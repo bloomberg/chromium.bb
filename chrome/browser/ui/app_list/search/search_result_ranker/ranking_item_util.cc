@@ -14,16 +14,16 @@
 
 namespace app_list {
 
-// Given a |ChromeSearchResult| representing an omnibox result, convert it based
-// on the subtype specified by |ChromeSearchResult::GetSubType|. Any
-// unanticipated subtypes are converted into |RankingItemType::kOmniboxGeneric|.
+// Given a ChromeSearchResult representing an omnibox result, convert it based
+// on the subtype specified by ChromeSearchResult::result_subtype. Any
+// unanticipated subtypes are converted into RankingItemType::kOmniboxGeneric.
 RankingItemType ExpandOmniboxType(const ChromeSearchResult& result) {
   if (result.result_type() != ash::SearchResultType::kOmnibox) {
     NOTREACHED();
     return RankingItemType::kUnknown;
   }
 
-  switch (static_cast<AutocompleteMatchType::Type>(result.GetSubType())) {
+  switch (static_cast<AutocompleteMatchType::Type>(result.result_subtype())) {
     case AutocompleteMatchType::Type::HISTORY_URL:
     case AutocompleteMatchType::Type::HISTORY_TITLE:
     case AutocompleteMatchType::Type::HISTORY_BODY:

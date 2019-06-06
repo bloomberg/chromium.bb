@@ -106,6 +106,11 @@ class APP_LIST_MODEL_EXPORT SearchResult {
     metadata_->result_type = result_type;
   }
 
+  int result_subtype() const { return metadata_->result_subtype; }
+  void set_result_subtype(int result_subtype) {
+    metadata_->result_subtype = result_subtype;
+  }
+
   int distance_from_origin() { return distance_from_origin_; }
   void set_distance_from_origin(int distance) {
     distance_from_origin_ = distance;

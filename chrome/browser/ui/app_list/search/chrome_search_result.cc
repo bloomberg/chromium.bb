@@ -217,10 +217,6 @@ std::string ChromeSearchResult::TagsDebugStringForTest(const std::string& text,
   return result;
 }
 
-int ChromeSearchResult::GetSubType() const {
-  return -1;
-}
-
 app_list::AppContextMenu* ChromeSearchResult::GetAppContextMenu() {
   return nullptr;
 }
