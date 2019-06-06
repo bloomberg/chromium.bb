@@ -320,6 +320,10 @@ public class GridTabSwitcherLayout
         if (ChromeVersionInfo.isLocalBuild() || ChromeVersionInfo.isCanaryBuild()) {
             Toast.makeText(ContextUtils.getApplicationContext(), message, Toast.LENGTH_SHORT)
                     .show();
+        }
+
+        // TODO(crbug.com/964406): stop logging it after this feature stabilizes.
+        if (!ChromeVersionInfo.isStableBuild()) {
             Log.i(TAG, message);
         }
 
