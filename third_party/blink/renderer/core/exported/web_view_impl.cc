@@ -2669,9 +2669,6 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
       MainFrameImpl()->GetFrameView()->SetNeedsLayout();
   }
 
-  if (TextAutosizer* text_autosizer = document->GetTextAutosizer())
-    text_autosizer->UpdatePageInfoInAllFrames();
-
   UpdateMainFrameLayoutSize();
 }
 

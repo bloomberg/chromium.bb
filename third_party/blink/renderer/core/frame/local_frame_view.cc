@@ -853,6 +853,13 @@ void LocalFrameView::UpdateLayout() {
           old_size.Height() != new_size.Height());
     }
 
+    if (frame_->IsMainFrame()) {
+      if (auto* text_autosizer = frame_->GetDocument()->GetTextAutosizer()) {
+        if (text_autosizer->HasLayoutInlineSizeChanged())
+          text_autosizer->UpdatePageInfoInAllFrames();
+      }
+    }
+
     if (NeedsLayout()) {
       base::AutoReset<bool> suppress(&suppress_adjust_view_size_, true);
       UpdateLayout();

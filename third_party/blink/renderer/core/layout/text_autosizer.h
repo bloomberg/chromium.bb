@@ -68,6 +68,7 @@ class CORE_EXPORT TextAutosizer final
                                         float multiplier,
                                         float effective_zoom);
 
+  bool HasLayoutInlineSizeChanged() const;
   void UpdatePageInfoInAllFrames();
   void UpdatePageInfo();
   void Record(LayoutBlock*);

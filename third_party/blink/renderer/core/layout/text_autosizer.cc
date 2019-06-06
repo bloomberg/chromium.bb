@@ -61,6 +61,19 @@
 
 namespace blink {
 
+namespace {
+
+inline int GetLayoutInlineSize(const Document& document,
+                               const LocalFrameView& main_frame_view) {
+  IntSize size = main_frame_view.GetLayoutSize();
+  const LayoutView* layout_view = document.GetLayoutView();
+  if (IsHorizontalWritingMode(layout_view->StyleRef().GetWritingMode()))
+    return size.Width();
+  return size.Height();
+}
+
+}  // namespace
+
 static LayoutObject* ParentElementLayoutObject(
     const LayoutObject* layout_object) {
   // At style recalc, the layoutObject's parent may not be attached,
@@ -549,6 +562,13 @@ void TextAutosizer::MarkSuperclusterForConsistencyCheck(LayoutObject* object) {
   }
 }
 
+bool TextAutosizer::HasLayoutInlineSizeChanged() const {
+  DCHECK(document_->GetFrame()->IsMainFrame());
+  int new_inline_size =
+      GetLayoutInlineSize(*document_, *document_->GetFrame()->View());
+  return new_inline_size != page_info_.shared_info_.main_frame_layout_width;
+}
+
 void TextAutosizer::UpdatePageInfoInAllFrames() {
   DCHECK(!document_->GetFrame() || document_->GetFrame()->IsMainFrame());
 
@@ -614,9 +634,8 @@ void TextAutosizer::UpdatePageInfo() {
     page_info_.shared_info_.main_frame_width =
         horizontal_writing_mode ? frame_size.Width() : frame_size.Height();
 
-    IntSize layout_size = main_frame.View()->GetLayoutSize();
     page_info_.shared_info_.main_frame_layout_width =
-        horizontal_writing_mode ? layout_size.Width() : layout_size.Height();
+        GetLayoutInlineSize(*document_, *main_frame.View());
 
     // TODO(pdr): Accessibility should be moved out of the text autosizer. See:
     // crbug.com/645717.

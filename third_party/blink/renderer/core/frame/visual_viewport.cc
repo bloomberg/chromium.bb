@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
-#include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -364,7 +363,6 @@ void VisualViewport::SetSize(const IntSize& size) {
 
   TRACE_EVENT2("blink", "VisualViewport::setSize", "width", size.Width(),
                "height", size.Height());
-  bool width_did_change = size.Width() != size_.Width();
   size_ = size;
   needs_paint_property_update_ = true;
 
@@ -385,18 +383,6 @@ void VisualViewport::SetSize(const IntSize& size) {
     return;
 
   EnqueueResizeEvent();
-
-  bool autosizer_needs_updating =
-      width_did_change && MainFrame()->GetSettings() &&
-      MainFrame()->GetSettings()->TextAutosizingEnabled();
-
-  if (autosizer_needs_updating) {
-    // This needs to happen after setting the m_size member since it'll be read
-    // in the update call.
-    if (TextAutosizer* text_autosizer =
-            MainFrame()->GetDocument()->GetTextAutosizer())
-      text_autosizer->UpdatePageInfoInAllFrames();
-  }
 }
 
 void VisualViewport::Reset() {
