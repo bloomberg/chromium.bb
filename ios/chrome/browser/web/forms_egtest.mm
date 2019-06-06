@@ -431,7 +431,11 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 }
 
 // A new navigation dismisses the repost dialog.
+// TODO(crbug.com/971670): Reenable for slim nav.
 - (void)testRepostFormDismissedByNewNavigation {
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Test not running with slim nav.");
+  }
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
