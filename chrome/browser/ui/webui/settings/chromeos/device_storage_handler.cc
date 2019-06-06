@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -34,6 +35,7 @@
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -89,8 +91,10 @@ StorageHandler::StorageHandler(Profile* profile,
       source_name_(html_source->GetSource()),
       arc_observer_(this),
       weak_ptr_factory_(this) {
-  html_source->AddBoolean(kAndroidEnabled,
-                          arc::IsArcPlayStoreEnabledForProfile(profile));
+  html_source->AddBoolean(
+      kAndroidEnabled,
+      base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature) &&
+          arc::IsArcPlayStoreEnabledForProfile(profile));
 }
 
 StorageHandler::~StorageHandler() {
@@ -125,7 +129,8 @@ void StorageHandler::RegisterMessages() {
 }
 
 void StorageHandler::OnJavascriptAllowed() {
-  arc_observer_.Add(arc::ArcSessionManager::Get());
+  if (base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature))
+    arc_observer_.Add(arc::ArcSessionManager::Get());
 
   // Start observing the mojo connection UpdateAndroidSize() relies on. Note
   // that OnConnectionReady() will be called immediately if the connection has
@@ -148,7 +153,8 @@ void StorageHandler::OnJavascriptDisallowed() {
       ->storage_manager()
       ->RemoveObserver(this);
 
-  arc_observer_.Remove(arc::ArcSessionManager::Get());
+  if (base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature))
+    arc_observer_.Remove(arc::ArcSessionManager::Get());
 }
 
 void StorageHandler::HandleUpdateAndroidEnabled(

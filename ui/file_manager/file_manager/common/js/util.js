@@ -1553,6 +1553,12 @@ util.unwrapEntry = entry => {
 };
 
 /** @return {boolean} */
+util.isArcUsbStorageUIEnabled = () => {
+  return loadTimeData.valueExists('ARC_USB_STORAGE_UI_ENABLED') &&
+      loadTimeData.getBoolean('ARC_USB_STORAGE_UI_ENABLED');
+};
+
+/** @return {boolean} */
 util.isMyFilesVolumeEnabled = () => {
   return loadTimeData.valueExists('MY_FILES_VOLUME_ENABLED') &&
       loadTimeData.getBoolean('MY_FILES_VOLUME_ENABLED');

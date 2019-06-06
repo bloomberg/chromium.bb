@@ -1559,6 +1559,8 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   if (IsArcTest()) {
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
+  // Make sure to run the ARC storage UI toast tests.
+  enabled_features.emplace_back(arc::kUsbStorageUIFeature);
 
   if (IsDocumentsProviderTest()) {
     enabled_features.emplace_back(

@@ -34335,6 +34335,7 @@ from previous Chrome versions.
   <int value="-322937746" label="disable-desktop-capture-picker-new-ui"/>
   <int value="-322827131" label="tab-management-experiment-type-basil"/>
   <int value="-320820051" label="enable-zero-copy"/>
+  <int value="-319002650" label="ArcUsbStorageUI:enabled"/>
   <int value="-315604713" label="WebUSB:enabled"/>
   <int value="-314910380" label="disable-distance-field-text"/>
   <int value="-314605926" label="protect-sync-credential-on-reauth:enabled"/>
@@ -35410,6 +35411,7 @@ from previous Chrome versions.
   <int value="1319068611" label="SecondaryUiMd:disabled"/>
   <int value="1319725131" label="enable-distance-field-text"/>
   <int value="1320201920" label="enable-touchpad-three-finger-click"/>
+  <int value="1320450434" label="ArcUsbStorageUI:disabled"/>
   <int value="1324623677"
       label="SessionRestorePrioritizesBackgroundUseCases:enabled"/>
   <int value="1330264457" label="OmniboxUIExperimentVerticalLayout:disabled"/>

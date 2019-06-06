@@ -254,7 +254,7 @@ class DeviceHandler extends cr.EventTarget {
                   /** @type {string} */ (metadata.devicePath));
             } else {
               chrome.fileManagerPrivate.getPreferences(pref => {
-                if (!pref.arcEnabled) {
+                if (!pref.arcEnabled || !util.isArcUsbStorageUIEnabled()) {
                   DeviceHandler.Notification.DEVICE_NAVIGATION.show(
                       /** @type {string} */ (metadata.devicePath));
                 } else if (pref.arcRemovableMediaAccessEnabled) {

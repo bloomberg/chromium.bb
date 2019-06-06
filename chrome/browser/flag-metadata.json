@@ -148,6 +148,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "arc-usb-storage-ui",
+    "owners": [ "fukino" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "arc-vpn",
     "owners": [ "cros-networking@google.com" ],
     "expiry_milestone": 76

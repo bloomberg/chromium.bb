@@ -1575,6 +1575,9 @@ class FileManager extends cr.EventTarget {
    * @param {VolumeInfo} volumeInfo Volume information currently selected.
    */
   showArcStorageToast_(volumeInfo) {
+    if (!util.isArcUsbStorageUIEnabled()) {
+      return;
+    }
     if (!volumeInfo ||
         volumeInfo.volumeType !== VolumeManagerCommon.VolumeType.REMOVABLE) {
       // The toast is for removable volumes.

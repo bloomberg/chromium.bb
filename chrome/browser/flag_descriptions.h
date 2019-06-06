@@ -1681,6 +1681,9 @@ extern const char kArcPrintSpoolerExperimentDescription[];
 extern const char kArcUsbHostName[];
 extern const char kArcUsbHostDescription[];
 
+extern const char kArcUsbStorageUIName[];
+extern const char kArcUsbStorageUIDescription[];
+
 extern const char kArcVpnName[];
 extern const char kArcVpnDescription[];
 
