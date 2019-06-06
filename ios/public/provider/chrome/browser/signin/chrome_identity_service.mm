@@ -40,6 +40,14 @@ ChromeIdentityService::CreateWebAndAppSettingDetailsController(
   return nil;
 }
 
+DismissWebAndAppSettingDetailsControllerBlock
+ChromeIdentityService::PresentWebAndAppSettingDetailsController(
+    ChromeIdentity* identity,
+    UIViewController* viewController,
+    BOOL animated) {
+  return nil;
+}
+
 ChromeIdentityInteractionManager*
 ChromeIdentityService::CreateChromeIdentityInteractionManager(
     ios::ChromeBrowserState* browser_state,

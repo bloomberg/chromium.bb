@@ -25,6 +25,7 @@
 @class UIApplication;
 @class UIImage;
 @class UINavigationController;
+@class UIViewController;
 
 namespace ios {
 
@@ -51,6 +52,11 @@ typedef void (^GetHostedDomainCallback)(NSString* hosted_domain,
 // Callback passed to method |HandleMDMNotification()|. |is_blocked| is true if
 // the device is blocked.
 typedef void (^MDMStatusCallback)(bool is_blocked);
+
+// Callback to dismiss Web and App settings details view. No-op, if this block
+// is more than once.
+// |animated| the view will be dismissed with animation if the value is YES.
+typedef void (^DismissWebAndAppSettingDetailsControllerBlock)(BOOL animated);
 
 // Opaque type representing the MDM (Mobile Device Management) status of the
 // device. Checking for equality is guaranteed to be valid.
@@ -109,6 +115,13 @@ class ChromeIdentityService {
   virtual UINavigationController* CreateWebAndAppSettingDetailsController(
       ChromeIdentity* identity,
       id<ChromeIdentityBrowserOpener> browser_opener);
+
+  // Not implemented yet. Please use CreateWebAndAppSettingDetailsController().
+  // See: crbug.com/905680.
+  virtual DismissWebAndAppSettingDetailsControllerBlock
+  PresentWebAndAppSettingDetailsController(ChromeIdentity* identity,
+                                           UIViewController* viewController,
+                                           BOOL animated);
 
   // Returns a new ChromeIdentityInteractionManager with |delegate| as its
   // delegate.
