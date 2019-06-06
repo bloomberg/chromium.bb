@@ -5,7 +5,7 @@
 #ifndef PLATFORM_API_TASK_RUNNER_H_
 #define PLATFORM_API_TASK_RUNNER_H_
 
-#include <functional>
+#include <future>
 
 #include "platform/api/time.h"
 
@@ -23,18 +23,33 @@ namespace platform {
 // NOTE: we do not make any assumptions about what thread tasks shall run on.
 class TaskRunner {
  public:
-  using Task = std::function<void()>;
+  using Task = std::packaged_task<void() noexcept>;
 
   virtual ~TaskRunner() = default;
 
-  // Takes a Task that should be run at the first convenient time.
-  virtual void PostTask(Task task) = 0;
+  // Takes any callable target (function, lambda-expression, std::bind result,
+  // etc.) that should be run at the first convenient time.
+  template <typename Functor>
+  inline void PostTask(Functor f) {
+    PostPackagedTask(Task(std::move(f)));
+  }
 
-  // Takes a Task that should be run no sooner than "delay" time from now. Note
-  // that we do not guarantee it will run precisely "delay" later, merely that
-  // it will run no sooner than "delay" time from now.
-  virtual void PostTaskWithDelay(Task task, Clock::duration delay) = 0;
+  // Takes any callable target (function, lambda-expression, std::bind result,
+  // etc.) that should be run no sooner than |delay| time from now. Note that
+  // the Task might run after an additional delay, especially under heavier
+  // system load. There is no deadline concept.
+  template <typename Functor>
+  inline void PostTaskWithDelay(Functor f, Clock::duration delay) {
+    PostPackagedTaskWithDelay(Task(std::move(f)), delay);
+  }
+
+  // Implementations should provide the behavior explained in the comments above
+  // for PostTask[WithDelay](). Client code may also call these directly when
+  // passing an existing Task object.
+  virtual void PostPackagedTask(Task task) = 0;
+  virtual void PostPackagedTaskWithDelay(Task task, Clock::duration delay) = 0;
 };
+
 }  // namespace platform
 }  // namespace openscreen
 

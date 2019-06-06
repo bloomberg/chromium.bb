@@ -19,7 +19,7 @@ TaskRunnerImpl::TaskRunnerImpl(platform::ClockNowFunctionPtr now_function,
 
 TaskRunnerImpl::~TaskRunnerImpl() = default;
 
-void TaskRunnerImpl::PostTask(Task task) {
+void TaskRunnerImpl::PostPackagedTask(Task task) {
   std::lock_guard<std::mutex> lock(task_mutex_);
   tasks_.push_back(std::move(task));
   if (task_waiter_) {
@@ -29,9 +29,11 @@ void TaskRunnerImpl::PostTask(Task task) {
   }
 }
 
-void TaskRunnerImpl::PostTaskWithDelay(Task task, Clock::duration delay) {
+void TaskRunnerImpl::PostPackagedTaskWithDelay(Task task,
+                                               Clock::duration delay) {
   std::lock_guard<std::mutex> lock(task_mutex_);
-  delayed_tasks_.emplace(std::move(task), now_function_() + delay);
+  delayed_tasks_.emplace(
+      std::make_pair(now_function_() + delay, std::move(task)));
   if (task_waiter_) {
     task_waiter_->OnTaskPosted();
   } else {
@@ -66,22 +68,24 @@ void TaskRunnerImpl::RunUntilIdleForTesting() {
 }
 
 void TaskRunnerImpl::RunCurrentTasksForTesting() {
-  std::deque<Task> current_tasks;
   {
     // Unlike in the RunCurrentTasksBlocking method, here we just immediately
     // take the lock and drain the tasks_ queue. This allows tests to avoid
     // having to do any multithreading to interact with the queue.
     std::unique_lock<std::mutex> lock(task_mutex_);
-    tasks_.swap(current_tasks);
+    OSP_DCHECK(running_tasks_.empty());
+    running_tasks_.swap(tasks_);
   }
 
-  for (Task& task : current_tasks) {
-    task();
+  for (Task& task : running_tasks_) {
+    // Move the task to the stack so that its bound state is freed immediately
+    // after being run.
+    std::move(task)();
   }
+  running_tasks_.clear();
 }
 
 void TaskRunnerImpl::RunCurrentTasksBlocking() {
-  std::deque<Task> current_tasks;
   {
     // Wait for the lock. If there are no current tasks, we will wait until
     // a delayed task is ready or a task gets added to the queue.
@@ -90,13 +94,17 @@ void TaskRunnerImpl::RunCurrentTasksBlocking() {
       return;
     }
 
-    tasks_.swap(current_tasks);
+    OSP_DCHECK(running_tasks_.empty());
+    running_tasks_.swap(tasks_);
   }
 
-  for (Task& task : current_tasks) {
-    OSP_DVLOG << "Running " << current_tasks.size() << " current tasks...";
-    task();
+  OSP_DVLOG << "Running " << running_tasks_.size() << " tasks...";
+  for (Task& task : running_tasks_) {
+    // Move the task to the stack so that its bound state is freed immediately
+    // after being run.
+    std::move(task)();
   }
+  running_tasks_.clear();
 }
 
 void TaskRunnerImpl::RunTasksUntilStopped() {
@@ -111,11 +119,11 @@ void TaskRunnerImpl::ScheduleDelayedTasks() {
 
   // Getting the time can be expensive on some platforms, so only get it once.
   const auto current_time = now_function_();
-  while (!delayed_tasks_.empty() &&
-         (delayed_tasks_.top().runnable_after <= current_time)) {
-    tasks_.push_back(std::move(delayed_tasks_.top().task));
-    delayed_tasks_.pop();
+  const auto end_of_range = delayed_tasks_.upper_bound(current_time);
+  for (auto it = delayed_tasks_.begin(); it != end_of_range; ++it) {
+    tasks_.push_back(std::move(it->second));
   }
+  delayed_tasks_.erase(delayed_tasks_.begin(), end_of_range);
 }
 
 bool TaskRunnerImpl::ShouldWakeUpRunLoop() {
@@ -128,7 +136,7 @@ bool TaskRunnerImpl::ShouldWakeUpRunLoop() {
   }
 
   return !delayed_tasks_.empty() &&
-         (delayed_tasks_.top().runnable_after <= now_function_());
+         (delayed_tasks_.begin()->first <= now_function_());
 }
 
 std::unique_lock<std::mutex> TaskRunnerImpl::WaitForWorkAndAcquireLock() {
@@ -151,7 +159,7 @@ std::unique_lock<std::mutex> TaskRunnerImpl::WaitForWorkAndAcquireLock() {
       Clock::duration timeout = waiter_timeout_;
       if (!delayed_tasks_.empty()) {
         Clock::duration next_task_delta =
-            delayed_tasks_.top().runnable_after - now_function_();
+            delayed_tasks_.begin()->first - now_function_();
         if (next_task_delta < timeout) {
           timeout = next_task_delta;
         }
@@ -167,9 +175,9 @@ std::unique_lock<std::mutex> TaskRunnerImpl::WaitForWorkAndAcquireLock() {
       // pipe.
       const auto wait_predicate = [this] { return ShouldWakeUpRunLoop(); };
       OSP_DVLOG << "TaskRunner waiting for lock until delayed task ready...";
-      run_loop_wakeup_.wait_for(
-          lock, delayed_tasks_.top().runnable_after - now_function_(),
-          wait_predicate);
+      run_loop_wakeup_.wait_for(lock,
+                                delayed_tasks_.begin()->first - now_function_(),
+                                wait_predicate);
     } else {
       // We don't have any work queued.
       const auto wait_predicate = [this] {

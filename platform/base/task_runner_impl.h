@@ -7,11 +7,9 @@
 
 #include <atomic>
 #include <condition_variable>  // NOLINT
-#include <deque>
-#include <functional>
+#include <map>
 #include <memory>
-#include <mutex>  // NOLINT
-#include <queue>
+#include <mutex>   // NOLINT
 #include <thread>  // NOLINT
 #include <utility>
 #include <vector>
@@ -53,9 +51,9 @@ class TaskRunnerImpl : public TaskRunner {
       Clock::duration waiter_timeout = std::chrono::milliseconds(100));
 
   // TaskRunner overrides
-  ~TaskRunnerImpl() override;
-  void PostTask(Task task) override;
-  void PostTaskWithDelay(Task task, Clock::duration delay) override;
+  ~TaskRunnerImpl() final;
+  void PostPackagedTask(Task task) final;
+  void PostPackagedTaskWithDelay(Task task, Clock::duration delay) final;
 
   // Tasks will only be executed if RunUntilStopped has been called, and
   // RequestStopSoon has not. Important note: TaskRunnerImpl does NOT do any
@@ -74,18 +72,6 @@ class TaskRunnerImpl : public TaskRunner {
   void RunUntilIdleForTesting();
 
  private:
-  struct DelayedTask {
-    DelayedTask(Task task_, Clock::time_point runnable_after_)
-        : task(std::move(task_)), runnable_after(runnable_after_) {}
-
-    Task task;
-    Clock::time_point runnable_after;
-
-    bool operator>(const DelayedTask& other) const {
-      return this->runnable_after > other.runnable_after;
-    }
-  };
-
   // Run all tasks already in the task queue. If the queue is empty, wait for
   // either (1) a delayed task to become available, or (2) a task to be added
   // to the queue.
@@ -117,14 +103,12 @@ class TaskRunnerImpl : public TaskRunner {
   // Atomic so that we can perform atomic exchanges.
   std::atomic_bool is_running_;
 
-  // This mutex is used for both tasks_ and notifying the run loop to wake
-  // up when it is waiting for a task to be added to the queue in
-  // run_loop_wakeup_.
+  // This mutex is used for |tasks_| and |delayed_tasks_|, and also for
+  // notifying the run loop to wake up when it is waiting for a task to be added
+  // to the queue in |run_loop_wakeup_|.
   std::mutex task_mutex_;
-  std::priority_queue<DelayedTask,
-                      std::vector<DelayedTask>,
-                      std::greater<DelayedTask>>
-      delayed_tasks_ GUARDED_BY(task_mutex_);
+  std::vector<Task> tasks_ GUARDED_BY(task_mutex_);
+  std::multimap<Clock::time_point, Task> delayed_tasks_ GUARDED_BY(task_mutex_);
 
   // When |task_waiter_| is nullptr, |run_loop_wakeup_| is used for sleeping the
   // task runner.  Otherwise, |run_loop_wakeup_| isn't used and |task_waiter_|
@@ -132,7 +116,11 @@ class TaskRunnerImpl : public TaskRunner {
   std::condition_variable run_loop_wakeup_;
   TaskWaiter* const task_waiter_;
   Clock::duration waiter_timeout_;
-  std::deque<Task> tasks_ GUARDED_BY(task_mutex_);
+
+  // To prevent excessive re-allocation of the underlying array of the |tasks_|
+  // vector, use an A/B vector-swap mechanism. |running_tasks_| starts out
+  // empty, and is swapped with |tasks_| when it is time to run the Tasks.
+  std::vector<Task> running_tasks_;
 };
 }  // namespace platform
 }  // namespace openscreen
