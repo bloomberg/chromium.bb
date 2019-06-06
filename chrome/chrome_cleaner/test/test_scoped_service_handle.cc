@@ -171,7 +171,7 @@ AssertionResult EnsureNoTestServicesRunning() {
   for (const ServiceStatus& service : services) {
     base::string16 service_name = service.service_name;
     base::ProcessId pid = service.service_status_process.dwProcessId;
-    if (base::ContainsValue(process_ids, pid)) {
+    if (base::Contains(process_ids, pid)) {
       if (!StopService(service_name.c_str()))
         return AssertionFailure() << "Could not stop service " << service_name;
       stopped_service_names.push_back(service_name);

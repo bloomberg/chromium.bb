@@ -202,7 +202,7 @@ void HandleRequestOnCmdThread(
     const HttpResponseSenderFunc& send_response_func) {
   if (!whitelisted_ips.empty()) {
     const net::IPAddress& peer_address = request.peer.address();
-    if (!base::ContainsValue(whitelisted_ips, peer_address)) {
+    if (!base::Contains(whitelisted_ips, peer_address)) {
       LOG(WARNING) << "unauthorized access from " << request.peer.ToString();
       std::unique_ptr<net::HttpServerResponseInfo> response(
           new net::HttpServerResponseInfo(net::HTTP_UNAUTHORIZED));

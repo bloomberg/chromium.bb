@@ -39,7 +39,7 @@ class FakeServiceDelegate
 
   // Service delegate overrides.
   bool IsPrinterInstalled(const Printer& printer) override {
-    if (!base::ContainsKey(installed_printers_, printer.id())) {
+    if (!base::Contains(installed_printers_, printer.id())) {
       return false;
     }
 
@@ -47,7 +47,7 @@ class FakeServiceDelegate
   }
 
   base::Optional<Printer> GetPrinter(const std::string& id) override {
-    if (!base::ContainsKey(installed_printers_, id)) {
+    if (!base::Contains(installed_printers_, id)) {
       return base::nullopt;
     }
 

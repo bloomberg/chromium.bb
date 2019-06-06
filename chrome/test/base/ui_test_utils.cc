@@ -94,7 +94,7 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
     BrowserAddedObserver observer;
     new_browser = observer.WaitForSingleNewBrowser();
     // The new browser should never be in |excluded_browsers|.
-    DCHECK(!base::ContainsKey(excluded_browsers, new_browser));
+    DCHECK(!base::Contains(excluded_browsers, new_browser));
   }
   return new_browser;
 }

@@ -654,9 +654,9 @@ TEST_F(PUPDataTest, GetUwSIds) {
 
   const std::vector<UwSId>* pup_ids = PUPData::GetUwSIds();
   EXPECT_EQ(pup_ids->size(), 2UL);
-  EXPECT_TRUE(base::ContainsValue(*pup_ids, k24ID));
-  EXPECT_TRUE(base::ContainsValue(*pup_ids, k42ID));
-  EXPECT_FALSE(base::ContainsValue(*pup_ids, k12ID));
+  EXPECT_TRUE(base::Contains(*pup_ids, k24ID));
+  EXPECT_TRUE(base::Contains(*pup_ids, k42ID));
+  EXPECT_FALSE(base::Contains(*pup_ids, k12ID));
 }
 
 TEST_F(PUPDataTest, InitializeTest) {

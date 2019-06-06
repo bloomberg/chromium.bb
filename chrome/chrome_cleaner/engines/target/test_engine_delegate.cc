@@ -174,8 +174,8 @@ uint32_t ScanForUwS(
     scoped_refptr<EngineFileRequestsProxy> privileged_file_calls,
     scoped_refptr<EngineScanResultsProxy> report_result_calls) {
   // Only check the Startup folder, assuming it's enabled
-  if (!base::ContainsValue(enabled_trace_locations,
-                           UwS_TraceLocation_FOUND_IN_SHELL)) {
+  if (!base::Contains(enabled_trace_locations,
+                      UwS_TraceLocation_FOUND_IN_SHELL)) {
     return EngineResultCode::kSuccess;
   }
 

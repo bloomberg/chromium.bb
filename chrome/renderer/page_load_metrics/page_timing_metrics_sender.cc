@@ -127,7 +127,7 @@ void PageTimingMetricsSender::DidStartResponse(
     const network::ResourceResponseHead& response_head,
     content::ResourceType resource_type,
     content::PreviewsState previews_state) {
-  DCHECK(!base::ContainsKey(page_resource_data_use_, resource_id));
+  DCHECK(!base::Contains(page_resource_data_use_, resource_id));
 
   auto resource_it = page_resource_data_use_.emplace(
       std::piecewise_construct, std::forward_as_tuple(resource_id),

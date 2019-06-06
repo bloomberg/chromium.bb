@@ -165,8 +165,8 @@ bool ContentSettingsObserver::IsPluginTemporarilyAllowed(
     const std::string& identifier) {
   // If the empty string is in here, it means all plugins are allowed.
   // TODO(bauerb): Remove this once we only pass in explicit identifiers.
-  return base::ContainsKey(temporarily_allowed_plugins_, identifier) ||
-         base::ContainsKey(temporarily_allowed_plugins_, std::string());
+  return base::Contains(temporarily_allowed_plugins_, identifier) ||
+         base::Contains(temporarily_allowed_plugins_, std::string());
 }
 
 void ContentSettingsObserver::DidBlockContentType(
