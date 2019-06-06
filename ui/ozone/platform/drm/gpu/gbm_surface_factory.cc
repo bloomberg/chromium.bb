@@ -115,6 +115,12 @@ std::vector<gfx::BufferFormat> EnumerateSupportedBufferFormatsForTexturing() {
       return supported_buffer_formats;
     }
 
+    // Skip the virtual graphics memory manager device.
+    if (base::LowerCaseEqualsASCII(gbm_device_get_backend_name(device.get()),
+                                   "vgem")) {
+      continue;
+    }
+
     for (int i = 0; i <= static_cast<int>(gfx::BufferFormat::LAST); ++i) {
       const gfx::BufferFormat buffer_format = static_cast<gfx::BufferFormat>(i);
       if (base::ContainsValue(supported_buffer_formats, buffer_format))
