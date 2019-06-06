@@ -534,7 +534,7 @@ void OverviewItem::CloseWindow() {
 void OverviewItem::OnMinimizedStateChanged() {
   const bool minimized = transform_window_.IsMinimized();
   caption_container_view_->SetShowPreview(minimized);
-  if (minimized)
+  if (!minimized)
     EnsureVisible();
 
   if (window_surface_cache_observers_) {

@@ -936,6 +936,57 @@ TEST_F(DesksTest, DragWindowToDesk) {
   EXPECT_TRUE(shadow->layer()->GetTargetVisibility());
 }
 
+TEST_F(DesksTest, DragMinimizedWindowToDesk) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  const Desk* desk_2 = controller->desks()[1].get();
+
+  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  // Minimize the window before entering Overview Mode.
+  auto* window_state = wm::GetWindowState(window.get());
+  window_state->Minimize();
+  ASSERT_TRUE(window_state->IsMinimized());
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  auto* overview_session = overview_controller->overview_session();
+  auto* overview_item =
+      overview_session->GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(overview_item);
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
+
+  // Drag the window to desk_2's mini_view and activate desk_2. Expect that the
+  // window will be in an unminimized state and all its visibility and layer
+  // opacity attributes are correct.
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  EXPECT_EQ(desk_2, desk_2_mini_view->desk());
+  DragItemToPoint(overview_item,
+                  desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
+                  GetEventGenerator());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(overview_grid->empty());
+  EXPECT_TRUE(desk_2->windows().contains(window.get()));
+  EXPECT_FALSE(overview_grid->drop_target_widget());
+  DeskSwitchAnimationWaiter waiter;
+  ClickOnMiniView(desk_2_mini_view, GetEventGenerator());
+  waiter.Wait();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(desk_2->is_active());
+
+  EXPECT_FALSE(window_state->IsMinimized());
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(window->layer()->GetTargetVisibility());
+  EXPECT_EQ(1.f, window->layer()->GetTargetOpacity());
+}
+
 TEST_F(DesksTest, DragWindowToNonMiniViewPoints) {
   auto* controller = DesksController::Get();
   controller->NewDesk();

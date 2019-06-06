@@ -245,6 +245,12 @@ void Desk::MoveWindowToDesk(aura::Window* window, Desk* target_desk) {
     MoveWindowToDeskInternal(window, target_desk);
 
     windows_.erase(window);
+
+    // Unminimize the window so that it shows up in the mini_view after it had
+    // been dragged and moved to another desk.
+    auto* window_state = wm::GetWindowState(window);
+    if (window_state->IsMinimized())
+      window_state->Unminimize();
   }
 
   NotifyContentChanged();
