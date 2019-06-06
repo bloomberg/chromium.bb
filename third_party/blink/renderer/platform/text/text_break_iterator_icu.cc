@@ -579,7 +579,7 @@ static UText* TextOpenUTF16(UText* text,
   return text;
 }
 
-static UText g_empty_text = UTEXT_INITIALIZER;
+static const UText g_empty_text = UTEXT_INITIALIZER;
 
 static TextBreakIterator* WordBreakIterator(base::span<const LChar> string) {
   UErrorCode error_code = U_ZERO_ERROR;
