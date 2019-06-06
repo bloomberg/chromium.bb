@@ -234,19 +234,15 @@ static void set_good_speed_features_framesize_independent(
   sf->use_real_time_ref_set = 0;
 
   if (speed >= 1) {
-    sf->gm_erroradv_type = GM_ERRORADV_TR_1;
     sf->selective_ref_frame = 2;
 
     sf->intra_tx_size_search_init_depth_rect = 1;
-    sf->tx_size_search_lgr_block = 1;
 
-    sf->prune_ext_partition_types_search_level = 2;
     sf->skip_repeat_interpolation_filter_search = 1;
     sf->tx_type_search.skip_tx_search = 1;
     sf->tx_type_search.ml_tx_split_thresh = 40;
     sf->adaptive_txb_search_level = 2;
     sf->use_intra_txb_hash = 1;
-    sf->optimize_b_precheck = 1;
     sf->dual_sgr_penalty_level = 1;
     sf->use_accurate_subpel_search = USE_4_TAPS;
     sf->reuse_inter_intra_mode = 1;
@@ -265,7 +261,6 @@ static void set_good_speed_features_framesize_independent(
     sf->cb_pred_filter_search = 1;
     sf->use_transform_domain_distortion = boosted ? 1 : 2;
     sf->perform_coeff_opt = boosted ? 1 : 2;
-    sf->use_inter_txb_hash = 0;
     sf->prune_ref_frame_for_rect_partitions =
         (frame_is_intra_only(&cpi->common) || (cm->allow_screen_content_tools))
             ? 0
