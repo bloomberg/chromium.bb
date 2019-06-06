@@ -123,8 +123,14 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
   // Only keep types that have controllers.
   desired_types_.Clear();
   for (ModelType type : desired_types) {
-    if (controllers_->find(type) != controllers_->end())
+    auto dtc_iter = controllers_->find(type);
+    if (dtc_iter != controllers_->end()) {
+      DataTypeController* dtc = dtc_iter->second.get();
+      // Controllers in a FAILED state should have been filtered out by the
+      // DataTypeManager.
+      DCHECK_NE(dtc->state(), DataTypeController::FAILED);
       desired_types_.Put(type);
+    }
   }
 
   DVLOG(1) << "ModelAssociationManager: Initializing for "

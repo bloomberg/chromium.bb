@@ -77,6 +77,24 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       weak_ptr_factory_(this) {
   DCHECK(configurer_);
   DCHECK(observer_);
+
+  // Check if any of the controllers are already in a FAILED state, and if so,
+  // mark them accordingly in the status table.
+  DataTypeStatusTable::TypeErrorMap existing_errors;
+  for (const auto& kv : *controllers_) {
+    ModelType type = kv.first;
+    const DataTypeController* controller = kv.second.get();
+    DataTypeController::State state = controller->state();
+    DCHECK(state == DataTypeController::NOT_RUNNING ||
+           state == DataTypeController::STOPPING ||
+           state == DataTypeController::FAILED);
+    if (state == DataTypeController::FAILED) {
+      existing_errors[type] =
+          SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
+                    "Preexisting controller error on Sync startup", type);
+    }
+  }
+  data_type_status_table_.UpdateFailedDataTypes(existing_errors);
 }
 
 DataTypeManagerImpl::~DataTypeManagerImpl() {}

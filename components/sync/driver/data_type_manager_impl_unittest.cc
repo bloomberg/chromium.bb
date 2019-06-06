@@ -251,7 +251,9 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   ~SyncDataTypeManagerImplTest() override {}
 
  protected:
-  void SetUp() override {
+  void SetUp() override { RecreateDataTypeManager(); }
+
+  void RecreateDataTypeManager() {
     dtm_ = std::make_unique<TestDataTypeManager>(
         ModelTypeSet(), WeakHandle<DataTypeDebugInfoListener>(), &controllers_,
         &encryption_handler_, &configurer_, &observer_);
@@ -1553,6 +1555,45 @@ TEST_F(SyncDataTypeManagerImplTest, ErrorBeforeAssociation) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
 
   EXPECT_EQ(0U, configurer_.activated_types().Size());
+}
+
+// Checks that DTM handles the case when a controller is already in a FAILED
+// state at the time the DTM is created. Regression test for crbug.com/967344.
+TEST_F(SyncDataTypeManagerImplTest, ErrorBeforeStartup) {
+  AddController(BOOKMARKS);
+  AddController(PREFERENCES);
+
+  // Produce an error (FAILED) state in the BOOKMARKS controller.
+  GetController(BOOKMARKS)->SetModelLoadError(SyncError(
+      FROM_HERE, SyncError::DATATYPE_ERROR, "bookmarks error", BOOKMARKS));
+  SetConfigureStartExpectation();
+  Configure({BOOKMARKS});
+  GetController(BOOKMARKS)->SimulateModelLoadFinishing();
+  ASSERT_EQ(GetController(BOOKMARKS)->state(), DataTypeController::FAILED);
+
+  // Now create a fresh DTM, simulating a Sync restart.
+  RecreateDataTypeManager();
+
+  ASSERT_EQ(GetController(BOOKMARKS)->state(), DataTypeController::FAILED);
+
+  // Now a configuration attempt for both types should complete successfully,
+  // but exclude the failed type.
+  SetConfigureStartExpectation();
+  Configure({BOOKMARKS, PREFERENCES});
+
+  SetConfigureDoneExpectation(
+      DataTypeManager::OK, BuildStatusTable(/*crypto_errors=*/{},
+                                            /*association_errors=*/{BOOKMARKS},
+                                            /*unready_errore=*/{},
+                                            /*unrecoverable_errors=*/{}));
+  FinishDownload(/*types_to_configure=*/{},
+                 /*failed_download_types=*/{});
+  FinishDownload(/*types_to_configure=*/{PREFERENCES},
+                 /*failed_download_types=*/{});
+  GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
+
+  EXPECT_TRUE(dtm_->GetActiveDataTypes().Has(PREFERENCES));
+  EXPECT_FALSE(dtm_->GetActiveDataTypes().Has(BOOKMARKS));
 }
 
 TEST_F(SyncDataTypeManagerImplTest, AssociationNeverCompletes) {
