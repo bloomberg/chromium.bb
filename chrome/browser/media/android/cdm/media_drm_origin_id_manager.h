@@ -85,6 +85,9 @@ class MediaDrmOriginIdManager : public KeyedService {
   // |origin_id| was successful if |success| is true.
   void OriginIdProvisioned(bool success, const MediaDrmOriginId& origin_id);
 
+  // If called, record the current number of pre-provisioned origin IDs to UMA.
+  void RecordCountOfPreprovisionedOriginIds();
+
   PrefService* const pref_service_;
 
   // Callback to be used when the next origin ID is provisioned.
