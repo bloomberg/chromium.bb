@@ -261,9 +261,6 @@ class ScopedTaskEnvironment {
   // Returns the TimeDomain driving this ScopedTaskEnvironment.
   sequence_manager::TimeDomain* GetTimeDomain() const;
 
-  // For testing the MockTimeDomain.
-  void SetAllowTimeToAutoAdvanceUntilForTesting(TimeTicks advance_until);
-
   sequence_manager::SequenceManager* sequence_manager() const;
 
   void DeferredInitFromSubclass(
@@ -291,7 +288,7 @@ class ScopedTaskEnvironment {
                         trait_helpers::NotATraitTag tag);
 
   const MainThreadType main_thread_type_;
-  const ThreadPoolExecutionMode thread_pool_execution_mode_;
+  ThreadPoolExecutionMode thread_pool_execution_mode_;
   const bool subclass_creates_default_taskrunner_;
 
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;

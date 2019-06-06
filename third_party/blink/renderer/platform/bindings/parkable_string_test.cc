@@ -7,9 +7,11 @@
 #include <thread>
 #include <vector>
 
+#include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -19,6 +21,9 @@
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/memory_pressure_listener.h"
+
+using ThreadPoolExecutionMode =
+    base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode;
 
 namespace blink {
 
@@ -38,14 +43,21 @@ String MakeLargeString(char c = 'a') {
 
 class ParkableStringTestBase : public ::testing::Test {
  public:
-  ParkableStringTestBase()
+  ParkableStringTestBase(ThreadPoolExecutionMode thread_pool_execution_mode =
+                             ThreadPoolExecutionMode::DEFAULT)
       : ::testing::Test(),
         scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            thread_pool_execution_mode),
         scoped_feature_list_() {}
 
  protected:
-  void RunPostedTasks() { scoped_task_environment_.RunUntilIdle(); }
+  virtual
+
+      void
+      RunPostedTasks() {
+    scoped_task_environment_.RunUntilIdle();
+  }
 
   bool ParkAndWait(const ParkableString& string) {
     bool success =
@@ -57,7 +69,6 @@ class ParkableStringTestBase : public ::testing::Test {
   void WaitForDelayedParking() {
     scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
         ParkableStringManager::kParkingDelayInSeconds));
-    RunPostedTasks();
   }
 
   void CheckOnlyCpuCostTaskRemains() {
@@ -77,7 +88,6 @@ class ParkableStringTestBase : public ::testing::Test {
     CHECK_EQ(0u, ParkableStringManager::Instance().Size());
     // Delayed tasks may remain, clear the queues.
     scoped_task_environment_.FastForwardUntilNoTasksRemain();
-    RunPostedTasks();
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -99,7 +109,6 @@ class ParkableStringTest : public ParkableStringTestBase {
   void WaitForStatisticsRecording() {
     scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
         ParkableStringManager::kStatisticsRecordingDelayInSeconds));
-    RunPostedTasks();
   }
 
   ParkableString CreateAndParkAll() {
@@ -619,11 +628,17 @@ TEST_F(ParkableStringTest, ShouldPark) {
 }
 
 #if defined(ADDRESS_SANITIZER)
+#define EXPECT_ASAN_DEATH(statement, regex) EXPECT_DEATH(statement, regex)
+#else
+#define EXPECT_ASAN_DEATH(statement, regex) \
+  GTEST_UNSUPPORTED_DEATH_TEST(statement, regex, )
+#endif
+
 TEST_F(ParkableStringTest, AsanPoisoningTest) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
   const LChar* data = parkable.ToString().Characters8();
   EXPECT_TRUE(ParkAndWait(parkable));
-  EXPECT_DEATH(EXPECT_NE(0, data[10]), "");
+  EXPECT_ASAN_DEATH(EXPECT_NE(0, data[10]), "");
 }
 
 // Non-regression test for crbug.com/905137.
@@ -638,7 +653,6 @@ TEST_F(ParkableStringTest, CorrectAsanPoisoning) {
   }
   RunPostedTasks();
 }
-#endif  // defined(ADDRESS_SANITIZER)
 
 TEST_F(ParkableStringTest, Compression) {
   base::HistogramTester histogram_tester;
@@ -814,14 +828,13 @@ TEST_F(ParkableStringTest, ForegroundParkingIsNotEnabled) {
 
 class ParkableStringForegroundParkingTest : public ParkableStringTestBase {
  public:
-  ParkableStringForegroundParkingTest() : ParkableStringTestBase() {}
+  using ParkableStringTestBase::ParkableStringTestBase;
 
  protected:
   void WaitForAging() {
     EXPECT_GT(scoped_task_environment_.GetPendingMainThreadTaskCount(), 0u);
     scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
         ParkableStringManager::kAgingIntervalInSeconds));
-    RunPostedTasks();
   }
 
   void SetUp() override {
@@ -831,10 +844,7 @@ class ParkableStringForegroundParkingTest : public ParkableStringTestBase {
   }
 
   void TearDown() override {
-    while (scoped_task_environment_.GetPendingMainThreadTaskCount() != 0) {
-      WaitForAging();
-    }
-
+    scoped_task_environment_.FastForwardUntilNoTasksRemain();
     ParkableStringTestBase::TearDown();
   }
 };
@@ -961,19 +971,6 @@ TEST_F(ParkableStringForegroundParkingTest, OnlyOneAgingTask) {
   EXPECT_EQ(2u, scoped_task_environment_.GetPendingMainThreadTaskCount());
 }
 
-TEST_F(ParkableStringForegroundParkingTest, AgingParkingInProgress) {
-  ParkableString parkable(MakeLargeString().ReleaseImpl());
-
-  WaitForAging();
-  parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways);
-  // Aging should work if the string is being parked.
-  WaitForAging();
-  // The aging task is rescheduled.
-  EXPECT_EQ(2u, scoped_task_environment_.GetPendingMainThreadTaskCount());
-
-  EXPECT_TRUE(parkable.Impl()->is_parked());
-}
-
 TEST_F(ParkableStringForegroundParkingTest,
        NoBackgroundParkingWhenForegroundIsEnabled) {
   ParkableString parkable(MakeLargeString().ReleaseImpl());
@@ -1045,6 +1042,40 @@ TEST_F(ParkableStringForegroundParkingTest, ReportTotalUnparkingTime) {
   histogram_tester.ExpectUniqueSample(
       "Memory.ParkableString.CompressionRatio.5min",
       100 * compressed_size / original_size, 1);
+}
+
+class ParkableStringForegroundParkingTestWithQueuedThreadPool
+    : public ParkableStringForegroundParkingTest {
+ public:
+  ParkableStringForegroundParkingTestWithQueuedThreadPool()
+      : ParkableStringForegroundParkingTest(ThreadPoolExecutionMode::QUEUED) {}
+};
+
+TEST_F(ParkableStringForegroundParkingTestWithQueuedThreadPool,
+       AgingParkingInProgress) {
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+
+  WaitForAging();
+  parkable.Impl()->Park(ParkableStringImpl::ParkingMode::kAlways);
+
+  // Advance the main thread until aging occurs. This uses RunLoop combined with
+  // ThreadPoolExecutionMode::QUEUED to force the 2-seconds-delayed aging task
+  // on the main thread to kick in before the immediate async compression task
+  // completes.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromSeconds(
+          ParkableStringManager::kAgingIntervalInSeconds));
+  run_loop.Run();
+
+  // The aging task is rescheduled.
+  EXPECT_EQ(2u, scoped_task_environment_.GetPendingMainThreadTaskCount());
+
+  // Complete asynchronous work.
+  RunPostedTasks();
+
+  EXPECT_TRUE(parkable.Impl()->is_parked());
 }
 
 }  // namespace blink

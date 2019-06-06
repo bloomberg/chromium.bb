@@ -149,13 +149,13 @@ class ScopedTaskEnvironment::MockTimeDomain
   // sequence_manager::TimeDomain:
 
   sequence_manager::LazyNow CreateLazyNow() const override {
-    base::AutoLock lock(now_ticks_lock_);
+    AutoLock lock(now_ticks_lock_);
     return sequence_manager::LazyNow(now_ticks_);
   }
 
   TimeTicks Now() const override {
     // This can be called from any thread.
-    base::AutoLock lock(now_ticks_lock_);
+    AutoLock lock(now_ticks_lock_);
     return now_ticks_;
   }
 
@@ -177,50 +177,22 @@ class ScopedTaskEnvironment::MockTimeDomain
 
     // The next task is a future delayed task. Since we're using mock time, we
     // don't want an actual OS level delayed wake up scheduled, so pretend we
-    // have no more work. This will result in MaybeFastForwardToNextTask getting
-    // called which lets us advance |now_ticks_|.
+    // have no more work. This will result in appearing idle,
+    // ScopedTaskEnvironment will decide what to do based on that (return to
+    // caller or fast-forward time).
     return base::nullopt;
   }
 
   // This method is called when the underlying message pump has run out of
-  // non-delayed work.
+  // non-delayed work. Advances time to the next task unless
+  // |quit_when_idle_requested| or ScopedTaskEnvironment controls mock time.
   bool MaybeFastForwardToNextTask(bool quit_when_idle_requested) override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    // If we're being externally controlled by a RunLoop in client code, check
-    // if the RunLoop is due to quit when idle, if so we don't want to advance
-    // mock time.
-    if (stop_when_message_pump_is_idle_ && quit_when_idle_requested)
+    if (quit_when_idle_requested)
+      return false;
+    if (!auto_advance_on_idle_)
       return false;
 
-    // We don't need to call ReclaimMemory here because
-    // DelayTillNextTask will have dealt with cancelled delayed tasks for us.
-    Optional<TimeTicks> run_time = NextScheduledRunTime();
-    // If an immediate task came in racily from another thread, resume work
-    // without advancing time. This can happen regardless of whether the main
-    // thread has more delayed tasks scheduled before |allow_advance_until_|. If
-    // there are such tasks, auto-advancing time all the way would be incorrect.
-    // In both cases, resuming is fine.
-    if (run_time == now_ticks_)
-      return true;
-
-    if (!run_time) {
-      // We've run out of tasks. ScopedTaskEnvironment::FastForwardBy requires
-      // the remaining virtual time to be consumed upon reaching idle.
-      if (now_ticks_ < allow_advance_until_ && !allow_advance_until_.is_max())
-        SetTime(allow_advance_until_);
-      return false;
-    }
-
-    // Don't advance past |allow_advance_until_|.
-    DCHECK_GT(*run_time, now_ticks_);
-    TimeTicks time_to_advance_to = std::min(allow_advance_until_, *run_time);
-    if (time_to_advance_to <= now_ticks_)
-      return false;
-
-    SetTime(time_to_advance_to);
-
-    // Make sure a DoWork is scheduled.
-    return true;
+    return FastForwardToNextTaskOrCap(TimeTicks::Max());
   }
 
   const char* GetName() const override { return "MockTimeDomain"; }
@@ -228,44 +200,51 @@ class ScopedTaskEnvironment::MockTimeDomain
   // TickClock implementation:
   TimeTicks NowTicks() const override { return Now(); }
 
-  // Allows time to advance when reaching idle, until
-  // |now_ticks_ == advance_until|. No-op if |advance_until <= now_ticks_|.
-  // Doesn't schedule work by itself.
-  void SetAllowTimeToAutoAdvanceUntil(TimeTicks advance_until) {
+  // Advances time to the next task or to |fast_forward_cap| (if it's not
+  // Max()). Returns true if there's additional immediate work as a result
+  // of this call.
+  bool FastForwardToNextTaskOrCap(TimeTicks fast_forward_cap) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    allow_advance_until_ = advance_until;
+
+    // We don't need to call ReclaimMemory here because
+    // DelayTillNextTask will have dealt with cancelled delayed tasks for us.
+    Optional<TimeTicks> next_task_time = NextScheduledRunTime();
+
+    if (next_task_time && *next_task_time <= fast_forward_cap) {
+      AutoLock lock(now_ticks_lock_);
+      now_ticks_ = *next_task_time;
+      return true;
+    }
+
+    if (!fast_forward_cap.is_max()) {
+      AutoLock lock(now_ticks_lock_);
+      now_ticks_ = fast_forward_cap;
+    }
+
+    return false;
   }
 
-  void SetStopWhenMessagePumpIsIdle(bool stop_when_message_pump_is_idle) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    stop_when_message_pump_is_idle_ = stop_when_message_pump_is_idle;
+  void set_auto_advance_on_idle(bool auto_advance_on_idle) {
+    auto_advance_on_idle_ = auto_advance_on_idle;
   }
 
  private:
-  void SetTime(TimeTicks time) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK_LE(time, allow_advance_until_);
-
-    base::AutoLock lock(now_ticks_lock_);
-    now_ticks_ = time;
-  }
-
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Whether MaybeFastForwardToNextTask() should auto advance time. Set to true
+  // by default so RunLoop::Run() auto-advances time. Set to false when
+  // ScopedTaskEnvironment controls mock time (i.e. in FastForwardBy()).
+  bool auto_advance_on_idle_ = true;
 
   sequence_manager::SequenceManager* const sequence_manager_;
 
   std::unique_ptr<subtle::ScopedTimeClockOverrides> time_overrides_;
 
-  // By default we want RunLoop.Run() to advance virtual time due to the API
-  // contract.
-  TimeTicks allow_advance_until_ = TimeTicks::Max();
-  bool stop_when_message_pump_is_idle_ = true;
-
   // Protects |now_ticks_|
   mutable Lock now_ticks_lock_;
 
   // Only ever written to from the main sequence.
-  // TODO(alexclarke): We can't override now by default with now_ticks_ staring
+  // TODO(alexclarke): We can't override now by default with now_ticks_ starting
   // from zero because many tests have checks that TimeTicks::Now() returns a
   // non-zero result.
   TimeTicks now_ticks_;
@@ -460,11 +439,6 @@ sequence_manager::TimeDomain* ScopedTaskEnvironment::GetTimeDomain() const {
                            : sequence_manager_->GetRealTimeDomain();
 }
 
-void ScopedTaskEnvironment::SetAllowTimeToAutoAdvanceUntilForTesting(
-    TimeTicks advance_until) {
-  mock_time_domain_->SetAllowTimeToAutoAdvanceUntil(advance_until);
-}
-
 sequence_manager::SequenceManager* ScopedTaskEnvironment::sequence_manager()
     const {
   DCHECK(subclass_creates_default_taskrunner_);
@@ -506,10 +480,6 @@ bool ScopedTaskEnvironment::MainThreadIsIdle() const {
 }
 
 void ScopedTaskEnvironment::RunUntilIdle() {
-  // Prevent virtual time from advancing while within this call.
-  if (mock_time_domain_)
-    mock_time_domain_->SetAllowTimeToAutoAdvanceUntil(TimeTicks());
-
   // TODO(gab): This can be heavily simplified to essentially:
   //     bool HasMainThreadTasks() {
   //      if (message_loop_)
@@ -547,7 +517,7 @@ void ScopedTaskEnvironment::RunUntilIdle() {
     // ThreadPool task synchronously block on a main thread task
     // (ThreadPoolInstance::FlushForTesting() can't be used here for that
     // reason).
-    RunLoop().RunUntilIdle();
+    RunLoop(RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
 
     // Then halt ThreadPool. DisallowRunTasks() failing indicates that there
     // were ThreadPool tasks currently running. In that case, try again from
@@ -562,7 +532,7 @@ void ScopedTaskEnvironment::RunUntilIdle() {
     // Note: this assumes that no main thread task synchronously blocks on a
     // ThreadPool tasks (it certainly shouldn't); this call could otherwise
     // hang.
-    RunLoop().RunUntilIdle();
+    RunLoop(RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
 
     // The above RunUntilIdle() guarantees there are no remaining main thread
     // tasks (the ThreadPool being halted during the last RunUntilIdle() is
@@ -589,19 +559,18 @@ void ScopedTaskEnvironment::RunUntilIdle() {
   // ThreadPoolExecutionMode::QUEUED.
   if (thread_pool_execution_mode_ != ThreadPoolExecutionMode::QUEUED)
     task_tracker_->AllowRunTasks();
-
-  if (mock_time_domain_)
-    mock_time_domain_->SetAllowTimeToAutoAdvanceUntil(TimeTicks::Max());
 }
 
 void ScopedTaskEnvironment::FastForwardBy(TimeDelta delta) {
   DCHECK(mock_time_domain_);
-  mock_time_domain_->SetStopWhenMessagePumpIsIdle(false);
-  mock_time_domain_->SetAllowTimeToAutoAdvanceUntil(mock_time_domain_->Now() +
-                                                    delta);
-  RunLoop{RunLoop::Type::kNestableTasksAllowed}.RunUntilIdle();
-  mock_time_domain_->SetStopWhenMessagePumpIsIdle(true);
-  mock_time_domain_->SetAllowTimeToAutoAdvanceUntil(TimeTicks::Max());
+  mock_time_domain_->set_auto_advance_on_idle(false);
+
+  const TimeTicks fast_forward_until = mock_time_domain_->NowTicks() + delta;
+  do {
+    RunUntilIdle();
+  } while (mock_time_domain_->FastForwardToNextTaskOrCap(fast_forward_until));
+
+  mock_time_domain_->set_auto_advance_on_idle(true);
 }
 
 void ScopedTaskEnvironment::FastForwardUntilNoTasksRemain() {

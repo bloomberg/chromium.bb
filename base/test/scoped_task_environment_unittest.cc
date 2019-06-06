@@ -4,6 +4,7 @@
 
 #include "base/test/scoped_task_environment.h"
 
+#include <atomic>
 #include <memory>
 
 #include "base/atomicops.h"
@@ -49,20 +50,6 @@ using ::testing::HasSubstr;
 using ::testing::IsNull;
 using ::testing::Not;
 using ::testing::Return;
-
-class ScopedTaskEnvironmentForTest : public ScopedTaskEnvironment {
- public:
-  template <
-      class... ArgTypes,
-      class CheckArgumentsAreValid = std::enable_if_t<
-          base::trait_helpers::AreValidTraits<ScopedTaskEnvironment::ValidTrait,
-                                              ArgTypes...>::value>>
-  NOINLINE ScopedTaskEnvironmentForTest(const ArgTypes... args)
-      : ScopedTaskEnvironment(args...) {}
-
-  using ScopedTaskEnvironment::GetTimeDomain;
-  using ScopedTaskEnvironment::SetAllowTimeToAutoAdvanceUntilForTesting;
-};
 
 class ScopedTaskEnvironmentTest
     : public testing::TestWithParam<ScopedTaskEnvironment::MainThreadType> {};
@@ -156,11 +143,8 @@ TEST_P(ScopedTaskEnvironmentTest, AsyncTasksRunAsTheyArePosted) {
   ScopedTaskEnvironment scoped_task_environment(
       GetParam(), ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC);
 
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
-  PostTask(FROM_HERE,
-           BindOnce([](WaitableEvent* task_ran) { task_ran->Signal(); },
-                    Unretained(&task_ran)));
+  WaitableEvent task_ran;
+  PostTask(FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)));
   task_ran.Wait();
 }
 
@@ -174,11 +158,8 @@ TEST_P(ScopedTaskEnvironmentTest,
 
   scoped_task_environment.RunUntilIdle();
 
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
-  PostTask(FROM_HERE,
-           BindOnce([](WaitableEvent* task_ran) { task_ran->Signal(); },
-                    Unretained(&task_ran)));
+  WaitableEvent task_ran;
+  PostTask(FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)));
   task_ran.Wait();
 }
 
@@ -284,7 +265,7 @@ TEST_P(ScopedTaskEnvironmentTest, SupportsSequenceLocalStorageOnMainThread) {
 }
 
 TEST_P(ScopedTaskEnvironmentTest, SingleThreadShouldNotInitializeThreadPool) {
-  ScopedTaskEnvironmentForTest scoped_task_environment(
+  ScopedTaskEnvironment scoped_task_environment(
       ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY);
   EXPECT_THAT(ThreadPoolInstance::Get(), IsNull());
 }
@@ -404,145 +385,97 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTimeTicks) {
   EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
 }
 
-TEST_F(ScopedTaskEnvironmentTest, MockTimeDomain_MaybeFastForwardToNextTask) {
+// Verify that FastForwardBy() runs existing immediate tasks before advancing,
+// then advances to the next delayed task, runs it, then advances the remainder
+// of time when out of tasks.
+TEST_F(ScopedTaskEnvironmentTest, FastForwardOnlyAdvancesWhenIdle) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
+
+  const TimeTicks start_time = base::TimeTicks::Now();
+
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
-  ScopedTaskEnvironmentForTest scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
-  const TimeTicks start_time = base::TimeTicks::Now();
-  EXPECT_FALSE(
-      scoped_task_environment.GetTimeDomain()->MaybeFastForwardToNextTask(
-          false));
-  EXPECT_EQ(start_time, base::TimeTicks::Now());
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::DoNothing(),
-                                                 kDelay);
-  EXPECT_TRUE(
-      scoped_task_environment.GetTimeDomain()->MaybeFastForwardToNextTask(
-          false));
-  EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
+  constexpr base::TimeDelta kFastForwardUntil = TimeDelta::FromSeconds(100);
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindLambdaForTesting(
+                     [&]() { EXPECT_EQ(start_time, base::TimeTicks::Now()); }));
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
+      }),
+      kDelay);
+  scoped_task_environment.FastForwardBy(kFastForwardUntil);
+  EXPECT_EQ(start_time + kFastForwardUntil, base::TimeTicks::Now());
 }
 
-TEST_F(ScopedTaskEnvironmentTest,
-       MockTimeDomain_MaybeFastForwardToNextTask_ImmediateTaskPending) {
-  ScopedTaskEnvironmentForTest scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
-  const TimeTicks start_time = base::TimeTicks::Now();
-  scoped_task_environment.SetAllowTimeToAutoAdvanceUntilForTesting(
-      start_time + TimeDelta::FromSeconds(100));
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::DoNothing(),
-                                                 TimeDelta::FromSeconds(42));
-  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::DoNothing());
-  EXPECT_TRUE(
-      scoped_task_environment.GetTimeDomain()->MaybeFastForwardToNextTask(
-          false));
-  EXPECT_EQ(start_time, base::TimeTicks::Now());
-}
-
-TEST_F(ScopedTaskEnvironmentTest,
-       MockTimeDomain_MaybeFastForwardToNextTask_TaskAfterAutoAdvanceUntil) {
-  constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
-  ScopedTaskEnvironmentForTest scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
-  const TimeTicks start_time = base::TimeTicks::Now();
-  scoped_task_environment.SetAllowTimeToAutoAdvanceUntilForTesting(start_time +
-                                                                   kDelay);
-
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::DoNothing(),
-                                                 TimeDelta::FromSeconds(100));
-  EXPECT_TRUE(
-      scoped_task_environment.GetTimeDomain()->MaybeFastForwardToNextTask(
-          false));
-  EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
-}
-
-TEST_F(ScopedTaskEnvironmentTest,
-       MockTimeDomain_MaybeFastForwardToNextTask_NoTasksPending) {
-  constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
-  ScopedTaskEnvironmentForTest scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
-  const TimeTicks start_time = base::TimeTicks::Now();
-  scoped_task_environment.SetAllowTimeToAutoAdvanceUntilForTesting(start_time +
-                                                                   kDelay);
-
-  EXPECT_FALSE(
-      scoped_task_environment.GetTimeDomain()->MaybeFastForwardToNextTask(
-          false));
-  EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
-}
-
+// FastForwardBy(0) should be equivalent of RunUntilIdle().
 TEST_F(ScopedTaskEnvironmentTest, FastForwardZero) {
   ScopedTaskEnvironment scoped_task_environment(
       ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
 
-  int run_count = 0;
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindLambdaForTesting([&]() { run_count++; }));
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindLambdaForTesting([&]() { run_count++; }));
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindLambdaForTesting([&]() { run_count++; }));
+  std::atomic_int run_count{0};
+
+  for (int i = 0; i < 1000; ++i) {
+    ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, BindLambdaForTesting([&]() {
+          run_count.fetch_add(1, std::memory_order_relaxed);
+        }));
+    base::PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                     run_count.fetch_add(1, std::memory_order_relaxed);
+                   }));
+  }
 
   scoped_task_environment.FastForwardBy(base::TimeDelta());
 
-  EXPECT_EQ(3, run_count);
+  EXPECT_EQ(2000, run_count.load(std::memory_order_relaxed));
 }
 
-#if defined(OS_IOS)
-// This test flakily times out on iOS.
-#define MAYBE_CrossThreadTaskPostingDoesntAffectMockTime \
-  DISABLED_CrossThreadTaskPostingDoesntAffectMockTime
-#else
-#define MAYBE_CrossThreadTaskPostingDoesntAffectMockTime \
-  CrossThreadTaskPostingDoesntAffectMockTime
-#endif
-
-TEST_F(ScopedTaskEnvironmentTest,
-       MAYBE_CrossThreadTaskPostingDoesntAffectMockTime) {
+TEST_F(ScopedTaskEnvironmentTest, CrossThreadTaskPostingDoesntAffectMockTime) {
   ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
-  scoped_refptr<SingleThreadTaskRunner> main_thread =
-      ThreadTaskRunnerHandle::Get();
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
 
-  // Start a thread that will spam the main thread with uninteresting tasks
-  // which shouldn't interfere with main thread MOCK_TIME.
-  Thread spamming_thread("test thread");
-  spamming_thread.Start();
-  AtomicFlag stop_spamming;
+  // ThreadPool WorkerThreads don't like when TimeTicks::Now() evaluates to 0.
+  // TODO(gab): Make ScopedTaskEnvironment not start at 0.
+  scoped_task_environment.FastForwardBy(TimeDelta::FromMilliseconds(100));
 
-  RepeatingClosure repeating_spam_task = BindLambdaForTesting([&]() {
-    if (stop_spamming.IsSet())
-      return;
-    // We don't want to completely drown out main thread tasks so we rate limit
-    // how fast we post to the main thread to at most 1 per 50 microseconds.
-    spamming_thread.task_runner()->PostDelayedTask(
-        FROM_HERE, repeating_spam_task, TimeDelta::FromMicroseconds(50));
-    main_thread->PostTask(FROM_HERE, DoNothing());
-  });
-  spamming_thread.task_runner()->PostTask(FROM_HERE, repeating_spam_task);
-
-  // Start a repeating delayed task.
   int count = 0;
-  RepeatingClosure repeating_delayed_task = BindLambdaForTesting([&]() {
-    main_thread->PostDelayedTask(FROM_HERE, repeating_delayed_task,
-                                 TimeDelta::FromSeconds(1));
 
-    count++;
-  });
-  main_thread->PostDelayedTask(FROM_HERE, repeating_delayed_task,
-                               TimeDelta::FromSeconds(1));
+  // Post tasks delayd between 0 and 999 seconds.
+  for (int i = 0; i < 1000; ++i) {
+    const TimeDelta delay = TimeDelta::FromSeconds(i);
+    ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        BindOnce(
+            [](TimeTicks expected_run_time, int* count) {
+              EXPECT_EQ(expected_run_time, TimeTicks::Now());
+              ++*count;
+            },
+            TimeTicks::Now() + delay, &count),
+        delay);
+  }
 
-  scoped_task_environment.FastForwardBy(TimeDelta::FromSeconds(10000));
+  // Having a bunch of tasks running in parallel and replying to the main thread
+  // shouldn't affect the rest of this test. Wait for the first task to run
+  // before proceeding with the test to increase the likelihood of exercising
+  // races.
+  base::WaitableEvent first_reply_is_incoming;
+  for (int i = 0; i < 1000; ++i) {
+    base::PostTaskAndReply(
+        FROM_HERE,
+        BindOnce(&WaitableEvent::Signal, Unretained(&first_reply_is_incoming)),
+        DoNothing());
+  }
+  first_reply_is_incoming.Wait();
+
+  scoped_task_environment.FastForwardBy(TimeDelta::FromSeconds(1000));
 
   // If this test flakes it's because there's an error with MockTimeDomain.
-  EXPECT_EQ(count, 10000);
+  EXPECT_EQ(count, 1000);
 
-  stop_spamming.Set();
-  spamming_thread.Stop();
+  // Flush any remaining asynchronous tasks with Unretained() state.
+  scoped_task_environment.RunUntilIdle();
 }
 
 #if defined(OS_WIN)
