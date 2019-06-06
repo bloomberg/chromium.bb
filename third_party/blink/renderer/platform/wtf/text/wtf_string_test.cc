@@ -44,19 +44,14 @@ TEST(StringTest, CreationFromLiteral) {
 }
 
 TEST(StringTest, ASCII) {
-  CString output;
-
   // Null String.
-  output = String().Ascii();
-  EXPECT_STREQ("", output.data());
+  EXPECT_EQ("", String().Ascii());
 
   // Empty String.
-  output = g_empty_string.Ascii();
-  EXPECT_STREQ("", output.data());
+  EXPECT_EQ("", g_empty_string.Ascii());
 
   // Regular String.
-  output = String("foobar").Ascii();
-  EXPECT_STREQ("foobar", output.data());
+  EXPECT_EQ("foobar", String("foobar").Ascii());
 }
 
 namespace {

@@ -64,7 +64,7 @@ PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(
     // should be either "true" or "false".
     block_resource_type_[i] = base::GetFieldTrialParamByFeatureAsBool(
         features::kPreviewsResourceLoadingHintsSpecificResourceTypes,
-        String::Format("block_resource_type_%d", i).Ascii().data(),
+        String::Format("block_resource_type_%d", i).Ascii(),
         block_resource_type_[i]);
   }
 

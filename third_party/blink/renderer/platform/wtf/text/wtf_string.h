@@ -167,7 +167,7 @@ class WTF_EXPORT String {
 
   bool Is8Bit() const { return impl_->Is8Bit(); }
 
-  CString Ascii() const WARN_UNUSED_RESULT;
+  std::string Ascii() const WARN_UNUSED_RESULT;
   std::string Latin1() const WARN_UNUSED_RESULT;
   CString Utf8(UTF8ConversionMode = kLenientUTF8Conversion) const
       WARN_UNUSED_RESULT;

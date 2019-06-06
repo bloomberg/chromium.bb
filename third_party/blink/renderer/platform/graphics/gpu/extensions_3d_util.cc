@@ -63,7 +63,7 @@ bool Extensions3DUtil::EnsureExtensionEnabled(const String& name) {
     return true;
 
   if (requestable_extensions_.Contains(name)) {
-    gl_->RequestExtensionCHROMIUM(name.Ascii().data());
+    gl_->RequestExtensionCHROMIUM(name.Ascii().c_str());
     enabled_extensions_.clear();
     requestable_extensions_.clear();
     InitializeExtensions();

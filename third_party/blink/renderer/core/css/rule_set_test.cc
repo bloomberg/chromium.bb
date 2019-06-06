@@ -361,7 +361,7 @@ TEST(RuleSetTest, SelectorIndexLimit) {
   builder.Append("b,span {}");
 
   TestStyleSheet sheet;
-  sheet.AddCSSRules(builder.ToString().Ascii().data());
+  sheet.AddCSSRules(builder.ToString());
   const RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules = rule_set.TagRules("b");
   ASSERT_EQ(1u, rules->size());

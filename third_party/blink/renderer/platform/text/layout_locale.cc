@@ -62,12 +62,14 @@ static const char* ToSkFontMgrLocale(UScriptCode script) {
 }
 
 const char* LayoutLocale::LocaleForSkFontMgr() const {
-  if (string_for_sk_font_mgr_.IsNull()) {
-    string_for_sk_font_mgr_ = ToSkFontMgrLocale(script_);
-    if (string_for_sk_font_mgr_.IsNull())
+  if (string_for_sk_font_mgr_.empty()) {
+    const char* sk_font_mgr_locale = ToSkFontMgrLocale(script_);
+    string_for_sk_font_mgr_ =
+        sk_font_mgr_locale ? sk_font_mgr_locale : std::string();
+    if (string_for_sk_font_mgr_.empty())
       string_for_sk_font_mgr_ = string_.Ascii();
   }
-  return string_for_sk_font_mgr_.data();
+  return string_for_sk_font_mgr_.c_str();
 }
 
 void LayoutLocale::ComputeScriptForHan() const {

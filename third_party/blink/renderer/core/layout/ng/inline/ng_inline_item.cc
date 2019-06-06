@@ -174,7 +174,7 @@ unsigned NGInlineItem::SetBidiLevel(Vector<NGInlineItem>& items,
 String NGInlineItem::ToString() const {
   return String::Format("NGInlineItem. Type: '%s'. LayoutObject: '%s'",
                         NGInlineItemTypeToString(Type()),
-                        GetLayoutObject()->DebugName().Ascii().data());
+                        GetLayoutObject()->DebugName().Ascii().c_str());
 }
 
 // Split |items[index]| to 2 items at |offset|.

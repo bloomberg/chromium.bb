@@ -269,7 +269,7 @@ String MediaControlInputElement::GetOverflowMenuSubtitleString() const {
 void MediaControlInputElement::RecordCTREvent(CTREvent event) {
   String histogram_name =
       StringView("Media.Controls.CTR.") + GetNameForHistograms();
-  EnumerationHistogram ctr_histogram(histogram_name.Ascii().data(),
+  EnumerationHistogram ctr_histogram(histogram_name.Ascii().c_str(),
                                      static_cast<int>(CTREvent::kCount));
   ctr_histogram.Count(static_cast<int>(event));
 }

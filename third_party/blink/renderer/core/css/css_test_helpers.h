@@ -33,7 +33,7 @@ class TestStyleSheet {
 
   const Document& GetDocument() { return *document_; }
 
-  void AddCSSRules(const char* rule_text, bool is_empty_sheet = false);
+  void AddCSSRules(const String& rule_text, bool is_empty_sheet = false);
   RuleSet& GetRuleSet();
   CSSRuleList* CssRules();
 

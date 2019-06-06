@@ -572,8 +572,8 @@ void FrameSerializer::RetrieveResourcesForCSSValue(const CSSValue& css_value,
 String FrameSerializer::MarkOfTheWebDeclaration(const KURL& url) {
   StringBuilder builder;
   bool emits_minus = false;
-  CString orignal_url = url.GetString().Ascii();
-  for (const char* string = orignal_url.data(); *string; ++string) {
+  std::string orignal_url = url.GetString().Ascii();
+  for (const char* string = orignal_url.c_str(); *string; ++string) {
     const char ch = *string;
     if (ch == '-' && emits_minus) {
       builder.Append("%2D");
@@ -583,10 +583,10 @@ String FrameSerializer::MarkOfTheWebDeclaration(const KURL& url) {
     emits_minus = ch == '-';
     builder.Append(ch);
   }
-  CString escaped_url = builder.ToString().Ascii();
+  std::string escaped_url = builder.ToString().Ascii();
   return String::Format("saved from url=(%04d)%s",
                         static_cast<int>(escaped_url.length()),
-                        escaped_url.data());
+                        escaped_url.c_str());
 }
 
 }  // namespace blink

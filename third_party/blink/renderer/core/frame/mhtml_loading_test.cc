@@ -102,7 +102,7 @@ TEST_F(MHTMLLoadingTest, CheckDomain) {
   EXPECT_EQ(kFileURL, frame->DomWindow()->location()->toString());
 
   const SecurityOrigin* origin = document->GetSecurityOrigin();
-  EXPECT_STRNE("localhost", origin->Domain().Ascii().data());
+  EXPECT_NE("localhost", origin->Domain().Ascii());
 }
 
 // Checks that full sandboxing protection has been turned on.

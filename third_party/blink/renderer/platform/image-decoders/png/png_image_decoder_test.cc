@@ -1257,7 +1257,7 @@ TEST(StaticPNGTests, DecodeHighBitDepthPngToHalfFloat) {
   String path = "/images/resources/png-16bit/";
   for (PNGSample& png_sample : png_samples) {
     String full_path = path + png_sample.filename;
-    png_sample.png_contents = ReadFile(full_path.Ascii().data());
+    png_sample.png_contents = ReadFile(full_path);
     auto decoder = Create16BitPNGDecoder();
     TestHighBitDepthPNGDecoding(png_sample, decoder.get());
   }
@@ -1271,7 +1271,7 @@ TEST(StaticPNGTests, ImageIsHighBitDepth) {
   String path = "/images/resources/png-16bit/";
   for (PNGSample& png_sample : png_samples) {
     String full_path = path + png_sample.filename;
-    png_sample.png_contents = ReadFile(full_path.Ascii().data());
+    png_sample.png_contents = ReadFile(full_path);
     ASSERT_TRUE(png_sample.png_contents.get());
 
     std::unique_ptr<ImageDecoder> decoders[] = {CreatePNGDecoder(),

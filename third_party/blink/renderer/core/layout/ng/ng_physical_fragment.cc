@@ -474,12 +474,12 @@ bool NGPhysicalFragment::ShouldPaintDragCaret() const {
 String NGPhysicalFragment::ToString() const {
   StringBuilder output;
   output.AppendFormat("Type: '%d' Size: '%s'", Type(),
-                      Size().ToString().Ascii().data());
+                      Size().ToString().Ascii().c_str());
   switch (Type()) {
     case kFragmentBox:
     case kFragmentRenderedLegend:
       output.AppendFormat(", BoxType: '%s'",
-                          StringForBoxType(*this).Ascii().data());
+                          StringForBoxType(*this).Ascii().c_str());
       break;
     case kFragmentText: {
       const auto& text = To<NGPhysicalTextFragment>(*this);

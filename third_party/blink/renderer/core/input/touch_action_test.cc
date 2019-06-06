@@ -245,7 +245,7 @@ void TouchActionTest::RunTestOnTree(
 
     std::string failure_context("Test case: ");
     if (element->HasID()) {
-      failure_context.append(element->GetIdAttribute().Ascii().data());
+      failure_context.append(element->GetIdAttribute().Ascii());
     } else if (element->firstChild()) {
       failure_context.append("\"");
       failure_context.append(element->firstChild()
@@ -358,8 +358,7 @@ void TouchActionTest::RunTestOnTree(
                     client.LastTouchAction())
               << failure_context_pos;
         } else {
-          FAIL() << "Unrecognized expected-action \""
-                 << expected_action.Ascii().data() << "\" "
+          FAIL() << "Unrecognized expected-action " << expected_action << " "
                  << failure_context_pos;
         }
       }

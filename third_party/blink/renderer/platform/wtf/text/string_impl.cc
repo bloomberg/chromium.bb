@@ -97,8 +97,7 @@ bool StringImpl::IsSafeToSendToAnotherThread() const {
 
 #if DCHECK_IS_ON()
 std::string StringImpl::AsciiForDebugging() const {
-  CString ascii = String(IsolatedCopy()->Substring(0, 128)).Ascii();
-  return std::string(ascii.data(), ascii.length());
+  return String(IsolatedCopy()->Substring(0, 128)).Ascii();
 }
 #endif
 

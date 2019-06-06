@@ -664,7 +664,7 @@ static_assert(sizeof(CSSPropertyValueSet) ==
 
 #ifndef NDEBUG
 void CSSPropertyValueSet::ShowStyle() {
-  fprintf(stderr, "%s\n", AsText().Ascii().data());
+  fprintf(stderr, "%s\n", AsText().Ascii().c_str());
 }
 #endif
 

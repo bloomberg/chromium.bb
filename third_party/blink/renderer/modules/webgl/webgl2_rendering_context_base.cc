@@ -4444,12 +4444,12 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(
       return;
   }
 
-  Vector<CString> keep_alive;  // Must keep these instances alive while looking
-                               // at their data
+  Vector<std::string> keep_alive;  // Must keep these instances alive while
+                                   // looking at their data
   Vector<const char*> varying_strings;
   for (const String& varying : varyings) {
     keep_alive.push_back(varying.Ascii());
-    varying_strings.push_back(keep_alive.back().data());
+    varying_strings.push_back(keep_alive.back().c_str());
   }
 
   program->SetRequiredTransformFeedbackBufferCount(
@@ -4671,12 +4671,14 @@ Vector<GLuint> WebGL2RenderingContextBase::getUniformIndices(
   if (!ValidateWebGLProgramOrShader("getUniformIndices", program))
     return result;
 
-  Vector<CString> keep_alive;  // Must keep these instances alive while looking
-                               // at their data
+  Vector<std::string> keep_alive;  // Must keep these instances alive while
+                                   // looking at their data
+  keep_alive.ReserveInitialCapacity(uniform_names.size());
   Vector<const char*> uniform_strings;
+  uniform_strings.ReserveInitialCapacity(uniform_names.size());
   for (const String& uniform_name : uniform_names) {
     keep_alive.push_back(uniform_name.Ascii());
-    uniform_strings.push_back(keep_alive.back().data());
+    uniform_strings.push_back(keep_alive.back().c_str());
   }
 
   result.resize(uniform_names.size());

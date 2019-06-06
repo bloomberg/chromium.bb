@@ -46,7 +46,7 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
     return locale ? locale->string_ : g_null_atom;
   }
   operator const AtomicString&() const { return string_; }
-  CString Ascii() const { return string_.Ascii(); }
+  std::string Ascii() const { return string_.Ascii(); }
 
   const hb_language_impl_t* HarfbuzzLanguage() const {
     return harfbuzz_language_;
@@ -78,7 +78,7 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
   void ComputeScriptForHan() const;
 
   AtomicString string_;
-  mutable CString string_for_sk_font_mgr_;
+  mutable std::string string_for_sk_font_mgr_;
   mutable scoped_refptr<Hyphenation> hyphenation_;
 
   // hb_language_t is defined in hb.h, which not all files can include.

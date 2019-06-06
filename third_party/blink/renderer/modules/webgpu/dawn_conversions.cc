@@ -581,8 +581,7 @@ std::tuple<DawnPipelineStageDescriptor, CString> AsDawnType(
     const GPUPipelineStageDescriptor* webgpu_stage) {
   DCHECK(webgpu_stage);
 
-  CString entry_point_string = webgpu_stage->entryPoint().Ascii();
-
+  CString entry_point_string(webgpu_stage->entryPoint().Ascii().c_str());
   DawnPipelineStageDescriptor dawn_stage;
   dawn_stage.module = webgpu_stage->module()->GetHandle();
   dawn_stage.entryPoint = entry_point_string.data();

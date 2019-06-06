@@ -55,7 +55,7 @@ static bool ShouldCreateWebGL2ComputeContext(
   if (extensions_util->SupportsExtension("GL_EXT_debug_marker")) {
     String context_label(
         String::Format("WebGL2ComputeRenderingContext-%p", context_provider));
-    gl->PushGroupMarkerEXT(0, context_label.Ascii().data());
+    gl->PushGroupMarkerEXT(0, context_label.Ascii().c_str());
   }
   return true;
 }

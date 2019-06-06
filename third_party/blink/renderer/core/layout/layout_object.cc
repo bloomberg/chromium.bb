@@ -1776,7 +1776,7 @@ void LayoutObject::DumpLayoutObject(StringBuilder& string_builder,
 
   if (IsText() && ToLayoutText(this)->IsTextFragment()) {
     string_builder.AppendFormat(" \"%s\" ",
-                                ToLayoutText(this)->GetText().Ascii().data());
+                                ToLayoutText(this)->GetText().Ascii().c_str());
   }
 
   if (VirtualContinuation())

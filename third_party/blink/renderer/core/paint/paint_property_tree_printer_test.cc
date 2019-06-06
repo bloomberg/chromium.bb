@@ -33,7 +33,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTree) {
   SetBodyInnerHTML("hello world");
   String transform_tree_as_string =
       transformPropertyTreeAsString(*GetDocument().View());
-  EXPECT_THAT(transform_tree_as_string.Ascii().data(),
+  EXPECT_THAT(transform_tree_as_string.Ascii(),
               testing::MatchesRegex("root .*"
                                     "  .*Translation \\(.*\\) .*"));
 }
@@ -41,7 +41,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTree) {
 TEST_P(PaintPropertyTreePrinterTest, SimpleClipTree) {
   SetBodyInnerHTML("hello world");
   String clip_tree_as_string = clipPropertyTreeAsString(*GetDocument().View());
-  EXPECT_THAT(clip_tree_as_string.Ascii().data(),
+  EXPECT_THAT(clip_tree_as_string.Ascii().c_str(),
               testing::MatchesRegex("root .*"
                                     "  .*Clip \\(.*\\) .*"));
 }
@@ -51,7 +51,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTree) {
   String effect_tree_as_string =
       effectPropertyTreeAsString(*GetDocument().View());
   EXPECT_THAT(
-      effect_tree_as_string.Ascii().data(),
+      effect_tree_as_string.Ascii().c_str(),
       testing::MatchesRegex("root .*"
                             "  Effect \\(LayoutN?G?BlockFlow DIV\\) .*"));
 }
@@ -60,7 +60,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTree) {
   SetBodyInnerHTML("<div style='height: 4000px;'>hello world</div>");
   String scroll_tree_as_string =
       scrollPropertyTreeAsString(*GetDocument().View());
-  EXPECT_THAT(scroll_tree_as_string.Ascii().data(),
+  EXPECT_THAT(scroll_tree_as_string.Ascii().c_str(),
               testing::MatchesRegex("root .*"
                                     "  Scroll \\(.*\\) .*"));
 }
@@ -75,7 +75,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath) {
       transformed_object->FirstFragment().PaintProperties();
   String transform_path_as_string =
       transformed_object_properties->Transform()->ToTreeString();
-  EXPECT_THAT(transform_path_as_string.Ascii().data(),
+  EXPECT_THAT(transform_path_as_string.Ascii().c_str(),
               testing::MatchesRegex("root .*\"scroll\".*"
                                     "  .*\"parent\".*"
                                     "    .*\"translation2d\".*"
@@ -92,7 +92,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {
       clipped_object->FirstFragment().PaintProperties();
   String clip_path_as_string =
       clipped_object_properties->CssClip()->ToTreeString();
-  EXPECT_THAT(clip_path_as_string.Ascii().data(),
+  EXPECT_THAT(clip_path_as_string.Ascii().c_str(),
               testing::MatchesRegex("root .*\"rect\".*"
                                     "  .*\"rect\".*"
                                     "    .*\"rect\".*"));
@@ -106,7 +106,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath) {
       effect_object->FirstFragment().PaintProperties();
   String effect_path_as_string =
       effect_object_properties->Effect()->ToTreeString();
-  EXPECT_THAT(effect_path_as_string.Ascii().data(),
+  EXPECT_THAT(effect_path_as_string.Ascii().c_str(),
               testing::MatchesRegex("root .*\"outputClip\".*"
                                     "  .*\"parent\".*\"opacity\".*"));
 }
@@ -124,7 +124,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
   String scroll_path_as_string = scroll_object_properties->ScrollTranslation()
                                      ->ScrollNode()
                                      ->ToTreeString();
-  EXPECT_THAT(scroll_path_as_string.Ascii().data(),
+  EXPECT_THAT(scroll_path_as_string.Ascii().c_str(),
               testing::MatchesRegex("root .* \\{\\}.*"
                                     "  .*\"parent\".*"));
 }

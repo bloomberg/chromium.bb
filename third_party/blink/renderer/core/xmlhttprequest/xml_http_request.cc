@@ -1486,7 +1486,7 @@ String XMLHttpRequest::getAllResponseHeaders() const {
 
     if (response_.GetType() == network::mojom::FetchResponseType::kCors &&
         !cors::IsCorsSafelistedResponseHeader(it->key) &&
-        access_control_expose_header_set.find(it->key.Ascii().data()) ==
+        access_control_expose_header_set.find(it->key.Ascii()) ==
             access_control_expose_header_set.end()) {
       continue;
     }
@@ -1523,7 +1523,7 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
 
   if (response_.GetType() == network::mojom::FetchResponseType::kCors &&
       !cors::IsCorsSafelistedResponseHeader(name) &&
-      access_control_expose_header_set.find(name.Ascii().data()) ==
+      access_control_expose_header_set.find(name.Ascii()) ==
           access_control_expose_header_set.end()) {
     LogConsoleError(GetExecutionContext(),
                     "Refused to get unsafe header \"" + name + "\"");

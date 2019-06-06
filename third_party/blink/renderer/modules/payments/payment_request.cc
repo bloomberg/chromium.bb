@@ -1524,7 +1524,7 @@ void PaymentRequest::DispatchPaymentRequestUpdateEvent(
     const String& message = String::Format(
         "No updateWith() call in '%s' event handler. User may see outdated "
         "line items and total.",
-        event->type().Ascii().data());
+        event->type().Ascii().c_str());
     GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kWarning, message));

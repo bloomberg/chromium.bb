@@ -47,7 +47,7 @@ RuleSet& TestStyleSheet::GetRuleSet() {
   return rule_set;
 }
 
-void TestStyleSheet::AddCSSRules(const char* css_text, bool is_empty_sheet) {
+void TestStyleSheet::AddCSSRules(const String& css_text, bool is_empty_sheet) {
   TextPosition position;
   unsigned sheet_length = style_sheet_->length();
   style_sheet_->Contents()->ParseStringAtPosition(css_text, position);

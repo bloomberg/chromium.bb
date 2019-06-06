@@ -621,7 +621,7 @@ bool NGBlockNode::CanUseNewLayout() const {
 
 String NGBlockNode::ToString() const {
   return String::Format("NGBlockNode: '%s'",
-                        GetLayoutBox()->DebugName().Ascii().data());
+                        GetLayoutBox()->DebugName().Ascii().c_str());
 }
 
 void NGBlockNode::CopyFragmentDataToLayoutBox(

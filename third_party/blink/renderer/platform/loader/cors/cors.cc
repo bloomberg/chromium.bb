@@ -49,7 +49,7 @@ base::Optional<std::string> GetOptionalHeaderValue(
   if (result.IsNull())
     return base::nullopt;
 
-  return std::string(result.Ascii().data());
+  return result.Ascii();
 }
 
 std::unique_ptr<net::HttpRequestHeaders> CreateNetHttpRequestHeaders(
@@ -61,8 +61,7 @@ std::unique_ptr<net::HttpRequestHeaders> CreateNetHttpRequestHeaders(
        i != end; ++i) {
     DCHECK(!i->key.IsNull());
     DCHECK(!i->value.IsNull());
-    request_headers->SetHeader(std::string(i->key.Ascii().data()),
-                               std::string(i->value.Ascii().data()));
+    request_headers->SetHeader(i->key.Ascii(), i->value.Ascii());
   }
   return request_headers;
 }
@@ -107,9 +106,7 @@ class HTTPHeaderNameListParser {
         return;
       }
 
-      const CString& name = value_.Substring(token_start, token_size).Ascii();
-      output.emplace(name.data(), name.length());
-
+      output.insert(value_.Substring(token_start, token_size).Ascii());
       ConsumeSpaces();
 
       if (pos_ == value_.length())
@@ -243,8 +240,7 @@ base::Optional<network::CorsErrorStatus> EnsurePreflightResultAndCacheOnSuccess(
     return network::CorsErrorStatus(*error);
 
   base::Optional<network::CorsErrorStatus> status;
-  status = result->EnsureAllowedCrossOriginMethod(
-      std::string(request_method.Ascii().data()));
+  status = result->EnsureAllowedCrossOriginMethod(request_method.Ascii());
   if (status)
     return status;
 
@@ -255,8 +251,8 @@ base::Optional<network::CorsErrorStatus> EnsurePreflightResultAndCacheOnSuccess(
   if (status)
     return status;
 
-  GetPerThreadPreflightCache().AppendEntry(std::string(origin.Ascii().data()),
-                                           request_url, std::move(result));
+  GetPerThreadPreflightCache().AppendEntry(origin.Ascii(), request_url,
+                                           std::move(result));
   return base::nullopt;
 }
 
@@ -272,8 +268,7 @@ bool CheckIfRequestCanSkipPreflight(
   // |is_revalidating| is not needed for blink-side CORS.
   constexpr bool is_revalidating = false;
   return GetPerThreadPreflightCache().CheckIfRequestCanSkipPreflight(
-      std::string(origin.Ascii().data()), url, credentials_mode,
-      std::string(method.Ascii().data()),
+      origin.Ascii(), url, credentials_mode, method.Ascii(),
       *CreateNetHttpRequestHeaders(request_header_map), is_revalidating);
 }
 
@@ -412,7 +407,7 @@ WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
   if (response.WasFetchedViaServiceWorker()) {
     WebHTTPHeaderSet header_set;
     for (const auto& header : response.CorsExposedHeaderNames())
-      header_set.emplace(header.Ascii().data(), header.Ascii().length());
+      header_set.insert(header.Ascii());
     return header_set;
   }
 
@@ -424,10 +419,8 @@ WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
   if (credentials_mode != network::mojom::FetchCredentialsMode::kInclude &&
       header_set.find("*") != header_set.end()) {
     header_set.clear();
-    for (const auto& header : response.HttpHeaderFields()) {
-      CString name = header.key.Ascii();
-      header_set.emplace(name.data(), name.length());
-    }
+    for (const auto& header : response.HttpHeaderFields())
+      header_set.insert(header.key.Ascii());
   }
   return header_set;
 }
@@ -446,7 +439,7 @@ bool IsCorsSafelistedResponseHeader(const String& name) {
                                       "last-modified",
                                       "pragma",
                                   }));
-  return allowed_cross_origin_response_headers.find(name.Ascii().data()) !=
+  return allowed_cross_origin_response_headers.find(name.Ascii()) !=
          allowed_cross_origin_response_headers.end();
 }
 

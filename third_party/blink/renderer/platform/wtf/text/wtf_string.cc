@@ -403,42 +403,32 @@ void String::Split(UChar separator,
     result.push_back(Substring(start_pos));
 }
 
-CString String::Ascii() const {
+std::string String::Ascii() const {
   // Printable ASCII characters 32..127 and the null character are
   // preserved, characters outside of this range are converted to '?'.
 
   unsigned length = this->length();
-  if (!length) {
-    char* character_buffer;
-    return CString::CreateUninitialized(length, character_buffer);
-  }
+  if (!length)
+    return std::string();
 
+  std::string ascii(length, '\0');
   if (this->Is8Bit()) {
     const LChar* characters = this->Characters8();
 
-    char* character_buffer;
-    CString result = CString::CreateUninitialized(length, character_buffer);
-
     for (unsigned i = 0; i < length; ++i) {
       LChar ch = characters[i];
-      character_buffer[i] = ch && (ch < 0x20 || ch > 0x7f) ? '?' : ch;
+      ascii[i] = ch && (ch < 0x20 || ch > 0x7f) ? '?' : ch;
     }
-
-    return result;
+    return ascii;
   }
 
   const UChar* characters = this->Characters16();
-
-  char* character_buffer;
-  CString result = CString::CreateUninitialized(length, character_buffer);
-
   for (unsigned i = 0; i < length; ++i) {
     UChar ch = characters[i];
-    character_buffer[i] =
-        ch && (ch < 0x20 || ch > 0x7f) ? '?' : static_cast<char>(ch);
+    ascii[i] = ch && (ch < 0x20 || ch > 0x7f) ? '?' : static_cast<char>(ch);
   }
 
-  return result;
+  return ascii;
 }
 
 std::string String::Latin1() const {

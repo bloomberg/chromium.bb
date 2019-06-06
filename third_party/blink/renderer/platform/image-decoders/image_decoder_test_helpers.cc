@@ -14,7 +14,7 @@
 
 namespace blink {
 
-scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
+scoped_refptr<SharedBuffer> ReadFile(StringView file_name) {
   StringBuilder file_path;
   file_path.Append(test::BlinkWebTestsDir());
   file_path.Append(file_name);

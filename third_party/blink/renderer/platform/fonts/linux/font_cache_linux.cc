@@ -124,7 +124,7 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
 
   FontCache::PlatformFallbackFont fallback_font;
   FontCache::GetFontForCharacter(
-      c, font_description.LocaleOrDefault().Ascii().data(), &fallback_font);
+      c, font_description.LocaleOrDefault().Ascii().c_str(), &fallback_font);
   if (fallback_font.name.IsEmpty())
     return nullptr;
 

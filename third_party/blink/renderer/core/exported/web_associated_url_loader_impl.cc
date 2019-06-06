@@ -217,9 +217,8 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
   for (const auto& header : response.HttpHeaderFields()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.key) ||
         (!cors::IsCorsSafelistedResponseHeader(header.key) &&
-         exposed_headers.find(header.key.Ascii().data()) ==
-             exposed_headers.end()))
-      blocked_headers.insert(header.key.Ascii().data());
+         exposed_headers.find(header.key.Ascii()) == exposed_headers.end()))
+      blocked_headers.insert(header.key.Ascii());
   }
 
   if (blocked_headers.empty()) {

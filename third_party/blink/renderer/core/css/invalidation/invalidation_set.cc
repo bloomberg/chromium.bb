@@ -370,7 +370,7 @@ void InvalidationSet::Show() const {
   value->BeginArray("InvalidationSet");
   ToTracedValue(value.get());
   value->EndArray();
-  fprintf(stderr, "%s\n", value->ToString().Ascii().data());
+  fprintf(stderr, "%s\n", value->ToString().Ascii().c_str());
 }
 #endif  // NDEBUG
 

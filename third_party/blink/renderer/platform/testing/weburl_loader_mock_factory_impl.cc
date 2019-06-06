@@ -263,7 +263,7 @@ bool WebURLLoaderMockFactoryImpl::LookupURL(const WebURL& url,
 
   for (const auto& key_value_pair : protocol_to_response_info_) {
     String protocol = key_value_pair.key;
-    if (url.ProtocolIs(protocol.Ascii().data())) {
+    if (url.ProtocolIs(protocol.Ascii().c_str())) {
       *response_info = key_value_pair.value;
       return true;
     }

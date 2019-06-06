@@ -501,7 +501,7 @@ bool SecurityOrigin::IsLocalhost() const {
   // We special-case "[::1]" here because `net::HostStringIsLocalhost` expects a
   // canonicalization that excludes the braces; a simple string comparison is
   // simpler than trying to adjust Blink's canonicalization.
-  return host_ == "[::1]" || net::HostStringIsLocalhost(host_.Ascii().data());
+  return host_ == "[::1]" || net::HostStringIsLocalhost(host_.Ascii());
 }
 
 String SecurityOrigin::ToString() const {

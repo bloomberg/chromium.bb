@@ -2021,8 +2021,7 @@ TEST_P(VisualViewportTest, WindowDimensionsOnLoad) {
 
   Element* output = GetFrame()->GetDocument()->getElementById("output");
   DCHECK(output);
-  EXPECT_EQ(std::string("1600x1200"),
-            std::string(output->InnerHTMLAsString().Ascii().data()));
+  EXPECT_EQ("1600x1200", output->InnerHTMLAsString());
 }
 
 // Similar to above but make sure the initial scale is updated with the content
@@ -2037,8 +2036,7 @@ TEST_P(VisualViewportTest, WindowDimensionsOnLoadWideContent) {
 
   Element* output = GetFrame()->GetDocument()->getElementById("output");
   DCHECK(output);
-  EXPECT_EQ(std::string("2000x1500"),
-            std::string(output->InnerHTMLAsString().Ascii().data()));
+  EXPECT_EQ("2000x1500", output->InnerHTMLAsString());
 }
 
 TEST_P(VisualViewportTest, ResizeWithScrollAnchoring) {

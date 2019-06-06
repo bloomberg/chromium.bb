@@ -142,7 +142,7 @@ void InlineBox::DumpBox(StringBuilder& string_inlinebox) const {
     string_inlinebox.Append(' ');
   string_inlinebox.AppendFormat(
       "\t%s %p {pos=%g,%g size=%g,%g} baseline=%i/%i",
-      GetLineLayoutItem().DecoratedName().Ascii().data(),
+      GetLineLayoutItem().DecoratedName().Ascii().c_str(),
       GetLineLayoutItem().DebugPointer(), X().ToFloat(), Y().ToFloat(),
       Width().ToFloat(), Height().ToFloat(),
       BaselinePosition(kAlphabeticBaseline).ToInt(),

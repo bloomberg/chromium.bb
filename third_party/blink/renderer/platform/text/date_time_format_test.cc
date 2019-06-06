@@ -192,7 +192,7 @@ class DateTimeFormatTest : public testing::Test {
 
 std::ostream& operator<<(std::ostream& os,
                          const DateTimeFormatTest::Tokens& tokens) {
-  return os << tokens.ToString().Ascii().data();
+  return os << tokens.ToString();
 }
 
 TEST_F(DateTimeFormatTest, CommonPattern) {

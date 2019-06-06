@@ -4829,13 +4829,13 @@ bool WebGLRenderingContextBase::ValidateValueFitNonNegInt32(
   if (value < 0) {
     String error_msg = String(param_name) + " < 0";
     SynthesizeGLError(GL_INVALID_VALUE, function_name,
-                      error_msg.Ascii().data());
+                      error_msg.Ascii().c_str());
     return false;
   }
   if (value > static_cast<int64_t>(std::numeric_limits<int>::max())) {
     String error_msg = String(param_name) + " more than 32-bit";
     SynthesizeGLError(GL_INVALID_OPERATION, function_name,
-                      error_msg.Ascii().data());
+                      error_msg.Ascii().c_str());
     return false;
   }
   return true;

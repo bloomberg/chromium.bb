@@ -161,8 +161,8 @@ std::ostream& operator<<(std::ostream& ostream, const LayoutRect& rect) {
 }
 
 String LayoutRect::ToString() const {
-  return String::Format("%s %s", Location().ToString().Ascii().data(),
-                        Size().ToString().Ascii().data());
+  return String::Format("%s %s", Location().ToString().Ascii().c_str(),
+                        Size().ToString().Ascii().c_str());
 }
 
 WTF::TextStream& operator<<(WTF::TextStream& ts, const LayoutRect& rect) {
