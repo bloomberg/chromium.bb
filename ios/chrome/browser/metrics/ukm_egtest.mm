@@ -353,11 +353,16 @@ void SignOut() {
     // Open Sync and Google services settings
     [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
     // Toggle "Make searches and browsing better" switch off.
-    [[EarlGrey
+
+    [[[EarlGrey
         selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
                                      @"betterSearchAndBrowsingItem_switch",
                                      YES)]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+        onElementWithMatcher:grey_accessibilityID(
+                                 @"google_services_settings_view_controller")]
         performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+
   } else {
     // Open accounts settings, then sync settings.
     [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
