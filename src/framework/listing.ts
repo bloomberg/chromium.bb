@@ -15,11 +15,9 @@ interface ITestNode {
 export async function loadListing(suite: string, listing: Listing):
         Promise<Map<string, ITestNode>> {
     const promises: Array<Promise<[string, ITestNode]>> = [];
-    for (const { path } of listing) {
+    for (const { path, description } of listing) {
         if (path.endsWith('/')) {
-            promises.push(fetch(`../${suite}${path}/README.txt`)
-                .then((resp) => resp.text())
-                .then((description) => [path, { description }]));
+            promises.push(Promise.resolve([path, { description }]));
         } else {
             promises.push(import(`../${suite}${path}.spec.js`)
                 .then((mod) => [path, mod]));

@@ -197,8 +197,6 @@ function basepath(path) {
   const log = new Logger();
   const runCaseList = [];
   for (const [path, entry] of listing) {
-    console.log("");
-    console.log(path, entry.description);
     const testcasesVis = mkTest(path, entry.description);
 
     if (!entry.group) {

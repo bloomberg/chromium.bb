@@ -1,1 +1,1 @@
-WebGPUBuffer tests.
+GPUBuffer tests.
