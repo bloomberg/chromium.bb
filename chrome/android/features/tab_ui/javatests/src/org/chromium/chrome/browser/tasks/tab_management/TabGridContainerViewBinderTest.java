@@ -8,8 +8,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import android.animation.ValueAnimator;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
+import android.provider.Settings;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.MediumTest;
 import android.view.View;
@@ -20,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.tab_ui.R;
@@ -111,8 +113,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
 
         assertThat(mStartedShowingCallback.getCallCount(), equalTo(1));
         assertThat(mRecyclerView.getVisibility(), equalTo(View.VISIBLE));
-        // TODO(yusufo): Find a way to test this on KitKat.
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+        if (areAnimatorsEnabled()) {
             assertThat(mRecyclerView.getAlpha(), equalTo(0.0f));
         }
         assertThat(mIsAnimating, equalTo(true));
@@ -163,8 +164,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
 
         assertThat(mStartedHidingCallback.getCallCount(), equalTo(1));
         assertThat(mRecyclerView.getVisibility(), equalTo(View.VISIBLE));
-        // TODO(yusufo): Find a way to test this on KitKat.
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+        if (areAnimatorsEnabled()) {
             assertThat(mRecyclerView.getAlpha(), equalTo(1.0f));
         }
         assertThat(mIsAnimating, equalTo(true));
@@ -172,10 +172,11 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mRecyclerView.getAlpha() == 0.0f;
+                // Invisibility signals the end of the animation, not alpha being zero.
+                return mRecyclerView.getVisibility() == View.INVISIBLE;
             }
         });
-        assertThat(mRecyclerView.getVisibility(), equalTo(View.INVISIBLE));
+        assertThat(mRecyclerView.getAlpha(), equalTo(0.0f));
     }
 
     @Test
@@ -247,5 +248,18 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     public void tearDownTest() throws Exception {
         mMCP.destroy();
         super.tearDownTest();
+    }
+
+    /**
+     * Should be the same as {@link ValueAnimator#areAnimatorsEnabled}, which requires API level 26.
+     */
+    public static boolean areAnimatorsEnabled() {
+        // We default to assuming that animations are enabled in case ANIMATOR_DURATION_SCALE is not
+        // defined.
+        final float defaultScale = 1f;
+        float durationScale =
+                Settings.Global.getFloat(ContextUtils.getApplicationContext().getContentResolver(),
+                        Settings.Global.ANIMATOR_DURATION_SCALE, defaultScale);
+        return !(durationScale == 0.0);
     }
 }
