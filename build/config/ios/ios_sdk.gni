@@ -88,7 +88,7 @@ if (ios_sdk_path == "") {
     ios_sdk_platform = "iPhoneOS"
   }
 
-  ios_sdk_info_args = []
+  ios_sdk_info_args = [ "--get_sdk_info" ]
   if (!use_system_xcode) {
     ios_sdk_info_args += [
       "--developer_dir",
