@@ -296,7 +296,9 @@
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                      reason:(int)reason {
-  [self updateDeviceSharingManager];
+  if (newWebState) {
+    [self updateDeviceSharingManager];
+  }
 }
 
 #pragma mark - CRWWebStateObserver
