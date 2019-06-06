@@ -95,9 +95,7 @@ DawnVertexInputInfo GPUVertexInputAsDawnInputState(
   DawnVertexInputDescriptor dawn_desc;
   dawn_desc.indexFormat =
       AsDawnEnum<DawnIndexFormat>(descriptor->indexFormat());
-  dawn_desc.numAttributes = 0;
-  dawn_desc.attributes = nullptr;
-  dawn_desc.numBuffers = 0;
+  dawn_desc.bufferCount = 0;
   dawn_desc.buffers = nullptr;
 
   Vector<DawnVertexBufferDescriptor> dawn_vertex_buffers;
@@ -116,12 +114,24 @@ DawnVertexInputInfo GPUVertexInputAsDawnInputState(
 
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::Local<v8::Array> vertex_buffers = vertex_buffers_value.As<v8::Array>();
+
+    // First we collect all the descriptors but we don't set
+    // DawnVertexBufferDescriptor::attributes
+    // TODO(cwallez@chromium.org): Should we validate the Length() first so we
+    // don't risk creating HUGE vectors of DawnVertexBufferDescriptor from the
+    // sparse array?
     for (uint32_t i = 0; i < vertex_buffers->Length(); ++i) {
       // This array can be sparse. Skip empty slots.
       v8::MaybeLocal<v8::Value> maybe_value = vertex_buffers->Get(context, i);
       v8::Local<v8::Value> value;
       if (!maybe_value.ToLocal(&value) || value.IsEmpty() ||
           value->IsNullOrUndefined()) {
+        DawnVertexBufferDescriptor dawn_vertex_buffer;
+        dawn_vertex_buffer.stride = 0;
+        dawn_vertex_buffer.stepMode = DAWN_INPUT_STEP_MODE_VERTEX;
+        dawn_vertex_buffer.attributeCount = 0;
+        dawn_vertex_buffer.attributes = nullptr;
+        dawn_vertex_buffers.push_back(dawn_vertex_buffer);
         continue;
       }
 
@@ -134,10 +144,12 @@ DawnVertexInputInfo GPUVertexInputAsDawnInputState(
       }
 
       DawnVertexBufferDescriptor dawn_vertex_buffer;
-      dawn_vertex_buffer.inputSlot = i;
       dawn_vertex_buffer.stride = vertex_buffer.stride();
       dawn_vertex_buffer.stepMode =
           AsDawnEnum<DawnInputStepMode>(vertex_buffer.stepMode());
+      dawn_vertex_buffer.attributeCount =
+          static_cast<uint32_t>(vertex_buffer.attributes().size());
+      dawn_vertex_buffer.attributes = nullptr;
       dawn_vertex_buffers.push_back(dawn_vertex_buffer);
 
       for (wtf_size_t j = 0; j < vertex_buffer.attributes().size(); ++j) {
@@ -145,19 +157,23 @@ DawnVertexInputInfo GPUVertexInputAsDawnInputState(
             vertex_buffer.attributes()[j];
         DawnVertexAttributeDescriptor dawn_vertex_attribute;
         dawn_vertex_attribute.shaderLocation = attribute->shaderLocation();
-        dawn_vertex_attribute.inputSlot = i;
         dawn_vertex_attribute.offset = attribute->offset();
         dawn_vertex_attribute.format =
             AsDawnEnum<DawnVertexFormat>(attribute->format());
         dawn_vertex_attributes.push_back(dawn_vertex_attribute);
       }
     }
+
+    // Set up pointers in DawnVertexBufferDescriptor::attributes only after we
+    // stopped appending to the vector so the pointers aren't invalidated.
+    uint32_t attributeIndex = 0;
+    for (DawnVertexBufferDescriptor& buffer : dawn_vertex_buffers) {
+      buffer.attributes = &dawn_vertex_attributes[attributeIndex];
+      attributeIndex += buffer.attributeCount;
+    }
   }
 
-  dawn_desc.numAttributes =
-      static_cast<uint32_t>(dawn_vertex_attributes.size());
-  dawn_desc.attributes = dawn_vertex_attributes.data();
-  dawn_desc.numBuffers = static_cast<uint32_t>(dawn_vertex_buffers.size());
+  dawn_desc.bufferCount = static_cast<uint32_t>(dawn_vertex_buffers.size());
   dawn_desc.buffers = dawn_vertex_buffers.data();
 
   return std::make_tuple(dawn_desc, std::move(dawn_vertex_buffers),
