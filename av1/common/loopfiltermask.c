@@ -777,14 +777,13 @@ void av1_build_bitmask_vert_info(
     int plane) {
   const int subsampling_x = plane_ptr->subsampling_x;
   const int subsampling_y = plane_ptr->subsampling_y;
-  const int row_step = (MI_SIZE >> MI_SIZE_LOG2);
   const int is_uv = plane > 0;
   TX_SIZE tx_size = TX_16X16, prev_tx_size = TX_16X16;
   uint8_t level, prev_level = 1;
   uint64_t skip, prev_skip = 0;
   uint64_t is_coding_block_border;
 
-  for (int r = 0; (r << MI_SIZE_LOG2) < plane_ptr->dst.height; r += row_step) {
+  for (int r = 0; (r << MI_SIZE_LOG2) < plane_ptr->dst.height; r++) {
     const int mi_row = r << subsampling_y;
     const int row = mi_row % MI_SIZE_64X64;
     const int row_uv = row | subsampling_y;
@@ -856,14 +855,13 @@ void av1_build_bitmask_horz_info(
     int plane) {
   const int subsampling_x = plane_ptr->subsampling_x;
   const int subsampling_y = plane_ptr->subsampling_y;
-  const int col_step = (MI_SIZE >> MI_SIZE_LOG2);
   const int is_uv = plane > 0;
   TX_SIZE tx_size = TX_16X16, prev_tx_size = TX_16X16;
   uint8_t level, prev_level = 1;
   uint64_t skip, prev_skip = 0;
   uint64_t is_coding_block_border;
 
-  for (int c = 0; (c << MI_SIZE_LOG2) < plane_ptr->dst.width; c += col_step) {
+  for (int c = 0; (c << MI_SIZE_LOG2) < plane_ptr->dst.width; c++) {
     const int mi_col = c << subsampling_x;
     const int col = mi_col % MI_SIZE_64X64;
     const int col_uv = col | subsampling_x;

@@ -346,7 +346,6 @@ void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
                                  const MACROBLOCKD *const xd, const int plane,
                                  const MACROBLOCKD_PLANE *const plane_ptr,
                                  const uint32_t mi_row, const uint32_t mi_col) {
-  const int row_step = MI_SIZE >> MI_SIZE_LOG2;
   const uint32_t scale_horz = plane_ptr->subsampling_x;
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
@@ -355,7 +354,7 @@ void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
   const int x_range = (MAX_MIB_SIZE >> scale_horz);
   const int use_highbitdepth = cm->seq_params.use_highbitdepth;
   const aom_bit_depth_t bit_depth = cm->seq_params.bit_depth;
-  for (int y = 0; y < y_range; y += row_step) {
+  for (int y = 0; y < y_range; y++) {
     uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
     for (int x = 0; x < x_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
@@ -433,7 +432,6 @@ void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
                                  const MACROBLOCKD *const xd, const int plane,
                                  const MACROBLOCKD_PLANE *const plane_ptr,
                                  const uint32_t mi_row, const uint32_t mi_col) {
-  const int col_step = MI_SIZE >> MI_SIZE_LOG2;
   const uint32_t scale_horz = plane_ptr->subsampling_x;
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
@@ -442,7 +440,7 @@ void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
   const int x_range = (MAX_MIB_SIZE >> scale_horz);
   const int use_highbitdepth = cm->seq_params.use_highbitdepth;
   const aom_bit_depth_t bit_depth = cm->seq_params.bit_depth;
-  for (int x = 0; x < x_range; x += col_step) {
+  for (int x = 0; x < x_range; x++) {
     uint8_t *p = dst_ptr + x * MI_SIZE;
     for (int y = 0; y < y_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
@@ -524,14 +522,13 @@ void av1_filter_block_plane_vert_test(const AV1_COMMON *const cm,
                                       const MACROBLOCKD_PLANE *const plane_ptr,
                                       const uint32_t mi_row,
                                       const uint32_t mi_col) {
-  const int row_step = MI_SIZE >> MI_SIZE_LOG2;
   const uint32_t scale_horz = plane_ptr->subsampling_x;
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
   const int y_range = cm->mi_rows >> scale_vert;
   const int x_range = cm->mi_cols >> scale_horz;
-  for (int y = 0; y < y_range; y += row_step) {
+  for (int y = 0; y < y_range; y++) {
     uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
     for (int x = 0; x < x_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
@@ -567,14 +564,13 @@ void av1_filter_block_plane_horz_test(const AV1_COMMON *const cm,
                                       const MACROBLOCKD_PLANE *const plane_ptr,
                                       const uint32_t mi_row,
                                       const uint32_t mi_col) {
-  const int col_step = MI_SIZE >> MI_SIZE_LOG2;
   const uint32_t scale_horz = plane_ptr->subsampling_x;
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
   const int y_range = cm->mi_rows >> scale_vert;
   const int x_range = cm->mi_cols >> scale_horz;
-  for (int x = 0; x < x_range; x += col_step) {
+  for (int x = 0; x < x_range; x++) {
     uint8_t *p = dst_ptr + x * MI_SIZE;
     for (int y = 0; y < y_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
