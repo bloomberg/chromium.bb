@@ -8,11 +8,11 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/interfaces/locale.mojom-forward.h"
 #include "base/strings/string16.h"
 
 namespace ash {
 
-struct LocaleInfo;
 class SystemTrayClient;
 enum class NotificationStyle;
 enum class UpdateSeverity;
@@ -50,7 +50,7 @@ class ASH_PUBLIC_EXPORT SystemTray {
 
   // Sets the list of supported UI locales. |current_locale_iso_code| refers to
   // the locale currently used by the UI.
-  virtual void SetLocaleList(std::vector<LocaleInfo> locale_list,
+  virtual void SetLocaleList(std::vector<mojom::LocaleInfoPtr> locale_list,
                              const std::string& current_locale_iso_code) = 0;
 
   // Shows an icon in the system tray or a notification on the unified system

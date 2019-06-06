@@ -4,6 +4,7 @@
 
 #include "ash/system/model/system_tray_model.h"
 
+#include "ash/public/interfaces/locale.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/model/clock_model.h"
@@ -72,7 +73,7 @@ void SystemTrayModel::SetPerformanceTracingIconVisible(bool visible) {
 }
 
 void SystemTrayModel::SetLocaleList(
-    std::vector<LocaleInfo> locale_list,
+    std::vector<mojom::LocaleInfoPtr> locale_list,
     const std::string& current_locale_iso_code) {
   locale()->SetLocaleList(std::move(locale_list), current_locale_iso_code);
 }

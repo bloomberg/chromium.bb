@@ -26,6 +26,7 @@
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/locale/locale_update_controller.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/night_light/night_light_controller.h"
@@ -103,6 +104,11 @@ void BindKeyboardControllerRequestOnMainThread(
   Shell::Get()->ash_keyboard_controller()->BindRequest(std::move(request));
 }
 
+void BindLocaleUpdateControllerOnMainThread(
+    mojom::LocaleUpdateControllerRequest request) {
+  Shell::Get()->locale_update_controller()->BindRequest(std::move(request));
+}
+
 void BindLockScreenRequestOnMainThread(mojom::LoginScreenRequest request) {
   Shell::Get()->login_screen_controller()->BindRequest(std::move(request));
 }
@@ -173,6 +179,9 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindKeyboardControllerRequestOnMainThread),
+      main_thread_task_runner);
+  registry->AddInterface(
+      base::BindRepeating(&BindLocaleUpdateControllerOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindLockScreenRequestOnMainThread),

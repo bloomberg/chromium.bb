@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_CLIENT_H_
 
 #include "ash/public/cpp/system_tray_client.h"
+#include "ash/public/interfaces/locale.mojom-forward.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/system/system_clock_observer.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 namespace ash {
-struct LocaleInfo;
 class SystemTray;
 enum class LoginStatus;
 enum class NotificationStyle;
@@ -45,7 +45,7 @@ class SystemTrayClient : public ash::SystemTrayClient,
   void SetPrimaryTrayEnabled(bool enabled);
   void SetPrimaryTrayVisible(bool visible);
   void SetPerformanceTracingIconVisible(bool visible);
-  void SetLocaleList(std::vector<ash::LocaleInfo> locale_list,
+  void SetLocaleList(std::vector<ash::mojom::LocaleInfoPtr> locale_list,
                      const std::string& current_locale_iso_code);
 
   // ash::SystemTrayClient:

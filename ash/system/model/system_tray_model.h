@@ -41,7 +41,7 @@ class SystemTrayModel : public SystemTray {
   void SetEnterpriseDisplayDomain(const std::string& enterprise_display_domain,
                                   bool active_directory_managed) override;
   void SetPerformanceTracingIconVisible(bool visible) override;
-  void SetLocaleList(std::vector<LocaleInfo> locale_list,
+  void SetLocaleList(std::vector<mojom::LocaleInfoPtr> locale_list,
                      const std::string& current_locale_iso_code) override;
   void ShowUpdateIcon(UpdateSeverity severity,
                       bool factory_reset_required,

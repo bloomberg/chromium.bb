@@ -123,18 +123,18 @@ void LocaleDetailedView::CreateItems() {
   CreateTitleRow(IDS_ASH_STATUS_TRAY_LOCALE_TITLE);
   CreateScrollableList();
 
-  const std::vector<LocaleInfo>& locales =
+  const std::vector<mojom::LocaleInfoPtr>& locales =
       Shell::Get()->system_tray_model()->locale()->locale_list();
   int id = 0;
   for (auto& entry : locales) {
     const bool checked =
-        entry.iso_code ==
+        entry->iso_code ==
         Shell::Get()->system_tray_model()->locale()->current_locale_iso_code();
     LocaleItem* item =
-        new LocaleItem(this, entry.iso_code, entry.display_name, checked);
+        new LocaleItem(this, entry->iso_code, entry->display_name, checked);
     scroll_content()->AddChildView(item);
     item->SetID(id);
-    id_to_locale_[id] = entry.iso_code;
+    id_to_locale_[id] = entry->iso_code;
     ++id;
   }
   Layout();

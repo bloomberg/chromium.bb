@@ -16,7 +16,7 @@
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/shutdown_controller_impl.h"
-#include "ash/system/locale/locale_update_controller_impl.h"
+#include "ash/system/locale/locale_update_controller.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/scoped_observer.h"
 #include "ui/views/controls/button/button.h"
@@ -178,7 +178,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   ScopedObserver<ShutdownControllerImpl, ShutdownControllerImpl::Observer>
       shutdown_controller_observer_{this};
 
-  ScopedObserver<LocaleUpdateControllerImpl, LocaleChangeObserver>
+  ScopedObserver<LocaleUpdateController, LocaleChangeObserver>
       locale_change_observer_{this};
 
   ScopedObserver<LoginDataDispatcher, LoginDataDispatcher::Observer>

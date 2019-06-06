@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
-#include "ash/public/cpp/locale_update_controller.h"
 #include "ash/public/cpp/system_tray.h"
 #include "ash/public/cpp/update_types.h"
+#include "ash/public/interfaces/locale.mojom.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -184,7 +184,7 @@ void SystemTrayClient::SetPerformanceTracingIconVisible(bool visible) {
 }
 
 void SystemTrayClient::SetLocaleList(
-    std::vector<ash::LocaleInfo> locale_list,
+    std::vector<ash::mojom::LocaleInfoPtr> locale_list,
     const std::string& current_locale_iso_code) {
   system_tray_->SetLocaleList(std::move(locale_list), current_locale_iso_code);
 }

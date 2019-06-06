@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_LOCALE_LOCALE_UPDATE_CONTROLLER_IMPL_H_
-#define ASH_SYSTEM_LOCALE_LOCALE_UPDATE_CONTROLLER_IMPL_H_
+#ifndef ASH_SYSTEM_LOCALE_LOCALE_UPDATE_CONTROLLER_H_
+#define ASH_SYSTEM_LOCALE_LOCALE_UPDATE_CONTROLLER_H_
 
 #include <string>
 
-#include "ash/public/cpp/locale_update_controller.h"
+#include "ash/public/interfaces/locale.mojom.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace ash {
 
@@ -22,16 +22,20 @@ class LocaleChangeObserver {
 };
 
 // Observes and handles locale change events.
-class LocaleUpdateControllerImpl : public LocaleUpdateController {
+class LocaleUpdateController : public mojom::LocaleUpdateController {
  public:
-  LocaleUpdateControllerImpl();
-  ~LocaleUpdateControllerImpl() override;
+  LocaleUpdateController();
+  ~LocaleUpdateController() override;
+
+  // Binds the mojom::LocaleUpdateController interface request to this
+  // object.
+  void BindRequest(mojom::LocaleUpdateControllerRequest request);
 
   void AddObserver(LocaleChangeObserver* observer);
   void RemoveObserver(LocaleChangeObserver* observer);
 
  private:
-  // LocaleUpdateController:
+  // Overridden from mojom::LocaleUpdateController:
   void OnLocaleChanged(const std::string& cur_locale,
                        const std::string& from_locale,
                        const std::string& to_locale,
@@ -42,9 +46,12 @@ class LocaleUpdateControllerImpl : public LocaleUpdateController {
   std::string to_locale_;
   base::ObserverList<LocaleChangeObserver>::Unchecked observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocaleUpdateControllerImpl);
+  // Bindings for the LocaleUpdateController interface.
+  mojo::BindingSet<mojom::LocaleUpdateController> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocaleUpdateController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_LOCALE_LOCALE_UPDATE_CONTROLLER_IMPL_H_
+#endif  // ASH_SYSTEM_LOCALE_LOCALE_UPDATE_CONTROLLER_H_
