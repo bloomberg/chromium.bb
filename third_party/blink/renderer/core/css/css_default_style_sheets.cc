@@ -52,13 +52,13 @@ CSSDefaultStyleSheets& CSSDefaultStyleSheets::Instance() {
 }
 
 static const MediaQueryEvaluator& ScreenEval() {
-  DEFINE_STATIC_LOCAL(Persistent<MediaQueryEvaluator>, static_screen_eval,
+  DEFINE_STATIC_LOCAL(const Persistent<MediaQueryEvaluator>, static_screen_eval,
                       (MakeGarbageCollected<MediaQueryEvaluator>("screen")));
   return *static_screen_eval;
 }
 
 static const MediaQueryEvaluator& PrintEval() {
-  DEFINE_STATIC_LOCAL(Persistent<MediaQueryEvaluator>, static_print_eval,
+  DEFINE_STATIC_LOCAL(const Persistent<MediaQueryEvaluator>, static_print_eval,
                       (MakeGarbageCollected<MediaQueryEvaluator>("print")));
   return *static_print_eval;
 }
