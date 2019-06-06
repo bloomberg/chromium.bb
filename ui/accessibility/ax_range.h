@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
@@ -162,22 +163,22 @@ class AXRange {
     return anchors;
   }
 
-  // Appends rects in screen coordinates of all text nodes that span between
+  // Appends rects in screen coordinates of all anchor nodes that span between
   // anchor_ and focus_. Rects outside of the viewport are skipped.
   std::vector<gfx::Rect> GetScreenRects() const {
-    DCHECK_LE(*anchor_, *focus_);
+    AXRange forward_range = GetForwardRange();
     std::vector<gfx::Rect> rectangles;
-    auto current_line_start = anchor_->Clone();
-    auto range_end = focus_->Clone();
+    auto current_line_start = forward_range.anchor()->Clone();
+    auto range_end = forward_range.focus()->Clone();
 
-    while (*current_line_start < *range_end) {
+    while (*current_line_start <= *range_end) {
       auto current_line_end = current_line_start->CreateNextLineEndPosition(
           ui::AXBoundaryBehavior::CrossBoundary);
 
-      if (*current_line_end > *range_end)
+      if (current_line_end->IsNullPosition() || *current_line_end > *range_end)
         current_line_end = range_end->Clone();
 
-      DCHECK(current_line_end->GetAnchor() == current_line_start->GetAnchor());
+      DCHECK_EQ(current_line_end->GetAnchor(), current_line_start->GetAnchor());
 
       if (current_line_start->GetAnchor()->data().role ==
           ax::mojom::Role::kInlineTextBox) {
@@ -192,15 +193,23 @@ class AXRange {
       AXPlatformNodeDelegate* current_anchor_delegate =
           manager->GetDelegate(current_tree_id, current_anchor->id());
 
-      gfx::Rect current_rect =
-          current_anchor_delegate->GetHypertextRangeBoundsRect(
-              current_line_start->text_offset(),
-              current_line_end->text_offset(), AXCoordinateSystem::kScreen,
-              AXClippingBehavior::kClipped);
+      gfx::Rect current_rect;
+      // For text anchors, we retrieve the bounding rectangles of its text
+      // content. For non-text anchors (such as checkboxes, images, etc.), we
+      // want to directly retrieve their bounding rectangles.
+      if (IsTextOrLineBreak(current_anchor->data().role)) {
+        current_rect = current_anchor_delegate->GetInnerTextRangeBoundsRect(
+            current_line_start->text_offset(), current_line_end->text_offset(),
+            AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
+      } else {
+        current_rect = current_anchor_delegate->GetBoundsRect(
+            AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
+      }
 
-      // Only add rects that are within the current viewport. The 'clipped'
-      // parameter for GetHypertextRangeBoundsRect will return an empty rect in
-      // that case.
+      // We only add rects that are within the current viewport. If the bounding
+      // rect is outside the viewport, the 'clipped' parameter in the bounds
+      // API's above will result in returning an empty rect and we omit it in
+      // the final result.
       if (!current_rect.IsEmpty())
         rectangles.emplace_back(current_rect);
 

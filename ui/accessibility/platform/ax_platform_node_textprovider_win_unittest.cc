@@ -181,9 +181,9 @@ TEST_F(AXPlatformNodeTextProviderTest, TestNearestTextIndexToPoint) {
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kInlineTextBox;
   text_data.SetName("text");
-  // spacing: "t-e-x---t--"
+  // spacing: "t-e-x---t-"
   text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kCharacterOffsets,
-                                {2, 2, 4, 2});
+                                {2, 4, 8, 10});
 
   ui::AXNodeData root_data;
   root_data.id = 1;

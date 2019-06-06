@@ -123,6 +123,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   int32_t GetPosInSet() const override;
   int32_t GetSetSize() const override;
   const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
+  gfx::RectF GetLocation() const;
+  int InternalChildCount() const;
+  TestAXNodeWrapper* InternalGetChild(int index) const;
 
  private:
   TestAXNodeWrapper(AXTree* tree, AXNode* node);
@@ -141,6 +144,11 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   TestAXNodeWrapper* HitTestSyncInternal(int x, int y);
   void Descendants(const AXNode* node,
                    std::vector<gfx::NativeViewAccessible>* descendants) const;
+
+  // Return the bounds of inline text in this node's coordinate system (which is
+  // relative to its container node specified in AXRelativeBounds).
+  gfx::RectF GetInlineTextRect(const int start_offset,
+                               const int end_offset) const;
 
   AXTree* tree_;
   AXNode* node_;

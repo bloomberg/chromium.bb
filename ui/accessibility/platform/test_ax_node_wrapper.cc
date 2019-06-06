@@ -114,14 +114,11 @@ gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() {
 }
 
 int TestAXNodeWrapper::GetChildCount() {
-  return int{node_->children().size()};
+  return InternalChildCount();
 }
 
 gfx::NativeViewAccessible TestAXNodeWrapper::ChildAtIndex(int index) {
-  CHECK_GE(index, 0);
-  CHECK_LT(index, GetChildCount());
-  TestAXNodeWrapper* child_wrapper =
-      GetOrCreate(tree_, node_->children()[size_t{index}]);
+  TestAXNodeWrapper* child_wrapper = InternalGetChild(index);
   return child_wrapper ?
       child_wrapper->ax_platform_node()->GetNativeViewAccessible() :
       nullptr;
@@ -134,7 +131,7 @@ gfx::Rect TestAXNodeWrapper::GetBoundsRect(
   switch (coordinate_system) {
     case AXCoordinateSystem::kScreen: {
       // We could optionally add clipping here if ever needed.
-      gfx::RectF bounds = GetData().relative_bounds.bounds;
+      gfx::RectF bounds = GetLocation();
       bounds.Offset(g_offset);
       return gfx::ToEnclosingRect(bounds);
     }
@@ -153,24 +150,23 @@ gfx::Rect TestAXNodeWrapper::GetInnerTextRangeBoundsRect(
     AXOffscreenResult* offscreen_result) const {
   switch (coordinate_system) {
     case AXCoordinateSystem::kScreen: {
-      gfx::RectF bounds = GetData().relative_bounds.bounds;
-      bounds.Offset(g_offset);
-      if (GetData().HasIntListAttribute(
-              ax::mojom::IntListAttribute::kCharacterOffsets)) {
-        const std::vector<int32_t>& offsets = GetData().GetIntListAttribute(
-            ax::mojom::IntListAttribute::kCharacterOffsets);
-        int32_t x = bounds.x();
-        int32_t width = 0;
-        for (int i = 0; i < static_cast<int>(offsets.size()); i++) {
-          if (i < start_offset)
-            x += offsets[i];
-          else if (i < end_offset)
-            width += offsets[i];
-          else
-            break;
+      gfx::RectF bounds = GetLocation();
+      // This implementation currently only deals with text node that has role
+      // kInlineTextBox and kStaticText.
+      // For test purposes, assume node with kStaticText always has a single
+      // child with role kInlineTextBox.
+      if (GetData().role == ax::mojom::Role::kInlineTextBox) {
+        bounds = GetInlineTextRect(start_offset, end_offset);
+      } else if (GetData().role == ax::mojom::Role::kStaticText &&
+                 InternalChildCount() > 0) {
+        TestAXNodeWrapper* child = InternalGetChild(0);
+        if (child != nullptr &&
+            child->GetData().role == ax::mojom::Role::kInlineTextBox) {
+          bounds = child->GetInlineTextRect(start_offset, end_offset);
         }
-        bounds = gfx::RectF(x, bounds.y(), width, bounds.height());
       }
+
+      bounds.Offset(g_offset);
       return gfx::ToEnclosingRect(bounds);
     }
     case AXCoordinateSystem::kRootFrame:
@@ -190,7 +186,7 @@ gfx::Rect TestAXNodeWrapper::GetHypertextRangeBoundsRect(
     case AXCoordinateSystem::kScreen: {
       // Ignoring start, len, and clipped, as there's no clean way to map these
       // via unit tests.
-      gfx::RectF bounds = GetData().relative_bounds.bounds;
+      gfx::RectF bounds = GetLocation();
       bounds.Offset(g_offset);
       return gfx::ToEnclosingRect(bounds);
     }
@@ -641,6 +637,20 @@ int32_t TestAXNodeWrapper::GetSetSize() const {
   return node_->GetSetSize();
 }
 
+gfx::RectF TestAXNodeWrapper::GetLocation() const {
+  return GetData().relative_bounds.bounds;
+}
+
+int TestAXNodeWrapper::InternalChildCount() const {
+  return int{node_->children().size()};
+}
+
+TestAXNodeWrapper* TestAXNodeWrapper::InternalGetChild(int index) const {
+  CHECK_GE(index, 0);
+  CHECK_LT(index, InternalChildCount());
+  return GetOrCreate(tree_, node_->children()[size_t{index}]);
+}
+
 // Recursive helper function for GetDescendants. Aggregates all of the
 // descendants for a given node within the descendants vector.
 void TestAXNodeWrapper::Descendants(
@@ -661,6 +671,34 @@ const std::vector<gfx::NativeViewAccessible> TestAXNodeWrapper::GetDescendants()
   std::vector<gfx::NativeViewAccessible> descendants;
   Descendants(node_, &descendants);
   return descendants;
+}
+
+gfx::RectF TestAXNodeWrapper::GetInlineTextRect(const int start_offset,
+                                                const int end_offset) const {
+  DCHECK(start_offset >= 0 && end_offset >= 0 && start_offset <= end_offset);
+  const std::vector<int32_t>& character_offsets = GetData().GetIntListAttribute(
+      ax::mojom::IntListAttribute::kCharacterOffsets);
+  gfx::RectF location = GetLocation();
+  gfx::RectF bounds;
+
+  switch (static_cast<ax::mojom::TextDirection>(
+      GetData().GetIntAttribute(ax::mojom::IntAttribute::kTextDirection))) {
+    // Currently only kNone and kLtr are supported text direction.
+    case ax::mojom::TextDirection::kNone:
+    case ax::mojom::TextDirection::kLtr: {
+      int start_pixel_offset =
+          start_offset > 0 ? character_offsets[start_offset - 1] : location.x();
+      int end_pixel_offset =
+          end_offset > 0 ? character_offsets[end_offset - 1] : location.x();
+      bounds =
+          gfx::RectF(start_pixel_offset, location.y(),
+                     end_pixel_offset - start_pixel_offset, location.height());
+      break;
+    }
+    default:
+      NOTIMPLEMENTED();
+  }
+  return bounds;
 }
 
 }  // namespace ui

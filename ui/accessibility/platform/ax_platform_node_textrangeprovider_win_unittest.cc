@@ -260,6 +260,142 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     return update;
   }
 
+  ui::AXTreeUpdate BuildAXTreeForBoundingRectangles() {
+    // AXTree content:
+    // <button>Button</button><input type="checkbox">Line 1<br>Line 2
+    ui::AXNodeData root;
+    ui::AXNodeData button;
+    ui::AXNodeData check_box;
+    ui::AXNodeData text_field;
+    ui::AXNodeData static_text1;
+    ui::AXNodeData line_break;
+    ui::AXNodeData static_text2;
+    ui::AXNodeData inline_box1;
+    ui::AXNodeData inline_box2;
+
+    const int ROOT_ID = 1;
+    const int BUTTON_ID = 2;
+    const int CHECK_BOX_ID = 3;
+    const int TEXT_FIELD_ID = 4;
+    const int STATIC_TEXT1_ID = 5;
+    const int INLINE_BOX1_ID = 6;
+    const int LINE_BREAK_ID = 7;
+    const int STATIC_TEXT2_ID = 8;
+    const int INLINE_BOX2_ID = 9;
+
+    root.id = ROOT_ID;
+    button.id = BUTTON_ID;
+    check_box.id = CHECK_BOX_ID;
+    text_field.id = TEXT_FIELD_ID;
+    static_text1.id = STATIC_TEXT1_ID;
+    inline_box1.id = INLINE_BOX1_ID;
+    line_break.id = LINE_BREAK_ID;
+    static_text2.id = STATIC_TEXT2_ID;
+    inline_box2.id = INLINE_BOX2_ID;
+
+    std::string LINE_1_TEXT = "Line 1";
+    std::string LINE_2_TEXT = "Line 2";
+    std::string LINE_BREAK_TEXT = "\n";
+    std::string ALL_TEXT = LINE_1_TEXT + LINE_BREAK_TEXT + LINE_2_TEXT;
+    std::string BUTTON_TEXT = "Button";
+    std::string CHECKBOX_TEXT = "Check box";
+
+    root.role = ax::mojom::Role::kRootWebArea;
+
+    button.role = ax::mojom::Role::kButton;
+    button.SetHasPopup(ax::mojom::HasPopup::kMenu);
+    button.SetName(BUTTON_TEXT);
+    button.SetValue(BUTTON_TEXT);
+    button.relative_bounds.bounds = gfx::RectF(20, 20, 200, 30);
+    button.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                           check_box.id);
+    root.child_ids.push_back(button.id);
+
+    check_box.role = ax::mojom::Role::kCheckBox;
+    check_box.SetCheckedState(ax::mojom::CheckedState::kTrue);
+    check_box.SetName(CHECKBOX_TEXT);
+    check_box.relative_bounds.bounds = gfx::RectF(20, 50, 200, 30);
+    check_box.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                              button.id);
+    root.child_ids.push_back(check_box.id);
+
+    text_field.role = ax::mojom::Role::kTextField;
+    text_field.AddState(ax::mojom::State::kEditable);
+    text_field.SetValue(ALL_TEXT);
+    text_field.AddIntListAttribute(
+        ax::mojom::IntListAttribute::kCachedLineStarts,
+        std::vector<int32_t>{0, 7});
+    text_field.child_ids.push_back(static_text1.id);
+    text_field.child_ids.push_back(line_break.id);
+    text_field.child_ids.push_back(static_text2.id);
+    root.child_ids.push_back(text_field.id);
+
+    static_text1.role = ax::mojom::Role::kStaticText;
+    static_text1.AddState(ax::mojom::State::kEditable);
+    static_text1.SetName(LINE_1_TEXT);
+    static_text1.child_ids.push_back(inline_box1.id);
+
+    inline_box1.role = ax::mojom::Role::kInlineTextBox;
+    inline_box1.AddState(ax::mojom::State::kEditable);
+    inline_box1.SetName(LINE_1_TEXT);
+    inline_box1.relative_bounds.bounds = gfx::RectF(220, 20, 100, 30);
+    std::vector<int32_t> character_offsets1;
+    // The width of each character is 5px.
+    character_offsets1.push_back(225);  // "L" {220, 20, 5x30}
+    character_offsets1.push_back(230);  // "i" {225, 20, 5x30}
+    character_offsets1.push_back(235);  // "n" {230, 20, 5x30}
+    character_offsets1.push_back(240);  // "e" {235, 20, 5x30}
+    character_offsets1.push_back(245);  // " " {240, 20, 5x30}
+    character_offsets1.push_back(250);  // "1" {245, 20, 5x30}
+    inline_box1.AddIntListAttribute(
+        ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets1);
+    inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                    std::vector<int32_t>{0, 5});
+    inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                    std::vector<int32_t>{4, 6});
+    inline_box1.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                                line_break.id);
+
+    line_break.role = ax::mojom::Role::kLineBreak;
+    line_break.AddState(ax::mojom::State::kEditable);
+    line_break.SetName(LINE_BREAK_TEXT);
+    line_break.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                               inline_box1.id);
+
+    static_text2.role = ax::mojom::Role::kStaticText;
+    static_text2.AddState(ax::mojom::State::kEditable);
+    static_text2.SetName(LINE_2_TEXT);
+    static_text2.child_ids.push_back(inline_box2.id);
+
+    inline_box2.role = ax::mojom::Role::kInlineTextBox;
+    inline_box2.AddState(ax::mojom::State::kEditable);
+    inline_box2.SetName(LINE_2_TEXT);
+    inline_box2.relative_bounds.bounds = gfx::RectF(220, 50, 100, 30);
+    std::vector<int32_t> character_offsets2;
+    // The width of each character is 7 px.
+    character_offsets2.push_back(227);  // "L" {220, 50, 7x30}
+    character_offsets2.push_back(234);  // "i" {227, 50, 7x30}
+    character_offsets2.push_back(241);  // "n" {234, 50, 7x30}
+    character_offsets2.push_back(248);  // "e" {241, 50, 7x30}
+    character_offsets2.push_back(255);  // " " {248, 50, 7x30}
+    character_offsets2.push_back(262);  // "2" {255, 50, 7x30}
+    inline_box2.AddIntListAttribute(
+        ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets2);
+    inline_box2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                    std::vector<int32_t>{0, 5});
+    inline_box2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                    std::vector<int32_t>{4, 6});
+
+    AXTreeUpdate update;
+    update.has_tree_data = true;
+    update.root_id = ROOT_ID;
+    update.nodes = {root,       button,       check_box,
+                    text_field, static_text1, inline_box1,
+                    line_break, static_text2, inline_box2};
+    update.tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    return update;
+  }
+
   ui::AXTreeUpdate BuildAXTreeForMove() {
     ui::AXNodeData group1_data;
     group1_data.id = 2;
@@ -2218,70 +2354,73 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelection) {
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderGetBoundingRectangles) {
-  ui::AXNodeData text_data;
-  text_data.id = 2;
-  text_data.role = ax::mojom::Role::kStaticText;
-  text_data.relative_bounds.bounds = gfx::RectF(100, 150, 200, 200);
-  text_data.SetName("some text");
-
-  ui::AXNodeData more_text_data;
-  more_text_data.id = 3;
-  more_text_data.role = ax::mojom::Role::kStaticText;
-  more_text_data.relative_bounds.bounds = gfx::RectF(200, 250, 100, 100);
-  more_text_data.SetName("more text");
-
-  ui::AXNodeData root_data;
-  root_data.id = 1;
-  root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids = {2, 3};
-
-  ui::AXTreeUpdate update;
-  ui::AXTreeData tree_data;
-  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
-  update.tree_data = tree_data;
-  update.has_tree_data = true;
-  update.root_id = root_data.id;
-  update.nodes.push_back(root_data);
-  update.nodes.push_back(text_data);
-  update.nodes.push_back(more_text_data);
-
+  ui::AXTreeUpdate update = BuildAXTreeForBoundingRectangles();
   Init(update);
-
-  AXNode* root_node = GetRootNode();
   AXNodePosition::SetTreeForTesting(tree_.get());
-  AXTreeManagerMap::GetInstance().AddTreeManager(tree_data.tree_id, this);
-
+  AXTreeManagerMap::GetInstance().AddTreeManager(update.tree_data.tree_id,
+                                                 this);
   ComPtr<ITextRangeProvider> text_range_provider;
-  GetTextRangeProviderFromTextNode(text_range_provider,
-                                   root_node->children()[0]);
-
   base::win::ScopedSafearray rectangles;
+  int count;
+
+  // Expected bounding rects:
+  // <button>Button</button><input type="checkbox">Line 1<br>Line 2
+  // |---------------------||---------------------||----|   |------|
+  GetTextRangeProviderFromTextNode(text_range_provider, GetRootNode());
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetBoundingRectangles(rectangles.Receive()));
-  std::vector<double> expected_values = {100, 150, 200, 200};
+  std::vector<double> expected_values = {20,  20, 200, 30, /* button */
+                                         20,  50, 200, 30, /* check box */
+                                         220, 20, 30,  30, /* line 1 */
+                                         220, 50, 42,  30 /* line 2 */};
   EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
   rectangles.Reset();
 
-  ComPtr<ITextRangeProvider> document_textrange;
-  GetTextRangeProviderFromTextNode(document_textrange, root_node);
-
+  // Move the text range end back by one character.
+  // Expected bounding rects:
+  // <button>Button</button><input type="checkbox">Line 1<br>Line 2
+  // |---------------------||---------------------||----|   |----|
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -1, &count));
+  ASSERT_EQ(-1, count);
   EXPECT_HRESULT_SUCCEEDED(
-      document_textrange->GetBoundingRectangles(rectangles.Receive()));
-  expected_values = {100, 150, 200, 200, 200, 250, 100, 100};
+      text_range_provider->GetBoundingRectangles(rectangles.Receive()));
+  expected_values = {20,  20, 200, 30, /* button */
+                     20,  50, 200, 30, /* check box */
+                     220, 20, 30,  30, /* line 1 */
+                     220, 50, 35,  30 /* line 2 */};
   EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
   rectangles.Reset();
 
-  EXPECT_UIA_MOVE(document_textrange, TextUnit_Character,
-                  /*count*/ 9,
-                  /*expected_text*/ L"m",
-                  /*expected_count*/ 9);
-
+  // Move the text range end back by one line.
+  // Expected bounding rects:
+  // <button>Button</button><input type="checkbox">Line 1<br>Line 2
+  // |---------------------||---------------------||-----|
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Line, /*count*/ -1, &count));
+  ASSERT_EQ(-1, count);
   EXPECT_HRESULT_SUCCEEDED(
-      document_textrange->GetBoundingRectangles(rectangles.Receive()));
-  expected_values = {200, 250, 100, 100};
+      text_range_provider->GetBoundingRectangles(rectangles.Receive()));
+  expected_values = {20,  20, 200, 30, /* button */
+                     20,  50, 200, 30, /* check box */
+                     220, 20, 30,  30 /* line 1 */};
+  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
+  rectangles.Reset();
+
+  // Move the text range end back by one line.
+  // Expected bounding rects:
+  // <button>Button</button><input type="checkbox">Line 1<br>Line 2
+  // |---------------------||---------------------|
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Line, /*count*/ -1, &count));
+  ASSERT_EQ(-1, count);
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetBoundingRectangles(rectangles.Receive()));
+  expected_values = {20, 20, 200, 30, /* button */
+                     20, 50, 200, 30 /* check box */};
   EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
 
-  AXTreeManagerMap::GetInstance().RemoveTreeManager(tree_data.tree_id);
+  AXTreeManagerMap::GetInstance().RemoveTreeManager(update.tree_data.tree_id);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
