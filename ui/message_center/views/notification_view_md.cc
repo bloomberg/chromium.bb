@@ -1221,6 +1221,8 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
 }
 
 void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
+  if (!settings_row_)
+    return;
   bool inline_settings_visible = !settings_row_->visible();
   bool disable_notification =
       settings_row_->visible() && block_all_button_->checked();
