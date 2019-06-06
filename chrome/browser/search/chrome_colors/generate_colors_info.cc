@@ -67,10 +67,6 @@ const char kFileContentTemplate[] =
     "\n"
     "#endif  // CHROME_BROWSER_SEARCH_CHROME_COLORS_GENERATED_COLORS_INFO_H_\n";
 
-// Generated file name.
-const base::FilePath::CharType kColorsInfoFilename[] =
-    FILE_PATH_LITERAL("generated_colors_info.h");
-
 // Returns hex string representation for the |color| in "#FFFFFF" format.
 std::string SkColorToHexString(SkColor color) {
   return base::StringPrintf("\"#%02X%02X%02X\"", SkColorGetR(color),
@@ -119,10 +115,10 @@ void GenerateColorsInfoFile(std::string output_dir) {
       base::ReplaceStringPlaceholders(kFileContentTemplate, subst, NULL);
 
   base::FilePath output_path = base::FilePath::FromUTF8Unsafe(output_dir);
-  if (!base::DirectoryExists(output_path))
-    base::CreateDirectory(output_path);
+  base::FilePath directory = output_path.DirName();
+  if (!base::DirectoryExists(directory))
+    base::CreateDirectory(directory);
 
-  output_path = output_path.Append(kColorsInfoFilename);
   if (base::WriteFile(output_path, output.c_str(),
                       static_cast<uint32_t>(output.size())) <= 0) {
     LOG(ERROR) << "Failed to write output to " << output_path;

@@ -19,6 +19,8 @@ _packaging_dir = "$root_out_dir/$chrome_product_full_name Packaging"
 process_version_rc_template("sign_config") {
   visibility = [ ":copy_signing" ]
 
+  process_only = true
+
   template_file = "signing/config.py.in"
 
   output = "$_packaging_dir/signing/config.py"

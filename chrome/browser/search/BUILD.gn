@@ -54,7 +54,7 @@ executable("generate_colors_info") {
 compiled_action("generate_chrome_colors_info") {
   tool = ":generate_colors_info"
   outputs = [
-    "$target_gen_dir/chrome_colors/",
+    "$target_gen_dir/chrome_colors/generated_color_info.h",
   ]
   args = rebase_path(outputs, root_build_dir)
 }
