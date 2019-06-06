@@ -12,6 +12,10 @@ namespace plugin_vm {
 extern const char kPluginVmImageDownloadedSizeHistogram[];
 extern const char kPluginVmLaunchResultHistogram[];
 extern const char kPluginVmSetupResultHistogram[];
+// Histogram for recording successful setup time.
+// When error occurs and user hits retry button in setup dialog - time between
+// pressing retry button and setup being finished is recorded.
+extern const char kPluginVmSetupTimeHistogram[];
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -40,6 +44,7 @@ enum class PluginVmSetupResult {
 void RecordPluginVmImageDownloadedSizeHistogram(uint64_t bytes_downloaded);
 void RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult launch_result);
 void RecordPluginVmSetupResultHistogram(PluginVmSetupResult setup_result);
+void RecordPluginVmSetupTimeHistogram(base::TimeDelta setup_time);
 
 }  // namespace plugin_vm
 

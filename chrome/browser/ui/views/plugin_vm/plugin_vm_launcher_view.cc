@@ -345,6 +345,8 @@ void PluginVmLauncherView::OnImported() {
 
   plugin_vm::RecordPluginVmSetupResultHistogram(
       plugin_vm::PluginVmSetupResult::kSuccess);
+  plugin_vm::RecordPluginVmSetupTimeHistogram(base::TimeTicks::Now() -
+                                              setup_start_tick_);
 }
 
 base::string16 PluginVmLauncherView::GetBigMessage() const {
@@ -496,6 +498,10 @@ void PluginVmLauncherView::SetBigImage() {
 }
 
 void PluginVmLauncherView::StartPluginVmImageDownload() {
+  // In each case setup starts from this function (when dialog is opened or
+  // retry button is clicked).
+  setup_start_tick_ = base::TimeTicks::Now();
+
   state_ = State::START_DOWNLOADING;
   OnStateUpdated();
 

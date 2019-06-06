@@ -90,6 +90,7 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   views::Label* download_progress_message_label_ = nullptr;
   views::Label* time_left_message_label_ = nullptr;
   views::ImageView* big_image_ = nullptr;
+  base::TimeTicks setup_start_tick_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmLauncherView);
 };
