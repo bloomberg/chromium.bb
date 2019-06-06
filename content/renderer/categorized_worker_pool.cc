@@ -123,7 +123,10 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
 
  private:
   ~CategorizedWorkerPoolSequencedTaskRunner() override {
-    task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
+    {
+      base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
+      task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
+    }
     task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                               &completed_tasks_);
   }
@@ -196,7 +199,11 @@ void CategorizedWorkerPool::Start(int num_threads) {
 }
 
 void CategorizedWorkerPool::Shutdown() {
-  WaitForTasksToFinishRunning(namespace_token_);
+  {
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
+    WaitForTasksToFinishRunning(namespace_token_);
+  }
+
   CollectCompletedTasks(namespace_token_, &completed_tasks_);
   // Shutdown raster threads.
   {
@@ -335,8 +342,6 @@ void CategorizedWorkerPool::WaitForTasksToFinishRunning(
 
   {
     base::AutoLock lock(lock_);
-    // http://crbug.com/902823
-    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
 
     auto* task_namespace = work_queue_.GetNamespaceForToken(token);
 

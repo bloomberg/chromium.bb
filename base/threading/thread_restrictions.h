@@ -115,7 +115,7 @@ class VideoFrameResourceProvider;
 }
 namespace cc {
 class CompletionEvent;
-class SingleThreadTaskGraphRunner;
+class TileTaskManagerImpl;
 }
 namespace chromeos {
 class BlockingMethodCaller;
@@ -453,6 +453,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class base::MessageLoopImpl;
   friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
   friend class base::StackSamplingProfiler;
+  friend class cc::TileTaskManagerImpl;
+  friend class content::CategorizedWorkerPool;
   friend class content::DesktopCaptureDevice;
   friend class content::InProcessUtilityThread;
   friend class content::RTCVideoDecoder;
@@ -474,10 +476,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class ::chromeos::BlockingMethodCaller;  // http://crbug.com/125360
   friend class base::Thread;                      // http://crbug.com/918039
   friend class cc::CompletionEvent;               // http://crbug.com/902653
-  friend class cc::SingleThreadTaskGraphRunner;   // http://crbug.com/902823
   friend class content::
       BrowserGpuChannelHostFactory;                 // http://crbug.com/125248
-  friend class content::CategorizedWorkerPool;      // http://crbug.com/902823
   friend class dbus::Bus;                           // http://crbug.com/125222
   friend class disk_cache::BackendImpl;             // http://crbug.com/74623
   friend class disk_cache::InFlightIO;              // http://crbug.com/74623
