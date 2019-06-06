@@ -8,6 +8,7 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
+#include <locale.h>
 #include <stddef.h>
 
 #include <memory>
@@ -34,6 +35,13 @@ namespace {
 const char kAuraTransientParent[] = "aura-transient-parent";
 
 void CommonInitFromCommandLine(const base::CommandLine& command_line) {
+  // Callers should have already called setlocale(LC_ALL, "") and
+  // setlocale(LC_NUMERIC, "C") by now. Chrome does this in
+  // service_manager::Main.
+  DCHECK_EQ(strcmp(setlocale(LC_NUMERIC, NULL), "C"), 0);
+  // This prevent GTK from calling setlocale(LC_ALL, ""), which potentially
+  // overwrites the LC_NUMERIC locale to something other than "C".
+  gtk_disable_setlocale();
 #if GTK_CHECK_VERSION(3, 90, 0)
   gtk_init();
 #else
