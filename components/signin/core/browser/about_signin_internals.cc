@@ -63,7 +63,8 @@ std::string GetGaiaCookiesStateAsString(const GaiaCookiesState state) {
 }
 
 std::string GetTimeStr(base::Time time) {
-  return base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(time));
+  return base::UTF16ToUTF8(
+      base::TimeFormatWithPattern(time, "yyyy-MM-dd HH:mm:ss X"));
 }
 
 base::ListValue* AddSection(base::ListValue* parent_list,
@@ -159,10 +160,12 @@ std::string SigninStatusFieldToLabel(
 }
 #endif  // !defined (OS_CHROMEOS)
 
+// It's quite unfortunate that |time| is saved in prefs as a string instead of
+// base::Time because any change of the format would create inconsistency.
 void SetPref(PrefService* prefs,
              signin_internals_util::TimedSigninStatusField field,
-             const std::string& time,
-             const std::string& value) {
+             const std::string& value,
+             const std::string& time) {
   std::string value_pref = SigninStatusFieldToString(field) + ".value";
   std::string time_pref = SigninStatusFieldToString(field) + ".time";
   prefs->SetString(value_pref, value);
@@ -171,8 +174,8 @@ void SetPref(PrefService* prefs,
 
 void GetPref(PrefService* prefs,
              signin_internals_util::TimedSigninStatusField field,
-             std::string* time,
-             std::string* value) {
+             std::string* value,
+             std::string* time) {
   std::string value_pref = SigninStatusFieldToString(field) + ".value";
   std::string time_pref = SigninStatusFieldToString(field) + ".time";
   *value = prefs->GetString(value_pref);
@@ -271,8 +274,7 @@ void AboutSigninInternals::NotifyTimedSigninFieldValueChanged(
          field_index < signin_status_.timed_signin_fields.size());
 
   base::Time now = base::Time::NowFromSystemTime();
-  std::string time_as_str =
-      base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(now));
+  std::string time_as_str = GetTimeStr(now);
   TimedSigninStatusValue timed_value(value, time_as_str);
 
   signin_status_.timed_signin_fields[field_index] = timed_value;
@@ -301,7 +303,7 @@ void AboutSigninInternals::RefreshSigninPrefs() {
        i < signin_internals_util::TIMED_FIELDS_END; ++i) {
     std::string time_str;
     std::string value_str;
-    GetPref(pref_service, i, &time_str, &value_str);
+    GetPref(pref_service, i, &value_str, &time_str);
     TimedSigninStatusValue value(value_str, time_str);
     signin_status_
         .timed_signin_fields[i - signin_internals_util::TIMED_FIELDS_BEGIN] =
@@ -684,15 +686,8 @@ AboutSigninInternals::SigninStatus::ToValue(
   if (cookie_requests_delay > base::TimeDelta()) {
     base::Time next_retry_time =
         base::Time::NowFromSystemTime() + cookie_requests_delay;
-
-    std::string next_retry_time_as_str =
-        base::UTF16ToUTF8(
-            base::TimeFormatShortDateAndTime(next_retry_time));
-
-    AddSectionEntry(detailed_info,
-                    "Cookie Manager Next Retry",
-                    next_retry_time_as_str,
-                    "");
+    AddSectionEntry(detailed_info, "Cookie Manager Next Retry",
+                    GetTimeStr(next_retry_time), "");
   }
 
   base::TimeDelta token_requests_delay =
@@ -702,15 +697,8 @@ AboutSigninInternals::SigninStatus::ToValue(
   if (token_requests_delay > base::TimeDelta()) {
     base::Time next_retry_time =
         base::Time::NowFromSystemTime() + token_requests_delay;
-
-    std::string next_retry_time_as_str =
-        base::UTF16ToUTF8(
-            base::TimeFormatShortDateAndTime(next_retry_time));
-
-    AddSectionEntry(detailed_info,
-                  "Token Service Next Retry",
-                  next_retry_time_as_str,
-                  "");
+    AddSectionEntry(detailed_info, "Token Service Next Retry",
+                    GetTimeStr(next_retry_time), "");
   }
 
 #endif  // !defined(OS_CHROMEOS)
