@@ -311,7 +311,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
 
   bool VerifyLayerInList(scoped_refptr<Layer> layer,
                          const LayerList* layer_list) {
-    return base::ContainsValue(*layer_list, layer);
+    return base::Contains(*layer_list, layer);
   }
 
  private:
@@ -9789,7 +9789,7 @@ TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
 
   // The root layer should be in the RenderSurfaceList.
   const auto* rsl = render_surface_list_impl();
-  EXPECT_TRUE(base::ContainsValue(*rsl, GetRenderSurface(root)));
+  EXPECT_TRUE(base::Contains(*rsl, GetRenderSurface(root)));
 }
 
 TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {

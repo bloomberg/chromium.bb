@@ -977,7 +977,7 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
     Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
-        EXPECT_TRUE(base::ContainsKey(
+        EXPECT_TRUE(base::Contains(
             scroll_layer->layer_tree_host()->LayersThatShouldPushProperties(),
             scroll_layer));
         break;
@@ -985,7 +985,7 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
         // Even if this layer doesn't need push properties, it should
         // still pick up scrolls that happen on the active layer during
         // commit.
-        EXPECT_FALSE(base::ContainsKey(
+        EXPECT_FALSE(base::Contains(
             scroll_layer->layer_tree_host()->LayersThatShouldPushProperties(),
             scroll_layer));
         break;

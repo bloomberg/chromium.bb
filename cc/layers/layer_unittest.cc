@@ -59,14 +59,14 @@ using ::testing::_;
   code_to_test;                                                                \
   root->layer_tree_host()->BuildPropertyTreesForTesting();                     \
   EXPECT_TRUE(root->subtree_property_changed());                               \
-  EXPECT_TRUE(base::ContainsKey(                                               \
+  EXPECT_TRUE(base::Contains(                                                  \
       root->layer_tree_host()->LayersThatShouldPushProperties(), root.get())); \
   EXPECT_TRUE(child->subtree_property_changed());                              \
-  EXPECT_TRUE(base::ContainsKey(                                               \
+  EXPECT_TRUE(base::Contains(                                                  \
       child->layer_tree_host()->LayersThatShouldPushProperties(),              \
       child.get()));                                                           \
   EXPECT_TRUE(grand_child->subtree_property_changed());                        \
-  EXPECT_TRUE(base::ContainsKey(                                               \
+  EXPECT_TRUE(base::Contains(                                                  \
       grand_child->layer_tree_host()->LayersThatShouldPushProperties(),        \
       grand_child.get()));
 
@@ -74,14 +74,14 @@ using ::testing::_;
   code_to_test;                                                                \
   root->layer_tree_host()->BuildPropertyTreesForTesting();                     \
   EXPECT_FALSE(root->subtree_property_changed());                              \
-  EXPECT_FALSE(base::ContainsKey(                                              \
+  EXPECT_FALSE(base::Contains(                                                 \
       root->layer_tree_host()->LayersThatShouldPushProperties(), root.get())); \
   EXPECT_FALSE(child->subtree_property_changed());                             \
-  EXPECT_FALSE(base::ContainsKey(                                              \
+  EXPECT_FALSE(base::Contains(                                                 \
       child->layer_tree_host()->LayersThatShouldPushProperties(),              \
       child.get()));                                                           \
   EXPECT_FALSE(grand_child->subtree_property_changed());                       \
-  EXPECT_FALSE(base::ContainsKey(                                              \
+  EXPECT_FALSE(base::Contains(                                                 \
       grand_child->layer_tree_host()->LayersThatShouldPushProperties(),        \
       grand_child.get()));
 
@@ -586,7 +586,7 @@ TEST_F(LayerTest, ReorderChildren) {
   EXPECT_EQ(child2, parent->children()[2]);
 
   for (const auto& child : parent->children()) {
-    EXPECT_FALSE(base::ContainsKey(
+    EXPECT_FALSE(base::Contains(
         layer_tree_host_->LayersThatShouldPushProperties(), child.get()));
     EXPECT_TRUE(child->subtree_property_changed());
   }
@@ -758,8 +758,8 @@ TEST_F(LayerTest, DeleteRemovedScrollParent) {
   SimulateCommitForLayer(child1.get());
 
   EXPECT_SET_NEEDS_COMMIT(1, child1->SetScrollParent(nullptr));
-  EXPECT_TRUE(base::ContainsKey(
-      layer_tree_host_->LayersThatShouldPushProperties(), child1.get()));
+  EXPECT_TRUE(base::Contains(layer_tree_host_->LayersThatShouldPushProperties(),
+                             child1.get()));
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(nullptr));
 }

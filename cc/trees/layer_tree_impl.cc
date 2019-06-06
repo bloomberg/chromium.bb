@@ -1482,7 +1482,7 @@ void LayerTreeImpl::AddLayerShouldPushProperties(LayerImpl* layer) {
   DCHECK(!IsActiveTree()) << "The active tree does not push layer properties";
   // TODO(crbug.com/303943): PictureLayerImpls always push properties so should
   // not go into this set or we'd push them twice.
-  DCHECK(!base::ContainsValue(picture_layers_, layer));
+  DCHECK(!base::Contains(picture_layers_, layer));
   layers_that_should_push_properties_.insert(layer);
 }
 
@@ -1503,7 +1503,7 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
 
 // These manage ownership of the LayerImpl.
 void LayerTreeImpl::AddLayer(std::unique_ptr<LayerImpl> layer) {
-  DCHECK(!base::ContainsValue(*layers_, layer));
+  DCHECK(!base::Contains(*layers_, layer));
   DCHECK(layer);
   layers_->push_back(std::move(layer));
   set_needs_update_draw_properties();
@@ -1862,7 +1862,7 @@ void LayerTreeImpl::ProcessUIResourceRequestQueue() {
 }
 
 void LayerTreeImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
-  DCHECK(!base::ContainsValue(picture_layers_, layer));
+  DCHECK(!base::Contains(picture_layers_, layer));
   picture_layers_.push_back(layer);
 }
 

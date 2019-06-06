@@ -41,14 +41,14 @@ static bool LayerHasValidPropertyTreeIndices(LayerImpl* layer) {
 }
 
 static bool LayerWillPushProperties(LayerTreeHost* host, Layer* layer) {
-  return base::ContainsKey(host->LayersThatShouldPushProperties(), layer);
+  return base::Contains(host->LayersThatShouldPushProperties(), layer);
 }
 
 static bool LayerWillPushProperties(LayerTreeImpl* tree, LayerImpl* layer) {
-  return base::ContainsKey(tree->LayersThatShouldPushProperties(), layer) ||
+  return base::Contains(tree->LayersThatShouldPushProperties(), layer) ||
          // TODO(crbug.com/303943): Stop always pushing PictureLayerImpl
          // properties.
-         base::ContainsValue(tree->picture_layers(), layer);
+         base::Contains(tree->picture_layers(), layer);
 }
 #endif
 

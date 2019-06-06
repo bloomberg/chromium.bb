@@ -686,7 +686,7 @@ bool AnimationHost::IsImplOnlyScrollAnimating() const {
 }
 
 void AnimationHost::AddToTicking(scoped_refptr<Animation> animation) {
-  DCHECK(!base::ContainsValue(ticking_animations_, animation));
+  DCHECK(!base::Contains(ticking_animations_, animation));
   ticking_animations_.push_back(animation);
 }
 

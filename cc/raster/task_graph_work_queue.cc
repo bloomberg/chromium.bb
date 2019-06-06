@@ -215,7 +215,7 @@ void TaskGraphWorkQueue::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
                     }))
       continue;
 
-    DCHECK(!base::ContainsValue(task_namespace.completed_tasks, node.task));
+    DCHECK(!base::Contains(task_namespace.completed_tasks, node.task));
     node.task->state().DidCancel();
     task_namespace.completed_tasks.push_back(node.task);
   }
@@ -326,7 +326,7 @@ void TaskGraphWorkQueue::CompleteTask(PrioritizedTask completed_task) {
         TaskNamespace::Vector& ready_to_run_namespaces =
             ready_to_run_namespaces_[dependent_node.category];
 
-        DCHECK(!base::ContainsValue(ready_to_run_namespaces, task_namespace));
+        DCHECK(!base::Contains(ready_to_run_namespaces, task_namespace));
         ready_to_run_namespaces.push_back(task_namespace);
       }
       ready_to_run_namespaces_has_heap_properties = false;
