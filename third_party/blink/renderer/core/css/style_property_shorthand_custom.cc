@@ -44,9 +44,10 @@ const StylePropertyShorthand& animationShorthandForParsing() {
       &GetCSSPropertyAnimationFillMode(),
       &GetCSSPropertyAnimationPlayState(),
       &GetCSSPropertyAnimationName()};
-  static StylePropertyShorthand webkit_animation_longhands_for_parsing(
-      CSSPropertyID::kAnimation, kAnimationPropertiesForParsing,
-      base::size(kAnimationPropertiesForParsing));
+  static constexpr StylePropertyShorthand
+      webkit_animation_longhands_for_parsing(
+          CSSPropertyID::kAnimation, kAnimationPropertiesForParsing,
+          base::size(kAnimationPropertiesForParsing));
   return webkit_animation_longhands_for_parsing;
 }
 
