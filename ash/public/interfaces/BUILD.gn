@@ -29,7 +29,6 @@ mojom("interfaces_internal") {
     "keyboard_config.mojom",
     "keyboard_controller.mojom",
     "keyboard_controller_types.mojom",
-    "locale.mojom",
     "login_screen.mojom",
     "night_light_controller.mojom",
     "shelf_integration_test_api.mojom",

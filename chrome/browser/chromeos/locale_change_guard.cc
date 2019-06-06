@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
@@ -26,8 +25,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::UserMetricsAction;
@@ -65,18 +62,6 @@ void LocaleChangeGuard::OnLogin() {
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                  content::NotificationService::AllBrowserContextsAndSources());
-}
-
-void LocaleChangeGuard::ConnectToLocaleUpdateController() {
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  service_manager::Connector* connector =
-      connection ? connection->GetConnector() : nullptr;
-  // Unit tests may not have a connector.
-  if (!connector)
-    return;
-
-  connector->BindInterface(ash::mojom::kServiceName, &notification_controller_);
 }
 
 void LocaleChangeGuard::RevertLocaleChange() {
@@ -191,20 +176,17 @@ void LocaleChangeGuard::Check() {
     PrepareChangingLocale(from_locale, to_locale);
   }
 
-  if (!notification_controller_)
-    ConnectToLocaleUpdateController();
-
-  notification_controller_->OnLocaleChanged(
+  ash::LocaleUpdateController::Get()->OnLocaleChanged(
       cur_locale, from_locale_, to_locale_,
       base::Bind(&LocaleChangeGuard::OnResult, AsWeakPtr()));
 }
 
-void LocaleChangeGuard::OnResult(ash::mojom::LocaleNotificationResult result) {
+void LocaleChangeGuard::OnResult(ash::LocaleNotificationResult result) {
   switch (result) {
-    case ash::mojom::LocaleNotificationResult::ACCEPT:
+    case ash::LocaleNotificationResult::kAccept:
       AcceptLocaleChange();
       break;
-    case ash::mojom::LocaleNotificationResult::REVERT:
+    case ash::LocaleNotificationResult::kRevert:
       RevertLocaleChange();
       break;
   }

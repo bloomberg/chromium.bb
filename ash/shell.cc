@@ -95,7 +95,7 @@
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
-#include "ash/system/locale/locale_update_controller.h"
+#include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/model/virtual_keyboard_model.h"
@@ -552,7 +552,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),
       keyboard_brightness_control_delegate_(
           std::make_unique<KeyboardBrightnessController>()),
-      locale_update_controller_(std::make_unique<LocaleUpdateController>()),
+      locale_update_controller_(std::make_unique<LocaleUpdateControllerImpl>()),
       media_controller_(std::make_unique<MediaControllerImpl>(connector)),
       session_controller_(std::make_unique<SessionControllerImpl>()),
       shell_delegate_(std::move(shell_delegate)),

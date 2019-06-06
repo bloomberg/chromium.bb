@@ -28,7 +28,7 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/locale/locale_update_controller.h"
+#include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/fullscreen_window_finder.h"
