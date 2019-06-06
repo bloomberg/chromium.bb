@@ -118,6 +118,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/installation",
     "//third_party/blink/renderer/modules/installedapp",
     "//third_party/blink/renderer/modules/keyboard",
+    "//third_party/blink/renderer/modules/launch",
     "//third_party/blink/renderer/modules/locks",
     "//third_party/blink/renderer/modules/manifest",
     "//third_party/blink/renderer/modules/media_capabilities",

@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -18,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/badging/badge_manager.h"
@@ -80,6 +82,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/geometry/rect.h"
@@ -915,6 +919,69 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, InScopeHttpUrlsDisplayAppTitle) {
   // title should be used instead.
   EXPECT_EQ(base::ASCIIToUTF16("A Hosted App"),
             app_browser->GetWindowTitleForCurrentTab(false));
+}
+
+class HostedAppFileHandlingTest : public HostedAppTest {
+ public:
+  HostedAppFileHandlingTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {blink::features::kNativeFileSystemAPI,
+         blink::features::kFileHandlingAPI},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest, PWAsCanViewLaunchParams) {
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL url = GetSecureAppURL();
+
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = url;
+  web_app_info.scope = url.GetWithoutFilename();
+  web_app_info.title = base::ASCIIToUTF16("A Hosted App");
+  web_app_info.file_handler = blink::Manifest::FileHandler();
+  web_app_info.file_handler->action =
+      GURL(https_server()->GetURL("app.com", "/ssl/blank_page.html"));
+
+  {
+    std::vector<blink::Manifest::FileFilter> filters;
+    blink::Manifest::FileFilter text = {
+        base::ASCIIToUTF16("text"),
+        {base::ASCIIToUTF16(".txt"), base::ASCIIToUTF16("text/*")}};
+    filters.push_back(text);
+    web_app_info.file_handler->files = std::move(filters);
+  }
+
+  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+
+  AppLaunchParams params(browser()->profile(), app,
+                         extensions::LaunchContainer::LAUNCH_CONTAINER_WINDOW,
+                         WindowOpenDisposition::NEW_WINDOW,
+                         extensions::AppLaunchSource::SOURCE_FILE_HANDLER);
+
+  content::TestNavigationObserver navigation_observer(
+      web_app_info.file_handler->action);
+  navigation_observer.StartWatchingNewWebContents();
+
+  content::WebContents* web_contents =
+      OpenApplicationWindow(params, web_app_info.file_handler->action);
+  navigation_observer.Wait();
+
+  base::Value expected(base::Value::Type::DICTIONARY);
+  expected.SetStringKey("cause", "default");
+  expected.SetIntKey("length", 0);
+
+  EXPECT_EQ(expected,
+            content::EvalJsWithManualReply(
+                web_contents,
+                "getLaunchParams().then(params => {"
+                "domAutomationController.send({ cause: params.cause, length: "
+                "params.files.length });"
+                "});"));
 }
 
 #if !defined(OS_ANDROID)
@@ -2907,6 +2974,11 @@ INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppSitePerProcessTest,
     ::testing::Values(AppType::HOSTED_APP));
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    HostedAppFileHandlingTest,
+    ::testing::Values(AppType::BOOKMARK_APP));
 
 #if !defined(OS_CHROMEOS)
 INSTANTIATE_TEST_SUITE_P(

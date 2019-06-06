@@ -600,6 +600,10 @@
       status: "experimental"
     },
     {
+      name: "FileHandling",
+      depends_on: ["NativeFileSystem"]
+    },
+    {
       name: "FileSystem",
       status: "stable",
     },
