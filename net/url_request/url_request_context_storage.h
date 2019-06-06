@@ -19,6 +19,7 @@ class CertVerifier;
 class CookieStore;
 class CTPolicyEnforcer;
 class CTVerifier;
+class FtpAuthCache;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpNetworkSession;
@@ -82,6 +83,9 @@ class NET_EXPORT URLRequestContextStorage {
       std::unique_ptr<URLRequestThrottlerManager> throttler_manager);
   void set_http_user_agent_settings(
       std::unique_ptr<HttpUserAgentSettings> http_user_agent_settings);
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  void set_ftp_auth_cache(std::unique_ptr<FtpAuthCache> ftp_auth_cache);
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 #if BUILDFLAG(ENABLE_REPORTING)
   void set_reporting_service(
@@ -117,6 +121,9 @@ class NET_EXPORT URLRequestContextStorage {
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer_;
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  std::unique_ptr<FtpAuthCache> ftp_auth_cache_;
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
   // Not actually pointed at by the URLRequestContext, but may be used (but not
   // owned) by the HttpTransactionFactory.

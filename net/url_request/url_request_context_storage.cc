@@ -24,6 +24,10 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_throttler_manager.h"
 
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+#include "net/ftp/ftp_auth_cache.h"
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_service.h"
@@ -143,6 +147,14 @@ void URLRequestContextStorage::set_http_user_agent_settings(
   context_->set_http_user_agent_settings(http_user_agent_settings.get());
   http_user_agent_settings_ = std::move(http_user_agent_settings);
 }
+
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+void URLRequestContextStorage::set_ftp_auth_cache(
+    std::unique_ptr<FtpAuthCache> ftp_auth_cache) {
+  context_->set_ftp_auth_cache(ftp_auth_cache.get());
+  ftp_auth_cache_ = std::move(ftp_auth_cache);
+}
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 #if BUILDFLAG(ENABLE_REPORTING)
 void URLRequestContextStorage::set_reporting_service(

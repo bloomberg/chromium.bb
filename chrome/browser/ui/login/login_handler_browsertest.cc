@@ -1702,4 +1702,43 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   ASSERT_EQ(1u, observer.handlers().size());
 }
 
+// Tests that FTP auth prompts do not appear when credentials have been
+// previously entered and cached.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, FtpAuthWithCache) {
+  net::SpawnedTestServer ftp_server(
+      net::SpawnedTestServer::TYPE_FTP,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data/ftp")));
+  ftp_server.set_no_anonymous_ftp_user(true);
+  ASSERT_TRUE(ftp_server.Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  // Navigate to an FTP server and wait for the auth prompt to appear.
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  ui_test_utils::NavigateToURL(browser(), ftp_server.GetURL(""));
+  auth_needed_waiter.Wait();
+  ASSERT_EQ(1u, observer.handlers().size());
+
+  // Supply credentials and wait for the page to successfully load.
+  LoginHandler* handler = *observer.handlers().begin();
+  WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
+  handler->SetAuth(base::ASCIIToUTF16("chrome"), base::ASCIIToUTF16("chrome"));
+  auth_supplied_waiter.Wait();
+  const base::string16 kExpectedTitle = base::ASCIIToUTF16("Index of /");
+  content::TitleWatcher title_watcher(contents, kExpectedTitle);
+  EXPECT_EQ(kExpectedTitle, title_watcher.WaitAndGetTitle());
+
+  // Navigate away and then back to the FTP server. There should be no auth
+  // prompt because the credentials are cached.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  content::TitleWatcher revisit_title_watcher(contents, kExpectedTitle);
+  ui_test_utils::NavigateToURL(browser(), ftp_server.GetURL(""));
+  EXPECT_EQ(kExpectedTitle, revisit_title_watcher.WaitAndGetTitle());
+  EXPECT_EQ(0u, observer.handlers().size());
+}
+
 }  // namespace

@@ -180,6 +180,9 @@ void URLRequestContext::CopyFrom(const URLRequestContext* other) {
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   set_enable_brotli(other->enable_brotli_);
   set_check_cleartext_permitted(other->check_cleartext_permitted_);
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  set_ftp_auth_cache(other->ftp_auth_cache_);
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 }
 
 }  // namespace net

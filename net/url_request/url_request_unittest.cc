@@ -143,6 +143,7 @@
 #endif
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT) && !defined(OS_ANDROID)
+#include "net/ftp/ftp_auth_cache.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/url_request/ftp_protocol_handler.h"
 #endif
@@ -12353,7 +12354,7 @@ class URLRequestTestFTP : public URLRequestTest {
   void SetUpFactory() override {
     // Add FTP support to the default URLRequestContext.
     job_factory_impl_->SetProtocolHandler(
-        "ftp", FtpProtocolHandler::Create(&host_resolver_));
+        "ftp", FtpProtocolHandler::Create(&host_resolver_, &ftp_auth_cache_));
   }
 
   std::string GetTestFileContents() {
@@ -12368,6 +12369,7 @@ class URLRequestTestFTP : public URLRequestTest {
 
  protected:
   MockHostResolver host_resolver_;
+  FtpAuthCache ftp_auth_cache_;
 
   SpawnedTestServer ftp_test_server_;
 };

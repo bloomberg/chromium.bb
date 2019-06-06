@@ -11,6 +11,7 @@
 #include "net/base/request_priority.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/fuzzed_host_resolver_util.h"
+#include "net/ftp/ftp_auth_cache.h"
 #include "net/ftp/ftp_network_transaction.h"
 #include "net/ftp/ftp_transaction_factory.h"
 #include "net/socket/client_socket_factory.h"
@@ -66,10 +67,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   url_request_context.set_host_resolver(host_resolver.get());
 
   net::URLRequestJobFactoryImpl job_factory;
+  net::FtpAuthCache auth_cache;
   job_factory.SetProtocolHandler(
       "ftp", net::FtpProtocolHandler::CreateForTesting(
                  std::make_unique<FuzzedFtpTransactionFactory>(
-                     host_resolver.get(), &fuzzed_socket_factory)));
+                     host_resolver.get(), &fuzzed_socket_factory),
+                 &auth_cache));
   url_request_context.set_job_factory(&job_factory);
 
   url_request_context.Init();
