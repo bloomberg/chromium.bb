@@ -8,11 +8,17 @@ namespace chromeos {
 namespace supervision {
 
 // Default URL prefix for the Supervision Onboarding pages.
-const char kSupervisionServerUrlPrefix[] =
-    "https://families.google.com/kids/deviceonboarding";
+const char kSupervisionServerUrlPrefix[] = "https://families.google.com/";
 
 // Relative URL for the onboarding start page.
 const char kOnboardingStartPageRelativeUrl[] = "/kids/deviceonboarding/start";
+
+// Relative URL for the onboarding details page.
+const char kOnboardingDetailsPageRelativeUrl[] =
+    "/kids/deviceonboarding/details";
+
+// Relative URL for the onboarding "All set" page.
+const char kOnboardingAllSetPageRelativeUrl[] = "/kids/deviceonboarding/allset";
 
 // Name of the custom HTTP header returned by the Supervision server containing
 // a list of experiments that this version of the onboarding supports.

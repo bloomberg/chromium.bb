@@ -22,21 +22,18 @@ struct OnboardingPage {
   // Url for the page that needs to be loaded by the webview host.
   url.mojom.Url url;
 
-  // Only requests to URLs that pass this pattern should be authenticated
-  // or have their custom headers extracted.
-  // Documentation on how to write these patterns can be found in:
-  // https://developer.chrome.com/extensions/match_patterns
-  string url_filter_pattern;
+  // Only requests to URLs that have this prefix should be allowed.
+  string allowed_urls_prefix;
 
   // Access token used to authenticate the flow page requests. Note that this
-  // should only be used in requests to URLs that match |url_filter_pattern|.
+  // should only be used in requests to URLs that match |allowed_urls_prefix|.
   string access_token;
 
   // Some flow pages are expected to return a custom header in their HTTP
   // responses. If this field is set, we will extract the given header from
   // responses and return its value when the page fully loads.
   // Note that this should only be used in requests to URLs that match
-  // |url_filter_pattern|.
+  // |allowed_urls_prefix|.
   string? custom_header_name;
 };
 

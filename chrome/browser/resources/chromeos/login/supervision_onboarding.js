@@ -29,12 +29,24 @@
        */
       this.pendingLoadPageCallback_ = null;
 
-      /** @private {?chromeos.supervision.mojom.OnboardingLoadPageResult} */
-      this.pendingLoadPageResult_ = null;
+      /** @private {!chromeos.supervision.mojom.OnboardingLoadPageResult} */
+      this.pendingLoadPageResult_ = {netError: 0};
+
+
+      // We listen to all requests made to fetch the main frame, but note that
+      // we end up blocking requests to URLs that don't start with the expected
+      // server prefix (see onBeforeSendHeaders_).
+      // This is done because we will only know the prefix when we start to
+      // load the page, but we add listeners at mojo setup time.
+      const requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
 
       this.webviewListener_ = this.webviewFinishedLoading_.bind(this);
-      this.webviewHeaderListener_ = this.onHeadersReceived_.bind(this);
-      this.webviewAuthListener_ = this.authorizeRequest_.bind(this);
+      this.webview_.request.onBeforeSendHeaders.addListener(
+          this.onBeforeSendHeaders_.bind(this), requestFilter,
+          ['blocking', 'requestHeaders']);
+      this.webview_.request.onHeadersReceived.addListener(
+          this.onHeadersReceived_.bind(this), requestFilter,
+          ['responseHeaders', 'extraHeaders']);
     }
 
     /**
@@ -55,15 +67,6 @@
       this.pendingLoadPageCallback_ = null;
       this.pendingLoadPageResult_ = {netError: 0};
 
-      this.webview_.request.onBeforeSendHeaders.addListener(
-          this.webviewAuthListener_,
-          {urls: [page.urlFilterPattern], types: ['main_frame']},
-          ['blocking', 'requestHeaders']);
-      this.webview_.request.onHeadersReceived.addListener(
-          this.webviewHeaderListener_,
-          {urls: [page.urlFilterPattern], types: ['main_frame']},
-          ['responseHeaders', 'extraHeaders']);
-
       this.webview_.addEventListener('loadstop', this.webviewListener_);
       this.webview_.addEventListener('loadabort', this.webviewListener_);
       this.webview_.src = page.url.url;
@@ -74,8 +77,29 @@
     }
 
     /**
-     * @param {!Object<{responseHeaders:
-     *     !Array<{name: string, value:string}>}>} responseEvent
+     * Injects headers into the passed request.
+     *
+     * @param {!Object} requestEvent
+     * @return {!BlockingResponse} Modified headers.
+     * @private
+     */
+    onBeforeSendHeaders_(requestEvent) {
+      if (!this.page_ ||
+          !requestEvent.url.startsWith(this.page_.allowedUrlsPrefix)) {
+        return {cancel: true};
+      }
+
+      requestEvent.requestHeaders.push(
+          {name: 'Authorization', value: 'Bearer ' + this.page_.accessToken});
+
+      return /** @type {!BlockingResponse} */ ({
+        requestHeaders: requestEvent.requestHeaders,
+      });
+    }
+
+    /**
+     * @param {!Object<{responseHeaders: !chrome.webRequest.HttpHeaders}>}
+     *     responseEvent
      * @return {!BlockingResponse}
      * @private
      */
@@ -95,30 +119,11 @@
     }
 
     /**
-     * Injects headers into the passed request.
-     *
-     * @param {!Object} requestEvent
-     * @return {!BlockingResponse} Modified headers.
+     * Called when the webview sends a loadstop or loadabort event.
+     * @param {!Event} e
      * @private
      */
-    authorizeRequest_(requestEvent) {
-      requestEvent.requestHeaders.push(
-          {name: 'Authorization', value: 'Bearer ' + this.page_.accessToken});
-
-      return /** @type {!BlockingResponse} */ ({
-        requestHeaders: requestEvent.requestHeaders,
-      });
-    }
-
-    /**
-     * Called when the webview sends a loadstop or loadabort event.
-     * @private {!Event} e
-     */
     webviewFinishedLoading_(e) {
-      this.webview_.request.onBeforeSendHeaders.removeListener(
-          this.webviewAuthListener_);
-      this.webview_.request.onHeadersReceived.removeListener(
-          this.webviewHeaderListener_);
       this.webview_.removeEventListener('loadstop', this.webviewListener_);
       this.webview_.removeEventListener('loadabort', this.webviewListener_);
 
