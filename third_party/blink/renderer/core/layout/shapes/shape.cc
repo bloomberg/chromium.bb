@@ -310,13 +310,10 @@ static std::unique_ptr<RasterShapeIntervals> ExtractIntervalsFromImageData(
 }
 
 static bool IsValidRasterShapeSize(const IntSize& size) {
-  static size_t max_image_size_bytes = 0;
-  if (!max_image_size_bytes) {
-    size_t size32_max_bytes =
-        0xFFFFFFFF / 4;  // Some platforms don't limit MaxDecodedImageBytes.
-    max_image_size_bytes =
-        std::min(size32_max_bytes, Platform::Current()->MaxDecodedImageBytes());
-  }
+  // Some platforms don't limit MaxDecodedImageBytes.
+  constexpr size_t size32_max_bytes = 0xFFFFFFFF / 4;
+  static const size_t max_image_size_bytes =
+      std::min(size32_max_bytes, Platform::Current()->MaxDecodedImageBytes());
   return size.Area() * 4 < max_image_size_bytes;
 }
 
