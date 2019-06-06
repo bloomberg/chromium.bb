@@ -192,16 +192,14 @@ static INLINE int is_full_sb(AV1_COMMON *const cm, int mi_row, int mi_col,
 static INLINE int use_auto_max_partition(AV1_COMP *const cpi,
                                          BLOCK_SIZE sb_size, int mi_row,
                                          int mi_col) {
-  assert(IMPLIES(cpi->twopass.gf_group.size > 0,
-                 cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
+  assert(IMPLIES(cpi->gf_group.size > 0,
+                 cpi->gf_group.index < cpi->gf_group.size));
   AV1_COMMON *const cm = &cpi->common;
   return !frame_is_intra_only(cm) &&
          cpi->sf.auto_max_partition_based_on_simple_motion != NOT_IN_USE &&
          sb_size == BLOCK_128X128 && is_full_sb(cm, mi_row, mi_col, sb_size) &&
-         cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index] !=
-             OVERLAY_UPDATE &&
-         cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index] !=
-             INTNL_OVERLAY_UPDATE;
+         cpi->gf_group.update_type[cpi->gf_group.index] != OVERLAY_UPDATE &&
+         cpi->gf_group.update_type[cpi->gf_group.index] != INTNL_OVERLAY_UPDATE;
 }
 
 #endif  // AOM_AV1_ENCODER_PARTITION_STRATEGY_H_

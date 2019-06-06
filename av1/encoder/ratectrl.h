@@ -142,6 +142,7 @@ typedef struct {
   float_t arf_boost_factor;
   // Q index used for ALT frame
   int arf_q;
+  int active_worst_quality;
 } RATE_CONTROL;
 
 struct AV1_COMP;

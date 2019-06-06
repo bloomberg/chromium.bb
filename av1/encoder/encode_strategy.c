@@ -179,7 +179,7 @@ static INLINE void update_twopass_gf_group_index(AV1_COMP *cpi) {
   // originally encoded.
   if (!cpi->common.show_existing_frame || cpi->rc.is_src_frame_alt_ref ||
       cpi->common.current_frame.frame_type == KEY_FRAME) {
-    ++cpi->twopass.gf_group.index;
+    ++cpi->gf_group.index;
   }
 }
 #endif
@@ -194,7 +194,7 @@ static void update_rc_counts(AV1_COMP *cpi) {
 
 // Get update type of the current frame.
 static INLINE FRAME_UPDATE_TYPE get_frame_update_type(const AV1_COMP *cpi) {
-  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+  const GF_GROUP *const gf_group = &cpi->gf_group;
   if (gf_group->size == 0) {
     // Special case 1: happens at the first frame of a video.
     return KF_UPDATE;
@@ -227,7 +227,7 @@ static INLINE int get_arf_update_idx(const GF_GROUP *const gf_group) {
 // av1_get_second_pass_params().
 static void check_show_existing_frame(AV1_COMP *const cpi,
                                       EncodeFrameParams *const frame_params) {
-  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+  const GF_GROUP *const gf_group = &cpi->gf_group;
   assert(gf_group->index <= gf_group->size);
   AV1_COMMON *const cm = &cpi->common;
   if (cm->show_existing_frame == 1) {
@@ -500,7 +500,7 @@ static int get_arf_src_index(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
   int arf_src_index = 0;
   if (cpi->oxcf.pass == 2) {
-    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+    const GF_GROUP *const gf_group = &cpi->gf_group;
     if (get_frame_update_type(cpi) == ARF_UPDATE) {
       assert(is_altref_enabled(cpi));
       arf_src_index = gf_group->arf_src_offset[gf_group->index];
@@ -516,7 +516,7 @@ static int get_arf_src_index(AV1_COMP *cpi) {
 static int get_internal_arf_src_index(AV1_COMP *cpi) {
   int internal_arf_src_index = 0;
   if (cpi->oxcf.pass == 2) {
-    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+    const GF_GROUP *const gf_group = &cpi->gf_group;
     if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
       assert(is_altref_enabled(cpi) && cpi->internal_altref_allowed);
       internal_arf_src_index = gf_group->arf_src_offset[gf_group->index];
@@ -551,7 +551,7 @@ static struct lookahead_entry *setup_arf_or_arf2(
     // When arf_src_index == rc->frames_to_key, it indicates a fwd_kf
     if (!arf2 && arf_src_index == rc->frames_to_key) {
       // Skip temporal filtering and mark as intra_only if we have a fwd_kf
-      const int which_arf = get_arf_update_idx(&cpi->twopass.gf_group);
+      const int which_arf = get_arf_update_idx(&cpi->gf_group);
       cpi->is_arf_filter_off[which_arf] = 1;
       cpi->no_show_kf = 1;
     } else {
@@ -1146,8 +1146,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
     frame_params.primary_ref_frame =
         choose_primary_ref_frame(cpi, &frame_params);
-    frame_params.order_offset =
-        get_order_offset(&cpi->twopass.gf_group, &frame_params);
+    frame_params.order_offset = get_order_offset(&cpi->gf_group, &frame_params);
 
     frame_params.refresh_frame_flags =
         get_refresh_frame_flags(cpi, &frame_params, frame_update_type);
@@ -1178,7 +1177,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     cm->min_qmlevel = cpi->oxcf.qm_minlevel;
     cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
     if (oxcf->pass == 2) {
-      if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
+      if (cpi->gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
         av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
         av1_set_frame_size(cpi, cm->width, cm->height);
         av1_tpl_setup_stats(cpi, &frame_input, 0);

@@ -3345,10 +3345,9 @@ BEGIN_PARTITION_SEARCH:
 #if !CONFIG_REALTIME_ONLY
 static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
                             int mi_row, int mi_col, int orig_rdmult) {
-  assert(IMPLIES(cpi->twopass.gf_group.size > 0,
-                 cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
-  const int tpl_idx =
-      cpi->twopass.gf_group.frame_disp_idx[cpi->twopass.gf_group.index];
+  assert(IMPLIES(cpi->gf_group.size > 0,
+                 cpi->gf_group.index < cpi->gf_group.size));
+  const int tpl_idx = cpi->gf_group.frame_disp_idx[cpi->gf_group.index];
   TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
@@ -3362,7 +3361,7 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
 
   if (!is_frame_tpl_eligible(cpi)) return orig_rdmult;
 
-  if (cpi->twopass.gf_group.index >= MAX_LAG_BUFFERS) return orig_rdmult;
+  if (cpi->gf_group.index >= MAX_LAG_BUFFERS) return orig_rdmult;
 
   int64_t mc_count = 0, mc_saved = 0;
   int mi_count = 0;
@@ -3420,10 +3419,9 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
                                       int analysis_type, int mi_row,
                                       int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
-  assert(IMPLIES(cpi->twopass.gf_group.size > 0,
-                 cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
-  const int tpl_idx =
-      cpi->twopass.gf_group.frame_disp_idx[cpi->twopass.gf_group.index];
+  assert(IMPLIES(cpi->gf_group.size > 0,
+                 cpi->gf_group.index < cpi->gf_group.size));
+  const int tpl_idx = cpi->gf_group.frame_disp_idx[cpi->gf_group.index];
   TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
@@ -3442,7 +3440,7 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   if (!is_frame_tpl_eligible(cpi)) return cm->base_qindex;
 
-  if (cpi->twopass.gf_group.index >= MAX_LAG_BUFFERS) return cm->base_qindex;
+  if (cpi->gf_group.index >= MAX_LAG_BUFFERS) return cm->base_qindex;
 
   int64_t mc_count = 0, mc_saved = 0;
   int mi_count = 0;
@@ -3480,7 +3478,7 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   }
   offset = (7 * av1_get_deltaq_offset(cpi, cm->base_qindex, beta)) / 8;
   // printf("[%d/%d]: beta %g offset %d\n", pyr_lev_from_top,
-  //        cpi->twopass.gf_group.pyramid_height, beta, offset);
+  //        cpi->gf_group.pyramid_height, beta, offset);
 
   aom_clear_system_state();
 
@@ -3762,12 +3760,12 @@ static void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
     return;
   }
 
-  assert(IMPLIES(cpi->twopass.gf_group.size > 0,
-                 cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
-  const int gf_group_index = cpi->twopass.gf_group.index;
+  assert(IMPLIES(cpi->gf_group.size > 0,
+                 cpi->gf_group.index < cpi->gf_group.size));
+  const int gf_group_index = cpi->gf_group.index;
   if (cpi->oxcf.enable_tpl_model && cpi->oxcf.aq_mode == NO_AQ &&
       cpi->oxcf.deltaq_mode == NO_DELTA_Q && gf_group_index > 0 &&
-      cpi->twopass.gf_group.update_type[gf_group_index] == ARF_UPDATE) {
+      cpi->gf_group.update_type[gf_group_index] == ARF_UPDATE) {
     const int dr =
         get_rdmult_delta(cpi, sb_size, 0, mi_row, mi_col, orig_rdmult);
     x->rdmult = dr;
@@ -4862,7 +4860,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
   av1_setup_frame_sign_bias(cm);
 
 #if CHECK_PRECOMPUTED_REF_FRAME_MAP
-  GF_GROUP *gf_group = &cpi->twopass.gf_group;
+  GF_GROUP *gf_group = &cpi->gf_group;
   // TODO(yuec): The check is disabled on OVERLAY frames for now, because info
   // in cpi->gf_group has been refreshed for the next GOP when the check is
   // performed for OVERLAY frames. Since we have not support inter-GOP ref

@@ -863,6 +863,8 @@ typedef struct AV1_COMP {
 
   TWO_PASS twopass;
 
+  GF_GROUP gf_group;
+
   YV12_BUFFER_CONFIG alt_ref_buffer;
 
 #if CONFIG_INTERNAL_STATS
@@ -1336,12 +1338,12 @@ static INLINE int is_frame_kf_and_tpl_eligible(AV1_COMP *const cpi) {
 }
 
 static INLINE int is_frame_arf_and_tpl_eligible(AV1_COMP *const cpi) {
+  GF_GROUP *const gf_group = &cpi->gf_group;
   const int max_pyr_level_fromtop_deltaq = 0;
   const int pyr_lev_from_top =
-      cpi->twopass.gf_group.pyramid_height -
-      cpi->twopass.gf_group.pyramid_level[cpi->twopass.gf_group.index];
+      gf_group->pyramid_height - gf_group->pyramid_level[cpi->gf_group.index];
   if (pyr_lev_from_top > max_pyr_level_fromtop_deltaq ||
-      cpi->twopass.gf_group.pyramid_height <= max_pyr_level_fromtop_deltaq + 1)
+      gf_group->pyramid_height <= max_pyr_level_fromtop_deltaq + 1)
     return 0;
   else
     return 1;

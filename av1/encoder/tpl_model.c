@@ -108,7 +108,7 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                             TX_SIZE tx_size, YV12_BUFFER_CONFIG *ref_frame[],
                             uint8_t *predictor, TplDepStats *tpl_stats) {
   AV1_COMMON *cm = &cpi->common;
-  const GF_GROUP *gf_group = &cpi->twopass.gf_group;
+  const GF_GROUP *gf_group = &cpi->gf_group;
 
   const int bw = 4 << mi_size_wide_log2[bsize];
   const int bh = 4 << mi_size_high_log2[bsize];
@@ -264,7 +264,7 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   if (frame_idx) {
     const int idx = gf_group->ref_frame_gop_idx[frame_idx][best_rf_idx];
     tpl_stats->ref_frame_index = idx;
-    tpl_stats->ref_disp_frame_index = cpi->twopass.gf_group.frame_disp_idx[idx];
+    tpl_stats->ref_disp_frame_index = gf_group->frame_disp_idx[idx];
     tpl_stats->mv.as_int = best_mv.as_int;
   }
 }
@@ -416,7 +416,7 @@ static YV12_BUFFER_CONFIG *get_framebuf(
   } else if (frame_idx == 1) {
     return frame_input ? frame_input->source : NULL;
   } else {
-    const GF_GROUP *gf_group = &cpi->twopass.gf_group;
+    const GF_GROUP *gf_group = &cpi->gf_group;
     const int frame_disp_idx = gf_group->frame_disp_idx[frame_idx];
     struct lookahead_entry *buf = av1_lookahead_peek(
         cpi->lookahead, frame_disp_idx - cpi->num_gf_group_show_frames);
@@ -426,7 +426,7 @@ static YV12_BUFFER_CONFIG *get_framebuf(
 
 static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
                               int frame_idx) {
-  const GF_GROUP *gf_group = &cpi->twopass.gf_group;
+  const GF_GROUP *gf_group = &cpi->gf_group;
   if (frame_idx == gf_group->size) return;
   int tpl_idx = gf_group->frame_disp_idx[frame_idx];
   TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
@@ -692,7 +692,7 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
                          const EncodeFrameInput *const frame_input,
                          int is_for_kf) {
   YV12_BUFFER_CONFIG *gf_picture[MAX_LENGTH_TPL_FRAME_STATS];
-  GF_GROUP *gf_group = &cpi->twopass.gf_group;
+  GF_GROUP *gf_group = &cpi->gf_group;
 
   init_gop_frames_for_tpl(cpi, gf_picture, gf_group, &cpi->tpl_gf_group_frames,
                           frame_input, is_for_kf);
@@ -911,9 +911,9 @@ void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
 #error "Invalid block size for tpl model"
 #endif  // MC_FLOW_BSIZE == 64
 
-  const GF_GROUP *gf_group = &cpi->twopass.gf_group;
+  const GF_GROUP *gf_group = &cpi->gf_group;
   assert(IMPLIES(gf_group->size > 0, gf_group->index < gf_group->size));
-  const int tpl_cur_idx = cpi->twopass.gf_group.frame_disp_idx[gf_group->index];
+  const int tpl_cur_idx = gf_group->frame_disp_idx[gf_group->index];
   TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_cur_idx];
   memset(
       tpl_frame->tpl_stats_ptr, 0,
@@ -921,7 +921,7 @@ void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
   tpl_frame->is_valid = 0;
   int tpl_used_mask[MAX_LENGTH_TPL_FRAME_STATS] = { 0 };
   for (int idx = gf_group->index + 1; idx < cpi->tpl_gf_group_frames; ++idx) {
-    const int tpl_future_idx = cpi->twopass.gf_group.frame_disp_idx[idx];
+    const int tpl_future_idx = gf_group->frame_disp_idx[idx];
 
     if (gf_group->update_type[idx] == OVERLAY_UPDATE ||
         gf_group->update_type[idx] == INTNL_OVERLAY_UPDATE)
@@ -931,7 +931,7 @@ void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
 
     for (int ridx = 0; ridx < INTER_REFS_PER_FRAME; ++ridx) {
       const int ref_idx = gf_group->ref_frame_gop_idx[idx][ridx];
-      const int tpl_ref_idx = cpi->twopass.gf_group.frame_disp_idx[ref_idx];
+      const int tpl_ref_idx = gf_group->frame_disp_idx[ref_idx];
       if (tpl_ref_idx == tpl_cur_idx) {
         // Do tpl stats computation between current buffer and the one at
         // gf_group index given by idx (and with disp index given by

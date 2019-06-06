@@ -373,8 +373,7 @@ static double get_rate_correction_factor(const AV1_COMP *cpi, int width,
   if (cpi->common.current_frame.frame_type == KEY_FRAME) {
     rcf = rc->rate_correction_factors[KF_STD];
   } else if (cpi->oxcf.pass == 2) {
-    const RATE_FACTOR_LEVEL rf_lvl =
-        get_rate_factor_level(&cpi->twopass.gf_group);
+    const RATE_FACTOR_LEVEL rf_lvl = get_rate_factor_level(&cpi->gf_group);
     rcf = rc->rate_correction_factors[rf_lvl];
   } else {
     if ((cpi->refresh_alt_ref_frame || cpi->refresh_golden_frame) &&
@@ -400,8 +399,7 @@ static void set_rate_correction_factor(AV1_COMP *cpi, double factor, int width,
   if (cpi->common.current_frame.frame_type == KEY_FRAME) {
     rc->rate_correction_factors[KF_STD] = factor;
   } else if (cpi->oxcf.pass == 2) {
-    const RATE_FACTOR_LEVEL rf_lvl =
-        get_rate_factor_level(&cpi->twopass.gf_group);
+    const RATE_FACTOR_LEVEL rf_lvl = get_rate_factor_level(&cpi->gf_group);
     rc->rate_correction_factors[rf_lvl] = factor;
   } else {
     if ((cpi->refresh_alt_ref_frame || cpi->refresh_golden_frame) &&
@@ -807,7 +805,7 @@ static int rc_pick_q_and_bounds_one_pass_cbr(const AV1_COMP *cpi, int width,
 }
 
 static int gf_group_pyramid_level(const AV1_COMP *cpi) {
-  const GF_GROUP *gf_group = &cpi->twopass.gf_group;
+  const GF_GROUP *gf_group = &cpi->gf_group;
   int this_height = gf_group->pyramid_level[gf_group->index];
   return this_height;
 }
@@ -995,8 +993,7 @@ static const double rate_factor_deltas[RATE_FACTOR_LEVELS] = {
 };
 
 int av1_frame_type_qdelta(const AV1_COMP *cpi, int q) {
-  const RATE_FACTOR_LEVEL rf_lvl =
-      get_rate_factor_level(&cpi->twopass.gf_group);
+  const RATE_FACTOR_LEVEL rf_lvl = get_rate_factor_level(&cpi->gf_group);
   const FRAME_TYPE frame_type = (rf_lvl == KF_STD) ? KEY_FRAME : INTER_FRAME;
   return av1_compute_qdelta_by_rate(&cpi->rc, frame_type, q,
                                     rate_factor_deltas[rf_lvl],
@@ -1212,12 +1209,12 @@ int av1_estimate_q_constant_quality_two_pass(const AV1_COMP *cpi, int width,
                                              int gf_index) {
   const AV1_COMMON *const cm = &cpi->common;
   const RATE_CONTROL *const rc = &cpi->rc;
-  const GF_GROUP *gf_group = &cpi->twopass.gf_group;
+  const GF_GROUP *gf_group = &cpi->gf_group;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   const int cq_level = get_active_cq_level(rc, oxcf, frame_is_intra_only(cm),
                                            cm->superres_scale_denominator);
   int active_best_quality = 0;
-  int active_worst_quality = cpi->twopass.active_worst_quality;
+  int active_worst_quality = rc->active_worst_quality;
   int q;
   const int bit_depth = cm->seq_params.bit_depth;
 
@@ -1306,11 +1303,11 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   const AV1_COMMON *const cm = &cpi->common;
   const RATE_CONTROL *const rc = &cpi->rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
-  const GF_GROUP *gf_group = &cpi->twopass.gf_group;
+  const GF_GROUP *gf_group = &cpi->gf_group;
   const int cq_level = get_active_cq_level(rc, oxcf, frame_is_intra_only(cm),
                                            cm->superres_scale_denominator);
   int active_best_quality = 0;
-  int active_worst_quality = cpi->twopass.active_worst_quality;
+  int active_worst_quality = rc->active_worst_quality;
   int q;
   int *inter_minq;
   const int bit_depth = cm->seq_params.bit_depth;
@@ -1443,7 +1440,7 @@ int av1_rc_pick_q_and_bounds(AV1_COMP *cpi, int width, int height,
   } else {
     assert(cpi->oxcf.pass == 2 && "invalid encode pass");
 
-    GF_GROUP *gf_group = &cpi->twopass.gf_group;
+    GF_GROUP *gf_group = &cpi->gf_group;
     int arf_q = -1;  // Initialize to invalid value, for sanity check later.
 
     q = rc_pick_q_and_bounds_two_pass(cpi, width, height, bottom_index,
@@ -1504,8 +1501,7 @@ static void update_alt_ref_frame_stats(AV1_COMP *cpi) {
 
 static void update_golden_frame_stats(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
-  const TWO_PASS *const twopass = &cpi->twopass;
-  const GF_GROUP *const gf_group = &twopass->gf_group;
+  const GF_GROUP *const gf_group = &cpi->gf_group;
   const int is_intrnl_arf =
       cpi->oxcf.pass == 2
           ? gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE
@@ -1526,7 +1522,7 @@ static void update_golden_frame_stats(AV1_COMP *cpi) {
     // active flag. In multi arf group case, if the index is not 0 then
     // we are overlaying a mid group arf so should not reset the flag.
     if (cpi->oxcf.pass == 2) {
-      if (!rc->source_alt_ref_pending && (cpi->twopass.gf_group.index == 0))
+      if (!rc->source_alt_ref_pending && (cpi->gf_group.index == 0))
         rc->source_alt_ref_active = 0;
     } else if (!rc->source_alt_ref_pending) {
       rc->source_alt_ref_active = 0;
@@ -1540,8 +1536,7 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
   const AV1_COMMON *const cm = &cpi->common;
   const CurrentFrame *const current_frame = &cm->current_frame;
   RATE_CONTROL *const rc = &cpi->rc;
-  const TWO_PASS *const twopass = &cpi->twopass;
-  const GF_GROUP *const gf_group = &twopass->gf_group;
+  const GF_GROUP *const gf_group = &cpi->gf_group;
   const int is_intrnl_arf =
       cpi->oxcf.pass == 2
           ? gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE

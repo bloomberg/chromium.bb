@@ -1247,7 +1247,7 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   struct scale_factors sf;
 
   YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };
-  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+  const GF_GROUP *const gf_group = &cpi->gf_group;
   int rdmult = 0;
 
   // Apply context specific adjustments to the arnr filter parameters.

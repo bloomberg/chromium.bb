@@ -171,13 +171,9 @@ typedef struct {
 
   int kf_zeromotion_pct;
   int last_kfgroup_zeromotion_pct;
-  int active_worst_quality;
-  int baseline_active_worst_quality;
   int extend_minq;
   int extend_maxq;
   int extend_minq_fast;
-
-  GF_GROUP gf_group;
 } TWO_PASS;
 
 struct AV1_COMP;

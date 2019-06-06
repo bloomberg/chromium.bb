@@ -576,7 +576,7 @@ static void allocate_gf_group_bits(
   RATE_CONTROL *const rc = &cpi->rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   TWO_PASS *const twopass = &cpi->twopass;
-  GF_GROUP *const gf_group = &twopass->gf_group;
+  GF_GROUP *const gf_group = &cpi->gf_group;
   const int key_frame = (frame_params->frame_type == KEY_FRAME);
   const int max_bits = frame_max_bits(&cpi->rc, &cpi->oxcf);
   int64_t total_group_bits = gf_group_bits;
@@ -732,7 +732,7 @@ static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
 
 void av1_assign_q_and_bounds_q_mode(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+  GF_GROUP *const gf_group = &cpi->gf_group;
   const int width = cm->width;
   const int height = cm->height;
   RATE_CONTROL *const rc = &cpi->rc;
@@ -822,7 +822,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // Reset the GF group data structures unless this is a key
   // frame in which case it will already have been done.
   if (!is_intra_only) {
-    av1_zero(twopass->gf_group);
+    av1_zero(cpi->gf_group);
   }
 
   aom_clear_system_state();
@@ -1157,8 +1157,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     tmp_q = get_twopass_worst_quality(
         cpi, group_av_err, (group_av_skip_pct + group_av_inactive_zone),
         vbr_group_bits_per_frame, twopass->kfgroup_inter_fraction * rc_factor);
-    twopass->active_worst_quality =
-        AOMMAX(tmp_q, twopass->active_worst_quality >> 1);
+    rc->active_worst_quality = AOMMAX(tmp_q, rc->active_worst_quality >> 1);
   }
 #endif
 
@@ -1337,7 +1336,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   int i, j;
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
-  GF_GROUP *const gf_group = &twopass->gf_group;
+  GF_GROUP *const gf_group = &cpi->gf_group;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   const FIRSTPASS_STATS first_frame = *this_frame;
   const FIRSTPASS_STATS *const start_position = twopass->stats_in;
@@ -1614,7 +1613,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
   CurrentFrame *const current_frame = &cm->current_frame;
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
-  GF_GROUP *const gf_group = &twopass->gf_group;
+  GF_GROUP *const gf_group = &cpi->gf_group;
   int frames_left;
   FIRSTPASS_STATS this_frame;
 
@@ -1656,7 +1655,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
   aom_clear_system_state();
 
   if (cpi->oxcf.rc_mode == AOM_Q) {
-    twopass->active_worst_quality = cpi->oxcf.cq_level;
+    rc->active_worst_quality = cpi->oxcf.cq_level;
   } else if (current_frame->frame_number == 0) {
     // Special case code for first frame.
     const int section_target_bandwidth =
@@ -1673,8 +1672,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
         cpi, section_error, section_intra_skip + section_inactive_zone,
         section_target_bandwidth, DEFAULT_GRP_WEIGHT);
 
-    twopass->active_worst_quality = tmp_q;
-    twopass->baseline_active_worst_quality = tmp_q;
+    rc->active_worst_quality = tmp_q;
     rc->ni_av_qi = tmp_q;
     rc->last_q[INTER_FRAME] = tmp_q;
     rc->avg_q = av1_convert_qindex_to_q(tmp_q, cm->seq_params.bit_depth);
@@ -1851,8 +1849,7 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
 
   // If the rate control is drifting consider adjustment to min or maxq.
   if ((cpi->oxcf.rc_mode != AOM_Q) && !cpi->rc.is_src_frame_alt_ref) {
-    const int maxq_adj_limit =
-        rc->worst_quality - twopass->active_worst_quality;
+    const int maxq_adj_limit = rc->worst_quality - rc->active_worst_quality;
     const int minq_adj_limit =
         (cpi->oxcf.rc_mode == AOM_CQ ? MINQ_ADJ_LIMIT_CQ : MINQ_ADJ_LIMIT);
 
