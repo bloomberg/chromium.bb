@@ -440,27 +440,33 @@ template("mac_toolchain") {
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
       pool = ":bundle_pool($default_toolchain)"
     }
-    tool("compile_xcassets") {
-      _tool = rebase_path("//build/toolchain/mac/compile_xcassets.py",
-                          root_build_dir)
-      if (is_ios) {
-        _sdk_name = ios_sdk_name
-        _min_deployment_target = ios_deployment_target
-        _compress_pngs = ""
-      } else {
-        _sdk_name = mac_sdk_name
-        _min_deployment_target = mac_deployment_target
-        _compress_pngs = " -c "
-      }
-      command =
-          "$env_wrapper rm -f \"{{output}}\" && " +
-          "TOOL_VERSION=${tool_versions.compile_xcassets} " +
-          "python $_tool$_compress_pngs -p \"$_sdk_name\" " +
-          "-t \"$_min_deployment_target\" -T \"{{bundle_product_type}}\" " +
-          "-P \"{{bundle_partial_info_plist}}\" -o {{output}} {{inputs}}"
 
-      description = "COMPILE_XCASSETS {{output}}"
-      pool = ":bundle_pool($default_toolchain)"
+    # xcassets are only used on iOS, not macOS. We want to minimize the number
+    # of Xcode-based tools used by the macOS toolchain, so we intentionally
+    # disallow future uses of xcassets on macOS. https://crbug.com/965663.
+    if (toolchain_args.current_os == "ios") {
+      tool("compile_xcassets") {
+        _tool = rebase_path("//build/toolchain/mac/compile_xcassets.py",
+                            root_build_dir)
+        if (is_ios) {
+          _sdk_name = ios_sdk_name
+          _min_deployment_target = ios_deployment_target
+          _compress_pngs = ""
+        } else {
+          _sdk_name = mac_sdk_name
+          _min_deployment_target = mac_deployment_target
+          _compress_pngs = " -c "
+        }
+        command =
+            "$env_wrapper rm -f \"{{output}}\" && " +
+            "TOOL_VERSION=${tool_versions.compile_xcassets} " +
+            "python $_tool$_compress_pngs -p \"$_sdk_name\" " +
+            "-t \"$_min_deployment_target\" -T \"{{bundle_product_type}}\" " +
+            "-P \"{{bundle_partial_info_plist}}\" -o {{output}} {{inputs}}"
+
+        description = "COMPILE_XCASSETS {{output}}"
+        pool = ":bundle_pool($default_toolchain)"
+      }
     }
 
     tool("action") {
