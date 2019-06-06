@@ -23,6 +23,7 @@ constexpr int kDialogYOffset = 32;
 }  // namespace
 
 RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
+    const base::string16& query,
     RemovalConfirmationCallback confirm_callback,
     int event_flags,
     ContentsView* contents_view)
@@ -35,8 +36,8 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  views::Label* label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS));
+  views::Label* label = new views::Label(l10n_util::GetStringFUTF16(
+      IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS, query));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetAllowCharacterBreak(true);

@@ -418,6 +418,7 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
       RecordZeroStateSearchResultUserActionHistogram(
           ZeroStateSearchResultUserActionType::kRemoveResult);
       RemoveQueryConfirmationDialog* dialog = new RemoveQueryConfirmationDialog(
+          result()->title(),
           base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
                          weak_ptr_factory_.GetWeakPtr()),
           event_flags, list_view_->app_list_main_view()->contents_view());

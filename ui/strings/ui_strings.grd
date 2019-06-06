@@ -865,10 +865,10 @@ need to be translated for each locale.-->
         Shelf auto hidden
       </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE" desc="Titlebar of removing zero state suggestion confirmation dialog">
-        Remove this suggestion?
+        Delete this search from your history?
       </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing zero state suggestion">
-        Removing this suggestion will hide it from your account across all your devices.
+        You searched for this before. Deleting "<ph name="query">$1<ex>Previously Searched Query</ex></ph>" from your history will permanently remove it from your account across all your devices.
       </message>
       <message name="IDS_REMOVE_SUGGESTION_BUTTON_LABEL" desc="Remove suggestion button label">
         Remove
