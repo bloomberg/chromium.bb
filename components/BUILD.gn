@@ -344,7 +344,6 @@ test("components_unittests") {
     deps += [
       "//components/arc:unit_tests",
       "//components/ownership:unit_tests",
-      "//components/pairing:unit_tests",
       "//components/timers:unit_tests",
       "//components/user_manager:unit_tests",
     ]
