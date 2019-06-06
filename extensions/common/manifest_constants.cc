@@ -112,6 +112,7 @@ const char kName[] = "name";
 const char kNaClModules[] = "nacl_modules";
 const char kNaClModulesMIMEType[] = "mime_type";
 const char kNaClModulesPath[] = "path";
+const char kNativelyConnectable[] = "natively_connectable";
 const char kOAuth2[] = "oauth2";
 const char kOAuth2AutoApprove[] = "oauth2.auto_approve";
 const char kOAuth2ClientId[] = "oauth2.client_id";
@@ -557,6 +558,10 @@ const char kInvalidMinimumChromeVersion[] =
     "Invalid value for 'minimum_chrome_version'.";
 const char kInvalidName[] =
     "Required value 'name' is missing or invalid.";
+const char kInvalidNativelyConnectable[] =
+    "Invalid natively_connectable. Must be a list.";
+const char kInvalidNativelyConnectableValue[] =
+    "Invalid natively_connectable value. Must be a string.";
 const char kInvalidNaClModules[] =
     "Invalid value for 'nacl_modules'.";
 const char kInvalidNaClModulesPath[] =

@@ -354,6 +354,8 @@ static_library("common") {
       "extensions/manifest_handlers/linked_app_icons.h",
       "extensions/manifest_handlers/minimum_chrome_version_checker.cc",
       "extensions/manifest_handlers/minimum_chrome_version_checker.h",
+      "extensions/manifest_handlers/natively_connectable_handler.cc",
+      "extensions/manifest_handlers/natively_connectable_handler.h",
       "extensions/manifest_handlers/settings_overrides_handler.cc",
       "extensions/manifest_handlers/settings_overrides_handler.h",
       "extensions/manifest_handlers/theme_handler.cc",
