@@ -47,10 +47,11 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
       create_info.method == "GET" && create_info.url().SchemeIsHTTPOrHTTPS();
   bool partial_response_success =
       download_item->GetReceivedSlices().empty() || create_info.offset != 0;
-  bool is_parallelizable = has_strong_validator && create_info.accept_range &&
-                           has_content_length && satisfy_min_file_size &&
-                           satisfy_connection_type && http_get_method &&
-                           partial_response_success;
+  bool is_parallelizable =
+      has_strong_validator &&
+      create_info.accept_range == RangeRequestSupportType::kSupport &&
+      has_content_length && satisfy_min_file_size && satisfy_connection_type &&
+      http_get_method && partial_response_success;
 
   if (!IsParallelDownloadEnabled())
     return is_parallelizable;
@@ -64,7 +65,7 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
     RecordParallelDownloadCreationEvent(
         ParallelDownloadCreationEvent::FALLBACK_REASON_STRONG_VALIDATORS);
   }
-  if (!create_info.accept_range) {
+  if (create_info.accept_range != RangeRequestSupportType::kSupport) {
     RecordParallelDownloadCreationEvent(
         ParallelDownloadCreationEvent::FALLBACK_REASON_ACCEPT_RANGE_HEADER);
   }

@@ -35,6 +35,16 @@ class HttpResponseHeaders;
 
 namespace download {
 
+// Server support for range request inferred from the response headers.
+// |kSupport| value means the server supports range requests. |kNoSupport|
+// means no range request is accepted by server. and |kUnknown| is used if
+// range request support cannot be inferred from response headers.
+enum class RangeRequestSupportType {
+  kSupport = 0,
+  kUnknown,
+  kNoSupport,
+};
+
 // Used for informing the download manager of a new download, since we don't
 // want to pass |DownloadItem|s between threads.
 struct COMPONENTS_DOWNLOAD_EXPORT DownloadCreateInfo {
@@ -142,10 +152,8 @@ struct COMPONENTS_DOWNLOAD_EXPORT DownloadCreateInfo {
   // For continuing a download, the ETag of the file.
   std::string etag;
 
-  // If the download response can be partial content.
-  // Either "Accept-Ranges" or "Content-Range" header presents in the
-  // response header.
-  bool accept_range;
+  // Whether the server supports range requests.
+  RangeRequestSupportType accept_range;
 
   // The HTTP connection type.
   net::HttpResponseInfo::ConnectionInfo connection_info;

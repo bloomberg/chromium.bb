@@ -237,10 +237,15 @@ void HandleResponseHeaders(const net::HttpResponseHeaders* headers,
   // In RFC 7233, a single part 206 partial response must generate
   // Content-Range. Accept-Range may be sent in 200 response to indicate the
   // server can handle range request, but optional in 206 response.
-  create_info->accept_range =
-      headers->HasHeaderValue("Accept-Ranges", "bytes") ||
+  if (headers->HasHeaderValue("Accept-Ranges", "bytes") ||
       (headers->HasHeader("Content-Range") &&
-       headers->response_code() == net::HTTP_PARTIAL_CONTENT);
+       headers->response_code() == net::HTTP_PARTIAL_CONTENT)) {
+    create_info->accept_range = RangeRequestSupportType::kSupport;
+  } else if (headers->HasHeaderValue("Accept-Ranges", "none")) {
+    create_info->accept_range = RangeRequestSupportType::kNoSupport;
+  } else {
+    create_info->accept_range = RangeRequestSupportType::kUnknown;
+  }
 }
 
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(

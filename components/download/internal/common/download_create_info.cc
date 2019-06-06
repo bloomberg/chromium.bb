@@ -28,7 +28,7 @@ DownloadCreateInfo::DownloadCreateInfo(
       save_info(std::move(save_info)),
       render_process_id(-1),
       render_frame_id(-1),
-      accept_range(false),
+      accept_range(RangeRequestSupportType::kNoSupport),
       connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       method("GET"),
       ukm_source_id(ukm::kInvalidSourceId) {}
