@@ -706,7 +706,7 @@
       },
       'linux-chromeos-dbg': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
