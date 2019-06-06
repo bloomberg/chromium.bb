@@ -28,6 +28,12 @@ const base::Feature kAddToHomescreenMessaging{
     "AddToHomescreenMessaging", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+// Controls whether web apps can be installed via APKs on Chrome OS.
+const base::Feature kApkWebAppInstalls{"ApkWebAppInstalls",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_MACOSX)
 // Enables the menu item for Javascript execution via AppleScript.
 const base::Feature kAppleScriptExecuteJavaScriptMenuItem{
