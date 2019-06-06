@@ -7,7 +7,6 @@
 <org.chromium.chrome.browser.suggestions.tile.TopSitesTileView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="@dimen/tile_view_width_condensed"
     android:layout_height="wrap_content"
     android:paddingStart="@dimen/tile_view_padding"
@@ -20,7 +19,7 @@
         android:layout_height="@dimen/tile_view_icon_size"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/tile_view_icon_background_margin_top_modern"
-        android:background="@drawable/tile_view_icon_background_modern" />
+        android:background="@drawable/tile_view_hairline_border_background" />
 
     <!-- The main icon. -->
     <ImageView
