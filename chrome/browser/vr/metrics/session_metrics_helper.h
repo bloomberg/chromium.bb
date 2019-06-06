@@ -62,39 +62,7 @@ enum PresentationStartAction {
   kMaxValue = 4,
 };
 
-// SessionTimer will monitor the time between calls to StartSession and
-// StopSession.  It will combine multiple segments into a single session if they
-// are sufficiently close in time.  It will also only include segments if they
-// are sufficiently long.
-// Because the session may be extended, the accumulated time is occasionally
-// sent on destruction or when a new session begins.
-class SessionTimer {
- public:
-  virtual ~SessionTimer() {}
-
-  void StartSession(base::Time start_time);
-  void StopSession(bool continuable, base::Time stop_time);
-
- protected:
-  SessionTimer() {}
-
-  virtual void SendAccumulatedSessionTime() = 0;
-
-  base::Time start_time_;
-  base::Time stop_time_;
-  base::TimeDelta accumulated_time_;
-
-  // Config members.
-  // Maximum time gap allowed between a StopSession and a StartSession before it
-  // will be logged as a seperate session.
-  base::TimeDelta maximum_session_gap_time_;
-
-  // Minimum time between a StartSession and StopSession required before it is
-  // added to the duration.
-  base::TimeDelta minimum_duration_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionTimer);
-};
+class SessionTimer;
 
 // SessionTracker tracks UKM data for sessions and sends the data upon request.
 template <class T>

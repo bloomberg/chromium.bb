@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -29,63 +30,6 @@ constexpr base::TimeDelta kMinimumHeadsetSessionDuration(
     base::TimeDelta::FromSecondsD(0));
 constexpr base::TimeDelta kMaximumHeadsetSessionGap(
     base::TimeDelta::FromSecondsD(0));
-
-// We have several different session times that share code in SessionTimer.
-// Unfortunately, when the actual timer histogram is processed in
-// UMA_HISTOGRAM_CUSTOM_TIMES, there is a function-static variable initialized
-// with the name of the event, and all histograms going through the same
-// function must share the same event name.
-// In order to work around this and use different names, a templated function
-// is used to get different function-static variables for each histogram name.
-// Ideally this could be templated by the event name, but unfortunately
-// C++ doesn't allow templates by strings.  Instead we template by enum, and
-// have a function that translates enum to string.  For each template
-// instantiation, the inlined function will be optimized to just access the
-// string we want to return.
-enum SessionEventName {
-  MODE_FULLSCREEN,
-  MODE_BROWSER,
-  MODE_WEBVR,
-  SESSION_VR,
-  MODE_FULLSCREEN_WITH_VIDEO,
-  MODE_BROWSER_WITH_VIDEO,
-  MODE_WEBVR_WITH_VIDEO,
-  SESSION_VR_WITH_VIDEO,
-};
-
-const char* HistogramNameFromSessionType(SessionEventName name) {
-  // TODO(crbug.com/790682): Migrate all of these to the "VR." namespace.
-  static constexpr char kVrSession[] = "VRSessionTime";
-  static constexpr char kWebVr[] = "VRSessionTime.WebVR";
-  static constexpr char kBrowser[] = "VRSessionTime.Browser";
-  static constexpr char kFullscreen[] = "VRSessionTime.Fullscreen";
-  static constexpr char kVrSessionVideo[] = "VRSessionVideoTime";
-  static constexpr char kWebVrVideo[] = "VRSessionVideoTime.WebVR";
-  static constexpr char kBrowserVideo[] = "VRSessionVideoTime.Browser";
-  static constexpr char kFullscreenVideo[] = "VRSessionVideoTime.Fullscreen";
-
-  switch (name) {
-    case MODE_FULLSCREEN:
-      return kFullscreen;
-    case MODE_BROWSER:
-      return kBrowser;
-    case MODE_WEBVR:
-      return kWebVr;
-    case SESSION_VR:
-      return kVrSession;
-    case MODE_FULLSCREEN_WITH_VIDEO:
-      return kFullscreenVideo;
-    case MODE_BROWSER_WITH_VIDEO:
-      return kBrowserVideo;
-    case MODE_WEBVR_WITH_VIDEO:
-      return kWebVrVideo;
-    case SESSION_VR_WITH_VIDEO:
-      return kVrSessionVideo;
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-}
 
 void SendRapporEnteredMode(const GURL& origin, Mode mode) {
   switch (mode) {
@@ -147,63 +91,89 @@ device::SessionMode ConvertRuntimeOptionsToSessionMode(
 
 }  // namespace
 
-template <SessionEventName SessionType>
-class SessionTimerImpl : public SessionTimer {
+// SessionTimer will monitor the time between calls to StartSession and
+// StopSession.  It will combine multiple segments into a single session if they
+// are sufficiently close in time.  It will also only include segments if they
+// are sufficiently long.
+// Because the session may be extended, the accumulated time is occasionally
+// sent on destruction or when a new session begins.
+class SessionTimer {
  public:
-  SessionTimerImpl(base::TimeDelta gap_time, base::TimeDelta minimum_duration) {
+  SessionTimer(char const* histogram_name,
+               base::TimeDelta gap_time,
+               base::TimeDelta minimum_duration) {
+    histogram_name_ = histogram_name;
     maximum_session_gap_time_ = gap_time;
     minimum_duration_ = minimum_duration;
   }
 
-  ~SessionTimerImpl() override { StopSession(false, base::Time::Now()); }
+  ~SessionTimer() { StopSession(false, base::Time::Now()); }
 
-  void SendAccumulatedSessionTime() override {
-    if (!accumulated_time_.is_zero()) {
-      UMA_HISTOGRAM_CUSTOM_TIMES(HistogramNameFromSessionType(SessionType),
-                                 accumulated_time_, base::TimeDelta(),
-                                 base::TimeDelta::FromHours(5), 100);
+  void StartSession(base::Time start_time) {
+    // If the new start time is within the minimum session gap time from the
+    // last stop, continue the previous session. Otherwise, start a new session,
+    // sending the event for the last session.
+    if (!stop_time_.is_null() &&
+        start_time - stop_time_ <= maximum_session_gap_time_) {
+      // Mark the previous segment as non-continuable, sending data and clearing
+      // state.
+      StopSession(false, stop_time_);
+    }
+
+    start_time_ = start_time;
+  }
+
+  void StopSession(bool continuable, base::Time stop_time) {
+    // first accumulate time from this segment of the session
+    base::TimeDelta segment_duration =
+        (start_time_.is_null() ? base::TimeDelta() : stop_time - start_time_);
+    if (!segment_duration.is_zero() && segment_duration > minimum_duration_) {
+      accumulated_time_ = accumulated_time_ + segment_duration;
+    }
+
+    if (continuable) {
+      // if we are continuable, accumulate the current segment to the session,
+      // and set stop_time_ so we may continue later
+      accumulated_time_ = stop_time - start_time_ + accumulated_time_;
+      stop_time_ = stop_time;
+      start_time_ = base::Time();
+    } else {
+      // send the histogram now if we aren't continuable, clearing segment state
+      SendAccumulatedSessionTime();
+
+      // clear out start/stop/accumulated time
+      start_time_ = base::Time();
+      stop_time_ = base::Time();
+      accumulated_time_ = base::TimeDelta();
     }
   }
+
+ private:
+  void SendAccumulatedSessionTime() {
+    if (!accumulated_time_.is_zero()) {
+      base::UmaHistogramCustomTimes(histogram_name_, accumulated_time_,
+                                    base::TimeDelta(),
+                                    base::TimeDelta::FromHours(5), 100);
+    }
+  }
+
+  char const* histogram_name_;
+
+  base::Time start_time_;
+  base::Time stop_time_;
+  base::TimeDelta accumulated_time_;
+
+  // Config members.
+  // Maximum time gap allowed between a StopSession and a StartSession before it
+  // will be logged as a separate session.
+  base::TimeDelta maximum_session_gap_time_;
+
+  // Minimum time between a StartSession and StopSession required before it is
+  // added to the duration.
+  base::TimeDelta minimum_duration_;
+
+  DISALLOW_COPY_AND_ASSIGN(SessionTimer);
 };
-
-void SessionTimer::StartSession(base::Time start_time) {
-  // If the new start time is within the minimum session gap time from the last
-  // stop, continue the previous session.
-  // Otherwise, start a new session, sending the event for the last session.
-  if (!stop_time_.is_null() &&
-      start_time - stop_time_ <= maximum_session_gap_time_) {
-    // Mark the previous segment as non-continuable, sending data and clearing
-    // state.
-    StopSession(false, stop_time_);
-  }
-
-  start_time_ = start_time;
-}
-
-void SessionTimer::StopSession(bool continuable, base::Time stop_time) {
-  // first accumulate time from this segment of the session
-  base::TimeDelta segment_duration =
-      (start_time_.is_null() ? base::TimeDelta() : stop_time - start_time_);
-  if (!segment_duration.is_zero() && segment_duration > minimum_duration_) {
-    accumulated_time_ = accumulated_time_ + segment_duration;
-  }
-
-  if (continuable) {
-    // if we are continuable, accumulate the current segment to the session, and
-    // set stop_time_ so we may continue later
-    accumulated_time_ = stop_time - start_time_ + accumulated_time_;
-    stop_time_ = stop_time;
-    start_time_ = base::Time();
-  } else {
-    // send the histogram now if we aren't continuable, clearing segment state
-    SendAccumulatedSessionTime();
-
-    // clear out start/stop/accumulated time
-    start_time_ = base::Time();
-    stop_time_ = base::Time();
-    accumulated_time_ = base::TimeDelta();
-  }
-}
 
 // static
 SessionMetricsHelper* SessionMetricsHelper::FromWebContents(
@@ -239,11 +209,12 @@ SessionMetricsHelper::SessionMetricsHelper(content::WebContents* contents,
   is_webvr_ = initial_mode == Mode::kWebXrVrPresentation;
   is_vr_enabled_ = initial_mode != Mode::kNoVr;
 
-  session_timer_ = std::make_unique<SessionTimerImpl<SESSION_VR>>(
-      kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
-  session_video_timer_ =
-      std::make_unique<SessionTimerImpl<SESSION_VR_WITH_VIDEO>>(
-          kMaximumVideoSessionGap, kMinimumVideoSessionDuration);
+  session_timer_ =
+      std::make_unique<SessionTimer>("VRSessionTime", kMaximumHeadsetSessionGap,
+                                     kMinimumHeadsetSessionDuration);
+  session_video_timer_ = std::make_unique<SessionTimer>(
+      "VRSessionVideoTime", kMaximumVideoSessionGap,
+      kMinimumVideoSessionDuration);
 
   Observe(contents);
   contents->SetUserData(kSessionMetricsHelperDataKey,
@@ -530,19 +501,22 @@ void SessionMetricsHelper::OnExitAllVr() {
 }
 
 void SessionMetricsHelper::OnEnterRegularBrowsing() {
-  mode_timer_ = std::make_unique<SessionTimerImpl<MODE_BROWSER>>(
-      kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
-  mode_video_timer_ =
-      std::make_unique<SessionTimerImpl<MODE_BROWSER_WITH_VIDEO>>(
-          kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+  mode_timer_ = std::make_unique<SessionTimer>("VRSessionTime.Browser",
+                                               kMaximumHeadsetSessionGap,
+                                               kMinimumHeadsetSessionDuration);
+  mode_video_timer_ = std::make_unique<SessionTimer>(
+      "VRSessionVideoTime.Browser", kMaximumHeadsetSessionGap,
+      kMinimumHeadsetSessionDuration);
 }
 
 void SessionMetricsHelper::OnEnterPresentation() {
-  mode_timer_ = std::make_unique<SessionTimerImpl<MODE_WEBVR>>(
-      kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+  mode_timer_ = std::make_unique<SessionTimer>("VRSessionTime.WebVR",
+                                               kMaximumHeadsetSessionGap,
+                                               kMinimumHeadsetSessionDuration);
 
-  mode_video_timer_ = std::make_unique<SessionTimerImpl<MODE_WEBVR_WITH_VIDEO>>(
-      kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+  mode_video_timer_ = std::make_unique<SessionTimer>(
+      "VRSessionVideoTime.WebVR", kMaximumHeadsetSessionGap,
+      kMinimumHeadsetSessionDuration);
 
   // If we are switching to WebVR presentation, start the new presentation
   // session.
@@ -575,12 +549,13 @@ void SessionMetricsHelper::OnExitPresentation() {
 }
 
 void SessionMetricsHelper::OnEnterFullscreenBrowsing() {
-  mode_timer_ = std::make_unique<SessionTimerImpl<MODE_FULLSCREEN>>(
-      kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+  mode_timer_ = std::make_unique<SessionTimer>("VRSessionTime.Fullscreen",
+                                               kMaximumHeadsetSessionGap,
+                                               kMinimumHeadsetSessionDuration);
 
-  mode_video_timer_ =
-      std::make_unique<SessionTimerImpl<MODE_FULLSCREEN_WITH_VIDEO>>(
-          kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+  mode_video_timer_ = std::make_unique<SessionTimer>(
+      "VRSessionVideoTime.Fullscreen", kMaximumHeadsetSessionGap,
+      kMinimumHeadsetSessionDuration);
 
   if (page_session_tracker_)
     page_session_tracker_->ukm_entry()->SetEnteredFullscreen(1);
