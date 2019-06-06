@@ -922,6 +922,51 @@ TYPED_TEST(ProtoDatabaseImplTest, Migration_SharedToUnique_UniqueObsolete) {
             this->GetClientMigrationStatus());
 }
 
+TYPED_TEST(ProtoDatabaseImplTest, InMemoryDatabaseDoesNoMigration) {
+  auto data_set = std::make_unique<std::vector<std::string>>();
+  data_set->emplace_back("entry1");
+  data_set->emplace_back("entry2");
+  data_set->emplace_back("entry3");
+  auto db_provider_withshared = this->CreateProviderWithSharedDB();
+
+  // First we create a shared DB so our second pass has a shared DB available.
+  auto shared_db_impl = this->CreateDBImpl(
+      ProtoDbType::TEST_DATABASE1, this->temp_dir(),
+      this->GetTestThreadTaskRunner(),
+      this->CreateSharedProvider(db_provider_withshared.get()));
+  this->InitDBImplAndWait(shared_db_impl.get(), kDefaultClientName, true,
+                          Enums::InitStatus::kOK);
+  this->AddDataToDBImpl(shared_db_impl.get(), data_set.get());
+
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
+            this->GetClientMigrationStatus());
+  shared_db_impl.reset();
+
+  // Open in memory database (unique db). This should not migrate the data from
+  // shared db.
+  auto unique_db_impl = this->CreateDBImpl(
+      ProtoDbType::TEST_DATABASE1, base::FilePath(),
+      this->GetTestThreadTaskRunner(),
+      this->CreateSharedProvider(db_provider_withshared.get()));
+  this->InitDBImplAndWait(unique_db_impl.get(), kDefaultClientName, false,
+                          Enums::InitStatus::kOK);
+
+  auto empty_data = std::make_unique<std::vector<std::string>>();
+  this->VerifyDataInDBImpl(unique_db_impl.get(), empty_data.get());
+  unique_db_impl.reset();
+
+  // Open shared db again to check the old data is present.
+  shared_db_impl = this->CreateDBImpl(
+      ProtoDbType::TEST_DATABASE1, this->temp_dir(),
+      this->GetTestThreadTaskRunner(),
+      this->CreateSharedProvider(db_provider_withshared.get()));
+  this->InitDBImplAndWait(shared_db_impl.get(), kDefaultClientName, true,
+                          Enums::InitStatus::kOK);
+  this->VerifyDataInDBImpl(shared_db_impl.get(), data_set.get());
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
+            this->GetClientMigrationStatus());
+}
+
 TYPED_TEST(ProtoDatabaseImplTest, DestroyShouldWorkWhenUniqueInitFailed) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
