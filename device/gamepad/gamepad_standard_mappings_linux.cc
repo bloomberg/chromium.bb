@@ -683,42 +683,16 @@ constexpr struct MappingData {
 } AvailableMappings[] = {
     // DragonRise Generic USB
     {GamepadId::kDragonRiseProduct0006, MapperDragonRiseGeneric},
-    // Xbox 360 Wired
-    {GamepadId::kMicrosoftProduct028e, MapperXInputStyleGamepad},
-    // Xbox 360 Wireless
-    {GamepadId::kMicrosoftProduct028f, MapperXInputStyleGamepad},
-    // Xbox 360 Wireless
-    {GamepadId::kMicrosoftProduct02a1, MapperXInputStyleGamepad},
-    // Xbox 360 Wireless
-    {GamepadId::kMicrosoftProduct0291, MapperXInputStyleGamepad},
-    // Xbox One Wired
-    {GamepadId::kMicrosoftProduct02d1, MapperXInputStyleGamepad},
-    // Xbox One Wired (2015 FW)
-    {GamepadId::kMicrosoftProduct02dd, MapperXInputStyleGamepad},
     // Xbox One S (Bluetooth)
     {GamepadId::kMicrosoftProduct02e0, MapperXboxOneS},
-    // Xbox One Elite Wired
-    {GamepadId::kMicrosoftProduct02e3, MapperXInputStyleGamepad},
-    // Xbox One S (USB)
-    {GamepadId::kMicrosoftProduct02ea, MapperXInputStyleGamepad},
     // Xbox One S (Bluetooth)
     {GamepadId::kMicrosoftProduct02fd, MapperXboxOneS2016Firmware},
-    // Xbox 360 Wireless
-    {GamepadId::kMicrosoftProduct0719, MapperXInputStyleGamepad},
-    // Xbox Adaptive Controller
-    {GamepadId::kMicrosoftProduct0b0a, MapperXInputStyleGamepad},
     // Logitech F310 D-mode
     {GamepadId::kLogitechProductc216, MapperLogitechDInput},
     // Logitech F510 D-mode
     {GamepadId::kLogitechProductc218, MapperLogitechDInput},
     // Logitech F710 D-mode
     {GamepadId::kLogitechProductc219, MapperLogitechDInput},
-    // Logitech F310 X-mode
-    {GamepadId::kLogitechProductc21d, MapperXInputStyleGamepad},
-    // Logitech F510 X-mode
-    {GamepadId::kLogitechProductc21e, MapperXInputStyleGamepad},
-    // Logitech F710 X-mode
-    {GamepadId::kLogitechProductc21f, MapperXInputStyleGamepad},
     // Samsung Gamepad EI-GP20
     {GamepadId::kSamsungElectronicsProducta000, MapperSamsung_EI_GP20},
     // Dualshock 3 / SIXAXIS
@@ -824,6 +798,14 @@ GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
   if (gamepad_id == GamepadId::kNintendoProduct200e &&
       mapper == MapperSwitchPro && bus_type != GAMEPAD_BUS_USB) {
     mapper = MapperSwitchComposite;
+  }
+
+  // If no mapper was found, check if the device is a known XInput gamepad.
+  if (mapper == nullptr) {
+    XInputType xtype =
+        GamepadIdList::Get().GetXInputType(vendor_id, product_id);
+    if (xtype == kXInputTypeXbox360 || xtype == kXInputTypeXboxOne)
+      mapper = MapperXInputStyleGamepad;
   }
 
   return mapper;
