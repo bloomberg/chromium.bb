@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/public/interfaces/locale.mojom.h"
+#include "ash/public/cpp/locale_update_controller.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -170,7 +170,7 @@ void RestoreDefaultLocaleForNextSession() {
 }
 
 // Returns the list of locales (and related info) supported by demo mode.
-std::vector<ash::mojom::LocaleInfoPtr> GetSupportedLocales() {
+std::vector<ash::LocaleInfo> GetSupportedLocales() {
   const base::flat_set<std::string> kSupportedLocales(
       {"da", "en-GB", "en-US", "fi", "fr", "fr-CA", "nb", "nl", "sv"});
 
@@ -179,19 +179,19 @@ std::vector<ash::mojom::LocaleInfoPtr> GetSupportedLocales() {
   const std::string current_locale_iso_code =
       ProfileManager::GetActiveUserProfile()->GetPrefs()->GetString(
           language::prefs::kApplicationLocale);
-  std::vector<ash::mojom::LocaleInfoPtr> supported_locales;
+  std::vector<ash::LocaleInfo> supported_locales;
   for (const std::string& locale : available_locales) {
     if (!kSupportedLocales.contains(locale))
       continue;
-    ash::mojom::LocaleInfoPtr locale_info = ash::mojom::LocaleInfo::New();
-    locale_info->iso_code = locale;
-    locale_info->display_name = l10n_util::GetDisplayNameForLocale(
+    ash::LocaleInfo locale_info;
+    locale_info.iso_code = locale;
+    locale_info.display_name = l10n_util::GetDisplayNameForLocale(
         locale, current_locale_iso_code, true /* is_for_ui */);
     const base::string16 native_display_name =
         l10n_util::GetDisplayNameForLocale(locale, locale,
                                            true /* is_for_ui */);
-    if (locale_info->display_name != native_display_name) {
-      locale_info->display_name +=
+    if (locale_info.display_name != native_display_name) {
+      locale_info.display_name +=
           base::UTF8ToUTF16(" - ") + native_display_name;
     }
     supported_locales.push_back(std::move(locale_info));

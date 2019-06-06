@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/interfaces/locale.mojom.h"
+#include "ash/public/cpp/locale_update_controller.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
@@ -48,11 +48,9 @@ class LocaleChangeGuard : public content::NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(LocaleChangeGuardTest,
                            ShowNotificationLocaleChangedList);
 
-  void ConnectToLocaleUpdateController();
-
   void Check();
 
-  void OnResult(ash::mojom::LocaleNotificationResult result);
+  void OnResult(ash::LocaleNotificationResult result);
   void AcceptLocaleChange();
   void RevertLocaleChange();
 
@@ -70,9 +68,6 @@ class LocaleChangeGuard : public content::NotificationObserver,
 
   static const char* const* GetSkipShowNotificationLanguagesForTesting();
   static size_t GetSkipShowNotificationLanguagesSizeForTesting();
-
-  // Ash's mojom::LocaleUpdateController used to display notifications.
-  ash::mojom::LocaleUpdateControllerPtr notification_controller_;
 
   std::string from_locale_;
   std::string to_locale_;

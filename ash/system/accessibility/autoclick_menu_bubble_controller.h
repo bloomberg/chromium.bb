@@ -7,7 +7,7 @@
 
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
-#include "ash/system/locale/locale_update_controller.h"
+#include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/system/tray/tray_bubble_view.h"
 
 namespace ash {

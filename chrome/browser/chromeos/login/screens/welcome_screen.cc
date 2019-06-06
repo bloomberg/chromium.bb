@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -30,8 +29,6 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -270,27 +267,10 @@ void WelcomeScreen::OnLanguageListResolved(
     observer.OnLanguageListReloaded();
 }
 
-void WelcomeScreen::ConnectToLocaleUpdateController() {
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  service_manager::Connector* connector =
-      connection ? connection->GetConnector() : nullptr;
-  // Unit tests may not have a connector.
-  if (!connector)
-    return;
-
-  connector->BindInterface(ash::mojom::kServiceName,
-                           &locale_update_controller_);
-}
-
 void WelcomeScreen::NotifyLocaleChange() {
-  if (!locale_update_controller_)
-    ConnectToLocaleUpdateController();
-
-  DCHECK(locale_update_controller_);
-  locale_update_controller_->OnLocaleChanged(
+  ash::LocaleUpdateController::Get()->OnLocaleChanged(
       std::string(), std::string(), std::string(),
-      base::DoNothing::Once<ash::mojom::LocaleNotificationResult>());
+      base::DoNothing::Once<ash::LocaleNotificationResult>());
 }
 
 }  // namespace chromeos
