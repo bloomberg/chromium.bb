@@ -159,6 +159,8 @@ class CC_EXPORT PictureLayerImpl
   void RegisterAnimatedImages();
   void UnregisterAnimatedImages();
 
+  std::unique_ptr<base::DictionaryValue> LayerAsJson() const override;
+
   PictureLayerImpl* twin_layer_;
 
   std::unique_ptr<PictureLayerTilingSet> tilings_;
