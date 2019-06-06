@@ -682,8 +682,8 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
-        "op": "<",
-        "value": "8.16"
+        "op": "<=",
+        "value": "9.18"
       },
       "features": [
         "disable_d3d11"
