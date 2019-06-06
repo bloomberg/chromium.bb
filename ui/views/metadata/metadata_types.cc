@@ -40,10 +40,22 @@ ClassMetaData::ClassMemberIterator::ClassMemberIterator(
 }
 ClassMetaData::ClassMemberIterator::~ClassMemberIterator() = default;
 
+// If starting_container's members vector is empty, set current_collection_
+// to its parent until parent class has members. Base parent class View
+// will always have members, even if all other parent classes do not.
 ClassMetaData::ClassMemberIterator::ClassMemberIterator(
     ClassMetaData* starting_container) {
   current_collection_ = starting_container;
-  current_vector_index_ = (current_collection_ ? 0 : SIZE_MAX);
+  if (!current_collection_) {
+    current_vector_index_ = SIZE_MAX;
+  } else if (current_collection_->members().size() == 0) {
+    do {
+      current_collection_ = current_collection_->parent_class_meta_data();
+    } while (current_collection_ && current_collection_->members().empty());
+    current_vector_index_ = (current_collection_ ? 0 : SIZE_MAX);
+  } else {
+    current_vector_index_ = 0;
+  }
 }
 
 bool ClassMetaData::ClassMemberIterator::operator==(
