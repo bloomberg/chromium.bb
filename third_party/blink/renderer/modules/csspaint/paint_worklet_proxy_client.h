@@ -74,7 +74,7 @@ class MODULES_EXPORT PaintWorkletProxyClient
   GetGlobalScopesForTesting() const {
     return global_scopes_;
   }
-  const HeapHashMap<String, Member<DocumentPaintDefinition>>&
+  const HashMap<String, std::unique_ptr<DocumentPaintDefinition>>&
   DocumentDefinitionMapForTesting() const {
     return document_definition_map_;
   }
@@ -119,7 +119,8 @@ class MODULES_EXPORT PaintWorkletProxyClient
   // DocumentPaintDefinition or the definition is invalid. Additionally we
   // cannot tell the main thread about a paint definition until all global
   // scopes have registered it.
-  HeapHashMap<String, Member<DocumentPaintDefinition>> document_definition_map_;
+  HashMap<String, std::unique_ptr<DocumentPaintDefinition>>
+      document_definition_map_;
 
   // The main thread needs to know about registered paint definitions so that it
   // can invalidate any associated paint objects and correctly create the paint

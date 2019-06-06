@@ -54,7 +54,7 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   // definitions registered via registerProperty; definitions are only
   // considered valid once all global scopes have registered the same definition
   // for the same thread.
-  typedef HeapHashMap<String, Member<DocumentPaintDefinition>>
+  typedef HashMap<String, std::unique_ptr<DocumentPaintDefinition>>
       DocumentDefinitionMap;
   DocumentDefinitionMap& GetDocumentDefinitionMap() {
     return document_definition_map_;

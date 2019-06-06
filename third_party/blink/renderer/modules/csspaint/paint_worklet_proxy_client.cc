@@ -81,13 +81,13 @@ void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
     const String& name,
     CSSPaintDefinition* definition,
     ExceptionState& exception_state) {
-  DocumentPaintDefinition* document_definition;
   if (document_definition_map_.Contains(name)) {
-    document_definition = document_definition_map_.at(name);
+    DocumentPaintDefinition* document_definition =
+        document_definition_map_.at(name);
     if (document_definition == kInvalidDocumentPaintDefinition)
       return;
     if (!document_definition->RegisterAdditionalPaintDefinition(*definition)) {
-      document_definition_map_.Set(name, kInvalidDocumentPaintDefinition);
+      document_definition_map_.Set(name, nullptr);
       exception_state.ThrowDOMException(
           DOMExceptionCode::kNotSupportedError,
           "A class with name:'" + name +
@@ -95,11 +95,16 @@ void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
       return;
     }
   } else {
-    document_definition =
-        MakeGarbageCollected<DocumentPaintDefinition>(definition);
-    document_definition_map_.Set(name, document_definition);
+    auto document_definition = std::make_unique<DocumentPaintDefinition>(
+        definition->NativeInvalidationProperties(),
+        definition->CustomInvalidationProperties(),
+        definition->InputArgumentTypes(),
+        definition->GetPaintRenderingContext2DSettings()->alpha());
+    document_definition_map_.insert(name, std::move(document_definition));
   }
 
+  DocumentPaintDefinition* document_definition =
+      document_definition_map_.at(name);
   // Notify the main thread only once all global scopes have registered the same
   // named paint definition (with the same definition as well).
   if (document_definition->GetRegisteredDefinitionCount() ==
@@ -137,7 +142,6 @@ void PaintWorkletProxyClient::Dispose() {
 }
 
 void PaintWorkletProxyClient::Trace(blink::Visitor* visitor) {
-  visitor->Trace(document_definition_map_);
   Supplement<WorkerClients>::Trace(visitor);
   PaintWorkletPainter::Trace(visitor);
 }

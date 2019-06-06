@@ -218,7 +218,7 @@ void RunDefinitionsMustBeCompatibleTestOnWorklet(
 
   // Things that can be different: alpha different, native properties
   // different, custom properties different, input type args different.
-  const HeapHashMap<String, Member<DocumentPaintDefinition>>&
+  const HashMap<String, std::unique_ptr<DocumentPaintDefinition>>&
       document_definition_map = proxy_client->DocumentDefinitionMapForTesting();
 
   // Differing native properties.

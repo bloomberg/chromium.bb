@@ -31,6 +31,7 @@ int NextId() {
 
 const wtf_size_t PaintWorklet::kNumGlobalScopes = 2u;
 const size_t kMaxPaintCountToSwitch = 30u;
+// TODO(xidachen): remove this and put comments in the usages.
 DocumentPaintDefinition* const kInvalidDocumentPaintDefinition = nullptr;
 
 // static
@@ -139,7 +140,6 @@ const char PaintWorklet::kSupplementName[] = "PaintWorklet";
 
 void PaintWorklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_generator_registry_);
-  visitor->Trace(document_definition_map_);
   visitor->Trace(proxy_client_);
   Worklet::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
@@ -155,7 +155,7 @@ void PaintWorklet::RegisterCSSPaintDefinition(const String& name,
       return;
     if (!existing_document_definition->RegisterAdditionalPaintDefinition(
             *definition)) {
-      document_definition_map_.Set(name, kInvalidDocumentPaintDefinition);
+      document_definition_map_.Set(name, nullptr);
       exception_state.ThrowDOMException(
           DOMExceptionCode::kNotSupportedError,
           "A class with name:'" + name +
@@ -169,9 +169,12 @@ void PaintWorklet::RegisterCSSPaintDefinition(const String& name,
         PaintWorklet::kNumGlobalScopes)
       pending_generator_registry_->NotifyGeneratorReady(name);
   } else {
-    DocumentPaintDefinition* document_definition =
-        MakeGarbageCollected<DocumentPaintDefinition>(definition);
-    document_definition_map_.Set(name, document_definition);
+    auto document_definition = std::make_unique<DocumentPaintDefinition>(
+        definition->NativeInvalidationProperties(),
+        definition->CustomInvalidationProperties(),
+        definition->InputArgumentTypes(),
+        definition->GetPaintRenderingContext2DSettings()->alpha());
+    document_definition_map_.insert(name, std::move(document_definition));
   }
 }
 

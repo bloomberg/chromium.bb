@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -22,25 +22,25 @@ namespace blink {
 //
 // The document has a map of document paint definitions. Initially the map is
 // empty; it is populated when registerPaint(name, paintCtor) is called.
-class DocumentPaintDefinition final
-    : public GarbageCollectedFinalized<DocumentPaintDefinition> {
+class MODULES_EXPORT DocumentPaintDefinition {
  public:
-  explicit DocumentPaintDefinition(CSSPaintDefinition*);
+  explicit DocumentPaintDefinition(
+      const Vector<CSSPropertyID>& native_invalidation_properties,
+      const Vector<AtomicString>& custom_invalidation_properties,
+      const Vector<CSSSyntaxDescriptor>& input_argument_types,
+      bool alpha);
   virtual ~DocumentPaintDefinition();
 
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const {
-    return paint_definition_->NativeInvalidationProperties();
+    return native_invalidation_properties_;
   }
   const Vector<AtomicString>& CustomInvalidationProperties() const {
-    return paint_definition_->CustomInvalidationProperties();
+    return custom_invalidation_properties_;
   }
   const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const {
-    return paint_definition_->InputArgumentTypes();
+    return input_argument_types_;
   }
-  const PaintRenderingContext2DSettings* GetPaintRenderingContext2DSettings()
-      const {
-    return paint_definition_->GetPaintRenderingContext2DSettings();
-  }
+  bool alpha() const { return alpha_; }
 
   bool RegisterAdditionalPaintDefinition(const CSSPaintDefinition&);
 
@@ -48,10 +48,11 @@ class DocumentPaintDefinition final
     return registered_definitions_count_;
   }
 
-  virtual void Trace(blink::Visitor*);
-
  private:
-  Member<CSSPaintDefinition> paint_definition_;
+  Vector<CSSPropertyID> native_invalidation_properties_;
+  Vector<AtomicString> custom_invalidation_properties_;
+  Vector<CSSSyntaxDescriptor> input_argument_types_;
+  bool alpha_;
   unsigned registered_definitions_count_;
 };
 

@@ -6,27 +6,28 @@
 
 namespace blink {
 
-DocumentPaintDefinition::DocumentPaintDefinition(CSSPaintDefinition* definition)
-    : paint_definition_(definition), registered_definitions_count_(1u) {
-  DCHECK(definition);
-}
+DocumentPaintDefinition::DocumentPaintDefinition(
+    const Vector<CSSPropertyID>& native_invalidation_properties,
+    const Vector<AtomicString>& custom_invalidation_properties,
+    const Vector<CSSSyntaxDescriptor>& input_argument_types,
+    bool alpha)
+    : native_invalidation_properties_(native_invalidation_properties),
+      custom_invalidation_properties_(custom_invalidation_properties),
+      input_argument_types_(input_argument_types),
+      alpha_(alpha),
+      registered_definitions_count_(1u) {}
 
 DocumentPaintDefinition::~DocumentPaintDefinition() = default;
 
 bool DocumentPaintDefinition::RegisterAdditionalPaintDefinition(
     const CSSPaintDefinition& other) {
-  if (GetPaintRenderingContext2DSettings()->alpha() !=
-          other.GetPaintRenderingContext2DSettings()->alpha() ||
+  if (alpha() != other.GetPaintRenderingContext2DSettings()->alpha() ||
       NativeInvalidationProperties() != other.NativeInvalidationProperties() ||
       CustomInvalidationProperties() != other.CustomInvalidationProperties() ||
       InputArgumentTypes() != other.InputArgumentTypes())
     return false;
   registered_definitions_count_++;
   return true;
-}
-
-void DocumentPaintDefinition::Trace(blink::Visitor* visitor) {
-  visitor->Trace(paint_definition_);
 }
 
 }  // namespace blink

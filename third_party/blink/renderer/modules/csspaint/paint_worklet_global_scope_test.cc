@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
+#include "third_party/blink/renderer/modules/csspaint/document_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
 #include "third_party/blink/renderer/modules/worklet/worklet_thread_test_common.h"

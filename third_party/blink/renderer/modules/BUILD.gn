@@ -279,6 +279,7 @@ jumbo_source_set("unit_tests") {
     "canvas/offscreencanvas/offscreen_canvas_test.cc",
     "credentialmanager/credentials_container_test.cc",
     "credentialmanager/password_credential_test.cc",
+    "csspaint/document_paint_definition_test.cc",
     "csspaint/main_thread_document_paint_definition_test.cc",
     "csspaint/paint_rendering_context_2d_test.cc",
     "csspaint/paint_worklet_global_scope_test.cc",
