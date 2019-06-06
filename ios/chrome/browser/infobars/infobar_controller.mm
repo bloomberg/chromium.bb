@@ -32,7 +32,6 @@
   if (self) {
     _infoBarDelegate = infoBarDelegate;
     _presented = NO;
-    _view = [self infobarView];
   }
   return self;
 }
@@ -48,6 +47,14 @@
 - (void)detachView {
   _delegate = nullptr;
   _infoBarDelegate = nullptr;
+}
+
+#pragma mark - Properties
+
+- (UIView*)view {
+  if (!_view)
+    _view = [self infobarView];
+  return _view;
 }
 
 #pragma mark - Protected
