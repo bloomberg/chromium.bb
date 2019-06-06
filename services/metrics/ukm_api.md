@@ -85,14 +85,14 @@ Currently supported additional index fields are:
 #### Aggregation by Metrics in the Same Event
 
 In addition to the standard "profile" keys, aggregation can be done against
-another metric in the same event.  This is accomplished with the same <index>
+another metric in the same event. This is accomplished with the same `<index>`
 tag as above but including "metrics.OtherMetricName" in the fields list. There
 is no event name included as the metric must always be in the same event.
 
-The metric to act as a key must also have <aggregation>, <history>, and
-<statistics> tags with a valid statistic (currently only <enumeration> is
+The metric to act as a key must also have `<aggregation>`, `<history>`, and
+`<statistics>` tags with a valid statistic (currently only `<enumeration>` is
 supported). However, since generating statistics for this "key" metric isn't
-likely to be useful on its own, add "export=False" to its <statistics> tag.
+likely to be useful on its own, add `export=False` to its `<statistics>` tag.
 
 ```xml
 <event name="Memory.Experimental">
