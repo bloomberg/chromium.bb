@@ -92,6 +92,10 @@ class PLATFORM_EXPORT GraphicsLayerClient {
   // (see LocalFrameView::ShouldThrottleRendering()).
   virtual bool ShouldThrottleRendering() const { return false; }
 
+  // Content under a LayoutSVGHiddenContainer is an auxiliary resource for
+  // painting and hit testing.
+  virtual bool IsUnderSVGHiddenContainer() const { return false; }
+
   virtual bool IsTrackingRasterInvalidations() const { return false; }
 
   virtual void SetOverlayScrollbarsHidden(bool) {}

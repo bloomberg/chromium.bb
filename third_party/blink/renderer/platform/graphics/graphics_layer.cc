@@ -385,7 +385,7 @@ bool GraphicsLayer::PaintWithoutCommit(
     const IntRect* interest_rect) {
   DCHECK(PaintsContentOrHitTest());
 
-  if (client_.ShouldThrottleRendering())
+  if (client_.ShouldThrottleRendering() || client_.IsUnderSVGHiddenContainer())
     return false;
 
   IntRect new_interest_rect;
@@ -1041,6 +1041,9 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
   DCHECK(PaintsContentOrHitTest());
 
   if (client_.ShouldThrottleRendering())
+    return sk_sp<PaintRecord>(new PaintRecord);
+
+  if (client_.IsUnderSVGHiddenContainer())
     return sk_sp<PaintRecord>(new PaintRecord);
 
   if (client_.PaintBlockedByDisplayLock())

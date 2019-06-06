@@ -635,7 +635,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetIsUnderSVGHiddenContainer(bool value) {
     is_under_svg_hidden_container_ = value;
   }
-  bool IsUnderSVGHiddenContainer() { return is_under_svg_hidden_container_; }
+  bool IsUnderSVGHiddenContainer() const {
+    return is_under_svg_hidden_container_;
+  }
 
   bool PaintsWithFilters() const;
 

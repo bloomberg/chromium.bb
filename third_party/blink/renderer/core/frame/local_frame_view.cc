@@ -2555,6 +2555,7 @@ static void CollectDrawableLayersForLayerListRecursively(
   DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
 
   if (!layer || layer->Client().ShouldThrottleRendering() ||
+      layer->Client().IsUnderSVGHiddenContainer() ||
       layer->Client().PaintBlockedByDisplayLock()) {
     return;
   }

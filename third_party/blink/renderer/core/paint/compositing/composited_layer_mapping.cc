@@ -3498,6 +3498,10 @@ bool CompositedLayerMapping::ShouldThrottleRendering() const {
   return GetLayoutObject().GetFrame()->ShouldThrottleRendering();
 }
 
+bool CompositedLayerMapping::IsUnderSVGHiddenContainer() const {
+  return owning_layer_.IsUnderSVGHiddenContainer();
+}
+
 bool CompositedLayerMapping::IsTrackingRasterInvalidations() const {
   return GetLayoutObject().GetFrameView()->IsTrackingPaintInvalidations();
 }
