@@ -862,10 +862,6 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
   if (watch_time_reporter_)
     watch_time_reporter_->OnSeeking();
 
-  // Clear any new frame processed callbacks on seek; otherwise we'll end up
-  // logging a time long after the seek completes.
-  frame_time_report_cb_.Cancel();
-
   // TODO(sandersd): Move |seeking_| to PipelineController.
   // TODO(sandersd): Do we want to reset the idle timer here?
   delegate_->SetIdle(delegate_id_, false);
@@ -1787,10 +1783,6 @@ void WebMediaPlayerImpl::OnEnded() {
   ended_ = true;
   client_->TimeChanged();
 
-  // Clear any new frame processed callbacks on end; otherwise we'll end up
-  // logging a time long after playback ends.
-  frame_time_report_cb_.Cancel();
-
   // We don't actually want this to run until |client_| calls seek() or pause(),
   // but that should have already happened in timeChanged() and so this is
   // expected to be a no-op.
@@ -2335,21 +2327,6 @@ void WebMediaPlayerImpl::OnFrameShown() {
       FROM_HERE,
       base::BindOnce(&VideoFrameCompositor::SetIsPageVisible,
                      base::Unretained(compositor_.get()), !IsHidden()));
-
-  // Only track the time to the first frame if playing or about to play because
-  // of being shown and only for videos we would optimize background playback
-  // for.
-  if ((!paused_ && IsBackgroundOptimizationCandidate()) ||
-      paused_when_hidden_) {
-    frame_time_report_cb_.Reset(base::BindOnce(
-        &WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame, weak_this_,
-        base::TimeTicks::Now()));
-    vfc_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&VideoFrameCompositor::SetOnNewProcessedFrameCallback,
-                       base::Unretained(compositor_.get()),
-                       BindToCurrentLoop(frame_time_report_cb_.callback())));
-  }
 
   UpdateBackgroundVideoOptimizationState();
 
@@ -3398,20 +3375,6 @@ base::TimeDelta WebMediaPlayerImpl::GetPipelineMediaDuration() const {
 
   return pipeline_media_duration_for_test_.value_or(
       pipeline_controller_->GetMediaDuration());
-}
-
-void WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame(
-    base::TimeTicks foreground_time,
-    base::TimeTicks new_frame_time) {
-  base::TimeDelta time_to_first_frame = new_frame_time - foreground_time;
-  if (HasAudio()) {
-    UMA_HISTOGRAM_TIMES(
-        "Media.Video.TimeFromForegroundToFirstFrame.DisableTrack",
-        time_to_first_frame);
-  } else {
-    UMA_HISTOGRAM_TIMES("Media.Video.TimeFromForegroundToFirstFrame.Paused",
-                        time_to_first_frame);
-  }
 }
 
 void WebMediaPlayerImpl::SwitchToRemoteRenderer(

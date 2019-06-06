@@ -522,9 +522,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Return the pipeline media duration or the value overridden by tests.
   base::TimeDelta GetPipelineMediaDuration() const;
 
-  void ReportTimeFromForegroundToFirstFrame(base::TimeTicks foreground_time,
-                                            base::TimeTicks new_frame_time);
-
   // Records |duration| to the appropriate metric based on whether we're
   // handling a src= or MSE based playback.
   void RecordUnderflowDuration(base::TimeDelta duration);
@@ -914,8 +911,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool surface_layer_for_video_enabled_ = false;
 
   CreateSurfaceLayerBridgeCB create_bridge_callback_;
-
-  base::CancelableOnceCallback<void(base::TimeTicks)> frame_time_report_cb_;
 
   bool initial_video_height_recorded_ = false;
 
