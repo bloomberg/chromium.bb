@@ -262,7 +262,17 @@ template("mac_toolchain") {
       # corrupted by this process. Don't use spaces for source files or labels.
       rspfile = "{{output}}.rsp"
       rspfile_content = "{{inputs_newline}}"
-      command = "$env_wrapper rm -f {{output}} && TOOL_VERSION=${tool_versions.filter_libtool} python $script libtool -static {{arflags}} -o {{output}} -filelist $rspfile"
+
+      # libtool is part of the default path at /usr/bin/libtool. That binary is
+      # just a shim that calls out to xcrun to find the actual libtool. If we're
+      # using hermetic xcode, then we can explicitly specify the path to avoid
+      # invoking xcrun.
+      if (use_system_xcode) {
+        libtool = "libtool"
+      } else {
+        libtool = "$hermetic_xcode_path/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool"
+      }
+      command = "$env_wrapper rm -f {{output}} && TOOL_VERSION=${tool_versions.filter_libtool} python $script $libtool -static {{arflags}} -o {{output}} -filelist $rspfile"
       description = "LIBTOOL-STATIC {{output}}"
       outputs = [
         "{{output_dir}}/{{target_output_name}}{{output_extension}}",
