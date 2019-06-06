@@ -25,14 +25,14 @@ XRPlane::XRPlane(XRSession* session,
                  const HeapVector<Member<DOMPointReadOnly>>& polygon)
     : polygon_(polygon),
       orientation_(orientation),
-      pose_matrix_(pose_matrix),
+      pose_matrix_(std::make_unique<TransformationMatrix>(pose_matrix)),
       session_(session) {
   DVLOG(3) << __func__;
 }
 
 XRPose* XRPlane::getPose(XRReferenceSpace* reference_space) const {
   std::unique_ptr<TransformationMatrix> viewer_pose =
-      reference_space->GetViewerPoseMatrix(&pose_matrix_);
+      reference_space->GetViewerPoseMatrix(pose_matrix_.get());
   return MakeGarbageCollected<XRPose>(*viewer_pose,
                                       session_->EmulatedPosition());
 }
@@ -62,7 +62,8 @@ void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data) {
 
   orientation_ = mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
       plane_data->orientation);
-  pose_matrix_ = mojo::ConvertTo<blink::TransformationMatrix>(plane_data->pose);
+  pose_matrix_ = std::make_unique<TransformationMatrix>(
+      mojo::ConvertTo<blink::TransformationMatrix>(plane_data->pose));
   polygon_ = mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(
       plane_data->polygon);
 }

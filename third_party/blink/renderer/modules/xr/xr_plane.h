@@ -50,7 +50,7 @@ class XRPlane : public ScriptWrappable {
   base::Optional<Orientation> orientation_;
 
   // Plane center's pose in device (mojo) space.
-  TransformationMatrix pose_matrix_;
+  std::unique_ptr<TransformationMatrix> pose_matrix_;
 
   Member<XRSession> session_;
 };
