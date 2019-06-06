@@ -9,7 +9,6 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -58,9 +57,8 @@ const char kLinksTestURL2Text[] = "arrived";
   const GURL URL1 = self.testServer->GetURL(kLinksTestURL1);
 
   // Create a tab that will act as the parent tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text]);
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text];
   Tab* parentTab = chrome_test_util::GetCurrentTab();
 
   // Child tab should be inserted after the parent.
@@ -70,7 +68,7 @@ const char kLinksTestURL2Text[] = "arrived";
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2U]);
+  [ChromeEarlGrey waitForMainTabCount:2U];
   Tab* childTab1 = chrome_test_util::GetNextTab();
 
   // New child tab should be inserted AFTER |childTab1|.
@@ -80,7 +78,7 @@ const char kLinksTestURL2Text[] = "arrived";
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:3U]);
+  [ChromeEarlGrey waitForMainTabCount:3U];
   GREYAssertEqual(childTab1, chrome_test_util::GetNextTab(),
                   @"Unexpected next tab");
 
@@ -88,15 +86,13 @@ const char kLinksTestURL2Text[] = "arrived";
   // grouping with the current child tabs. Total number of tabs should not
   // change.
   const GURL URL2 = self.testServer->GetURL(kLinksTestURL2);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL2Text]);
+  [ChromeEarlGrey loadURL:URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL2Text];
   GREYAssertEqual(3U, [ChromeEarlGrey mainTabCount],
                   @"Unexpected number of tabs");
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text]);
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text];
   GREYAssertEqual(3U, [ChromeEarlGrey mainTabCount],
                   @"Unexpected number of tabs");
 
@@ -107,7 +103,7 @@ const char kLinksTestURL2Text[] = "arrived";
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:4U]);
+  [ChromeEarlGrey waitForMainTabCount:4U];
   Tab* childTab3 = chrome_test_util::GetNextTab();
   GREYAssertNotEqual(childTab1, childTab3, @"Unexpected next tab");
 
@@ -118,7 +114,7 @@ const char kLinksTestURL2Text[] = "arrived";
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:5U]);
+  [ChromeEarlGrey waitForMainTabCount:5U];
   GREYAssertEqual(childTab3, chrome_test_util::GetNextTab(),
                   @"Unexpected next tab");
 
@@ -129,8 +125,8 @@ const char kLinksTestURL2Text[] = "arrived";
 
   // Add a non-owned tab. It should be added at the end and marked as the
   // current tab. Next tab should wrap back to index 0, the original parent tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:6U]);
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey waitForMainTabCount:6U];
   GREYAssertEqual(parentTab, chrome_test_util::GetNextTab(),
                   @"Unexpected next tab");
 

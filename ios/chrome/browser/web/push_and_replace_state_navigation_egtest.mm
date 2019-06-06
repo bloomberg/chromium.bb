@@ -10,7 +10,6 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/net/url_test_util.h"
@@ -64,24 +63,20 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const std::string pushStatePathSpaceOmniboxText =
       net::GetContentAndFragmentForUrl(pushStatePathSpaceURL);
   web::test::SetUpFileBasedHttpServer();
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)];
 
   // Push 3 URLs. Verify that the URL changed and the status was updated.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushStateHashWithObject"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStateHashWithObject"];
   [self assertStatusText:@"pushStateHashWithObject"
          withOmniboxText:pushStateHashWithObjectOmniboxText
               pageLoaded:NO];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushStateRootPath"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStateRootPath"];
   [self assertStatusText:@"pushStateRootPath"
          withOmniboxText:pushStateRootPathOmniboxText
               pageLoaded:NO];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushStatePathSpace"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStatePathSpace"];
   [self assertStatusText:@"pushStatePathSpace"
          withOmniboxText:pushStatePathSpaceOmniboxText
               pageLoaded:NO];
@@ -98,8 +93,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
          withOmniboxText:pushStateHashWithObjectOmniboxText
               pageLoaded:NO];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"goBack"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"goBack"];
   const GURL historyTestURL = web::test::HttpServer::MakeUrl(kHistoryTestUrl);
   [self assertStatusText:nil
          withOmniboxText:net::GetContentAndFragmentForUrl(historyTestURL)
@@ -107,8 +101,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
 
   // Go forward 2 pages and check that the page doesn't load and the status text
   // is updated by the popstate event.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"goForward2"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"goForward2"];
   [self assertStatusText:@"pushStateRootPath"
          withOmniboxText:pushStateRootPathOmniboxText
               pageLoaded:NO];
@@ -120,17 +113,15 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const GURL initialURL = web::test::HttpServer::MakeUrl(kNonPushedUrl);
   const std::string initialOmniboxText =
       net::GetContentAndFragmentForUrl(initialURL);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:initialURL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)]);
+  [ChromeEarlGrey loadURL:initialURL];
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)];
 
   // Replace the URL and go back then forward.
   const GURL replaceStateHashWithObjectURL =
       web::test::HttpServer::MakeUrl(kReplaceStateHashWithObjectURL);
   const std::string replaceStateHashWithObjectOmniboxText =
       net::GetContentAndFragmentForUrl(replaceStateHashWithObjectURL);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"replaceStateHashWithObject"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"replaceStateHashWithObject"];
   [self assertStatusText:@"replaceStateHashWithObject"
          withOmniboxText:replaceStateHashWithObjectOmniboxText
               pageLoaded:NO];
@@ -154,8 +145,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
       web::test::HttpServer::MakeUrl(kPushStateHashStringURL);
   const std::string pushStateHashStringOmniboxText =
       net::GetContentAndFragmentForUrl(pushStateHashStringURL);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushStateHashString"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStateHashString"];
   [self assertStatusText:@"pushStateHashString"
          withOmniboxText:pushStateHashStringOmniboxText
               pageLoaded:NO];
@@ -164,8 +154,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
       web::test::HttpServer::MakeUrl(kReplaceStateHashStringURL);
   const std::string replaceStateHashStringOmniboxText =
       net::GetContentAndFragmentForUrl(replaceStateHashStringURL);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"replaceStateHashString"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"replaceStateHashString"];
   [self assertStatusText:@"replaceStateHashString"
          withOmniboxText:replaceStateHashStringOmniboxText
               pageLoaded:NO];
@@ -174,8 +163,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
       web::test::HttpServer::MakeUrl(kPushStatePathURL);
   const std::string pushStatePathOmniboxText =
       net::GetContentAndFragmentForUrl(pushStatePathURL);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushStatePath"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStatePath"];
   [self assertStatusText:@"pushStatePath"
          withOmniboxText:pushStatePathOmniboxText
               pageLoaded:NO];
@@ -184,8 +172,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
       web::test::HttpServer::MakeUrl(kReplaceStateRootPathSpaceURL);
   const std::string replaceStateRootPathSpaceOmniboxText =
       net::GetContentAndFragmentForUrl(replaceStateRootPathSpaceURL);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"replaceStateRootPathSpace"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"replaceStateRootPathSpace"];
   [self assertStatusText:@"replaceStateRootPathSpace"
          withOmniboxText:replaceStateRootPathSpaceOmniboxText
               pageLoaded:NO];
@@ -201,8 +188,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
               pageLoaded:NO];
 
   // Go forward and check URL.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"goForward2"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"goForward2"];
   [self assertStatusText:@"replaceStateRootPathSpace"
          withOmniboxText:replaceStateRootPathSpaceOmniboxText
               pageLoaded:NO];
@@ -213,7 +199,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   GURL nonPushedURL = web::test::HttpServer::MakeUrl(kNonPushedUrl);
   web::test::SetUpFileBasedHttpServer();
   const GURL historyTestURL = web::test::HttpServer::MakeUrl(kHistoryTestUrl);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:historyTestURL]);
+  [ChromeEarlGrey loadURL:historyTestURL];
   const std::string historyTestOmniboxText =
       net::GetContentAndFragmentForUrl(historyTestURL);
 
@@ -222,24 +208,21 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
       web::test::HttpServer::MakeUrl(kPushStateHashStringURL);
   const std::string pushStateHashStringOmniboxText =
       net::GetContentAndFragmentForUrl(pushStateHashStringURL);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushStateHashString"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStateHashString"];
   [self assertStatusText:@"pushStateHashString"
          withOmniboxText:pushStateHashStringOmniboxText
               pageLoaded:NO];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushStateHashString"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStateHashString"];
   [self assertStatusText:@"pushStateHashString"
          withOmniboxText:pushStateHashStringOmniboxText
               pageLoaded:NO];
 
   // Load a non-pushed URL.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:nonPushedURL]);
+  [ChromeEarlGrey loadURL:nonPushedURL];
 
   // Load history.html and push another URL.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:historyTestURL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushStateHashString"]);
+  [ChromeEarlGrey loadURL:historyTestURL];
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStateHashString"];
   [self assertStatusText:@"pushStateHashString"
          withOmniboxText:pushStateHashStringOmniboxText
               pageLoaded:NO];
@@ -270,16 +253,14 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
               pageLoaded:NO];
 
   // Go forward 4 entries at once (to third #string) and verify page did load.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"goForward4"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"goForward4"];
 
   [self assertStatusText:nil
          withOmniboxText:pushStateHashStringOmniboxText
               pageLoaded:expectOnLoad];
 
   // Go back 4 entries at once (to first #string) and verify page did load.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"goBack4"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"goBack4"];
 
   [self assertStatusText:nil
          withOmniboxText:pushStateHashStringOmniboxText
@@ -306,33 +287,27 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   NSString* pushStateUnicode2Status = @"pushStateUnicode2∢";
 
   web::test::SetUpFileBasedHttpServer();
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)];
 
   // Do 2 push states with unicode characters.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushStateUnicode"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStateUnicode"];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::OmniboxText(pushStateUnicode)]
       assertWithMatcher:grey_notNil()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:pushStateUnicodeLabel]);
+  [ChromeEarlGrey waitForWebStateContainingText:pushStateUnicodeLabel];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushStateUnicode2"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStateUnicode2"];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::OmniboxText(pushStateUnicode2)]
       assertWithMatcher:grey_notNil()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:pushStateUnicode2Label]);
+  [ChromeEarlGrey waitForWebStateContainingText:pushStateUnicode2Label];
 
   // Do a push state without a unicode character.
   const GURL pushStatePathURL =
       web::test::HttpServer::MakeUrl(kPushStatePathURL);
   const std::string pushStatePathOmniboxText =
       net::GetContentAndFragmentForUrl(pushStatePathURL);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushStatePath"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStatePath"];
 
   [self assertStatusText:@"pushStatePath"
          withOmniboxText:pushStatePathOmniboxText
@@ -380,15 +355,13 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
       [NSString stringWithFormat:simplePage, baseTag, pushAndReplaceButtons]);
   web::test::SetUpSimpleHttpServer(responses);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:originURL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"pushState"]);
+  [ChromeEarlGrey loadURL:originURL];
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushState"];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           pushResultOmniboxText)]
       assertWithMatcher:grey_notNil()];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"replaceState"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"replaceState"];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           replaceResultOmniboxText)]
       assertWithMatcher:grey_notNil()];
@@ -403,17 +376,15 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
          withOmniboxText:(const std::string&)omniboxText
               pageLoaded:(BOOL)pageLoaded {
   if (pageLoaded) {
-    CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebStateContainingText:"onload"]);
+    [ChromeEarlGrey waitForWebStateContainingText:"onload"];
   } else {
-    CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebStateNotContainingText:"onload"]);
+    [ChromeEarlGrey waitForWebStateNotContainingText:"onload"];
   }
 
   if (status != nil) {
     NSString* statusLabel = [NSString stringWithFormat:@"Action: %@", status];
-    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-        waitForWebStateContainingText:base::SysNSStringToUTF8(statusLabel)]);
+    [ChromeEarlGrey
+        waitForWebStateContainingText:base::SysNSStringToUTF8(statusLabel)];
   }
 
   [[EarlGrey

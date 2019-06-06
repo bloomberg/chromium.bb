@@ -17,7 +17,6 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
@@ -186,12 +185,10 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   web::test::SetUpHttpServer(std::move(uniqueInfinitePendingProvider));
   // The page being loaded never completes, so call the LoadUrl helper that
   // does not wait for the page to complete loading.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:infinitePendingURL
-                                  waitForCompletion:NO]);
+  [ChromeEarlGrey loadURL:infinitePendingURL waitForCompletion:NO];
 
   // Wait until the page is half loaded.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPageText]);
+  [ChromeEarlGrey waitForWebStateContainingText:kPageText];
 
   // Verify progress view visible and halfway progress.
   [[EarlGrey selectElementWithMatcher:ProgressViewWithProgress(0.5)]
@@ -225,15 +222,13 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   web::test::AddResponseProvider(std::move(uniqueInfinitePendingProvider));
 
   // Load form first.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:formURL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kFormPageText]);
+  [ChromeEarlGrey loadURL:formURL];
+  [ChromeEarlGrey waitForWebStateContainingText:kFormPageText];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey submitWebStateFormWithID:kFormID]);
+  [ChromeEarlGrey submitWebStateFormWithID:kFormID];
 
   // Wait until the page is half loaded.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPageText]);
+  [ChromeEarlGrey waitForWebStateContainingText:kPageText];
 
   // Verify progress view visible and halfway progress.
   [[EarlGrey selectElementWithMatcher:ProgressViewWithProgress(0.5)]
@@ -258,16 +253,14 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   responses[simplePageURL] = kPageText;
   web::test::SetUpSimpleHttpServer(responses);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:formURL]);
+  [ChromeEarlGrey loadURL:formURL];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kFormPageText]);
+  [ChromeEarlGrey waitForWebStateContainingText:kFormPageText];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey submitWebStateFormWithID:kFormID]);
+  [ChromeEarlGrey submitWebStateFormWithID:kFormID];
 
   // Verify the new page has been loaded.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPageText]);
+  [ChromeEarlGrey waitForWebStateContainingText:kPageText];
 
   // Verify progress view is not visible.
   [[EarlGrey selectElementWithMatcher:ProgressView()]
@@ -287,13 +280,12 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   responses[formURL] = [self formPageHTMLWithSuppressedSubmitEvent];
   web::test::SetUpSimpleHttpServer(responses);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:formURL]);
+  [ChromeEarlGrey loadURL:formURL];
 
   // Verify the form page has been loaded.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kFormPageText]);
+  [ChromeEarlGrey waitForWebStateContainingText:kFormPageText];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey submitWebStateFormWithID:kFormID]);
+  [ChromeEarlGrey submitWebStateFormWithID:kFormID];
 
   // Verify progress view is not visible.
   [[EarlGrey selectElementWithMatcher:grey_kindOfClass([MDCProgressView class])]
