@@ -68,6 +68,11 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
                              base::File::Error result,
                              const base::File::Info& info);
 
+  void RemoveImpl(RemoveCallback callback);
+
+  void WriteImpl(uint64_t offset,
+                 blink::mojom::BlobPtr data,
+                 WriteCallback callback);
   void DoWriteBlob(WriteCallback callback,
                    uint64_t position,
                    std::unique_ptr<storage::BlobDataHandle> blob);
@@ -76,6 +81,9 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
                                std::unique_ptr<storage::BlobDataHandle> blob,
                                base::File::Error result,
                                const base::File::Info& file_info);
+  void WriteStreamImpl(uint64_t offset,
+                       mojo::ScopedDataPipeConsumerHandle stream,
+                       WriteStreamCallback callback);
   void DoWriteStreamWithFileInfo(WriteStreamCallback callback,
                                  uint64_t position,
                                  mojo::ScopedDataPipeConsumerHandle data_pipe,
@@ -85,6 +93,8 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
                 base::File::Error result,
                 int64_t bytes,
                 bool complete);
+
+  void TruncateImpl(uint64_t length, TruncateCallback callback);
 
   base::WeakPtrFactory<NativeFileSystemFileHandleImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemFileHandleImpl);

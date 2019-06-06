@@ -52,6 +52,13 @@ void NativeFileSystemFileHandleImpl::RequestPermission(
 
 void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (GetReadPermissionStatus() != PermissionStatus::GRANTED) {
+    std::move(callback).Run(
+        NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
+        nullptr);
+    return;
+  }
+
   // TODO(mek): Check backend::SupportsStreaming and create snapshot file if
   // streaming is not supported.
   operation_runner()->GetMetadata(
@@ -66,12 +73,14 @@ void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
 void NativeFileSystemFileHandleImpl::Remove(RemoveCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  operation_runner()->RemoveFile(
-      url(), base::BindOnce(
-                 [](RemoveCallback callback, base::File::Error result) {
-                   std::move(callback).Run(NativeFileSystemError::New(result));
-                 },
-                 std::move(callback)));
+  RunWithWritePermission(
+      base::BindOnce(&NativeFileSystemFileHandleImpl::RemoveImpl,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce([](RemoveCallback callback) {
+        std::move(callback).Run(
+            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED));
+      }),
+      std::move(callback));
 }
 
 void NativeFileSystemFileHandleImpl::Write(uint64_t offset,
@@ -79,10 +88,15 @@ void NativeFileSystemFileHandleImpl::Write(uint64_t offset,
                                            WriteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  blob_context()->GetBlobDataFromBlobPtr(
-      std::move(data),
-      base::BindOnce(&NativeFileSystemFileHandleImpl::DoWriteBlob,
-                     weak_factory_.GetWeakPtr(), std::move(callback), offset));
+  RunWithWritePermission(
+      base::BindOnce(&NativeFileSystemFileHandleImpl::WriteImpl,
+                     weak_factory_.GetWeakPtr(), offset, std::move(data)),
+      base::BindOnce([](WriteCallback callback) {
+        std::move(callback).Run(
+            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
+            0);
+      }),
+      std::move(callback));
 }
 
 void NativeFileSystemFileHandleImpl::WriteStream(
@@ -91,33 +105,29 @@ void NativeFileSystemFileHandleImpl::WriteStream(
     WriteStreamCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // FileSystemOperationRunner assumes that positions passed to Write are always
-  // valid, and will NOTREACHED() if that is not the case, so first check the
-  // size of the file to make sure the position passed in from the renderer is
-  // in fact valid.
-  // Of course the file could still change between checking its size and the
-  // write operation being started, but this is at least a lot better than the
-  // old implementation where the renderer only checks against how big it thinks
-  // the file currently is.
-  // TODO(https://crbug.com/957214): Fix this situation.
-  operation_runner()->GetMetadata(
-      url(), FileSystemOperation::GET_METADATA_FIELD_SIZE,
-      base::BindOnce(&NativeFileSystemFileHandleImpl::DoWriteStreamWithFileInfo,
-                     weak_factory_.GetWeakPtr(), std::move(callback), offset,
-                     std::move(stream)));
+  RunWithWritePermission(
+      base::BindOnce(&NativeFileSystemFileHandleImpl::WriteStreamImpl,
+                     weak_factory_.GetWeakPtr(), offset, std::move(stream)),
+      base::BindOnce([](WriteStreamCallback callback) {
+        std::move(callback).Run(
+            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
+            0);
+      }),
+      std::move(callback));
 }
 
 void NativeFileSystemFileHandleImpl::Truncate(uint64_t length,
                                               TruncateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  operation_runner()->Truncate(
-      url(), length,
-      base::BindOnce(
-          [](TruncateCallback callback, base::File::Error result) {
-            std::move(callback).Run(NativeFileSystemError::New(result));
-          },
-          std::move(callback)));
+  RunWithWritePermission(
+      base::BindOnce(&NativeFileSystemFileHandleImpl::TruncateImpl,
+                     weak_factory_.GetWeakPtr(), length),
+      base::BindOnce([](TruncateCallback callback) {
+        std::move(callback).Run(
+            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED));
+      }),
+      std::move(callback));
 }
 
 void NativeFileSystemFileHandleImpl::Transfer(
@@ -163,6 +173,31 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
       NativeFileSystemError::New(base::File::FILE_OK),
       blink::mojom::SerializedBlob::New(uuid, "application/octet-stream",
                                         info.size, blob_ptr.PassInterface()));
+}
+void NativeFileSystemFileHandleImpl::RemoveImpl(RemoveCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(GetWritePermissionStatus(),
+            blink::mojom::PermissionStatus::GRANTED);
+
+  operation_runner()->RemoveFile(
+      url(), base::BindOnce(
+                 [](RemoveCallback callback, base::File::Error result) {
+                   std::move(callback).Run(NativeFileSystemError::New(result));
+                 },
+                 std::move(callback)));
+}
+
+void NativeFileSystemFileHandleImpl::WriteImpl(uint64_t offset,
+                                               blink::mojom::BlobPtr data,
+                                               WriteCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(GetWritePermissionStatus(),
+            blink::mojom::PermissionStatus::GRANTED);
+
+  blob_context()->GetBlobDataFromBlobPtr(
+      std::move(data),
+      base::BindOnce(&NativeFileSystemFileHandleImpl::DoWriteBlob,
+                     weak_factory_.GetWeakPtr(), std::move(callback), offset));
 }
 
 void NativeFileSystemFileHandleImpl::DoWriteBlob(
@@ -214,6 +249,30 @@ void NativeFileSystemFileHandleImpl::DoWriteBlobWithFileInfo(
                           base::Owned(new WriteState{std::move(callback)})));
 }
 
+void NativeFileSystemFileHandleImpl::WriteStreamImpl(
+    uint64_t offset,
+    mojo::ScopedDataPipeConsumerHandle stream,
+    WriteStreamCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(GetWritePermissionStatus(),
+            blink::mojom::PermissionStatus::GRANTED);
+
+  // FileSystemOperationRunner assumes that positions passed to Write are always
+  // valid, and will NOTREACHED() if that is not the case, so first check the
+  // size of the file to make sure the position passed in from the renderer is
+  // in fact valid.
+  // Of course the file could still change between checking its size and the
+  // write operation being started, but this is at least a lot better than the
+  // old implementation where the renderer only checks against how big it thinks
+  // the file currently is.
+  // TODO(https://crbug.com/957214): Fix this situation.
+  operation_runner()->GetMetadata(
+      url(), FileSystemOperation::GET_METADATA_FIELD_SIZE,
+      base::BindOnce(&NativeFileSystemFileHandleImpl::DoWriteStreamWithFileInfo,
+                     weak_factory_.GetWeakPtr(), std::move(callback), offset,
+                     std::move(stream)));
+}
+
 void NativeFileSystemFileHandleImpl::DoWriteStreamWithFileInfo(
     WriteStreamCallback callback,
     uint64_t position,
@@ -247,6 +306,21 @@ void NativeFileSystemFileHandleImpl::DidWrite(WriteState* state,
     std::move(state->callback)
         .Run(NativeFileSystemError::New(result), state->bytes_written);
   }
+}
+
+void NativeFileSystemFileHandleImpl::TruncateImpl(uint64_t length,
+                                                  TruncateCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(GetWritePermissionStatus(),
+            blink::mojom::PermissionStatus::GRANTED);
+
+  operation_runner()->Truncate(
+      url(), length,
+      base::BindOnce(
+          [](TruncateCallback callback, base::File::Error result) {
+            std::move(callback).Run(NativeFileSystemError::New(result));
+          },
+          std::move(callback)));
 }
 
 }  // namespace content

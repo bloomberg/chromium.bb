@@ -62,6 +62,15 @@ class CONTENT_EXPORT NativeFileSystemHandleBase {
   void DoRequestPermission(bool writable,
                            base::OnceCallback<void(PermissionStatus)> callback);
 
+  // Invokes |callback|, possibly after first requesting write permission. If
+  // permission isn't granted, |permission_denied| is invoked instead. The
+  // callbacks can be invoked synchronously.
+  template <typename CallbackArgType>
+  void RunWithWritePermission(
+      base::OnceCallback<void(CallbackArgType)> callback,
+      base::OnceCallback<void(CallbackArgType)> no_permission_callback,
+      CallbackArgType callback_arg);
+
  protected:
   NativeFileSystemManagerImpl* manager() { return manager_; }
   const BindingContext& context() { return context_; }
@@ -89,6 +98,28 @@ class CONTENT_EXPORT NativeFileSystemHandleBase {
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemHandleBase);
 };
+
+template <typename CallbackArgType>
+void NativeFileSystemHandleBase::RunWithWritePermission(
+    base::OnceCallback<void(CallbackArgType)> callback,
+    base::OnceCallback<void(CallbackArgType)> no_permission_callback,
+    CallbackArgType callback_arg) {
+  DoRequestPermission(
+      /*writable=*/true,
+      base::BindOnce(
+          [](base::OnceCallback<void(CallbackArgType)> callback,
+             base::OnceCallback<void(CallbackArgType)> no_permission_callback,
+             CallbackArgType callback_arg,
+             blink::mojom::PermissionStatus status) {
+            if (status == blink::mojom::PermissionStatus::GRANTED) {
+              std::move(callback).Run(std::move(callback_arg));
+              return;
+            }
+            std::move(no_permission_callback).Run(std::move(callback_arg));
+          },
+          std::move(callback), std::move(no_permission_callback),
+          std::move(callback_arg)));
+}
 
 }  // namespace content
 

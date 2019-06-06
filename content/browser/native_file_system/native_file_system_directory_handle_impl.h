@@ -52,10 +52,18 @@ class NativeFileSystemDirectoryHandleImpl
   // State that is kept for the duration of a GetEntries/ReadDirectory call.
   struct ReadDirectoryState;
 
-  void DidGetFile(storage::FileSystemURL url,
+  // This method creates the file if it does not currently exists. I.e. it is
+  // the implementation for passing create=true to GetFile.
+  void GetFileWithWritePermission(const storage::FileSystemURL& child_url,
+                                  GetFileCallback callback);
+  void DidGetFile(const storage::FileSystemURL& url,
                   GetFileCallback callback,
                   base::File::Error result);
-  void DidGetDirectory(storage::FileSystemURL url,
+  // This method creates the directory if it does not currently exists. I.e. it
+  // is the implementation for passing create=true to GetDirectory.
+  void GetDirectoryWithWritePermission(const storage::FileSystemURL& child_url,
+                                       GetDirectoryCallback callback);
+  void DidGetDirectory(const storage::FileSystemURL& url,
                        GetDirectoryCallback callback,
                        base::File::Error result);
   void DidReadDirectory(
@@ -63,6 +71,8 @@ class NativeFileSystemDirectoryHandleImpl
       base::File::Error result,
       std::vector<filesystem::mojom::DirectoryEntry> file_list,
       bool has_more);
+
+  void RemoveImpl(bool recurse, RemoveCallback callback);
 
   // Calculates a FileSystemURL for a (direct) child of this directory with the
   // given name.  Returns an error when |name| includes invalid input like "/".

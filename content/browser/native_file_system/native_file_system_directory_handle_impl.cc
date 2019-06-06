@@ -89,12 +89,27 @@ void NativeFileSystemDirectoryHandleImpl::GetFile(const std::string& name,
     return;
   }
 
+  if (GetReadPermissionStatus() != PermissionStatus::GRANTED) {
+    std::move(callback).Run(
+        NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
+        nullptr);
+    return;
+  }
+
   if (create) {
-    operation_runner()->CreateFile(
-        child_url, /*exclusive=*/false,
-        base::BindOnce(&NativeFileSystemDirectoryHandleImpl::DidGetFile,
-                       weak_factory_.GetWeakPtr(), child_url,
-                       std::move(callback)));
+    // If |create| is true, write permission is required unconditionally, i.e.
+    // even if the file already exists. This is intentional, and matches the
+    // behavior that is specified in the spec.
+    RunWithWritePermission(
+        base::BindOnce(
+            &NativeFileSystemDirectoryHandleImpl::GetFileWithWritePermission,
+            weak_factory_.GetWeakPtr(), child_url),
+        base::BindOnce([](GetFileCallback callback) {
+          std::move(callback).Run(
+              NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
+              nullptr);
+        }),
+        std::move(callback));
   } else {
     operation_runner()->FileExists(
         child_url,
@@ -117,12 +132,27 @@ void NativeFileSystemDirectoryHandleImpl::GetDirectory(
     return;
   }
 
+  if (GetReadPermissionStatus() != PermissionStatus::GRANTED) {
+    std::move(callback).Run(
+        NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
+        nullptr);
+    return;
+  }
+
   if (create) {
-    operation_runner()->CreateDirectory(
-        child_url, /*exclusive=*/false, /*recursive=*/false,
-        base::BindOnce(&NativeFileSystemDirectoryHandleImpl::DidGetDirectory,
-                       weak_factory_.GetWeakPtr(), child_url,
-                       std::move(callback)));
+    // If |create| is true, write permission is required unconditionally, i.e.
+    // even if the file already exists. This is intentional, and matches the
+    // behavior that is specified in the spec.
+    RunWithWritePermission(
+        base::BindOnce(&NativeFileSystemDirectoryHandleImpl::
+                           GetDirectoryWithWritePermission,
+                       weak_factory_.GetWeakPtr(), child_url),
+        base::BindOnce([](GetDirectoryCallback callback) {
+          std::move(callback).Run(
+              NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
+              nullptr);
+        }),
+        std::move(callback));
   } else {
     operation_runner()->DirectoryExists(
         child_url,
@@ -147,13 +177,14 @@ void NativeFileSystemDirectoryHandleImpl::Remove(bool recurse,
                                                  RemoveCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  operation_runner()->Remove(
-      url(), recurse,
-      base::BindOnce(
-          [](RemoveCallback callback, base::File::Error result) {
-            std::move(callback).Run(NativeFileSystemError::New(result));
-          },
-          std::move(callback)));
+  RunWithWritePermission(
+      base::BindOnce(&NativeFileSystemDirectoryHandleImpl::RemoveImpl,
+                     weak_factory_.GetWeakPtr(), recurse),
+      base::BindOnce([](RemoveCallback callback) {
+        std::move(callback).Run(
+            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED));
+      }),
+      std::move(callback));
 }
 
 void NativeFileSystemDirectoryHandleImpl::Transfer(
@@ -163,9 +194,24 @@ void NativeFileSystemDirectoryHandleImpl::Transfer(
   manager()->CreateTransferToken(*this, std::move(token));
 }
 
-void NativeFileSystemDirectoryHandleImpl::DidGetFile(storage::FileSystemURL url,
-                                                     GetFileCallback callback,
-                                                     base::File::Error result) {
+void NativeFileSystemDirectoryHandleImpl::GetFileWithWritePermission(
+    const storage::FileSystemURL& child_url,
+    GetFileCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(GetWritePermissionStatus(),
+            blink::mojom::PermissionStatus::GRANTED);
+
+  operation_runner()->CreateFile(
+      child_url, /*exclusive=*/false,
+      base::BindOnce(&NativeFileSystemDirectoryHandleImpl::DidGetFile,
+                     weak_factory_.GetWeakPtr(), child_url,
+                     std::move(callback)));
+}
+
+void NativeFileSystemDirectoryHandleImpl::DidGetFile(
+    const storage::FileSystemURL& url,
+    GetFileCallback callback,
+    base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (result != base::File::FILE_OK) {
@@ -178,8 +224,22 @@ void NativeFileSystemDirectoryHandleImpl::DidGetFile(storage::FileSystemURL url,
       manager()->CreateFileHandle(context(), url, file_system()));
 }
 
+void NativeFileSystemDirectoryHandleImpl::GetDirectoryWithWritePermission(
+    const storage::FileSystemURL& child_url,
+    GetDirectoryCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(GetWritePermissionStatus(),
+            blink::mojom::PermissionStatus::GRANTED);
+
+  operation_runner()->CreateDirectory(
+      child_url, /*exclusive=*/false, /*recursive=*/false,
+      base::BindOnce(&NativeFileSystemDirectoryHandleImpl::DidGetDirectory,
+                     weak_factory_.GetWeakPtr(), child_url,
+                     std::move(callback)));
+}
+
 void NativeFileSystemDirectoryHandleImpl::DidGetDirectory(
-    storage::FileSystemURL url,
+    const storage::FileSystemURL& url,
     GetDirectoryCallback callback,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -229,6 +289,21 @@ void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
         .Run(NativeFileSystemError::New(base::File::FILE_OK),
              std::move(state->entries));
   }
+}
+
+void NativeFileSystemDirectoryHandleImpl::RemoveImpl(bool recurse,
+                                                     RemoveCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(GetWritePermissionStatus(),
+            blink::mojom::PermissionStatus::GRANTED);
+
+  operation_runner()->Remove(
+      url(), recurse,
+      base::BindOnce(
+          [](RemoveCallback callback, base::File::Error result) {
+            std::move(callback).Run(NativeFileSystemError::New(result));
+          },
+          std::move(callback)));
 }
 
 base::File::Error NativeFileSystemDirectoryHandleImpl::GetChildURL(
