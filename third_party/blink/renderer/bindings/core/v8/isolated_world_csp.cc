@@ -51,7 +51,7 @@ class IsolatedWorldCSPDelegate final
     // https://w3c.github.io/webappsec-csp/#violation-url.
     // TODO(crbug.com/916885): Figure out if we want to support violation
     // reporting for isolated world CSPs.
-    DEFINE_STATIC_LOCAL(KURL, g_empty_url, ());
+    DEFINE_STATIC_LOCAL(const KURL, g_empty_url, ());
     return g_empty_url;
   }
 
