@@ -26,6 +26,7 @@ xf-display-panel {
     max-width: 216px;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .xf-panel-label-text {
@@ -41,13 +42,26 @@ xf-display-panel {
 }
 
 .xf-padder-16 {
-    min-width: 16px;
+    width: 16px;
 }
 
 .xf-padder-24 {
-    min-width: 24px;
+    flex-grow: 16;
+    width: 24px;
 }
 
 xf-circular-progress {
     padding: 16px;
+}
+
+xf-activity-complete {
+    padding: 16px;
+}
+
+.xf-success {
+    color: rgb(52, 168, 83);
+}
+
+.xf-failure {
+    color: rgb(234, 67, 53);
 }

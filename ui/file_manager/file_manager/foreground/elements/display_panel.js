@@ -43,20 +43,20 @@ class DisplayPanel extends HTMLElement {
    */
   static get template_() {
     return `<style>
-                    #container {
-                        align-items: center;
-                        background-color: #FFF;
-                        box-shadow: -2px -1px rgba(60, 64, 67, 0.15),
-                                    -1px 2px rgba(60, 64, 67, 0.3),
-                                    2px 0px rgba(60, 64, 67, 0.15);
-                        border-radius: 4px;
-                        display: flex;
-                        flex-direction: column;
-                        max-width: 400px;
-                        z-index: 100;
-                    }
-                </style>
-                <div id="container"></div>`;
+              #container {
+                  align-items: stretch;
+                  background-color: #FFF;
+                  box-shadow: -2px -1px rgba(60, 64, 67, 0.15),
+                              -1px 2px rgba(60, 64, 67, 0.3),
+                              2px 0px rgba(60, 64, 67, 0.15);
+                  border-radius: 4px;
+                  display: flex;
+                  flex-direction: column;
+                  max-width: min-content;
+                  z-index: 100;
+              }
+            </style>
+            <div id="container"></div>`;
   }
 
   /**
