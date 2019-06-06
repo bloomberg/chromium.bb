@@ -11,6 +11,7 @@
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/host/host_details.h"
+#include "remoting/proto/remoting/v1/remote_support_host_service.grpc.pb.h"
 #include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
@@ -35,13 +36,57 @@ protocol::ErrorCode MapError(grpc::StatusCode status_code) {
 
 }  // namespace
 
+class RemotingRegisterSupportHostRequest::RegisterSupportHostClientImpl final
+    : public RegisterSupportHostClient {
+ public:
+  explicit RegisterSupportHostClientImpl(OAuthTokenGetter* token_getter);
+  ~RegisterSupportHostClientImpl() override;
+
+  void RegisterSupportHost(
+      const apis::v1::RegisterSupportHostRequest& request,
+      RegisterSupportHostResponseCallback callback) override;
+  void CancelPendingRequests() override;
+
+ private:
+  using RemoteSupportService = apis::v1::RemoteSupportService;
+
+  GrpcAuthenticatedExecutor grpc_executor_;
+  std::unique_ptr<RemoteSupportService::Stub> remote_support_;
+
+  DISALLOW_COPY_AND_ASSIGN(RegisterSupportHostClientImpl);
+};
+
+RemotingRegisterSupportHostRequest::RegisterSupportHostClientImpl::
+    RegisterSupportHostClientImpl(OAuthTokenGetter* token_getter)
+    : grpc_executor_(token_getter),
+      remote_support_(RemoteSupportService::NewStub(CreateSslChannelForEndpoint(
+          ServiceUrls::GetInstance()->remoting_server_endpoint()))) {}
+
+RemotingRegisterSupportHostRequest::RegisterSupportHostClientImpl::
+    ~RegisterSupportHostClientImpl() = default;
+
+void RemotingRegisterSupportHostRequest::RegisterSupportHostClientImpl::
+    RegisterSupportHost(const apis::v1::RegisterSupportHostRequest& request,
+                        RegisterSupportHostResponseCallback callback) {
+  auto grpc_request = CreateGrpcAsyncUnaryRequest(
+      base::BindOnce(&RemoteSupportService::Stub::AsyncRegisterSupportHost,
+                     base::Unretained(remote_support_.get())),
+      request, std::move(callback));
+  grpc_executor_.ExecuteRpc(std::move(grpc_request));
+}
+
+void RemotingRegisterSupportHostRequest::RegisterSupportHostClientImpl::
+    CancelPendingRequests() {
+  grpc_executor_.CancelPendingRequests();
+}
+
+// End of RegisterSupportHostClientImpl.
+
 RemotingRegisterSupportHostRequest::RemotingRegisterSupportHostRequest(
     std::unique_ptr<OAuthTokenGetter> token_getter)
     : token_getter_(std::move(token_getter)),
-      grpc_executor_(token_getter_.get()) {
-  remote_support_ = RemoteSupportService::NewStub(CreateSslChannelForEndpoint(
-      ServiceUrls::GetInstance()->remoting_server_endpoint()));
-}
+      register_host_client_(std::make_unique<RegisterSupportHostClientImpl>(
+          token_getter_.get())) {}
 
 RemotingRegisterSupportHostRequest::~RemotingRegisterSupportHostRequest() {
   if (signal_strategy_) {
@@ -53,6 +98,7 @@ void RemotingRegisterSupportHostRequest::StartRequest(
     SignalStrategy* signal_strategy,
     scoped_refptr<RsaKeyPair> key_pair,
     RegisterCallback callback) {
+  DCHECK_EQ(State::NOT_STARTED, state_);
   DCHECK(signal_strategy);
   DCHECK(key_pair);
   DCHECK(callback);
@@ -105,13 +151,10 @@ void RemotingRegisterSupportHostRequest::RegisterHost() {
   request.set_host_os_name(GetHostOperatingSystemName());
   request.set_host_os_version(GetHostOperatingSystemVersion());
 
-  auto grpc_request = CreateGrpcAsyncUnaryRequest(
-      base::BindOnce(&RemoteSupportService::Stub::AsyncRegisterSupportHost,
-                     base::Unretained(remote_support_.get())),
+  register_host_client_->RegisterSupportHost(
       request,
       base::BindOnce(&RemotingRegisterSupportHostRequest::OnRegisterHostResult,
                      base::Unretained(this)));
-  grpc_executor_.ExecuteRpc(std::move(grpc_request));
 }
 
 void RemotingRegisterSupportHostRequest::OnRegisterHostResult(
@@ -132,8 +175,13 @@ void RemotingRegisterSupportHostRequest::RunCallback(
     const std::string& support_id,
     base::TimeDelta lifetime,
     protocol::ErrorCode error_code) {
+  if (!callback_) {
+    // Callback has already been run, so just return.
+    return;
+  }
+
   // Cleanup state before calling the callback.
-  grpc_executor_.CancelPendingRequests();
+  register_host_client_->CancelPendingRequests();
   signal_strategy_->RemoveListener(this);
   signal_strategy_ = nullptr;
 

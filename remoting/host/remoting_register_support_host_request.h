@@ -10,10 +10,22 @@
 #include "base/memory/ref_counted.h"
 #include "remoting/base/grpc_support/grpc_authenticated_executor.h"
 #include "remoting/host/register_support_host_request.h"
-#include "remoting/proto/remoting/v1/remote_support_host_service.grpc.pb.h"
 #include "remoting/signaling/muxing_signal_strategy.h"
 
+namespace grpc {
+class Status;
+}  // namespace grpc
+
 namespace remoting {
+
+namespace apis {
+namespace v1 {
+
+class RegisterSupportHostRequest;
+class RegisterSupportHostResponse;
+
+}  // namespace v1
+}  // namespace apis
 
 class OAuthTokenGetter;
 
@@ -35,7 +47,22 @@ class RemotingRegisterSupportHostRequest final
                     RegisterCallback callback) override;
 
  private:
-  using RemoteSupportService = apis::v1::RemoteSupportService;
+  using RegisterSupportHostResponseCallback =
+      base::OnceCallback<void(const grpc::Status&,
+                              const apis::v1::RegisterSupportHostResponse&)>;
+
+  friend class RemotingRegisterSupportHostTest;
+
+  class RegisterSupportHostClient {
+   public:
+    virtual ~RegisterSupportHostClient() = default;
+    virtual void RegisterSupportHost(
+        const apis::v1::RegisterSupportHostRequest& request,
+        RegisterSupportHostResponseCallback callback) = 0;
+    virtual void CancelPendingRequests() = 0;
+  };
+
+  class RegisterSupportHostClientImpl;
 
   // MuxingSignalStrategy might notify a CONNECTED state for more than once, so
   // this is necessary to prevent trying to register twice when a strategy is
@@ -64,11 +91,9 @@ class RemotingRegisterSupportHostRequest final
   scoped_refptr<RsaKeyPair> key_pair_;
   RegisterCallback callback_;
   std::unique_ptr<OAuthTokenGetter> token_getter_;
-  GrpcAuthenticatedExecutor grpc_executor_;
+  std::unique_ptr<RegisterSupportHostClient> register_host_client_;
 
   State state_ = State::NOT_STARTED;
-
-  std::unique_ptr<RemoteSupportService::Stub> remote_support_;
 
   DISALLOW_COPY_AND_ASSIGN(RemotingRegisterSupportHostRequest);
 };
