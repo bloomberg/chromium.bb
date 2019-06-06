@@ -5,12 +5,14 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -27,13 +29,17 @@ CookieSettings::CookieSettings(
     const char* extension_scheme)
     : host_content_settings_map_(host_content_settings_map),
       extension_scheme_(extension_scheme),
-      block_third_party_cookies_(
-          prefs->GetBoolean(prefs::kBlockThirdPartyCookies)) {
+      block_third_party_cookies_(false) {
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       prefs::kBlockThirdPartyCookies,
-      base::Bind(&CookieSettings::OnBlockThirdPartyCookiesChanged,
+      base::Bind(&CookieSettings::OnCookiePreferencesChanged,
                  base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kCookieControlsEnabled,
+      base::Bind(&CookieSettings::OnCookiePreferencesChanged,
+                 base::Unretained(this)));
+  OnCookiePreferencesChanged();
 }
 
 ContentSetting CookieSettings::GetDefaultCookieSetting(
@@ -52,6 +58,9 @@ void CookieSettings::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kBlockThirdPartyCookies, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kCookieControlsEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
@@ -163,12 +172,20 @@ void CookieSettings::GetCookieSetting(const GURL& url,
 CookieSettings::~CookieSettings() {
 }
 
-void CookieSettings::OnBlockThirdPartyCookiesChanged() {
+void CookieSettings::OnCookiePreferencesChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  base::AutoLock auto_lock(lock_);
-  block_third_party_cookies_ = pref_change_registrar_.prefs()->GetBoolean(
-      prefs::kBlockThirdPartyCookies);
+  bool new_block_third_party_cookies =
+      pref_change_registrar_.prefs()->GetBoolean(
+          prefs::kBlockThirdPartyCookies) ||
+      (base::FeatureList::IsEnabled(kImprovedCookieControls) &&
+       pref_change_registrar_.prefs()->GetBoolean(
+           prefs::kCookieControlsEnabled));
+
+  if (block_third_party_cookies_ != new_block_third_party_cookies) {
+    base::AutoLock auto_lock(lock_);
+    block_third_party_cookies_ = new_block_third_party_cookies;
+  }
 }
 
 bool CookieSettings::ShouldBlockThirdPartyCookies() const {

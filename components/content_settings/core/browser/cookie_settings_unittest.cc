@@ -4,9 +4,11 @@
 
 #include "components/content_settings/core/browser/cookie_settings.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "extensions/buildflags/buildflags.h"
@@ -101,6 +103,26 @@ TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
   EXPECT_FALSE(
       cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
+}
+
+TEST_F(CookieSettingsTest, CookiesControlsEnabled) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(kImprovedCookieControls);
+  ASSERT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  prefs_.SetBoolean(prefs::kCookieControlsEnabled, true);
+  EXPECT_FALSE(
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+}
+
+TEST_F(CookieSettingsTest, CookiesControlsEnabledButFeatureDisabled) {
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(kImprovedCookieControls);
+  ASSERT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  prefs_.SetBoolean(prefs::kCookieControlsEnabled, true);
+  EXPECT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
 }
 
 TEST_F(CookieSettingsTest, CookiesAllowThirdParty) {

@@ -90,6 +90,11 @@ class CookieSettings : public CookieSettingsBase,
 
   bool IsStorageDurable(const GURL& origin) const;
 
+  // Returns true if third party cookies should be blocked.
+  //
+  // This method may be called on any thread.
+  bool ShouldBlockThirdPartyCookies() const;
+
   // Detaches the |CookieSettings| from |PrefService|. This methods needs to be
   // called before destroying the service. Afterwards, only const methods can be
   // called.
@@ -106,12 +111,7 @@ class CookieSettings : public CookieSettingsBase,
  private:
   ~CookieSettings() override;
 
-  void OnBlockThirdPartyCookiesChanged();
-
-  // Returns true if the "block third party cookies" preference is set.
-  //
-  // This method may be called on any thread.
-  bool ShouldBlockThirdPartyCookies() const;
+  void OnCookiePreferencesChanged();
 
   base::ThreadChecker thread_checker_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
