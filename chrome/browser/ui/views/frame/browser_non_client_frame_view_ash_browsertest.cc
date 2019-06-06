@@ -1246,8 +1246,10 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, TopViewInset) {
   EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
 }
 
+// Test that for a browser window, its caption buttons are always hidden in
+// tablet mode.
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
-                       HeaderVisibilityInOverviewAndSplitview) {
+                       BrowserHeaderVisibilityInTabletModeTest) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   Widget* widget = browser_view->GetWidget();
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
@@ -1256,15 +1258,30 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
       aura::client::kResizeBehaviorKey,
       aura::client::kResizeBehaviorCanMaximize |
           aura::client::kResizeBehaviorCanResize);
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
-  // Test that the header is invisible for the browser window in overview mode
-  // and visible when not in overview mode.
   ToggleOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
   ToggleOverview();
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
-  // Create another browser window.
+  ASSERT_NO_FATAL_FAILURE(
+      ash::ShellTestApi().EnableTabletModeWindowManager(true));
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  ToggleOverview();
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  ToggleOverview();
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  ash::Shell::Get()->split_view_controller()->SnapWindow(
+      widget->GetNativeWindow(), ash::SplitViewController::LEFT);
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+}
+
+// Test that for a browser app window, its caption buttons may or may not hide
+// in tablet mode.
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
+                       AppHeaderVisibilityInTabletModeTest) {
+  // Create a browser app window.
   Browser::CreateParams params = Browser::CreateParams::CreateForApp(
       "test_browser_app", true /* trusted_source */, gfx::Rect(),
       browser()->profile(), true);
@@ -1278,33 +1295,22 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
       aura::client::kResizeBehaviorKey,
       aura::client::kResizeBehaviorCanMaximize |
           aura::client::kResizeBehaviorCanResize);
-
-  // Test that when one browser window is snapped, the header is visible for
-  // the snapped browser window, but invisible for the browser window still in
-  // overview mode.
-  ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(true));
-  ash::Shell* shell = ash::Shell::Get();
-  ash::SplitViewController* split_view_controller =
-      shell->split_view_controller();
-
   ToggleOverview();
-  split_view_controller->SnapWindow(widget->GetNativeWindow(),
-                                    ash::SplitViewController::LEFT);
-  // TODO(crbug.com/970904): Test first frame header visibility here and below.
   EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
-
-  // When both browser windows are snapped, the headers are both visible.
-  split_view_controller->SnapWindow(widget2->GetNativeWindow(),
-                                    ash::SplitViewController::RIGHT);
+  ToggleOverview();
   EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 
-  // Toggle overview mode while splitview mode is active. Test that the header
-  // is visible for the snapped browser window but not for the other browser
-  // window in overview mode.
+  ASSERT_NO_FATAL_FAILURE(
+      ash::ShellTestApi().EnableTabletModeWindowManager(true));
   ToggleOverview();
-
   EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
+
+  ToggleOverview();
+  EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
+
+  ash::Shell::Get()->split_view_controller()->SnapWindow(
+      widget2->GetNativeWindow(), ash::SplitViewController::RIGHT);
+  EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 }
 
 // Regression test for https://crbug.com/879851.

@@ -1628,8 +1628,18 @@ TEST_F(OverviewSessionTest, ExitOverviewWithKey) {
   SendKey(ui::VKEY_BROWSER_BACK);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
 
-  // TODO(crbug.com/969899): Test in tablet mode, and ensure escape/back does
-  // not exit single spitview mode with no other windows in overview.
+  // Tests that in tablet mode, if we snap the only overview window, we cannot
+  // exit overview mode.
+  EnterTabletMode();
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+  Shell::Get()->split_view_controller()->SnapWindow(window.get(),
+                                                    SplitViewController::LEFT);
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+  SendKey(ui::VKEY_ESCAPE);
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  SendKey(ui::VKEY_BROWSER_BACK);
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
 }
 
 // Regression test for clusterfuzz crash. https://crbug.com/920568

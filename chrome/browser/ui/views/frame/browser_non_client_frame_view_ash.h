@@ -128,7 +128,9 @@ class BrowserNonClientFrameViewAsh
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            AvatarDisplayOnTeleportedWindow);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
-                           HeaderVisibilityInOverviewAndSplitview);
+                           BrowserHeaderVisibilityInTabletModeTest);
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
+                           AppHeaderVisibilityInTabletModeTest);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            ImmersiveModeTopViewInset);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshBackButtonTest,
