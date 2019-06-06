@@ -14,7 +14,7 @@ typedef (DOMString or ArrayBuffer or NDEFMessage) NDEFMessageSource;
 ] interface NFC {
     [CallWith=ScriptState, MeasureAs=WebNFCPush] Promise<void> push (NDEFMessageSource message, optional NFCPushOptions options);
     [CallWith=ScriptState, MeasureAs=WebNFCCancelPush] Promise<void> cancelPush (optional NFCPushTarget target = "any");
-    [CallWith=ScriptState, MeasureAs=WebNFCWatch] Promise<long> watch (MessageCallback callback, optional NFCWatchOptions options);
+    [CallWith=ScriptState, MeasureAs=WebNFCWatch] Promise<long> watch (MessageCallback callback, optional NFCReaderOptions options);
     [CallWith=ScriptState, MeasureAs=WebNFCCancelWatch] Promise<void> cancelWatch (optional long id);
 };
 

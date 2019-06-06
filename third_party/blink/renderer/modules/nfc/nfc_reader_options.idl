@@ -6,8 +6,8 @@
 // http://w3c.github.io/web-nfc/#dom-ndefcompatibility
 enum NDEFCompatibility { "nfc-forum", "vendor", "any" };
 
-// https://w3c.github.io/web-nfc/#the-nfcwatchoptions-dictionary
-dictionary NFCWatchOptions {
+// https://w3c.github.io/web-nfc/#dom-nfcreaderoptions
+dictionary NFCReaderOptions {
     USVString url = "";
     NDEFRecordType? recordType;
     USVString mediaType = "";

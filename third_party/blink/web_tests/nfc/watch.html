@@ -24,15 +24,15 @@ nfc_test(() => {
 
 nfc_test(async () => {
   await navigator.nfc.watch(noop);
-  assertNFCWatchOptionsEqual(createNFCWatchOptions(), mockNFC.watchOptions());
-}, 'Test that default NFCWatchOptions values are set correctly.')
+  assertNFCReaderOptionsEqual(createNFCReaderOptions(), mockNFC.watchOptions());
+}, 'Test that default NFCReaderOptions values are set correctly.')
 
 nfc_test(async () => {
-  let watchOptions = createNFCWatchOptions(test_message_origin, 'json',
+  let watchOptions = createNFCReaderOptions(test_message_origin, 'json',
       'application/json', 'any');
   await navigator.nfc.watch(noop, watchOptions);
-  assertNFCWatchOptionsEqual(watchOptions, mockNFC.watchOptions());
-}, 'Test that NFCWatchOptions values are correctly converted.')
+  assertNFCReaderOptionsEqual(watchOptions, mockNFC.watchOptions());
+}, 'Test that NFCReaderOptions values are correctly converted.')
 
 nfc_test(() => {
   return assertRejectsWithError(navigator.nfc.cancelWatch(1), 'NotFoundError');
@@ -75,35 +75,35 @@ nfc_test(async () => {
 nfc_test(() => {
   return assertRejectsWithError(navigator.nfc.watch(noop, {url:"www.a.com"}),
       'SyntaxError');
-}, 'Test that nfc.watch fails if NFCWatchOptions.url is missing components.');
+}, 'Test that nfc.watch fails if NFCReaderOptions.url is missing components.');
 
 nfc_test(() => {
   return assertRejectsWithError(navigator.nfc.watch(noop, {url:"invalid"}),
       'SyntaxError');
-}, 'Test that nfc.watch fails if NFCWatchOptions.url is invalid.');
+}, 'Test that nfc.watch fails if NFCReaderOptions.url is invalid.');
 
 nfc_test(() => {
   return assertRejectsWithError(navigator.nfc.watch(noop, {url:"http://a.com"}),
       'SyntaxError');
-}, 'Test that nfc.watch fails if NFCWatchOptions.url has wrong protocol.');
+}, 'Test that nfc.watch fails if NFCReaderOptions.url has wrong protocol.');
 
 nfc_test(() => {
   return navigator.nfc.watch(noop, {url:"https://a.com"});
-}, 'Test that nfc.watch succeeds if NFCWatchOptions.url is valid URL.');
+}, 'Test that nfc.watch succeeds if NFCReaderOptions.url is valid URL.');
 
 nfc_test(() => {
   return navigator.nfc.watch(noop, {url:"https://a.com/*"});
-}, 'Test that nfc.watch succeeds if NFCWatchOptions.url is valid URL with "*"' +
+}, 'Test that nfc.watch succeeds if NFCReaderOptions.url is valid URL with "*"' +
    ' wildcard character in path.');
 
 nfc_test(() => {
   return navigator.nfc.watch(noop, {url:"https://foo.com/*/bar"});
-}, 'Test that nfc.watch succeeds if NFCWatchOptions.url is valid URL with "*"' +
+}, 'Test that nfc.watch succeeds if NFCReaderOptions.url is valid URL with "*"' +
    ' wildcard character in the beginning of path component followed by' +
    ' subpath.');
 
 nfc_test(() => {
   return navigator.nfc.watch(noop, {url:""});
-}, 'Test that nfc.watch succeeds if NFCWatchOptions.url is empty.')
+}, 'Test that nfc.watch succeeds if NFCReaderOptions.url is empty.')
 
 </script>

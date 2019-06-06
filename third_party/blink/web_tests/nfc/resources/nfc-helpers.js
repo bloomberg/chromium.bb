@@ -47,7 +47,7 @@ function createNFCPushOptions(target, timeout, ignoreRead) {
   return { target, timeout, ignoreRead };
 }
 
-function createNFCWatchOptions(url, recordType, mediaType, compatibility) {
+function createNFCReaderOptions(url, recordType, mediaType, compatibility) {
   return { url, recordType, mediaType, compatibility };
 }
 
@@ -222,9 +222,9 @@ function assertNFCPushOptionsEqual(provided, received) {
     assert_equals(received.target, device.mojom.NFCPushTarget.ANY);
 }
 
-// Compares NFCWatchOptions structures that were provided to API and
+// Compares NFCReaderOptions structures that were provided to API and
 // received by the mock mojo service.
-function assertNFCWatchOptionsEqual(provided, received) {
+function assertNFCReaderOptionsEqual(provided, received) {
   if (provided.url !== undefined)
     assert_equals(provided.url, received.url);
   else

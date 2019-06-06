@@ -20,7 +20,7 @@ namespace blink {
 class NFCPushOptions;
 using NDEFMessageSource = StringOrArrayBufferOrNDEFMessage;
 using NDEFRecordData = StringOrUnrestrictedDoubleOrArrayBufferOrDictionary;
-class NFCWatchOptions;
+class NFCReaderOptions;
 class ScriptPromiseResolver;
 
 class NFC final : public ScriptWrappable,
@@ -50,8 +50,10 @@ class NFC final : public ScriptWrappable,
   // Cancels ongoing push operation.
   ScriptPromise cancelPush(ScriptState*, const String&);
 
-  // Starts watching for NFC messages that match NFCWatchOptions criteria.
-  ScriptPromise watch(ScriptState*, V8MessageCallback*, const NFCWatchOptions*);
+  // Starts watching for NFC messages that match NFCReaderOptions criteria.
+  ScriptPromise watch(ScriptState*,
+                      V8MessageCallback*,
+                      const NFCReaderOptions*);
 
   // Cancels watch operation with id.
   ScriptPromise cancelWatch(ScriptState*, int32_t id);

@@ -662,7 +662,7 @@ modules_dictionary_idl_files =
           "nfc/ndef_message.idl",
           "nfc/nfc_push_options.idl",
           "nfc/ndef_record.idl",
-          "nfc/nfc_watch_options.idl",
+          "nfc/nfc_reader_options.idl",
           "notifications/get_notification_options.idl",
           "notifications/notification_action.idl",
           "notifications/notification_event_init.idl",

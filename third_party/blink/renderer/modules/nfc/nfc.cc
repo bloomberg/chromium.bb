@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_error.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_watch_options.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_reader_options.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -48,8 +48,8 @@ using device::mojom::blink::NDEFRecordTypeFilter;
 using device::mojom::blink::NFCPushOptions;
 using device::mojom::blink::NFCPushOptionsPtr;
 using device::mojom::blink::NFCPushTarget;
-using device::mojom::blink::NFCWatchOptions;
-using device::mojom::blink::NFCWatchOptionsPtr;
+using device::mojom::blink::NFCReaderOptions;
+using device::mojom::blink::NFCReaderOptionsPtr;
 
 NFCPushTarget ToNFCPushTarget(const String& target) {
   if (target == "tag")
@@ -334,13 +334,13 @@ struct TypeConverter<NFCPushOptionsPtr, const blink::NFCPushOptions*> {
 };
 
 template <>
-struct TypeConverter<NFCWatchOptionsPtr, const blink::NFCWatchOptions*> {
-  static NFCWatchOptionsPtr Convert(
-      const blink::NFCWatchOptions* watchOptions) {
-    // https://w3c.github.io/web-nfc/#the-nfcwatchoptions-dictionary
-    // Default values for NFCWatchOptions dictionary are:
+struct TypeConverter<NFCReaderOptionsPtr, const blink::NFCReaderOptions*> {
+  static NFCReaderOptionsPtr Convert(
+      const blink::NFCReaderOptions* watchOptions) {
+    // https://w3c.github.io/web-nfc/#dom-nfcreaderoptions
+    // Default values for NFCReaderOptions dictionary are:
     // url = "", recordType = null, mediaType = "", compatibility = "nfc-forum"
-    NFCWatchOptionsPtr watchOptionsPtr = NFCWatchOptions::New();
+    NFCReaderOptionsPtr watchOptionsPtr = NFCReaderOptions::New();
     watchOptionsPtr->url = watchOptions->url();
     watchOptionsPtr->media_type = watchOptions->mediaType();
     watchOptionsPtr->compatibility =
@@ -760,7 +760,7 @@ ScriptPromise NFC::cancelPush(ScriptState* script_state, const String& target) {
 // https://w3c.github.io/web-nfc/#dom-nfc-watch
 ScriptPromise NFC::watch(ScriptState* script_state,
                          V8MessageCallback* callback,
-                         const NFCWatchOptions* options) {
+                         const NFCReaderOptions* options) {
   ScriptPromise promise = RejectIfNotSupported(script_state);
   if (!promise.IsEmpty())
     return promise;
@@ -781,7 +781,7 @@ ScriptPromise NFC::watch(ScriptState* script_state,
       WTF::Bind(&NFC::OnWatchRegistered, WrapPersistent(this),
                 WrapPersistent(ToV8PersistentCallbackFunction(callback)),
                 WrapPersistent(resolver));
-  nfc_->Watch(device::mojom::blink::NFCWatchOptions::From(options),
+  nfc_->Watch(device::mojom::blink::NFCReaderOptions::From(options),
               std::move(watch_callback));
   return resolver->Promise();
 }

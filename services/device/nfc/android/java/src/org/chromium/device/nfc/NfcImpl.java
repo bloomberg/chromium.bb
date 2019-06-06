@@ -31,7 +31,7 @@ import org.chromium.device.mojom.NfcError;
 import org.chromium.device.mojom.NfcErrorType;
 import org.chromium.device.mojom.NfcPushOptions;
 import org.chromium.device.mojom.NfcPushTarget;
-import org.chromium.device.mojom.NfcWatchOptions;
+import org.chromium.device.mojom.NfcReaderOptions;
 import org.chromium.mojo.bindings.Callbacks;
 import org.chromium.mojo.system.MojoException;
 
@@ -103,12 +103,12 @@ public class NfcImpl implements Nfc {
     private int mWatcherId;
 
     /**
-     * Map of watchId <-> NfcWatchOptions. All NfcWatchOptions are matched against tag that is in
+     * Map of watchId <-> NfcReaderOptions. All NfcReaderOptions are matched against tag that is in
      * proximity, when match algorithm (@see #matchesWatchOptions) returns true, watcher with
      * corresponding ID would be notified using NfcClient interface.
      * @see NfcClient#onWatch(int[] id, NdefMessage message)
      */
-    private final SparseArray<NfcWatchOptions> mWatchers = new SparseArray<>();
+    private final SparseArray<NfcReaderOptions> mWatchers = new SparseArray<>();
 
     /**
      * Handler that runs delayed push timeout task.
@@ -163,8 +163,8 @@ public class NfcImpl implements Nfc {
 
     /**
      * Sets NfcClient. NfcClient interface is used to notify mojo NFC service client when NFC
-     * device is in proximity and has NdefMessage that matches NfcWatchOptions criteria.
-     * @see Nfc#watch(NfcWatchOptions options, WatchResponse callback)
+     * device is in proximity and has NdefMessage that matches NfcReaderOptions criteria.
+     * @see Nfc#watch(NfcReaderOptions options, WatchResponse callback)
      *
      * @param client @see NfcClient
      */
@@ -238,15 +238,15 @@ public class NfcImpl implements Nfc {
     /**
      * Watch method allows to set filtering criteria for NdefMessages that are found when NFC device
      * is within proximity. On success, watch ID is returned to caller through WatchResponse
-     * callback. When NdefMessage that matches NfcWatchOptions is found, it is passed to NfcClient
+     * callback. When NdefMessage that matches NfcReaderOptions is found, it is passed to NfcClient
      * interface together with corresponding watch ID.
      * @see NfcClient#onWatch(int[] id, NdefMessage message)
      *
-     * @param options used to filter NdefMessages, @see NfcWatchOptions.
+     * @param options used to filter NdefMessages, @see NfcReaderOptions.
      * @param callback that is used to notify caller when watch() is completed and return watch ID.
      */
     @Override
-    public void watch(NfcWatchOptions options, WatchResponse callback) {
+    public void watch(NfcReaderOptions options, WatchResponse callback) {
         if (!checkIfReady(callback)) return;
         int watcherId = ++mWatcherId;
         mWatchers.put(watcherId, options);
@@ -548,7 +548,7 @@ public class NfcImpl implements Nfc {
     }
 
     /**
-     * Iterates through active watchers and if any of those match NfcWatchOptions criteria,
+     * Iterates through active watchers and if any of those match NfcReaderOptions criteria,
      * delivers NdefMessage to the client.
      */
     private void notifyMatchingWatchers(android.nfc.NdefMessage message, int compatibility) {
@@ -556,7 +556,7 @@ public class NfcImpl implements Nfc {
             NdefMessage ndefMessage = NfcTypeConverter.toNdefMessage(message);
             List<Integer> watchIds = new ArrayList<Integer>();
             for (int i = 0; i < mWatchers.size(); i++) {
-                NfcWatchOptions options = mWatchers.valueAt(i);
+                NfcReaderOptions options = mWatchers.valueAt(i);
                 if (matchesWatchOptions(ndefMessage, compatibility, options))
                     watchIds.add(mWatchers.keyAt(i));
             }
@@ -577,7 +577,7 @@ public class NfcImpl implements Nfc {
      * Implements matching algorithm.
      */
     private boolean matchesWatchOptions(
-            NdefMessage message, int compatibility, NfcWatchOptions options) {
+            NdefMessage message, int compatibility, NfcReaderOptions options) {
         // 'nfc-forum' option can only read messages from NFC standard devices and 'vendor' option
         // can only read from vendor specific ones.
         if (options.compatibility != NdefCompatibility.ANY
