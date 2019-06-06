@@ -50,13 +50,13 @@ void InlineBoxList<InlineBoxType>::AssertIsEmpty() {
 
 const LineBoxList& LineBoxList::Empty() {
   // Need to use "static" because DISALLOW_NEW.
-  static LineBoxList empty;
+  static const LineBoxList empty;
   return empty;
 }
 
 const InlineTextBoxList& InlineTextBoxList::Empty() {
   // Need to use "static" because DISALLOW_NEW.
-  static InlineTextBoxList empty;
+  static const InlineTextBoxList empty;
   return empty;
 }
 
