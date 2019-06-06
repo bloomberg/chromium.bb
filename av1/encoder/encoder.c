@@ -3550,7 +3550,7 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
 }
 
 static int get_gfu_boost_from_r0(double r0) {
-  int boost = (int)rint(220.0 / r0);
+  int boost = (int)rint(260.0 / r0);
   return boost;
 }
 

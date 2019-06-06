@@ -83,8 +83,8 @@ static int arfgf_high_motion_minq_12[QINDEX_RANGE];
 static int inter_minq_12[QINDEX_RANGE];
 static int rtc_minq_12[QINDEX_RANGE];
 
-static int gf_high = 2000;
-static int gf_low = 400;
+static int gf_high = 2400;
+static int gf_low = 300;
 static int kf_high = 5000;
 static int kf_low = 400;
 
