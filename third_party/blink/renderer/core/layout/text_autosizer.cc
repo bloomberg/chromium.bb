@@ -1266,8 +1266,8 @@ bool TextAutosizer::IsWiderOrNarrowerDescendant(Cluster* cluster) {
   // Clusters with a root that is significantly narrower than the
   // deepestBlockContainingAllText of their parent autosize independently of
   // their parent.
-  static float narrow_width_difference = 200;
-  if (cluster_text_width - content_width > narrow_width_difference)
+  constexpr float kNarrowWidthDifference = 200;
+  if (cluster_text_width - content_width > kNarrowWidthDifference)
     return true;
 
   return false;
