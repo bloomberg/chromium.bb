@@ -2,56 +2,56 @@
 # Do not modify manually. All changes will be overwritten.
 
 infra/tools/bb/linux-386
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	cpeuz5KrzcEIZ-4O66SVZFbWxrRYhdwCNHGdnMOKzDYC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	FZtRS-P3M1rPkavd15dSn0Y6fEiPw7rXI9N1h59fNJQC
 
 infra/tools/bb/linux-amd64
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	2fIivIkZkltdsj4VENVgAGYF8pHNTE8fFmPbhwZDORYC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	My9cU9Gx_rQYusTjaYfgTLWuNH9eOwdgj7ESrgxW_K4C
 
 infra/tools/bb/linux-arm64
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	B6X2_FgnoztZpb_MUxIdSLR9fzfpw1bjyCjp9UbpygMC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	oDqJoNS9r1JF2J_tHp55kOOUhxCQSNBzMYPyR4ZLRUEC
 
 infra/tools/bb/linux-armv6l
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	W17LjZaqqxqDjoWPiy72DEnTp84PB6FdVGjFJvJTZ7gC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	4zUHjpNbKycWlnKxkd3xqYzthEtyNu90TZkRIrJcmCkC
 
 infra/tools/bb/linux-mips64
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	GqG_HxTx_p0m6YRHMC5DTtKS1K2332IVcO7CtW-0W5cC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	PDvcKdWxf9ON-00C6QQLNd-kxOy9kVnhTnTa50agfUcC
 
 infra/tools/bb/linux-mips64le
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	wjFmuKp9hO4YAGdhuWJK-FLGqC2x03mlPYWHeVH7U9kC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	Wz522X-p7oOoWufilPvMAQe8l4MxjBo--qeBesWMr98C
 
 infra/tools/bb/linux-mipsle
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	QIrxL6nYt-mf5kiyHM0wmkstJ5UDxGt0iqf4HuqtG0YC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	lkYfJ68TkGQqE11GpSGN9fiMfJ1JgvHw-zKiDrGqN3cC
 
 infra/tools/bb/linux-ppc64
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	s4-OFGYXMsmBdCWYZTGo4qi31MhQwrJghb05oFv6srcC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	ciNiveC-Ib0Zzogn5eipqjI_bYZYpDGEJw3ymWTq5EAC
 
 infra/tools/bb/linux-ppc64le
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	0c3ctZ4kjEDwoFAcyxLpDaZKJkj36pSel-M1Pu1ATFgC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	PIIQlT6K_RJlgFNq-fLSchx3yxArlIZzU99d8mNPp0IC
 
 infra/tools/bb/linux-s390x
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	Ecp66VoECd-1cEUuLbP2ZnKXnQjWrM256ynD2X8EEaMC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	GvLi8E3JuS7XA-wMwavI7XRy93lGIyD835VUKNeoHk4C
 
 infra/tools/bb/mac-amd64
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	HtWkNv0bx9OdKxETk-1JEAaTt7usHefXzSFOacMkxswC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	CLT_nPLrwKLSXmKjfFJcAwjTD_BOfFbCfWWZXEsaD_gC
 
 infra/tools/bb/windows-386
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	Xcvo1eebw2dhpAI9lQVMR-2BUdoUjMJXRkSgRQGwvakC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	j4gmGfkKSd1UHMsEj5vu1Dd9arEePvYj0jwEwotUo1EC
 
 infra/tools/bb/windows-amd64
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	nfOD3xLmeaN0tliuhYMmlDxmUYld4dCBq5nAYtqNuYsC
+	git_revision:d0bb723b707deed5f523ad688c63fd48429bb3ee
+	oYPjQ-PKX0kP6pENViWup1be5Gw6JLYu3YYp9YRXcgsC
 
 infra/tools/luci-auth/linux-386
 	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
