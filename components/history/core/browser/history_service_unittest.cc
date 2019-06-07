@@ -145,16 +145,12 @@ class HistoryServiceTest : public testing::Test {
     base::RunLoop run_loop;
     history_service_->QueryMostVisitedURLs(
         kResultCount, kDaysBack,
-        base::BindRepeating(&HistoryServiceTest::OnQueryMostVisitedURLsComplete,
-                            base::Unretained(this), run_loop.QuitClosure()),
+        base::BindLambdaForTesting([&](MostVisitedURLList urls) {
+          most_visited_urls_ = urls;
+          run_loop.Quit();
+        }),
         &tracker_);
     run_loop.Run();  // Will be exited in *QueryComplete.
-  }
-
-  void OnQueryMostVisitedURLsComplete(base::OnceClosure done,
-                                      const MostVisitedURLList* url_list) {
-    most_visited_urls_ = *url_list;
-    std::move(done).Run();
   }
 
   base::ScopedTempDir temp_dir_;

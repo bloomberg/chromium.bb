@@ -169,7 +169,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   void OnGotMostVisitedURLs(const scoped_refptr<MostVisitedThreadSafe>& sites);
 
   // Called when history service returns a list of top URLs.
-  void OnTopSitesAvailableFromHistory(const MostVisitedURLList* data);
+  void OnTopSitesAvailableFromHistory(MostVisitedURLList data);
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(HistoryService* history_service,

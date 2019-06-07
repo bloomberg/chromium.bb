@@ -257,9 +257,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Request the |result_count| most visited URLs and the chain of
   // redirects leading to each of these URLs. |days_back| is the
   // number of days of history to use. Used by TopSites.
-  void QueryMostVisitedURLs(int result_count,
-                            int days_back,
-                            MostVisitedURLList* result);
+  MostVisitedURLList QueryMostVisitedURLs(int result_count, int days_back);
 
   // Statistics ----------------------------------------------------------------
 

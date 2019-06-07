@@ -1378,11 +1378,10 @@ VisibleVisitCountToHostResult HistoryBackend::GetVisibleVisitCountToHost(
   return result;
 }
 
-void HistoryBackend::QueryMostVisitedURLs(int result_count,
-                                          int days_back,
-                                          MostVisitedURLList* result) {
+MostVisitedURLList HistoryBackend::QueryMostVisitedURLs(int result_count,
+                                                        int days_back) {
   if (!db_)
-    return;
+    return {};
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
@@ -1394,14 +1393,17 @@ void HistoryBackend::QueryMostVisitedURLs(int result_count,
       base::Time::Now() - base::TimeDelta::FromDays(days_back), result_count,
       url_filter);
 
+  MostVisitedURLList result;
   for (const std::unique_ptr<PageUsageData>& current_data : data) {
     RedirectList redirects = QueryRedirectsFrom(current_data->GetURL());
-    result->emplace_back(current_data->GetURL(), current_data->GetTitle(),
-                         redirects);
+    result.emplace_back(current_data->GetURL(), current_data->GetTitle(),
+                        redirects);
   }
 
   UMA_HISTOGRAM_TIMES("History.QueryMostVisitedURLsTime",
                       base::TimeTicks::Now() - begin_time);
+
+  return result;
 }
 
 void HistoryBackend::GetRedirectsFromSpecificVisit(VisitID cur_visit,

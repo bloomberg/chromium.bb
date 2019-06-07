@@ -285,13 +285,13 @@ class HistoryService : public KeyedService {
   // Request the |result_count| most visited URLs and the chain of
   // redirects leading to each of these URLs. |days_back| is the
   // number of days of history to use. Used by TopSites.
-  typedef base::Callback<void(const MostVisitedURLList*)>
-      QueryMostVisitedURLsCallback;
+  using QueryMostVisitedURLsCallback =
+      base::OnceCallback<void(MostVisitedURLList)>;
 
   base::CancelableTaskTracker::TaskId QueryMostVisitedURLs(
       int result_count,
       int days_back,
-      const QueryMostVisitedURLsCallback& callback,
+      QueryMostVisitedURLsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Statistics ----------------------------------------------------------------

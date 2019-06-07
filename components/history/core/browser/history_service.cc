@@ -832,16 +832,15 @@ base::CancelableTaskTracker::TaskId HistoryService::GetVisibleVisitCountToHost(
 base::CancelableTaskTracker::TaskId HistoryService::QueryMostVisitedURLs(
     int result_count,
     int days_back,
-    const QueryMostVisitedURLsCallback& callback,
+    QueryMostVisitedURLsCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  MostVisitedURLList* result = new MostVisitedURLList();
-  return tracker->PostTaskAndReply(
+  return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::QueryMostVisitedURLs, history_backend_,
-                     result_count, days_back, base::Unretained(result)),
-      base::BindOnce(callback, base::Owned(result)));
+                     result_count, days_back),
+      std::move(callback));
 }
 
 void HistoryService::Cleanup() {
