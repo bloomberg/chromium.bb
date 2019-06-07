@@ -52,7 +52,7 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   set_context_menu_controller(this);
 
   if (base::FeatureList::IsEnabled(views::kInstallableInkDropFeature))
-    installable_ink_drop_ = std::make_unique<views::InstallableInkDrop>();
+    installable_ink_drop_ = std::make_unique<views::InstallableInkDrop>(this);
 
   SetInkDropMode(InkDropMode::ON);
 
