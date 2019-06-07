@@ -18,6 +18,7 @@
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
@@ -1029,6 +1030,14 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
   // model and tabstrip are in sync.
   if (!drag_context_->IsMutating() && drag_context_->IsDraggingWindow())
     EndDrag(END_DRAG_COMPLETE);
+
+  Profile* profile = controller()->GetProfile();
+  if (profile) {
+    if (profile->IsGuestSession())
+      base::UmaHistogramCounts100("Tab.Count.Guest", tab_count());
+    else if (profile->IsIncognitoProfile())
+      base::UmaHistogramCounts100("Tab.Count.Incognito", tab_count());
+  }
 }
 
 void TabStrip::MoveTab(int from_model_index,
