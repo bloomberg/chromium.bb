@@ -7,6 +7,21 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/test/gl_image_test_template.h"
 
+// TODO(crbug.com/969798): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_GLTexture2DToDmabuf DISABLED_GLTexture2DToDmabuf
+#else
+#define MAYBE_GLTexture2DToDmabuf GLTexture2DToDmabuf
+#endif
+
+// TYPED_TEST_P() and REGISTER_TYPED_TEST_SUITE_P() don't do macro expansion on
+// their parameters, making the MAYBE_ technique above not work -- these macros
+// are a workaround.
+#define TYPED_TEST_P_WITH_EXPANSION(SuiteName, TestName) \
+  TYPED_TEST_P(SuiteName, TestName)
+#define REGISTER_TYPED_TEST_SUITE_P_WITH_EXPANSION(SuiteName, ...) \
+  REGISTER_TYPED_TEST_SUITE_P(SuiteName, __VA_ARGS__)
+
 namespace gl {
 
 namespace {
@@ -71,7 +86,8 @@ class GLImageNativePixmapToDmabufTest
 
 TYPED_TEST_SUITE_P(GLImageNativePixmapToDmabufTest);
 
-TYPED_TEST_P(GLImageNativePixmapToDmabufTest, GLTexture2DToDmabuf) {
+TYPED_TEST_P_WITH_EXPANSION(GLImageNativePixmapToDmabufTest,
+                            MAYBE_GLTexture2DToDmabuf) {
   if (this->delegate_.SkipTest())
     return;
 
@@ -94,8 +110,8 @@ TYPED_TEST_P(GLImageNativePixmapToDmabufTest, GLTexture2DToDmabuf) {
 }
 
 // This test verifies that GLImageNativePixmap can be exported as dmabuf fds.
-REGISTER_TYPED_TEST_SUITE_P(GLImageNativePixmapToDmabufTest,
-                            GLTexture2DToDmabuf);
+REGISTER_TYPED_TEST_SUITE_P_WITH_EXPANSION(GLImageNativePixmapToDmabufTest,
+                                           MAYBE_GLTexture2DToDmabuf);
 
 using GLImageTestTypes = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferFormat::RGBX_8888>,
