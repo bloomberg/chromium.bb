@@ -2404,23 +2404,23 @@ void LayoutText::SetInlineItems(NGInlineItem* begin, NGInlineItem* end) {
     DCHECK_EQ(item->GetLayoutObject(), this);
   }
 #endif
-  NGInlineItems* items = GetNGInlineItems();
+  base::span<NGInlineItem>* items = GetNGInlineItems();
   if (!items)
     return;
   valid_ng_items_ = true;
-  items->SetRange(begin, end);
+  *items = base::make_span(begin, end);
 }
 
 void LayoutText::ClearInlineItems() {
   valid_ng_items_ = false;
-  if (NGInlineItems* items = GetNGInlineItems())
-    items->Clear();
+  if (base::span<NGInlineItem>* items = GetNGInlineItems())
+    *items = base::span<NGInlineItem>();
 }
 
-const NGInlineItems& LayoutText::InlineItems() const {
+const base::span<NGInlineItem>& LayoutText::InlineItems() const {
   DCHECK(valid_ng_items_);
   DCHECK(GetNGInlineItems());
-  DCHECK(!GetNGInlineItems()->IsEmpty());
+  DCHECK(!GetNGInlineItems()->empty());
   return *GetNGInlineItems();
 }
 

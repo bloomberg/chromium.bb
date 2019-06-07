@@ -40,7 +40,6 @@ class AbstractInlineTextBox;
 class ContentCaptureManager;
 class InlineTextBox;
 class NGInlineItem;
-class NGInlineItems;
 class NGOffsetMapping;
 
 enum class OnlyWhitespaceOrNbsp : unsigned { kUnknown = 0, kNo = 1, kYes = 2 };
@@ -316,14 +315,16 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void SetInlineItems(NGInlineItem* begin, NGInlineItem* end);
   void ClearInlineItems();
   bool HasValidInlineItems() const { return valid_ng_items_; }
-  const NGInlineItems& InlineItems() const;
+  const base::span<NGInlineItem>& InlineItems() const;
   // Inline items depends on context. It needs to be invalidated not only when
   // it was inserted/changed but also it was moved.
   void InvalidateInlineItems() { valid_ng_items_ = false; }
 
  protected:
-  virtual const NGInlineItems* GetNGInlineItems() const { return nullptr; }
-  virtual NGInlineItems* GetNGInlineItems() { return nullptr; }
+  virtual const base::span<NGInlineItem>* GetNGInlineItems() const {
+    return nullptr;
+  }
+  virtual base::span<NGInlineItem>* GetNGInlineItems() { return nullptr; }
   void WillBeDestroyed() override;
 
   void StyleWillChange(StyleDifference, const ComputedStyle&) final {}

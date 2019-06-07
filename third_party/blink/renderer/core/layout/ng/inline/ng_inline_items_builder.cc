@@ -280,7 +280,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
     const NGInlineNodeData& original_data,
     LayoutText* layout_text) {
   DCHECK(layout_text);
-  const NGInlineItems& items = layout_text->InlineItems();
+  const base::span<NGInlineItem>& items = layout_text->InlineItems();
   const NGInlineItem& old_item0 = items.front();
   if (!old_item0.Length())
     return false;
