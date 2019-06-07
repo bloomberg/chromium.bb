@@ -2008,10 +2008,39 @@ static void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, 0, bsize, partition,
                &pc_tree->none, NULL);
       break;
-    // TODO(kyslov@) Add HORZ and VERT partitions
-    case PARTITION_HORZ:
     case PARTITION_VERT:
-      assert(0 && "Cannot yet handle non-square partition types");
+      pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &dummy_cost,
+                    PARTITION_VERT, subsize, &pc_tree->vertical[0], INT64_MAX,
+                    sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
+                                                 : PICK_MODE_NONRD);
+      encode_b(cpi, tile_data, td, tp, mi_row, mi_col, 0, subsize,
+               PARTITION_VERT, &pc_tree->vertical[0], NULL);
+      if (mi_col + hbs < cm->mi_cols && bsize > BLOCK_8X8) {
+        pick_sb_modes(cpi, tile_data, x, mi_row, mi_col + hbs, &dummy_cost,
+                      PARTITION_VERT, subsize, &pc_tree->vertical[1], INT64_MAX,
+                      sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
+                                                   : PICK_MODE_NONRD);
+        encode_b(cpi, tile_data, td, tp, mi_row, mi_col + hbs, 0, subsize,
+                 PARTITION_VERT, &pc_tree->vertical[1], NULL);
+      }
+      break;
+    case PARTITION_HORZ:
+      pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &dummy_cost,
+                    PARTITION_HORZ, subsize, &pc_tree->horizontal[0], INT64_MAX,
+                    sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
+                                                 : PICK_MODE_NONRD);
+      encode_b(cpi, tile_data, td, tp, mi_row, mi_col, 0, subsize,
+               PARTITION_HORZ, &pc_tree->horizontal[0], NULL);
+
+      if (mi_row + hbs < cm->mi_rows && bsize > BLOCK_8X8) {
+        pick_sb_modes(cpi, tile_data, x, mi_row + hbs, mi_col, &dummy_cost,
+                      PARTITION_HORZ, subsize, &pc_tree->horizontal[1],
+                      INT64_MAX,
+                      sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
+                                                   : PICK_MODE_NONRD);
+        encode_b(cpi, tile_data, td, tp, mi_row + hbs, mi_col, 0, subsize,
+                 PARTITION_HORZ, &pc_tree->horizontal[1], NULL);
+      }
       break;
     case PARTITION_SPLIT:
       for (int i = 0; i < 4; i++) {
