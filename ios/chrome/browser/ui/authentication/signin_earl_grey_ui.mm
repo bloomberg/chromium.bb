@@ -51,6 +51,7 @@ using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
 using chrome_test_util::SettingsDoneButton;
+using chrome_test_util::UnifiedConsentAddAccountButton;
 
 @implementation SigninEarlGreyUI
 
@@ -134,6 +135,31 @@ using chrome_test_util::SettingsDoneButton;
         performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
   }
   [[EarlGrey selectElementWithMatcher:AccountConsistencyConfirmationOkButton()]
+      performAction:grey_tap()];
+}
+
++ (void)tapAddAccountButton {
+  GREYAssertTrue(unified_consent::IsUnifiedConsentFeatureEnabled(),
+                 @"-[SigninEarlGreyUI tapAddAccountButton] is not available "
+                 @"without UnifiedConsent flag");
+  id<GREYMatcher> confirmationScrollViewMatcher =
+      grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  NSError* error = nil;
+  [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
+      assertWithMatcher:ContentViewSmallerThanScrollView()
+                  error:&error];
+  if (error) {
+    // If the consent is bigger than the scroll view, the primary button should
+    // be "MORE".
+    [[EarlGrey selectElementWithMatcher:
+                   chrome_test_util::ButtonWithAccessibilityLabelId(
+                       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON)]
+        assertWithMatcher:grey_notNil()];
+    [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
+        performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+  }
+  [[EarlGrey selectElementWithMatcher:UnifiedConsentAddAccountButton()]
       performAction:grey_tap()];
 }
 

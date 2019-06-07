@@ -46,13 +46,6 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
                     grey_sufficientlyVisible(), nil);
 }
 
-// Returns a matcher for "ADD ACCOUNT" in IdentityChooserViewController.
-id<GREYMatcher> addIdentityButtonInIdentityChooser() {
-  return chrome_test_util::ButtonWithAccessibilityLabel(
-      l10n_util::GetNSStringWithFixup(
-          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_ADD_ACCOUNT));
-}
-
 // Opens Accounts Settings and tap the sign out button. Assumes that the main
 // settings page is visible.
 void SignOutFromSettings() {
@@ -93,8 +86,7 @@ void SignOutFromSettings() {
   [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   // Tap on "ADD ACCOUNT".
-  [[EarlGrey selectElementWithMatcher:addIdentityButtonInIdentityChooser()]
-      performAction:grey_tap()];
+  [SigninEarlGreyUI tapAddAccountButton];
   // Check for the fake SSO screen.
   WaitForMatcher(grey_accessibilityID(kFakeAddAccountViewIdentifier));
   // Close the SSO view controller.

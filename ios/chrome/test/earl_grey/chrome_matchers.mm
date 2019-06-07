@@ -165,6 +165,10 @@ id<GREYMatcher> AccountConsistencyConfirmationOkButton() {
   return [ChromeMatchersAppInterface accountConsistencyConfirmationOKButton];
 }
 
+id<GREYMatcher> UnifiedConsentAddAccountButton() {
+  return [ChromeMatchersAppInterface unifiedConsentAddAccountButton];
+}
+
 id<GREYMatcher> AddAccountButton() {
   return [ChromeMatchersAppInterface addAccountButton];
 }

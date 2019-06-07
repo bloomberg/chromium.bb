@@ -129,6 +129,9 @@
 // Returns matcher for the account consistency confirmation button.
 + (id<GREYMatcher>)accountConsistencyConfirmationOKButton;
 
+// Returns matcher for "ADD ACCOUNT" button in unified consent dialog.
++ (id<GREYMatcher>)unifiedConsentAddAccountButton;
+
 // Returns matcher for the add account accounts button.
 + (id<GREYMatcher>)addAccountButton;
 

@@ -355,6 +355,12 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:(labelID)];
 }
 
++ (id<GREYMatcher>)unifiedConsentAddAccountButton {
+  return [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:
+          (IDS_IOS_ACCOUNT_UNIFIED_CONSENT_ADD_ACCOUNT)];
+}
+
 + (id<GREYMatcher>)addAccountButton {
   return grey_accessibilityID(kSettingsAccountsTableViewAddAccountCellId);
 }
