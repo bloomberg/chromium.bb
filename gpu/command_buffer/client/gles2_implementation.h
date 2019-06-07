@@ -750,6 +750,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   GLuint bound_atomic_counter_buffer_;
   GLuint bound_copy_read_buffer_;
   GLuint bound_copy_write_buffer_;
+  GLuint bound_dispatch_indirect_buffer_;
   GLuint bound_pixel_pack_buffer_;
   GLuint bound_pixel_unpack_buffer_;
   GLuint bound_shader_storage_buffer_;

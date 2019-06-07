@@ -1461,6 +1461,8 @@ interface WebGL2ComputeRenderingContext
     attribute DEPTH_STENCIL_ATTACHMENT
     attribute DEPTH_TEST
     attribute DEPTH_WRITEMASK
+    attribute DISPATCH_INDIRECT_BUFFER
+    attribute DISPATCH_INDIRECT_BUFFER_BINDING
     attribute DITHER
     attribute DONT_CARE
     attribute DRAW_BUFFER0

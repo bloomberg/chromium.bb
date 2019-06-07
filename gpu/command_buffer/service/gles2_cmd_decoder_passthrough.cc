@@ -1803,6 +1803,7 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults(GLenum pname,
     case GL_COPY_READ_BUFFER_BINDING:
     case GL_COPY_WRITE_BUFFER_BINDING:
     case GL_UNIFORM_BUFFER_BINDING:
+    case GL_DISPATCH_INDIRECT_BUFFER_BINDING:
       if (*params != 0 &&
           !GetClientID(&resources_->buffer_id_map, *params, params)) {
         return error::kInvalidArguments;

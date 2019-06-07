@@ -1370,6 +1370,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute DEPTH_STENCIL_ATTACHMENT
 [Worker]     attribute DEPTH_TEST
 [Worker]     attribute DEPTH_WRITEMASK
+[Worker]     attribute DISPATCH_INDIRECT_BUFFER
+[Worker]     attribute DISPATCH_INDIRECT_BUFFER_BINDING
 [Worker]     attribute DITHER
 [Worker]     attribute DONT_CARE
 [Worker]     attribute DRAW_BUFFER0

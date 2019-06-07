@@ -100,6 +100,7 @@ class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
                                              GLuint index,
                                              WebGLBuffer*) override;
 
+  Member<WebGLBuffer> bound_dispatch_indirect_buffer_;
   Member<WebGLBuffer> bound_atomic_counter_buffer_;
   Member<WebGLBuffer> bound_shader_storage_buffer_;
 

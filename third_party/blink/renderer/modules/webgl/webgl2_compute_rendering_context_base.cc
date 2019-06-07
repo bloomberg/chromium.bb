@@ -34,6 +34,7 @@ void WebGL2ComputeRenderingContextBase::InitializeNewContext() {
   DCHECK(!isContextLost());
   DCHECK(GetDrawingBuffer());
 
+  bound_dispatch_indirect_buffer_ = nullptr;
   bound_atomic_counter_buffer_ = nullptr;
   bound_shader_storage_buffer_ = nullptr;
 
@@ -345,6 +346,8 @@ ScriptValue WebGL2ComputeRenderingContextBase::getParameter(
       return GetIntParameter(script_state, pname);
     case GL_MAX_SHADER_STORAGE_BLOCK_SIZE:
       return GetInt64Parameter(script_state, pname);
+    case GL_DISPATCH_INDIRECT_BUFFER_BINDING:
+      return WebGLAny(script_state, bound_dispatch_indirect_buffer_.Get());
 
     default:
       return WebGL2RenderingContextBase::getParameter(script_state, pname);
@@ -392,6 +395,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::getIndexedParameter(
 }
 
 void WebGL2ComputeRenderingContextBase::Trace(blink::Visitor* visitor) {
+  visitor->Trace(bound_dispatch_indirect_buffer_);
   visitor->Trace(bound_atomic_counter_buffer_);
   visitor->Trace(bound_indexed_atomic_counter_buffers_);
   visitor->Trace(bound_shader_storage_buffer_);
@@ -439,6 +443,7 @@ bool WebGL2ComputeRenderingContextBase::ValidateBufferTarget(
     const char* function_name,
     GLenum target) {
   switch (target) {
+    case GL_DISPATCH_INDIRECT_BUFFER:
     case GL_ATOMIC_COUNTER_BUFFER:
     case GL_SHADER_STORAGE_BUFFER:
       return true;
@@ -453,6 +458,9 @@ WebGLBuffer* WebGL2ComputeRenderingContextBase::ValidateBufferDataTarget(
     GLenum target) {
   WebGLBuffer* buffer = nullptr;
   switch (target) {
+    case GL_DISPATCH_INDIRECT_BUFFER:
+      buffer = bound_dispatch_indirect_buffer_.Get();
+      break;
     case GL_ATOMIC_COUNTER_BUFFER:
       buffer = bound_atomic_counter_buffer_.Get();
       break;
@@ -482,6 +490,9 @@ bool WebGL2ComputeRenderingContextBase::ValidateAndUpdateBufferBindTarget(
     return false;
 
   switch (target) {
+    case GL_DISPATCH_INDIRECT_BUFFER:
+      bound_dispatch_indirect_buffer_ = buffer;
+      break;
     case GL_ATOMIC_COUNTER_BUFFER:
       bound_atomic_counter_buffer_ = buffer;
       break;
@@ -499,6 +510,8 @@ bool WebGL2ComputeRenderingContextBase::ValidateAndUpdateBufferBindTarget(
 }
 
 void WebGL2ComputeRenderingContextBase::RemoveBoundBuffer(WebGLBuffer* buffer) {
+  if (bound_dispatch_indirect_buffer_ == buffer)
+    bound_dispatch_indirect_buffer_ = nullptr;
   if (bound_atomic_counter_buffer_ == buffer)
     bound_atomic_counter_buffer_ = nullptr;
   if (bound_shader_storage_buffer_ == buffer)
@@ -516,6 +529,7 @@ bool WebGL2ComputeRenderingContextBase::ValidateBufferTargetCompatibility(
   switch (buffer->GetInitialTarget()) {
     case GL_ELEMENT_ARRAY_BUFFER:
       switch (target) {
+        case GL_DISPATCH_INDIRECT_BUFFER:
         case GL_ATOMIC_COUNTER_BUFFER:
         case GL_SHADER_STORAGE_BUFFER:
           SynthesizeGLError(
@@ -527,6 +541,7 @@ bool WebGL2ComputeRenderingContextBase::ValidateBufferTargetCompatibility(
           break;
       }
       break;
+    case GL_DISPATCH_INDIRECT_BUFFER:
     case GL_ATOMIC_COUNTER_BUFFER:
     case GL_SHADER_STORAGE_BUFFER:
       if (target == GL_ELEMENT_ARRAY_BUFFER) {
