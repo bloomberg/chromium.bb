@@ -268,7 +268,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
     return;
   }
 
-  if (!base::ContainsValue(names, name)) {
+  if (!base::Contains(names, name)) {
     const int64_t version = 0;
     callbacks->OnSuccess(version);
     return;
@@ -648,12 +648,12 @@ bool IndexedDBFactoryImpl::IsDatabaseOpen(const Origin& origin,
   auto it = factories_per_origin_.find(origin);
   if (it == factories_per_origin_.end())
     return false;
-  return base::ContainsKey(it->second->databases(), name);
+  return base::Contains(it->second->databases(), name);
 }
 
 bool IndexedDBFactoryImpl::IsBackingStoreOpen(const Origin& origin) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::ContainsKey(factories_per_origin_, origin);
+  return base::Contains(factories_per_origin_, origin);
 }
 
 bool IndexedDBFactoryImpl::IsBackingStorePendingClose(

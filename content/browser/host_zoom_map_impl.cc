@@ -159,7 +159,7 @@ bool HostZoomMapImpl::HasZoomLevel(const std::string& scheme,
           ? scheme_iterator->second
           : host_zoom_levels_;
 
-  return base::ContainsKey(zoom_levels, host);
+  return base::Contains(zoom_levels, host);
 }
 
 double HostZoomMapImpl::GetZoomLevelForHostAndScheme(const std::string& scheme,
@@ -434,7 +434,7 @@ bool HostZoomMapImpl::UsesTemporaryZoomLevel(int render_process_id,
                                              int render_view_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderViewKey key(render_process_id, render_view_id);
-  return base::ContainsKey(temporary_zoom_levels_, key);
+  return base::Contains(temporary_zoom_levels_, key);
 }
 
 double HostZoomMapImpl::GetTemporaryZoomLevel(int render_process_id,
@@ -472,7 +472,7 @@ double HostZoomMapImpl::GetZoomLevelForView(const GURL& url,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderViewKey key(render_process_id, render_view_id);
 
-  if (base::ContainsKey(temporary_zoom_levels_, key))
+  if (base::Contains(temporary_zoom_levels_, key))
     return temporary_zoom_levels_.find(key)->second;
 
   return GetZoomLevelForHostAndScheme(url.scheme(),

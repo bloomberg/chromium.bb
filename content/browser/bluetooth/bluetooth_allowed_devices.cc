@@ -113,7 +113,7 @@ bool BluetoothAllowedDevices::IsAllowedToAccessService(
 
   return id_iter == device_id_to_services_map_.end()
              ? false
-             : base::ContainsKey(id_iter->second, service_uuid);
+             : base::Contains(id_iter->second, service_uuid);
 }
 
 bool BluetoothAllowedDevices::IsAllowedToGATTConnect(
@@ -126,7 +126,7 @@ bool BluetoothAllowedDevices::IsAllowedToGATTConnect(
 
 blink::WebBluetoothDeviceId BluetoothAllowedDevices::GenerateUniqueDeviceId() {
   blink::WebBluetoothDeviceId device_id = blink::WebBluetoothDeviceId::Create();
-  while (base::ContainsKey(device_id_set_, device_id)) {
+  while (base::Contains(device_id_set_, device_id)) {
     LOG(WARNING) << "Generated repeated id.";
     device_id = blink::WebBluetoothDeviceId::Create();
   }

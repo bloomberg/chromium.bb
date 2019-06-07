@@ -2370,8 +2370,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, ScrollEventToOOPIF) {
 
   // Verify that this a mouse wheel event was sent to the child frame renderer.
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-  EXPECT_TRUE(base::ContainsValue(child_frame_monitor.events_received(),
-                                  blink::WebInputEvent::kMouseWheel));
+  EXPECT_TRUE(base::Contains(child_frame_monitor.events_received(),
+                             blink::WebInputEvent::kMouseWheel));
 }
 
 // Tests that touching an OOPIF editable element correctly resizes the
@@ -2972,7 +2972,7 @@ class TooltipMonitor : public CursorManager::TooltipObserver {
 
   void WaitUntil(const base::string16& tooltip_text) {
     tooltip_text_wanted_ = tooltip_text;
-    if (base::ContainsValue(tooltips_received_, tooltip_text))
+    if (base::Contains(tooltips_received_, tooltip_text))
       return;
     run_loop_->Run();
   }
@@ -4138,8 +4138,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
 
   // Verify that this a mouse wheel event was sent to the child frame renderer.
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-  EXPECT_TRUE(base::ContainsValue(child_frame_monitor.events_received(),
-                                  blink::WebInputEvent::kMouseWheel));
+  EXPECT_TRUE(base::Contains(child_frame_monitor.events_received(),
+                             blink::WebInputEvent::kMouseWheel));
 
   // Kill the wheel target view process. This must reset the wheel_target_.
   RenderProcessHost* child_process =

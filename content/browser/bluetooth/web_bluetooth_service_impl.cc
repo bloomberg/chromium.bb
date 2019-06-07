@@ -350,7 +350,7 @@ bool WebBluetoothServiceImpl::ScanningClient::SendEvent(
     if (filter->services.has_value()) {
       bool found_uuid_match = false;
       for (auto& filter_uuid : filter->services.value()) {
-        found_uuid_match = base::ContainsValue(result->uuids, filter_uuid);
+        found_uuid_match = base::Contains(result->uuids, filter_uuid);
         if (found_uuid_match)
           break;
       }
@@ -546,8 +546,8 @@ void WebBluetoothServiceImpl::GattCharacteristicValueChanged(
     device::BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
   // Don't notify of characteristics that we haven't returned.
-  if (!base::ContainsKey(characteristic_id_to_service_id_,
-                         characteristic->GetIdentifier())) {
+  if (!base::Contains(characteristic_id_to_service_id_,
+                      characteristic->GetIdentifier())) {
     return;
   }
 
@@ -1664,8 +1664,7 @@ void WebBluetoothServiceImpl::RunPendingPrimaryServicesRequests(
   }
 
   // Sending get-service responses unexpectedly queued another request.
-  DCHECK(
-      !base::ContainsKey(pending_primary_services_requests_, device_address));
+  DCHECK(!base::Contains(pending_primary_services_requests_, device_address));
 }
 
 RenderProcessHost* WebBluetoothServiceImpl::GetRenderProcessHost() {

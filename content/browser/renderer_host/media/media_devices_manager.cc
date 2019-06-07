@@ -792,7 +792,7 @@ void MediaDevicesManager::GotAudioInputCapabilities(
     size_t capabilities_index,
     const base::Optional<media::AudioParameters>& parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::ContainsKey(enumeration_states_, state_id));
+  DCHECK(base::Contains(enumeration_states_, state_id));
 
   auto& enumeration_state = enumeration_states_[state_id];
   DCHECK_GT(enumeration_state.num_pending_audio_input_capabilities, 0);

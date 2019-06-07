@@ -3509,14 +3509,14 @@ void RenderProcessHostImpl::RemovePendingView() {
 }
 
 void RenderProcessHostImpl::AddPriorityClient(PriorityClient* priority_client) {
-  DCHECK(!base::ContainsKey(priority_clients_, priority_client));
+  DCHECK(!base::Contains(priority_clients_, priority_client));
   priority_clients_.insert(priority_client);
   UpdateProcessPriorityInputs();
 }
 
 void RenderProcessHostImpl::RemovePriorityClient(
     PriorityClient* priority_client) {
-  DCHECK(base::ContainsKey(priority_clients_, priority_client));
+  DCHECK(base::Contains(priority_clients_, priority_client));
   priority_clients_.erase(priority_client);
   UpdateProcessPriorityInputs();
 }

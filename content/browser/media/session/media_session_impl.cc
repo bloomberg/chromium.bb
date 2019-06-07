@@ -854,7 +854,7 @@ void MediaSessionImpl::GetMediaImageBitmap(
   // We should make sure |image| is in |images_|.
   bool found = false;
   for (auto& image_type : images_)
-    found = found || base::ContainsValue(image_type.second, image);
+    found = found || base::Contains(image_type.second, image);
 
   // Check that |image.sizes| contains a size that is above the minimum size.
   bool check_size = false;
@@ -1106,8 +1106,7 @@ MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
 
 bool MediaSessionImpl::ShouldRouteAction(
     media_session::mojom::MediaSessionAction action) const {
-  return routed_service_ &&
-         base::ContainsKey(routed_service_->actions(), action);
+  return routed_service_ && base::Contains(routed_service_->actions(), action);
 }
 
 void MediaSessionImpl::RebuildAndNotifyActionsChanged() {

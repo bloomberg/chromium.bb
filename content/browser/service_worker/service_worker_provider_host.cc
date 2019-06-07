@@ -548,7 +548,7 @@ void ServiceWorkerProviderHost::AddMatchingRegistration(
   if (!IsContextSecureForServiceWorker())
     return;
   size_t key = registration->scope().spec().size();
-  if (base::ContainsKey(matching_registrations_, key))
+  if (base::Contains(matching_registrations_, key))
     return;
   registration->AddListener(this);
   matching_registrations_[key] = registration;
@@ -582,14 +582,14 @@ ServiceWorkerProviderHost::MatchRegistration() const {
 
 void ServiceWorkerProviderHost::RemoveServiceWorkerRegistrationObjectHost(
     int64_t registration_id) {
-  DCHECK(base::ContainsKey(registration_object_hosts_, registration_id));
+  DCHECK(base::Contains(registration_object_hosts_, registration_id));
   registration_object_hosts_.erase(registration_id);
 }
 
 void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
     int64_t version_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::ContainsKey(service_worker_object_hosts_, version_id));
+  DCHECK(base::Contains(service_worker_object_hosts_, version_id));
   service_worker_object_hosts_.erase(version_id);
 }
 

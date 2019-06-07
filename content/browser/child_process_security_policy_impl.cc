@@ -196,7 +196,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   // Grant certain permissions to a file.
   void GrantPermissionsForFileSystem(const std::string& filesystem_id,
                                      int permissions) {
-    if (!base::ContainsKey(filesystem_permissions_, filesystem_id))
+    if (!base::Contains(filesystem_permissions_, filesystem_id))
       storage::IsolatedContext::GetInstance()->AddReference(filesystem_id);
     filesystem_permissions_[filesystem_id] |= permissions;
   }
@@ -264,7 +264,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     if (url.SchemeIs(url::kFileScheme)) {
       base::FilePath path;
       if (net::FileURLToFilePath(url, &path))
-        return base::ContainsKey(request_file_set_, path);
+        return base::Contains(request_file_set_, path);
     }
 
     return false;  // Unmentioned schemes are disallowed.
@@ -593,7 +593,7 @@ bool ChildProcessSecurityPolicyImpl::IsWebSafeScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
 
-  return base::ContainsKey(schemes_okay_to_request_in_any_process_, scheme);
+  return base::Contains(schemes_okay_to_request_in_any_process_, scheme);
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterPseudoScheme(
@@ -612,7 +612,7 @@ bool ChildProcessSecurityPolicyImpl::IsPseudoScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
 
-  return base::ContainsKey(pseudo_schemes_, scheme);
+  return base::Contains(pseudo_schemes_, scheme);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantCommitURL(int child_id,
@@ -969,7 +969,7 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
     //
     // TODO(creis, nick): https://crbug.com/515309: The line below does not
     // enforce that http pages cannot commit in an extension process.
-    if (base::ContainsKey(schemes_okay_to_commit_in_any_process_, scheme))
+    if (base::Contains(schemes_okay_to_commit_in_any_process_, scheme))
       return true;
 
     auto state = security_state_.find(child_id);
@@ -1011,8 +1011,8 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
   // document origin.
   {
     base::AutoLock lock(lock_);
-    if (base::ContainsKey(schemes_okay_to_appear_as_origin_headers_,
-                          url.scheme())) {
+    if (base::Contains(schemes_okay_to_appear_as_origin_headers_,
+                       url.scheme())) {
       return true;
     }
   }

@@ -380,7 +380,7 @@ download::DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
     const download::DownloadCreateInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (base::ContainsKey(downloads_, id))
+  if (base::Contains(downloads_, id))
     return nullptr;
 
   download::DownloadItemImpl* download =
@@ -732,7 +732,7 @@ void DownloadManagerImpl::OnFileExistenceChecked(uint32_t download_id,
                                                  bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!result) {  // File does not exist.
-    if (base::ContainsKey(downloads_, download_id))
+    if (base::Contains(downloads_, download_id))
       downloads_[download_id]->OnDownloadedFileRemoved();
   }
 }
@@ -774,7 +774,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(download::DownloadItem::kInvalidId, id);
-  DCHECK(!base::ContainsKey(downloads_, id));
+  DCHECK(!base::Contains(downloads_, id));
   download::DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
       this, id, main_file_path, page_url, mime_type, std::move(request_handle));
   DownloadItemUtils::AttachInfo(download_item, GetBrowserContext(),
@@ -1076,8 +1076,8 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
 
 void DownloadManagerImpl::OnDownloadCreated(
     std::unique_ptr<download::DownloadItemImpl> download) {
-  DCHECK(!base::ContainsKey(downloads_, download->GetId()));
-  DCHECK(!base::ContainsKey(downloads_by_guid_, download->GetGuid()));
+  DCHECK(!base::Contains(downloads_, download->GetId()));
+  DCHECK(!base::Contains(downloads_by_guid_, download->GetGuid()));
   download::DownloadItemImpl* item = download.get();
   downloads_[item->GetId()] = std::move(download);
   downloads_by_guid_[item->GetGuid()] = item;
@@ -1198,9 +1198,8 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() {
 }
 
 download::DownloadItem* DownloadManagerImpl::GetDownload(uint32_t download_id) {
-  return base::ContainsKey(downloads_, download_id)
-             ? downloads_[download_id].get()
-             : nullptr;
+  return base::Contains(downloads_, download_id) ? downloads_[download_id].get()
+                                                 : nullptr;
 }
 
 download::DownloadItem* DownloadManagerImpl::GetDownloadByGuid(
@@ -1211,8 +1210,8 @@ download::DownloadItem* DownloadManagerImpl::GetDownloadByGuid(
         return it.get();
     }
   }
-  return base::ContainsKey(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
-                                                     : nullptr;
+  return base::Contains(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
+                                                  : nullptr;
 }
 
 void DownloadManagerImpl::OnUrlDownloadStarted(

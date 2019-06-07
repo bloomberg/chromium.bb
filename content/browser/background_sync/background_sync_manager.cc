@@ -1232,7 +1232,7 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
   if (clock_->Now() < registration.delay_until())
     return false;
 
-  if (base::ContainsKey(emulated_offline_sw_, service_worker_id))
+  if (base::Contains(emulated_offline_sw_, service_worker_id))
     return false;
 
   return AreOptionConditionsMet();
@@ -1725,7 +1725,7 @@ blink::ServiceWorkerStatusCode BackgroundSyncManager::CanEmulateSyncEvent(
   if (!network_observer_->NetworkSufficient())
     return blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected;
   int64_t registration_id = active_version->registration_id();
-  if (base::ContainsKey(emulated_offline_sw_, registration_id))
+  if (base::Contains(emulated_offline_sw_, registration_id))
     return blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected;
   return blink::ServiceWorkerStatusCode::kOk;
 }

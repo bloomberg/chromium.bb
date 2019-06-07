@@ -170,7 +170,7 @@ base::WeakPtr<IndexedDBTransaction>
 IndexedDBConnection::AddTransactionForTesting(
     std::unique_ptr<IndexedDBTransaction> transaction) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!base::ContainsKey(transactions_, transaction->id()));
+  DCHECK(!base::Contains(transactions_, transaction->id()));
   base::WeakPtr<IndexedDBTransaction> transaction_ptr =
       transaction->ptr_factory_.GetWeakPtr();
   transactions_[transaction->id()] = std::move(transaction);

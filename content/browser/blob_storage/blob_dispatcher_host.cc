@@ -113,7 +113,7 @@ storage::BlobStorageContext* BlobDispatcherHost::context() {
 }
 
 bool BlobDispatcherHost::IsUrlRegisteredInHost(const GURL& blob_url) {
-  return base::ContainsKey(public_blob_urls_, blob_url);
+  return base::Contains(public_blob_urls_, blob_url);
 }
 
 void BlobDispatcherHost::ClearHostFromBlobStorageContext() {

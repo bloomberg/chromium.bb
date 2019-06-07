@@ -169,7 +169,7 @@ IndexedDBDatabase* IndexedDBOriginState::AddDatabase(
     const base::string16& name,
     std::unique_ptr<IndexedDBDatabase> database) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!base::ContainsKey(databases_, name));
+  DCHECK(!base::Contains(databases_, name));
   return databases_.emplace(name, std::move(database)).first->second.get();
 }
 

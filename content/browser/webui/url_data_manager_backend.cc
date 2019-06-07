@@ -61,7 +61,7 @@ const char kNetworkErrorKey[] = "netError";
 
 bool SchemeIsInSchemes(const std::string& scheme,
                        const std::vector<std::string>& schemes) {
-  return base::ContainsValue(schemes, scheme);
+  return base::Contains(schemes, scheme);
 }
 
 // Returns a value of 'Origin:' header for the |request| if the header is set.

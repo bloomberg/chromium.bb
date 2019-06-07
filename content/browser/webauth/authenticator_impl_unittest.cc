@@ -452,7 +452,7 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
   }
 
   bool SupportsTransportProtocol(::device::FidoTransportProtocol protocol) {
-    return base::ContainsKey(
+    return base::Contains(
         authenticator_impl_->get_authenticator_common_for_testing()
             ->enabled_transports_for_testing(),
         protocol);

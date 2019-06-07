@@ -197,10 +197,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
             dialog_params.file_types->extensions[0][0]);
   EXPECT_EQ(FILE_PATH_LITERAL("txt"),
             dialog_params.file_types->extensions[0][1]);
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[1],
-                                  FILE_PATH_LITERAL("jpg")));
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[1],
-                                  FILE_PATH_LITERAL("jpeg")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[1],
+                             FILE_PATH_LITERAL("jpg")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[1],
+                             FILE_PATH_LITERAL("jpeg")));
 
   ASSERT_EQ(2u,
             dialog_params.file_types->extension_description_overrides.size());

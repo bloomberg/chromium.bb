@@ -310,7 +310,7 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
     if (i > 0)
       buffer_formats += ",  ";
     buffer_formats += gfx::BufferFormatToString(buffer_format);
-    const bool supported = base::ContainsValue(
+    const bool supported = base::Contains(
         gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
         buffer_format);
     buffer_formats += supported ? ": supported" : ": not supported";
@@ -365,7 +365,7 @@ std::unique_ptr<base::ListValue> GpuMemoryBufferInfo() {
     std::string native_usage_support;
     for (size_t usage = 0;
          usage < static_cast<size_t>(gfx::BufferUsage::LAST) + 1; usage++) {
-      if (base::ContainsKey(
+      if (base::Contains(
               native_configurations,
               std::make_pair(static_cast<gfx::BufferFormat>(format),
                              static_cast<gfx::BufferUsage>(usage)))) {

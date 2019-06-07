@@ -1716,7 +1716,7 @@ bool RenderFrameHostImpl::SchemeShouldBypassCSP(
   // TODO(arthursonzogni): url::GetBypassingCSPScheme() is used instead of the
   // blink::SchemeRegistry. It contains 1) but not 2).
   const auto& bypassing_schemes = url::GetCSPBypassingSchemes();
-  return base::ContainsValue(bypassing_schemes, scheme);
+  return base::Contains(bypassing_schemes, scheme);
 }
 
 mojom::FrameInputHandler* RenderFrameHostImpl::GetFrameInputHandler() {
@@ -4468,7 +4468,7 @@ bool RenderFrameHostImpl::CheckOrDispatchBeforeUnloadForSubtree(
     // ask it once.
     while (!rfh->is_local_root() && rfh != this)
       rfh = rfh->GetParent();
-    if (base::ContainsKey(beforeunload_pending_replies_, rfh))
+    if (base::Contains(beforeunload_pending_replies_, rfh))
       continue;
 
     // For a case like A(B(A)), it's not necessary to send an IPC for the
@@ -4783,7 +4783,7 @@ void RenderFrameHostImpl::CommitNavigation(
     // See if this is for WebUI.
     std::string scheme = common_params.url.scheme();
     const auto& webui_schemes = URLDataManagerBackend::GetWebUISchemes();
-    if (base::ContainsValue(webui_schemes, scheme)) {
+    if (base::Contains(webui_schemes, scheme)) {
       network::mojom::URLLoaderFactoryPtr factory_for_webui =
           CreateWebUIURLLoaderBinding(this, scheme);
       // If the renderer has webui bindings, then don't give it access to

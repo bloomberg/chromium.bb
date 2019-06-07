@@ -1022,7 +1022,7 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
     // To be safe, ignore schemes that aren't allowed to register service
     // workers. We assume that importScripts and fetch() should fail on such
     // schemes.
-    if (!base::ContainsValue(GetServiceWorkerSchemes(), scheme))
+    if (!base::Contains(GetServiceWorkerSchemes(), scheme))
       continue;
     network::mojom::URLLoaderFactoryPtr factory_ptr;
     mojo::MakeStrongBinding(std::move(factory),

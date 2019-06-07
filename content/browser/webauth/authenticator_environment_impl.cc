@@ -53,7 +53,7 @@ void AuthenticatorEnvironmentImpl::EnableVirtualAuthenticatorFor(
     FrameTreeNode* node) {
   // Do not create a new virtual authenticator if there is one already defined
   // for the |node|.
-  if (base::ContainsKey(virtual_discovery_factories_, node))
+  if (base::Contains(virtual_discovery_factories_, node))
     return;
 
   node->AddObserver(this);
@@ -63,7 +63,7 @@ void AuthenticatorEnvironmentImpl::EnableVirtualAuthenticatorFor(
 
 void AuthenticatorEnvironmentImpl::DisableVirtualAuthenticatorFor(
     FrameTreeNode* node) {
-  if (!base::ContainsKey(virtual_discovery_factories_, node))
+  if (!base::Contains(virtual_discovery_factories_, node))
     return;
 
   node->RemoveObserver(this);
@@ -73,7 +73,7 @@ void AuthenticatorEnvironmentImpl::DisableVirtualAuthenticatorFor(
 VirtualFidoDiscoveryFactory* AuthenticatorEnvironmentImpl::GetVirtualFactoryFor(
     FrameTreeNode* node) {
   do {
-    if (base::ContainsKey(virtual_discovery_factories_, node)) {
+    if (base::Contains(virtual_discovery_factories_, node)) {
       return virtual_discovery_factories_[node].get();
     }
   } while ((node = node->parent()));

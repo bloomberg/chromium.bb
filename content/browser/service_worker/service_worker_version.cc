@@ -711,7 +711,7 @@ void ServiceWorkerVersion::AddControllee(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const std::string& uuid = provider_host->client_uuid();
   CHECK(!provider_host->client_uuid().empty());
-  DCHECK(!base::ContainsKey(controllee_map_, uuid));
+  DCHECK(!base::Contains(controllee_map_, uuid));
   // TODO(crbug.com/951571): Change to DCHECK once we figured out the cause of
   // invalid controller status.
   CHECK(status_ == ACTIVATING || status_ == ACTIVATED);
@@ -739,7 +739,7 @@ void ServiceWorkerVersion::AddControllee(
 
 void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::ContainsKey(controllee_map_, client_uuid));
+  DCHECK(base::Contains(controllee_map_, client_uuid));
   controllee_map_.erase(client_uuid);
 
   embedded_worker_->UpdateForegroundPriority();

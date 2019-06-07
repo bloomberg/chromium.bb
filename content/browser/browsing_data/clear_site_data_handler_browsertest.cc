@@ -327,7 +327,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
                               0 /* process_id */, 0 /* render_frame_id */,
                               net::LOAD_ONLY_FROM_CACHE) == net::OK;
     } else {
-      return base::ContainsValue(cache_test_util_->GetEntryKeys(), url.spec());
+      return base::Contains(cache_test_util_->GetEntryKeys(), url.spec());
     }
   }
 

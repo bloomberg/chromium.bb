@@ -212,13 +212,13 @@ class LegacyCacheStorage::MemoryLoader
 
   void NotifyCacheCreated(const std::string& cache_name,
                           CacheStorageCacheHandle cache_handle) override {
-    DCHECK(!base::ContainsKey(cache_handles_, cache_name));
+    DCHECK(!base::Contains(cache_handles_, cache_name));
     cache_handles_.insert(std::make_pair(cache_name, std::move(cache_handle)));
   }
 
   void NotifyCacheDoomed(CacheStorageCacheHandle cache_handle) override {
     auto* impl = LegacyCacheStorageCache::From(cache_handle);
-    DCHECK(base::ContainsKey(cache_handles_, impl->cache_name()));
+    DCHECK(base::Contains(cache_handles_, impl->cache_name()));
     cache_handles_.erase(impl->cache_name());
   }
 
@@ -260,7 +260,7 @@ class LegacyCacheStorage::SimpleCacheLoader
       int64_t cache_padding,
       std::unique_ptr<SymmetricKey> cache_padding_key) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(base::ContainsKey(cache_name_to_cache_dir_, cache_name));
+    DCHECK(base::Contains(cache_name_to_cache_dir_, cache_name));
 
     std::string cache_dir = cache_name_to_cache_dir_[cache_name];
     base::FilePath cache_path = origin_path_.AppendASCII(cache_dir);
@@ -312,7 +312,7 @@ class LegacyCacheStorage::SimpleCacheLoader
 
   void CleanUpDeletedCache(CacheStorageCache* cache) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(base::ContainsKey(doomed_cache_to_path_, cache));
+    DCHECK(base::Contains(doomed_cache_to_path_, cache));
 
     base::FilePath cache_path =
         origin_path_.AppendASCII(doomed_cache_to_path_[cache]);
@@ -343,7 +343,7 @@ class LegacyCacheStorage::SimpleCacheLoader
     protobuf_index.set_origin(origin_.GetURL().spec());
 
     for (const auto& cache_metadata : index.ordered_cache_metadata()) {
-      DCHECK(base::ContainsKey(cache_name_to_cache_dir_, cache_metadata.name));
+      DCHECK(base::Contains(cache_name_to_cache_dir_, cache_metadata.name));
 
       proto::CacheStorageIndex::Cache* index_cache = protobuf_index.add_cache();
       index_cache->set_name(cache_metadata.name);
@@ -444,7 +444,7 @@ class LegacyCacheStorage::SimpleCacheLoader
 
   void NotifyCacheDoomed(CacheStorageCacheHandle cache_handle) override {
     auto* impl = LegacyCacheStorageCache::From(cache_handle);
-    DCHECK(base::ContainsKey(cache_name_to_cache_dir_, impl->cache_name()));
+    DCHECK(base::Contains(cache_name_to_cache_dir_, impl->cache_name()));
     auto iter = cache_name_to_cache_dir_.find(impl->cache_name());
     doomed_cache_to_path_[cache_handle.value()] = iter->second;
     cache_name_to_cache_dir_.erase(iter);
@@ -465,8 +465,7 @@ class LegacyCacheStorage::SimpleCacheLoader
     {
       base::FilePath cache_path;
       while (!(cache_path = file_enum.Next()).empty()) {
-        if (!base::ContainsKey(*cache_dirs,
-                               cache_path.BaseName().AsUTF8Unsafe()))
+        if (!base::Contains(*cache_dirs, cache_path.BaseName().AsUTF8Unsafe()))
           dirs_to_delete.push_back(cache_path);
       }
     }
@@ -831,8 +830,8 @@ bool LegacyCacheStorage::InitiateScheduledIndexWriteForTest(
 void LegacyCacheStorage::CacheSizeUpdated(
     const LegacyCacheStorageCache* cache) {
   // Should not be called for doomed caches.
-  DCHECK(!base::ContainsKey(doomed_caches_,
-                            const_cast<LegacyCacheStorageCache*>(cache)));
+  DCHECK(!base::Contains(doomed_caches_,
+                         const_cast<LegacyCacheStorageCache*>(cache)));
   DCHECK_NE(cache->cache_padding(), kSizeUnknown);
   bool size_changed =
       cache_index_->SetCacheSize(cache->cache_name(), cache->cache_size());
@@ -1020,7 +1019,7 @@ void LegacyCacheStorage::HasCacheImpl(const std::string& cache_name,
                          TRACE_ID_GLOBAL(trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "cache_name", cache_name);
-  bool has_cache = base::ContainsKey(cache_map_, cache_name);
+  bool has_cache = base::Contains(cache_map_, cache_name);
   std::move(callback).Run(has_cache, CacheStorageError::kSuccess);
 }
 

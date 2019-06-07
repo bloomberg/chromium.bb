@@ -69,7 +69,7 @@ void VirtualFidoDiscoveryFactory::AddBinding(
 
 void VirtualFidoDiscoveryFactory::OnDiscoveryDestroyed(
     VirtualFidoDiscovery* discovery) {
-  if (base::ContainsKey(discoveries_, discovery))
+  if (base::Contains(discoveries_, discovery))
     discoveries_.erase(discovery);
 }
 

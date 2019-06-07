@@ -87,7 +87,7 @@ void BackgroundSyncContextImpl::CreateService(
 void BackgroundSyncContextImpl::ServiceHadConnectionError(
     BackgroundSyncServiceImpl* service) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::ContainsKey(services_, service));
+  DCHECK(base::Contains(services_, service));
 
   services_.erase(service);
 }

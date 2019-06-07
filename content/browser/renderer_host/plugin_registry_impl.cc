@@ -84,8 +84,8 @@ void PluginRegistryImpl::GetPluginsComplete(
         mime_type_blink->file_extensions = mime_type.file_extensions;
         plugin_blink->mime_types.push_back(std::move(mime_type_blink));
         if (!plugin_blink->may_use_external_handler) {
-          plugin_blink->may_use_external_handler = base::ContainsKey(
-              mime_handler_view_mime_types, mime_type.mime_type);
+          plugin_blink->may_use_external_handler =
+              base::Contains(mime_handler_view_mime_types, mime_type.mime_type);
         }
       }
       plugins.push_back(std::move(plugin_blink));

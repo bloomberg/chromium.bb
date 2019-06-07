@@ -76,7 +76,7 @@ bool DoesOriginMatchMaskAndURLs(
     return false;
 
   const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
-  bool is_web_scheme = base::ContainsValue(schemes, origin.scheme());
+  bool is_web_scheme = base::Contains(schemes, origin.scheme());
 
   // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
   if ((!policy || !policy->IsStorageProtected(origin.GetURL())) &&

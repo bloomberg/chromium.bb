@@ -104,7 +104,7 @@ ServiceWorkerProcessManager::AllocateWorkerProcess(
     return blink::ServiceWorkerStatusCode::kErrorAbort;
   }
 
-  DCHECK(!base::ContainsKey(worker_process_map_, embedded_worker_id))
+  DCHECK(!base::Contains(worker_process_map_, embedded_worker_id))
       << embedded_worker_id << " already has a process allocated";
 
   // Create a SiteInstance to get the renderer process from. Use the site URL

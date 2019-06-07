@@ -570,7 +570,7 @@ void PaymentAppDatabase::DidReadAllPaymentInstruments(
       continue;
 
     int64_t id = instrument_proto.registration_id();
-    if (!base::ContainsKey(apps, id))
+    if (!base::Contains(apps, id))
       continue;
 
     apps[id]->enabled_methods.emplace_back(instrument_proto.method());

@@ -401,9 +401,9 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetOriginsWithRegistrations(&origins));
   EXPECT_EQ(3U, origins.size());
-  EXPECT_TRUE(base::ContainsKey(origins, origin1));
-  EXPECT_TRUE(base::ContainsKey(origins, origin2));
-  EXPECT_TRUE(base::ContainsKey(origins, origin3));
+  EXPECT_TRUE(base::Contains(origins, origin1));
+  EXPECT_TRUE(base::Contains(origins, origin2));
+  EXPECT_TRUE(base::Contains(origins, origin3));
 
   // |origin3| has another registration, so should not remove it from the
   // unique origin list.
@@ -418,9 +418,9 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetOriginsWithRegistrations(&origins));
   EXPECT_EQ(3U, origins.size());
-  EXPECT_TRUE(base::ContainsKey(origins, origin1));
-  EXPECT_TRUE(base::ContainsKey(origins, origin2));
-  EXPECT_TRUE(base::ContainsKey(origins, origin3));
+  EXPECT_TRUE(base::Contains(origins, origin1));
+  EXPECT_TRUE(base::Contains(origins, origin2));
+  EXPECT_TRUE(base::Contains(origins, origin3));
 
   // |origin3| should be removed from the unique origin list.
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -434,8 +434,8 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetOriginsWithRegistrations(&origins));
   EXPECT_EQ(2U, origins.size());
-  EXPECT_TRUE(base::ContainsKey(origins, origin1));
-  EXPECT_TRUE(base::ContainsKey(origins, origin2));
+  EXPECT_TRUE(base::Contains(origins, origin1));
+  EXPECT_TRUE(base::Contains(origins, origin2));
 }
 
 TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
@@ -712,8 +712,8 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetPurgeableResourceIds(&purgeable_ids_out));
   EXPECT_EQ(2u, purgeable_ids_out.size());
-  EXPECT_TRUE(base::ContainsKey(purgeable_ids_out, resources[0].resource_id));
-  EXPECT_TRUE(base::ContainsKey(purgeable_ids_out, resources[1].resource_id));
+  EXPECT_TRUE(base::Contains(purgeable_ids_out, resources[0].resource_id));
+  EXPECT_TRUE(base::Contains(purgeable_ids_out, resources[1].resource_id));
 }
 
 TEST(ServiceWorkerDatabaseTest, DeleteNonExistentRegistration) {
@@ -844,8 +844,8 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetPurgeableResourceIds(&purgeable_ids_out));
   EXPECT_EQ(2u, purgeable_ids_out.size());
-  EXPECT_TRUE(base::ContainsKey(purgeable_ids_out, resources1[0].resource_id));
-  EXPECT_TRUE(base::ContainsKey(purgeable_ids_out, resources1[1].resource_id));
+  EXPECT_TRUE(base::Contains(purgeable_ids_out, resources1[0].resource_id));
+  EXPECT_TRUE(base::Contains(purgeable_ids_out, resources1[1].resource_id));
 }
 
 TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
@@ -938,8 +938,8 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetPurgeableResourceIds(&purgeable_ids_out));
   EXPECT_EQ(2u, purgeable_ids_out.size());
-  EXPECT_TRUE(base::ContainsKey(purgeable_ids_out, resources1[0].resource_id));
-  EXPECT_TRUE(base::ContainsKey(purgeable_ids_out, resources1[1].resource_id));
+  EXPECT_TRUE(base::Contains(purgeable_ids_out, resources1[0].resource_id));
+  EXPECT_TRUE(base::Contains(purgeable_ids_out, resources1[1].resource_id));
 
   // Make sure that registration2 is still alive.
   resources_out.clear();
@@ -2030,7 +2030,7 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetOriginsWithRegistrations(&unique_origins));
   EXPECT_EQ(1u, unique_origins.size());
-  EXPECT_TRUE(base::ContainsKey(unique_origins, origin2));
+  EXPECT_TRUE(base::Contains(unique_origins, origin2));
 
   // The registrations for |origin1| should be removed.
   std::vector<RegistrationData> registrations;
@@ -2060,10 +2060,10 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetPurgeableResourceIds(&purgeable_ids_out));
   EXPECT_EQ(4u, purgeable_ids_out.size());
-  EXPECT_TRUE(base::ContainsKey(purgeable_ids_out, 1));
-  EXPECT_TRUE(base::ContainsKey(purgeable_ids_out, 2));
-  EXPECT_TRUE(base::ContainsKey(purgeable_ids_out, 3));
-  EXPECT_TRUE(base::ContainsKey(purgeable_ids_out, 4));
+  EXPECT_TRUE(base::Contains(purgeable_ids_out, 1));
+  EXPECT_TRUE(base::Contains(purgeable_ids_out, 2));
+  EXPECT_TRUE(base::Contains(purgeable_ids_out, 3));
+  EXPECT_TRUE(base::Contains(purgeable_ids_out, 4));
 
   // The user data associated with |origin1| should be removed.
   std::vector<std::string> user_data_out;

@@ -96,7 +96,7 @@ class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
                               net::LOAD_ONLY_FROM_CACHE |
                                   net::LOAD_SKIP_CACHE_VALIDATION) == net::OK;
     } else {
-      return base::ContainsValue(cache_util_->GetEntryKeys(), url.spec());
+      return base::Contains(cache_util_->GetEntryKeys(), url.spec());
     }
   }
 

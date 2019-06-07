@@ -637,7 +637,7 @@ void IndexedDBDatabase::ConnectionClosed(IndexedDBConnection* connection) {
 }
 
 bool IndexedDBDatabase::ValidateObjectStoreId(int64_t object_store_id) const {
-  if (!base::ContainsKey(metadata_.object_stores, object_store_id)) {
+  if (!base::Contains(metadata_.object_stores, object_store_id)) {
     DLOG(ERROR) << "Invalid object_store_id";
     return false;
   }
@@ -651,7 +651,7 @@ bool IndexedDBDatabase::ValidateObjectStoreIdAndIndexId(
     return false;
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores.find(object_store_id)->second;
-  if (!base::ContainsKey(object_store_metadata.indexes, index_id)) {
+  if (!base::Contains(object_store_metadata.indexes, index_id)) {
     DLOG(ERROR) << "Invalid index_id";
     return false;
   }
@@ -666,7 +666,7 @@ bool IndexedDBDatabase::ValidateObjectStoreIdAndOptionalIndexId(
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores.find(object_store_id)->second;
   if (index_id != IndexedDBIndexMetadata::kInvalidId &&
-      !base::ContainsKey(object_store_metadata.indexes, index_id)) {
+      !base::Contains(object_store_metadata.indexes, index_id)) {
     DLOG(ERROR) << "Invalid index_id";
     return false;
   }
@@ -680,7 +680,7 @@ bool IndexedDBDatabase::ValidateObjectStoreIdAndNewIndexId(
     return false;
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores.find(object_store_id)->second;
-  if (base::ContainsKey(object_store_metadata.indexes, index_id)) {
+  if (base::Contains(object_store_metadata.indexes, index_id)) {
     DLOG(ERROR) << "Invalid index_id";
     return false;
   }
@@ -698,7 +698,7 @@ void IndexedDBDatabase::CreateObjectStore(IndexedDBTransaction* transaction,
   DCHECK_EQ(transaction->mode(),
             blink::mojom::IDBTransactionMode::VersionChange);
 
-  if (base::ContainsKey(metadata_.object_stores, object_store_id)) {
+  if (base::Contains(metadata_.object_stores, object_store_id)) {
     DLOG(ERROR) << "Invalid object_store_id";
     return;
   }

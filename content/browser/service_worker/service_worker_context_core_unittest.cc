@@ -158,7 +158,7 @@ TEST_F(ServiceWorkerContextCoreTest, FailureInfo) {
   context()->UpdateVersionFailureCount(kVersionId,
                                        blink::ServiceWorkerStatusCode::kOk);
   EXPECT_EQ(0, context()->GetVersionFailureCount(kVersionId));
-  EXPECT_FALSE(base::ContainsKey(context()->failure_counts_, kVersionId));
+  EXPECT_FALSE(base::Contains(context()->failure_counts_, kVersionId));
 }
 
 TEST_F(ServiceWorkerContextCoreTest, DeleteForOrigin) {

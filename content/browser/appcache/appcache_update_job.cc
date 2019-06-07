@@ -211,7 +211,7 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
     DCHECK(!new_master_resource.has_ref());
     DCHECK(new_master_resource.GetOrigin() == manifest_url_.GetOrigin());
 
-    if (base::ContainsKey(failed_master_entries_, new_master_resource))
+    if (base::Contains(failed_master_entries_, new_master_resource))
       return;
 
     // Cannot add more to this update if already terminating.

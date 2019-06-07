@@ -85,21 +85,21 @@ TEST_F(FileSystemChooserTest, AcceptsMimeTypes) {
   EXPECT_TRUE(dialog_params.file_types->include_all_files);
   ASSERT_EQ(2u, dialog_params.file_types->extensions.size());
 
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[0],
-                                  FILE_PATH_LITERAL("text")));
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[0],
-                                  FILE_PATH_LITERAL("txt")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],
+                             FILE_PATH_LITERAL("text")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],
+                             FILE_PATH_LITERAL("txt")));
 
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[1],
-                                  FILE_PATH_LITERAL("gif")));
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[1],
-                                  FILE_PATH_LITERAL("jpg")));
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[1],
-                                  FILE_PATH_LITERAL("jpeg")));
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[1],
-                                  FILE_PATH_LITERAL("png")));
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[1],
-                                  FILE_PATH_LITERAL("tiff")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[1],
+                             FILE_PATH_LITERAL("gif")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[1],
+                             FILE_PATH_LITERAL("jpg")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[1],
+                             FILE_PATH_LITERAL("jpeg")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[1],
+                             FILE_PATH_LITERAL("png")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[1],
+                             FILE_PATH_LITERAL("tiff")));
 
   ASSERT_EQ(2u,
             dialog_params.file_types->extension_description_overrides.size());
@@ -124,10 +124,10 @@ TEST_F(FileSystemChooserTest, AcceptsExtensions) {
   ASSERT_EQ(1u, dialog_params.file_types->extensions.size());
 
   EXPECT_EQ(2u, dialog_params.file_types->extensions[0].size());
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[0],
-                                  FILE_PATH_LITERAL("text")));
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[0],
-                                  FILE_PATH_LITERAL("js")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],
+                             FILE_PATH_LITERAL("text")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],
+                             FILE_PATH_LITERAL("js")));
 
   ASSERT_EQ(1u,
             dialog_params.file_types->extension_description_overrides.size());
@@ -149,12 +149,12 @@ TEST_F(FileSystemChooserTest, AcceptsExtensionsAndMimeTypes) {
   EXPECT_FALSE(dialog_params.file_types->include_all_files);
   ASSERT_EQ(1u, dialog_params.file_types->extensions.size());
 
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[0],
-                                  FILE_PATH_LITERAL("text")));
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[0],
-                                  FILE_PATH_LITERAL("gif")));
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[0],
-                                  FILE_PATH_LITERAL("jpeg")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],
+                             FILE_PATH_LITERAL("text")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],
+                             FILE_PATH_LITERAL("gif")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[0],
+                             FILE_PATH_LITERAL("jpeg")));
   EXPECT_EQ(1, base::STLCount(dialog_params.file_types->extensions[0],
                               FILE_PATH_LITERAL("jpg")));
 

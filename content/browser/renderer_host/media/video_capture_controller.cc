@@ -510,15 +510,15 @@ void VideoCaptureController::OnFrameReadyInBuffer(
 
       // On the first use of a BufferContext for a particular client, call
       // OnBufferCreated().
-      if (!base::ContainsValue(client->known_buffer_context_ids,
-                               buffer_context_id)) {
+      if (!base::Contains(client->known_buffer_context_ids,
+                          buffer_context_id)) {
         client->known_buffer_context_ids.push_back(buffer_context_id);
         client->event_handler->OnNewBuffer(
             client->controller_id, buffer_context_iter->CloneBufferHandle(),
             buffer_context_id);
       }
 
-      if (!base::ContainsValue(client->buffers_in_use, buffer_context_id))
+      if (!base::Contains(client->buffers_in_use, buffer_context_id))
         client->buffers_in_use.push_back(buffer_context_id);
       else
         NOTREACHED() << "Unexpected duplicate buffer: " << buffer_context_id;

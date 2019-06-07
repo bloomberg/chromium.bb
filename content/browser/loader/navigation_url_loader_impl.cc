@@ -1523,7 +1523,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   network::mojom::URLLoaderFactoryPtrInfo factory_for_webui;
   const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
   std::string scheme = new_request->url.scheme();
-  if (base::ContainsValue(schemes, scheme)) {
+  if (base::Contains(schemes, scheme)) {
     factory_for_webui = CreateWebUIURLLoaderBinding(
                             frame_tree_node->current_frame_host(), scheme)
                             .PassInterface();

@@ -3572,13 +3572,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
       if (expect_old_cache_) {
         EXPECT_NE(expect_old_cache_, group_->newest_complete_cache());
-        EXPECT_TRUE(
-            base::ContainsValue(group_->old_caches(), expect_old_cache_));
+        EXPECT_TRUE(base::Contains(group_->old_caches(), expect_old_cache_));
       }
       if (expect_newest_cache_) {
         EXPECT_EQ(expect_newest_cache_, group_->newest_complete_cache());
         EXPECT_FALSE(
-            base::ContainsValue(group_->old_caches(), expect_newest_cache_));
+            base::Contains(group_->old_caches(), expect_newest_cache_));
       } else {
         // Tests that don't know which newest cache to expect contain updates
         // that succeed (because the update creates a new cache whose pointer

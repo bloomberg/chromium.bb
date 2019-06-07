@@ -31,13 +31,13 @@ namespace {
 
 // Should return the same value as SchemeRegistry::shouldTreatURLSchemeAsSecure.
 bool IsSecureScheme(const std::string& scheme) {
-  return base::ContainsValue(url::GetSecureSchemes(), scheme);
+  return base::Contains(url::GetSecureSchemes(), scheme);
 }
 
 // Should return the same value as SecurityOrigin::isLocal and
 // SchemeRegistry::shouldTreatURLSchemeAsCorsEnabled.
 bool ShouldTreatURLSchemeAsCorsEnabled(const GURL& url) {
-  return base::ContainsValue(url::GetCorsEnabledSchemes(), url.scheme());
+  return base::Contains(url::GetCorsEnabledSchemes(), url.scheme());
 }
 
 // Should return the same value as the resource URL checks assigned to

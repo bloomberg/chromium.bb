@@ -383,7 +383,7 @@ void AppendUniqueTransportsFromCertificate(
 
   for (const auto& mapping : kTransportMapping) {
     if (transport_bits.AssertsBit(mapping.bit_index) &&
-        !base::ContainsValue(*out_transports, mapping.transport)) {
+        !base::Contains(*out_transports, mapping.transport)) {
       out_transports->push_back(mapping.transport);
     }
   }

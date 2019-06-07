@@ -134,7 +134,7 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
 
   bool WasURLVisited(const GURL& url) {
     base::AutoLock lock(visited_urls_lock_);
-    return base::ContainsKey(visited_urls_, url);
+    return base::Contains(visited_urls_, url);
   }
 
   MediaSession* SetupMediaImageTest() {

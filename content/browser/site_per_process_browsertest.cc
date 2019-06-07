@@ -7985,10 +7985,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   filter2->Wait();
 
   // At this point, we should have two pending WebContents.
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       web_contents()->pending_contents_,
       GlobalRoutingID(process1->GetID(), filter1->routing_id())));
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       web_contents()->pending_contents_,
       GlobalRoutingID(process2->GetID(), filter2->routing_id())));
 
@@ -8063,10 +8063,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   filter2->Wait();
 
   // At this point, we should have two pending widgets.
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       web_contents()->pending_widget_views_,
       GlobalRoutingID(process1->GetID(), filter1->routing_id())));
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       web_contents()->pending_widget_views_,
       GlobalRoutingID(process2->GetID(), filter2->routing_id())));
 
@@ -8080,10 +8080,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                                     false, gfx::Rect());
   web_contents()->ShowCreatedWidget(process2->GetID(), filter2->routing_id(),
                                     false, gfx::Rect());
-  EXPECT_FALSE(base::ContainsKey(
+  EXPECT_FALSE(base::Contains(
       web_contents()->pending_widget_views_,
       GlobalRoutingID(process1->GetID(), filter1->routing_id())));
-  EXPECT_FALSE(base::ContainsKey(
+  EXPECT_FALSE(base::Contains(
       web_contents()->pending_widget_views_,
       GlobalRoutingID(process2->GetID(), filter2->routing_id())));
 }

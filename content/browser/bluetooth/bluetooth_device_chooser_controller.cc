@@ -132,7 +132,7 @@ bool MatchesFilter(const std::string* device_name,
 
   if (filter->services) {
     for (const auto& service : filter->services.value()) {
-      if (!base::ContainsKey(device_uuids, service)) {
+      if (!base::Contains(device_uuids, service)) {
         return false;
       }
     }
