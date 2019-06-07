@@ -150,8 +150,8 @@ the box (the vertical scrollbar is the `|/|` part):
 
 ## Coordinate Spaces
 
-Layout and Paint work with and frequently refer to three main coordinate spaces
-(really two, with one variant):
+Layout and Paint work with and frequently refer to four coordinate spaces
+(really two, with two variants):
 
 * Physical coordinates: Corresponds to physical direction of the output per the
   physical display (screen, printed page). Generally used for painting, thus
@@ -179,6 +179,10 @@ Layout and Paint work with and frequently refer to three main coordinate spaces
   writing mode must, by definition, incorporate flipping. It can be expensive to
   look up the writing mode of an object.  Performing computation on values known
   to be in this space can save on the overhead required to unflip/reflip.
+
+* Logical coordinates without flipping inline direction: those are "logical
+  block coordinates", without considering text direction. Examples are
+  "LogicalLeft" and "LogicalRight".
 
 Example with `writing-mode: vertical-rl; direction: ltr`:
 
