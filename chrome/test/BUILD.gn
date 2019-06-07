@@ -80,6 +80,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "../browser/autofill/automated_tests/cache_replayer.cc",
+    "../browser/autofill/automated_tests/cache_replayer.h",
     "base/chrome_render_view_host_test_harness.cc",
     "base/chrome_render_view_host_test_harness.h",
     "base/chrome_test_launcher.cc",
@@ -2707,6 +2709,7 @@ test("unit_tests") {
     "../browser/android/history_report/usage_reports_buffer_backend_unittest.cc",
     "../browser/android/locale/locale_template_url_loader_unittest.cc",
     "../browser/android/tab_web_contents_delegate_android_unittest.cc",
+    "../browser/autofill/automated_tests/cache_replayer_unittest.cc",
     "../browser/security_events/security_event_recorder_impl_unittest.cc",
     "../browser/ui/webui/version_handler_win_unittest.cc",
 
@@ -6000,8 +6003,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/autofill/autofill_captured_sites_interactive_uitest.cc",
       "../browser/autofill/autofill_uitest.cc",
       "../browser/autofill/autofill_uitest.h",
-      "../browser/autofill/automated_tests/cache_replayer.cc",
-      "../browser/autofill/automated_tests/cache_replayer.h",
       "../browser/autofill/captured_sites_test_utils.cc",
       "../browser/autofill/captured_sites_test_utils.h",
       "../browser/password_manager/password_manager_captured_sites_interactive_uitest.cc",
