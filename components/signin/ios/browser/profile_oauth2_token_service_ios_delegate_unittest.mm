@@ -5,8 +5,8 @@
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -103,7 +103,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::FakeURLFetcherFactory factory_;
   TestingPrefServiceSimple prefs_;
   TestSigninClient client_;
