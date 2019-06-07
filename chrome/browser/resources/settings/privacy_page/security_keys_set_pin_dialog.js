@@ -202,7 +202,22 @@ Polymer({
       return;
     }
     this.complete_ = true;
+    // Setting |complete_| to true hides the |pinSubmitNew| button while it
+    // has focus, which in turn causes the browser to move focus to the <body>
+    // element, which in turn prevents subsequent "Enter" keystrokes to be
+    // handled by cr-dialog itself. Re-focusing manually fixes this.
+    this.$.dialog.focus();
     this.browserProxy_.close();
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onIronSelect_: function(e) {
+    // Prevent this event from bubbling since it is unnecessarily triggering the
+    // listener within settings-animated-pages.
+    e.stopPropagation();
   },
 
   /** @private */

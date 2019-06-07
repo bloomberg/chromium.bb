@@ -322,4 +322,8 @@ Polymer({
     // the backdrop area.
     e.preventDefault();
   },
+
+  focus() {
+    this.$$('.title-container').focus();
+  },
 });
