@@ -189,11 +189,6 @@ class MimeHandlerViewCrossProcessTest
   void SetUpCommandLine(base::CommandLine* cl) override {
     MimeHandlerViewTest::SetUpCommandLine(cl);
     is_cross_process_mode_ = GetParam();
-    // TODO(ekaramad): All these tests started timing out on ChromeOS (https://
-    // crbug.com/949565).
-#if defined(OS_CHROMEOS)
-    is_cross_process_mode_ = false;
-#endif
     if (is_cross_process_mode_) {
       scoped_feature_list_.InitAndEnableFeature(
           features::kMimeHandlerViewInCrossProcessFrame);
