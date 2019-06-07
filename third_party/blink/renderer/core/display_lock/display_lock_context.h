@@ -258,6 +258,8 @@ class CORE_EXPORT DisplayLockContext final
 
   // Helper functions to resolve the update/commit promises.
   enum ResolverState { kResolve, kReject, kDetach };
+  void MakeResolver(ScriptState*, Member<ScriptPromiseResolver>*);
+  bool HasResolver();
   void FinishUpdateResolver(ResolverState, const char* reject_reason = nullptr);
   void FinishCommitResolver(ResolverState, const char* reject_reason = nullptr);
   void FinishAcquireResolver(ResolverState,
@@ -284,6 +286,10 @@ class CORE_EXPORT DisplayLockContext final
   bool ConnectedToView() const;
 
   bool ShouldPerformUpdatePhase(DisplayLockBudget::Phase phase) const;
+
+  // During an attempt to commit, clean up state and reject pending resolver
+  // promises if the lock is not connected to the tree.
+  bool CleanupAndRejectCommitIfNotConnected();
 
   std::unique_ptr<DisplayLockBudget> update_budget_;
 

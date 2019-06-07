@@ -208,8 +208,7 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
       return GetRejectedPromise(script_state, reason);
     }
 
-    acquire_resolver_ =
-        MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+    MakeResolver(script_state, &acquire_resolver_);
     is_horizontal_writing_mode_ = true;
     if (auto* layout_object = element_->GetLayoutObject()) {
       layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
@@ -246,9 +245,24 @@ ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
     return update_resolver_->Promise();
   }
 
-  update_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  MakeResolver(script_state, &update_resolver_);
   StartUpdateIfNeeded();
   return update_resolver_->Promise();
+}
+
+bool DisplayLockContext::CleanupAndRejectCommitIfNotConnected() {
+  // If we don't have an element or we're not connected, then the process of
+  // committing is the same as just unlocking the element. Early out if
+  // those conditions *don't* hold.
+  if (element_ && ConnectedToView())
+    return false;
+
+  state_ = kUnlocked;
+  update_budget_.reset();
+  // Note that we reject the update, but resolve the commit.
+  FinishUpdateResolver(kReject, rejection_names::kElementIsDisconnected);
+  FinishCommitResolver(kResolve);
+  return true;
 }
 
 ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
@@ -268,18 +282,32 @@ ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
     return commit_resolver_->Promise();
   }
 
+  if (CleanupAndRejectCommitIfNotConnected())
+    return GetResolvedPromise(script_state);
+
   // Note that we don't resolve the update promise here, since it should still
   // finish updating before resolution. That is, calling update() and commit()
   // together will still wait until the lifecycle is clean before resolving any
   // of the promises.
 
-  commit_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  MakeResolver(script_state, &commit_resolver_);
   auto promise = commit_resolver_->Promise();
   // It's possible we are already committing due to activation. If not, we
   // should start the commit.
   if (state_ != kCommitting)
     StartCommit();
   return promise;
+}
+
+void DisplayLockContext::MakeResolver(ScriptState* script_state,
+                                      Member<ScriptPromiseResolver>* resolver) {
+  DCHECK(ConnectedToView());
+  document_->View()->RegisterForLifecycleNotifications(this);
+  *resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+}
+
+bool DisplayLockContext::HasResolver() {
+  return acquire_resolver_ || update_resolver_ || commit_resolver_;
 }
 
 ScriptPromise DisplayLockContext::updateAndCommit(ScriptState* script_state) {
@@ -304,7 +332,7 @@ ScriptPromise DisplayLockContext::updateAndCommit(ScriptState* script_state) {
   }
 
   CancelTimeoutTask();
-  commit_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  MakeResolver(script_state, &commit_resolver_);
   StartUpdateIfNeeded();
   return commit_resolver_->Promise();
 }
@@ -350,6 +378,8 @@ void DisplayLockContext::FinishResolver(Member<ScriptPromiseResolver>* resolver,
       (*resolver)->Detach();
   }
   *resolver = nullptr;
+  if (!HasResolver() && ConnectedToView())
+    document_->View()->UnregisterFromLifecycleNotifications(this);
 }
 
 bool DisplayLockContext::ShouldPerformUpdatePhase(
@@ -489,16 +519,8 @@ void DisplayLockContext::NotifyForcedUpdateScopeEnded() {
 void DisplayLockContext::StartCommit() {
   // Since we are starting a commit, cancel the timeout task.
   CancelTimeoutTask();
-  // If we don't have an element or we're not connected, then the process of
-  // committing is the same as just unlocking the element.
-  if (!element_ || !ConnectedToView()) {
-    state_ = kUnlocked;
-    update_budget_.reset();
-    // Note that we reject the update, but resolve the commit.
-    FinishUpdateResolver(kReject, rejection_names::kElementIsDisconnected);
-    FinishCommitResolver(kResolve);
+  if (CleanupAndRejectCommitIfNotConnected())
     return;
-  }
 
   // If we have an acquire resolver, it means that we haven't had a chance to
   // run the lifecycle yet to clear the painted output. However, we're being
@@ -682,10 +704,12 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
 
   // Since we're observing the lifecycle updates, ensure that we listen to the
   // right document's view.
-  if (old_document.View())
-    old_document.View()->UnregisterFromLifecycleNotifications(this);
-  if (document_->View())
-    document_->View()->RegisterForLifecycleNotifications(this);
+  if (HasResolver()) {
+    if (old_document.View())
+      old_document.View()->UnregisterFromLifecycleNotifications(this);
+    if (document_->View())
+      document_->View()->RegisterForLifecycleNotifications(this);
+  }
 
   if (!IsActivatable()) {
     old_document.RemoveActivationBlockingDisplayLock();
