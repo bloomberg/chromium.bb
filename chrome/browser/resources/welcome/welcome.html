@@ -6,11 +6,10 @@
 
   <link rel="import" href="chrome://resources/html/polymer.html">
 
-  <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
   <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
   <link rel="import" href="chrome://resources/html/cr.html">
   <link rel="import" href="chrome://resources/html/util.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
   <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
@@ -24,7 +23,7 @@
 
   <dom-module id="welcome-app">
     <template>
-      <style include="paper-button-style">
+      <style>
         @keyframes slideUpContent {
           from {
             transform: translateY(186px);
@@ -195,9 +194,9 @@
           width: fit-content;
         }
 
-        paper-button {
+        cr-button {
           font-size: .8125em;
-          /* Makes sure the two paper-buttons are the same width since they're
+          /* Makes sure the two cr-button's are the same width since they're
              placed vertically. Requires parent to be "width: fit-content;". */
           width: 100%;
         }
@@ -220,12 +219,12 @@
           <div class="signin">
             <div class="signin-description">$i18n{descriptionText}</div>
             <div class="signin-buttons">
-              <paper-button class="action-button" on-tap="onAccept_">
+              <cr-button class="action-button" on-click="onAccept_">
                 $i18n{acceptText}
-              </paper-button>
-              <paper-button id="cancel" on-tap="onDecline_">
+              </cr-button>
+              <cr-button id="cancel" on-click="onDecline_">
                 $i18n{declineText}
-              </paper-button>
+              </cr-button>
             </div>
           </div>
         </div>

@@ -25,7 +25,7 @@ cr.define('onboarding_signin_view_test', function() {
     });
 
     test('sign-in button', function() {
-      const signinButton = testElement.$$('paper-button');
+      const signinButton = testElement.$$('cr-button');
       assertTrue(!!signinButton);
 
       signinButton.click();

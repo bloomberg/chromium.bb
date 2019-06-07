@@ -1,14 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../navigation_behavior.html">
 <link rel="import" href="../shared/animations_css.html">
 <link rel="import" href="../shared/bookmark_proxy.html">
@@ -20,7 +19,7 @@
 
 <dom-module id="nux-google-apps">
   <template>
-    <style include="animations chooser-shared-css paper-button-style">
+    <style include="animations chooser-shared-css">
       .apps-ask {
         text-align: center;
       }
@@ -196,15 +195,15 @@
         </div>
 
         <div class="button-bar">
-          <paper-button id="noThanksButton" on-click="onNoThanksClicked_">
+          <cr-button id="noThanksButton" on-click="onNoThanksClicked_">
             $i18n{skip}
-          </paper-button>
+          </cr-button>
           <step-indicator model="[[indicatorModel]]"></step-indicator>
-          <paper-button class="action-button" disabled$="[[!hasAppsSelected_]]"
+          <cr-button class="action-button" disabled$="[[!hasAppsSelected_]]"
               on-click="onGetStartedClicked_">
             $i18n{next}
             <iron-icon icon="cr:chevron-right"></iron-icon>
-          </paper-button>
+          </cr-button>
         </div>
       </div>
     </div>

@@ -1,14 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="welcome_browser_proxy.html">
 
 <dom-module id="welcome-app">
   <template>
-    <style include="paper-button-style">
+    <style>
       @keyframes slideUpContent {
         from {
           transform: translateY(120px);
@@ -152,13 +151,13 @@
         margin-top: 2.5em;
       }
 
-      paper-button {
+      cr-button {
         min-width: 92px;
       }
     </style>
     <div class="slider">
       <div id="logoWrapper">
-        <div id="logo" on-tap="onLogoTap_"></div>
+        <div id="logo" on-click="onLogoTap_"></div>
       </div>
       <div class="heading-container">
         <div class="heading">$i18n{headerText}</div>
@@ -167,12 +166,12 @@
       <div class="signin">
         <div class="signin-description">$i18n{descriptionText}</div>
         <div class="signin-buttons">
-          <paper-button on-tap="onDecline_">
+          <cr-button on-click="onDecline_">
             $i18n{declineText}
-          </paper-button>
-          <paper-button class="action-button" on-tap="onAccept_">
+          </cr-button>
+          <cr-button class="action-button" on-click="onAccept_">
             $i18n{acceptText}
-          </paper-button>
+          </cr-button>
         </div>
       </div>
     </div>

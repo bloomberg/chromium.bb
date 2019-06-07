@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="landing_view_proxy.html">
 <link rel="import" href="navigation_behavior.html">
@@ -13,9 +12,7 @@
 
 <dom-module id="landing-view">
   <template>
-    <style
-        include="animations paper-button-style action-link-style
-            splash-pages-shared-css">
+    <style include="animations action-link-style splash-pages-shared-css">
       onboarding-background {
         --animation-delay: 275ms;
       }
@@ -33,9 +30,9 @@
       <onboarding-background class="fade-in"></onboarding-background>
       <h2 class="fade-in">$i18n{landingDescription}</h2>
       <h1 class="fade-in" tabindex="-1">$i18n{landingTitle}</h1>
-      <paper-button class="action-button fade-in" on-click="onNewUserClick_">
+      <cr-button class="action-button fade-in" on-click="onNewUserClick_">
         $i18n{landingNewUser}
-      </paper-button>
+      </cr-button>
       <button class="action-link fade-in" on-click="onExistingUserClick_">
         <span hidden$="[[!signinAllowed_]]">$i18n{landingExistingUser}</span>
         <span hidden$="[[signinAllowed_]]">$i18n{skip}</span>

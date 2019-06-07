@@ -6,7 +6,7 @@
 
   <link rel="import" href="chrome://resources/html/polymer.html">
 
-  <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
   <link rel="import" href="chrome://resources/cr_elements/icons.html">
   <link rel="import" href="chrome://resources/html/cr.html">
   <link rel="import" href="chrome://resources/html/load_time_data.html">
@@ -16,7 +16,6 @@
   <link rel="import" href="chrome://resources/html/action_link_css.html">
 
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
@@ -26,7 +25,7 @@
 
   <dom-module id="welcome-win10">
     <template>
-      <style include="action-link paper-button-style">
+      <style include="action-link">
         :host {
           align-items: flex-start;
           display: inline-flex;
@@ -151,7 +150,7 @@
           visibility: visible;
         }
 
-        paper-button {
+        cr-button {
           font-size: .8125em;
         }
 
@@ -343,9 +342,9 @@
           </div>
         </template>
       </div>
-      <paper-button class="action-button" on-tap="onContinue">
+      <cr-button class="action-button" on-click="onContinue">
         $i18n{continueText}
-      </paper-button>
+      </cr-button>
     </template>
     <script src="/welcome_win10.js"></script>
   </dom-module>
