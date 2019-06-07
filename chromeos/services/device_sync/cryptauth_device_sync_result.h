@@ -15,10 +15,8 @@ namespace chromeos {
 namespace device_sync {
 
 // Information about the result of a CryptAuth v2 DeviceSync attempt.
-//
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. If entries are added, kMaxValue should
-// be updated.
+// TODO(nohle): Add a HaveDevicesChanged() function that returns true if the
+// synced-device registry changes.
 class CryptAuthDeviceSyncResult {
  public:
   // Enum class to denote the result of a CryptAuth v2 DeviceSync attempt.

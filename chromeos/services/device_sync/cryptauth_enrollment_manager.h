@@ -45,10 +45,9 @@ class CryptAuthEnrollmentManager {
   // Begins scheduling periodic enrollment attempts.
   virtual void Start() = 0;
 
-  // Skips the waiting period and forces an enrollment immediately. If an
-  // enrollment is already in progress, this function does nothing.
+  // Skips the waiting period and requests an immediate enrollment.
   // |invocation_reason|: Specifies the reason that the enrollment was
-  //                      triggered, which is upload to the server.
+  //                      triggered, which is uploaded to the server.
   // |session_id|: The session ID sent by CryptAuth v2 in a GCM message
   //               requesting enrollment. Null if enrollment was not triggered
   //               by a GCM message or if no session ID was included in the GCM
