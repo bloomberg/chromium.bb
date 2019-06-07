@@ -417,6 +417,11 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   if (HasBeenDisposed() || GetScrollOffset() == new_offset)
     return;
 
+  TRACE_EVENT2("blink", "PaintLayerScrollableArea::UpdateScrollOffset", "x",
+               new_offset.Width(), "y", new_offset.Height());
+  TRACE_EVENT_INSTANT1("blink", "Type", TRACE_EVENT_SCOPE_THREAD, "type",
+                       scroll_type);
+
   scroll_offset_ = new_offset;
 
   LocalFrame* frame = GetLayoutBox()->GetFrame();
