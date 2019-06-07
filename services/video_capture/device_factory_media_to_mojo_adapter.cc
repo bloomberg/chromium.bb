@@ -44,8 +44,8 @@ static void TranslateDeviceInfos(
               : media::PIXEL_FORMAT_I420;
       translated_format.frame_size = format.frame_size;
       translated_format.frame_rate = format.frame_rate;
-      if (base::ContainsValue(translated_device_info.supported_formats,
-                              translated_format))
+      if (base::Contains(translated_device_info.supported_formats,
+                         translated_format))
         continue;
       translated_device_info.supported_formats.push_back(translated_format);
     }

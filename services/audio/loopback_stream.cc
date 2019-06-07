@@ -262,7 +262,7 @@ void LoopbackStream::FlowNetwork::AddInput(SnooperNode* node) {
   if (inputs_.empty()) {
     HelpDiagnoseCauseOfLoopbackCrash("adding first input");
   }
-  DCHECK(!base::ContainsValue(inputs_, node));
+  DCHECK(!base::Contains(inputs_, node));
   inputs_.push_back(node);
 }
 

@@ -269,8 +269,8 @@ MimeType CrossOriginReadBlocking::GetCanonicalMimeType(
   if (base::LowerCaseEqualsASCII(mime_type, kTextPlain))
     return MimeType::kPlain;
 
-  if (base::ContainsKey(GetNeverSniffedMimeTypes(),
-                        base::ToLowerASCII(mime_type))) {
+  if (base::Contains(GetNeverSniffedMimeTypes(),
+                     base::ToLowerASCII(mime_type))) {
     return MimeType::kNeverSniffed;
   }
 
@@ -994,7 +994,7 @@ void CrossOriginReadBlocking::AddExceptionForPlugin(int process_id) {
 // static
 bool CrossOriginReadBlocking::ShouldAllowForPlugin(int process_id) {
   std::set<int>& plugin_proxies = GetPluginProxyingProcesses();
-  return base::ContainsKey(plugin_proxies, process_id);
+  return base::Contains(plugin_proxies, process_id);
 }
 
 // static

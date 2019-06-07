@@ -349,7 +349,7 @@ void MockMediaSession::SetImagesOfType(mojom::MediaSessionImageType type,
 }
 
 void MockMediaSession::EnableAction(mojom::MediaSessionAction action) {
-  if (base::ContainsKey(actions_, action))
+  if (base::Contains(actions_, action))
     return;
 
   actions_.insert(action);
@@ -357,7 +357,7 @@ void MockMediaSession::EnableAction(mojom::MediaSessionAction action) {
 }
 
 void MockMediaSession::DisableAction(mojom::MediaSessionAction action) {
-  if (!base::ContainsKey(actions_, action))
+  if (!base::Contains(actions_, action))
     return;
 
   actions_.erase(action);

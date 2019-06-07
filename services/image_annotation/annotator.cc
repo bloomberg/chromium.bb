@@ -404,8 +404,8 @@ void Annotator::AnnotateImage(const std::string& source_id,
                      true /* canceled */));
 
   // Don't start local work if it would duplicate some already-ongoing work.
-  if (base::ContainsKey(local_processors_, request_key) ||
-      base::ContainsKey(pending_requests_, request_key))
+  if (base::Contains(local_processors_, request_key) ||
+      base::Contains(pending_requests_, request_key))
     return;
 
   local_processors_.insert(

@@ -162,7 +162,7 @@ class ResourceScheduler::RequestQueue {
 
   // Returns true if |request| is queued.
   bool IsQueued(ScheduledResourceRequestImpl* request) const {
-    return base::ContainsKey(pointers_, request);
+    return base::Contains(pointers_, request);
   }
 
   // Returns true if no requests are queued.
@@ -355,7 +355,7 @@ bool ResourceScheduler::ScheduledResourceSorter::operator()(
 
 void ResourceScheduler::RequestQueue::Insert(
     ScheduledResourceRequestImpl* request) {
-  DCHECK(!base::ContainsKey(pointers_, request));
+  DCHECK(!base::Contains(pointers_, request));
   request->set_fifo_ordering(MakeFifoOrderingId());
   pointers_[request] = queue_.insert(request);
 }
@@ -402,7 +402,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   void RemoveRequest(ScheduledResourceRequestImpl* request) {
     if (pending_requests_.IsQueued(request)) {
       pending_requests_.Erase(request);
-      DCHECK(!base::ContainsKey(in_flight_requests_, request));
+      DCHECK(!base::Contains(in_flight_requests_, request));
     } else {
       // Record metrics.
       if (!RequestAttributesAreSet(request->attributes(), kAttributeDelayable))
@@ -448,7 +448,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     request->set_request_priority_params(new_priority_params);
     SetRequestAttributes(request, DetermineRequestAttributes(request));
     if (!pending_requests_.IsQueued(request)) {
-      DCHECK(base::ContainsKey(in_flight_requests_, request));
+      DCHECK(base::Contains(in_flight_requests_, request));
       // Request has already started.
       return;
     }
@@ -567,7 +567,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
       }
       // Account for the current request if it is not in one of the lists yet.
       if (current_request &&
-          !base::ContainsKey(in_flight_requests_, current_request) &&
+          !base::Contains(in_flight_requests_, current_request) &&
           !current_request_is_pending) {
         if (RequestAttributesAreSet(current_request->attributes(), attributes))
           matching_request_count++;
@@ -613,7 +613,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
       ScheduledResourceRequestImpl* request) {
     RequestAttributes attributes = kAttributeNone;
 
-    if (base::ContainsKey(in_flight_requests_, request))
+    if (base::Contains(in_flight_requests_, request))
       attributes |= kAttributeInFlight;
 
     if (RequestAttributesAreSet(request->attributes(),
@@ -1089,7 +1089,7 @@ ResourceScheduler::ScheduleRequest(int child_id,
 
 void ResourceScheduler::RemoveRequest(ScheduledResourceRequestImpl* request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (base::ContainsKey(unowned_requests_, request)) {
+  if (base::Contains(unowned_requests_, request)) {
     unowned_requests_.erase(request);
     return;
   }
@@ -1108,7 +1108,7 @@ void ResourceScheduler::OnClientCreated(
     net::NetworkQualityEstimator* network_quality_estimator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ClientId client_id = MakeClientId(child_id, route_id);
-  DCHECK(!base::ContainsKey(client_map_, client_id));
+  DCHECK(!base::Contains(client_map_, client_id));
 
   client_map_[client_id] =
       std::make_unique<Client>(child_id == mojom::kBrowserProcessId,

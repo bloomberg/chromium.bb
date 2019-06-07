@@ -127,7 +127,7 @@ bool Connector::HasBinderOverrideForTesting(
   if (service_overrides == local_binder_overrides_.end())
     return false;
 
-  return base::ContainsKey(service_overrides->second, interface_name);
+  return base::Contains(service_overrides->second, interface_name);
 }
 
 void Connector::ClearBinderOverrideForTesting(

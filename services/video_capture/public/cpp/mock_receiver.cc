@@ -30,7 +30,7 @@ void MockReceiver::ReleaseAccessPermissions() {
 void MockReceiver::OnNewBuffer(
     int32_t buffer_id,
     media::mojom::VideoBufferHandlePtr buffer_handle) {
-  CHECK(!base::ContainsValue(known_buffer_ids_, buffer_id));
+  CHECK(!base::Contains(known_buffer_ids_, buffer_id));
   known_buffer_ids_.push_back(buffer_id);
   DoOnNewBuffer(buffer_id, &buffer_handle);
 }

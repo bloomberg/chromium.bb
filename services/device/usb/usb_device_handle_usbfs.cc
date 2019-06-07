@@ -485,7 +485,7 @@ void UsbDeviceHandleUsbfs::ClaimInterface(int interface_number,
     return;
   }
 
-  if (base::ContainsKey(interfaces_, interface_number)) {
+  if (base::Contains(interfaces_, interface_number)) {
     USB_LOG(DEBUG) << "Interface " << interface_number << " already claimed.";
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(std::move(callback), false));

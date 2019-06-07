@@ -28,7 +28,7 @@ struct CollectionHasReportId {
     if (report_id_ == HidConnection::kAnyReportId)
       return true;
 
-    return base::ContainsValue(info->report_ids, report_id_);
+    return base::Contains(info->report_ids, report_id_);
   }
 
  private:

@@ -120,7 +120,7 @@ void FakeHidManager::GetDevices(GetDevicesCallback callback) {
 void FakeHidManager::Connect(const std::string& device_guid,
                              mojom::HidConnectionClientPtr connection_client,
                              ConnectCallback callback) {
-  if (!base::ContainsKey(devices_, device_guid)) {
+  if (!base::Contains(devices_, device_guid)) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -160,7 +160,7 @@ void FakeHidManager::AddDevice(mojom::HidDeviceInfoPtr device) {
 }
 
 void FakeHidManager::RemoveDevice(const std::string& guid) {
-  if (base::ContainsKey(devices_, guid)) {
+  if (base::Contains(devices_, guid)) {
     mojom::HidDeviceInfo* device_info = devices_[guid].get();
     clients_.ForAllPtrs([device_info](mojom::HidManagerClient* client) {
       client->DeviceRemoved(device_info->Clone());

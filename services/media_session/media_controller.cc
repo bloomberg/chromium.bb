@@ -199,7 +199,7 @@ void MediaController::MediaSessionImagesChanged(
       // No image of this type is available from the session so we should clear
       // any image the observers might have.
       holder->ClearImage();
-    } else if (base::ContainsKey(types_changed, holder->type())) {
+    } else if (base::Contains(types_changed, holder->type())) {
       holder->ImagesChanged(it->second);
     }
   }

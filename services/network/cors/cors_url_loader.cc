@@ -390,8 +390,8 @@ void CorsURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
 }
 
 void CorsURLLoader::StartRequest() {
-  if (fetch_cors_flag_ && !base::ContainsValue(url::GetCorsEnabledSchemes(),
-                                               request_.url.scheme())) {
+  if (fetch_cors_flag_ &&
+      !base::Contains(url::GetCorsEnabledSchemes(), request_.url.scheme())) {
     HandleComplete(URLLoaderCompletionStatus(
         CorsErrorStatus(mojom::CorsError::kCorsDisabledScheme)));
     return;

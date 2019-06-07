@@ -396,7 +396,7 @@ void UsbServiceWin::DeviceReady(scoped_refptr<UsbDeviceWin> device,
   if (it == devices_by_path_.end()) {
     success = false;
   } else if (success) {
-    DCHECK(!base::ContainsKey(devices(), device->guid()));
+    DCHECK(!base::Contains(devices(), device->guid()));
     devices()[device->guid()] = device;
 
     USB_LOG(USER) << "USB device added: path=" << device->device_path()

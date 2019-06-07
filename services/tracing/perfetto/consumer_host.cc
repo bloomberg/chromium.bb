@@ -274,7 +274,7 @@ void ConsumerHost::TracingSession::MaybeSendEnableTracingAck() {
 }
 
 bool ConsumerHost::TracingSession::IsExpectedPid(base::ProcessId pid) const {
-  return filtered_pids_.empty() || base::ContainsKey(filtered_pids_, pid);
+  return filtered_pids_.empty() || base::Contains(filtered_pids_, pid);
 }
 
 void ConsumerHost::TracingSession::ChangeTraceConfig(

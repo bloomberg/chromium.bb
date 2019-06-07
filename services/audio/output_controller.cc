@@ -498,7 +498,7 @@ void OutputController::StartSnooping(Snooper* snooper) {
 
   // The list will only update on this thread, and only be read on the realtime
   // audio thread.
-  DCHECK(!base::ContainsValue(snoopers_, snooper));
+  DCHECK(!base::Contains(snoopers_, snooper));
   base::AutoLock lock(snooper_lock_);
   snoopers_.push_back(snooper);
 }

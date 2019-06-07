@@ -160,7 +160,7 @@ TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithReceiver) {
       .Times(1)
       .WillOnce(Invoke([this](int32_t buffer_id) {
         // Verify that the returned |buffer_id| is a known buffer ID.
-        EXPECT_TRUE(base::ContainsValue(received_buffer_ids_, buffer_id));
+        EXPECT_TRUE(base::Contains(received_buffer_ids_, buffer_id));
       }));
   device_adapter_->RequestFrameBuffer(kTestFrameSize, kTestPixelFormat, nullptr,
                                       request_frame_buffer_callback.Get());

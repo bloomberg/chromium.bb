@@ -54,7 +54,7 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
 
     // Not the first service added for this PID, and the process has already
     // accepted a connection request.
-    if (base::ContainsKey(connected_pids_, pid))
+    if (base::Contains(connected_pids_, pid))
       return;
 
     // Let the Coordinator and the perfetto service know it should be expecting

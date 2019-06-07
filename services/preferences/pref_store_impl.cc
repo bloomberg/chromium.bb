@@ -24,7 +24,7 @@ class PrefStoreImpl::Observer {
   }
 
   void OnPrefChanged(const std::string& key, const base::Value& value) const {
-    if (!base::ContainsKey(prefs_, key))
+    if (!base::Contains(prefs_, key))
       return;
 
     std::vector<mojom::PrefUpdatePtr> updates;
@@ -34,7 +34,7 @@ class PrefStoreImpl::Observer {
   }
 
   void OnPrefRemoved(const std::string& key) const {
-    if (!base::ContainsKey(prefs_, key))
+    if (!base::Contains(prefs_, key))
       return;
 
     std::vector<mojom::PrefUpdatePtr> updates;

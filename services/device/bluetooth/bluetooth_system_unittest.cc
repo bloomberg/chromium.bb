@@ -168,12 +168,11 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
                          base::Unretained(this), object_path)));
     DCHECK(was_inserted);
 
-    DCHECK(
-        !base::ContainsKey(adapter_object_paths_to_call_counts_, object_path));
+    DCHECK(!base::Contains(adapter_object_paths_to_call_counts_, object_path));
     adapter_object_paths_to_call_counts_[object_path];
 
-    DCHECK(!base::ContainsKey(adapter_object_paths_to_next_responses_,
-                              object_path));
+    DCHECK(
+        !base::Contains(adapter_object_paths_to_next_responses_, object_path));
     adapter_object_paths_to_next_responses_[object_path];
 
     GetProperties(object_path)->powered.ReplaceValue(false);
@@ -342,12 +341,11 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
 
   void StartDiscovery(const dbus::ObjectPath& object_path,
                       ResponseCallback callback) override {
-    DCHECK(
-        base::ContainsKey(adapter_object_paths_to_call_counts_, object_path));
+    DCHECK(base::Contains(adapter_object_paths_to_call_counts_, object_path));
     ++adapter_object_paths_to_call_counts_[object_path].start_discovery;
 
-    DCHECK(base::ContainsKey(adapter_object_paths_to_next_responses_,
-                             object_path));
+    DCHECK(
+        base::Contains(adapter_object_paths_to_next_responses_, object_path));
 
     base::Optional<bool> response;
     response.swap(
@@ -362,12 +360,11 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
 
   void StopDiscovery(const dbus::ObjectPath& object_path,
                      ResponseCallback callback) override {
-    DCHECK(
-        base::ContainsKey(adapter_object_paths_to_call_counts_, object_path));
+    DCHECK(base::Contains(adapter_object_paths_to_call_counts_, object_path));
     ++adapter_object_paths_to_call_counts_[object_path].stop_discovery;
 
-    DCHECK(base::ContainsKey(adapter_object_paths_to_next_responses_,
-                             object_path));
+    DCHECK(
+        base::Contains(adapter_object_paths_to_next_responses_, object_path));
 
     base::Optional<bool> response;
     response.swap(

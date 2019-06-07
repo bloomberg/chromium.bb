@@ -286,7 +286,7 @@ bool ServiceInstance::MaybeAcceptConnectionRequest(
     return false;
 
   const Manifest& source_manifest = source_instance.manifest();
-  const bool bindable_on_any_service = base::ContainsKey(
+  const bool bindable_on_any_service = base::Contains(
       source_manifest.interfaces_bindable_on_any_service, interface_name);
   const bool allowed_by_capabilities =
       AllowsInterface(source_manifest.required_capabilities, identity_.name(),

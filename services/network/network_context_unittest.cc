@@ -3832,7 +3832,7 @@ TEST_F(NetworkContextTest, SetExpectCTTestReport) {
   run_loop.Run();
   EXPECT_FALSE(result);
 
-  EXPECT_TRUE(base::ContainsKey(requested_urls, kReportURL));
+  EXPECT_TRUE(base::Contains(requested_urls, kReportURL));
 }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
