@@ -32,7 +32,7 @@ class QUIC_EXPORT_PRIVATE QuicSocketAddressImpl {
   int FromSocket(int fd);
   QuicSocketAddressImpl Normalized() const;
 
-  QuicIpAddressImpl host() const;
+  QuicIpAddress host() const;
   uint16_t port() const;
 
   sockaddr_storage generic_address() const;

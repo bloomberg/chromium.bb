@@ -175,8 +175,10 @@ const struct QuicErrorMapping {
     // A crypto handshake message specified an unsupported version.
     {quic::QUIC_CRYPTO_VERSION_NOT_SUPPORTED,
      "quic.crypto.version_not_supported"},
-    // A crypto handshake message resulted in a stateless reject.
-    {quic::QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT,
+    // QUIC_CRYPTO_STATELESS_REJECT was code 72. The code has been
+    // deprecated, but to keep the assert below happy, there needs to be
+    // an entry for it, but the symbol is gone.
+    {static_cast<quic::QuicErrorCode>(72),
      "quic.crypto.handshake_stateless_reject"},
     // There was no intersection between the crypto primitives supported by the
     // peer and ourselves.

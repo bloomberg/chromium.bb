@@ -1001,8 +1001,6 @@ component("net") {
       "quic/platform/impl/quic_hostname_utils_impl.cc",
       "quic/platform/impl/quic_hostname_utils_impl.h",
       "quic/platform/impl/quic_iovec_impl.h",
-      "quic/platform/impl/quic_ip_address_impl.cc",
-      "quic/platform/impl/quic_ip_address_impl.h",
       "quic/platform/impl/quic_logging_impl.h",
       "quic/platform/impl/quic_macros_impl.h",
       "quic/platform/impl/quic_map_util_impl.h",

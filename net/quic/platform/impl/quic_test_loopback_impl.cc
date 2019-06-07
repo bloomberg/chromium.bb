@@ -11,20 +11,22 @@ IpAddressFamily AddressFamilyUnderTestImpl() {
 }
 
 QuicIpAddress TestLoopback4Impl() {
-  return QuicIpAddress(QuicIpAddressImpl(net::IPAddress::IPv4Localhost()));
+  return QuicIpAddress::Loopback4();
 }
 
 QuicIpAddress TestLoopback6Impl() {
-  return QuicIpAddress(QuicIpAddressImpl(net::IPAddress::IPv6Localhost()));
+  return QuicIpAddress::Loopback6();
 }
 
 QuicIpAddress TestLoopbackImpl() {
-  return QuicIpAddress(QuicIpAddressImpl(net::IPAddress::IPv4Localhost()));
+  return QuicIpAddress::Loopback4();
 }
 
 QuicIpAddress TestLoopbackImpl(int index) {
-  const uint8_t kLocalhostIPv4[] = {127, 0, 0, index};
-  return QuicIpAddress(QuicIpAddressImpl(net::IPAddress(kLocalhostIPv4)));
+  const char kLocalhostIPv4[] = {127, 0, 0, index};
+  QuicIpAddress address;
+  address.FromPackedString(kLocalhostIPv4, 4);
+  return address;
 }
 
 }  // namespace quic

@@ -78,8 +78,8 @@ QuicSocketAddressImpl QuicSocketAddressImpl::Normalized() const {
   return QuicSocketAddressImpl();
 }
 
-QuicIpAddressImpl QuicSocketAddressImpl::host() const {
-  return QuicIpAddressImpl(socket_address_.address());
+QuicIpAddress QuicSocketAddressImpl::host() const {
+  return ToQuicIpAddress(socket_address_.address());
 }
 
 uint16_t QuicSocketAddressImpl::port() const {
