@@ -9,8 +9,7 @@ from __future__ import print_function
 
 import os
 
-from chromite.cli.cros import cros_chrome_sdk
-from chromite.lib import cache
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -44,40 +43,29 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     return self.TempFilePath(os.path.join('cros_vm_%d' % self.ssh_port,
                                           kvm_file))
 
-  def CreateFakeSDKCache(self, key):
-    """Creates a fake SDK Cache.
-
-    Args:
-      key: Key of item in the tarball cache.
-
-    Returns:
-      Path to the cache directory.
-    """
-    # Sets SDK Version.
-    sdk_version = '12225.0.0'
-    os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = sdk_version
-    # Defines the path for the fake SDK cache.
-    tarball_cache_path = os.path.join(self._vm.cache_dir,
-                                      cros_chrome_sdk.COMMAND_NAME,
-                                      cros_chrome_sdk.SDKFetcher.TARBALL_CACHE)
-    # Creates a SDK TarballCache instance.
-    tarball_cache = cache.TarballCache(tarball_cache_path)
-    # Creates the cache key required for accessing the fake SDK cache.
-    cache_key = (self._vm.board, sdk_version, key)
-    # Adds the cache path at the key.
-    cache.CacheReference(tarball_cache, cache_key).Assign(tarball_cache_path)
-    cache_path = tarball_cache.Lookup(cache_key).path
-    expected_cache_path = os.path.join(self._vm.cache_dir,
-                                       'chrome-sdk/tarballs',
-                                       '+'.join(cache_key))
-    self.assertEqual(cache_path, expected_cache_path)
-    return cache_path
-
   def Touch(self, path):
     """Creates the parent directories and the file for the path."""
     assert path.startswith(path), 'All files must be in tempdir.'
     osutils.SafeMakedirs(os.path.dirname(path))
     osutils.Touch(path)
+
+  def FindPathInArgs(self, args, path):
+    """Checks the called commands to see if the path is present.
+
+    Args:
+      args: List of called commands.
+      path: Path to check if present in the called commands.
+
+    Returns:
+      Whether the path is found in the called commands.
+    """
+    for call in args:
+      # A typical call looks like:
+      # call(['.../chroot/usr/bin/qemu-system-x86_64', '--version'],
+      #      capture_output=True)
+      if any(path in a for a in call[0][0]):
+        return True
+    return False
 
   def testStart(self):
     self._vm.Start()
@@ -111,6 +99,45 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     osutils.WriteFile(self._vm.pidfile, pid)
     self._vm.Stop()
     self.assertCommandContains(['kill', '-9', pid])
+
+  def testBuiltVMImagePath(self):
+    """Verify locally built VM image path is picked up by vm.VM."""
+    self._vm.image_path = None
+    expected_vm_image_path = os.path.join(constants.SOURCE_ROOT,
+                                          'src/build/images/%s/latest/'
+                                          'chromiumos_qemu_image.bin'
+                                          % self._vm.board)
+    self.Touch(expected_vm_image_path)
+    self._vm.Start()
+    self.assertTrue(self.FindPathInArgs(self.rc.call_args_list,
+                                        expected_vm_image_path))
+
+  def testSDKVMImagePath(self):
+    """Verify vm.VM picks up the downloaded VM in the SDK."""
+    self._vm.image_path = None
+    cache_dir = cros_test_lib.FakeSDKCache(
+        self._vm.cache_dir).CreateCacheReference(self._vm.board,
+                                                 constants.VM_IMAGE_TAR)
+    vm_cache_path = os.path.join(cache_dir, constants.VM_IMAGE_BIN)
+    self.Touch(vm_cache_path)
+    self._vm.Start()
+    expected_vm_image_path = os.path.join(
+        self._vm.cache_dir,
+        'chrome-sdk/tarballs/%s+12225.0.0+chromiumos_qemu_image.tar.xz/'
+        'chromiumos_qemu_image.bin' % self._vm.board)
+    self.assertTrue(self.FindPathInArgs(self.rc.call_args_list,
+                                        expected_vm_image_path))
+
+  def testVMImageNotFound(self):
+    """Verify that VMError is raised when a fake board image cannot be found."""
+    self._vm.image_path = None
+    self._vm.board = 'fake_board_name'
+    self.assertRaises(vm.VMError, self._vm.Start)
+
+  def testVMImageDoesNotExist(self):
+    """Verify that VMError is raised when image path is not real."""
+    self._vm.image_path = '/fake/path/to/the/vm/image'
+    self.assertRaises(vm.VMError, self._vm.Start)
 
   def testAppendBinFile(self):
     """When image-path points to a directory, we should append the bin file."""
