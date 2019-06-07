@@ -9,7 +9,6 @@
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -37,22 +36,16 @@ LoginScreenClient::Delegate::~Delegate() = default;
 LoginScreenClient::ParentAccessDelegate::~ParentAccessDelegate() = default;
 
 LoginScreenClient::LoginScreenClient()
-    : binding_(this),
-      auth_recorder_(std::make_unique<chromeos::LoginAuthRecorder>()),
-      weak_ptr_factory_(this) {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &login_screen_);
+    : auth_recorder_(std::make_unique<chromeos::LoginAuthRecorder>()) {
   // Register this object as the client interface implementation.
-  ash::mojom::LoginScreenClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-  login_screen_->SetClient(std::move(client));
+  ash::LoginScreen::Get()->SetClient(this);
 
   DCHECK(!g_login_screen_client_instance);
   g_login_screen_client_instance = this;
 }
 
 LoginScreenClient::~LoginScreenClient() {
+  ash::LoginScreen::Get()->SetClient(nullptr);
   DCHECK_EQ(this, g_login_screen_client_instance);
   g_login_screen_client_instance = nullptr;
 }
@@ -82,10 +75,6 @@ void LoginScreenClient::RemoveSystemTrayFocusObserver(
   system_tray_focus_observers_.RemoveObserver(observer);
 }
 
-ash::mojom::LoginScreenPtr& LoginScreenClient::login_screen() {
-  return login_screen_;
-}
-
 chromeos::LoginAuthRecorder* LoginScreenClient::auth_recorder() {
   return auth_recorder_.get();
 }
@@ -94,7 +83,7 @@ void LoginScreenClient::AuthenticateUserWithPasswordOrPin(
     const AccountId& account_id,
     const std::string& password,
     bool authenticated_by_pin,
-    AuthenticateUserWithPasswordOrPinCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   if (delegate_) {
     delegate_->HandleAuthenticateUserWithPasswordOrPin(
         account_id, password, authenticated_by_pin, std::move(callback));
@@ -110,7 +99,7 @@ void LoginScreenClient::AuthenticateUserWithPasswordOrPin(
 
 void LoginScreenClient::AuthenticateUserWithExternalBinary(
     const AccountId& account_id,
-    AuthenticateUserWithExternalBinaryCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   if (!delegate_)
     LOG(FATAL) << "Failed AuthenticateUserWithExternalBinary; no delegate";
 
@@ -121,7 +110,7 @@ void LoginScreenClient::AuthenticateUserWithExternalBinary(
 }
 
 void LoginScreenClient::EnrollUserWithExternalBinary(
-    EnrollUserWithExternalBinaryCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   if (!delegate_)
     LOG(FATAL) << "Failed EnrollUserWithExternalBinary; no delegate";
 
@@ -140,13 +129,11 @@ void LoginScreenClient::AuthenticateUserWithEasyUnlock(
   }
 }
 
-void LoginScreenClient::ValidateParentAccessCode(
+bool LoginScreenClient::ValidateParentAccessCode(
     const AccountId& account_id,
-    const std::string& access_code,
-    ValidateParentAccessCodeCallback callback) {
-  bool result = chromeos::parent_access::ParentAccessService::Get()
-                    .ValidateParentAccessCode(account_id, access_code);
-  std::move(callback).Run(result);
+    const std::string& access_code) {
+  return chromeos::parent_access::ParentAccessService::Get()
+      .ValidateParentAccessCode(account_id, access_code);
 }
 
 void LoginScreenClient::HardlockPod(const AccountId& account_id) {
@@ -166,7 +153,7 @@ void LoginScreenClient::OnNoPodFocused() {
 
 void LoginScreenClient::FocusLockScreenApps(bool reverse) {
   // If delegate is not set, or it fails to handle focus request, call
-  // |HandleFocusLeavingLockScreenApps| so the lock screen mojo service can
+  // |HandleFocusLeavingLockScreenApps| so the lock screen service can
   // give focus to the next window in the tab order.
   if (!delegate_ || !delegate_->HandleFocusLockScreenApps(reverse)) {
     ash::LoginScreen::Get()->GetModel()->HandleFocusLeavingLockScreenApps(
@@ -179,9 +166,8 @@ void LoginScreenClient::FocusOobeDialog() {
     delegate_->HandleFocusOobeDialog();
 }
 
-void LoginScreenClient::ShowGaiaSignin(
-    bool can_close,
-    const base::Optional<AccountId>& prefilled_account) {
+void LoginScreenClient::ShowGaiaSignin(bool can_close,
+                                       const AccountId& prefilled_account) {
   if (chromeos::LoginDisplayHost::default_host()) {
     chromeos::LoginDisplayHost::default_host()->ShowGaiaDialog(
         can_close, prefilled_account);

@@ -12,7 +12,6 @@
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -24,13 +23,12 @@ namespace ash {
 class ParentAccessWidget;
 class SystemTrayNotifier;
 
-// LoginScreenController implements mojom::LoginScreen and wraps the
-// mojom::LoginScreenClient interface. This lets a consumer of ash provide a
-// LoginScreenClient, which we will dispatch to if one has been provided to us.
-// This could send requests to LoginScreenClient and also handle requests from
-// LoginScreenClient through mojo.
-class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
-                                         public LoginScreen,
+// LoginScreenController implements LoginScreen and wraps the LoginScreenClient
+// interface. This lets a consumer of ash provide a LoginScreenClient, which we
+// will dispatch to if one has been provided to us. This could send requests to
+// LoginScreenClient and also handle requests from the consumer via the
+// LoginScreen interface.
+class ASH_EXPORT LoginScreenController : public LoginScreen,
                                          public KioskAppMenu,
                                          public SystemTrayFocusObserver {
  public:
@@ -57,9 +55,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
-  // Binds the mojom::LoginScreen interface to this object.
-  void BindRequest(mojom::LoginScreenRequest request);
-
   // Check to see if an authentication attempt is in-progress.
   bool IsAuthenticating() const;
 
@@ -75,9 +70,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
                                           OnAuthenticateCallback callback);
   void EnrollUserWithExternalBinary(OnAuthenticateCallback callback);
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id);
-  void ValidateParentAccessCode(const AccountId& account_id,
-                                const std::string& code,
-                                OnParentAccessValidation callback);
+  bool ValidateParentAccessCode(const AccountId& account_id,
+                                const std::string& code);
   void HardlockPod(const AccountId& account_id);
   void OnFocusPod(const AccountId& account_id);
   void OnNoPodFocused();
@@ -87,8 +81,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   void LoginAsGuest();
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id);
   void FocusLockScreenApps(bool reverse);
-  void ShowGaiaSignin(bool can_close,
-                      const base::Optional<AccountId>& prefilled_account);
+  void ShowGaiaSignin(bool can_close, const AccountId& prefilled_account);
   void OnRemoveUserWarningShown();
   void RemoveUser(const AccountId& account_id);
   void LaunchPublicSession(const AccountId& account_id,
@@ -109,7 +102,10 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   }
 
   // LoginScreen:
+  void SetClient(LoginScreenClient* client) override;
   LoginScreenModel* GetModel() override;
+  void ShowLockScreen() override;
+  void ShowLoginScreen() override;
   void ShowKioskAppError(const std::string& message) override;
   void FocusLoginShelf(bool reverse) override;
   bool IsReadyForPassword() override;
@@ -122,19 +118,11 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
       base::RepeatingCallback<void(bool success)> callback) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
 
-  // mojom::LoginScreen:
-  void SetClient(mojom::LoginScreenClientPtr client) override;
-  void ShowLockScreen(ShowLockScreenCallback on_shown) override;
-  void ShowLoginScreen(ShowLoginScreenCallback on_shown) override;
-
   // KioskAppMenu:
   void SetKioskApps(
       const std::vector<KioskAppMenuEntry>& kiosk_apps,
       const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app)
       override;
-
-  // Flushes the mojo pipes - to be used in tests.
-  void FlushForTesting();
 
   AuthenticationStage authentication_stage() const {
     return authentication_stage_;
@@ -144,8 +132,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
 
  private:
   void OnAuthenticateComplete(OnAuthenticateCallback callback, bool success);
-  void OnParentAccessValidationComplete(OnParentAccessValidation callback,
-                                        bool success);
 
   // Common code that is called when the login/lock screen is shown.
   void OnShow();
@@ -155,11 +141,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
 
   LoginDataDispatcher login_data_dispatcher_;
 
-  // Client interface in chrome browser. May be null in tests.
-  mojom::LoginScreenClientPtr login_screen_client_;
-
-  // Bindings for users of the LockScreen interface.
-  mojo::BindingSet<mojom::LoginScreen> bindings_;
+  LoginScreenClient* client_ = nullptr;
 
   AuthenticationStage authentication_stage_ = AuthenticationStage::kIdle;
 

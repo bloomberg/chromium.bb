@@ -224,7 +224,7 @@ class LoginShelfButton : public views::LabelButton {
 
 void StartAddUser() {
   Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-      true /*can_close*/, base::nullopt /*prefilled_account*/);
+      true /*can_close*/, EmptyAccountId() /*prefilled_account*/);
 }
 
 }  // namespace

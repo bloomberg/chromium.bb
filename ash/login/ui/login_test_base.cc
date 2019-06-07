@@ -14,7 +14,6 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -50,14 +49,9 @@ void LoginTestBase::ShowLockScreen() {
       session_manager::SessionState::LOCKED);
   // The lock screen can't be shown without a wallpaper.
   Shell::Get()->wallpaper_controller()->ShowDefaultWallpaperForTesting();
-
-  base::Optional<bool> result;
-  Shell::Get()->login_screen_controller()->ShowLockScreen(base::BindOnce(
-      [](base::Optional<bool>* result, bool did_show) { *result = did_show; },
-      &result));
+  Shell::Get()->login_screen_controller()->ShowLockScreen();
+  // Allow focus to reach the appropriate View.
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(result.has_value());
-  ASSERT_EQ(*result, true);
 }
 
 void LoginTestBase::ShowLoginScreen() {
@@ -65,14 +59,9 @@ void LoginTestBase::ShowLoginScreen() {
       session_manager::SessionState::LOGIN_PRIMARY);
   // The login screen can't be shown without a wallpaper.
   Shell::Get()->wallpaper_controller()->ShowDefaultWallpaperForTesting();
-
-  base::Optional<bool> result;
-  Shell::Get()->login_screen_controller()->ShowLoginScreen(base::BindOnce(
-      [](base::Optional<bool>* result, bool did_show) { *result = did_show; },
-      &result));
+  Shell::Get()->login_screen_controller()->ShowLoginScreen();
+  // Allow focus to reach the appropriate View.
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(result.has_value());
-  ASSERT_EQ(*result, true);
 }
 
 void LoginTestBase::SetWidget(std::unique_ptr<views::Widget> widget) {
@@ -151,9 +140,7 @@ void LoginTestBase::AddChildUsers(size_t num_users) {
 }
 
 LoginDataDispatcher* LoginTestBase::DataDispatcher() {
-  return LockScreen::HasInstance()
-             ? Shell::Get()->login_screen_controller()->data_dispatcher()
-             : &data_dispatcher_;
+  return Shell::Get()->login_screen_controller()->data_dispatcher();
 }
 
 void LoginTestBase::TearDown() {

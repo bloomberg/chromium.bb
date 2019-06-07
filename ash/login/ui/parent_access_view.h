@@ -13,7 +13,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "components/account_id/account_id.h"
@@ -113,10 +112,6 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
   // whether current input code is complete.
   void OnInputChange(bool complete);
 
-  // To be called when parent access code validation was completed. Result of
-  // the validation is available in |result| if validation was performed.
-  void OnValidationResult(base::Optional<bool> result);
-
   // Callbacks to be called when user performs certain actions.
   const Callbacks callbacks_;
 
@@ -137,8 +132,6 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
 
   ScopedObserver<TabletModeController, TabletModeObserver>
       tablet_mode_observer_{this};
-
-  base::WeakPtrFactory<ParentAccessView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ParentAccessView);
 };

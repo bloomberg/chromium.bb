@@ -1077,9 +1077,8 @@ void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
   }
 }
 
-void LoginDisplayHostWebUI::ShowGaiaDialog(
-    bool can_close,
-    const base::Optional<AccountId>& prefilled_account) {
+void LoginDisplayHostWebUI::ShowGaiaDialog(bool can_close,
+                                           const AccountId& prefilled_account) {
   // This is a special case, when WebUI sign-in screen shown with Views-based
   // launch bar. Then "Add user" button will be Views-based, and user click
   // will result in this call.

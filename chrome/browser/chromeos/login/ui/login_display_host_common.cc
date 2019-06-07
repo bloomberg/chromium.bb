@@ -273,19 +273,21 @@ void LoginDisplayHostCommon::OnStartSignInScreenCommon() {
 }
 
 void LoginDisplayHostCommon::ShowGaiaDialogCommon(
-    const base::Optional<AccountId>& prefilled_account) {
+    const AccountId& prefilled_account) {
   DCHECK(GetOobeUI());
 
-  if (prefilled_account) {
+  if (prefilled_account.is_valid()) {
     // Make sure gaia displays |account| if requested.
     if (!GetLoginDisplay()->delegate()->IsSigninInProgress()) {
       GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(
           prefilled_account);
     }
-    LoadWallpaper(*prefilled_account);
+    LoadWallpaper(prefilled_account);
   } else {
-    if (GetOobeUI()->current_screen() != GaiaView::kScreenId)
-      GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(base::nullopt);
+    if (GetOobeUI()->current_screen() != GaiaView::kScreenId) {
+      GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(
+          EmptyAccountId());
+    }
     LoadSigninWallpaper();
   }
 }

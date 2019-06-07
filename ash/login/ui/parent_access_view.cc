@@ -623,10 +623,18 @@ void ParentAccessView::SubmitCode() {
   base::Optional<std::string> code = access_code_view_->GetCode();
   DCHECK(code.has_value());
 
-  Shell::Get()->login_screen_controller()->ValidateParentAccessCode(
-      account_id_, *code,
-      base::BindOnce(&ParentAccessView::OnValidationResult,
-                     weak_ptr_factory_.GetWeakPtr()));
+  bool result =
+      Shell::Get()->login_screen_controller()->ValidateParentAccessCode(
+          account_id_, *code);
+
+  if (result) {
+    VLOG(1) << "Parent access code successfully validated";
+    callbacks_.on_finished.Run(true);
+    return;
+  }
+
+  VLOG(1) << "Invalid parent access code entered";
+  UpdateState(State::kError);
 }
 
 void ParentAccessView::UpdateState(State state) {
@@ -656,17 +664,6 @@ void ParentAccessView::UpdatePreferredSize() {
   pin_keyboard_to_footer_spacer_->SetPreferredSize(
       GetPinKeyboardToFooterSpacerSize());
   SetPreferredSize(CalculatePreferredSize());
-}
-
-void ParentAccessView::OnValidationResult(base::Optional<bool> result) {
-  if (result.has_value() && *result) {
-    VLOG(1) << "Parent access code successfully validated";
-    callbacks_.on_finished.Run(true);
-    return;
-  }
-
-  VLOG(1) << "Invalid parent access code entered";
-  UpdateState(State::kError);
 }
 
 void ParentAccessView::OnInputChange(bool complete) {

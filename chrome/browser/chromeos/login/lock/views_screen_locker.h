@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_VIEWS_SCREEN_LOCKER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_VIEWS_SCREEN_LOCKER_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
@@ -36,7 +37,6 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   ~ViewsScreenLocker() override;
 
   void Init();
-  void OnLockScreenReady();
 
   // ScreenLocker::Delegate:
   void ShowErrorMessage(int error_msg_id,
@@ -49,12 +49,12 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
       const AccountId& account_id,
       const std::string& password,
       bool authenticated_by_pin,
-      AuthenticateUserWithPasswordOrPinCallback callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   void HandleAuthenticateUserWithExternalBinary(
       const AccountId& account_id,
-      AuthenticateUserWithExternalBinaryCallback callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   void HandleEnrollUserWithExternalBinary(
-      EnrollUserWithExternalBinaryCallback) override;
+      base::OnceCallback<void(bool)> callback) override;
   void HandleAuthenticateUserWithEasyUnlock(
       const AccountId& account_id) override;
   void HandleHardlockPod(const AccountId& account_id) override;
@@ -102,13 +102,9 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   std::unique_ptr<CrosSettings::ObserverSubscription>
       allowed_input_methods_subscription_;
 
-  bool lock_screen_ready_ = false;
+  base::OnceCallback<void(bool)> authenticate_with_external_binary_callback_;
 
-  AuthenticateUserWithExternalBinaryCallback
-      authenticate_with_external_binary_callback_;
-
-  EnrollUserWithExternalBinaryCallback
-      enroll_user_with_external_binary_callback_;
+  base::OnceCallback<void(bool)> enroll_user_with_external_binary_callback_;
 
   // Callback registered as a lock screen apps focus handler - it should be
   // called to hand focus over to lock screen apps.

@@ -14,7 +14,6 @@
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_types.h"
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/shutdown_controller_impl.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/tray_action/tray_action_observer.h"

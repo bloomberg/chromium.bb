@@ -86,12 +86,6 @@ ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
       std::make_unique<ChromeUserSelectionScreen>(kLockDisplay);
   user_selection_screen_->SetView(user_board_view_mojo_.get());
 
-  allowed_input_methods_subscription_ =
-      CrosSettings::Get()->AddSettingsObserver(
-          kDeviceLoginScreenInputMethods,
-          base::Bind(&ViewsScreenLocker::OnAllowedInputMethodsChanged,
-                     base::Unretained(this)));
-
   if (base::FeatureList::IsEnabled(ash::features::kUnlockWithExternalBinary))
     scoped_observer_.Add(media_analytics_client_);
 }
@@ -120,10 +114,6 @@ void ViewsScreenLocker::Init() {
   }
 
   system_info_updater_->StartRequest();
-}
-
-void ViewsScreenLocker::OnLockScreenReady() {
-  lock_screen_ready_ = true;
 
   ash::LoginScreen::Get()->GetModel()->SetUserList(
       user_selection_screen_->UpdateAndReturnUserListForAsh());
@@ -134,6 +124,12 @@ void ViewsScreenLocker::OnLockScreenReady() {
                       base::TimeTicks::Now() - lock_time_);
   screen_locker_->ScreenLockReady();
   lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(this);
+
+  allowed_input_methods_subscription_ =
+      CrosSettings::Get()->AddSettingsObserver(
+          kDeviceLoginScreenInputMethods,
+          base::Bind(&ViewsScreenLocker::OnAllowedInputMethodsChanged,
+                     base::Unretained(this)));
   OnAllowedInputMethodsChanged();
 }
 
@@ -156,7 +152,7 @@ void ViewsScreenLocker::HandleAuthenticateUserWithPasswordOrPin(
     const AccountId& account_id,
     const std::string& password,
     bool authenticated_by_pin,
-    AuthenticateUserWithPasswordOrPinCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   DCHECK_EQ(account_id.GetUserEmail(),
             gaia::SanitizeEmail(account_id.GetUserEmail()));
   const user_manager::User* const user =
@@ -182,7 +178,7 @@ void ViewsScreenLocker::HandleAuthenticateUserWithPasswordOrPin(
 
 void ViewsScreenLocker::HandleAuthenticateUserWithExternalBinary(
     const AccountId& account_id,
-    AuthenticateUserWithExternalBinaryCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   authenticate_with_external_binary_callback_ = std::move(callback);
   external_binary_timer_.Start(
       FROM_HERE, kExternalBinaryAuthTimeout,
@@ -193,7 +189,7 @@ void ViewsScreenLocker::HandleAuthenticateUserWithExternalBinary(
 }
 
 void ViewsScreenLocker::HandleEnrollUserWithExternalBinary(
-    EnrollUserWithExternalBinaryCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   enroll_user_with_external_binary_callback_ = std::move(callback);
   external_binary_timer_.Start(
       FROM_HERE, kExternalBinaryAuthTimeout,
@@ -320,9 +316,6 @@ void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {
 }
 
 void ViewsScreenLocker::OnAllowedInputMethodsChanged() {
-  if (!lock_screen_ready_)
-    return;
-
   if (focused_pod_account_id_) {
     std::string user_input_method = lock_screen_utils::GetUserLastInputMethod(
         focused_pod_account_id_->GetUserEmail());

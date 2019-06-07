@@ -942,7 +942,7 @@ void GaiaScreenHandler::HandleShowGuestInOobe(bool show) {
 void GaiaScreenHandler::OnShowAddUser() {
   signin_screen_handler_->is_account_picker_showing_first_time_ = false;
   lock_screen_utils::EnforcePolicyInputMethods(std::string());
-  ShowGaiaAsync(base::nullopt);
+  ShowGaiaAsync(EmptyAccountId());
 }
 
 void GaiaScreenHandler::DoCompleteLogin(
@@ -1086,10 +1086,9 @@ void GaiaScreenHandler::SetSAMLPrincipalsAPIUsed(bool api_used) {
   UMA_HISTOGRAM_BOOLEAN("ChromeOS.SAML.APIUsed", api_used);
 }
 
-void GaiaScreenHandler::ShowGaiaAsync(
-    const base::Optional<AccountId>& account_id) {
-  if (account_id)
-    populated_email_ = account_id->GetUserEmail();
+void GaiaScreenHandler::ShowGaiaAsync(const AccountId& account_id) {
+  if (account_id.is_valid())
+    populated_email_ = account_id.GetUserEmail();
   show_when_ready_ = true;
   if (gaia_silent_load_ && populated_email_.empty()) {
     dns_cleared_ = true;

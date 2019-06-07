@@ -21,7 +21,6 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"

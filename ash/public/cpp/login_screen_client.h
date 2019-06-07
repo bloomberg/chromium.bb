@@ -1,33 +1,23 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module ash.mojom;
+#ifndef ASH_PUBLIC_CPP_LOGIN_SCREEN_CLIENT_H_
+#define ASH_PUBLIC_CPP_LOGIN_SCREEN_CLIENT_H_
 
-import "components/account_id/interfaces/account_id.mojom";
-import "mojo/public/mojom/base/string16.mojom";
-import "mojo/public/mojom/base/time.mojom";
+#include <string>
 
-// Allows clients (e.g. the browser process) to send messages to the ash
-// login/lock/user-add screens.
-// TODO(estade): this is in the process of being migrated off Mojo. Methods will
-// move to ash::LoginScreen or ash::LoginScreenModel.
-interface LoginScreen {
-  // Sets the client interface.
-  SetClient(LoginScreenClient client);
+#include "ash/public/cpp/ash_public_export.h"
+#include "base/callback_forward.h"
 
-  // Displays the lock screen. |did_show| is true iff the lock UI was
-  // successfully displayed.
-  ShowLockScreen() => (bool did_show);
+class AccountId;
 
-  // Displays the login screen. |did_show| is true iff the login UI was
-  // successfully displayed.
-  ShowLoginScreen() => (bool did_show);
-};
+namespace ash {
 
-// Allows ash lock screen to control a client (e.g. Chrome browser). Requests
-// often involve preferences or talk to cryptohome that is not available to ash.
-interface LoginScreenClient {
+// An interface allows Ash to trigger certain login steps that Chrome is
+// responsible for.
+class ASH_PUBLIC_EXPORT LoginScreenClient {
+ public:
   // Attempt to authenticate a user with a password or PIN.
   //
   // If auth succeeds:
@@ -40,19 +30,22 @@ interface LoginScreenClient {
   //
   // The result will be set to true if auth was successful, false if not.
   //
-  // TODO(jdufault): Extract authenticated_by_pin into a separate mojom method,
+  // TODO(jdufault): Extract authenticated_by_pin into a separate method,
   //                 similar to the other Authenticate* methods
-  AuthenticateUserWithPasswordOrPin(
-      signin.mojom.AccountId account_id,
-      string password,
-      bool authenticated_by_pin) => (bool auth_success);
+  virtual void AuthenticateUserWithPasswordOrPin(
+      const AccountId& account_id,
+      const std::string& password,
+      bool authenticated_by_pin,
+      base::OnceCallback<void(bool)> callback) = 0;
 
   // Attempt to authenticate the user with with an external binary.
-  AuthenticateUserWithExternalBinary(signin.mojom.AccountId account_id)
-      => (bool auth_success);
+  virtual void AuthenticateUserWithExternalBinary(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> callback) = 0;
 
   // Attempt to enroll a user in the external binary authentication system.
-  EnrollUserWithExternalBinary() => (bool enrollment_success);
+  virtual void EnrollUserWithExternalBinary(
+      base::OnceCallback<void(bool)> callback) = 0;
 
   // Try to authenticate |account_id| using easy unlock. This can be used on the
   // login or lock screen.
@@ -60,42 +53,41 @@ interface LoginScreenClient {
   //
   // TODO(jdufault): Refactor this method to return an auth_success, similar to
   // the other auth methods above.
-  AuthenticateUserWithEasyUnlock(signin.mojom.AccountId account_id);
+  virtual void AuthenticateUserWithEasyUnlock(const AccountId& account_id) = 0;
 
   // Validates parent access code for the user identified by |account_id|. When
   // |account_id| is empty it tries to validate the access code for any child
-  // that is signed in the device. Passes validation result in the callback.
+  // that is signed in the device. Returns validation result.
   // Note: This should only be used for child user, it will always return false
   // when a non-child id is used.
   // TODO(crbug.com/965479): move this to a more appropriate place.
-  ValidateParentAccessCode(
-    signin.mojom.AccountId account_id,
-    string access_code) => (bool access_code_valid);
+  virtual bool ValidateParentAccessCode(const AccountId& account_id,
+                                        const std::string& access_code) = 0;
 
   // Request to hard lock the user pod.
   // |account_id|:    The account id of the user in the user pod.
-  HardlockPod(signin.mojom.AccountId account_id);
+  virtual void HardlockPod(const AccountId& account_id) = 0;
 
   // Focus user pod of user with |account_id|.
-  OnFocusPod(signin.mojom.AccountId account_id);
+  virtual void OnFocusPod(const AccountId& account_id) = 0;
 
   // Notify that no user pod is focused.
-  OnNoPodFocused();
+  virtual void OnNoPodFocused() = 0;
 
   // Load wallpaper of user with |account_id|.
-  LoadWallpaper(signin.mojom.AccountId account_id);
+  virtual void LoadWallpaper(const AccountId& account_id) = 0;
 
   // Sign out current user.
-  SignOutUser();
+  virtual void SignOutUser() = 0;
 
   // Close add user screen.
-  CancelAddUser();
+  virtual void CancelAddUser() = 0;
 
   // Launches guest mode.
-  LoginAsGuest();
+  virtual void LoginAsGuest() = 0;
 
   // User with |account_id| has reached maximum incorrect password attempts.
-  OnMaxIncorrectPasswordAttempted(signin.mojom.AccountId account_id);
+  virtual void OnMaxIncorrectPasswordAttempted(const AccountId& account_id) = 0;
 
   // Should pass the focus to the active lock screen app window, if there is
   // one. This is called when a lock screen app is reported to be active (using
@@ -103,21 +95,22 @@ interface LoginScreenClient {
   // |HandleFocusLeavingLockScreenApps| should be called to return focus to the
   // lock screen.
   // |reverse|:   Whether the tab order is reversed.
-  FocusLockScreenApps(bool reverse);
+  virtual void FocusLockScreenApps(bool reverse) = 0;
 
   // Passes focus to the OOBE dialog if it is showing. No-op otherwise.
-  FocusOobeDialog();
+  virtual void FocusOobeDialog() = 0;
 
   // Show the gaia sign-in dialog. If |can_close| is true, the dialog can be
   // closed. The value in |prefilled_account| will be used to prefill the
   // sign-in dialog so the user does not need to type the account email.
-  ShowGaiaSignin(bool can_close, signin.mojom.AccountId? prefilled_account);
+  virtual void ShowGaiaSignin(bool can_close,
+                              const AccountId& prefilled_account) = 0;
 
   // Notification that the remove user warning was shown.
-  OnRemoveUserWarningShown();
+  virtual void OnRemoveUserWarningShown() = 0;
 
   // Try to remove |account_id|.
-  RemoveUser(signin.mojom.AccountId account_id);
+  virtual void RemoveUser(const AccountId& account_id) = 0;
 
   // Launch a public session for user with |account_id|.
   // |locale|:       Locale for this user.
@@ -125,32 +118,40 @@ interface LoginScreenClient {
   // |input_method|: Input method for this user.
   //                 This is the id of InputMethodDescriptor like
   //                 "t:latn-post", "pinyin".
-  LaunchPublicSession(signin.mojom.AccountId account_id,
-                      string locale,
-                      string input_method);
+  virtual void LaunchPublicSession(const AccountId& account_id,
+                                   const std::string& locale,
+                                   const std::string& input_method) = 0;
 
   // Request public session keyboard layouts for user with |account_id|.
   // This function send a request to chrome and the result will be returned by
   // SetPublicSessionKeyboardLayouts.
   // |locale|: Request a list of keyboard layouts that can be used by this
   //           locale.
-  RequestPublicSessionKeyboardLayouts(signin.mojom.AccountId account_id,
-                                      string locale);
+  virtual void RequestPublicSessionKeyboardLayouts(
+      const AccountId& account_id,
+      const std::string& locale) = 0;
 
   // Request to show a feedback report dialog in chrome.
-  ShowFeedback();
+  virtual void ShowFeedback() = 0;
 
   // Show the powerwash (device reset) dialog.
-  ShowResetScreen();
+  virtual void ShowResetScreen() = 0;
 
   // Show the help app for when users have trouble signing in to their account.
-  ShowAccountAccessHelpApp();
+  virtual void ShowAccountAccessHelpApp() = 0;
 
-  // Called when the keyboard focus is about to leave from the sytem tray in
+  // Called when the keyboard focus is about to leave from the system tray in
   // the login screen / OOBE. |reverse| is true when the focus moves in the
   // reversed direction.
-  OnFocusLeavingSystemTray(bool reverse);
+  virtual void OnFocusLeavingSystemTray(bool reverse) = 0;
 
   // Used by Ash to signal that user activity occurred on the login screen.
-  OnUserActivity();
+  virtual void OnUserActivity() = 0;
+
+ protected:
+  virtual ~LoginScreenClient() = default;
 };
+
+}  // namespace ash
+
+#endif  // ASH_PUBLIC_CPP_LOGIN_SCREEN_CLIENT_H_

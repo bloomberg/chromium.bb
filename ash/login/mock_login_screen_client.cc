@@ -12,21 +12,17 @@
 
 namespace ash {
 
-MockLoginScreenClient::MockLoginScreenClient() : binding_(this) {}
+MockLoginScreenClient::MockLoginScreenClient() {
+  Shell::Get()->login_screen_controller()->SetClient(this);
+}
 
 MockLoginScreenClient::~MockLoginScreenClient() = default;
-
-mojom::LoginScreenClientPtr MockLoginScreenClient::CreateInterfacePtrAndBind() {
-  mojom::LoginScreenClientPtr ptr;
-  binding_.Bind(mojo::MakeRequest(&ptr));
-  return ptr;
-}
 
 void MockLoginScreenClient::AuthenticateUserWithPasswordOrPin(
     const AccountId& account_id,
     const std::string& password,
     bool authenticated_by_pin,
-    AuthenticateUserWithPasswordOrPinCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   AuthenticateUserWithPasswordOrPin_(account_id, password, authenticated_by_pin,
                                      callback);
   if (authenticate_user_with_password_or_pin_callback_storage_) {
@@ -39,7 +35,7 @@ void MockLoginScreenClient::AuthenticateUserWithPasswordOrPin(
 
 void MockLoginScreenClient::AuthenticateUserWithExternalBinary(
     const AccountId& account_id,
-    AuthenticateUserWithExternalBinaryCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   AuthenticateUserWithExternalBinary_(account_id, callback);
   if (authenticate_user_with_external_binary_callback_storage_) {
     *authenticate_user_with_external_binary_callback_storage_ =
@@ -50,7 +46,7 @@ void MockLoginScreenClient::AuthenticateUserWithExternalBinary(
 }
 
 void MockLoginScreenClient::EnrollUserWithExternalBinary(
-    EnrollUserWithExternalBinaryCallback callback) {
+    base::OnceCallback<void(bool)> callback) {
   EnrollUserWithExternalBinary_(callback);
   if (enroll_user_with_external_binary_callback_storage_) {
     *enroll_user_with_external_binary_callback_storage_ = std::move(callback);
@@ -59,19 +55,11 @@ void MockLoginScreenClient::EnrollUserWithExternalBinary(
   }
 }
 
-void MockLoginScreenClient::ValidateParentAccessCode(
+bool MockLoginScreenClient::ValidateParentAccessCode(
     const AccountId& account_id,
-    const std::string& code,
-    ValidateParentAccessCodeCallback callback) {
-  ValidateParentAccessCode_(account_id, code, callback);
-  std::move(callback).Run(validate_parent_access_code_result_);
-}
-
-std::unique_ptr<MockLoginScreenClient> BindMockLoginScreenClient() {
-  auto client = std::make_unique<MockLoginScreenClient>();
-  Shell::Get()->login_screen_controller()->SetClient(
-      client->CreateInterfacePtrAndBind());
-  return client;
+    const std::string& code) {
+  ValidateParentAccessCode_(account_id, code);
+  return validate_parent_access_code_result_;
 }
 
 }  // namespace ash

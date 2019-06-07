@@ -102,10 +102,6 @@ void BindKioskNextShellControllerRequestOnMainThread(
   Shell::Get()->kiosk_next_shell_controller()->BindRequest(std::move(request));
 }
 
-void BindLockScreenRequestOnMainThread(mojom::LoginScreenRequest request) {
-  Shell::Get()->login_screen_controller()->BindRequest(std::move(request));
-}
-
 void BindNightLightControllerRequestOnMainThread(
     mojom::NightLightControllerRequest request) {
   Shell::Get()->night_light_controller()->BindRequest(std::move(request));
@@ -174,9 +170,6 @@ void RegisterInterfaces(
   }
   registry->AddInterface(
       base::BindRepeating(&BindImeControllerRequestOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindLockScreenRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindNightLightControllerRequestOnMainThread),

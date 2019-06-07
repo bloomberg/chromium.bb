@@ -200,7 +200,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, LaunchPublicSession) {
   EXPECT_EQ(selected_keyboard, kKeyboardIdForItem2);
 
   // Expect LanuchPublicSession mojo call when the submit button is clicked.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client,
               LaunchPublicSession(user_.basic_user_info.account_id,
                                   selected_language, selected_keyboard));
@@ -266,7 +266,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   // 2. Selected language item will change.
   // 3. Expect RequestPublicSessionKeyboardLayouts mojo call with the selected
   // language item.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client,
               RequestPublicSessionKeyboardLayouts(
                   user_.basic_user_info.account_id, kFrenchLanguageCode));

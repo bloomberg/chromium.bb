@@ -103,6 +103,7 @@ component("cpp") {
     "login_constants.h",
     "login_screen.cc",
     "login_screen.h",
+    "login_screen_client.h",
     "login_screen_model.cc",
     "login_screen_model.h",
     "login_types.cc",

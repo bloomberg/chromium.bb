@@ -14,6 +14,7 @@ class AccountId;
 
 namespace ash {
 
+class LoginScreenClient;
 class LoginScreenModel;
 
 // Allows clients (e.g. the browser process) to send messages to the ash
@@ -24,7 +25,15 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   // Returns the singleton instance.
   static LoginScreen* Get();
 
+  virtual void SetClient(LoginScreenClient* client) = 0;
+
   virtual LoginScreenModel* GetModel() = 0;
+
+  // Displays the lock screen.
+  virtual void ShowLockScreen() = 0;
+
+  // Displays the login screen.
+  virtual void ShowLoginScreen() = 0;
 
   // Display a toast describing the latest kiosk app launch error.
   virtual void ShowKioskAppError(const std::string& message) = 0;

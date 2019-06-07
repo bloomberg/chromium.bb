@@ -76,9 +76,8 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnStartAppLaunch() override;
   void OnStartArcKiosk() override;
   void OnBrowserCreated() override;
-  void ShowGaiaDialog(
-      bool can_close,
-      const base::Optional<AccountId>& prefilled_account) override;
+  void ShowGaiaDialog(bool can_close,
+                      const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogSize(int width, int height) override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;

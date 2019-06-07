@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/public/cpp/login_screen.h"
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/test_login_screen_model.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -21,19 +20,16 @@
 //
 // Note: A ServiceManagerConnection must be initialized before constructing this
 // object. Consider using content::TestServiceManagerContext on your tests.
-class TestLoginScreen : public ash::mojom::LoginScreen,
-                        public ash::LoginScreen {
+class TestLoginScreen : public ash::LoginScreen {
  public:
   TestLoginScreen();
   ~TestLoginScreen() override;
 
-  // ash:mojom::LoginScreen:
-  void SetClient(ash::mojom::LoginScreenClientPtr client) override;
-  void ShowLockScreen(ShowLockScreenCallback callback) override;
-  void ShowLoginScreen(ShowLoginScreenCallback callback) override;
-
   // ash::LoginScreen:
+  void SetClient(ash::LoginScreenClient* client) override;
   ash::LoginScreenModel* GetModel() override;
+  void ShowLockScreen() override;
+  void ShowLoginScreen() override;
   void ShowKioskAppError(const std::string& message) override;
   void FocusLoginShelf(bool reverse) override;
   bool IsReadyForPassword() override;
@@ -47,9 +43,6 @@ class TestLoginScreen : public ash::mojom::LoginScreen,
   void SetAllowLoginAsGuest(bool allow_guest) override;
 
  private:
-  void Bind(mojo::ScopedMessagePipeHandle handle);
-  mojo::Binding<ash::mojom::LoginScreen> binding_{this};
-
   TestLoginScreenModel test_screen_model_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLoginScreen);

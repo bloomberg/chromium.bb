@@ -4,46 +4,19 @@
 
 #include "chrome/browser/ui/ash/test_login_screen.h"
 
-#include <utility>
+TestLoginScreen::TestLoginScreen() = default;
 
-#include "ash/public/interfaces/constants.mojom.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_filter.h"
+TestLoginScreen::~TestLoginScreen() = default;
 
-TestLoginScreen::TestLoginScreen() {
-  CHECK(content::ServiceManagerConnection::GetForProcess())
-      << "ServiceManager is uninitialized. Did you forget to create a "
-         "content::TestServiceManagerContext?";
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->OverrideBinderForTesting(
-          service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
-          ash::mojom::LoginScreen::Name_,
-          base::BindRepeating(&TestLoginScreen::Bind, base::Unretained(this)));
-}
-
-TestLoginScreen::~TestLoginScreen() {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->ClearBinderOverrideForTesting(
-          service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
-          ash::mojom::LoginScreen::Name_);
-}
-
-void TestLoginScreen::SetClient(ash::mojom::LoginScreenClientPtr client) {}
-
-void TestLoginScreen::ShowLockScreen(ShowLockScreenCallback callback) {
-  std::move(callback).Run(true);
-}
-
-void TestLoginScreen::ShowLoginScreen(ShowLoginScreenCallback callback) {
-  std::move(callback).Run(true);
-}
+void TestLoginScreen::SetClient(ash::LoginScreenClient* client) {}
 
 ash::LoginScreenModel* TestLoginScreen::GetModel() {
   return &test_screen_model_;
 }
+
+void TestLoginScreen::ShowLockScreen() {}
+
+void TestLoginScreen::ShowLoginScreen() {}
 
 void TestLoginScreen::ShowKioskAppError(const std::string& message) {}
 
@@ -66,7 +39,3 @@ void TestLoginScreen::ShowParentAccessWidget(
     base::RepeatingCallback<void(bool success)> callback) {}
 
 void TestLoginScreen::SetAllowLoginAsGuest(bool allow_guest) {}
-
-void TestLoginScreen::Bind(mojo::ScopedMessagePipeHandle handle) {
-  binding_.Bind(ash::mojom::LoginScreenRequest(std::move(handle)));
-}

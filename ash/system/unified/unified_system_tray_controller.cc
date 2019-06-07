@@ -104,7 +104,6 @@ void UnifiedSystemTrayController::HandleSignOutAction() {
 void UnifiedSystemTrayController::HandleLockAction() {
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
   Shell::Get()->session_controller()->LockScreen();
-  CloseBubble();
 }
 
 void UnifiedSystemTrayController::HandleSettingsAction() {

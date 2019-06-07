@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/login/ui/login_data_dispatcher.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 
@@ -17,6 +17,8 @@ class Widget;
 }  // namespace views
 
 namespace ash {
+
+class LoginDataDispatcher;
 
 // Base test fixture for testing the views-based login and lock screens. This
 // class provides easy access to types which the login/lock frequently need.
@@ -67,8 +69,7 @@ class LoginTestBase : public AshTestBase {
 
   const std::vector<LoginUserInfo>& users() const { return users_; }
 
-  // If the LockScreen is instantiated, returns its data dispatcher. Otherwise,
-  // returns a standalone instance.
+  // Returns the singleton LoginDataDispatcher.
   LoginDataDispatcher* DataDispatcher();
 
   // AshTestBase:
@@ -81,8 +82,6 @@ class LoginTestBase : public AshTestBase {
   std::unique_ptr<views::Widget> widget_;
 
   std::vector<LoginUserInfo> users_;
-
-  LoginDataDispatcher data_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginTestBase);
 };
