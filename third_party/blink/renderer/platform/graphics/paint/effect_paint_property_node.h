@@ -200,6 +200,12 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     return state_.filters_origin;
   }
 
+  bool HasRealEffects() const {
+    return Opacity() != 1.0f || GetColorFilter() != kColorFilterNone ||
+           BlendMode() != SkBlendMode::kSrcOver || !Filter().IsEmpty() ||
+           !BackdropFilter().IsEmpty();
+  }
+
   // Returns a rect covering the pixels that can be affected by pixels in
   // |inputRect|. The rects are in the space of localTransformSpace.
   FloatRect MapRect(const FloatRect& input_rect) const;
