@@ -1,8 +1,15 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
@@ -12,12 +19,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
-<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="add_languages_dialog.html">
 <link rel="import" href="languages.html">
 <link rel="import" href="../controls/controlled_radio_button.html">
@@ -224,9 +225,9 @@
 <if expr="chromeos or is_win">
                 <template is="dom-if" if="[[isRestartRequired_(
                         item.language.code, languages.prospectiveUILanguage)]]">
-                  <paper-button class="restart-button" on-click="onRestartTap_">
+                  <cr-button class="restart-button" on-click="onRestartTap_">
                     $i18n{restart}
-                  </paper-button>
+                  </cr-button>
                 </template>
 </if>
                 <cr-icon-button class="icon-more-vert"
@@ -350,11 +351,11 @@
                       $i18n{languagesDictionaryDownloadErrorHelp}
                     </div>
                   </div>
-                  <paper-button on-click="onRetryDictionaryDownloadClick_"
+                  <cr-button on-click="onRetryDictionaryDownloadClick_"
                       hidden="[[!errorsGreaterThan_(
                           item.downloadDictionaryFailureCount, 0)]]">
                     $i18n{retry}
-                  </paper-button>
+                  </cr-button>
                   <template is="dom-if" if="[[!item.isManaged]]">
                     <cr-toggle on-change="onSpellCheckLanguageChange_"
                         disabled="[[!item.language.supportsSpellcheck]]"

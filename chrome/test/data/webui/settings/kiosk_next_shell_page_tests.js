@@ -21,7 +21,7 @@ suite('KioskNextShellPageTests', function() {
   }
 
   function showDialog() {
-    const dialogButton = page.$$('paper-button');
+    const dialogButton = page.$$('cr-button');
     assertTrue(!!dialogButton);
     dialogButton.click();
     Polymer.dom.flush();

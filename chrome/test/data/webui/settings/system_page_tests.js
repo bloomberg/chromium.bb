@@ -73,7 +73,7 @@ suite('settings system page', function() {
     expectEquals(HARDWARE_ACCELERATION_AT_STARTUP, control.checked);
 
     // Restart button should be hidden by default.
-    expectFalse(!!control.querySelector('paper-button'));
+    expectFalse(!!control.querySelector('cr-button'));
 
     systemPage.set(
         'prefs.hardware_acceleration_mode.enabled.value',
@@ -81,7 +81,7 @@ suite('settings system page', function() {
     Polymer.dom.flush();
     expectNotEquals(HARDWARE_ACCELERATION_AT_STARTUP, control.checked);
 
-    const restart = control.querySelector('paper-button');
+    const restart = control.querySelector('cr-button');
     expectTrue(!!restart);  // The "RESTART" button should be showing now.
 
     restart.click();

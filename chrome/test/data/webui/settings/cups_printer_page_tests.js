@@ -287,7 +287,7 @@ suite('CupsAddPrinterDialogTests', function() {
     // Starts in discovery dialog, select add manually button.
     const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
     assertTrue(!!discoveryDialog);
-    discoveryDialog.$$('.secondary-button').click();
+    discoveryDialog.$.manuallyAddPrinterButton.click();
     Polymer.dom.flush();
 
     // Now we should be in the manually add dialog.
@@ -324,7 +324,7 @@ suite('CupsAddPrinterDialogTests', function() {
   test('NoBlankQueries', function() {
     const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
     assertTrue(!!discoveryDialog);
-    discoveryDialog.$$('.secondary-button').click();
+    discoveryDialog.$.manuallyAddPrinterButton.click();
     Polymer.dom.flush();
 
     const addDialog = dialog.$$('add-printer-manually-dialog');
@@ -497,7 +497,7 @@ suite('CupsAddPrinterDialogTests', function() {
     // Starts in discovery dialog, select add manually button.
     const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
     assertTrue(!!discoveryDialog);
-    discoveryDialog.$$('.secondary-button').click();
+    discoveryDialog.$.manuallyAddPrinterButton.click();
     Polymer.dom.flush();
 
     // Now we should be in the manually add dialog.
@@ -535,7 +535,7 @@ suite('CupsAddPrinterDialogTests', function() {
   test('getEulaUrlGetsCalledOnModelChange', function() {
     const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
     assertTrue(!!discoveryDialog);
-    discoveryDialog.$$('.secondary-button').click();
+    discoveryDialog.$.manuallyAddPrinterButton.click();
     Polymer.dom.flush();
 
     const addDialog = dialog.$$('add-printer-manually-dialog');
@@ -612,6 +612,8 @@ suite('EditPrinterDialog', function() {
   function clickSaveButton(dialog) {
     assertTrue(!!dialog, 'Dialog is null for save');
     const saveButton = dialog.$$('.action-button');
+    dialog.printerInfoChanged_ = true;
+    assertFalse(saveButton.disabled);
     assertTrue(!!saveButton, 'Button is null');
     saveButton.click();
   }
@@ -848,8 +850,7 @@ suite('EditPrinterDialog', function() {
 
     Polymer.dom.flush();
 
-    const saveButton = dialog.$$('.action-button');
-    saveButton.click();
+    clickSaveButton(dialog);
 
     return cupsPrintersBrowserProxy.whenCalled('updateCupsPrinter')
         .then(function() {

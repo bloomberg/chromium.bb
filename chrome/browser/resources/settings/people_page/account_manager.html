@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -101,11 +102,11 @@
           hidden="[[isSecondaryGoogleAccountSigninAllowed_()]]"
           indicator-type="userPolicy">
       </cr-policy-indicator>
-      <paper-button disabled="[[!isSecondaryGoogleAccountSigninAllowed_()]]"
+      <cr-button disabled="[[!isSecondaryGoogleAccountSigninAllowed_()]]"
           id="add-account-button" on-tap="addAccount_">
         <div id="add-account-icon"></div>
         $i18n{addAccountLabel}
-      </paper-button>
+      </cr-button>
     </div>
 
     <div id="outer" class="layout vertical nowrap">
@@ -138,10 +139,10 @@
 
           <template is="dom-if"
               if="[[shouldShowReauthenticationButton_(item)]]">
-            <paper-button class="reauth-button"
+            <cr-button class="reauth-button"
                 on-click="onReauthenticationTap_">
               [[getAccountManagerSignedOutLabel_(item.unmigrated)]]
-            </paper-button>
+            </cr-button>
           </template>
 
           <!-- If this is the Device Account, display the management status -->

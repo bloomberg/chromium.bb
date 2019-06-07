@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -51,12 +52,12 @@
         [[i18n('siteSettingsSiteResetConfirmation', pageTitle)]]
       </div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-click="onCloseDialog_">
+        <cr-button class="cancel-button" on-click="onCloseDialog_">
           $i18n{cancel}
-        </paper-button>
-        <paper-button class="action-button" on-click="onResetSettings_">
+        </cr-button>
+        <cr-button class="action-button" on-click="onResetSettings_">
           $i18n{siteSettingsSiteResetAll}
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
 
@@ -70,12 +71,12 @@
         [[i18n('siteSettingsSiteClearStorageConfirmation', pageTitle)]]
       </div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-click="onCloseDialog_">
+        <cr-button class="cancel-button" on-click="onCloseDialog_">
           $i18n{cancel}
-        </paper-button>
-        <paper-button class="action-button" on-click="onClearStorage_">
+        </cr-button>
+        <cr-button class="action-button" on-click="onClearStorage_">
           $i18n{siteSettingsSiteClearStorage}
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
 
@@ -98,23 +99,22 @@
               </div>
               <div hidden$="[[!numCookies_]]">[[numCookies_]]</div>
             </div>
-            <paper-button class="secondary-button" id="clearStorage"
-                role="button" aria-disabled="false"
+            <cr-button id="clearStorage" role="button" aria-disabled="false"
                 on-click="onConfirmClearStorage_"
                 aria-label="$i18n{siteSettingsDelete}">
               $i18n{siteSettingsDelete}
-            </paper-button>
+            </cr-button>
           </div>
         </div>
       </div>
 
       <div class="settings-box first">
         <h2 class="start">$i18n{siteSettingsPermissions}</h2>
-        <paper-button id="resetSettingsButton"
-            class="secondary-button header-aligned-button" role="button"
-            aria-disabled="false" on-click="onConfirmClearSettings_">
+        <cr-button id="resetSettingsButton" class="header-aligned-button"
+            role="button" aria-disabled="false"
+            on-click="onConfirmClearSettings_">
           $i18n{siteSettingsReset}
-        </paper-button>
+        </cr-button>
       </div>
     </template>
     <div class$="list-frame [[permissionListClass_(enableSiteSettings_)]]">

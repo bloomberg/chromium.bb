@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
@@ -46,10 +47,10 @@
 
     <div class="settings-box first">
       <h2 class="start">$i18n{searchEnginesOther}</h2>
-      <paper-button class="secondary-button header-aligned-button"
+      <cr-button class="secondary-button header-aligned-button"
           on-click="onAddSearchEngineTap_" id="addSearchEngine">
         $i18n{add}
-      </paper-button>
+      </cr-button>
     </div>
     <div id="noOtherEngines" hidden="[[otherEngines.length]]">
       $i18n{searchEnginesNoOtherEngines}

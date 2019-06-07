@@ -402,7 +402,7 @@ suite('SiteDetails', function() {
 
     // Check both cancelling and accepting the dialog closes it.
     ['cancel-button', 'action-button'].forEach(buttonType => {
-      testElement.$$('#usage paper-button').click();
+      testElement.$$('#usage cr-button').click();
       assertTrue(testElement.$.confirmClearStorage.open);
       const actionButtonList =
           testElement.$.confirmClearStorage.getElementsByClassName(buttonType);

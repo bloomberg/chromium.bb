@@ -104,7 +104,7 @@ suite('Multidevice', function() {
 
   test('clicking setup shows multidevice setup dialog', function() {
     setHostData(settings.MultiDeviceSettingsMode.NO_HOST_SET);
-    const button = multidevicePage.$$('paper-button');
+    const button = multidevicePage.$$('cr-button');
     assertTrue(!!button);
     button.click();
     return browserProxy.whenCalled('showMultiDeviceSetupDialog');

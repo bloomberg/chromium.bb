@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -11,7 +12,6 @@
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="profile_info_browser_proxy.html">
 <link rel="import" href="sync_browser_proxy.html">
@@ -177,18 +177,17 @@
 <if expr="not chromeos">
               <template is="dom-if" if="[[showSignin_(syncStatus)]]">
                 <div class="separator"></div>
-                <paper-button class="action-button" on-click="onSigninTap_"
+                <cr-button class="action-button" on-click="onSigninTap_"
                     disabled="[[syncStatus.firstSetupInProgress]]">
                   $i18n{syncSignin}
-                </paper-button>
+                </cr-button>
               </template>
               <template is="dom-if" if="[[syncStatus.signedIn]]">
                 <div class="separator"></div>
-                <paper-button id="disconnectButton" class="secondary-button"
-                    on-click="onDisconnectTap_"
+                <cr-button id="disconnectButton" on-click="onDisconnectTap_"
                     disabled="[[syncStatus.firstSetupInProgress]]">
                   $i18n{syncDisconnect}
-                </paper-button>
+                </cr-button>
               </template>
 </if>
             </template>

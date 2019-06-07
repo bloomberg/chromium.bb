@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_tabs/cr_tabs.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="clear_browsing_data_browser_proxy.html">
@@ -244,14 +244,14 @@
       <div slot="button-container">
         <paper-spinner-lite active="[[clearingInProgress_]]">
         </paper-spinner-lite>
-        <paper-button class="cancel-button" disabled="[[clearingInProgress_]]"
-            on-click="onCancelTap_">$i18n{cancel}</paper-button>
-        <paper-button id="clearBrowsingDataConfirm"
+        <cr-button class="cancel-button" disabled="[[clearingInProgress_]]"
+            on-click="onCancelTap_">$i18n{cancel}</cr-button>
+        <cr-button id="clearBrowsingDataConfirm"
             class="action-button" on-click="clearBrowsingData_"
             disabled="[[isClearButtonDisabled_(clearingInProgress_,
                                                clearButtonDisabled_)]]">
             $i18n{clearData}
-        </paper-button>
+        </cr-button>
       </div>
       <div slot="footer"
           hidden="[[!shouldShowFooter_(syncStatus.signedIn, diceEnabled_)]]">

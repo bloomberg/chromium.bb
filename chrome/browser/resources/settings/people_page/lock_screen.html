@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/quick_unlock/lock_screen_constants.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -96,11 +97,10 @@
                     <!-- Use stop-keyboard-event-propagation to prevent
                          triggering this when focused after closing the
                          dialog. -->
-                    <paper-button id="setupPinButton" class="secondary-button"
-                        on-click="onConfigurePin_"
+                    <cr-button id="setupPinButton" on-click="onConfigurePin_"
                         stop-keyboard-event-propagation>
                       [[getSetupPinText_(hasPin)]]
-                    </paper-button>
+                    </cr-button>
                   </div>
                 </template>
               </cr-radio-button>
@@ -145,12 +145,11 @@
           </div>
           <div class="separator"></div>
           <div class="secondary-action">
-            <paper-button class="secondary-button"
-                on-click="onEditFingerprints_"
+            <cr-button on-click="onEditFingerprints_"
                 aria-label="$i18n{lockScreenEditFingerprints}"
                 aria-descibedby="lockScreenEditFingerprintsSecondary">
               $i18n{lockScreenSetupFingerprintButton}
-            </paper-button>
+            </cr-button>
           </div>
         </div>
       </template>

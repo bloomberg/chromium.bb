@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
@@ -11,7 +12,6 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="sync_browser_proxy.html">
 <link rel="import" href="sync_controls.html">
 <link rel="import" href="../privacy_page/personalization_options.html">
@@ -137,11 +137,11 @@
               placeholder="$i18n{passphrasePlaceholder}"
               error-message="$i18n{incorrectPassphraseError}"
               on-keypress="onSubmitExistingPassphraseTap_">
-            <paper-button id="submitExistingPassphrase" slot="suffix"
+            <cr-button id="submitExistingPassphrase" slot="suffix"
                 on-click="onSubmitExistingPassphraseTap_"
                 class="action-button" disabled="[[!existingPassphrase_]]">
               $i18n{submitPassphraseButton}
-            </paper-button>
+            </cr-button>
           </cr-input>
         </div>
         <div id="passphraseRecoverHint" class="list-item">
@@ -184,11 +184,11 @@
                   placeholder="$i18n{passphrasePlaceholder}"
                   error-message="$i18n{incorrectPassphraseError}"
                   on-keypress="onSubmitExistingPassphraseTap_">
-                <paper-button id="submitExistingPassphrase" slot="suffix"
+                <cr-button id="submitExistingPassphrase" slot="suffix"
                     on-click="onSubmitExistingPassphraseTap_"
                     class="action-button" disabled="[[!existingPassphrase_]]">
                   $i18n{submitPassphraseButton}
-                </paper-button>
+                </cr-button>
               </cr-input>
             </div>
             <div id="passphraseRecoverHint" class="list-item">
@@ -306,12 +306,12 @@
                     placeholder="$i18n{passphraseConfirmationPlaceholder}"
                     error-message="$i18n{mismatchedPassphraseError}">
                 </cr-input>
-                <paper-button id="saveNewPassphrase"
+                <cr-button id="saveNewPassphrase"
                     on-click="onSaveNewPassphraseTap_" class="action-button"
                     disabled="[[!isSaveNewPassphraseEnabled_(passphrase_,
                                                              confirmation_)]]">
                   $i18n{save}
-                </paper-button>
+                </cr-button>
               </div>
             </div>
           </template>
@@ -337,14 +337,14 @@
         <div slot="title">$i18n{syncSetupCancelDialogTitle}</div>
         <div slot="body">$i18n{syncSetupCancelDialogBody}</div>
         <div slot="button-container">
-          <paper-button class="cancel-button"
+          <cr-button class="cancel-button"
               on-click="onSetupCancelDialogBack_">
             $i18n{back}
-          </paper-button>
-          <paper-button class="action-button"
+          </cr-button>
+          <cr-button class="action-button"
               on-click="onSetupCancelDialogConfirm_">
             $i18n{cancelSync}
-          </paper-button>
+          </cr-button>
         </div>
       </cr-dialog>
     </template>
@@ -352,9 +352,9 @@
     <template is="dom-if" if="[[!unifiedConsentEnabled]]">
       <cr-toast id="toast" open="[[syncStatus.firstSetupInProgress]]">
         <div>$i18n{syncWillStart}</div>
-        <paper-button on-click="onSyncSetupCancel_">
+        <cr-button on-click="onSyncSetupCancel_">
           $i18n{cancelSync}
-        </paper-button>
+        </cr-button>
       </cr-toast>
     </template>
 </if>

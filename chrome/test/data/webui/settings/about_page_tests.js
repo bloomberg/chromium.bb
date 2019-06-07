@@ -895,7 +895,7 @@ cr.define('settings_about_page', function() {
           page = document.createElement('settings-detailed-build-info');
           document.body.appendChild(page);
           return browserProxy.whenCalled('getChannelInfo').then(function() {
-            const changeChannelButton = page.$$('paper-button');
+            const changeChannelButton = page.$$('cr-button');
             assertTrue(!!changeChannelButton);
             assertEquals(canChangeChannel, !changeChannelButton.disabled);
           });

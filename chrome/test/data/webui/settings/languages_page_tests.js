@@ -701,7 +701,7 @@ cr.define('languages_page_tests', function() {
         checkAllHidden(errorDivs);
 
         const retryButtons =
-            Array.from(spellCheckCollapse.querySelectorAll('paper-button'));
+            Array.from(spellCheckCollapse.querySelectorAll('cr-button'));
         assertEquals(2, retryButtons.length);
         checkAllHidden(retryButtons);
 

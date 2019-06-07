@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="cups_add_printer_dialog_elements.html">
 <link rel="import" href="cups_printer_dialog_util.html">
@@ -109,24 +109,23 @@
               error-message="$i18n{selectDriverErrorMessage}"
               invalid="[[invalidPPD_]]">
           </cr-input>
-          <paper-button class="browse-button" on-click="onBrowseFile_">
+          <cr-button class="browse-button" on-click="onBrowseFile_">
             $i18n{selectDriverButtonText}
-          </paper-button>
+          </cr-button>
         </div>
         <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
           <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
         </div>
       </div>
       <div slot="dialog-buttons">
-        <paper-button class="cancel-button secondary-button"
-            on-click="onCancelTap_">
+        <cr-button class="cancel-button" on-click="onCancelTap_">
           $i18n{cancel}
-        </paper-button>
-        <paper-button class="action-button" on-click="onSaveTap_"
+        </cr-button>
+        <cr-button class="action-button" on-click="onSaveTap_"
             disabled="[[!canSavePrinter_(pendingPrinter_.*,
                                          printerInfoChanged_)]]">
           $i18n{editPrinterButtonText}
-        </paper-button>
+        </cr-button>
       </div>
     </add-printer-dialog>
   </template>

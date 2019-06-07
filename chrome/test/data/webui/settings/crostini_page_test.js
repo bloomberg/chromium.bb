@@ -125,8 +125,8 @@ suite('CrostiniPageTests', function() {
       subpage.$$('#crostini-export-import').click();
       return flushAsync().then(() => {
         subpage = crostiniPage.$$('settings-crostini-export-import');
-        assertTrue(!!subpage.$$('#export paper-button'));
-        subpage.$$('#export paper-button').click();
+        assertTrue(!!subpage.$$('#export cr-button'));
+        subpage.$$('#export cr-button').click();
         assertEquals(
             1, crostiniBrowserProxy.getCallCount('exportCrostiniContainer'));
       });
@@ -137,16 +137,16 @@ suite('CrostiniPageTests', function() {
       subpage.$$('#crostini-export-import').click();
       return flushAsync().then(() => {
         subpage = crostiniPage.$$('settings-crostini-export-import');
-        assertTrue(!!subpage.$$('#import paper-button'));
-        subpage.$$('#import paper-button').click();
+        assertTrue(!!subpage.$$('#import cr-button'));
+        subpage.$$('#import cr-button').click();
         assertEquals(
             1, crostiniBrowserProxy.getCallCount('importCrostiniContainer'));
       });
     });
 
     test('Remove', function() {
-      assertTrue(!!subpage.$$('#remove paper-button'));
-      subpage.$$('#remove paper-button').click();
+      assertTrue(!!subpage.$$('#remove cr-button'));
+      subpage.$$('#remove cr-button').click();
       assertEquals(
           1, crostiniBrowserProxy.getCallCount('requestRemoveCrostini'));
       setCrostiniPrefs(false);

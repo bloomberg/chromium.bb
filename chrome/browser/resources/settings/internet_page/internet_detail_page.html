@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -18,7 +19,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../controls/controlled_button.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
@@ -90,27 +90,27 @@
           </cr-policy-indicator>
         </template>
       </div>
-      <paper-button on-click="onForgetTap_"
+      <cr-button on-click="onForgetTap_"
           hidden$="[[!showForget_(networkProperties_)]]"
           disabled="[[disableForget_(networkProperties_,
               prefs.vpn_config_allowed)]]">
         $i18n{networkButtonForget}
-      </paper-button>
-      <paper-button on-click="onViewAccountTap_"
+      </cr-button>
+      <cr-button on-click="onViewAccountTap_"
           hidden$="[[!showViewAccount_(networkProperties_)]]">
         $i18n{networkButtonViewAccount}
-      </paper-button>
-      <paper-button on-click="onActivateTap_"
+      </cr-button>
+      <cr-button on-click="onActivateTap_"
           hidden$="[[!showActivate_(networkProperties_)]]">
         $i18n{networkButtonActivate}
-      </paper-button>
-      <paper-button on-click="onConfigureTap_"
+      </cr-button>
+      <cr-button on-click="onConfigureTap_"
           hidden$="[[!showConfigure_(networkProperties_, globalPolicy,
               managedNetworkAvailable)]]"
           disabled="[[disableConfigure_(networkProperties_,
               prefs.vpn_config_allowed)]]">
         $i18n{networkButtonConfigure}
-      </paper-button>
+      </cr-button>
       <!-- Use policy properties from vpn_config_allowed to indicate when that
            pref disables buttons in this row. -->
       <controlled-button id="connect" action-button on-click="onConnectTap_"

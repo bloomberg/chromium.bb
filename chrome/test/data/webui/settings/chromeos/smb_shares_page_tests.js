@@ -212,12 +212,16 @@ suite('AddSmbShareDialogTests', function() {
 
     page = document.createElement('settings-smb-shares-page');
     page.prefs = {
-      network_file_shares: {most_recently_used_url: {value: expectedSmbUrl}},
+      network_file_shares: {
+        most_recently_used_url: {value: expectedSmbUrl},
+        allowed: {value: true},
+      },
     };
     document.body.appendChild(page);
 
     const button = page.$$('#addShare');
     assertTrue(!!button);
+    assertFalse(button.disabled);
     button.click();
 
     Polymer.dom.flush();

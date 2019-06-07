@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="default_browser_browser_proxy.html">
 <link rel="import" href="../icons.html">
@@ -16,10 +17,9 @@
           <div class="secondary">$i18n{defaultBrowserMakeDefault}</div>
         </div>
         <div class="separator"></div>
-        <paper-button class="secondary-button"
-            on-click="onSetDefaultBrowserTap_">
+        <cr-button on-click="onSetDefaultBrowserTap_">
           $i18n{defaultBrowserMakeDefaultButton}
-        </paper-button>
+        </cr-button>
       </div>
     </template>
     <template is="dom-if" if="[[!maySetDefaultBrowser_]]">

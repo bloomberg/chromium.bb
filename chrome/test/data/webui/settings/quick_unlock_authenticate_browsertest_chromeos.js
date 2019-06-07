@@ -117,7 +117,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         passwordElement.value = 'foo';
         Polymer.dom.flush();
 
-        passwordPromptDialog.$$('paper-button[class="action-button"]').click();
+        passwordPromptDialog.$$('cr-button[class="action-button"]').click();
         Polymer.dom.flush();
 
         assertEquals(0, passwordElement.inputElement.selectionStart);
@@ -138,7 +138,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         const confirmButton = passwordPromptDialog.$$('#confirmButton');
         quickUnlockPrivateApi.accountPassword = 'bar';
         passwordElement.value = 'foo';
-        passwordPromptDialog.$$('paper-button[class="action-button"]').click();
+        passwordPromptDialog.$$('cr-button[class="action-button"]').click();
 
         assertTrue(passwordElement.hasAttribute('focused_'));
       });
@@ -443,8 +443,8 @@ cr.define('settings_people_page_quick_unlock', function() {
         titleDiv = getFromElement('div[slot=title]');
         problemDiv = getFromElement('#problemDiv');
         pinKeyboard = getFromElement('pin-keyboard');
-        backButton = getFromElement('paper-button[class="cancel-button"]');
-        continueButton = getFromElement('paper-button[class="action-button"]');
+        backButton = getFromElement('cr-button[class="cancel-button"]');
+        continueButton = getFromElement('cr-button[class="action-button"]');
 
         assertTrue(isVisible(backButton));
         assertTrue(isVisible(continueButton));

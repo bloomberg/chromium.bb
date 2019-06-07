@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/fingerprint/cr_fingerprint_progress_arc.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="../icons.html">
@@ -73,15 +73,15 @@
         </cr-fingerprint-progress-arc>
       </div>
       <div slot="button-container">
-        <paper-button id="addAnotherButton" on-click="onAddAnotherFingerprint_"
+        <cr-button id="addAnotherButton" on-click="onAddAnotherFingerprint_"
             hidden$="[[hideAddAnother_(step_, allowAddAnotherFinger)]]">
           $i18n{configureFingerprintAddAnotherButton}
-        </paper-button>
+        </cr-button>
 
-        <paper-button id="closeButton"
+        <cr-button id="closeButton"
             class$="[[getCloseButtonClass_(step_)]]" on-click="onClose_">
           [[getCloseButtonText_(step_)]]
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
   </template>

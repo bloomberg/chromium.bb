@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../global_scroll_target_behavior.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
@@ -39,11 +39,11 @@
               '$i18nPolymer{addDictionaryWordDuplicateError}',
               '$i18nPolymer{addDictionaryWordLengthError}')]]"
           spellcheck="false">
-        <paper-button class="secondary-button" on-click="onAddWordTap_"
+        <cr-button on-click="onAddWordTap_"
             disabled="[[disableAddButton_(newWordValue_)]]" id="addWord"
             slot="suffix">
           $i18n{addDictionaryWordButton}
-        </paper-button>
+        </cr-button>
       </cr-input>
     </div>
     <div class="settings-box continuation block">

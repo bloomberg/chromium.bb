@@ -11,6 +11,7 @@
 <link rel="import" href="../settings_page/settings_section.html">
 <link rel="import" href="../settings_page_css.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -18,7 +19,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <if expr="chromeos">
 <link rel="import" href="detailed_build_info.html">
@@ -72,7 +72,7 @@
         overflow-x: auto;
       }
 
-      paper-button {
+      cr-button {
         white-space: nowrap;
       }
 
@@ -157,21 +157,20 @@
             </div>
             <div class="separator" hidden="[[!showButtonContainer_]]"></div>
             <span id="buttonContainer" hidden="[[!showButtonContainer_]]">
-              <paper-button id="relaunch" class="secondary-button"
-                  hidden="[[!showRelaunch_]]" on-click="onRelaunchTap_">
+              <cr-button id="relaunch" hidden="[[!showRelaunch_]]"
+                  on-click="onRelaunchTap_">
                 $i18n{aboutRelaunch}
-              </paper-button>
+              </cr-button>
 <if expr="chromeos">
-              <paper-button id="relaunchAndPowerwash" class="secondary-button"
+              <cr-button id="relaunchAndPowerwash"
                   hidden="[[!showRelaunchAndPowerwash_]]"
                   on-click="onRelaunchAndPowerwashTap_">
                 $i18n{aboutRelaunchAndPowerwash}
-              </paper-button>
-              <paper-button id="checkForUpdates" class="secondary-button"
-                  hidden="[[!showCheckUpdates_]]"
+              </cr-button>
+              <cr-button id="checkForUpdates" hidden="[[!showCheckUpdates_]]"
                   on-click="onCheckUpdatesTap_">
                 $i18n{aboutCheckForUpdates}
-              </paper-button>
+              </cr-button>
 </if>
             </span>
           </div>

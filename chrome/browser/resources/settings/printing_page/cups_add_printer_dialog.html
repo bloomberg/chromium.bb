@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="cups_add_printer_dialog_elements.html">
@@ -52,21 +52,20 @@
       </div>
       <div slot="dialog-buttons">
         <div>  <!-- Left group -->
-          <paper-button id="manuallyAddPrinterButton" class="secondary-button"
+          <cr-button id="manuallyAddPrinterButton"
               on-click="switchToManualAddDialog_">
             $i18n{manuallyAddPrinterButtonText}
-          </paper-button>
+          </cr-button>
         </div>
         <div>  <!-- Right group -->
-          <paper-button class="cancel-button secondary-button"
-              on-click="onCancelTap_">
+          <cr-button class="cancel-button" on-click="onCancelTap_">
             $i18n{cancel}
-          </paper-button>
-          <paper-button class="action-button" id="addPrinterButton"
+          </cr-button>
+          <cr-button class="action-button" id="addPrinterButton"
               disabled="[[!canAddPrinter_(selectedPrinter)]]"
               on-click="switchToConfiguringDialog_">
             $i18n{addPrinterButtonText}
-          </paper-button>
+          </cr-button>
         </div>
       </div>
     </add-printer-dialog>
@@ -116,21 +115,19 @@
       </div>
       <div slot="dialog-buttons">
         <div>  <!-- Left group -->
-          <paper-button class="secondary-button"
-              on-click="switchToDiscoveryDialog_">
+          <cr-button on-click="switchToDiscoveryDialog_">
             $i18n{discoverPrintersButtonText}
-          </paper-button>
+          </cr-button>
         </div>
         <div>  <!-- Right group -->
-          <paper-button class="cancel-button secondary-button"
-              on-click="onCancelTap_">
+          <cr-button class="cancel-button" on-click="onCancelTap_">
             $i18n{cancel}
-          </paper-button>
-          <paper-button id="addPrinterButton" class="action-button"
+          </cr-button>
+          <cr-button id="addPrinterButton" class="action-button"
               on-click="addPressed_"
               disabled="[[!canAddPrinter_(newPrinter.*)]]">
             $i18n{addPrinterButtonText}
-          </paper-button>
+          </cr-button>
         </div>
       </div>
     </add-printer-dialog>
@@ -181,26 +178,25 @@
               aria-labelledby="ppdLabel" invalid="[[invalidPPD_]]"
               error-message="$i18n{selectDriverErrorMessage}" tabindex="-1">
           </cr-input>
-          <paper-button class="browse-button" on-click="onBrowseFile_">
+          <cr-button class="browse-button" on-click="onBrowseFile_">
             $i18n{selectDriverButtonText}
-          </paper-button>
+          </cr-button>
         </div>
         <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
           <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
         </div>
       </div>
       <div slot="dialog-buttons">
-        <paper-button class="cancel-button secondary-button"
-            on-click="onCancelTap_">
+        <cr-button class="cancel-button" on-click="onCancelTap_">
           $i18n{cancel}
-        </paper-button>
-        <paper-button class="action-button" id="addPrinterButton"
+        </cr-button>
+        <cr-button class="action-button" id="addPrinterButton"
             disabled="[[!canAddPrinter_(activePrinter.ppdManufacturer,
                                         activePrinter.ppdModel,
                                         activePrinter.printerPPDPath)]]"
             on-click="switchToConfiguringDialog_">
           $i18n{addPrinterButtonText}
-        </paper-button>
+        </cr-button>
       </div>
     </add-printer-dialog>
   </template>
@@ -221,10 +217,9 @@
         <div id="configuringMessage">$i18n{printerConfiguringMessage}</div>
       </div>
       <div slot="dialog-buttons">
-        <paper-button class="cancel-button secondary-button"
-            on-click="onCloseConfiguringTap_">
+        <cr-button class="cancel-button" on-click="onCloseConfiguringTap_">
           $i18n{close}
-        </paper-button>
+        </cr-button>
       </div>
     </add-printer-dialog>
   </template>

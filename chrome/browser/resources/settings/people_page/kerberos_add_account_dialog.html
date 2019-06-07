@@ -1,20 +1,19 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="kerberos_accounts_browser_proxy.html">
 
 <dom-module id="kerberos-add-account-dialog">
   <template>
-    <style include="paper-button-style">
+    <style>
       .label {
         @apply --cr-form-field-label;
       }
@@ -49,13 +48,13 @@
         </div>
       </div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-click="onCancel_" id="cancel">
+        <cr-button class="cancel-button" on-click="onCancel_" id="cancel">
           $i18n{cancel}
-        </paper-button>
-        <paper-button class="action-button" on-click="onAdd_"
+        </cr-button>
+        <cr-button class="action-button" on-click="onAdd_"
             disabled="[[inProgress_]]">
           $i18n{add}
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
   </template>
