@@ -861,12 +861,18 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) {
       // Items split from a LayoutObject should be consecutive.
       DCHECK(associated_objects.insert(object).is_new_entry);
 #endif
+      layout_text->ClearHasBidiControlInlineItems();
+      bool has_bidi_control = false;
       NGInlineItem* begin = item;
       for (++item; item != items.end(); ++item) {
         if (item->GetLayoutObject() != object)
           break;
+        if (item->Type() == NGInlineItem::kBidiControl)
+          has_bidi_control = true;
       }
       layout_text->SetInlineItems(begin, item);
+      if (has_bidi_control)
+        layout_text->SetHasBidiControlInlineItems();
       continue;
     }
     ++item;

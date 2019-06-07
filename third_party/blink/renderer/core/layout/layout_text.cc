@@ -128,6 +128,7 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
       has_tab_(false),
       lines_dirty_(false),
       valid_ng_items_(false),
+      has_bidi_control_items_(false),
       contains_reversed_text_(false),
       known_to_have_no_overflow_and_no_fallback_fonts_(false),
       contains_only_whitespace_or_nbsp_(
@@ -2413,6 +2414,7 @@ void LayoutText::SetInlineItems(NGInlineItem* begin, NGInlineItem* end) {
 }
 
 void LayoutText::ClearInlineItems() {
+  has_bidi_control_items_ = false;
   valid_ng_items_ = false;
   if (base::span<NGInlineItem>* items = GetNGInlineItems())
     *items = base::span<NGInlineItem>();

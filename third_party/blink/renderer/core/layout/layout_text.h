@@ -320,6 +320,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // it was inserted/changed but also it was moved.
   void InvalidateInlineItems() { valid_ng_items_ = false; }
 
+  bool HasBidiControlInlineItems() const { return has_bidi_control_items_; }
+  void SetHasBidiControlInlineItems() { has_bidi_control_items_ = true; }
+  void ClearHasBidiControlInlineItems() { has_bidi_control_items_ = false; }
+
  protected:
   virtual const base::span<NGInlineItem>* GetNGInlineItems() const {
     return nullptr;
@@ -420,6 +424,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // modified.
   // Functionally the inverse equivalent of lines_dirty_ for LayoutNG.
   unsigned valid_ng_items_ : 1;
+
+  // Used by LayoutNGText. Whether there is any BidiControl type NGInlineItem
+  // associated with this object. Set after layout when associating items.
+  unsigned has_bidi_control_items_ : 1;
 
   unsigned contains_reversed_text_ : 1;
   mutable unsigned known_to_have_no_overflow_and_no_fallback_fonts_ : 1;

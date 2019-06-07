@@ -1431,6 +1431,18 @@ TEST_F(NGInlineNodeTest, PreservedNewlineWithRemovedBidiAndRelayout) {
   EXPECT_EQ("foo\nbar", GetText());
 }
 
+TEST_F(NGInlineNodeTest, PreservedNewlineWithRemovedLtrDirAndRelayout) {
+  SetupHtml("container",
+            "<pre id=container>foo<span dir=ltr>\nbar</span></pre>");
+  EXPECT_EQ(String(u"foo\u2066\u2069\n\u2066bar\u2069"), GetText());
+
+  GetDocument().QuerySelector("span")->removeAttribute(html_names::kDirAttr);
+  UpdateAllLifecyclePhasesForTest();
+
+  // The bidi control characters around '\n' should not preserve
+  EXPECT_EQ("foo\nbar", GetText());
+}
+
 // https://crbug.com/969089
 TEST_F(NGInlineNodeTest, InsertedWBRWithLineBreakInRelayout) {
   SetupHtml("container", "<div id=container><span>foo</span>\nbar</div>");

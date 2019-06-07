@@ -362,7 +362,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
     // We exit and then re-enter all bidi contexts around a forced break. So, We
     // must go through the full pipeline to ensure that we exit and enter the
     // correct bidi contexts the re-layout.
-    if (bidi_context_.size() || original_data.IsBidiEnabled()) {
+    if (bidi_context_.size() || layout_text->HasBidiControlInlineItems()) {
       if (layout_text->GetText().Contains(kNewlineCharacter))
         return false;
     }
