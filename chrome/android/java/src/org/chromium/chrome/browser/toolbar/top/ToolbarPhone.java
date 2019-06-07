@@ -2551,6 +2551,11 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
     }
 
+    @Override
+    View getExperimentalButtonView() {
+        return mExperimentalButton;
+    }
+
     /**
      * Whether the menu button is visible. Used as a proxy for whether there are end toolbar
      * buttons besides the experimental button.

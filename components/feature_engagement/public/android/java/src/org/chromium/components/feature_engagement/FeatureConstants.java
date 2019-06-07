@@ -34,7 +34,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.TAB_GROUPS_QUICKLY_COMPARE_PAGES_FEATURE,
         FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE,
         FeatureConstants.TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE,
-        FeatureConstants.FEED_CARD_MENU_FEATURE})
+        FeatureConstants.FEED_CARD_MENU_FEATURE, FeatureConstants.IDENTITY_DISC_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
@@ -114,4 +114,10 @@ public @interface FeatureConstants {
      * An IPH feature to show on a card menu on the FeedNewTabPage.
      */
     String FEED_CARD_MENU_FEATURE = "IPH_FeedCardMenu";
+
+    /**
+     * An IPH feature prompting user to tap on identity disc to navigate to "Sync and Google
+     * services" preferences.
+     */
+    String IDENTITY_DISC_FEATURE = "IPH_IdentityDisc";
 }

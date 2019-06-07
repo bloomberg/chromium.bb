@@ -618,6 +618,18 @@ public class TopToolbarCoordinator implements Toolbar {
         mToolbarLayout.disableExperimentalButton();
     }
 
+    /**
+     * Displays in-product help for experimental button.
+     * @param stringId The id of the string resource for the text that should be shown.
+     * @param accessibilityStringId The id of the string resource of the accessibility text.
+     * @param dismissedCallback The callback that will be called when in-product help is dismissed.
+     */
+    public void showIPHOnExperimentalButton(@StringRes int stringId,
+            @StringRes int accessibilityStringId, Runnable dismissedCallback) {
+        mToolbarLayout.showIPHOnExperimentalButton(
+                stringId, accessibilityStringId, dismissedCallback);
+    }
+
     @Override
     public int getHeight() {
         return mToolbarLayout.getHeight();

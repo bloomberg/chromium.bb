@@ -73,6 +73,8 @@ const base::Feature kIPHHomePageButtonFeature{
     "IPH_HomePageButton", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHHomepageTileFeature{"IPH_HomepageTile",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHIdentityDiscFeature{"IPH_IdentityDisc",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHKeyboardAccessoryAddressFillingFeature{
     "IPH_KeyboardAccessoryAddressFilling", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature{
