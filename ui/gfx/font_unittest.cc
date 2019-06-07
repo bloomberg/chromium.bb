@@ -19,7 +19,24 @@
 namespace gfx {
 namespace {
 
-using FontTest = testing::Test;
+class FontTest : public testing::Test {
+ public:
+  FontTest() = default;
+
+ protected:
+  void SetUp() override {
+#if defined(OS_WIN)
+    // System fonts is keeping a cache of loaded system fonts. These fonts are
+    // scaled based on global callbacks configured on startup. The tests in this
+    // file are testing these callbacks and need to be sure we cleared the
+    // global state to avoid flaky tests.
+    win::ResetSystemFontsForTesting();
+#endif
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FontTest);
+};
 
 TEST_F(FontTest, DefaultFont) {
   Font cf;
