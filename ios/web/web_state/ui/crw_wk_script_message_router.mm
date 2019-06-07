@@ -21,9 +21,11 @@
 @end
 
 @implementation CRWWKScriptMessageRouter {
-  // Two level map of registed message handlers. Keys are message names and
-  // values are more maps (where keys are web views and values are handlers).
-  NSMutableDictionary* _handlers;
+  // Two level map of registed message handlers:
+  //   {MessageName => {WKWebView => MessageCallbacks}}.
+  NSMutableDictionary<NSString*,
+                      NSMapTable<WKWebView*, void (^)(WKScriptMessage*)>*>*
+      _handlers;
   // Wrapped WKUserContentController.
   WKUserContentController* _userContentController;
 }
