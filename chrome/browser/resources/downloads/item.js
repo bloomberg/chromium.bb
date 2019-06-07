@@ -244,6 +244,7 @@ cr.define('downloads', function() {
      */
     computeIcon_: function() {
       if (loadTimeData.getBoolean('requestsApVerdicts') &&
+          this.data &&
           this.data.dangerType == downloads.DangerType.UNCOMMON_CONTENT) {
         return 'cr:error';
       }
