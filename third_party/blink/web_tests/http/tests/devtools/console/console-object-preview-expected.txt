@@ -31,6 +31,7 @@ console-object-preview.js:84 {nan: NaN, posInf: Infinity, negInf: -Infinity, neg
 console-object-preview.js:86 Object with exactly 5 properties: expected to be lossless
 console-object-preview.js:87 {a: 1, b: 2, c: 3, d: 4, e: 5}
 console-object-preview.js:89 {null: null, undef: undefined, regexp: /^[regexp]$/g, bool: false}
+console-object-preview.js:96 IHavePrivateProperties {regularProperty: 3, #privateProperty1: 1, #privateProperty2: 2}
 Expanded all messages
 console-object-preview.js:10 Mutating object in a loop
 console-object-preview.js:14 {a: 0, b: 0, c: 0}a: 0b: 0c: 2__proto__: Object
@@ -63,4 +64,5 @@ console-object-preview.js:84 {nan: NaN, posInf: Infinity, negInf: -Infinity, neg
 console-object-preview.js:86 Object with exactly 5 properties: expected to be lossless
 console-object-preview.js:87 {a: 1, b: 2, c: 3, d: 4, e: 5}a: 1b: 2c: 3d: 4e: 5__proto__: Object
 console-object-preview.js:89 {null: null, undef: undefined, regexp: /^[regexp]$/g, bool: false}bool: falsenull: nullregexp: /^[regexp]$/gundef: undefined__proto__: Object
+console-object-preview.js:96 IHavePrivateProperties {regularProperty: 3, #privateProperty1: 1, #privateProperty2: 2}regularProperty: 3#privateProperty1: 1#privateProperty2: 2__proto__: Object
 
