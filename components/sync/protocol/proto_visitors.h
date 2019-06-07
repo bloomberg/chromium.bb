@@ -1034,6 +1034,13 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Test& proto) {}
 
+VISIT_PROTO_FIELDS(const sync_pb::CloudTokenData& proto) {
+  VISIT(suffix);
+  VISIT(exp_month);
+  VISIT(exp_year);
+  VISIT(art_file_url);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::WalletMaskedCreditCard& proto) {
   VISIT(id);
   VISIT_ENUM(status);
