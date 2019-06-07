@@ -31,6 +31,7 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
+using message_center::ButtonInfo;
 using message_center::HandleNotificationClickDelegate;
 using message_center::Notification;
 using message_center::NotificationObserver;
@@ -53,7 +54,7 @@ const base::NoDestructor<NotifierId> kNotifierId(
     message_center::NotifierType::SYSTEM_COMPONENT,
     kNotificationId);
 
-// Simplest type of notification - has text but no other UI elements.
+// Simplest type of notification UI - no progress bars, images etc.
 const NotificationType kNotificationType =
     message_center::NOTIFICATION_TYPE_SIMPLE;
 
@@ -64,34 +65,41 @@ const NotificationHandler::Type kNotificationHandlerType =
 // The icon to use for this notification - looks like an office building.
 const gfx::VectorIcon& kIcon = vector_icons::kBusinessIcon;
 
-// Warning level NORMAL means the notification heading is blue.
-const SystemNotificationWarningLevel kWarningLevel =
-    SystemNotificationWarningLevel::NORMAL;
-
 // Leaving this empty means the notification is attributed to the system -
 // ie "Chromium OS" or similar.
-const base::NoDestructor<base::string16> kDisplaySource;
+const base::NoDestructor<base::string16> kEmptyDisplaySource;
 
 // No origin URL is needed since the notification comes from the system.
 const base::NoDestructor<GURL> kEmptyOriginUrl;
 
-// Line separator in the notification body.
-const base::NoDestructor<base::string16> kLineSeparator(
-    base::string16(1, '\n'));
+// When the password will expire in |kCriticalWarningDays| or less, the warning
+// will have red text, slightly stronger language, and doesn't automatically
+// time out - it stays on the screen until the user hides or dismisses it.
+const int kCriticalWarningDays = 3;
 
 base::string16 GetTitleText(int less_than_n_days) {
-  const bool hasExpired = (less_than_n_days <= 0);
-  return hasExpired ? l10n_util::GetStringUTF16(IDS_PASSWORD_HAS_EXPIRED_TITLE)
-                    : l10n_util::GetStringUTF16(IDS_PASSWORD_WILL_EXPIRE_TITLE);
+  return l10n_util::GetPluralStringFUTF16(IDS_PASSWORD_EXPIRY_DAYS_BODY,
+                                          less_than_n_days);
 }
 
-base::string16 GetBodyText(int less_than_n_days) {
-  const std::vector<base::string16> body_lines = {
-      l10n_util::GetPluralStringFUTF16(IDS_PASSWORD_EXPIRY_DAYS_BODY,
-                                       std::max(less_than_n_days, 0)),
-      l10n_util::GetStringUTF16(IDS_PASSWORD_EXPIRY_CHOOSE_NEW_PASSWORD_LINK)};
+base::string16 GetBodyText(bool is_critical) {
+  return is_critical
+             ? l10n_util::GetStringUTF16(
+                   IDS_PASSWORD_EXPIRY_CALL_TO_ACTION_CRITICAL)
+             : l10n_util::GetStringUTF16(IDS_PASSWORD_EXPIRY_CALL_TO_ACTION);
+}
 
-  return base::JoinString(body_lines, *kLineSeparator);
+RichNotificationData GetRichNotificationData(bool is_critical) {
+  RichNotificationData result;
+  result.never_timeout = is_critical;
+  result.buttons = std::vector<ButtonInfo>{ButtonInfo(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_EXPIRY_CHANGE_PASSWORD_BUTTON))};
+  return result;
+}
+
+SystemNotificationWarningLevel GetWarningLevel(bool is_critical) {
+  return is_critical ? SystemNotificationWarningLevel::CRITICAL_WARNING
+                     : SystemNotificationWarningLevel::WARNING;
 }
 
 void ShowNotificationImpl(
@@ -100,15 +108,18 @@ void ShowNotificationImpl(
     scoped_refptr<message_center::NotificationDelegate> delegate) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  const bool is_critical = less_than_n_days <= kCriticalWarningDays;
   const base::string16 title = GetTitleText(less_than_n_days);
-  const base::string16 body = GetBodyText(less_than_n_days);
+  const base::string16 body = GetBodyText(is_critical);
+  const RichNotificationData rich_notification_data =
+      GetRichNotificationData(is_critical);
+  const SystemNotificationWarningLevel warning_level =
+      GetWarningLevel(is_critical);
 
-  // TODO(olsen): Add button to notification - see UI mock.
-  RichNotificationData rich_notification_data;
   std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
-      kNotificationType, kNotificationId, title, body, *kDisplaySource,
+      kNotificationType, kNotificationId, title, body, *kEmptyDisplaySource,
       *kEmptyOriginUrl, *kNotifierId, rich_notification_data, delegate, kIcon,
-      kWarningLevel);
+      warning_level);
 
   NotificationDisplayService* nds =
       NotificationDisplayServiceFactory::GetForProfile(profile);
@@ -278,8 +289,10 @@ void Rechecker::OnLockStateChanged(bool locked) {
 
 void Rechecker::Click(const base::Optional<int>& button_index,
                       const base::Optional<base::string16>& reply) {
-  // TODO(olsen): Add a button, only handle clicks on the button itself.
-  PasswordChangeDialog::Show(profile_);
+  bool clicked_on_button = button_index.has_value();
+  if (clicked_on_button) {
+    PasswordChangeDialog::Show(profile_);
+  }
 }
 
 void Rechecker::Close(bool by_user) {

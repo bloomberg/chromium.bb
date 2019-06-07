@@ -189,20 +189,20 @@ Try tapping the mic to ask me anything.
       </message>
 
       <!-- Password expiry notifications -->
-      <message name="IDS_PASSWORD_HAS_EXPIRED_TITLE" desc="Title for a notification that tells the user their password has expired.">
-        Password has expired
-      </message>
-      <message name="IDS_PASSWORD_WILL_EXPIRE_TITLE" desc="Title for a notification that tells the user their password will soon expire.">
-        Password will soon expire
-      </message>
       <message name="IDS_PASSWORD_EXPIRY_DAYS_BODY" desc="Message body for a notification that tells the user their password will expire in less than some number of days (where 0 days means it has expired).">
         {NUM_DAYS, plural,
          =0 {Your current password has expired!}
          =1 {Your current password will expire in less than one day!}
          other {Your current password will expire in less than # days!}}
       </message>
-      <message name="IDS_PASSWORD_EXPIRY_CHOOSE_NEW_PASSWORD_LINK" desc="Added to the message body on a notification to explain that clicking the notification will open a dialog where a new password can be chosen.">
-        Click here to choose a new password
+      <message name="IDS_PASSWORD_EXPIRY_CALL_TO_ACTION" desc="Message body on a notification that politely requests the user to choose a new password since their old password is expiring soon">
+        Please choose a new password now
+      </message>
+      <message name="IDS_PASSWORD_EXPIRY_CALL_TO_ACTION_CRITICAL" desc="Message body on a notification that *URGENTLY* requests the user to choose a new password since their old password is expiring *VERY* soon">
+        Please choose a new password immediately
+      </message>
+      <message name="IDS_PASSWORD_EXPIRY_CHANGE_PASSWORD_BUTTON" desc="Text on a button that takes the user to page to change their password">
+        Change password
       </message>
 
       <message name="IDS_IME_SERVICE_DISPLAY_NAME" desc="The display name (in the system task manager, etc) of the service process providing the input methods.">
