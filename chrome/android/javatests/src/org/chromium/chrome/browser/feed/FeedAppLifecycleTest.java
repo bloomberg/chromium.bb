@@ -5,11 +5,7 @@
 package org.chromium.chrome.browser.feed;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,13 +16,12 @@ import android.support.test.filters.SmallTest;
 import com.google.android.libraries.feed.api.client.lifecycle.AppLifecycleListener;
 import com.google.android.libraries.feed.api.host.network.NetworkClient;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -41,6 +36,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.feed.FeedAppLifecycle.AppLifecycleEvent;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -56,6 +52,8 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -75,11 +73,9 @@ public class FeedAppLifecycleTest {
     private FeedOfflineIndicator mOfflineIndicator;
     @Mock
     private AppLifecycleListener mAppLifecycleListener;
-    @Mock
-    private FeedAppLifecycle.TaskDelegate mTestDelegate;
 
-    @Captor
-    ArgumentCaptor<Runnable> mRunnableCaptor;
+    private TestDeferredStartupHandler mTestDeferredStartupHandler =
+            new TestDeferredStartupHandler();
 
     private ChromeTabbedActivity mActivity;
     private FeedAppLifecycle mAppLifecycle;
@@ -87,9 +83,27 @@ public class FeedAppLifecycleTest {
     private final String mHistogramAppLifecycleEvents =
             "ContentSuggestions.Feed.AppLifecycle.Events";
 
+    private static class TestDeferredStartupHandler extends DeferredStartupHandler {
+        private List<Runnable> mDeferredTaskQueue = new ArrayList<>();
+        @Override
+        public void addDeferredTask(Runnable deferredTask) {
+            mDeferredTaskQueue.add(deferredTask);
+        }
+        public void runAllTasks() {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                for (Runnable deferredTask : mDeferredTaskQueue) {
+                    deferredTask.run();
+                }
+            });
+        }
+    }
+
     @Before
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
+
+        DeferredStartupHandler.setInstanceForTests(mTestDeferredStartupHandler);
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             try {
                 ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
@@ -98,8 +112,8 @@ public class FeedAppLifecycleTest {
             }
             Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
             mLifecycleBridge = new FeedLifecycleBridge(profile);
-            mAppLifecycle = new FeedAppLifecycle(
-                    mAppLifecycleListener, mLifecycleBridge, mFeedScheduler, mTestDelegate);
+            mAppLifecycle =
+                    new FeedAppLifecycle(mAppLifecycleListener, mLifecycleBridge, mFeedScheduler);
             FeedProcessScopeFactory.createFeedProcessScopeForTesting(mFeedScheduler, mNetworkClient,
                     mOfflineIndicator, mAppLifecycle,
                     new FeedLoggingBridge(profile));
@@ -107,6 +121,11 @@ public class FeedAppLifecycleTest {
 
         mActivityTestRule.startMainActivityOnBlankPage();
         mActivity = mActivityTestRule.getActivity();
+    }
+
+    @After
+    public void tearDown() {
+        DeferredStartupHandler.setInstanceForTests(null);
     }
 
     @Test
@@ -305,8 +324,8 @@ public class FeedAppLifecycleTest {
     @Feature({"Feed"})
     public void testDelayedInitNoParam() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
+        mTestDeferredStartupHandler.runAllTasks();
         verify(mAppLifecycleListener, times(0)).initialize();
-        verify(mTestDelegate, never()).postDelayedTask(any(), any(), anyLong());
     }
 
     @Test
@@ -314,15 +333,12 @@ public class FeedAppLifecycleTest {
     @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
-            "force-fieldtrial-params=Trial.Group:init_feed_after_delay_ms/99"})
+            "force-fieldtrial-params=Trial.Group:init_feed_after_startup/true"})
     public void
-    testDelayedInitWithParam() {
+    testDelayedInitWithParamTrue() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
         verify(mAppLifecycleListener, times(0)).initialize();
-        verify(mTestDelegate, times(1))
-                .postDelayedTask(
-                        eq(UiThreadTaskTraits.BEST_EFFORT), mRunnableCaptor.capture(), eq(99L));
-        mRunnableCaptor.getValue().run();
+        mTestDeferredStartupHandler.runAllTasks();
         verify(mAppLifecycleListener, times(1)).initialize();
     }
 
@@ -331,18 +347,12 @@ public class FeedAppLifecycleTest {
     @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
-            "force-fieldtrial-params=Trial.Group:init_feed_after_delay_ms/0"})
+            "force-fieldtrial-params=Trial.Group:init_feed_after_startup/false"})
     public void
-    testDelayedInitZeroParam() {
+    testDelayedInitZeroParamFalse() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
-        // While the real implementation will likely synchronously invoke the callback when given a
-        // delay of 0, our mocks have no logic in them.
+        mTestDeferredStartupHandler.runAllTasks();
         verify(mAppLifecycleListener, times(0)).initialize();
-        verify(mTestDelegate, times(1))
-                .postDelayedTask(
-                        eq(UiThreadTaskTraits.BEST_EFFORT), mRunnableCaptor.capture(), eq(0L));
-        mRunnableCaptor.getValue().run();
-        verify(mAppLifecycleListener, times(1)).initialize();
     }
 
     @Test
@@ -350,20 +360,12 @@ public class FeedAppLifecycleTest {
     @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
-            "force-fieldtrial-params=Trial.Group:init_feed_after_delay_ms/99"})
+            "force-fieldtrial-params=Trial.Group:init_feed_after_startup/notboolean"})
     public void
-    testDelayedInitWithDestroy() {
+    testDelayedInitZeroParamNotBoolean() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
+        mTestDeferredStartupHandler.runAllTasks();
         verify(mAppLifecycleListener, times(0)).initialize();
-        verify(mTestDelegate, times(1))
-                .postDelayedTask(
-                        eq(UiThreadTaskTraits.BEST_EFFORT), mRunnableCaptor.capture(), eq(99L));
-        // Must be on the UI thread, one of the dependencies checks.
-        TestThreadUtils.runOnUiThreadBlocking(() -> mAppLifecycle.destroy());
-
-        // Initialize shouldn't be called after we're destroyed.
-        mRunnableCaptor.getValue().run();
-        verify(mAppLifecycleListener, never()).initialize();
     }
 
     private void signalActivityStart(Activity activity)
