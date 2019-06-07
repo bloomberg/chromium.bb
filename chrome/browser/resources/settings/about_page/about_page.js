@@ -143,7 +143,10 @@ Polymer({
     },
 
     /** @private */
-    showTPMFirmwareUpdateLineItem_: Boolean,
+    showTPMFirmwareUpdateLineItem_: {
+      type: Boolean,
+      value: false,
+    },
 
     /** @private */
     showTPMFirmwareUpdateDialog_: Boolean,
