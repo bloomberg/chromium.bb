@@ -212,7 +212,7 @@ static TX_SIZE get_transform_size(const MACROBLOCKD *const xd,
     tx_size = mb_tx_size;
   }
 
-  // since in case of chrominance or non-square transorm need to convert
+  // since in case of chrominance or non-square transform need to convert
   // transform size into transform size in particular direction.
   // for vertical edge, filter direction is horizontal, for horizontal
   // edge, filter direction is vertical.
@@ -231,7 +231,7 @@ typedef struct AV1_DEBLOCKING_PARAMETERS {
 } AV1_DEBLOCKING_PARAMETERS;
 
 // Return TX_SIZE from get_transform_size(), so it is plane and direction
-// awared
+// aware
 static TX_SIZE set_lpf_parameters(
     AV1_DEBLOCKING_PARAMETERS *const params, const ptrdiff_t mode_step,
     const AV1_COMMON *const cm, const MACROBLOCKD *const xd,
@@ -359,7 +359,7 @@ void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
     for (int x = 0; x < x_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
       // is 8x8, it will filter the vertical edge aligned with a 8x8 block.
-      // If 4x4 trasnform is used, it will then filter the internal edge
+      // If 4x4 transform is used, it will then filter the internal edge
       //  aligned with a 4x4 block
       const uint32_t curr_x = ((mi_col * MI_SIZE) >> scale_horz) + x * MI_SIZE;
       const uint32_t curr_y = ((mi_row * MI_SIZE) >> scale_vert) + y * MI_SIZE;
@@ -445,7 +445,7 @@ void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
     for (int y = 0; y < y_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
       // is 8x8, it will first filter the vertical edge aligned with a 8x8
-      // block. If 4x4 trasnform is used, it will then filter the internal
+      // block. If 4x4 transform is used, it will then filter the internal
       // edge aligned with a 4x4 block
       const uint32_t curr_x = ((mi_col * MI_SIZE) >> scale_horz) + x * MI_SIZE;
       const uint32_t curr_y = ((mi_row * MI_SIZE) >> scale_vert) + y * MI_SIZE;
@@ -533,7 +533,7 @@ void av1_filter_block_plane_vert_test(const AV1_COMMON *const cm,
     for (int x = 0; x < x_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
       // is 8x8, it will filter the vertical edge aligned with a 8x8 block.
-      // If 4x4 trasnform is used, it will then filter the internal edge
+      // If 4x4 transform is used, it will then filter the internal edge
       //  aligned with a 4x4 block
       const uint32_t curr_x = ((mi_col * MI_SIZE) >> scale_horz) + x * MI_SIZE;
       const uint32_t curr_y = ((mi_row * MI_SIZE) >> scale_vert) + y * MI_SIZE;
@@ -575,7 +575,7 @@ void av1_filter_block_plane_horz_test(const AV1_COMMON *const cm,
     for (int y = 0; y < y_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
       // is 8x8, it will first filter the vertical edge aligned with a 8x8
-      // block. If 4x4 trasnform is used, it will then filter the internal
+      // block. If 4x4 transform is used, it will then filter the internal
       // edge aligned with a 4x4 block
       const uint32_t curr_x = ((mi_col * MI_SIZE) >> scale_horz) + x * MI_SIZE;
       const uint32_t curr_y = ((mi_row * MI_SIZE) >> scale_vert) + y * MI_SIZE;
