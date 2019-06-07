@@ -51,16 +51,18 @@ const char* const kAllSteps[] = {ui::kEnrollmentStepSignin,
                                  ui::kEnrollmentStepDeviceAttributesError};
 
 std::string StepVisibleExpression(const std::string& step) {
-  return "document.getElementsByClassName('oauth-enroll-state-" + step +
-         "').length > 0";
+  return "Polymer.dom($('enterprise-enrollment').root)."
+         "querySelectorAll('.oauth-enroll-state-" +
+         step + "').length > 0";
 }
 
 const std::initializer_list<base::StringPiece> kEnrollmentErrorRetryButtonPath =
-    {"oauth-enroll-error-card", "submitButton"};
+    {"enterprise-enrollment", "oauth-enroll-error-card", "submitButton"};
 
 const std::initializer_list<base::StringPiece>
     kEnrollmentDeviceAttributesErrorButtonPath = {
-        "oauth-enroll-attribute-prompt-error-card", "submitButton"};
+        "enterprise-enrollment", "oauth-enroll-attribute-prompt-error-card",
+        "submitButton"};
 
 }  // namespace
 
@@ -85,18 +87,19 @@ bool EnrollmentUIMixin::IsStepDisplayed(const std::string& step) {
 
 void EnrollmentUIMixin::SelectEnrollmentLicense(
     const std::string& license_type) {
-  OobeJS().SelectRadioPath(
-      {"oauth-enroll-license-ui", "license-option-" + license_type});
+  OobeJS().SelectRadioPath({"enterprise-enrollment", "oauth-enroll-license-ui",
+                            "license-option-" + license_type});
 }
 
 void EnrollmentUIMixin::UseSelectedLicense() {
-  OobeJS().TapOnPath({"oauth-enroll-license-ui", "next"});
+  OobeJS().TapOnPath(
+      {"enterprise-enrollment", "oauth-enroll-license-ui", "next"});
 }
 
 void EnrollmentUIMixin::ExpectErrorMessage(int error_message_id,
                                            bool can_retry) {
   const std::string element_path =
-      GetOobeElementPath({"oauth-enroll-error-card"});
+      GetOobeElementPath({"enterprise-enrollment", "oauth-enroll-error-card"});
   const std::string message = OobeJS().GetString(element_path + ".textContent");
   ASSERT_TRUE(std::string::npos !=
               message.find(l10n_util::GetStringUTF8(error_message_id)));
@@ -118,9 +121,12 @@ void EnrollmentUIMixin::LeaveDeviceAttributeErrorScreen() {
 
 void EnrollmentUIMixin::SubmitDeviceAttributes(const std::string& asset_id,
                                                const std::string& location) {
-  OobeJS().TypeIntoPath(asset_id, {"oauth-enroll-asset-id"});
-  OobeJS().TypeIntoPath(location, {"oauth-enroll-location"});
-  OobeJS().TapOn("enroll-attributes-submit-button");
+  OobeJS().TypeIntoPath(asset_id,
+                        {"enterprise-enrollment", "oauth-enroll-asset-id"});
+  OobeJS().TypeIntoPath(location,
+                        {"enterprise-enrollment", "oauth-enroll-location"});
+  OobeJS().TapOnPath(
+      {"enterprise-enrollment", "enroll-attributes-submit-button"});
 }
 
 void EnrollmentUIMixin::SetExitHandler() {

@@ -834,7 +834,7 @@ SAMLEnrollmentTest::SAMLEnrollmentTest() {
   guest_view::GuestViewManager::set_factory_for_testing(
       &guest_view_manager_factory_);
   gaia_frame_parent_ = "oauth-enroll-auth-view";
-  authenticator_id_ = "$('oauth-enrollment').authenticator_";
+  authenticator_id_ = "$('enterprise-enrollment').authenticator_";
 }
 
 SAMLEnrollmentTest::~SAMLEnrollmentTest() {}

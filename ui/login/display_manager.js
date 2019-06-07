@@ -522,6 +522,9 @@ cr.define('cr.ui.login', function() {
       if (oldStep.onBeforeHide)
         oldStep.onBeforeHide();
 
+      if (oldStep.defaultControl && oldStep.defaultControl.onBeforeHide)
+        oldStep.defaultControl.onBeforeHide();
+
       $('oobe').className = nextStepId;
 
       // Need to do this before calling newStep.onBeforeShow() so that new step

@@ -39,3 +39,5 @@
 // <include src="../assistant_optin/assistant_optin_flow.js">
 // <include src="multidevice_setup_first_run.js">
 // <include src="supervision_onboarding.js">
+// <include src="enrollment_license_card.js">
+// <include src="enterprise_enrollment.js">
