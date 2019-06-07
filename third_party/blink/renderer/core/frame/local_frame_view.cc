@@ -848,7 +848,6 @@ void LocalFrameView::UpdateLayout() {
 
     IntSize new_size(Size());
     if (old_size != new_size) {
-      SetNeedsLayout();
       MarkViewportConstrainedObjectsForLayout(
           old_size.Width() != new_size.Width(),
           old_size.Height() != new_size.Height());
