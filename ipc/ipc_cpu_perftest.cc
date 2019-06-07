@@ -5,12 +5,12 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/perf_log.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/timer/timer.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_perftest_messages.h"
@@ -394,7 +394,7 @@ class MojoSteadyPingPongTest : public mojo::core::test::MojoTestBase {
 };
 
 DEFINE_TEST_CLIENT_WITH_PIPE(PingPongClient, MojoSteadyPingPongTest, h) {
-  base::MessageLoop main_message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   return RunPingPongClient(h);
 }
 
@@ -402,14 +402,14 @@ DEFINE_TEST_CLIENT_WITH_PIPE(PingPongClient, MojoSteadyPingPongTest, h) {
 // instead of raw IPC::Messages.
 TEST_F(MojoSteadyPingPongTest, AsyncPingPong) {
   RunTestClient("PingPongClient", [&](MojoHandle h) {
-    base::MessageLoop main_message_loop;
+    base::test::ScopedTaskEnvironment scoped_task_environment;
     RunPingPongServer(h, "Mojo_CPU_Async", false);
   });
 }
 
 TEST_F(MojoSteadyPingPongTest, SyncPingPong) {
   RunTestClient("PingPongClient", [&](MojoHandle h) {
-    base::MessageLoop main_message_loop;
+    base::test::ScopedTaskEnvironment scoped_task_environment;
     RunPingPongServer(h, "Mojo_CPU_Sync", true);
   });
 }
