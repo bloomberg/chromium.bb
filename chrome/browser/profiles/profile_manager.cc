@@ -1093,17 +1093,18 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 #endif  // !defined(OS_ANDROID)
 }
 
-void ProfileManager::RegisterTestingProfile(Profile* profile,
+void ProfileManager::RegisterTestingProfile(std::unique_ptr<Profile> profile,
                                             bool add_to_storage,
                                             bool start_deferred_task_runners) {
-  RegisterProfile(profile, true);
+  Profile* profile_ptr = profile.get();
+  RegisterProfile(std::move(profile), true);
   if (add_to_storage) {
-    InitProfileUserPrefs(profile);
-    AddProfileToStorage(profile);
+    InitProfileUserPrefs(profile_ptr);
+    AddProfileToStorage(profile_ptr);
   }
   if (start_deferred_task_runners) {
-    StartupTaskRunnerServiceFactory::GetForProfile(profile)->
-        StartDeferredTaskRunners();
+    StartupTaskRunnerServiceFactory::GetForProfile(profile_ptr)
+        ->StartDeferredTaskRunners();
   }
 }
 
@@ -1412,11 +1413,11 @@ Profile* ProfileManager::CreateProfileHelper(const base::FilePath& path) {
       .release();
 }
 
-Profile* ProfileManager::CreateProfileAsyncHelper(const base::FilePath& path,
-                                                  Delegate* delegate) {
+std::unique_ptr<Profile> ProfileManager::CreateProfileAsyncHelper(
+    const base::FilePath& path,
+    Delegate* delegate) {
   return Profile::CreateProfile(path, delegate,
-                                Profile::CREATE_MODE_ASYNCHRONOUS)
-      .release();
+                                Profile::CREATE_MODE_ASYNCHRONOUS);
 }
 
 Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
@@ -1471,7 +1472,7 @@ bool ProfileManager::AddProfile(std::unique_ptr<Profile> profile) {
     return false;
   }
 
-  RegisterProfile(profile.release(), true);
+  RegisterProfile(std::move(profile), true);
   InitProfileUserPrefs(profile_ptr);
   DoFinalInit(profile_ptr, ShouldGoOffTheRecord(profile_ptr));
   return true;
@@ -1647,12 +1648,13 @@ void ProfileManager::FinishDeletingProfile(
 #endif  // !defined(OS_ANDROID)
 
 ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(
-    Profile* profile,
+    std::unique_ptr<Profile> profile,
     bool created) {
   TRACE_EVENT0("browser", "ProfileManager::RegisterProfile");
-  auto info = std::make_unique<ProfileInfo>(profile, created);
+  base::FilePath path = profile->GetPath();
+  auto info = std::make_unique<ProfileInfo>(std::move(profile), created);
   ProfileInfo* info_raw = info.get();
-  profiles_info_.insert(std::make_pair(profile->GetPath(), std::move(info)));
+  profiles_info_.insert(std::make_pair(path, std::move(info)));
   return info_raw;
 }
 
@@ -1770,12 +1772,9 @@ void ProfileManager::RunCallbacks(const std::vector<CreateCallback>& callbacks,
     callbacks[i].Run(profile, status);
 }
 
-ProfileManager::ProfileInfo::ProfileInfo(
-    Profile* profile,
-    bool created)
-    : profile(profile),
-      created(created) {
-}
+ProfileManager::ProfileInfo::ProfileInfo(std::unique_ptr<Profile> profile,
+                                         bool created)
+    : profile(std::move(profile)), created(created) {}
 
 ProfileManager::ProfileInfo::~ProfileInfo() {
   ProfileDestroyer::DestroyProfileWhenAppropriate(profile.release());

@@ -701,12 +701,12 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   // Create profile 2.
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath path2 = profile_manager->GenerateNextProfileDirectoryPath();
-  Profile* profile2 =
-      Profile::CreateProfile(path2, NULL, Profile::CREATE_MODE_SYNCHRONOUS)
-          .release();
-  profile_manager->RegisterTestingProfile(profile2, false, true);
+  std::unique_ptr<Profile> profile2 =
+      Profile::CreateProfile(path2, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
+  Profile* profile2_ptr = profile2.get();
+  profile_manager->RegisterTestingProfile(std::move(profile2), false, true);
   bookmarks::test::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForBrowserContext(profile2));
+      BookmarkModelFactory::GetForBrowserContext(profile2_ptr));
 
   // Switch to profile 1, create bookmark 1 and force the menu to build.
   [ac windowChangedToProfile:profile1];
@@ -717,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   [[profile1_submenu delegate] menuNeedsUpdate:profile1_submenu];
 
   // Switch to profile 2, create bookmark 2 and force the menu to build.
-  [ac windowChangedToProfile:profile2];
+  [ac windowChangedToProfile:profile2_ptr];
   [ac bookmarkMenuBridge]->GetBookmarkModel()->AddURL(
       [ac bookmarkMenuBridge]->GetBookmarkModel()->bookmark_bar_node(),
       0, title2, url2);

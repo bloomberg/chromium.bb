@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -107,12 +109,13 @@ class UnittestProfileManager : public ProfileManagerWithoutInit {
     return BuildTestingProfile(file_path, /*delegate=*/nullptr).release();
   }
 
-  Profile* CreateProfileAsyncHelper(const base::FilePath& path,
-                                    Delegate* delegate) override {
+  std::unique_ptr<Profile> CreateProfileAsyncHelper(
+      const base::FilePath& path,
+      Delegate* delegate) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(base::IgnoreResult(&base::CreateDirectory), path));
-    return BuildTestingProfile(path, this).release();
+    return BuildTestingProfile(path, this);
   }
 };
 

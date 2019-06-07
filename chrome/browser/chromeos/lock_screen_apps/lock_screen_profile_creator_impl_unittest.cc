@@ -182,8 +182,9 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
     return new TestingProfile(path, NULL);
   }
 
-  Profile* CreateProfileAsyncHelper(const base::FilePath& path,
-                                    Delegate* delegate) override {
+  std::unique_ptr<Profile> CreateProfileAsyncHelper(
+      const base::FilePath& path,
+      Delegate* delegate) override {
     pending_profile_creation_.Set(path, delegate);
 
     auto new_profile =
@@ -195,7 +196,7 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
     incognito_builder.SetPath(path);
     incognito_builder.BuildIncognito(new_profile.get());
 
-    return new_profile.release();
+    return new_profile;
   }
 
  private:
@@ -337,7 +338,7 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
         std::make_unique<TestingProfile>(user_profile_path);
     primary_profile_ = primary_profile.get();
     profile_manager_->RegisterTestingProfile(
-        primary_profile.release(), false /*add_to_storage*/,
+        std::move(primary_profile), false /*add_to_storage*/,
         false /*start_deferred_task_runner*/);
     InitExtensionSystem(primary_profile_);
 
