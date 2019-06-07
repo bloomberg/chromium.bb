@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/common/stack_unwinder_android.h"
+#include "services/tracing/public/cpp/stack_sampling/stack_unwinder_android.h"
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 #include "base/bind.h"

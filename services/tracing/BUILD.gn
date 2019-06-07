@@ -5,6 +5,13 @@
 # There should be only one tracing service. It is currently
 # in the browser process. So, only //content/browser should link to this target.
 # Others modules should only need the public targets.
+
+import("//build/config/compiler/compiler.gni")
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 source_set("lib") {
   sources = [
     "agent_registry.cc",
@@ -119,6 +126,7 @@ source_set("tests") {
       "public/cpp/perfetto/task_runner_unittest.cc",
       "public/cpp/perfetto/trace_event_data_source_unittest.cc",
       "public/cpp/perfetto/traced_value_proto_writer_unittest.cc",
+      "public/cpp/stack_sampling/tracing_sampler_profiler_unittest.cc",
     ]
   }
 
@@ -158,5 +166,33 @@ source_set("tests") {
       "//third_party/perfetto/protos/perfetto/trace/interned_data:lite",
       "//third_party/perfetto/protos/perfetto/trace/track_event:lite",
     ]
+  }
+
+  if (is_android && can_unwind_with_cfi_table && is_official_build) {
+    sources +=
+        [ "public/cpp/stack_sampling/stack_unwinder_android_unittest.cc" ]
+    deps += [
+      ":jni_headers",
+      ":tracing_test_helper_java",
+    ]
+  }
+}
+
+if (is_android) {
+  generate_jni("jni_headers") {
+    testonly = true
+    sources = [
+      "android/test/src/org/chromium/tracing/UnwindTestHelper.java",
+    ]
+    jni_package = "tracing"
+  }
+
+  android_library("tracing_test_helper_java") {
+    testonly = true
+    deps = [
+      "//base:base_java",
+    ]
+    java_files =
+        [ "android/test/src/org/chromium/tracing/UnwindTestHelper.java" ]
   }
 }

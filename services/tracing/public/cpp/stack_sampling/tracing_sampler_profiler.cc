@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/common/tracing_sampler_profiler.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 
 #include <cinttypes>
 
@@ -27,7 +27,7 @@
 #include <dlfcn.h>
 
 #include "base/trace_event/cfi_backtrace_android.h"
-#include "components/tracing/common/stack_sampler_android.h"
+#include "services/tracing/public/cpp/stack_sampling/stack_sampler_android.h"
 #endif
 
 namespace tracing {
@@ -87,30 +87,30 @@ void TracingSamplerProfiler::TracingProfileBuilder::OnSampleCompleted(
     std::string module_id;
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
-      Dl_info info = {};
-      // For chrome address we do not have symbols on the binary. So, just write
-      // the offset address. For addresses on framework libraries, symbolize
-      // and write the function name.
-      if (frame.instruction_pointer == 0) {
-        frame_name = "Scanned";
-      } else if (base::trace_event::CFIBacktraceAndroid::is_chrome_address(
-                     frame.instruction_pointer)) {
-        frame_name = GetFrameNameFromOffsetAddr(
-            frame.instruction_pointer -
-            base::trace_event::CFIBacktraceAndroid::executable_start_addr());
-      } else if (dladdr(reinterpret_cast<void*>(frame.instruction_pointer),
-                        &info) != 0) {
-        // TODO(ssid): Add offset and module debug id if symbol was not resolved
-        // in case this might be useful to send report to vendors.
-        if (info.dli_sname)
-          frame_name = info.dli_sname;
-        if (info.dli_fname)
-          module_name = info.dli_fname;
-      }
-      // If no module is available, then name it unknown. Adding PC would be
-      // useless anyway.
-      if (frame_name.empty())
-        frame_name = "Unknown";
+    Dl_info info = {};
+    // For chrome address we do not have symbols on the binary. So, just write
+    // the offset address. For addresses on framework libraries, symbolize
+    // and write the function name.
+    if (frame.instruction_pointer == 0) {
+      frame_name = "Scanned";
+    } else if (base::trace_event::CFIBacktraceAndroid::is_chrome_address(
+                   frame.instruction_pointer)) {
+      frame_name = GetFrameNameFromOffsetAddr(
+          frame.instruction_pointer -
+          base::trace_event::CFIBacktraceAndroid::executable_start_addr());
+    } else if (dladdr(reinterpret_cast<void*>(frame.instruction_pointer),
+                      &info) != 0) {
+      // TODO(ssid): Add offset and module debug id if symbol was not resolved
+      // in case this might be useful to send report to vendors.
+      if (info.dli_sname)
+        frame_name = info.dli_sname;
+      if (info.dli_fname)
+        module_name = info.dli_fname;
+    }
+    // If no module is available, then name it unknown. Adding PC would be
+    // useless anyway.
+    if (frame_name.empty())
+      frame_name = "Unknown";
 #else
     if (frame.module) {
       module_name = frame.module->GetDebugBasename().MaybeAsASCII();
@@ -122,13 +122,13 @@ void TracingSamplerProfiler::TracingProfileBuilder::OnSampleCompleted(
       frame_name = "Unknown";
     }
 #endif
-      base::StringAppendF(&result, "%s - %s [%s]\n", frame_name.c_str(),
-                          module_name.c_str(), module_id.c_str());
+    base::StringAppendF(&result, "%s - %s [%s]\n", frame_name.c_str(),
+                        module_name.c_str(), module_id.c_str());
   }
 
-    TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
-                         "StackCpuSampling", TRACE_EVENT_SCOPE_THREAD, "frames",
-                         result, "thread_id", sampled_thread_id_);
+  TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+                       "StackCpuSampling", TRACE_EVENT_SCOPE_THREAD, "frames",
+                       result, "thread_id", sampled_thread_id_);
 }
 
 // static

@@ -19,7 +19,7 @@ source_set("libunwind") {
   if (is_fuchsia) {
     visibility += [ "//buildtools/third_party/libc++abi" ]
   } else if (is_android) {
-    visibility += [ "//components/tracing" ]
+    visibility += [ "//services/tracing/public/cpp" ]
   }
   if (!is_component_build) {
     defines = [ "_LIBUNWIND_DISABLE_VISIBILITY_ANNOTATIONS" ]

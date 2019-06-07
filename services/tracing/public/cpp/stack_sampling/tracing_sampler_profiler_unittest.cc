@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/common/tracing_sampler_profiler.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 
 #include "base/at_exit.h"
 #include "base/bind.h"

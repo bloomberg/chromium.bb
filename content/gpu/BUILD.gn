@@ -82,6 +82,7 @@ target(link_target_type, "gpu_sources") {
     "//services/service_manager/sandbox:chromecast_sandbox_whitelist_buildflags",
     "//services/shape_detection:lib",
     "//services/shape_detection/public/mojom",
+    "//services/tracing/public/cpp",
     "//services/viz/privileged/interfaces",
     "//skia",
     "//third_party/angle:angle_gpu_info_util",

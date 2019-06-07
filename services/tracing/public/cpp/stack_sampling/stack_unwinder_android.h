@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TRACING_COMMON_STACK_UNWINDER_ANDROID_H_
-#define COMPONENTS_TRACING_COMMON_STACK_UNWINDER_ANDROID_H_
+#ifndef SERVICES_TRACING_PUBLIC_CPP_STACK_SAMPLING_STACK_UNWINDER_ANDROID_H_
+#define SERVICES_TRACING_PUBLIC_CPP_STACK_SAMPLING_STACK_UNWINDER_ANDROID_H_
 
 #include <ucontext.h>
 
 #include <map>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/debug/proc_maps_linux.h"
 #include "base/profiler/stack_sampler.h"
 #include "base/threading/platform_thread.h"
-#include "components/tracing/tracing_export.h"
 
 namespace jni_generator {
 struct JniJavaCallContextUnchecked;
@@ -30,7 +30,7 @@ namespace tracing {
 // to use multiple instances of this class at the same time due to signal
 // handling. So, the client must ensure synchronization between multiple
 // instances of this class.
-class TRACING_EXPORT StackUnwinderAndroid {
+class COMPONENT_EXPORT(TRACING_CPP) StackUnwinderAndroid {
  public:
   using JniMarker = jni_generator::JniJavaCallContextUnchecked;
 
@@ -95,4 +95,4 @@ class TRACING_EXPORT StackUnwinderAndroid {
 
 }  // namespace tracing
 
-#endif  // COMPONENTS_TRACING_COMMON_STACK_UNWINDER_ANDROID_H_
+#endif  // SERVICES_TRACING_PUBLIC_CPP_STACK_SAMPLING_STACK_UNWINDER_ANDROID_H_

@@ -24,7 +24,7 @@ include_rules = [
   "+components/policy",
   "+components/safe_browsing",
   "+components/startup_metric_utils/browser",
-  "+components/tracing/common/tracing_sampler_profiler.h",
+  "+services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h",
   "+components/upload_list",
   "+components/version_info",
   "+content/public/app",

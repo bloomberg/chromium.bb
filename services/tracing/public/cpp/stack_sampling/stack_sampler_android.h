@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TRACING_COMMON_STACK_SAMPLER_ANDROID_H_
-#define COMPONENTS_TRACING_COMMON_STACK_SAMPLER_ANDROID_H_
+#ifndef SERVICES_TRACING_PUBLIC_CPP_STACK_SAMPLING_STACK_SAMPLER_ANDROID_H_
+#define SERVICES_TRACING_PUBLIC_CPP_STACK_SAMPLING_STACK_SAMPLER_ANDROID_H_
 
 #include "base/profiler/stack_sampler.h"
 #include "base/threading/platform_thread.h"
-#include "components/tracing/common/stack_unwinder_android.h"
+#include "services/tracing/public/cpp/stack_sampling/stack_unwinder_android.h"
 
 namespace tracing {
 
@@ -36,4 +36,4 @@ class StackSamplerAndroid : public base::StackSampler {
 
 }  // namespace tracing
 
-#endif  // COMPONENTS_TRACING_COMMON_STACK_SAMPLER_ANDROID_H_
+#endif  // SERVICES_TRACING_PUBLIC_CPP_STACK_SAMPLING_STACK_SAMPLER_ANDROID_H_

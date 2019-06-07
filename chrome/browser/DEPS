@@ -90,6 +90,7 @@ include_rules = [
   "+services/resource_coordinator/public/mojom",
   "+services/shape_detection/public/mojom",
   "+services/strings",
+  "+services/tracing/public/cpp",
   "+services/video_capture/public",
   "+services/viz/privileged",
   "+services/viz/public/interfaces",

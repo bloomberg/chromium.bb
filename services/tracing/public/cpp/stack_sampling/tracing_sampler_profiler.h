@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TRACING_COMMON_TRACING_SAMPLER_PROFILER_H_
-#define COMPONENTS_TRACING_COMMON_TRACING_SAMPLER_PROFILER_H_
+#ifndef SERVICES_TRACING_PUBLIC_CPP_STACK_SAMPLING_TRACING_SAMPLER_PROFILER_H_
+#define SERVICES_TRACING_PUBLIC_CPP_STACK_SAMPLING_TRACING_SAMPLER_PROFILER_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/sequence_checker.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_log.h"
-#include "components/tracing/tracing_export.h"
 
 namespace tracing {
 
@@ -24,12 +24,13 @@ namespace tracing {
 // The TracingSamplerProfiler must be created and destroyed on the sampled
 // thread. The tracelog observers can be called on any thread which force the
 // field |profiler_| to be thread-safe.
-class TRACING_EXPORT TracingSamplerProfiler
+class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler
     : public base::trace_event::TraceLog::EnabledStateObserver {
  public:
   // This class will receive the sampling profiler stackframes and output them
   // to the chrome trace via an event. Exposed for testing.
-  class TRACING_EXPORT TracingProfileBuilder : public base::ProfileBuilder {
+  class COMPONENT_EXPORT(TRACING_CPP) TracingProfileBuilder
+      : public base::ProfileBuilder {
    public:
     TracingProfileBuilder(base::PlatformThreadId sampled_thread_id);
 
@@ -74,4 +75,4 @@ class TRACING_EXPORT TracingSamplerProfiler
 
 }  // namespace tracing
 
-#endif  // COMPONENTS_TRACING_COMMON_TRACING_SAMPLER_PROFILER_H_
+#endif  // SERVICES_TRACING_PUBLIC_CPP_STACK_SAMPLING_TRACING_SAMPLER_PROFILER_H_

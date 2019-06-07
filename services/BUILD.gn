@@ -12,6 +12,12 @@ import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 # To add tests for a new service, please define a "tests" source_set in the
 # service subdirectory and add it as a dependency here.
 test("services_unittests") {
+  # The tracing unittests require this for testing unwinding. See
+  # stack_unwinder_android_unittest.cc.
+  if (is_android && can_unwind_with_cfi_table && is_official_build) {
+    add_unwind_tables_in_apk = true
+  }
+
   # If your service does not run on iOS, its tests should go in the !iOS
   # section below. If you are unsure, contact blundell@chromium.org.
   deps = [
@@ -57,6 +63,7 @@ test("services_unittests") {
       "//services/device:java",
       "//services/identity:java",
       "//services/media_session/public/cpp/android:media_session_java",
+      "//services/tracing:tracing_test_helper_java",
 
       # Some tests make network requests.
       "//net/android:net_java",

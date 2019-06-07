@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/common/stack_unwinder_android.h"
+#include "services/tracing/public/cpp/stack_sampling/stack_unwinder_android.h"
 
 #include <linux/futex.h>
 #include <sys/mman.h>
@@ -23,8 +23,8 @@
 #include "base/trace_event/cfi_backtrace_android.h"
 #include "libunwind.h"
 
-using base::trace_event::CFIBacktraceAndroid;
 using base::debug::MappedMemoryRegion;
+using base::trace_event::CFIBacktraceAndroid;
 
 namespace {
 
