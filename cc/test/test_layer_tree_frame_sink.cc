@@ -204,10 +204,10 @@ void TestLayerTreeFrameSink::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
 }
 
 void TestLayerTreeFrameSink::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     const viz::SharedBitmapId& id) {
-  bool ok = shared_bitmap_manager_->ChildAllocatedSharedBitmap(
-      viz::bitmap_allocation::FromMojoHandle(std::move(buffer)).Map(), id);
+  bool ok =
+      shared_bitmap_manager_->ChildAllocatedSharedBitmap(region.Map(), id);
   DCHECK(ok);
   owned_bitmaps_.insert(id);
 }

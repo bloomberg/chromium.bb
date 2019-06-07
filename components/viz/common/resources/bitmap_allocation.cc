@@ -62,16 +62,6 @@ base::MappedReadOnlyRegion AllocateSharedBitmap(const gfx::Size& size,
   return shm;
 }
 
-mojo::ScopedSharedBufferHandle ToMojoHandle(
-    base::ReadOnlySharedMemoryRegion region) {
-  return mojo::WrapReadOnlySharedMemoryRegion(std::move(region));
-}
-
-base::ReadOnlySharedMemoryRegion FromMojoHandle(
-    mojo::ScopedSharedBufferHandle handle) {
-  return mojo::UnwrapReadOnlySharedMemoryRegion(std::move(handle));
-}
-
 }  // namespace bitmap_allocation
 
 }  // namespace viz

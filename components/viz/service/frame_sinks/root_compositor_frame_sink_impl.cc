@@ -274,9 +274,9 @@ void RootCompositorFrameSinkImpl::DidNotProduceFrame(
 }
 
 void RootCompositorFrameSinkImpl::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     const SharedBitmapId& id) {
-  if (!support_->DidAllocateSharedBitmap(std::move(buffer), id)) {
+  if (!support_->DidAllocateSharedBitmap(std::move(region), id)) {
     DLOG(ERROR) << "DidAllocateSharedBitmap failed for duplicate "
                 << "SharedBitmapId";
     compositor_frame_sink_binding_.Close();

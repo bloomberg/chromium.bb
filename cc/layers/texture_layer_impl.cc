@@ -110,8 +110,7 @@ void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
   LayerTreeFrameSink* sink = layer_tree_impl()->layer_tree_frame_sink();
   for (const auto& pair : to_register_bitmaps_) {
-    sink->DidAllocateSharedBitmap(viz::bitmap_allocation::ToMojoHandle(
-                                      pair.second->shared_region().Duplicate()),
+    sink->DidAllocateSharedBitmap(pair.second->shared_region().Duplicate(),
                                   pair.first);
   }
   // All |to_register_bitmaps_| have been registered above, so we can move them

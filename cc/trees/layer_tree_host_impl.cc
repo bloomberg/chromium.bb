@@ -5361,7 +5361,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   GLenum texture_target = GL_TEXTURE_2D;
   // For software compositing, shared memory will be allocated and the
   // UIResource will be copied into it.
-  base::MappedReadOnlyRegion mapped_region;
+  base::MappedReadOnlyRegion shm;
   viz::SharedBitmapId shared_bitmap_id;
   bool overlay_candidate = false;
 
@@ -5379,8 +5379,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
                                                    BufferFormat(format), caps);
     }
   } else {
-    mapped_region =
-        viz::bitmap_allocation::AllocateSharedBitmap(upload_size, format);
+    shm = viz::bitmap_allocation::AllocateSharedBitmap(upload_size, format);
     shared_bitmap_id = viz::SharedBitmap::GenerateId();
   }
 
@@ -5405,7 +5404,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
           SkImageInfo::MakeN32Premul(gfx::SizeToSkISize(upload_size));
 
       sk_sp<SkSurface> surface = SkSurface::MakeRasterDirect(
-          dst_info, mapped_region.mapping.memory(), dst_info.minRowBytes());
+          dst_info, shm.mapping.memory(), dst_info.minRowBytes());
       surface->getCanvas()->writePixels(
           src_info, const_cast<uint8_t*>(bitmap.GetPixels()),
           src_info.minRowBytes(), 0, 0);
@@ -5441,7 +5440,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       SkImageInfo dst_info =
           SkImageInfo::MakeN32Premul(gfx::SizeToSkISize(upload_size));
       scaled_surface = SkSurface::MakeRasterDirect(
-          dst_info, mapped_region.mapping.memory(), dst_info.minRowBytes());
+          dst_info, shm.mapping.memory(), dst_info.minRowBytes());
     }
     SkCanvas* scaled_canvas = scaled_surface->getCanvas();
     scaled_canvas->scale(canvas_scale_x, canvas_scale_y);
@@ -5484,9 +5483,8 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
         overlay_candidate);
     transferable.format = format;
   } else {
-    layer_tree_frame_sink_->DidAllocateSharedBitmap(
-        viz::bitmap_allocation::ToMojoHandle(std::move(mapped_region.region)),
-        shared_bitmap_id);
+    layer_tree_frame_sink_->DidAllocateSharedBitmap(std::move(shm.region),
+                                                    shared_bitmap_id);
     transferable = viz::TransferableResource::MakeSoftware(shared_bitmap_id,
                                                            upload_size, format);
   }
@@ -5504,7 +5502,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   data.opaque = bitmap.GetOpaque();
   data.format = format;
   data.shared_bitmap_id = shared_bitmap_id;
-  data.shared_mapping = std::move(mapped_region.mapping);
+  data.shared_mapping = std::move(shm.mapping);
   data.mailbox = mailbox;
   data.resource_id_for_export = id;
   ui_resource_map_[uid] = std::move(data);

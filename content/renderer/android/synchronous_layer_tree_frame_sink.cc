@@ -358,7 +358,7 @@ void SynchronousLayerTreeFrameSink::DidNotProduceFrame(
 }
 
 void SynchronousLayerTreeFrameSink::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     const viz::SharedBitmapId& id) {
   // Webview does not use software compositing (other than resourceless draws,
   // but this is called for software /resources/).

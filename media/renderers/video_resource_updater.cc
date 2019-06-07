@@ -284,9 +284,8 @@ class VideoResourceUpdater::SoftwarePlaneResource
         viz::bitmap_allocation::AllocateSharedBitmap(
             resource_size(), viz::ResourceFormat::RGBA_8888);
     shared_mapping_ = std::move(shm.mapping);
-    shared_bitmap_reporter_->DidAllocateSharedBitmap(
-        viz::bitmap_allocation::ToMojoHandle(std::move(shm.region)),
-        shared_bitmap_id_);
+    shared_bitmap_reporter_->DidAllocateSharedBitmap(std::move(shm.region),
+                                                     shared_bitmap_id_);
   }
   ~SoftwarePlaneResource() override {
     shared_bitmap_reporter_->DidDeleteSharedBitmap(shared_bitmap_id_);

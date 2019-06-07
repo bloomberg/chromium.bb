@@ -5,6 +5,7 @@
 module viz.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
+import "mojo/public/mojom/base/shared_memory.mojom";
 import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame.mojom";
 import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
@@ -67,7 +68,8 @@ interface CompositorFrameSink {
   // The |id| can then be used in subsequent CompositorFrames given to
   // SubmitCompositorFrame. The |id| is a Mailbox type which doubles as a
   // SharedBitmapId for this case.
-  DidAllocateSharedBitmap(handle<shared_buffer> buffer, gpu.mojom.Mailbox id);
+  DidAllocateSharedBitmap(mojo_base.mojom.ReadOnlySharedMemoryRegion region,
+                          gpu.mojom.Mailbox id);
 
   // Informs the display compositor that the client deleted a shared bitmap. This
   // allows the service to free the shared memory that was previously given to it

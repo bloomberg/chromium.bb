@@ -2271,11 +2271,9 @@ void RenderWidgetHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
 }
 
 void RenderWidgetHostImpl::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     const viz::SharedBitmapId& id) {
-  if (!shared_bitmap_manager_->ChildAllocatedSharedBitmap(
-          viz::bitmap_allocation::FromMojoHandle(std::move(buffer)).Map(),
-          id)) {
+  if (!shared_bitmap_manager_->ChildAllocatedSharedBitmap(region.Map(), id)) {
     bad_message::ReceivedBadMessage(GetProcess(),
                                     bad_message::RWH_SHARED_BITMAP);
   }

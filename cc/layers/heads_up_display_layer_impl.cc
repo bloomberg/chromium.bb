@@ -320,14 +320,13 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       auto backing = std::make_unique<HudSoftwareBacking>();
       backing->layer_tree_frame_sink = layer_tree_frame_sink;
       backing->shared_bitmap_id = viz::SharedBitmap::GenerateId();
-      base::MappedReadOnlyRegion mapped_region =
+      base::MappedReadOnlyRegion shm =
           viz::bitmap_allocation::AllocateSharedBitmap(pool_resource.size(),
                                                        pool_resource.format());
-      backing->shared_mapping = std::move(mapped_region.mapping);
+      backing->shared_mapping = std::move(shm.mapping);
 
-      layer_tree_frame_sink->DidAllocateSharedBitmap(
-          viz::bitmap_allocation::ToMojoHandle(std::move(mapped_region.region)),
-          backing->shared_bitmap_id);
+      layer_tree_frame_sink->DidAllocateSharedBitmap(std::move(shm.region),
+                                                     backing->shared_bitmap_id);
 
       pool_resource.set_software_backing(std::move(backing));
     }

@@ -334,10 +334,10 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
 }
 
 bool CompositorFrameSinkSupport::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     const SharedBitmapId& id) {
   if (!frame_sink_manager_->shared_bitmap_manager()->ChildAllocatedSharedBitmap(
-          bitmap_allocation::FromMojoHandle(std::move(buffer)).Map(), id)) {
+          region.Map(), id)) {
     return false;
   }
 

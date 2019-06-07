@@ -293,10 +293,10 @@ void AsyncLayerTreeFrameSink::DidNotProduceFrame(
 }
 
 void AsyncLayerTreeFrameSink::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     const viz::SharedBitmapId& id) {
   DCHECK(compositor_frame_sink_ptr_);
-  compositor_frame_sink_ptr_->DidAllocateSharedBitmap(std::move(buffer), id);
+  compositor_frame_sink_ptr_->DidAllocateSharedBitmap(std::move(region), id);
 }
 
 void AsyncLayerTreeFrameSink::DidDeleteSharedBitmap(

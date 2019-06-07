@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/client/shared_bitmap_reporter.h"
@@ -26,7 +27,7 @@ class FakeSharedBitmapReporter : public viz::SharedBitmapReporter {
   ~FakeSharedBitmapReporter() override = default;
 
   // viz::SharedBitmapReporter implementation.
-  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const viz::SharedBitmapId& id) override {
     DCHECK_EQ(shared_bitmaps_.count(id), 0u);
     shared_bitmaps_.insert(id);

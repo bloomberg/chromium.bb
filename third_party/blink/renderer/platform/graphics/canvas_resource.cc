@@ -579,7 +579,7 @@ CanvasResourceSharedBitmap::CanvasResourceSharedBitmap(
       Provider() ? Provider()->ResourceDispatcher() : nullptr;
   if (resource_dispatcher) {
     resource_dispatcher->DidAllocateSharedBitmap(
-        viz::bitmap_allocation::ToMojoHandle(std::move(shm.region)),
+        std::move(shm.region),
         SharedBitmapIdToGpuMailboxPtr(shared_bitmap_id_));
   }
 }

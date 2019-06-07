@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -75,7 +76,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
       const WTF::Vector<viz::ReturnedResource>& resources) override;
 
   // viz::SharedBitmapReporter implementation.
-  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle,
+  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion,
                                const viz::SharedBitmapId&) override;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId&) override;
 

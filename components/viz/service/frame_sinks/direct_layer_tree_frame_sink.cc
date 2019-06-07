@@ -185,9 +185,9 @@ void DirectLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
 }
 
 void DirectLayerTreeFrameSink::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     const SharedBitmapId& id) {
-  bool ok = support_->DidAllocateSharedBitmap(std::move(buffer), id);
+  bool ok = support_->DidAllocateSharedBitmap(std::move(region), id);
   DCHECK(ok);
 }
 

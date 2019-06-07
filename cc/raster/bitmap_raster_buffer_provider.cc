@@ -108,12 +108,11 @@ BitmapRasterBufferProvider::AcquireBufferForRaster(
     auto backing = std::make_unique<BitmapSoftwareBacking>();
     backing->frame_sink = frame_sink_;
     backing->shared_bitmap_id = viz::SharedBitmap::GenerateId();
-    base::MappedReadOnlyRegion mapped_region =
+    base::MappedReadOnlyRegion shm =
         viz::bitmap_allocation::AllocateSharedBitmap(size, viz::RGBA_8888);
-    backing->mapping = std::move(mapped_region.mapping);
-    frame_sink_->DidAllocateSharedBitmap(
-        viz::bitmap_allocation::ToMojoHandle(std::move(mapped_region.region)),
-        backing->shared_bitmap_id);
+    backing->mapping = std::move(shm.mapping);
+    frame_sink_->DidAllocateSharedBitmap(std::move(shm.region),
+                                         backing->shared_bitmap_id);
 
     resource.set_software_backing(std::move(backing));
   }

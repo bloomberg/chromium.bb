@@ -85,7 +85,7 @@ void FakeLayerTreeFrameSink::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
 }
 
 void FakeLayerTreeFrameSink::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     const viz::SharedBitmapId& id) {
   DCHECK(!base::Contains(shared_bitmaps_, id));
   shared_bitmaps_.push_back(id);

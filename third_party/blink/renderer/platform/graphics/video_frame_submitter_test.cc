@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
@@ -96,11 +97,11 @@ class VideoMockCompositorFrameSink
   MOCK_METHOD1(DidNotProduceFrame, void(const viz::BeginFrameAck&));
 
   MOCK_METHOD2(DidAllocateSharedBitmap_,
-               void(mojo::ScopedSharedBufferHandle* buffer,
+               void(base::ReadOnlySharedMemoryRegion* region,
                     gpu::mojom::blink::MailboxPtr* id));
-  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                gpu::mojom::blink::MailboxPtr id) override {
-    DidAllocateSharedBitmap_(&buffer, &id);
+    DidAllocateSharedBitmap_(&region, &id);
   }
 
   MOCK_METHOD1(DidDeleteSharedBitmap_, void(gpu::mojom::blink::MailboxPtr* id));

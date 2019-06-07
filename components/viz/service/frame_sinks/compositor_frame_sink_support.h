@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -143,7 +144,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       base::Optional<HitTestRegionList> hit_test_region_list = base::nullopt,
       uint64_t submit_time = 0);
   // Returns false if the notification was not valid (a duplicate).
-  bool DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+  bool DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const SharedBitmapId& id);
   void DidDeleteSharedBitmap(const SharedBitmapId& id);
 

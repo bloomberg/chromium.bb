@@ -388,10 +388,10 @@ void CanvasResourceDispatcher::Reshape(const IntSize& size) {
 }
 
 void CanvasResourceDispatcher::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     ::gpu::mojom::blink::MailboxPtr id) {
   if (sink_)
-    sink_->DidAllocateSharedBitmap(std::move(buffer), std::move(id));
+    sink_->DidAllocateSharedBitmap(std::move(region), std::move(id));
 }
 
 void CanvasResourceDispatcher::DidDeleteSharedBitmap(

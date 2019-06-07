@@ -234,12 +234,12 @@ void VideoFrameSubmitter::ReclaimResources(
 }
 
 void VideoFrameSubmitter::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     const viz::SharedBitmapId& id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(compositor_frame_sink_);
   compositor_frame_sink_->DidAllocateSharedBitmap(
-      std::move(buffer), SharedBitmapIdToGpuMailboxPtr(id));
+      std::move(region), SharedBitmapIdToGpuMailboxPtr(id));
 }
 
 void VideoFrameSubmitter::DidDeleteSharedBitmap(const viz::SharedBitmapId& id) {
