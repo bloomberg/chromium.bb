@@ -117,6 +117,11 @@ const base::Feature kCompositeOpaqueFixedPosition{
 const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Show messages in the DevTools console about upcoming deprecations
+// that would affect sent/received cookies.
+const base::Feature kCookieDeprecationMessages{
+    "CookieDeprecationMessages", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables crash reporting via Reporting API.
 // https://www.w3.org/TR/reporting/#crash-report
 const base::Feature kCrashReporting{"CrashReporting",

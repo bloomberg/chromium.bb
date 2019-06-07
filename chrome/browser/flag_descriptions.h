@@ -200,6 +200,9 @@ extern const char kForceColorProfileDescription[];
 extern const char kCompositedLayerBordersName[];
 extern const char kCompositedLayerBordersDescription[];
 
+extern const char kCookieDeprecationMessagesName[];
+extern const char kCookieDeprecationMessagesDescription[];
+
 extern const char kCookiesWithoutSameSiteMustBeSecureName[];
 extern const char kCookiesWithoutSameSiteMustBeSecureDescription[];
 

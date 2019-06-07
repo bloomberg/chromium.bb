@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/syslog_logging.h"
@@ -38,6 +39,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -222,36 +224,43 @@ void SendDeprecationMessagesForSameSiteCookiesOnUI(
   bool log_unspecified_treated_as_lax_metric = false;
   bool log_none_insecure_metric = false;
 
+  bool emit_messages =
+      base::FeatureList::IsEnabled(features::kCookieDeprecationMessages);
+
   for (const auto& cookie_with_status : deprecated_cookies) {
     if (cookie_with_status.status ==
         net::CanonicalCookie::CookieInclusionStatus::
             EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
       log_unspecified_treated_as_lax_metric = true;
-      render_frame_host->AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kWarning,
-          "[Deprecation] A cookie associated with a cross-site resource at " +
-              url.possibly_invalid_spec() +
-              " was set without the `SameSite` attribute. "
-              "Starting in M77, Chrome will only deliver cookies with "
-              "cross-site requests if they are set with `SameSite=None`. You "
-              "can review cookies in developer tools under "
-              "Application>Storage>Cookies and see more details at "
-              "https://www.chromestatus.com/feature/5088147346030592.");
+      if (emit_messages) {
+        render_frame_host->AddMessageToConsole(
+            blink::mojom::ConsoleMessageLevel::kWarning,
+            "[Deprecation] A cookie associated with a cross-site resource at " +
+                url.possibly_invalid_spec() +
+                " was set without the `SameSite` attribute. "
+                "A future release of Chrome will only deliver cookies with "
+                "cross-site requests if they are set with `SameSite=None`. You "
+                "can review cookies in developer tools under "
+                "Application>Storage>Cookies and see more details at "
+                "https://www.chromestatus.com/feature/5088147346030592.");
+      }
     }
     if (cookie_with_status.status ==
         net::CanonicalCookie::CookieInclusionStatus::
             EXCLUDE_SAMESITE_NONE_INSECURE) {
       log_none_insecure_metric = true;
-      render_frame_host->AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kWarning,
-          "[Deprecation] A cookie associated with a resource at " +
-              url.possibly_invalid_spec() +
-              " was set with `SameSite=None` but without `Secure`. "
-              "Starting in M80, Chrome will only deliver cookies marked "
-              "`SameSite=None` if they are also marked `Secure`. You "
-              "can review cookies in developer tools under "
-              "Application>Storage>Cookies and see more details at "
-              "https://www.chromestatus.com/feature/5633521622188032.");
+      if (emit_messages) {
+        render_frame_host->AddMessageToConsole(
+            blink::mojom::ConsoleMessageLevel::kWarning,
+            "[Deprecation] A cookie associated with a resource at " +
+                url.possibly_invalid_spec() +
+                " was set with `SameSite=None` but without `Secure`. "
+                "A future release of Chrome will only deliver cookies marked "
+                "`SameSite=None` if they are also marked `Secure`. You "
+                "can review cookies in developer tools under "
+                "Application>Storage>Cookies and see more details at "
+                "https://www.chromestatus.com/feature/5633521622188032.");
+      }
     }
   }
 
