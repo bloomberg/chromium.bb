@@ -33,6 +33,7 @@ import org.chromium.chrome.R;
             R.string.accessibility_unselect_tab,
             R.string.undo_bar_group_tabs_message,
             R.string.menu_group_tabs,
+            R.string.tab_grid_dialog_remove_from_group,
     };
 
     private SilenceLintErrors() {}

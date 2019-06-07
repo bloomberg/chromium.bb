@@ -4084,6 +4084,11 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Un-select <ph name="TAB_TITLE">%1$s<ex>Google</ex></ph> tab.
       </message>
 
+      <!-- Tab Grid Dialog strings -->
+      <message name="IDS_TAB_GRID_DIALOG_REMOVE_FROM_GROUP" desc="This text shows on the ungroup bar in TabGridDialog. When user drags a tab and drops it on the ungroup bar, this tab will be moved out of the group.">
+        Remove from group
+      </message>
+
       <message name="IDS_AUTOFILL_ASSISTANT_MODULE_TITLE"
   desc="Text shown when the Foo module is referenced in install start, success,
         failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
