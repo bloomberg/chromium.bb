@@ -92,7 +92,7 @@ const base::Feature kTranslateMobileManualTrigger{
 };
 
 const base::Feature kCompactTranslateInfobarIOS{
-    "CompactTranslateInfobarIOS", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CompactTranslateInfobarIOS", base::FEATURE_ENABLED_BY_DEFAULT};
 
 DenialTimeUpdate::DenialTimeUpdate(PrefService* prefs,
                                    const std::string& language,
