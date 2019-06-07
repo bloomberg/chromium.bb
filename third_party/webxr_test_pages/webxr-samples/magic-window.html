@@ -221,13 +221,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
 
           for (let view of pose.views) {
-            // TODO(crbug.com/966077): This appears to be returning null for inline.
-            if (session.mode.startsWith('immersive')) {
-              let viewport = session.renderState.baseLayer.getViewport(view);
-              gl.viewport(viewport.x, viewport.y,
-                          viewport.width, viewport.height);
-            }
-
+            let viewport = session.renderState.baseLayer.getViewport(view);
+            gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
             scene.draw(view.projectionMatrix, view.transform.inverse.matrix);
           }
         }
