@@ -339,6 +339,7 @@ void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {
     NOTREACHED() << "SkBitmapToNSImageWithColorSpace failed";
     return;
   }
+  // TODO (https://crbug.com/971916): Write NSImage directly to clipboard.
   // An API to ask the NSImage to write itself to the clipboard comes in 10.6 :(
   // For now, spit out the image as a TIFF.
   NSPasteboard* pb = GetPasteboard();
