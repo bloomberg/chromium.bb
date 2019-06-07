@@ -51,7 +51,6 @@ extern const base::Feature kOmniboxMaterialDesignWeatherIcons;
 
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;
-extern const base::Feature kOnFocusSuggestionsCustomEndpoint;
 extern const base::Feature kZeroSuggestionsOnNTP;
 
 }  // namespace omnibox

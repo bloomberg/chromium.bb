@@ -257,6 +257,7 @@ bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
              page_classification) == "Personalized";
 }
 
+// static
 bool OmniboxFieldTrial::InZeroSuggestRemoteSendURLFieldTrial(
     metrics::OmniboxEventProto::PageClassification page_classification) {
   return internal::GetValueForRuleInContextByFeature(
@@ -265,18 +266,17 @@ bool OmniboxFieldTrial::InZeroSuggestRemoteSendURLFieldTrial(
 }
 
 // static
-int OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointExperimentId() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kOnFocusSuggestionsCustomEndpoint,
-      kOnFocusSuggestionsEndpointExperimentIdParam,
-      /*default_value=*/-1);
+std::string OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointURL() {
+  return base::GetFieldTrialParamValueByFeature(
+      omnibox::kOnFocusSuggestions, kOnFocusSuggestionsEndpointURLParam);
 }
 
 // static
-std::string OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointURL() {
-  return base::GetFieldTrialParamValueByFeature(
-      omnibox::kOnFocusSuggestionsCustomEndpoint,
-      kOnFocusSuggestionsEndpointURLParam);
+int OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointExperimentId() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kOnFocusSuggestions,
+      kOnFocusSuggestionsEndpointExperimentIdParam,
+      /*default_value=*/-1);
 }
 
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(

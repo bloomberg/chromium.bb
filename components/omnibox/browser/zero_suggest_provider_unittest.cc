@@ -503,21 +503,14 @@ TEST_F(ZeroSuggestProviderTest, CustomEndpoint) {
   // experiments off, IsPersonalizedUrlDataCollectionActive true), and the
   // redirect to chrome mode on.
   base::test::ScopedFeatureList features;
-  features.InitWithFeaturesAndParameters(
+  features.InitAndEnableFeatureWithParameters(
+      omnibox::kOnFocusSuggestions,
       {
-          {
-              omnibox::kOnFocusSuggestions,
-              {{std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) +
-                    ":*:*",
-                "RemoteSendURL"}},
-          },
-          {
-              omnibox::kOnFocusSuggestionsCustomEndpoint,
-              {{OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam,
-                "https://valid-but-fake-endpoint.com/fakepath"}},
-          },
-      },
-      {});
+          {std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) + ":*:*",
+           "RemoteSendURL"},
+          {OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam,
+           "https://valid-but-fake-endpoint.com/fakepath"},
+      });
 
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));

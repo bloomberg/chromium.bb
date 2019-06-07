@@ -181,15 +181,12 @@ bool InZeroSuggestPersonalizedFieldTrial(
 bool InZeroSuggestRemoteSendURLFieldTrial(
     metrics::OmniboxEventProto::PageClassification page_classification);
 
-// ---------------------------------------------------------
-// For the On Focus Suggestions Custom Endpoint field trial.
+// Returns the server address associated with the current field trial.
+std::string GetOnFocusSuggestionsCustomEndpointURL();
 
 // Returns the server-side experiment ID to use for contextual suggestions.
 // Returns -1 if there is no associated experiment ID.
 int GetOnFocusSuggestionsCustomEndpointExperimentId();
-
-// Returns the server address associated with the current field trial.
-std::string GetOnFocusSuggestionsCustomEndpointURL();
 
 // ---------------------------------------------------------
 // For the ShortcutsScoringMaxRelevance experiment that's part of the
