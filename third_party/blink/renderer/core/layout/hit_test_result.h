@@ -47,6 +47,7 @@ class Node;
 class LayoutObject;
 class Region;
 class Scrollbar;
+struct PhysicalOffset;
 
 // List-based hit test testing can continue even after a hit has been found.
 // This is used to support fuzzy matching with rect-based hit tests as well as
@@ -108,12 +109,14 @@ class CORE_EXPORT HitTestResult {
   }
   LocalFrame* InnerNodeFrame() const;
 
-  // The hit-tested point in the coordinates of the inner node.
+  // The hit-tested point in the coordinates of the inner node, in physical
+  // coordinates with flipped blocks direction.
   const LayoutPoint& LocalPoint() const { return local_point_; }
   void SetNodeAndPosition(Node* node, const LayoutPoint& p) {
     local_point_ = p;
     SetInnerNode(node);
   }
+  void SetNodeAndPosition(Node* node, const PhysicalOffset& p);
 
   PositionWithAffinity GetPosition() const;
   LayoutObject* GetLayoutObject() const;

@@ -1049,7 +1049,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(
       if (!result.InnerNode() && node) {
         LayoutPoint point =
             location_in_container.Point() - ToLayoutSize(physical_offset);
-        result.SetNodeAndPosition(node, point);
+        result.SetNodeAndPosition(node, PhysicalOffsetToBeNoop(point));
       }
       if (result.AddNodeToListBasedTestResult(node, location_in_container,
                                               bounds_rect) == kStopHitTesting) {
@@ -1096,7 +1096,7 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
       LayoutPoint point =
           location_in_container.Point() - ToLayoutSize(physical_offset) +
           text_paint_fragment.InlineOffsetToContainerBox().ToLayoutPoint();
-      result.SetNodeAndPosition(node, point);
+      result.SetNodeAndPosition(node, PhysicalOffsetToBeNoop(point));
     }
 
     if (result.AddNodeToListBasedTestResult(node, location_in_container,
@@ -1148,7 +1148,7 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
     const LayoutPoint point =
         location_in_container.Point() - ToLayoutSize(physical_offset) +
         fragment.InlineOffsetToContainerBox().ToLayoutPoint();
-    result.SetNodeAndPosition(node, point);
+    result.SetNodeAndPosition(node, PhysicalOffsetToBeNoop(point));
   }
   return result.AddNodeToListBasedTestResult(node, location_in_container,
                                              bounds_rect) == kStopHitTesting;

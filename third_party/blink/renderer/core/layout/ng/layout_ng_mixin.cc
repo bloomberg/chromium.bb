@@ -327,8 +327,10 @@ PositionWithAffinity LayoutNGMixin<Base>::PositionForPoint(
   if (!PaintFragment())
     return Base::CreatePositionWithAffinity(0);
 
+  // Flip because |point| is in flipped physical coordinates while
+  // NGPaintFragment::PositionForPoint() requires pure physical coordinates.
   const PositionWithAffinity ng_position =
-      PaintFragment()->PositionForPoint(PhysicalOffset(point));
+      PaintFragment()->PositionForPoint(Base::FlipForWritingMode(point));
   if (ng_position.IsNotNull())
     return ng_position;
   return Base::CreatePositionWithAffinity(0);
