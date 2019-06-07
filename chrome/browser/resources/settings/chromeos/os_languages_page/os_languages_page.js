@@ -1,9 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'settings-languages-page' is the settings page
+ * @fileoverview 'os-settings-languages-page' is the settings page
  * for language and input method settings.
  */
 cr.exportPath('settings');
@@ -24,7 +24,7 @@ const LANGUAGE_SETTING_IS_SHOWN_UMA_NAME = 'Translate.LanguageSettingsIsShown';
 'use strict';
 
 Polymer({
-  is: 'settings-languages-page',
+  is: 'os-settings-languages-page',
 
   behaviors: [
     I18nBehavior,
@@ -42,7 +42,7 @@ Polymer({
 
     /**
      * Read-only reference to the languages model provided by the
-     * 'settings-languages' instance.
+     * 'os-settings-languages' instance.
      * @type {!LanguagesModel|undefined}
      */
     languages: {
@@ -53,31 +53,12 @@ Polymer({
     /** @type {!LanguageHelper} */
     languageHelper: Object,
 
-    // <if expr="not is_macosx">
-    /** @private */
-    spellCheckLanguages_: {
-      type: Array,
-      value: function() {
-        return [];
-      },
-    },
-
-    /** @private {string|undefined} */
-    languageSyncedWithBrowserEnableSpellchecking_: String,
-    // </if>
-
     /**
      * The language to display the details for.
      * @type {!LanguageState|undefined}
      * @private
      */
     detailLanguage_: Object,
-
-    /** @private */
-    hideSpellCheckLanguages_: {
-      type: Boolean,
-      value: false,
-    },
 
     /**
      * Whether the language settings list is opened.
@@ -96,49 +77,13 @@ Polymer({
       type: Object,
       value: function() {
         const map = new Map();
-        // <if expr="not is_macosx">
-        if (settings.routes.EDIT_DICTIONARY) {
-          map.set(
-              settings.routes.EDIT_DICTIONARY.path,
-              '#spellCheckSubpageTrigger');
-        }
-        // </if>
-        // <if expr="chromeos">
         if (settings.routes.INPUT_METHODS) {
           map.set(settings.routes.INPUT_METHODS.path, '#manageInputMethods');
         }
-        // </if>
         return map;
       },
     },
-
-    /**
-     * Dictionary defining page visibility.
-     * @type {!LanguagesPageVisibility}
-     */
-    pageVisibility: Object,
   },
-
-  // <if expr="not is_macosx">
-  observers: [
-    'updateSpellcheckLanguages_(languages.enabled.*, ' +
-        'languages.forcedSpellCheckLanguages.*)',
-    'updateSpellcheckEnabled_(prefs.browser.enable_spellchecking.*)',
-  ],
-
-  /**
-   * Checks if there are any errors downloading the spell check dictionary. This
-   * is used for showing/hiding error messages, spell check toggle and retry.
-   * button.
-   * @param {number} downloadDictionaryFailureCount
-   * @param {number} threshold
-   * @return {boolean}
-   * @private
-   */
-  errorsGreaterThan_: function(downloadDictionaryFailureCount, threshold) {
-    return downloadDictionaryFailureCount > threshold;
-  },
-  // </if>
 
   /**
    * Stamps and opens the Add Languages dialog, registering a listener to
@@ -232,41 +177,6 @@ Polymer({
   },
 
   /**
-   * @param {string} languageCode The language code identifying a language.
-   * @param {string} translateTarget The target language.
-   * @return {string} 'target' if |languageCode| matches the target language,
-   'non-target' otherwise.
-   */
-  isTranslationTarget_: function(languageCode, translateTarget) {
-    if (this.languageHelper.convertLanguageCodeForTranslate(languageCode) ==
-        translateTarget) {
-      return 'target';
-    } else {
-      return 'non-target';
-    }
-  },
-
-  // <if expr="chromeos">
-  /**
-   * Applies Chrome OS session tweaks to the menu.
-   * @param {!CrActionMenuElement} menu
-   * @private
-   */
-  tweakMenuForCrOS_: function(menu) {
-    // In a CrOS multi-user session, the primary user controls the UI language.
-    // TODO(michaelpg): The language selection should not be hidden, but should
-    // show a policy indicator. crbug.com/648498
-    if (this.isSecondaryUser_()) {
-      menu.querySelector('#uiLanguageItem').hidden = true;
-    }
-
-    // The UI language choice doesn't persist for guests.
-    if (loadTimeData.getBoolean('isGuest')) {
-      menu.querySelector('#uiLanguageItem').hidden = true;
-    }
-  },
-
-  /**
    * Opens the Manage Input Methods page.
    * @private
    */
@@ -308,15 +218,13 @@ Polymer({
   onInputMethodOptionsTap_: function(e) {
     this.languageHelper.openInputMethodOptions(e.model.item.id);
   },
-  // </if>
 
-  // <if expr="chromeos or is_win">
   /**
    * @return {boolean} True for a secondary user in a multi-profile session.
    * @private
    */
   isSecondaryUser_: function() {
-    return cr.isChromeOS && loadTimeData.getBoolean('isSecondaryUser');
+    return loadTimeData.getBoolean('isSecondaryUser');
   },
 
   /**
@@ -383,56 +291,6 @@ Polymer({
 
     this.closeMenuSoon_();
   },
-  // </if>
-
-  /**
-   * @param {!LanguageState|undefined} languageState
-   * @param {string} targetLanguageCode The default translate target language.
-   * @return {boolean} True if the translate checkbox should be disabled.
-   * @private
-   */
-  disableTranslateCheckbox_: function(languageState, targetLanguageCode) {
-    if (languageState == undefined || languageState.language == undefined ||
-        !languageState.language.supportsTranslate) {
-      return true;
-    }
-
-    if (this.languageHelper.isOnlyTranslateBlockedLanguage(languageState)) {
-      return true;
-    }
-
-    return this.languageHelper.convertLanguageCodeForTranslate(
-               languageState.language.code) == targetLanguageCode;
-  },
-
-  /**
-   * Handler for changes to the translate checkbox.
-   * @param {!{target: !Element}} e
-   * @private
-   */
-  onTranslateCheckboxChange_: function(e) {
-    if (e.target.checked) {
-      this.languageHelper.enableTranslateLanguage(
-          this.detailLanguage_.language.code);
-    } else {
-      this.languageHelper.disableTranslateLanguage(
-          this.detailLanguage_.language.code);
-    }
-    this.closeMenuSoon_();
-  },
-
-  /**
-   * Returns "complex" if the menu includes checkboxes, which should change the
-   * spacing of items and show a separator in the menu.
-   * @param {boolean} translateEnabled
-   * @return {string}
-   */
-  getMenuClass_: function(translateEnabled) {
-    if (translateEnabled || cr.isChromeOS || cr.isWindows) {
-      return 'complex';
-    }
-    return '';
-  },
 
   /**
    * Moves the language to the top of the list.
@@ -472,11 +330,9 @@ Polymer({
     this.languageHelper.disableLanguage(this.detailLanguage_.language.code);
   },
 
-  // <if expr="chromeos or is_win">
   /**
    * Checks whether the prospective UI language (the pref that indicates what
-   * language to use in Chrome) matches the current language. This pref is used
-   * only on Chrome OS and Windows; we don't control the UI language elsewhere.
+   * language to use in Chrome) matches the current language.
    * @param {string} languageCode The language code identifying a language.
    * @param {string} prospectiveUILanguage The prospective UI language.
    * @return {boolean} True if the given language matches the prospective UI
@@ -495,225 +351,22 @@ Polymer({
   getProspectiveUILanguageName_: function(prospectiveUILanguage) {
     return this.languageHelper.getLanguage(prospectiveUILanguage).displayName;
   },
-  // </if>
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getLanguageListTwoLine_: function() {
-    return cr.isChromeOS || cr.isWindows ? 'two-line' : '';
-  },
-
-  // <if expr="not is_macosx">
-  /**
-   * Returns the value to use as the |pref| attribute for the policy indicator
-   * of spellcheck languages, based on whether or not the language is enabled.
-   * @param {boolean} isEnabled Whether the language is enabled or not.
-   */
-  getIndicatorPrefForManagedSpellcheckLanguage_(isEnabled) {
-    return isEnabled ?
-        this.get('spellcheck.forced_dictionaries', this.prefs) :
-        this.get('spellcheck.blacklisted_dictionaries', this.prefs);
-  },
-
-  /**
-   * Returns an array of enabled languages, plus spellcheck languages that are
-   * force-enabled by policy.
-   * @return {!Array<!LanguageState|!ForcedLanguageState>}
-   * @private
-   */
-  getSpellCheckLanguages_: function() {
-    const supportedSpellcheckLanguages =
-        /** @type {!Array<!LanguageState|!ForcedLanguageState>} */ (
-            this.languages.enabled.filter(
-                (item) => item.language.supportsSpellcheck));
-    const supportedSpellcheckLanguagesSet =
-        new Set(supportedSpellcheckLanguages.map(x => x.language.code));
-
-    this.languages.forcedSpellCheckLanguages.forEach(forcedLanguage => {
-      if (!supportedSpellcheckLanguagesSet.has(forcedLanguage.language.code)) {
-        supportedSpellcheckLanguages.push(forcedLanguage);
-      }
-    });
-
-    return supportedSpellcheckLanguages;
-  },
-
-  /** @private */
-  updateSpellcheckLanguages_: function() {
-    if (this.languages == undefined) {
-      return;
-    }
-
-    this.set('spellCheckLanguages_', this.getSpellCheckLanguages_());
-
-    // Notify Polymer of subproperties that might have changed on the items in
-    // the spellCheckLanguages_ array, to make sure the UI updates. Polymer
-    // would otherwise not notice the changes in the subproperties, as some of
-    // them are references to those from |this.languages.enabled|. It would be
-    // possible to |this.linkPaths()| objects from |this.languages.enabled| to
-    // |this.spellCheckLanguages_|, but that would require complex housekeeping
-    // to |this.unlinkPaths()| as |this.languages.enabled| changes.
-    for (let i = 0; i < this.spellCheckLanguages_.length; i++) {
-      this.notifyPath(`spellCheckLanguages_.${i}.isManaged`);
-      this.notifyPath(`spellCheckLanguages_.${i}.spellCheckEnabled`);
-      this.notifyPath(
-          `spellCheckLanguages_.${i}.downloadDictionaryFailureCount`);
-    }
-
-    if (this.spellCheckLanguages_.length === 0) {
-      // If there are no supported spell check languages, automatically turn
-      // off spell check to indicate no spell check will happen.
-      this.setPrefValue('browser.enable_spellchecking', false);
-    }
-
-    if (this.spellCheckLanguages_.length === 1) {
-      const singleLanguage = this.spellCheckLanguages_[0];
-
-      // Hide list of spell check languages if there is only 1 language
-      // and we don't need to display any errors for that language
-      this.hideSpellCheckLanguages_ = !singleLanguage.isManaged &&
-          singleLanguage.downloadDictionaryFailureCount === 0;
-
-      // Turn off spell check if spell check for the 1 remaining language is off
-      if (!singleLanguage.spellCheckEnabled) {
-        this.setPrefValue('browser.enable_spellchecking', false);
-        this.languageSyncedWithBrowserEnableSpellchecking_ =
-            singleLanguage.language.code;
-      }
-
-      // Undo the sync if spell check appeared as turned off for the language
-      // because a download was still in progress. This only occurs when
-      // Settings is loaded for the very first time and dictionaries have not
-      // been downloaded yet.
-      if (this.languageSyncedWithBrowserEnableSpellchecking_ ===
-              singleLanguage.language.code &&
-          singleLanguage.spellCheckEnabled) {
-        this.setPrefValue('browser.enable_spellchecking', true);
-      }
-    } else {
-      this.hideSpellCheckLanguages_ = false;
-      this.languageSyncedWithBrowserEnableSpellchecking_ = undefined;
-    }
-  },
-
-  /** @private */
-  updateSpellcheckEnabled_: function() {
-    if (this.prefs == undefined) {
-      return;
-    }
-
-    // If there is only 1 language, we hide the list of languages so users
-    // are unable to toggle on/off spell check specifically for the 1 language.
-    // Therefore, we need to treat the toggle for `browser.enable_spellchecking`
-    // as the toggle for the 1 language as well.
-    if (this.spellCheckLanguages_.length === 1) {
-      this.languageHelper.toggleSpellCheck(
-          this.spellCheckLanguages_[0].language.code,
-          !!this.getPref('browser.enable_spellchecking').value);
-    }
-
-    // <if expr="_google_chrome">
-    // When spell check is disabled, automatically disable using the spelling
-    // service. This resets the spell check option to 'Use basic spell check'
-    // when spell check is turned off. This check is in an observer so that it
-    // can also correct any users who land on the Settings page and happen
-    // to have spelling service enabled but spell check disabled.
-    if (!this.getPref('browser.enable_spellchecking').value) {
-      this.setPrefValue('spellcheck.use_spelling_service', false);
-    }
-    // </if>
-  },
-
-  /**
-   * Opens the Custom Dictionary page.
-   * @private
-   */
-  onEditDictionaryTap_: function() {
-    settings.navigateTo(settings.routes.EDIT_DICTIONARY);
-  },
-
-  /**
-   * Handler for enabling or disabling spell check for a specific language.
-   * @param {!{target: Element, model: !{item: !LanguageState}}} e
-   */
-  onSpellCheckLanguageChange_: function(e) {
-    const item = e.model.item;
-    if (!item.language.supportsSpellcheck) {
-      return;
-    }
-
-    this.languageHelper.toggleSpellCheck(
-        item.language.code, !item.spellCheckEnabled);
-  },
-
-  /**
-   * Handler to initiate another attempt at downloading the spell check
-   * dictionary for a specified language.
-   * @param {!{target: Element, model: !{item: !LanguageState}}} e
-   */
-  onRetryDictionaryDownloadClick_: function(e) {
-    assert(this.errorsGreaterThan_(
-        e.model.item.downloadDictionaryFailureCount, 0));
-    this.languageHelper.retryDownloadDictionary(e.model.item.language.code);
-  },
-
-  /**
-   * Handler for clicking on the name of the language. The action taken must
-   * match the control that is available.
-   * @param {!{target: Element, model: !{item: !LanguageState}}} e
-   */
-  onSpellCheckNameClick_: function(e) {
-    assert(!this.isSpellCheckNameClickDisabled_(e.model.item));
-    this.onSpellCheckLanguageChange_(e);
-  },
-
-  /**
-   * Name only supports clicking when language is not managed, supports
-   * spellcheck, and the dictionary has been downloaded with no errors.
-   * @param {!LanguageState|!ForcedLanguageState} item
-   * @return {boolean}
-   * @private
-   */
-  isSpellCheckNameClickDisabled_: function(item) {
-    return item.isManaged || !item.language.supportsSpellcheck ||
-        item.downloadDictionaryFailureCount > 0;
-  },
-  // </if>
 
   /**
    * Returns either the "selected" class, if the language matches the
-   * prospective UI language, or an empty string. Languages can only be
-   * selected on Chrome OS and Windows.
+   * prospective UI language, or an empty string.
    * @param {string} languageCode The language code identifying a language.
    * @param {string} prospectiveUILanguage The prospective UI language.
    * @return {string} The class name for the language item.
    * @private
    */
   getLanguageItemClass_: function(languageCode, prospectiveUILanguage) {
-    if ((cr.isChromeOS || cr.isWindows) &&
-        languageCode == prospectiveUILanguage) {
+    if (languageCode == prospectiveUILanguage) {
       return 'selected';
     }
     return '';
   },
 
-  /**
-   * @return {string|undefined}
-   * @private
-   */
-  getSpellCheckSubLabel_: function() {
-    // <if expr="not is_macosx">
-    if (this.spellCheckLanguages_.length === 0) {
-      return this.i18n('spellCheckDisabledReason');
-    }
-    // </if>
-
-    return undefined;
-  },
-
-  // <if expr="chromeos">
   /**
    * @param {string} id The input method ID.
    * @param {string} currentId The ID of the currently enabled input method.
@@ -721,7 +374,6 @@ Polymer({
    * @private
    */
   isCurrentInputMethod_: function(id, currentId) {
-    assert(cr.isChromeOS);
     return id == currentId;
   },
 
@@ -732,19 +384,16 @@ Polymer({
    * @private
    */
   getInputMethodItemClass_: function(id, currentId) {
-    assert(cr.isChromeOS);
     return this.isCurrentInputMethod_(id, currentId) ? 'selected' : '';
   },
 
   getInputMethodName_: function(id) {
-    assert(cr.isChromeOS);
     const inputMethod =
         this.languages.inputMethods.enabled.find(function(inputMethod) {
           return inputMethod.id == id;
         });
     return inputMethod ? inputMethod.displayName : '';
   },
-  // </if>
 
   /**
    * @param {!Event} e
@@ -761,9 +410,19 @@ Polymer({
     let menu = /** @type {?CrActionMenuElement} */ (this.$.menu.getIfExists());
     if (!menu) {
       menu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
-      // <if expr="chromeos">
-      this.tweakMenuForCrOS_(menu);
-      // </if>
+
+      // In a CrOS multi-user session, the primary user controls the UI
+      // language.
+      // TODO(michaelpg): The language selection should not be hidden, but
+      // should show a policy indicator. crbug.com/648498
+      if (this.isSecondaryUser_()) {
+        menu.querySelector('#uiLanguageItem').hidden = true;
+      }
+
+      // The UI language choice doesn't persist for guests.
+      if (loadTimeData.getBoolean('isGuest')) {
+        menu.querySelector('#uiLanguageItem').hidden = true;
+      }
     }
 
     menu.showAt(/** @type {!Element} */ (e.target));
@@ -796,20 +455,13 @@ Polymer({
     }, settings.kMenuCloseDelay);
   },
 
-  // <if expr="chromeos or is_win">
   /**
    * Handler for the restart button.
    * @private
    */
   onRestartTap_: function() {
-    // <if expr="chromeos">
     settings.LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
-    // </if>
-    // <if expr="is_win">
-    settings.LifetimeBrowserProxyImpl.getInstance().restart();
-    // </if>
   },
-  // </if>
 
   /**
    * Toggles the expand button within the element being listened to.

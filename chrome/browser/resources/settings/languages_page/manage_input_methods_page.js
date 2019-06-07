@@ -9,6 +9,8 @@
  *
  * @group Chrome Settings Elements
  * @element settings-manage-input-methods-page
+ *
+ * TODO(hsuregan): Move to OS settings.
  */
 Polymer({
   is: 'settings-manage-input-methods-page',

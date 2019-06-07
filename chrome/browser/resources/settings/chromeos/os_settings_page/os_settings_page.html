@@ -250,10 +250,10 @@
             </template>
             <template is="dom-if" if="[[showPage_(pageVisibility.languages)]]"
                 restamp>
-              <settings-section page-title="$i18n{languagesPageTitle}"
+              <settings-section page-title="$i18n{osLanguagesPageTitle}"
                   section="languages">
-                <settings-languages-page prefs="{{prefs}}">
-                </settings-languages-page>
+                <os-settings-languages-page prefs="{{prefs}}">
+                </os-settings-languages-page>
               </settings-section>
             </template>
             <template is="dom-if" if="[[showPage_(pageVisibility.downloads)]]"

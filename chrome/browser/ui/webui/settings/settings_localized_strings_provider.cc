@@ -640,6 +640,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
     {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
     {"setWallpaper", IDS_OS_SETTINGS_SET_WALLPAPER},
+    {"osLanguagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE},
 #endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     {"showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS},
@@ -1417,7 +1418,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
 
 void AddLanguagesStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
-    {"languagesPageTitle", IDS_SETTINGS_LANGUAGES_PAGE_TITLE},
     {"languagesListTitle", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE},
     {"searchLanguages", IDS_SETTINGS_LANGUAGE_SEARCH},
     {"languagesExpandA11yLabel",
@@ -1490,6 +1490,17 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "languagesLearnMoreURL",
       base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl));
+  // TODO(hsuregan): Remove once OS Browser split settings is complete.
+  html_source->AddString(
+      "languagesPageTitle",
+      l10n_util::GetStringUTF16(
+          base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
+              ? IDS_SETTINGS_LANGUAGES_PAGE_TITLE
+              : IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE));
+#else
+  html_source->AddString(
+      "languagesPageTitle",
+      l10n_util::GetStringUTF16(IDS_SETTINGS_LANGUAGES_PAGE_TITLE));
 #endif
 }
 
