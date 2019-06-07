@@ -142,15 +142,6 @@
       Jos käytännön arvo on epätosi, kehittäjätilaa (käytössä / ei käytössä) ei ilmoiteta.</translation>
 <translation id="1160479894929412407">Salli QUIC-protokollan käyttö</translation>
 <translation id="1160939557934457296">Estä eteneminen Selaussuojan varoitussivulta</translation>
-<translation id="1171342272070128466">Ota käyttöön kiinnitetty suurennus ‑esteettömyysominaisuus.
-
-          Jos käytännön arvoksi on asetettu tosi, kiinnitetty suurennus on aina käytössä.
-
-          Jos käytännön arvoksi on asetettu epätosi, kiinnitetty suurennus ei ole koskaan käytössä.
-
-          Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
-
-          Jos tätä käytäntöä ei ole määritetty, kiinnitetty suurennus poistetaan oletuksena käytöstä, mutta käyttäjä voi ottaa sen käyttöön milloin tahansa.</translation>
 <translation id="1189817621108632689">Voit määrittää URL-mallien luettelon, jossa määritetään sivustot, jotka saavat näyttää kuvia.
 
           Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.
@@ -1124,6 +1115,15 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
           Jos tätä käytäntöä ei ole määritetty, toimintaa tarkemmin ohjaavien käytäntöjen toiminta pysyy ennallaan.</translation>
 <translation id="2987155890997901449">Ota ARC käyttöön.</translation>
 <translation id="2987227569419001736">Hallinnoi Web Bluetooth ‑sovellusliittymän käyttöä</translation>
+<translation id="2990018289267778247">Jos tämän käytännön arvo on tosi, esteettömyysasetukset näkyvät aina ilmaisinalueen valikossa.
+
+          Jos tämän käytännön arvo on epätosi, esteettömyysasetuksia ei koskaan näytetä ilmaisinalueen valikossa.
+
+          Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
+
+          Jos tätä käytäntöä ei ole määritetty, esteettömyysasetuksia ei lisätä ilmaisinalueen valikkoon, mutta käyttäjä voi asettaa ne näkyviin Asetukset-sivulta.
+
+          Kun esteettömyysominaisuudet on otettu käyttöön muilla keinoilla (esim. näppäinyhdistelmällä), esteettömyysasetukset näkyvät aina ilmaisinalueen valikossa.</translation>
 <translation id="3011301228198307065">Määrittää etusivun URL-osoitteen, jota <ph name="PRODUCT_NAME" /> käyttää oletuksena, ja estää käyttäjiä muuttamasta sitä.
 
           Etusivu avautuu, kun käyttäjä valitsee Etusivu-painikkeen. Käynnistyksen yhteydessä avautuvat sivut määritetään RestoreOnStartup-käytännöillä.
@@ -1440,6 +1440,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
         Tätä käytännön arvoa käytetään laitteen laajuisessa pöytäkoneen rekisteröimisessä pilvikäytäntöön. Arvon voi asettaa Windowsissa rekisteri tai ryhmäkäytäntöobjekti, Macissa plist ja Linuxissa JSON-käytäntötiedosto.</translation>
 <translation id="3660562134618097814">SAML-tunnistuspalvelun evästeiden siirto kirjautumisen aikana</translation>
 <translation id="3701121231485832347">Määrittää sellaisten laitteiden (<ph name="PRODUCT_OS_NAME" />) asetukset, joita <ph name="MS_AD_NAME" /> ylläpitää</translation>
+<translation id="3702518095257671450">Etätodennus</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Yksirivinen kenttä on poistettu käytöstä ja poistetaan pian kokonaan. Siirry käyttämään alla olevaa monirivistä tekstiruutua.)</translation>
 <translation id="3709266154059827597">Määritä, mitä laajennuksia ei saa asentaa</translation>
 <translation id="3711895659073496551">Keskeytä</translation>
@@ -1550,11 +1551,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos käytännön arvo on Epätosi, käyttökertatietoja ei
       raportoida. Jos arvo on Tosi tai sitä ei aseteta, käyttökertatiedot
       raportoidaan.</translation>
-<translation id="3852924591079583104">
-      Kun käytännön arvoksi asetetaan ArcSession, se pakottaa laitteen käynnistymään uudelleen käyttäjän uloskirjautumisen yhteydessä, jos Android on käynnistynyt.
-      Kun arvo on Aina, se pakottaa laitteen käynnistymään uudelleen aina uloskirjautumisen yhteydessä.
-      Jos sitä ei aseteta, käytännöllä ei ole vaikutusta eikä uudelleenkäynnistys ole pakollinen uloskirjautumisen yhteydessä. Sama pätee myös Ei koskaan ‑valintaan.
-      </translation>
 <translation id="3858658082795336534">Kaksipuolisen tulostuksen oletustila</translation>
 <translation id="3859780406608282662">Lisää parametri muunnelmasiemenarvon noutamiseen tuotteessa <ph name="PRODUCT_OS_NAME" />.
 
@@ -1840,6 +1836,15 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
 <translation id="4285674129118156176">Salli ulkopuolisten käyttäjien käyttää ARC:tä</translation>
+<translation id="4289903996435140853">Voit määrittää luettelon URL-osoitemalleja, jonka sivustot saavat automaattisesti pyytää käyttäjältä USB-laitteen käyttöoikeutta, jos sillä on tietty myyjän ja tuotteen tunnus. Luettelon jokaisessa kohteessa on oltava laitteita ja URL-osoitemalleja, jotta käytäntö voi astua voimaan. Jokainen laitekohta voi sisältää kentät myyjän tunnukselle ja tuotteen tunnukselle. Jos tunnusta ei mainita, tätä pidetään jokerimerkkinä, paitsi jos tuotteen tunnus mainitaan ilman myyjän tunnuksen mainitsemista – tämä ei ole mahdollista. Muuten käytäntö ei voi astua voimaan. Virheelliset käytännön arvot ohitetaan.
+
+        USB-lupamallissa on pyytävän sivuston URL-osoite (pyytävä URL) ja ylimmän tason kehyssivuston URL-osoite (upottava URL), joiden avulla pyytävälle URL-osoitteelle annetaan lupa käyttää USB-laitetta. Pyytävä ja upottava URL-osoite voivat olla erilaiset, kun pyytävä sivusto ladataan iframella. Siksi "urls"-kentässä voi olla enintään kaksi URL-osoitekohtaa pilkulla erotettuna: pyytävä ja upottava URL-osoite. Jos vain yksi URL-osoite mainitaan, kyseisten USB-laitteiden käyttölupa annetaan, jos tämä osoite vastaa pyytävän sivun URL-osoitetta upotustilasta huolimatta. "urls"-kentän osoitteiden on oltava hyväksyttäviä URL-osoitteita, tai käytäntö ohitetaan.
+
+        Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultWebUsbGuardSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista arvoa.
+
+        Tämän käytännön URL-osoitemallien on sovittava yhteen WebUsbBlockedForUrls-mallien kanssa. Ristiriitatilanteissa tätä käytäntöä sovelletaan ennen WebUsbBlockedForUrls- ja WebUsbAskForUrls-käytäntöjä.
+
+        Tämän käytännön ja WebUsbAllowDevicesForUrls-käytännön arvot yhdistetään.</translation>
 <translation id="4298509794364745131">Määrittää luettelon sovelluksia, jotka <ph name="PRODUCT_OS_NAME" /> voi näyttää lukitusnäytöllä muistiinpanosovelluksina.
 
       Jos ensisijainen muistiinpanosovellus on käytettävissä lukitusnäytöllä, näytöllä näkyy sovelluksen käynnistävä käyttöliittymäelementti.
@@ -1983,6 +1988,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4639407427807680016">Laitteen omaa viestijärjestelmää käyttävät isännät, jotka tulee lisätä sallittujen luetteloon</translation>
 <translation id="4650759511838826572">Poista URL-protokollajärjestelmät käytöstä</translation>
 <translation id="465099050592230505">Enterprise-verkkomyymälän URL-osoite (ei enää käytössä)</translation>
+<translation id="4661889655253181651">Sisältöasetuksissa voit määrittää, miten tietyn tyyppistä sisältöä (kuten evästeitä, kuvia tai JavaScriptiä) käsitellään.</translation>
 <translation id="4665897631924472251">Laajennusten hallinnan asetukset</translation>
 <translation id="4668325077104657568">Kuvien oletusasetus</translation>
 <translation id="4670865688564083639">Vähimmäismäärä:</translation>
@@ -2026,6 +2032,11 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4757671984625088193">Jos käytännön arvoksi on asetettu Tosi tai sille ei aseteta mitään arvoa, <ph name="PRODUCT_NAME" /> ehdottaa nykyiseen sivuun liittyviä sivuja.
       Ehdotukset haetaan Googlen palvelimilta.
       Jos sen arvo on Epätosi, ehdotuksia ei haeta tai näytetä.</translation>
+<translation id="4759650396863318477">Voit määrittää ajanjakson (millisekunteina), jonka aikana käyttäjälle ilmoitetaan, että <ph name="PRODUCT_NAME" /> tai <ph name="PRODUCT_OS_NAME" /> ‑laite on käynnistettävä uudelleen odottavan päivityksen vuoksi.
+
+      Tänä aikana käyttäjä saa toistuvia muistutuksia päivittämisestä. <ph name="PRODUCT_OS_NAME" /> ‑laitteilla uudelleenkäynnistysilmoitus näkyy ilmaisinalueella <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />-käytännön mukaan. <ph name="PRODUCT_NAME" /> ‑selaimissa sovellusvalikon muutos kertoo uudelleenkäynnistyksen tarpeesta, kun kolmannes ilmoitusajasta on kulunut. Ilmoituksen väri muuttuu, kun kaksi kolmannesta ilmoitusajasta on kulunut, ja uudelleen, kun koko ilmoitusaika on kulunut. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-käytännön sallimat lisäilmoitukset noudattavat samaa aikataulua.
+
+      Jos käytäntöä ei ole määritetty, <ph name="PRODUCT_OS_NAME" /> ‑laitteiden oletusajanjakso on 345 600 000 millisekuntia (neljä päivää) ja <ph name="PRODUCT_NAME" /> ‑selainten 604 800 000 millisekuntia (yksi viikko).</translation>
 <translation id="4788252609789586009">Kun tämä on käytössä, <ph name="PRODUCT_NAME" /> voi täyttää kenttiä automaattisesti. Käyttäjät voivat täyttää verkkolomakkeita aiemmin tallennetuilla luottokorttitiedoilla.
 
       Jos asetus poistetaan käytöstä, automaattinen täyttö ei ehdota luottokorttitietoja, täytä niitä tai tallenna uusia luottokorttitietoja myöhempää käyttöä varten selailun yhteydessä.
@@ -2220,6 +2231,15 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="5208240613060747912">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa näyttää ilmoituksia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultNotificationsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="5213038356678567351">Sivustot, jotka eivät koskaan aiheuta selaimen vaihtoa</translation>
 <translation id="5219844027738217407">Android-sovellusten kohdalla tämä käytäntö vaikuttaa vain mikrofoniin. Kun tämän käytännön arvoksi on määritetty tosi, mikrofoni on mykistetty kaikkien Android-sovellusten kohdalla, ilman poikkeuksia.</translation>
+<translation id="5221394278852982313">Voit määrittää luettelon URL-osoitemalleja, jonka sivustot saavat automaattisesti pyytää käyttäjältä USB-laitteen käyttöoikeutta, jos sillä on tietty myyjän ja tuotteen tunnus. Luettelon jokaisessa kohteessa on oltava laitteita ja URL-osoitemalleja, jotta käytäntö voi astua voimaan. Jokainen laitekohta voi sisältää kentät myyjän tunnukselle ja tuotteen tunnukselle. Jos tunnusta ei mainita, tätä pidetään jokerimerkkinä, paitsi jos tuotteen tunnus mainitaan ilman myyjän tunnuksen mainitsemista – tämä ei ole mahdollista. Muuten käytäntö ei voi astua voimaan. Virheelliset käytännön arvot ohitetaan.
+
+        USB-lupamallissa on pyytävän sivuston URL-osoite (pyytävä URL) ja ylimmän tason kehyssivuston URL-osoite (upottava URL), joiden avulla pyytävälle URL-osoitteelle annetaan lupa käyttää USB-laitetta. Pyytävä ja upottava URL-osoite voivat olla erilaiset, kun pyytävä sivusto ladataan iframella. Siksi "urls"-kentässä voi olla enintään kaksi URL-osoitekohtaa pilkulla erotettuna: pyytävä ja upottava URL-osoite. Jos vain yksi URL-osoite mainitaan, kyseisten USB-laitteiden käyttölupa annetaan, jos tämä osoite vastaa pyytävän sivun URL-osoitetta upotustilasta huolimatta. "urls"-kentän osoitteiden on oltava hyväksyttäviä URL-osoitteita, tai käytäntö ohitetaan.
+
+        Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultWebUsbGuardSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista arvoa.
+
+        Tämän käytännön URL-osoitemallien on sovittava yhteen WebUsbBlockedForUrls-mallien kanssa. Ristiriitatilanteissa tätä käytäntöä sovelletaan ennen WebUsbBlockedForUrls- ja WebUsbAskForUrls-käytäntöjä.
+
+        Tämän käytännön ja DeviceWebUsbAllowDevicesForUrls-käytännön arvot yhdistetään.</translation>
 <translation id="5228316810085661003">Laitteen paikallisen tilin automaattisen kirjautumisen viive.
 
       Jos |DeviceLocalAccountAutoLoginId|-käytäntöä ei ole määritetty, käytännöllä ei ole vaikutusta. Muutoin:
@@ -2944,6 +2964,21 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
       Jos käytännön arvo on Estä käyttäjiä määrittämästä varmenteita, käyttäjät eivät voi määrittää varmenteita, ainoastaan lukea niitä.</translation>
 <translation id="6573305661369899995">Aseta URL-rajoitusten ulkopuolinen lähde</translation>
+<translation id="6583851521569686409">Määrittää tulostinluettelon.
+
+      Tämän käytännön avulla järjestelmänvalvojat voivat määrittää tulostinasetuksia
+      käyttäjiä varten.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> ovat vapaamuotoisia merkkijonoja, joita voidaan muokata tulostimen valinnan helpottamiseksi. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> auttavat käyttäjiä tunnistamaan tulostimet. Ne vastaavat tulostimen valmistajaa ja mallia. Lisää kohtaan <ph name="PRINTER_URI" /> osoite, joka on käytettävissä asiakastietokoneelta ja johon sisältyvät <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valinnainen arvo. Sen tarkoituksena on auttaa <ph name="ZEROCONF_DISCOVERY" /> ‑tulostinkopioiden poistamisessa.
+
+      Tulostimen nimen tulee sisältyä <ph name="PRINTER_EFFECTIVE_MODEL" />-arvoon, tai <ph name="PRINTER_AUTOCONF" />-arvoksi on asetettava tosi. Sellaiset tulostimet ohitetaan, joissa on joko molemmat ominaisuudet tai ei kumpaakaan.
+
+      Tulostin määritetään sen ensimmäisen käyttökerran yhteydessä.  PPD:t ladataan vasta, kun tulostinta käytetään.  Tämän jälkeen PPD:t tallennetaan välimuistiin, jos niitä käytetään usein.
+
+      Tämä käytäntö ei vaikuta siihen, voivatko käyttäjät määrittää tulostimia yksittäisillä laitteilla.  Se on tarkoitettu käytettäväksi yksittäisten käyttäjien tekemien tulostinmääritysten lisäksi.
+
+      Jos laitetta hallinnoidaan Active Directoryn avulla, tämä käytäntö sallii, että <ph name="MACHINE_NAME_VARIABLE" /> liitetään Active Directory ‑koneen nimeen tai sen alimerkkijonoon. Jos koneen nimi on esimerkiksi <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> korvattaisiin kuudetta kohtaa seuraavilla neljällä merkillä: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Huomaa, että kohtien laskeminen aloitetaan nollasta.
+      </translation>
 <translation id="6598235178374410284">Käyttäjän avatar-kuva</translation>
 <translation id="6603004149426829878">Lähetä aina käytettävissä olevat sijaintisignaalit palvelimelle aikavyöhykkeen selvittämisen yhteydessä.</translation>
 <translation id="6628120204569232711">Ilmoita tallennustilan tila</translation>
@@ -3380,7 +3415,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytännön arvoksi asetetaan RemoveLRUIfDormant, automaattinen puhdistus poistaa laitteelta käyttäjiä, jotka eivät ole kirjautuneet sisään vähintään kolmeen kuukauteen, järjestyksessä, jossa pisimpään kirjautumatta ollut käyttäjä poistetaan ensin, kunnes levytilaa on vapautettu tarpeeksi.
 
       Jos käytäntöä ei määritetä, automaattinen puhdistus käyttää sisäänrakennettua oletustapaa, joka on tällä hetkellä RemoveLRUIfDormant.</translation>
-<translation id="7334274148831027933">Ota kiinnitetty suurennus käyttöön</translation>
 <translation id="7336785017449297672">Määrittää kellon ja aikavyöhykkeen asetukset</translation>
 <translation id="7336878834592315572">Säilytä evästeet käyttökerran ajan</translation>
 <translation id="7339315111520512972">Pakota verkostokoodin suorittaminen selainprosessissa</translation>
@@ -4264,6 +4298,8 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
 <translation id="915194831143859291">Jos tämän käytännön arvo on Epätosi tai jos sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> sallii käyttäjän sammuttaa laitteen.
       Jos tämän käytännön arvo on Tosi, <ph name="PRODUCT_OS_NAME" /> käynnistää laitteen uudelleen, jos käyttäjä sammuttaa sen. <ph name="PRODUCT_OS_NAME" /> korvaa käyttöliittymän kaikki sammutuspainikkeet uudelleenkäynnistyspainikkeilla. Jos käyttäjä käyttää sammuttamiseen laitteen virtapainiketta, laite ei käynnisty automaattisesti uudelleen, vaikka tämä käytäntö olisikin käytössä.</translation>
 <translation id="9152473318295429890">Salli vastaavien verkkosivujen ehdottaminen kontekstin perusteella</translation>
+<translation id="9153446010242995516">Palaa kohdeversioon ja pysy siinä, jos käyttöjärjestelmän versio on uudempi kuin kohde. Pyri siirtämään laitetason määritykset (mukaan lukien verkon kirjautumistiedot) palautusprosessin yhteydessä, jos mahdollista, mutta tee palautuksessa täysi powerwash, vaikka datan palautus ei olisi mahdollista (koska kohdeversio ei tue datan palautusta tai muutos on yhteensopimaton vanhemman version kanssa).
+          Tuettu versiossa 75 ja uudemmissa (<ph name="PRODUCT_OS_NAME" />). Palautus ei siis ole mahdollinen vanhempia versioita käyttävissä asiakassovelluksissa.</translation>
 <translation id="9158929520101169054">Salli kirjautuminen usealle tilille selaimessa</translation>
 <translation id="9159126470527871268">Ilmoita käyttäjille, että <ph name="PRODUCT_NAME" /> tai <ph name="PRODUCT_OS_NAME" /> on käynnistettävä uudelleen odottavan päivityksen käyttöönottamiseksi.
 

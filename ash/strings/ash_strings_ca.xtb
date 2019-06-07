@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Els teus dispositius funcionen encara millor junts</translation>
 <translation id="112308213915226829">Amaga el prestatge automàticament</translation>
 <translation id="1153356358378277386">Dispositius vinculats</translation>
+<translation id="1175572348579024023">Desplaça</translation>
 <translation id="1178581264944972037">Posa en pausa</translation>
 <translation id="1195412055398077112">ajusta la mida</translation>
 <translation id="119944043368869598">Esborra-ho tot</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">L'Assistent de Google no està disponible en les sessions de demostració.</translation>
 <translation id="479989351350248267">cerca</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
+<translation id="4831034276697007977">Confirmes que vols desactivar els clics automàtics?</translation>
 <translation id="4849058404725798627">Ressalta l'objecte amb el focus del teclat</translation>
 <translation id="485592688953820832">No facis res (pausa)</translation>
 <translation id="4872237917498892622">Alt+Cerca o Maj</translation>
@@ -298,7 +300,7 @@
 <translation id="574392208103952083">Mitjà</translation>
 <translation id="5744083938413354016">Tocar i arrossegar</translation>
 <translation id="5750765938512549687">El Bluetooth està desactivat</translation>
-<translation id="5777841717266010279">Voleu deixar de compartir la pantalla?</translation>
+<translation id="5777841717266010279">Vols aturar la compartició de pantalla?</translation>
 <translation id="57838592816432529">Silencia</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Atura <ph name="ROUTE_TITLE" /> a <ph name="RECEIVER_NAME" /></translation>
@@ -319,7 +321,7 @@
 <translation id="6018164090099858612">S'està sortint del mode de rèplica</translation>
 <translation id="6043212731627905357">Aquest monitor i el teu <ph name="DEVICE_TYPE" /> no s'entenen (el monitor no és compatible).</translation>
 <translation id="6043994281159824495">Tanca la sessió ara</translation>
-<translation id="6047696787498798094">La pantalla es deixarà de compartir quan canvieu d'usuari. Voleu continuar?</translation>
+<translation id="6047696787498798094">La compartició de pantalla s'aturarà quan canviïs d'usuari. Vols continuar?</translation>
 <translation id="6062360702481658777">Es tancarà la sessió automàticament d'aquí a <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">No s'ha pogut verificar la contrasenya. Torna-ho a provar.</translation>
 <translation id="607652042414456612">El vostre ordinador està visible als dispositius Bluetooth propers i apareixerà com a "<ph name="NAME" />" amb l'adreça <ph name="ADDRESS" />.</translation>
@@ -413,6 +415,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> no admet <ph name="SPECIFIED_RESOLUTION" />. S'ha canviat la resolució per <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Paleta d'emoji</translation>
 <translation id="7564874036684306347">Moure finestres a un altre escriptori pot provocar un comportament imprevist. És possible que les notificacions, les finestres i els quadres de diàleg següents quedin dividits entre escriptoris.</translation>
+<translation id="7568294522609223312">Desactiva els clics automàtics</translation>
 <translation id="7569509451529460200">S'ha activat el braille i ChromeVox</translation>
 <translation id="7593891976182323525">Cerca o Maj</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propietari)</translation>

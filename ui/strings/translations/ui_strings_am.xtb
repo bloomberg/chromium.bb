@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
+<translation id="1028699632127661925">ወደ <ph name="DEVICE_NAME" /> በመላክ ላይ...</translation>
 <translation id="111910763555783249">የማሳወቂያ ቅንብሮች</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 ቀን በፊት}one{# ቀኖች በፊት}other{# ቀኖች በፊት}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{ከ1 ደቂቃ በፊት}one{ከ# ደቂቃዎች በፊት}other{ከ# ደቂቃዎች በፊት}}</translation>
@@ -185,7 +186,6 @@
 <translation id="8144660977431427332">የእርስዎ ፍለጋዎች የቀረቡት በ Google ረዳቱ ነው። <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />፣ ራስሰር ሙላ</translation>
 <translation id="815598010540052116">ወደ ታች ሸብልል</translation>
-<translation id="8170087467028567933">ይህን የአስተያየት ጥቆማን ማስወገድ በመላ መሣሪያዎችዎ ላይ ከመለያዎ ይደብቀዋል።</translation>
 <translation id="8179976553408161302">አስገባ</translation>
 <translation id="8210608804940886430">ወደታች አንቀሳቅስ</translation>
 <translation id="8245914219290430011">ትር</translation>
@@ -196,7 +196,6 @@
 <translation id="838869780401515933">አመልክት</translation>
 <translation id="8393700583063109961">መልዕክት ይላኩ</translation>
 <translation id="8394908167088220973">ሚዲያ አጫውት/ለአፍታ አቁም</translation>
-<translation id="8420205633584771378">ይህ የአስተያየት ጥቆማ ይወገድ?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1ዓ}one{#ዓ}other{#ዓ}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ፋይል(.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">መደርደሪያ ሁልጊዜ ይታያል</translation>

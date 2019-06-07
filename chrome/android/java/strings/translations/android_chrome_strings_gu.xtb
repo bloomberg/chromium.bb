@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">છબી</translation>
 <translation id="257088987046510401">થીમ્સ</translation>
 <translation id="2570922361219980984">આ ઉપકરણ માટે સ્થાન ઍક્સેસ પણ બંધ છે. તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>
+<translation id="257674075312929031">જૂથ</translation>
 <translation id="257931822824936280">વિસ્તૃત - સંકુચિત કરવા માટે ક્લિક કરો.</translation>
 <translation id="2581165646603367611">આ કુકી, કૅશ અને Chromeને લાગતું હોય કે આ મહત્વનું નથી એવા સાઇટના બીજા ડેટાને સાફ કરશે.</translation>
 <translation id="2586657967955657006">ક્લિપબોર્ડ</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">આ એકાઉન્ટ <ph name="PARENT_NAME_1" /> અને <ph name="PARENT_NAME_2" /> દ્વારા મેનેજ થાય છે.</translation>
 <translation id="2962095958535813455">છૂપા ટૅબ્સ પર સ્વિચ કર્યું</translation>
 <translation id="2968755619301702150">પ્રમાણપત્ર દર્શક</translation>
+<translation id="2977480621796371840">ગ્રૂપમાંથી દૂર કરો</translation>
 <translation id="2979025552038692506">પસંદ કરેલ છૂપું ટૅબ</translation>
 <translation id="2989523299700148168">તાજેતરમાં મુલાકાત લીધેલ</translation>
 <translation id="2996291259634659425">પાસફ્રેઝ બનાવો</translation>
@@ -426,6 +428,12 @@
 <translation id="4226663524361240545">સૂચનાઓ ઉપકરણને વાઇબ્રેટ કરી શકે છે</translation>
 <translation id="423219824432660969"><ph name="TIME" /> પ્રમાણે Google પાસવર્ડ વડે સિંક કરેલા ડેટાને એન્ક્રિપ્ટ કરો</translation>
 <translation id="4242533952199664413">સેટિંગ્સ ખોલો</translation>
+<translation id="4247274662191902962">તમે આ VR અનુભવમાં હશો, ત્યારે જ સેન્સરનો ડેટા શેર કરવામાં આવશે. આ સાઇટ અમુક ચોક્કસ માહિતીનો ઉપયોગ કરીને કદાચ તમારા વિશેની માહિતી મેળવી શકશે, જેમ કે:
+    - તમારું સ્થાન
+    - તમારી શારીરિક લાક્ષણિકતાઓ, જેમ કે તમારી આંખની સ્થિતિ
+    - તમારું હલનચલન, જેમ કે તમારી ચાલવાની રીત
+
+    તમે ઍક્સેસ માટે મંજૂરી આપો તે પહેલાં ખાતરી કરો કે તમે આ સાઇટ પર વિશ્વાસ મૂકો છો.</translation>
 <translation id="424864128008805179">Chromeમાંથી સાઇન આઉટ કરીએ?</translation>
 <translation id="4256782883801055595">ઓપન સોર્સ લાઇસન્સ</translation>
 <translation id="4259722352634471385">નેવિગેશન અવરોધિત છે: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@
 <translation id="545042621069398927">તમારા ડાઉનલોડની ગતિ વધારી રહ્યાં છીએ.</translation>
 <translation id="5456381639095306749">પૃષ્ઠ ડાઉનલોડ કરો</translation>
 <translation id="5475862044948910901">ઑગ્મેન્ટેડ રિયાલિટી સત્ર શરૂ કરીએ?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" />ને મારી ઍપમાં ઉમેરી</translation>
 <translation id="548278423535722844">નકશા અ‍ૅપ્લિકેશનમાં ખોલો</translation>
 <translation id="5487521232677179737">ડેટા સાફ કરો</translation>
 <translation id="5494752089476963479">ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવતી સાઇટ પરથી જાહેરાતો બ્લૉક કરો</translation>

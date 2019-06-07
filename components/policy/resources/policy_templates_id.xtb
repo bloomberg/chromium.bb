@@ -130,15 +130,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
       Jika kebijakan ini disetel ke false, status pengalih dev tidak akan dilaporkan.</translation>
 <translation id="1160479894929412407">Izinkan protokol QUIC</translation>
 <translation id="1160939557934457296">Menonaktifkan untuk melanjutkan dari halaman peringatan Safe Browsing</translation>
-<translation id="1171342272070128466">Aktifkan fitur aksesibilitas kaca pembesar yang dipasang di dok.
-
-          JIka kebijakan ini ditetapkan ke true, kaca pembesar yang dipasang di dok akan selalu diaktifkan.
-
-          Jika kebijakan ini ditetapkan ke false, kaca pembesar yang dipasang di dok akan selalu dinonaktifkan.
-
-          Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
-
-          Jika kebijakan ini tidak ditetapkan, kaca pembesar yang dipasang di dok mula-mula dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="1189817621108632689">Memungkinkan Anda menyetel daftar pola URL yang menentukan situs mana yang tidak diizinkan untuk menampilkan gambar.
 
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs yaitu dari kebijakan 'DefaultImagesSetting' jika disetel, atau dari konfigurasi pribadi pengguna.
@@ -1530,11 +1521,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika kebijakan disetel ke False, informasi sesi tidak akan
       dilaporkan. Jika disetel ke True atau tidak disetel, informasi sesi kios akan
       dilaporkan.</translation>
-<translation id="3852924591079583104">
-      Kebijakan ini, saat disetel ke ArcSession, akan memaksa perangkat untuk reboot saat pengguna logout jika Android telah dimulai.
-      Saat disetel ke Selalu, kebijakan ini akan memaksa perangkat untuk reboot setiap kali pengguna logout.
-      Jika tidak disetel, kebijakan ini tidak berpengaruh dan reboot paksa tidak akan dilakukan saat pengguna logout. Hal yang sama berlaku jika kebijakan disetel ke Jangan pernah.
-      </translation>
 <translation id="3858658082795336534">Mode dupleks pencetakan default</translation>
 <translation id="3859780406608282662">Tambahkan parameter untuk mengambil sumber Variasi di <ph name="PRODUCT_OS_NAME" />.
 
@@ -3332,7 +3318,6 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
       Jika kebijakan ini disetel ke 'RemoveLRUIfDormant', pembersihan otomatis akan tetap membuang pengguna yang tidak melakukan proses masuk minimal selama 3 bulan dalam urutan yang paling lama tidak diakses hingga terdapat ruang kosong yang memadai.
 
       Jika kebijakan ini tidak disetel, pembersihan otomatis menggunakan strategi yang tertanam secara default. Saat ini, itu adalah strategi 'RemoveLRUIfDormant'.</translation>
-<translation id="7334274148831027933">Aktifkan kaca pembesar yang dipasang ke dok</translation>
 <translation id="7336785017449297672">Mengontrol setelan jam dan zona waktu.</translation>
 <translation id="7336878834592315572">Menyimpan cookie selama durasi sesi</translation>
 <translation id="7339315111520512972">Paksa kode jaringan untuk dijalankan dalam proses browser</translation>

@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Vaše zariadenia fungujú spoločne ešte lepšie</translation>
 <translation id="112308213915226829">Automatické skrývanie poličky</translation>
 <translation id="1153356358378277386">Spárované zariadenia</translation>
+<translation id="1175572348579024023">Posúvanie</translation>
 <translation id="1178581264944972037">Pozastaviť</translation>
 <translation id="1195412055398077112">presah obsahu</translation>
 <translation id="119944043368869598">Vymazať všetko</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">Asistent Google nie je k dispozícii v relácii ukážky.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Odpojiť</translation>
+<translation id="4831034276697007977">Naozaj chcete vypnúť automatické kliknutia?</translation>
 <translation id="4849058404725798627">Zvýrazniť objekt so zameraním klávesnice</translation>
 <translation id="485592688953820832">Žiadna akcia (pozastaviť)</translation>
 <translation id="4872237917498892622">Alt + Hľadať alebo Shift</translation>
@@ -413,6 +415,7 @@
 <translation id="7561014039265304140">Obrazovka <ph name="DISPLAY_NAME" /> nepodporuje rozlíšenie <ph name="SPECIFIED_RESOLUTION" />. Rozlíšenie bolo zmenené na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta emodži</translation>
 <translation id="7564874036684306347">Presunutie okien na inú obrazovku môže spôsobiť neočakávané správanie. Nasledujúce upozornenia, okná a dialógové okná sa môžu zobraziť rozdelené na viacerých pracovných plochách.</translation>
+<translation id="7568294522609223312">Vypnutie automatických kliknutí</translation>
 <translation id="7569509451529460200">Funkcie Braille a ChromeVox sú povolené</translation>
 <translation id="7593891976182323525">Hľadať alebo Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (vlastník)</translation>

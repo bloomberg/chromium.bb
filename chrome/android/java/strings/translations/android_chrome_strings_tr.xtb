@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">IMAGE</translation>
 <translation id="257088987046510401">Temalar</translation>
 <translation id="2570922361219980984">Konum erişimi bu cihaz için de kapalı. Konum erişimini <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ndan açın.</translation>
+<translation id="257674075312929031">Grup</translation>
 <translation id="257931822824936280">Genişletildi - Daraltmak için tıklayın.</translation>
 <translation id="2581165646603367611">Bu işlem Chrome'un önemli olmadığını düşündüğü çerezleri, önbelleği ve diğer site verilerini temizleyecek.</translation>
 <translation id="2586657967955657006">Pano</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">Bu hesap <ph name="PARENT_NAME_1" /> ve <ph name="PARENT_NAME_2" /> tarafından yönetiliyor.</translation>
 <translation id="2962095958535813455">Gizli mod sekmelerine geçildi</translation>
 <translation id="2968755619301702150">Sertifika görüntüleyici</translation>
+<translation id="2977480621796371840">Gruptan kaldır</translation>
 <translation id="2979025552038692506">Seçili Gizli Sekme</translation>
 <translation id="2989523299700148168">Son ziyaret edilenler</translation>
 <translation id="2996291259634659425">Parola oluşturun</translation>
@@ -426,6 +428,12 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4226663524361240545">Bildirimler cihazı titretebilir</translation>
 <translation id="423219824432660969"><ph name="TIME" /> itibarıyla, senkronize edilmiş verileri Google şifresiyle şifrele</translation>
 <translation id="4242533952199664413">Ayarları aç</translation>
+<translation id="4247274662191902962">Sensör verileri yalnızca bu VR deneyiminiz sırasında paylaşılacak. Bu site bazı verileri kullanarak hakkınızda bilgi edinebilir. Örneğin:
+    - Konumunuz
+    - Fiziksel özellikleriniz (ör. gözünüzün konumu)
+    - Hareketleriniz (ör. yürüme biçiminiz)
+
+    Erişime izin vermeden önce bu siteye güvendiğinizden emin olun.</translation>
 <translation id="424864128008805179">Chrome oturumu kapatılsın mı?</translation>
 <translation id="4256782883801055595">Açık kaynak lisansları</translation>
 <translation id="4259722352634471385">Gezinme engellendi: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="545042621069398927">İndirme işleminiz hızlandırılıyor.</translation>
 <translation id="5456381639095306749">Sayfayı indir</translation>
 <translation id="5475862044948910901">Artırılmış Gerçeklik oturumu başlatılsın mı?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> uygulamalarıma eklendi</translation>
 <translation id="548278423535722844">Haritalar uygulamasında aç</translation>
 <translation id="5487521232677179737">Verileri temizle</translation>
 <translation id="5494752089476963479">Araya giren veya yanıltıcı reklamlar gösteren sitelerde reklamları engelle</translation>

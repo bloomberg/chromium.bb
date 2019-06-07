@@ -306,7 +306,7 @@
 <translation id="146000042969587795">Denne ramme blev blokeret, da den indeholder usikkert indhold.</translation>
 <translation id="146219525117638703">ONC-tilstand</translation>
 <translation id="146220085323579959">Forbindelsen til internettet blev afbrudt. Kontrollér din internetforbindelse, og prøv igen.</translation>
-<translation id="1463112138205428654"><ph name="FILE_NAME" /> blev blokeret af Avanceret beskyttelse</translation>
+<translation id="1463112138205428654"><ph name="FILE_NAME" /> blev blokeret af Avanceret beskyttelse.</translation>
 <translation id="1464258312790801189">Dine konti</translation>
 <translation id="1465176863081977902">K&amp;opiér webadressen til lyden</translation>
 <translation id="1465827627707997754">Pizzastykke</translation>
@@ -2142,6 +2142,12 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4242577469625748426">Det lykkedes ikke at installere politikindstillinger på enheden: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Find flere apps til styluspenne</translation>
 <translation id="424726838611654458">Altid åben i Adobe Reader</translation>
+<translation id="4247274662191902962">Sensordata deles kun, når du er i denne VR-oplevelse. Websitet kan muligvis få oplysninger om dig ved hjælp af bestemte oplysninger som f.eks.:
+    - Din placering
+    - Dine fysiske træk, f.eks. øjnenes placering
+    - Dine bevægelser, f.eks. den måde, du går på
+
+    Det er vigtigt, at du har tillid til websitet, før du giver adgang.</translation>
 <translation id="4247901771970415646">Der kan ikke synkroniseres med <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Venter på netværksforbindelse...</translation>
 <translation id="4249373718504745892">Denne sides adgang til dit kamera og din mikrofon er blevet blokeret.</translation>

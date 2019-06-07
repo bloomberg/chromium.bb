@@ -286,6 +286,7 @@
 <translation id="4572815280350369984">Súbor <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Viac...</translation>
 <translation id="4582497162516204941">Nainštalovať pomocou systému Linux (beta)</translation>
+<translation id="4594543368593301662">Zobrazujú sa výsledky pre dopyt <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Interpret</translation>
 <translation id="4656293982926141856">Tento počítač</translation>
 <translation id="4669606053856530811">Členovia zdroja <ph name="SOURCE_NAME" /> stratia prístup, pokiaľ s nimi tieto položky nezačnete zdieľať.</translation>
@@ -383,12 +384,14 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5412637665001827670">bulharská klávesnica</translation>
 <translation id="5418923334382419584">Klávesnica pre mjanmarčinu</translation>
 <translation id="5428105026674456456">Španielčina</translation>
+<translation id="5438282218546237410">Pre dopyt <ph name="SEARCH_TERM" /> nie sú k dispozícii žiadne výsledky.</translation>
 <translation id="5464696796438641524">poľská klávesnica</translation>
 <translation id="5465122519792752163">Klávesnica pre nepálčinu (InScript)</translation>
 <translation id="5469868506864199649">Taliančina</translation>
 <translation id="5494920125229734069">Vybrať všetko</translation>
 <translation id="5500122897333236901">Islandčina</translation>
 <translation id="5508696409934741614">Bodky</translation>
+<translation id="5522908512596376669">Zoznam súborov sa zmenil na zobrazenie zoznamu.</translation>
 <translation id="5524517123096967210">Súbor sa nepodarilo prečítať.</translation>
 <translation id="5533102081734025921">Obrázok <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Prepis (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6040143037577758943">Zavrieť</translation>
 <translation id="6054173164583630569">francúzska klávesnica</translation>
 <translation id="6074825444536523002">Formulár Google</translation>
+<translation id="6096979789310008754">Text vyhľadávania bol vymazaný, zobrazujú sa všetky súbory a priečinky</translation>
 <translation id="6111770213269631447">Prepis (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Medzera</translation>
 <translation id="6133173853026656527">Prebieha presúvanie súboru <ph name="FILE_NAME" />...</translation>
@@ -650,6 +654,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="8561206103590473338">Slon</translation>
 <translation id="8569764466147087991">Vyberte súbor, ktorý chcete otvoriť</translation>
 <translation id="8579285237314169903">Synchronizujú sa položky (počet: <ph name="NUMBER_OF_FILES" />)...</translation>
+<translation id="8600173386174225982">Zoznam súborov sa zmenil na zobrazenie miniatúry.</translation>
 <translation id="8669949407341943408">Presúva sa...</translation>
 <translation id="8671210955687109937">Môže pridávať komentáre</translation>
 <translation id="8686213429977032554">Tento súbor na Disku sa zatiaľ nezdieľa</translation>

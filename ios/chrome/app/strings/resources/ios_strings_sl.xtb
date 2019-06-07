@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Izbira mape</translation>
 <translation id="1265739287306757398">Več o tem</translation>
 <translation id="1272079795634619415">Ustavi</translation>
+<translation id="1283524564873030414">Zadnjih 24 ur</translation>
 <translation id="1323735185997015385">Izbriši</translation>
 <translation id="132683371494960526">Double tap to change the parent folder.</translation>
 <translation id="1340643665687018190">Close Menu</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Dodatno</translation>
 <translation id="1989112275319619282">Brskanje</translation>
 <translation id="2015722694326466240">Če si želite ogledati gesla, morate najprej nastaviti geslo v napravi.</translation>
+<translation id="2073572773299281212">Aktivna pred toliko dnevi: <ph name="DAYS" /></translation>
 <translation id="2074131957428911366">V <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" /> lahko kadar koli izberete, kaj želite sinhronizirati.</translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="209018056901015185">Zahtevaj spletno mesto za nam. računalnik</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Odpri vse</translation>
 <translation id="2570206273416014374">Pošilja nekatere piškotke in iskanja iz naslovne vrstice ter iskalnega polja privzetemu iskalniku.</translation>
 <translation id="2572712655377361602">Pravilnik o napravah je blokiral dostop do fotografij.</translation>
+<translation id="2578571896248130439">Pošlji spletno stran</translation>
 <translation id="2584132361465095047">Dodajanje računa ...</translation>
 <translation id="2625189173221582860">Geslo kopirano</translation>
 <translation id="2648803196158606475">Izbriši prebrano</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Označi …</translation>
 <translation id="3157684681743766797">Označi vse …</translation>
 <translation id="3175081911749765310">Spletne storitve</translation>
+<translation id="3178650076442119961">Aktivna danes</translation>
 <translation id="3207960819495026254">Dodano med zaznamke</translation>
 <translation id="3224641773458703735">Če želite izvoziti gesla, morate najprej nastaviti geslo v napravi.</translation>
 <translation id="3240426699337459095">Povezava kopirana</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">Če želite optično prebrati kodo QR, v nastavitvah omogočite fotoaparat</translation>
 <translation id="4281844954008187215">Pogoji storitve</translation>
 <translation id="430793432425771671">Sinhroniziraj vse</translation>
+<translation id="430967081421617822">Od začetka</translation>
 <translation id="4338650699862464074">Googlu pošlje URL-je strani, ki jih obiščete.</translation>
 <translation id="4359125752503270327">This page will open in another application.</translation>
 <translation id="4370827530403103842">Sync isn't working. Tap to fix.</translation>
@@ -281,6 +286,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5127805178023152808">Sinhroniziranje je izklopljeno</translation>
 <translation id="5132942445612118989">Sinhronizirajte gesla, zgodovino in drugo v vseh napravah</translation>
 <translation id="5140288047769711648">Chrome si bo zapomnil to geslo namesto vas. Ni si vam ga treba zapomniti.</translation>
+<translation id="5150492518600715772">Pošlji v napravo</translation>
 <translation id="5181140330217080051">Prenos</translation>
 <translation id="5186185447130319458">Zasebno</translation>
 <translation id="5190835502935405962">Vrstica z zaznamki</translation>
@@ -295,6 +301,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5327248766486351172">Ime</translation>
 <translation id="5388358297987318779">Odpri sliko</translation>
 <translation id="5409365236829784218">Nameščena ni nobena apl. za odpiranje te datoteke.</translation>
+<translation id="5416022985862681400">Zadnjih 7 dni</translation>
 <translation id="5433691172869980887">Uporabniško ime kopirano</translation>
 <translation id="54401264925851789">Informacije o varnosti strani</translation>
 <translation id="5443952882982198570">Kreditne kartice</translation>
@@ -309,6 +316,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Različica <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">Aktivna pred 1 dnevom</translation>
 <translation id="5711039611392265845">Če vas zanima več nastavitev, povezanih z zasebnostjo, varnostjo in zbiranjem podatkov, si oglejte razdelek <ph name="BEGIN_LINK" />Sinhronizacija in Googlove storitve<ph name="END_LINK" /></translation>
 <translation id="5728700505257787410">Žal je bila pri prijavi v račun težava.</translation>
 <translation id="5737974891429562743">Account sign-in details are out of date. Update to start sync.</translation>

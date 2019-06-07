@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">AFBEELDING</translation>
 <translation id="257088987046510401">Thema's</translation>
 <translation id="2570922361219980984">Locatietoegang is ook uitgeschakeld voor dit apparaat. Schakel dit in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Groep</translation>
 <translation id="257931822824936280">Uitgevouwen; klik om samen te vouwen.</translation>
 <translation id="2581165646603367611">Hiermee worden cookies, het cachegeheugen en andere gegevens gewist van sites waarvan Chrome denkt dat deze niet belangrijk zijn.</translation>
 <translation id="2586657967955657006">Klembord</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">Dit account wordt beheerd door <ph name="PARENT_NAME_1" /> en <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Overgeschakeld naar incognitotabbladen</translation>
 <translation id="2968755619301702150">Certificaatviewer</translation>
+<translation id="2977480621796371840">Uit groep verwijderen</translation>
 <translation id="2979025552038692506">Geselecteerd incognitotabblad</translation>
 <translation id="2989523299700148168">Onlangs bezocht</translation>
 <translation id="2996291259634659425">Wachtwoordzin maken</translation>
@@ -426,6 +428,12 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4226663524361240545">Het apparaat kan trillen bij meldingen</translation>
 <translation id="423219824432660969">Gesynchroniseerde gegevens versleutelen met Google-wachtwoord vanaf <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Instellingen openen</translation>
+<translation id="4247274662191902962">Sensorgegevens worden alleen gedeeld wanneer je deze VR-functie gebruikt. De site kan je mogelijk herkennen aan de hand van bepaalde gegevens, zoals:
+    - Je locatie
+    - Je fysieke kenmerken, zoals de positie van je ogen
+    - Je bewegingen, zoals hoe je loopt
+
+    Controleer of je de site vertrouwt voordat je deze toegang geeft.</translation>
 <translation id="424864128008805179">Uitloggen bij Chrome?</translation>
 <translation id="4256782883801055595">Open-sourcelicenties</translation>
 <translation id="4259722352634471385">Navigatie is geblokkeerd: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="545042621069398927">Je download wordt versneld.</translation>
 <translation id="5456381639095306749">Pagina downloaden</translation>
 <translation id="5475862044948910901">Augmented reality-sessie starten?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> toegevoegd aan mijn apps</translation>
 <translation id="548278423535722844">Openen in app voor passen</translation>
 <translation id="5487521232677179737">Gegevens wissen</translation>
 <translation id="5494752089476963479">Advertenties blokkeren op sites die opdringerige of misleidende advertenties weergeven</translation>

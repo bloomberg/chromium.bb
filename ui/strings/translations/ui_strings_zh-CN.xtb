@@ -185,7 +185,6 @@
 <translation id="8144660977431427332">您的搜索由 Google 助理提供支持。<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />，自动填充</translation>
 <translation id="815598010540052116">向下滚动</translation>
-<translation id="8170087467028567933">移除这项推荐内容会致使它停止在您的帐号中显示（无论您使用何种设备）。</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">向下翻页</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -196,7 +195,6 @@
 <translation id="838869780401515933">选中</translation>
 <translation id="8393700583063109961">发送消息</translation>
 <translation id="8394908167088220973">媒体播放/暂停</translation>
-<translation id="8420205633584771378">移除这项推荐内容？</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 年}other{# 年}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> 文件 (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">一律显示任务栏</translation>

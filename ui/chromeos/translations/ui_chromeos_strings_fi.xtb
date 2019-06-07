@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-tiedosto</translation>
 <translation id="457386861538956877">Lisää...</translation>
 <translation id="4582497162516204941">Asenna Linuxilla (beta)</translation>
+<translation id="4594543368593301662">Näytetään tulokset haulla <ph name="SEARCH_TERM" /></translation>
 <translation id="4631887759990505102">Esittäjä</translation>
 <translation id="4656293982926141856">Tällä tietokoneella</translation>
 <translation id="4669606053856530811">Jäsenet (<ph name="SOURCE_NAME" />) menettävät käyttöoikeuden, ellei näitä kohteita jaeta heille.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Näppäimistö: bulgaria</translation>
 <translation id="5418923334382419584">Myanmarilainen näppäimistö</translation>
 <translation id="5428105026674456456">espanja</translation>
+<translation id="5438282218546237410">Ei tuloksia haulla <ph name="SEARCH_TERM" /></translation>
 <translation id="5464696796438641524">Näppäimistö: puola</translation>
 <translation id="5465122519792752163">Nepalinkielinen näppäimistö (InScript)</translation>
 <translation id="5469868506864199649">italia</translation>
 <translation id="5494920125229734069">Valitse kaikki</translation>
 <translation id="5500122897333236901">islanti</translation>
 <translation id="5508696409934741614">Pisteet</translation>
+<translation id="5522908512596376669">Tiedostot näkyvät nyt luettelona.</translation>
 <translation id="5524517123096967210">Tiedostoa ei voi lukea.</translation>
 <translation id="5533102081734025921">Kuva, jonka tyyppi on <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Translitterointi (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="6054173164583630569">Näppäimistö: ranska</translation>
 <translation id="6074825444536523002">Google-lomake</translation>
+<translation id="6096979789310008754">Hakukysely poistettu, kaikki tiedostot ja kansiot näytetään.</translation>
 <translation id="6111770213269631447">Translitterointi (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Välilyönti</translation>
 <translation id="6133173853026656527">Siirretään tiedostoa <ph name="FILE_NAME" />…</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Norsu</translation>
 <translation id="8569764466147087991">Valitse avattava tiedosto</translation>
 <translation id="8579285237314169903">Synkronoidaan <ph name="NUMBER_OF_FILES" /> kohdetta…</translation>
+<translation id="8600173386174225982">Tiedostot näkyvät nyt pikkukuvina.</translation>
 <translation id="8669949407341943408">Siirretään…</translation>
 <translation id="8671210955687109937">Voi kommentoida</translation>
 <translation id="8686213429977032554">Tätä Drive-tiedostoa ei ole vielä jaettu</translation>

@@ -286,6 +286,7 @@
 <translation id="4572815280350369984">Plik <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Więcej</translation>
 <translation id="4582497162516204941">Zainstaluj za pomocą Linuksa (Beta)</translation>
+<translation id="4594543368593301662">Wyświetlam wyniki dla: <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Wykonawca</translation>
 <translation id="4656293982926141856">Ten komputer</translation>
 <translation id="4669606053856530811">Osoby z uprawnieniami do: „<ph name="SOURCE_NAME" />” utracą dostęp do tych elementów, chyba że zostaną one im udostępnione.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Klawiatura bułgarska</translation>
 <translation id="5418923334382419584">Klawiatura birmańska</translation>
 <translation id="5428105026674456456">Hiszpański</translation>
+<translation id="5438282218546237410">Brak wyników dla: <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Klawiatura polska</translation>
 <translation id="5465122519792752163">Klawiatura nepalska (InScript)</translation>
 <translation id="5469868506864199649">Włoski</translation>
 <translation id="5494920125229734069">Wybierz wszystko</translation>
 <translation id="5500122897333236901">Islandzki</translation>
 <translation id="5508696409934741614">Punkty</translation>
+<translation id="5522908512596376669">Lista plików została przełączona na widok listy.</translation>
 <translation id="5524517123096967210">Nie można odczytać pliku.</translation>
 <translation id="5533102081734025921">Obraz <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Transliteracja (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="6054173164583630569">Klawiatura francuska</translation>
 <translation id="6074825444536523002">Formularz Google</translation>
+<translation id="6096979789310008754">Wyszukiwany tekst został wyczyszczony. Wyświetlam wszystkie pliki i foldery.</translation>
 <translation id="6111770213269631447">Transliteracja (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Spacja</translation>
 <translation id="6133173853026656527">Przenoszę <ph name="FILE_NAME" />...</translation>
@@ -583,7 +587,7 @@
 <translation id="7864662577698025113">Dodaj nową usługę</translation>
 <translation id="7873831373602885875">Nie można zapisać w folderze <ph name="FOLDER_NAME" />. Wszystkie zmiany będą zapisywane w folderze <ph name="DOWNLOADS_FOLDER" /> znajdującym się w folderze Pobrane pliki.</translation>
 <translation id="7881969471599061635">Wyłącz napisy</translation>
-<translation id="78946041517601018">Udostępniane dyski</translation>
+<translation id="78946041517601018">Dyski współdzielone</translation>
 <translation id="7896906914454843592">Klawiatura rozszerzona USA</translation>
 <translation id="7898607018410277265">Klawiatura gudżarati (nowa fonetyczna)</translation>
 <translation id="7917972308273378936">Klawiatura litewska</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Słoń</translation>
 <translation id="8569764466147087991">Wybierz plik do otwarcia</translation>
 <translation id="8579285237314169903">Synchronizuję elementy – <ph name="NUMBER_OF_FILES" />...</translation>
+<translation id="8600173386174225982">Lista plików została przełączona na widok miniatur.</translation>
 <translation id="8669949407341943408">Przenoszę...</translation>
 <translation id="8671210955687109937">Może komentować</translation>
 <translation id="8686213429977032554">Ten plik na Dysku nie jest jeszcze udostępniany</translation>

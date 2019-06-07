@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Избор на папка</translation>
 <translation id="1265739287306757398">Научете как</translation>
 <translation id="1272079795634619415">Стоп</translation>
+<translation id="1283524564873030414">Последните 24 часа</translation>
 <translation id="1323735185997015385">Изтриване</translation>
 <translation id="132683371494960526">Докоснете двукратно, за да промените главната папка.</translation>
 <translation id="1340643665687018190">Затваряне на менюто</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Разширени</translation>
 <translation id="1989112275319619282">Сърфиране</translation>
 <translation id="2015722694326466240">За да видите паролите, трябва първо да зададете код за достъп на устройството си.</translation>
+<translation id="2073572773299281212">Активно преди <ph name="DAYS" /> дни</translation>
 <translation id="2074131957428911366">Винаги можете да изберете какво да се синхронизира от <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="209018056901015185">Заявка за настолния сайт</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Отваряне на всички</translation>
 <translation id="2570206273416014374">Изпраща някои „бисквитки“ и заявките за търсене от адресната лента и полето за търсене до стандартната ви търсеща машина.</translation>
 <translation id="2572712655377361602">Достъпът до снимките ви е блокиран от правило за устройства</translation>
+<translation id="2578571896248130439">Изпращане на уеб страницата</translation>
 <translation id="2584132361465095047">Добавяне на профил…</translation>
 <translation id="2625189173221582860">Паролата е копирана</translation>
 <translation id="2648803196158606475">Изтриване на прочетените</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Означаване…</translation>
 <translation id="3157684681743766797">Означаване на всички…</translation>
 <translation id="3175081911749765310">Уеб услуги</translation>
+<translation id="3178650076442119961">Активно днес</translation>
 <translation id="3207960819495026254">С отметка</translation>
 <translation id="3224641773458703735">За да експортирате паролите, трябва първо да зададете код за достъп на устройството си.</translation>
 <translation id="3240426699337459095">Връзката е копирана</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">За да сканирате код за бърза реакция, активирайте камерата от настройките</translation>
 <translation id="4281844954008187215">Условия за ползване</translation>
 <translation id="430793432425771671">Синхронизиране на всичко</translation>
+<translation id="430967081421617822">За цялото време</translation>
 <translation id="4338650699862464074">Изпраща до Google URL адресите на посещаваните от вас страници.</translation>
 <translation id="4359125752503270327">Тази страница ще се отвори в друго приложение.</translation>
 <translation id="4370827530403103842">Синхронизирането не работи. Докоснете, за да отстраните проблема.</translation>
@@ -281,6 +286,7 @@
 <translation id="5127805178023152808">Синхронизирането е изключено</translation>
 <translation id="5132942445612118989">Синхронизиране на паролите, историята ви и др. на всички устройства</translation>
 <translation id="5140288047769711648">Chrome ще запамети тази парола. Няма нужда да я помните.</translation>
+<translation id="5150492518600715772">Изпращане до устройството ви</translation>
 <translation id="5181140330217080051">Изтегля се</translation>
 <translation id="5186185447130319458">Частно</translation>
 <translation id="5190835502935405962">Лента на отметките</translation>
@@ -295,6 +301,7 @@
 <translation id="5327248766486351172">Име</translation>
 <translation id="5388358297987318779">Отваряне на изображението</translation>
 <translation id="5409365236829784218">Няма инсталирани приложения, които могат да отворят файла.</translation>
+<translation id="5416022985862681400">Последните 7 дни</translation>
 <translation id="5433691172869980887">Потребителското име е копирано</translation>
 <translation id="54401264925851789">Информация за сигурността на страницата</translation>
 <translation id="5443952882982198570">Кредитни карти</translation>
@@ -309,6 +316,7 @@
 <translation id="5659593005791499971">Имейл</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Версия <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">Активно преди 1 ден</translation>
 <translation id="5711039611392265845">За още настройки за поверителността, сигурността и събирането на данни вижте <ph name="BEGIN_LINK" />Синхронизиране и услуги на Google<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">За съжаление при влизането в профила ви възникна проблем.</translation>
 <translation id="5737974891429562743">Данните за вход в профила не са актуални. Актуализирайте ги, за да започне синхронизирането.</translation>

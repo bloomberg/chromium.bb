@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Vos appareils fonctionnent encore mieux ensemble</translation>
 <translation id="112308213915226829">Masquer automatiquement l'étagère</translation>
 <translation id="1153356358378277386">Appareils associés</translation>
+<translation id="1175572348579024023">Faire défiler</translation>
 <translation id="1178581264944972037">Suspendre</translation>
 <translation id="1195412055398077112">Surbalayage</translation>
 <translation id="119944043368869598">Tout effacer</translation>
@@ -251,6 +252,7 @@
 <translation id="4778095205580009397">L'Assistant Google n'est pas disponible dans une session de démonstration.</translation>
 <translation id="479989351350248267">rechercher</translation>
 <translation id="4804818685124855865">Se déconnecter</translation>
+<translation id="4831034276697007977">Voulez-vous vraiment désactiver les clics automatiques ?</translation>
 <translation id="4849058404725798627">Mettre l'objet sélectionné au clavier en surbrillance</translation>
 <translation id="485592688953820832">Aucune action (pause)</translation>
 <translation id="4872237917498892622">Alt + Recherche ou Maj</translation>
@@ -414,6 +416,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> n'est pas compatible avec <ph name="SPECIFIED_RESOLUTION" />. La résolution a été modifiée pour utiliser <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Palette d'emoji</translation>
 <translation id="7564874036684306347">Le déplacement de fenêtres vers un autre écran peut entraîner un comportement inattendu. Par exemple, les notifications, les fenêtres et les boîtes de dialogue peuvent s'afficher sur les deux écrans.</translation>
+<translation id="7568294522609223312">Désactiver les clics automatiques</translation>
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propriétaire)</translation>

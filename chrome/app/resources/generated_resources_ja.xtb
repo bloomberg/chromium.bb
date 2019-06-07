@@ -2144,6 +2144,12 @@
 <translation id="4242577469625748426">デバイスにポリシー設定をインストールできませんでした: <ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4244238649050961491">他のタッチペン アプリを探す</translation>
 <translation id="424726838611654458">常に Adobe Reader で開く</translation>
+<translation id="4247274662191902962">センサーデータは、この VR 空間を利用している間のみ共有されます。次のような特定の情報により、サイトがお客様を記憶できる場合があります。
+    - お客様の位置情報
+    - お客様の身体的特徴（目の位置など）
+    - お客様の動き（歩き方など）
+
+    アクセスを許可する前に、このサイトを信頼できるかどうか確認してください。</translation>
 <translation id="4247901771970415646"><ph name="USERNAME" /> に同期できません</translation>
 <translation id="4249248555939881673">ネットワークに接続しています...</translation>
 <translation id="4249373718504745892">このページではカメラとマイクへのアクセスがブロックされています。</translation>

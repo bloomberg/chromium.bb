@@ -132,15 +132,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Hvis politikken er angivet til Falsk, rapporteres tilstanden for udviklerkontakten ikke.</translation>
 <translation id="1160479894929412407">Tillad QUIC-protokol</translation>
 <translation id="1160939557934457296">Deaktiver fortsættelse fra advarselssiden for Beskyttet browsing</translation>
-<translation id="1171342272070128466">Aktivér hjælpefunktionen Fastgjort lupvindue.
-
-          Hvis politikken angives som Sand, er det fastgjorte lupvindue altid aktiveret.
-
-          Hvis politikken angives som Falsk, er det fastgjorte lupvindue altid deaktiveret.
-
-          Hvis politikken konfigureres, kan brugerne ikke ændre eller tilsidesætte den.
-
-          Hvis politikken ikke konfigureres, er det fastgjorte lupvindue deaktiveret, men brugeren kan når som helst aktivere funktionen.</translation>
 <translation id="1189817621108632689">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor det ikke er tilladt at vise billeder.
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultImagesSetting", hvis den er angivet, eller brugerens personlige konfiguration.
@@ -1530,11 +1521,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis politikken er angivet som falsk, rapporteres terminaloplysningerne
       ikke. Hvis den angives som sand eller ikke angives, rapporteres
       terminaloplysningerne.</translation>
-<translation id="3852924591079583104">
-      Hvis politikken er angivet som ArcSession, tvinges enheden til at genstarte, når brugeren logger ud, hvis Android er startet.
-      Hvis politikken er angivet som Altid, tvinges enheden til at genstarte, hver gang brugeren logger ud.
-      Hvis politikken ikke er konfigureret, har den ikke nogen effekt, og enheden tvinges ikke til at genstarte, når brugeren logger ud. Det samme gælder, hvis politikken er angivet som Aldrig.
-      </translation>
 <translation id="3858658082795336534">Standardudskrivning i duplex-tilstand</translation>
 <translation id="3859780406608282662">Føj en parameter til hentning af variationsbasistallet i <ph name="PRODUCT_OS_NAME" />.
 
@@ -3357,7 +3343,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       Hvis denne politik er angivet til "RemoveLRUIfDormant", vil den automatiske oprydningsfunktion fortsætte med at fjerne brugere, der ikke har været logget ind i minimum tre måneder, startende med den bruger, der ikke har været logget ind i længst tid, indtil der er tilstrækkelig ledig plads.
 
       Hvis denne politik ikke er indstillet, anvender den automatiske oprydningsfunktion standardstrategien. Denne strategi er i øjeblikket "RemoveLRUIfDormant".</translation>
-<translation id="7334274148831027933">Aktivér fastgjort lupvindue</translation>
 <translation id="7336785017449297672">Styrer indstillingerne for tidszone</translation>
 <translation id="7336878834592315572">Behold cookies under sessionen</translation>
 <translation id="7339315111520512972">Tving netværkskoden til at køre i browserprocessen</translation>

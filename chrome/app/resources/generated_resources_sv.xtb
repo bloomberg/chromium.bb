@@ -2143,6 +2143,12 @@
 <translation id="4242577469625748426">Det gick inte att installera policyinställningar på enheten: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Hitta fler appar för e-penna</translation>
 <translation id="424726838611654458">Öppna alltid i Adobe Reader</translation>
+<translation id="4247274662191902962">Sensordata delas bara så länge VR-upplevelsen pågår. Webbplatsen kan ta reda på mer om dig utifrån vissa uppgifter, till exempel:
+    – din plats
+    – dina fysiska egenskaper, som ögonens placering
+    – dina rörelser, som hur du går.
+
+    Tänk efter om du litar på webbplatsen innan du ger den åtkomst.</translation>
 <translation id="4247901771970415646">Det gick inte att synkronisera med <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Väntar på nätverksanslutning ...</translation>
 <translation id="4249373718504745892">Den här sidan har blockerats och kan inte komma åt kameran och mikrofonen.</translation>

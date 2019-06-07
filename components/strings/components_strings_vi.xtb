@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1001338328714563407">Với tư cách là người quản lý thiết bị và tài khoản của bạn, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Không phải Bây giờ</translation>
 <translation id="1010200102790553230">Tải trang vào lúc khác</translation>
 <translation id="1015730422737071372">Cung cấp chi tiết bổ sung</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">Kết nối lại với Wi-Fi</translation>
 <translation id="1165039591588034296">Lỗi</translation>
 <translation id="1175364870820465910">&amp;In...</translation>
+<translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1181037720776840403">Xóa</translation>
 <translation id="1197088940767939838">Màu cam</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
@@ -100,7 +100,6 @@
 <translation id="1405567553485452995">Xanh lục nhạt</translation>
 <translation id="1407135791313364759">Mở tất cả</translation>
 <translation id="1413809658975081374">Lỗi bảo mật</translation>
-<translation id="14171126816530869">Nhận dạng <ph name="ORGANIZATION" /> tại <ph name="LOCALITY" /> đã được xác minh bởi <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1430915738399379752">In</translation>
 <translation id="1455413310270022028">Tẩy</translation>
@@ -256,6 +255,7 @@
 <translation id="2262243747453050782">Lỗi HTTP</translation>
 <translation id="2263079731045660823">Cập nhật thông tin tự động điền thẻ tín dụng trong mục cài đặt của Chrome</translation>
 <translation id="2270484714375784793">Số điện thoại</translation>
+<translation id="2277103315734023688">Tua tiến</translation>
 <translation id="2283340219607151381">Lưu và điền địa chỉ</translation>
 <translation id="2292556288342944218">Quyền truy cập Internet của bạn bị chặn</translation>
 <translation id="2297722699537546652">B5 (Phong bì)</translation>
@@ -383,7 +383,6 @@
 <translation id="295526156371527179">Cảnh báo: Chính sách này không phải là từ điển nên không được hợp nhất dưới dạng từ điển như chỉ định trong chính sách.</translation>
 <translation id="2955913368246107853">Đóng thanh tìm</translation>
 <translation id="2969319727213777354">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chrome không thể xác minh các chứng chỉ này.</translation>
-<translation id="2970515157925768593">Có thể thay đổi từ xa quá trình thiết lập tài khoản và thiết bị của bạn.</translation>
 <translation id="2972581237482394796">&amp;Làm lại</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, hiện đã chọn. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Xóa dữ liệu</translation>
@@ -395,7 +394,6 @@
 <translation id="3005723025932146533">Hiển thị bản sao đã lưu</translation>
 <translation id="3008447029300691911">Nhập CVC cho <ph name="CREDIT_CARD" />. Sau khi bạn xác nhận, chi tiết thẻ của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="3010559122411665027">Mục nhập danh sách "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Với tư cách là người quản lý thiết bị này, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Tự động bị chặn</translation>
 <translation id="3023071826883856138">You4 (Phong bì)</translation>
 <translation id="3024663005179499861">Loại chính sách sai</translation>
@@ -441,7 +439,6 @@
 <translation id="3287510313208355388">Tải xuống khi trực tuyến</translation>
 <translation id="3293642807462928945">Hãy tìm hiểu thêm về chính sách <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Không tìm thấy kết quả tìm kiếm nào</translation>
-<translation id="3311730110465560799">Có thể thay đổi từ xa quá trình thiết lập thiết bị.</translation>
 <translation id="3320021301628644560">Thêm địa chỉ thanh toán</translation>
 <translation id="3324983252691184275">Đỏ thẫm</translation>
 <translation id="3338095232262050444">Bảo mật</translation>
@@ -537,7 +534,6 @@
 <translation id="3761718714832595332">Ẩn trạng thái</translation>
 <translation id="3765032636089507299">Trang Duyệt web an toàn đang được xây dựng.</translation>
 <translation id="3778403066972421603">Bạn có muốn lưu thẻ này vào Tài khoản Google của bạn và trên thiết bị này không?</translation>
-<translation id="3779973883630527594">Công ty, trường học hoặc tổ chức quản lý tài khoản này:</translation>
 <translation id="3781428340399460090">Hồng đậm</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Ngày hết hạn <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -561,6 +557,7 @@
 <translation id="3949571496842715403">Máy chủ này không thể chứng minh được đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ không chỉ định Tên thay thế đối tượng. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="3949601375789751990">Lịch sử duyệt web của bạn xuất hiện ở đây</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
+<translation id="3962859241508114581">Bản nhạc trước</translation>
 <translation id="3963837677003247395">Bạn muốn tiếp tục theo cách thủ công?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Không có}=1{Của 1 trang web }other{Của # trang web }}</translation>
 <translation id="397105322502079400">Đang tính...</translation>
@@ -583,6 +580,7 @@
 <translation id="410351446219883937">Tự động phát</translation>
 <translation id="4103763322291513355">Truy cập &lt;strong&gt;chrome://policy&lt;/strong&gt; để xem danh sách các URL bị chặn quyền truy cập và các chính sách khác bị quản trị viên hệ thống buộc phải thực thi.</translation>
 <translation id="4110652170750985508">Xem xét thanh toán của bạn</translation>
+<translation id="4112140312785995938">Tua lùi</translation>
 <translation id="4116663294526079822">Luôn cho phép trên trang web này</translation>
 <translation id="4117700440116928470">Phạm vi chính sách không được hỗ trợ.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 mục khác}other{# mục khác}}</translation>
@@ -661,6 +659,7 @@
 <translation id="443673843213245140">Đã tắt sử dụng proxy nhưng cấu hình proxy rõ ràng được chỉ định.</translation>
 <translation id="445100540951337728">Thẻ ghi nợ được chấp nhận</translation>
 <translation id="4466881336512663640">Các thay đổi đối với biểu mẫu sẽ bị mất. Bạn có chắc chắn muốn tiếp tục không?</translation>
+<translation id="4477350412780666475">Bản nhạc tiếp theo</translation>
 <translation id="4482953324121162758">Trang web này sẽ không được dịch.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">URL không hợp lệ. Phải là URL chứa tên giao thức chuẩn, chẳng hạn như: http://example.com hoặc https://example.com.</translation>
@@ -907,7 +906,6 @@
 <translation id="5838278095973806738">Bạn không nên nhập bất kỳ thông tin nhạy cảm nào trên trang web này (ví dụ: mật khẩu hoặc thẻ tín dụng), vì những kẻ tấn công có thể đánh cắp thông tin đó.</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5863847714970149516">Trang phía trước có thể tìm cách tính phí bạn</translation>
-<translation id="5865951947699094510">Có thể thay đổi từ xa quá trình thiết lập tài khoản của bạn.</translation>
 <translation id="5866257070973731571">Thêm số điện thoại</translation>
 <translation id="5869405914158311789">Không thể truy cập trang web này</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
@@ -1060,6 +1058,7 @@
 <translation id="6778737459546443941">Cha mẹ của bạn chưa phê duyệt trang web</translation>
 <translation id="67862343314499040">Tím vi-ô-lét</translation>
 <translation id="6786747875388722282">Tiện ích</translation>
+<translation id="6790428901817661496">Phát</translation>
 <translation id="679355240208270552">Đã bỏ qua vì chính sách đã tắt tìm kiếm mặc định.</translation>
 <translation id="681021252041861472">Trường bắt buộc</translation>
 <translation id="6810899417690483278">ID tùy chỉnh</translation>
@@ -1163,6 +1162,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7353601530677266744">Dòng Lệnh</translation>
 <translation id="7372973238305370288">kết quả tìm kiếm</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">Các chức năng điều khiển nội dung đa phương tiện</translation>
 <translation id="7378627244592794276">Không</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Xác nhận thẻ</translation>
@@ -1266,7 +1266,6 @@ Thông tin chi tiết bổ sung:
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7805768142964895445">Trạng thái</translation>
 <translation id="7806344367022510803">Thay đổi tùy chọn cài đặt công cụ tìm kiếm trong Chrome</translation>
-<translation id="7810209002420871817">Với tư cách là người quản lý tài khoản của bạn, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Xóa đề xuất biểu mẫu khỏi Chrome?</translation>
 <translation id="7815407501681723534">Đã tìm thấy <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> cho '<ph name="SEARCH_STRING" />'</translation>

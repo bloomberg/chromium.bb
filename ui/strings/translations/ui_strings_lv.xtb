@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="1028699632127661925">Notiek sūtīšana uz: <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Paziņojumu iestatījumi</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Pirms 1 dienas}zero{Pirms # dienām}one{Pirms # dienas}other{Pirms # dienām}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Pirms 1 minūtes}zero{Pirms # minūtēm}one{Pirms # minūtes}other{Pirms # minūtēm}}</translation>
@@ -185,7 +186,6 @@
 <translation id="8144660977431427332">Jūsu meklēšanas vaicājumus nodrošina Google asistents. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automātiski pabeigts</translation>
 <translation id="815598010540052116">Ritināt lejup</translation>
-<translation id="8170087467028567933">Ja noņemsiet šo ieteikumu, tas vairs netiks rādīts jūsu kontā nevienā jūsu ierīcē.</translation>
 <translation id="8179976553408161302">Ievadīt</translation>
 <translation id="8210608804940886430">Lejup</translation>
 <translation id="8245914219290430011">Tabulēšanas taustiņš</translation>
@@ -196,7 +196,6 @@
 <translation id="838869780401515933">prbaudt</translation>
 <translation id="8393700583063109961">Sūtīt ziņojumu</translation>
 <translation id="8394908167088220973">Multivide — atskaņot/apturēt</translation>
-<translation id="8420205633584771378">Vai noņemt šo ieteikumu?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 g.}zero{# g.}one{# g.}other{# g.}}</translation>
 <translation id="8602707065186045623">Fails <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Plaukts tiek rādīts vienmēr</translation>

@@ -130,15 +130,6 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
       Pokud je tato zásada nastavena na hodnotu false, stav přepínače režimu pro vývojáře se hlásit nebude.</translation>
 <translation id="1160479894929412407">Povolit protokol QUIC</translation>
 <translation id="1160939557934457296">Zakázat pokračování ze stránky s upozorněním Bezpečného prohlížení</translation>
-<translation id="1171342272070128466">Zapnout zadokovanou lupu (funkce pro usnadnění přístupu).
-
-          Pokud je tato zásada nastavená na hodnotu true, bude zadokovaná lupa vždy zapnutá.
-
-          Pokud je tato zásada nastavená na hodnotu false, bude zadokovaná lupa vždy vypnutá.
-
-          Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
-
-          Pokud ji ponecháte nenastavenou, zadokovaná lupa bude ve výchozím nastavení vypnutá, ale uživatel ji bude moci kdykoli zapnout.</translation>
 <translation id="1189817621108632689">Umožňuje nastavit seznam vzorů adres URL webových stránek, které nemají povoleno zobrazovat obrázky.
 
           Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultImageSetting (pokud je nastavena), nebo z osobního nastavení uživatele.
@@ -1105,6 +1096,15 @@ Platné jsou tyto specifikace vzorů adres URL:
           Pokud tato zásada nastavena není, chování konkrétnějších zásad nebude ovlivněno.</translation>
 <translation id="2987155890997901449">Povolit rozšíření ARC</translation>
 <translation id="2987227569419001736">Ovládat používání rozhraní Web Bluetooth API</translation>
+<translation id="2990018289267778247">Pokud je tato zásada nastavená na hodnotu true, v nabídce hlavního panelu systému se vždy zobrazí možnosti usnadnění přístupu.
+
+          Pokud je tato zásada nastavená na hodnotu false, možnosti usnadnění přístupu se v nabídce hlavního panelu systému nikdy nezobrazí.
+
+          Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
+
+          Pokud tato zásada není nastavená, možnosti usnadnění přístupu se v nabídce hlavního panelu systému nezobrazí, ale uživatelé jejich zobrazení mohou aktivovat na stránce Nastavení.
+
+          Při aktivaci funkcí usnadnění přístupu (jiným způsobem, například klávesovou kombinací) se možnosti usnadnění přístupu v nabídce hlavního panelu systému zobrazí vždy.</translation>
 <translation id="3011301228198307065">Nakonfiguruje v prohlížeči <ph name="PRODUCT_NAME" /> adresu URL výchozí domovské stránky a zabrání uživatelům, aby toto nastavení změnili.
 
           Domovská stránka je stránka, která se otevírá tlačítkem Domovská stránka. Stránky, které se otevírají po spuštění, jsou určeny zásadami RestoreOnStartup.
@@ -1420,6 +1420,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
         Tato zásada se používá k registraci cloudových zásad pro počítač. V systému Windows ji lze nastavit pomocí registru nebo objektů zásad skupiny, na počítačích Mac pomocí souboru plist a v Linuxu pomocí souboru JSON se zásadami.</translation>
 <translation id="3660562134618097814">Přenos souborů cookie od poskytovatele identity SAML při přihlášení</translation>
 <translation id="3701121231485832347">Ovládá nastavení specifická pro zařízení <ph name="PRODUCT_OS_NAME" /> spravovaná službou <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Vzdálené ověření identity</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Podpora pole s jedním řádkem byla ukončena. Začněte používat níže uvedené textové pole s více řádky.)</translation>
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
 <translation id="3711895659073496551">Pozastavit</translation>
@@ -1529,11 +1530,6 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 <translation id="3851039766298741586">Hlášení informací o aktivní relaci veřejného terminálu, jako je ID a verze aplikace.
 
       Je-li tato zásada nastavena na hodnotu False, informace o relaci veřejného terminálu se hlásit nebudou. Pokud je nastavena na hodnotu True nebo nastavena není, informace o relaci veřejného terminálu se hlásit budou.</translation>
-<translation id="3852924591079583104">
-      Když je tato zásada nastavená na hodnotu ArcSession a byl spuštěn systém Android, bude po odhlášení uživatele vynucen restart zařízení.
-      Když je nastavená na možnost Always (Vždy), bude restart zařízení vynucen po každém odhlášení uživatele.
-      Pokud je ponechána nenastavená, nemá žádný účinek a restart se po odhlášení uživatele nevynucuje. To samé platí i v případě, že je nastavená na možnost Never (Nikdy).
-      </translation>
 <translation id="3858658082795336534">Výchozí režim oboustranného tisku</translation>
 <translation id="3859780406608282662">Přidá parametr k načítání počátečních hodnot variant v systému <ph name="PRODUCT_OS_NAME" />.
 
@@ -1810,6 +1806,15 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
 
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="4285674129118156176">Povolit cizím uživatelům používat ARC</translation>
+<translation id="4289903996435140853">Umožňuje nastavit seznam adres URL určujících, kterým webům bude automaticky uděleno oprávnění k přístupu k zařízení USB od určitého dodavatele s určitými ID produktu. Aby zásada byla platná, musí každá položka v seznamu obsahovat jak zařízení, tak adresy URL. Každá položka zařízení může obsahovat pole ID dodavatele a ID produktu. Chybějící ID je považováno za zástupný znak. ID produktu však nesmí být zadáno bez ID dodavatele, jinak zásada nebude platná.
+
+        Model oprávnění USB k udělení přístupu k zařízení USB žádajícímu webu používá adresu URL žádajícího webu („žádající adresa URL“) a adresu URL webu v rámci nejvyšší úrovně („adresa URL hlavního rámce“). Pokud je žádající web načten v prvku iframe, může se žádající adresa URL od adresy URL hlavního rámce lišit. Pole „urls“ proto může obsahovat až dva řetězce URL oddělené čárkou, které určují žádající adresu URL a adresu URL hlavního rámce. Pokud je zadána jen jedna adresa URL, bude přístup k příslušným zařízením USB udělen, když adresa URL žádajícího webu odpovídá této adrese URL, bez ohledu na stav vložení. Adresy URL v poli „urls“ musejí být platné, jinak tato zásada bude ignorována.
+
+        Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultWebUsbGuardSetting (pokud je nastavena), nebo z osobního nastavení uživatele.
+
+        Vzory adres URL v této zásadě by neměly být v konfliktu se vzory nakonfigurovanými prostřednictvím zásady WebUsbBlockedForUrls. V případě konfliktu bude mít tato zásada před zásadami WebUsbBlockedForUrls a WebUsbAskForUrls přednost.
+
+        Hodnoty této zásady a zásady WebUsbAllowDevicesForUrls se slučují dohromady.</translation>
 <translation id="4298509794364745131">Určuje seznam aplikací, které lze povolit jako aplikace k přidávání poznámek na obrazovku uzamčení v systému <ph name="PRODUCT_OS_NAME" />.
 
       Je-li na obrazovce uzamčení povolena preferovaná aplikace k přidávání poznámek, obrazovka uzamčení bude obsahovat prvek uživatelského rozhraní ke spuštění preferované aplikace.
@@ -1961,6 +1966,7 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 <translation id="4639407427807680016">Názvy hostitelů zasílání nativních zpráv, kterým chcete udělit výjimku ze seznamu zakázaných položek.</translation>
 <translation id="4650759511838826572">Deaktivovat schémata protokolu adresy URL</translation>
 <translation id="465099050592230505">Adresa URL podnikového úložiště aplikací (podpora ukončena)</translation>
+<translation id="4661889655253181651">Nastavení obsahu umožňují určit, jakým způsobem bude zpracováván obsah určitého typu (například soubory cookie, obrázky nebo JavaScript).</translation>
 <translation id="4665897631924472251">Nastavení správy rozšíření</translation>
 <translation id="4668325077104657568">Výchozí nastavení obrázků</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2005,6 +2011,11 @@ Pokud zásadu nenastavíte, <ph name="PRODUCT_NAME" /> nebude delegovat přihla�
       Tyto návrhy se načítají vzdáleně ze serverů Google.
 
       Pokud je tato zásada nastavená na hodnotu false, návrhy se načítat ani zobrazovat nebudou.</translation>
+<translation id="4759650396863318477">Umožňuje nastavit dobu v milisekundách, po kterou se uživatelům bude zobrazovat oznámení, že je třeba prohlížeč <ph name="PRODUCT_NAME" /> nebo zařízení se systémem <ph name="PRODUCT_OS_NAME" /> restartovat, aby bylo možné nainstalovat čekající aktualizaci.
+
+      Během této doby bude uživatel opakovaně informován, že je potřeba nainstalovat aktualizaci. Na zařízeních se systémem <ph name="PRODUCT_OS_NAME" /> se oznámení o restartu zobrazuje na hlavním panelu systému podle zásady <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. V prohlížečích <ph name="PRODUCT_NAME" /> se po uplynutí jedné třetiny lhůty pro oznámení změní nabídka aplikace na znamení, že je prohlížeč potřeba aktualizovat. Barva tohoto oznámení se změní po uplynutí dvou třetin lhůty a poté znovu po uplynutí celé lhůty. Další oznámení aktivovaná pomocí zásady <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> se řídí stejným časovým plánem.
+
+      Pokud tuto zásadu nenastavíte, použije se pro systém <ph name="PRODUCT_OS_NAME" /> výchozí doba 345 600 000 milisekund (čtyři dny) a pro prohlížeč <ph name="PRODUCT_NAME" /> 604 800 000 milisekund (jeden týden).</translation>
 <translation id="4788252609789586009">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> funkci Automatické vyplňování a umožňuje uživatelům automaticky ve webových formulářích vyplňovat informace o platebních kartách pomocí dříve uložených údajů.
 
       Pokud je toto nastavení vypnuto, nebude automatické vyplňování navrhovat ani vyplňovat informace o platebních kartách a nebude ani ukládat další informace o platebních kartách, které uživatel při prohlížení webu odešle.
@@ -2211,6 +2222,15 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
          Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultNotificationsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="5213038356678567351">Weby, které by nikdy neměly spustit přepnutí prohlížeče.</translation>
 <translation id="5219844027738217407">U aplikací Android má tato zásada vliv pouze na mikrofon. Když je tato zásada nastavena na hodnotu True, je mikrofon pro všechny aplikace Android bez výjimky ztlumen.</translation>
+<translation id="5221394278852982313">Umožňuje nastavit seznam adres URL určujících, kterým webům bude automaticky uděleno oprávnění k přístupu k zařízení USB od určitého dodavatele s určitými ID produktu. Aby zásada byla platná, musí každá položka v seznamu obsahovat jak zařízení, tak adresy URL. Každá položka zařízení může obsahovat pole ID dodavatele a ID produktu. Chybějící ID je považováno za zástupný znak. ID produktu však nesmí být zadáno bez ID dodavatele, jinak zásada nebude platná.
+
+        Model oprávnění USB k udělení přístupu k zařízení USB žádajícímu webu používá adresu URL žádajícího webu („žádající adresa URL“) a adresu URL webu v rámci nejvyšší úrovně („adresa URL hlavního rámce“). Pokud je žádající web načten v prvku iframe, může se žádající adresa URL od adresy URL hlavního rámce lišit. Pole „urls“ proto může obsahovat až dva řetězce URL oddělené čárkou, které určují žádající adresu URL a adresu URL hlavního rámce. Pokud je zadána jen jedna adresa URL, bude přístup k příslušným zařízením USB udělen, když adresa URL žádajícího webu odpovídá této adrese URL, bez ohledu na stav vložení. Adresy URL v poli „urls“ musejí být platné, jinak tato zásada bude ignorována.
+
+        Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultWebUsbGuardSetting (pokud je nastavena), nebo z osobního nastavení uživatele.
+
+        Vzory adres URL v této zásadě by neměly být v konfliktu se vzory nakonfigurovanými prostřednictvím zásady WebUsbBlockedForUrls. V případě konfliktu bude mít tato zásada před zásadami WebUsbBlockedForUrls a WebUsbAskForUrls přednost.
+
+        Hodnoty této zásady a zásady DeviceWebUsbAllowDevicesForUrls se slučují dohromady.</translation>
 <translation id="5228316810085661003">Prodleva automatického přihlášení místního účtu na zařízení.
 
       Jestliže není nastavena zásada |DeviceLocalAccountAutoLoginId| nemá tato zásada žádný účinek. Jinak:
@@ -2928,6 +2948,20 @@ Pokud tato zásada nebude nastavená, uživatel bude moci sám zvolit, zda se ja
 
       Pokud je nastavená na možnost „Zakázat uživatelům správu certifikátů“, uživatelé certifikáty nebudou moci spravovat (budou je moci jen zobrazit).</translation>
 <translation id="6573305661369899995">Nastavit externí zdroj omezení adres URL</translation>
+<translation id="6583851521569686409">Konfiguruje seznam tiskáren.
+
+      Tato zásada administrátorům umožňuje poskytnout uživatelům konfigurace tiskáren.
+
+      Hodnoty <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> jsou volně upravitelné textové řetězce, pomocí kterých lze usnadnit výběr tiskárny. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> koncovým uživatelům umožní snáze tiskárnu rozpoznat. Představují výrobce a model tiskárny. Hodnota <ph name="PRINTER_URI" /> by měla být adresa přístupná z klientského počítače, včetně údajů <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je volitelná. Pokud je zadána, slouží k odebrání duplicitních tiskáren <ph name="ZEROCONF_DISCOVERY" />.
+
+      Pole <ph name="PRINTER_EFFECTIVE_MODEL" /> musí obsahovat název tiskárny, nebo je třeba nastavit příznak <ph name="PRINTER_AUTOCONF" /> na hodnotu true. Tiskárny s oběma těmito nastaveními nebo bez žádného z nich budou ignorovány.
+
+      Nastavení tiskárny se dokončí při prvním použití.  Soubory PPD se stáhnou až při použití tiskárny.  Často používané soubory PPD budou následně uloženy do mezipaměti.
+
+      Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na jednotlivých zařízeních.  Je zamýšlena jako doplněk ke konfiguraci tiskáren ze strany jednotlivých uživatelů.
+
+      U zařízení spravovaných pomocí služby Active Directory tato zásada podporuje rozšíření <ph name="MACHINE_NAME_VARIABLE" /> na název počítače ve službě Active Directory nebo jeho podřetězec. V případě názvu počítače <ph name="MACHINE_NAME_EXAMPLE" /> by byl řetězec <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahrazen čtyřmi znaky po šesté pozici, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozice se počítají od nuly.
+      </translation>
 <translation id="6598235178374410284">Obrázek avatara uživatele</translation>
 <translation id="6603004149426829878">Při určování časového pásma na server vždy odesílat všechny dostupné signály týkající se polohy</translation>
 <translation id="6628120204569232711">Hlásit stav úložiště</translation>
@@ -3373,7 +3407,6 @@ Pokud nezadáte žádné nastavení, ověření protokolu <ph name="HTTP_NEGOTIA
       Je-li tato zásada nastavena na hodnotu RemoveLRUIfDormant, budou při automatickém čištění odstraňováni uživatelé, kteří se nejdelší dobu nepřihlásili, dokud nevznikne dostatek volného místa. Uživatelé, kteří se přihlásili během posledních 3 měsíců, však odstraněni nebudou.
 
       Pokud tato zásada nastavena není, bude při automatickém čištění použita výchozí integrovaná strategie. Aktuálně je to strategie RemoveLRUIfDormant.</translation>
-<translation id="7334274148831027933">Zapnout zadokovanou lupu</translation>
 <translation id="7336785017449297672">Ovládá nastavení hodin a časového pásma.</translation>
 <translation id="7336878834592315572">Uchovat soubory cookie po dobu trvání návštěvy</translation>
 <translation id="7339315111520512972">Vynutit spuštění kódu pro sítě v procesu prohlížeče</translation>
@@ -4242,6 +4275,8 @@ Pokud je zásada nastavena na hodnotu true, systémové protokoly budou odesíl�
 <translation id="915194831143859291">Pokud je tato zásada nastavena na hodnotu false nebo není nastavena, systém <ph name="PRODUCT_OS_NAME" /> umožní uživateli vypnout zařízení.
 Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, spustí systém <ph name="PRODUCT_OS_NAME" /> restart. Systém <ph name="PRODUCT_OS_NAME" /> nahradí všechna tlačítka pro vypnutí v uživatelském rozhraní tlačítky pro restart. Pokud uživatel zařízení vypne pomocí vypínače, zařízení se automaticky restartovat nebude, a to ani v případě, že je tato zásada aktivována.</translation>
 <translation id="9152473318295429890">Povolit kontextové návrhy souvisejících webových stránek</translation>
+<translation id="9153446010242995516">Pokud je verze operačního systému novější než cílová verze, vrátit se zpět k cílové verzi a zachovat ji. Při procesu vrácení se systém pokusí obnovit stávající konfiguraci na úrovni zařízení (včetně přihlašovacích údajů k sítím). Vrácení k cílové verzi a úplné vyčištění Powerwash se však provede i v případě, že obnovení těchto dat nebude možné (protože cílová verze nepodporuje obnovení dat nebo protože došlo ke změně, která není zpětně kompatibilní).
+          Tato funkce je podporována v systému <ph name="PRODUCT_OS_NAME" /> verze 75 a vyšších verzích. U starších klientů tato hodnota znamená, že je vrácení zpět zakázáno.</translation>
 <translation id="9158929520101169054">Povolit v prohlížeči vícenásobné přihlášení</translation>
 <translation id="9159126470527871268">Oznamuje uživateli, že je třeba restartovat prohlížeč <ph name="PRODUCT_NAME" /> nebo systém <ph name="PRODUCT_OS_NAME" />, aby bylo možné nainstalovat čekající aktualizaci.
 

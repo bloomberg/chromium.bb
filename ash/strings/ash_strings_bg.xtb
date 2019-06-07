@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Устройствата ви работят още по-добре заедно</translation>
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
 <translation id="1153356358378277386">Сдвоени устройства</translation>
+<translation id="1175572348579024023">Превъртане</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1195412055398077112">допълнителна област</translation>
 <translation id="119944043368869598">Изчистване на всички</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">Google Асистент не е налице по време на демонстрационна сесия.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Изключване</translation>
+<translation id="4831034276697007977">Наистина ли искате да изключите автоматичните кликвания?</translation>
 <translation id="4849058404725798627">Открояване на обекта, върху който е фокусът от клавиатурата</translation>
 <translation id="485592688953820832">Без действие (пауза)</translation>
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
@@ -413,6 +415,7 @@
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME" />“ не поддържа разделителна способност от <ph name="SPECIFIED_RESOLUTION" />. Тя бе променена на <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Панел с емотикони</translation>
 <translation id="7564874036684306347">Преместването на прозорци към друг работен плот може да предизвика неочаквано поведение. Последващите известия, прозорци и диалогови прозорци може да бъдат разделени между работните плотове.</translation>
+<translation id="7568294522609223312">Изключване на автоматичните кликвания</translation>
 <translation id="7569509451529460200">Активирахте функцията за брайлово писмо и ChromeVox</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (собственик)</translation>

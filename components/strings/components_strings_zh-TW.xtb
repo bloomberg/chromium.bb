@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="1001338328714563407">你的裝置和帳戶管理員 <ph name="ENROLLMENT_DOMAIN" /> 可執行下列操作：</translation>
 <translation id="1008557486741366299">現在不要</translation>
 <translation id="1010200102790553230">稍後再載入頁面</translation>
 <translation id="1015730422737071372">提供其他詳細資訊</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">重新連線至 Wi-Fi 網路</translation>
 <translation id="1165039591588034296">錯誤</translation>
 <translation id="1175364870820465910">列印(&amp;P)...</translation>
+<translation id="1178581264944972037">暫停</translation>
 <translation id="1181037720776840403">移除</translation>
 <translation id="1197088940767939838">橘色</translation>
 <translation id="1201402288615127009">繼續</translation>
@@ -100,7 +100,6 @@
 <translation id="1405567553485452995">淺綠色</translation>
 <translation id="1407135791313364759">全部開啟</translation>
 <translation id="1413809658975081374">隱私權設定發生錯誤</translation>
-<translation id="14171126816530869">位於 <ph name="LOCALITY" /> 的 <ph name="ORGANIZATION" />，已經過 <ph name="ISSUER" /> 驗證身分。</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1430915738399379752">列印</translation>
 <translation id="1455413310270022028">橡皮擦</translation>
@@ -256,6 +255,7 @@
 <translation id="2262243747453050782">HTTP 錯誤</translation>
 <translation id="2263079731045660823">在 Chrome 設定中更新信用卡自動填入資訊</translation>
 <translation id="2270484714375784793">電話號碼</translation>
+<translation id="2277103315734023688">快轉</translation>
 <translation id="2283340219607151381">儲存及填入地址</translation>
 <translation id="2292556288342944218">您的網際網路存取權遭到封鎖</translation>
 <translation id="2297722699537546652">B5 (信封)</translation>
@@ -383,7 +383,6 @@
 <translation id="295526156371527179">警告：這項政策並非字典，因此未依照政策中指定的方式合併為字典。</translation>
 <translation id="2955913368246107853">關閉搜尋列</translation>
 <translation id="2969319727213777354">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Google Chrome 無法驗證這些憑證。</translation>
-<translation id="2970515157925768593">可以在遠端變更你的裝置和帳戶設定。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />，目前已選取。<ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">清除資料</translation>
@@ -395,7 +394,6 @@
 <translation id="3005723025932146533">顯示儲存的複本</translation>
 <translation id="3008447029300691911">請輸入 <ph name="CREDIT_CARD" /> 的信用卡安全碼。完成驗證後，這個網站就會取得您的信用卡詳細資訊。</translation>
 <translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX" />」：<ph name="ERROR" /></translation>
-<translation id="3014389611820813634">這個裝置的管理員 <ph name="ENROLLMENT_DOMAIN" /> 可執行下列操作：</translation>
 <translation id="301521992641321250">已自動封鎖</translation>
 <translation id="3023071826883856138">You4 (信封)</translation>
 <translation id="3024663005179499861">政策類型有誤</translation>
@@ -441,7 +439,6 @@
 <translation id="3287510313208355388">等到可連線時再下載網頁內容</translation>
 <translation id="3293642807462928945">進一步瞭解 <ph name="POLICY_NAME" /> 政策</translation>
 <translation id="3303855915957856445">找不到相符的搜尋結果</translation>
-<translation id="3311730110465560799">你可以遠端變更裝置設定。</translation>
 <translation id="3320021301628644560">新增帳單地址</translation>
 <translation id="3324983252691184275">深紅色</translation>
 <translation id="3338095232262050444">安全</translation>
@@ -537,7 +534,6 @@
 <translation id="3761718714832595332">隱藏狀態</translation>
 <translation id="3765032636089507299">安全瀏覽網頁正在建構中。</translation>
 <translation id="3778403066972421603">你要將這張信用卡的資訊儲存到你在這個裝置上的 Google 帳戶嗎？</translation>
-<translation id="3779973883630527594">管理這個帳戶的公司、學校或機構：</translation>
 <translation id="3781428340399460090">亮粉色</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">到期日：<ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -561,6 +557,7 @@
 <translation id="3949571496842715403">這個伺服器無法證明所屬網域為 <ph name="DOMAIN" />；其安全性憑證未指定主體別名。這可能是因為設定錯誤，或是有攻擊者攔截你的連線所致。</translation>
 <translation id="3949601375789751990">你的瀏覽記錄會顯示在這裡</translation>
 <translation id="3950820424414687140">登入</translation>
+<translation id="3962859241508114581">上一首曲目</translation>
 <translation id="3963837677003247395">要以手動方式繼續嗎？</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{無}=1{來自 1 個網站 }other{來自 # 個網站 }}</translation>
 <translation id="397105322502079400">計算中…</translation>
@@ -583,6 +580,7 @@
 <translation id="410351446219883937">自動播放</translation>
 <translation id="4103763322291513355">請前往 &lt;strong&gt;chrome://policy&lt;/strong&gt; 查看列入黑名單的網址清單，以及其他系統管理員強制執行的政策。</translation>
 <translation id="4110652170750985508">查看您的付款</translation>
+<translation id="4112140312785995938">倒轉</translation>
 <translation id="4116663294526079822">永遠允許在這個網站執行</translation>
 <translation id="4117700440116928470">系統不支援這項政策的範圍。</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{以及另外 1 項表單資料}other{以及另外 # 項表單資料}}</translation>
@@ -661,6 +659,7 @@
 <translation id="443673843213245140">雖然已停用 Proxy，不過已指定明確 Proxy 設定。</translation>
 <translation id="445100540951337728">接受的簽帳金融卡</translation>
 <translation id="4466881336512663640">你對表單所做變更將會遺失。確定要繼續嗎？</translation>
+<translation id="4477350412780666475">下一首曲目</translation>
 <translation id="4482953324121162758">系統不會翻譯這個網站。</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">網址無效。網址必須採用標準架構，例如 http://example.com 或 https://example.com。</translation>
@@ -907,7 +906,6 @@
 <translation id="5838278095973806738">請勿在這個網站上輸入任何機密資訊 (例如密碼或信用卡號碼)，以免遭到攻擊者竊取。</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5863847714970149516">你要瀏覽的網頁可能會向你收取費用</translation>
-<translation id="5865951947699094510">可以在遠端變更你的帳戶設定。</translation>
 <translation id="5866257070973731571">新增電話號碼</translation>
 <translation id="5869405914158311789">無法連上這個網站</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
@@ -1060,6 +1058,7 @@
 <translation id="6778737459546443941">你的家長尚未核准這個網站</translation>
 <translation id="67862343314499040">紫羅蘭色</translation>
 <translation id="6786747875388722282">擴充功能</translation>
+<translation id="6790428901817661496">播放</translation>
 <translation id="679355240208270552">由於政策未啟用預設搜尋設定，因此遭到忽略。</translation>
 <translation id="681021252041861472">必填欄位</translation>
 <translation id="6810899417690483278">自訂 ID</translation>
@@ -1163,6 +1162,7 @@
 <translation id="7353601530677266744">命令列</translation>
 <translation id="7372973238305370288">搜尋結果</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">媒體控制項</translation>
 <translation id="7378627244592794276">不需要</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">驗證信用卡</translation>
@@ -1266,7 +1266,6 @@
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7805768142964895445">狀態</translation>
 <translation id="7806344367022510803">在 Chrome 中變更搜尋引擎設定</translation>
-<translation id="7810209002420871817">你的帳戶管理員 <ph name="ACCOUNT_DOMAIN" /> 可進行下列動作：</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">要從 Chrome 中移除建議嗎？</translation>
 <translation id="7815407501681723534">找到 <ph name="NUMBER_OF_RESULTS" /> 個與「<ph name="SEARCH_STRING" />」相符的<ph name="SEARCH_RESULTS" /></translation>

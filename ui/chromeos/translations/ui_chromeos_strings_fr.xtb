@@ -286,6 +286,7 @@
 <translation id="4572815280350369984">Fichier <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Autres...</translation>
 <translation id="4582497162516204941">Installer avec Linux (Bêta)</translation>
+<translation id="4594543368593301662">Résultats de recherche pour <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artiste</translation>
 <translation id="4656293982926141856">Cet ordinateur</translation>
 <translation id="4669606053856530811">Les membres de "<ph name="SOURCE_NAME" />" n'auront plus accès à ces éléments, à moins qu'ils ne soient partagés avec eux.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Clavier bulgare</translation>
 <translation id="5418923334382419584">Clavier birman</translation>
 <translation id="5428105026674456456">Espagnol</translation>
+<translation id="5438282218546237410">Il n'y a pas de résultat pour <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Clavier polonais</translation>
 <translation id="5465122519792752163">Clavier népalais (InScript)</translation>
 <translation id="5469868506864199649">Italien</translation>
 <translation id="5494920125229734069">Tout sélectionner</translation>
 <translation id="5500122897333236901">Islandais</translation>
 <translation id="5508696409934741614">Points</translation>
+<translation id="5522908512596376669">Les fichiers s'affichent désormais sous forme de liste.</translation>
 <translation id="5524517123096967210">Impossible de lire le fichier.</translation>
 <translation id="5533102081734025921">Fichier image <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Translittération (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6054173164583630569">Clavier français</translation>
 <translation id="6074825444536523002">Formulaire Google</translation>
+<translation id="6096979789310008754">Texte de recherche effacé, tous les fichiers et dossiers sont affichés.</translation>
 <translation id="6111770213269631447">Translittération (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Espace</translation>
 <translation id="6133173853026656527">Transfert du fichier <ph name="FILE_NAME" /> en cours…</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Éléphant</translation>
 <translation id="8569764466147087991">Sélectionnez le fichier à ouvrir</translation>
 <translation id="8579285237314169903">Synchronisation de <ph name="NUMBER_OF_FILES" /> éléments en cours…</translation>
+<translation id="8600173386174225982">Les fichiers s'affichent désormais sous forme de vignettes.</translation>
 <translation id="8669949407341943408">Déplacement en cours…</translation>
 <translation id="8671210955687109937">Commentateur</translation>
 <translation id="8686213429977032554">Ce fichier Drive n'a pas encore été partagé</translation>

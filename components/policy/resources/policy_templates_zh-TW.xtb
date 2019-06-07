@@ -133,15 +133,6 @@
       如果這項政策設為 False，則不會回報開發人員模式切換設定的狀態。</translation>
 <translation id="1160479894929412407">允許 QUIC 通訊協定</translation>
 <translation id="1160939557934457296">停用略過安全瀏覽警告網頁繼續進行</translation>
-<translation id="1171342272070128466">啟用停駐放大鏡無障礙功能。
-
-          如果將這項政策設為 True，系統將一律啟用停駐放大鏡功能。
-
-          如果將這項政策設為 False，系統將一律停用停駐放大鏡功能。
-
-          設定這項政策後，使用者即無法變更或覆寫。
-
-          如果未設定這項政策，系統預設會停用停駐放大鏡，但使用者可以隨時啟用這項功能。</translation>
 <translation id="1189817621108632689">讓你設定網址模式清單，指定不可顯示圖片的網站。
 
           如果未設定這項政策，系統會根據「DefaultImagesSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
@@ -1529,11 +1520,6 @@
 
       如果將政策設為 false，系統將不會回報資訊站工作階段資訊。
       如果設為 true 或不予設定，則會回報資訊站工作階段資訊。</translation>
-<translation id="3852924591079583104">
-      如果將這項政策設為 ArcSession，系統會在 Android 已啟動的前提下，於使用者登出時強制裝置重新啟動。
-      如果將這項政策設為 Always，系統會在每位使用者登出時強制裝置重新啟動。
-      如果不設定這項政策，則不會有任何影響，系統不會在使用者登出時強制重新啟動。如果設為 Never，結果也一樣。
-      </translation>
 <translation id="3858658082795336534">預設使用雙面列印模式</translation>
 <translation id="3859780406608282662">在 <ph name="PRODUCT_OS_NAME" /> 中擷取變異版本種子時新增參數。
 
@@ -3016,6 +3002,17 @@
       </translation>
 <translation id="6922884955650325312">封鎖 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
 <translation id="6923366716660828830">指定預設搜尋引擎名稱。如果名稱欄位留空或未設定，系統會使用搜尋網址指定的主機名稱。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
+<translation id="6924223708804692571">這項政策會強制停用指定語言的拼字檢查功能。系統會忽略該清單中無法辨識的語言。
+
+      如果啟用這項政策，系統會為指定的語言停用拼字檢查功能。針對不在清單上的語言，使用者仍可以啟用或停用拼字檢查功能。
+
+      如果停用或不設定這項政策，則使用者的拼字檢查偏好設定不會受到任何影響。
+
+      如果將 <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> 政策設為 False，這項政策就不會有任何作用。
+
+      如果某個語言同時列在這項政策和 <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> 政策中，系統會優先執行後者，為該語言啟用拼字檢查功能。
+
+      拼字檢查功能目前支援的語言如下：af、bg、ca、cs、da、de、el、en-AU、en-CA、en-GB、en-US、es、es-419、es-AR、es-ES、es-MX、es-US、et、fa、fo、fr、he、hi、hr、hu、id、it、ko、lt、lv、nb、nl、pl、pt-BR、pt-PT、ro、ru、sh、sk、sl、sq、sr、sv、ta、tg、tr、uk、vi。</translation>
 <translation id="6926703471186170050">啟用長邊雙面列印</translation>
 <translation id="6931242315485576290">停用 Google 資料同步處理功能</translation>
 <translation id="6936894225179401731">指定 Proxy 伺服器的同時連線數量上限。
@@ -3151,7 +3148,7 @@
 
       系統套用這個 XML 檔案中所含規則的方式與 <ph name="GREYLIST_POLICY_NAME" /> 相同。也就是說，這些規則會禁止 <ph name="PRODUCT_NAME" /> 開啟替代瀏覽器，並禁止替代瀏覽器開啟 <ph name="PRODUCT_NAME" />。
 
-      如果未設定這項政策，或是將此政策設為無效的網址，<ph name="PRODUCT_NAME" /> 不會將其當做「不觸發瀏覽器切換」的規則來源。
+      如果未設定這項政策，或是設為無效網址，<ph name="PRODUCT_NAME" /> 就不會將政策當做「不觸發瀏覽器切換」的規則來源。
 
       如果將這項政策設為有效的網址，<ph name="PRODUCT_NAME" /> 會從該網址下載網站清單，然後按照 <ph name="SITELIST_POLICY_NAME" /> 政策中的設定套用規則。
 
@@ -3300,7 +3297,6 @@
       如果這項政策設為「RemoveLRUIfDormant」，自動清理作業將會根據使用者的近期登入次數，從次數最少的使用者開始，依序把至少 3 個月未登入的使用者從裝置上移除，直到有足夠的可用空間為止。
 
       如果未設定這項政策，自動清理作業將會採用目前的預設內建策略：「RemoveLRUIfDormant」。</translation>
-<translation id="7334274148831027933">啟用停駐放大鏡</translation>
 <translation id="7336785017449297672">控管時鐘和時區設定。</translation>
 <translation id="7336878834592315572">在工作階段期間保留 Cookie</translation>
 <translation id="7339315111520512972">強制網路程式碼在瀏覽器程序中執行</translation>
@@ -3818,7 +3814,7 @@
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
 <translation id="8465746466645315861">如果不設定這項政策，使用者可以在語言設定中啟用或停用拼字檢查功能。
 
-      如果將這項政策設為 True，系統會啟用拼字檢查功能，且使用者無法停用。在 <ph name="MS_WIN_NAME" />、<ph name="PRODUCT_OS_NAME" />和 <ph name="LINUX_OS_NAME" /> 中，使用者可以開啟或關閉各語言的拼字檢查功能，因此仍然可以透過關閉每個語言的拼字檢查來停用這項功能。如要避免這種情況，可以使用 <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> 政策強制啟用特定語言的拼字檢查功能。
+      如果將這項政策設為 True，系統會啟用拼字檢查功能，且使用者無法停用。在 <ph name="MS_WIN_NAME" />、<ph name="PRODUCT_OS_NAME" />和 <ph name="LINUX_OS_NAME" /> 中，使用者可以開啟或關閉個別語言的拼字檢查功能，因此只要關閉所有語言的拼字檢查，即可停用這項功能。如要避免這種情況，可以使用 <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> 政策強制啟用特定語言的拼字檢查功能。
 
       如果將這項政策設為 False，系統會停用拼字檢查功能，且使用者無法啟用。如果將這項政策設為 False，<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> 和 <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> 政策將不會有任何作用。
       </translation>

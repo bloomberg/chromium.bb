@@ -143,15 +143,6 @@
       Als het beleid is ingesteld op 'false', wordt de status van de schakelaar voor de ontwikkelaarsmodus niet gemeld.</translation>
 <translation id="1160479894929412407">QUIC-protocol toestaan</translation>
 <translation id="1160939557934457296">Doorgaan vanaf de waarschuwingspagina van Safe Browsing uitschakelen</translation>
-<translation id="1171342272070128466">Schakel de toegankelijkheidsfunctie 'Gedockt vergrootglas' in.
-
-          Als dit beleid is ingesteld op True, wordt het gedockte vergrootglas altijd ingeschakeld.
-
-          Als dit beleid is ingesteld op False, wordt het gedockte vergrootglas altijd uitgeschakeld.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
-
-          Als dit beleid niet wordt ingesteld, is het gedockte vergrootglas in eerste instantie uitgeschakeld, maar kan de gebruiker dit op elk gewenst moment inschakelen.</translation>
 <translation id="1189817621108632689">Hiermee kun je een lijst met URL's opgeven voor sites die afbeeldingen mogen weergeven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites, op basis van het beleid DefaultImagesSetting (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.
@@ -1575,11 +1566,6 @@
       Als het beleid is ingesteld op 'False', worden er geen sessiegegevens
       gerapporteerd. Als het beleid is ingesteld op 'True' of als er geen beleid is
       ingesteld, worden de kiosksessiegegevens gerapporteerd.</translation>
-<translation id="3852924591079583104">
-      Wanneer dit beleid is ingesteld op 'ArcSession', wordt het apparaat gedwongen opnieuw opgestart na het uitloggen van een gebruiker als Android is gestart.
-      Wanneer dit beleid is ingesteld op 'Altijd', wordt het apparaat elke keer na het uitloggen van een gebruiker gedwongen opnieuw opgestart.
-      Als dit beleid niet wordt ingesteld, heeft het geen effect en wordt opnieuw opstarten na het uitloggen van een gebruiker niet afgedwongen. Hetzelfde is van toepassing als het beleid is ingesteld op 'Nooit'.
-      </translation>
 <translation id="3858658082795336534">Standaard afdrukken in duplexmodus</translation>
 <translation id="3859780406608282662">Voeg een parameter toe aan het ophalen van de varianten-seed in <ph name="PRODUCT_OS_NAME" />.
 
@@ -3440,7 +3426,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid is ingesteld op 'RemoveLRUIfDormant', blijft de automatische opschoonfunctie gebruikers verwijderen die ten minste drie maanden niet zijn ingelogd (waarbij gegevens van gebruikers die het minst recentelijk hebben ingelogd het eerste worden verwijderd) totdat er voldoende schijfruimte is.
 
       Als dit beleid niet wordt ingesteld, gebruikt de automatische opschoonfunctie de standaard ingebouwde strategie. Momenteel is dit de strategie'RemoveLRUIfDormant'.</translation>
-<translation id="7334274148831027933">Gedockt vergrootglas inschakelen</translation>
 <translation id="7336785017449297672">Beheert instellingen voor de klok en tijdzone.</translation>
 <translation id="7336878834592315572">Cookies bewaren voor de duur van de sessie</translation>
 <translation id="7339315111520512972">Afdwingen dat netwerkcode wordt uitgevoerd in het browserproces</translation>

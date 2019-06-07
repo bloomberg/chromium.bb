@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" />-এ পাঠানো হচ্ছে...</translation>
 <translation id="111910763555783249">বিজ্ঞপ্তি সেটিংস</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{১ দিন পূর্বে}one{# দিন পূর্বে}other{# দিন পূর্বে}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{১ মিনিট আগে}one{# মিনিট আগে}other{# মিনিট আগে}}</translation>
@@ -185,7 +186,6 @@
 <translation id="8144660977431427332">Google অ্যাসিস্ট্যান্ট আপনার সার্চ পরিচালনা করে। <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, নিজে থেকে সম্পূর্ন করা</translation>
 <translation id="815598010540052116">নিচে স্ক্রল করুন</translation>
-<translation id="8170087467028567933">এই সাজেশন সরিয়ে দেওয়া হলে, আপনার সব ডিভাইসে অ্যাকাউন্ট থেকে এটি লুকিয়ে রাখা হবে।</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">পৃষ্ঠা উপরে</translation>
 <translation id="8245914219290430011">ট্যাব</translation>
@@ -196,7 +196,6 @@
 <translation id="838869780401515933">চেক করুন</translation>
 <translation id="8393700583063109961">বার্তা পাঠান</translation>
 <translation id="8394908167088220973">মিডিয়া প্লে করুন/বিরতি</translation>
-<translation id="8420205633584771378">সাজেশনটি সরাতে চান?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{১ বছর}one{# বছর}other{# বছর}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ফাইল (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">শেল্ফ সবসময় দেখানো হয়</translation>

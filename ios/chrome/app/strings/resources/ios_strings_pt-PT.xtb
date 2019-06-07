@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Escolher Pasta</translation>
 <translation id="1265739287306757398">Saiba como</translation>
 <translation id="1272079795634619415">Parar</translation>
+<translation id="1283524564873030414">Últimas 24 horas</translation>
 <translation id="1323735185997015385">Eliminar</translation>
 <translation id="132683371494960526">Toque duas vezes para alterar a pasta principal.</translation>
 <translation id="1340643665687018190">Fechar menu</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Avançadas</translation>
 <translation id="1989112275319619282">Procurar</translation>
 <translation id="2015722694326466240">Para ver as palavras-passe, tem de definir primeiro um código secreto no dispositivo.</translation>
+<translation id="2073572773299281212">Ativo há <ph name="DAYS" /> dias</translation>
 <translation id="2074131957428911366">Pode escolher o que pretende sincronizar nas <ph name="BEGIN_LINK" />definições<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Anular</translation>
 <translation id="209018056901015185">Pedir site para computador</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Abrir todos</translation>
 <translation id="2570206273416014374">Envia alguns cookies e pesquisas da barra de endereço e da caixa de pesquisa para o motor de pesquisa predefinido.</translation>
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
+<translation id="2578571896248130439">Envie a página Web</translation>
 <translation id="2584132361465095047">Adicionar conta...</translation>
 <translation id="2625189173221582860">Palavra-passe copiada</translation>
 <translation id="2648803196158606475">Eliminar lidas</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Marcar…</translation>
 <translation id="3157684681743766797">Marcar tudo…</translation>
 <translation id="3175081911749765310">Serviços Web</translation>
+<translation id="3178650076442119961">Ativo hoje</translation>
 <translation id="3207960819495026254">Adicionado aos marcadores</translation>
 <translation id="3224641773458703735">Para exportar palavras-passe, tem de definir primeiro um código secreto no dispositivo.</translation>
 <translation id="3240426699337459095">Link copiado</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">Para ler um código QR, ative a câmara nas definições</translation>
 <translation id="4281844954008187215">Termos de Utilização</translation>
 <translation id="430793432425771671">Sincronizar Tudo</translation>
+<translation id="430967081421617822">Sempre</translation>
 <translation id="4338650699862464074">Envia para a Google os URLs das páginas que visita.</translation>
 <translation id="4359125752503270327">Esta página abre noutra aplicação.</translation>
 <translation id="4370827530403103842">A sincronização não está a funcionar. Toque para corrigir.</translation>
@@ -281,6 +286,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5127805178023152808">A sincronização está desativada</translation>
 <translation id="5132942445612118989">Sincronize as suas palavras-passe, o histórico e muito mais em todos os dispositivos</translation>
 <translation id="5140288047769711648">O Chrome memorizará esta palavra-passe por si. Não tem de a memorizar.</translation>
+<translation id="5150492518600715772">Enviar para o dispositivo</translation>
 <translation id="5181140330217080051">A transferir</translation>
 <translation id="5186185447130319458">Privado</translation>
 <translation id="5190835502935405962">Barra de marcadores</translation>
@@ -295,6 +301,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5388358297987318779">Abrir Imagem</translation>
 <translation id="5409365236829784218">Não existem aplicações instaladas que possam abrir este ficheiro.</translation>
+<translation id="5416022985862681400">Últimos 7 dias</translation>
 <translation id="5433691172869980887">Nome de utilizador copiado</translation>
 <translation id="54401264925851789">Informações de Segurança da Página</translation>
 <translation id="5443952882982198570">Cartões de crédito</translation>
@@ -309,6 +316,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versão <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">Ativo há 1 dia</translation>
 <translation id="5711039611392265845">Para obter mais definições relacionadas com privacidade, segurança e recolha de dados, consulte <ph name="BEGIN_LINK" />Sincronização e serviços Google<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Lamentamos, mas houve um problema ao iniciar sessão na sua conta.</translation>
 <translation id="5737974891429562743">Os detalhes de início de sessão na conta estão desatualizados. Atualize-os para iniciar a sincronização.</translation>

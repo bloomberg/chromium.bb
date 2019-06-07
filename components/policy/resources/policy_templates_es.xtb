@@ -142,15 +142,6 @@
 Si esta política se establece en False, no se informará sobre el estado del conector de modo de desarrollador.</translation>
 <translation id="1160479894929412407">Permitir protocolo QUIC</translation>
 <translation id="1160939557934457296">Inhabilitar seguir navegando desde la página de advertencia sobre Navegación Segura</translation>
-<translation id="1171342272070128466">Habilita la función de accesibilidad de lupa fijada.
-
-          Si se le asigna el valor "True" a esta política, la lupa fijada siempre estará habilitada.
-
-          Si se le asigna el valor "False" a esta política, la lupa fijada siempre estará inhabilitada.
-
-          Si asignas un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
-
-          Si no se le asigna ningún valor, la lupa fijada se inhabilitará de forma inicial, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="1189817621108632689">Permite establecer una lista de patrones de URL para especificar los sitios web que no pueden mostrar imágenes.
 
           Si no se establece esta política, se usará para todos los sitios web el valor general predeterminado que se indique en la política "DefaultImagesSetting" (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).
@@ -1575,11 +1566,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se asigna el valor false a la política, no se proporcionará ninguna información
       sobre la sesión. Si se asigna el valor true o si la política no se configura, sí se proporcionará información
       sobre la sesión.</translation>
-<translation id="3852924591079583104">
-      Si se asigna el valor "ArcSession" a esta política, fuerza al dispositivo a reiniciarse cuando el usuario cierre sesión (si Android se ha iniciado).
-      Si se le asigna el valor "Always", fuerza al dispositivo a reiniciarse cada vez que el usuario cierre sesión.
-      Si no se le asigna ningún valor, no tiene ningún efecto y no se fuerza al dispositivo a reiniciarse cuando el usuario cierre sesión. Lo mismo sucede si se le asigna el valor "Never".
-      </translation>
 <translation id="3858658082795336534">Modo predeterminado de impresión por las dos caras</translation>
 <translation id="3859780406608282662">Permite añadir un parámetro para la obtención de la base de las variaciones en <ph name="PRODUCT_OS_NAME" />.
 
@@ -3467,7 +3453,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       Si esta política se establece en RemoveLRUIfDormant, la limpieza automática seguirá eliminando usuarios que no hayan iniciado sesión durante al menos tres meses por orden de inicios de sesión menos recientes hasta que haya suficiente espacio libre.
 
       Si esta política no se establece, la limpieza automática utilizará la estrategia integrada predeterminada. Actualmente, se trata de la estrategia RemoveLRUIfDormant.</translation>
-<translation id="7334274148831027933">Habilitar lupa fijada</translation>
 <translation id="7336785017449297672">Controla los ajustes del reloj y de la zona horaria.</translation>
 <translation id="7336878834592315572">Guardar las cookies durante la duración de la sesión</translation>
 <translation id="7339315111520512972">Forzar que el código de red se ejecute en el proceso del navegador</translation>

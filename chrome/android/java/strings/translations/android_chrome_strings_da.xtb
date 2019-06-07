@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">BILLEDE</translation>
 <translation id="257088987046510401">Temaer</translation>
 <translation id="2570922361219980984">Placeringsadgang er også deaktiveret for denne enhed. Aktivér det under <ph name="BEGIN_LINK" />indstillinger for Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Gruppe</translation>
 <translation id="257931822824936280">Udvidet – klik for at skjule.</translation>
 <translation id="2581165646603367611">Dette rydder cookies, cache og andre data fra websites, som ikke er vigtige ifølge Chrome.</translation>
 <translation id="2586657967955657006">Udklipsholder</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">Denne konto administreres af <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Skiftet til inkognitofaner</translation>
 <translation id="2968755619301702150">Certifikatfremviser</translation>
+<translation id="2977480621796371840">Fjern fra gruppe</translation>
 <translation id="2979025552038692506">Valgt inkognitofane</translation>
 <translation id="2989523299700148168">Besøgt for nylig</translation>
 <translation id="2996291259634659425">Opret adgangssætning</translation>
@@ -426,6 +428,12 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4226663524361240545">Notifikationer kan få enheden til at vibrere</translation>
 <translation id="423219824432660969">Kryptér synkroniserede data med Google-adgangskoden fra <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Åbn Indstillinger</translation>
+<translation id="4247274662191902962">Sensordata deles kun, når du er i denne VR-oplevelse. Websitet kan muligvis få oplysninger om dig ved hjælp af bestemte oplysninger som f.eks.:
+    - Din placering
+    - Dine fysiske træk, f.eks. øjnenes placering
+    - Dine bevægelser, f.eks. den måde, du går på
+
+    Det er vigtigt, at du har tillid til websitet, før du giver adgang.</translation>
 <translation id="424864128008805179">Vil du logge ud af Chrome?</translation>
 <translation id="4256782883801055595">Open source-licenser</translation>
 <translation id="4259722352634471385">Navigationen er blokeret: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="545042621069398927">Øger hastigheden på din download.</translation>
 <translation id="5456381639095306749">Download siden</translation>
 <translation id="5475862044948910901">Vil du starte en session med augmented reality?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> blev føjet til mine apps</translation>
 <translation id="548278423535722844">Åbn i kortapp</translation>
 <translation id="5487521232677179737">Ryd data</translation>
 <translation id="5494752089476963479">Bloker annoncer på websites, der viser påtrængende eller vildledende annoncer</translation>

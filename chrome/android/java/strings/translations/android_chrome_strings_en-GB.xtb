@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="1006017844123154345">Open Online</translation>
+<translation id="1028699632127661925">Sending to <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Adding <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">From websites</translation>
 <translation id="1049743911850919806">Incognito</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Search and explore</translation>
 <translation id="1264974993859112054">Sports</translation>
 <translation id="1272079795634619415">Stop</translation>
+<translation id="1272444412400969138">Device picker to share a tab with.</translation>
 <translation id="1283039547216852943">Tap to expand</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="1291207594882862231">Clear history, cookies, site data, cache…</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Hi, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1384959399684842514">Download paused</translation>
+<translation id="1386674309198842382">Active <ph name="LAST_UPDATED" /> days ago</translation>
 <translation id="1389974829397082527">No bookmarks here</translation>
 <translation id="1397811292916898096">Search with <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Embedded in <ph name="WEBSITE_URL" /></translation>
@@ -223,6 +226,7 @@
 <translation id="2567385386134582609">IMAGE</translation>
 <translation id="257088987046510401">Themes</translation>
 <translation id="2570922361219980984">Location access is also off for this device. Turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Group</translation>
 <translation id="257931822824936280">Expanded – click to collapse.</translation>
 <translation id="2581165646603367611">This will clear cookies, cache and other data of sites Chrome doesn't think is important.</translation>
 <translation id="2586657967955657006">Clipboard</translation>
@@ -274,6 +278,7 @@
 <translation id="2956410042958133412">This account is managed by <ph name="PARENT_NAME_1" /> and <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Switched to incognito tabs</translation>
 <translation id="2968755619301702150">Certificate viewer</translation>
+<translation id="2977480621796371840">Remove from group</translation>
 <translation id="2979025552038692506">Selected Incognito Tab</translation>
 <translation id="2989523299700148168">Recently Visited</translation>
 <translation id="2996291259634659425">Create passphrase</translation>
@@ -400,6 +405,7 @@
 <translation id="4008040567710660924">Allow cookies for a specific site.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# hr}other{# hrs}}</translation>
 <translation id="4042870126885713738">Show suggestions when a web address does not resolve or a connection cannot be made</translation>
+<translation id="4044912625106523635">Device picker to share a tab with is opened at full height.</translation>
 <translation id="4046123991198612571">Next track</translation>
 <translation id="4048707525896921369">Learn about topics on websites without leaving the page. Tap to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
 
@@ -426,6 +432,12 @@ To adjust your search term, long-press to select. To refine your search, slide t
 <translation id="4226663524361240545">Notifications may vibrate the device</translation>
 <translation id="423219824432660969">Encrypt synced data with Google password as of <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Open settings</translation>
+<translation id="4247274662191902962">Sensor data will only be shared while you're in this VR experience. The site may be able to learn about you using certain info, such as:
+    - Your location
+    - Your physical features, like eye position
+    - Your movements, like how you walk
+
+    Make sure that you trust this site before you allow access.</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
 <translation id="4256782883801055595">Open-source licences</translation>
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
@@ -571,6 +583,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5271967389191913893">Device cannot open the content to be downloaded.</translation>
 <translation id="528192093759286357">Drag from top and touch the back button to exit full screen.</translation>
 <translation id="5284584623296338184">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your  Google Account. However, your existing data will remain stored in your Google Account.</translation>
+<translation id="5292796745632149097">Send to</translation>
 <translation id="5300589172476337783">Show</translation>
 <translation id="5301954838959518834">OK, got it</translation>
 <translation id="5304593522240415983">This field cannot be blank</translation>
@@ -598,6 +611,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="545042621069398927">Speeding up your download.</translation>
 <translation id="5456381639095306749">Download page</translation>
 <translation id="5475862044948910901">Start Augmented Reality session?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> added to my apps</translation>
 <translation id="548278423535722844">Open in maps app</translation>
 <translation id="5487521232677179737">Clear data</translation>
 <translation id="5494752089476963479">Block ads on sites that show intrusive or misleading ads</translation>
@@ -731,6 +745,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6406506848690869874">Sync</translation>
 <translation id="641643625718530986">Print…</translation>
 <translation id="6416782512398055893">Downloaded <ph name="MBS" /> MB</translation>
+<translation id="6418750371676080905">Device picker to share a tab with is closed.</translation>
 <translation id="6427112570124116297">Translate the Web</translation>
 <translation id="6433501201775827830">Choose your search engine</translation>
 <translation id="6437478888915024427">Page info</translation>
@@ -770,6 +785,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="666268767214822976">Use a prediction service to show related queries and popular websites as you type in the address bar</translation>
 <translation id="666731172850799929">Open in <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome Privacy Notice</translation>
+<translation id="6672986458216094438">Device picker to share a tab with is opened at half height.</translation>
 <translation id="6697492270171225480">Show suggestions for similar pages when a page can't be found</translation>
 <translation id="6697947395630195233">Chrome needs access to your location to share your location with this site.</translation>
 <translation id="6698801883190606802">Manage synced data</translation>
@@ -947,6 +963,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is out of date.</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="7963646190083259054">Vendor:</translation>
+<translation id="7971136598759319605">Active 1 day ago</translation>
 <translation id="7975379999046275268">Preview page <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Preload pages for faster browsing and searching</translation>
 <translation id="79859296434321399">To view augmented reality content, install ARCore</translation>

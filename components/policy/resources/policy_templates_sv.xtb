@@ -144,15 +144,6 @@
       Om principen anges som False kommer utvecklarväxelns läge inte att redovisas.</translation>
 <translation id="1160479894929412407">Tillåt QUIC-protokoll</translation>
 <translation id="1160939557934457296">Inaktivera möjligheten att fortsätta från varningssidan Säker webbsökning</translation>
-<translation id="1171342272070128466">Aktivera tillgänglighetsfunktionen med dockad skärmförstoring.
-
-          Om principen är inställd på sant är dockad skärmförstoring alltid aktiverat.
-
-          Om principen är inställd på falskt är dockad skärmförstoring alltid inaktiverat.
-
-          Om principen har ställts in kan användarna inte ändra eller åsidosätta den.
-
-          Om principen saknar inställning är dockad skärmförstoring inaktiverat från start, men funktionen kan aktiveras av användaren när som helst.</translation>
 <translation id="1189817621108632689">Låter dig ange en lista med webbadressmönster som styr vilka webbplatser som inte får visa bilder.
 
           Om principen lämnas utan inställning används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från principen DefaultImagesSetting om den har ställts in och från användarens egna inställningar i annat fall.
@@ -1582,11 +1573,6 @@
       Om principen är inställd på falskt rapporteras ingen information om
       kiosksessionen. Om principen är inställd på sant eller inte har angetts
       rapporteras information om kiosksessionen.</translation>
-<translation id="3852924591079583104">
-      När principen är inställd på ArcSession görs en tvingad omstart när användaren loggar ut om Android har startats.
-      Med inställningen Alltid görs en tvingad omstart varje gång användaren loggar ut.
-      Om principen saknar inställning händer ingenting: ingen tvingad omstart görs när användaren loggar ut. Detsamma gäller om principen har ställts in på Aldrig.
-      </translation>
 <translation id="3858658082795336534">Standardinställning för dubbelsidig utskrift</translation>
 <translation id="3859780406608282662">Lägg till en parameter för att hämta ett slumpfrö i <ph name="PRODUCT_OS_NAME" />.
 
@@ -3467,7 +3453,6 @@
       Om RemoveLRUIfDormant har angetts som policy tas användare som inte har loggat in på tre månader bort, via automatisk rensning, i en ordningsföljd utifrån vem som loggade in för längst tid sedan, tills tillräckligt med utrymme har frigjorts.
 
       Om policyn inte har angetts används den inbyggda strategin av den automatiska rensningen. För närvarande är det strategin RemoveLRUIfDormant.</translation>
-<translation id="7334274148831027933">Aktivera dockad skärmförstoring</translation>
 <translation id="7336785017449297672">Styr inställningar för klocka och tidszon.</translation>
 <translation id="7336878834592315572">Behåll cookies under hela sessionen</translation>
 <translation id="7339315111520512972">Tvinga nätverkskod att köras i webbläsarprocessen</translation>

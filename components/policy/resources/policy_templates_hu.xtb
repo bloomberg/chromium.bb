@@ -141,15 +141,6 @@
       Ha a házirend értéke hamis, akkor a fejlesztői kapcsoló állapota nem lesz jelentve.</translation>
 <translation id="1160479894929412407">A QUIC protokoll engedélyezése</translation>
 <translation id="1160939557934457296">Biztonságos Böngészés figyelmeztetőoldal</translation>
-<translation id="1171342272070128466">A dokkolt nagyító kisegítő funkció engedélyezése.
-
-          Ha a házirend igaz értékre van beállítva, a dokkolt nagyító mindig engedélyezve lesz.
-
-          Ha a házirend hamis értékre van beállítva, a dokkolt nagyító mindig le lesz tiltva.
-
-          Ha beállítja ezt a házirendet, a felhasználók nem módosíthatják vagy bírálhatják felül.
-
-          Ha nem állítja be a házirendet, akkor a dokkolt nagyító kezdetben le van tiltva, de a felhasználó bármikor engedélyezheti.</translation>
 <translation id="1189817621108632689">Lehetővé teszi, hogy megadja az URL-minták azon listáját, amely meghatározza, mely webhelyek nem jeleníthetnek meg képeket.
 
           Ha a házirend konfigurálatlanul marad, akkor a rendszer a „DefaultImagesSetting” házirend globális alapértelmezett értékét használja valamennyi webhelyre vonatkozóan (ha az be van állítva), vagy pedig a felhasználó saját személyes beállítását.
@@ -1122,6 +1113,15 @@
           Ha a házirend nincs beállítva, akkor nem befolyásolja a specifikusabb házirendek működését.</translation>
 <translation id="2987155890997901449">ARC engedélyezése</translation>
 <translation id="2987227569419001736">A Web Bluetooth API használatának irányítása</translation>
+<translation id="2990018289267778247">Ha a házirend beállítása igaz, a kisegítő lehetőségek mindig megjelennek a tálca menüjében.
+
+          Ha a házirend beállítása hamis, a kisegítő lehetőségek sosem jelennek meg a tálca menüjében.
+
+          Ha beállítja ezt a házirendet, a felhasználó nem módosíthatja vagy bírálhatja felül.
+
+          Ha nem állítja be a házirendet, akkor a kisegítő lehetőségek nem jelennek meg a tálca menüjében, de a felhasználó bármikor engedélyezheti a megjelenésüket a beállítások között.
+
+          A kisegítő funkciók engedélyezésekor (ha az aktiválás más módszerrel, például billentyűkombinációval történt) a kisegítő lehetőségek mindig megjelennek a tálca menüjében.</translation>
 <translation id="3011301228198307065">Beállítja a kezdőlap alapértelmezett címét a <ph name="PRODUCT_NAME" /> böngészőben, és megakadályozza, hogy a felhasználók módosítsák.
 
           A kezdőlapot a Főoldal gomb megnyomásával lehet megnyitni. Az indításkor megnyíló oldalakat a RestoreOnStartup házirendek szabályozzák.
@@ -1437,6 +1437,7 @@
         Ez a házirend a gépek hatókörére vonatkozó, felhővel kapcsolatos házirend asztali környezetben való regisztrációjánál használható. Beállítása Windows rendszeren beállításjegyzék vagy GPO, Mac rendszeren plist, Linux esetében pedig JSON-házirendfájl használatával lehetséges.</translation>
 <translation id="3660562134618097814">SAML IdP cookie-k átadása a bejelentkezés során</translation>
 <translation id="3701121231485832347">A(z) <ph name="MS_AD_NAME" /> által kezelt <ph name="PRODUCT_OS_NAME" />-eszközök beállításainak módosítására szolgál.</translation>
+<translation id="3702518095257671450">Távoli tanúsítás</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Az egysoros mező megszűnt, és a jövőben eltávolítjuk. Kérjük, használja az alábbi többsoros szövegmezőt.)</translation>
 <translation id="3709266154059827597">Bővítménytelepítési feketelista beállítása</translation>
 <translation id="3711895659073496551">Felfüggesztés</translation>
@@ -1544,11 +1545,6 @@
 <translation id="3851039766298741586">Információk (például alkalmazásazonosító és -verzió) jelentése az aktív kioszkmunkamenetről.
 
 Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet információit. Ha igaz, illetve ha nincs beállítva, a böngésző jelenti ezeket az információkat.</translation>
-<translation id="3852924591079583104">
-      Az ArcSession beállítás kiválasztása esetén ez a házirend arra kényszeríti az eszközt, hogy újrainduljon, amikor a felhasználó kijelentkezik (ha az Android rendszer fut).
-      Ha a beállítás értéke Mindig, akkor az eszköz minden felhasználói kijelentkezéskor újraindul.
-      Ha nincs beállítva a házirend, akkor nincs hatása, és nem kényszeríti újraindulásra az eszközt a felhasználói kijelentkezések esetén. Ugyanez érvényes a Soha beállítás esetén is.
-      </translation>
 <translation id="3858658082795336534">Alapértelmezett kétoldalas nyomtatási mód</translation>
 <translation id="3859780406608282662">Hozzáad egy paramétert a <ph name="PRODUCT_OS_NAME" /> rendszer változatainak lekéréséhez.
 
@@ -1832,6 +1828,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ez a házirend csak akkor érvényesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
 <translation id="4285674129118156176">Az ARC használatának engedélyezése nem társult felhasználók számára</translation>
+<translation id="4289903996435140853">Lehetővé teszi egy olyan URL-lista megadását, amely meghatározza, hogy mely webhelyek kapnak automatikusan engedélyt az adott gyártótól származó és adott termékazonosítóval rendelkező USB-eszközhöz való hozzáférésre. A házirend csak akkor érvényes, ha a listán szereplő összes elemnél szerepel eszköz és URL-cím is. Az eszközök mindegyike tartalmazhat gyártó- és termékazonosítót is. A kihagyott azonosítókat a rendszer – egy kivételével – helyettesítő karakterként kezeli. Az egyetlen kivétel az, hogy a termékazonosítót nem lehet megadni a gyártóazonosító nélkül. Ellenkező esetben a rendszer érvénytelennek tekinti és figyelmen kívül hagyja a házirendet.
+
+        Az USB-engedélyezési modell a kérelmező webhely URL-címét („kérelmező URL”) és a keretként szolgáló legfelső szintű webhely URL-címét („beágyazó URL”) használja arra, hogy engedélyt adjon a kérelmező URL-nek az USB-eszközhöz való hozzáférésre. A kérelmező URL és a beágyazó URL eltérhetnek egymástól, ha a kérelmező webhely betöltése iframe keretben történik. Az „urls” mező tehát két URL vesszővel elválasztott karakterláncát is tartalmazhatja a kérelmező és a beágyazó URL megadása érdekében. Ha csak egy URL van megadva, akkor a rendszer abban az esetben adja meg a hozzáférést az adott USB-eszközökhöz, ha a kérelmező webhely egyezik ezzel az URL-címmel (függetlenül a beágyazottsági állapottól). Az „urls” mezőben lévő URL-címeknek érvényes URL-eknek kell lenniük, máskülönben a rendszer figyelmen kívül hagyja a házirendet.
+
+        Ha nem állítja be ezt a házirendet, akkor a böngésző valamennyi webhelyre vonatkozóan a globális alapértelmezett értéket használja a „DefaultWebUsbGuardSetting” házirend alapján (ha be van állítva) vagy a felhasználó személyes konfigurációja alapján (ha nincs beállítva az említett házirend).
+
+        Az ebben a házirendben megadott URL-minták nem ütközhetnek a WebUsbBlockedForUrls házirendben beállítottakkal. Ha mégis ütközés van, akkor ez a házirend élvez elsőbbséget a WebUsbBlockedForUrls és WebUsbAskForUrls házirendekkel szemben.
+
+        Az ebben és a WebUsbAllowDevicesForUrls házirendben megadott értékeket a rendszer egyesíti.</translation>
 <translation id="4298509794364745131">Olyan alkalmazásokból álló listát ad meg, amelyek jegyzetkészítő alkalmazásként engedélyezhetők a(z) <ph name="PRODUCT_OS_NAME" /> lezárási képernyőjén.
 
       Ha az előnyben részesített jegyzetkészítő alkalmazás engedélyezve van a lezárási képernyőn, akkor ezen a képernyőn szerepel majd az előnyben részesített jegyzetkészítő alkalmazás indítására szolgáló kezelőfelület-elem.
@@ -1975,6 +1980,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4639407427807680016">A tiltólistáról mentesülő natív üzenetkezelő gazdagépek neve</translation>
 <translation id="4650759511838826572">URL protokollsémák tiltása</translation>
 <translation id="465099050592230505">Vállalati internetes áruház URL-je (megszűnt)</translation>
+<translation id="4661889655253181651">A tartalombeállítások lehetővé teszik az adott típusú tartalmak (pl. cookie-k, képek vagy JavaScriptek) kezelésének meghatározását.</translation>
 <translation id="4665897631924472251">Bővítménykezelési beállítások</translation>
 <translation id="4668325077104657568">Képek alapértelmezett beállítása</translation>
 <translation id="4670865688564083639">Legalább:</translation>
@@ -2019,6 +2025,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ezeket a javaslatokat a rendszer a Google szervereiről kéri le távolról.
 
       Ha értéke hamis, a böngésző nem kér le és nem jelenít meg javaslatokat.</translation>
+<translation id="4759650396863318477">Lehetővé teszi annak az időtartamnak a beállítását (ezredmásodpercben), ameddig a felhasználóknak megjelenik az értesítés, hogy a <ph name="PRODUCT_NAME" /> böngészőt vagy a <ph name="PRODUCT_OS_NAME" />-t újra kell indítani a függőben lévő frissítés alkalmazásához.
+
+      Ez alatt az idő alatt a rendszer többször is tájékoztatja a felhasználót a frissítés szükségességéről. <ph name="PRODUCT_OS_NAME" />-eszközök esetében az újraindítási értesítés a tálcán jelenik meg a <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> házirendnek megfelelően. A <ph name="PRODUCT_NAME" /> böngésző esetében az értesítési időszak egyharmadának letelte után az alkalmazásmenü változása jelzi, hogy újraindításra van szükség. Az értesítési időszak kétharmadának elérésekor, valamint az értesítési időszak leteltekor az értesítés színe megváltozik. A <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> házirend által engedélyezett további értesítések is ezt a mintát követik.
+
+      Ha nincs beállítva, akkor az alapértelmezett időszak 345 600 000 ezredmásodperc (négy nap) a <ph name="PRODUCT_OS_NAME" />-eszközök, és 604 800 000 ezredmásodperc (egy hét) a <ph name="PRODUCT_NAME" /> esetében.</translation>
 <translation id="4788252609789586009">Engedélyezi a <ph name="PRODUCT_NAME" /> automatikus kitöltés funkcióját, és lehetővé teszi a felhasználók számára az internetes űrlapok automatikus kitöltését korábban eltárolt hitelkártyaadatokkal.
 
       Ha le van tiltva ez a beállítás, az automatikus kitöltés funkció nem ajánlja fel és nem végzi el a hitelkártyaadatok kitöltését, és nem ment további hitelkártyaadatokat, amelyeket a felhasználó az interneten való böngészés közben ad meg.
@@ -2213,6 +2224,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5208240613060747912">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem jeleníthetnek meg értesítéseket. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultNotificationsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="5213038356678567351">Webhelyek, amelyek nem vezetnek böngészőváltáshoz.</translation>
 <translation id="5219844027738217407">Az Android-alkalmazások esetében ez a házirend csak a mikrofonra vonatkozik. Ha a házirend beállítása igaz, a rendszer kivétel nélkül valamennyi Android-alkalmazásra vonatkozóan némítja a mikrofont.</translation>
+<translation id="5221394278852982313">Lehetővé teszi egy olyan URL-lista megadását, amely meghatározza, hogy mely webhelyek kapnak automatikusan engedélyt az adott gyártótól származó és adott termékazonosítóval rendelkező USB-eszközhöz való hozzáférésre. A házirend csak akkor érvényes, ha a listán szereplő összes elemnél szerepel eszköz és URL-cím is. Az eszközök mindegyike tartalmazhat gyártó- és termékazonosítót is. A kihagyott azonosítókat a rendszer – egy kivételével – helyettesítő karakterként kezeli. Az egyetlen kivétel az, hogy a termékazonosítót nem lehet megadni a gyártóazonosító nélkül. Ellenkező esetben a rendszer érvénytelennek tekinti és figyelmen kívül hagyja a házirendet.
+
+        Az USB-engedélyezési modell a kérelmező webhely URL-címét („kérelmező URL”) és a keretként szolgáló legfelső szintű webhely URL-címét („beágyazó URL”) használja arra, hogy engedélyt adjon a kérelmező URL-nek az USB-eszközhöz való hozzáférésre. A kérelmező URL és a beágyazó URL eltérhetnek egymástól, ha a kérelmező webhely betöltése iframe keretben történik. Az „urls” mező tehát két URL vesszővel elválasztott karakterláncát is tartalmazhatja a kérelmező és a beágyazó URL megadása érdekében. Ha csak egy URL van megadva, akkor a rendszer abban az esetben adja meg a hozzáférést az adott USB-eszközökhöz, ha a kérelmező webhely egyezik ezzel az URL-címmel (függetlenül a beágyazottsági állapottól). Az „urls” mezőben lévő URL-címeknek érvényes URL-eknek kell lenniük, máskülönben a rendszer figyelmen kívül hagyja a házirendet.
+
+        Ha nem állítja be ezt a házirendet, akkor a böngésző valamennyi webhelyre vonatkozóan a globális alapértelmezett értéket használja a „DefaultWebUsbGuardSetting” házirend alapján (ha be van állítva) vagy a felhasználó személyes konfigurációja alapján (ha nincs beállítva az említett házirend).
+
+        Az ebben a házirendben megadott URL-minták nem ütközhetnek a WebUsbBlockedForUrls házirendben beállítottakkal. Ha mégis ütközés van, akkor ez a házirend élvez elsőbbséget a WebUsbBlockedForUrls és WebUsbAskForUrls házirendekkel szemben.
+
+        Az ebben és a DeviceWebUsbAllowDevicesForUrls házirendben megadott értékeket a rendszer egyesíti.</translation>
 <translation id="5228316810085661003">Az eszköz helyi fiókjaira vonatkozó bejelentkezési késleltetés.
 
       Ha a |DeviceLocalAccountAutoLoginId| házirend nincs beállítva, ennek a házirendnek nincs hatása. Egyébként:
@@ -2938,6 +2958,21 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha a házirend beállítása „A felhasználók nem kezelhetik a tanúsítványokat”, akkor a felhasználók kezelni nem, csak megtekinteni tudják a tanúsítványokat.</translation>
 <translation id="6573305661369899995">Külső URL-korlátozási forrás beállítása</translation>
+<translation id="6583851521569686409">A nyomtatók listáját konfigurálja.
+
+      Ez a házirend lehetővé teszi a rendszergazdák számára, hogy 
+      nyomtatókonfigurációkat biztosítsanak felhasználóiknak.
+
+      A <ph name="PRINTER_DISPLAY_NAME" /> és a <ph name="PRINTER_DESCRIPTION" /> szabad formájú karakterláncok, amelyek személyre szabhatók a nyomtatóválasztás megkönnyítése érdekében. A <ph name="PRINTER_MANUFACTURER" /> és a <ph name="PRINTER_MODEL" /> a nyomtató végfelhasználó általi azonosításának megkönnyítésére szolgálnak. A nyomtató gyártóját és modelljét jelölik. Az <ph name="PRINTER_URI" /> olyan cím, amelynek hozzáférhetőnek kell lennie ügyfélszámítógépről, és tartalmaznia kell a következőket: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> és <ph name="URI_QUEUE" />. Az <ph name="PRINTER_UUID" /> megadása nem kötelező. Ha meg van adva, segít elkerülni a <ph name="ZEROCONF_DISCOVERY" /> nyomtatók ismétlődését.
+
+      Vagy az <ph name="PRINTER_EFFECTIVE_MODEL" /> elemnek kell tartalmaznia a nyomtató nevét, vagy igazra kell állítani az <ph name="PRINTER_AUTOCONF" /> beállítást. A rendszer figyelmen kívül hagyja a mindkét tulajdonsággal, illetve az egyikkel sem rendelkező nyomtatókat.
+
+      A nyomtató beállítása a nyomtató első használatakor történik.  A PPD-k csak a nyomtató használatakor töltődnek le.  Ezután a gyakran használt PPD-k a gyorsítótárba kerülnek.
+
+      A házirend nem befolyásolja, hogy a felhasználók beállíthatják-e a nyomtatókat saját eszközeiken.  A házirend célja, hogy kiegészítse az egyes felhasználók nyomtatóbeállításait.
+
+      Az Active Directory által kezelt eszközöknél a házirend támogatja a(z) <ph name="MACHINE_NAME_VARIABLE" /> kibővítését az Active Directory-gép nevére, vagy annak karakterláncrészére. Ha például a gép neve <ph name="MACHINE_NAME_EXAMPLE" />, akkor a(z) <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> karakterláncot a 6. pozíciónál kezdődő négy karakter helyettesíti, vagyis: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Megjegyzés: A pozíció meghatározásához a kiindulási pont a nulla.
+      </translation>
 <translation id="6598235178374410284">Felhasználó avatarképe</translation>
 <translation id="6603004149426829878">Mindig elküldi a rendelkezésre álló helyjeleket a szervernek az időzóna meghatározása során</translation>
 <translation id="6628120204569232711">A tárhelyállapot bejelentése</translation>
@@ -3379,7 +3414,6 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha a házirend beállítása „RemoveLRUIfDormant”, akkor az automatikus tisztítás a felhasználókat addig távolítja el a legrégebbi bejelentkezés sorrendjében, amíg elég szabad terület nem lesz, akik legalább 3 hónapja nem jelentkeztek be.
 
       Ha a házirend nincs beállítva, akkor az automatikus tisztítás az alapértelmezett stratégiát használja. Ez jelenleg a „RemoveLRUIfDormant” stratégia.</translation>
-<translation id="7334274148831027933">Dokkolt nagyító engedélyezése</translation>
 <translation id="7336785017449297672">Az óra és az időzóna beállításainak módosítására szolgál.</translation>
 <translation id="7336878834592315572">Cookie-k megtartása a munkamenet idejére</translation>
 <translation id="7339315111520512972">A hálózati kód kényszerítése a böngészőfolyamatban történő futásra.</translation>
@@ -4265,6 +4299,8 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="915194831143859291">Ha a házirend értéke false (hamis), vagy ha nincs beállítva, a <ph name="PRODUCT_OS_NAME" /> engedélyezi a felhasználó számára az eszköz leállítását.
       Ha a házirend értéke true (igaz), a <ph name="PRODUCT_OS_NAME" /> újraindítást kezdeményez, amikor a felhasználó leállítja az eszközt. A <ph name="PRODUCT_OS_NAME" /> a felhasználói felület összes leállítógombját újraindítást kezdeményező gombokra cseréli ki. Ha a felhasználó a bekapcsológombbal állítja le az eszközt, az nem indul automatikusan újra automatikusan akkor sem, ha a házirend engedélyezve van.</translation>
 <translation id="9152473318295429890">Kontextus szerinti javaslatok engedélyezése kapcsolódó weboldalak formájában</translation>
+<translation id="9153446010242995516">A korábbi állapot visszaállítása és a célverzió megtartása, ha az operációs rendszer verziója újabb, mint a célverzió. Megpróbálja átvinni az eszközszintű konfigurációt (a hálózati hitelesítő adatokkal együtt) a korábbi állapot visszaállítása során, de még akkor is elvégzi a teljes powerwash folyamatot, ha az adatok helyreállítása nem lehetséges (mert a célverzió nem támogatja az adatok helyreállítását, illetve visszafelé nem kompatibilis módosítás miatt).
+          Csak a <ph name="PRODUCT_OS_NAME" /> 75-ös és újabb verzióin támogatott. A régebbi ügyfelek esetén ez az érték azt jelenti, hogy a korábbi állapot visszaállítása le van tiltva.</translation>
 <translation id="9158929520101169054">Böngészőn belüli többfiókos bejelentkezés engedélyezése</translation>
 <translation id="9159126470527871268">A felhasználók értesítése arról, hogy szükség van a <ph name="PRODUCT_NAME" /> vagy a <ph name="PRODUCT_OS_NAME" /> újraindítására függőben lévő frissítés alkalmazása céljából.
 

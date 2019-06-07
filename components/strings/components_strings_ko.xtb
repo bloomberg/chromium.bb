@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
-<translation id="1001338328714563407">기기 및 계정의 관리자로서 <ph name="ENROLLMENT_DOMAIN" />은(는) 다음을 할 수 있습니다.</translation>
 <translation id="1008557486741366299">나중에 하기</translation>
 <translation id="1010200102790553230">페이지 나중에 로드하기</translation>
 <translation id="1015730422737071372">추가 세부정보 제공</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">Wi-Fi에 다시 연결</translation>
 <translation id="1165039591588034296">오류</translation>
 <translation id="1175364870820465910">인쇄(&amp;P)</translation>
+<translation id="1178581264944972037">일시중지</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1197088940767939838">오렌지색</translation>
 <translation id="1201402288615127009">다음</translation>
@@ -100,7 +100,6 @@
 <translation id="1405567553485452995">연한 녹색</translation>
 <translation id="1407135791313364759">모두 열기</translation>
 <translation id="1413809658975081374">개인정보 보호 오류</translation>
-<translation id="14171126816530869"><ph name="LOCALITY" />에 위치한 <ph name="ORGANIZATION" />의 주소를 <ph name="ISSUER" />이(가) 확인했습니다.</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="1455413310270022028">지우개</translation>
@@ -256,6 +255,7 @@
 <translation id="2262243747453050782">HTTP 오류</translation>
 <translation id="2263079731045660823">Chrome 설정에서 신용카드 자동 완성 정보를 업데이트하세요.</translation>
 <translation id="2270484714375784793">전화번호</translation>
+<translation id="2277103315734023688">앞으로 탐색</translation>
 <translation id="2283340219607151381">주소 저장 및 자동 입력</translation>
 <translation id="2292556288342944218">인터넷 액세스가 차단됨</translation>
 <translation id="2297722699537546652">B5(봉투)</translation>
@@ -383,7 +383,6 @@
 <translation id="295526156371527179">경고: 이 정책은 사전이 아니므로 정책에 명시된 대로 사전으로 병합되지 않았습니다.</translation>
 <translation id="2955913368246107853">검색 바 닫기</translation>
 <translation id="2969319727213777354">보안 연결을 설정하려면 시계가 올바로 설정되어 있어야 합니다. 웹사이트가 자신을 식별하는 데 사용하는 인증서는 특정 기간에만 유효하기 때문입니다. 기기의 시계가 잘못 설정되어 Chrome에서 이 인증서를 확인할 수 없습니다.</translation>
-<translation id="2970515157925768593">기기 및 계정 설정을 원격으로 변경할 수 있습니다.</translation>
 <translation id="2972581237482394796">다시 실행(&amp;R)</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />이(가) 현재 선택되어 있습니다. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">데이터 삭제</translation>
@@ -395,7 +394,6 @@
 <translation id="3005723025932146533">저장된 사본 표시</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> 카드의 CVC를 입력하세요. 카드를 확인하면 카드 세부정보가 이 사이트와 공유됩니다.</translation>
 <translation id="3010559122411665027">목록 항목 '<ph name="ENTRY_INDEX" />': <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">기기의 관리자로서 <ph name="ENROLLMENT_DOMAIN" />은(는) 다음을 할 수 있습니다.</translation>
 <translation id="301521992641321250">자동으로 차단됨</translation>
 <translation id="3023071826883856138">You4(봉투)</translation>
 <translation id="3024663005179499861">잘못된 정책 유형</translation>
@@ -441,7 +439,6 @@
 <translation id="3287510313208355388">온라인 상태일 때 다운로드</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> 정책에 관해 자세히 알아보기</translation>
 <translation id="3303855915957856445">검색결과 없음</translation>
-<translation id="3311730110465560799">기기 설정을 원격으로 변경할 수 있습니다.</translation>
 <translation id="3320021301628644560">청구지 주소 추가</translation>
 <translation id="3324983252691184275">진홍색</translation>
 <translation id="3338095232262050444">보안 연결</translation>
@@ -537,7 +534,6 @@
 <translation id="3761718714832595332">상태 숨기기</translation>
 <translation id="3765032636089507299">세이프 브라우징 페이지는 현재 준비 중입니다.</translation>
 <translation id="3778403066972421603">이 카드를 Google 계정과 이 기기에 저장하시겠습니까?</translation>
-<translation id="3779973883630527594">이 계정을 관리하는 회사, 학교 또는 조직:</translation>
 <translation id="3781428340399460090">진한 분홍색</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">만료: <ph name="EXPIRATION_YEAR" />년 <ph name="EXPIRATION_MONTH" />월</translation>
@@ -561,6 +557,7 @@
 <translation id="3949571496842715403">보안 인증서에 주체 대체 이름(SAN)이 지정되어 있지 않아 이 서버가 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 공격자가 연결을 가로채고 있기 때문일 수도 있습니다.</translation>
 <translation id="3949601375789751990">인터넷 사용 기록이 여기에 표시됩니다.</translation>
 <translation id="3950820424414687140">로그인</translation>
+<translation id="3962859241508114581">이전 트랙</translation>
 <translation id="3963837677003247395">직접 계속하시겠어요?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{없음}=1{사이트 1개 }other{사이트 #개 }}</translation>
 <translation id="397105322502079400">계산 중...</translation>
@@ -583,6 +580,7 @@
 <translation id="410351446219883937">자동재생</translation>
 <translation id="4103763322291513355">차단된 URL 및 시스템 관리자가 설정한 기타 정책 목록을 확인하려면 &lt;strong&gt;chrome://policy&lt;/strong&gt;를 방문하세요.</translation>
 <translation id="4110652170750985508">결제 검토</translation>
+<translation id="4112140312785995938">뒤로 탐색</translation>
 <translation id="4116663294526079822">이 사이트에서 항상 허용</translation>
 <translation id="4117700440116928470">지원되지 않는 정책 범위입니다.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{외 1개}other{외 #개}}</translation>
@@ -661,6 +659,7 @@
 <translation id="443673843213245140">프록시 사용은 중지되었지만 명시적 프록시 설정이 지정되어 있습니다.</translation>
 <translation id="445100540951337728">사용 가능한 직불카드</translation>
 <translation id="4466881336512663640">양식에서 변경한 사항이 삭제됩니다. 계속하시겠습니까?</translation>
+<translation id="4477350412780666475">다음 트랙</translation>
 <translation id="4482953324121162758">이 사이트는 번역되지 않습니다.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">잘못된 URL입니다. URL에는 표준 스키마가 있어야 합니다(예: http://example.com 또는 https://example.com).</translation>
@@ -907,7 +906,6 @@
 <translation id="5838278095973806738">이 사이트에 입력하는 비밀번호나 신용카드 번호 등의 정보가 공격자에 의해 도용될 수 있습니다.</translation>
 <translation id="5860033963881614850">사용 안함</translation>
 <translation id="5863847714970149516">방문하려는 페이지에서 금액을 청구할 수 있습니다.</translation>
-<translation id="5865951947699094510">계정 설정을 원격으로 변경할 수 있습니다.</translation>
 <translation id="5866257070973731571">전화번호 추가</translation>
 <translation id="5869405914158311789">사이트에 연결할 수 없음</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
@@ -1060,6 +1058,7 @@
 <translation id="6778737459546443941">부모님이 아직 승인하지 않았습니다.</translation>
 <translation id="67862343314499040">보라색</translation>
 <translation id="6786747875388722282">확장 프로그램</translation>
+<translation id="6790428901817661496">재생</translation>
 <translation id="679355240208270552">정책에 의해 기본 검색이 사용 설정되지 않았기 때문에 무시되었습니다.</translation>
 <translation id="681021252041861472">필수 입력란</translation>
 <translation id="6810899417690483278">맞춤설정 ID</translation>
@@ -1163,6 +1162,7 @@
 <translation id="7353601530677266744">명령줄</translation>
 <translation id="7372973238305370288">검색결과</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">미디어 컨트롤</translation>
 <translation id="7378627244592794276">안함</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">카드 확인</translation>
@@ -1265,7 +1265,6 @@
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7805768142964895445">상태</translation>
 <translation id="7806344367022510803">Chrome에서 검색엔진 설정을 변경하세요.</translation>
-<translation id="7810209002420871817">계정의 관리자로서 <ph name="ACCOUNT_DOMAIN" />은(는) 다음을 할 수 있습니다.</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome에서 추천검색어를 삭제하시겠습니까?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />'에 대해 <ph name="SEARCH_RESULTS" /> <ph name="NUMBER_OF_RESULTS" />개의 검색 결과를 찾았습니다.</translation>

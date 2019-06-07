@@ -144,15 +144,6 @@
       Če je pravilnik nastavljen na »False«, se o stanju stikala za razvijalce ne poroča.</translation>
 <translation id="1160479894929412407">Dovoli protokol QUIC</translation>
 <translation id="1160939557934457296">Onemogoči nadaljevanje z opozorilne strani varnega brskanja</translation>
-<translation id="1171342272070128466">Omogočanje funkcije zasidrane lupe za ljudi s posebnimi potrebami.
-
-          Če je ta pravilnik omogočen, je zasidrana lupa vedno omogočena.
-
-          Če je pravilnik onemogočen, je zasidrana lupa vedno onemogočena.
-
-          Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
-
-          Če tega pravilnika ne nastavite, je zasidrana lupa prvotno onemogočena, vendar jo lahko uporabnik kadar koli omogoči.</translation>
 <translation id="1189817621108632689">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki jim ni dovoljeno prikazovati slik.
 
          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena globalna privzeta vrednost iz pravilnika »DefaultImagesSetting«, kadar je ta pravilnik nastavljen, sicer pa iz osebnih nastavitev uporabnika.
@@ -1147,6 +1138,15 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če ta pravilnik ni nastavljen, to ne vpliva na delovanje podrobnejših pravilnikov.</translation>
 <translation id="2987155890997901449">Omogočanje ARC-ja</translation>
 <translation id="2987227569419001736">Nadzor uporabe API-ja za Web Bluetooth</translation>
+<translation id="2990018289267778247">Če je pravilnik nastavljen na »true«, so možnosti funkcij za ljudi s posebnimi potrebami vedno prikazane v meniju sistemske vrstice.
+
+          Če je pravilnik nastavljen na »false«, možnosti funkcij za ljudi s posebnimi potrebami niso prikazane v meniju sistemske vrstice.
+
+          Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
+
+          Če ta pravilnik ni nastavljen, možnosti funkcij za ljudi s posebnimi potrebami niso prikazane v meniju sistemske vrstice, vendar lahko uporabniki nastavijo, da so možnosti funkcij za ljudi s posebnimi potrebami prikazane prek strani z nastavitvami.
+
+          Če so omogočene funkcije za ljudi s posebnimi potrebami (na druge načine, na primer s kombinacijo tipk), so možnosti funkcij za ljudi s posebnimi potrebami vedno prikazane v meniju sistemske vrstice.</translation>
 <translation id="3011301228198307065">Konfigurira privzeti URL domače strani za brskalnik <ph name="PRODUCT_NAME" /> in uporabnikom prepreči, da bi ga spreminjali.
 
           Domača stran je stran, ki se odpre ob kliku gumba »Domača stran«. Strani, ki se odprejo ob zagonu, določajo pravilniki RestoreOnStartup.
@@ -1470,6 +1470,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
         Ta pravilnik uporablja včlanitev v pravilnik oblaka v obsegu naprave v namiznem računalniku in ga je mogoče nastaviti prek registra ali pravilnika skupine v sistemu Windows, prek datoteke plist v sistemu macOS in datoteke pravilnika v obliki zapisa JSON v Linuxu.</translation>
 <translation id="3660562134618097814">Prenesi piškotke SAML IdP pri prijavi</translation>
 <translation id="3701121231485832347">Nadzira nastavitve za naprave s sistemom <ph name="PRODUCT_OS_NAME" />, ki jih upravlja <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Potrditev na daljavo</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Enovrstično polje je zastarelo in bo v prihodnje odstranjeno. Začnite uporabljati večvrstično besedilno polje spodaj.)</translation>
 <translation id="3709266154059827597">Nastavi seznam razširitev, katerih namestitev je prepovedana</translation>
 <translation id="3711895659073496551">Prekinitev</translation>
@@ -1582,11 +1583,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je pravilnik onemogočen, se podatki o seji kioska ne
       poročajo. Če je omogočen ali ni nastavljen, se podatki o seji kioska
       poročajo.</translation>
-<translation id="3852924591079583104">
-      Če je ta pravilnik nastavljen na ArcSession, napravo prisili, da se znova zažene ob odjavi uporabnika, če se je zagnal Android.
-      Če je ta pravilnik nastavljen na »Vedno«, napravo prisili, da se znova zažene ob vsaki odjavi uporabnika.
-      Če pravilnik ni nastavljen, nima učinka in ob odjavi uporabnika ni vsiljen vnovični zagon. Isto velja, če je nastavljen na »Nikoli«.
-      </translation>
 <translation id="3858658082795336534">Privzeto obojestransko tiskanje</translation>
 <translation id="3859780406608282662">Dodajanje parametra prejemanju semen različic v izdelku <ph name="PRODUCT_OS_NAME" />.
 
@@ -1872,6 +1868,15 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="4285674129118156176">Omogočanje uporabe ARC-ja nepovezanim uporabnikom</translation>
+<translation id="4289903996435140853">Omogoča nastavitev seznama URL-jev, ki določajo, katerim spletnim mestom bo samodejno podeljeno dovoljenje za dostop do naprave USB z danim ID-jem izdelka in dobavitelja. Pravilnik je veljaven samo, če vsak element na seznamu vsebuje tako naprave kot tudi URL-je. Vsak element v napravah lahko vsebuje polje z ID-jem dobavitelja in ID-jem izdelka. Vsak izpuščen ID se obravnava kot nadomestni znak z eno izjemo, in sicer, da ID izdelka ne more biti naveden, ne da bi bil naveden tudi ID dobavitelja. Pravilnik sicer ne bo veljaven in bo prezrt.
+
+        Model dovoljenj za USB uporablja URL spletnega mesta, ki pošlje zahtevo (»URL z zahtevo«), in URL spletnega mesta z vrhnjim okvirjem (»URL za vdelavo«), da URL-ju z zahtevo podeli dovoljenje za dostop do naprave USB. URL z zahtevo se lahko razlikuje od URL-ja za vdelavo, če je stran, ki pošilja zahtevo, naložena v okviru iframe. Polje »urls« lahko tako vsebuje do dva niza z URL-jem, ločena z vejico, ki določata URL z zahtevo oziroma URL za vdelavo. Če je naveden samo en URL, bo dostop do ustreznih naprav USB podeljen, ko se URL spletnega mesta, ki pošilja zahtevo, ujema s tem URL-jem, ne glede na stanje vdelave. URL-ji v polju »urls« morajo biti veljavni URL-ji, sicer se pravilnik prezre.
+
+        Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultWebUsbGuardSetting«, če je nastavljen, sicer pa iz uporabnikove osebne konfiguracije.
+
+        Vzorci URL-jev v tem pravilniku ne smejo biti v navzkrižju s tistimi, ki so konfigurirani prek pravilnika WebUsbBlockedForUrls. V primeru navzkrižja ima ta pravilnik prednost pred pravilnikoma WebUsbBlockedForUrls in WebUsbAskForUrls.
+
+        Vrednosti za ta pravilnik in pravilnik WebUsbAllowDevicesForUrls so združene.</translation>
 <translation id="4298509794364745131">Določa seznam aplikacij, ki jih je mogoče omogočiti kot aplikacije za zapiske na zaklenjenem zaslonu sistema <ph name="PRODUCT_OS_NAME" />.
 
       Če je prednostna aplikacija za zapiske omogočena na zaklenjenem zaslonu, je na njem element uporabniškega vmesnika za zagon te aplikacije.
@@ -2023,6 +2028,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4639407427807680016">Imena gostiteljev izvornega pošiljanja sporočil, ki se ne vključijo na seznam blokiranih</translation>
 <translation id="4650759511838826572">Onemogoči protokolne sheme URL-ja</translation>
 <translation id="465099050592230505">URL spletne trgovine podjetja (zastarelo)</translation>
+<translation id="4661889655253181651">Z nastavitvami vsebine lahko določite, kako se obravnava vsebina različnih vrst (npr. piškotki, slike ali JavaScript).</translation>
 <translation id="4665897631924472251">Nastavitve upravljanja razširitev</translation>
 <translation id="4668325077104657568">Nastavitev privzetih slik</translation>
 <translation id="4670865688564083639">Najmanj:</translation>
@@ -2067,6 +2073,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Ti predlogi se prenesejo oddaljeno iz Googlovih strežnikov.
 
       Če je ta nastavitev onemogočena, se predlogi ne bodo prenesli ali prikazali.</translation>
+<translation id="4759650396863318477">Omogoči nastavitev časovnega obdobja v milisekundah, v katerem so uporabniki obveščeni, da mora biti brskalnik <ph name="PRODUCT_NAME" /> znova zagnan ali da mora biti naprava <ph name="PRODUCT_OS_NAME" /> znova zagnana za uveljavitev čakajoče posodobitve.
+
+      V tem časovnem obdobju je uporabnik večkrat obveščen glede potrebe po posodobitvi. V skladu s pravilnikom <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> se za naprave <ph name="PRODUCT_OS_NAME" /> v sistemski vrstici pojavi obvestilo o vnovičnem zagonu. Za brskalnike <ph name="PRODUCT_NAME" /> se meni aplikacije spremeni, da ponazori, da je potreben vnovični zagon, ko mine ena tretjina obdobja za obveščanje. Barva tega obvestila se spremeni, ko mineta dve tretjini obdobja za obveščanje, in znova, ko mine celotno obdobje za obveščanje. Za dodatna obvestila, ki jih je omogočil pravilnik <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, prav tako velja ta pravilnik.
+
+      Če pravilnik ni nastavljen, se za naprave <ph name="PRODUCT_OS_NAME" /> kot privzeto časovno obdobje uporabi 345.600.000 milisekund (štirje dnevi), za brskalnike <ph name="PRODUCT_NAME" /> pa 604.800.000 milisekund (en teden).</translation>
 <translation id="4788252609789586009">Omogoči funkcijo za samodejno izpolnjevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom omogoča samodejno izpolnjevanje podatkov o kreditni kartici v spletnih obrazcih s predhodno shranjenimi podatki.
 
       Če je ta nastavitev onemogočena, samodejno izpolnjevanje ne bo nikoli predlagalo ali vneslo podatkov o kreditni kartici in prav tako ne bo shranilo dodatnih podatkov o kreditni kartici, ki jih uporabnik lahko pošlje med brskanjem v spletu.
@@ -2277,6 +2288,15 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultNotificationsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="5213038356678567351">Spletna mesta, ki naj nikoli ne sprožijo preklopa brskalnika.</translation>
 <translation id="5219844027738217407">Pri aplikacijah za Android ta pravilnik vpliva samo na mikrofon. Če je ta pravilnik omogočen, ima mikrofon brez izjem izklopljen zvok pri vseh aplikacijah za Android.</translation>
+<translation id="5221394278852982313">Omogoča nastavitev seznama URL-jev, ki določajo, katerim spletnim mestom bo samodejno podeljeno dovoljenje za dostop do naprave USB z danim ID-jem izdelka in dobavitelja. Pravilnik je veljaven samo, če vsak element na seznamu vsebuje tako naprave kot tudi URL-je. Vsak element v napravah lahko vsebuje polje z ID-jem dobavitelja in ID-jem izdelka. Vsak izpuščen ID se obravnava kot nadomestni znak z eno izjemo, in sicer, da ID izdelka ne more biti naveden, ne da bi bil naveden tudi ID dobavitelja. Pravilnik sicer ne bo veljaven in bo prezrt.
+
+        Model dovoljenj za USB uporablja URL spletnega mesta, ki pošlje zahtevo (»URL z zahtevo«), in URL spletnega mesta z vrhnjim okvirjem (»URL za vdelavo«), da URL-ju z zahtevo podeli dovoljenje za dostop do naprave USB. URL z zahtevo se lahko razlikuje od URL-ja za vdelavo, če je stran, ki pošilja zahtevo, naložena v okviru iframe. Polje »urls« lahko tako vsebuje do dva niza z URL-jem, ločena z vejico, ki določata URL z zahtevo oziroma URL za vdelavo. Če je naveden samo en URL, bo dostop do ustreznih naprav USB podeljen, ko se URL spletnega mesta, ki pošilja zahtevo, ujema s tem URL-jem, ne glede na stanje vdelave. URL-ji v polju »urls« morajo biti veljavni URL-ji, sicer se pravilnik prezre.
+
+        Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultWebUsbGuardSetting«, če je nastavljen, sicer pa iz uporabnikove osebne konfiguracije.
+
+        Vzorci URL-jev v tem pravilniku ne smejo biti v navzkrižju s tistimi, ki so konfigurirani prek pravilnika WebUsbBlockedForUrls. V primeru navzkrižja ima ta pravilnik prednost pred pravilnikoma WebUsbBlockedForUrls in WebUsbAskForUrls.
+
+        Vrednosti za ta pravilnik in pravilnik DeviceWebUsbAllowDevicesForUrls so združene.</translation>
 <translation id="5228316810085661003">Zamik samodejne prijave v lokalni račun v napravi.
 
       Če pravilnik |DeviceLocalAccountAutoLoginId| ni nastavljen, ta pravilnik nima vpliva. V nasprotnem primeru:
@@ -3021,6 +3041,21 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če je ta pravilnik nastavljen na »Uporabnikom ne dovoli upravljanja potrdil«, uporabniki ne bodo mogli upravljati potrdil, temveč si jih bodo lahko samo ogledali.</translation>
 <translation id="6573305661369899995">Nastavitev zunanjega vira omejitev za URL-je</translation>
+<translation id="6583851521569686409">Konfigurira seznam tiskalnikov.
+
+      Ta pravilnik skrbnikom omogoča navajanje konfiguracij tiskalnikov
+      za uporabnike.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> in <ph name="PRINTER_DESCRIPTION" /> sta poljubno oblikovana niza, ki ju je mogoče prilagoditi za preprostejše izbiranje tiskalnika. <ph name="PRINTER_MANUFACTURER" /> in <ph name="PRINTER_MODEL" /> končnim uporabnikom olajšata prepoznavo tiskalnika, saj predstavljata proizvajalca in model tiskalnika. <ph name="PRINTER_URI" /> mora biti naslov, do katerega je mogoče dostopati iz odjemalskega računalnika, vključno s temi podatki: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> in <ph name="URI_QUEUE" />. Identifikator <ph name="PRINTER_UUID" /> ni obvezen. Če je naveden, se uporablja za odstranjevanje podvojenih tiskalnikov <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> mora vsebovati ime tiskalnika ali mora biti <ph name="PRINTER_AUTOCONF" /> omogočen. Tiskalniki z obema lastnostma ali brez lastnosti bodo prezrti.
+
+      Nastavitev tiskalnika je dokončana ob prvi uporabi tiskalnika.  Datoteke PPD se ne prenesejo, dokler se tiskalnik ne uporablja.  Po tem se pogosto uporabljene datoteke PPD predpomnijo.
+
+      Ta pravilnik ne vpliva na to, ali lahko uporabniki konfigurirajo tiskalnike v posameznih napravah.  Namenjen je kot dodatek konfiguracijam tiskalnikov, ki jih opravijo posamezni uporabniki.
+
+      Za naprave, ki jih upravlja Active Directory, ta pravilnik podpira razširitev <ph name="MACHINE_NAME_VARIABLE" /> na ime naprave za Active Directory ali njegov podniz. Če je ime naprave na primer <ph name="MACHINE_NAME_EXAMPLE" />, potem <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamenjajo 4 znaki po 6. mestu, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj temelji na ničli.
+      </translation>
 <translation id="6598235178374410284">Slika za avatar uporabnika</translation>
 <translation id="6603004149426829878">Vedno pošlji vse razpoložljive signale lokacije v strežnik pri določanju časovnega pasu</translation>
 <translation id="6628120204569232711">Poročanje o stanju shrambe</translation>
@@ -3477,7 +3512,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik nastavljen na »RemoveLRUIfDormant«, bo samodejno čiščenje odstranjevalo uporabnike, ki se niso prijavili vsaj tri mesece. Nato bodo odstranjeni uporabniki z naslednjim najdaljšim časom od zadnje prijave. Odstranjevanje se bo končalo takoj, ko bo na voljo dovolj prostora.
 
       Če ta pravilnik ni nastavljen, samodejno čiščenje uporablja privzeto vgrajeno strategijo. Trenutno je to strategija »RemoveLRUIfDormant«.</translation>
-<translation id="7334274148831027933">Omogoči zasidrano lupo</translation>
 <translation id="7336785017449297672">Nadzira nastavitve ure in časovnega pasu.</translation>
 <translation id="7336878834592315572">Ohrani piškotke za obdobje trajanja seje</translation>
 <translation id="7339315111520512972">Vsili izvajanje omrežne kode v procesu brskalnika</translation>
@@ -4387,6 +4421,8 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="915194831143859291">Če je ta pravilnik onemogočen ali ni nastavljen, bo <ph name="PRODUCT_OS_NAME" /> uporabniku dovolil zaustaviti napravo.
       Če je ta pravilnik omogočen, bo <ph name="PRODUCT_OS_NAME" /> sprožil vnovični zagon, ko uporabnik zaustavi napravo. <ph name="PRODUCT_OS_NAME" /> nadomesti vse gumbe za zaustavitev v uporabniškem vmesniku z gumbi za vnovični zagon. Če uporabnik zaustavi napravo z gumbom za vklop, se naprava ne bo samodejno zagnala znova, tudi če je pravilnik omogočen.</translation>
 <translation id="9152473318295429890">Omogočeni kontekstni predlogi sorodnih spletnih strani</translation>
+<translation id="9153446010242995516">Povrnite na ciljno različico in ostanite na njej, če je različica operacijskega sistema novejša kot ciljna. S povrnitvijo poskusite prenesti konfiguracijo na ravni naprave (vključno z omrežnimi poverilnicami), če je to mogoče, vendar ne izvedite povrnitve s popolnim Powerwashem, tudi če obnovitev podatkov ni mogoča (ker ciljna različica ne podpira obnovitve podatkov ali zaradi spremembe, ki ni združljiva s prejšnjo različico).
+          Podprto v brskalniku <ph name="PRODUCT_OS_NAME" /> različice 75 in novejših. Pri starejših odjemalcih ta vrednost pomeni, da je povrnitev onemogočena.</translation>
 <translation id="9158929520101169054">Omogočanje prijave z več računi v brskalniku</translation>
 <translation id="9159126470527871268">Obvesti uporabnike, da je treba zaradi uveljavitve posodobitve na čakanju znova zagnati brskalnik <ph name="PRODUCT_NAME" /> ali napravo <ph name="PRODUCT_OS_NAME" />.
 

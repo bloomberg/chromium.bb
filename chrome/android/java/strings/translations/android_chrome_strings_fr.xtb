@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="1006017844123154345">Ouvrir la version en ligne</translation>
+<translation id="1028699632127661925">Envoi sur <ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">Ajout de <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">À partir de sites Web</translation>
 <translation id="1049743911850919806">Navigation privée</translation>
@@ -20,7 +21,7 @@
 <translation id="1145536944570833626">Supprimer les données existantes.</translation>
 <translation id="1146678959555564648">Activer la réalité virtuelle</translation>
 <translation id="116280672541001035">Utilisées</translation>
-<translation id="1171770572613082465">Appuyez sur le bouton "Sites prisés" pour afficher les sites Web populaires</translation>
+<translation id="1171770572613082465">Appuyez sur le bouton "Sites populaires" pour afficher les sites Web les plus visités</translation>
 <translation id="1172593791219290334">Page de démarrage</translation>
 <translation id="1173894706177603556">Renommer</translation>
 <translation id="1175310183703641346">Vos favoris, votre historique, vos mots de passe et d'autres paramètres ne seront plus synchronisés avec votre compte Google</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Rechercher et explorer</translation>
 <translation id="1264974993859112054">Sports</translation>
 <translation id="1272079795634619415">Arrêter</translation>
+<translation id="1272444412400969138">Outil de sélection de l'appareil avec lequel partager un onglet.</translation>
 <translation id="1283039547216852943">Appuyer pour développer</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="1291207594882862231">Efface l'historique, vider le cache, supprimer les cookies et les données de site…</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Bonjour "<ph name="FULL_NAME" />"</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1384959399684842514">Téléchargement suspendu</translation>
+<translation id="1386674309198842382">Actif il y a <ph name="LAST_UPDATED" /> jours</translation>
 <translation id="1389974829397082527">Aucun favori ici</translation>
 <translation id="1397811292916898096">Rechercher avec <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Intégration sur <ph name="WEBSITE_URL" /></translation>
@@ -223,6 +226,7 @@
 <translation id="2567385386134582609">IMAGE</translation>
 <translation id="257088987046510401">Thèmes</translation>
 <translation id="2570922361219980984">L'accès à la position est également désactivé pour cet appareil. Activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Groupe</translation>
 <translation id="257931822824936280">Développé – Cliquer pour réduire</translation>
 <translation id="2581165646603367611">Cette action aura pour effet de vider le cache et de supprimer les cookies, ainsi que d'autres données de site que Chrome ne considère pas comme importantes.</translation>
 <translation id="2586657967955657006">Presse-papiers</translation>
@@ -257,7 +261,7 @@
 <translation id="2836148919159985482">Appuyez sur le bouton Retour pour quitter le mode plein écran.</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
 <translation id="2845873210977809562">Onglets ouverts fermés</translation>
-<translation id="2858138569776157458">Sites prisés</translation>
+<translation id="2858138569776157458">Sites populaires</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Piste précédente</translation>
 <translation id="2876369937070532032">Envoyer à Google les URL des pages que vous consultez présentant un risque pour votre sécurité</translation>
@@ -274,6 +278,7 @@
 <translation id="2956410042958133412">Ce compte est géré par <ph name="PARENT_NAME_1" /> et <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Onglets de navigation privée sélectionnés</translation>
 <translation id="2968755619301702150">Lecteur de certificat</translation>
+<translation id="2977480621796371840">Retirer du groupe</translation>
 <translation id="2979025552038692506">Onglet de navigation privée sélectionné</translation>
 <translation id="2989523299700148168">Consultations récentes</translation>
 <translation id="2996291259634659425">Créer une phrase secrète</translation>
@@ -400,6 +405,7 @@
 <translation id="4008040567710660924">Autorisez les cookies pour un site spécifique.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}one{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Afficher d'autres solutions lorsqu'une adresse Web ne peut pas être résolue ou qu'une connexion ne peut pas être établie</translation>
+<translation id="4044912625106523635">L'outil de sélection de l'appareil avec lequel partager un onglet est ouvert à hauteur maximale.</translation>
 <translation id="4046123991198612571">Piste suivante</translation>
 <translation id="4048707525896921369">Découvrez les thèmes abordés sur les sites Web sans quitter la page. La fonctionnalité "Appuyer pour rechercher" transmet un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des images, des résultats de recherche et d'autres informations.
 
@@ -426,6 +432,12 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="4226663524361240545">L'appareil vibrera en cas de notifications.</translation>
 <translation id="423219824432660969">Chiffrer les données synchronisées avec le mot de passe Google à la date suivante : <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Ouvrir les paramètres</translation>
+<translation id="4247274662191902962">Les données du capteur ne seront partagées que durant l'expérience de réalité virtuelle. Le site peut retenir certaines informations vous concernant, par exemple :
+    – Votre position
+    – Vos caractéristiques physiques, par exemple la position de vos yeux
+    – Vos mouvements, par exemple votre démarche
+
+    N'autorisez l'accès que si vous faites confiance à ce site.</translation>
 <translation id="424864128008805179">Se déconnecter de Chrome ?</translation>
 <translation id="4256782883801055595">Licences Open Source</translation>
 <translation id="4259722352634471385">La navigation sur <ph name="URL" /> est bloquée.</translation>
@@ -571,6 +583,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5271967389191913893">Impossible d'ouvrir le contenu à télécharger sur l'appareil.</translation>
 <translation id="528192093759286357">Pour quitter le mode plein écran, faites glisser un doigt du haut vers le bas, puis appuyez sur le bouton Retour.</translation>
 <translation id="5284584623296338184">Les modifications apportées à vos favoris, votre historique, vos mots de passe et d'autres paramètres ne seront plus synchronisées avec votre compte Google. Vos données seront cependant conservées dans votre compte Google.</translation>
+<translation id="5292796745632149097">Envoyer sur</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5304593522240415983">Champ obligatoire.</translation>
@@ -598,6 +611,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="545042621069398927">Accélération du téléchargement…</translation>
 <translation id="5456381639095306749">Télécharger la page</translation>
 <translation id="5475862044948910901">Lancer une session en réalité augmentée ?</translation>
+<translation id="5481942164684849270">Ajouté à mes applications : <ph name="APP_NAME" /></translation>
 <translation id="548278423535722844">Ouvrir dans une application de plans</translation>
 <translation id="5487521232677179737">Effacer les données</translation>
 <translation id="5494752089476963479">Bloquer les annonces sur les sites qui affichent des annonces intrusives ou trompeuses</translation>
@@ -731,6 +745,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6406506848690869874">Synchronisation</translation>
 <translation id="641643625718530986">Imprimer…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> Mo téléchargé(s)</translation>
+<translation id="6418750371676080905">L'outil de sélection de l'appareil avec lequel partager un onglet est fermé.</translation>
 <translation id="6427112570124116297">Traduire le Web</translation>
 <translation id="6433501201775827830">Sélectionner votre moteur de recherche</translation>
 <translation id="6437478888915024427">Infos sur la page</translation>
@@ -770,6 +785,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="666268767214822976">Utiliser un service de prédiction pour suggérer des requêtes associées et des sites populaires lorsque vous saisissez des termes dans la barre d'adresse</translation>
 <translation id="666731172850799929">Ouvrir dans <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Avis de confidentialité de Chrome</translation>
+<translation id="6672986458216094438">L'outil de sélection de l'appareil avec lequel partager un onglet est ouvert à mi-hauteur.</translation>
 <translation id="6697492270171225480">Afficher des suggestions de pages similaires lorsqu'une page est introuvable</translation>
 <translation id="6697947395630195233">Chrome a besoin d'accéder à votre position pour la partager avec ce site.</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
@@ -947,6 +963,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> est obsolète.</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
 <translation id="7963646190083259054">Fournisseur :</translation>
+<translation id="7971136598759319605">Actif il y a 1 jour</translation>
 <translation id="7975379999046275268">Prévisualiser la page <ph name="BEGIN_NEW" />Nouveau<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Précharger les pages pour accélérer la navigation et la recherche</translation>
 <translation id="79859296434321399">Pour afficher des contenus en réalité augmentée, installez ARCore</translation>

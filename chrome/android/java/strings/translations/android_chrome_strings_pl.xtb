@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="1006017844123154345">Otwórz online</translation>
+<translation id="1028699632127661925">Przesyłam na: <ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">Dodaję aplikację <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">Ze stron internetowych</translation>
 <translation id="1049743911850919806">Incognito</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Szukaj i przeglądaj</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
+<translation id="1272444412400969138">Selektor urządzenia, któremu udostępniasz kartę.</translation>
 <translation id="1283039547216852943">Kliknij, by rozwinąć</translation>
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="1291207594882862231">Wyczyść historię, pliki cookie, dane witryn, pamięć podręczną…</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Witaj, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1384959399684842514">Pobieranie wstrzymane</translation>
+<translation id="1386674309198842382">Aktywność <ph name="LAST_UPDATED" /> dni temu</translation>
 <translation id="1389974829397082527">Brak zakładek</translation>
 <translation id="1397811292916898096">Szukaj w <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Umieszczone na <ph name="WEBSITE_URL" /></translation>
@@ -223,6 +226,7 @@
 <translation id="2567385386134582609">OBRAZ</translation>
 <translation id="257088987046510401">Motywy</translation>
 <translation id="2570922361219980984">Dostęp do lokalizacji jest wyłączony też na tym urządzeniu. Włącz go w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grupa</translation>
 <translation id="257931822824936280">Rozwinięty – kliknij, by zwinąć.</translation>
 <translation id="2581165646603367611">Spowoduje to skasowanie plików cookie, pamięci podręcznej i innych danych witryn, które Chrome uzna za nieistotne.</translation>
 <translation id="2586657967955657006">Schowek</translation>
@@ -274,6 +278,7 @@
 <translation id="2956410042958133412">Tym kontem zarządzają <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Przełączono na karty incognito</translation>
 <translation id="2968755619301702150">Przeglądarka certyfikatów</translation>
+<translation id="2977480621796371840">Usuń z grupy</translation>
 <translation id="2979025552038692506">Wybrana karta incognito</translation>
 <translation id="2989523299700148168">Ostatnio odwiedzone</translation>
 <translation id="2996291259634659425">Utwórz hasło</translation>
@@ -400,6 +405,7 @@
 <translation id="4008040567710660924">Zezwalaj na pliki cookie z określonej strony internetowej.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# godzina}few{# godziny}many{# godzin}other{# godziny}}</translation>
 <translation id="4042870126885713738">Pokazuj podpowiedzi, gdy nie można znaleźć adresu internetowego lub nawiązać połączenia</translation>
+<translation id="4044912625106523635">Selektor urządzenia, któremu udostępniasz kartę, jest otwarty na pełną wysokość.</translation>
 <translation id="4046123991198612571">Następny utwór</translation>
 <translation id="4048707525896921369">Poznaj tematy w witrynach bez opuszczania strony. Funkcja Kliknij, by wyszukać kopiuje słowo wraz z kontekstem i wkleja je w wyszukiwarce Google. Dzięki temu otrzymujesz definicje, grafiki, wyniki wyszukiwania i inne informacje.
 
@@ -426,6 +432,12 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4226663524361240545">Powiadomienia będą sygnalizowane wibracjami</translation>
 <translation id="423219824432660969">Zaszyfruj synchronizowane dane hasłem Google z <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Otwórz ustawienia</translation>
+<translation id="4247274662191902962">Dane z czujników będą udostępniane tylko wtedy, gdy będziesz używać tego doświadczenia związanego z VR. Strona może być w stanie poznać Cię na podstawie pewnych informacji, takich jak:
+    – Twoja lokalizacja;
+    – Twoje cechy fizyczne, na przykład położenie oczu;
+    – Twoje ruchy, na przykład sposób chodzenia.
+
+    Zanim zezwolisz stronie na dostęp, upewnij się, że możesz jej zaufać.</translation>
 <translation id="424864128008805179">Wylogować z Chrome?</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
 <translation id="4259722352634471385">Adres zablokowany: <ph name="URL" /></translation>
@@ -571,6 +583,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5271967389191913893">Na tym urządzeniu nie można otworzyć treści, które chcesz pobrać.</translation>
 <translation id="528192093759286357">Przeciągnij od góry i kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="5284584623296338184">Zmiany w zakładkach, historii, hasłach i innych ustawieniach nie będą już synchronizowane z kontem Google. Twoje obecne dane będą jednak nadal na nim przechowywane.</translation>
+<translation id="5292796745632149097">Wyślij na</translation>
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5301954838959518834">Rozumiem</translation>
 <translation id="5304593522240415983">To pole nie może być puste</translation>
@@ -598,6 +611,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="545042621069398927">Przyspieszam pobieranie.</translation>
 <translation id="5456381639095306749">Pobierz stronę</translation>
 <translation id="5475862044948910901">Rozpocząć sesję rzeczywistości rozszerzonej?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> – dodano do aplikacji</translation>
 <translation id="548278423535722844">Otwórz w aplikacji z mapami</translation>
 <translation id="5487521232677179737">Wyczyść dane</translation>
 <translation id="5494752089476963479">Blokuj reklamy na stronach, które wyświetlają reklamy uciążliwe lub wprowadzające w błąd</translation>
@@ -731,6 +745,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6406506848690869874">Synchronizacja</translation>
 <translation id="641643625718530986">Drukuj…</translation>
 <translation id="6416782512398055893">Pobrano <ph name="MBS" /> MB</translation>
+<translation id="6418750371676080905">Selektor urządzenia, któremu udostępniasz kartę, jest zamknięty.</translation>
 <translation id="6427112570124116297">Tłumacz internet</translation>
 <translation id="6433501201775827830">Wybierz wyszukiwarkę</translation>
 <translation id="6437478888915024427">Informacje o stronie</translation>
@@ -770,6 +785,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="666268767214822976">Gdy piszesz na pasku adresu, korzystaj z podpowiedzi, by wyświetlać podobne zapytania i adresy popularnych stron</translation>
 <translation id="666731172850799929">Otwórz w <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Informacje na temat ochrony prywatności w Chrome</translation>
+<translation id="6672986458216094438">Selektor urządzenia, któremu udostępniasz kartę, jest otwarty na pół wysokości.</translation>
 <translation id="6697492270171225480">Gdy nie można odnaleźć strony, pokazuj sugestie podobnych stron</translation>
 <translation id="6697947395630195233">Chrome musi mieć dostęp do Twojej lokalizacji, by udostępnić ją tej stronie.</translation>
 <translation id="6698801883190606802">Zarządzaj synchronizowanymi danymi</translation>
@@ -947,6 +963,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7942131818088350342">Przeglądarka <ph name="PRODUCT_NAME" /> jest nieaktualna.</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
 <translation id="7963646190083259054">Dostawca:</translation>
+<translation id="7971136598759319605">Aktywność 1 dzień temu</translation>
 <translation id="7975379999046275268">Wyświetl podgląd strony <ph name="BEGIN_NEW" />Nowość<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Ładuj wstępnie strony, by przyspieszyć przeglądanie i wyszukiwanie</translation>
 <translation id="79859296434321399">Aby oglądać treści rzeczywistości rozszerzonej, zainstaluj ARCore</translation>

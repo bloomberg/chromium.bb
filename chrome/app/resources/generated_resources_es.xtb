@@ -34,7 +34,7 @@
 <translation id="1039337018183941703">El archivo no es válido o está dañado</translation>
 <translation id="1041175011127912238">La página no responde</translation>
 <translation id="1042174272890264476">El ordenador también incluye la biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" />. RLZ asigna una etiqueta identificable, no exclusiva y no personal para medir las búsquedas y el uso de <ph name="SHORT_PRODUCT_NAME" /> derivados de una determinada campaña promocional. Estas etiquetas aparecen a veces en las consultas de la Búsqueda de Google realizadas en <ph name="PRODUCT_NAME" />.</translation>
-<translation id="1045692658517323508">{0,plural, =1{Actualizar dentro de 1 minuto}other{Actualizar dentro de # minutos}}</translation>
+<translation id="1045692658517323508">{0,plural, =1{Actualizar en el transcurso de 1 minuto}other{Actualizar en el transcurso de # minutos}}</translation>
 <translation id="1046059554679513793">¡Vaya! Este nombre ya está en uso.</translation>
 <translation id="1046635659603195359">Parece que ya has configurado Voice Match con el Asistente de Google en otro dispositivo. Esas grabaciones anteriores pueden servir para crear un modelo de voz en este dispositivo. No debería llevar más de un minuto.</translation>
 <translation id="1047431265488717055">Copiar te&amp;xto de enlace</translation>
@@ -1115,7 +1115,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2677748264148917807">Salir</translation>
 <translation id="2678063897982469759">Volver a habilitar</translation>
 <translation id="268053382412112343">Hi&amp;storial</translation>
-<translation id="2682374361574804119">{0,plural, =1{Actualizar dentro de 1 hora}other{Actualizar dentro de # horas}}</translation>
+<translation id="2682374361574804119">{0,plural, =1{Actualizar en el transcurso de 1 hora}other{Actualizar en el transcurso de # horas}}</translation>
 <translation id="2682498795777673382">Actualizado por tu padre o madre</translation>
 <translation id="2683638487103917598">Carpeta ordenada</translation>
 <translation id="2684004000387153598">Para continuar, haz clic en Aceptar y, a continuación, en Añadir perfil para crear un perfil con tu dirección de correo electrónico.</translation>
@@ -2141,6 +2141,12 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4242577469625748426">Se ha producido un error al instalar la configuración de política en el dispositivo (<ph name="VALIDATION_ERROR" />).</translation>
 <translation id="4244238649050961491">Buscar más aplicaciones para el lápiz óptico</translation>
 <translation id="424726838611654458">Abrir siempre en Adobe Reader</translation>
+<translation id="4247274662191902962">Los datos de los sensores solo se podrán compartir mientras estés inmerso en esta experiencia de realidad virtual. Es posible que el sitio web aprenda sobre ti usando cierta información, como la siguiente:
+    - Tu ubicación
+    - Tus características físicas, como la posición de los ojos
+    - Tus movimientos, p. ej., tu forma de andar
+
+    Antes de permitirle el acceso, asegúrate de que el sitio web sea de confianza.</translation>
 <translation id="4247901771970415646">No se puede sincronizar con <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Esperando conexión de red...</translation>
 <translation id="4249373718504745892">Esta página no tiene permiso para acceder a la cámara y al micrófono.</translation>
@@ -2589,7 +2595,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4973307593867026061">Añadir impresoras</translation>
 <translation id="4973325300212422370">{NUM_TABS,plural, =1{Silenciar sitio web}other{Silenciar sitios web}}</translation>
 <translation id="4974733135013075877">Salir y bloquear</translation>
-<translation id="4976795213394241669">{0,plural, =0{Actualizar ahora}=1{Actualizar dentro de 1 segundo}other{Actualizar dentro de # segundos}}</translation>
+<translation id="4976795213394241669">{0,plural, =0{Actualizar ahora}=1{Actualizar en el transcurso de 1 segundo}other{Actualizar en el transcurso de # segundos}}</translation>
 <translation id="4977942889532008999">Confirmar acceso</translation>
 <translation id="4980805016576257426">Esta extensión contiene software malicioso.</translation>
 <translation id="4981449534399733132">Para borrar los datos de navegación de todos los dispositivos sincronizados y de tu cuenta de Google, <ph name="BEGIN_LINK" />inicia sesión<ph name="END_LINK" />.</translation>
@@ -3149,7 +3155,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5855773610748894548">Vaya, se ha producido un error en el módulo de seguridad.</translation>
 <translation id="5856721540245522153">Habilitar funciones de depuración</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
-<translation id="5857171483910641802">Se mostrarán sugerencias de accesos directos a los sitios web que visites más a menudo</translation>
+<translation id="5857171483910641802">Se sugieren accesos directos a los sitios web que visitas más a menudo</translation>
 <translation id="5858490737742085133">Terminal</translation>
 <translation id="585979798156957858">Tecla meta externa</translation>
 <translation id="5860033963881614850">No</translation>
@@ -5190,7 +5196,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8948939328578167195"><ph name="WEBSITE" /> quiere ver la marca y el modelo de tu llave de seguridad</translation>
 <translation id="8951256747718668828">No se ha podido completar la restauración debido a un error</translation>
 <translation id="895347679606913382">Iniciando...</translation>
-<translation id="8956941634583033512">{0,plural, =1{Actualizar dentro de 1 día}other{Actualizar dentro de # días}}</translation>
+<translation id="8956941634583033512">{0,plural, =1{Actualizar en el transcurso de 1 día}other{Actualizar en el transcurso de # días}}</translation>
 <translation id="895944840846194039">Memoria de JavaScript</translation>
 <translation id="8959810181433034287">El usuario supervisado deberá utilizar esta contraseña para iniciar sesión, por lo que debes seleccionar una contraseña segura que deberás comunicar al usuario supervisado.</translation>
 <translation id="8962083179518285172">Ocultar detalles</translation>

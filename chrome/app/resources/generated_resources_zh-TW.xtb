@@ -2142,6 +2142,12 @@
 <translation id="4242577469625748426">無法在裝置上安裝政策設定：<ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4244238649050961491">尋找其他觸控筆應用程式</translation>
 <translation id="424726838611654458">一律在 Adobe Reader 中開啟</translation>
+<translation id="4247274662191902962">系統只會在你進入這個 VR 時分享感應器資料。網站或許可以使用特定資訊辨識你，例如：
+    - 你的位置
+    - 你的身體特徵，例如眼睛的位置
+    - 你的動作，例如走路的方式
+
+    允許存取前，請確認你信任這個網站。</translation>
 <translation id="4247901771970415646">無法與 <ph name="USERNAME" /> 同步</translation>
 <translation id="4249248555939881673">正在等待網路連線...</translation>
 <translation id="4249373718504745892">系統已封鎖這個網頁存取你的攝影機和麥克風。</translation>
@@ -5003,7 +5009,7 @@
 <translation id="8678648549315280022">管理下載設定...</translation>
 <translation id="8678933587484842200">你希望如何啟動這個應用程式？</translation>
 <translation id="8680251145628383637">只要登入帳戶，你在任何裝置上都能取得自己的書籤、歷史記錄和密碼，並套用相同的設定。此外，系統還會自動讓您登入各項 Google 服務。</translation>
-<translation id="8682730193597992579">已連接 <ph name="PRINTER_NAME" /> 並準備就緒</translation>
+<translation id="8682730193597992579"><ph name="PRINTER_NAME" /> 已連接且準備就緒</translation>
 <translation id="8688579245973331962">找不到你的名稱嗎？</translation>
 <translation id="8688591111840995413">密碼錯誤</translation>
 <translation id="8688672835843460752">可用空間</translation>

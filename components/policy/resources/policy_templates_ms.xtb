@@ -143,15 +143,6 @@
       Jika dasar tidak ditetapkan atau ditetapkan kepada tidak benar, keadaan suis pembangun tidak akan dilaporkan.</translation>
 <translation id="1160479894929412407">Benarkan protokol QUIC</translation>
 <translation id="1160939557934457296">Lumpuhkan tindakan dari halaman amaran Penyemakan Imbas Selamat</translation>
-<translation id="1171342272070128466">Dayakan ciri kebolehaksesan penggadang yang didok.
-
-          Jika dasar ini ditetapkan kepada benar, penggadang yang didok akan sentiasa didayakan.
-
-          Jika dasar ini ditetapkan kepada palsu, penggadang yang didok akan sentiasa dilumpuhkan.
-
-          Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, penggadang yang didok dilumpuhkan pada mulanya tetapi boleh didayakan oleh pengguna pada bila-bila masa.</translation>
 <translation id="1189817621108632689">Membolehkan anda menetapkan beberapa corak url yang menentukan tapak yang tidak dibenarkan memaparkan imej.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultImagesSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.
@@ -1577,11 +1568,6 @@
       Jika dasar ini ditetapkan kepada palsu, maklumat sesi kios tidak
       akan dilaporkan. Jika ditetapkan kepada benar atau dibiarkan
       tanpa ditetapkan, maklumat sesi kios akan dilaporkan.</translation>
-<translation id="3852924591079583104">
-      Jika Android telah dimulakan, dasar ini akan memaksa peranti untuk but semula apabila pengguna log keluar jika dasar ditetapkan kepada ArcSession.
-      Apabila ditetapkan kepada Sentiasa, dasar ini memaksa peranti untuk but semula setiap kali pengguna log keluar.
-      Jika dibiarkan tidak ditetapkan, dasar ini tiada sebarang kesan dan but semula tidak akan dipaksa apabila pengguna log keluar. Begitu juga halnya jika ditetapkan kepada Jangan sekali-kali.
-      </translation>
 <translation id="3858658082795336534">Mod dupleks pencetakan lalai</translation>
 <translation id="3859780406608282662">Tambahkan parameter untuk pengambilan benih Variasi dalam <ph name="PRODUCT_OS_NAME" />.
 
@@ -3469,7 +3455,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini ditetapkan kepada 'RemoveLRUIfDormant', pembersihan automatik akan terus mengalih keluar pengguna yang tidak melog masuk selama sekurang-kurangnya 3 bulan dalam susunan paling lama tidak melog masuk sehingga terdapat ruang kosong mencukupi.
 
       Jika dasar ini tidak ditetapkan, pembersihan autimatik menggunakan strategi terbina dalam lalai. Pada masa ini, itu adalah strategi 'RemoveLRUIfDormant'.</translation>
-<translation id="7334274148831027933">Dayakan penggadang yang didok</translation>
 <translation id="7336785017449297672">Mengawal tetapan jam dan zon waktu.</translation>
 <translation id="7336878834592315572">Simpan kuki sepanjang tempoh sesi</translation>
 <translation id="7339315111520512972">Paksa kod rangkaian dijalankan dalam proses penyemak imbas</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="1028699632127661925">Шаље се на уређај <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Подешавања обавештења</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Пре 1 дан}one{Пре # дан}few{Пре # дана}other{Пре # дана}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Пре 1 минут}one{Пре # минут}few{Пре # минута}other{Пре # минута}}</translation>
@@ -185,7 +186,6 @@
 <translation id="8144660977431427332">Претраге омогућава Google помоћник. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, аутоматско довршавање</translation>
 <translation id="815598010540052116">Помери надоле</translation>
-<translation id="8170087467028567933">Уклањањем овог предлога сакрићете га за свој налог на свим уређајима.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Страница надоле</translation>
 <translation id="8245914219290430011">Табулатор</translation>
@@ -196,7 +196,6 @@
 <translation id="838869780401515933">изабери</translation>
 <translation id="8393700583063109961">Пошаљите поруку</translation>
 <translation id="8394908167088220973">Пуштање/паузирање медија</translation>
-<translation id="8420205633584771378">Желите ли да уклоните овај предлог?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 г}one{# г}few{# г}other{# г}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> датотека (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Полица се увек приказује</translation>

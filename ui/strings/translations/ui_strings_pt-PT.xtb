@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="1028699632127661925">A enviar para <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">Definições de notificação</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Há 1 dia}other{Há # dias}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Há 1 minuto}other{Há # minutos}}</translation>
@@ -185,7 +186,6 @@
 <translation id="8144660977431427332">As suas pesquisas são ativadas pelo Assistente Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, preenchimento automático</translation>
 <translation id="815598010540052116">Deslocar-se para baixo</translation>
-<translation id="8170087467028567933">Ao remover a sugestão, esta deixará de ser apresentada na sua conta em todos os dispositivos.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Página para baixo</translation>
 <translation id="8245914219290430011">Tabulação</translation>
@@ -196,7 +196,6 @@
 <translation id="838869780401515933">verificar</translation>
 <translation id="8393700583063109961">Enviar mensagem</translation>
 <translation id="8394908167088220973">Reproduzir/interromper multimédia</translation>
-<translation id="8420205633584771378">Pretende remover esta sugestão?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 a}other{# a}}</translation>
 <translation id="8602707065186045623">Ficheiro <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Prateleira apresentada sempre</translation>

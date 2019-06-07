@@ -20,7 +20,7 @@
 <translation id="1145536944570833626">Elimina los datos actuales.</translation>
 <translation id="1146678959555564648">Iniciar RV</translation>
 <translation id="116280672541001035">Usados</translation>
-<translation id="1171770572613082465">Toca el botón "Populares" para ver los sitios web más populares</translation>
+<translation id="1171770572613082465">Toca el botón Populares para ver los sitios web más populares</translation>
 <translation id="1172593791219290334">Página de inicio</translation>
 <translation id="1173894706177603556">Cambiar nombre</translation>
 <translation id="1175310183703641346">Tus marcadores, el historial, las contraseñas y otros datos dejarán de sincronizarse con tu cuenta de Google.</translation>
@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">IMAGEN</translation>
 <translation id="257088987046510401">Temas</translation>
 <translation id="2570922361219980984">El acceso a la ubicación también está desactivado en este dispositivo. Actívalo en los <ph name="BEGIN_LINK" />Ajustes de Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grupo</translation>
 <translation id="257931822824936280">Ampliado (hacer clic para contraer)</translation>
 <translation id="2581165646603367611">Se borrarán las cookies, la caché y otros datos de los sitios web que Chrome no considere importantes.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">Esta cuenta está administrada por <ph name="PARENT_NAME_1" /> y <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Se ha cambiado a las pestañas de incógnito</translation>
 <translation id="2968755619301702150">Visor de certificados</translation>
+<translation id="2977480621796371840">Quitar del grupo</translation>
 <translation id="2979025552038692506">Pestaña de incógnito seleccionada</translation>
 <translation id="2989523299700148168">Visitados recientemente</translation>
 <translation id="2996291259634659425">Crea una frase de contraseña</translation>
@@ -426,6 +428,12 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4226663524361240545">Es posible que las notificaciones hagan que el dispositivo vibre</translation>
 <translation id="423219824432660969">Cifrar los datos sincronizados con la contraseña de Google desde el <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Abrir Configuración</translation>
+<translation id="4247274662191902962">Los datos de los sensores solo se podrán compartir mientras estés inmerso en esta experiencia de realidad virtual. Es posible que el sitio web aprenda sobre ti usando cierta información, como la siguiente:
+    - Tu ubicación
+    - Tus características físicas, como la posición de los ojos
+    - Tus movimientos, p. ej., tu forma de andar
+
+    Antes de permitirle el acceso, asegúrate de que el sitio web sea de confianza.</translation>
 <translation id="424864128008805179">¿Quieres cerrar sesión en Chrome?</translation>
 <translation id="4256782883801055595">Licencias de código abierto</translation>
 <translation id="4259722352634471385">Se ha bloqueado la navegación: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="545042621069398927">Acelerando descarga.</translation>
 <translation id="5456381639095306749">Descargar página</translation>
 <translation id="5475862044948910901">¿Quieres iniciar la sesión de realidad aumentada?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> se ha añadido a mis aplicaciones</translation>
 <translation id="548278423535722844">Abrirla en una aplicación de mapas</translation>
 <translation id="5487521232677179737">Borrar datos</translation>
 <translation id="5494752089476963479">Bloquea anuncios invasivos o engañosos en los sitios web que los muestran</translation>
@@ -967,7 +976,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8058746566562539958">Abrir en una pestaña nueva</translation>
 <translation id="8063895661287329888">No se ha podido añadir el marcador.</translation>
 <translation id="806745655614357130">Mantener mis datos separados</translation>
-<translation id="8067883171444229417">Ver vídeo</translation>
+<translation id="8067883171444229417">Reproducir vídeo</translation>
 <translation id="8068648041423924542">No se puede seleccionar el certificado.</translation>
 <translation id="8073388330009372546">Abrir en pestaña nueva</translation>
 <translation id="8076492880354921740">Pestañas</translation>

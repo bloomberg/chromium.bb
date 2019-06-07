@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="1028699632127661925">Odesílání na zařízení <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Nastavení oznámení</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Před 1 dnem}few{Před # dny}many{Před # dne}other{Před # dny}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{před minutou}few{před # minutami}many{před # minuty}other{před # minutami}}</translation>
@@ -185,7 +186,6 @@
 <translation id="8144660977431427332">Pro vaše vyhledávání se používá technologie Asistenta Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatické doplnění</translation>
 <translation id="815598010540052116">Posuv dolů</translation>
-<translation id="8170087467028567933">Pokud tento návrh odstraníte, bude ve vašem účtu skryt na všech vašich zařízeních.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Klávesa PageDown</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -196,7 +196,6 @@
 <translation id="838869780401515933">zaškrtnout</translation>
 <translation id="8393700583063109961">Odeslat zprávu</translation>
 <translation id="8394908167088220973">Média – přehrát/pozastavit</translation>
-<translation id="8420205633584771378">Odstranit tento návrh?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 r}few{# r}many{# r}other{# r}}</translation>
 <translation id="8602707065186045623">Soubor <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Polička se vždy zobrazuje</translation>

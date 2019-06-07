@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1028699632127661925">Šalje se uređaju <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Postavke obavijesti</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Prije 1 dan}one{Prije # dan}few{Prije # dana}other{Prije # dana}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Prije 1 minute}one{prije # minute}few{prije # minute}other{prije # minuta}}</translation>
@@ -185,7 +186,6 @@
 <translation id="8144660977431427332">Vaša pretraživanja pokreće Google asistent. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, samodovrši</translation>
 <translation id="815598010540052116">Pomakni se dolje</translation>
-<translation id="8170087467028567933">Ako ga uklonite, taj će se prijedlog sakriti na vašem računu na svim vašim uređajima.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Stranica prema dolje</translation>
 <translation id="8245914219290430011">Kartica</translation>
@@ -196,7 +196,6 @@
 <translation id="838869780401515933">označi</translation>
 <translation id="8393700583063109961">Pošaljite poruku</translation>
 <translation id="8394908167088220973">Reproduciraj/pauziraj Medije</translation>
-<translation id="8420205633584771378">Ukloniti prijedlog?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 g}one{# g}few{# g}other{# g}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> Datoteka (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Polica se uvijek prikazuje</translation>

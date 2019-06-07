@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Sélectionner un dossier</translation>
 <translation id="1265739287306757398">En savoir plus</translation>
 <translation id="1272079795634619415">Arrêter</translation>
+<translation id="1283524564873030414">Dernières 24 heures</translation>
 <translation id="1323735185997015385">Supprimer</translation>
 <translation id="132683371494960526">Appuyez deux fois pour modifier le dossier parent.</translation>
 <translation id="1340643665687018190">Fermer le menu</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Paramètres avancés</translation>
 <translation id="1989112275319619282">Parcourir</translation>
 <translation id="2015722694326466240">Pour afficher les mots de passe, vous devez d'abord définir un code secret sur votre appareil.</translation>
+<translation id="2073572773299281212">Actif il y a <ph name="DAYS" /> jours</translation>
 <translation id="2074131957428911366">Vous avez toujours la possibilité de sélectionner les éléments à synchroniser dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="209018056901015185">Voir version ordinateur</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Tout ouvrir</translation>
 <translation id="2570206273416014374">Envoie des cookies et des recherches effectuées à partir de la barre d'adresse et du champ de recherche à votre moteur de recherche par défaut.</translation>
 <translation id="2572712655377361602">Les règles relatives aux appareils ont bloqué l'accès à vos photos.</translation>
+<translation id="2578571896248130439">Envoyer la page Web</translation>
 <translation id="2584132361465095047">Ajouter un compte…</translation>
 <translation id="2625189173221582860">Mot de passe copié</translation>
 <translation id="2648803196158606475">Supprimer entrées lues</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Marquer…</translation>
 <translation id="3157684681743766797">Tout marquer…</translation>
 <translation id="3175081911749765310">Services Web</translation>
+<translation id="3178650076442119961">Actif aujourd'hui</translation>
 <translation id="3207960819495026254">Favori</translation>
 <translation id="3224641773458703735">Pour exporter les mots de passe, vous devez d'abord définir un code secret sur votre appareil.</translation>
 <translation id="3240426699337459095">Le lien a bien été copié.</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">Pour scanner un code QR, activez l'appareil photo depuis les paramètres</translation>
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="430793432425771671">Tout synchroniser</translation>
+<translation id="430967081421617822">Toutes les périodes</translation>
 <translation id="4338650699862464074">Envoie à Google les URL des pages que vous consultez.</translation>
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
 <translation id="4370827530403103842">La synchronisation ne fonctionne pas. Appuyez pour corriger.</translation>
@@ -281,6 +286,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5127805178023152808">La synchronisation est désactivée.</translation>
 <translation id="5132942445612118989">Synchroniser vos mots de passe, votre historique et plus encore sur tous les appareils</translation>
 <translation id="5140288047769711648">Chrome mémorisera ce mot de passe pour vous. Vous n'avez donc pas besoin de le retenir.</translation>
+<translation id="5150492518600715772">Envoyer sur votre appareil</translation>
 <translation id="5181140330217080051">Téléchargement</translation>
 <translation id="5186185447130319458">Privé</translation>
 <translation id="5190835502935405962">Barre de favoris</translation>
@@ -295,6 +301,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5388358297987318779">Ouvrir l'image</translation>
 <translation id="5409365236829784218">Aucune application installée ne peut ouvrir ce fichier.</translation>
+<translation id="5416022985862681400">Sept derniers jours</translation>
 <translation id="5433691172869980887">Nom d'utilisateur copié</translation>
 <translation id="54401264925851789">Informations sur la sécurité de cette page</translation>
 <translation id="5443952882982198570">Cartes de crédit</translation>
@@ -309,6 +316,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">Actif il y a 1 jour</translation>
 <translation id="5711039611392265845">Pour accéder à d'autres paramètres liés à la confidentialité, à la sécurité et à la collecte de données, consultez la section <ph name="BEGIN_LINK" />Services Google/Synchronisation<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Désolé, problème lors de la connexion à votre compte.</translation>
 <translation id="5737974891429562743">Informations de connexion au compte obsolètes. Mettez-les à jour pour lancer la synchronisation.</translation>
@@ -499,7 +507,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8532105204136943229">Année d'expiration</translation>
 <translation id="8534481786647257214">Post Google+ publié.</translation>
 <translation id="8548878600947630424">Rechercher sur la page…</translation>
-<translation id="8583866649835978847">Envoyez <ph name="TITLE" /> vers un de vos appareils.</translation>
+<translation id="8583866649835978847">Envoyez l'onglet <ph name="TITLE" /> sur un de vos appareils.</translation>
 <translation id="8605219856220328675">Fermer l'onglet</translation>
 <translation id="8620640915598389714">Modifier</translation>
 <translation id="8636825310635137004">Activez la synchronisation pour accéder à vos onglets sur vos autres appareils.</translation>

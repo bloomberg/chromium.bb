@@ -131,15 +131,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Dacă politica este dezactivată, starea comutatorului modului pentru dezvoltatori nu va fi raportată.</translation>
 <translation id="1160479894929412407">Permite protocolul QUIC</translation>
 <translation id="1160939557934457296">Dezactivați continuarea navigării de pe pagina de avertisment Navigare sigură</translation>
-<translation id="1171342272070128466">Activează sau dezactivează funcția de accesibilitate de lupă andocată.
-
-          Dacă politica este activată, lupa andocată va fi activată întotdeauna.
-
-          Dacă politica este dezactivată, lupa andocată va fi dezactivată întotdeauna.
-
-          Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
-
-          Dacă această politică nu este configurată, lupa andocată este inițial dezactivată, dar poate fi activată oricând de utilizator.</translation>
 <translation id="1189817621108632689">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care nu au permisiunea să afișeze imagini.
 
           Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultImagesSetting” dacă este setată, fie din configurația personală a utilizatorului, în caz contrar.
@@ -1112,6 +1103,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Comportamentul politicilor specifice nu va fi afectat dacă setarea acestei politici este anulată.</translation>
 <translation id="2987155890997901449">Activează ARC</translation>
 <translation id="2987227569419001736">Controlează folosirea API-ului Web Bluetooth</translation>
+<translation id="2990018289267778247">Dacă politica este activată, opțiunile de accesibilitate se afișează întotdeauna în meniul barei de sistem.
+
+          Dacă politica este dezactivată, opțiunile de accesibilitate nu se afișează niciodată în meniul barei de sistem.
+
+          Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
+
+          Dacă această politică nu este configurată, opțiunile de accesibilitate nu vor apărea în meniul barei de sistem, dar utilizatorul poate afișa opțiunile de accesibilitate prin intermediul paginii Setări.
+
+          Când funcțiile de accesibilitate sunt activate (prin alte mijloace, de exemplu printr-o combinație de taste), opțiunile de accesibilitate vor fi afișate întotdeauna în meniul barei de sistem.</translation>
 <translation id="3011301228198307065">Configurează adresa URL a paginii principale prestabilite în <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să o schimbe.
 
           Pagina principală este cea care se deschide apăsând pe butonul Pagină principală. Paginile care se deschid la pornire sunt controlate de politicile RestoreOnStartup.
@@ -1429,6 +1429,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
         Această politică este folosită de înregistrarea în politica de cloud a domeniului dispozitivului pe desktop și poate fi setată de fișierul de politică Registry sau GPO în Windows, plist în Mac și JSON în Linux.</translation>
 <translation id="3660562134618097814">Transferă cookie-urile unui furnizor de identitate SAML în timpul conectării</translation>
 <translation id="3701121231485832347">Controlează setările specifice dispozitivelor <ph name="PRODUCT_OS_NAME" /> gestionate de <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Atestare la distanță</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Câmpul cu un singur rând este învechit și va fi eliminat în viitor. Începe să folosești caseta text cu mai multe rânduri de mai jos.)</translation>
 <translation id="3709266154059827597">Configurează lista neagră pentru instalarea extensiilor</translation>
 <translation id="3711895659073496551">Suspendați</translation>
@@ -1539,11 +1540,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este dezactivată, informațiile privind sesiunea chioșc nu vor fi
       raportate. Dacă politica este activată sau nu este configurată, informațiile privind sesiunea chioșc vor fi
       raportate.</translation>
-<translation id="3852924591079583104">
-      Când politica este setată la ArcSession, forțează dispozitivul să repornească la deconectarea utilizatorului dacă Android a pornit.
-      Când este setată la Întotdeauna, forțează dispozitivul să repornească de fiecare dată când utilizatorul se deconectează.
-      Dacă nu este setată, nu are niciun efect și nu este forțată repornirea la deconectarea utilizatorului. Același lucru este valabil dacă politica este setată la Niciodată.
-      </translation>
 <translation id="3858658082795336534">Modul de printare duplex prestabilit</translation>
 <translation id="3859780406608282662">Adăugați un parametru la preluarea valorii inițiale Variante din <ph name="PRODUCT_OS_NAME" />.
 
@@ -1827,6 +1823,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="4285674129118156176">Permite utilizatorilor neafiliați să folosească ARC</translation>
+<translation id="4289903996435140853">Îți permite să setezi o listă de adrese URL ce indică site-urile care vor primi automat permisiunea să acceseze un dispozitiv USB cu ID-ul de furnizor și de produs oferit. Fiecare articol din listă trebuie să conțină atât dispozitivele, cât și adresele URL pentru ca politica să fie validă. Fiecare articol din dispozitive poate conține un câmp pentru ID-ul furnizorului și ID-ul produsului. Orice ID omis este considerat un metacaracter, cu o excepție: un ID de produs nu poate fi specificat fără să fie specificat și un ID de furnizor. În caz contrar, politica nu va fi validă și va fi ignorată.
+
+        Modelul permisiunii USB folosește adresa URL a site-ului care face solicitarea („adresa URL solicitantă”) și adresa URL a site-ului cadru de nivel superior („adresa URL încorporantă”) pentru a acorda permisiunea adresei URL solicitante de a accesa dispozitivul USB. Adresa URL solicitantă poate fi diferită de adresa URL încorporantă când site-ul solicitant este încărcat într-un iframe. De aceea, câmpul „urls” poate conține până la două șiruri separate cu o virgulă pentru a specifica adresa URL încorporantă și, respectiv, solicitantă. Dacă este specificată o singură adresă URL, accesul la dispozitivele USB corespunzătoare va fi acordat când adresa URL a site-ului solicitant este aceeași cu această adresă URL, indiferent de starea încorporării. Adresele URL din „urls” trebuie să fie adrese URL valide; în caz contrar, politica va fi ignorată.
+
+        Dacă această politică nu este setată, valoarea globală prestabilită va fi folosită pentru toate site-urile, fie din politica „DefaultWebUsbGuardSetting”, dacă este setată, fie din configurația personală a utilizatorului, în caz contrar.
+
+        Șabloanele de adrese URL din această politică nu trebuie să fie în contradicție cu cele configurate prin WebUsbBlockedForUrls. Dacă există o contradicție, această politică va avea întâietate în fața WebUsbBlockedForUrls și WebUsbAskForUrls.
+
+        Valorile pentru această politică și politica WebUsbAllowDevicesForUrls sunt îmbinate.</translation>
 <translation id="4298509794364745131">Specifică lista de aplicații care pot fi activate ca aplicație pentru creat note pe ecranul de blocare din <ph name="PRODUCT_OS_NAME" />.
 
       Dacă aplicația preferată pentru creat note este activată pe ecranul de blocare, acesta va include un element al interfeței de utilizare pentru lansarea aplicației preferate pentru creat note.
@@ -1970,6 +1975,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4639407427807680016">Numele gazdelor de mesagerie nativă de exclus din lista neagră.</translation>
 <translation id="4650759511838826572">Dezactivează schemele pentru protocolul adresei URL</translation>
 <translation id="465099050592230505">Adresa URL a magazinului web pentru întreprinderi (politică învechită)</translation>
+<translation id="4661889655253181651">Folosind Setările privind conținutul, poți să specifici modul în care este gestionat conținutul de un anumit tip (de exemplu: cookie-uri, imagini sau JavaScript)</translation>
 <translation id="4665897631924472251">Setările de gestionare a extensiilor</translation>
 <translation id="4668325077104657568">Setare pentru imagini prestabilite</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2014,6 +2020,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Aceste sugestii vor fi preluate de la distanță de pe serverele Google.
 
       Dacă setarea este dezactivată, nu se vor prelua și nu se vor afișa sugestii.</translation>
+<translation id="4759650396863318477">Îți permite să setezi perioada, în milisecunde, în care utilizatorii sunt informați că <ph name="PRODUCT_NAME" /> trebuie relansat sau că un dispozitiv <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru a aplica o actualizare în așteptare.
+
+      În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări. Pentru dispozitivele <ph name="PRODUCT_OS_NAME" />, notificarea privind repornirea apare în bara de sistem, conform politicii <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pentru browserele <ph name="PRODUCT_NAME" />, meniul aplicației se modifică, indicând faptul că este necesară o relansare după expirarea unei treimi din perioada de notificare. Această notificare își schimbă culoarea după expirarea a două treimi din perioada de notificare și încă o dată, după încheierea întregii perioade de notificare. Notificările suplimentare activate de politica <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> urmează același program.
+
+      Dacă nu este configurată, se aplică o perioadă prestabilită de 345.600.000 de milisecunde (patru zile) pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> și 604.800.000 de milisecunde (o săptămână) pentru <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Activează funcția de completare automată din <ph name="PRODUCT_NAME" /> și permite utilizatorilor să completeze automat informațiile despre carduri de credit în formularele web folosind informațiile stocate anterior.
 
       Dacă această setare este dezactivată, completarea automată nu va sugera și nu va completa niciodată informațiile despre carduri de credit, nici nu va salva informații suplimentare despre carduri de credit pe care utilizatorul le-ar putea trimite când navighează pe web.
@@ -2212,6 +2223,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5208240613060747912">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea să afișeze notificări. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultNotificationsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="5213038356678567351">Site-uri care nu trebuie să declanșeze niciodată comutarea browserului.</translation>
 <translation id="5219844027738217407">În cazul aplicațiilor Android, această politică afectează numai microfonul. Când politica este activată, microfonul este dezactivat pentru toate aplicațiile Android, fără excepții.</translation>
+<translation id="5221394278852982313">Îți permite să setezi o listă de adrese URL ce indică site-urile care vor primi automat permisiunea să acceseze un dispozitiv USB cu ID-ul de furnizor și de produs oferit. Fiecare articol din listă trebuie să conțină atât dispozitivele, cât și adresele URL pentru ca politica să fie validă. Fiecare articol din dispozitive poate conține un câmp pentru ID-ul furnizorului și ID-ul produsului. Orice ID omis este considerat un metacaracter, cu o excepție: un ID de produs nu poate fi specificat fără să fie specificat și un ID de furnizor. În caz contrar, politica nu va fi validă și va fi ignorată.
+
+        Modelul permisiunii USB folosește adresa URL a site-ului care face solicitarea („adresa URL solicitantă”) și adresa URL a site-ului cadru de nivel superior („adresa URL încorporantă”) pentru a acorda permisiunea adresei URL solicitante de a accesa dispozitivul USB. Adresa URL solicitantă poate fi diferită de adresa URL încorporantă când site-ul solicitant este încărcat într-un iframe. De aceea, câmpul „urls” poate conține până la două șiruri separate cu o virgulă pentru a specifica adresa URL încorporantă și, respectiv, solicitantă. Dacă este specificată o singură adresă URL, accesul la dispozitivele USB corespunzătoare va fi acordat când adresa URL a site-ului solicitant este aceeași cu această adresă URL, indiferent de starea încorporării. Adresele URL din „urls” trebuie să fie adrese URL valide; în caz contrar, politica va fi ignorată.
+
+        Dacă această politică nu este setată, valoarea globală prestabilită va fi folosită pentru toate site-urile, fie din politica „DefaultWebUsbGuardSetting”, dacă este setată, fie din configurația personală a utilizatorului, în caz contrar.
+
+        Șabloanele de adrese URL din această politică nu trebuie să fie în contradicție cu cele configurate prin WebUsbBlockedForUrls. Dacă există o contradicție, această politică va avea întâietate în fața WebUsbBlockedForUrls și WebUsbAskForUrls.
+
+        Valorile pentru această politică și politica DeviceWebUsbAllowDevicesForUrls sunt îmbinate.</translation>
 <translation id="5228316810085661003">Întârzierea până la conectarea automată la contul local de pe dispozitiv.
 
       Dacă politica |DeviceLocalAccountAutoLoginId| nu este setată, această politică nu are niciun efect. În caz contrar:
@@ -2937,6 +2957,21 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă politica este setată la „Nu permite utilizatorilor să gestioneze certificate”, utilizatorii nu vor putea să gestioneze certificate, ci doar să le vizualizeze.</translation>
 <translation id="6573305661369899995">Setează o sursă externă a restricțiilor privind adresele URL</translation>
+<translation id="6583851521569686409">Configurează o listă de imprimante.
+
+      Această politică permite administratorilor să ofere utilizatorilor configurații ale
+      imprimantelor.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri cu formă liberă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> sunt folosite pentru a simplifica identificarea imprimantei de utilizatorii finali. Acestea reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe un computer client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, este folosit pentru a deduplica imprimantele <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să conțină numele imprimantei sau <ph name="PRINTER_AUTOCONF" /> trebuie să fie activat. Imprimantele cu ambele proprietăți sau fără niciuna vor fi ignorate.
+
+      Configurarea imprimantei este finalizată la prima folosire a acesteia.  Fișierele PPD nu sunt descărcate înainte de folosirea imprimantei.  După aceea, PPD-urile folosite frecvent sunt stocate în memoria cache.
+
+      Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe dispozitive individuale.  Este creată ca o politică suplimentară pentru configurarea imprimantelor de utilizatori individuali.
+
+      Pentru dispozitivele gestionate cu Active Directory, această politică acceptă extinderea <ph name="MACHINE_NAME_VARIABLE" /> la numele computerului din Active Directory sau la un subșir al acestuia. De exemplu, dacă numele computerului este <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> va fi înlocuit de cele patru caractere care urmează după cea de-a șasea poziție, adică <ph name="MACHINE_NAME_PART_EXAMPLE" />. Reține că poziția începe de la zero.
+      </translation>
 <translation id="6598235178374410284">Imagine cu avatarul de utilizator</translation>
 <translation id="6603004149426829878">Trimite întotdeauna semnalele disponibile privind locația către server în timp ce se stabilește fusul orar</translation>
 <translation id="6628120204569232711">Raportează starea spațiului de stocare</translation>
@@ -3377,7 +3412,6 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica este setată la „RemoveLRUIfDormant”, curățarea automată va continua să elimine utilizatorii care nu s-au conectat în ultimele 3 luni, începând cu cei care s-au conectat de cele mai puține ori recent, până când există suficient spațiu liber.
 
       Dacă politica nu este setată, curățarea automată utilizează strategia încorporată în mod prestabilit. În prezent, aceasta este strategia „RemoveLRUIfDormant”.</translation>
-<translation id="7334274148831027933">Activează lupa andocată</translation>
 <translation id="7336785017449297672">Controlează setările de ceas și fus orar.</translation>
 <translation id="7336878834592315572">Păstrați cookie-urile pe durata sesiunii</translation>
 <translation id="7339315111520512972">Forțează codul de rețea să ruleze în procesul browserului</translation>
@@ -4244,6 +4278,8 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="915194831143859291">Dacă această politică este dezactivată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> îi va permite utilizatorului să oprească dispozitivul.
       Dacă această politică este activată, <ph name="PRODUCT_OS_NAME" /> va declanșa o repornire când utilizatorul închide dispozitivul. <ph name="PRODUCT_OS_NAME" /> înlocuiește toate aparițiile butoanelor de închidere din interfața de utilizare cu butoane de repornire. Dacă utilizatorul închide dispozitivul folosind butonul de pornire, acesta nu va reporni automat, chiar dacă politica este activată.</translation>
 <translation id="9152473318295429890">Activează sugestiile contextuale ale paginilor web asociate</translation>
+<translation id="9153446010242995516">Revino la starea anterioară și rămâi la versiunea țintă dacă versiunea sistemului de operare este mai nouă decât ținta. Încearcă să preiei configurația la nivel de dispozitiv (inclusiv acreditările de rețea) prin procesul de revenire, dacă este posibil, dar fă revenirea cu un Powerwash complet, chiar dacă restabilirea datelor nu este posibilă (deoarece versiunea țintă nu acceptă restabilirea datelor sau din cauza unei schimbări care nu acceptă revenirea la starea anterioară).
+          Se acceptă în versiunea 75 și versiunile ulterioare de <ph name="PRODUCT_OS_NAME" />. Pentru clienții mai vechi, această valoare înseamnă că revenirea este dezactivată.</translation>
 <translation id="9158929520101169054">Permite conectarea multiplă în browser</translation>
 <translation id="9159126470527871268">Notifică utilizatorul că <ph name="PRODUCT_NAME" /> trebuie relansat sau <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru aplicarea unei actualizări în așteptare.
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="1028699632127661925">กำลังส่งไปที่ <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">การตั้งค่าการแจ้งเตือน</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 วันที่ผ่านมา}other{# วันที่ผ่านมา}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 นาทีที่ผ่านมา}other{# นาทีที่ผ่านมา}}</translation>
@@ -185,7 +186,6 @@
 <translation id="8144660977431427332">การค้นหาของคุณขับเคลื่อนโดย Google Assistant <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" /> เติมข้อความอัตโนมัติ</translation>
 <translation id="815598010540052116">เลื่อนลง</translation>
-<translation id="8170087467028567933">การนำคำแนะนำนี้ออกจะเป็นการซ่อนคำแนะนำจากบัญชีของคุณในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">เลื่อนหน้าลง</translation>
 <translation id="8245914219290430011">แท็บ</translation>
@@ -196,7 +196,6 @@
 <translation id="838869780401515933">ทำเครื่องหมาย</translation>
 <translation id="8393700583063109961">ส่งข้อความ</translation>
 <translation id="8394908167088220973">เล่น/หยุดสื่อชั่วคราว</translation>
-<translation id="8420205633584771378">นำคำแนะนำนี้ออกไหม</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 ปี}other{# ปี}}</translation>
 <translation id="8602707065186045623">ไฟล์ <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">แสดงชั้นวางเสมอ</translation>

@@ -370,7 +370,7 @@
 <translation id="155865706765934889">לוח מגע</translation>
 <translation id="1564414980088536597">לא ניתן להשתמש בתמונה הזו. צריך לבחור תמונה אחרת.</translation>
 <translation id="1566049601598938765">אתר</translation>
-<translation id="15662109988763471">המדפסת שנבחרה אינה זמינה או שאינה מותקנת כראוי. יש לבדוק את המדפסת או לנסות לבחור מדפסת אחרת</translation>
+<translation id="15662109988763471">המדפסת שנבחרה אינה זמינה או שאינה מותקנת כראוי. יש לבדוק את המדפסת או לנסות לבחור מדפסת אחרת.</translation>
 <translation id="1567387640189251553">חוברה מקלדת אחרת מאז שהזנת את הסיסמה בפעם האחרונה. ייתכן שהיא מנסה לתעד את ההקשות שלך.</translation>
 <translation id="1567750922576943685">אימות הזהות עוזר להגן על המידע האישי</translation>
 <translation id="1567993339577891801">‏קונסולת JavaScript</translation>
@@ -2141,6 +2141,12 @@
 <translation id="4242577469625748426">התקנת הגדרות המדיניות במכשיר: <ph name="VALIDATION_ERROR" /> נכשלה.</translation>
 <translation id="4244238649050961491">חפש עוד אפליקציות לשימוש בסטיילוס</translation>
 <translation id="424726838611654458">‏פתח תמיד ב-Adobe Reader</translation>
+<translation id="4247274662191902962">‏שיתוף נתוני החיישן יתבצע רק במהלך ההשתתפות בחוויית ה-VR הזו. ייתכן שהאתר ילמד עליך באמצעות פרטים מסוימים, למשל:
+    - המיקום שלך
+    - המאפיינים הגופניים שלך, כמו מיקום העיניים
+    - התנועות שלך, למשל צורת ההליכה
+
+    לפני הענקת הגישה, יש לוודא שמדובר באתר מהימן.</translation>
 <translation id="4247901771970415646">לא ניתן לסנכרן עם <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">תיכף נתחבר לרשת…</translation>
 <translation id="4249373718504745892">הגישה של הדף הזה למצלמה ולמיקרופון נחסמה.</translation>
@@ -4464,7 +4470,7 @@
 <translation id="7849264908733290972">פתיחת &amp;תמונה בכרטיסייה חדשה</translation>
 <translation id="784934925303690534">טווח זמן</translation>
 <translation id="7850222546481862746">‏<ph name="BEGIN_PARAGRAPH1" />כדי לסיים את הגדרת הפיקוח במכשיר הזה יש לצאת מהחשבון של <ph name="USER_NAME" />.<ph name="END_PARAGRAPH1" />
-      <ph name="BEGIN_PARAGRAPH2" />כדי לנהל את בקרת הורים עליך להתקין את Family Link להורים במכשיר שלך.<ph name="END_PARAGRAPH2" /></translation>
+      <ph name="BEGIN_PARAGRAPH2" />כדי לנהל את בקרת ההורים בשביל ילדך עליך להתקין את Family Link להורים במכשיר שלך.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="7851457902707056880">הכניסה הוגבלה לחשבון הבעלים בלבד. בצע אתחול מחדש והיכנס באמצעות חשבון הבעלים. המחשב יבצע אתחול מחדש אוטומטי בתוך 30 שניות.</translation>
 <translation id="7851716364080026749">חסום תמיד גישה למצלמה ולמיקרופון</translation>
 <translation id="7853747251428735">&amp;כלים נוספים</translation>

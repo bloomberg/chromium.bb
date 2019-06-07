@@ -130,15 +130,6 @@
       如果此政策设为False，则不报告dev开关的状态。</translation>
 <translation id="1160479894929412407">允许使用 QUIC 协议</translation>
 <translation id="1160939557934457296">禁止从安全浏览警告页面继续访问</translation>
-<translation id="1171342272070128466">启用停靠的放大镜无障碍功能。
-
-          如果将此政策设置为 true，停靠的放大镜将始终处于启用状态。
-
-          如果将此政策设置为 false，停靠的放大镜将始终处于停用状态。
-
-          如果您设置了此政策，用户将无法更改或覆盖它。
-
-          如果未设置此政策，则停靠的放大镜最初会处于停用状态，但用户可以随时启用该功能。</translation>
 <translation id="1189817621108632689">让您能够设置一系列网址格式，以用于指定允许哪些网站显示图片。
 
           如果未设置此政策，系统将会对所有网站使用“DefaultImagesSetting”政策中的全局默认值（倘若已设置“DefaultImagesSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultImagesSetting”政策）。
@@ -1489,11 +1480,6 @@
 <translation id="3851039766298741586">报告有关当前自助服务终端会话的信息，例如应用 ID 和版本。
 
       如果此政策设为 false，则系统不会报告自助服务终端会话信息。如果此政策设为 true 或未设置，则系统会报告自助服务终端会话信息。</translation>
-<translation id="3852924591079583104">
-      如果将此政策设为 ArcSession，系统会在用户退出后强制相应设备重新启动（如果 Android 已启动）。
-      如果将此政策设为 Always，则系统会在每位用户退出后都强制相应设备重新启动。
-      如果未设置，此政策将不会产生任何效力，也不会在用户退出后强制相应设备重新启动。如果设为 Never，结果也一样。
-      </translation>
 <translation id="3858658082795336534">默认使用双面打印模式</translation>
 <translation id="3859780406608282662">在提取 <ph name="PRODUCT_OS_NAME" /> 中的变体种子的方法中添加参数。
 
@@ -3275,7 +3261,6 @@
       如果此政策设为“RemoveLRUIfDormant”，自动清理将按最近最少登录顺序移除至少已有3个月未登录的用户，直至系统有足够的可用空间。
 
       如果此政策未设置，自动清理将使用默认的内置策略（目前为“RemoveLRUIfDormant”策略）。</translation>
-<translation id="7334274148831027933">启用停靠的放大镜</translation>
 <translation id="7336785017449297672">控制时钟和时区设置。</translation>
 <translation id="7336878834592315572">在会话期间保留 Cookie</translation>
 <translation id="7339315111520512972">强制网络代码在浏览器进程中运行</translation>

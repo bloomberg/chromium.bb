@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">HÌNH ẢNH</translation>
 <translation id="257088987046510401">Chủ đề</translation>
 <translation id="2570922361219980984">Quyền truy cập vị trí cũng đã bị tắt đối với thiết bị này. Hãy bật trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Nhóm</translation>
 <translation id="257931822824936280">Đã mở rộng - nhấp để thu gọn.</translation>
 <translation id="2581165646603367611">Thao tác này sẽ xóa cookie, bộ nhớ đệm và các dữ liệu khác của các trang web mà Chrome cho rằng không quan trọng.</translation>
 <translation id="2586657967955657006">Khay nhớ tạm</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">Tài khoản này do <ph name="PARENT_NAME_1" /> và <ph name="PARENT_NAME_2" /> quản lý.</translation>
 <translation id="2962095958535813455">Đã chuyển sang tab ẩn danh</translation>
 <translation id="2968755619301702150">Trình xem chứng chỉ</translation>
+<translation id="2977480621796371840">Xóa khỏi nhóm</translation>
 <translation id="2979025552038692506">Tab ẩn danh được chọn</translation>
 <translation id="2989523299700148168">Đã truy cập gần đây</translation>
 <translation id="2996291259634659425">Tạo cụm mật khẩu</translation>
@@ -426,6 +428,12 @@
 <translation id="4226663524361240545">Thông báo có thể làm rung thiết bị</translation>
 <translation id="423219824432660969">Mã hóa dữ liệu đã đồng bộ hóa bằng mật khẩu Google kể từ <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Mở cài đặt</translation>
+<translation id="4247274662191902962">Dữ liệu cảm biến sẽ chỉ được chia sẻ khi bạn vào trải nghiệm thực tế ảo này. Trang web này có thể tìm hiểu về bạn thông qua một số thông tin, chẳng hạn như:
+    - Vị trí của bạn
+    - Đặc điểm ngoại hình của bạn, như vị trí mắt
+    - Cử động của bạn, ví dụ như cách đi
+
+    Đảm bảo bạn tin cậy trang web này trước khi cho phép truy cập.</translation>
 <translation id="424864128008805179">Đăng xuất khỏi Chrome?</translation>
 <translation id="4256782883801055595">Giấy phép nguồn mở</translation>
 <translation id="4259722352634471385">Điều hướng bị chặn: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="545042621069398927">Đang tăng tốc độ tải xuống.</translation>
 <translation id="5456381639095306749">Tải trang xuống</translation>
 <translation id="5475862044948910901">Bắt đầu phiên đăng nhập thực tế tăng cường?</translation>
+<translation id="5481942164684849270">Đã thêm <ph name="APP_NAME" /> vào phần ứng dụng của tôi</translation>
 <translation id="548278423535722844">Mở trong ứng dụng bản đồ</translation>
 <translation id="5487521232677179737">Xóa dữ liệu</translation>
 <translation id="5494752089476963479">Chặn quảng cáo trên các trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>

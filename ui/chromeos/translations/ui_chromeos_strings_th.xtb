@@ -286,6 +286,7 @@
 <translation id="4572815280350369984">ไฟล์ <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">เพิ่มเติม...</translation>
 <translation id="4582497162516204941">ติดตั้งด้วย Linux (เบต้า)</translation>
+<translation id="4594543368593301662">กำลังแสดงผลการค้นหาสำหรับ <ph name="SEARCH_TERM" /></translation>
 <translation id="4631887759990505102">ศิลปิน</translation>
 <translation id="4656293982926141856">คอมพิวเตอร์เครื่องนี้</translation>
 <translation id="4669606053856530811">สมาชิกของ "<ph name="SOURCE_NAME" />" จะสูญเสียสิทธิ์เข้าถึง เว้นแต่มีการแชร์รายการเหล่านี้กับสมาชิกดังกล่าว</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">แป้นพิมพ์ภาษาบัลแกเรีย</translation>
 <translation id="5418923334382419584">แป้นพิมพ์ภาษาพม่า</translation>
 <translation id="5428105026674456456">สเปน</translation>
+<translation id="5438282218546237410">ไม่มีผลการค้นหาสำหรับ <ph name="SEARCH_TERM" /></translation>
 <translation id="5464696796438641524">แป้นพิมพ์ภาษาโปแลนด์</translation>
 <translation id="5465122519792752163">แป้นพิมพ์ภาษาเนปาล (InScript)</translation>
 <translation id="5469868506864199649">อิตาลี</translation>
 <translation id="5494920125229734069">เลือกทั้งหมด</translation>
 <translation id="5500122897333236901">ไอซ์แลนดิก</translation>
 <translation id="5508696409934741614">จุด</translation>
+<translation id="5522908512596376669">เปลี่ยนรายการไฟล์เป็นมุมมองรายการแล้ว</translation>
 <translation id="5524517123096967210">ไม่สามารถอ่านไฟล์</translation>
 <translation id="5533102081734025921">รูปภาพ <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">การทับศัพท์ (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6054173164583630569">แป้นพิมพ์ภาษาฝรั่งเศส</translation>
 <translation id="6074825444536523002">Google ฟอร์ม</translation>
+<translation id="6096979789310008754">ล้างข้อความค้นหาแล้ว กำลังแสดงไฟล์และโฟลเดอร์ทั้งหมด</translation>
 <translation id="6111770213269631447">การทับศัพท์ (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">ช่องว่าง</translation>
 <translation id="6133173853026656527">กำลังย้าย <ph name="FILE_NAME" />...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">ช้าง</translation>
 <translation id="8569764466147087991">เลือกไฟล์เพื่อเปิด</translation>
 <translation id="8579285237314169903">กำลังซิงค์ <ph name="NUMBER_OF_FILES" /> รายการ...</translation>
+<translation id="8600173386174225982">เปลี่ยนรายการไฟล์เป็นมุมมองภาพขนาดย่อแล้ว</translation>
 <translation id="8669949407341943408">กำลังย้าย...</translation>
 <translation id="8671210955687109937">สามารถแสดงความคิดเห็นได้</translation>
 <translation id="8686213429977032554">ยังไม่มีการแชร์ไฟล์ไดรฟ์นี้</translation>

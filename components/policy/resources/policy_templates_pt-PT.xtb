@@ -145,15 +145,6 @@
       Se a política estiver definida como "false", o estado do comutador dev não será comunicado.</translation>
 <translation id="1160479894929412407">Autorizar o protocolo QUIC</translation>
 <translation id="1160939557934457296">Desativar procedimento da página de aviso de Navegação Segura</translation>
-<translation id="1171342272070128466">Ative a funcionalidade de acessibilidade da lupa ancorada.
-
-          Se esta política for definida como verdadeira, a lupa ancorada estará sempre ativada.
-
-          Se esta política for definida como falsa, a lupa ancorada estará sempre desativada.
-
-          Se definir esta política, os utilizadores não a poderão alterar nem substituir.
-
-          Se esta política não for definida, a lupa ancorada estará inicialmente desativada, mas poderá ser ativada pelo utilizador em qualquer altura.</translation>
 <translation id="1189817621108632689">Permite definir uma lista de padrões de URL que especificam os sites não autorizados a apresentar imagens.
 
           Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultImagesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.
@@ -1125,6 +1116,15 @@
           Se esta política não for definida, o comportamento das políticas mais específicas permanece intacto.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2987227569419001736">Controlar a utilização da API Web Bluetooth</translation>
+<translation id="2990018289267778247">Se esta política for definida como Verdadeira, as opções de Acessibilidade aparecem sempre no menu do tabuleiro do sistema.
+
+          Se esta política for definida como Falsa, as opções de Acessibilidade nunca aparecem no menu do tabuleiro do sistema.
+
+          Se definir esta política, os utilizadores não a podem alterar nem substituir.
+
+          Se esta política não for definida, as opções de Acessibilidade não aparecem no menu do tabuleiro do sistema, mas o utilizador pode fazer com que as mesmas apareçam através da página Definições.
+
+          Quando as funcionalidades de acessibilidade são ativadas (por outros meios, por exemplo, através de uma combinação de teclas), as opções de Acessibilidade aparecem sempre no menu do tabuleiro do sistema.</translation>
 <translation id="3011301228198307065">Configura o URL da página inicial predefinida no <ph name="PRODUCT_NAME" /> e impede os utilizadores de o alterarem.
 
           A página inicial é a página aberta com o botão página inicial. As páginas abertas no arranque são controladas pelas políticas RestoreOnStartup.
@@ -1442,6 +1442,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
         Esta política é utilizada pela inscrição de políticas de nuvem num âmbito automático em computadores e pode ser definida pela Base de dados de registo ou GPO no Windows, pelo plist no Mac e pelo ficheiro da política JSON no Linux.</translation>
 <translation id="3660562134618097814">Transferir cookies SAML IdP durante o início de sessão</translation>
 <translation id="3701121231485832347">Controla definições específicas para dispositivos <ph name="PRODUCT_OS_NAME" /> geridos por <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Atestação remota</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (O campo de uma única linha foi descontinuado e será removido no futuro. Comece a utilizar a caixa de texto multilinha abaixo.)</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="3711895659073496551">Suspenso</translation>
@@ -1552,11 +1553,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se a política for definida como falsa, as informações da sessão do quiosque não são
       comunicadas. Se for definida como verdadeira ou deixada por definir, as informações da sessão do quiosque são
       comunicadas.</translation>
-<translation id="3852924591079583104">
-      Quando definida como ArcSession, esta política força o reinício do dispositivo após o fim de sessão do utilizador, se o Android tiver sido iniciado.
-      Quando definida como Sempre, força o reinício do dispositivo aquando de todos os fins de sessão do utilizador.
-      Se não for definida, não tem qualquer efeito e não é forçado nenhum reinício aquando do fim de sessão do utilizador. O mesmo se aplica se for definida como Nunca.
-      </translation>
 <translation id="3858658082795336534">Modo duplex de impressão padrão</translation>
 <translation id="3859780406608282662">Adiciona um parâmetro para a obtenção da semente Variações no <ph name="PRODUCT_OS_NAME" />.
 
@@ -1840,6 +1836,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="4285674129118156176">Permitir que os utilizadores não afiliados utilizem o ARC</translation>
+<translation id="4289903996435140853">Permite-lhe definir uma lista de URLs que especificam os sites aos quais será concedida automaticamente autorização para aceder a um dispositivo USB com os IDs de fornecedor e do produto indicados. Todos os itens na lista devem conter dispositivos e URLs para que a política seja válida. Todos os itens nos dispositivos podem conter um campo de ID de fornecedor e de ID do produto. Os IDs omitidos são tratados como carateres universais, com a exceção de que não é possível especificar um ID do produto sem que o ID de fornecedor também seja especificado. Caso contrário, a política não é válida e será ignorada.
+
+        O modelo de autorização de USB utiliza o URL do site requerente ("URL requerente") e o URL do site de nível superior ("URL incorporante") para autorizar o URL requerente a aceder ao dispositivo USB. O URL requerente pode ser diferente do URL incorporante se o site requerente for carregado num iFrame. Assim, o campo "URLs" pode conter até duas strings de URL separadas por vírgula para especificar o URL requerente e o URL incorporante, respetivamente. Se apenas for especificado um URL, é concedido acesso aos dispositivos USB correspondentes quando o URL do site requerente corresponder a este URL, independentemente do estado de incorporação. Os URLs no campo "URLs" têm de ser URLs válidos; caso contrário, a política será ignorada.
+
+        Se esta política não estiver definida, o valor predefinido global é utilizado para todos os sites a partir da política "DefaultWebUsbGuardSetting", se estiver definida, ou, caso contrário, a partir da configuração pessoal do utilizador.
+
+        Os padrões de URL nesta política não devem entrar em conflito com os configurados através de WebUsbBlockedForUrls. Se existir conflito, esta política prevalece em relação a WebUsbBlockedForUrls e WebUsbAskForUrls.
+
+        Os valores desta política e da política WebUsbAllowDevicesForUrls policy são unidos.</translation>
 <translation id="4298509794364745131">Especifica a lista de aplicações que podem ser ativadas como aplicações para tirar notas no ecrã de bloqueio do <ph name="PRODUCT_OS_NAME" />.
 
       Se a aplicação para tirar notas preferida estiver ativada no ecrã de bloqueio, este irá conter um elemento de IU para a iniciar.
@@ -1983,6 +1988,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4639407427807680016">Nomes dos anfitriões de mensagens nativas a isentar da lista negra</translation>
 <translation id="4650759511838826572">Desativar os esquemas de protocolo de URL</translation>
 <translation id="465099050592230505">URL da Web store da empresa (descontinuado)</translation>
+<translation id="4661889655253181651">As definições de conteúdo permitem-lhe especificar como são processados os conteúdos de um determinado tipo (por exemplo, cookies, imagens ou JavaScript).</translation>
 <translation id="4665897631924472251">Definições de gestão de extensões</translation>
 <translation id="4668325077104657568">Definição de imagens predefinidas</translation>
 <translation id="4670865688564083639">Mínimo:</translation>
@@ -2027,6 +2033,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Essas sugestões são obtidas remotamente a partir dos servidores da Google.
 
       Se esta definição estiver definida como falsa, as sugestões não serão obtidas nem apresentadas.</translation>
+<translation id="4759650396863318477">Permite-lhe definir o período de tempo, em milissegundos, ao longo do qual os utilizadores são notificados de que o <ph name="PRODUCT_NAME" /> tem de ser reiniciado ou que um dispositivo<ph name="PRODUCT_OS_NAME" /> tem de ser reiniciado para aplicar uma atualização pendente.
+
+      Ao longo deste período de tempo, o utilizador é informado, repetidamente, de que é necessária uma atualização. Relativamente aos dispositivos <ph name="PRODUCT_OS_NAME" />, é apresentada uma notificação de reinício no tabuleiro do sistema de acordo com a política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Quanto aos navegadores <ph name="PRODUCT_NAME" />, o menu da aplicação muda e passa a indicar que é necessário reiniciar assim que for ultrapassado um terço do período de notificação. A cor da notificação muda quando forem ultrapassados dois terços do período de notificação e volta a mudar quando o período terminar. As outras notificações que a política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> ativa seguem este mesmo horário.
+
+      Se não for definida, é utilizado o período predefinido de 345 600 000 milissegundos (quatro dias) para os dispositivos <ph name="PRODUCT_OS_NAME" /> e de 604 800 000 milissegundos (uma semana) para o <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Ativa a funcionalidade de Preenchimento automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente as informações de cartões de crédito em formulários Web ao utilizar informações armazenadas anteriormente.
 
       Se esta definição estiver desativada, o Preenchimento automático nunca sugere nem preenche formulários com informações de cartões de crédito e também não guarda informações adicionais de cartões de crédito que o utilizador possa enviar enquanto navega na Web.
@@ -2221,6 +2232,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5208240613060747912">Permite definir uma lista de padrões de URL que especificam os Web sites não autorizados a apresentar notificações. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultNotificationsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="5213038356678567351">Websites que nunca devem acionar uma mudança de navegador.</translation>
 <translation id="5219844027738217407">Para aplicações para Android, esta política afeta apenas o microfone. Se esta política estiver definida como verdadeira, o som do microfone é desativado para todas as aplicações para Android, sem exceções.</translation>
+<translation id="5221394278852982313">Permite-lhe definir uma lista de URLs que especificam os sites aos quais será concedida automaticamente autorização para aceder a um dispositivo USB com os IDs de fornecedor e do produto indicados. Todos os itens na lista devem conter dispositivos e URLs para que a política seja válida. Todos os itens nos dispositivos podem conter um campo de ID de fornecedor e de ID do produto. Os IDs omitidos são tratados como carateres universais, com a exceção de que não é possível especificar um ID do produto sem que o ID de fornecedor também seja especificado. Caso contrário, a política não é válida e será ignorada.
+
+        O modelo de autorização de USB utiliza o URL do site requerente ("URL requerente") e o URL do site de nível superior ("URL incorporante") para autorizar o URL requerente a aceder ao dispositivo USB. O URL requerente pode ser diferente do URL incorporante se o site requerente for carregado num iFrame. Assim, o campo "URLs" pode conter até duas strings de URL separadas por vírgula para especificar o URL requerente e o URL incorporante, respetivamente. Se apenas for especificado um URL, é concedido acesso aos dispositivos USB correspondentes quando o URL do site requerente corresponder a este URL, independentemente do estado de incorporação. Os URLs no campo "URLs" têm de ser URLs válidos; caso contrário, a política será ignorada.
+
+        Se esta política não estiver definida, o valor predefinido global é utilizado para todos os sites a partir da política "DefaultWebUsbGuardSetting", se estiver definida, ou, caso contrário, a partir da configuração pessoal do utilizador.
+
+        Os padrões de URL nesta política não devem entrar em conflito com os configurados através de WebUsbBlockedForUrls. Se existir conflito, esta política prevalece em relação a WebUsbBlockedForUrls e WebUsbAskForUrls.
+
+        Os valores desta política e da política DeviceWebUsbAllowDevicesForUrls são unidos.</translation>
 <translation id="5228316810085661003">Atraso no início de sessão automático na conta local do dispositivo.
 
       Se a política |DeviceLocalAccountAutoLoginId| não estiver definida, a mesma não produz efeitos. Caso contrário:
@@ -2942,6 +2962,21 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política estiver definida como "Não permitir que os utilizadores efetuem a gestão dos certificados", os utilizadores não poderão gerir os certificados, só os podem ver.</translation>
 <translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
+<translation id="6583851521569686409">Configura uma lista de impressoras.
+
+      Esta política permite aos administradores fornecer configurações de impressora para
+      os respetivos utilizadores.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de forma livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora por parte dos utilizadores finais. Representam o fabricante e o modelo da impressora. <ph name="PRINTER_URI" /> deve ser um endereço acessível a partir de um computador de cliente, incluindo <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, é utilizado para ajudar a remover duplicados de impressoras <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> deve conter o nome da impressora ou <ph name="PRINTER_AUTOCONF" /> deve ser definida como verdadeira. As impressoras com as duas propriedades ou sem nenhuma delas serão ignoradas.
+
+      A configuração de uma impressora fica concluída com a primeira utilização da mesma.  Os PPDs não são transferidos enquanto a impressora não for utilizada.  Posteriormente, os PPDs utilizados com frequência são colocados em cache.
+
+      Esta política não influencia a possibilidade de os utilizadores configurarem impressoras em dispositivos individuais.  Destina-se a complementar a configuração de impressoras por utilizadores individuais.
+
+      Em dispositivos geridos pelo Active Directory, esta política suporta a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador do Active Directory ou uma substring do mesmo. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, então <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos 4 carateres a partir da 6.ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tenha em atenção que a posição baseia-se em zero.
+      </translation>
 <translation id="6598235178374410284">Imagem do avatar do utilizador</translation>
 <translation id="6603004149426829878">Enviar sempre quaisquer sinais de localização disponíveis para o servidor durante a resolução do fuso horário</translation>
 <translation id="6628120204569232711">Comunicar o estado do armazenamento</translation>
@@ -3378,7 +3413,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida para "RemoveLRUIfDormant", a limpeza automática continuará a remover utilizadores que não iniciam sessão há, pelo menos, 3 meses, pela ordem de início de sessão menos recente até existir espaço livre suficiente.
 
       Se esta política não estiver definida, a limpeza automática utiliza a estratégia integrada predefinida. Atualmente, é a estratégia "RemoveLRUIfDormant".</translation>
-<translation id="7334274148831027933">Ativar lupa ancorada</translation>
 <translation id="7336785017449297672">Controla as definições do relógio e do fuso horário.</translation>
 <translation id="7336878834592315572">Manter cookies durante toda a sessão</translation>
 <translation id="7339315111520512972">Forçar a execução do código de rede no processo do navegador</translation>
@@ -4264,6 +4298,8 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="915194831143859291">Se esta política estiver definida como falsa ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> permite ao utilizador encerrar o dispositivo.
       Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> aciona um reinício quando o utilizador encerrar o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de encerramento na IU por botões de reinício. Se o utilizador encerrar o dispositivo através do botão ligar/desligar, este não reinicia automaticamente, mesmo que a política esteja ativada.</translation>
 <translation id="9152473318295429890">Ativar sugestões contextuais de páginas Web relacionadas</translation>
+<translation id="9153446010242995516">Reverta e continue com a versão de destino se a versão do SO for mais recente do que a do destino. Tente transferir a configuração ao nível do dispositivo (incluindo as credenciais da rede) através do processo de reversão, se possível, mas efetue a reversão com Powerwash completo, mesmo que não seja possível restaurar os dados (por a versão do destino não ser compatível com o restauro de dados ou devido a uma alteração incompatível com anterior).
+          Compatível com a versão 75 e superior do <ph name="PRODUCT_OS_NAME" />. Para clientes mais antigos, este valor significa que a reversão está desativada.</translation>
 <translation id="9158929520101169054">Permitir o início de sessão integrado no navegador</translation>
 <translation id="9159126470527871268">Notifique os utilizadores de que o <ph name="PRODUCT_NAME" /> tem de ser reiniciado ou que o <ph name="PRODUCT_OS_NAME" /> tem de ser reiniciado para aplicar uma atualização pendente.
 

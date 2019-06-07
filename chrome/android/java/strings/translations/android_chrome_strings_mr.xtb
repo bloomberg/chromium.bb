@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">इमेज</translation>
 <translation id="257088987046510401">थीम</translation>
 <translation id="2570922361219980984">या डिव्हाइसाठी स्थान अ‍ॅक्सेस देखील बंद आहे, <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे सुरू करा.</translation>
+<translation id="257674075312929031">गट</translation>
 <translation id="257931822824936280">विस्‍तृत केले - संकुचित करण्‍यासाठी क्‍लिक करा.</translation>
 <translation id="2581165646603367611">हे सर्व कुकी, कॅशे आणि साइटचा अन्य डेटा साफ करेल जो Chrome ला महत्त्वाचा वाटत नाही.</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">हे खाते <ph name="PARENT_NAME_1" /> आणि <ph name="PARENT_NAME_2" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="2962095958535813455">गुप्त टॅबवर स्विच केले</translation>
 <translation id="2968755619301702150">सर्टिफिकेट दर्शक</translation>
+<translation id="2977480621796371840">गटामधून काढून टाका</translation>
 <translation id="2979025552038692506">निवडलेला गुप्त टॅब</translation>
 <translation id="2989523299700148168">अलीकडे भेट दिलेले</translation>
 <translation id="2996291259634659425">सांकेतिक पासफ्रेझ तयार करा</translation>
@@ -426,6 +428,12 @@
 <translation id="4226663524361240545">सूचनांमुळे डिव्हाइसचे कंपन होऊ शकते</translation>
 <translation id="423219824432660969"><ph name="TIME" /> पर्यंत Google पासवर्डसह सिंक केलेला डेटा एंक्रिप्ट करा</translation>
 <translation id="4242533952199664413">सेटिंग्ज उघडा</translation>
+<translation id="4247274662191902962">तुम्ही VR अनुभवामध्ये असता तेव्हाच फक्त सेन्सर डेटा शेअर करू शकता. ही साइट खालील विशिष्ट माहिती वापरून तुमच्याबद्दल अधिक जाणून घेऊ शकते:
+    - तुमचे स्थान
+    - तुमची शारीरिक वैशिष्‍ट्ये, जसे की, डोळ्यांची रचना
+    - तुमच्या हालचाली, जसे की, तुम्ही कसे चालता
+
+    ॲक्सेसची अनुमती देण्यापूर्वी तुम्ही या साइवर विश्वास ठेवता याची खात्री करा.</translation>
 <translation id="424864128008805179">Chrome मधून साइन आउट करायचे?</translation>
 <translation id="4256782883801055595">मुक्त स्रोत परवाने</translation>
 <translation id="4259722352634471385">नेव्हिगेशन अवरोधित केले आहे: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@
 <translation id="545042621069398927">तुमच्या डाउनलोडचा वेग वाढवत आहे.</translation>
 <translation id="5456381639095306749">पेज डाउनलोड करा</translation>
 <translation id="5475862044948910901">ऑगमेंटेड रीअ‍ॅलिटी सेशन सुरू करायचे का?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> माझ्या अ‍ॅप्समध्ये जोडले आहे</translation>
 <translation id="548278423535722844">नकाशे ॲपमध्ये उघडा</translation>
 <translation id="5487521232677179737">डेटा साफ करा</translation>
 <translation id="5494752089476963479">अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवणाऱ्या साइटवरील जाहिराती ब्लॉक करा</translation>

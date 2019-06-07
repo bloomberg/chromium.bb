@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="1001338328714563407">तुमच्या डिव्हाइस आणि खात्याचे, <ph name="ENROLLMENT_DOMAIN" /> व्यवस्थापक म्हणून:</translation>
 <translation id="1008557486741366299">सध्या नाही</translation>
 <translation id="1010200102790553230">पेज नंतर लोड करा</translation>
 <translation id="1015730422737071372">अतिरिक्त तपशील प्रदान करा</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">वाय-फाय शी पुन्हा कनेक्ट करत आहे</translation>
 <translation id="1165039591588034296">एरर</translation>
 <translation id="1175364870820465910">&amp;मुद्रण...</translation>
+<translation id="1178581264944972037">विराम द्या</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
 <translation id="1197088940767939838">नारिंगी</translation>
 <translation id="1201402288615127009">पुढील</translation>
@@ -100,7 +100,6 @@
 <translation id="1405567553485452995">फिकट हिरवा</translation>
 <translation id="1407135791313364759">सर्व उघडा</translation>
 <translation id="1413809658975081374">गोपनीयता एरर</translation>
-<translation id="14171126816530869"><ph name="ISSUER" /> द्वारे <ph name="LOCALITY" /> स्थित <ph name="ORGANIZATION" /> ची ओळख सत्यापित केली गेली आहे.</translation>
 <translation id="1426410128494586442">होय</translation>
 <translation id="1430915738399379752">प्रिंट</translation>
 <translation id="1455413310270022028">खोडरबर</translation>
@@ -256,6 +255,7 @@
 <translation id="2262243747453050782">HTTP एरर</translation>
 <translation id="2263079731045660823">Chrome सेटिंग्जमध्ये क्रेडिट कार्ड ऑटोफिल माहिती अपडेट करा</translation>
 <translation id="2270484714375784793">फोन नंबर</translation>
+<translation id="2277103315734023688">पुढे जा</translation>
 <translation id="2283340219607151381">पत्ते भरा आणि सेव्ह करा</translation>
 <translation id="2292556288342944218">तुमचा इंटरनेट अॅक्सेस ब्लॉक केला आहे</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
@@ -383,7 +383,6 @@
 <translation id="295526156371527179">चेतावणी: धोरणामध्ये नमूद केल्याप्रमाणे हे धोरण शब्दकोश म्हणून विलीन केले नाही कारण तो एखादा शब्दकोश नाही.</translation>
 <translation id="2955913368246107853">शोध बार बंद करा</translation>
 <translation id="2969319727213777354">एक सुरक्षित कनेक्‍शन स्‍थापित करण्‍यापूर्वी, तुमचे घड्‍याळ योग्यरित्या सेट केले असणे आवश्यक आहे. वेबसाइट त्यांना स्‍वत:ला ओळखण्‍यासाठी वापरलेली ती सर्टिफिकेटे केवळ नमूद केलेल्‍या कालावधीसाठी वैध असल्याने हे असू शकते. तुमच्या डिव्‍हाइसचे घड्‍याळ चुकीचे असल्‍यामुळे, Google Chrome ला सर्टिफिकेट पडताळणी करता आली नाही.</translation>
-<translation id="2970515157925768593">तुमच्या डिव्हाइसचे आणि खात्याचे सेटअप रिमोट पद्धतीने बदलू शकता.</translation>
 <translation id="2972581237482394796">&amp;पुन्हा करा</translation>
 <translation id="2977665033722899841">सध्या निवडलेली <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">डेटा साफ करा</translation>
@@ -395,7 +394,6 @@
 <translation id="3005723025932146533">सेव्ह केलेली प्रत दर्शवा</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> साठी CVC प्रविष्‍ट करा. तुम्ही पुष्टी केल्यावर, तुमचे कार्ड तपशील या साइटसह शेअर केले जातील.</translation>
 <translation id="3010559122411665027">सूची प्रविष्टी "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">डिव्हाइसचे व्यवस्थापक म्हणून <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">आपोआप ब्लॉक केलेले</translation>
 <translation id="3023071826883856138">You4 (Envelope)</translation>
 <translation id="3024663005179499861">चुकीचा धोरण प्रकार</translation>
@@ -441,7 +439,6 @@
 <translation id="3287510313208355388">ऑनलाइन असताना डाउनलोड करा</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> धोरणांबद्दल अधिक जाणून घ्या</translation>
 <translation id="3303855915957856445">कोणतेही शोध परिणाम आढळले नाहीत</translation>
-<translation id="3311730110465560799">तुमच्या डिव्हाइसचे सेटअप रिमोट पद्धतीने बदलू शकता.</translation>
 <translation id="3320021301628644560">बिलिंग पत्ता जोडा</translation>
 <translation id="3324983252691184275">किरमिजी</translation>
 <translation id="3338095232262050444">सुरक्षित</translation>
@@ -536,7 +533,6 @@
 <translation id="3761718714832595332">स्थिती लपवा</translation>
 <translation id="3765032636089507299">सुरक्षित ब्राउझिंग पेज तयार होत आहे.</translation>
 <translation id="3778403066972421603">तुम्हाला हे कार्ड तुमच्या Google खात्यामध्ये आणि या डिव्हाइसवर सेव्ह करायचे आहे का?</translation>
-<translation id="3779973883630527594">या खात्याचे व्यवस्थापन करणारी कंपनी, शाळा किंवा संस्था:</translation>
 <translation id="3781428340399460090">गडद गुलाबी</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">समाप्त होते: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -560,6 +556,7 @@
 <translation id="3949571496842715403">हा सर्व्हर <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षा सर्टिफिकेट विषय पर्यायी नावांचा उल्लेख करत नाही. हे कदाचित चुकीच्या कॉंफिगरेशनमुळे होत आहे किंवा हल्लेखोर तुमच्या कनेक्शनमध्ये अडथळा आणत आहे.</translation>
 <translation id="3949601375789751990">तुमचा ब्राउझिंग इतिहास येथे दिसतो</translation>
 <translation id="3950820424414687140">साइन इन करा</translation>
+<translation id="3962859241508114581">मागील ट्रॅक</translation>
 <translation id="3963837677003247395">मॅन्‍युअली सुरू ठेवायचे आहे का?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{काहीही नाही}=1{1 साइटकडून }other{# साइटकडून }}</translation>
 <translation id="397105322502079400">गणना करत आहे...</translation>
@@ -582,6 +579,7 @@
 <translation id="410351446219883937">ऑटोप्ले</translation>
 <translation id="4103763322291513355">तुमच्या सिस्टीम अॅडमिनिस्ट्रेटराद्वारे प्रवर्तित ब्लॅक लिस्टमधील URLs आणि अन्य धोरणांची सूची पाहण्यासाठी &lt;strong&gt;chrome://policy&lt;/strong&gt; ला भेट द्या.</translation>
 <translation id="4110652170750985508">तुमचे पेमेंट पुन्हा एकदा तपासा</translation>
+<translation id="4112140312785995938">मागे शोधा</translation>
 <translation id="4116663294526079822">या साइटवर नेहमी अनुमती द्या</translation>
 <translation id="4117700440116928470">धोरण कक्षा समर्थित नाही.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{अन्य 1}other{अन्य #}}</translation>
@@ -660,6 +658,7 @@
 <translation id="443673843213245140">प्रॉक्सीचा वापर अक्षम करण्‍यात आला आहे पण एक सुस्पष्‍ट प्रॉक्सी कॉन्‍फिगरेशन निर्दिष्‍ट करण्‍यात आले आहे.</translation>
 <translation id="445100540951337728">डेबिट कार्डे स्वीकारली जातात</translation>
 <translation id="4466881336512663640">फॉर्म बदल गमावतील. तुम्हाला नक्की पुढे सुरू ठेवायचे आहे?</translation>
+<translation id="4477350412780666475">पुढील ट्रॅक</translation>
 <translation id="4482953324121162758">या साइटचे भाषांतर केले जाणार नाही.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">चुकीची URL. URL चा एक ठरावीक फॉरमॅट असणे आवश्यक आहे, उदा. http://example.com or https://example.com.</translation>
@@ -906,7 +905,6 @@
 <translation id="5838278095973806738">या साइटवर कोणतीही संवेदनशील माहिती (उदाहरणार्थ, पासवर्ड किंवा क्रेडिट कार्ड) एंटर करू नका, कारण आक्रमणकर्ते ती चोरू शकतात.</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5863847714970149516">पुढील पेजवर तुमच्याकडून शुल्क आकारले जाऊ शकते</translation>
-<translation id="5865951947699094510">तुमच्या खात्याचे सेटअप रिमोट पद्धतीने बदलू शकता.</translation>
 <translation id="5866257070973731571">फोन नंबर जोडा</translation>
 <translation id="5869405914158311789">या साइटवर पोहचणे शक्य नाही</translation>
 <translation id="5869522115854928033">सेव्ह केलेले पासवर्ड</translation>
@@ -1060,6 +1058,7 @@
 <translation id="6778737459546443941">आपल्या पालकाने अद्याप ती मंजूर केली नाही</translation>
 <translation id="67862343314499040">जांभळा</translation>
 <translation id="6786747875388722282">विस्तार</translation>
+<translation id="6790428901817661496">प्ले करा</translation>
 <translation id="679355240208270552">दुर्लक्ष केले कारण डीफॉल्ट शोध धोरणाने सुरू केलेले नाही</translation>
 <translation id="681021252041861472">या जागा भरणे आवश्यक</translation>
 <translation id="6810899417690483278">सानुकूलीकरण आयडी</translation>
@@ -1163,6 +1162,7 @@
 <translation id="7353601530677266744">कमांड लाइन</translation>
 <translation id="7372973238305370288">शोध परिणाम</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">मीडिया नियंत्रणे</translation>
 <translation id="7378627244592794276">नाही</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">कार्डची पुष्टी करा</translation>
@@ -1266,7 +1266,6 @@
 <translation id="780301667611848630">नाही, नको</translation>
 <translation id="7805768142964895445">स्थिती</translation>
 <translation id="7806344367022510803">Chrome मध्ये शोध इंजिन सेटिंग्ज बदला</translation>
-<translation id="7810209002420871817">तुमचा <ph name="ACCOUNT_DOMAIN" />खाते व्यवस्थापक म्हणून:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome मधून सूचना फॉर्म काढून टाकायचा?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' साठी <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> सापडले</translation>

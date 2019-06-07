@@ -4,7 +4,7 @@
 <translation id="1003088604756913841">Link openen in een nieuw <ph name="APP" />-venster</translation>
 <translation id="1004218526896219317">Toegang tot site</translation>
 <translation id="1005274289863221750">Je microfoon en camera gebruiken</translation>
-<translation id="1005608198058526414">Bekijk e Family Link-instellingen</translation>
+<translation id="1005608198058526414">Bekijk je Family Link-instellingen</translation>
 <translation id="1006873397406093306">Deze extensie kan je gegevens op sites lezen en wijzigen. Je bepaalt tot welke sites de extensie toegang heeft.</translation>
 <translation id="1007408791287232274">Kan apparaten niet laden.</translation>
 <translation id="1008186147501209563">Bladwijzers exporteren</translation>
@@ -2144,6 +2144,12 @@
 <translation id="4242577469625748426">Kan geen beleidsinstellingen op het apparaat installeren: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Meer stylus-apps zoeken</translation>
 <translation id="424726838611654458">Altijd in Adobe Reader openen</translation>
+<translation id="4247274662191902962">Sensorgegevens worden alleen gedeeld wanneer je deze VR-functie gebruikt. De site kan je mogelijk herkennen aan de hand van bepaalde gegevens, zoals:
+    - Je locatie
+    - Je fysieke kenmerken, zoals de positie van je ogen
+    - Je bewegingen, zoals hoe je loopt
+
+    Controleer of je de site vertrouwt voordat je deze toegang geeft.</translation>
 <translation id="4247901771970415646">Kan niet synchroniseren met <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Wachten op netwerkverbinding...</translation>
 <translation id="4249373718504745892">Deze pagina heeft geen toegang tot je camera en microfoon.</translation>

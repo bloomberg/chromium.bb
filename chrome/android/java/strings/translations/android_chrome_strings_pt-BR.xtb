@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">IMAGEM</translation>
 <translation id="257088987046510401">Temas</translation>
 <translation id="2570922361219980984">O acesso ao local também está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grupo</translation>
 <translation id="257931822824936280">Visualização expandida. Clique para recolher</translation>
 <translation id="2581165646603367611">Essa ação limpará os cookies, cache e outros dados de sites que o Chrome não acredita serem importantes.</translation>
 <translation id="2586657967955657006">Área de transferência</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">Esta conta é gerenciada por <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Alternada para guias anônimas</translation>
 <translation id="2968755619301702150">Leitor de certificados</translation>
+<translation id="2977480621796371840">Remover do grupo</translation>
 <translation id="2979025552038692506">Guia anônima selecionada</translation>
 <translation id="2989523299700148168">Visitados recentemente</translation>
 <translation id="2996291259634659425">Criar senha longa</translation>
@@ -426,6 +428,12 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4226663524361240545">É possível que as notificações façam o dispositivo vibrar</translation>
 <translation id="423219824432660969">Criptografar dados sincronizados com a senha do Google a partir de <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Abrir configurações.</translation>
+<translation id="4247274662191902962">Os dados do sensor serão compartilhados apenas enquanto você estiver nesta experiência de RV. É possível que o site aprenda sobre você usando algumas informações, como estas:
+    - Sua localização
+    - Suas características físicas, como a posição dos olhos
+    - Seus movimentos, como a maneira como você caminha
+
+    Certifique-se de que esse site seja confiável antes de conceder acesso.</translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
 <translation id="4259722352634471385">A Navegação GPS está bloqueada: <ph name="URL" /></translation>
@@ -599,6 +607,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="545042621069398927">Acelerando seu download.</translation>
 <translation id="5456381639095306749">Fazer o download da página</translation>
 <translation id="5475862044948910901">Iniciar sessão de realidade aumentada?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> adicionado aos meus apps</translation>
 <translation id="548278423535722844">Abrir no app de mapa</translation>
 <translation id="5487521232677179737">Limpar dados</translation>
 <translation id="5494752089476963479">Bloquear anúncios em sites com publicidade invasiva ou enganosa</translation>

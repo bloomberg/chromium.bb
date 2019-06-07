@@ -2136,6 +2136,12 @@
 <translation id="4242577469625748426">无法在设备上安装策略设置：<ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4244238649050961491">查找更多触控笔应用</translation>
 <translation id="424726838611654458">始终用Adobe Reader打开</translation>
+<translation id="4247274662191902962">仅在您体验此 VR 时才能分享传感器数据。这可能会让网站可以使用某些信息来了解您，例如：
+    - 您的位置信息
+    - 您的身体特征，例如眼睛位置
+    - 您的动作，例如走路姿势
+
+    请确保您信任此网站，然后再允许访问。</translation>
 <translation id="4247901771970415646">无法同步到“<ph name="USERNAME" />”</translation>
 <translation id="4249248555939881673">正在等待建立网络连接…</translation>
 <translation id="4249373718504745892">已禁止此网页使用您的摄像头和麦克风。</translation>

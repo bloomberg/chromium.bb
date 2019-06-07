@@ -131,15 +131,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1152117524387175066">Consente di indicare lo stato dello switch dev del dispositivo all'avvio. Se la norma viene impostata su False, lo stato dello switch dev non viene indicato.</translation>
 <translation id="1160479894929412407">Consenti protocollo QUIC</translation>
 <translation id="1160939557934457296">Disattiva procedendo dalla pagina di avviso Navigazione sicura</translation>
-<translation id="1171342272070128466">Consente di attivare la funzione di accessibilità Lente d'ingrandimento ancorata.
-
-          Se questo criterio viene impostato su true, la lente d'ingrandimento ancorata sarà sempre attiva.
-
-          Se questo criterio viene impostato su false, la lente d'ingrandimento ancorata sarà sempre disattivata.
-
-          Se questo criterio viene impostato, gli utenti non potranno modificarlo o ignorarlo.
-
-          Se questo criterio non viene impostato, inizialmente la lente d'ingrandimento ancorata è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="1189817621108632689">Questa norma consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita la visualizzazione di immagini.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultImagesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.
@@ -1096,6 +1087,15 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Quando questa norma non viene impostata, il comportamento delle norme più specifiche rimane invariato.</translation>
 <translation id="2987155890997901449">Attiva ARC</translation>
 <translation id="2987227569419001736">Controlla l'utilizzo dell'API Web Bluetooth</translation>
+<translation id="2990018289267778247">Se questo criterio è impostato su true, le opzioni di accessibilità vengono visualizzate sempre nel menu della barra delle applicazioni.
+
+          Se questo criterio è impostato su false, le opzioni di accessibilità non vengono mai visualizzate nel menu della barra delle applicazioni.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+          Se questo criterio non viene impostata, le opzioni di accessibilità non verranno visualizzate nel menu della barra delle applicazioni, ma l'utente potrà attivarne la visualizzazione tramite la pagina Impostazioni.
+
+          Quando vengono attivate le funzionalità di accessibilità (in altri modi, ad esempio con una combinazione di tasti), le opzioni di accessibilità verranno sempre visualizzate nel menu della barra delle applicazioni.</translation>
 <translation id="3011301228198307065">Consente di configurare l'URL della home page predefinita di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificarlo.
 
           La home page è la pagina che viene aperta facendo clic sul pulsante Home. Le pagine che si aprono all'avvio vengono stabilite dalle norme RestoreOnStartup.
@@ -1408,6 +1408,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
         Questo criterio viene utilizzato su desktop dalla registrazione con criteri cloud in ambito macchina e può essere impostato tramite il file di criteri registry o GPO su Windows, plist su Mac e JSON su Linux.</translation>
 <translation id="3660562134618097814">Trasferisci i cookie dell'IdP SAML durante l'accesso</translation>
 <translation id="3701121231485832347">Consente di gestire le impostazioni specifiche dei dispositivi <ph name="PRODUCT_OS_NAME" /> gestiti da <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Attestazione da remoto</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Il campo a una sola riga è obsoleto e sarà rimosso a breve. Inizia a usare la casella di testo multiriga qui sotto).</translation>
 <translation id="3709266154059827597">Configura blacklist per l'installazione delle estensioni</translation>
 <translation id="3711895659073496551">Sospensione</translation>
@@ -1515,11 +1516,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 <translation id="3851039766298741586">Consente di segnalare informazioni sulla sessione kiosk attiva, ad esempio l'ID e la versione dell'applicazione.
 
       Se la norma viene impostata su false, le informazioni relative alla sessione kiosk non verranno segnalate. Se viene impostata su true o non viene impostata, tali informazioni verranno segnalate.</translation>
-<translation id="3852924591079583104">
-      Se è impostata su ArcSession, questa norma forza il riavvio del dispositivo all'uscita dell'utente se Android è stato avviato.
-      Se è impostata su Sempre, forza il riavvio del dispositivo a ogni uscita dell'utente.
-      Se non è impostata, non sortisce alcun effetto e non viene forzato alcun riavvio all'uscita dell'utente. Lo stesso accade se è impostata su Mai.
-      </translation>
 <translation id="3858658082795336534">Modalità di stampa fronte/retro predefinita</translation>
 <translation id="3859780406608282662">Consente di aggiungere un parametro al recupero del numero di inizializzazione delle varianti in <ph name="PRODUCT_OS_NAME" />.
 
@@ -1795,6 +1791,15 @@ Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di 
 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="4285674129118156176">Consenti agli utenti non affiliati di usare ARC</translation>
+<translation id="4289903996435140853">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e vendor definiti. Perché la norma sia valida, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID vendor e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID vendor. In caso contrario, il criterio non sarà valido e verrà ignorato.
+
+        Il modello di autorizzazione USB utilizza l'URL del sito richiedente ("URL richiedente") e l'URL del sito frame di livello principale ("URL di incorporamento") per concedere l'autorizzazione all'URL richiedente di accedere al dispositivo USB. L'URL richiedente può essere diverso dall'URL di incorporamento quando il sito richiedente viene caricato in un iframe. Di conseguenza il campo "URL" può contenere fino a due stringhe URL delimitate da virgola per specificare rispettivamente l'URL richiedente e l'URL di incorporamento. Se è specificato un solo URL, l'accesso ai dispositivi USB corrispondenti viene concesso quando l'URL del sito richiedente corrisponde all'URL, a prescindere dallo stato di incorporamento. Gli URL in "URL" devono essere validi, altrimenti il criterio viene ignorato.
+
+        Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale dal criterio "DefaultWebUsbGuardSetting" (se impostato) o dalla configurazione personale dell'utente (se non impostato).
+
+        I pattern URL di questo criterio non devono essere in conflitto con quelli configurati tramite il criterio WebUsbBlockedForUrls. In caso di conflitto, questo criterio ha la precedenza su WebUsbBlockedForUrls e WebUsbAskForUrls.
+
+        I valori di questo criterio e del criterio WebUsbAllowDevicesForUrls vengono uniti.</translation>
 <translation id="4298509794364745131">Consente di specificare l'elenco di app che è possibile attivare come app per scrivere note nella schermata di blocco di <ph name="PRODUCT_OS_NAME" />.
 
       Se nella schermata di blocco viene attivata l'app per scrivere note preferita, nella schermata sarà presente l'elemento dell'interfaccia utente per avviare tale app.
@@ -1932,6 +1937,7 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 <translation id="4639407427807680016">Nomi degli host di messaggi nativi da escludere dalla lista nera.</translation>
 <translation id="4650759511838826572">Disabilita schemi di protocollo dell'URL</translation>
 <translation id="465099050592230505">URL del web store dell'azienda (obsoleta)</translation>
+<translation id="4661889655253181651">Le Impostazioni contenuti consentono di specificare la modalità di gestione di determinati tipi di contenuto (ad esempio Cookie, Immagini o JavaScript).</translation>
 <translation id="4665897631924472251">Impostazioni di gestione delle estensioni</translation>
 <translation id="4668325077104657568">Impostazione immagini predefinite</translation>
 <translation id="4670865688564083639">Minimo:</translation>
@@ -1976,6 +1982,11 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
       Questi suggerimenti vengono recuperati da remoto dai server di Google.
 
       Se la norma è impostata su false, non verranno recuperati o mostrati suggerimenti.</translation>
+<translation id="4759650396863318477">Consente di stabilire per quanto tempo, in millisecondi, gli utenti riceveranno notifiche relative alla necessità di riavviare <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso.
+
+      Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio in base al criterio <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario il riavvio una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base al criterio <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguono questa stessa pianificazione.
+
+      Se il criterio non viene impostato, viene usato il periodo predefinito di 345600000 millisecondi (quattro giorni) per <ph name="PRODUCT_OS_NAME" /> e di 604800000 millisecondi (una settimana) per <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e permette agli utenti di eseguire il completamento automatico dei dati della carta di credito nei moduli web utilizzando informazioni memorizzate in precedenza.
 
       Se questa impostazione è disattivata, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati della carta di credito e non salverà i dati di altre carte di credito che l'utente potrebbe inviare durante la navigazione sul Web.
@@ -2168,6 +2179,15 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 <translation id="5208240613060747912">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="5213038356678567351">Siti web che non devono mai attivare il cambio di browser.</translation>
 <translation id="5219844027738217407">Nell'ambito delle app Android, la norma influisce solo sul microfono. Se la norma viene impostata su true, il microfono viene disattivato per tutte le app Android, senza alcuna eccezione.</translation>
+<translation id="5221394278852982313">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e vendor definiti. Perché la norma sia valida, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID vendor e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID vendor. In caso contrario, il criterio non sarà valido e verrà ignorato.
+
+        Il modello di autorizzazione USB utilizza l'URL del sito richiedente ("URL richiedente") e l'URL del sito frame di livello principale ("URL di incorporamento") per concedere l'autorizzazione all'URL richiedente di accedere al dispositivo USB. L'URL richiedente può essere diverso dall'URL di incorporamento quando il sito richiedente viene caricato in un iframe. Di conseguenza il campo "URL" può contenere fino a due stringhe URL delimitate da virgola per specificare rispettivamente l'URL richiedente e l'URL di incorporamento. Se è specificato un solo URL, l'accesso ai dispositivi USB corrispondenti viene concesso quando l'URL del sito richiedente corrisponde all'URL, a prescindere dallo stato di incorporamento. Gli URL in "URL" devono essere validi, altrimenti il criterio viene ignorato.
+
+        Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale dal criterio "DefaultWebUsbGuardSetting" (se impostato) o dalla configurazione personale dell'utente (se non impostato).
+
+        I pattern URL di questo criterio non devono essere in conflitto con quelli configurati tramite il criterio WebUsbBlockedForUrls. In caso di conflitto, questo criterio ha la precedenza su WebUsbBlockedForUrls e WebUsbAskForUrls.
+
+        I valori di questo criterio e del criterio DeviceWebUsbAllowDevicesForUrls vengono uniti.</translation>
 <translation id="5228316810085661003">Il ritardo prima dell'accesso automatico all'account locale del dispositivo.
 
       Se non è impostata, la norma |DeviceLocalAccountAutoLoginId| non ha effetto. In caso contrario:
@@ -2286,11 +2306,11 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5423001109873148185">Se è attiva, questa norma impone l'importazione dei motori di ricerca dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, il motore di ricerca predefinito non viene importato. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5423197884968724595">Nome della limitazione di Android WebView:</translation>
 <translation id="5424147596523390018">Consenti tutte le modalità a colori</translation>
-<translation id="5427003226809696696">Questa norma consente di stabilire se avviare o meno la finestra del browser all'inizio della sessione.
+<translation id="5427003226809696696">Questo criterio consente di stabilire se avviare o meno la finestra del browser all'inizio della sessione.
 
-          Se questa norma viene attivata, la finestra del browser non verrà avviata.
+          Se questo criterio viene attivato, la finestra del browser non verrà avviata.
 
-          Se questa norma viene disattivata o non viene impostata, è possibile avviare la finestra del browser. Tieni presente che la finestra del browser potrebbe non essere avviata a causa di altre norme o altri flag della riga di comando.</translation>
+          Se questo criterio viene disattivato o non viene impostato, è possibile avviare la finestra del browser. Tieni presente che la finestra del browser potrebbe non essere avviata a causa di altri criteri o altri flag della riga di comando.</translation>
 <translation id="5427879482805712214">Questo criterio consente di configurare l'immagine avatar che rappresenta l'utente sulla schermata di accesso. Il criterio viene impostato specificando l'URL da cui <ph name="PRODUCT_OS_NAME" /> può scaricare l'immagine e un hash crittografico utilizzato per verificare l'integrità del download. L'immagine deve essere in formato JPEG e avere dimensioni non superiori a 512 kB. L'URL deve essere accessibile senza nessuna autenticazione.
 
       L'immagine avatar viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL o l'hash vengono modificati.
@@ -2883,6 +2903,20 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se la norma è impostata su "Non consentire più agli utenti di gestire i certificati", gli utenti non potranno gestire i certificati, ma solo visualizzarli.</translation>
 <translation id="6573305661369899995">Imposta una fonte esterna di limitazioni relative agli URL</translation>
+<translation id="6583851521569686409">Consente di configurare un elenco di stampanti.
+
+      Questo criterio consente agli amministratori di fornire configurazioni delle stampanti ai propri utenti.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> sono stringhe in formato libero che è possibile personalizzare per selezionare facilmente le stampanti. I valori <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" />, che rappresentano il produttore e il modello della stampante, consentono agli utenti finali di identificare più facilmente le stampanti. Il valore <ph name="PRINTER_URI" /> dovrebbe essere un indirizzo raggiungibile da un computer client che includa <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. Il valore <ph name="PRINTER_UUID" /> è facoltativo, ma se è specificato viene utilizzato per consentire la deduplicazione delle stampanti <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> deve contenere il nome della stampante oppure occorre impostare <ph name="PRINTER_AUTOCONF" /> su true. Le stampanti con entrambe le proprietà o prive di proprietà verranno ignorate.
+
+      La configurazione viene completata al primo utilizzo della stampante.  I file PPD vengono scaricati soltanto quando viene utilizzata la stampante.  Dopodiché, i PPD utilizzati più spesso vengono memorizzati nella cache.
+
+      Questo criterio non influisce sulla possibilità per gli utenti di configurare le stampanti su singoli dispositivi.  È supplementare alla configurazione di stampanti da parte dei singoli utenti.
+
+      Per i dispositivi Active Directory gestiti, questo criterio supporta l'espansione di <ph name="MACHINE_NAME_VARIABLE" /> al nome della macchina Active Directory oppure a una sua sottostringa. Ad esempio, se il nome della macchina è <ph name="MACHINE_NAME_EXAMPLE" />, la variabile <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> verrà sostituita dai quattro caratteri che iniziano dopo la sesta posizione, ad esempio <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tieni presente che la posizione è in base zero.
+      </translation>
 <translation id="6598235178374410284">Immagine avatar utente</translation>
 <translation id="6603004149426829878">Consente di inviare sempre al server i segnali relativi alla posizione disponibili durante le operazioni per stabilire il fuso orario</translation>
 <translation id="6628120204569232711">Segnala lo stato di archiviazione</translation>
@@ -3318,7 +3352,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se questa norma viene impostata su "RemoveLRUIfDormant", la pulizia automatica continua a rimuovere gli utenti che non hanno eseguito l'accesso negli ultimi tre mesi in ordine di accesso meno recente fino a liberare spazio a sufficienza.
 
       Se questa norma non viene impostata, la pulizia automatica utilizza la strategia incorporata predefinita, che al momento è "RemoveLRUIfDormant".</translation>
-<translation id="7334274148831027933">Attiva lente d'ingrandimento ancorata</translation>
 <translation id="7336785017449297672">Consente di gestire le impostazioni relative all'orologio e al fuso orario.</translation>
 <translation id="7336878834592315572">Conserva cookie per tutta la durata della sessione</translation>
 <translation id="7339315111520512972">Forza l'esecuzione del codice di networking nel processo di browser</translation>
@@ -4168,6 +4201,8 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="915194831143859291">Se questa norma viene impostata su false o non viene configurata, <ph name="PRODUCT_OS_NAME" /> consente all'utente di spegnere il dispositivo.
       Se questa norma viene impostata su true, <ph name="PRODUCT_OS_NAME" /> attiva il riavvio quando l'utente spegne il dispositivo. <ph name="PRODUCT_OS_NAME" /> sostituisce tutte le occorrenze dei pulsanti di spegnimento nell'interfaccia utente con pulsanti di riavvio. Se l'utente spegne il dispositivo utilizzando il tasto di accensione, il dispositivo non viene riavviato, anche se la norma è attivata.</translation>
 <translation id="9152473318295429890">Attiva i suggerimenti contestuali delle pagine web correlate</translation>
+<translation id="9153446010242995516">Esegui il rollback e rimani nella versione target se la versione del sistema operativo è più recente di quella target. Prova a trasferire la configurazione a livello di dispositivo (incluse le credenziali di rete) tramite la procedura di rollback, se possibile, ma esegui il rollback con Powerwash completo anche se il ripristino dei dati non è possibile (perché la versione target non supporta il ripristino dei dati o a causa di una modifica non compatibile con le versioni precedenti).
+          Supportato su <ph name="PRODUCT_OS_NAME" /> 75 e versioni successive. Per i client precedenti, questo valore indica che il rollback è disattivato.</translation>
 <translation id="9158929520101169054">Consenti accesso simultaneo nel browser</translation>
 <translation id="9159126470527871268">Consente di inviare agli utenti una notifica che comunica che <ph name="PRODUCT_NAME" /> o <ph name="PRODUCT_OS_NAME" /> deve essere riavviato per applicare un aggiornamento in sospeso
 

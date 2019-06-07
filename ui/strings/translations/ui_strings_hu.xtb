@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1028699632127661925">Küldés a következő eszközre: <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">Értesítési beállítások</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 napja}other{# napja}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 perce}other{# perce}}</translation>
@@ -185,7 +186,6 @@
 <translation id="8144660977431427332">Kereséseit a Google Segéd teszi lehetővé. <ph name="LEARN_MORE" />.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatikus kiegészítés</translation>
 <translation id="815598010540052116">Görgetés lefelé</translation>
-<translation id="8170087467028567933">Ha eltávolítja ezt a javaslatot, továbbiakban nem jelenik meg a fiókjával használt egyik eszközön sem.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="8245914219290430011">Lap</translation>
@@ -196,7 +196,6 @@
 <translation id="838869780401515933">Megjelölés</translation>
 <translation id="8393700583063109961">Üzenet küldése</translation>
 <translation id="8394908167088220973">Lejátszás/szüneteltetés</translation>
-<translation id="8420205633584771378">Eltávolítja ezt a javaslatot?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 é}other{# é}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> fájl (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">A polc mindig látható</translation>

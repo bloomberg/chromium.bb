@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1028699632127661925">Lähetetään: <ph name="DEVICE_NAME" /></translation>
 <translation id="111910763555783249">Ilmoitusasetukset</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 päivä sitten}other{# päivää sitten}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minuutti sitten}other{# minuuttia sitten}}</translation>
@@ -185,7 +186,6 @@
 <translation id="8144660977431427332">Hakupalvelun tarjoaa Google Assistant. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automaattinen täydennys</translation>
 <translation id="815598010540052116">Vieritä alas</translation>
-<translation id="8170087467028567933">Tämän ehdotuksen poistaminen piilottaa sen pysyvästi tililtäsi kaikilla laitteilla.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Sivu alas</translation>
 <translation id="8245914219290430011">Sarkain</translation>
@@ -196,7 +196,6 @@
 <translation id="838869780401515933">valitse</translation>
 <translation id="8393700583063109961">Lähetä viesti</translation>
 <translation id="8394908167088220973">Media: toista/keskeytä</translation>
-<translation id="8420205633584771378">Poistetaanko tämä ehdotus?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 v}other{# v}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" />-tiedosto (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Hylly näytetään aina</translation>

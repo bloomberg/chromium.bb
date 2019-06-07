@@ -185,7 +185,6 @@
 <translation id="8144660977431427332">Ваши поисковые запросы обрабатывает Google Ассистент. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, автозаполнение</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>
-<translation id="8170087467028567933">Если вы удалите эту подсказку, она будет скрыта на всех ваших устройствах, где выполнен вход в аккаунт.</translation>
 <translation id="8179976553408161302">ВВОД</translation>
 <translation id="8210608804940886430">Прокрутка вниз</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -196,7 +195,6 @@
 <translation id="838869780401515933">поставить галочку</translation>
 <translation id="8393700583063109961">Отправить сообщение</translation>
 <translation id="8394908167088220973">Воспроизведение/пауза</translation>
-<translation id="8420205633584771378">Удалить эту подсказку?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 г.}one{# г.}few{# г.}many{# л.}other{# г.}}</translation>
 <translation id="8602707065186045623">Файл <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Временное хранилище будет всегда отображаться</translation>

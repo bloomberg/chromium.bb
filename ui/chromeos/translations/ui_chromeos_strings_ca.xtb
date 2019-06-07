@@ -286,6 +286,7 @@
 <translation id="4572815280350369984">Fitxer <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Més...</translation>
 <translation id="4582497162516204941">Instal·la amb Linux (versió beta)</translation>
+<translation id="4594543368593301662">Es mostren els resultats per a <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="4656293982926141856">Aquest ordinador</translation>
 <translation id="4669606053856530811">Els membres de l'equip <ph name="SOURCE_NAME" /> ja no podran accedir a aquests elements, tret que es comparteixin amb ells.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Teclat búlgar</translation>
 <translation id="5418923334382419584">Teclat de Birmània</translation>
 <translation id="5428105026674456456">Espanyol</translation>
+<translation id="5438282218546237410">No hi ha cap resultat per a <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Teclat polonès</translation>
 <translation id="5465122519792752163">Teclat nepalès (InScript)</translation>
 <translation id="5469868506864199649">Italià</translation>
 <translation id="5494920125229734069">Selecciona-ho tot</translation>
 <translation id="5500122897333236901">Islandès</translation>
 <translation id="5508696409934741614">Punts</translation>
+<translation id="5522908512596376669">La llista de fitxers ha canviat a la visualització de llista.</translation>
 <translation id="5524517123096967210">El fitxer no s'ha pogut llegir.</translation>
 <translation id="5533102081734025921">Imatge <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Transliteració (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6054173164583630569">Teclat francès</translation>
 <translation id="6074825444536523002">Formulari de Google</translation>
+<translation id="6096979789310008754">El text de cerca s'ha esborrat. Es mostren tots els fitxers i carpetes.</translation>
 <translation id="6111770213269631447">Transliteració (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Espai</translation>
 <translation id="6133173853026656527">S'està traslladant <ph name="FILE_NAME" />...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Elefant</translation>
 <translation id="8569764466147087991">Seleccioneu el fitxer que vulgueu obrir</translation>
 <translation id="8579285237314169903">S'estan sincronitzant <ph name="NUMBER_OF_FILES" /> elements...</translation>
+<translation id="8600173386174225982">La llista de fitxers ha canviat a la visualització de miniatures.</translation>
 <translation id="8669949407341943408">S'estan traslladant...</translation>
 <translation id="8671210955687109937">Pot comentar</translation>
 <translation id="8686213429977032554">Aquest fitxer de Drive encara no s'ha compartit</translation>

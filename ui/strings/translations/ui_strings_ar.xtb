@@ -185,7 +185,6 @@
 <translation id="8144660977431427332">‏عمليات بحثك يوفّرها "مساعد Google". <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />، الإكمال التلقائي</translation>
 <translation id="815598010540052116">التمرير إلى أسفل</translation>
-<translation id="8170087467028567933">ستؤدي إزالة هذا الاقتراح إلى إخفائه من حسابك على جميع أجهزتك.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">صفحة  إلى أسفل</translation>
 <translation id="8245914219290430011">علامة تبويب</translation>
@@ -196,7 +195,6 @@
 <translation id="838869780401515933">الاختيار</translation>
 <translation id="8393700583063109961">إرسال رسالة</translation>
 <translation id="8394908167088220973">تشغيل/إيقاف الوسائط</translation>
-<translation id="8420205633584771378">هل تريد إزالة هذا الاقتراح؟</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{عام واحد}zero{# عام}two{عامان (#)}few{# أعوام}many{# عامًا}other{# عام}}</translation>
 <translation id="8602707065186045623">ملف <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">إظهار الرف دائمًا</translation>

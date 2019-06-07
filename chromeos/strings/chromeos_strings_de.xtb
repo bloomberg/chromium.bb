@@ -9,8 +9,6 @@
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="3147142846278915599">Launcher (Apps werden synchronisiert...)</translation>
-<translation id="3442261357327209537">Zum Ändern des Passworts hier klicken</translation>
-<translation id="3506732833599356229">Passwort ist abgelaufen</translation>
 <translation id="4731797938093519117">Elternfreigabe</translation>
 <translation id="476166673298332917">Der Geräteadministrator überwacht unter Umständen Ihre Browseraktivitäten.</translation>
 <translation id="5212543919916444558">Ich finde nichts auf deinem Display, wobei ich dir helfen könnte.
@@ -21,8 +19,8 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="5832805196449965646">Person hinzufügen</translation>
 <translation id="5895138241574237353">Neu starten</translation>
 <translation id="6574601967010742428">Der Geräteadministrator kann Ihre Aktivitäten möglicherweise überwachen.</translation>
-<translation id="7467001599725918325">Passwort läuft demnächst ab</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Ihr aktuelles Passwort ist abgelaufen.}=1{Ihr aktuelles Passwort läuft in weniger als einem Tag ab.}other{Ihr aktuelles Passwort läuft in weniger als # Tagen ab.}}</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
+<translation id="808894953321890993">Passwort ändern</translation>
 <translation id="9111102763498581341">Entsperren</translation>
 </translationbundle>

@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Choose Folder</translation>
 <translation id="1265739287306757398">Learn How</translation>
 <translation id="1272079795634619415">Stop</translation>
+<translation id="1283524564873030414">Last 24 hours</translation>
 <translation id="1323735185997015385">Delete</translation>
 <translation id="132683371494960526">Double tap to change the parent folder.</translation>
 <translation id="1340643665687018190">Close menu</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1989112275319619282">Browse</translation>
 <translation id="2015722694326466240">To see passwords, you must first set a passcode on your device.</translation>
+<translation id="2073572773299281212">Active <ph name="DAYS" /> days ago</translation>
 <translation id="2074131957428911366">You can always choose what to sync in <ph name="BEGIN_LINK" />settings<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="209018056901015185">Request Desktop Site</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Open All</translation>
 <translation id="2570206273416014374">Sends some cookies and searches from the address bar and search box to your default search engine.</translation>
 <translation id="2572712655377361602">A device policy blocked access to your photos</translation>
+<translation id="2578571896248130439">Send Web Page</translation>
 <translation id="2584132361465095047">Add Account…</translation>
 <translation id="2625189173221582860">Password copied</translation>
 <translation id="2648803196158606475">Delete Read</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Mark…</translation>
 <translation id="3157684681743766797">Mark All…</translation>
 <translation id="3175081911749765310">Web Services</translation>
+<translation id="3178650076442119961">Active today</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
 <translation id="3224641773458703735">To export passwords, you must first set a passcode on your device.</translation>
 <translation id="3240426699337459095">Link copied</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">To scan a QR code, enable the camera from settings</translation>
 <translation id="4281844954008187215">Terms of Service</translation>
 <translation id="430793432425771671">Sync Everything</translation>
+<translation id="430967081421617822">All time</translation>
 <translation id="4338650699862464074">Sends URLs of pages that you visit to Google.</translation>
 <translation id="4359125752503270327">This page will open in another application.</translation>
 <translation id="4370827530403103842">Sync isn't working. Tap to fix.</translation>
@@ -281,6 +286,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5127805178023152808">Sync is off</translation>
 <translation id="5132942445612118989">Sync your passwords, history and more on all devices</translation>
 <translation id="5140288047769711648">Chrome will remember this password for you. You don't have to remember it.</translation>
+<translation id="5150492518600715772">Send to your device</translation>
 <translation id="5181140330217080051">Downloading</translation>
 <translation id="5186185447130319458">Private</translation>
 <translation id="5190835502935405962">Bookmarks Bar</translation>
@@ -295,6 +301,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5327248766486351172">Name</translation>
 <translation id="5388358297987318779">Open Image</translation>
 <translation id="5409365236829784218">There are no applications installed that can open this file.</translation>
+<translation id="5416022985862681400">Last 7 days</translation>
 <translation id="5433691172869980887">Username copied</translation>
 <translation id="54401264925851789">Page Security Info</translation>
 <translation id="5443952882982198570">Credit cards</translation>
@@ -309,6 +316,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">Active 1 day ago</translation>
 <translation id="5711039611392265845">For more settings that relate to privacy, security and data collection, see <ph name="BEGIN_LINK" />Sync and Google Services<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Sorry, there was a problem signing in to your account.</translation>
 <translation id="5737974891429562743">Account sign-in details are out of date. Update to start sync.</translation>

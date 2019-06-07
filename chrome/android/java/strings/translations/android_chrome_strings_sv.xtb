@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">BILD</translation>
 <translation id="257088987046510401">Teman</translation>
 <translation id="2570922361219980984">Platsåtkomst har inaktiverats på enheten också. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grupp</translation>
 <translation id="257931822824936280">Vyn har expanderats. Komprimera den genom att klicka.</translation>
 <translation id="2581165646603367611">Det här alternativet rensar cookies, cacheminnet och annan data från webbplatser som bedöms vara oviktiga.</translation>
 <translation id="2586657967955657006">Urklipp</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">Det här kontot hanteras av <ph name="PARENT_NAME_1" /> och <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Byter till inkognitoflikar</translation>
 <translation id="2968755619301702150">Certifikatvisare</translation>
+<translation id="2977480621796371840">Ta bort från gruppen</translation>
 <translation id="2979025552038692506">Vald inkognitoflik</translation>
 <translation id="2989523299700148168">Nyligen besökta</translation>
 <translation id="2996291259634659425">Skapa lösenfras</translation>
@@ -426,6 +428,12 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4226663524361240545">Aviseringar kan göra att enheten vibrerar</translation>
 <translation id="423219824432660969">Kryptera synkroniserad data med Google-lösenordet från <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Öppna Inställningar</translation>
+<translation id="4247274662191902962">Sensordata delas bara så länge VR-upplevelsen pågår. Webbplatsen kan ta reda på mer om dig utifrån vissa uppgifter, till exempel:
+    – din plats
+    – dina fysiska egenskaper, som ögonens placering
+    – dina rörelser, som hur du går.
+
+    Tänk efter om du litar på webbplatsen innan du ger den åtkomst.</translation>
 <translation id="424864128008805179">Vill du logga ut från Chrome?</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
 <translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="545042621069398927">Nedladdningen görs snabbare.</translation>
 <translation id="5456381639095306749">Ladda ned sida</translation>
 <translation id="5475862044948910901">Vill du starta en session med förstärkt verklighet?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> har lagts till i mina appar</translation>
 <translation id="548278423535722844">Öppna i kartapp</translation>
 <translation id="5487521232677179737">Rensa data</translation>
 <translation id="5494752089476963479">Blockera annonser på webbplatser där påträngande eller vilseledande annonser visas</translation>

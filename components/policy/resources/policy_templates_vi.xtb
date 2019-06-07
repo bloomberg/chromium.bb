@@ -144,15 +144,6 @@
       Nếu chính sách được đặt thành sai, trạng thái của bộ chuyển đổi dành cho nhà phát triển sẽ không được báo cáo.</translation>
 <translation id="1160479894929412407">Cho phép giao thức kết nối Internet nhanh UDP (QUIC)</translation>
 <translation id="1160939557934457296">Vô hiệu hóa khả năng tiếp tục từ trang cảnh báo Duyệt web an toàn</translation>
-<translation id="1171342272070128466">Bật tính năng hỗ trợ tiếp cận cho tùy chọn phóng to ở vị trí cố định.
-
-          Nếu bạn đặt chính sách này thành true, thì tùy chọn phóng to ở vị trí cố định sẽ luôn bật.
-
-          Nếu bạn đặt chính sách này thành false, thì tùy chọn phóng to ở vị trí cố định sẽ luôn tắt.
-
-          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
-
-          Nếu bạn không đặt chính sách này, thì ban đầu, tùy chọn phóng to ở vị trí cố định sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="1189817621108632689">Cho phép bạn đặt danh sách các mẫu url chỉ định những trang web không được phép hiển thị hình ảnh.
 
           Nếu không đặt chính sách này, thì giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web từ chính sách 'DefaultImagesSetting', nếu chính sách đó được đặt, hoặc từ cấu hình cá nhân của người dùng.
@@ -1574,11 +1565,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt thành false, thông tin về phiên kiosk sẽ không được
       báo cáo. Nếu chính sách này được đặt thành true hoặc không được đặt, thông tin về phiên kiosk sẽ được
       báo cáo.</translation>
-<translation id="3852924591079583104">
-      Khi bạn đặt chính sách này thành ArcSession, nếu Android đã khởi động, thì chính sách này sẽ buộc thiết bị khởi động lại khi đăng xuất người dùng.
-      Khi bạn đặt chính sách này thành Luôn khởi động lại, thì chính sách này sẽ buộc thiết bị khởi động lại mỗi khi đăng xuất người dùng.
-      Nếu bạn không đặt chính sách này, thì chính sách sẽ không có hiệu lực và thiết bị sẽ không bị buộc khởi động lại sau khi đăng xuất người dùng. Nếu bạn đặt chính sách này thành Không bao giờ, thì thiết bị cũng không bị buộc khởi động lại sau khi đăng xuất người dùng.
-      </translation>
 <translation id="3858658082795336534">Chế độ in hai mặt mặc định</translation>
 <translation id="3859780406608282662">Thêm thông số cho quá trình tìm nạp khởi đầu Biến thể trong <ph name="PRODUCT_OS_NAME" />.
 
@@ -3460,7 +3446,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu chính sách này được đặt thành 'RemoveLRUIfDormant', tính năng dọn sạch tự động sẽ tiếp tục xóa người dùng đã không đăng nhập trong ít nhất 3 tháng theo thứ tự gần đây ít đăng nhập nhất cho tới khi có đủ dung lượng trống.
 
       Nếu chính sách này không được đặt, tính năng dọn sạch tự động sẽ sử dụng chiến lược tích hợp sẵn mặc định. Hiện tại đó là chiến lược 'RemoveLRUIfDormant'.</translation>
-<translation id="7334274148831027933">Bật tính năng phóng to ở vị trí cố định</translation>
 <translation id="7336785017449297672">Kiểm soát các tùy chọn cài đặt đồng hồ và múi giờ.</translation>
 <translation id="7336878834592315572">Lưu giữ cookie trong thời hạn phiên</translation>
 <translation id="7339315111520512972">Buộc mã nối mạng chạy trong quá trình chạy trình duyệt</translation>

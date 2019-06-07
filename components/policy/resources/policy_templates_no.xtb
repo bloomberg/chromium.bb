@@ -130,15 +130,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis innstillingen angis som «true», rapporteres ikke tilstanden til utviklerbryteren.</translation>
 <translation id="1160479894929412407">Tillat QUIC-protokollen</translation>
 <translation id="1160939557934457296">Deaktiver muligheten til å overse Safe Browsing-advarsler og fortsette til potensielt farlig nettsted</translation>
-<translation id="1171342272070128466">Slå på tilgjengelighetsfunksjonen for dokket forstørrelse.
-
-          Hvis denne regelen er satt til «true» (sann), er dokket forstørrelse alltid slått på.
-
-          Hvis denne regelen er satt til «false» (usann), er dokket forstørrelse alltid slått av.
-
-          Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
-
-          Hvis denne regelen ikke angis, er dokket forstørrelse i utgangspunktet slått av, men brukerne kan når som helst slå funksjonen på.</translation>
 <translation id="1189817621108632689">Lar deg angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke får vise bilder.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra DefaultImagesSetting-regelen hvis den er angitt, eller fra brukerens egen konfigurasjon hvis ikke.
@@ -1119,6 +1110,15 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Når denne regelen ikke er angitt, påvirkes ikke funksjonaliteten til de mer spesifikke reglene.</translation>
 <translation id="2987155890997901449">Slå på ARC</translation>
 <translation id="2987227569419001736">Kontrollér bruken av Web Bluetooth API</translation>
+<translation id="2990018289267778247">Hvis denne regelen er satt til «true» (sann), vises alltid tilgjengelighetsalternativer i systemfeltmenyen.
+
+          Hvis denne regelen er satt til «false» (usann), vises aldri tilgjengelighetsalternativer i systemfeltmenyen.
+
+          Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
+
+          Hvis denne regelen ikke er angitt, vises ikke tilgjengelighetsalternativer i systemfeltmenyen. Brukerne kan likevel få tilgjengelighetsalternativer til å vises via innstillingssiden.
+
+          Når tilgjengelighetsfunksjoner er slått på (på andre måter, f.eks. via tastekombinasjoner), vises alltid tilgjengelighetsalternativer i systemfeltmenyen.</translation>
 <translation id="3011301228198307065">Konfigurerer nettadressen for startsiden som brukes som standard i <ph name="PRODUCT_NAME" />, og forhindrer at brukerne kan endre den.
 
           Startsiden er siden som åpnes med hjemknappen. Hvilke sider som åpnes ved oppstart, kontrolleres av RestoreOnStartup-reglene.
@@ -1432,6 +1432,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
         Denne regelen brukes ved registrering av retningslinjer for nettskyer med maskinomfang på datamaskiner. Den kan angis via registeret eller GPO i Windows, plist på Mac og en JSON-regelfil i Linux.</translation>
 <translation id="3660562134618097814">Overfør SAML IdP-informasjonskapsler ved pålogging</translation>
 <translation id="3701121231485832347">Kontrollerer innstillinger som er spesifikke for <ph name="PRODUCT_OS_NAME" />-enheter som administreres av <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Ekstern attestering</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Feltet med én linje er avviklet og det fjernes i nær fremtid. Begynn å bruke tekstfeltet med flere linjer nedenfor.)</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
@@ -1542,11 +1543,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis regelen settes til false (usann), rapporteres ikke
       informasjonen om kioskøkten. Hvis den settes til true (sann)
       eller ikke angis, rapporteres informasjonen om kioskøkten.</translation>
-<translation id="3852924591079583104">
-      Hvis denne regelen er satt til ArcSession og Android har startet, tvinges enheten til å starte på nytt når brukeren logger av.
-      Når regelen er satt til «Always» (Alltid), tvinges enheten til å starte på nytt hver gang brukeren logger av.
-      Hvis den ikke er angitt, har den ingen virkning, og enheten tvinges ikke til å starte på nytt når brukeren logger av. Det samme gjelder hvis den er satt til «Never» (Aldri).
-      </translation>
 <translation id="3858658082795336534">Utskrift på begge sider som standard</translation>
 <translation id="3859780406608282662">Legg til en parameter i hentingen av Variasjoner-utgangsverdien i <ph name="PRODUCT_OS_NAME" />.
 
@@ -1833,6 +1829,15 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="4285674129118156176">Tillat at brukere uten tilknytning bruker ARC</translation>
+<translation id="4289903996435140853">Lar deg angi en liste over nettadresser som spesifiserer nettsteder som automatisk får tilgang til USB-enheter fra gjeldende leverandører og produkt-ID-er. Hvert element på listen må inneholde både enhetene og nettadressene for at regelen skal gjelde. Hvert element i enheter kan inneholde felt for leverandør-ID og produkt-ID. Eventuelle ID-er som ikke føres opp på listen, behandles som jokertegn, med ett unntak: Du kan ikke angi en produkt-ID uten å angi en leverandør-ID. Hvis ikke er regelen ugyldig og den blir ignorert.
+
+        USB-tillatelsesmodellen bruker nettadressen forespørselen kommer fra («forespørsel-nettadressen»), og nettadressen med den innebygde iframe-koden («nettadressen med innebygging») for å gi nettadressen forespørselen kommer fra, tilgang til USB-enheten. Forespørsel-nettadressen kan være forskjellig fra nettadressen med innebygging når nettstedet forespørselen kommer fra, ligger i en iframe. Derfor kan feltet «urls» (nettadresser) inneholde opptil to nettadressestrenger atskilt med komma for å spesifisere henholdsvis forespørsel-nettadressen og nettadressen med innebygging. Hvis kun én nettadresse er spesifisert, gis tilgang til de samsvarende USB-enhetene når forespørsel-nettadressen samsvarer med denne nettadressen, uavhengig av innebyggingsstatus. Nettadressene i «urls» (nettadresser) må være gyldige, ellers blir regelen ignorert.
+
+        Hvis denne regelen ikke er angitt, brukes den globale standardverdien for alle nettsteder fra «DefaultWebUsbGuardSetting»-regelen hvis den er angitt, eller brukerens personlige konfigurasjon hvis den ikke er angitt.
+
+        Nettadressemønstre i denne regelen må ikke kollidere med de som er konfigurert via WebUsbBlockedForUrls. Hvis de kolliderer, har denne regelen prioritet over WebUsbBlockedForUrls og WebUsbAskForUrls.
+
+Verdiene for denne regelen og WebUsbAllowDevicesForUrls-regelen slås sammen.</translation>
 <translation id="4298509794364745131">Angir en liste over apper som kan aktiveres som notatapper på låseskjermen for <ph name="PRODUCT_OS_NAME" />.
 
       Hvis den foretrukne notatappen er aktivert på låseskjermen, inneholder låseskjermen et UI-element for å starte den aktuelle appen.
@@ -1984,6 +1989,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4639407427807680016">Navnene på de innebygde meldingsvertene som skal unntas fra svartelisten.</translation>
 <translation id="4650759511838826572">Deaktiver protokollsystemer for nettadresse</translation>
 <translation id="465099050592230505">Nettadresse for bedriftens nettbutikk (avviklet)</translation>
+<translation id="4661889655253181651">Innholdsinnstillinger lar deg angi hvordan innholdet for spesifikke elementer (f.eks. informasjonskapsler, bilder eller JavaScript) skal håndteres.</translation>
 <translation id="4665897631924472251">Innstillinger for administrasjon av utvidelser</translation>
 <translation id="4668325077104657568">Standardinnstilling for bilder</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2028,6 +2034,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Forslagene hentes fra Googles tjenere.
 
       Hvis innstillingen er angitt som usann, verken hentes eller vises forslag.</translation>
+<translation id="4759650396863318477">Med denne regelen kan du angi tidsperioden (i millisekunder) der brukerne skal varsles om at <ph name="PRODUCT_NAME" /> eller en <ph name="PRODUCT_OS_NAME" />-enhet må startes på nytt for å ta i bruk en ventende oppdatering.
+
+      I denne tidsperioden blir brukerne gjentatte ganger informert om behovet for oppdatering. På <ph name="PRODUCT_OS_NAME" />-enheter vises et varsel om omstart i systemfeltet i samsvar med <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />-regelen. I <ph name="PRODUCT_NAME" />-nettlesere endres appmenyen for å indikere at det er nødvendig med en omstart, når en tredjedel av varselperioden er gått. Varselet endrer farge når to tredjedeler av varselperioden er gått, og en gang til når hele varselperioden er omme. Tilleggsvarslene som slås på av <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-regelen, følger den samme tidsplanen.
+
+      Hvis regelen ikke er angitt, brukes standardperioden på 345 600 000 millisekunder (fire dager) for <ph name="PRODUCT_OS_NAME" />-enheter og 604 800 000 millisekunder (én uke) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Slår på autofyllfunksjonen i <ph name="PRODUCT_NAME" /> og gjør det mulig for brukere å fylle ut informasjon om kredittkort i nettskjemaer automatisk ved å bruke tidligere lagret informasjon.
 
 
@@ -2229,6 +2240,15 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="5213038356678567351">Nettsteder som aldri skal utløse bytte av nettleser.</translation>
 <translation id="5219844027738217407">For Android-apper har denne regelen bare innvirkning på mikrofonen. Når denne regelen er angitt som «true» (sann), slås mikrofonen av for alle Android-apper – uten unntak.</translation>
+<translation id="5221394278852982313">Lar deg angi en liste over nettadresser som spesifiserer nettsteder som automatisk får tilgang til USB-enheter fra gjeldende leverandører og produkt-ID-er. Hvert element på listen må inneholde både enhetene og nettadressene for at regelen skal gjelde. Hvert element i enheter kan inneholde felt for leverandør-ID og produkt-ID. Eventuelle ID-er som ikke føres opp på listen, behandles som jokertegn, med ett unntak: Du kan ikke angi en produkt-ID uten å angi en leverandør-ID. Hvis ikke er regelen ugyldig og den blir ignorert.
+
+        USB-tillatelsesmodellen bruker nettadressen forespørselen kommer fra («forespørsel-nettadressen»), og nettadressen med den innebygde iframe-koden («nettadressen med innebygging») for å gi nettadressen forespørselen kommer fra, tilgang til USB-enheten. Forespørsel-nettadressen kan være forskjellig fra nettadressen med innebygging når nettstedet forespørselen kommer fra, ligger i en iframe. Derfor kan feltet «urls» (nettadresser) inneholde opptil to nettadressestrenger atskilt med komma for å spesifisere henholdsvis forespørsel-nettadressen og nettadressen med innebygging. Hvis kun én nettadresse er spesifisert, gis tilgang til de samsvarende USB-enhetene når forespørsel-nettadressen samsvarer med denne nettadressen, uavhengig av innebyggingsstatus. Nettadressene i «urls» (nettadresser) må være gyldige, ellers blir regelen ignorert.
+
+        Hvis denne regelen ikke er angitt, brukes den globale standardverdien for alle nettsteder fra «DefaultWebUsbGuardSetting»-regelen hvis den er angitt, eller brukerens personlige konfigurasjon hvis den ikke er angitt.
+
+        Nettadressemønstre i denne regelen må ikke kollidere med de som er konfigurert via WebUsbBlockedForUrls. Hvis de kolliderer, har denne regelen prioritet over WebUsbBlockedForUrls og WebUsbAskForUrls.
+
+Verdiene for denne regelen og DeviceWebUsbAllowDevicesForUrls-regelen slås sammen.</translation>
 <translation id="5228316810085661003">Forsinkelsen for automatisk pålogging for den lokale kontoen på enheten.
 
       Hvis regelen |DeviceLocalAccountAutoLoginId| ikke er angitt, har ikke denne regelen noen virkning. Ellers:
@@ -2967,6 +2987,20 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
       Hvis denne regelen er satt til «Ikke la brukerne administrere sertifikater», kan brukerne bare se sertifikater. De kan ikke administrere dem.</translation>
 <translation id="6573305661369899995">Angi en ekstern kilde for nettadressebegrensninger</translation>
+<translation id="6583851521569686409">Konfigurerer en liste over skrivere.
+
+      Med denne regelen kan administratorer levere skriveroppsett til brukerne sine.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenger som kan tilpasses fritt for å gjøre det lett å velge skriver. Formålet med <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> er å gjøre det lett for brukere å identifisere skriverne. Strengene representerer skriverprodusenten og -modellen. <ph name="PRINTER_URI" /> skal være en adresse som klientdatamaskiner kan nå, inkludert <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfritt. Hvis den angis, kan den bidra til å deduplisere <ph name="ZEROCONF_DISCOVERY" />-skrivere.
+
+      Enten må <ph name="PRINTER_EFFECTIVE_MODEL" /> inneholde navnet på skriveren, eller så må <ph name="PRINTER_AUTOCONF" /> være satt til «true» (sann). Skrivere med begge eller uten noen av egenskapene ignoreres.
+
+      Skriveroppsettet fullføres første gang en skriver tas i bruk.  PPD-er lastes ikke ned før skriveren tas i bruk.  Deretter blir mye brukte PPD-er bufret.
+
+      Denne regelen har ingen innvirkning på om brukere kan konfigurere skrivere på enhetene sine.  Den er ment å supplere skriveroppsettene til individuelle brukere.
+
+      For enheter som administreres via Active Directory, har denne regelen støtte for å utvide <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-maskinnavnet eller en delstreng av dette. Hvis maskinnavnet for eksempel er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> med de fire tegnene som kommer etter den sjette posisjonen, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Legg merke til at posisjonen er nullbasert.
+      </translation>
 <translation id="6598235178374410284">Brukerbilde</translation>
 <translation id="6603004149426829878">Send alltid eventuelle tilgjengelige posisjonssignaler til tjeneren mens tidssonen påvises</translation>
 <translation id="6628120204569232711">Rapportér lagringsstatus</translation>
@@ -3410,7 +3444,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne innstillingen angis som «RemoveLRUIfDormant», fortsetter den automatiske oppryddingen å fjerne brukere som ikke har logget på de siste tre månedene (gamle pålogginger først) til det er nok ledig plass.
 
       Hvis denne innstillingen ikke angis, tar automatisk opprydding i bruk den innebygde standardstrategien. For øyeblikket er det «RemoveLRUIfDormant»-strategien.</translation>
-<translation id="7334274148831027933">Aktivér den dokkede lupen</translation>
 <translation id="7336785017449297672">Kontrollerer innstillinger for klokke og tidssone.</translation>
 <translation id="7336878834592315572">Behold informasjonskapsler så lenge økten varer</translation>
 <translation id="7339315111520512972">Tving nettverkskode til å kjøre i nettleserprosessen</translation>
@@ -4293,6 +4326,8 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="915194831143859291">Hvis denne regelen settes til usann eller ikke konfigureres, kan brukerne slå av enhetene sine i <ph name="PRODUCT_OS_NAME" />.
       Hvis denne regelen settes til sann, gjør <ph name="PRODUCT_OS_NAME" /> at enhetene starter på nytt når brukerne slår dem av. Alle «slå av»-knappene i <ph name="PRODUCT_OS_NAME" />-brukergrensesnittet blir byttet ut med «start på nytt»-knapper. Hvis brukerne slår av enhetene med den fysiske av/på-knappen, starter de ikke på nytt – selv om regelen er slått på.</translation>
 <translation id="9152473318295429890">Aktiver kontekstavhengige forslag for lignende nettsider</translation>
+<translation id="9153446010242995516">Rull tilbake til og behold målversjonen hvis OS-versjonen er nyere enn målet. Prøv å overføre konfigurering på enhetsnivå (inkludert nettverkslegitimasjon) gjennom rollback-prosessen, hvis mulig, men gjennomfør rollback med full powerwash selv om gjenoppretting av data ikke er mulig (fordi målversjonen ikke støtter gjenoppretting av data, eller på grunn av en bakover-inkompatibel endring).
+          Støttes på <ph name="PRODUCT_OS_NAME" /> versjon 75 og nyere. For eldre klienter betyr denne verdien at rollback er deaktivert.</translation>
 <translation id="9158929520101169054">Tillat multipålogging i nettleseren</translation>
 <translation id="9159126470527871268">Varsle brukere om at <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> må startes på nytt på grunn av en ventende oppdatering.
 

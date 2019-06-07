@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
-<translation id="1001338328714563407">Ako správca zariadenia a účtu, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Teraz nie</translation>
 <translation id="1010200102790553230">Načítať stránku neskôr</translation>
 <translation id="1015730422737071372">Poskytnite ďalšie podrobnosti</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">Znovu sa pripojiť k sieti Wi‑Fi</translation>
 <translation id="1165039591588034296">Chyba</translation>
 <translation id="1175364870820465910">&amp;Tlačiť...</translation>
+<translation id="1178581264944972037">Pozastaviť</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
 <translation id="1197088940767939838">Oranžová</translation>
 <translation id="1201402288615127009">Ďalej</translation>
@@ -98,7 +98,6 @@
 <translation id="1405567553485452995">Svetlozelená</translation>
 <translation id="1407135791313364759">Otvoriť všetko</translation>
 <translation id="1413809658975081374">Chyba v ochrane osobných údajov</translation>
-<translation id="14171126816530869">Identita spoločnosti <ph name="ORGANIZATION" /> so sídlom <ph name="LOCALITY" /> bola overená spoločnosťou <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Áno</translation>
 <translation id="1430915738399379752">Tlačiť</translation>
 <translation id="1455413310270022028">Guma</translation>
@@ -251,6 +250,7 @@
 <translation id="2262243747453050782">Chyba protokolu HTTP</translation>
 <translation id="2263079731045660823">Aktualizujte informácie automatického dopĺňania kreditných kariet v nastaveniach Chromu</translation>
 <translation id="2270484714375784793">Telefónne číslo</translation>
+<translation id="2277103315734023688">Pretočiť dopredu</translation>
 <translation id="2283340219607151381">Ukladať a dopĺňať adresy</translation>
 <translation id="2292556288342944218">Váš prístup k internetu je blokovaný</translation>
 <translation id="2297722699537546652">B5 (obálka)</translation>
@@ -375,7 +375,6 @@
 <translation id="295526156371527179">Upozornenie: Toto pravidlo nebolo zlúčené ako slovník podľa špecifikácií pravidla, pretože to nie je slovník.</translation>
 <translation id="2955913368246107853">Zatvoriť panel pre vyhľadávanie</translation>
 <translation id="2969319727213777354">Ak chcete nadviazať zabezpečené pripojenie, vaše hodiny musia byť nastavené správne. Je to preto, že certifikáty, ktoré webové stránky používajú na vlastnú identifikáciu, sú platné iba určitý čas. Keďže nie sú hodiny vášho zariadenia nastavené správne, Chrome nemôže tieto certifikáty overiť.</translation>
-<translation id="2970515157925768593">Môže vzdialene zmeniť nastavenie zariadenia a účtu.</translation>
 <translation id="2972581237482394796">&amp;Dopredu</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, aktuálne vybraté. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Vymazať dáta</translation>
@@ -387,7 +386,6 @@
 <translation id="3005723025932146533">Zobraziť uloženú kópiu</translation>
 <translation id="3008447029300691911">Zadajte kód CVC karty <ph name="CREDIT_CARD" />. Po potvrdení budú podrobnosti o karte zdieľané s týmto webom.</translation>
 <translation id="3010559122411665027">Položka zoznamu „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Ako správca tohto zariadenia, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Automaticky blokované</translation>
 <translation id="3023071826883856138">You4 (obálka)</translation>
 <translation id="3024663005179499861">Chybný typ pravidla</translation>
@@ -430,7 +428,6 @@
 <translation id="3287510313208355388">Stiahnuť po obnovení pripojenia</translation>
 <translation id="3293642807462928945">Ďalšie informácie o pravidle <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Nič sa nenašlo</translation>
-<translation id="3311730110465560799">Môže vzdialene zmeniť nastavenie zaradenia.</translation>
 <translation id="3320021301628644560">Pridanie fakturačnej adresy</translation>
 <translation id="3324983252691184275">Karmínová</translation>
 <translation id="3338095232262050444">Zabezpečené</translation>
@@ -525,7 +522,6 @@
 <translation id="3761718714832595332">Skryť stav</translation>
 <translation id="3765032636089507299">Stránka Bezpečného prehliadania sa pripravuje.</translation>
 <translation id="3778403066972421603">Chcete uložiť túto kartu do svojho účtu Google a tohto zariadenia?</translation>
-<translation id="3779973883630527594">Spoločnosť, škola alebo organizácia, ktorá spravuje tento účet:</translation>
 <translation id="3781428340399460090">Jasnoružová</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Platnosť vyprší <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -549,6 +545,7 @@
 <translation id="3949571496842715403">Tento server nedokázal potvrdiť, či ide o doménu <ph name="DOMAIN" /> – príslušný bezpečnostný certifikát neuvádza alternatívne názvy predmetu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie napadol útočník.</translation>
 <translation id="3949601375789751990">Tu sa zobrazí vaša história prehliadania</translation>
 <translation id="3950820424414687140">Prihlásiť sa</translation>
+<translation id="3962859241508114581">Predchádzajúca stopa</translation>
 <translation id="3963837677003247395">Pokračovať manuálne?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Žiadne}=1{Z 1 webu }few{Z # webov }many{Z # webu }other{Z # webov }}</translation>
 <translation id="397105322502079400">Prebieha výpočet...</translation>
@@ -571,6 +568,7 @@
 <translation id="410351446219883937">Automatické prehrávanie</translation>
 <translation id="4103763322291513355">Na stránke &lt;strong&gt;chrome://policy&lt;/strong&gt; nájdete zoznam zakázaných webových adries a ďalšie pravidlá vynútené vaším správcom systému.</translation>
 <translation id="4110652170750985508">Kontrola platby</translation>
+<translation id="4112140312785995938">Pretočiť dozadu</translation>
 <translation id="4116663294526079822">Vždy povoliť na tomto webe</translation>
 <translation id="4117700440116928470">Rozsah pravidla nie je podporovaný.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 ďalšia}few{# ďalšie}many{# ďalšej}other{# ďalších}}</translation>
@@ -649,6 +647,7 @@
 <translation id="443673843213245140">Použitie servera proxy je zakázané, ale je určená explicitná konfigurácia servera proxy.</translation>
 <translation id="445100540951337728">Akceptované debetné karty</translation>
 <translation id="4466881336512663640">Zmeny formulára sa odstránia. Naozaj chcete pokračovať?</translation>
+<translation id="4477350412780666475">Ďalšia stopa</translation>
 <translation id="4482953324121162758">Tento web nebude preložený.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">Neplatná webová adresa. Je nutné použiť webovú adresu so štandardnou schémou, napr. http://example.com alebo https://example.com.</translation>
@@ -895,7 +894,6 @@
 <translation id="5838278095973806738">Na tomto webe by ste nemali zadávať citlivé údaje, napríklad heslá alebo kreditné karty, pretože by ich mohli ukradnúť útočníci.</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
 <translation id="5863847714970149516">Stránka, na ktorú sa chystáte prejsť, vám môže účtovať poplatky</translation>
-<translation id="5865951947699094510">Môže vzdialene zmeniť nastavenie účtu.</translation>
 <translation id="5866257070973731571">Pridanie telefónneho čísla</translation>
 <translation id="5869405914158311789">Tento web je nedostupný</translation>
 <translation id="5869522115854928033">Uložené heslá</translation>
@@ -1047,6 +1045,7 @@
 <translation id="6778737459546443941">Váš rodič to zatiaľ neschválil</translation>
 <translation id="67862343314499040">Fialová</translation>
 <translation id="6786747875388722282">Rozšírenia</translation>
+<translation id="6790428901817661496">Prehrať</translation>
 <translation id="679355240208270552">Ignorované, pretože predvolené vyhľadávanie je zakázané pravidlom.</translation>
 <translation id="681021252041861472">Povinné pole</translation>
 <translation id="6810899417690483278">Identifikátor prispôsobenia</translation>
@@ -1091,6 +1090,7 @@
 <translation id="7053983685419859001">Blokovať</translation>
 <translation id="7062635574500127092">Modrozelená</translation>
 <translation id="7064851114919012435">Kontaktné informácie</translation>
+<translation id="7075452647191940183">Žiadosť je príliš veľká</translation>
 <translation id="7079718277001814089">Tento web obsahuje malvér</translation>
 <translation id="7087282848513945231">Okres</translation>
 <translation id="7090678807593890770">Vyhľadajte na Googli výraz <ph name="LINK" /></translation>
@@ -1147,6 +1147,7 @@
 <translation id="7353601530677266744">Príkazový riadok</translation>
 <translation id="7372973238305370288">výsledok vyhľadávania</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">Ovládacie prvky médií</translation>
 <translation id="7378627244592794276">Nie</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Overenie karty</translation>
@@ -1250,7 +1251,6 @@
 <translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="7805768142964895445">Stav</translation>
 <translation id="7806344367022510803">Zmeňte nastavenia vyhľadávača v Chrome</translation>
-<translation id="7810209002420871817">Ako správca účtu <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chcete návrh odstrániť z prehliadača Chrome?</translation>
 <translation id="7815407501681723534">Nájdené výsledky (počet: <ph name="NUMBER_OF_RESULTS" />) pre dopyt „<ph name="SEARCH_STRING" />“: <ph name="SEARCH_RESULTS" /></translation>

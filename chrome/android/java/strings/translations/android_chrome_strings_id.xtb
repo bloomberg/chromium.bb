@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">GAMBAR</translation>
 <translation id="257088987046510401">Tema</translation>
 <translation id="2570922361219980984">Akses lokasi juga dinonaktifkan untuk perangkat ini. Aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grup</translation>
 <translation id="257931822824936280">Diperluas - klik untuk menciutkan</translation>
 <translation id="2581165646603367611">Tindakan ini akan mengosongkan cache dan menghapus cookie, serta data lain dari situs yang dianggap tidak penting oleh Chrome.</translation>
 <translation id="2586657967955657006">Papan klip</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">Akun ini dikelola oleh <ph name="PARENT_NAME_1" /> dan <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Beralih ke tab penyamaran</translation>
 <translation id="2968755619301702150">Penampil sertifikat</translation>
+<translation id="2977480621796371840">Hapus dari grup</translation>
 <translation id="2979025552038692506">Tab Penyamaran yang Dipilih</translation>
 <translation id="2989523299700148168">Baru saja dikunjungi</translation>
 <translation id="2996291259634659425">Buat frasa sandi</translation>
@@ -426,6 +428,12 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memerinc
 <translation id="4226663524361240545">Notifikasi dapat membuat perangkat bergetar</translation>
 <translation id="423219824432660969">Enkripsikan data yang disinkronkan dengan sandi Google mulai tanggal <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Buka setelan</translation>
+<translation id="4247274662191902962">Data sensor hanya akan dibagikan selama Anda berada di pengalaman VR ini. Situs mungkin dapat mempelajari Anda dengan menggunakan informasi tertentu, seperti:
+    - Lokasi Anda
+    - Ciri fisik Anda, seperti posisi mata
+    - Gerakan Anda, seperti cara Anda berjalan
+
+    Pastikan Anda memercayai situs ini sebelum mengizinkan akses.</translation>
 <translation id="424864128008805179">Logout dari Chrome?</translation>
 <translation id="4256782883801055595">Lisensi open source</translation>
 <translation id="4259722352634471385">Navigasi diblokir: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="545042621069398927">Mempercepat download.</translation>
 <translation id="5456381639095306749">Download halaman</translation>
 <translation id="5475862044948910901">Mulai sesi Augmented Reality?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> ditambahkan ke aplikasi saya</translation>
 <translation id="548278423535722844">Buka di aplikasi peta</translation>
 <translation id="5487521232677179737">Hapus data</translation>
 <translation id="5494752089476963479">Blokir iklan di situs yang menampilkan iklan yang mengganggu atau menyesatkan</translation>

@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Valg av mappe</translation>
 <translation id="1265739287306757398">Finn ut hvordan</translation>
 <translation id="1272079795634619415">Stopp</translation>
+<translation id="1283524564873030414">Siste døgn</translation>
 <translation id="1323735185997015385">Slett</translation>
 <translation id="132683371494960526">Dobbelttrykk for å bytte overordnet mappe.</translation>
 <translation id="1340643665687018190">Lukk menyen</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Avansert</translation>
 <translation id="1989112275319619282">Bla gjennom</translation>
 <translation id="2015722694326466240">For å se passordene må du først angi en adgangskode på enheten din.</translation>
+<translation id="2073572773299281212">Aktiv for <ph name="DAYS" /> dager siden</translation>
 <translation id="2074131957428911366">Du kan når som helst velge hva du vil synkronisere, i <ph name="BEGIN_LINK" />innstillingene<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="209018056901015185">Bruk skrivebordsversjon</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Åpne alle</translation>
 <translation id="2570206273416014374">Sender standardsøkemotoren din noen informasjonskapsler og søk fra adressefeltet og søkefeltet.</translation>
 <translation id="2572712655377361602">En enhetsinnstilling har blokkert tilgangen til bildene dine</translation>
+<translation id="2578571896248130439">Send nettside</translation>
 <translation id="2584132361465095047">Legg til en konto …</translation>
 <translation id="2625189173221582860">Passordet er kopiert</translation>
 <translation id="2648803196158606475">Slett leste</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Merk…</translation>
 <translation id="3157684681743766797">Merk alle…</translation>
 <translation id="3175081911749765310">Nettjenester</translation>
+<translation id="3178650076442119961">Aktiv i dag</translation>
 <translation id="3207960819495026254">Bokmerket</translation>
 <translation id="3224641773458703735">For å eksportere passordene må du først angi en adgangskode på enheten din.</translation>
 <translation id="3240426699337459095">Linken er kopiert</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">For å skanne QR-koder, slå på kameraet i innstillingene</translation>
 <translation id="4281844954008187215">Vilkår for bruk</translation>
 <translation id="430793432425771671">Synkroniser alt</translation>
+<translation id="430967081421617822">Alle datoer</translation>
 <translation id="4338650699862464074">Sender Google nettadressene til sider du besøker.</translation>
 <translation id="4359125752503270327">Denne siden åpnes i et annet program.</translation>
 <translation id="4370827530403103842">Synkronisering fungerer ikke. Trykk for å fikse.</translation>
@@ -281,6 +286,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5127805178023152808">Synkronisering er slått av</translation>
 <translation id="5132942445612118989">Synkroniser passordene dine, loggen din med mer på alle enheter</translation>
 <translation id="5140288047769711648">Chrome husker dette passordet for deg. Du trenger ikke å huske det selv.</translation>
+<translation id="5150492518600715772">Send til enheten din</translation>
 <translation id="5181140330217080051">Laster ned</translation>
 <translation id="5186185447130319458">Privat</translation>
 <translation id="5190835502935405962">Bokmerkerad</translation>
@@ -295,6 +301,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5388358297987318779">Åpne bildet</translation>
 <translation id="5409365236829784218">Ingen av de installerte appene kan åpne denne filen.</translation>
+<translation id="5416022985862681400">De siste 7 dagene</translation>
 <translation id="5433691172869980887">Brukernavnet er kopiert</translation>
 <translation id="54401264925851789">Sikkerhetsinformasjon for siden</translation>
 <translation id="5443952882982198570">Kredittkort</translation>
@@ -309,6 +316,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versjon <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">Aktiv for én dag siden</translation>
 <translation id="5711039611392265845">Se <ph name="BEGIN_LINK" />Synkronisering og Google-tjenester<ph name="END_LINK" /> for flere innstillinger knyttet til personvern, sikkerhet og datainnsamling.</translation>
 <translation id="5728700505257787410">Det oppsto et problem ved pålogging til kontoen din.</translation>
 <translation id="5737974891429562743">Påloggingsdetaljene for kontoen er utdatert. Oppdater for å starte synkroniseringen.</translation>

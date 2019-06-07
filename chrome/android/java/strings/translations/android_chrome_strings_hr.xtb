@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1006017844123154345">Otvori online</translation>
+<translation id="1028699632127661925">Šalje se uređaju <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Dodavanje stavke <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">S web-lokacija</translation>
 <translation id="1049743911850919806">Anonimno</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Pretraživanje i istraživanje</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
+<translation id="1272444412400969138">Alat za odabir uređaja s kojim će se dijeliti kartica.</translation>
 <translation id="1283039547216852943">Dodirnite za proširivanje</translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
 <translation id="1291207594882862231">Brisanje povijesti, kolačića, podataka web-lokacija, predmemorije...</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Pozdrav, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1384959399684842514">Preuzimanje je pauzirano</translation>
+<translation id="1386674309198842382">Aktivan prije <ph name="LAST_UPDATED" /> dana</translation>
 <translation id="1389974829397082527">Nema nijedne oznake</translation>
 <translation id="1397811292916898096">Pretraživanje pomoću usluge <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Ugrađeno u <ph name="WEBSITE_URL" /></translation>
@@ -223,6 +226,7 @@
 <translation id="2567385386134582609">SLIKA</translation>
 <translation id="257088987046510401">Teme</translation>
 <translation id="2570922361219980984">Pristup lokaciji isključen je i za ovaj uređaj. Uključite ga u <ph name="BEGIN_LINK" />postavkama Androida<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grupa</translation>
 <translation id="257931822824936280">Prošireno – kliknite za sažimanje.</translation>
 <translation id="2581165646603367611">Time će se izbrisati kolačići, predmemorija i ostali podaci o web-lokacijama koje Chrome ne smatra važnima.</translation>
 <translation id="2586657967955657006">Međuspremnik</translation>
@@ -274,6 +278,7 @@
 <translation id="2956410042958133412">Računom upravljaju <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Prešli ste na anonimne kartice</translation>
 <translation id="2968755619301702150">Preglednik certifikata</translation>
+<translation id="2977480621796371840">Ukloni iz grupe</translation>
 <translation id="2979025552038692506">Odabrana anonimna kartica</translation>
 <translation id="2989523299700148168">Nedavno posjećeno</translation>
 <translation id="2996291259634659425">Stvaranje zaporke</translation>
@@ -400,6 +405,7 @@
 <translation id="4008040567710660924">Dopusti kolačiće za određenu web-lokaciju.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}one{# h}few{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Prikaži prijedloge kada se ne razriješi web-adresa ili nije moguće uspostaviti vezu</translation>
+<translation id="4044912625106523635">Alat za odabir uređaja s kojim će se dijeliti kartica otvoren je u punoj visini.</translation>
 <translation id="4046123991198612571">Sljedeća pjesma</translation>
 <translation id="4048707525896921369">Saznajte više o temama na web-lokacijama izravno na stranici. Značajka Dodirnite za pretraživanje Google pretraživanju šalje riječ i njezin kontekst, a vraća definicije, slike, rezultate pretraživanja i druge pojedinosti.
 
@@ -426,6 +432,12 @@ Da biste prilagodili pojam za pretraživanje, odaberite ga tako što ćete ga du
 <translation id="4226663524361240545">Obavijesti mogu uključiti vibriranje uređaja</translation>
 <translation id="423219824432660969">Kriptiraj sinkronizirane podatke pomoću Googleove zaporke od <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Otvori postavke</translation>
+<translation id="4247274662191902962">Podaci senzora dijelit će se samo dok ste u tom VR doživljaju. Web-lokacija možda može saznati nešto o vama na temelju određenih informacija, na primjer:
+    – vaše lokacije
+    – vaših fizičkih značajki, primjerice položaja očiju
+    – vašeg kretanja, primjerice načina hoda.
+
+    Prije nego što omogućite pristup, provjerite je li ta web-lokacija pouzdana.</translation>
 <translation id="424864128008805179">Želite li se odjaviti s Chromea?</translation>
 <translation id="4256782883801055595">Licence otvorenog koda</translation>
 <translation id="4259722352634471385">Otvaranje je blokirano: <ph name="URL" /></translation>
@@ -571,6 +583,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5271967389191913893">Uređaj ne može otvoriti sadržaj za preuzimanje.</translation>
 <translation id="528192093759286357">Povucite od vrha zaslona i dodirnite gumb Natrag da biste zatvorili prikaz na cijelom zaslonu.</translation>
 <translation id="5284584623296338184">Promjene oznaka, povijesti, zaporki i drugih postavki više se neće sinkronizirati s vašim Google računom. No vaši postojeći podaci ostat će pohranjeni na vašem Google računu.</translation>
+<translation id="5292796745632149097">Pošalji na uređaj</translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5301954838959518834">U redu, shvaćam</translation>
 <translation id="5304593522240415983">To polje ne može biti prazno</translation>
@@ -598,6 +611,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="545042621069398927">Ubrzavanje preuzimanja.</translation>
 <translation id="5456381639095306749">Preuzmi stranicu</translation>
 <translation id="5475862044948910901">Želite li pokrenuti sesiju proširene stvarnosti?</translation>
+<translation id="5481942164684849270">Aplikacija <ph name="APP_NAME" /> dodana je u Moje aplikacije</translation>
 <translation id="548278423535722844">Otvori u aplikaciji za karte</translation>
 <translation id="5487521232677179737">Izbriši podatke</translation>
 <translation id="5494752089476963479">Blokiraj oglase na web-lokacijama koje prikazuju ometajuće ili obmanjujuće oglase</translation>
@@ -731,6 +745,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6406506848690869874">Sinkronizacija</translation>
 <translation id="641643625718530986">Ispis…</translation>
 <translation id="6416782512398055893">Preuzeto <ph name="MBS" /> MB</translation>
+<translation id="6418750371676080905">Alat za odabir uređaja s kojim će se dijeliti kartica zatvoren je.</translation>
 <translation id="6427112570124116297">Prijevod weba</translation>
 <translation id="6433501201775827830">Odaberite tražilicu</translation>
 <translation id="6437478888915024427">Informacije o stranici</translation>
@@ -770,6 +785,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="666268767214822976">Upotrijebi uslugu predviđanja za prikaz srodnih upita i popularnih web-lokacija prilikom upisivanja u adresnu traku</translation>
 <translation id="666731172850799929">Otvori u aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Obavijest o privatnosti za Chrome</translation>
+<translation id="6672986458216094438">Alat za odabir uređaja s kojim će se dijeliti kartica otvoren je na pola visine.</translation>
 <translation id="6697492270171225480">Prikaži prijedloge za slične stranice kada se stranica ne može pronaći</translation>
 <translation id="6697947395630195233">Chrome treba dopuštenje za pristup vašoj lokaciji da bi je podijelio s ovom web-lokacijom.</translation>
 <translation id="6698801883190606802">Upravljanje sinkroniziranim podacima</translation>
@@ -947,6 +963,7 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="7942131818088350342">Proizvod <ph name="PRODUCT_NAME" /> zastario je.</translation>
 <translation id="7947953824732555851">Prihv. i prijavi se</translation>
 <translation id="7963646190083259054">Dobavljač:</translation>
+<translation id="7971136598759319605">Aktivan prije jednog dana</translation>
 <translation id="7975379999046275268">Pregled stranice <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Prethodno učitaj stranice za brže pregledavanje i pretraživanje</translation>
 <translation id="79859296434321399">Za prikaz sadržaja proširene stvarnosti instalirajte ARCore</translation>

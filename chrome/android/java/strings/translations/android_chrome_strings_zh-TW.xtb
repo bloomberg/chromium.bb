@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">圖片</translation>
 <translation id="257088987046510401">主題</translation>
 <translation id="2570922361219980984">此外，這部裝置的位置資訊存取權已關閉。請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中予以開啟。</translation>
+<translation id="257674075312929031">群組</translation>
 <translation id="257931822824936280">已展開 - 按一下即可收合。</translation>
 <translation id="2581165646603367611">這項操作會清除不重要的網站 Cookie、快取等其他資料 (Chrome 會自動判斷資料的重要性)。</translation>
 <translation id="2586657967955657006">剪貼簿</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">這個帳戶受 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2962095958535813455">已切換成無痕式分頁</translation>
 <translation id="2968755619301702150">憑證檢視器</translation>
+<translation id="2977480621796371840">從群組中移除</translation>
 <translation id="2979025552038692506">選取的無痕式分頁</translation>
 <translation id="2989523299700148168">最近造訪過</translation>
 <translation id="2996291259634659425">建立通關密語</translation>
@@ -426,6 +428,12 @@
 <translation id="4226663524361240545">收到通知時裝置會震動</translation>
 <translation id="423219824432660969">使用你在 <ph name="TIME" />設定的 Google 密碼，加密保護同步資料</translation>
 <translation id="4242533952199664413">開啟設定</translation>
+<translation id="4247274662191902962">系統只會在你進入這個 VR 時分享感應器資料。網站或許可以使用特定資訊辨識你，例如：
+    - 你的位置
+    - 你的身體特徵，例如眼睛的位置
+    - 你的動作，例如走路的方式
+
+    允許存取前，請確認你信任這個網站。</translation>
 <translation id="424864128008805179">要登出 Chrome 嗎？</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="4259722352634471385">瀏覽的網址已封鎖：<ph name="URL" /></translation>
@@ -598,6 +606,7 @@
 <translation id="545042621069398927">正在加快下載速度。</translation>
 <translation id="5456381639095306749">下載網頁</translation>
 <translation id="5475862044948910901">要啟動擴增實境工作階段嗎？</translation>
+<translation id="5481942164684849270">已將「<ph name="APP_NAME" />」新增至我的應用程式</translation>
 <translation id="548278423535722844">在地圖應用程式中開啟</translation>
 <translation id="5487521232677179737">清除資料</translation>
 <translation id="5494752089476963479">封鎖干擾性或誤導性的網站廣告</translation>

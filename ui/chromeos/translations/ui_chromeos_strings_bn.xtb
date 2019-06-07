@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ফাইল</translation>
 <translation id="457386861538956877">আরও...</translation>
 <translation id="4582497162516204941">Linux (বিটা) ব্যবহার করে ইনস্টল করুন</translation>
+<translation id="4594543368593301662"><ph name="SEARCH_TERM" />-এর ফলাফল দেখানো হচ্ছে।</translation>
 <translation id="4631887759990505102">শিল্পী</translation>
 <translation id="4656293982926141856">এই কম্পিউটার</translation>
 <translation id="4669606053856530811">এই আইটেমগুলি '<ph name="SOURCE_NAME" />' এর সদস্যদের সাথে শেয়ার না করলে তারা সেগুলি অ্যাক্সেস করতে পারবে না।</translation>
@@ -382,12 +383,14 @@
 <translation id="5412637665001827670">বুলগেরিয় কীবোর্ড</translation>
 <translation id="5418923334382419584">মায়ানমার কীবোর্ড</translation>
 <translation id="5428105026674456456">স্প্যানিশ</translation>
+<translation id="5438282218546237410"><ph name="SEARCH_TERM" />-এর জন্য কোনও ফলাফল পাওয়া যায়নি।</translation>
 <translation id="5464696796438641524">পোলিশ কীবোর্ড</translation>
 <translation id="5465122519792752163">নেপালি কীবোর্ড (ইনস্ক্রিপ্ট)</translation>
 <translation id="5469868506864199649">ইতালীয়</translation>
 <translation id="5494920125229734069">সকল বেছে নিন</translation>
 <translation id="5500122897333236901">আইসল্যান্ডিক</translation>
 <translation id="5508696409934741614">বিন্দু</translation>
+<translation id="5522908512596376669">লিস্ট ভিউতে ফাইলের তালিকা পরিবর্তিত হয়েছে।</translation>
 <translation id="5524517123096967210">ফাইল পড়া যায়নি৷</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> ছবি</translation>
 <translation id="5533555070048896610">লিপ্যন্তরকরণ (namaste → नमस्ते)</translation>
@@ -434,6 +437,7 @@
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6054173164583630569">ফরাসী কিবোর্ড</translation>
 <translation id="6074825444536523002">Google ফর্ম</translation>
+<translation id="6096979789310008754">সার্চ টেক্সট মুছে দেওয়া হয়েছে, সব ফাইল এবং ফোল্ডার দেখা যাচ্ছে।</translation>
 <translation id="6111770213269631447">লিপ্যন্তরকরণ (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">ব্যবধান</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> সরানো হচ্ছে...</translation>
@@ -649,6 +653,7 @@
 <translation id="8561206103590473338">হাতি</translation>
 <translation id="8569764466147087991">খুলতে একটি স্ক্রিপ্ট বেছে নিন</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" />টি আইটেম সিঙ্ক করা হচ্ছে...</translation>
+<translation id="8600173386174225982">থাম্বনেল ভিউতে ফাইলের তালিকা পরিবর্তিত হয়েছে।</translation>
 <translation id="8669949407341943408">সরানো  হচ্ছে...</translation>
 <translation id="8671210955687109937">মন্তব্য করতে পারবেন</translation>
 <translation id="8686213429977032554">এই ড্রাইভ ফাইল এখনো শেয়ার করা হয়নি</translation>

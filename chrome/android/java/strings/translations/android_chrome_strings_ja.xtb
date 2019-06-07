@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">画像</translation>
 <translation id="257088987046510401">テーマ</translation>
 <translation id="2570922361219980984">位置情報へのアクセスがデバイスでもオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
+<translation id="257674075312929031">グループ</translation>
 <translation id="257931822824936280">展開されています - クリックすると折りたたまれます。</translation>
 <translation id="2581165646603367611">Chrome で重要度が低いと判断されるサイトの Cookie やキャッシュなどのデータを削除します。</translation>
 <translation id="2586657967955657006">クリップボード</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">このアカウントは <ph name="PARENT_NAME_1" /> と <ph name="PARENT_NAME_2" /> によって管理されています。</translation>
 <translation id="2962095958535813455">シークレット タブに切り替えました</translation>
 <translation id="2968755619301702150">証明書ビューア</translation>
+<translation id="2977480621796371840">グループから削除</translation>
 <translation id="2979025552038692506">選択したシークレット タブ</translation>
 <translation id="2989523299700148168">最近のアクセス</translation>
 <translation id="2996291259634659425">パスフレーズの作成</translation>
@@ -426,6 +428,12 @@
 <translation id="4226663524361240545">通知を受け取るとデバイスが振動します</translation>
 <translation id="423219824432660969"><ph name="TIME" />時点の Google パスワードで同期データを暗号化する</translation>
 <translation id="4242533952199664413">設定を開く</translation>
+<translation id="4247274662191902962">センサーデータは、この VR 空間を利用している間のみ共有されます。次のような特定の情報により、サイトがお客様を記憶できる場合があります。
+    - お客様の位置情報
+    - お客様の身体的特徴（目の位置など）
+    - お客様の動き（歩き方など）
+
+    アクセスを許可する前に、このサイトを信頼できるかどうか確認してください。</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
@@ -598,6 +606,7 @@
 <translation id="545042621069398927">ダウンロード速度が向上しました。</translation>
 <translation id="5456381639095306749">ページをダウンロード</translation>
 <translation id="5475862044948910901">拡張現実セッションを開始しますか？</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> をマイアプリに追加しました</translation>
 <translation id="548278423535722844">マップアプリで開く</translation>
 <translation id="5487521232677179737">データを削除</translation>
 <translation id="5494752089476963479">煩わしい広告や誤解を招く広告が表示されるサイトで広告をブロックする</translation>

@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Os seus dispositivos funcionam ainda melhor juntos</translation>
 <translation id="112308213915226829">Ocultar prateleira automaticamente</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
+<translation id="1175572348579024023">Deslocar</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">O Assistente Google não está disponível numa sessão de demonstração.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desligar</translation>
+<translation id="4831034276697007977">Tem a certeza de que pretende desativar os cliques automáticos?</translation>
 <translation id="4849058404725798627">Realçar objeto com foco do teclado</translation>
 <translation id="485592688953820832">Nenhuma ação (colocar em pausa)</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
@@ -413,6 +415,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta de emoji</translation>
 <translation id="7564874036684306347">A movimentação de janelas para outro ambiente de trabalho pode provocar um comportamento inesperado. É possível dividir as notificações, as janelas e as caixas de diálogo subsequentes entre ambientes de trabalho.</translation>
+<translation id="7568294522609223312">Desative os cliques automáticos</translation>
 <translation id="7569509451529460200">O braille e o ChromeVox estão ativados</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietário)</translation>

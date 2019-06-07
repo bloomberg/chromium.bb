@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> fájl</translation>
 <translation id="457386861538956877">Továbbiak...</translation>
 <translation id="4582497162516204941">Telepítés a Linux (béta) segítségével</translation>
+<translation id="4594543368593301662">Keresési eredmények megjelenítése a következőhöz: <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Előadó</translation>
 <translation id="4656293982926141856">Ez a számítógép</translation>
 <translation id="4669606053856530811">A(z) „<ph name="SOURCE_NAME" />” tagjai elveszítik hozzáférésüket, kivéve, ha meg vannak osztva velük ezek az elemek.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Bolgár billentyűzet</translation>
 <translation id="5418923334382419584">Mianmari billentyűzet</translation>
 <translation id="5428105026674456456">spanyol</translation>
+<translation id="5438282218546237410">Nincs találat a következő kifejezésre: <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Lengyel billentyűzet</translation>
 <translation id="5465122519792752163">Nepáli billentyűzet (InScript)</translation>
 <translation id="5469868506864199649">olasz</translation>
 <translation id="5494920125229734069">Összes kiválasztása</translation>
 <translation id="5500122897333236901">izlandi</translation>
 <translation id="5508696409934741614">Pöttyök</translation>
+<translation id="5522908512596376669">A fájllista nézete listanézetre változott.</translation>
 <translation id="5524517123096967210">A fájl nem olvasható.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> kép</translation>
 <translation id="5533555070048896610">Átírás (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="6054173164583630569">Francia billentyűzet</translation>
 <translation id="6074825444536523002">Google-űrlap</translation>
+<translation id="6096979789310008754">A keresési kifejezés törölve, az összes fájl és mappa látható.</translation>
 <translation id="6111770213269631447">Átírás (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Szóköz</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> áthelyezése...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Elefánt</translation>
 <translation id="8569764466147087991">Válassza ki a megnyitni kívánt fájlt</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> elem szinkronizálása…</translation>
+<translation id="8600173386174225982">A fájllista nézete indexképnézetre változott.</translation>
 <translation id="8669949407341943408">Áthelyezés…</translation>
 <translation id="8671210955687109937">Megjegyzések fűzhetők hozzá</translation>
 <translation id="8686213429977032554">Ez a Drive-fájl még nincs megosztva</translation>

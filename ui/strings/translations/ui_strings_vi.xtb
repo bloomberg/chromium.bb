@@ -185,7 +185,6 @@
 <translation id="8144660977431427332">Các nội dung tìm kiếm của bạn được Trợ lý Google hỗ trợ. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, Tự động hoàn thành</translation>
 <translation id="815598010540052116">Cuộn Xuống</translation>
-<translation id="8170087467028567933">Nếu bạn xóa nội dung đề xuất này, thì nội dung đề xuất này sẽ ẩn khỏi tài khoản của bạn trên tất cả thiết bị.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Trang Dưới</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -196,7 +195,6 @@
 <translation id="838869780401515933">chọn</translation>
 <translation id="8393700583063109961">Gửi tin nhắn</translation>
 <translation id="8394908167088220973">Phát/Tạm dừng trình phát phương tiện</translation>
-<translation id="8420205633584771378">Xóa đề xuất này?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 năm}other{# năm}}</translation>
 <translation id="8602707065186045623">Tệp <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Giá luôn hiển thị</translation>

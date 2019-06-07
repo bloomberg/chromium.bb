@@ -286,6 +286,7 @@
 <translation id="4572815280350369984">Faili ya <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Zaidi...</translation>
 <translation id="4582497162516204941">Sakinisha ukitumia Linux (Beta)</translation>
+<translation id="4594543368593301662">Inaonyesha matokeo ya <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Msanii</translation>
 <translation id="4656293982926141856">Kompyuta hii</translation>
 <translation id="4669606053856530811">Wanachama wa '<ph name="SOURCE_NAME" />' hawataweza kuifikia isipokuwa vipengee hivi viwe vinashirikiwa nao.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Kidobi ya Kibulgeria</translation>
 <translation id="5418923334382419584">Kibodi ya Kimyanma</translation>
 <translation id="5428105026674456456">Kihispania</translation>
+<translation id="5438282218546237410">Hakuna matokeo ya <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Kibodi ya Kipoli</translation>
 <translation id="5465122519792752163">Kibodi ya Kinepali (InScript)</translation>
 <translation id="5469868506864199649">Kiitaliano</translation>
 <translation id="5494920125229734069">Chagua zote</translation>
 <translation id="5500122897333236901">Kiaislandi</translation>
 <translation id="5508696409934741614">Nukta</translation>
+<translation id="5522908512596376669">Umebadilisha orodha ya faili kuwa mwonekano wa orodha.</translation>
 <translation id="5524517123096967210">Faili isingeweza kusomwa.</translation>
 <translation id="5533102081734025921">Picha ya <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Unukuzi wa mfumo wa kuandika (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Funga</translation>
 <translation id="6054173164583630569">Kibodi ya Kifaransa</translation>
 <translation id="6074825444536523002">Fomu ya Google</translation>
+<translation id="6096979789310008754">Imefuta hoja ya utafutaji, inaonyesha faili na folda zote.</translation>
 <translation id="6111770213269631447">Unukuzi wa mfumo wa kuandika (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Nafasi</translation>
 <translation id="6133173853026656527">Inasogeza <ph name="FILE_NAME" />...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Tembo</translation>
 <translation id="8569764466147087991">Chagua faili ya kufungua</translation>
 <translation id="8579285237314169903">Inasasisha vipengee <ph name="NUMBER_OF_FILES" />...</translation>
+<translation id="8600173386174225982">Orodha ya faili imebadilishwa kuwa mwonekano wa kijipicha.</translation>
 <translation id="8669949407341943408">Inahamisha...</translation>
 <translation id="8671210955687109937">Anaweza kutoa maoni</translation>
 <translation id="8686213429977032554">Faili hii ya Hifadhi bado haijashirikiwa</translation>

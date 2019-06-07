@@ -286,6 +286,7 @@
 <translation id="4572815280350369984">File <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Altro...</translation>
 <translation id="4582497162516204941">Installa con Linux (beta)</translation>
+<translation id="4594543368593301662">Risultati visualizzati per <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="4656293982926141856">Questo computer</translation>
 <translation id="4669606053856530811">I membri di "<ph name="SOURCE_NAME" />" non avranno più accesso, a meno che questi elementi vengano condivisi con loro.</translation>
@@ -382,12 +383,14 @@
 <translation id="5412637665001827670">Tastiera bulgara</translation>
 <translation id="5418923334382419584">Tastiera Birmano</translation>
 <translation id="5428105026674456456">Spagnolo</translation>
+<translation id="5438282218546237410">Nessun risultato per <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Tastiera polacca</translation>
 <translation id="5465122519792752163">Tastiera Nepalese (InScript)</translation>
 <translation id="5469868506864199649">Italiano</translation>
 <translation id="5494920125229734069">Seleziona tutto</translation>
 <translation id="5500122897333236901">Islandese</translation>
 <translation id="5508696409934741614">Punti</translation>
+<translation id="5522908512596376669">L'elenco dei file è stato modificato in visualizzazione elenco.</translation>
 <translation id="5524517123096967210">Impossibile leggere il file.</translation>
 <translation id="5533102081734025921">Immagine <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Traslitterazione (namaste → नमस्ते)</translation>
@@ -434,6 +437,7 @@
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="6054173164583630569">Tastiera francese</translation>
 <translation id="6074825444536523002">Modulo Google</translation>
+<translation id="6096979789310008754">Testo di ricerca cancellato, sono visualizzati tutti i file e tutte le cartelle.</translation>
 <translation id="6111770213269631447">Traslitterazione (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Spazio</translation>
 <translation id="6133173853026656527">Spostamento di <ph name="FILE_NAME" />...</translation>
@@ -649,6 +653,7 @@
 <translation id="8561206103590473338">Elefante</translation>
 <translation id="8569764466147087991">Seleziona un file da aprire</translation>
 <translation id="8579285237314169903">Sincronizzazione di <ph name="NUMBER_OF_FILES" /> elementi...</translation>
+<translation id="8600173386174225982">L'elenco dei file è stato modificato in visualizzazione miniatura.</translation>
 <translation id="8669949407341943408">Spostamento...</translation>
 <translation id="8671210955687109937">Può commentare</translation>
 <translation id="8686213429977032554">Questo file di Drive non è stato ancora condiviso</translation>

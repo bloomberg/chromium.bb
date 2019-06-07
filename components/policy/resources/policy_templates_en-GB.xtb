@@ -144,15 +144,6 @@
       If the policy is set to false, the state of the dev switch will not be reported.</translation>
 <translation id="1160479894929412407">Allow QUIC protocol</translation>
 <translation id="1160939557934457296">Disable proceeding from the Safe Browsing warning page</translation>
-<translation id="1171342272070128466">Enable the docked magnifier accessibility feature.
-
-          If this policy is set to true, the docked magnifier will always be enabled.
-
-          If this policy is set to false, the docked magnifier will always be disabled.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, the docked magnifier is disabled initially but can be enabled by the user at any time.</translation>
 <translation id="1189817621108632689">Allows you to set a list of URL patterns that specify sites which are not allowed to display images.
 
           If this policy is left not set, the global default value will be used for all sites, either from the 'DefaultImagesSetting' policy if it is set, or from the user's personal configuration. 
@@ -1141,6 +1132,15 @@
           When this policy is unset, behaviour of the more specific policies remains unaffected.</translation>
 <translation id="2987155890997901449">Enable ARC</translation>
 <translation id="2987227569419001736">Control use of the Web Bluetooth API</translation>
+<translation id="2990018289267778247">If this policy is set to true, Accessibility options always appear in system tray menu.
+
+          If this policy is set to false, Accessibility options never appear in system tray menu.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.
+
+          When accessibility features are enabled (by other means, e.g. by a key combination), Accessibility options will always appear in system tray menu.</translation>
 <translation id="3011301228198307065">Configures the default homepage URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
 
           The homepage is the page opened by the Home button. The pages that open on start-up are controlled by the RestoreOnStartup policies.
@@ -1461,6 +1461,7 @@
         This policy is used by machine scope cloud policy enrolment on desktop and can be set by Registry or GPO on Windows, plist on Mac and JSON policy file on Linux.</translation>
 <translation id="3660562134618097814">Transfer SAML IdP cookies during login</translation>
 <translation id="3701121231485832347">Controls settings specific to <ph name="MS_AD_NAME" />-managed <ph name="PRODUCT_OS_NAME" /> devices.</translation>
+<translation id="3702518095257671450">Remote attestation</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (The single-line field is deprecated and will be removed in the future. Please start using the multi-line text box below.)</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="3711895659073496551">Suspend</translation>
@@ -1573,11 +1574,6 @@
       If the policy is set to false, the kiosk session information will not be
       reported. If set to true or left unset, kiosk session information will be
       reported.</translation>
-<translation id="3852924591079583104">
-      This policy, when set to ArcSession, forces the device to reboot when a user signs out if Android has started.
-      When set to Always, it forces the device to reboot on every user sign-out.
-      If left unset, it has no effect and no reboot is forced on user sign-out. The same applies if set to Never.
-      </translation>
 <translation id="3858658082795336534">Default printing duplex mode</translation>
 <translation id="3859780406608282662">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_OS_NAME" />.
 
@@ -1863,6 +1859,15 @@
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="4285674129118156176">Allow unaffiliated users to use ARC</translation>
+<translation id="4289903996435140853">Allows you to set a list of URLs that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and URLs in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
+
+        The USB permission model uses the URL of the requesting site ('requesting URL') and the URL of the top-level frame site ('embedding URL') to grant permission to the requesting URL to access the USB device. The requesting URL may be different from the embedding URL when the requesting site is loaded in an iframe. Therefore, the 'URLs' field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in 'URLs' must be valid URLs, otherwise the policy will be ignored.
+
+        If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+
+        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.
+
+        Values for this policy and the WebUsbAllowDevicesForUrls policy are merged together.</translation>
 <translation id="4298509794364745131">Specifies list of apps that can be enabled as a note-taking app on the <ph name="PRODUCT_OS_NAME" /> lock screen.
 
       If the preferred note-taking app is enabled on the lock screen, the lock screen will contain UI element for launching the preferred note taking app.
@@ -2014,6 +2019,7 @@
 <translation id="4639407427807680016">Names of the native messaging hosts to be exempt from the blacklist</translation>
 <translation id="4650759511838826572">Disable URL protocol schemes</translation>
 <translation id="465099050592230505">Enterprise web store URL (deprecated)</translation>
+<translation id="4661889655253181651">Content settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) are handled.</translation>
 <translation id="4665897631924472251">Extension management settings</translation>
 <translation id="4668325077104657568">Default images setting</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2058,6 +2064,11 @@
       These suggestions are fetched remotely from Google servers.
 
       If this setting is set to false, suggestions will not be fetched or displayed.</translation>
+<translation id="4759650396863318477">Allows you to set the time period, in milliseconds, over which users are notified that <ph name="PRODUCT_NAME" /> must be relaunched or that a <ph name="PRODUCT_OS_NAME" /> device must be restarted to apply a pending update.
+
+      Over this time period, the user will be repeatedly informed of the need for an update. For <ph name="PRODUCT_OS_NAME" /> devices, a restart notification appears in the system tray according to the <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> policy. For <ph name="PRODUCT_NAME" /> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes colour once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy follow this same schedule.
+
+      If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME" /> devices and 604800000 milliseconds (one week) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Enables <ph name="PRODUCT_NAME" />'s Auto-Fill feature and allows users to auto-complete credit card information in web forms using previously stored information.
 
       If this setting is disabled, Auto-fill will never suggest or fill in credit card information, nor will it save additional credit card information that the user might submit while browsing the web.
@@ -2267,6 +2278,15 @@
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="5213038356678567351">Websites that should never trigger a browser switch.</translation>
 <translation id="5219844027738217407">For Android apps, this policy affects the microphone only. When this policy is set to true, the microphone is muted for all Android apps, with no exceptions.</translation>
+<translation id="5221394278852982313">Allows you to set a list of URLs that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and URLs in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
+
+        The USB permission model uses the URL of the requesting site ('requesting URL') and the URL of the top-level frame site ('embedding URL') to grant permission to the requesting URL to access the USB device. The requesting URL may be different from the embedding URL when the requesting site is loaded in an iframe. Therefore, the 'URLs' field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in 'URLs' must be valid URLs, otherwise the policy will be ignored.
+
+        If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+
+        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.
+
+        Values for this policy and the DeviceWebUsbAllowDevicesForUrls policy are merged together.</translation>
 <translation id="5228316810085661003">The device-local account auto-login delay.
 
       If the |DeviceLocalAccountAutoLoginId| policy is unset, this policy has no effect. Otherwise:
@@ -3000,6 +3020,20 @@
 
       If this policy is set to 'Disallow users to manage certificates', users will not be able to manage certificates, they can only view certificates.</translation>
 <translation id="6573305661369899995">Set an external source of URL restrictions</translation>
+<translation id="6583851521569686409">Configures a list of printers.
+
+      This policy allows administrators to provide printer configurations for their users.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> and <ph name="PRINTER_DESCRIPTION" /> are free-form strings that can be customised for ease of printer selection. <ph name="PRINTER_MANUFACTURER" /> and <ph name="PRINTER_MODEL" /> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI" /> should be an address reachable from a client computer including the <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> and <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optional. If provided, it is used to help de-duplicate <ph name="ZEROCONF_DISCOVERY" /> printers.
+
+      Either <ph name="PRINTER_EFFECTIVE_MODEL" /> should contain the name of the printer or <ph name="PRINTER_AUTOCONF" /> should be set to true. The printers with both or without any properties will be ignored.
+
+      Printer setup is completed upon the first use of a printer.  PPDs are not downloaded until the printer is used.  After that time, frequently used PPDs are cached.
+
+      This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
+
+      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE" /> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE" />, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> would be replaced by the four characters starting after the sixth position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Note that the position is zero-based.
+      </translation>
 <translation id="6598235178374410284">User avatar image</translation>
 <translation id="6603004149426829878">Always send any available location signals to the server while resolving time zone</translation>
 <translation id="6628120204569232711">Report storage status</translation>
@@ -3455,7 +3489,6 @@
       If this policy is set to 'RemoveLRUIfDormant', the automatic clean-up will keep removing users who have not logged in for at least 3 months in least-recently-logged-in order until there is enough free space.
 
       If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
-<translation id="7334274148831027933">Enable docked magnifier</translation>
 <translation id="7336785017449297672">Controls clock and time zone settings.</translation>
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
 <translation id="7339315111520512972">Force networking code to run in the browser process</translation>
@@ -4366,6 +4399,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="915194831143859291">If this policy is set to false or not configured, <ph name="PRODUCT_OS_NAME" /> will allow the user to shut down the device.
       If this policy is set to true, <ph name="PRODUCT_OS_NAME" /> will trigger a reboot when the user shuts down the device. <ph name="PRODUCT_OS_NAME" /> replaces all occurrences of shutdown buttons in the UI by reboot buttons. If the user shuts down the device using the power button, it will not automatically reboot, even if the policy is enabled.</translation>
 <translation id="9152473318295429890">Enable contextual suggestions of related web pages</translation>
+<translation id="9153446010242995516">Roll back and stay on target version if OS version is newer than target. Try to carry over device-level configuration (including network credentials) through the rollback process, if possible, but do the rollback with full powerwash even if restoring the data is not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
+          Supported on <ph name="PRODUCT_OS_NAME" /> version 75 and higher. For older clients, this value means that rollback is disabled.</translation>
 <translation id="9158929520101169054">Allow Multiple Sign-in Within the Browser</translation>
 <translation id="9159126470527871268">Notify users that <ph name="PRODUCT_NAME" /> must be relaunched or <ph name="PRODUCT_OS_NAME" /> must be restarted to apply a pending update.
 

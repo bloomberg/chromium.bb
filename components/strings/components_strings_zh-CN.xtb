@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="1001338328714563407">作为您的设备和帐号的管理器，<ph name="ENROLLMENT_DOMAIN" />：</translation>
 <translation id="1008557486741366299">以后再说</translation>
 <translation id="1010200102790553230">保存网页以供日后加载</translation>
 <translation id="1015730422737071372">提供其他详细信息</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">重新连接到 Wi-Fi 网络</translation>
 <translation id="1165039591588034296">错误</translation>
 <translation id="1175364870820465910">打印(&amp;P)...</translation>
+<translation id="1178581264944972037">暂停</translation>
 <translation id="1181037720776840403">删除</translation>
 <translation id="1197088940767939838">橙色</translation>
 <translation id="1201402288615127009">下一步</translation>
@@ -98,7 +98,6 @@
 <translation id="1405567553485452995">浅绿色</translation>
 <translation id="1407135791313364759">全部打开</translation>
 <translation id="1413809658975081374">隐私设置错误</translation>
-<translation id="14171126816530869">位于<ph name="LOCALITY" />的<ph name="ORGANIZATION" />的身份已通过了<ph name="ISSUER" />的验证。</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1430915738399379752">打印</translation>
 <translation id="1455413310270022028">橡皮擦</translation>
@@ -251,6 +250,7 @@
 <translation id="2262243747453050782">HTTP 错误</translation>
 <translation id="2263079731045660823">在 Chrome 设置中更新信用卡自动填充信息</translation>
 <translation id="2270484714375784793">电话号码</translation>
+<translation id="2277103315734023688">快进</translation>
 <translation id="2283340219607151381">保存并填写地址</translation>
 <translation id="2292556288342944218">您被禁止访问互联网</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
@@ -375,7 +375,6 @@
 <translation id="295526156371527179">警告：系统未按照相关政策中指定的方式对此政策进行字典合并，因为此政策不是字典。</translation>
 <translation id="2955913368246107853">关闭查找栏</translation>
 <translation id="2969319727213777354">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Google Chrome 无法验证这些证书。</translation>
-<translation id="2970515157925768593">可以远程更改您的设备和帐号设置。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="2977665033722899841">目前已选择“<ph name="ROW_NAME" />”。<ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">清除数据</translation>
@@ -387,7 +386,6 @@
 <translation id="3005723025932146533">显示已保存的版本</translation>
 <translation id="3008447029300691911">输入“<ph name="CREDIT_CARD" />”的银行卡验证码 (CVC)。在您确认后，您的信用卡详情将与此网站共享。</translation>
 <translation id="3010559122411665027">列表条目“<ph name="ENTRY_INDEX" />”：<ph name="ERROR" /></translation>
-<translation id="3014389611820813634">作为此设备的管理器，<ph name="ENROLLMENT_DOMAIN" />：</translation>
 <translation id="301521992641321250">已被自动禁止</translation>
 <translation id="3023071826883856138">You4 (Envelope)</translation>
 <translation id="3024663005179499861">策略类型有误</translation>
@@ -431,7 +429,6 @@
 <translation id="3287510313208355388">联网时下载</translation>
 <translation id="3293642807462928945">详细了解“<ph name="POLICY_NAME" />”政策</translation>
 <translation id="3303855915957856445">未找到任何搜索结果</translation>
-<translation id="3311730110465560799">可以远程更改您的设备设置。</translation>
 <translation id="3320021301628644560">添加账单邮寄地址</translation>
 <translation id="3324983252691184275">深红色</translation>
 <translation id="3338095232262050444">安全</translation>
@@ -525,7 +522,6 @@
 <translation id="3761718714832595332">隐藏状态</translation>
 <translation id="3765032636089507299">安全浏览页面正在构建中。</translation>
 <translation id="3778403066972421603">要将此卡的信息保存到您的 Google 帐号中和此设备上吗？</translation>
-<translation id="3779973883630527594">管理此帐号的公司、学校或组织：</translation>
 <translation id="3781428340399460090">艳粉色</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">失效日期：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
@@ -549,6 +545,7 @@
 <translation id="3949571496842715403">此服务器无法证实它就是 <ph name="DOMAIN" /> - 它的安全证书没有指定主题备用名称。这可能是因为某项配置有误或某个攻击者拦截了您的连接。</translation>
 <translation id="3949601375789751990">您的浏览记录会显示在此处</translation>
 <translation id="3950820424414687140">登录</translation>
+<translation id="3962859241508114581">上一曲</translation>
 <translation id="3963837677003247395">以手动方式继续？</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{无}=1{来自 1 个网站}other{来自 # 个网站}}</translation>
 <translation id="397105322502079400">正在计算...</translation>
@@ -571,6 +568,7 @@
 <translation id="410351446219883937">自动播放</translation>
 <translation id="4103763322291513355">请访问 &lt;strong&gt;chrome:// 政策&lt;/strong&gt;，查看列入黑名单的网址列表以及您的系统管理员强制要求执行的其他政策。</translation>
 <translation id="4110652170750985508">查看您的付款</translation>
+<translation id="4112140312785995938">快退</translation>
 <translation id="4116663294526079822">在此网站上始终允许</translation>
 <translation id="4117700440116928470">政策范围不受支持。</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 项其他内容}other{# 项其他内容}}</translation>
@@ -649,6 +647,7 @@
 <translation id="443673843213245140">已停用代理，但是指定了明确的代理配置。</translation>
 <translation id="445100540951337728">接受的借记卡</translation>
 <translation id="4466881336512663640">对表单所做的更改将会丢失。确定要继续吗？</translation>
+<translation id="4477350412780666475">下一曲</translation>
 <translation id="4482953324121162758">系统不会翻译此网站。</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">网址无效。必须是采用标准架构的网址，例如“http://example.com”或“https://example.com”。</translation>
@@ -895,7 +894,6 @@
 <translation id="5838278095973806738">请勿在此网站上输入任何敏感信息（例如密码或信用卡信息），因为攻击者可能会盗取这些信息。</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5863847714970149516">即将进入的页面可能会向您收取费用</translation>
-<translation id="5865951947699094510">可以远程更改您的帐号设置。</translation>
 <translation id="5866257070973731571">添加电话号码</translation>
 <translation id="5869405914158311789">无法访问此网站</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
@@ -1047,6 +1045,7 @@
 <translation id="6778737459546443941">您的父亲/母亲尚未批准此网站</translation>
 <translation id="67862343314499040">紫罗兰色</translation>
 <translation id="6786747875388722282">扩展程序</translation>
+<translation id="6790428901817661496">播放</translation>
 <translation id="679355240208270552">由于政策未启用默认搜索引擎，因此政策值已被忽略。</translation>
 <translation id="681021252041861472">必填字段</translation>
 <translation id="6810899417690483278">自定义 ID</translation>
@@ -1147,6 +1146,7 @@
 <translation id="7353601530677266744">命令行</translation>
 <translation id="7372973238305370288">搜索结果</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">媒体控件</translation>
 <translation id="7378627244592794276">否</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">确认信用卡</translation>
@@ -1250,7 +1250,6 @@
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7805768142964895445">状态</translation>
 <translation id="7806344367022510803">在 Chrome 中更改搜索引擎设置</translation>
-<translation id="7810209002420871817">作为您帐号的管理员，<ph name="ACCOUNT_DOMAIN" />：</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">从 Chrome 中移除表单建议？</translation>
 <translation id="7815407501681723534">找到了 <ph name="NUMBER_OF_RESULTS" /> 个与“<ph name="SEARCH_STRING" />”相符的<ph name="SEARCH_RESULTS" /></translation>

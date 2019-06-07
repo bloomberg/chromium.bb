@@ -140,15 +140,6 @@
       Jeśli ta zasada ma wartość Fałsz, stan przełącznika trybu dewelopera nie jest zgłaszany.</translation>
 <translation id="1160479894929412407">Zezwalaj na protokół QUIC</translation>
 <translation id="1160939557934457296">Wyłącz możliwość kontynuacji na stronie ostrzeżenia Bezpiecznego przeglądania</translation>
-<translation id="1171342272070128466">Włącz funkcję lupy zadokowanej.
-
-          Jeśli zasada ma wartość Prawda, lupa zadokowana będzie zawsze włączona.
-
-          Jeśli zasada ma wartość Fałsz, lupa zadokowana będzie zawsze wyłączona.
-
-          Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
-
-          Jeśli nie skonfigurujesz tej zasady, lupa zadokowana jest początkowo wyłączona, ale użytkownik może ją w każdej chwili włączyć.</translation>
 <translation id="1189817621108632689">Pozwala na ustawienie listy wzorców adresów URL określających witryny, którym nie wolno wyświetlać obrazów.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.
@@ -1116,6 +1107,15 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
           Gdy ta zasada nie jest skonfigurowana, nie ma wpływu na bardziej szczegółowe zasady.</translation>
 <translation id="2987155890997901449">Włączenie ARC</translation>
 <translation id="2987227569419001736">Kontrolowanie użycia interfejsu API Web Bluetooth</translation>
+<translation id="2990018289267778247">Jeśli ta zasada ma wartość Prawda, opcje ułatwień dostępu są zawsze wyświetlane w menu w obszarze powiadomień.
+
+          Jeśli ma wartość Fałsz, opcje ułatwień dostępu nie są wyświetlane w menu w obszarze powiadomień.
+
+          Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
+
+          Jeśli pozostanie ona nieskonfigurowana, opcje ułatwień dostępu nie będą wyświetlane w menu w obszarze powiadomień, ale użytkownik będzie mógł włączyć ich wyświetlanie na stronie Ustawienia.
+
+          Gdy funkcje ułatwień dostępu zostaną włączone (innym sposobem, np. skrótem klawiszowym), opcje ułatwień dostępu będą zawsze wyświetlane w menu w obszarze powiadomień.</translation>
 <translation id="3011301228198307065">Służy do konfigurowania adresu URL domyślnej strony głównej w <ph name="PRODUCT_NAME" /> i blokuje użytkownikom możliwość jego zmiany.
 
           Strona główna otwiera się po kliknięciu przycisku strony głównej. Listę stron otwieranych po uruchomieniu określają zasady RestoreOnStartup.
@@ -1429,6 +1429,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
         Ta zasada jest używana przez rejestrację zasad chmurowych obejmującą cały komputer na komputerach osobistych. Można ją skonfigurować przy użyciu Rejestru lub obiektu zasad grupy (GPO) w systemie Windows, plist na Macu i pliku zasad JSON na Linuksie.</translation>
 <translation id="3660562134618097814">Prześlij pliki cookie dostawcy tożsamości SAML podczas logowania</translation>
 <translation id="3701121231485832347">Kontroluje ustawienia urządzeń z systemem <ph name="PRODUCT_OS_NAME" />, którymi zarządza <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Zdalny atest</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Pole z jednym wierszem jest nieużywane i zostanie usunięte. Zacznij używać wielowierszowego pola tekstowego poniżej).</translation>
 <translation id="3709266154059827597">Konfiguruj czarną listę instalacji rozszerzeń</translation>
 <translation id="3711895659073496551">Wstrzymaj</translation>
@@ -1536,11 +1537,6 @@ Jeśli nie skonfigurujesz tej zasady lub jej wartość będzie pustym ciągiem, 
 <translation id="3851039766298741586">Przesyłaj informacje o aktywnej sesji publicznej, np. identyfikator i wersję aplikacji.
 
 Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Jeśli zasada jest włączona lub nieustawiona, informacje o sesji będą przesyłane.</translation>
-<translation id="3852924591079583104">
-      Gdy ta zasada jest ustawiona na ArcSession i uruchomiono Androida, po wylogowaniu użytkownika wymuszane jest ponowne uruchomienie urządzenia.
-      Gdy jest ustawiona na opcję Zawsze, ponowne uruchomienie urządzenia jest wymuszane po każdym wylogowaniu użytkownika.
-      Jeśli zasada jest nieskonfigurowana, nie ma żadnego efektu i po wylogowaniu użytkownika nie jest wymuszane ponowne uruchomienie urządzenia. Tak samo jest, gdy zasada jest ustawiona na opcję Nigdy.
-      </translation>
 <translation id="3858658082795336534">Domyślny tryb drukowania dwustronnego</translation>
 <translation id="3859780406608282662">Dodaj parametr do pobierania odmian referencyjnych w <ph name="PRODUCT_OS_NAME" />.
 
@@ -1818,6 +1814,15 @@ Jeśli wartość |IdleAction| nie będzie określona, zostanie wykonane działan
 
           Ta zasada jest uwzględniana tyko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="4285674129118156176">Zezwalaj użytkownikom z innych domen na używanie ARC</translation>
+<translation id="4289903996435140853">Umożliwia ustawienie listy adresów URL określającej witryny, które mają automatycznie uzyskiwać dostęp do urządzeń USB o podanych identyfikatorach producenta i produktu. Aby zasada była poprawna, każda pozycja na liście musi zawierać zarówno urządzenia, jak i adresy URL. Każda definicja urządzenia może zawierać pole identyfikatora producenta i identyfikatora produktu. Każde pominięcie identyfikatora jest traktowane jako symbol wieloznaczny, ale nie można podać identyfikatora produktu bez podania identyfikatora producenta. W przeciwnym razie zasada będzie niepoprawna i będzie ignorowana.
+
+        W modelu przyznawania dostępu do urządzeń USB rozróżniamy adres URL witryny wysyłającej żądanie („URL źródła żądania”) oraz URL witryny ramki najwyższego poziomu („URL miejsca osadzenia”). URL źródła żądania może być inny niż URL miejsca osadzenia, gdy witryna wysyłająca żądanie jest ładowana w elemencie iframe. Dlatego pole „adresy URL” może zawierać maksymalnie dwa adresy URL oddzielone przecinkiem – pierwszy to URL źródła żądania, a drugi to URL miejsca osadzenia. Jeśli podany jest tylko jeden URL, witryna o tym adresie uzyska dostęp do wskazanych urządzeń USB niezależnie od osadzenia. W polu „adresy URL” muszą znajdować się poprawne adresy URL – w przeciwnym razie zasada będzie ignorowana.
+
+        Jeśli zasada pozostanie nieskonfigurowana, dla wszystkich witryn będzie stosowana globalna wartość domyślna pochodząca z zasady „DefaultWebUsbGuardSetting”, o ile ta jest skonfigurowana, a w przeciwnym razie z osobistej konfiguracji użytkownika.
+
+        Wzorce adresów URL w tej zasadzie nie powinny być w konflikcie z wzorcami w zasadzie WebUsbBlockedForUrls. W przypadku konfliktu ta zasada ma pierwszeństwo nad WebUsbBlockedForUrls i WebUsbAskForUrls.
+
+        Wartości tej zasady oraz zasady WebUsbAllowDevicesForUrls są scalone.</translation>
 <translation id="4298509794364745131">Określa listę aplikacji, które mogą być włączone jako aplikacje do notatek na ekranie blokady w: <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli preferowana aplikacja do robienia notatek jest włączona na ekranie blokady, będą na nim dostępne elementy interfejsu umożliwiające uruchomienie tej aplikacji.
@@ -1969,6 +1974,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4639407427807680016">Nazwy hostów wiadomości natywnych do usunięcia z czarnej listy</translation>
 <translation id="4650759511838826572">Wyłącz schematy protokołów adresów URL</translation>
 <translation id="465099050592230505">URL firmowego sklepu internetowego (wycofana)</translation>
+<translation id="4661889655253181651">Ustawienia treści umożliwiają określenie sposobu obsługi treści danego typu (na przykład plików cookie, grafik czy kodu JavaScript).</translation>
 <translation id="4665897631924472251">Ustawienia zarządzania rozszerzeniami</translation>
 <translation id="4668325077104657568">Domyślne ustawienie grafik</translation>
 <translation id="4670865688564083639">Minimalnie:</translation>
@@ -2009,6 +2015,11 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Takie propozycje są pobierane zdalnie z serwerów Google.
 
       Jeśli to ustawienie ma wartość fałsz, propozycje nie będą pobierane ani wyświetlane.</translation>
+<translation id="4759650396863318477">Umożliwia określenie czasu (w milisekundach), przez który użytkownicy będą powiadamiani o konieczności ponownego uruchomienia <ph name="PRODUCT_NAME" /> lub urządzenia z <ph name="PRODUCT_OS_NAME" /> w celu zainstalowania oczekującej aktualizacji.
+
+      Przez ten czas użytkownik będzie wciąż informowany o konieczności aktualizacji. Na urządzeniach z <ph name="PRODUCT_OS_NAME" /> powiadomienie o konieczności ponownego uruchomienia będzie wyświetlane w obszarze powiadomień zgodnie z zasadą <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. W przeglądarkach <ph name="PRODUCT_NAME" /> po upływie jednej trzeciej okresu powiadamiania zmieni się menu aplikacji. Powiadomienie zmieni kolor po upływie dwóch trzecich okresu powiadamiania i ponownie po upływie całego tego okresu. Dodatkowe powiadomienia, które włącza zasada <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, mają ten sam harmonogram.
+
+      Jeśli zasada nie jest skonfigurowana, na urządzeniach z <ph name="PRODUCT_OS_NAME" /> stosowany jest domyślny czas 345 600 000 milisekund (cztery dni), a w <ph name="PRODUCT_NAME" /> – 604 800 000 milisekund (tydzień).</translation>
 <translation id="4788252609789586009">Włącza funkcję autouzupełniania w <ph name="PRODUCT_NAME" />, umożliwiając użytkownikom automatyczne wprowadzanie wcześniej zapisanych danych karty kredytowej w formularzach na stronach internetowych.
 
       Jeśli to ustawienie jest wyłączone, autouzupełnianie nie będzie podpowiadać ani wypełniać danych karty kredytowej, nie będzie też zapisywać dodatkowych danych karty kredytowej, które użytkownik może podawać na stronach internetowych.
@@ -2200,6 +2211,15 @@ Po włączeniu tej zasady <ph name="PRODUCT_NAME" /> ignoruje wszystkie opcje zw
 <translation id="5208240613060747912">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="5213038356678567351">Witryny, które nigdy nie będą powodować zmiany przeglądarki.</translation>
 <translation id="5219844027738217407">W przypadku aplikacji na Androida ta zasada wpływa tylko na mikrofon. Gdy jest ona włączona, mikrofon jest wyłączony dla wszystkich aplikacji na Androida bez żadnych wyjątków.</translation>
+<translation id="5221394278852982313">Umożliwia ustawienie listy adresów URL określającej witryny, które mają automatycznie uzyskiwać dostęp do urządzeń USB o podanych identyfikatorach producenta i produktu. Aby zasada była poprawna, każda pozycja na liście musi zawierać zarówno urządzenia, jak i adresy URL. Każda definicja urządzenia może zawierać pole identyfikatora producenta i identyfikatora produktu. Każde pominięcie identyfikatora jest traktowane jako symbol wieloznaczny, ale nie można podać identyfikatora produktu bez podania identyfikatora producenta. W przeciwnym razie zasada będzie niepoprawna i będzie ignorowana.
+
+        W modelu przyznawania dostępu do urządzeń USB rozróżniamy adres URL witryny wysyłającej żądanie („URL źródła żądania”) oraz URL witryny ramki najwyższego poziomu („URL miejsca osadzenia”). URL źródła żądania może być inny niż URL miejsca osadzenia, gdy witryna wysyłająca żądanie jest ładowana w elemencie iframe. Dlatego pole „adresy URL” może zawierać maksymalnie dwa adresy URL oddzielone przecinkiem – pierwszy to URL źródła żądania, a drugi to URL miejsca osadzenia. Jeśli podany jest tylko jeden URL, witryna o tym adresie uzyska dostęp do wskazanych urządzeń USB niezależnie od osadzenia. W polu „adresy URL” muszą znajdować się poprawne adresy URL – w przeciwnym razie zasada będzie ignorowana.
+
+        Jeśli zasada pozostanie nieskonfigurowana, dla wszystkich witryn będzie stosowana globalna wartość domyślna pochodząca z zasady „DefaultWebUsbGuardSetting”, o ile ta jest skonfigurowana, a w przeciwnym razie z osobistej konfiguracji użytkownika.
+
+        Wzorce adresów URL w tej zasadzie nie powinny być w konflikcie z wzorcami w zasadzie WebUsbBlockedForUrls. W przypadku konfliktu ta zasada ma pierwszeństwo nad WebUsbBlockedForUrls i WebUsbAskForUrls.
+
+        Wartości tej zasady oraz zasady DeviceWebUsbAllowDevicesForUrls są scalone.</translation>
 <translation id="5228316810085661003">Opóźnienie automatycznego logowania na lokalne konto na urządzeniu.
 
       Jeśli zasada |DeviceLocalAccountAutoLoginId| jest nieskonfigurowana, ta zasada nie ma żadnych skutków. W przeciwnym razie:
@@ -2921,6 +2941,20 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 
       Jeśli ta zasada ma wartość „Nie zezwalaj użytkownikom na zarządzanie certyfikatami”, użytkownicy nie mogą zarządzać certyfikatami, a jedynie je wyświetlać.</translation>
 <translation id="6573305661369899995">Pozwala na ustawianie zewnętrznego źródła ograniczeń URL</translation>
+<translation id="6583851521569686409">Konfiguruje listę drukarek.
+
+      Ta zasada umożliwia administratorom przekazanie konfiguracji drukarek użytkownikom.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> to dowolny tekst, który ma ułatwić wybranie drukarki. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> ułatwiają użytkownikom identyfikację drukarki. Oznaczają producenta i model drukarki. <ph name="PRINTER_URI" /> to adres, który powinien być dostępny z komputera klienckiego. Zawiera te składniki: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. Opcjonalny składnik to <ph name="PRINTER_UUID" />. Jeśli jest podany, umożliwia usunięcie duplikatów drukarek <ph name="ZEROCONF_DISCOVERY" />.
+
+      Musi zostać spełniony jeden z dwóch warunków: <ph name="PRINTER_EFFECTIVE_MODEL" /> musi zawierać nazwę drukarki lub ustawienie <ph name="PRINTER_AUTOCONF" /> musi mieć wartość Prawda. Drukarki spełniające oba te warunki lub niespełniające żadnego będą ignorowane.
+
+      Konfiguracja drukarki jest wykonywana podczas jej pierwszego użycia.  Pliki PPD nie są pobierane przed użyciem drukarki.  Później często używane pliki PPD są przechowywane w pamięci podręcznej.
+
+      Zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować drukarki na poszczególnych urządzeniach.  Uzupełnia ona konfigurację drukarek wykonywaną przez poszczególnych użytkowników.
+
+      W przypadku urządzeń zarządzanych przez Active Directory zasada ta obsługuje rozwijanie nazwy <ph name="MACHINE_NAME_VARIABLE" /> do nazwy komputera w Active Directory lub jej podłańcucha. Jeśli na przykład nazwa komputera to <ph name="MACHINE_NAME_EXAMPLE" />, ciąg <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zastępowany jest czterema znakami, zaczynając po szóstej pozycji, np. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozycja jest liczona od zera.
+      </translation>
 <translation id="6598235178374410284">Obraz awatara użytkownika</translation>
 <translation id="6603004149426829878">Zawsze przesyłaj wszelkie dostępne sygnały o lokalizacji do serwera podczas określania strefy czasowej</translation>
 <translation id="6628120204569232711">Raportuje stan pamięci</translation>
@@ -3350,7 +3384,6 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
       Jeśli ma wartość „RemoveLRUIfDormant”, automatyczne czyszczenie usuwa użytkowników, którzy nie logowali się od co najmniej 3 miesięcy (począwszy od najdawniej zalogowanych), aż do uzyskania odpowiedniej ilości wolnego miejsca.
 
       Jeśli nie ustawisz tej zasady, funkcja automatycznego czyszczenia korzysta z domyślnej wbudowanej strategii. Obecnie to „RemoveLRUIfDormant”.</translation>
-<translation id="7334274148831027933">Włącz lupę zadokowaną</translation>
 <translation id="7336785017449297672">Kontroluje ustawienia zegara i strefy czasowej.</translation>
 <translation id="7336878834592315572">Zachowaj pliki cookie na czas trwania sesji</translation>
 <translation id="7339315111520512972">Wymuś działanie kodu obsługi sieci wewnątrz procesu przeglądarki</translation>
@@ -4233,6 +4266,8 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
 <translation id="915194831143859291">Jeśli wyłączysz tę zasadę lub jej nie skonfigurujesz, <ph name="PRODUCT_OS_NAME" /> pozwoli użytkownikowi wyłączyć urządzenie.
       Jeśli zasada będzie włączona, <ph name="PRODUCT_OS_NAME" /> wymusi ponowne uruchomienie urządzenia, gdy użytkownik spróbuje je wyłączyć. <ph name="PRODUCT_OS_NAME" /> zastąpi wszystkie wystąpienia przycisku wyłączania w interfejsie użytkownika przyciskami ponownego uruchomienia. Urządzenie nie uruchomi się ponownie niezależnie od ustawienia tej zasady, jeśli użytkownik wyłączy je za pomocą przycisku zasilania.</translation>
 <translation id="9152473318295429890">Włącz kontekstowe proponowanie powiązanych stron</translation>
+<translation id="9153446010242995516">Przywrócenie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. Jeśli to możliwe, konfiguracja na poziomie urządzenia (w tym dane logowania do sieci) zostanie zachowana, ale jeśli nie jest to możliwe (ponieważ wersja docelowa nie umożliwia przywrócenia danych lub z powodu niezgodnej wstecznie zmiany), wykonane zostanie przywrócenie z pełną procedurą Powerwash.
+          Obsługiwane w <ph name="PRODUCT_OS_NAME" /> w wersji 75 lub nowszej. W przypadku starszych klientów ta wartość wyłącza możliwość przywrócenia wersji.</translation>
 <translation id="9158929520101169054">Zezwól na wielokrotne logowanie w przeglądarce</translation>
 <translation id="9159126470527871268">Powiadamiaj użytkowników, że konieczne jest ponowne uruchomienie <ph name="PRODUCT_NAME" /> lub urządzenia z <ph name="PRODUCT_OS_NAME" /> w celu zainstalowania oczekującej aktualizacji.
 

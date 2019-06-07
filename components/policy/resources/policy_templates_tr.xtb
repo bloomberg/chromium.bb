@@ -132,15 +132,6 @@
       Politika yanlış değerine ayarlanmışsa geliştirici anahtarının durumu rapor edilmez.</translation>
 <translation id="1160479894929412407">QUIC protokolüne izin verin</translation>
 <translation id="1160939557934457296">Güvenli Tarama uyarı sayfasından ilerlemeyi devre dışı bırak</translation>
-<translation id="1171342272070128466">Yuvaya yerleştirilmiş büyüteç erişilebilirlik özelliğini etkinleştirin.
-
-          Bu politika true (doğru) değerine ayarlanırsa, yuvaya yerleştirilmiş büyüteç her zaman etkin olur.
-
-          Bu politika false (yanlış) değerine ayarlanırsa, yuvaya yerleştirilmiş büyüteç her zaman devre dışı olur.
-
-          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
-
-          Bu politika ayarlanmadan bırakılırsa, yuvaya yerleştirilmiş büyüteç başlangıçta devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
 <translation id="1189817621108632689">Bildirim görüntülemelerine izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, "DefaultImagesSetting" politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.
@@ -1564,11 +1555,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3851039766298741586">Uygulama kimliği ve sürümü gibi aktif kiosk oturumuyla ilgili bilgileri rapor edin.
 
 Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edilmez. Doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa oturum bilgileri rapor edilir.</translation>
-<translation id="3852924591079583104">
-      Bu politika ArcSession değerine ayarlandığında, Android başlatılmışsa kullanıcı oturumu kapatıldığında cihazı yeniden başlamaya zorlar.
-      Always (Her zaman) değerine ayarlandığında, kullanıcı oturumu her kapatıldığında cihazı yeniden başlamaya zorlar.
-      Bu politika ayarlanmadan bırakılırsa hiçbir etkisi olmaz ve kullanıcı oturumu kapatıldığında cihaz yeniden başlamaya zorlanmaz. Never (Hiçbir zaman) değerine ayarlanırsa da aynısı geçerli olur.
-      </translation>
 <translation id="3858658082795336534">Varsayılan dupleks yazdırma modu</translation>
 <translation id="3859780406608282662"><ph name="PRODUCT_OS_NAME" /> içindeki Varyasyonlar çekirdeğini getirmek için bir parametre ekleyin.
 
@@ -2385,7 +2371,7 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
 
           Bu politika etkinleştirilirse tarayıcı penceresi başlatılmaz.
 
-          Bu politika devre dışı bırakılır veya ayarlanmazsa tarayıcı penceresinin başlatılmasına izin verilir. Tarayıcı penceresinin başka politikalar veya komut satırı işaretleri nedeniyle başlamayabileceğini göz önünde bulundurun.</translation>
+          Bu politika devre dışı bırakılır veya ayarlanmazsa tarayıcı penceresinin başlatılmasına izin verilir. Tarayıcı penceresinin başka politikalar veya komut satırı işaretleri nedeniyle de başlamayabileceğini göz önünde bulundurun.</translation>
 <translation id="5427879482805712214">Bu politika, giriş ekranında kullanıcıyı temsil eden avatar resmini yapılandırmanıza olanak tanır. Politika, avatar resminin <ph name="PRODUCT_OS_NAME" /> tarafından indirilebileceği URL'nin belirtilmesi ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreleme karmasının tanımlanmasıyla ayarlanır. Resim JPEG biçiminde olmalı, boyutu 512 kB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir.
 
       Avatar resmi indirilir ve önbelleğe alınır. URL veya karma her değiştiğinde resim tekrar indirilir.
@@ -3438,7 +3424,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu politika "RemoveLRUIfDormant" olarak ayarlanırsa, otomatik temizleme yeterli disk alanı oluşuncaya kadar en eski oturum açan kullanıcıdan başlayarak en az 3 aydır oturum açmayan kullanıcıları sırayla kaldırır.
 
       Bu politika ayarlanmazsa, otomatik temizleme varsayılan yerleşik stratejiyi kullanır. Şu an bu "RemoveLRUIfDormant" stratejisidir.</translation>
-<translation id="7334274148831027933">Yerleştirilmiş büyüteci etkinleştir</translation>
 <translation id="7336785017449297672">Saat ve saat dilimi ayarlarını kontrol eder.</translation>
 <translation id="7336878834592315572">Oturum süresince çerezleri tutma</translation>
 <translation id="7339315111520512972">Ağ iletişimi kodunu tarayıcı işleminde çalışmaya zorla</translation>

@@ -185,7 +185,6 @@
 <translation id="8144660977431427332">你的搜尋結果由 Google 助理提供。<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />，自動完成</translation>
 <translation id="815598010540052116">向下捲動</translation>
-<translation id="8170087467028567933">如果移除這項建議，你的帳戶會在所有裝置上隱藏該建議。</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">向下翻頁</translation>
 <translation id="8245914219290430011">Tab 鍵</translation>
@@ -196,7 +195,6 @@
 <translation id="838869780401515933">選取</translation>
 <translation id="8393700583063109961">傳送訊息</translation>
 <translation id="8394908167088220973">媒體播放/暫停</translation>
-<translation id="8420205633584771378">要移除這項建議嗎？</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 年}other{# 年}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> 檔案 (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">一律顯示檔案櫃</translation>

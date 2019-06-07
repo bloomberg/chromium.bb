@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
-<translation id="1001338328714563407">உங்கள் சாதனம் மற்றும் கணக்கின் நிர்வாகியாக <ph name="ENROLLMENT_DOMAIN" /> இவற்றைச் செய்யலாம்:</translation>
 <translation id="1008557486741366299">இப்போது இல்லை </translation>
 <translation id="1010200102790553230">பக்கத்தைப் பின்னர் ஏற்று</translation>
 <translation id="1015730422737071372">கூடுதல் விவரங்களை வழங்கவும்</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">வைஃபையுடன் மீண்டும் இணைத்தல்</translation>
 <translation id="1165039591588034296">பிழை</translation>
 <translation id="1175364870820465910">&amp;அச்சிடு...</translation>
+<translation id="1178581264944972037">இடைநிறுத்து</translation>
 <translation id="1181037720776840403">அகற்று</translation>
 <translation id="1197088940767939838">ஆரஞ்சு</translation>
 <translation id="1201402288615127009">அடுத்து</translation>
@@ -100,7 +100,6 @@
 <translation id="1405567553485452995">வெளிர் பச்சை</translation>
 <translation id="1407135791313364759">எல்லாவற்றையும் திற</translation>
 <translation id="1413809658975081374">தனியுரிமைப் பிழை</translation>
-<translation id="14171126816530869"><ph name="LOCALITY" /> இல் <ph name="ORGANIZATION" /> அடையாளம் <ph name="ISSUER" /> ஆல் பரிசோதிக்கப்பட்டது.</translation>
 <translation id="1426410128494586442">ஆம்</translation>
 <translation id="1430915738399379752">அச்சிடுக</translation>
 <translation id="1455413310270022028">எரேஸர்</translation>
@@ -254,6 +253,7 @@
 <translation id="2262243747453050782">HTTP பிழை</translation>
 <translation id="2263079731045660823">Chrome அமைப்புகளில் கிரெடிட் கார்டுத் தன்னிரப்பித் தகவலைப் புதுப்பிக்கவும்</translation>
 <translation id="2270484714375784793">தொலைபேசி எண்</translation>
+<translation id="2277103315734023688">முன்செல்</translation>
 <translation id="2283340219607151381">முகவரிகளைச் சேமித்துத் தானாக நிரப்பு</translation>
 <translation id="2292556288342944218">உங்கள் இணைய அணுகல் தடுக்கப்பட்டது</translation>
 <translation id="2297722699537546652">B5 (என்வலப்)</translation>
@@ -383,7 +383,6 @@
 <translation id="295526156371527179">எச்சரிக்கை: இது டிக்‌ஷனரி இல்லை என்பதால் கொள்கையில் குறிப்பிட்டபடி ஒன்றிணைக்கப்படவில்லை.</translation>
 <translation id="2955913368246107853">தேடல் பெட்டியை மூடுக</translation>
 <translation id="2969319727213777354">பாதுகாப்பான இணைப்பை ஏற்படுத்த, கடிகாரம் சரியாக அமைக்கப்பட வேண்டும். இணையதளங்கள் தங்களைத் தாமே அடையாளப்படுத்தப் பயன்படுத்தப்படும் சான்றிதழ்கள் குறிப்பிட்ட காலத்திற்கு மட்டும் செல்லுபடியாவதால், இது செய்யப்பட வேண்டும். உங்கள் சாதனத்தின் கடிகாரம் தவறாக இருப்பதால், இந்தச் சான்றிதழ்களை Google Chrome ஆல் சரிபார்க்க முடியவில்லை.</translation>
-<translation id="2970515157925768593">சாதன அமைவையும் கணக்கு அமைவையும் தொலைநிலையிலிருந்து மாற்ற முடியும்.</translation>
 <translation id="2972581237482394796">&amp;மீண்டும் செய்</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, தற்போது தேர்ந்தெடுக்கப்பட்டது. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">தரவை அழி</translation>
@@ -395,7 +394,6 @@
 <translation id="3005723025932146533">சேமித்த நகலைக் காட்டு</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> இன் CVC எண்ணை உள்ளிடவும். உறுதிசெய்த பின்னர், உங்கள் கார்டு விவரங்கள் இந்தத் தளத்திற்குப் பகிரப்படும்.</translation>
 <translation id="3010559122411665027">பட்டியல் உள்ளீடு "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">இந்தச் சாதனத்தின் நிர்வாகியாக <ph name="ENROLLMENT_DOMAIN" /> இவற்றைச் செய்யலாம்:</translation>
 <translation id="301521992641321250">தானாகத் தடுக்கப்பட்டது</translation>
 <translation id="3023071826883856138">You4 (என்வலப்)</translation>
 <translation id="3024663005179499861">தவறான கொள்கை வகை</translation>
@@ -438,7 +436,6 @@
 <translation id="3287510313208355388">ஆன்லைனில் இருக்கும் போது பதிவிறக்கு</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> கொள்கை குறித்து மேலும் அறிக</translation>
 <translation id="3303855915957856445">தேடல் முடிவுகள் எதுவுமில்லை</translation>
-<translation id="3311730110465560799">சாதன அமைவைத் தொலைநிலையிலிருந்து மாற்ற முடியும்.</translation>
 <translation id="3320021301628644560">பில்லிங் முகவரியைச் சேர்க்கவும்</translation>
 <translation id="3324983252691184275">அடர்சிவப்பு</translation>
 <translation id="3338095232262050444">பாதுகாப்பானது</translation>
@@ -533,7 +530,6 @@
 <translation id="3761718714832595332">நிலையை மறை</translation>
 <translation id="3765032636089507299">பாதுகாப்பு உலாவல் பக்கம் உருவாக்கப்படுகிறது.</translation>
 <translation id="3778403066972421603">கார்டை உங்கள் Google கணக்கிலும் இந்தச் சாதனத்திலும் சேமிக்க விரும்புகிறீர்களா?</translation>
-<translation id="3779973883630527594">இந்தக் கணக்கை நிர்வகிக்கும் நிறுவனம், பள்ளி அல்லது பிற அமைப்புகள்:</translation>
 <translation id="3781428340399460090">ஹாட் பிங்க்</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">காலாவதி: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -557,6 +553,7 @@
 <translation id="3949571496842715403">இது <ph name="DOMAIN" /> தான் என்பதை, இந்தச் சேவையகத்தால் உறுதிப்படுத்த முடியவில்லை; பொருள் மாற்றுப் பெயர்களை அதன் பாதுகாப்புச் சான்றிதழ் குறிப்பிடவில்லை. இது தவறான உள்ளமைவினால் ஏற்பட்டிருக்கலாம் அல்லது தீங்கிழைப்பவர் உங்கள் இணைப்பில் குறுக்கிட்டிருக்கலாம்.</translation>
 <translation id="3949601375789751990">உலாவல் வரலாறு இங்கே தோன்றும்</translation>
 <translation id="3950820424414687140">உள்நுழைக</translation>
+<translation id="3962859241508114581">முந்தைய டிராக்</translation>
 <translation id="3963837677003247395">நீங்களே செய்கிறீர்களா?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{ஏதுமில்லை}=1{1 தளத்திலிருந்து }other{# தளங்களிலிருந்து }}</translation>
 <translation id="397105322502079400">கணக்கிடுகிறது...</translation>
@@ -579,6 +576,7 @@
 <translation id="410351446219883937">தானியங்கி</translation>
 <translation id="4103763322291513355">ஏற்கத்தகாத URLகளின் பட்டியலையும் உங்கள் கணினி நிர்வாகியால் செயற்படுத்தப்படும் பிற கொள்கைகளையும் காண &lt;strong&gt;chrome://policy&lt;/strong&gt; ஐப் பார்வையிடவும்.</translation>
 <translation id="4110652170750985508">உங்கள் கட்டணத்தை மதிப்பாய்வு செய்யவும்</translation>
+<translation id="4112140312785995938">பின்செல்</translation>
 <translation id="4116663294526079822">இந்தத் தளத்தில் எப்போதும் அனுமதி</translation>
 <translation id="4117700440116928470">கொள்கையின் நோக்கம் ஆதரிக்கப்படவில்லை.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{மேலும் ஒன்று}other{மேலும் #}}</translation>
@@ -656,6 +654,7 @@
 <translation id="443673843213245140">ப்ராக்ஸி பயன்பாடு முடக்கப்பட்டுள்ளது. ஆனால் வெளிப்படையான ப்ராக்ஸி உள்ளமைவு குறிப்பிடப்பட்டுள்ளது.</translation>
 <translation id="445100540951337728">ஏற்கப்படும் டெபிட் கார்டுகள்</translation>
 <translation id="4466881336512663640">படிவத்தில் செய்த மாற்றங்கள் சேமிக்கப்படாது. நிச்சயமாகத் தொடர விரும்புகிறீர்களா?</translation>
+<translation id="4477350412780666475">அடுத்த டிராக்</translation>
 <translation id="4482953324121162758">இந்தத் தளம் மொழிபெயர்க்கப்படாது.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">தவறான URL. URL ஒரு நிலையான வகையில் இருக்க வேண்டும், எ.கா http://example.com or https://example.com.</translation>
@@ -902,7 +901,6 @@
 <translation id="5838278095973806738">தீங்கிழைப்பவர்கள் திருடிவிடலாம் என்பதால், இந்தத் தளத்தில் முக்கியத் தகவலை (எடுத்துக்காட்டு: கடவுச்சொற்கள் அல்லது கிரெடிட் கார்டுகள்) உள்ளிட வேண்டாம்.</translation>
 <translation id="5860033963881614850">ஆஃப்</translation>
 <translation id="5863847714970149516">அடுத்த பக்கத்தில் உங்களிடமிருந்து கட்டணம் வசூலிக்கப்படலாம்</translation>
-<translation id="5865951947699094510">உங்கள் கணக்கின் அமைவைத் தொலைநிலையிலிருந்து மாற்ற முடியும்.</translation>
 <translation id="5866257070973731571">மொபைல் எண்ணைச் சேர்க்கவும்</translation>
 <translation id="5869405914158311789">இந்தத் தளத்தை அணுக முடியவில்லை</translation>
 <translation id="5869522115854928033">சேமிக்கப்பட்ட கடவுச்சொற்கள்</translation>
@@ -1053,6 +1051,7 @@
 <translation id="6778737459546443941">இன்னும் உங்கள் பெற்றோர் அனுமதிக்கவில்லை</translation>
 <translation id="67862343314499040">ஊதா</translation>
 <translation id="6786747875388722282">நீட்டிப்புகள்</translation>
+<translation id="6790428901817661496">இயக்கு</translation>
 <translation id="679355240208270552">கொள்கையின்படி இயல்புநிலைத் தேடல் முடக்கப்பட்டுள்ளதால் புறக்கணிக்கப்பட்டது.</translation>
 <translation id="681021252041861472">அவசியமானவை</translation>
 <translation id="6810899417690483278">தனிப்பயனாக்கல் ஐடி</translation>
@@ -1155,6 +1154,7 @@
 <translation id="7353601530677266744">கட்டளை வரி</translation>
 <translation id="7372973238305370288">தேடல் முடிவு</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">மீடியா கட்டுப்பாடுகள்</translation>
 <translation id="7378627244592794276">வேண்டாம்</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">கார்டை உறுதிசெய்</translation>
@@ -1258,7 +1258,6 @@
 <translation id="780301667611848630">தேவையில்லை</translation>
 <translation id="7805768142964895445">நிலை</translation>
 <translation id="7806344367022510803">Chromeமில் தேடல் இன்ஜின் அமைப்புகளை மாற்றவும்</translation>
-<translation id="7810209002420871817">உங்கள் கணக்கின் நிர்வாகியாக <ph name="ACCOUNT_DOMAIN" /> இவற்றைச் செய்யலாம்:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome இலிருந்து படிவப் பரிந்துரையை அகற்றவா?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />'க்கு <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> உள்ளன</translation>

@@ -185,7 +185,6 @@
 <translation id="8144660977431427332">検索は Google アシスタントによって行われます。<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />、オートコンプリート</translation>
 <translation id="815598010540052116">下にスクロール</translation>
-<translation id="8170087467028567933">この候補を削除すると、お使いのすべてのデバイスでアカウントに表示されなくなります。</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">次のページへ</translation>
 <translation id="8245914219290430011">タブ</translation>
@@ -196,7 +195,6 @@
 <translation id="838869780401515933">チェックを付ける</translation>
 <translation id="8393700583063109961">メッセージを送信</translation>
 <translation id="8394908167088220973">メディアの再生/一時停止</translation>
-<translation id="8420205633584771378">この候補を削除しますか？</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1年}other{#年}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ファイル (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">シェルフは常に表示されます</translation>

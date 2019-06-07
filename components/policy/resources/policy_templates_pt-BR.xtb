@@ -137,15 +137,6 @@
       Se a política for definida como "False", o estado da chave dev não será informado.</translation>
 <translation id="1160479894929412407">Permitir protocolo QUIC</translation>
 <translation id="1160939557934457296">Desativa a continuação na página de aviso de "Navegação segura"</translation>
-<translation id="1171342272070128466">Ativar o recurso de acessibilidade da lupa ancorada.
-
-          Se esta política for definida como verdadeira, a lupa ancorada estará sempre ativada.
-
-          Se esta política for definida como falsa, a lupa ancorada estará sempre desativada.
-
-          Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
-
-          Se esta política não for definida, a lupa ancorada estará desativada inicialmente, mas poderá ser ativada pelo usuário a qualquer momento.</translation>
 <translation id="1189817621108632689">Permite que você defina uma lista de padrões de URL que especifica sites que têm permissão para exibir imagens.
 
           Se esta política não for definida, o valor global padrão será usado para todos os sites da política "DefaultImagesSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.
@@ -1532,11 +1523,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se a política for definida como "false", as informações da sessão de quiosque não serão
       comunicadas. Se definida como "true" ou não configurada, as informações da sessão de quiosque serão
       comunicadas.</translation>
-<translation id="3852924591079583104">
-      Quando definida como "ArcSession", esta política forçará a reinicialização do dispositivo depois que o usuário sair se o Android tiver sido iniciado.
-      Quando definida como "Sempre", a política força a reinicialização do dispositivo sempre que o usuário sai.
-      Se não for definida, a política não terá efeito, e a reinicialização não será forçada quando o usuário sair. O mesmo acontece quando a política é definida como "Nunca".
-      </translation>
 <translation id="3858658082795336534">Modo duplex de impressão padrão</translation>
 <translation id="3859780406608282662">Adicionar um parâmetro para a busca do termo-semente "Variações" no <ph name="PRODUCT_OS_NAME" />.
 
@@ -3340,7 +3326,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Se esta política for configurada como "RemoveLRUIfDormant", a limpeza automática continuará removendo os usuários que não fizeram login há pelo menos três meses, na ordem dos usuários que fizeram login há mais tempo, até que haja espaço livre suficiente.
 
       Se esta política não for configurada, a limpeza automática usa a estratégia integrada padrão, que atualmente é a estratégia "RemoveLRUIfDormant".</translation>
-<translation id="7334274148831027933">Ativar lupa ancorada</translation>
 <translation id="7336785017449297672">Controla configurações do relógio e de fuso horário.</translation>
 <translation id="7336878834592315572">Manter cookies enquanto durar a sessão</translation>
 <translation id="7339315111520512972">Força a execução do código de rede no processo do navegador</translation>

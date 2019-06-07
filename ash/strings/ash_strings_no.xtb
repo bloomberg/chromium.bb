@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Enhetene fungerer enda bedre sammen</translation>
 <translation id="112308213915226829">Skjul hyllen automatisk</translation>
 <translation id="1153356358378277386">Tilkoblede enheter</translation>
+<translation id="1175572348579024023">Rull</translation>
 <translation id="1178581264944972037">Stans midlertidig</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Fjern alle</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">Google-assistenten er ikke tilgjengelig under demonstrasjonsøkter.</translation>
 <translation id="479989351350248267">søk</translation>
 <translation id="4804818685124855865">Koble fra</translation>
+<translation id="4831034276697007977">Er du sikker på at du vil slå av automatiske klikk?</translation>
 <translation id="4849058404725798627">Fremhev objektet med tastaturfokus</translation>
 <translation id="485592688953820832">Ingen handling (pause)</translation>
 <translation id="4872237917498892622">Alt + Søk eller Shift</translation>
@@ -413,6 +415,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> støtter ikke <ph name="SPECIFIED_RESOLUTION" />. Oppløsningen ble endret til <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7564874036684306347">Flytting av vinduer til et annet skrivebord kan føre til uventet atferd. Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</translation>
+<translation id="7568294522609223312">Slå av automatiske klikk</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er slått på</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eier)</translation>

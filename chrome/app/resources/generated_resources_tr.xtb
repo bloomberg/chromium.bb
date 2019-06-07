@@ -2144,6 +2144,12 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4242577469625748426">Politika ayarları cihaza yüklenemedi: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Daha fazla ekran kalemi uygulaması bul</translation>
 <translation id="424726838611654458">Her zaman Adobe Reader programında aç</translation>
+<translation id="4247274662191902962">Sensör verileri yalnızca bu VR deneyiminiz sırasında paylaşılacak. Bu site bazı verileri kullanarak hakkınızda bilgi edinebilir. Örneğin:
+    - Konumunuz
+    - Fiziksel özellikleriniz (ör. gözünüzün konumu)
+    - Hareketleriniz (ör. yürüme biçiminiz)
+
+    Erişime izin vermeden önce bu siteye güvendiğinizden emin olun.</translation>
 <translation id="4247901771970415646"><ph name="USERNAME" /> ile senkronize edilemiyor</translation>
 <translation id="4249248555939881673">Ağ bağlantısı bekleniyor...</translation>
 <translation id="4249373718504745892">Bu sayfanın kamera ve mikrofonunuza erişimi engellenmiştir.</translation>

@@ -132,15 +132,6 @@
       Si la política s'estableix com a falsa, no s'informarà de l'estat del botó per a desenvolupadors.</translation>
 <translation id="1160479894929412407">Permet el protocol QUIC</translation>
 <translation id="1160939557934457296">Desactivació de l'accés des de la pàgina d'advertiment de Navegació segura</translation>
-<translation id="1171342272070128466">Activa la funció d'accessibilitat de la lupa acoblada.
-
-          Si aquesta política s'estableix en "true", la lupa acoblada sempre estarà activada.
-
-          Si aquesta política s'estableix en "false", la lupa acoblada sempre estarà desactivada.
-
-          Si estableixes aquesta política, els usuaris no la podran canviar ni substituir.
-
-          Si aquesta política no s'estableix, la lupa acoblada estarà desactivada des d'un principi, però l'usuari la podrà activar en qualsevol moment.</translation>
 <translation id="1189817621108632689">Permet definir una llista de patrons d'URL que especifiquin llocs web que no poden mostrar imatges.
 
           Si aquesta política es deixa sense establir, s'utilitzarà per a tots els llocs web el valor global predeterminat indicat a la política DefaultImagesSetting (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.
@@ -1009,6 +1000,15 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior o igual al retard de desactivació (si s'ha definit) i al retard d'inactivitat.</translation>
 <translation id="2987155890997901449">Activa ARC</translation>
 <translation id="2987227569419001736">Controla l'ús de l'API Web Bluetooth</translation>
+<translation id="2990018289267778247">Si aquesta política s'estableix en "true", les opcions d'accessibilitat sempre es mostraran al menú de la safata del sistema.
+
+          Si aquesta política s'estableix en "false", les opcions d'accessibilitat no es mostraran mai al menú de la safata del sistema.
+
+          Si estableixes aquesta política, els usuaris no la podran canviar ni substituir.
+
+          Si aquesta política es deixa sense establir, les opcions d'accessibilitat no es mostraran al menú de la safata del sistema, però l'usuari podrà fer que es mostrin des de la pàgina Configuració.
+
+          Si s'activen les funcions d'accessibilitat (per altres mitjans, com ara una combinació de claus), les opcions d'accessibilitat sempre es mostraran al menú de la safata del sistema.</translation>
 <translation id="3011301228198307065">Configura l'URL de la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris el canviïn.
 
           La pàgina d'inici és la que s'obre amb el botó Inici. Les pàgines que s'obren en iniciar el navegador les controlen les polítiques RestoreOnStartup.
@@ -1294,6 +1294,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
         La inscripció a polítiques al núvol segons l'abast de l'equip utilitza aquesta política als ordinadors. La política es pot definir amb Registry o GPO a Windows, plist a Mac i el fitxer de polítiques JSON a Linux.</translation>
 <translation id="3660562134618097814">Transfereix les galetes del proveïdor d'identitat SAML durant l'inici de sessió</translation>
 <translation id="3701121231485832347">Controla la configuració específica dels dispositius <ph name="PRODUCT_OS_NAME" /> gestionats per <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Testimoni remot</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> El camp d'una sola línia ja no està disponible i se suprimirà en el futur. Comença a utilitzar el quadre de text amb diverses línies que hi ha més avall.</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
 <translation id="3711895659073496551">Suspèn</translation>
@@ -1398,11 +1399,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
 
       Si la política s'estableix en "false", no s'ofereix informació de la sessió. Si s'estableix en "true" o no s'hi estableix cap valor, s'ofereix informació de la sessió.</translation>
-<translation id="3852924591079583104">
-      Si aquesta política s'estableix en "ArcSession", obliga el dispositiu a reiniciar-se quan l'usuari tanqui la sessió si Android s'ha iniciat.
-      Si s'estableix en "Sempre", obliga el dispositiu a reiniciar-se cada vegada que l'usuari tanqui la sessió.
-      Si es deixa sense establir, no té cap efecte i no obliga el dispositiu a reiniciar-se quan l'usuari tanqui la sessió. Funciona de la mateixa manera si s'estableix en "Mai".
-      </translation>
 <translation id="3858658082795336534">Mode d'impressió a doble cara predeterminat</translation>
 <translation id="3859780406608282662">Afegeix un paràmetre a l'obtenció de la propagació de variacions a <ph name="PRODUCT_OS_NAME" />.
 
@@ -1662,6 +1658,15 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="4285674129118156176">Permet que els usuaris no afiliats facin servir ARC</translation>
+<translation id="4289903996435140853">Permet definir una llista d'URL que especifiquin quins llocs web obtindran permís automàticament per accedir a un dispositiu USB amb els identificadors de proveïdor i producte que s'indiquin. Perquè la política sigui vàlida, tots els elements de la llista han d'incloure tant dispositius com URL. A més, cada dispositiu pot incloure un camp per a l'identificador de proveïdor i per al de producte. Els identificadors omesos es tracten com un comodí, amb excepció dels identificadors de producte, que no es poden especificar si no hi ha un identificador de proveïdor. En cas contrari, la política no serà vàlida i s'ignorarà.
+
+        El model de permisos per a USB utilitza l'URL del lloc web que sol·licita permís ("URL sol·licitant") i l'URL del lloc web de marcs de nivell superior ("URL d'inserció") per concedir permís a l'URL sol·licitant per accedir al dispositiu USB. Si el lloc web que sol·licita permís es carrega en un iframe, l'URL sol·licitant pot ser diferent de l'URL d'inserció. Per tant, el camp urls pot incloure fins a dues cadenes d'URL delimitades per una coma a fi d'especificar l'URL sol·licitant i el d'inserció, respectivament. Si només se n'especifica un, l'accés als dispositius USB corresponents es concedeix quan l'URL del lloc web sol·licitant coincideixi amb aquest URL independentment de l'estat d'inserció. Els URL del camp urls han de ser vàlids. Si no, la política s'ignorarà.
+
+        Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat general per a tots els llocs web, ja sigui de la política DefaultWebUsbGuardSetting si està establerta o de la configuració personal de l'usuari si no ho està.
+
+        Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. Si hi ha un conflicte, aquesta política té prioritat sobre WebUsbBlockedForUrls i WebUsbAskForUrls.
+
+        Els valors d'aquesta política i els de la política WebUsbAllowDevicesForUrls es fusionen.</translation>
 <translation id="4298509794364745131">Indica una llista d'aplicacions que es poden activar com a aplicacions per prendre notes a la pantalla de bloqueig de <ph name="PRODUCT_OS_NAME" />.
 
       Si l'aplicació preferida per prendre notes està activada a la pantalla de bloqueig, en aquesta pantalla s'hi mostrarà un element d'IU per iniciar-la.
@@ -1796,6 +1801,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4639407427807680016">Noms dels amfitrions de missatgeria nativa que no s'han d'incloure a la llista negra</translation>
 <translation id="4650759511838826572">Desactiva els esquemes del protocol URL</translation>
 <translation id="465099050592230505">URL de la botiga web de l'empresa (obsolet)</translation>
+<translation id="4661889655253181651">A la configuració del contingut pots especificar la manera com es tracta el contingut d'un tipus determinat (per exemple, les galetes, les imatges o JavaScript).</translation>
 <translation id="4665897631924472251">Configuració de la gestió d'extensions</translation>
 <translation id="4668325077104657568">Configuració predeterminada de les imatges</translation>
 <translation id="4670865688564083639">Mínim:</translation>
@@ -1840,6 +1846,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Aquests suggeriments s'obtenen dels servidors de Google de manera remota.
 
       Si aquesta opció de configuració s'estableix en "false", no s'obtindran ni es mostraran suggeriments.</translation>
+<translation id="4759650396863318477">Et permet establir el període de temps, en mil·lisegons, durant el qual es notifica als usuaris que <ph name="PRODUCT_NAME" /> o <ph name="PRODUCT_OS_NAME" /> s'han de reiniciar per aplicar una actualització pendent.
+
+      Durant aquest període de temps, s'informa l'usuari repetidament de la necessitat de dur a terme una actualització. En dispositius amb <ph name="PRODUCT_OS_NAME" />, es mostra una notificació de reinici a la safata del sistema de conformitat amb la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En navegadors <ph name="PRODUCT_NAME" />, el menú d'aplicacions canvia un cop transcorregut un terç del període de notificació per indicar que cal dur a terme un reinici. Aquesta notificació canvia de color quan han transcorregut dos terços del període de notificació i, de nou, quan ha transcorregut el període de notificació complet. Les altres notificacions activades per la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> segueixen aquest mateix patró.
+
+      Si la política no s'estableix, s'utilitza el període predeterminat de 345.600.000 mil·lisegons (4 dies) per a dispositius amb <ph name="PRODUCT_OS_NAME" /> i 604.800.000 mil·lisegons (1 setmana) per a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Activa la funció Emplenament automàtic de <ph name="PRODUCT_NAME" /> i permet que els usuaris emplenin la informació de targetes de crèdit automàticament als formularis web amb dades emmagatzemades anteriorment.
 
       Si es desactiva aquesta opció, Emplenament automàtic mai no suggerirà ni emplenarà la informació de targetes de crèdit, ni tampoc desarà la informació addicional de targetes de crèdit que l'usuari enviï mentre navega pel web.
@@ -2026,6 +2037,15 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="5208240613060747912">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès mostrar notificacions. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultNotificationsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="5213038356678567351">Llocs web que mai no han de provocar un canvi de navegador.</translation>
 <translation id="5219844027738217407">En el cas de les aplicacions per a Android, aquesta política afecta només el micròfon. Quan s'estableix en "true", es desactiva el micròfon en totes les aplicacions per a Android, sense cap excepció.</translation>
+<translation id="5221394278852982313">Permet definir una llista d'URL que especifiquin quins llocs web obtindran permís automàticament per accedir a un dispositiu USB amb els identificadors de proveïdor i producte que s'indiquin. Perquè la política sigui vàlida, tots els elements de la llista han d'incloure tant dispositius com URL. A més, cada dispositiu pot incloure un camp per a l'identificador de proveïdor i per al de producte. Els identificadors omesos es tracten com un comodí, amb excepció dels identificadors de producte, que no es poden especificar si no hi ha un identificador de proveïdor. En cas contrari, la política no serà vàlida i s'ignorarà.
+
+        El model de permisos per a USB utilitza l'URL del lloc web que sol·licita permís ("URL sol·licitant") i l'URL del lloc web de marcs de nivell superior ("URL d'inserció") per concedir permís a l'URL sol·licitant per accedir al dispositiu USB. Si el lloc web que sol·licita permís es carrega en un iframe, l'URL sol·licitant pot ser diferent de l'URL d'inserció. Per tant, el camp urls pot incloure fins a dues cadenes d'URL delimitades per una coma a fi d'especificar l'URL sol·licitant i el d'inserció, respectivament. Si només se n'especifica un, l'accés als dispositius USB corresponents es concedeix quan l'URL del lloc web sol·licitant coincideixi amb aquest URL independentment de l'estat d'inserció. Els URL del camp urls han de ser vàlids. Si no, la política s'ignorarà.
+
+        Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat general per a tots els llocs web, ja sigui de la política DefaultWebUsbGuardSetting si està establerta o de la configuració personal de l'usuari si no ho està.
+
+        Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. Si hi ha un conflicte, aquesta política té prioritat sobre WebUsbBlockedForUrls i WebUsbAskForUrls.
+
+        Els valors d'aquesta política i els de la política DeviceWebUsbAllowDevicesForUrls es fusionen.</translation>
 <translation id="5228316810085661003">Retard de l'inici de sessió automàtic al compte local del dispositiu.
 
       Si no s'estableix la política |DeviceLocalAccountAutoLoginId|, aquesta política no té cap efecte. En cas contrari:
@@ -2646,6 +2666,20 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si s'estableix en "No permetis que els usuaris gestionin els certificats", els usuaris no podran gestionar els certificats, sinó només veure'ls.</translation>
 <translation id="6573305661369899995">Estableix una font externa de restriccions d'URL</translation>
+<translation id="6583851521569686409">Configura una llista d'impressores.
+
+      Aquesta política permet als administradors proporcionar configuracions d'impressores als usuaris.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> són cadenes de format lliure que es poden personalitzar per facilitar la selecció de la impressora. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> serveixen perquè els usuaris finals puguin identificar la impressora més fàcilment. Representen el fabricant i el model de la impressora. <ph name="PRINTER_URI" /> ha de ser una adreça accessible des d'un client i ha d'incloure <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> és opcional. Si s'indica, s'utilitza per eliminar la duplicació d'impressores <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> ha de contenir el nom de la impressora o bé <ph name="PRINTER_AUTOCONF" /> s'ha d'establir en "true". Les impressores que no tinguin cap d'aquestes propietats o que les tinguin totes dues s'ignoraran.
+
+      La configuració d'una impressora es completa quan s'utilitza per primera vegada,  moment en què es baixen els fitxers PPD.  Després, es desen a la memòria cau els que s'utilitzen sovint.
+
+      Aquesta política no repercuteix en la possibilitat dels usuaris de configurar impressores en dispositius concrets,  sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris.sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris.
+
+      En el cas dels dispositius gestionats d'Active Directory, aquesta política permet ampliar <ph name="MACHINE_NAME_VARIABLE" /> sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris.per incloure-hi el nom del dispositiu d'Active Directory o una subcadena d'aquest directori. Si, per exemple, el nom del dispositiu és <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se substituirà pels 4 caràcters posteriors a la sisena posició, és a dir, <ph name="MACHINE_NAME_PART_EXAMPLE" />.sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris. Fixa't que la posició es basa en zero.
+      </translation>
 <translation id="6598235178374410284">Imatge d'avatar de l'usuari</translation>
 <translation id="6603004149426829878">Envia sempre els senyals d'ubicació disponibles al servidor mentre es determina la zona horària</translation>
 <translation id="6628120204569232711">Informa de l'estat de l'emmagatzematge</translation>
@@ -3067,7 +3101,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política es defineix com a RemoveLRUIfDormant, la neteja automàtica continuarà suprimint usuaris que no hagin iniciat la sessió com a mínim durant els darrers tres mesos, començant pels que faci més temps que han iniciat la sessió, fins que hi hagi prou espai lliure.
 
       Si aquesta política no es defineix, la neteja automàtica utilitza l'estratègia integrada predeterminada. Actualment, és l'estratègia RemoveLRUIfDormant.</translation>
-<translation id="7334274148831027933">Activa la lupa acoblada</translation>
 <translation id="7336785017449297672">Controla la configuració del rellotge i de la zona horària.</translation>
 <translation id="7336878834592315572">Conserva les galetes mentre duri la sessió</translation>
 <translation id="7339315111520512972">Obliga a executar el codi de xarxa cal procés del navegador</translation>
@@ -3445,7 +3478,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si no es defineix aquesta política, no es faran excepcions a la llista negra de la política "URLBlacklist".</translation>
 <translation id="8176035528522326671">Permet que un usuari d'empresa només sigui un usuari multiperfil principal (comportament predeterminat per a usuaris gestionats per l'empresa)</translation>
-<translation id="8183108371184777472">Cancel·la l'inici de la finestra del navegador</translation>
+<translation id="8183108371184777472">Impedeix que s'obri la finestra del navegador</translation>
 <translation id="8214600119442850823">Configura el gestor de contrasenyes.</translation>
 <translation id="8244171102276095471">Activa els sistemes de xifratge RC4 de TLS</translation>
 <translation id="8244525275280476362">Retard màxim en l'obtenció després de la invalidació d'una política</translation>
@@ -3842,6 +3875,8 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="915194831143859291">Si aquesta política s'estableix en false o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà que l'usuari apagui el dispositiu.
       Si aquesta política s'estableix en true, <ph name="PRODUCT_OS_NAME" /> reiniciarà el dispositiu quan l'usuari l'apagui. És a dir, <ph name="PRODUCT_OS_NAME" /> substitueix tots els botons d'apagat de la interfície d'usuari per botons de reinici. Per tant, si l'usuari apaga el dispositiu amb el botó d'engegada, es reiniciarà de manera automàtica, encara que la política estigui activada.</translation>
 <translation id="9152473318295429890">Activa suggeriments contextuals de pàgines web relacionades</translation>
+<translation id="9153446010242995516">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació. Prova de dur a terme una configuració a nivell del dispositiu (que inclogui les credencials de xarxa) mitjançant el procés de reversió sempre que sigui possible. Executa la reversió amb la funció Powerwash completa, fins i tot si no es poden restaurar les dades, ja sigui perquè la versió de destinació no admet la restauració de dades o a causa d'un canvi incompatible amb versions anteriors.
+          S'admet a <ph name="PRODUCT_OS_NAME" /> en la versió 75 i posteriors. En clients més antics, aquest valor indica que la reversió està desactivada.</translation>
 <translation id="9158929520101169054">Permet l'inici de sessió múltiple al navegador</translation>
 <translation id="9159126470527871268">Notifica els usuaris que cal reiniciar <ph name="PRODUCT_NAME" /> o <ph name="PRODUCT_OS_NAME" /> per aplicar una actualització pendent.
 

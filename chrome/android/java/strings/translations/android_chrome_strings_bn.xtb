@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="1006017844123154345">অনলাইনে খুলুন</translation>
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" />-এ পাঠানো হচ্ছে...</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> যোগ করা হচ্ছে...</translation>
 <translation id="1041308826830691739">ওয়েবসাইট থেকে</translation>
 <translation id="1049743911850919806">ছদ্মবেশী</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">সার্চ করুন, ঘুরে দেখুন</translation>
 <translation id="1264974993859112054">খেলাধূলা</translation>
 <translation id="1272079795634619415">বন্ধ</translation>
+<translation id="1272444412400969138">ট্যাব শেয়ার করার জন্য ডিভাইস পিকার।</translation>
 <translation id="1283039547216852943">প্রসারিত করতে আলতো চাপুন</translation>
 <translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
 <translation id="1291207594882862231">ইতিহাস, কুকিজ, সাইট ডেটা, ক্যাশে সাফ করে...</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">হাই, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1384959399684842514">ডাউনলোড পজ করা আছে</translation>
+<translation id="1386674309198842382"><ph name="LAST_UPDATED" /> দিন আগে ব্যবহার করা হয়েছে</translation>
 <translation id="1389974829397082527">এখানে কোনো বুকমার্ক নেই</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> এর সাহায্যে খুঁজুন</translation>
 <translation id="1404122904123200417">এর মধ্যে এম্বেড করা হয়েছে <ph name="WEBSITE_URL" /></translation>
@@ -223,6 +226,7 @@
 <translation id="2567385386134582609">ইমেজ</translation>
 <translation id="257088987046510401">থিমসমূহ</translation>
 <translation id="2570922361219980984">এই ডিভাইসেও লোকেশন অ্যাক্সেস বন্ধ আছে। চালু করতে <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> যান।</translation>
+<translation id="257674075312929031">গ্রুপ</translation>
 <translation id="257931822824936280">প্রসারিত - সঙ্কুচিত করতে ক্লিক করুন৷</translation>
 <translation id="2581165646603367611">এটা কুকিজ, ক্যাশে, এবং সাইটের সেই সব ডেটা যা Chrome গুরুত্বপূর্ণ মনে করে না সেগুলিকে সাফ করবে।</translation>
 <translation id="2586657967955657006">ক্লিপবোর্ড</translation>
@@ -274,6 +278,7 @@
 <translation id="2956410042958133412">এই অ্যাকাউন্টটি <ph name="PARENT_NAME_1" /> এবং <ph name="PARENT_NAME_2" /> দ্বারা পরিচালিত হয়৷</translation>
 <translation id="2962095958535813455">ছদ্মবেশী ট্যাবে পাল্টানো হয়েছে</translation>
 <translation id="2968755619301702150">সার্টিফিকেট প্রদর্শনকারী</translation>
+<translation id="2977480621796371840">গ্রুপ থেকে সরান</translation>
 <translation id="2979025552038692506">নির্বাচিত ছদ্মবেশী ট্যাবগুলি</translation>
 <translation id="2989523299700148168">সাম্প্রতিক দেখা হয়েছে</translation>
 <translation id="2996291259634659425">পাসফ্রেজ তৈরি করুন</translation>
@@ -402,6 +407,7 @@
 <translation id="4008040567710660924">কোনও নির্দিষ্ট সাইটের জন্য কুকিকে অনুমতি দিন।</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}</translation>
 <translation id="4042870126885713738">যখন কোনো ওয়েব ঠিকানা সমাধান করা না গেলে অথবা কোনো সংযোগ স্থাপন করা না গেলে সেক্ষেত্রে প্রস্তাবগুলি দেখান</translation>
+<translation id="4044912625106523635">ট্যাব শেয়ার করতে ডিভাইস পিকার সম্পূর্ণ স্ক্রিন জুড়ে খুলেছে।</translation>
 <translation id="4046123991198612571">পরবর্তী ট্র্যাক</translation>
 <translation id="4048707525896921369">পৃষ্ঠাতে থাকাকালীন ওয়েবসাইটে গিয়ে বিষয়গুলি সম্পর্কে জানুন। 'সার্চ করতে ট্যাপ করা' বৈশিষ্ট্যটি একটি শব্দ এবং এটির সাথে সম্পর্কযুক্ত প্রসঙ্গ Google সার্চে পাঠায়, তার সাথে সংজ্ঞা, ছবি, সার্চ ফলাফল এবং আরও অনেক কিছু দেখায়৷
 
@@ -428,6 +434,12 @@
 <translation id="4226663524361240545">বিজ্ঞপ্তি আসলে ডিভাইস ভাইব্রেট হতে পারে</translation>
 <translation id="423219824432660969">Google পাসওয়ার্ড দিয়ে <ph name="TIME" />-এ সিঙ্ক করা ডেটা এনক্রিপ্ট করুন</translation>
 <translation id="4242533952199664413">সেটিংস খুলুন</translation>
+<translation id="4247274662191902962">এই ভিআর প্রেজেন্টেশন চলাকালীনই শুধু সেন্সর ডেটা শেয়ার করা হবে। সাইটটি আপনার সম্পর্কে কিছু তথ্য জানতে পারে, যেমন:
+    - আপনার লোকেশন
+    - আপনার শারীরিক বৈশিষ্ট্য, যেমন চোখের অবস্থান
+    - আপনার গতিবিধি, যেমন আপনি কেমন করে হাঁটেন
+
+    অ্যাক্সেসের অনুমতি দেওয়ার আগে সাইটটি বিশ্বস্ত কিনা দেখে নিতে ভুলবেন না।</translation>
 <translation id="424864128008805179">Chrome থেকে সাইন-আউট করবেন?</translation>
 <translation id="4256782883801055595">ওপেন সোর্স লাইসেন্স</translation>
 <translation id="4259722352634471385">নেভিগেশন অবরুদ্ধ করা হয়েছে: <ph name="URL" /></translation>
@@ -573,6 +585,7 @@
 <translation id="5271967389191913893">ডাউনলোড করা কন্টেন্ট ডিভাইস খুলতে পারবে না৷</translation>
 <translation id="528192093759286357">উপর থেকে টেনে আনুন এবং পূর্ণ স্ক্রিন থেকে বেরিয়ে যেতে পিছনে ফেরার বোতাম স্পর্শ করুন।</translation>
 <translation id="5284584623296338184">আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংসে করা পরিবর্তন আর আপনার Google অ্যাকাউন্টের সাথে সিঙ্ক করা হবে না। অবশ্য, আপনার বর্তমান ডেটা আপনার Google অ্যাকাউন্টে সঞ্চিত থাকবে।</translation>
+<translation id="5292796745632149097">এতে পাঠান:</translation>
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5301954838959518834">ঠিক আছে, বুঝেছি</translation>
 <translation id="5304593522240415983">এই ক্ষেত্রটি খালি রাখা যাবে না</translation>
@@ -600,6 +613,7 @@
 <translation id="545042621069398927">আপনার ডাউনলোডের স্পিড বাড়ানো হচ্ছে।</translation>
 <translation id="5456381639095306749">পৃষ্ঠা ডাউনলোড করুন</translation>
 <translation id="5475862044948910901">অগমেন্টেড রিয়েলিটি সেশন শুরু করতে চান?</translation>
+<translation id="5481942164684849270">আমার অ্যাপে <ph name="APP_NAME" /> যোগ করা হয়েছে</translation>
 <translation id="548278423535722844">ম্যাপ অ্যাপ্লিকেশানে খুলুন</translation>
 <translation id="5487521232677179737">ডেটা সাফ করুন</translation>
 <translation id="5494752089476963479">সাইটে থাকা ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন ব্লক করুন</translation>
@@ -733,6 +747,7 @@
 <translation id="6406506848690869874">সিঙ্ক</translation>
 <translation id="641643625718530986">প্রিন্ট...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ডাউনলোড হয়েছে</translation>
+<translation id="6418750371676080905">ট্যাব শেয়ার করার ডিভাইস পিকার বন্ধ আছে।</translation>
 <translation id="6427112570124116297">ওয়েবের কন্টেন্ট অনুবাদ করুন</translation>
 <translation id="6433501201775827830">আপনার সার্চ ইঞ্জিন বেছে নিন</translation>
 <translation id="6437478888915024427">পৃষ্ঠার তথ্য</translation>
@@ -772,6 +787,7 @@
 <translation id="666268767214822976">সম্পর্কিত কোয়েরি এবং অ্যাড্রেস বারের মধ্যে আপনার টাইপ করা জনপ্রিয় ওয়েবসাইটগুলি দেখাতে একটি পূর্বাভাস পরিষেবা ব্যবহার করুন</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> এ খুলুন</translation>
 <translation id="666981079809192359">Chrome এর গোপনীয়তা বিজ্ঞপ্তি</translation>
+<translation id="6672986458216094438">ট্যাব শেয়ার করার ডিভাইস পিকার অর্ধেক স্ক্রিন জুড়ে খুলেছে।</translation>
 <translation id="6697492270171225480">কোনও একটি পৃষ্ঠা খুঁজে পাওয়া না গেলে একইরকম আরও পৃষ্ঠার সাজেশন দেখুন</translation>
 <translation id="6697947395630195233">এই সাইটটির সাথে আপনার লোকেশন শেয়ার করার জন্য Chrome কে আপনার লোকেশনের তথ্যে অ্যাক্সেস দিতে হবে।</translation>
 <translation id="6698801883190606802">সিঙ্ক হওয়া ডেটা পরিচালনা করুন</translation>
@@ -949,6 +965,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> পুরনো হয়ে গেছে।</translation>
 <translation id="7947953824732555851">সম্মত হয়ে সাইন-ইন করুন</translation>
 <translation id="7963646190083259054">বিক্রেতা:</translation>
+<translation id="7971136598759319605">১ দিন আগে ব্যবহার করা হয়েছে</translation>
 <translation id="7975379999046275268"><ph name="BEGIN_NEW" />নতুন<ph name="END_NEW" /> পৃষ্ঠার প্রিভিউ দেখুন</translation>
 <translation id="7981313251711023384">আরও দ্রুত ব্রাউজ করা এবং খোঁজার জন্য পৃষ্ঠা আগে লোড করুন</translation>
 <translation id="79859296434321399">অগমেন্টেড রিয়েলিটি কন্টেন্ট দেখার জন্য ARCore ইনস্টল করুন</translation>

@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">IMEJ</translation>
 <translation id="257088987046510401">Tema</translation>
 <translation id="2570922361219980984">Akses lokasi turut dimatikan untuk peranti ini. Hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Kumpulan</translation>
 <translation id="257931822824936280">Dikembangkan - klik untuk meruntuhkan.</translation>
 <translation id="2581165646603367611">Tindakan ini akan menghapuskan kuki, cache dan data tapak yang lain yang Chrome anggap tidak penting.</translation>
 <translation id="2586657967955657006">Papan Keratan</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">Akaun ini diurus oleh <ph name="PARENT_NAME_1" /> dan <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Beralih ke tab inkognito</translation>
 <translation id="2968755619301702150">Pemapar sijil</translation>
+<translation id="2977480621796371840">Alih keluar daripada kumpulan</translation>
 <translation id="2979025552038692506">Tab Inkognito yang Dipilih</translation>
 <translation id="2989523299700148168">Dilawati baru-baru ini</translation>
 <translation id="2996291259634659425">Buat ungkapan laluan</translation>
@@ -426,6 +428,12 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="4226663524361240545">Pemberitahuan boleh menggetarkan peranti</translation>
 <translation id="423219824432660969">Sulitkan data yang disegerakkan dengan kata laluan Google bermula dari <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Buka tetapan</translation>
+<translation id="4247274662191902962">Data penderia hanya akan dikongsi semasa anda dalam pengalaman VR ini. Tapak ini mungkin dapat mengetahui tentang anda menggunakan maklumat tertentu, seperti:
+    - Lokasi anda
+    - Ciri fizikal anda, seperti kedudukan mata
+    - Pergerakan anda, seperti cara anda berjalan
+
+    Pastikan anda mempercayai tapak ini sebelum anda membenarkan akses.</translation>
 <translation id="424864128008805179">Log keluar daripada Chrome?</translation>
 <translation id="4256782883801055595">Lesen sumber terbuka</translation>
 <translation id="4259722352634471385">Navigasi disekat: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="545042621069398927">Mempercepatkan muat turun anda.</translation>
 <translation id="5456381639095306749">Muat turun halaman</translation>
 <translation id="5475862044948910901">Mulakan sesi Realiti Tambahan?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> ditambahkan pada apl saya</translation>
 <translation id="548278423535722844">Buka dalam apl peta</translation>
 <translation id="5487521232677179737">Kosongkan data</translation>
 <translation id="5494752089476963479">Sekat iklan di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>

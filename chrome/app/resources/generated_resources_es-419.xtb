@@ -2141,6 +2141,12 @@
 <translation id="4242577469625748426">Se produjo un error al instalar la configuración de la política en el dispositivo: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Encontrar más apps para la pluma stylus</translation>
 <translation id="424726838611654458">Abrir siempre en Adobe Reader</translation>
+<translation id="4247274662191902962">Los datos del sensor solo se compartirán cuando estés disfrutando de esta experiencia en RV. Es posible que el sitio te reconozca con cierta información, por ejemplo:
+    - Tu ubicación
+    - Tus características físicas, como la posición de los ojos
+    - Tus movimientos, como la manera de caminar
+
+    Antes de permitir el acceso, asegúrate de que confías en este sitio.</translation>
 <translation id="4247901771970415646">No se puede sincronizar con <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Esperando la conexión de red...</translation>
 <translation id="4249373718504745892">Se bloqueó el acceso de esta página a la cámara y el micrófono.</translation>

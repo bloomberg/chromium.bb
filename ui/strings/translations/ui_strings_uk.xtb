@@ -185,7 +185,6 @@
 <translation id="8144660977431427332">Ваші пошукові запити виконуються за технологією Google Асистента. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />: автозавершення</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>
-<translation id="8170087467028567933">Якщо видалити цю пропозицію, вона не з’являтиметься в обліковому записі на всіх ваших пристроях.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Сторінка вниз</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -196,7 +195,6 @@
 <translation id="838869780401515933">установити прапорець</translation>
 <translation id="8393700583063109961">Надіслати повідомлення</translation>
 <translation id="8394908167088220973">Відтворити чи призупинити</translation>
-<translation id="8420205633584771378">Видалити цю пропозицію?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 р.}one{# р.}few{# р.}many{# р.}other{# р.}}</translation>
 <translation id="8602707065186045623">файл <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Полицю завжди видно</translation>

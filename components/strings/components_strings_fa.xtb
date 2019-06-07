@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
-<translation id="1001338328714563407">به‌عنوان مدیر دستگاه و حسابتان، <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">اکنون نه</translation>
 <translation id="1010200102790553230">بار کردن صفحه در فرصتی دیگر</translation>
 <translation id="1015730422737071372">جزئیات بیشتری ارائه دهید</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">‏اتصال مجدد به Wi-Fi</translation>
 <translation id="1165039591588034296">خطا</translation>
 <translation id="1175364870820465910">&amp;چاپ...</translation>
+<translation id="1178581264944972037">مکث</translation>
 <translation id="1181037720776840403">حذف</translation>
 <translation id="1197088940767939838">نارنجی</translation>
 <translation id="1201402288615127009">بعدی</translation>
@@ -100,7 +100,6 @@
 <translation id="1405567553485452995">سبز روشن</translation>
 <translation id="1407135791313364759">باز کردن همه</translation>
 <translation id="1413809658975081374">خطای حریم خصوصی</translation>
-<translation id="14171126816530869">هویت <ph name="ORGANIZATION" /> در <ph name="LOCALITY" /> توسط <ph name="ISSUER" /> تأیید شده است.</translation>
 <translation id="1426410128494586442">بله</translation>
 <translation id="1430915738399379752">چاپ</translation>
 <translation id="1455413310270022028">پاک‌کن</translation>
@@ -256,6 +255,7 @@
 <translation id="2262243747453050782">‏خطای HTTP</translation>
 <translation id="2263079731045660823">‏اطلاعات تکمیل خودکار کارت اعتباری را در تنظیمات Chrome به‌روزرسانی کنید</translation>
 <translation id="2270484714375784793">شماره تلفن</translation>
+<translation id="2277103315734023688">رفتن به جلو</translation>
 <translation id="2283340219607151381">ذخیره و تکمیل نشانی</translation>
 <translation id="2292556288342944218">دسترسی شما به اینترنت مسدود است</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
@@ -383,7 +383,6 @@
 <translation id="295526156371527179">هشدار: این خط‌مشی طبق آنچه در خط‌مشی مشخص شده است به‌عنوان فهرست ادغام نشد، زیرا فهرست نیست.</translation>
 <translation id="2955913368246107853">بستن نوار یافتن</translation>
 <translation id="2969319727213777354">‏برای برقراری یک اتصال امن، لازم است ساعت شما درست تنظیم شده باشد. زیرا گواهی‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند، تنها برای دوره‌های زمانی خاصی معتبرند. از آنجا که ساعت دستگاه شما نادرست است، Google Chrome نمی‌تواند این گواهی‌ها را تأیید کند.</translation>
-<translation id="2970515157925768593">می‌تواند تنظیم دستگاه و حسابتان را ازراه‌دور تغییر دهد.</translation>
 <translation id="2972581237482394796">انجام مجدد</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />، درحال‌حاضر انتخاب شده است. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">پاک کردن داده‌ها</translation>
@@ -395,7 +394,6 @@
 <translation id="3005723025932146533">نمایش کپی ذخیره شده</translation>
 <translation id="3008447029300691911">‏CVC کارت <ph name="CREDIT_CARD" /> را وارد کنید. بعد از تأیید، جزئیات کارت شما با این سایت به اشتراک گذاشته می‌شود.</translation>
 <translation id="3010559122411665027">ورودی فهرست "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">به‌عنوان مدیر این دستگاه، <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">مسدود‌شده به‌طور خودکار</translation>
 <translation id="3023071826883856138">You4 (Envelope)</translation>
 <translation id="3024663005179499861">نوع خط‌مشی اشتباه است</translation>
@@ -441,7 +439,6 @@
 <translation id="3287510313208355388">بارگیری بعد از آنلاین شدن</translation>
 <translation id="3293642807462928945">درباره خطمشی <ph name="POLICY_NAME" /> بیشتر بدانید</translation>
 <translation id="3303855915957856445">هیچ نتیجه‌ای برای جستجو یافت نشد</translation>
-<translation id="3311730110465560799">می‌تواند تنظیم دستگاهتان را ازراه‌دور تغییر دهد.</translation>
 <translation id="3320021301628644560">افزودن نشانی صورتحساب</translation>
 <translation id="3324983252691184275">زرشکی</translation>
 <translation id="3338095232262050444">ایمن</translation>
@@ -537,7 +534,6 @@
 <translation id="3761718714832595332">پنهان کردن وضعیت</translation>
 <translation id="3765032636089507299">صفحه «مرور ایمن» در دست ساخت است.</translation>
 <translation id="3778403066972421603">‏آیا می‌خواهید این کارت در حساب Google شما و این دستگاه ذخیره شود؟</translation>
-<translation id="3779973883630527594">شرکت، مدرسه، یا سازمانی که این حساب را مدیریت می‌کند:</translation>
 <translation id="3781428340399460090">صورتی پررنگ</translation>
 <translation id="3783418713923659662">مسترکارت</translation>
 <translation id="3787705759683870569">تاریخ انقضا <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -561,6 +557,7 @@
 <translation id="3949571496842715403">‏این سرور نتوانست ثابت کند که <ph name="DOMAIN" /> است؛ در گواهی امنیتی آن، Subject Alternative Names مشخص نشده است. ممکن است این مشکل به دلیل پیکربندی نادرست یا قطع اتصال شما توسط مهاجم ایجاد شده باشد.</translation>
 <translation id="3949601375789751990">سابقه مرورتان در اینجا نشان داده می‌شود</translation>
 <translation id="3950820424414687140">ورود به سیستم</translation>
+<translation id="3962859241508114581">آهنگ قبلی</translation>
 <translation id="3963837677003247395">به‌صورت دستی ادامه می‌دهید؟</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{هیچ‌کدام}=1{از ۱ سایت }one{از # سایت }other{از # سایت }}</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
@@ -583,6 +580,7 @@
 <translation id="410351446219883937">پخش خودکار</translation>
 <translation id="4103763322291513355">‏برای مشاهده فهرست نشانی‌های وب ممنوع و سایر خط‌مشی‌های اجباری براساس تصمیم سرپرست سیستم خود از &lt;strong&gt;chrome://policy&lt;/strong&gt; بازدید نمایید.</translation>
 <translation id="4110652170750985508">مرور پرداخت</translation>
+<translation id="4112140312785995938">رفتن به عقب</translation>
 <translation id="4116663294526079822">همیشه مجاز در این سایت</translation>
 <translation id="4117700440116928470">محدوده خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{۱ مورد دیگر}one{# مورد دیگر}other{# مورد دیگر}}</translation>
@@ -661,6 +659,7 @@
 <translation id="443673843213245140">استفاده از پروکسی غیرفعال است اما یک پیکربندی خاص برای پروکسی تعیین شده است.</translation>
 <translation id="445100540951337728">کارت‌های نقدی قابل‌قبول</translation>
 <translation id="4466881336512663640">تغییرات فرم از بین می‌رود. مطمئن هستید می‌خواهید ادامه دهید؟</translation>
+<translation id="4477350412780666475">آهنگ بعدی</translation>
 <translation id="4482953324121162758">این سایت ترجمه نخواهد شد.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">‏نشانی وب نامعتبر است. باید نشانی وبی با طرحی استاندارد مانند http://example.com یا https://example.com باشد.</translation>
@@ -907,7 +906,6 @@
 <translation id="5838278095973806738">نباید هیچ اطلاعات حساسی (مثل گذرواژه یا کارت اعتباری) را در این سایت وارد کنید، زیرا ممکن است مهاجمین آن‌ها را سرقت کنند.</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="5863847714970149516">صفحه پیش‌رو ممکن است تلاش کند از شما پول دریافت کند</translation>
-<translation id="5865951947699094510">می‌تواند تنظیم حسابتان را ازراه‌دور تغییر دهد.</translation>
 <translation id="5866257070973731571">افزودن شماره تلفن</translation>
 <translation id="5869405914158311789">دسترسی به این سایت امکان‌پذیر نیست</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
@@ -1060,6 +1058,7 @@
 <translation id="6778737459546443941">والدینتان هنوز این سایت را تأیید نکرده‌اند</translation>
 <translation id="67862343314499040">بنفش</translation>
 <translation id="6786747875388722282">افزونه‌ها</translation>
+<translation id="6790428901817661496">پخش</translation>
 <translation id="679355240208270552">نادیده گرفته شد، زیرا جستجوی پیش‌فرض توسط خط‌مشی فعال نشده است.</translation>
 <translation id="681021252041861472">فیلد ضروری</translation>
 <translation id="6810899417690483278">شناسه سفارشی‌سازی</translation>
@@ -1163,6 +1162,7 @@
 <translation id="7353601530677266744">خط فرمان</translation>
 <translation id="7372973238305370288">نتیجه جستجو</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">کنترل‌های رسانه</translation>
 <translation id="7378627244592794276">نه</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">تأیید کارت</translation>
@@ -1266,7 +1266,6 @@
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7805768142964895445">وضعیت</translation>
 <translation id="7806344367022510803">‏تنظیمات «موتور جستجو» را در Chrome تغییر دهید</translation>
-<translation id="7810209002420871817">به‌عنوان مدیر حسابتان، <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">‏پیشنهاد فرم از Chrome پاک شود؟</translation>
 <translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /><ph name="SEARCH_RESULTS" /> برای «<ph name="SEARCH_STRING" />» پیدا شد</translation>

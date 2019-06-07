@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="1006017844123154345">Online megnyitás</translation>
+<translation id="1028699632127661925">Küldés a következő eszközre: <ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> hozzáadása…</translation>
 <translation id="1041308826830691739">Webhelyekről</translation>
 <translation id="1049743911850919806">Inkognitómód</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Keresés és felfedezés</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Leállítás</translation>
+<translation id="1272444412400969138">Eszközválasztó a lap megosztásához.</translation>
 <translation id="1283039547216852943">Koppintson a kibontáshoz</translation>
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="1291207594882862231">Előzmények, cookie-k, webhelyadatok és a gyorsítótár törlése…</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Üdv, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1384959399684842514">A letöltés szünetel</translation>
+<translation id="1386674309198842382"><ph name="LAST_UPDATED" /> napja volt aktív</translation>
 <translation id="1389974829397082527">Itt nincsenek könyvjelzők</translation>
 <translation id="1397811292916898096">Keresés a(z) <ph name="PRODUCT_NAME" /> keresőmotorral</translation>
 <translation id="1404122904123200417">Beágyazva itt: <ph name="WEBSITE_URL" /></translation>
@@ -223,6 +226,7 @@
 <translation id="2567385386134582609">KÉP</translation>
 <translation id="257088987046510401">Témák</translation>
 <translation id="2570922361219980984">A helyhozzáférés is ki van kapcsolva ennél az eszköznél. A funkciót az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" /> tudja bekapcsolni.</translation>
+<translation id="257674075312929031">Csoport</translation>
 <translation id="257931822824936280">Kibontva – kattintson az összecsukáshoz.</translation>
 <translation id="2581165646603367611">Ezzel törli a cookie-kat, a gyorsítótárat, valamint a webhelyek összes olyan adatát, amelyről a Chrome úgy véli, hogy nem fontos.</translation>
 <translation id="2586657967955657006">Vágólap</translation>
@@ -274,6 +278,7 @@
 <translation id="2956410042958133412">A fiók kezelői: <ph name="PARENT_NAME_1" /> és <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Átváltva az inkognitómódban használt lapokra</translation>
 <translation id="2968755619301702150">Tanúsítványmegtekintő</translation>
+<translation id="2977480621796371840">Eltávolítás a csoportból</translation>
 <translation id="2979025552038692506">Kiválasztott inkognitólap</translation>
 <translation id="2989523299700148168">Legutóbb látogatott</translation>
 <translation id="2996291259634659425">Összetett jelszó létrehozása</translation>
@@ -400,6 +405,7 @@
 <translation id="4008040567710660924">Adott webhely cookie-jainak engedélyezése.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# órája}other{# órája}}</translation>
 <translation id="4042870126885713738">Javaslatok megjelenítése, ha egy internetcímet nem lehet feloldani, vagy nem lehet kapcsolódni</translation>
+<translation id="4044912625106523635">A lap megosztásához használt eszközválasztó teljes magasságban van megnyitva.</translation>
 <translation id="4046123991198612571">Következő szám</translation>
 <translation id="4048707525896921369">Megtudhatja a webhelyek témaköreit anélkül, hogy elhagyná az oldalt. A Keresés koppintással funkció elküld egy szót és annak kontextusát a Google Keresés számára, majd meghatározásokat, képeket, keresési eredményeket és egyéb részleteket ad vissza.
 
@@ -426,6 +432,12 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4226663524361240545">Az értesítések miatt rezeghet az eszköz</translation>
 <translation id="423219824432660969">A szinkronizált adatok titkosítása Google-jelszóval ekkortól: <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Beállítások megnyitása</translation>
+<translation id="4247274662191902962">A szenzoradatok megosztására csak addig kerül sor, amíg fut ez a VR-élmény. A webhely tanulhat Önről bizonyos információk, például a következők alapján:
+    – tartózkodási hely;
+    – fizikai jellemzők (például a szemei elhelyezkedése);
+    – mozgás (például a járásmódja).
+
+    A hozzáférés engedélyezése előtt bizonyosodjon meg arról, hogy a webhely megbízható.</translation>
 <translation id="424864128008805179">Kijelentkezés a Chrome-ból</translation>
 <translation id="4256782883801055595">Nyílt forráskódú licencek</translation>
 <translation id="4259722352634471385">Le van tiltva az ide vezető navigáció: <ph name="URL" /></translation>
@@ -571,6 +583,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5271967389191913893">Az eszköz nem tudja megnyitni a letölteni kívánt tartalmat.</translation>
 <translation id="528192093759286357">A teljes képernyős megjelenítésből való kilépéshez húzza le felülről, majd koppintson a vissza gombra.</translation>
 <translation id="5284584623296338184">Könyvjelzői, előzményei, jelszavai és más beállításai a továbbiakban már nem lesznek szinkronizálva Google-fiókjával. Meglévő adatainak tárolása azonban továbbra is megmarad Google-fiókjában.</translation>
+<translation id="5292796745632149097">Küldés a következőre:</translation>
 <translation id="5300589172476337783">Megjelenítés</translation>
 <translation id="5301954838959518834">Rendben, értem</translation>
 <translation id="5304593522240415983">Ez a mező nem lehet üres</translation>
@@ -598,6 +611,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="545042621069398927">Letöltés felgyorsítása…</translation>
 <translation id="5456381639095306749">Oldal letöltése</translation>
 <translation id="5475862044948910901">Elindítja a kiterjesztett valóságot (AR) használó munkamenetet?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> hozzáadva a saját alkalmazásokhoz</translation>
 <translation id="548278423535722844">Megnyitás térképalkalmazásban</translation>
 <translation id="5487521232677179737">Adatok törlése</translation>
 <translation id="5494752089476963479">Hirdetések letiltása a tolakodó és félrevezető hirdetéseket megjelenítő webhelyeken</translation>
@@ -731,6 +745,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6406506848690869874">Szinkronizálás</translation>
 <translation id="641643625718530986">Nyomtatás…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB letöltve</translation>
+<translation id="6418750371676080905">A lap megosztására szolgáló eszközválasztó be van zárva.</translation>
 <translation id="6427112570124116297">Lefordíthatja az internetet</translation>
 <translation id="6433501201775827830">Keresőmotor kiválasztása</translation>
 <translation id="6437478888915024427">Oldaladatok</translation>
@@ -770,6 +785,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="666268767214822976">„Várható kifejezések” szolgáltatás használata a kapcsolódó lekérdezések és népszerű webhelyek megjelenítéséhez a címsávban történő gépelés során.</translation>
 <translation id="666731172850799929">Megnyitás itt: <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome – Adatvédelmi közlemény</translation>
+<translation id="6672986458216094438">A lap megosztásához használt eszközválasztó félmagasságban van megnyitva.</translation>
 <translation id="6697492270171225480">Hasonló oldalakra vonatkozó javaslatok megjelenítése, ha az oldal nem található</translation>
 <translation id="6697947395630195233">A Chrome-nak hozzáférésre van szüksége a helyadatokra ahhoz, hogy megoszthassa a webhellyel az Ön tartózkodási helyét.</translation>
 <translation id="6698801883190606802">Szinkronizálás kezelése</translation>
@@ -947,6 +963,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="7942131818088350342">A(z) <ph name="PRODUCT_NAME" /> elavult.</translation>
 <translation id="7947953824732555851">Elfogadás és bejelentkezés</translation>
 <translation id="7963646190083259054">Szolgáltató:</translation>
+<translation id="7971136598759319605">1 napja volt aktív</translation>
 <translation id="7975379999046275268">Oldal előnézete <ph name="BEGIN_NEW" />Új<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Oldalak előtöltése a gyorsabb böngészés és keresés érdekében</translation>
 <translation id="79859296434321399">A kiterjesztett valósággal kapcsolatos tartalmak megtekintéséhez telepítse az ARCore-t</translation>

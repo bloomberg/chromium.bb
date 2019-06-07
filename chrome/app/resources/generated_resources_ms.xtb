@@ -2145,6 +2145,12 @@
 <translation id="4242577469625748426">Gagal memasang tetapan dasar pada peranti: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Dapatkan lagi apl stilus</translation>
 <translation id="424726838611654458">Sentiasa buka dalam Adobe Reader</translation>
+<translation id="4247274662191902962">Data penderia hanya akan dikongsi semasa anda dalam pengalaman VR ini. Tapak ini mungkin dapat mengetahui tentang anda menggunakan maklumat tertentu, seperti:
+    - Lokasi anda
+    - Ciri fizikal anda, seperti kedudukan mata
+    - Pergerakan anda, seperti cara anda berjalan
+
+    Pastikan anda mempercayai tapak ini sebelum anda membenarkan akses.</translation>
 <translation id="4247901771970415646">Tidak dapat disegerakkan ke <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Menunggu sambungan rangkaian...</translation>
 <translation id="4249373718504745892">Halaman ini telah disekat daripada mengakses kamera dan mikrofon anda.</translation>

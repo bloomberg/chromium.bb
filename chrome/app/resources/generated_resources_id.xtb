@@ -2142,6 +2142,12 @@
 <translation id="4242577469625748426">Gagal memasang setelan kebijakan di perangkat: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Temukan aplikasi stilus lainnya</translation>
 <translation id="424726838611654458">Selalu buka di Adobe Reader</translation>
+<translation id="4247274662191902962">Data sensor hanya akan dibagikan selama Anda berada di pengalaman VR ini. Situs mungkin dapat mempelajari Anda dengan menggunakan informasi tertentu, seperti:
+    - Lokasi Anda
+    - Ciri fisik Anda, seperti posisi mata
+    - Gerakan Anda, seperti cara Anda berjalan
+
+    Pastikan Anda memercayai situs ini sebelum mengizinkan akses.</translation>
 <translation id="4247901771970415646">Tidak dapat disinkronkan ke <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Menunggu sambungan jaringan...</translation>
 <translation id="4249373718504745892">Halaman ini telah diblokir agar tidak dapat mengakses kamera dan mikrofon Anda.</translation>

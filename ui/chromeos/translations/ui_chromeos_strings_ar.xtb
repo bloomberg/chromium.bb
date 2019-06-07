@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">السويدية</translation>
 <translation id="4693155481716051732">سوشي</translation>
 <translation id="4694604912444486114">قرد</translation>
+<translation id="4697043402264950621">تم ترتيب قائمة الملف تصاعديًا حسب <ph name="COLUMN_NAME" />.</translation>
 <translation id="4711094779914110278">التركية</translation>
 <translation id="4713544552769165154">‏تم تصميم هذا الملف لجهاز كمبيوتر يستخدم برنامج  Macintosh. وهو غير متوافق مع جهازك الذي يعمل بنظام تشغيل Chrome. يُرجى البحث في <ph name="BEGIN_LINK" />سوق Chrome الإلكتروني<ph name="END_LINK" /> للحصول على تطبيق بديل مناسب.<ph name="BEGIN_LINK_HELP" />مزيد من المعلومات<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">تم نسخ <ph name="FILE_COUNT" /> من الصور احتياطيًا</translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">نافذة جديدة</translation>
 <translation id="7348749398828259943">‏لوحة مفاتيح US Workman الدولية</translation>
 <translation id="7359359531237882347">جارٍ نسخ <ph name="NUMBER_OF_ITEMS" /> من العناصر...</translation>
+<translation id="7375951387215729722">تم ترتيب قائمة الملف تنازليًا حسب <ph name="COLUMN_NAME" />.</translation>
 <translation id="7389722738210761877">‏لوحة المفاتيح التايلاندية (TIS 820-2531)</translation>
 <translation id="7396038720194014279">لوحة المفاتيح الهندية (صوتية)</translation>
 <translation id="7417453074306512035">لوحة المفاتيح الإثيوبية</translation>

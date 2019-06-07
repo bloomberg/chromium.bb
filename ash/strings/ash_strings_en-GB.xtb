@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Your devices work even better together</translation>
 <translation id="112308213915226829">Autohide shelf</translation>
 <translation id="1153356358378277386">Paired devices</translation>
+<translation id="1175572348579024023">Scroll</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Clear all</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">The Google Assistant is not available in a demo session.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Disconnect</translation>
+<translation id="4831034276697007977">Are you sure that you want to turn off automatic clicks?</translation>
 <translation id="4849058404725798627">Highlight object with keyboard focus</translation>
 <translation id="485592688953820832">No action (pause)</translation>
 <translation id="4872237917498892622">Alt+Search or Shift</translation>
@@ -413,6 +415,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> doesn't support <ph name="SPECIFIED_RESOLUTION" />. The resolution was changed to <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emoji palette</translation>
 <translation id="7564874036684306347">Moving windows to another desktop may result in unexpected behaviour. Subsequent notifications, windows and dialogues may be split between desktops.</translation>
+<translation id="7568294522609223312">Turn off automatic clicks</translation>
 <translation id="7569509451529460200">Braille and ChromeVox are enabled</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (owner)</translation>

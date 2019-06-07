@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">इमेज</translation>
 <translation id="257088987046510401">थीम</translation>
 <translation id="2570922361219980984">इस डिवाइस के लिए जगह की जानकारी का एक्सेस भी बंद है. उसे <ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में चालू करें.</translation>
+<translation id="257674075312929031">समूह</translation>
 <translation id="257931822824936280">बड़ा किया गया - छोटा करने के लिए क्‍लिक करें.</translation>
 <translation id="2581165646603367611">यह साइट की कुकी, कैश और अन्य डेटा निकाल देगा जो Chrome के विचार में महत्वपूर्ण नहीं है.</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">यह खाता <ph name="PARENT_NAME_1" /> और <ph name="PARENT_NAME_2" /> के द्वारा प्रबंधित है.</translation>
 <translation id="2962095958535813455">गुप्त टैब पर स्विच कर दिया गया</translation>
 <translation id="2968755619301702150">प्रमाणपत्र व्यूअर</translation>
+<translation id="2977480621796371840">समूह से हटाएं</translation>
 <translation id="2979025552038692506">चयनित गुप्त टैब</translation>
 <translation id="2989523299700148168">हाल ही में देखे गए</translation>
 <translation id="2996291259634659425">'पासफ़्रेज़' बनाएं</translation>
@@ -426,6 +428,12 @@
 <translation id="4226663524361240545">नोटिफ़िकेशन से डिवाइस में कंपन हो सकता है</translation>
 <translation id="423219824432660969"><ph name="TIME" /> तक का सुरक्षित किया गया किया गया डेटा 'Google पासवर्ड' से सिंक करें</translation>
 <translation id="4242533952199664413">सेटिंग खोलें</translation>
+<translation id="4247274662191902962">कुछ सेंसर डेटा को तब ही शेयर किया जाएगा जब आप इस VR अनुभव में होंगे. खास जानकारी का इस्तेमाल करके साइट आपको पहचान सकती है, जैसे:
+    - आपकी जगह की जानकारी
+    - आपकी शारीरिक बनावट, जैसे कि आँखों की स्थिति
+    - आपकी गतिविधि, जैसे कि आप कैसे चलते हैं
+
+    एक्सेस देने से पहले इस बात की पुष्टि कर लें कि आप इस साइट पर भरोसा करते हैं.</translation>
 <translation id="424864128008805179">Chrome से साइन आउट करें?</translation>
 <translation id="4256782883801055595">ओपन सोर्स लाइसेंस</translation>
 <translation id="4259722352634471385">मार्गदर्शक अवरोधित है: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@
 <translation id="545042621069398927">आपके डाउनलोड की गति बढ़ाई जा रही है.</translation>
 <translation id="5456381639095306749">पेज डाउनलोड करें</translation>
 <translation id="5475862044948910901">ऑगमेंटेड रिएलिटी (AR) सत्र शुरू करें?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> 'मेरे ऐप्लिकेशन' में जोड़ा गया</translation>
 <translation id="548278423535722844">मैप ऐप्लिकेशन में खोलें</translation>
 <translation id="5487521232677179737">डेटा साफ़ करें</translation>
 <translation id="5494752089476963479">तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाने वाली साइटों पर विज्ञापन ब्लॉक करें</translation>

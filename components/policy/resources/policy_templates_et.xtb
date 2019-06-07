@@ -146,15 +146,6 @@
       Kui määrate reegli olekule Väär, siis ei saadeta teavet arendaja lüliti oleku kohta.</translation>
 <translation id="1160479894929412407">QUIC-protokolli lubamine</translation>
 <translation id="1160939557934457296">Keela turvalise sirvimise hoiatuslehest edasiliikumine</translation>
-<translation id="1171342272070128466">Lubatakse dokitud luubi juurdepääsufunktsioon.
-
-          Kui see reegel on seatud väärtusele Tõene, on dokitud luup alati lubatud.
-
-          Kui see reegel on seatud väärtusele Väär, on dokitud luup alati keelatud.
-
-          Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
-
-          Kui see reegel jäetakse määramata, on dokitud luup algselt keelatud, kuid kasutaja võib selle igal ajal lubada.</translation>
 <translation id="1189817621108632689">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud pilte kuvada.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultImagesSetting”, kui see on määratud, või kasutaja isiklikku seadistust.
@@ -1151,6 +1142,15 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
           Kui reegel on määramata, ei mõjuta see täpsemate reeglite toimimist.</translation>
 <translation id="2987155890997901449">ARC lubamine</translation>
 <translation id="2987227569419001736">Web Bluetooth API kasutuse kontrollimine</translation>
+<translation id="2990018289267778247">Kui reegli väärtuseks määratakse Tõene, kuvatakse juurdepääsuvalikud alati süsteemisalve menüüs.
+
+          Kui reegli väärtuseks määratakse Väär, ei kuvata juurdepääsuvalikuid süsteemisalve menüüs kunagi.
+
+          Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
+
+          Kui jätate reegli määramata, ei kuvata juurdepääsuvalikuid süsteemisalve menüüs, kuid kasutaja saab juurdepääsuvalikud kuvada lehe Seaded kaudu.
+
+          Kui juurdepääsufunktsioonid on lubatud (muude meetoditega, näiteks klahvikombinatsiooniga), kuvatakse süsteemisalve menüüs alati juurdepääsetavuse valikud.</translation>
 <translation id="3011301228198307065">Seadistab rakenduse <ph name="PRODUCT_NAME" /> avalehe vaike-URL-i ja keelab kasutajatel selle muutmise.
 
           Avaleht on leht, mis avaneb nupu Avaleht vajutamisel. Käivitamisel avatavaid lehti juhivad reeglid RestoreOnStartup.
@@ -1469,6 +1469,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
         Seda reeglit kasutatakse arvutites seadme ulatuses pilvereegli registreerimiseks ja selle saab määrata failiga Registry või GPO Windowsis, failiga plist Macis ja JSON-i reeglifailiga Linuxis.</translation>
 <translation id="3660562134618097814">SAML IdP küpsisefailide ülekandmine sisselogimisel</translation>
 <translation id="3701121231485832347">Haldab üksuse <ph name="MS_AD_NAME" /> hallatud operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete seadeid.</translation>
+<translation id="3702518095257671450">Kaugatesteerimine</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Üherealist välja enam ei toetata ja tulevikus see eemaldatakse. Hakake kasutama allolevat mitmerealist tekstivälja.)</translation>
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>
 <translation id="3711895659073496551">Peata</translation>
@@ -1581,11 +1582,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui selle reegli väärtuseks määratakse Väär, siis teavet seansi kohta ei
       saadeta. Kui väärtuseks määratakse Tõene või seda ei määrata, saadetakse
       teavet seansi kohta.</translation>
-<translation id="3852924591079583104">
-      Kui selle reegli väärtuseks on määratud ArcSession, taaskäivitab reegel seadme pärast kasutaja väljalogimist, kui Android on käivitunud.
-      Kui reegli väärtuseks on määratud Alati, taaskäivitub seade iga kord, kui kasutaja välja logib.
-      Kui reegel on määramata, puudub sellel mõju ning seadet pärast kasutaja väljalogimist ei taaskäivitata. Sama kehtib ka siis, kui reegli väärtuseks on määratud Mitte kunagi.
-      </translation>
 <translation id="3858658082795336534">Vaikimisi kasutatav printimise dupleksrežiim</translation>
 <translation id="3859780406608282662">Parameteri lisamine variatsioonide lähteväärtuse toomisel rakendusest <ph name="PRODUCT_OS_NAME" />.
 
@@ -1869,6 +1865,15 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
           Reeglit järgitakse ainult siis, kui lubatud on reegel „DefaultSearchProviderEnabled”.</translation>
 <translation id="4285674129118156176">Seoseta kasutajatel ARC kasutamise lubamine</translation>
+<translation id="4289903996435140853">Võimaldab teil määrata URL-ide loendi, mis määravad, millistele saitidele antakse automaatselt luba määratud tootja ja toote ID-ga USB-seadmele juurdepääsemiseks. Iga loendiüksus peab sisaldama nii seadmeid kui ka URL-e, et reegel kehtiks. Iga seadmete loendi üksus võib sisaldada tootja ID ja toote ID välja. Väljajäetud ID-sid käsitletakse metamärkidena ühe erandiga: ilma tootja ID-d määramata ei saa toote ID-d määrata. Muidu on reegel kehtetu ja seda eiratakse.
+
+        USB loamudel kasutab taotluse esitanud saidi URL-i („taotleja URL”) ja ülataseme raamsaidi URL-i („manustamise URL”), et lubada taotluse esitanud URL-il USB-seadmele juurde pääseda. Taotleja URL võib manustamise URL-ist erineda juhul, kui taotluse esitanud sait laaditakse iframe'is. Seetõttu võib väli „URL-id” sisaldada kuni kaht komaga eraldatud URL-i, mis määravad vastavalt taotleja URL-i ja manustamise URL-i. Kui määratud on ainult üks URL, antakse juurdepääs vastavatele USB-seadmetele juhul, kui taotluse esitanud saidi URL kattub selle URL-iga, olenemata manustamise olekust. Väljal „URL-id” olevad URL-id peavad olema kehtivad, muidu reeglit eiratakse.
+
+        Kui reegel jäetakse määramata, kasutatakse kõigi saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultWebUsbGuardSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.
+
+        Reeglis määratud URL-i mustrid ei tohi olla vastuolus reegli WebUsbBlockedForUrls kaudu seadistatud URL-idega. Vastuolu korral on sellel reeglil eesõigus reeglite WebUsbBlockedForUrls ja WebUsbAskForUrls ees.
+
+        Selle reegli ja reegli WebUsbAllowDevicesForUrls väärtused liidetakse.</translation>
 <translation id="4298509794364745131">Määratakse loend rakendustest, mille saab operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> lukustuskuval lubada märkmete tegemise rakendustena.
 
       Kui eelistatud märkmete tegemise rakendus on lukustuskuval lubatud, sisaldab lukustuskuva kasutajaliidese elementi eelistatud märkmete tegemise rakenduse käivitamiseks.
@@ -2020,6 +2025,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="4639407427807680016">Omasõnumside hostide nimed mustast nimekirjast välistamiseks</translation>
 <translation id="4650759511838826572">Keela URL-i protokolli skeemid</translation>
 <translation id="465099050592230505">Ettevõtte veebipoe URL (tugi on katkestatud)</translation>
+<translation id="4661889655253181651">Sisu seaded võimaldavad teil määrata, kuidas kindlat tüüpi sisu (näiteks küpsiseid, kujutisi või JavaScripti) käsitletakse.</translation>
 <translation id="4665897631924472251">Laienduse haldamise seaded</translation>
 <translation id="4668325077104657568">Kujutiste vaikeseaded</translation>
 <translation id="4670865688564083639">Miinimum:</translation>
@@ -2064,6 +2070,11 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Need soovitused tuuakse kaugühenduse kaudu Google'i serveritest.
 
       Kui reegel on seatud väärtusele Väär, siis soovitusi ei tooda ega kuvata.</translation>
+<translation id="4759650396863318477">Võimaldab määrata ajavahemiku (millisekundites), mille jooksul antakse kasutajatele teada, et ootel oleva värskenduse rakendamiseks tuleb <ph name="PRODUCT_NAME" /> või operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seade taaskäivitada.
+
+      Selle vahemiku jooksul teavitatakse kasutajat värskendusest korduvalt. Operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete puhul kuvatakse taaskäivituse märguanne süsteemisalves reegli <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> alusel. Brauseri <ph name="PRODUCT_NAME" /> puhul rakenduse menüü muutub, kui kolmandik ajavahemikust on möödunud, ja näitab, et rakendus on vaja taaskäivitada. Märguanne muudab esimest korda värvi siis, kui möödunud on kaks kolmandikku ajavahemikust, ja teist korda ajavahemiku lõpus. Reegliga <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> lubatud lisamärguanded järgivad sama ajakava.
+
+      Kui reegel on määramata, kasutatakse vaikeperioodi, mis on operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete puhul 345 600 000 millisekundit (neli päeva) ja brauseri <ph name="PRODUCT_NAME" /> puhul 604 800 000 millisekundit (üks nädal).</translation>
 <translation id="4788252609789586009">Lubab rakenduse <ph name="PRODUCT_NAME" /> automaattäite funktsiooni ja võimaldab kasutajatel veebivormidel krediitkaardiandmeid automaatselt täita, kasutades selleks varem salvestatud teavet.
 
       Kui seade on keelatud, ei anna automaattäite funktsioon krediitkaardiandmete kohta soovitusi ega sisesta neid. Samuti ei salvesta see krediitkaardi lisateavet, mille kasutaja võib veebi sirvimisel esitada.
@@ -2273,6 +2284,15 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultNotificationsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
 <translation id="5213038356678567351">Veebisaidid, mis ei käivita kunagi brauserivahetust.</translation>
 <translation id="5219844027738217407">Androidi rakenduste puhul mõjutab see reegel ainult mikrofoni. Kui reegli väärtuseks on määratud Tõene, on mikrofon ilma eranditeta kõigi Androidi rakenduste puhul vaigistatud.</translation>
+<translation id="5221394278852982313">Võimaldab teil määrata URL-ide loendi, mis määravad, millistele saitidele antakse automaatselt luba määratud tootja ja toote ID-ga USB-seadmele juurdepääsemiseks. Iga loendiüksus peab sisaldama nii seadmeid kui ka URL-e, et reegel kehtiks. Iga seadmete loendi üksus võib sisaldada tootja ID ja toote ID välja. Väljajäetud ID-sid käsitletakse metamärkidena ühe erandiga: ilma tootja ID-d määramata ei saa toote ID-d määrata. Muidu on reegel kehtetu ja seda eiratakse.
+
+        USB loamudel kasutab taotluse esitanud saidi URL-i („taotleja URL”) ja ülataseme raamsaidi URL-i („manustamise URL”), et lubada taotluse esitanud URL-il USB-seadmele juurde pääseda. Taotleja URL võib manustamise URL-ist erineda juhul, kui taotluse esitanud sait laaditakse iframe'is. Seetõttu võib väli „URL-id” sisaldada kuni kaht komaga eraldatud URL-i, mis määravad vastavalt taotleja URL-i ja manustamise URL-i. Kui määratud on ainult üks URL, antakse juurdepääs vastavatele USB-seadmetele juhul, kui taotluse esitanud saidi URL kattub selle URL-iga, olenemata manustamise olekust. Väljal „URL-id” olevad URL-id peavad olema kehtivad, muidu reeglit eiratakse.
+
+        Kui reegel jäetakse määramata, kasutatakse kõigi saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultWebUsbGuardSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.
+
+        Reeglis määratud URL-i mustrid ei tohi olla vastuolus reegli WebUsbBlockedForUrls kaudu seadistatud URL-idega. Vastuolu korral on sellel reeglil eesõigus reeglite WebUsbBlockedForUrls ja WebUsbAskForUrls ees.
+
+        Selle reegli ja reegli DeviceWebUsbAllowDevicesForUrls väärtused liidetakse.</translation>
 <translation id="5228316810085661003">Seadme kohaliku konto automaatse sisselogimise viivitus.
 
       Kui reegel |DeviceLocalAccountAutoLoginId| on määramata, ei ole sellel reeglil mingit mõju. Muidu on mõju järgmine.
@@ -3015,6 +3035,20 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Kui selle reegli väärtuseks on määratud „Kasutajatel sertifikaatide haldamise keelamine”, saavad kasutajad sertifikaate ainult vaadata.</translation>
 <translation id="6573305661369899995">URL-i piirangute välise allika seadistamine</translation>
+<translation id="6583851521569686409">Seadistab printerite loendi.
+
+      Reegel võimaldab administraatoritel pakkuda kasutajatele printeriseadistusi.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> on vabas vormis stringid, mida saab kohandada, et hõlbustada printeri valimist. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> hõlbustavad lõppkasutajate jaoks printerite tuvastamist. Need näitavad printeri tootjat ja mudelit. <ph name="PRINTER_URI" /> peab olema aadress, mida saab külastada klientarvutist, sh <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valikuline. Selle olemasolul aitab see seadistus <ph name="ZEROCONF_DISCOVERY" /> printerite duplikaate eemaldada.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> peab sisaldama printeri nime või <ph name="PRINTER_AUTOCONF" /> tuleb määrata väärtusele Tõene. Printereid, mis kasutavad mõlemat või millel puuduvad atribuudid, eiratakse.
+
+      Printeri seadistus viiakse lõpule printeri esimesel kasutuskorral.  PPD-sid ei laadita alla enne, kui printerit kasutatakse.  Pärast seda salvestatakse sageli kasutatud PPD-d vahemällu.
+
+      See reegel ei mõjuta seda, kas kasutajad saavad konkreetsetes seadmetes printereid seadistada.  See on mõeldud kasutajate printerite seadistusi täiendama.
+
+      Active Directory hallatavate seadmete puhul toetab see reegel seadme <ph name="MACHINE_NAME_VARIABLE" /> laiendamist Active Directory seadme nimele või selle alamstringile. Näiteks kui seadme nimi on <ph name="MACHINE_NAME_EXAMPLE" />, asendatakse <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nelja tähemärgiga pärast kuuendat positsiooni (nt <ph name="MACHINE_NAME_PART_EXAMPLE" />). Pange tähele, et positsioon algab nullist.
+      </translation>
 <translation id="6598235178374410284">Kasutaja avatarkujutis</translation>
 <translation id="6603004149426829878">Ajavööndi lahendamisel saada saadaolevad asukohasignaalid alati serverisse</translation>
 <translation id="6628120204569232711">Salvestusruumi oleku teavitamine</translation>
@@ -3470,7 +3504,6 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
       Kui reegel on määratud valikule „RemoveLRUIfDormant”, jätkab automaatne puhastamine nende kasutajate eemaldamist, kes ei ole vähemalt 3 kuu jooksul sisse loginud, lähtudes sellest, milline kasutaja kõige kauem aega tagasi sisse logis, kuni on piisavalt vaba ruumi.
 
       Kui reegel on määramata, kasutab automaatne puhastamine sisseehitatud vaikestrateegiat. Praegu on selleks strateegia „RemoveLRUIfDormant”.</translation>
-<translation id="7334274148831027933">Luba dokitud luup</translation>
 <translation id="7336785017449297672">Haldab kella ja ajavööndi seadeid.</translation>
 <translation id="7336878834592315572">Säilita küpsised seansi kestuse jooksul</translation>
 <translation id="7339315111520512972">Brauseri protsessis võrgustiku koodi sundkäitamine</translation>
@@ -4382,6 +4415,8 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="915194831143859291">Kui reegel on määramata või seatud väärtusele Väär, lubab <ph name="PRODUCT_OS_NAME" /> kasutajal seadme välja lülitada.
       Kui reegel on seatud väärtusele Tõene ja kasutaja lülitab seadme välja, taaskäivitab <ph name="PRODUCT_OS_NAME" /> seadme. <ph name="PRODUCT_OS_NAME" /> asendab kasutajaliidese kõik väljalülitamisnupud taaskäivitusnuppudega. Kui kasutaja lülitab seadme toitenupuga välja, ei taaskäivitata seda automaatselt, isegi kui reegel on lubatud.</translation>
 <translation id="9152473318295429890">Seotud veebilehtede kontekstipõhiste soovituste lubamine</translation>
+<translation id="9153446010242995516">Võimaldab naasta ja jääda sihtversioonile, kui operatsioonisüsteemi versioon on sihtversioonist uuem. Proovige võimaluse korral seadme tasemel seadistus (sh võrgumandaat) tagasiminekuprotsessi kaudu üle viia, ent tehke seejuures täielik powerwash, isegi kui andmete taastamine ei ole võimalik (kuna sihtversioon ei toeta andmete taastamist või muudatus ei ole tagasiühilduv).
+          Seda toetatakse alates operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> 75. versioonist. Vanemate klientide puhul tähendab väärtus, et tagasiminek on keelatud.</translation>
 <translation id="9158929520101169054">Brauseris mitmele kontole sisselogimise lubamine</translation>
 <translation id="9159126470527871268">Võimaldab anda kasutajatele teada, et ootel oleva värskenduse rakendamiseks tuleb <ph name="PRODUCT_NAME" /> või <ph name="PRODUCT_OS_NAME" /> taaskäivitada.
 

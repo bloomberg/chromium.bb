@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
-<translation id="1001338328714563407">Ukiwa msimamizi wa kifaa na akaunti yako, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Sio Sasa</translation>
 <translation id="1010200102790553230">Pakia ukurasa baadaye</translation>
 <translation id="1015730422737071372">Toa maelezo ya ziada</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">Kuunganisha tena kwenye Wi-Fi</translation>
 <translation id="1165039591588034296">Hitilafu</translation>
 <translation id="1175364870820465910">&amp;Chapisha...</translation>
+<translation id="1178581264944972037">Sitisha</translation>
 <translation id="1181037720776840403">Ondoa</translation>
 <translation id="1197088940767939838">Rangi ya machungwa</translation>
 <translation id="1201402288615127009">Endelea</translation>
@@ -100,7 +100,6 @@
 <translation id="1405567553485452995">Kijani Isiyokolea</translation>
 <translation id="1407135791313364759">Fungua zote</translation>
 <translation id="1413809658975081374">Hitilafu ya faragha</translation>
-<translation id="14171126816530869">Utambulisho wa <ph name="ORGANIZATION" /> iliyo <ph name="LOCALITY" /> umethibitishwa na <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Ndio</translation>
 <translation id="1430915738399379752">Chapisha</translation>
 <translation id="1455413310270022028">Kifutio</translation>
@@ -256,6 +255,7 @@
 <translation id="2262243747453050782">Hitilfau ya HTTP</translation>
 <translation id="2263079731045660823">Sasisha maelezo ya kujaza kiotomatiki kadi za mikopo katika mipangilio ya Chrome</translation>
 <translation id="2270484714375784793">Nambari ya simu</translation>
+<translation id="2277103315734023688">Sogeza Mbele</translation>
 <translation id="2283340219607151381">Hifadhi na ujaze anwani</translation>
 <translation id="2292556288342944218">Ufikiaji wako wa intaneti umezuiwa</translation>
 <translation id="2297722699537546652">B5 (Bahasha)</translation>
@@ -383,7 +383,6 @@
 <translation id="295526156371527179">Onyo: Sera hii haikuunganishwa kama kamusi jinsi ilivyobainishwa katika sera kwa sababu si kamusi.</translation>
 <translation id="2955913368246107853">Funga upau wa kupata</translation>
 <translation id="2969319727213777354">Ili kutambua muunganisho salama, saa yako inahitaji kusahihishwa. Hii ni kwa sababu vyeti ambavyo tovuti hutumia kujitambua ni sahihi kwa vipindi mahususi pekee. Kwa kuwa saa ya kifaa chako si sahihi, Google Chrome haiwezi kuthibitisha vyeti hivi.</translation>
-<translation id="2970515157925768593">Inaweza kubadilisha mipangilio ya akaunti na kifaa chako kwa mbali.</translation>
 <translation id="2972581237482394796">&amp;Rudia</translation>
 <translation id="2977665033722899841">Umechagua <ph name="ROW_NAME" /> wakati huu. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Futa Data</translation>
@@ -395,7 +394,6 @@
 <translation id="3005723025932146533">Onyesha nakala iliyohifadhiwa</translation>
 <translation id="3008447029300691911">Weka CVC ya <ph name="CREDIT_CARD" />. Baada ya kuthibitisha, maelezo ya kadi yako yatashirikiwa na tovuti hii.</translation>
 <translation id="3010559122411665027">Ingizo orodha "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Ukiwa msimamizi wa kifaa hiki, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Imezuiwa kiotomatiki</translation>
 <translation id="3023071826883856138">You4 (Bahasha)</translation>
 <translation id="3024663005179499861">Aina mbaya ya sera</translation>
@@ -441,7 +439,6 @@
 <translation id="3287510313208355388">Pakua ukiwa mtandaoni</translation>
 <translation id="3293642807462928945">Pata maelezo zaidi kuhusu sera ya <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Hakuna matokeo ya utafutaji yaliyopatikana</translation>
-<translation id="3311730110465560799">Inaweza kubadilisha mipangilio ya kifaa chako kutoka mbali.</translation>
 <translation id="3320021301628644560">Ongeza anwani ya kutuma bili</translation>
 <translation id="3324983252691184275">Nyekundu Iliyoiva</translation>
 <translation id="3338095232262050444">Salama</translation>
@@ -537,7 +534,6 @@
 <translation id="3761718714832595332">Ficha hali</translation>
 <translation id="3765032636089507299">Ukurasa wa Kuvinjari Salama unaboreshwa.</translation>
 <translation id="3778403066972421603">Je, ungependa kuhifadhi kadi hii kwenye Akaunti yako ya Google na kwenye kifaa hiki?</translation>
-<translation id="3779973883630527594">Kampuni, shule au shirika ambalo linadhibiti akaunti hii:</translation>
 <translation id="3781428340399460090">Waridi Inayong'aa</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Muda wa matumizi utakwisha <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -561,6 +557,7 @@
 <translation id="3949571496842715403">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakibainishi Majina Mbadala ya Mada. Hii inaweza kusababishwa na uwekaji mipangilio usiofaa au muunganisho wako kukatwa na mvamizi.</translation>
 <translation id="3949601375789751990">Historia yako ya kuvinjari itaonekana hapa</translation>
 <translation id="3950820424414687140">Ingia</translation>
+<translation id="3962859241508114581">Wimbo Uliotangulia</translation>
 <translation id="3963837677003247395">Ungependa kuendelea kujaza mwenyewe?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Hamna}=1{Kutoka kwenye tovuti 1 }other{Kutoka kwenye tovuti # }}</translation>
 <translation id="397105322502079400">Inakokotoa...</translation>
@@ -583,6 +580,7 @@
 <translation id="410351446219883937">Kucheza kiotomatiki</translation>
 <translation id="4103763322291513355">Tembelea &lt;strong&gt;chrome://policy&lt;/strong&gt; ili kuona orodha ya URL zilizoondolewa idhini na sera zingine zinazosimamiwa na msimamizi wako wa mfumo.</translation>
 <translation id="4110652170750985508">Kagua malipo yako</translation>
+<translation id="4112140312785995938">Sogeza Nyuma</translation>
 <translation id="4116663294526079822">Ruhusu mara kwa mara kwenye tovuti hii</translation>
 <translation id="4117700440116928470">Upeo wa sera hauwezi kutumika.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{Nyingine 1 }other{Nyingine #}}</translation>
@@ -661,6 +659,7 @@
 <translation id="443673843213245140">Matumizi ya proksi yamelemazwa lakini usanidi wa proksi wazi umebainishwa.</translation>
 <translation id="445100540951337728">Kadi za malipo zinazokubaliwa</translation>
 <translation id="4466881336512663640">Haitahifadhi mabadiliko uliyofanya kwenye fomu. Je, una uhakika unataka kuendelea?</translation>
+<translation id="4477350412780666475">Wimbo Unaofuata</translation>
 <translation id="4482953324121162758">Haitatafsiri tovuti hii.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">URL si sahihi. Lazima iwe URL yenye mfumo wa kawaida, k.m. http://example.com or https://example.com.</translation>
@@ -907,7 +906,6 @@
 <translation id="5838278095973806738">Hupaswi kuweka maelezo nyeti kwenye tovuti hii (kwa mfano, manenosiri au kadi za mikopo), kwa sababu wavamizi wanaweza kuyaiba.</translation>
 <translation id="5860033963881614850">Kimezimwa</translation>
 <translation id="5863847714970149516">Huenda ukurasa unaofuata ukajaribu kukutoza pesa</translation>
-<translation id="5865951947699094510">Inaweza kubadilisha mipangilio ya akaunti yako kutoka mbali.</translation>
 <translation id="5866257070973731571">Ongeza Nambari ya Simu</translation>
 <translation id="5869405914158311789">Imeshindwa kufungua tovuti hii</translation>
 <translation id="5869522115854928033">Manenosiri yaliyohifadhiwa</translation>
@@ -1060,6 +1058,7 @@
 <translation id="6778737459546443941">Mzazi wako bado hajaiidhinisha</translation>
 <translation id="67862343314499040">Zambarau iliyokolea</translation>
 <translation id="6786747875388722282">Viendelezi</translation>
+<translation id="6790428901817661496">Cheza</translation>
 <translation id="679355240208270552">Imepuuzwa kwa sababu utafutaji chaguomsingi umezimwa na sera.</translation>
 <translation id="681021252041861472">Sehemu Hii Sharti Ijazwe</translation>
 <translation id="6810899417690483278">Kitambulisho cha kubadilisha ili kukufaa</translation>
@@ -1104,6 +1103,7 @@
 <translation id="7053983685419859001">Zuia</translation>
 <translation id="7062635574500127092">Samawati ya kijani</translation>
 <translation id="7064851114919012435">Maelezo ya mawasiliano</translation>
+<translation id="7075452647191940183">Ombi ni kubwa mno</translation>
 <translation id="7079718277001814089">Tovuti hii ina programu hasidi</translation>
 <translation id="7087282848513945231">Jimbo</translation>
 <translation id="7090678807593890770">Tafuta <ph name="LINK" /> kwenye Google</translation>
@@ -1161,6 +1161,7 @@
 <translation id="7353601530677266744">Mbinu ya Amri</translation>
 <translation id="7372973238305370288">matokeo ya utafutaji</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">Vidhibiti vya Maudhui</translation>
 <translation id="7378627244592794276">La</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Thibitisha Kadi</translation>
@@ -1264,7 +1265,6 @@
 <translation id="780301667611848630">La, asante</translation>
 <translation id="7805768142964895445">Hali</translation>
 <translation id="7806344367022510803">Badilisha mipangilio ya Mtambo wa Kutafuta katika Chrome</translation>
-<translation id="7810209002420871817">Ukiwa msimamizi wa akaunti yako, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Ungependa kuondoa pendekezo la fomu kutoka kwenye Chrome?</translation>
 <translation id="7815407501681723534">Imepata matokeo <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> ya '<ph name="SEARCH_STRING" />'</translation>

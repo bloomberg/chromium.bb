@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">تصویر</translation>
 <translation id="257088987046510401">طرح‌‌های قسمت</translation>
 <translation id="2570922361219980984">‏دسترسی به مکان برای این دستگاه نیز خاموش است. آن را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
+<translation id="257674075312929031">گروه</translation>
 <translation id="257931822824936280">بزرگ‌شده - برای کوچک کردن کلیک کنید.</translation>
 <translation id="2581165646603367611">‏این کار کوکی‌ها، حافظه پنهان و داده‌های دیگر سایت‌ها را که از نظر Chrome مهم نیست پاک می‌کند.</translation>
 <translation id="2586657967955657006">بریده‌دان</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" /> این حساب را مدیریت می‌کنند.</translation>
 <translation id="2962095958535813455">به برگه‌های ناشناس تغییر یافت</translation>
 <translation id="2968755619301702150">بیننده گواهی</translation>
+<translation id="2977480621796371840">برداشتن از گروه</translation>
 <translation id="2979025552038692506">برگه ناشناس انتخاب‌شده</translation>
 <translation id="2989523299700148168">اخیراً دیده‌شده</translation>
 <translation id="2996291259634659425">ایجاد عبارت عبور</translation>
@@ -426,6 +428,12 @@
 <translation id="4226663524361240545">اعلان‌ها ممکن است دستگاه را بلرزانند</translation>
 <translation id="423219824432660969">‏رمزگذاری داده‌های همگام‌سازی‌شده با گذرواژه Google از <ph name="TIME" /></translation>
 <translation id="4242533952199664413">باز کردن تنظیمات</translation>
+<translation id="4247274662191902962">داده‌های حسگر فقط زمانی هم‌رسانی می‌شود که در این تجربه واقعیت مجازی باشید. این سایت ممکن است ازطریق بعضی از اطلاعات زیر، اطلاعاتی درباره شما دریافت کند:
+    - مکان شما
+    - ویژگی‌های فیزیکی شما، مانند موقعیت چشمانتان
+    - حرکت‌های شما، مانند نحوه راه رفتنتان
+
+    قبل از دسترسی به این سایت، مطمئن شوید به آن اعتماد دارید.</translation>
 <translation id="424864128008805179">‏از سیستم Chrome خارج می شوید؟</translation>
 <translation id="4256782883801055595">مجوزهای منبع آزاد</translation>
 <translation id="4259722352634471385">پیمایش مسدود است: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@
 <translation id="545042621069398927">درحال سرعت بخشیدن به بارگیری.</translation>
 <translation id="5456381639095306749">بارگیری صفحه</translation>
 <translation id="5475862044948910901">جلسه «واقعیت افزوده» شروع شود؟</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> به برنامه‌های من اضافه شد</translation>
 <translation id="548278423535722844">‏باز کردن در برنامه Maps</translation>
 <translation id="5487521232677179737">پاک کردن داده‌ها</translation>
 <translation id="5494752089476963479">آگهی سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند، مسدود می‌شود</translation>

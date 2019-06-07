@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="1006017844123154345">Otevřít online</translation>
+<translation id="1028699632127661925">Odesílání na zařízení <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Přidávání aplikace <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Z webů</translation>
 <translation id="1049743911850919806">Anonymní režim</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Vyhledávání a prozkoumávání</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Zastavit</translation>
+<translation id="1272444412400969138">Výběr zařízení, se kterým se má sdílet karta.</translation>
 <translation id="1283039547216852943">Klepnutím rozbalíte</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="1291207594882862231">Vymazat historii, soubory cookie, data webů, mezipaměť…</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Dobrý den, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1384959399684842514">Stahování pozastaveno</translation>
+<translation id="1386674309198842382">Aktivní před tímto počtem dní: <ph name="LAST_UPDATED" /></translation>
 <translation id="1389974829397082527">Nejsou zde žádné záložky</translation>
 <translation id="1397811292916898096">Hledat pomocí vyhledávače <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Vloženo do <ph name="WEBSITE_URL" /></translation>
@@ -223,6 +226,7 @@
 <translation id="2567385386134582609">OBRÁZEK</translation>
 <translation id="257088987046510401">Motivy</translation>
 <translation id="2570922361219980984">Přístup k poloze je vypnut také v tomto zařízení. Zapnete jej v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Skupina</translation>
 <translation id="257931822824936280">Rozbaleno – kliknutím sbalíte</translation>
 <translation id="2581165646603367611">Tímto vymažete soubory cookie, mezipaměť a další data webů, která Chrome považuje za nedůležitá.</translation>
 <translation id="2586657967955657006">Schránka</translation>
@@ -274,6 +278,7 @@
 <translation id="2956410042958133412">Tento účet spravují uživatelé <ph name="PARENT_NAME_1" /> a <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Přepnuto na anonymní karty</translation>
 <translation id="2968755619301702150">Prohlížeč certifikátů</translation>
+<translation id="2977480621796371840">Odebrat ze skupiny</translation>
 <translation id="2979025552038692506">Vybraná anonymní karta</translation>
 <translation id="2989523299700148168">Nedávno navštívené</translation>
 <translation id="2996291259634659425">Vytvoření heslové fráze</translation>
@@ -400,6 +405,7 @@
 <translation id="4008040567710660924">Povolit soubory cookie pro konkrétní web.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}few{# h}many{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Zobrazovat návrhy, pokud nelze vyhledat webovou adresu nebo navázat připojení.</translation>
+<translation id="4044912625106523635">Tabulka pro výběr zařízení, se kterým se má sdílet karta, je otevřená na plnou výšku.</translation>
 <translation id="4046123991198612571">Další skladba</translation>
 <translation id="4048707525896921369">Vyhledávejte informace o tématech zmíněných na stránce, aniž byste stránku museli opustit. Funkce Vyhledání klepnutím odešle slovo a okolní kontext do Vyhledávání Google, které vrátí definice, obrázky, výsledky vyhledávání a další podrobnosti.
 
@@ -426,6 +432,12 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4226663524361240545">Oznámení mohou aktivovat vibraci</translation>
 <translation id="423219824432660969">Zašifrovat synchronizovaná data pomocí hesla Google z <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Otevřít Nastavení</translation>
+<translation id="4247274662191902962">Data ze senzorů se budou sdílet, pouze dokud budete v této virtuální realitě. Z některých údajů si o vás web může udělat určitou představu. Příklady takových údajů:
+    – poloha,
+    – fyzické znaky, např. pozice očí,
+    – pohyby, například způsob chůze.
+
+    Přístup webu povolte pouze v případě, že mu důvěřujete.</translation>
 <translation id="424864128008805179">Odhlásit se z Chromu?</translation>
 <translation id="4256782883801055595">Licence open source</translation>
 <translation id="4259722352634471385">Navigace je blokována: <ph name="URL" /></translation>
@@ -571,6 +583,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5271967389191913893">Zařízení obsah ke stažení nemůže otevřít.</translation>
 <translation id="528192093759286357">Režim celé obrazovky ukončíte přetažením z horního okraje obrazovky a klepnutím na tlačítko Zpět.</translation>
 <translation id="5284584623296338184">Změny záložek, historie, hesel a dalších nastavení se již nebudou synchronizovat do vašeho účtu Google. Vaše existující data však v účtu Google uložena zůstanou.</translation>
+<translation id="5292796745632149097">Odeslat do zařízení</translation>
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5301954838959518834">Dobře, rozumím</translation>
 <translation id="5304593522240415983">Toto pole nesmí být prázdné</translation>
@@ -598,6 +611,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="545042621069398927">Zrychlování stahování.</translation>
 <translation id="5456381639095306749">Stáhnout stránku</translation>
 <translation id="5475862044948910901">Spustit relaci rozšířené reality?</translation>
+<translation id="5481942164684849270">Aplikace <ph name="APP_NAME" /> byla přidána mezi moje aplikace</translation>
 <translation id="548278423535722844">Otevřít v mapové aplikaci</translation>
 <translation id="5487521232677179737">Vymazat data</translation>
 <translation id="5494752089476963479">Blokovat reklamy na webech, které zobrazují obtěžující nebo zavádějící reklamy</translation>
@@ -731,6 +745,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6406506848690869874">Synchronizace</translation>
 <translation id="641643625718530986">Tisk…</translation>
 <translation id="6416782512398055893">Staženo: <ph name="MBS" /> MB</translation>
+<translation id="6418750371676080905">Tabulka pro výběr zařízení, se kterým se má sdílet karta, je zavřená.</translation>
 <translation id="6427112570124116297">Přeložte si web</translation>
 <translation id="6433501201775827830">Vyberte vyhledávač</translation>
 <translation id="6437478888915024427">Informace o stránce</translation>
@@ -770,6 +785,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="666268767214822976">Používat službu předpovídání k zobrazení souvisejících dotazů a oblíbených webových stránek.</translation>
 <translation id="666731172850799929">Otevřít v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Ochrana soukromí v Chromu</translation>
+<translation id="6672986458216094438">Tabulka pro výběr zařízení, se kterým se má sdílet karta, je otevřená na poloviční výšku.</translation>
 <translation id="6697492270171225480">Zobrazovat návrhy podobných stránek, když stránku nelze najít</translation>
 <translation id="6697947395630195233">Chrome potřebuje přístup k vaší poloze, aby ji mohl sdílet s tímto webem.</translation>
 <translation id="6698801883190606802">Správa synchronizovaných dat</translation>
@@ -947,6 +963,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="7942131818088350342">Aplikace <ph name="PRODUCT_NAME" /> je zastaralá.</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
 <translation id="7963646190083259054">Dodavatel:</translation>
+<translation id="7971136598759319605">Aktivní včera</translation>
 <translation id="7975379999046275268">Zobrazit náhled stránky <ph name="BEGIN_NEW" />Nové<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Předběžně načítat stránky pro rychlejší procházení a vyhledávání</translation>
 <translation id="79859296434321399">Chcete-li zobrazit obsah pro rozšířenou realitu, nainstalujte ARCore</translation>

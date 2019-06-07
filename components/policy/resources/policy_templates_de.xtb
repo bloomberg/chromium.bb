@@ -139,15 +139,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wird die Richtlinie auf "False" gesetzt, wird der Status des Entwicklerschalters nicht gemeldet.</translation>
 <translation id="1160479894929412407">QUIC-Protokoll zulassen</translation>
 <translation id="1160939557934457296">Fortfahren von der Safe Browsing-Hinweisseite deaktivieren</translation>
-<translation id="1171342272070128466">Hierdurch wird die angedockte Lupe aktiviert.
-
-          Wird die Richtlinie auf "true" festgelegt, ist die angedockte Lupe immer aktiviert.
-
-          Falls die Richtlinie auf "false" festgelegt wurde, ist die angedockte Lupe immer deaktiviert.
-
-          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
-
-          Ist die Richtlinie nicht konfiguriert, so ist die angedockte Lupe anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="1189817621108632689">Ermöglicht die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von Bildern nicht gestattet ist.
 
           Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultImagesSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
@@ -1541,11 +1532,6 @@ Wenn diese Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Un
 <translation id="3851039766298741586">Durch diese Richtlinien werden Informationen zur aktiven Kiosksitzung gesendet, etwa Anwendungs-ID und Anwendungsversion.
 
 Wenn für die Richtlinien "false" festgelegt wird, werden die Informationen zu der Kiosksitzung nicht gesendet. Wird für die Richtlinien "true" festgelegt oder werden sie nicht konfiguriert, werden die Informationen zu der Kiosksitzung gesendet.</translation>
-<translation id="3852924591079583104">
-      Wenn diese Richtlinie auf "ArcSession" gesetzt ist, wird das Gerät zum Neustart gezwungen, sobald sich ein Nutzer abmeldet, wenn Android gestartet wurde.
-      Ist sie auf "Immer" festgelegt, wird das Gerät nach jeder Nutzerabmeldung zu einem Neustart gezwungen.
-      Wenn die Richtlinie nicht konfiguriert ist, hat sie keine Auswirkung und es wird nach der Nutzerabmeldung kein Neustart erzwungen. Dasselbe gilt bei der Einstellung "Nie".
-      </translation>
 <translation id="3858658082795336534">Standardmäßiger Duplexmodus</translation>
 <translation id="3859780406608282662">Fügt einen Parameter für den Abruf des Varianten-Seeds in <ph name="PRODUCT_OS_NAME" /> hinzu.
 
@@ -2328,7 +2314,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
           Ist sie aktiviert, wird das Browserfenster nicht geöffnet.
 
-          Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, kann das Browserfenster geöffnet werden. Unter Umständen verhindern andere Richtlinien oder Befehlszeilen-Flags, dass das Browserfenster geöffnet wird.</translation>
+          Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, kann das Browserfenster geöffnet werden. Unter Umständen verhindern jedoch andere Richtlinien oder Befehlszeilen-Flags, dass das Browserfenster geöffnet wird.</translation>
 <translation id="5427879482805712214">Über diese Richtlinie können Sie das Avatarbild des Nutzers für den Anmeldebildschirm konfigurieren. Zum Festlegen der Richtlinie muss die URL, über die <ph name="PRODUCT_OS_NAME" /> das Avatarbild herunterladen kann, sowie ein kryptografischer Hash angegeben werden, um die Integrität des Downloads zu verifizieren. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 512 KB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
 
       Das Avatarbild wird heruntergeladen und im Cache gespeichert. Sobald sich die URL oder der Hash ändert, wird es noch einmal heruntergeladen.
@@ -3346,7 +3332,6 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
       Wenn für diese Richtlinie "RemoveLRUIfDormant" festgelegt ist, entfernt die automatische Bereinigungsfunktion nur diejenigen Nutzer vom Gerät, die seit mindestens drei Monaten nicht mehr angemeldet waren. Diese Nutzer werden in der chronologischen Reihenfolge ihrer letzten Anmeldung vom Gerät gelöscht, bis wieder genügend freier Speicher vorhanden ist.
 
       Ist die Richtlinie nicht konfiguriert, erfolgt die automatische Bereinigung auf Grundlage der integrierten Standardstrategie. Zurzeit handelt es sich dabei um die "RemoveLRUIfDormant"-Strategie.</translation>
-<translation id="7334274148831027933">Angedockte Lupe aktivieren</translation>
 <translation id="7336785017449297672">Legt die Einstellungen für die Uhrzeit und Zeitzone fest.</translation>
 <translation id="7336878834592315572">Cookies für die Dauer der Sitzung beibehalten</translation>
 <translation id="7339315111520512972">Ausführung des Netzwerkcodes im Browserprozess erzwingen</translation>

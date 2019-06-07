@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
-<translation id="1001338328714563407">Como administrador de tu dispositivo y de tu cuenta, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Ahora no</translation>
 <translation id="1010200102790553230">Cargar la página más tarde</translation>
 <translation id="1015730422737071372">Proporciónanos más detalles</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">Volver a conectarte a una red Wi-Fi</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1175364870820465910">Im&amp;primir...</translation>
+<translation id="1178581264944972037">Pausar</translation>
 <translation id="1181037720776840403">Quitar</translation>
 <translation id="1197088940767939838">Naranja</translation>
 <translation id="1201402288615127009">Siguiente</translation>
@@ -98,7 +98,6 @@
 <translation id="1405567553485452995">Verde claro</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1413809658975081374">Error de privacidad</translation>
-<translation id="14171126816530869">La identidad de <ph name="ORGANIZATION" /> en <ph name="LOCALITY" /> ha sido verificada por <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1455413310270022028">Borrador</translation>
@@ -251,6 +250,7 @@
 <translation id="2262243747453050782">Error de HTTP</translation>
 <translation id="2263079731045660823">Actualiza la información de autocompletar tarjetas de crédito en la configuración de Chrome</translation>
 <translation id="2270484714375784793">Número de teléfono</translation>
+<translation id="2277103315734023688">Ir hacia delante</translation>
 <translation id="2283340219607151381">Guardar y autocompletar direcciones</translation>
 <translation id="2292556288342944218">Tu acceso a Internet está bloqueado</translation>
 <translation id="2297722699537546652">B5 (sobre)</translation>
@@ -375,7 +375,6 @@
 <translation id="295526156371527179">Advertencia: Esta política no se ha combinado como un diccionario tal como se especifica en la política porque no es un diccionario.</translation>
 <translation id="2955913368246107853">Cerrar la barra de búsqueda</translation>
 <translation id="2969319727213777354">Para establecer una conexión segura, el reloj debe estar configurado correctamente. Esto se debe a que los certificados que utilizan los sitios web para identificarse solo son válidos para períodos de tiempo específicos. Como el reloj de tu dispositivo no está configurado correctamente, Google Chrome no puede verificar estos certificados.</translation>
-<translation id="2970515157925768593">Puede cambiar la configuración de tu dispositivo y de tu cuenta de forma remota.</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, opción seleccionada actualmente. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Borrar datos</translation>
@@ -387,7 +386,6 @@
 <translation id="3005723025932146533">Mostrar copia guardada</translation>
 <translation id="3008447029300691911">Introduce el código CVC de la tarjeta <ph name="CREDIT_CARD" />. Cuando la confirmes, su información se compartirá con este sitio web.</translation>
 <translation id="3010559122411665027">Entrada de lista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Como administrador de este dispositivo, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Bloqueado automáticamente</translation>
 <translation id="3023071826883856138">You4 (sobre)</translation>
 <translation id="3024663005179499861">Tipo de política incorrecto</translation>
@@ -433,7 +431,6 @@
 <translation id="3287510313208355388">Descargar cuando haya conexión</translation>
 <translation id="3293642807462928945">Más información sobre la política <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">No se han encontrado resultados de búsqueda</translation>
-<translation id="3311730110465560799">Puede cambiar la configuración de tu dispositivo de forma remota.</translation>
 <translation id="3320021301628644560">Añadir dirección de facturación</translation>
 <translation id="3324983252691184275">Carmesí</translation>
 <translation id="3338095232262050444">Es seguro</translation>
@@ -529,7 +526,6 @@
 <translation id="3761718714832595332">Ocultar estado</translation>
 <translation id="3765032636089507299">La página Navegación Segura está en construcción.</translation>
 <translation id="3778403066972421603">¿Quieres guardar esta tarjeta en tu cuenta de Google y en este dispositivo?</translation>
-<translation id="3779973883630527594">La empresa, el centro educativo o la organización que gestiona esta cuenta:</translation>
 <translation id="3781428340399460090">Rosa fucsia</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Vencimiento: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -553,6 +549,7 @@
 <translation id="3949571496842715403">Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; su certificado de seguridad no especifica nombres alternativos del sujeto. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión.</translation>
 <translation id="3949601375789751990">Tu historial de navegación aparece aquí</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
+<translation id="3962859241508114581">Pista anterior</translation>
 <translation id="3963837677003247395">¿Quieres continuar de forma manual?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ninguno}=1{De 1 sitio web }other{De # sitios web }}</translation>
 <translation id="397105322502079400">Calculando...</translation>
@@ -575,6 +572,7 @@
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4103763322291513355">Accede a la página &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver la lista de URLs no admitidas y otras políticas establecidas por el administrador del sistema.</translation>
 <translation id="4110652170750985508">Revisa tu pago</translation>
+<translation id="4112140312785995938">Ir hacia atrás</translation>
 <translation id="4116663294526079822">Permitir siempre en este sitio</translation>
 <translation id="4117700440116928470">No se admite el alcance de la política.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{Uno más}other{# más}}</translation>
@@ -653,6 +651,7 @@
 <translation id="443673843213245140">Se ha inhabilitado el uso de un servidor proxy, pero se han especificado ajustes de proxy explícitos.</translation>
 <translation id="445100540951337728">Tarjetas de débito aceptadas</translation>
 <translation id="4466881336512663640">Se perderán los cambios realizados en el formulario. ¿Seguro que quieres continuar?</translation>
+<translation id="4477350412780666475">Pista siguiente</translation>
 <translation id="4482953324121162758">Este sitio web no se traducirá.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">La URL no es válida. Debe ser una URL con una estructura estándar, como "http://example.com" o "https://example.com".</translation>
@@ -899,7 +898,6 @@
 <translation id="5838278095973806738">No deberías introducir información confidencial en este sitio web (por ejemplo, contraseñas o tarjetas de crédito) porque los atacantes podrían robarla.</translation>
 <translation id="5860033963881614850">No</translation>
 <translation id="5863847714970149516">Es posible que la página a la que vas a acceder intente aplicar algún cargo</translation>
-<translation id="5865951947699094510">Puede cambiar la configuración de tu cuenta de forma remota.</translation>
 <translation id="5866257070973731571">Añade un número de teléfono</translation>
 <translation id="5869405914158311789">No se puede acceder a este sitio web</translation>
 <translation id="5869522115854928033">Contraseñas guardadas</translation>
@@ -1052,6 +1050,7 @@
 <translation id="6778737459546443941">Uno de tus padres aún no lo ha aprobado</translation>
 <translation id="67862343314499040">Violeta</translation>
 <translation id="6786747875388722282">Extensiones</translation>
+<translation id="6790428901817661496">Reproducir</translation>
 <translation id="679355240208270552">Se ha ignorado el valor porque se ha establecido una política que inhabilita la búsqueda predeterminada.</translation>
 <translation id="681021252041861472">Campo obligatorio</translation>
 <translation id="6810899417690483278">ID de personalización</translation>
@@ -1152,6 +1151,7 @@ Más información:
 <translation id="7353601530677266744">Línea de comandos</translation>
 <translation id="7372973238305370288">resultado de búsqueda</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">Controles multimedia</translation>
 <translation id="7378627244592794276">No</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Confirmar tarjeta</translation>
@@ -1255,7 +1255,6 @@ Más información:
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7805768142964895445">Estado</translation>
 <translation id="7806344367022510803">Cambia la configuración del motor de búsqueda en Chrome</translation>
-<translation id="7810209002420871817">Como administrador de tu cuenta, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">¿Eliminar sugerencia de formulario de Chrome?</translation>
 <translation id="7815407501681723534">Se han encontrado <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> de <ph name="SEARCH_STRING" /></translation>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
-<translation id="1001338328714563407">Als Manager Ihres Geräts und Kontos kann <ph name="ENROLLMENT_DOMAIN" /> Folgendes tun:</translation>
 <translation id="1008557486741366299">Jetzt nicht</translation>
 <translation id="1010200102790553230">Seite später laden</translation>
 <translation id="1015730422737071372">Weitere Details angeben</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">WLAN-Verbindung erneut herstellen</translation>
 <translation id="1165039591588034296">Fehler</translation>
 <translation id="1175364870820465910">&amp;Drucken...</translation>
+<translation id="1178581264944972037">Anhalten</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Weiter</translation>
@@ -98,7 +98,6 @@
 <translation id="1405567553485452995">Hellgrün</translation>
 <translation id="1407135791313364759">Alle öffnen</translation>
 <translation id="1413809658975081374">Datenschutzfehler</translation>
-<translation id="14171126816530869">Die Identität von <ph name="ORGANIZATION" /> bei <ph name="LOCALITY" /> wurde von <ph name="ISSUER" /> verifiziert.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1430915738399379752">Drucken</translation>
 <translation id="1455413310270022028">Radierer</translation>
@@ -251,6 +250,7 @@
 <translation id="2262243747453050782">HTTP-Fehler</translation>
 <translation id="2263079731045660823">AutoFill für Kreditkarten in den Chrome-Einstellungen aktualisieren</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
+<translation id="2277103315734023688">Vorwärts springen</translation>
 <translation id="2283340219607151381">Adressen speichern und ausfüllen</translation>
 <translation id="2292556288342944218">Ihre Internetverbindung ist gesperrt</translation>
 <translation id="2297722699537546652">B5 (Umschlag)</translation>
@@ -375,7 +375,6 @@
 <translation id="295526156371527179">Warnung: Diese Richtlinie wurde nicht gemäß Richtlinie in einem Wörterbuch zusammengeführt, weil sie kein Wörterbuch ist.</translation>
 <translation id="2955913368246107853">Suchleiste schließen</translation>
 <translation id="2969319727213777354">Zum Herstellen einer sicheren Verbindung muss die Uhrzeit richtig eingestellt sein. Der Grund hierfür ist, dass Websites sich mithilfe von Zertifikaten identifizieren, die nur für einen bestimmten Zeitraum gelten. Da die Uhrzeit Ihres Geräts falsch ist, kann Google Chrome diese Zertifikate nicht bestätigen.</translation>
-<translation id="2970515157925768593">Ihre Geräte- und Kontoeinrichtung remote ändern.</translation>
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, aktuell ausgewählt. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Daten löschen</translation>
@@ -387,7 +386,6 @@
 <translation id="3005723025932146533">Gespeicherte Kopie anzeigen</translation>
 <translation id="3008447029300691911">Geben Sie den CVC für <ph name="CREDIT_CARD" /> ein. Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
 <translation id="3010559122411665027">Listeneintrag "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Als Manager dieses Geräts kann <ph name="ENROLLMENT_DOMAIN" /> Folgendes tun:</translation>
 <translation id="301521992641321250">Automatisch blockiert</translation>
 <translation id="3023071826883856138">You4 (Umschlag)</translation>
 <translation id="3024663005179499861">Falscher Richtlinientyp</translation>
@@ -433,7 +431,6 @@
 <translation id="3287510313208355388">Herunterladen, sobald eine Internetverbindung besteht</translation>
 <translation id="3293642807462928945">Weitere Informationen zur "<ph name="POLICY_NAME" />"-Richtlinie</translation>
 <translation id="3303855915957856445">Keine Suchergebnisse gefunden</translation>
-<translation id="3311730110465560799">Ihre Geräteeinrichtung remote ändern.</translation>
 <translation id="3320021301628644560">Rechnungsadresse hinzufügen</translation>
 <translation id="3324983252691184275">Purpur</translation>
 <translation id="3338095232262050444">Sicher</translation>
@@ -527,7 +524,6 @@
 <translation id="3761718714832595332">Status ausblenden</translation>
 <translation id="3765032636089507299">Die Seite "Safe Browsing" wird überarbeitet.</translation>
 <translation id="3778403066972421603">Möchten Sie diese Karte in Ihrem Google-Konto und auf diesem Gerät speichern?</translation>
-<translation id="3779973883630527594">Das Unternehmen, die Bildungseinrichtung oder Organisation, von der dieses Konto verwaltet wird, kann Folgendes tun:</translation>
 <translation id="3781428340399460090">Dunkelrosa</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Ablaufdatum: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -551,6 +547,7 @@
 <translation id="3949571496842715403">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gibt keine alternativen Namen an. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="3949601375789751990">Hier wird Ihr Browserverlauf angezeigt</translation>
 <translation id="3950820424414687140">Anmelden</translation>
+<translation id="3962859241508114581">Vorheriger Titel</translation>
 <translation id="3963837677003247395">Manuell fortfahren?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Keine}=1{Von 1 Website }other{Von # Websites }}</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
@@ -573,6 +570,7 @@
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4103763322291513355">Unter &lt;strong&gt;chrome://policy&lt;/strong&gt; finden Sie eine Liste der blockierten URLs und andere Richtlinien, die durch Ihren Systemadministrator erzwungen werden.</translation>
 <translation id="4110652170750985508">Zahlung überprüfen</translation>
+<translation id="4112140312785995938">Zurück springen</translation>
 <translation id="4116663294526079822">Auf dieser Website immer zulassen</translation>
 <translation id="4117700440116928470">Richtlinienbereich wird nicht unterstützt.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 weiterer}other{# weitere}}</translation>
@@ -651,6 +649,7 @@
 <translation id="443673843213245140">Die Proxy-Nutzung ist deaktiviert, es ist jedoch eine explizite Proxy-Konfiguration festgelegt.</translation>
 <translation id="445100540951337728">Akzeptierte Debitkarten</translation>
 <translation id="4466881336512663640">Änderungen im Formular gehen verloren. Möchten Sie den Vorgang wirklich fortsetzen?</translation>
+<translation id="4477350412780666475">Nächster Titel</translation>
 <translation id="4482953324121162758">Diese Website wird nicht übersetzt.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">Ungültige URL. Dies muss eine URL mit einem Standardschema sein, z. B. "http://example.com" oder "https://example.com".</translation>
@@ -897,7 +896,6 @@
 <translation id="5838278095973806738">Sie sollten keine vertraulichen Informationen wie Passwörter oder Kreditkartennummern auf dieser Website eingeben, da sie von Angreifern gestohlen werden könnten.</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5863847714970149516">Auf der nächsten Seite wird möglicherweise versucht, Ihnen etwas in Rechnung zu stellen</translation>
-<translation id="5865951947699094510">Ihre Kontoeinrichtung remote ändern.</translation>
 <translation id="5866257070973731571">Telefonnummer hinzufügen</translation>
 <translation id="5869405914158311789">Die Website ist nicht erreichbar</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
@@ -1050,6 +1048,7 @@
 <translation id="6778737459546443941">Dein Elternteil hat die Berechtigung noch nicht erteilt</translation>
 <translation id="67862343314499040">Violett</translation>
 <translation id="6786747875388722282">Erweiterungen</translation>
+<translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="679355240208270552">Ignoriert, da die Standardsuchmaschine durch die Richtlinie deaktiviert ist.</translation>
 <translation id="681021252041861472">Pflichtfeld</translation>
 <translation id="6810899417690483278">Personalisierungs-ID</translation>
@@ -1137,7 +1136,7 @@ Weitere Details:
 <translation id="7298195798382681320">Empfohlen</translation>
 <translation id="7300012071106347854">Kobaltblau</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
-<translation id="7303701124147721189">Damit Zahlungen zukünftig schneller abgewickelt werden können, speichern Sie Ihre Kreditkartendaten und Ihre Rechnungsadresse in Ihrem Google-Konto.</translation>
+<translation id="7303701124147721189">Damit Zahlungen zukünftig schneller abgewickelt werden können, speichern Sie Ihre Kreditkartendaten und Ihre Rechnungsadresse in Ihrem Google-Konto und auf diesem Gerät.</translation>
 <translation id="7309308571273880165">Absturzbericht erfasst: <ph name="CRASH_TIME" /> (Upload wurde vom Nutzer angefordert, aber noch nicht abgeschlossen)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" />-Warnmeldungen</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1150,6 +1149,7 @@ Weitere Details:
 <translation id="7353601530677266744">Befehlszeile</translation>
 <translation id="7372973238305370288">Suchergebnis</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">Mediensteuerelemente</translation>
 <translation id="7378627244592794276">Nein</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Karte bestätigen</translation>
@@ -1253,7 +1253,6 @@ Weitere Details:
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7806344367022510803">Suchmaschinen-Einstellungen in Chrome ändern</translation>
-<translation id="7810209002420871817">Als Manager Ihres Kontos kann <ph name="ACCOUNT_DOMAIN" /> Folgendes tun:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Vorschlag für das Formular aus Chrome entfernen?</translation>
 <translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> für "<ph name="SEARCH_STRING" />" gefunden</translation>

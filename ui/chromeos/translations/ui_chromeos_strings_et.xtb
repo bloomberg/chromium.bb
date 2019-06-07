@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-file</translation>
 <translation id="457386861538956877">Rohkem ...</translation>
 <translation id="4582497162516204941">Installimine Linuxiga (beetaversioon)</translation>
+<translation id="4594543368593301662">Kuvatakse otsingu <ph name="SEARCH_TERM" /> tulemusi.</translation>
 <translation id="4631887759990505102">Esitaja</translation>
 <translation id="4656293982926141856">See arvuti</translation>
 <translation id="4669606053856530811">Üksuse „<ph name="SOURCE_NAME" />” liikmed kaotavad juurdepääsu, kui neid üksusi nendega ei jagata.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Bulgaaria klaviatuur</translation>
 <translation id="5418923334382419584">Birma klaviatuur</translation>
 <translation id="5428105026674456456">hispaania keel</translation>
+<translation id="5438282218546237410">Päringule <ph name="SEARCH_TERM" /> ei leitud tulemusi.</translation>
 <translation id="5464696796438641524">Poola klaviatuur</translation>
 <translation id="5465122519792752163">Nepaali klaviatuur (InScript)</translation>
 <translation id="5469868506864199649">itaalia keel</translation>
 <translation id="5494920125229734069">Valige kõik</translation>
 <translation id="5500122897333236901">islandi keel</translation>
 <translation id="5508696409934741614">Punktid</translation>
+<translation id="5522908512596376669">Faililoendi jaoks aktiveeriti loendikuva.</translation>
 <translation id="5524517123096967210">Faili ei saa lugeda.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" />-pilt</translation>
 <translation id="5533555070048896610">Transliteratsioon (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Sulge</translation>
 <translation id="6054173164583630569">Prantsuse klaviatuur</translation>
 <translation id="6074825444536523002">Google'i vorm</translation>
+<translation id="6096979789310008754">Otsingutekst on kustutatud, kuvatud on kõik failid ja kaustad.</translation>
 <translation id="6111770213269631447">Transliteratsioon (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Tühik</translation>
 <translation id="6133173853026656527">Faili <ph name="FILE_NAME" /> teisaldamine ...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Elevant</translation>
 <translation id="8569764466147087991">Valige avatav fail</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> üksuse sünkroonimine ...</translation>
+<translation id="8600173386174225982">Faililoendi jaoks aktiveeriti pisipildikuva.</translation>
 <translation id="8669949407341943408">Teisaldamine ...</translation>
 <translation id="8671210955687109937">Saab kommenteerida</translation>
 <translation id="8686213429977032554">Seda Drive'i faili pole veel jagatud</translation>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
-<translation id="1001338328714563407">તમારા ડિવાઇસ અને એકાઉન્ટના મેનેજર તરીકે, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">હમણાં નહીં</translation>
 <translation id="1010200102790553230">પેજ પછીથી લોડ કરો</translation>
 <translation id="1015730422737071372">અતિરિક્ત વિગતો પ્રદાન કરો</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">વાઇ-ફાઇ સાથે ફરીથી કનેક્ટ કરીને</translation>
 <translation id="1165039591588034296">ભૂલ</translation>
 <translation id="1175364870820465910">&amp;છાપો...</translation>
+<translation id="1178581264944972037">થોભો</translation>
 <translation id="1181037720776840403">કાઢી નાખો</translation>
 <translation id="1197088940767939838">નારંગી</translation>
 <translation id="1201402288615127009">આગલું</translation>
@@ -100,7 +100,6 @@
 <translation id="1405567553485452995">આછો લીલો</translation>
 <translation id="1407135791313364759">બધું ખોલો</translation>
 <translation id="1413809658975081374">ગોપનીયતા ભૂલ</translation>
-<translation id="14171126816530869"><ph name="LOCALITY" /> માં <ph name="ORGANIZATION" /> ની ઓળખાણ <ph name="ISSUER" /> દ્વારા ચકાસવામાં આવી છે.</translation>
 <translation id="1426410128494586442">હા</translation>
 <translation id="1430915738399379752">પ્રિન્ટ</translation>
 <translation id="1455413310270022028">ઇરેઝર</translation>
@@ -256,6 +255,7 @@
 <translation id="2262243747453050782">HTTP ભૂલ</translation>
 <translation id="2263079731045660823">Chrome સેટિંગમાં ક્રેડિટ કાર્ડ ઑટોમેટિક રીતે ભરવાની માહિતીને અપડેટ કરો</translation>
 <translation id="2270484714375784793">ફોન નંબર</translation>
+<translation id="2277103315734023688">આગળ લઈ જાઓ</translation>
 <translation id="2283340219607151381">સરનામાં સાચવો અને ભરો</translation>
 <translation id="2292556288342944218">તમારી ઇન્ટરનેટ ઍક્સેસ અવરોધિત છે</translation>
 <translation id="2297722699537546652">B5 (એન્વલપ)</translation>
@@ -383,7 +383,6 @@
 <translation id="295526156371527179">ચેતવણી: નીતિમાં ઉલ્લેખ કર્યા મુજબ આ નીતિને શબ્દકોશ તરીકે મર્જ કરવામાં આવી ન હતી, કારણ કે તે શબ્દકોશ નથી.</translation>
 <translation id="2955913368246107853">શોધ બાર બંધ કરો</translation>
 <translation id="2969319727213777354">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારી ઘડિયાળ યોગ્ય રીતે સેટ હોવી જરૂરી છે. આનું કારણ એ કે વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Google Chrome આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
-<translation id="2970515157925768593">તમારા ડિવાઇસનું અને એકાઉન્ટનું સેટઅપ રિમોટલી બદલી શકે છે.</translation>
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, વર્તમાનમાં પસંદ કરેલ. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">ડેટા સાફ કરો</translation>
@@ -395,7 +394,6 @@
 <translation id="3005723025932146533">સાચવેલી કૉપિ બતાવો</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> માટે CVC દાખલ કરો. એકવાર તમે ખાતરી કરી લો, તે પછી આ સાઇટ સાથે તમારા કાર્ડની વિગતો શેર કરવામાં આવશે.</translation>
 <translation id="3010559122411665027">"<ph name="ENTRY_INDEX" />" એન્ટ્રીને સૂચિબદ્ધ કરો: <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">આ ડિવાઇસના મેનેજર તરીકે, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">આપમેળે અવરોધિત</translation>
 <translation id="3023071826883856138">You4 (એન્વલપ)</translation>
 <translation id="3024663005179499861">ખોટો નીતિ પ્રકાર</translation>
@@ -441,7 +439,6 @@
 <translation id="3287510313208355388">ઑનલાઇન હોય ત્યારે ડાઉનલોડ કરો</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> નીતિ વિશે વધુ જાણો</translation>
 <translation id="3303855915957856445">કોઈ શોધ પરિણામો મળ્યાં નથી</translation>
-<translation id="3311730110465560799">તમારા ડિવાઇસનું સેટઅપ રિમોટલી બદલી શકે છે.</translation>
 <translation id="3320021301628644560">બિલિંગ સરનામું ઉમેરો</translation>
 <translation id="3324983252691184275">કિરમજી</translation>
 <translation id="3338095232262050444">સુરક્ષિત</translation>
@@ -536,7 +533,6 @@
 <translation id="3761718714832595332">સ્ટેટસ છુપાવો</translation>
 <translation id="3765032636089507299">Safe Browsing પેજ રચના હેઠળ છે.</translation>
 <translation id="3778403066972421603">શું તમે આ કાર્ડને તમારા Google એકાઉન્ટ અને આ ડિવાઇસ પર સાચવવા માગો છો?</translation>
-<translation id="3779973883630527594">આ એકાઉન્ટને મેનેજ કરનાર કંપની, શાળા અથવા સંસ્થા:</translation>
 <translation id="3781428340399460090">ચળકતો ગુલાબી</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> માં સમાપ્ત થાય છે</translation>
@@ -560,6 +556,7 @@
 <translation id="3949571496842715403">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર વિષય વૈકલ્પિક નામનો ઉલ્લેખ કરતું નથી. આ કોઈ ખોટી ગોઠવણીને કારણે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવતો હોવાને કારણે બન્યું હોઈ શકે.</translation>
 <translation id="3949601375789751990">તમારો બ્રાઉઝિંગ ઇતિહાસ અહીં દેખાય છે</translation>
 <translation id="3950820424414687140">સાઇન ઇન</translation>
+<translation id="3962859241508114581">પાછલું ટ્રૅક</translation>
 <translation id="3963837677003247395">મેન્યુઅલી ચાલુ રાખીએ?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{કોઈ નહીં}=1{1 સાઇટમાંથી }one{# સાઇટમાંથી }other{# સાઇટમાંથી }}</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
@@ -582,6 +579,7 @@
 <translation id="410351446219883937">ઑટોપ્લે</translation>
 <translation id="4103763322291513355">બ્લેકલિસ્ટ કરેલા URL ની સૂચિ અને તમારા સિસ્ટમ વ્યવસ્થાપક દ્વારા લાગુ અન્ય નીતિઓ જોવા માટે &lt;strong&gt;chrome://policy&lt;/strong&gt; ની મુલાકાત લો.</translation>
 <translation id="4110652170750985508">તમારી ચુકવણીને રિવ્યૂ કરો</translation>
+<translation id="4112140312785995938">પાછળ કરો</translation>
 <translation id="4116663294526079822">હંમેશા આ સાઇટ પર મંજૂરી આપો</translation>
 <translation id="4117700440116928470">નીતિ મર્યાદા સમર્થિત નથી.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 અન્ય}one{# અન્ય}other{# અન્ય}}</translation>
@@ -660,6 +658,7 @@
 <translation id="443673843213245140">પ્રૉક્સીનો ઉપયોગ બંધ કરેલો છે પણ એક સ્પષ્ટ પ્રૉક્સી ગોઠવણીનો ઉલ્લેખ કરેલો છે.</translation>
 <translation id="445100540951337728">સ્વીકૃત ડેબિટ કાર્ડ</translation>
 <translation id="4466881336512663640">ફોર્મના ફેરફારો ગુમાવશો. શું તમે ખરેખર ચાલુ રાખવા માગો છો?</translation>
+<translation id="4477350412780666475">આગલો ટ્રૅક</translation>
 <translation id="4482953324121162758">આ સાઇટનો અનુવાદ થશે નહીં.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">અમાન્ય URL. કોઈ માનક સ્કીમ ધરાવતું URL હોવું આવશ્યક છે, દા.ત. http://example.com અથવા https://example.com.</translation>
@@ -906,7 +905,6 @@
 <translation id="5838278095973806738">તમારે આ સાઇટ પર કોઈપણ સંવેદનશીલ માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ અથવા ક્રેડિટ કાર્ડ્સ) દાખલ કરવી જોઈએ નહીં, કારણ કે તે હુમલાખોર દ્વારા ચોરવામાં આવી શકે છે.</translation>
 <translation id="5860033963881614850">બંધ</translation>
 <translation id="5863847714970149516">આગળનું પેજ તમને શુલ્ક લાગુ કરી શકે છે</translation>
-<translation id="5865951947699094510">તમારા એકાઉન્ટનું સેટઅપ રિમોટલી બદલી શકે છે.</translation>
 <translation id="5866257070973731571">ફોન નંબર ઉમેરો</translation>
 <translation id="5869405914158311789">આ સાઇટ પર પહોંચી શકાતું નથી</translation>
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
@@ -1059,6 +1057,7 @@
 <translation id="6778737459546443941">તમારા માતાપિતાએ હજી સુધી તેને મંજૂર કરેલ નથી</translation>
 <translation id="67862343314499040">જાંબુડિયો</translation>
 <translation id="6786747875388722282">એક્સ્ટેન્શન્સ</translation>
+<translation id="6790428901817661496">ચલાવો</translation>
 <translation id="679355240208270552">અવગણના કરી, કારણ કે નીતિએ ડિફૉલ્ટ શોધ બંધ કરેલ છે.</translation>
 <translation id="681021252041861472">ફરજિયાત</translation>
 <translation id="6810899417690483278">કસ્ટમાઇઝેશન ID</translation>
@@ -1162,6 +1161,7 @@
 <translation id="7353601530677266744">આદેશ પંક્તિ</translation>
 <translation id="7372973238305370288">શોધ પરિણામ</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">મીડિયા નિયંત્રણો</translation>
 <translation id="7378627244592794276">ના</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">કાર્ડની પુષ્ટિ કરો</translation>
@@ -1265,7 +1265,6 @@
 <translation id="780301667611848630">નહીં, આભાર</translation>
 <translation id="7805768142964895445">સ્થિતિ</translation>
 <translation id="7806344367022510803">Chromeમાં સર્ચ એંજિનની સેટિંગ બદલો</translation>
-<translation id="7810209002420871817">તમારા <ph name="ACCOUNT_DOMAIN" /> એકાઉન્ટના મેનેજર તરીકે:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome માંથી ફોર્મ સૂચનો દૂર કરીએ?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' માટે <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> મળ્યાં</translation>

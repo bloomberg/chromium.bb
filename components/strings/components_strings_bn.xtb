@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
-<translation id="1001338328714563407">আপনার ডিভাইস ও অ্যাকাউন্টের ম্যানেজার হিসেবে, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">এখনই নয়</translation>
 <translation id="1010200102790553230">পৃষ্ঠা পরে দেখার জন্য লোড করে রাখুন</translation>
 <translation id="1015730422737071372">অতিরিক্ত বিবরণ দিন</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">ওয়াই-ফাই এ আবার সংযুক্ত করে দেখুন</translation>
 <translation id="1165039591588034296">ত্রুটি</translation>
 <translation id="1175364870820465910">&amp;প্রিন্ট...</translation>
+<translation id="1178581264944972037">বিরতি</translation>
 <translation id="1181037720776840403">সরান</translation>
 <translation id="1197088940767939838">কমলা</translation>
 <translation id="1201402288615127009">পরবর্তী</translation>
@@ -100,7 +100,6 @@
 <translation id="1405567553485452995">হালকা সবুজ</translation>
 <translation id="1407135791313364759">সব খুলুন</translation>
 <translation id="1413809658975081374">গোপনীয়তা ত্রুটি</translation>
-<translation id="14171126816530869"><ph name="LOCALITY" />-তে <ph name="ORGANIZATION" />-এর পরিচয় <ph name="ISSUER" /> যাচাই করেছে৷</translation>
 <translation id="1426410128494586442">হ্যাঁ</translation>
 <translation id="1430915738399379752">প্রিন্ট</translation>
 <translation id="1455413310270022028">ইরেজার</translation>
@@ -257,6 +256,7 @@
 <translation id="2262243747453050782">HTTP ত্রুটি</translation>
 <translation id="2263079731045660823">Chrome সেটিংসে ক্রেডিট কার্ডের অটোমেটিক পূরণের তথ্য আপডেট করুন</translation>
 <translation id="2270484714375784793">ফোন নম্বর</translation>
+<translation id="2277103315734023688">এগিয়ে যান</translation>
 <translation id="2283340219607151381">অ্যাড্রেস পূরণ করে সেভ করুন</translation>
 <translation id="2292556288342944218">আপনার ইন্টারনেট অ্যাক্সেস অবরুদ্ধ করা হয়েছে</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
@@ -384,7 +384,6 @@
 <translation id="295526156371527179">সতর্কতা: এই নীতি ডিকশনারি নয় বলে এটিকে নীতি অনুযায়ী ডিকশনারি হিসেবে মার্জ করা হয়নি।</translation>
 <translation id="2955913368246107853">খোঁজ দণ্ড বন্ধ করুন</translation>
 <translation id="2969319727213777354">নিরাপদ নেটওয়ার্ক সংযোগ স্থাপন করতে আপনার ঘড়িকে সঠিকভাবে সেট করতে হবে। এমন হওয়ার কারণ হলো, নিরাপদ সংযোগ স্থাপন করার জন্য নিজেদের শনাক্ত করার জন্য ওয়েবসাইটগুলি যে শংসাপত্রগুলি ব্যবহার করে, সেগুলি শুধুমাত্র নির্দিষ্ট সময়ের জন্য বৈধ থাকে। যেহেতু আপনার ডিভাইসের ঘড়িটি ভুল, সেই জন্য Google Chrome সঠিকভাবে শংসাপত্রগুলি পরীক্ষা করতে পারছে না।</translation>
-<translation id="2970515157925768593">অন্য জায়গা থেকে আপনার ডিভাইস ও অ্যাকাউন্টের সেট-আপ পরিবর্তন করতে পারে।</translation>
 <translation id="2972581237482394796">&amp;পুনরায় করুন</translation>
 <translation id="2977665033722899841">এখন <ph name="ROW_NAME" /> বেছে নিয়েছেন। <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">ডেটা মুছুন</translation>
@@ -396,7 +395,6 @@
 <translation id="3005723025932146533">সেভ করা কপি দেখুন</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" />-এর CVC লিখুন। আপনি নিশ্চিত করলে, আপনার কার্ডের বিবরণ এই সাইটের সাথে শেয়ার করা হবে।</translation>
 <translation id="3010559122411665027">তালিকার এন্ট্রি " <ph name="ENTRY_INDEX" /> ": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">এই ডিভাইসের ম্যানেজার হিসেবে, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">স্বয়ংক্রিয়ভাবে ব্লক করা হয়েছে</translation>
 <translation id="3023071826883856138">You4 (Envelope)</translation>
 <translation id="3024663005179499861">নীতির ভুল প্রকার</translation>
@@ -442,7 +440,6 @@
 <translation id="3287510313208355388">অনলাইন হয়ে ডাউনলোড করবেন</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> নীতি সম্পর্কে আরও জানুন</translation>
 <translation id="3303855915957856445">কোনো সার্চ ফলাফল পাওয়া যায়নি</translation>
-<translation id="3311730110465560799">অন্য জায়গা থেকে আপনার ডিভাইসের সেট-আপ পরিবর্তন করতে পারে।</translation>
 <translation id="3320021301628644560">বিলিংয়ের ঠিকানা যোগ করুন</translation>
 <translation id="3324983252691184275">টকটকে লাল</translation>
 <translation id="3338095232262050444">সুরক্ষিত</translation>
@@ -538,7 +535,6 @@
 <translation id="3761718714832595332">স্ট্যাটাসটি লুকান</translation>
 <translation id="3765032636089507299">নিরাপদ ব্রাউজিং পৃষ্ঠা তৈরি করা হচ্ছে।</translation>
 <translation id="3778403066972421603">আপনি কি এই কার্ডটি আপনার Google অ্যাকাউন্টে ও এই ডিভাইসে সেভ করতে চান?</translation>
-<translation id="3779973883630527594">যে কোম্পানি, স্কুল বা সংস্থা এই অ্যাকাউন্ট ম্যানেজ করে:</translation>
 <translation id="3781428340399460090">হট গোলাপী</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> এ মেয়াদ শেষ হবে</translation>
@@ -562,6 +558,7 @@
 <translation id="3949571496842715403">এই সার্ভারটিকে <ph name="DOMAIN" /> হিসাবে প্রমাণ করা যায়নি; এটির নিরাপত্তা সার্টিফিকেটে সাবজেক্ট অল্টারনেটিভ নেম্স নির্দিষ্ট করা নেই। কনফিগারেশনের কোনও সমস্যা অথবা আপনার সংযোগে কোনও আক্রমণকারী আড়ি পাতার কারণে এটি হয়ে থাকতে পারে।</translation>
 <translation id="3949601375789751990">আপনার ব্রাউজিং এর ইতিহাস এখানে দেখা যায়</translation>
 <translation id="3950820424414687140">সাইন-ইন করুন</translation>
+<translation id="3962859241508114581">আগের ট্র্যাক চালান</translation>
 <translation id="3963837677003247395">ম্যানুয়ালি চালিয়ে যেতে চান?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{কিছুই নয়}=1{১টি সাইট থেকে }one{#টি সাইট থেকে }other{#টি সাইট থেকে }}</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
@@ -584,6 +581,7 @@
 <translation id="410351446219883937">স্বতঃচালানো</translation>
 <translation id="4103763322291513355">কালো তালিকাভুক্ত ইউআরএলগুলির তালিকা এবং আপনার সিস্টেম অ্যাডমিনিস্ট্রেটরের প্রয়োগ করা অন্যান্য নীতিগুলি দেখার জন্য &lt;strong&gt;chrome://policy&lt;/strong&gt;-এ যান৷</translation>
 <translation id="4110652170750985508">আপনার পেমেন্টের রিভিউ</translation>
+<translation id="4112140312785995938">পিছিয়ে যান</translation>
 <translation id="4116663294526079822">এই সাইটে সর্বদা অনুমতি দিন</translation>
 <translation id="4117700440116928470">নীতির সুযোগটি সমর্থিত নয়৷</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{আরও ১টি}one{অন্যান্য #টি}other{অন্যান্য #টি}}</translation>
@@ -662,6 +660,7 @@
 <translation id="443673843213245140">প্রক্সির ব্যবহার অক্ষম করা হয়েছে কিন্তু কোনো স্পষ্ট প্রক্সি কনফিগারেশান নির্দিষ্ট করা হয়েছে৷</translation>
 <translation id="445100540951337728">ডেবিট কার্ড গ্রহণ করা হয়</translation>
 <translation id="4466881336512663640">ফর্মে করা পরিবর্তনগুলি সেভ হবে না। আপনি কি চালিয়ে যেতে চান?</translation>
+<translation id="4477350412780666475">পরের ট্র্যাক চালান</translation>
 <translation id="4482953324121162758">এই সাইটটি অনুবাদ করা হবে না।</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">ইউআরএলটি সঠিক নয়। অবশ্যই স্ট্যান্ডার্ড স্কিম সহ ইউআরএল হতে হবে, যেমন http://example.com বা https://example.com.</translation>
@@ -908,7 +907,6 @@
 <translation id="5838278095973806738">এই সাইটে আপনার কোনো সংবেদনশীল তথ্য দেওয়া উচিত হবে না (উদাহরণস্বরূপ, পাসওয়ার্ড বা ক্রেডিট কার্ড) কারণ আক্রমণকারীরা এগুলি চুরি করতে পারে।</translation>
 <translation id="5860033963881614850">বন্ধ করুন</translation>
 <translation id="5863847714970149516">পরের পৃষ্ঠাতে আপনাকে চার্জ করা হতে পারে</translation>
-<translation id="5865951947699094510">অন্য জায়গা থেকে আপনার অ্যাকাউন্টের সেট-আপ পরিবর্তন করতে পারে।</translation>
 <translation id="5866257070973731571">ফোন নম্বর যোগ করুন</translation>
 <translation id="5869405914158311789">এই সাইটটিতে পৌছানো যাচ্ছে না</translation>
 <translation id="5869522115854928033">সংরক্ষিত পাসওয়ার্ড</translation>
@@ -1060,6 +1058,7 @@
 <translation id="6778737459546443941">আপনার পিতামাতা এখনও এটি অনুমোদন করেন নি</translation>
 <translation id="67862343314499040">বেগুনি</translation>
 <translation id="6786747875388722282">এক্সটেনশানসমূহ</translation>
+<translation id="6790428901817661496">চালু করুন</translation>
 <translation id="679355240208270552">নীতি অনুযায়ী ডিফল্ট সার্চ সক্ষম করা হয়নি তাই উপেক্ষা করা হয়েছে৷</translation>
 <translation id="681021252041861472">এই ফিল্ডটি ফাঁকা রাখা যাবে না</translation>
 <translation id="6810899417690483278">কাস্টমাইজেশন আইডি</translation>
@@ -1104,6 +1103,7 @@
 <translation id="7053983685419859001">ব্লক করুন</translation>
 <translation id="7062635574500127092">নীলচে সবুজ</translation>
 <translation id="7064851114919012435">পরিচিতি তথ্য</translation>
+<translation id="7075452647191940183">অনুরোধ অত্যন্ত বড়</translation>
 <translation id="7079718277001814089">এই সাইটটিতে ম্যালওয়্যার আছে</translation>
 <translation id="7087282848513945231">দেশ</translation>
 <translation id="7090678807593890770">Google এ <ph name="LINK" /> এর খুঁজুন</translation>
@@ -1163,6 +1163,7 @@
 <translation id="7353601530677266744">কম্যান্ড লাইন</translation>
 <translation id="7372973238305370288">ফলাফল খুঁজুন</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">মিডিয়ার নিয়ন্ত্রণ</translation>
 <translation id="7378627244592794276">না</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">কার্ড নিশ্চিত করুন</translation>
@@ -1266,7 +1267,6 @@
 <translation id="780301667611848630">না থাক</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
 <translation id="7806344367022510803">Chrome-এ সার্চ ইঞ্জিন সেটিংস পরিবর্তন করুন</translation>
-<translation id="7810209002420871817">আপনার অ্যাকাউন্টের ম্যানেজার হিসেবে, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome থেকে ফর্ম প্রস্তাবনা সরাবেন?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' এর জন্য <ph name="NUMBER_OF_RESULTS" />টি <ph name="SEARCH_RESULTS" /> খুঁজে পাওয়া গেছে</translation>

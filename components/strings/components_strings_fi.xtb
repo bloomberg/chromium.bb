@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
-<translation id="1001338328714563407">Laitteesi ja tilisi ylläpitäjänä <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Ei nyt</translation>
 <translation id="1010200102790553230">Lataa sivu myöhemmin</translation>
 <translation id="1015730422737071372">Lisätietoja</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">Muodosta yhteys Wi-Fi-verkkoon uudelleen.</translation>
 <translation id="1165039591588034296">Virhe</translation>
 <translation id="1175364870820465910">Tulo&amp;sta...</translation>
+<translation id="1178581264944972037">Tauko</translation>
 <translation id="1181037720776840403">Poista</translation>
 <translation id="1197088940767939838">Oranssi</translation>
 <translation id="1201402288615127009">Seuraava</translation>
@@ -100,7 +100,6 @@
 <translation id="1405567553485452995">Vaaleanvihreä</translation>
 <translation id="1407135791313364759">Avaa kaikki</translation>
 <translation id="1413809658975081374">Tietosuojavirhe</translation>
-<translation id="14171126816530869">Organisaation <ph name="ORGANIZATION" /> identiteetin sijainnissa <ph name="LOCALITY" /> on vahvistanut <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="1430915738399379752">Tulosta</translation>
 <translation id="1455413310270022028">Pyyhekumi</translation>
@@ -256,6 +255,7 @@
 <translation id="2262243747453050782">HTTP-virhe</translation>
 <translation id="2263079731045660823">Päivitä luottokorttien automaattiset täyttötiedot Chrome-asetuksissa</translation>
 <translation id="2270484714375784793">Puhelinnumero</translation>
+<translation id="2277103315734023688">Kelaa eteenpäin</translation>
 <translation id="2283340219607151381">Tallenna ja täytä osoitteet</translation>
 <translation id="2292556288342944218">Internetyhteytesi on estetty</translation>
 <translation id="2297722699537546652">B5 (kirjekuori)</translation>
@@ -383,7 +383,6 @@
 <translation id="295526156371527179">Varoitus: tätä käytäntöä ei yhdistetty käytännössä kuvatulla tavalla sanakirjana, sillä se ei ole sanakirja.</translation>
 <translation id="2955913368246107853">Sulje hakupalkki</translation>
 <translation id="2969319727213777354">Kellosi täytyy asettaa oikeaan aikaan, jotta salattu yhteys voidaan muodostaa. Tämä johtuu siitä, että verkkosivustojen tunnistamisessa käytettävät varmenteet ovat voimassa vain tiettyinä aikoina. Chrome ei voi vahvistaa varmenteita, koska laitteesi kello on väärässä ajassa.</translation>
-<translation id="2970515157925768593">Voi muuttaa laitteesi ja tilisi kokoonpanoa etänä.</translation>
 <translation id="2972581237482394796">&amp;Tee uudelleen</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, tällä hetkellä valittuna. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Tyhjennä tiedot</translation>
@@ -395,7 +394,6 @@
 <translation id="3005723025932146533">Näytä tallennettu kopio</translation>
 <translation id="3008447029300691911">Anna kortin <ph name="CREDIT_CARD" /> CVC. Vahvistamisen jälkeen korttisi tiedot jaetaan sivuston kanssa.</translation>
 <translation id="3010559122411665027">Luettelokohde "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Tämän laitteen ylläpitäjänä <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Estetty automaattisesti</translation>
 <translation id="3023071826883856138">You4 (kirjekuori)</translation>
 <translation id="3024663005179499861">Väärä käytäntötyyppi</translation>
@@ -442,7 +440,6 @@
 <translation id="3287510313208355388">Lataa, kun verkkoyhteys on muodostettu</translation>
 <translation id="3293642807462928945">Lisätietoja käytännöstä: <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Ei hakutuloksia</translation>
-<translation id="3311730110465560799">Voi muuttaa laitteesi määrityksiä etänä.</translation>
 <translation id="3320021301628644560">Lisää laskutusosoite</translation>
 <translation id="3324983252691184275">Karmiininpunainen</translation>
 <translation id="3338095232262050444">Turvallinen</translation>
@@ -538,7 +535,6 @@
 <translation id="3761718714832595332">Piilota tila</translation>
 <translation id="3765032636089507299">Selaussuojasivu on työn alla.</translation>
 <translation id="3778403066972421603">Haluatko tallentaa tämän kortin Google-tilille ja tälle laitteelle?</translation>
-<translation id="3779973883630527594">Tätä tiliä ylläpitävä yritys, oppilaitos tai organisaatio:</translation>
 <translation id="3781428340399460090">Pinkki</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Vanhenee <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -562,6 +558,7 @@
 <translation id="3949571496842715403">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenteessa ei määritetä kohteen vaihtoehtoisia nimiä. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="3949601375789751990">Selaushistoriasi näkyy tässä.</translation>
 <translation id="3950820424414687140">Kirjaudu sisään</translation>
+<translation id="3962859241508114581">Edellinen kappale</translation>
 <translation id="3963837677003247395">Jatketaanko manuaalisesti?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ei mitään}=1{1 sivustolta }other{# sivustolta }}</translation>
 <translation id="397105322502079400">Lasketaan...</translation>
@@ -584,6 +581,7 @@
 <translation id="410351446219883937">Automaattinen toisto</translation>
 <translation id="4103763322291513355">Voit lukea listan kielletyistä URL-osoitteista ja muut järjestelmänvalvojasi määräämät käytännöt osoitteessa &lt;strong&gt;chrome://policy&lt;/strong&gt;.</translation>
 <translation id="4110652170750985508">Tarkasta maksu</translation>
+<translation id="4112140312785995938">Kelaa taaksepäin</translation>
 <translation id="4116663294526079822">Salli aina tässä sivustossa</translation>
 <translation id="4117700440116928470">Käytännön laajuutta ei tueta.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 muu}other{# muuta}}</translation>
@@ -662,6 +660,7 @@
 <translation id="443673843213245140">Välityspalvelinta ei saa käyttää, mutta erilliset välityspalvelimen asetukset on määritetty.</translation>
 <translation id="445100540951337728">Hyväksytyt maksukortit</translation>
 <translation id="4466881336512663640">Lomakkeen muutokset menetetään. Haluatko varmasti jatkaa?</translation>
+<translation id="4477350412780666475">Seuraava kappale</translation>
 <translation id="4482953324121162758">Tätä sivustoa ei käännetä.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">Virheellinen URL-osoite URL-osoitteen on oltava vakiomallien mukainen, esimerkiksi "http://example.com" tai "https://example.com".</translation>
@@ -908,7 +907,6 @@
 <translation id="5838278095973806738">Älä anna tälle sivustolle salasanoja, luottokorttinumeroita tai muita arkaluonteisia tietoja, sillä hyökkääjät saattavat varastaa ne.</translation>
 <translation id="5860033963881614850">Pois käytöstä</translation>
 <translation id="5863847714970149516">Avaamasi sivu voi yrittää veloittaa sinulta rahaa</translation>
-<translation id="5865951947699094510">Voi muuttaa tilisi kokoonpanoa etänä.</translation>
 <translation id="5866257070973731571">Lisää puhelinnumero</translation>
 <translation id="5869405914158311789">Sivustoon ei saada yhteyttä</translation>
 <translation id="5869522115854928033">Tallennetut salasanat</translation>
@@ -1061,6 +1059,7 @@
 <translation id="6778737459546443941">Vanhempasi ei ole hyväksynyt sitä vielä.</translation>
 <translation id="67862343314499040">Lila</translation>
 <translation id="6786747875388722282">Laajennukset</translation>
+<translation id="6790428901817661496">Toista</translation>
 <translation id="679355240208270552">Ohitettu, koska oletushaku on poistettu käytöstä käytännön johdosta</translation>
 <translation id="681021252041861472">Pakollinen kenttä</translation>
 <translation id="6810899417690483278">Muokkaustunnus</translation>
@@ -1105,6 +1104,7 @@
 <translation id="7053983685419859001">Estä</translation>
 <translation id="7062635574500127092">Turkoosi</translation>
 <translation id="7064851114919012435">Yhteystiedot</translation>
+<translation id="7075452647191940183">Pyyntö on liian suuri</translation>
 <translation id="7079718277001814089">Tämä sivusto sisältää haittaohjelmia</translation>
 <translation id="7087282848513945231">Piirikunta</translation>
 <translation id="7090678807593890770">Tee Google-haku: <ph name="LINK" /></translation>
@@ -1164,6 +1164,7 @@ Lisätietoja:
 <translation id="7353601530677266744">Komentorivi</translation>
 <translation id="7372973238305370288">hakutulos</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">Mediaohjaimet</translation>
 <translation id="7378627244592794276">Ei</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Vahvista kortti</translation>
@@ -1267,7 +1268,6 @@ Lisätietoja:
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="7805768142964895445">Tila</translation>
 <translation id="7806344367022510803">Muuta hakukoneasetuksia Chromessa</translation>
-<translation id="7810209002420871817">Tilisi ylläpitäjänä <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Poistetaanko lomake-ehdotus Chromen tiedoista?</translation>
 <translation id="7815407501681723534">Haku <ph name="SEARCH_STRING" /> tuotti <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" />.</translation>

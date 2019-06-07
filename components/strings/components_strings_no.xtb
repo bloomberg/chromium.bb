@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
-<translation id="1001338328714563407">Som administrator for enheten og kontoen din kan <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1008557486741366299">Ikke nå</translation>
 <translation id="1010200102790553230">Last inn siden senere</translation>
 <translation id="1015730422737071372">Oppgi flere detaljer</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">Koble til Wi-Fi på nytt</translation>
 <translation id="1165039591588034296">Feil</translation>
 <translation id="1175364870820465910">&amp;Skriv ut...</translation>
+<translation id="1178581264944972037">Stans midlertidig</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1197088940767939838">Oransje</translation>
 <translation id="1201402288615127009">Neste</translation>
@@ -100,7 +100,6 @@
 <translation id="1405567553485452995">Lysegrønn</translation>
 <translation id="1407135791313364759">Åpne alle</translation>
 <translation id="1413809658975081374">Personvernfeil</translation>
-<translation id="14171126816530869">Identiteten til <ph name="ORGANIZATION" /> på <ph name="LOCALITY" /> er verifisert av <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1455413310270022028">Viskelær</translation>
@@ -131,7 +130,7 @@
       &lt;p&gt;Juster datoen og klokkeslettet under &lt;strong&gt;Generelt&lt;/strong&gt; i &lt;strong&gt;Innstillinger&lt;/strong&gt;-appen.&lt;/p&gt;</translation>
 <translation id="1569487616857761740">Oppgi utløpsdato</translation>
 <translation id="1581080074034554886">CVC</translation>
-<translation id="1583429793053364125">Noe gikk galt under åpningen av denne nettsiden.</translation>
+<translation id="1583429793053364125">Noe gikk galt da denne nettsiden skulle åpnes.</translation>
 <translation id="1592005682883173041">Tilgang til lokale data</translation>
 <translation id="1594030484168838125">Velg</translation>
 <translation id="161042844686301425">Cyan</translation>
@@ -256,6 +255,7 @@
 <translation id="2262243747453050782">HTTP-feil</translation>
 <translation id="2263079731045660823">Oppdater autofyll av kredittkortinformasjon i Chrome-innstillingene</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
+<translation id="2277103315734023688">Spol fremover</translation>
 <translation id="2283340219607151381">Lagre og fyll inn adresser</translation>
 <translation id="2292556288342944218">Internett-tilgangen din er blokkert</translation>
 <translation id="2297722699537546652">B5 (konvolutt)</translation>
@@ -383,7 +383,6 @@
 <translation id="295526156371527179">Advarsel: Denne regelen ble ikke sammenslått som en regelspesifisert ordliste fordi den ikke er en ordliste.</translation>
 <translation id="2955913368246107853">Lukk søkefelt</translation>
 <translation id="2969319727213777354">Klokken må være riktig stilt før du kan opprette sikre tilkoblinger. Grunnen til dette er at sertifikatene nettsteder identifiserer seg med, bare er gyldige i visse tidsperioder. Ettersom klokken på enheten din er feil, kan ikke Google Chrome bekrefte disse sertifikatene.</translation>
-<translation id="2970515157925768593">endre enhets- og kontooppsettet eksternt</translation>
 <translation id="2972581237482394796">Gjø&amp;r om</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, for øyeblikket valgt. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Fjern data</translation>
@@ -395,7 +394,6 @@
 <translation id="3005723025932146533">Vis lagret kopi</translation>
 <translation id="3008447029300691911">Skriv inn verifiseringskoden for <ph name="CREDIT_CARD" />. Når du bekrefter, deles kortinformasjonen din med dette nettstedet.</translation>
 <translation id="3010559122411665027">Listeoppføring «<ph name="ENTRY_INDEX" />»: <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Som administrator for denne enheten kan <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="301521992641321250">Automatisk blokkert</translation>
 <translation id="3023071826883856138">You4 (konvolutt)</translation>
 <translation id="3024663005179499861">Feil type enhetsinnstillinger</translation>
@@ -441,7 +439,6 @@
 <translation id="3287510313208355388">Last ned når du er koblet til Internett</translation>
 <translation id="3293642807462928945">Finn ut mer om regelen <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Søket ga ingen treff</translation>
-<translation id="3311730110465560799">endre enhetsoppsettet eksternt</translation>
 <translation id="3320021301628644560">Legg til faktureringsadresse</translation>
 <translation id="3324983252691184275">Karmosinrød</translation>
 <translation id="3338095232262050444">Sikker</translation>
@@ -537,7 +534,6 @@
 <translation id="3761718714832595332">Skjul statusen</translation>
 <translation id="3765032636089507299">Safe Browsing-siden er under utvikling.</translation>
 <translation id="3778403066972421603">Vil du lagre dette kortet i Google-kontoen din og på denne enheten?</translation>
-<translation id="3779973883630527594">Selskapet, skolen eller organisasjonen som administrerer denne kontoen, kan</translation>
 <translation id="3781428340399460090">Knallrosa</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Utløper <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -561,6 +557,7 @@
 <translation id="3949571496842715403">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Det er ikke angitt noen alternative emnenavn i tjenerens sikkerhetssertifikat. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="3949601375789751990">Nettleserloggen din vises her</translation>
 <translation id="3950820424414687140">Logg på</translation>
+<translation id="3962859241508114581">Forrige spor</translation>
 <translation id="3963837677003247395">Vil du fortsette manuelt?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ingen}=1{Fra 1 nettsted }other{Fra # nettsteder }}</translation>
 <translation id="397105322502079400">Beregner …</translation>
@@ -583,6 +580,7 @@
 <translation id="410351446219883937">Autoavspilling</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for å se listen over sperrede nettadresser og andre innstillinger aktivert av systemadministratoren din.</translation>
 <translation id="4110652170750985508">Gjennomgå betalingen</translation>
+<translation id="4112140312785995938">Spol bakover</translation>
 <translation id="4116663294526079822">Tillat alltid på dette nettstedet</translation>
 <translation id="4117700440116928470">Omfanget for innstillingen støttes ikke.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 til}other{# til}}</translation>
@@ -661,6 +659,7 @@
 <translation id="443673843213245140">Bruk av mellomtjener er deaktivert, men det er angitt en uttrykkelig mellomtjenerkonfigurasjon.</translation>
 <translation id="445100540951337728">Godkjente debetkort</translation>
 <translation id="4466881336512663640">Endringer i skjemaet går tapt. Er du sikker på at du vil fortsette?</translation>
+<translation id="4477350412780666475">Neste spor</translation>
 <translation id="4482953324121162758">Dette nettstedet oversettes ikke.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">Ugyldig nettadresse. Dette må være en nettadresse på standardformat, f.eks. http://example.com eller https://example.com.</translation>
@@ -907,7 +906,6 @@
 <translation id="5838278095973806738">Du bør ikke oppgi sensitiv informasjon på dette nettstedet (for eksempel passord eller kredittkort) fordi den kan bli stjålet av angripere.</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5863847714970149516">Den neste siden kan prøve å belaste deg for penger</translation>
-<translation id="5865951947699094510">endre kontooppsettet eksternt</translation>
 <translation id="5866257070973731571">Legg til telefonnummer</translation>
 <translation id="5869405914158311789">Dette nettstedet er ikke tilgjengelig</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
@@ -1060,6 +1058,7 @@
 <translation id="6778737459546443941">Forelderen din har ikke godkjent det ennå</translation>
 <translation id="67862343314499040">Fiolett</translation>
 <translation id="6786747875388722282">Utvidelser</translation>
+<translation id="6790428901817661496">Spill av</translation>
 <translation id="679355240208270552">Ignorert fordi standardsøk ikke er aktivert av regel.</translation>
 <translation id="681021252041861472">Obligatorisk felt</translation>
 <translation id="6810899417690483278">Tilpasnings-ID</translation>
@@ -1104,6 +1103,7 @@
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7062635574500127092">Blågrønn</translation>
 <translation id="7064851114919012435">Kontaktinformasjon</translation>
+<translation id="7075452647191940183">Forespørselen er for stor</translation>
 <translation id="7079718277001814089">Dette nettstedet inneholder skadelig programvare</translation>
 <translation id="7087282848513945231">Fylke</translation>
 <translation id="7090678807593890770">Søk på Google etter <ph name="LINK" /></translation>
@@ -1162,6 +1162,7 @@
 <translation id="7353601530677266744">Kommandolinje </translation>
 <translation id="7372973238305370288">søkeresultat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">Mediekontroller</translation>
 <translation id="7378627244592794276">Nei takk</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Bekreft kortet</translation>
@@ -1265,7 +1266,6 @@
 <translation id="780301667611848630">Nei takk</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7806344367022510803">Endre innstillingene for søkemotor i Chrome</translation>
-<translation id="7810209002420871817">Som administrator for kontoen din kan <ph name="ACCOUNT_DOMAIN" /></translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Vil du fjerne skjemaforslaget fra Chrome?</translation>
 <translation id="7815407501681723534">Fant <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for «<ph name="SEARCH_STRING" />»</translation>

@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> datoteka</translation>
 <translation id="457386861538956877">Više...</translation>
 <translation id="4582497162516204941">Instalacija uz Linux (Beta)</translation>
+<translation id="4594543368593301662">Prikazuju se rezultati za <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Izvođač</translation>
 <translation id="4656293982926141856">Ovo računalo</translation>
 <translation id="4669606053856530811">Članovi grupe "<ph name="SOURCE_NAME" />" izgubit će pristup ako se te stavke ne podijele s njima.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Bugarska tipkovnica</translation>
 <translation id="5418923334382419584">mjanmarska tipkovnica</translation>
 <translation id="5428105026674456456">Španjolski</translation>
+<translation id="5438282218546237410">Nema rezultata za <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Poljska tipkovnica</translation>
 <translation id="5465122519792752163">nepalska tipkovnica (InScript)</translation>
 <translation id="5469868506864199649">Talijanski</translation>
 <translation id="5494920125229734069">Odaberi sve</translation>
 <translation id="5500122897333236901">Islandski</translation>
 <translation id="5508696409934741614">Točke</translation>
+<translation id="5522908512596376669">Popis datoteka promijenio se na prikaz popisa.</translation>
 <translation id="5524517123096967210">Nije bilo moguće pročitati datoteku.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> slika</translation>
 <translation id="5533555070048896610">transliteracija (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="6054173164583630569">Francuska tipkovnica</translation>
 <translation id="6074825444536523002">Google obrazac</translation>
+<translation id="6096979789310008754">Pretraži izbrisani tekst, uz prikaz svih datoteka i mapa.</translation>
 <translation id="6111770213269631447">transliteracija (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Razmak</translation>
 <translation id="6133173853026656527">Premještanje datoteke <ph name="FILE_NAME" />...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Slon</translation>
 <translation id="8569764466147087991">Odaberite datoteku za otvaranje</translation>
 <translation id="8579285237314169903">Sinkronizacija ovoliko stavki: <ph name="NUMBER_OF_FILES" />...</translation>
+<translation id="8600173386174225982">Popis datoteka promijenio se na prikaz minijatura.</translation>
 <translation id="8669949407341943408">Premještanje...</translation>
 <translation id="8671210955687109937">Može komentirati</translation>
 <translation id="8686213429977032554">Ova datoteka na Disku još se ne dijeli</translation>

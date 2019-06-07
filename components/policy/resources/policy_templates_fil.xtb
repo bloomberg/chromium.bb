@@ -144,15 +144,6 @@
       Kung nakatakda ang patakaran sa false, hindi iuulat ang katayuan ng dev switch.</translation>
 <translation id="1160479894929412407">Payagan ang QUIC protocol</translation>
 <translation id="1160939557934457296">Huwag paganahin ang pagpapatuloy mula sa pahina ng babala sa Ligtas na Pag-browse</translation>
-<translation id="1171342272070128466">I-enable ang feature ng pagiging naa-access ng naka-dock na magnifier.
-
-          Kung nakatakda ang patakarang ito sa true, palaging naka-enable ang naka-dock na magnifier.
-
-          Kung nakatakda ang patakarang ito sa false, palaging naka-disable ang naka-dock na magnifier.
-
-          Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
-
-          Kung hahayaang hindi nakatakda ang patakarang ito, madi-disable sa simula ang naka-dock na magnifier pero puwede itong i-enable ng user anumang oras.</translation>
 <translation id="1189817621108632689">Binibigyang-daan kang magtakda ng listahan ng mga pattern ng url na tumutukoy ng mga site na hindi pinapayagang magpakita ng mga larawan.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, gagamitin ang pangkalahatang default na value para sa lahat ng site mula sa patakarang 'DefaultImagesSetting' kung nakatakda ito, o kung hindi, sa personal na pag-configure ng user.
@@ -1580,11 +1571,6 @@
       Kung itatakda ang patakaran sa false, hindi iuulat ang impormasyon ng session sa
       kiosk. Kung itatakda sa true o kung sadyang hindi itatakda, iuulat ang impormasyon ng session
       sa kiosk.</translation>
-<translation id="3852924591079583104">
-      Pupuwersahin ng patakarang ito, kapag nakatakda sa ArcSession, na mag-reboot ang device kapag may user na nag-sign out kung nagsimula ang Android.
-      Kapag nakatakda sa Palagi, pupuwersahin nito ang device na mag-reboot sa tuwing pag-sign out ng user.
-      Kung iwang hindi nakatakda, wala itong epekto at hindi pupuwersahin ang pag-reboot sa pag-sign out ng user. Nalalapat din ito kung nakatakda sa Hindi Kailanman.
-      </translation>
 <translation id="3858658082795336534">Default na printing duplex mode</translation>
 <translation id="3859780406608282662">Magdagdag ng parameter sa pagkuha ng seed ng Mga Variation sa <ph name="PRODUCT_OS_NAME" />.
 
@@ -3468,7 +3454,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung itinakda ang patakarang ito sa 'RemoveLRUIfDormant', patuloy na aalisin ng awtomatikong pag-clean-up ang mga user na hindi nag-log in sa nakalipas na tatlong buwan na nakaayos ayon sa pinakamatagal nang pag-log-in hanggang magkaroon ng sapat na espasyo sa disk.
 
       Kung hindi itinakda ang patakarang ito, gagamiting ng awtomatikong pag-clean-up ang default na built-in na diskarte. Sa kasalukuyan, ito ay ang 'RemoveLRUIfDormant' na diskarte.</translation>
-<translation id="7334274148831027933">I-enable ang naka-dock na magnifier</translation>
 <translation id="7336785017449297672">Nagkokontrol sa mga setting ng clock at time zone.</translation>
 <translation id="7336878834592315572">Panatilihin ang cookies para sa kabuuan ng session</translation>
 <translation id="7339315111520512972">Sapilitang paganahin ang networking code sa proseso ng browser</translation>

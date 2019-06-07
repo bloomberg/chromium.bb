@@ -2144,6 +2144,12 @@
 <translation id="4242577469625748426">Không thể cài đặt các cài đặt chính sách trên thiết bị: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Tìm thêm ứng dụng bút cảm ứng</translation>
 <translation id="424726838611654458">Luôn mở trong Adobe Reader</translation>
+<translation id="4247274662191902962">Dữ liệu cảm biến sẽ chỉ được chia sẻ khi bạn vào trải nghiệm thực tế ảo này. Trang web này có thể tìm hiểu về bạn thông qua một số thông tin, chẳng hạn như:
+    - Vị trí của bạn
+    - Đặc điểm ngoại hình của bạn, như vị trí mắt
+    - Cử động của bạn, ví dụ như cách đi
+
+    Đảm bảo bạn tin cậy trang web này trước khi cho phép truy cập.</translation>
 <translation id="4247901771970415646">Không thể đồng bộ hóa với <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Đang chờ kết nối mạng...</translation>
 <translation id="4249373718504745892">Trang này đã bị chặn truy cập vào máy ảnh và micrô của bạn.</translation>

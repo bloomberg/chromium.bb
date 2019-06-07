@@ -2142,6 +2142,12 @@
 <translation id="4242577469625748426">기기에 정책 설정을 설치하지 못함: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">스타일러스 앱 더보기</translation>
 <translation id="424726838611654458">항상 Adobe Reader에서 열기</translation>
+<translation id="4247274662191902962">이 VR 경험을 사용하는 동안에만 센서 데이터가 공유됩니다. 사이트에서 다음과 같은 특정 정보를 사용해 나에 관한 정보를 학습할 수 있습니다.
+    - 위치
+    - 눈 위치와 같은 신체적 특징
+    - 걸음걸이와 같은 움직임
+
+    액세스를 허용하기 전에 사이트를 신뢰할 수 있는지 확인하세요.</translation>
 <translation id="4247901771970415646"><ph name="USERNAME" />과(와) 동기화할 수 없음</translation>
 <translation id="4249248555939881673">네트워크 연결 대기 중...</translation>
 <translation id="4249373718504745892">카메라와 마이크 액세스가 차단된 페이지입니다.</translation>

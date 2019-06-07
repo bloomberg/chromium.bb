@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">IMAGEN</translation>
 <translation id="257088987046510401">Temas</translation>
 <translation id="2570922361219980984">El acceso a la ubicación también está desactivado en este dispositivo. Actívalo en la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grupo</translation>
 <translation id="257931822824936280">Expandido; haz clic para contraer.</translation>
 <translation id="2581165646603367611">Esta acción borrará la caché, cookies y otros datos de sitios que Chrome no considera importantes.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> y <ph name="PARENT_NAME_2" /> administran esta cuenta.</translation>
 <translation id="2962095958535813455">Se seleccionaron las pestañas en modo de navegación de incógnito</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
+<translation id="2977480621796371840">Quitar del grupo</translation>
 <translation id="2979025552038692506">Pestaña de incógnito seleccionada</translation>
 <translation id="2989523299700148168">Visitados recientemente</translation>
 <translation id="2996291259634659425">Crear frase de contraseña</translation>
@@ -426,6 +428,12 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4226663524361240545">Es posible que las notificaciones hagan vibrar el dispositivo</translation>
 <translation id="423219824432660969">Encriptar los datos sincronizados con la contraseña de Google a partir del <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Abrir la configuración</translation>
+<translation id="4247274662191902962">Los datos del sensor solo se compartirán cuando estés disfrutando de esta experiencia en RV. Es posible que el sitio te reconozca con cierta información, por ejemplo:
+    - Tu ubicación
+    - Tus características físicas, como la posición de los ojos
+    - Tus movimientos, como la manera de caminar
+
+    Antes de permitir el acceso, asegúrate de que confías en este sitio.</translation>
 <translation id="424864128008805179">¿Quieres salir de Chrome?</translation>
 <translation id="4256782883801055595">Licencias de código abierto</translation>
 <translation id="4259722352634471385">Navegación bloqueada: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="545042621069398927">Acelerando la descarga</translation>
 <translation id="5456381639095306749">Descargar página</translation>
 <translation id="5475862044948910901">¿Quieres iniciar la sesión de realidad aumentada?</translation>
+<translation id="5481942164684849270">Se agregó <ph name="APP_NAME" /> a mis apps</translation>
 <translation id="548278423535722844">Abrir en una app de mapas</translation>
 <translation id="5487521232677179737">Borrar datos</translation>
 <translation id="5494752089476963479">Bloquear anuncios de sitios que muestran anuncios intrusivos o engañosos</translation>

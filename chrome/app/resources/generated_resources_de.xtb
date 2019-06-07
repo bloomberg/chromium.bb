@@ -151,7 +151,7 @@
 <translation id="1206407435587370571">Ihr Chromebook kennenlernen</translation>
 <translation id="1209796539517632982">Automatische Wahl des Nameservers</translation>
 <translation id="1211364473545090084">In einem Inkognitofenster können Sie surfen, ohne dass Ihr Browserverlauf gespeichert wird</translation>
-<translation id="1211769675100312947">Verknüpfungen werden von Ihnen ausgewählt</translation>
+<translation id="1211769675100312947">Sie können die Verknüpfungen personalisieren</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> Fingerabdrücke eingerichtet</translation>
 <translation id="1215411991991485844">Neue Hintergrund-App hinzugefügt</translation>
 <translation id="1217483152325416304">Ihre lokalen Daten werden bald gelöscht</translation>
@@ -655,7 +655,7 @@
 <translation id="1983959805486816857">Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen jederzeit von jedem Gerät aus unter <ph name="MANAGEMENT_URL" /> verwalten.</translation>
 <translation id="1987317783729300807">Konten</translation>
 <translation id="1989112275319619282">Durchsuchen</translation>
-<translation id="1990512225220753005">Keine Verknüpfungen auf dieser Seite einblenden</translation>
+<translation id="1990512225220753005">Keine Verknüpfungen auf dieser Seite anzeigen</translation>
 <translation id="1992397118740194946">Nicht eingerichtet</translation>
 <translation id="1994173015038366702">Website-URL</translation>
 <translation id="1997484222658892567"><ph name="URL" /> möchte umfangreiche Daten dauerhaft auf Ihrem lokalen Computer speichern</translation>
@@ -2139,6 +2139,12 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4242577469625748426">Fehler beim Installieren der Richtlinieneinstellungen auf dem Gerät: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Mehr Eingabestift-Apps suchen</translation>
 <translation id="424726838611654458">Immer mit Adobe Reader öffnen</translation>
+<translation id="4247274662191902962">Sensordaten werden nur geteilt, während Sie diese VR-Funktion verwenden. Die Website erhält möglicherweise bestimmte Informationen über Sie. Dazu gehören
+    – Ihr Standort,
+    – physische Merkmale wie Ihre Augenposition und
+    – Bewegungen, wie z. B. Ihre Art, zu gehen.
+
+    Geben Sie dieser Website nur Zugriff, wenn Sie ihr vertrauen.</translation>
 <translation id="4247901771970415646">Synchronisierung mit <ph name="USERNAME" /> nicht möglich</translation>
 <translation id="4249248555939881673">Auf Netzwerkverbindung warten...</translation>
 <translation id="4249373718504745892">Diese Seite darf nicht auf die Kamera und das Mikrofon zugreifen.</translation>
@@ -4465,7 +4471,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7849264908733290972">B&amp;ild in neuem Tab öffnen</translation>
 <translation id="784934925303690534">Zeitraum</translation>
 <translation id="7850222546481862746"><ph name="BEGIN_PARAGRAPH1" />Damit die Einrichtung der Elternaufsicht auf diesem Gerät abgeschlossen werden kann, müssen Sie sich aus dem Konto von <ph name="USER_NAME" /> abmelden.<ph name="END_PARAGRAPH1" />
-      <ph name="BEGIN_PARAGRAPH2" />Sie können Family Link für Eltern auf Ihrem eigenen Gerät installieren, um die Jugendschutzeinstellungen Ihres Kindes zu verwalten.<ph name="END_PARAGRAPH2" /></translation>
+      <ph name="BEGIN_PARAGRAPH2" />Sie können die Jugendschutzeinstellungen für Ihr Kind verwalten, indem Sie Family Link für Eltern auf Ihrem eigenen Gerät installieren.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="7851457902707056880">Die Anmeldung ist nur über das Eigentümerkonto möglich. Bitte starten Sie das Gerät neu und melden Sie sich dann mit dem Eigentümerkonto an. Das Gerät wird in 30 Sekunden automatisch neu gestartet.</translation>
 <translation id="7851716364080026749">Zugriff auf Kamera und Mikrofon immer blockieren</translation>
 <translation id="7853747251428735">Weitere Too&amp;ls</translation>

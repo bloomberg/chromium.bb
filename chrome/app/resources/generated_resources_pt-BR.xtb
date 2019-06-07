@@ -2144,6 +2144,12 @@
 <translation id="4242577469625748426">Falha ao instalar configurações da política no dispositivo: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Encontrar mais apps para usar com a stylus</translation>
 <translation id="424726838611654458">Sempre abrir com o Adobe Reader</translation>
+<translation id="4247274662191902962">Os dados do sensor serão compartilhados apenas enquanto você estiver nesta experiência de RV. É possível que o site aprenda sobre você usando algumas informações, como estas:
+    - Sua localização
+    - Suas características físicas, como a posição dos olhos
+    - Seus movimentos, como a maneira como você caminha
+
+    Certifique-se de que esse site seja confiável antes de conceder acesso.</translation>
 <translation id="4247901771970415646">Não é possível sincronizar com <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Aguardando conexão da rede...</translation>
 <translation id="4249373718504745892">Esta página foi impedida de acessar sua câmera e seu microfone.</translation>

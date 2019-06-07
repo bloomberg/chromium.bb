@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
-<translation id="1001338328714563407">നിങ്ങളുടെ ഉപകരണത്തിൻ്റെയും അക്കൗണ്ടിൻ്റെയും മാനേജരെന്ന നിലയിൽ, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">ഇപ്പോഴല്ല</translation>
 <translation id="1010200102790553230">പേജ് പിന്നീട് ലോഡ് ചെയ്യുക</translation>
 <translation id="1015730422737071372">കൂടുതൽ വിശദാംശങ്ങൾ നൽകുക</translation>
@@ -41,6 +40,7 @@
 <translation id="1161325031994447685">Wi-Fi-ലേക്ക് വീണ്ടും കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="1165039591588034296">പിശക്</translation>
 <translation id="1175364870820465910">&amp;അച്ചടിക്കൂ...</translation>
+<translation id="1178581264944972037">അല്പംനിര്‍ത്തൂ</translation>
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
 <translation id="1197088940767939838">ഓറഞ്ച്</translation>
 <translation id="1201402288615127009">അടുത്തത്</translation>
@@ -98,7 +98,6 @@
 <translation id="1405567553485452995">ഇളം പച്ച</translation>
 <translation id="1407135791313364759">എല്ലാം തുറക്കുക</translation>
 <translation id="1413809658975081374">സ്വകാര്യ പിശക്</translation>
-<translation id="14171126816530869"><ph name="LOCALITY" /> ലെ <ph name="ORGANIZATION" /> ന്റെ വ്യക്തിത്വം <ph name="ISSUER" /> പരിശോധിച്ചു.</translation>
 <translation id="1426410128494586442">അതെ</translation>
 <translation id="1430915738399379752">അച്ചടിക്കുക</translation>
 <translation id="1455413310270022028">ഇറേസർ</translation>
@@ -251,6 +250,7 @@
 <translation id="2262243747453050782">HTTP പിശക്</translation>
 <translation id="2263079731045660823">Chrome ക്രമീകരണത്തിൽ ക്രെഡിറ്റ് കാർഡിന്‍റെ സ്വമേധയാ പൂരിപ്പിക്കൽ വിവരം അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
 <translation id="2270484714375784793">ഫോൺ നമ്പർ</translation>
+<translation id="2277103315734023688">മുന്നോട്ട് നീക്കുക</translation>
 <translation id="2283340219607151381">വിലാസങ്ങൾ സംരക്ഷിച്ച് സ്വമേധയാ പൂരിപ്പിക്കുക</translation>
 <translation id="2292556288342944218">നിങ്ങളുടെ ഇന്‍റർനെറ്റ് ആക്‌സസ് തടഞ്ഞു</translation>
 <translation id="2297722699537546652">B5 (എൻവലപ്പ്)</translation>
@@ -375,7 +375,6 @@
 <translation id="295526156371527179">മുന്നറിയിപ്പ്: ഈ നയം ഒരു നിഘണ്ടു അല്ലാത്തതിനാലാണ് നയത്തിൽ വ്യക്തമാക്കിയിരിക്കുന്നത് പോലെ ഇത് ഒരു നിഘണ്ടുവായി ലയിപ്പിക്കാത്തത്.</translation>
 <translation id="2955913368246107853">ഫൈന്‍ഡ് ബാര്‍ അടയ്ക്കുക</translation>
 <translation id="2969319727213777354">ഒരു സുരക്ഷിത കണക്ഷൻ സ്ഥാപിക്കുന്നതിന്, നിങ്ങളുടെ ക്ലോക്ക് ശരിയായി സജ്ജീകരിക്കേണ്ടതുണ്ട്. വെബ്‌സൈറ്റുകൾ സ്വയം തിരിച്ചറിയുന്നതിന് ഉപയോഗിക്കുന്ന സർട്ടിഫിക്കറ്റുകൾ, നിർദ്ദിഷ്‌ട സമയ പരിധിയിൽ മാത്രം സാധുതയുള്ളതിനാലാണിത്. നിങ്ങളുടെ ഉപകരണത്തിന്റെ ക്ലോക്ക് തെറ്റായിരിക്കുന്നതിനാൽ, Google Chrome-ന് ഈ സർട്ടിഫിക്കറ്റുകൾ പരിശോധിച്ചുറപ്പിക്കാനാവില്ല.</translation>
-<translation id="2970515157925768593">നിങ്ങളുടെ ഉപകരണ, അക്കൗണ്ട് സജ്ജീകരണം റിമോട്ടായി മാറ്റാനാവും.</translation>
 <translation id="2972581237482394796">&amp;വീണ്ടും ചെയ്യുക</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, നിലവിൽ തിരഞ്ഞെടുത്തു. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">ഡാറ്റ മായ്‌ക്കുക</translation>
@@ -387,7 +386,6 @@
 <translation id="3005723025932146533">സംരക്ഷിച്ച പകർപ്പ് കാണിക്കുക</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" />-ന്‍റെ CVC നൽകുക. സ്ഥിരീകരിച്ച് കഴിഞ്ഞാൽ, നിങ്ങളുടെ കാർഡ് വിശദാംശങ്ങൾ ഈ സൈറ്റുമായി പങ്കിടും.</translation>
 <translation id="3010559122411665027">ലിസ്റ്റ് എൻട്രി "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">ഈ ഉപകരണത്തിൻ്റെ മാനേജരെന്ന നിലയിൽ, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">സ്വയമേവ ബ്ലോക്കുചെയ്‌തു</translation>
 <translation id="3023071826883856138">You4 (എൻവലപ്പ്)</translation>
 <translation id="3024663005179499861">തെറ്റായ നയ തരം</translation>
@@ -432,7 +430,6 @@
 <translation id="3287510313208355388">ഓൺലൈൻ ആയിരിക്കുന്ന സമയത്ത് ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> നയത്തെ കുറിച്ച് കൂടുതലറിയുക</translation>
 <translation id="3303855915957856445">തിരയൽ ഫലങ്ങളൊന്നും കണ്ടെത്തിയില്ല</translation>
-<translation id="3311730110465560799">നിങ്ങളുടെ ഉപകരണ സജ്ജീകരണം റിമോട്ട് ആയി മാറ്റാം.</translation>
 <translation id="3320021301628644560">ബില്ലിംഗ് വിലാസം ചേർക്കുക</translation>
 <translation id="3324983252691184275">ക്രിംസൺ</translation>
 <translation id="3338095232262050444">സുരക്ഷിതം</translation>
@@ -528,7 +525,6 @@
 <translation id="3761718714832595332">സ്‌റ്റാറ്റസ് മറയ്ക്കുക</translation>
 <translation id="3765032636089507299">സുരക്ഷിത ബ്രൗസിംഗ് പേജ് നിർമ്മാണത്തിലാണ്.</translation>
 <translation id="3778403066972421603">ഈ കാർഡ് നിങ്ങളുടെ Google അക്കൗണ്ടിലും ഈ ഉപകരണത്തിലും സംരക്ഷിക്കണോ?</translation>
-<translation id="3779973883630527594">ഈ അക്കൗണ്ട് മാനേജ് ചെയ്യുന്ന കമ്പനി, സ്‌കൂൾ അല്ലെങ്കിൽ സ്ഥാപനം:</translation>
 <translation id="3781428340399460090">ഹോട്ട് പിങ്ക്</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" />-ൽ അവസാനിക്കുന്നു</translation>
@@ -552,6 +548,7 @@
 <translation id="3949571496842715403">ഈ സെർവറിന് ഇത് <ph name="DOMAIN" /> ആണെന്ന് തെളിയിക്കാനായില്ല; അതിന്റെ സുരക്ഷാ സർട്ടിഫിക്കറ്റ് വിഷയേതര നാമങ്ങൾ വ്യക്തമാക്കുന്നില്ല. തെറ്റായ കോൺഫിഗറേഷൻ കാരണമോ ഒരു അക്രമി നിങ്ങളുടെ കണക്ഷനെ തടസ്സപ്പെടുത്തുന്നത് കൊണ്ടോ ആയിരിക്കാം ഇത് സംഭവിച്ചത്.</translation>
 <translation id="3949601375789751990">നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഇവിടെ ദൃശ്യമാകും</translation>
 <translation id="3950820424414687140">സൈൻ ഇൻ</translation>
+<translation id="3962859241508114581">മുമ്പത്തെ ട്രാക്ക്</translation>
 <translation id="3963837677003247395">നേരിട്ട് തുടരണോ?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{ഒന്നുമില്ല}=1{ഒരു സൈറ്റിൽ നിന്ന് }other{# സൈറ്റുകളിൽ നിന്ന് }}</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
@@ -574,6 +571,7 @@
 <translation id="410351446219883937">സ്വയം പ്ലേചെയ്യൽ</translation>
 <translation id="4103763322291513355">ബ്ലാക്ക്‌ലിസ്റ്റിൽപ്പെട്ട URL-കളുടെ ലിസ്റ്റും നിങ്ങളുടെ സിസ്റ്റം അഡ്‌മിനിസ്‌ട്രേറ്റർ നടപ്പിലാക്കിയ മറ്റ് നയങ്ങളും കാണുന്നതിന് &lt;strong&gt;chrome://policy&lt;/strong&gt; സന്ദർശിക്കുക.</translation>
 <translation id="4110652170750985508">നിങ്ങളുടെ പേയ്‌മെന്‍റ് അവലോകനം ചെയ്യുക</translation>
+<translation id="4112140312785995938">പുറകിലേക്ക് നീക്കുക</translation>
 <translation id="4116663294526079822">ഈ സൈറ്റിൽ എല്ലായ്‌പ്പോഴും അനുവദിക്കുക</translation>
 <translation id="4117700440116928470">നയ പരിധി പിന്തുണയ്ക്കുന്നില്ല.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{മറ്റൊരെണ്ണം}other{മറ്റ് # എണ്ണം}}</translation>
@@ -652,6 +650,7 @@
 <translation id="443673843213245140">പ്രോക്‌സി ഉപയോഗം അപ്രാപ്‌തമാക്കി പക്ഷെ ഒരു വ്യക്തമായ പ്രോക്‌സി കോൺഫിഗറേഷൻ നിർദ്ദേശിച്ചു.</translation>
 <translation id="445100540951337728">ഡെബിറ്റ് കാർഡുകൾ സ്വീകരിക്കുന്നു</translation>
 <translation id="4466881336512663640">ഫോം മാറ്റങ്ങൾ നഷ്‌ടമാകും. തുടരണമെന്ന് നിങ്ങൾക്ക് തീർച്ചയാണോ?</translation>
+<translation id="4477350412780666475">അടുത്ത ട്രാക്ക്</translation>
 <translation id="4482953324121162758">ഈ സൈറ്റ് വിവർത്തനം ചെയ്യപ്പെടില്ല.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4493480324863638523">URL അസാധുവാണ്. സ്‌റ്റാൻഡേർഡ് സ്‌കീം ഉള്ള URL ആയിരിക്കണം, ഉദാ. http://example.com അല്ലെങ്കിൽ https://example.com.</translation>
@@ -898,7 +897,6 @@
 <translation id="5838278095973806738">അക്രമകാരികൾ മോഷ്‌ടിക്കാൻ സാധ്യതയുള്ളതിനാൽ ഈ സൈറ്റിൽ നിങ്ങളുടെ രഹസ്യ വിവരങ്ങളൊന്നും (ഉദാഹരണത്തിന്, പാസ്‌വേഡുകളോ ക്രെഡിറ്റ് കാർഡുകളോ പോലുള്ളവ) നൽകരുത്.</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
 <translation id="5863847714970149516">മുമ്പോട്ടുള്ള പേജ് നിങ്ങളിൽ നിന്ന് പണമീടാക്കാൻ ശ്രമിച്ചേക്കാം</translation>
-<translation id="5865951947699094510">നിങ്ങളുടെ അക്കൗണ്ട് സജ്ജീകരണം റിമോട്ട് ആയി മാറ്റാം.</translation>
 <translation id="5866257070973731571">ഫോണ്‍ നമ്പര്‍ ചേര്‍ക്കുക</translation>
 <translation id="5869405914158311789">ഈ സൈറ്റ് ലഭ്യമാക്കാനാകുന്നില്ല</translation>
 <translation id="5869522115854928033">സംരക്ഷിച്ച പാസ്‌വേഡുകള്‍</translation>
@@ -1051,6 +1049,7 @@
 <translation id="6778737459546443941">നിങ്ങളുടെ രക്ഷിതാവ് ഇതുവരെ അംഗീകാരം നൽകിയിട്ടില്ല</translation>
 <translation id="67862343314499040">വയലറ്റ്</translation>
 <translation id="6786747875388722282">വിപുലീകരണങ്ങള്‍</translation>
+<translation id="6790428901817661496">പ്ലേചെയ്യുക</translation>
 <translation id="679355240208270552">നയ പ്രകാരം, ഡിഫോൾട്ട് തിരയൽ പ്രവർത്തനക്ഷമമാക്കാത്തതിനാൽ അവഗണിച്ചു.</translation>
 <translation id="681021252041861472">ഇത് പൂരിപ്പിക്കേണ്ടതുണ്ട്</translation>
 <translation id="6810899417690483278">ഇഷ്‌ടാനുസൃതമാക്കൽ ഐഡി</translation>
@@ -1151,6 +1150,7 @@
 <translation id="7353601530677266744">കമാന്‍റ് ലൈന്‍‌</translation>
 <translation id="7372973238305370288">തിരയൽ ഫലം</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
+<translation id="7378594059915113390">മീഡിയ നിയന്ത്രണങ്ങൾ</translation>
 <translation id="7378627244592794276">വേണ്ട</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">കാർഡ് സ്ഥിരീകരിക്കുക</translation>
@@ -1252,7 +1252,6 @@
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
 <translation id="7805768142964895445">നില</translation>
 <translation id="7806344367022510803">Chrome-ൽ തിരയല്‍ യന്ത്ര ക്രമീകരണം മാറ്റുക</translation>
-<translation id="7810209002420871817">നിങ്ങളുടെ അക്കൗണ്ടിൻ്റെ മാനേജരെന്ന നിലയിൽ, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome-ൽ നിന്നുള്ള നിർദ്ദേശം നീക്കംചെയ്യണോ?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' എന്നതിന്റെ <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> കണ്ടു</translation>

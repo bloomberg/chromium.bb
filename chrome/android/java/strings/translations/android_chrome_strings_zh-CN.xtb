@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">图片</translation>
 <translation id="257088987046510401">主题背景</translation>
 <translation id="2570922361219980984">此设备的位置信息使用权也已关闭；若想开启这项权限，请转到 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />。</translation>
+<translation id="257674075312929031">群组</translation>
 <translation id="257931822824936280">已展开 - 点击此处即可收起。</translation>
 <translation id="2581165646603367611">这会清除 Chrome 认为不重要的网站的 Cookie、缓存和其他数据。</translation>
 <translation id="2586657967955657006">剪贴板</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">该帐号由 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2962095958535813455">已切换到隐身标签页</translation>
 <translation id="2968755619301702150">证书查看器</translation>
+<translation id="2977480621796371840">从组中移除</translation>
 <translation id="2979025552038692506">所选的隐身标签页</translation>
 <translation id="2989523299700148168">最近用过的搜索引擎</translation>
 <translation id="2996291259634659425">创建密码</translation>
@@ -426,6 +428,12 @@
 <translation id="4226663524361240545">收到通知时设备会振动</translation>
 <translation id="423219824432660969">自 <ph name="TIME" />起，使用 Google 密码加密已同步的数据</translation>
 <translation id="4242533952199664413">打开“设置”</translation>
+<translation id="4247274662191902962">仅在您体验此 VR 时才能分享传感器数据。这可能会让网站可以使用某些信息来了解您，例如：
+    - 您的位置信息
+    - 您的身体特征，例如眼睛位置
+    - 您的动作，例如走路姿势
+
+    请确保您信任此网站，然后再允许访问。</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
@@ -598,6 +606,7 @@
 <translation id="545042621069398927">正在加快您的下载速度。</translation>
 <translation id="5456381639095306749">下载网页</translation>
 <translation id="5475862044948910901">启动增强现实会话？</translation>
+<translation id="5481942164684849270">“<ph name="APP_NAME" />”已添加到“我的应用”</translation>
 <translation id="548278423535722844">在地图应用中打开</translation>
 <translation id="5487521232677179737">清除数据</translation>
 <translation id="5494752089476963479">禁止会展示侵扰性或误导性广告的网站显示广告</translation>

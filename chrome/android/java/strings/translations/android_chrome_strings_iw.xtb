@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">תמונה</translation>
 <translation id="257088987046510401">ערכות נושא</translation>
 <translation id="2570922361219980984">‏גם הגישה למיקום כבויה בשביל המכשיר הזה. יש להפעיל אותה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">קבוצה</translation>
 <translation id="257931822824936280">מורחב - לחץ כדי לכווץ.</translation>
 <translation id="2581165646603367611">‏פעולה זו תמחק את קובצי ה-Cookie, את המטמון ונתונים אחרים של אתרים ש-Chrome לא מחשיב כחשובים.</translation>
 <translation id="2586657967955657006">לוח</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME_1" /> ו-<ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">הוחלף לכרטיסיות גלישה בסתר</translation>
 <translation id="2968755619301702150">מציג האישורים</translation>
+<translation id="2977480621796371840">הסרה מהקבוצה</translation>
 <translation id="2979025552038692506">כרטיסיית הגלישה בסתר שנבחרה</translation>
 <translation id="2989523299700148168">מנועי חיפוש שהשתמשת בהם לאחרונה</translation>
 <translation id="2996291259634659425">יצירת ביטוי סיסמה</translation>
@@ -426,6 +428,12 @@
 <translation id="4226663524361240545">רטט של המכשיר אפשרי כשמתקבלת הודעה</translation>
 <translation id="423219824432660969">‏הצפנת נתונים מסונכרנים באמצעות סיסמת Google החל מ-<ph name="TIME" /></translation>
 <translation id="4242533952199664413">פתח את 'הגדרות'</translation>
+<translation id="4247274662191902962">‏שיתוף נתוני החיישן יתבצע רק במהלך ההשתתפות בחוויית ה-VR הזו. ייתכן שהאתר ילמד עליך באמצעות פרטים מסוימים, למשל:
+    - המיקום שלך
+    - המאפיינים הגופניים שלך, כמו מיקום העיניים
+    - התנועות שלך, למשל צורת ההליכה
+
+    לפני הענקת הגישה, יש לוודא שמדובר באתר מהימן.</translation>
 <translation id="424864128008805179">‏האם לצאת מ-Chrome?</translation>
 <translation id="4256782883801055595">רישיונות קוד פתוח</translation>
 <translation id="4259722352634471385">הניווט חסום: <ph name="URL" /></translation>
@@ -598,6 +606,7 @@
 <translation id="545042621069398927">הדפדפן מאיץ את ההורדה.</translation>
 <translation id="5456381639095306749">הורד דף זה</translation>
 <translation id="5475862044948910901">להתחיל פעילות של מציאות רבודה?</translation>
+<translation id="5481942164684849270">'<ph name="APP_NAME" />' נוסף לאפליקציות שלי</translation>
 <translation id="548278423535722844">פתח יישום מפות</translation>
 <translation id="5487521232677179737">ניקוי נתונים</translation>
 <translation id="5494752089476963479">חסימת מודעות באתרים שמוצגות בהם מודעות מפריעות או מטעות</translation>

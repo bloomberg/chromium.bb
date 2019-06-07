@@ -223,6 +223,7 @@
 <translation id="2567385386134582609">BILD</translation>
 <translation id="257088987046510401">Designs</translation>
 <translation id="2570922361219980984">Der Standortzugriff ist für dieses Gerät ebenfalls deaktiviert. Sie können ihn in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
+<translation id="257674075312929031">Gruppe</translation>
 <translation id="257931822824936280">Maximiert – zum Minimieren klicken</translation>
 <translation id="2581165646603367611">Alle Cookies, der Cache und andere Daten von Websites, die Chrome nicht für wichtig hält, werden gelöscht.</translation>
 <translation id="2586657967955657006">Zwischenablage</translation>
@@ -274,6 +275,7 @@
 <translation id="2956410042958133412">Dieses Konto wird von <ph name="PARENT_NAME_1" /> und <ph name="PARENT_NAME_2" /> verwaltet.</translation>
 <translation id="2962095958535813455">Zu Inkognito-Tabs gewechselt</translation>
 <translation id="2968755619301702150">Zertifikats-Viewer</translation>
+<translation id="2977480621796371840">Aus Gruppe entfernen</translation>
 <translation id="2979025552038692506">Ausgewählter Inkognito-Tab</translation>
 <translation id="2989523299700148168">Kürzlich besucht</translation>
 <translation id="2996291259634659425">Passphrase erstellen</translation>
@@ -426,6 +428,12 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4226663524361240545">Bei Benachrichtigungen kann das Gerät vibrieren</translation>
 <translation id="423219824432660969">Synchronisierte Daten mit dem Google-Passwort vom <ph name="TIME" /> verschlüsseln</translation>
 <translation id="4242533952199664413">Einstellungen öffnen</translation>
+<translation id="4247274662191902962">Sensordaten werden nur geteilt, während Sie diese VR-Funktion verwenden. Die Website erhält möglicherweise bestimmte Informationen über Sie. Dazu gehören
+    – Ihr Standort,
+    – physische Merkmale wie Ihre Augenposition und
+    – Bewegungen, wie z. B. Ihre Art, zu gehen.
+
+    Geben Sie dieser Website nur Zugriff, wenn Sie ihr vertrauen.</translation>
 <translation id="424864128008805179">Von Chrome abmelden?</translation>
 <translation id="4256782883801055595">Open Source-Lizenzen</translation>
 <translation id="4259722352634471385">Die Navigation zu <ph name="URL" /> ist blockiert.</translation>
@@ -598,6 +606,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="545042621069398927">Download wird beschleunigt.</translation>
 <translation id="5456381639095306749">Seite herunterladen</translation>
 <translation id="5475862044948910901">Augmented-Reality-Sitzung starten?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> zu meinen Apps hinzugefügt</translation>
 <translation id="548278423535722844">In einer Karten-App öffnen</translation>
 <translation id="5487521232677179737">Daten löschen</translation>
 <translation id="5494752089476963479">Werbung auf Websites blockieren, auf denen aufdringliche oder irreführende Werbung angezeigt wird</translation>
