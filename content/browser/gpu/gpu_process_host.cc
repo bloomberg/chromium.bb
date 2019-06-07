@@ -276,8 +276,8 @@ void RunCallbackOnIO(GpuProcessKind kind,
 
 void OnGpuProcessHostDestroyedOnUI(int host_id, const std::string& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  GpuDataManagerImpl::GetInstance()->AddLogMessage(
-      logging::LOG_ERROR, "GpuProcessHostUIShim", message);
+  GpuDataManagerImpl::GetInstance()->AddLogMessage(logging::LOG_ERROR,
+                                                   "GpuProcessHost", message);
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()
       ->GetGpuPlatformSupportHost()
@@ -719,23 +719,28 @@ GpuProcessHost::~GpuProcessHost() {
                            gpu::GpuSurfaceTracker::Get()->GetSurfaceCount());
 #endif
 
-  std::string message;
   bool block_offscreen_contexts = true;
-  if (!in_process_ && process_launched_ &&
-      kind_ == GPU_PROCESS_KIND_SANDBOXED) {
+  if (!in_process_ && process_launched_) {
     ChildProcessTerminationInfo info =
         process_->GetTerminationInfo(false /* known_dead */);
-    UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus2",
-                              ConvertToGpuTerminationStatus(info.status),
-                              GpuTerminationStatus::MAX_ENUM);
+    std::string message;
+    if (kind_ == GPU_PROCESS_KIND_SANDBOXED) {
+      UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus2",
+                                ConvertToGpuTerminationStatus(info.status),
+                                GpuTerminationStatus::MAX_ENUM);
 
-    if (info.status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
-        info.status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
-        info.status == base::TERMINATION_STATUS_PROCESS_CRASHED) {
-      // Windows always returns PROCESS_CRASHED on abnormal termination, as it
-      // doesn't have a way to distinguish the two.
-      base::UmaHistogramSparse("GPU.GPUProcessExitCode",
-                               std::max(0, std::min(100, info.exit_code)));
+      if (info.status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
+          info.status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
+          info.status == base::TERMINATION_STATUS_PROCESS_CRASHED) {
+        // Windows always returns PROCESS_CRASHED on abnormal termination, as it
+        // doesn't have a way to distinguish the two.
+        base::UmaHistogramSparse("GPU.GPUProcessExitCode",
+                                 std::max(0, std::min(100, info.exit_code)));
+      }
+
+      message = "The GPU process ";
+    } else {
+      message = "The unsandboxed GPU process ";
     }
 
     switch (info.status) {
@@ -748,32 +753,46 @@ GpuProcessHost::~GpuProcessHost() {
 #if defined(OS_ANDROID)
         block_offscreen_contexts = false;
 #endif
-        message = "The GPU process exited normally. Everything is okay.";
+        message += "exited normally. Everything is okay.";
         break;
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
-        message = base::StringPrintf("The GPU process exited with code %d.",
-                                     info.exit_code);
+        message += base::StringPrintf("exited with code %d.", info.exit_code);
         break;
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
         UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationOrigin",
                                   termination_origin_,
                                   GpuTerminationOrigin::kMax);
-        message = "You killed the GPU process! Why?";
+        message += "was killded by you! Why?";
+        break;
+      case base::TERMINATION_STATUS_PROCESS_CRASHED:
+        message += "crashed!";
+        break;
+      case base::TERMINATION_STATUS_STILL_RUNNING:
+        message += "hasn't exited yet.";
         break;
 #if defined(OS_CHROMEOS)
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
-        message = "The GUP process was killed due to out of memory.";
+        message += "was killed due to out of memory.";
         break;
-#endif
-      case base::TERMINATION_STATUS_PROCESS_CRASHED:
-        message = "The GPU process crashed!";
+#endif  // OS_CHROMEOS
+#if defined(OS_ANDROID)
+      case base::TERMINATION_STATUS_OOM_PROTECTED:
+        message += "was protected from out of memory kill.";
         break;
+#endif  // OS_ANDROID
       case base::TERMINATION_STATUS_LAUNCH_FAILED:
-        message = "The GPU process failed to start!";
+        message += "failed to start!";
         break;
-      default:
+      case base::TERMINATION_STATUS_OOM:
+        message += "died due to out of memory.";
+        break;
+      case base::TERMINATION_STATUS_MAX_ENUM:
+        NOTREACHED();
         break;
     }
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, message));
   }
 
   // If there are any remaining offscreen contexts at the point the GPU process
@@ -781,10 +800,6 @@ GpuProcessHost::~GpuProcessHost() {
   // client 3D APIs without prompting.
   if (block_offscreen_contexts && gpu_host_)
     gpu_host_->BlockLiveOffscreenContexts();
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, message));
 
   if (ServiceManagerConnection::GetForProcess()) {
     ServiceManagerConnection::GetForProcess()->RemoveConnectionFilter(

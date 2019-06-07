@@ -173,7 +173,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Update GPU crash counters.  Disable GPU if crash limit is reached.
   void RecordProcessCrash();
 
-  // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
+  // The serial number of the GpuProcessHost.
   int host_id_;
 
   // GPU process id in case GPU is not in-process.
