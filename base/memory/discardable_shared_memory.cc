@@ -32,6 +32,12 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+#include <lib/zx/vmo.h>
+#include <zircon/types.h>
+#include "base/fuchsia/fuchsia_logging.h"
+#endif
+
 namespace base {
 namespace {
 
@@ -416,7 +422,13 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
     void* ptr = VirtualAlloc(address, length, MEM_RESET, PAGE_READWRITE);
     CHECK(ptr);
   }
-#endif
+#elif defined(OS_FUCHSIA)
+  zx::unowned_vmo vmo = shared_memory_region_.GetPlatformHandle();
+  zx_status_t status =
+      vmo->op_range(ZX_VMO_OP_DECOMMIT, AlignToPageSize(sizeof(SharedState)),
+                    AlignToPageSize(mapped_size_), nullptr, 0);
+  ZX_DCHECK(status == ZX_OK, status) << "zx_vmo_op_range(ZX_VMO_OP_DECOMMIT)";
+#endif  // defined(OS_FUCHSIA)
 
   last_known_usage_ = Time();
   return true;
