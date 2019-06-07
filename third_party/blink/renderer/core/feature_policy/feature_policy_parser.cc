@@ -323,6 +323,13 @@ PolicyValue FeaturePolicyParser::ParseValueForType(
   return value;
 }
 
+void FeaturePolicyParser::ParseValueForFuzzer(
+    blink::mojom::PolicyValueType feature_type,
+    const WTF::String& value_string) {
+  bool ok;
+  ParseValueForType(feature_type, value_string, &ok);
+}
+
 bool IsFeatureDeclared(mojom::FeaturePolicyFeature feature,
                        const ParsedFeaturePolicy& policy) {
   return std::any_of(policy.begin(), policy.end(),

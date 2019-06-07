@@ -16,9 +16,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-// Forward declare for friendship.
-void ParseValueForFuzzer(blink::mojom::PolicyValueType, const WTF::String&);
-
 namespace blink {
 
 class Document;
@@ -79,8 +76,10 @@ class CORE_EXPORT FeaturePolicyParser {
       const FeatureNameMap& feature_names,
       ExecutionContext* execution_context = nullptr);
 
+  // Used for LLVM fuzzer test
+  static void ParseValueForFuzzer(mojom::PolicyValueType, const String&);
+
  private:
-  friend void ::ParseValueForFuzzer(mojom::PolicyValueType, const String&);
   static PolicyValue GetFallbackValueForFeature(
       mojom::FeaturePolicyFeature feature);
   static PolicyValue ParseValueForType(mojom::PolicyValueType feature_type,
