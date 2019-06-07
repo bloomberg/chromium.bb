@@ -102,15 +102,18 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   }
 
  private:
-  void ReleaseResources();
-  void ComputeQuads(const Node&, Vector<FloatQuad>&) const;
+  // TODO(crbug.com/967281): These NOINLINEs are for more accurate crash stack
+  // in the crash reports.
+  NOINLINE void ReleaseResources();
+  NOINLINE void ComputeQuads(const Node&, Vector<FloatQuad>&) const;
 
-  void AttachLinkHighlightToCompositingLayer(
+  NOINLINE void AttachLinkHighlightToCompositingLayer(
       const LayoutBoxModelObject& paint_invalidation_container);
-  void ClearGraphicsLayerLinkHighlightPointer();
+  NOINLINE void ClearGraphicsLayerLinkHighlightPointer();
   // This function computes the highlight path, and returns true if it has
   // changed size since the last call to this function.
-  bool ComputeHighlightLayerPathAndPosition(const LayoutBoxModelObject&);
+  NOINLINE bool ComputeHighlightLayerPathAndPosition(
+      const LayoutBoxModelObject&);
 
   void SetPaintArtifactCompositorNeedsUpdate();
 
