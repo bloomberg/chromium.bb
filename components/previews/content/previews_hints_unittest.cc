@@ -276,7 +276,7 @@ TEST_F(PreviewsHintsTest, IsBlacklistedReturnsTrueIfNoBloomFilter) {
   EXPECT_FALSE(HasLitePageRedirectBlacklist());
 
   EXPECT_FALSE(previews_hints()->IsBlacklisted(GURL("https://black.com/path"),
-                                               PreviewsType::LOFI));
+                                               PreviewsType::OFFLINE));
 
   EXPECT_TRUE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
@@ -302,7 +302,7 @@ TEST_F(PreviewsHintsTest, IsBlacklisted) {
 
   EXPECT_TRUE(HasLitePageRedirectBlacklist());
   EXPECT_FALSE(previews_hints()->IsBlacklisted(GURL("https://black.com/path"),
-                                               PreviewsType::LOFI));
+                                               PreviewsType::OFFLINE));
   EXPECT_TRUE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
   EXPECT_TRUE(previews_hints()->IsBlacklisted(

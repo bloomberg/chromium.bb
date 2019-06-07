@@ -26,10 +26,6 @@ const base::Feature kPreviews {
 const base::Feature kOfflinePreviews{"OfflinePreviews",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the Client Lo-Fi previews.
-const base::Feature kClientLoFi{"ClientLoFi",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the NoScript previews for Android.
 const base::Feature kNoScriptPreviews {
   "NoScriptPreviews",

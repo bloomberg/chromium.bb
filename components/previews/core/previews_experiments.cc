@@ -277,10 +277,6 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
       return GetParamValueAsECT(kClientSidePreviewsFieldTrial,
                                 kEffectiveConnectionTypeThreshold,
                                 net::EFFECTIVE_CONNECTION_TYPE_2G);
-    case PreviewsType::LOFI:
-      return GetParamValueAsECTByFeature(features::kClientLoFi,
-                                         kEffectiveConnectionTypeThreshold,
-                                         net::EFFECTIVE_CONNECTION_TYPE_2G);
     case PreviewsType::LITE_PAGE:
       NOTREACHED();
       break;
@@ -295,6 +291,7 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
                                          kEffectiveConnectionTypeThreshold,
                                          net::EFFECTIVE_CONNECTION_TYPE_2G);
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case PreviewsType::DEPRECATED_LOFI:
     case PreviewsType::LAST:
       break;
   }
@@ -316,10 +313,6 @@ bool IsOfflinePreviewsEnabled() {
   return base::FeatureList::IsEnabled(features::kOfflinePreviews);
 }
 
-bool IsClientLoFiEnabled() {
-  return base::FeatureList::IsEnabled(features::kClientLoFi);
-}
-
 bool IsNoScriptPreviewsEnabled() {
   return base::FeatureList::IsEnabled(features::kNoScriptPreviews);
 }
@@ -338,11 +331,6 @@ bool IsDeferAllScriptPreviewsEnabled() {
 
 int OfflinePreviewsVersion() {
   return GetParamValueAsInt(kClientSidePreviewsFieldTrial, kVersion, 0);
-}
-
-int ClientLoFiVersion() {
-  return base::GetFieldTrialParamByFeatureAsInt(features::kClientLoFi, kVersion,
-                                                0);
 }
 
 int LitePageServerPreviewsVersion() {
@@ -453,8 +441,6 @@ std::string GetStringNameForType(PreviewsType type) {
       return "None";
     case PreviewsType::OFFLINE:
       return "Offline";
-    case PreviewsType::LOFI:
-      return "LoFi";
     case PreviewsType::LITE_PAGE:
       return "LitePage";
     case PreviewsType::LITE_PAGE_REDIRECT:
@@ -468,6 +454,7 @@ std::string GetStringNameForType(PreviewsType type) {
     case PreviewsType::DEFER_ALL_SCRIPT:
       return "DeferAllScript";
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case PreviewsType::DEPRECATED_LOFI:
     case PreviewsType::LAST:
       break;
   }

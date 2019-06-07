@@ -294,12 +294,6 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     previews_state |= content::LITE_PAGE_REDIRECT_ON;
   }
 
-  if (previews::params::IsClientLoFiEnabled() &&
-      previews_decider->ShouldAllowPreviewAtNavigationStart(
-          previews_data, url, is_reload, previews::PreviewsType::LOFI)) {
-    previews_state |= content::CLIENT_LOFI_ON;
-  }
-
   return previews_state;
 }
 
@@ -427,10 +421,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     // commit to it.
     previews_state = previews_state & ~content::NOSCRIPT_ON;
   }
-  if (previews_state & content::CLIENT_LOFI_ON) {
-    LogCommittedPreview(previews_data, PreviewsType::LOFI);
-    return content::CLIENT_LOFI_ON;
-  }
 
   if (!previews_state) {
     return content::PREVIEWS_OFF;
@@ -525,14 +515,10 @@ previews::PreviewsType GetMainFramePreviewsType(
     return previews::PreviewsType::LITE_PAGE_REDIRECT;
   if (previews_state & content::SERVER_LITE_PAGE_ON)
     return previews::PreviewsType::LITE_PAGE;
-  if (previews_state & content::SERVER_LOFI_ON)
-    return previews::PreviewsType::LOFI;
   if (previews_state & content::RESOURCE_LOADING_HINTS_ON)
     return previews::PreviewsType::RESOURCE_LOADING_HINTS;
   if (previews_state & content::NOSCRIPT_ON)
     return previews::PreviewsType::NOSCRIPT;
-  if (previews_state & content::CLIENT_LOFI_ON)
-    return previews::PreviewsType::LOFI;
 
   DCHECK_EQ(content::PREVIEWS_UNSPECIFIED,
             previews_state & ~content::CLIENT_LOFI_AUTO_RELOAD &

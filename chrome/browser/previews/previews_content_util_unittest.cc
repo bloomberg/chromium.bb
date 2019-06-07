@@ -92,8 +92,8 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
     switch (type) {
       case previews::PreviewsType::OFFLINE:
         return params::IsOfflinePreviewsEnabled();
-      case previews::PreviewsType::LOFI:
-        return params::IsClientLoFiEnabled();
+      case previews::PreviewsType::DEPRECATED_LOFI:
+        return false;
       case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
         return false;
       case previews::PreviewsType::NOSCRIPT:
@@ -135,7 +135,7 @@ TEST_F(PreviewsContentUtilTest,
        DetermineAllowedClientPreviewsStatePreviewsDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "ClientLoFi,ResourceLoadingHints,NoScriptPreviews" /* enable_features */,
+      "ResourceLoadingHints,NoScriptPreviews" /* enable_features */,
       "Previews" /* disable_features */);
   PreviewsUserData user_data(1);
   bool is_reload = false;
@@ -157,14 +157,14 @@ TEST_F(PreviewsContentUtilTest,
        DetermineAllowedClientPreviewsStateDataSaverDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "Previews,ClientLoFi,ResourceLoadingHints,NoScriptPreviews",
+      "Previews,ResourceLoadingHints,NoScriptPreviews",
       {} /* disable_features */);
   PreviewsUserData user_data(1);
   bool is_reload = false;
   bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
-  EXPECT_EQ(content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON |
-                content::RESOURCE_LOADING_HINTS_ON | content::NOSCRIPT_ON,
+  EXPECT_EQ(content::OFFLINE_PAGE_ON | content::RESOURCE_LOADING_HINTS_ON |
+                content::NOSCRIPT_ON,
             previews::CallDetermineAllowedClientPreviewsState(
                 &user_data, GURL("http://www.google.com"), is_reload,
                 previews_triggering_logic_already_ran, is_data_saver_user,
@@ -181,7 +181,7 @@ TEST_F(PreviewsContentUtilTest,
        DetermineAllowedClientPreviewsStateOfflineAndRedirects) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "Previews", "ClientLoFi,ResourceLoadingHints,NoScriptPreviews");
+      "Previews", "ResourceLoadingHints,NoScriptPreviews");
   PreviewsUserData user_data(1);
   bool is_reload = false;
   bool previews_triggering_logic_already_ran = false;
@@ -218,25 +218,6 @@ TEST_F(PreviewsContentUtilTest,
                 enabled_previews_decider(), nullptr));
 }
 
-TEST_F(PreviewsContentUtilTest, DetermineAllowedClientPreviewsStateClientLoFi) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("Previews,ClientLoFi", std::string());
-  PreviewsUserData user_data(1);
-  bool is_reload = false;
-  bool previews_triggering_logic_already_ran = false;
-  bool is_data_saver_user = true;
-  EXPECT_TRUE(content::CLIENT_LOFI_ON &
-              previews::CallDetermineAllowedClientPreviewsState(
-                  &user_data, GURL("https://www.google.com"), is_reload,
-                  previews_triggering_logic_already_ran, is_data_saver_user,
-                  enabled_previews_decider(), nullptr));
-  EXPECT_TRUE(content::CLIENT_LOFI_ON &
-              previews::CallDetermineAllowedClientPreviewsState(
-                  &user_data, GURL("http://www.google.com"), is_reload,
-                  previews_triggering_logic_already_ran, is_data_saver_user,
-                  enabled_previews_decider(), nullptr));
-}
-
 TEST_F(PreviewsContentUtilTest,
        DetermineAllowedClientPreviewsStateResourceLoadingHints) {
   base::test::ScopedFeatureList scoped_feature_list;
@@ -258,37 +239,6 @@ TEST_F(PreviewsContentUtilTest,
                     &user_data, GURL("http://www.google.com"), is_reload,
                     previews_triggering_logic_already_ran, is_data_saver_user,
                     enabled_previews_decider(), nullptr));
-}
-
-TEST_F(PreviewsContentUtilTest,
-       DetermineAllowedClientPreviewsStateNoScriptAndClientLoFi) {
-  // Enable both Client LoFi and NoScript.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "Previews,ClientLoFi,NoScriptPreviews", std::string());
-
-  PreviewsUserData user_data(1);
-  bool is_reload = false;
-  bool previews_triggering_logic_already_ran = false;
-  bool is_data_saver_user = true;
-  // Verify both are enabled.
-  EXPECT_TRUE((content::NOSCRIPT_ON | content::CLIENT_LOFI_ON) &
-              previews::CallDetermineAllowedClientPreviewsState(
-                  &user_data, GURL("https://www.google.com"), is_reload,
-                  previews_triggering_logic_already_ran, is_data_saver_user,
-                  enabled_previews_decider(), nullptr));
-  EXPECT_TRUE((content::NOSCRIPT_ON | content::CLIENT_LOFI_ON) &
-              previews::CallDetermineAllowedClientPreviewsState(
-                  &user_data, GURL("http://www.google.com"), is_reload,
-                  previews_triggering_logic_already_ran, is_data_saver_user,
-                  enabled_previews_decider(), nullptr));
-
-  // Verify non-HTTP[S] URL has no previews enabled.
-  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
-            previews::CallDetermineAllowedClientPreviewsState(
-                &user_data, GURL("data://someblob"), is_reload,
-                previews_triggering_logic_already_ran, is_data_saver_user,
-                enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest,
@@ -372,19 +322,16 @@ TEST_F(PreviewsContentUtilTest,
 TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "Previews,ClientLoFi,NoScriptPreviews,ResourceLoadingHints",
-      std::string());
+      "Previews,NoScriptPreviews,ResourceLoadingHints", std::string());
   PreviewsUserData user_data(1);
   user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
   base::HistogramTester histogram_tester;
 
   // Server bits take precedence over NoScript:
-  EXPECT_EQ(content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
-                content::CLIENT_LOFI_ON,
+  EXPECT_EQ(content::SERVER_LITE_PAGE_ON,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
-                content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
-                    content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
+                content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON,
                 enabled_previews_decider(), nullptr));
   histogram_tester.ExpectUniqueSample(
       "Previews.Triggered.EffectiveConnectionType2.LitePage",
@@ -393,12 +340,11 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
       "Previews.Triggered.EffectiveConnectionType2", 1);
 
   content::PreviewsState lite_page_redirect_enabled =
-      content::CLIENT_LOFI_ON | content::NOSCRIPT_ON |
-      content::RESOURCE_LOADING_HINTS_ON | content::LITE_PAGE_REDIRECT_ON;
+      content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
+      content::LITE_PAGE_REDIRECT_ON;
 
-  // LITE_PAGE_REDIRECT takes precedence over NoScript, Resource Loading Hints,
-  // and Client LoFi when the committed URL is for the lite page previews
-  // server.
+  // LITE_PAGE_REDIRECT takes precedence over NoScript, and Resource Loading
+  // Hints, when the committed URL is for the lite page previews server.
   EXPECT_EQ(
       content::LITE_PAGE_REDIRECT_ON,
       previews::DetermineCommittedClientPreviewsState(
@@ -422,57 +368,20 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
   histogram_tester.ExpectTotalCount(
       "Previews.Triggered.EffectiveConnectionType2", 3);
 
-  // NoScript has precedence over Client LoFi - kept for committed HTTPS:
-  EXPECT_EQ(content::NOSCRIPT_ON,
-            previews::DetermineCommittedClientPreviewsState(
-                &user_data, GURL("https://www.google.com"),
-                content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
-                enabled_previews_decider(), nullptr));
-  histogram_tester.ExpectUniqueSample(
-      "Previews.Triggered.EffectiveConnectionType2.NoScript",
-      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
-  histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 4);
-
   // Try different navigation ECT value.
   user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
-  // RESOURCE_LOADING_HINTS has precedence over Client LoFi and NoScript.
+  // RESOURCE_LOADING_HINTS has precedence over NoScript.
   EXPECT_EQ(content::RESOURCE_LOADING_HINTS_ON,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
-                content::CLIENT_LOFI_ON | content::NOSCRIPT_ON |
-                    content::RESOURCE_LOADING_HINTS_ON,
+                content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON,
                 enabled_previews_decider(), nullptr));
   histogram_tester.ExpectBucketCount(
       "Previews.Triggered.EffectiveConnectionType2.ResourceLoadingHints",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
   histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 5);
-
-  // NoScript has precedence over Client LoFi - except for committed HTTP:
-  EXPECT_EQ(content::CLIENT_LOFI_ON,
-            previews::DetermineCommittedClientPreviewsState(
-                &user_data, GURL("http://www.google.com"),
-                content::CLIENT_LOFI_ON | content::NOSCRIPT_ON |
-                    content::RESOURCE_LOADING_HINTS_ON,
-                enabled_previews_decider(), nullptr));
-  histogram_tester.ExpectUniqueSample(
-      "Previews.Triggered.EffectiveConnectionType2.LoFi",
-      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
-  histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 6);
-
-  // Only Client LoFi:
-  EXPECT_EQ(content::CLIENT_LOFI_ON,
-            previews::DetermineCommittedClientPreviewsState(
-                &user_data, GURL("https://www.google.com"),
-                content::CLIENT_LOFI_ON, enabled_previews_decider(), nullptr));
-  histogram_tester.ExpectUniqueSample(
-      "Previews.Triggered.EffectiveConnectionType2.LoFi",
-      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 2);
-  histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 7);
+      "Previews.Triggered.EffectiveConnectionType2", 4);
 
   // Only NoScript:
   EXPECT_EQ(content::NOSCRIPT_ON,
@@ -487,18 +396,16 @@ TEST_F(PreviewsContentUtilTest,
   scoped_feature_list.InitFromCommandLine("Previews,ClientLoFi",
                                           "NoScriptPreviews");
   PreviewsUserData user_data(1);
-  // NoScript not allowed at commit time so Client LoFi chosen:
-  EXPECT_EQ(content::CLIENT_LOFI_ON,
+  // NoScript not allowed at commit time so no previews chosen:
+  EXPECT_EQ(content::PREVIEWS_OFF,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
-                content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
-                enabled_previews_decider(), nullptr));
+                content::NOSCRIPT_ON, enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest, DetermineCommittedServerPreviewsStateLitePage) {
   content::PreviewsState enabled_previews =
-      content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
-      content::CLIENT_LOFI_ON | content::NOSCRIPT_ON;
+      content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON;
 
   // Add DataReductionProxyData for LitePage to URLRequest.
   data_reduction_proxy::DataReductionProxyData data_reduction_proxy_data;
@@ -512,31 +419,12 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedServerPreviewsStateLitePage) {
                                                   enabled_previews));
 }
 
-TEST_F(PreviewsContentUtilTest, DetermineCommittedServerPreviewsStateLoFi) {
-  content::PreviewsState enabled_previews =
-      content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
-      content::CLIENT_LOFI_ON | content::NOSCRIPT_ON;
-
-  // Add DataReductionProxyData for LitePage to URLRequest.
-  data_reduction_proxy::DataReductionProxyData data_reduction_proxy_data;
-  data_reduction_proxy_data.set_used_data_reduction_proxy(true);
-  data_reduction_proxy_data.set_lite_page_received(false);
-  data_reduction_proxy_data.set_lofi_policy_received(true);
-
-  // Verify keeps LoFi bits and also doesn't touch client-only NoScript bit.
-  EXPECT_EQ(
-      content::SERVER_LOFI_ON | content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
-      DetermineCommittedServerPreviewsState(&data_reduction_proxy_data,
-                                            enabled_previews));
-}
-
 TEST_F(PreviewsContentUtilTest, DetermineCommittedServerPreviewsStateNoProxy) {
   content::PreviewsState enabled_previews =
-      content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
-      content::CLIENT_LOFI_ON | content::NOSCRIPT_ON;
+      content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON;
 
-  // Verify keeps LoFi bits and also doesn't touch client-only NoScript bit.
-  EXPECT_EQ(content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
+  // Verify doesn't touch client-only NoScript bit.
+  EXPECT_EQ(content::NOSCRIPT_ON,
             DetermineCommittedServerPreviewsState(nullptr, enabled_previews));
 }
 
@@ -544,15 +432,11 @@ TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
   // Simple cases:
   EXPECT_EQ(previews::PreviewsType::LITE_PAGE,
             previews::GetMainFramePreviewsType(content::SERVER_LITE_PAGE_ON));
-  EXPECT_EQ(previews::PreviewsType::LOFI,
-            previews::GetMainFramePreviewsType(content::SERVER_LOFI_ON));
   EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
             previews::GetMainFramePreviewsType(content::NOSCRIPT_ON));
   EXPECT_EQ(
       previews::PreviewsType::RESOURCE_LOADING_HINTS,
       previews::GetMainFramePreviewsType(content::RESOURCE_LOADING_HINTS_ON));
-  EXPECT_EQ(previews::PreviewsType::LOFI,
-            previews::GetMainFramePreviewsType(content::CLIENT_LOFI_ON));
   EXPECT_EQ(previews::PreviewsType::LITE_PAGE_REDIRECT,
             previews::GetMainFramePreviewsType(content::LITE_PAGE_REDIRECT_ON));
 
@@ -565,27 +449,19 @@ TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
   // Precedence cases when server preview is available:
   EXPECT_EQ(previews::PreviewsType::LITE_PAGE,
             previews::GetMainFramePreviewsType(
-                content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
-                content::NOSCRIPT_ON | content::CLIENT_LOFI_ON |
+                content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON |
                 content::RESOURCE_LOADING_HINTS_ON));
-  EXPECT_EQ(previews::PreviewsType::LOFI,
-            previews::GetMainFramePreviewsType(
-                content::SERVER_LOFI_ON | content::NOSCRIPT_ON |
-                content::CLIENT_LOFI_ON | content::RESOURCE_LOADING_HINTS_ON));
 
   // Precedence cases when server preview is not available:
   EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
-            previews::GetMainFramePreviewsType(content::NOSCRIPT_ON |
-                                               content::CLIENT_LOFI_ON));
+            previews::GetMainFramePreviewsType(content::NOSCRIPT_ON));
   EXPECT_EQ(previews::PreviewsType::RESOURCE_LOADING_HINTS,
             previews::GetMainFramePreviewsType(
-                content::NOSCRIPT_ON | content::CLIENT_LOFI_ON |
-                content::RESOURCE_LOADING_HINTS_ON));
-  EXPECT_EQ(
-      previews::PreviewsType::LITE_PAGE_REDIRECT,
-      previews::GetMainFramePreviewsType(
-          content::NOSCRIPT_ON | content::CLIENT_LOFI_ON |
-          content::RESOURCE_LOADING_HINTS_ON | content::LITE_PAGE_REDIRECT_ON));
+                content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON));
+  EXPECT_EQ(previews::PreviewsType::LITE_PAGE_REDIRECT,
+            previews::GetMainFramePreviewsType(
+                content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
+                content::LITE_PAGE_REDIRECT_ON));
 }
 
 class PreviewsContentSimulatedNavigationTest
@@ -652,16 +528,16 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::CLIENT_LOFI_ON,
-          .want_returned = content::CLIENT_LOFI_ON,
+          .initial_state = content::NOSCRIPT_ON,
+          .want_returned = content::NOSCRIPT_ON,
       },
       {
           .msg = "Feature disabled, no affect, tails",
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::CLIENT_LOFI_ON,
-          .want_returned = content::CLIENT_LOFI_ON,
+          .initial_state = content::NOSCRIPT_ON,
+          .want_returned = content::NOSCRIPT_ON,
       },
       {
           .msg = "After-commit decided previews are not affected before commit "
@@ -669,8 +545,8 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::CLIENT_LOFI_ON,
-          .want_returned = content::CLIENT_LOFI_ON,
+          .initial_state = content::NOSCRIPT_ON,
+          .want_returned = content::NOSCRIPT_ON,
       },
       {
           .msg = "After-commit decided previews are not affected before commit "
@@ -678,8 +554,8 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::CLIENT_LOFI_ON,
-          .want_returned = content::CLIENT_LOFI_ON,
+          .initial_state = content::NOSCRIPT_ON,
+          .want_returned = content::NOSCRIPT_ON,
       },
       {
           .msg =
@@ -705,7 +581,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
-          .initial_state = content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON,
+          .initial_state = content::OFFLINE_PAGE_ON | content::NOSCRIPT_ON,
           .want_returned = content::PREVIEWS_OFF,
       },
       {
@@ -714,8 +590,8 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
-          .initial_state = content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON,
-          .want_returned = content::OFFLINE_PAGE_ON | content::CLIENT_LOFI_ON,
+          .initial_state = content::OFFLINE_PAGE_ON | content::NOSCRIPT_ON,
+          .want_returned = content::OFFLINE_PAGE_ON | content::NOSCRIPT_ON,
       },
   };
 
@@ -765,23 +641,23 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::CLIENT_LOFI_ON,
-          .want_returned = content::CLIENT_LOFI_ON,
+          .initial_state = content::NOSCRIPT_ON,
+          .want_returned = content::NOSCRIPT_ON,
       },
       {
           .msg = "Feature disabled, no affect, tails",
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::CLIENT_LOFI_ON,
-          .want_returned = content::CLIENT_LOFI_ON,
+          .initial_state = content::NOSCRIPT_ON,
+          .want_returned = content::NOSCRIPT_ON,
       },
       {
           .msg = "Holdback enabled previews",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
-          .initial_state = content::CLIENT_LOFI_ON,
+          .initial_state = content::NOSCRIPT_ON,
           .want_returned = content::PREVIEWS_OFF,
       },
       {
@@ -789,8 +665,8 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
-          .initial_state = content::CLIENT_LOFI_ON,
-          .want_returned = content::CLIENT_LOFI_ON,
+          .initial_state = content::NOSCRIPT_ON,
+          .want_returned = content::NOSCRIPT_ON,
       },
   };
 

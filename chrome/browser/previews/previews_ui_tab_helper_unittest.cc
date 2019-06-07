@@ -188,32 +188,6 @@ TEST_F(PreviewsUITabHelperUnitTest,
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 }
 
-TEST_F(PreviewsUITabHelperUnitTest,
-       DidFinishNavigationDoesCreateLoFiPreviewsUI) {
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(web_contents());
-  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
-
-  SetCommittedPreviewsType(previews::PreviewsType::LOFI);
-  SimulateWillProcessResponse();
-  CallDidFinishNavigation();
-  base::RunLoop().RunUntilIdle();
-
-#if defined(OS_ANDROID)
-  EXPECT_TRUE(ui_tab_helper->should_display_android_omnibox_badge());
-#endif
-  EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
-
-  // Navigate to reset the displayed state.
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL(kTestUrl));
-
-#if defined(OS_ANDROID)
-  EXPECT_FALSE(ui_tab_helper->should_display_android_omnibox_badge());
-#endif
-  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
-}
-
 TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsIDSet) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents());

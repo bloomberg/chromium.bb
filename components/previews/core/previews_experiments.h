@@ -22,8 +22,8 @@ enum class PreviewsType {
   // The user is shown an offline page as a preview.
   OFFLINE = 1,
 
-  // Replace images with placeholders.
-  LOFI = 2,
+  // Replace images with placeholders. Deprecated, and should not be used.
+  DEPRECATED_LOFI = 2,
 
   // The user is shown a server lite page.
   LITE_PAGE = 3,
@@ -170,7 +170,6 @@ bool ArePreviewsAllowed();
 
 // Whether the preview type is enabled.
 bool IsOfflinePreviewsEnabled();
-bool IsClientLoFiEnabled();
 bool IsNoScriptPreviewsEnabled();
 bool IsResourceLoadingHintsEnabled();
 bool IsLitePageServerPreviewsEnabled();
@@ -178,7 +177,6 @@ bool IsDeferAllScriptPreviewsEnabled();
 
 // The blacklist version for each preview type.
 int OfflinePreviewsVersion();
-int ClientLoFiVersion();
 int LitePageServerPreviewsVersion();
 int NoScriptPreviewsVersion();
 int ResourceLoadingHintsVersion();

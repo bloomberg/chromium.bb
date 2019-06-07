@@ -59,8 +59,7 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     : public InProcessBrowserTest {
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {previews::features::kClientLoFi, features::kLazyImageLoading}, {});
+    scoped_feature_list_.InitWithFeatures({features::kLazyImageLoading}, {});
     InProcessBrowserTest::SetUp();
   }
 

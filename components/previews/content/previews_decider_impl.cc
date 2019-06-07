@@ -55,12 +55,12 @@ bool ShouldCheckOptimizationHints(PreviewsType type) {
     // These types do not have server optimization hints.
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
-    case PreviewsType::LOFI:
     case PreviewsType::DEFER_ALL_SCRIPT:
       return false;
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case PreviewsType::DEPRECATED_LOFI:
     case PreviewsType::LAST:
       break;
   }
@@ -76,7 +76,6 @@ bool CheckECTOnlyAtCommitTime(PreviewsType type) {
     case PreviewsType::RESOURCE_LOADING_HINTS:
     case PreviewsType::DEFER_ALL_SCRIPT:
       return true;
-    case PreviewsType::LOFI:
     case PreviewsType::LITE_PAGE_REDIRECT:
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
@@ -84,6 +83,7 @@ bool CheckECTOnlyAtCommitTime(PreviewsType type) {
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case PreviewsType::DEPRECATED_LOFI:
     case PreviewsType::LAST:
       break;
   }

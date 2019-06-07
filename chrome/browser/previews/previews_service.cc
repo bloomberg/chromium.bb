@@ -38,8 +38,8 @@ bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
   switch (type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::IsOfflinePreviewsEnabled();
-    case previews::PreviewsType::LOFI:
-      return server_previews_enabled || previews::params::IsClientLoFiEnabled();
+    case previews::PreviewsType::DEPRECATED_LOFI:
+      return false;
     case previews::PreviewsType::LITE_PAGE_REDIRECT:
       return previews::params::IsLitePageServerPreviewsEnabled();
     case previews::PreviewsType::LITE_PAGE:
@@ -69,8 +69,6 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
   switch (type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::OfflinePreviewsVersion();
-    case previews::PreviewsType::LOFI:
-      return previews::params::ClientLoFiVersion();
     case previews::PreviewsType::LITE_PAGE:
       return data_reduction_proxy::params::LitePageVersion();
     case previews::PreviewsType::LITE_PAGE_REDIRECT:
@@ -85,6 +83,7 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
     case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:
     case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case previews::PreviewsType::DEPRECATED_LOFI:
       break;
   }
   NOTREACHED();

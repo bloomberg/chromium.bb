@@ -55,7 +55,6 @@ constexpr char kOfflinePreviewsHtmlId[] = "offline-preview-status";
 constexpr char kLitePageRedirectHtmlId[] = "lite-page-redirect-status";
 constexpr char kResourceLoadingHintsHtmlId[] = "resource-loading-hints-status";
 constexpr char kNoScriptPreviewsHtmlId[] = "noscript-preview-status";
-constexpr char kClientLoFiPreviewsHtmlId[] = "client-lofi-preview-status";
 
 // Descriptions for previews.
 constexpr char kPreviewsAllowedDescription[] = "Previews Allowed";
@@ -65,7 +64,6 @@ constexpr char kLitePageRedirectDescription[] =
 constexpr char kResourceLoadingHintsDescription[] =
     "ResourceLoadingHints Previews";
 constexpr char kNoScriptDescription[] = "NoScript Previews";
-constexpr char kClientLoFiDescription[] = "Client LoFi Previews";
 
 // The HTML DOM ID used in Javascript.
 constexpr char kOfflinePageFlagHtmlId[] = "offline-page-flag";
@@ -327,7 +325,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetPreviewsEnabledCount) {
   page_handler_->GetPreviewsEnabled(
       base::BindOnce(&MockGetPreviewsEnabledCallback));
 
-  constexpr size_t expected = 6;
+  constexpr size_t expected = 5;
   EXPECT_EQ(expected, passed_in_modes.size());
 }
 
@@ -353,30 +351,6 @@ TEST_F(InterventionsInternalsPageHandlerTest, PreviewsAllowedEnabled) {
   ASSERT_NE(passed_in_modes.end(), previews_allowed);
   EXPECT_EQ(kPreviewsAllowedDescription, previews_allowed->second->description);
   EXPECT_TRUE(previews_allowed->second->enabled);
-}
-
-TEST_F(InterventionsInternalsPageHandlerTest, ClientLoFiDisabled) {
-  // Init with kClientLoFi disabled.
-  scoped_feature_list_->InitWithFeatures({}, {previews::features::kClientLoFi});
-
-  page_handler_->GetPreviewsEnabled(
-      base::BindOnce(&MockGetPreviewsEnabledCallback));
-  auto client_lofi = passed_in_modes.find(kClientLoFiPreviewsHtmlId);
-  ASSERT_NE(passed_in_modes.end(), client_lofi);
-  EXPECT_EQ(kClientLoFiDescription, client_lofi->second->description);
-  EXPECT_FALSE(client_lofi->second->enabled);
-}
-
-TEST_F(InterventionsInternalsPageHandlerTest, ClientLoFiEnabled) {
-  // Init with kClientLoFi enabled.
-  scoped_feature_list_->InitWithFeatures({previews::features::kClientLoFi}, {});
-
-  page_handler_->GetPreviewsEnabled(
-      base::BindOnce(&MockGetPreviewsEnabledCallback));
-  auto client_lofi = passed_in_modes.find(kClientLoFiPreviewsHtmlId);
-  ASSERT_NE(passed_in_modes.end(), client_lofi);
-  EXPECT_EQ(kClientLoFiDescription, client_lofi->second->description);
-  EXPECT_TRUE(client_lofi->second->enabled);
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest, NoScriptDisabled) {

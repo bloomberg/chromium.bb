@@ -210,13 +210,11 @@ void PreviewsUITabHelper::ReloadWithoutPreviews(
       web_contents()->GetController().Reload(
           content::ReloadType::ORIGINAL_REQUEST_URL, true);
       break;
-    case previews::PreviewsType::LOFI:
-      web_contents()->ReloadLoFiImages();
-      break;
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:
     case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case previews::PreviewsType::DEPRECATED_LOFI:
       NOTREACHED();
       break;
   }

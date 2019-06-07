@@ -158,7 +158,7 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionMadeLogMessage) {
   const base::Time time = base::Time::Now();
 
   PreviewsType type_a = PreviewsType::OFFLINE;
-  PreviewsType type_b = PreviewsType::LOFI;
+  PreviewsType type_b = PreviewsType::LITE_PAGE;
   PreviewsEligibilityReason reason_a =
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
   std::vector<PreviewsEligibilityReason> passed_reasons_a = {};
@@ -193,21 +193,22 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionMadeLogMessage) {
   EXPECT_EQ(time, actual[0].time);
   EXPECT_EQ(page_id_a, actual[0].page_id);
 
-  std::string expected_passed_0 = "LoFi preview - Network quality available";
+  std::string expected_passed_0 =
+      "LitePage preview - Network quality available";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[1].event_type);
   EXPECT_EQ(expected_passed_0, actual[1].event_description);
   EXPECT_EQ(url_b, actual[1].url);
   EXPECT_EQ(time, actual[1].time);
   EXPECT_EQ(page_id_b, actual[1].page_id);
 
-  std::string expected_passed_1 = "LoFi preview - Page reloads allowed";
+  std::string expected_passed_1 = "LitePage preview - Page reloads allowed";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[2].event_type);
   EXPECT_EQ(expected_passed_1, actual[2].event_description);
   EXPECT_EQ(url_b, actual[2].url);
   EXPECT_EQ(time, actual[2].time);
   EXPECT_EQ(page_id_b, actual[2].page_id);
 
-  std::string expected_description_b = "LoFi preview - Network not slow";
+  std::string expected_description_b = "LitePage preview - Network not slow";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[3].event_type);
   EXPECT_EQ(expected_description_b, actual[3].event_description);
   EXPECT_EQ(url_b, actual[3].url);
@@ -219,7 +220,7 @@ TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
   const base::Time time = base::Time::Now();
 
   PreviewsType type_a = PreviewsType::OFFLINE;
-  PreviewsType type_b = PreviewsType::LOFI;
+  PreviewsType type_b = PreviewsType::LITE_PAGE;
   const GURL url_a("http://www.url_a.com/url_a");
   const GURL url_b("http://www.url_b.com/url_b");
   const uint64_t page_id_a = 1234;
@@ -245,7 +246,7 @@ TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
   EXPECT_EQ(time, actual[0].time);
   EXPECT_EQ(page_id_a, actual[0].page_id);
 
-  std::string expected_description_b = "LoFi preview - user opt-out: False";
+  std::string expected_description_b = "LitePage preview - user opt-out: False";
   EXPECT_EQ(kPreviewsNavigationEventType, actual[1].event_type);
   EXPECT_EQ(expected_description_b, actual[1].event_description);
   EXPECT_EQ(url_b, actual[1].url);
@@ -295,7 +296,7 @@ TEST_F(PreviewsLoggerTest,
                       GURL("http://www.url_.com/url_"), base::Time::Now(),
                       1234 /* page_id */);
 
-  PreviewsType type = PreviewsType::LOFI;
+  PreviewsType type = PreviewsType::OFFLINE;
   PreviewsEligibilityReason final_reason =
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
   std::vector<PreviewsEligibilityReason> passed_reasons = {
