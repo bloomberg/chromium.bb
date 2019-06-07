@@ -198,9 +198,9 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
   file_system_.GetChangedURLsInTracker(&urls);
 
   EXPECT_EQ(3U, urls.size());
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath0)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath1)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath2)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath0)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath1)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath2)));
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -232,9 +232,9 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
 
   // kPath0 and its all chidren (kPath1 and kPath2) must have been deleted.
   EXPECT_EQ(3U, urls.size());
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath0)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath1)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath2)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath0)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath1)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath2)));
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_DELETE,

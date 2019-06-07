@@ -634,7 +634,7 @@ TEST_F(OriginChangeMapTest, Basic) {
   GURL origin;
   while (!all_origins.empty()) {
     ASSERT_TRUE(NextOriginToProcess(&origin));
-    ASSERT_TRUE(base::ContainsKey(all_origins, origin));
+    ASSERT_TRUE(base::Contains(all_origins, origin));
     all_origins.erase(origin);
   }
 
@@ -647,7 +647,7 @@ TEST_F(OriginChangeMapTest, Basic) {
   all_origins.insert(kOrigin3);
   while (!all_origins.empty()) {
     ASSERT_TRUE(NextOriginToProcess(&origin));
-    ASSERT_TRUE(base::ContainsKey(all_origins, origin));
+    ASSERT_TRUE(base::Contains(all_origins, origin));
     all_origins.erase(origin);
   }
 
@@ -658,7 +658,7 @@ TEST_F(OriginChangeMapTest, Basic) {
   all_origins.insert(kOrigin3);
   while (!all_origins.empty()) {
     ASSERT_TRUE(NextOriginToProcess(&origin));
-    ASSERT_TRUE(base::ContainsKey(all_origins, origin));
+    ASSERT_TRUE(base::Contains(all_origins, origin));
     all_origins.erase(origin);
   }
 
@@ -669,7 +669,7 @@ TEST_F(OriginChangeMapTest, Basic) {
   all_origins.insert(kOrigins, kOrigins + base::size(kOrigins));
   while (!all_origins.empty()) {
     ASSERT_TRUE(NextOriginToProcess(&origin));
-    ASSERT_TRUE(base::ContainsKey(all_origins, origin));
+    ASSERT_TRUE(base::Contains(all_origins, origin));
     all_origins.erase(origin);
   }
 }
@@ -694,7 +694,7 @@ TEST_F(OriginChangeMapTest, WithDisabled) {
   GURL origin;
   while (!all_origins.empty()) {
     ASSERT_TRUE(NextOriginToProcess(&origin));
-    ASSERT_TRUE(base::ContainsKey(all_origins, origin));
+    ASSERT_TRUE(base::Contains(all_origins, origin));
     all_origins.erase(origin);
   }
 
@@ -706,7 +706,7 @@ TEST_F(OriginChangeMapTest, WithDisabled) {
   all_origins.insert(kOrigin3);
   while (!all_origins.empty()) {
     ASSERT_TRUE(NextOriginToProcess(&origin));
-    ASSERT_TRUE(base::ContainsKey(all_origins, origin));
+    ASSERT_TRUE(base::Contains(all_origins, origin));
     all_origins.erase(origin);
   }
 
@@ -726,7 +726,7 @@ TEST_F(OriginChangeMapTest, WithDisabled) {
   all_origins.insert(kOrigin3);
   while (!all_origins.empty()) {
     ASSERT_TRUE(NextOriginToProcess(&origin));
-    ASSERT_TRUE(base::ContainsKey(all_origins, origin));
+    ASSERT_TRUE(base::Contains(all_origins, origin));
     all_origins.erase(origin);
   }
 }

@@ -1424,7 +1424,7 @@ void MetadataDatabase::MaybeAddTrackersForNewFile(
       if (!parent_tracker.active())
         continue;
 
-      if (base::ContainsKey(parents_to_exclude, parent_tracker.tracker_id()))
+      if (base::Contains(parents_to_exclude, parent_tracker.tracker_id()))
         continue;
 
       CreateTrackerForParentAndFileMetadata(

@@ -68,7 +68,7 @@ void LocalFileSyncContext::MaybeInitializeFileSystemContext(
     FileSystemContext* file_system_context,
     const SyncStatusCallback& callback) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  if (base::ContainsKey(file_system_contexts_, file_system_context)) {
+  if (base::Contains(file_system_contexts_, file_system_context)) {
     // The context has been already initialized. Just dispatch the callback
     // with SYNC_STATUS_OK.
     ui_task_runner_->PostTask(FROM_HERE,
@@ -737,8 +737,8 @@ void LocalFileSyncContext::DidInitialize(
     return;
   }
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(!base::ContainsKey(file_system_contexts_, file_system_context));
-  DCHECK(base::ContainsKey(pending_initialize_callbacks_, file_system_context));
+  DCHECK(!base::Contains(file_system_contexts_, file_system_context));
+  DCHECK(base::Contains(pending_initialize_callbacks_, file_system_context));
 
   SyncFileSystemBackend* backend =
       SyncFileSystemBackend::GetBackend(file_system_context);
