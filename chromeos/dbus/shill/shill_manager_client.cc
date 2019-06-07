@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/shill/shill_manager_client.h"
 
+#include <ios>
 #include <memory>
 
 #include "base/bind.h"

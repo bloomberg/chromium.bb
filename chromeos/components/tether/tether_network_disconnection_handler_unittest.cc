@@ -170,7 +170,7 @@ TEST_F(TetherNetworkDisconnectionHandlerTest,
   SetWiFiTechnologyStateEnabled(false);
 
   std::unique_ptr<NetworkState> network =
-      std::make_unique<NetworkState>(kWifiNetworkGuid);
+      std::make_unique<NetworkState>(wifi_service_path_);
   network->SetGuid(kWifiNetworkGuid);
   handler_->NetworkConnectionStateChanged(network.get());
 

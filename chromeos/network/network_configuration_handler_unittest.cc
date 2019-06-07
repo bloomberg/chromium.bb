@@ -473,9 +473,8 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(success);
-  // In FakeShillManagerClient, instead of re-implementing shill's behavior,
-  // guid is used for service_path.
-  EXPECT_EQ(service_path, kGuid);
+  EXPECT_EQ(service_path,
+            GetShillServiceClient()->FindServiceMatchingGUID(kGuid));
   EXPECT_EQ(guid, kGuid);
 }
 

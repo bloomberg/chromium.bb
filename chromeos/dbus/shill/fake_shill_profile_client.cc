@@ -102,8 +102,10 @@ void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
   ProfileProperties* profile = GetProfile(profile_path, error_callback);
-  if (!profile)
+  if (!profile) {
+    error_callback.Run("Error.InvalidProfile", profile_path.value());
     return;
+  }
 
   if (!profile->entries.RemoveWithoutPathExpansion(entry_path, nullptr)) {
     error_callback.Run("Error.InvalidProfileEntry", entry_path);

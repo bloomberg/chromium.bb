@@ -276,10 +276,10 @@ class AutoConnectHandlerTest : public testing::Test {
 
 namespace {
 
-const char* kConfigUnmanagedSharedConnected =
+const char* kConfigWifi0UnmanagedSharedConnected =
     "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"online\", "
     "  \"Security\": \"wpa\", \"Profile\": \"/profile/default\" }";
-const char* kConfigManagedSharedConnectable =
+const char* kConfigWifi1ManagedSharedConnectable =
     "{ \"GUID\": \"wifi1\", \"Type\": \"wifi\", \"State\": \"idle\", "
     "  \"Connectable\": true, \"Security\": \"wpa\", \"Profile\": "
     "\"/profile/default\" }";
@@ -316,15 +316,19 @@ const char* kPolicyCertPattern =
 }  // namespace
 
 TEST_F(AutoConnectHandlerTest, ReconnectOnCertLoading) {
-  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
-  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
-  helper().manager_test()->SetBestServiceToConnect("wifi1");
+  std::string wifi0_service_path =
+      ConfigureService(kConfigWifi0UnmanagedSharedConnected);
+  ASSERT_FALSE(wifi0_service_path.empty());
+  std::string wifi1_service_path =
+      ConfigureService(kConfigWifi1ManagedSharedConnectable);
+  ASSERT_FALSE(wifi1_service_path.empty());
+  helper().manager_test()->SetBestServiceToConnect(wifi1_service_path);
 
   // User login shouldn't trigger any change until the certificates and policy
   // are loaded.
   LoginToRegularUser();
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
 
   // Applying the policy which restricts autoconnect should disconnect from the
   // shared, unmanaged network.
@@ -337,13 +341,13 @@ TEST_F(AutoConnectHandlerTest, ReconnectOnCertLoading) {
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
   SetupPolicy(kPolicy, global_config, false /* load as device policy */);
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
 
   // Certificate loading should trigger connecting to the 'best' network.
   StartNetworkCertLoader();
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi1_service_path));
   EXPECT_EQ(1, test_observer_->num_auto_connect_events());
   EXPECT_EQ(AutoConnectHandler::AUTO_CONNECT_REASON_LOGGED_IN |
                 AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED,
@@ -351,9 +355,13 @@ TEST_F(AutoConnectHandlerTest, ReconnectOnCertLoading) {
 }
 
 TEST_F(AutoConnectHandlerTest, ReconnectOnCertPatternResolved) {
-  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
-  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
-  helper().manager_test()->SetBestServiceToConnect("wifi0");
+  std::string wifi0_service_path =
+      ConfigureService(kConfigWifi0UnmanagedSharedConnected);
+  ASSERT_FALSE(wifi0_service_path.empty());
+  std::string wifi1_service_path =
+      ConfigureService(kConfigWifi1ManagedSharedConnectable);
+  ASSERT_FALSE(wifi1_service_path.empty());
+  helper().manager_test()->SetBestServiceToConnect(wifi0_service_path);
 
   SetupPolicy(std::string(),            // no device policy
               base::DictionaryValue(),  // no global config
@@ -371,10 +379,10 @@ TEST_F(AutoConnectHandlerTest, ReconnectOnCertPatternResolved) {
                 AutoConnectHandler::AUTO_CONNECT_REASON_CERTIFICATE_RESOLVED,
             test_observer_->auto_connect_reasons());
 
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
 
-  helper().manager_test()->SetBestServiceToConnect("wifi1");
+  helper().manager_test()->SetBestServiceToConnect(wifi1_service_path);
   TestCertResolveObserver observer(client_cert_resolver_.get());
 
   scoped_refptr<net::X509Certificate> cert = ImportTestClientCert();
@@ -383,8 +391,8 @@ TEST_F(AutoConnectHandlerTest, ReconnectOnCertPatternResolved) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(observer.DidNetworkPropertiesChange());
 
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi1_service_path));
   EXPECT_EQ(2, test_observer_->num_auto_connect_events());
   EXPECT_EQ(AutoConnectHandler::AUTO_CONNECT_REASON_LOGGED_IN |
                 AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED |
@@ -395,9 +403,13 @@ TEST_F(AutoConnectHandlerTest, ReconnectOnCertPatternResolved) {
 // Ensure that resolving of certificate patterns only triggers a reconnect if at
 // least one pattern was resolved.
 TEST_F(AutoConnectHandlerTest, NoReconnectIfNoCertResolved) {
-  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
-  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
-  helper().manager_test()->SetBestServiceToConnect("wifi0");
+  std::string wifi0_service_path =
+      ConfigureService(kConfigWifi0UnmanagedSharedConnected);
+  ASSERT_FALSE(wifi0_service_path.empty());
+  std::string wifi1_service_path =
+      ConfigureService(kConfigWifi1ManagedSharedConnectable);
+  ASSERT_FALSE(wifi1_service_path.empty());
+  helper().manager_test()->SetBestServiceToConnect(wifi0_service_path);
 
   SetupPolicy(std::string(),            // no device policy
               base::DictionaryValue(),  // no global config
@@ -408,10 +420,10 @@ TEST_F(AutoConnectHandlerTest, NoReconnectIfNoCertResolved) {
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
 
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
 
-  helper().manager_test()->SetBestServiceToConnect("wifi1");
+  helper().manager_test()->SetBestServiceToConnect(wifi1_service_path);
   TestCertResolveObserver observer(client_cert_resolver_.get());
   scoped_refptr<net::X509Certificate> cert = ImportTestClientCert();
   ASSERT_TRUE(cert.get());
@@ -419,8 +431,8 @@ TEST_F(AutoConnectHandlerTest, NoReconnectIfNoCertResolved) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(observer.DidNetworkPropertiesChange());
 
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
   EXPECT_EQ(1, test_observer_->num_auto_connect_events());
   EXPECT_EQ(AutoConnectHandler::AUTO_CONNECT_REASON_LOGGED_IN |
                 AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED,
@@ -428,15 +440,19 @@ TEST_F(AutoConnectHandlerTest, NoReconnectIfNoCertResolved) {
 }
 
 TEST_F(AutoConnectHandlerTest, DisconnectOnPolicyLoading) {
-  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
-  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
+  std::string wifi0_service_path =
+      ConfigureService(kConfigWifi0UnmanagedSharedConnected);
+  ASSERT_FALSE(wifi0_service_path.empty());
+  std::string wifi1_service_path =
+      ConfigureService(kConfigWifi1ManagedSharedConnectable);
+  ASSERT_FALSE(wifi1_service_path.empty());
 
   // User login and certificate loading shouldn't trigger any change until the
   // policy is loaded.
   LoginToRegularUser();
   StartNetworkCertLoader();
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
 
   base::DictionaryValue global_config;
   global_config.SetKey(
@@ -450,26 +466,30 @@ TEST_F(AutoConnectHandlerTest, DisconnectOnPolicyLoading) {
   SetupPolicy(kPolicy, global_config, false /* load as device policy */);
 
   // Should not trigger any change until user policy is loaded
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
 
   SetupPolicy(std::string(), base::DictionaryValue(), true);
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
   EXPECT_EQ(0, test_observer_->num_auto_connect_events());
 }
 
 TEST_F(AutoConnectHandlerTest,
        DisconnectOnPolicyLoadingAllowOnlyPolicyNetworksToConnect) {
-  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
-  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
+  std::string wifi0_service_path =
+      ConfigureService(kConfigWifi0UnmanagedSharedConnected);
+  ASSERT_FALSE(wifi0_service_path.empty());
+  std::string wifi1_service_path =
+      ConfigureService(kConfigWifi1ManagedSharedConnectable);
+  ASSERT_FALSE(wifi1_service_path.empty());
 
   // User login and certificate loading shouldn't trigger any change until the
   // policy is loaded.
   LoginToRegularUser();
   StartNetworkCertLoader();
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
 
   base::DictionaryValue global_config;
   global_config.SetKey(
@@ -483,52 +503,60 @@ TEST_F(AutoConnectHandlerTest,
   SetupPolicy(kPolicy, global_config, false /* load as device policy */);
 
   // Should not trigger any change until user policy is loaded
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
 
   SetupPolicy(std::string(), base::DictionaryValue(), true);
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
   EXPECT_EQ(0, test_observer_->num_auto_connect_events());
 }
 
 // After login a reconnect is triggered even if there is no managed network.
 TEST_F(AutoConnectHandlerTest, ReconnectAfterLogin) {
-  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
-  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
-  helper().manager_test()->SetBestServiceToConnect("wifi1");
+  std::string wifi0_service_path =
+      ConfigureService(kConfigWifi0UnmanagedSharedConnected);
+  ASSERT_FALSE(wifi0_service_path.empty());
+  std::string wifi1_service_path =
+      ConfigureService(kConfigWifi1ManagedSharedConnectable);
+  ASSERT_FALSE(wifi1_service_path.empty());
+  helper().manager_test()->SetBestServiceToConnect(wifi1_service_path);
 
   // User login and certificate loading shouldn't trigger any change until the
   // policy is loaded.
   LoginToRegularUser();
   StartNetworkCertLoader();
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
 
   // Applying an empty device policy will not trigger anything yet, until also
   // the user policy is applied.
   SetupPolicy(std::string(),            // no network configs
               base::DictionaryValue(),  // no global config
               false);                   // load as device policy
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
 
   // Applying also an empty user policy should trigger connecting to the 'best'
   // network.
   SetupPolicy(std::string(),            // no network configs
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi1_service_path));
   EXPECT_EQ(1, test_observer_->num_auto_connect_events());
   EXPECT_EQ(AutoConnectHandler::AUTO_CONNECT_REASON_LOGGED_IN,
             test_observer_->auto_connect_reasons());
 }
 
 TEST_F(AutoConnectHandlerTest, ManualConnectAbortsReconnectAfterLogin) {
-  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
-  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
-  helper().manager_test()->SetBestServiceToConnect("wifi1");
+  std::string wifi0_service_path =
+      ConfigureService(kConfigWifi0UnmanagedSharedConnected);
+  ASSERT_FALSE(wifi0_service_path.empty());
+  std::string wifi1_service_path =
+      ConfigureService(kConfigWifi1ManagedSharedConnectable);
+  ASSERT_FALSE(wifi1_service_path.empty());
+  helper().manager_test()->SetBestServiceToConnect(wifi1_service_path);
 
   // User login and certificate loading shouldn't trigger any change until the
   // policy is loaded.
@@ -538,8 +566,8 @@ TEST_F(AutoConnectHandlerTest, ManualConnectAbortsReconnectAfterLogin) {
               base::DictionaryValue(),  // no global config
               false);                   // load as device policy
 
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
 
   // A manual connect request should prevent a reconnect after login.
   auto_connect_handler_->ConnectToNetworkRequested(
@@ -550,20 +578,24 @@ TEST_F(AutoConnectHandlerTest, ManualConnectAbortsReconnectAfterLogin) {
   SetupPolicy(std::string(),            // no network configs
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
   EXPECT_EQ(0, test_observer_->num_auto_connect_events());
 }
 
 TEST_F(AutoConnectHandlerTest, DisconnectFromBlacklistedNetwork) {
-  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
-  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
+  std::string wifi0_service_path =
+      ConfigureService(kConfigWifi0UnmanagedSharedConnected);
+  ASSERT_FALSE(wifi0_service_path.empty());
+  std::string wifi1_service_path =
+      ConfigureService(kConfigWifi1ManagedSharedConnectable);
+  ASSERT_FALSE(wifi1_service_path.empty());
 
   LoginToRegularUser();
   StartNetworkCertLoader();
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
-  EXPECT_TRUE(helper().profile_test()->HasService("wifi0"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
+  EXPECT_TRUE(helper().profile_test()->HasService(wifi0_service_path));
 
   // Apply a device policy, which blocks wifi0. No disconnects should occur
   // since we wait for both device & user policy before possibly disconnecting.
@@ -573,30 +605,34 @@ TEST_F(AutoConnectHandlerTest, DisconnectFromBlacklistedNetwork) {
   global_config.SetKey(::onc::global_network_config::kBlacklistedHexSSIDs,
                        base::Value(blacklist));
   SetupPolicy(std::string(), global_config, false /* load as device policy */);
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
-  EXPECT_TRUE(helper().profile_test()->HasService("wifi0"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
+  EXPECT_TRUE(helper().profile_test()->HasService(wifi0_service_path));
 
   // Apply an empty user policy (no whitelist for wifi0). Connection to wifi0
   // should be disconnected due to being blacklisted.
   SetupPolicy(std::string(), base::DictionaryValue(),
               true /* load as user policy */);
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
-  EXPECT_FALSE(helper().profile_test()->HasService("wifi0"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
+  EXPECT_FALSE(helper().profile_test()->HasService(wifi0_service_path));
 
   EXPECT_EQ(0, test_observer_->num_auto_connect_events());
 }
 
 TEST_F(AutoConnectHandlerTest, AllowOnlyPolicyNetworksToConnectIfAvailable) {
-  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
-  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
+  std::string wifi0_service_path =
+      ConfigureService(kConfigWifi0UnmanagedSharedConnected);
+  ASSERT_FALSE(wifi0_service_path.empty());
+  std::string wifi1_service_path =
+      ConfigureService(kConfigWifi1ManagedSharedConnectable);
+  ASSERT_FALSE(wifi1_service_path.empty());
 
   LoginToRegularUser();
   StartNetworkCertLoader();
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
-  EXPECT_TRUE(helper().profile_test()->HasService("wifi0"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
+  EXPECT_TRUE(helper().profile_test()->HasService(wifi0_service_path));
 
   // Apply 'AllowOnlyPolicyNetworksToConnectIfAvailable' policy as a device
   // policy and provide a network configuration for wifi1 to make it managed.
@@ -605,18 +641,18 @@ TEST_F(AutoConnectHandlerTest, AllowOnlyPolicyNetworksToConnectIfAvailable) {
                            kAllowOnlyPolicyNetworksToConnectIfAvailable,
                        base::Value(true));
   SetupPolicy(kPolicy, global_config, false /* load as device policy */);
-  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
-  EXPECT_TRUE(helper().profile_test()->HasService("wifi0"));
+  EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
+  EXPECT_TRUE(helper().profile_test()->HasService(wifi0_service_path));
 
   // Apply an empty user policy (no whitelist for wifi0). Connection to wifi0
   // should be disconnected due to being unmanaged and managed network wifi1
   // being available. wifi0 configuration should not be removed.
   SetupPolicy(std::string(), base::DictionaryValue(),
               true /* load as user policy */);
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
-  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
-  EXPECT_TRUE(helper().profile_test()->HasService("wifi0"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi0_service_path));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
+  EXPECT_TRUE(helper().profile_test()->HasService(wifi0_service_path));
 
   EXPECT_EQ(0, test_observer_->num_auto_connect_events());
 }

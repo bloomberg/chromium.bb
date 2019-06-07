@@ -100,9 +100,13 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
                           const base::Value& value) override;
   const base::DictionaryValue* GetServiceProperties(
       const std::string& service_path) const override;
+  std::string FindServiceMatchingGUID(const std::string& guid) override;
+  std::string FindSimilarService(
+      const base::Value& template_service_properties) override;
   void ClearServices() override;
   void SetConnectBehavior(const std::string& service_path,
                           const base::Closure& behavior) override;
+  void SetHoldBackServicePropertyUpdates(bool hold_back) override;
 
  private:
   typedef base::ObserverList<ShillPropertyChangedObserver>::Unchecked
@@ -129,6 +133,15 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   // Observer list for each service.
   std::map<dbus::ObjectPath, std::unique_ptr<PropertyObserverList>>
       observer_list_;
+
+  // If this is true, the FakeShillServiceClient is recording service property
+  // updates and will only send them when SetHoldBackServicePropertyUpdates is
+  // called with false again.
+  bool hold_back_service_property_updates_ = false;
+
+  // Property updates that were held back while
+  // |hold_back_service_property_updates_| was true.
+  std::vector<base::OnceClosure> recorded_property_updates_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

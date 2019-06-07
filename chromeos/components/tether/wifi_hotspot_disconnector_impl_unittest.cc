@@ -230,7 +230,7 @@ TEST_F(WifiHotspotDisconnectorImplTest, NetworkNotActuallyConnected) {
   SimulateConnectionToWifiNetwork();
   SetWifiNetworkToDisconnected();
 
-  CallDisconnect(wifi_service_path_);
+  CallDisconnect(kWifiNetworkGuid);
   EXPECT_EQ(NetworkConnectionHandler::kErrorNotConnected, GetResultAndReset());
 
   // Configuration should not have been removed.
@@ -243,7 +243,7 @@ TEST_F(WifiHotspotDisconnectorImplTest, WifiDisconnectionFails) {
 
   should_disconnect_successfully_ = false;
 
-  CallDisconnect(wifi_service_path_);
+  CallDisconnect(kWifiNetworkGuid);
   EXPECT_EQ(NetworkConnectionHandler::kErrorDisconnectFailed,
             GetResultAndReset());
 
@@ -260,7 +260,7 @@ TEST_F(WifiHotspotDisconnectorImplTest, WifiDisconnectionFails) {
 TEST_F(WifiHotspotDisconnectorImplTest, WifiDisconnectionSucceeds) {
   SimulateConnectionToWifiNetwork();
 
-  CallDisconnect(wifi_service_path_);
+  CallDisconnect(kWifiNetworkGuid);
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
 
   // The Wi-Fi network should be disconnected.

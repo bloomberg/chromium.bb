@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
@@ -42,6 +43,81 @@ void CallSortManagerServices() {
 
 base::TimeDelta GetInteractiveDelay() {
   return ShillManagerClient::Get()->GetTestInterface()->GetInteractiveDelay();
+}
+
+// Extracts the hex SSID from shill |service_properties|.
+std::string GetHexSSID(const base::Value& service_properties) {
+  const std::string* hex_ssid =
+      service_properties.FindStringKey(shill::kWifiHexSsid);
+  if (hex_ssid)
+    return *hex_ssid;
+  const std::string* ssid =
+      service_properties.FindStringKey(shill::kSSIDProperty);
+  if (ssid)
+    return base::HexEncode(ssid->c_str(), ssid->size());
+  return std::string();
+}
+
+std::string GetSecurityClass(const base::Value& service_properties) {
+  // Mimics shill's WiFiProvider::GetServiceParametersFromStorage with
+  // WiFiService::ComputeSecurityClass  .
+  const std::string* security_class =
+      service_properties.FindStringKey(shill::kSecurityClassProperty);
+  const std::string* security =
+      service_properties.FindStringKey(shill::kSecurityProperty);
+  if (security_class && security && *security_class != *security) {
+    LOG(ERROR) << "Mismatch between SecurityClass " << *security_class
+               << " and Security " << *security;
+  }
+
+  if (security_class)
+    return *security_class;
+
+  if (security) {
+    if (*security == shill::kSecurityRsn || *security == shill::kSecurityWpa)
+      return shill::kSecurityPsk;
+    return *security;
+  }
+
+  return shill::kSecurityNone;
+}
+
+// Returns true if both |template_service_properties| and |service_properties|
+// have the key |key| and both have the same value for it.
+bool HaveSameValueForKey(const base::Value& template_service_properties,
+                         const base::Value& service_properties,
+                         base::StringPiece key) {
+  const base::Value* template_service_value =
+      template_service_properties.FindKey(key);
+  const base::Value* service_value = service_properties.FindKey(key);
+  return template_service_value && service_value &&
+         *template_service_value == *service_value;
+}
+
+// Mimics shill's similar service matching logic. This is only invoked if
+// |template_service_properties| and |service_properties| refer to a service of
+// the same type.
+bool IsSimilarService(const std::string& service_type,
+                      const base::Value& template_service_properties,
+                      const base::Value& service_properties) {
+  if (service_type == shill::kTypeWifi) {
+    // Mimics shill's WiFiProvider::FindSimilarService.
+    return GetHexSSID(template_service_properties) ==
+               GetHexSSID(service_properties) &&
+           HaveSameValueForKey(template_service_properties, service_properties,
+                               shill::kModeProperty) &&
+           GetSecurityClass(template_service_properties) ==
+               GetSecurityClass(service_properties);
+  }
+
+  // Assume that Ethernet / EthernetEAP services are always similar.
+  if (service_type == shill::kTypeEthernet ||
+      service_type == shill::kTypeEthernetEap) {
+    // Mimics shill's EthernetProvider::FindSimilarService.
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -85,10 +161,14 @@ void FakeShillServiceClient::GetProperties(
     call_status = DBUS_METHOD_CALL_FAILURE;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
+  base::OnceClosure property_update =
       base::BindOnce(&PassStubServiceProperties, callback, call_status,
-                     base::Owned(result_properties.release())));
+                     base::Owned(result_properties.release()));
+  if (hold_back_service_property_updates_)
+    recorded_property_updates_.push_back(std::move(property_update));
+  else
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(property_update));
 }
 
 void FakeShillServiceClient::SetProperty(const dbus::ObjectPath& service_path,
@@ -461,11 +541,15 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
   }
 
   // Notifiy Chrome of the property change.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
+  base::OnceClosure property_update =
       base::BindOnce(&FakeShillServiceClient::NotifyObserversPropertyChanged,
                      weak_ptr_factory_.GetWeakPtr(),
-                     dbus::ObjectPath(service_path), changed_property));
+                     dbus::ObjectPath(service_path), changed_property);
+  if (hold_back_service_property_updates_)
+    recorded_property_updates_.push_back(std::move(property_update));
+  else
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(property_update));
   return true;
 }
 
@@ -474,6 +558,46 @@ const base::DictionaryValue* FakeShillServiceClient::GetServiceProperties(
   const base::DictionaryValue* properties = nullptr;
   stub_services_.GetDictionaryWithoutPathExpansion(service_path, &properties);
   return properties;
+}
+
+std::string FakeShillServiceClient::FindServiceMatchingGUID(
+    const std::string& guid) {
+  for (const auto& service_pair : stub_services_.DictItems()) {
+    const auto& service_path = service_pair.first;
+    const auto& service_properties = service_pair.second;
+
+    const std::string* service_guid =
+        service_properties.FindStringKey(shill::kGuidProperty);
+    if (service_guid && *service_guid == guid)
+      return service_path;
+  }
+
+  return std::string();
+}
+
+std::string FakeShillServiceClient::FindSimilarService(
+    const base::Value& template_service_properties) {
+  const std::string* template_type =
+      template_service_properties.FindStringKey(shill::kTypeProperty);
+  if (!template_type)
+    return std::string();
+
+  for (const auto& service_pair : stub_services_.DictItems()) {
+    const auto& service_path = service_pair.first;
+    const auto& service_properties = service_pair.second;
+
+    const std::string* service_type =
+        service_properties.FindStringKey(shill::kTypeProperty);
+    if (!service_type || *service_type != *template_type)
+      continue;
+
+    if (IsSimilarService(*service_type, template_service_properties,
+                         service_properties)) {
+      return service_path;
+    }
+  }
+
+  return std::string();
 }
 
 void FakeShillServiceClient::ClearServices() {
@@ -485,6 +609,19 @@ void FakeShillServiceClient::ClearServices() {
 void FakeShillServiceClient::SetConnectBehavior(const std::string& service_path,
                                                 const base::Closure& behavior) {
   connect_behavior_[service_path] = behavior;
+}
+
+void FakeShillServiceClient::SetHoldBackServicePropertyUpdates(bool hold_back) {
+  hold_back_service_property_updates_ = hold_back;
+  std::vector<base::OnceClosure> property_updates;
+  recorded_property_updates_.swap(property_updates);
+
+  if (hold_back_service_property_updates_)
+    return;
+
+  for (auto& property_update : property_updates)
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(property_update));
 }
 
 void FakeShillServiceClient::NotifyObserversPropertyChanged(

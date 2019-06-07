@@ -76,11 +76,27 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
     virtual const base::DictionaryValue* GetServiceProperties(
         const std::string& service_path) const = 0;
 
+    // Returns the service path for the service which has the GUID property set
+    // to |guid|. If no such service exists, returns the empty string.
+    virtual std::string FindServiceMatchingGUID(const std::string& guid) = 0;
+
+    // Returns the service path for a service which is similar to the service
+    // described by |template_service_properties|. For Wifi, this means that
+    // security and mode match. Returns the empty string if no similar service
+    // is found.
+    virtual std::string FindSimilarService(
+        const base::Value& template_service_properties) = 0;
+
     // Clears all Services from the Manager and Service stubs.
     virtual void ClearServices() = 0;
 
     virtual void SetConnectBehavior(const std::string& service_path,
                                     const base::Closure& behavior) = 0;
+
+    // If |hold_back| is set to true, stops sending service property updates to
+    // observers and records them instead. Then if this is called again with
+    // |hold_back| == false, sends all recorded property updates.
+    virtual void SetHoldBackServicePropertyUpdates(bool hold_back) = 0;
 
    protected:
     virtual ~TestInterface() {}
