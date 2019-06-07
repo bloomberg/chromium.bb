@@ -8,6 +8,7 @@ import static java.lang.Math.min;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.support.annotation.NonNull;
@@ -16,8 +17,10 @@ import android.view.ViewGroup.MarginLayoutParams;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
+import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.native_page.FrozenNativePage;
@@ -29,6 +32,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.display.DisplayAndroid;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -115,6 +119,7 @@ public class TabContentManager {
 
         float thumbnailScale = 1.f;
         boolean useApproximationThumbnails;
+        boolean saveJpegThumbnails = FeatureUtilities.isGridTabSwitcherEnabled();
         DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(context);
         float deviceDensity = display.getDipScale();
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
@@ -133,9 +138,9 @@ public class TabContentManager {
 
         mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
 
-        mNativeTabContentManager = nativeInit(defaultCacheSize,
-                approximationCacheSize, compressionQueueMaxSize, writeQueueMaxSize,
-                useApproximationThumbnails);
+        mNativeTabContentManager =
+                nativeInit(defaultCacheSize, approximationCacheSize, compressionQueueMaxSize,
+                        writeQueueMaxSize, useApproximationThumbnails, saveJpegThumbnails);
     }
 
     /**
@@ -277,13 +282,13 @@ public class TabContentManager {
         if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
 
         if (!forceUpdate) {
-            nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tab.getId(), callback);
+            getTabThumbnailFromDisk(tab, callback);
             return;
         }
 
         // Reading thumbnail from disk is faster than taking screenshot from live Tab, so fetch
         // that first even if |forceUpdate|.
-        nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tab.getId(), (diskBitmap) -> {
+        getTabThumbnailFromDisk(tab, (diskBitmap) -> {
             callback.onResult(diskBitmap);
             captureDownsampledThumbnail(tab, (bitmap) -> {
                 // Null check to avoid having a Bitmap from nativeGetTabThumbnailWithCallback() but
@@ -295,6 +300,28 @@ public class TabContentManager {
                 }
             });
         });
+    }
+
+    private void getTabThumbnailFromDisk(@NonNull Tab tab, @NonNull Callback<Bitmap> callback) {
+        // Try JPEG thumbnail first before using the more costly nativeGetTabThumbnailWithCallback.
+        new AsyncTask<Bitmap>() {
+            @Override
+            public Bitmap doInBackground() {
+                File file = new File(PathUtils.getThumbnailCacheDirectory(), tab.getId() + ".jpeg");
+                if (!file.isFile()) return null;
+                return BitmapFactory.decodeFile(file.getPath());
+            }
+
+            @Override
+            public void onPostExecute(Bitmap bitmap) {
+                if (bitmap != null) {
+                    callback.onResult(bitmap);
+                    return;
+                }
+                if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
+                nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tab.getId(), callback);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -421,7 +448,8 @@ public class TabContentManager {
 
     // Class Object Methods
     private native long nativeInit(int defaultCacheSize, int approximationCacheSize,
-            int compressionQueueMaxSize, int writeQueueMaxSize, boolean useApproximationThumbnail);
+            int compressionQueueMaxSize, int writeQueueMaxSize, boolean useApproximationThumbnail,
+            boolean saveJpegThumbnails);
     private native void nativeAttachTab(long nativeTabContentManager, Tab tab, int tabId);
     private native void nativeDetachTab(long nativeTabContentManager, Tab tab, int tabId);
     private native boolean nativeHasFullCachedThumbnail(long nativeTabContentManager, int tabId);

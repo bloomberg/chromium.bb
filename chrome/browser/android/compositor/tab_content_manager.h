@@ -45,7 +45,8 @@ class TabContentManager : public ThumbnailCacheObserver {
                     jint approximation_cache_size,
                     jint compression_queue_max_size,
                     jint write_queue_max_size,
-                    jboolean use_approximation_thumbnail);
+                    jboolean use_approximation_thumbnail,
+                    jboolean save_jpeg_thumbnails);
 
   virtual ~TabContentManager();
 

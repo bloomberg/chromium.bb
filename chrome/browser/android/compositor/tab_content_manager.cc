@@ -115,13 +115,15 @@ TabContentManager::TabContentManager(JNIEnv* env,
                                      jint approximation_cache_size,
                                      jint compression_queue_max_size,
                                      jint write_queue_max_size,
-                                     jboolean use_approximation_thumbnail)
+                                     jboolean use_approximation_thumbnail,
+                                     jboolean save_jpeg_thumbnails)
     : weak_java_tab_content_manager_(env, obj), weak_factory_(this) {
   thumbnail_cache_ = std::make_unique<ThumbnailCache>(
       static_cast<size_t>(default_cache_size),
       static_cast<size_t>(approximation_cache_size),
       static_cast<size_t>(compression_queue_max_size),
-      static_cast<size_t>(write_queue_max_size), use_approximation_thumbnail);
+      static_cast<size_t>(write_queue_max_size), use_approximation_thumbnail,
+      save_jpeg_thumbnails);
   thumbnail_cache_->AddThumbnailCacheObserver(this);
 }
 
@@ -435,11 +437,12 @@ jlong JNI_TabContentManager_Init(JNIEnv* env,
                                  jint approximation_cache_size,
                                  jint compression_queue_max_size,
                                  jint write_queue_max_size,
-                                 jboolean use_approximation_thumbnail) {
+                                 jboolean use_approximation_thumbnail,
+                                 jboolean save_jpeg_thumbnails) {
   TabContentManager* manager = new TabContentManager(
       env, obj, default_cache_size, approximation_cache_size,
       compression_queue_max_size, write_queue_max_size,
-      use_approximation_thumbnail);
+      use_approximation_thumbnail, save_jpeg_thumbnails);
   return reinterpret_cast<intptr_t>(manager);
 }
 
