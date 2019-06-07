@@ -127,7 +127,7 @@ void PageInfoControllerAndroid::SetPermissionInfo(
       user_specified_settings_to_display;
 
   for (const auto& permission : permission_info_list) {
-    if (base::ContainsValue(permissions_to_display, permission.type)) {
+    if (base::Contains(permissions_to_display, permission.type)) {
       base::Optional<ContentSetting> setting_to_display =
           GetSettingToDisplay(permission);
       if (setting_to_display) {
@@ -138,7 +138,7 @@ void PageInfoControllerAndroid::SetPermissionInfo(
   }
 
   for (const auto& permission : permissions_to_display) {
-    if (base::ContainsKey(user_specified_settings_to_display, permission)) {
+    if (base::Contains(user_specified_settings_to_display, permission)) {
       base::string16 setting_title =
           PageInfoUI::PermissionTypeToUIString(permission);
 

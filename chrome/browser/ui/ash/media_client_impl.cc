@@ -226,7 +226,7 @@ void MediaClientImpl::EnableCustomMediaKeyHandler(
     ui::MediaKeysListener::Delegate* delegate) {
   auto it = media_key_delegates_.find(context);
 
-  DCHECK(!base::ContainsKey(media_key_delegates_, context) ||
+  DCHECK(!base::Contains(media_key_delegates_, context) ||
          it->second == delegate);
 
   media_key_delegates_.emplace(context, delegate);
@@ -237,7 +237,7 @@ void MediaClientImpl::EnableCustomMediaKeyHandler(
 void MediaClientImpl::DisableCustomMediaKeyHandler(
     content::BrowserContext* context,
     ui::MediaKeysListener::Delegate* delegate) {
-  if (!base::ContainsKey(media_key_delegates_, context))
+  if (!base::Contains(media_key_delegates_, context))
     return;
 
   auto it = media_key_delegates_.find(context);

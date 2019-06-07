@@ -271,7 +271,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
 std::string GetDisplayType(const GURL& url) {
   std::string path = url.path().size() ? url.path().substr(1) : "";
 
-  if (!base::ContainsValue(kKnownDisplayTypes, path)) {
+  if (!base::Contains(kKnownDisplayTypes, path)) {
     LOG(ERROR) << "Unknown display type '" << path << "'. Setting default.";
     return OobeUI::kLoginDisplay;
   }

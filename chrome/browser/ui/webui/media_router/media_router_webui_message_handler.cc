@@ -551,7 +551,7 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   // that should be the cast mode initially selected in the dialog. Otherwise
   // the initial cast mode should be chosen automatically by the dialog.
   bool use_tab_mirroring =
-      base::ContainsKey(cast_modes, MediaCastMode::TAB_MIRROR) &&
+      base::Contains(cast_modes, MediaCastMode::TAB_MIRROR) &&
       media_router_ui_->UserSelectedTabMirroringForCurrentOrigin();
   initial_data.SetBoolean("useTabMirroring", use_tab_mirroring);
 
@@ -1146,8 +1146,7 @@ std::unique_ptr<base::ListValue> MediaRouterWebUIMessageHandler::RoutesToValue(
   auto value = std::make_unique<base::ListValue>();
 
   for (const MediaRoute& route : routes) {
-    bool can_join =
-        base::ContainsValue(joinable_route_ids, route.media_route_id());
+    bool can_join = base::Contains(joinable_route_ids, route.media_route_id());
     int current_cast_mode =
         CurrentCastModeForRouteId(route.media_route_id(), current_cast_modes);
     std::unique_ptr<base::DictionaryValue> route_val(

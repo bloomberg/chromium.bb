@@ -84,7 +84,7 @@ void PasswordManagerInternalsUI::DidStopLoading() {
   if (url.is_valid() && url.has_query()) {
     std::vector<std::string> query_parameters = base::SplitString(
         url.query(), "&", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    if (base::ContainsValue(query_parameters, "reset_fre"))
+    if (base::Contains(query_parameters, "reset_fre"))
       ResetAutoSignInFirstRunExperience();
   }
 }

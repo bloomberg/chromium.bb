@@ -600,7 +600,7 @@ bool PrintPreviewHandler::ShouldReceiveRendererMessage(int request_id) {
     return false;
   }
 
-  if (!base::ContainsKey(preview_callbacks_, request_id)) {
+  if (!base::Contains(preview_callbacks_, request_id)) {
     BadMessageReceived();
     return false;
   }
@@ -703,7 +703,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   int request_id = settings.FindIntKey(kPreviewRequestID).value();
   CHECK_GT(request_id, -1);
 
-  CHECK(!base::ContainsKey(preview_callbacks_, request_id));
+  CHECK(!base::Contains(preview_callbacks_, request_id));
   preview_callbacks_[request_id] = callback_id;
   print_preview_ui()->OnPrintPreviewRequest(request_id);
   // Add an additional key in order to identify |print_preview_ui| later on
@@ -1208,7 +1208,7 @@ void PrintPreviewHandler::SendPagePreviewReady(int page_index,
   // gets called, the print preview may have failed. Since the failure message
   // may have arrived first, check for this case and bail out instead of
   // thinking this may be a bad IPC message.
-  if (base::ContainsKey(preview_failures_, preview_request_id))
+  if (base::Contains(preview_failures_, preview_request_id))
     return;
 
   if (!ShouldReceiveRendererMessage(preview_request_id))

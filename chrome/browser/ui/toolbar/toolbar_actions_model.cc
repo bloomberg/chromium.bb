@@ -320,8 +320,7 @@ void ToolbarActionsModel::AddAction(const ActionId& action_id) {
   CHECK(actions_initialized_);
 
   // See if we have a last known good position for this extension.
-  bool is_new_extension =
-      !base::ContainsValue(last_known_positions_, action_id);
+  bool is_new_extension = !base::Contains(last_known_positions_, action_id);
 
   // New extensions go at the right (end) of the visible extensions. Other
   // extensions go at their previous position.
@@ -437,7 +436,7 @@ ToolbarActionsModel::GetExtensionMessageBubbleController(Browser* browser) {
 
 bool ToolbarActionsModel::IsActionPinned(const ActionId& action_id) const {
   DCHECK(base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
-  return base::ContainsValue(pinned_action_ids_, action_id);
+  return base::Contains(pinned_action_ids_, action_id);
 }
 
 void ToolbarActionsModel::RemoveExtension(
@@ -590,7 +589,7 @@ void ToolbarActionsModel::Populate() {
 }
 
 bool ToolbarActionsModel::HasAction(const ActionId& action_id) const {
-  return base::ContainsValue(action_ids_, action_id);
+  return base::Contains(action_ids_, action_id);
 }
 
 void ToolbarActionsModel::IncognitoPopulate() {
@@ -689,7 +688,7 @@ void ToolbarActionsModel::OnActionToolbarPrefChange() {
   std::vector<ActionId> pref_positions = extension_prefs_->GetToolbarOrder();
   size_t pref_position_size = pref_positions.size();
   for (size_t i = 0; i < last_known_positions_.size(); ++i) {
-    if (!base::ContainsValue(pref_positions, last_known_positions_[i])) {
+    if (!base::Contains(pref_positions, last_known_positions_[i])) {
       pref_positions.push_back(last_known_positions_[i]);
     }
   }

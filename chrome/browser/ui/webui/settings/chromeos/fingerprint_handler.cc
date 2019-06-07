@@ -248,7 +248,7 @@ void FingerprintHandler::HandleStartEnroll(const base::ListValue* args) {
     std::string fingerprint_name = l10n_util::GetStringFUTF8(
         IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME,
         base::NumberToString16(i));
-    if (!base::ContainsValue(fingerprints_labels_, fingerprint_name)) {
+    if (!base::Contains(fingerprints_labels_, fingerprint_name)) {
       fp_service_->StartEnrollSession(user_id_, fingerprint_name);
       break;
     }

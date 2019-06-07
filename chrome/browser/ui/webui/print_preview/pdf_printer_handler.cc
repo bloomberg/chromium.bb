@@ -97,7 +97,7 @@ base::Value GetPdfCapabilities(const std::string& locale) {
   Media default_media("", "", default_media_size.width(),
                       default_media_size.height());
   if (!default_media.MatchBySize() ||
-      !base::ContainsValue(kPdfMedia, default_media.type)) {
+      !base::Contains(kPdfMedia, default_media.type)) {
     default_media =
         Media(locale == "en-US" ? MediaType::NA_LETTER : MediaType::ISO_A4);
   }

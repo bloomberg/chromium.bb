@@ -58,7 +58,7 @@ void PrintersToValues(const PrinterList& printer_list,
 
     printer_info->SetBoolean(
         kCUPSEnterprisePrinter,
-        base::ContainsKey(printer.options, kCUPSEnterprisePrinter) &&
+        base::Contains(printer.options, kCUPSEnterprisePrinter) &&
             printer.options.at(kCUPSEnterprisePrinter) == kValueTrue);
 
     printer_info->Set(kSettingPrinterOptions, std::move(options));

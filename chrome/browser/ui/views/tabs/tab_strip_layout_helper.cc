@@ -124,7 +124,7 @@ void TabStripLayoutHelper::UpdateIdealBounds(
     const bool pinned = i < num_pinned_tabs;
     base::Optional<TabGroupId> group = tab_to_group_mapping[i];
     if (group.has_value() &&
-        !base::ContainsKey(headers_already_added, group.value())) {
+        !base::Contains(headers_already_added, group.value())) {
       // Start of a group.
       slots.push_back(TabSlot::CreateForGroupHeader(group.value(), pinned));
       headers_already_added.insert(group.value());

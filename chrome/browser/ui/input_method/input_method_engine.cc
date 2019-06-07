@@ -286,14 +286,13 @@ bool InputMethodEngine::IsValidKeyForAllPages(ui::KeyEvent* ui_event) {
                                                            ui::VKEY_RETURN};
   if (ui_event->GetDomKey().IsCharacter() && !ui_event->IsControlDown() &&
       !ui_event->IsCommandDown()) {
-    return !base::ContainsValue(invalid_character_keycodes,
-                                ui_event->key_code());
+    return !base::Contains(invalid_character_keycodes, ui_event->key_code());
   }
 
   // Whitelists Backspace key and arrow keys.
   std::vector<ui::KeyboardCode> whitelist_keycodes{
       ui::VKEY_BACK, ui::VKEY_LEFT, ui::VKEY_RIGHT, ui::VKEY_UP, ui::VKEY_DOWN};
-  return base::ContainsValue(whitelist_keycodes, ui_event->key_code());
+  return base::Contains(whitelist_keycodes, ui_event->key_code());
 }
 
 }  // namespace input_method

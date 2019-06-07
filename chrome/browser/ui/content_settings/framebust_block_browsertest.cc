@@ -261,8 +261,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, SimpleFramebust_Blocked) {
                                             redirect_url.spec().c_str())),
       base::NullCallback());
   block_waiter.Run();
-  EXPECT_TRUE(base::ContainsValue(GetFramebustTabHelper()->blocked_urls(),
-                                  redirect_url));
+  EXPECT_TRUE(
+      base::Contains(GetFramebustTabHelper()->blocked_urls(), redirect_url));
 }
 
 IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest,
@@ -351,8 +351,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest,
                                             redirect_url.spec().c_str())),
       base::NullCallback());
   block_waiter.Run();
-  EXPECT_TRUE(base::ContainsValue(GetFramebustTabHelper()->blocked_urls(),
-                                  redirect_url));
+  EXPECT_TRUE(
+      base::Contains(GetFramebustTabHelper()->blocked_urls(), redirect_url));
 
   // Now, navigate away and check that the UI went away.
   ui_test_utils::NavigateToURL(browser(),

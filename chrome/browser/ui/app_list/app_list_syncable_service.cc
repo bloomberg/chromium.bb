@@ -789,7 +789,7 @@ void AppListSyncableService::PruneEmptySyncFolders() {
     SyncItem* sync_item = (iter++)->second.get();
     if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
       continue;
-    if (!base::ContainsKey(parent_ids, sync_item->item_id))
+    if (!base::Contains(parent_ids, sync_item->item_id))
       DeleteSyncItem(sync_item->item_id);
   }
 }
@@ -1143,11 +1143,11 @@ AppListSyncableService::SyncItem* AppListSyncableService::FindSyncItem(
 AppListSyncableService::SyncItem* AppListSyncableService::CreateSyncItem(
     const std::string& item_id,
     sync_pb::AppListSpecifics::AppListItemType item_type) {
-  DCHECK(!base::ContainsKey(sync_items_, item_id));
+  DCHECK(!base::Contains(sync_items_, item_id));
   sync_items_[item_id] = std::make_unique<SyncItem>(item_id, item_type);
 
   // In case we have pending attributes to apply, process it asynchronously.
-  if (base::ContainsKey(pending_transfer_map_, item_id)) {
+  if (base::Contains(pending_transfer_map_, item_id)) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppListSyncableService::ApplyAppAttributes,
                                   weak_ptr_factory_.GetWeakPtr(), item_id,

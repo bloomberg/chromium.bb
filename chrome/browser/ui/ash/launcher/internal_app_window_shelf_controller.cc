@@ -91,7 +91,7 @@ void InternalAppWindowShelfController::OnWindowVisibilityChanging(
     return;
 
   // Skip OnWindowVisibilityChanged for ancestors/descendants.
-  if (!base::ContainsValue(observed_windows_, window))
+  if (!base::Contains(observed_windows_, window))
     return;
 
   ash::ShelfID shelf_id =

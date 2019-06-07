@@ -501,9 +501,9 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
         }));
     EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("registerBegin"));
     run_loop.Run();
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLInfo)));
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterStart)));
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterClaimToken)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLInfo)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLRegisterStart)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLRegisterClaimToken)));
     test_url_loader_factory()->SetInterceptor(base::NullCallback());
   }
 
@@ -523,10 +523,10 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
             run_loop.Quit();
         }));
     run_loop.Run();
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterClaimToken)));
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLCloudPrintConfirm)));
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterComplete)));
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLInfo)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLRegisterClaimToken)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLCloudPrintConfirm)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLRegisterComplete)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLInfo)));
     test_url_loader_factory()->SetInterceptor(base::NullCallback());
   }
 

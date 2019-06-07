@@ -341,7 +341,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
       }
     }
     DCHECK(!tabs.empty());
-    DCHECK(base::ContainsValue(tabs, tab));
+    DCHECK(base::Contains(tabs, tab));
     ui::ListSelectionModel selection_model;
     if (!original_selection.IsSelected(model_index))
       selection_model = original_selection;

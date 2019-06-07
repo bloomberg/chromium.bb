@@ -185,13 +185,13 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyOrigin, file_system_info.origin.Serialize());
       dict->SetString(
           kKeyPersistent,
-          base::ContainsKey(file_system_info.usage_map, kPerm)
+          base::Contains(file_system_info.usage_map, kPerm)
               ? base::UTF16ToUTF8(ui::FormatBytes(
                     file_system_info.usage_map.find(kPerm)->second))
               : l10n_util::GetStringUTF8(IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
       dict->SetString(
           kKeyTemporary,
-          base::ContainsKey(file_system_info.usage_map, kTemp)
+          base::Contains(file_system_info.usage_map, kTemp)
               ? base::UTF16ToUTF8(ui::FormatBytes(
                     file_system_info.usage_map.find(kTemp)->second))
               : l10n_util::GetStringUTF8(IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));

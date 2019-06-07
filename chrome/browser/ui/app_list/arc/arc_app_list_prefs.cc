@@ -1747,7 +1747,7 @@ void ArcAppListPrefs::OnPackageListRefreshed(
 
   for (const auto& package : packages) {
     AddOrUpdatePackagePrefs(*package);
-    if (!base::ContainsKey(old_packages, package->package_name)) {
+    if (!base::Contains(old_packages, package->package_name)) {
       for (auto& observer : observer_list_)
         observer.OnPackageInstalled(*package);
     }
@@ -1755,7 +1755,7 @@ void ArcAppListPrefs::OnPackageListRefreshed(
   }
 
   for (const auto& package_name : old_packages) {
-    if (!base::ContainsKey(current_packages, package_name)) {
+    if (!base::Contains(current_packages, package_name)) {
       RemovePackageFromPrefs(package_name);
       for (auto& observer : observer_list_)
         observer.OnPackageRemoved(package_name, false);

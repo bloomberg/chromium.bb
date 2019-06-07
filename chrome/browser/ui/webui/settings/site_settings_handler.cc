@@ -251,7 +251,7 @@ void ConvertSiteGroupMapToListValue(
       origin_object.SetKey(kNumCookies, base::Value(0));
       origin_object.SetKey(
           kHasPermissionSettings,
-          base::Value(base::ContainsKey(origin_permission_set, origin)));
+          base::Value(base::Contains(origin_permission_set, origin)));
       origin_list.GetList().emplace_back(std::move(origin_object));
     }
     site_group.SetKey(kNumCookies, base::Value(0));

@@ -292,7 +292,7 @@ void MediaRouterUI::OnRoutesUpdated(
 
   for (const MediaRoute& route : routes) {
     if (route.for_display() &&
-        base::ContainsValue(joinable_route_ids, route.media_route_id())) {
+        base::Contains(joinable_route_ids, route.media_route_id())) {
       joinable_route_ids_.push_back(route.media_route_id());
     }
   }

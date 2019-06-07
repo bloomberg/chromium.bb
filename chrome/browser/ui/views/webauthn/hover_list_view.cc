@@ -222,7 +222,7 @@ void HoverListView::CreateAndAppendPlaceholderItem() {
 }
 
 void HoverListView::AddListItemView(int item_tag) {
-  CHECK(!base::ContainsKey(tags_to_list_item_views_, item_tag));
+  CHECK(!base::Contains(tags_to_list_item_views_, item_tag));
   if (placeholder_list_item_view_) {
     RemoveListItemView(*placeholder_list_item_view_);
     placeholder_list_item_view_.reset();

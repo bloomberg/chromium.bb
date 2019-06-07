@@ -262,7 +262,7 @@ std::string FilterModules(const std::string& requested_modules,
                std::back_inserter(filtered_modules),
                [available_modules](std::string module) {
                  return !module.empty() &&
-                        base::ContainsValue(available_modules, module);
+                        base::Contains(available_modules, module);
                });
 
   return base::JoinString(filtered_modules, ",");

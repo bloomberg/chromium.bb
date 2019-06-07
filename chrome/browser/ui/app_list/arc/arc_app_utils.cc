@@ -664,7 +664,7 @@ void Intent::AddExtraParam(const std::string& extra_param) {
 }
 
 bool Intent::HasExtraParam(const std::string& extra_param) const {
-  return base::ContainsValue(extra_params_, extra_param);
+  return base::Contains(extra_params_, extra_param);
 }
 
 }  // namespace arc

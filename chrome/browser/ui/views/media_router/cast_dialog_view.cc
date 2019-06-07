@@ -434,17 +434,17 @@ base::Optional<MediaCastMode> CastDialogView::GetCastModeToUse(
   // supported and selected.
   switch (selected_source_) {
     case SourceType::kTab:
-      if (base::ContainsKey(sink.cast_modes, PRESENTATION))
+      if (base::Contains(sink.cast_modes, PRESENTATION))
         return base::make_optional<MediaCastMode>(PRESENTATION);
-      if (base::ContainsKey(sink.cast_modes, TAB_MIRROR))
+      if (base::Contains(sink.cast_modes, TAB_MIRROR))
         return base::make_optional<MediaCastMode>(TAB_MIRROR);
       break;
     case SourceType::kDesktop:
-      if (base::ContainsKey(sink.cast_modes, DESKTOP_MIRROR))
+      if (base::Contains(sink.cast_modes, DESKTOP_MIRROR))
         return base::make_optional<MediaCastMode>(DESKTOP_MIRROR);
       break;
     case SourceType::kLocalFile:
-      if (base::ContainsKey(sink.cast_modes, LOCAL_FILE))
+      if (base::Contains(sink.cast_modes, LOCAL_FILE))
         return base::make_optional<MediaCastMode>(LOCAL_FILE);
       break;
   }

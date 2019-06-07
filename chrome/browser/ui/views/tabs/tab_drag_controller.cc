@@ -432,7 +432,7 @@ void TabDragController::Init(TabDragContext* source_context,
                              MoveBehavior move_behavior,
                              EventSource event_source) {
   DCHECK(!tabs.empty());
-  DCHECK(base::ContainsValue(tabs, source_tab));
+  DCHECK(base::Contains(tabs, source_tab));
   source_context_ = source_context;
   was_source_maximized_ = source_context->AsView()->GetWidget()->IsMaximized();
   was_source_fullscreen_ =

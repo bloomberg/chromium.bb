@@ -37,7 +37,7 @@ const uint16_t kDeviceIds[] = {0x0457, 0x266e, 0x222a};
 // Returns true if |vendor_id| is a valid vendor id that may be made the primary
 // display.
 bool IsWhiteListedVendorId(uint16_t vendor_id) {
-  return base::ContainsValue(kDeviceIds, vendor_id);
+  return base::Contains(kDeviceIds, vendor_id);
 }
 
 }  // namespace

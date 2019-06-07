@@ -81,7 +81,7 @@ MATCHER_P(VectorSetEquals, expected, "") {
     return false;
 
   for (size_t i = 0; i < expected.size(); ++i) {
-    if (!base::ContainsValue(arg, expected[i]))
+    if (!base::Contains(arg, expected[i]))
       return false;
   }
   return true;
@@ -121,7 +121,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
 
   cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_EQ(1u, cast_modes.size());
-  EXPECT_TRUE(base::ContainsKey(cast_modes, MediaCastMode::PRESENTATION));
+  EXPECT_TRUE(base::Contains(cast_modes, MediaCastMode::PRESENTATION));
   actual_sources =
       query_result_manager_.GetSourcesForCastMode(MediaCastMode::PRESENTATION);
   EXPECT_EQ(1u, actual_sources.size());
@@ -139,7 +139,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
 
   cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_EQ(1u, cast_modes.size());
-  EXPECT_TRUE(base::ContainsKey(cast_modes, MediaCastMode::PRESENTATION));
+  EXPECT_TRUE(base::Contains(cast_modes, MediaCastMode::PRESENTATION));
   actual_sources =
       query_result_manager_.GetSourcesForCastMode(MediaCastMode::PRESENTATION);
   EXPECT_EQ(1u, actual_sources.size());
@@ -383,11 +383,10 @@ TEST_F(QueryResultManagerTest, AddInvalidSource) {
   const auto& cast_mode_sources = query_result_manager_.cast_mode_sources_;
   const auto& presentation_sources =
       cast_mode_sources.at(MediaCastMode::PRESENTATION);
-  EXPECT_TRUE(
-      base::ContainsKey(cast_mode_sources, MediaCastMode::PRESENTATION));
+  EXPECT_TRUE(base::Contains(cast_mode_sources, MediaCastMode::PRESENTATION));
   EXPECT_EQ(presentation_sources.size(), 1u);
   EXPECT_EQ(presentation_sources.at(0), source);
-  EXPECT_FALSE(base::ContainsKey(cast_mode_sources, MediaCastMode::TAB_MIRROR));
+  EXPECT_FALSE(base::Contains(cast_mode_sources, MediaCastMode::TAB_MIRROR));
 }
 
 }  // namespace media_router

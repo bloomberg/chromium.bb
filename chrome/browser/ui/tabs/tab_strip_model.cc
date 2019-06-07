@@ -778,7 +778,7 @@ bool TabStripModel::IsTabBlocked(int index) const {
 }
 
 const TabGroupData* TabStripModel::GetDataForGroup(TabGroupId group) const {
-  DCHECK(base::ContainsKey(group_data_, group));
+  DCHECK(base::Contains(group_data_, group));
   return group_data_.at(group).get();
 }
 

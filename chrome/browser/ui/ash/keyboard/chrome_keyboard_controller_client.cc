@@ -182,7 +182,7 @@ void ChromeKeyboardControllerClient::ClearEnableFlag(
 
 bool ChromeKeyboardControllerClient::IsEnableFlagSet(
     const keyboard::KeyboardEnableFlag& flag) {
-  return base::ContainsKey(keyboard_enable_flags_, flag);
+  return base::Contains(keyboard_enable_flags_, flag);
 }
 
 void ChromeKeyboardControllerClient::ReloadKeyboardIfNeeded() {
