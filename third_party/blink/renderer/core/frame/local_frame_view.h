@@ -103,6 +103,16 @@ typedef uint64_t DOMTimeStamp;
 using LayerTreeFlags = unsigned;
 using MainThreadScrollingReasons = uint32_t;
 
+struct LifecycleData {
+  LifecycleData() {}
+  LifecycleData(TimeTicks start_time_arg, int count_arg)
+      : start_time(start_time_arg), count(count_arg) {}
+  TimeTicks start_time;
+  // The number of lifecycles that have occcurred since the first one,
+  // inclusive, on a given LocalFrameRoot.
+  unsigned count = 0;
+};
+
 class CORE_EXPORT LocalFrameView final
     : public GarbageCollectedFinalized<LocalFrameView>,
       public FrameView {
@@ -357,6 +367,14 @@ class CORE_EXPORT LocalFrameView final
   // Returns whether the lifecycle was successfully updated to the
   // desired state.
   bool UpdateLifecycleToLayoutClean();
+
+  bool InLifecycleUpdate() { return in_lifecycle_update_; }
+  void SetInLifecycleUpdateForTest(bool val) { in_lifecycle_update_ = val; }
+  void SetLifecycleDataForTesting(const LifecycleData& lifecycle_data) {
+    lifecycle_data_ = lifecycle_data;
+  }
+
+  const LifecycleData& CurrentLifecycleData() const { return lifecycle_data_; }
 
   // This for doing work that needs to run synchronously at the end of lifecyle
   // updates, but needs to happen outside of the lifecycle code. It's OK to
@@ -937,6 +955,9 @@ class CORE_EXPORT LocalFrameView final
   bool needs_forced_compositing_update_;
 
   bool needs_focus_on_fragment_;
+  bool in_lifecycle_update_;
+
+  LifecycleData lifecycle_data_;
 
   IntRect remote_viewport_intersection_;
 

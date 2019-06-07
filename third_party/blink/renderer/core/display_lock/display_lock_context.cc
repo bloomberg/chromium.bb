@@ -352,10 +352,20 @@ void DisplayLockContext::FinishResolver(Member<ScriptPromiseResolver>* resolver,
   *resolver = nullptr;
 }
 
+bool DisplayLockContext::ShouldPerformUpdatePhase(
+    DisplayLockBudget::Phase phase) const {
+  DCHECK(document_);
+  if (state_ != kUpdating)
+    return false;
+  auto* view = document_->View();
+  return view && view->InLifecycleUpdate() &&
+         update_budget_->ShouldPerformPhase(phase,
+                                            view->CurrentLifecycleData());
+}
+
 bool DisplayLockContext::ShouldStyle(LifecycleTarget target) const {
   return target == kSelf || update_forced_ || state_ > kUpdating ||
-         (state_ == kUpdating && in_lifecycle_update_ &&
-          update_budget_->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
+         ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kStyle);
 }
 
 void DisplayLockContext::DidStyle(LifecycleTarget target) {
@@ -387,9 +397,7 @@ void DisplayLockContext::DidStyle(LifecycleTarget target) {
 
 bool DisplayLockContext::ShouldLayout(LifecycleTarget target) const {
   return target == kSelf || update_forced_ || state_ > kUpdating ||
-         (state_ == kUpdating && in_lifecycle_update_ &&
-          update_budget_->ShouldPerformPhase(
-              DisplayLockBudget::Phase::kLayout));
+         ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kLayout);
 }
 
 void DisplayLockContext::DidLayout(LifecycleTarget target) {
@@ -402,9 +410,7 @@ void DisplayLockContext::DidLayout(LifecycleTarget target) {
 
 bool DisplayLockContext::ShouldPrePaint() const {
   return update_forced_ || state_ > kUpdating ||
-         (state_ == kUpdating && in_lifecycle_update_ &&
-          update_budget_->ShouldPerformPhase(
-              DisplayLockBudget::Phase::kPrePaint));
+         ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kPrePaint);
 }
 
 void DisplayLockContext::DidPrePaint() {
@@ -692,13 +698,11 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
 }
 
 void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
-  in_lifecycle_update_ = true;
-  if (state_ == kUpdating)
-    update_budget_->WillStartLifecycleUpdate();
+  if (update_budget_)
+    update_budget_->OnLifecycleChange(view.CurrentLifecycleData());
 }
 
 void DisplayLockContext::DidFinishLifecycleUpdate(const LocalFrameView& view) {
-  in_lifecycle_update_ = false;
   if (acquire_resolver_) {
     if (ForceUnlockIfNeeded())
       return;

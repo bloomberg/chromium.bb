@@ -38,4 +38,13 @@ bool DisplayLockBudget::IsElementDirtyForPhase(Phase phase) const {
   return false;
 }
 
+void DisplayLockBudget::MarkPhaseAsDirty(Phase marking_phase) {
+  // Mark the next phase we're scheduled to run.
+  for (auto phase = static_cast<unsigned>(marking_phase);
+       phase <= static_cast<unsigned>(Phase::kLast); ++phase) {
+    if (MarkAncestorsDirtyForPhaseIfNeeded(static_cast<Phase>(phase)))
+      break;
+  }
+}
+
 }  // namespace blink

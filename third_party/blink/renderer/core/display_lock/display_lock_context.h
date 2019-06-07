@@ -283,6 +283,8 @@ class CORE_EXPORT DisplayLockContext final
   // when acquiring this lock should immediately resolve the acquire promise.
   bool ConnectedToView() const;
 
+  bool ShouldPerformUpdatePhase(DisplayLockBudget::Phase phase) const;
+
   std::unique_ptr<DisplayLockBudget> update_budget_;
 
   Member<ScriptPromiseResolver> commit_resolver_;
@@ -304,7 +306,6 @@ class CORE_EXPORT DisplayLockContext final
   base::Optional<LayoutSize> locked_content_logical_size_;
 
   bool update_forced_ = false;
-  bool in_lifecycle_update_ = false;
   bool activatable_ = false;
 
   bool is_locked_after_connect_ = false;

@@ -15,6 +15,8 @@ class TickClock;
 namespace blink {
 
 class DisplayLockContext;
+struct LifecycleData;
+
 class CORE_EXPORT DisplayLockBudget {
  public:
   enum class Phase : unsigned {
@@ -30,13 +32,13 @@ class CORE_EXPORT DisplayLockBudget {
 
   // Returns true if the given phase is allowed to proceed under the current
   // budget.
-  virtual bool ShouldPerformPhase(Phase) const = 0;
+  virtual bool ShouldPerformPhase(Phase, const LifecycleData&) = 0;
+
+  // Called just before any calls to ShouldPerformPhase for a new lifecycle.
+  virtual void OnLifecycleChange(const LifecycleData&) = 0;
 
   // Notifies the budget that the given phase was completed.
   virtual void DidPerformPhase(Phase) = 0;
-
-  // Notifies the budget that a new lifecycle update phase is going to start.
-  virtual void WillStartLifecycleUpdate() = 0;
 
   // Returns true if according to this budget, we still need a lifecycle update.
   // For example, if a budget blocked a needed phase, then it this will return
@@ -48,12 +50,14 @@ class CORE_EXPORT DisplayLockBudget {
   void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
 
  protected:
+  // Returns true if there is likely to be work for the given phase.
+  bool IsElementDirtyForPhase(Phase) const;
+
+  void MarkPhaseAsDirty(Phase marking_phase);
+
   // Marks the ancestor chain dirty for the given phase if it's needed. Returns
   // true if the ancestors were marked dirty and false otherwise.
   bool MarkAncestorsDirtyForPhaseIfNeeded(Phase);
-
-  // Returns true if there is likely to be work for the given phase.
-  bool IsElementDirtyForPhase(Phase) const;
 
   const base::TickClock* clock_;
 

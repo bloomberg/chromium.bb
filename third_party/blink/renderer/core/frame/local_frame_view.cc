@@ -270,6 +270,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       intersection_observation_state_(kNotNeeded),
       needs_forced_compositing_update_(false),
       needs_focus_on_fragment_(false),
+      in_lifecycle_update_(false),
       tracked_object_paint_invalidations_(
           base::WrapUnique(g_initial_track_all_paint_invalidations
                                ? new Vector<ObjectPaintInvalidation>
@@ -2193,6 +2194,10 @@ bool LocalFrameView::UpdateLifecyclePhases(
   if (ShouldThrottleRendering()) {
     return Lifecycle().GetState() == target_state;
   }
+
+  base::AutoReset<bool> in_lifecycle_scope(&in_lifecycle_update_, true);
+  lifecycle_data_.start_time = base::TimeTicks::Now();
+  ++lifecycle_data_.count;
 
   {
     TRACE_EVENT0("blink,benchmark", "LocalFrameView::WillStartLifecycleUpdate");
