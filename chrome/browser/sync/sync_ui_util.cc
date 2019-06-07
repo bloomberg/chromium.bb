@@ -5,16 +5,16 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace sync_ui_util {
@@ -228,8 +228,10 @@ MessageType GetStatusLabels(Profile* profile,
   }
   const bool is_user_signout_allowed =
       signin_util::IsUserSignoutAllowedForProfile(profile);
+  CoreAccountInfo account_info = service->GetAuthenticatedAccountInfo();
   GoogleServiceAuthError auth_error =
-      SigninErrorControllerFactory::GetForProfile(profile)->auth_error();
+      IdentityManagerFactory::GetForProfile(profile)
+          ->GetErrorStateOfRefreshTokenForAccount(account_info.account_id);
   return GetStatusLabelsImpl(service, is_user_signout_allowed, auth_error,
                              status_label, link_label, action_type);
 }
@@ -269,9 +271,12 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   }
 
   // Check for an auth error.
-  SigninErrorController* signin_error_controller =
-      SigninErrorControllerFactory::GetForProfile(profile);
-  if (signin_error_controller && signin_error_controller->HasError()) {
+  CoreAccountInfo account_info = service->GetAuthenticatedAccountInfo();
+  GoogleServiceAuthError auth_error =
+      IdentityManagerFactory::GetForProfile(profile)
+          ->GetErrorStateOfRefreshTokenForAccount(account_info.account_id);
+
+  if (auth_error.state() != GoogleServiceAuthError::State::NONE) {
     // The user can reauth to resolve the signin error.
     *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_MESSAGE;
     *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_BUTTON;

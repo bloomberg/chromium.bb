@@ -86,6 +86,8 @@ sync_ui_util::ActionType GetDistinctCase(
       // Make sure to fail authentication with an error in this case.
       std::string account_id = identity_manager->GetPrimaryAccountId();
       identity::SetRefreshTokenForPrimaryAccount(identity_manager);
+      service->SetAuthenticatedAccountInfo(
+          identity_manager->GetPrimaryAccountInfo());
       identity::UpdatePersistentErrorOfRefreshTokenForAccount(
           identity_manager, account_id,
           GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR));
@@ -284,4 +286,49 @@ TEST_F(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {
                                 &link_label, &action_type);
 
   EXPECT_EQ(action_type, sync_ui_util::CONFIRM_SYNC_SETTINGS);
+}
+
+// Errors in non-sync accounts should be ignored.
+TEST_F(SyncUIUtilTest, IgnoreSyncErrorForNonSyncAccount) {
+  std::unique_ptr<Profile> profile = BuildTestingProfile();
+
+  IdentityTestEnvironmentProfileAdaptor env_adaptor(profile.get());
+  identity::IdentityTestEnvironment* environment =
+      env_adaptor.identity_test_env();
+  identity::IdentityManager* identity_manager = environment->identity_manager();
+  AccountInfo primary_account_info =
+      environment->MakePrimaryAccountAvailable(kTestUser);
+
+  TestSyncService* service = static_cast<TestSyncService*>(
+      ProfileSyncServiceFactory::GetForProfile(profile.get()));
+  service->SetAuthenticatedAccountInfo(primary_account_info);
+  service->SetFirstSetupComplete(true);
+
+  // Setup a secondary account.
+  AccountInfo secondary_account_info =
+      environment->MakeAccountAvailable("secondary-user@example.com");
+
+  // Verify that we do not have any existing errors.
+  base::string16 actionable_error_status_label;
+  base::string16 link_label;
+  sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
+
+  sync_ui_util::MessageType message = sync_ui_util::GetStatusLabels(
+      profile.get(), &actionable_error_status_label, &link_label, &action_type);
+
+  EXPECT_EQ(action_type, sync_ui_util::NO_ACTION);
+  EXPECT_EQ(message, sync_ui_util::MessageType::SYNCED);
+
+  // Add an error to the secondary account.
+  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+      identity_manager, secondary_account_info.account_id,
+      GoogleServiceAuthError(
+          GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
+
+  // Verify that we do not see any sign-in errors.
+  message = sync_ui_util::GetStatusLabels(
+      profile.get(), &actionable_error_status_label, &link_label, &action_type);
+
+  EXPECT_EQ(action_type, sync_ui_util::NO_ACTION);
+  EXPECT_EQ(message, sync_ui_util::MessageType::SYNCED);
 }
