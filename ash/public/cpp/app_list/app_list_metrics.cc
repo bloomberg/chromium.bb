@@ -20,7 +20,7 @@ const char kAppListSuggestionChipOpenTypeHistogramInClamshell[] =
 const char kAppListSuggestionChipOpenTypeHistogramInTablet[] =
     "Apps.AppListSuggestedChipOpenType.TabletMode";
 const char kAppListZeroStateSuggestionOpenTypeHistogram[] =
-    "Apps.AppListZeroStateSuggestionOpenType";
+    "Apps.AppList.ZeroStateSuggestionOpenType";
 
 }  // namespace
 
