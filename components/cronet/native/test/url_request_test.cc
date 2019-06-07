@@ -10,9 +10,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/cronet/native/test/test_request_finished_info_listener.h"
 #include "components/cronet/native/test/test_upload_data_provider.h"
 #include "components/cronet/native/test/test_url_request_callback.h"
@@ -484,8 +484,10 @@ class UrlRequestTest : public ::testing::TestWithParam<
                   bool expect_error);
 
  protected:
-  // Provide a message loop for use by TestExecutor instances.
-  base::MessageLoop message_loop_;
+  // Provide a task environment for use by TestExecutor instances. Do not
+  // initialize the ThreadPool as this is done by the Cronet_Engine
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY};
 
   // Not owned, |request_finished_listener_| destroys itself when run. This
   // pointer is only needed to unregister the listener from the Engine in
