@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 
@@ -49,23 +49,11 @@
       }
 
       #button {
-        border-radius: 4px;
-        cursor: pointer;
-        display: inline-block;
-        height: 32px;
+        --cr-icon-button-color: currentColor;
+        --cr-icon-button-height: 32px;
+        --cr-icon-button-icon-start-offset: 4px;
+        --cr-icon-button-width: 48px;
         margin: 0;
-        min-width: 48px;
-        opacity: 0.38;
-        padding-bottom: 6px;
-        padding-inline-end: 2px;
-        padding-inline-start: 6px;
-        padding-top: 6px;
-        width: 48px;
-      }
-
-      #button:focus {
-        background-color: rgba(255, 255, 255, 0.24);
-        opacity: 1;
       }
 
       #button:hover {
@@ -89,11 +77,9 @@
         padding: 14px 28px;
       }
     </style>
-    <paper-button on-click="toggleDropdown" id="button"
-         aria-label$="{{header}}" title$="{{header}}">
-      <iron-icon icon="[[dropdownIcon]]"></iron-icon>
-      <iron-icon icon="cr:arrow-drop-down"></iron-icon>
-    </paper-button>
+    <cr-icon-button on-click="toggleDropdown" id="button"
+        iron-icon="[[dropdownIcon]],cr:arrow-drop-down" title$="[[header]]">
+    </cr-icon-button>
 
     <div id="container">
       <div id="dropdown" style="display: none">
