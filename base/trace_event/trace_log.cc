@@ -782,7 +782,7 @@ void TraceLog::AddOwnedEnabledStateObserver(
 
 bool TraceLog::HasEnabledStateObserver(EnabledStateObserver* listener) const {
   AutoLock lock(observers_lock_);
-  return ContainsValue(enabled_state_observers_, listener);
+  return Contains(enabled_state_observers_, listener);
 }
 
 void TraceLog::AddAsyncEnabledStateObserver(
@@ -800,7 +800,7 @@ void TraceLog::RemoveAsyncEnabledStateObserver(
 bool TraceLog::HasAsyncEnabledStateObserver(
     AsyncEnabledStateObserver* listener) const {
   AutoLock lock(observers_lock_);
-  return ContainsKey(async_observers_, listener);
+  return Contains(async_observers_, listener);
 }
 
 TraceLogStatus TraceLog::GetStatus() const {
@@ -1212,7 +1212,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
         std::vector<StringPiece> existing_names = base::SplitStringPiece(
             existing_name->second, ",", base::KEEP_WHITESPACE,
             base::SPLIT_WANT_NONEMPTY);
-        if (!ContainsValue(existing_names, new_name)) {
+        if (!Contains(existing_names, new_name)) {
           if (!existing_names.empty())
             existing_name->second.push_back(',');
           existing_name->second.append(new_name);

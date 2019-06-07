@@ -221,6 +221,8 @@ bool Contains(const Container& container, const Value& value) {
 
 // Test to see if a set or map contains a particular key.
 // Returns true if the key is in the collection.
+// TODO(crbug.com/970209): Replace usages of ContainsKey() with Contains() and
+// remove this method.
 template <typename Collection, typename Key>
 bool ContainsKey(const Collection& collection, const Key& key) {
   return Contains(collection, key);
@@ -228,6 +230,8 @@ bool ContainsKey(const Collection& collection, const Key& key) {
 
 // Test to see if a collection like a vector contains a particular value.
 // Returns true if the value is in the collection.
+// TODO(crbug.com/970209): Replace usages of ContainsValue() with Contains() and
+// remove this method.
 template <typename Collection, typename Value>
 bool ContainsValue(const Collection& collection, const Value& value) {
   return Contains(collection, value);

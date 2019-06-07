@@ -282,7 +282,7 @@ void ProcessTestResults(TestLauncher* test_launcher,
   std::vector<TestResult> final_results;
 
   for (const auto& i : test_names) {
-    if (ContainsKey(results_map, i)) {
+    if (Contains(results_map, i)) {
       TestResult test_result = results_map[i];
       if (test_result.status == TestResult::TEST_CRASH) {
         if (was_timeout) {

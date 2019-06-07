@@ -1427,7 +1427,7 @@ void GlobalActivityTracker::RecordProcessLaunch(
   DCHECK_NE(0, pid);
 
   base::AutoLock lock(global_tracker_lock_);
-  if (base::ContainsKey(known_processes_, pid)) {
+  if (base::Contains(known_processes_, pid)) {
     // TODO(bcwhite): Measure this in UMA.
     NOTREACHED() << "Process #" << process_id
                  << " was previously recorded as \"launched\""

@@ -150,7 +150,7 @@ void FeatureList::RegisterFieldTrialOverride(const std::string& feature_name,
                                              OverrideState override_state,
                                              FieldTrial* field_trial) {
   DCHECK(field_trial);
-  DCHECK(!ContainsKey(overrides_, feature_name) ||
+  DCHECK(!Contains(overrides_, feature_name) ||
          !overrides_.find(feature_name)->second.field_trial)
       << "Feature " << feature_name
       << " has conflicting field trial overrides: "

@@ -114,7 +114,7 @@ bool VerifySpecificPathControlledByUser(const FilePath& path,
   }
 
   if ((stat_info.st_mode & S_IWGRP) &&
-      !ContainsKey(group_gids, stat_info.st_gid)) {
+      !Contains(group_gids, stat_info.st_gid)) {
     DLOG(ERROR) << "Path " << path.value()
                 << " is writable by an unprivileged group.";
     return false;

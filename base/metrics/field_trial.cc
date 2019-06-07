@@ -733,7 +733,7 @@ bool FieldTrialList::CreateTrialsFromString(
     const std::string trial_name = entry.trial_name.as_string();
     const std::string group_name = entry.group_name.as_string();
 
-    if (ContainsKey(ignored_trial_names, trial_name)) {
+    if (Contains(ignored_trial_names, trial_name)) {
       // This is to warn that the field trial forced through command-line
       // input is unforcable.
       // Use --enable-logging or --enable-logging=stderr to see this warning.

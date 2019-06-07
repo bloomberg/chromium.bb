@@ -496,7 +496,7 @@ void FilePathWatcherImpl::OnFilePathChangedOnOriginSequence(
     }
   }
 
-  if (ContainsKey(recursive_paths_by_watch_, fired_watch)) {
+  if (Contains(recursive_paths_by_watch_, fired_watch)) {
     if (!did_update)
       UpdateRecursiveWatches(fired_watch, is_dir);
     callback_.Run(target_, false /* error */);
@@ -607,7 +607,7 @@ void FilePathWatcherImpl::UpdateRecursiveWatches(
 
   // Check to see if this is a forced update or if some component of |target_|
   // has changed. For these cases, redo the watches for |target_| and below.
-  if (!ContainsKey(recursive_paths_by_watch_, fired_watch) &&
+  if (!Contains(recursive_paths_by_watch_, fired_watch) &&
       fired_watch != watches_.back().watch) {
     UpdateRecursiveWatchesForPath(target_);
     return;
@@ -617,10 +617,9 @@ void FilePathWatcherImpl::UpdateRecursiveWatches(
   if (!is_dir)
     return;
 
-  const FilePath& changed_dir =
-      ContainsKey(recursive_paths_by_watch_, fired_watch) ?
-      recursive_paths_by_watch_[fired_watch] :
-      target_;
+  const FilePath& changed_dir = Contains(recursive_paths_by_watch_, fired_watch)
+                                    ? recursive_paths_by_watch_[fired_watch]
+                                    : target_;
 
   auto start_it = recursive_watches_by_path_.lower_bound(changed_dir);
   auto end_it = start_it;
@@ -652,7 +651,7 @@ void FilePathWatcherImpl::UpdateRecursiveWatchesForPath(const FilePath& path) {
        current = enumerator.Next()) {
     DCHECK(enumerator.GetInfo().IsDirectory());
 
-    if (!ContainsKey(recursive_watches_by_path_, current)) {
+    if (!Contains(recursive_watches_by_path_, current)) {
       // Add new watches.
       InotifyReader::Watch watch =
           g_inotify_reader.Get().AddWatch(current, this);
@@ -686,8 +685,8 @@ void FilePathWatcherImpl::TrackWatchForRecursion(InotifyReader::Watch watch,
   if (watch == InotifyReader::kInvalidWatch)
     return;
 
-  DCHECK(!ContainsKey(recursive_paths_by_watch_, watch));
-  DCHECK(!ContainsKey(recursive_watches_by_path_, path));
+  DCHECK(!Contains(recursive_paths_by_watch_, watch));
+  DCHECK(!Contains(recursive_watches_by_path_, path));
   recursive_paths_by_watch_[watch] = path;
   recursive_watches_by_path_[path] = watch;
 }

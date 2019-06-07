@@ -107,7 +107,7 @@ class ObserverListThreadSafe : public internal::ObserverListThreadSafeBase {
     AutoLock auto_lock(lock_);
 
     // Add |observer| to the list of observers.
-    DCHECK(!ContainsKey(observers_, observer));
+    DCHECK(!Contains(observers_, observer));
     const scoped_refptr<SequencedTaskRunner> task_runner =
         SequencedTaskRunnerHandle::Get();
     observers_[observer] = task_runner;

@@ -1242,7 +1242,7 @@ bool TestLauncher::ReorderAndValidateTests() {
   std::vector<TestInfo> tests_to_run;
   for (const TestInfo& test_info : tests_) {
     // If any test has a matching disabled test, fail and log for audit.
-    if (base::ContainsKey(disabled_tests, test_info.GetFullName())) {
+    if (base::Contains(disabled_tests, test_info.GetFullName())) {
       LOG(ERROR) << test_info.GetFullName()
                  << " duplicated by a DISABLED_ test";
       result = false;

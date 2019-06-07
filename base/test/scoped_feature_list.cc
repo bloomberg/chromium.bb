@@ -68,8 +68,8 @@ void OverrideFeatures(const std::string& features,
   for (StringPiece feature : features_list) {
     StringPiece feature_name = GetFeatureName(feature);
 
-    if (ContainsValue(merged_features->enabled_feature_list, feature_name) ||
-        ContainsValue(merged_features->disabled_feature_list, feature_name))
+    if (Contains(merged_features->enabled_feature_list, feature_name) ||
+        Contains(merged_features->disabled_feature_list, feature_name))
       continue;
 
     if (override_state == FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE) {
