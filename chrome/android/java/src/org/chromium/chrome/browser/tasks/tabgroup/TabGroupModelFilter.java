@@ -252,10 +252,7 @@ public class TabGroupModelFilter extends TabModelFilter {
 
         int destinationGroupId = destinationTab.getRootId();
         List<Tab> tabsToMerge = getRelatedTabList(sourceTabId);
-        int sourceTabIndexInTabModel =
-                TabModelUtils.getTabIndexById(getTabModel(), sourceTab.getId());
         int destinationIndexInTabModel = getTabModelDestinationIndex(destinationTab);
-        boolean isMovingBackward = sourceTabIndexInTabModel < destinationIndexInTabModel;
 
         if (!needToUpdateTabModel(tabsToMerge, destinationIndexInTabModel)) {
             for (int i = 0; i < tabsToMerge.size(); i++) {
@@ -271,13 +268,31 @@ public class TabGroupModelFilter extends TabModelFilter {
                         tabsToMerge.get(tabsToMerge.size() - 1), group.getLastShownTabId());
             }
         } else {
-            for (int i = 0; i < tabsToMerge.size(); i++) {
-                Tab tab = tabsToMerge.get(i);
-                tab.setRootId(destinationGroupId);
-                getTabModel().moveTab(tab.getId(),
-                        isMovingBackward ? destinationIndexInTabModel
-                                         : destinationIndexInTabModel++);
-            }
+            mergeListOfTabsToGroup(tabsToMerge, destinationTab);
+        }
+    }
+
+    /**
+     * This method appends a list of {@link Tab}s to the destination group that contains the
+     * {@code} destinationTab. The {@link TabModel} ordering of the tabs in the given list is not
+     * preserved. After calling this method, the {@link TabModel} ordering of these tabs would
+     * become the ordering of {@code tabs}.
+     *
+     * @param tabs List of {@link Tab}s to be appended.
+     * @param destinationTab The destination {@link Tab} to be append to.
+     */
+    public void mergeListOfTabsToGroup(List<Tab> tabs, Tab destinationTab) {
+        int destinationGroupId = destinationTab.getRootId();
+        int destinationIndexInTabModel = getTabModelDestinationIndex(destinationTab);
+
+        for (int i = 0; i < tabs.size(); i++) {
+            Tab tab = tabs.get(i);
+            int index = TabModelUtils.getTabIndexById(getTabModel(), tab.getId());
+            boolean isMergingBackward = index < destinationIndexInTabModel;
+
+            tab.setRootId(destinationGroupId);
+            getTabModel().moveTab(tab.getId(),
+                    isMergingBackward ? destinationIndexInTabModel : destinationIndexInTabModel++);
         }
     }
 

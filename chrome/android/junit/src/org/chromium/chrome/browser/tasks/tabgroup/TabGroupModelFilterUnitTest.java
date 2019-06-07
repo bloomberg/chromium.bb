@@ -64,6 +64,8 @@ public class TabGroupModelFilterUnitTest {
     private static final int POSITION5 = 4;
     private static final int POSITION6 = 5;
 
+    private static final int NEW_TAB_ID = 159;
+
     @Mock
     TabModel mTabModel;
 
@@ -172,6 +174,13 @@ public class TabGroupModelFilterUnitTest {
         }).when(mTabModel).getCount();
 
         doReturn(0).when(mTabModel).index();
+    }
+
+    private Tab addTabToTabModel() {
+        Tab tab = prepareTab(NEW_TAB_ID, NEW_TAB_ID);
+        mTabModel.addTab(tab, -1, TabLaunchType.FROM_CHROME_UI);
+        mTabModelObserverCaptor.getValue().didAddTab(tab, TabLaunchType.FROM_CHROME_UI);
+        return tab;
     }
 
     @Before
@@ -311,6 +320,53 @@ public class TabGroupModelFilterUnitTest {
         verify(mTabGroupModelFilterObserver).didMergeTabToGroup(mTab3, mTab4.getId());
         assertArrayEquals(mTabGroupModelFilter.getRelatedTabList(mTab2.getId()).toArray(),
                 expectedGroup.toArray());
+        assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
+    }
+
+    @Test
+    public void mergeListOfTabsToGroup_All_Backward() {
+        List<Tab> expectedTabModel =
+                new ArrayList<>(Arrays.asList(mTab2, mTab3, mTab5, mTab6, mTab1, mTab4));
+        List<Tab> tabsToMerge = new ArrayList<>(Arrays.asList(mTab1, mTab4));
+
+        mTabGroupModelFilter.mergeListOfTabsToGroup(tabsToMerge, mTab5);
+
+        verify(mTabModel).moveTab(mTab1.getId(), POSITION6 + 1);
+        verify(mTabModel).moveTab(mTab4.getId(), POSITION6 + 1);
+        verify(mTabGroupModelFilterObserver).didMergeTabToGroup(mTab1, mTab5.getId());
+        verify(mTabGroupModelFilterObserver).didMergeTabToGroup(mTab4, mTab5.getId());
+        assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
+    }
+
+    @Test
+    public void mergeListOfTabsToGroup_All_Forward() {
+        Tab newTab = addTabToTabModel();
+        List<Tab> tabsToMerge = new ArrayList<>(Arrays.asList(mTab4, newTab));
+        List<Tab> expectedTabModel =
+                new ArrayList<>(Arrays.asList(mTab1, mTab4, newTab, mTab2, mTab3, mTab5, mTab6));
+
+        mTabGroupModelFilter.mergeListOfTabsToGroup(tabsToMerge, mTab1);
+
+        verify(mTabModel).moveTab(mTab4.getId(), POSITION1 + 1);
+        verify(mTabModel).moveTab(newTab.getId(), POSITION1 + 2);
+        verify(mTabGroupModelFilterObserver).didMergeTabToGroup(mTab4, mTab1.getId());
+        verify(mTabGroupModelFilterObserver).didMergeTabToGroup(newTab, mTab1.getId());
+        assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
+    }
+
+    @Test
+    public void mergeListOfTabsToGroup_Any_direction() {
+        Tab newTab = addTabToTabModel();
+        List<Tab> tabsToMerge = new ArrayList<>(Arrays.asList(mTab1, newTab));
+        List<Tab> expectedTabModel =
+                new ArrayList<>(Arrays.asList(mTab2, mTab3, mTab4, mTab1, newTab, mTab5, mTab6));
+
+        mTabGroupModelFilter.mergeListOfTabsToGroup(tabsToMerge, mTab4);
+
+        verify(mTabModel).moveTab(mTab1.getId(), POSITION4 + 1);
+        verify(mTabModel).moveTab(newTab.getId(), POSITION4 + 1);
+        verify(mTabGroupModelFilterObserver).didMergeTabToGroup(mTab1, mTab4.getId());
+        verify(mTabGroupModelFilterObserver).didMergeTabToGroup(newTab, mTab4.getId());
         assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
     }
 
