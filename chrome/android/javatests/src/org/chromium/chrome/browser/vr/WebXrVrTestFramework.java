@@ -16,6 +16,9 @@ import org.chromium.content_public.browser.WebContents;
  * Extension of VrTestFramework containing WebXR for VR-specific functionality.
  */
 public class WebXrVrTestFramework extends WebXrTestFramework {
+    // If set, a consent dialog is expected on all enterSessionWithUserGesture* methods.
+    protected boolean mShouldExpectConsentDialog = true;
+
     public WebXrVrTestFramework(ChromeActivityTestRule rule) {
         super(rule);
         if (!TestVrShellDelegate.isOnStandalone()) {
@@ -39,6 +42,10 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
             VrShellDelegateUtils.getDelegateInstance().setExpectingBroadcast();
         }
         super.enterSessionWithUserGesture(webContents);
+
+        if (!mShouldExpectConsentDialog) return;
+        PermissionUtils.waitForConsentPrompt(getRule().getActivity());
+        PermissionUtils.acceptConsentPrompt(getRule().getActivity());
     }
 
     /**
@@ -51,9 +58,6 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
         runJavaScriptOrFail(
                 "sessionTypeToRequest = sessionTypes.IMMERSIVE", POLL_TIMEOUT_LONG_MS, webContents);
         enterSessionWithUserGesture(webContents);
-
-        PermissionUtils.waitForConsentPrompt(getRule().getActivity());
-        PermissionUtils.acceptConsentPrompt(getRule().getActivity());
 
         pollJavaScriptBooleanOrFail("sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
                 POLL_TIMEOUT_LONG_MS, webContents);
