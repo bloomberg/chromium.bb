@@ -173,6 +173,23 @@ GuardedPageAllocator::~GuardedPageAllocator() {
     UnmapRegion();
 }
 
+void* GuardedPageAllocator::MapRegionHint() const {
+#if defined(ARCH_CPU_64_BITS)
+  // Mapping the GWP-ASan region in to the lower 32-bits of address space makes
+  // it much more likely that a bad pointer dereference points into our region
+  // and triggers a false positive report, so try to hint to the OS that we want
+  // the region to be in the upper address space.
+  static const uintptr_t kMinAddress = 1ULL << 32;
+  static const uintptr_t kMaxAddress = 1ULL << 46;
+  uint64_t rand = base::RandUint64() & (kMaxAddress - 1);
+  if (rand < kMinAddress)
+    rand += kMinAddress;
+  return reinterpret_cast<void*>(rand & ~(state_.page_size - 1));
+#else
+  return nullptr;
+#endif  // defined(ARCH_CPU_64_BITS)
+}
+
 void* GuardedPageAllocator::Allocate(size_t size,
                                      size_t align,
                                      const char* type) {

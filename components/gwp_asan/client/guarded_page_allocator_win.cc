@@ -16,6 +16,11 @@ namespace internal {
 // protection routines can be broken out in base/ and merged with those used for
 // PartionAlloc/ProtectedMemory.
 void* GuardedPageAllocator::MapRegion() {
+  if (void* hint = MapRegionHint())
+    if (void* ptr =
+            VirtualAlloc(hint, RegionSize(), MEM_RESERVE, PAGE_NOACCESS))
+      return ptr;
+
   return VirtualAlloc(nullptr, RegionSize(), MEM_RESERVE, PAGE_NOACCESS);
 }
 
