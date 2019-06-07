@@ -76,6 +76,30 @@ source_set("confirmations") {
   ]
 }
 
+source_set("prompts") {
+  sources = [
+    "java_script_prompt_overlay_coordinator.h",
+    "java_script_prompt_overlay_coordinator.mm",
+    "java_script_prompt_overlay_mediator.h",
+    "java_script_prompt_overlay_mediator.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":common",
+    "//base",
+    "//components/strings:components_strings_grit",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/web_content_area",
+    "//ios/chrome/browser/ui/alert_view_controller",
+    "//ios/chrome/browser/ui/elements",
+    "//ios/chrome/browser/ui/overlays:coordinators",
+    "//ui/base",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -84,6 +108,8 @@ source_set("unit_tests") {
     "java_script_confirmation_overlay_coordinator_unittest.mm",
     "java_script_confirmation_overlay_mediator_unittest.mm",
     "java_script_dialog_overlay_mediator_unittest.mm",
+    "java_script_prompt_overlay_coordinator_unittest.mm",
+    "java_script_prompt_overlay_mediator_unittest.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -92,6 +118,7 @@ source_set("unit_tests") {
     ":alerts",
     ":common",
     ":confirmations",
+    ":prompts",
     "//base/test:test_support",
     "//components/strings:components_strings_grit",
     "//components/url_formatter",
@@ -101,6 +128,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/ui/alert_view_controller",
     "//ios/chrome/browser/ui/alert_view_controller/test",
+    "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays/test",
     "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test",
     "//ios/web/public",

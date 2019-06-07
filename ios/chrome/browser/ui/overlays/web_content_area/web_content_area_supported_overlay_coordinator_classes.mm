@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_alert_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_confirmation_overlay_coordinator.h"
+#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_prompt_overlay_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,7 +17,8 @@ namespace web_content_area {
 NSArray<Class>* GetSupportedOverlayCoordinatorClasses() {
   // TODO(crbug.com/941745): Add more supported overlay coordinator classes.
   return @ [[JavaScriptAlertOverlayCoordinator class],
-            [JavaScriptConfirmationOverlayCoordinator class]];
+            [JavaScriptConfirmationOverlayCoordinator class],
+            [JavaScriptPromptOverlayCoordinator class]];
 }
 
 }  // web_content_area
