@@ -60,8 +60,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   CheckRoundtrips16<int64_t>(data, size, &base::StringToInt64);
   CheckRoundtrips<uint64_t>(data, size, &base::StringToUint64);
   CheckRoundtrips16<uint64_t>(data, size, &base::StringToUint64);
-  CheckRoundtrips<size_t>(data, size, &base::StringToUint64);
-  CheckRoundtrips16<size_t>(data, size, &base::StringToUint64);
+  CheckRoundtrips<size_t>(data, size, &base::StringToSizeT);
+  CheckRoundtrips16<size_t>(data, size, &base::StringToSizeT);
 
   base::StringPiece string_piece_input(reinterpret_cast<const char*>(data),
                                        size);
