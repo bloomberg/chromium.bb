@@ -141,6 +141,60 @@ TEST_F('OSSettingsUIBrowserTest', 'All', () => {
       assertTrue(floatingMenu.advancedOpened);
       assertTrue(ui.advancedOpenedInMenu_);
     });
+
+    test('URL initiated search propagates to search box', () => {
+      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      const searchField =
+          /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
+      assertEquals('', searchField.getSearchInput().value);
+
+      const query = 'foo';
+      settings.navigateTo(
+          settings.routes.BASIC, new URLSearchParams(`search=${query}`));
+      assertEquals(query, searchField.getSearchInput().value);
+    });
+
+    test('search box initiated search propagates to URL', () => {
+      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      const searchField =
+          /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
+
+      settings.navigateTo(
+          settings.routes.BASIC, /* dynamicParams */ null,
+          /* removeSearch */ true);
+      assertEquals('', searchField.getSearchInput().value);
+      assertFalse(settings.getQueryParameters().has('search'));
+
+      let value = 'GOOG';
+      searchField.setValue(value);
+      assertEquals(value, settings.getQueryParameters().get('search'));
+
+      // Test that search queries are properly URL encoded.
+      value = '+++';
+      searchField.setValue(value);
+      assertEquals(value, settings.getQueryParameters().get('search'));
+    });
+
+    test('whitespace only search query is ignored', () => {
+      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      const searchField =
+          /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
+      searchField.setValue('    ');
+      let urlParams = settings.getQueryParameters();
+      assertFalse(urlParams.has('search'));
+
+      searchField.setValue('   foo');
+      urlParams = settings.getQueryParameters();
+      assertEquals('foo', urlParams.get('search'));
+
+      searchField.setValue('   foo ');
+      urlParams = settings.getQueryParameters();
+      assertEquals('foo ', urlParams.get('search'));
+
+      searchField.setValue('   ');
+      urlParams = settings.getQueryParameters();
+      assertFalse(urlParams.has('search'));
+    });
   });
 
   mocha.run();
