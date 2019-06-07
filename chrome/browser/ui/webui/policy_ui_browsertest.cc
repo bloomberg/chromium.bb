@@ -47,8 +47,8 @@
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "url/gurl.h"
 
-using testing::Return;
 using testing::_;
+using testing::Return;
 
 namespace {
 
@@ -142,6 +142,21 @@ std::vector<std::string> PopulateExpectedPolicy(
   return expected_policy;
 }
 
+void SetChromeMetaData(base::DictionaryValue* expected) {
+  // Only set the expected keys and types and not the values since
+  // these can vary greatly on the platform, OS, architecture
+  // that is running.
+  constexpr char prefix[] = "chromeMetadata";
+  expected->SetPath({prefix, "application"}, base::Value(""));
+  expected->SetPath({prefix, "version"}, base::Value(""));
+  expected->SetPath({prefix, "revision"}, base::Value(""));
+#if defined(OS_CHROMEOS)
+  expected->SetPath({prefix, "platform"}, base::Value(""));
+#else
+  expected->SetPath({prefix, "OS"}, base::Value(""));
+#endif
+}
+
 void SetExpectedPolicy(base::DictionaryValue* expected,
                        const std::string& name,
                        const std::string& level,
@@ -185,7 +200,7 @@ class PolicyUITest : public InProcessBrowserTest {
       const policy::PolicyNamespace& policy_namespace,
       const policy::PolicyMap& policy);
 
-  void VerifyPolicies(const std::vector<std::vector<std::string> >& expected);
+  void VerifyPolicies(const std::vector<std::vector<std::string>>& expected);
 
   void VerifyExportingPolicies(const base::DictionaryValue& expected);
 
@@ -237,11 +252,9 @@ class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
   }
 };
 
-PolicyUITest::PolicyUITest() {
-}
+PolicyUITest::PolicyUITest() {}
 
-PolicyUITest::~PolicyUITest() {
-}
+PolicyUITest::~PolicyUITest() {}
 
 void PolicyUITest::SetUpInProcessBrowserTestFixture() {
   EXPECT_CALL(provider_, IsInitializationComplete(_))
@@ -266,7 +279,7 @@ void PolicyUITest::UpdateProviderPolicyForNamespace(
 }
 
 void PolicyUITest::VerifyPolicies(
-    const std::vector<std::vector<std::string> >& expected_policies) {
+    const std::vector<std::vector<std::string>>& expected_policies) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy"));
 
   // Retrieve the text contents of the policy table cells for all policies.
@@ -289,8 +302,8 @@ void PolicyUITest::VerifyPolicies(
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   std::string json;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents, javascript,
-                                                     &json));
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractString(contents, javascript, &json));
   std::unique_ptr<base::Value> value_ptr =
       base::JSONReader::ReadDeprecated(json);
   const base::ListValue* actual_policies = NULL;
@@ -344,6 +357,24 @@ void PolicyUITest::VerifyExportingPolicies(
   base::DictionaryValue* actual_policies = nullptr;
   EXPECT_TRUE(value_ptr->GetAsDictionary(&actual_policies));
 
+  // Since Chrome Metadata has a lot of variations based on platform, OS,
+  // architecture and version, it is difficult to test for exact values. Test
+  // instead that the same keys exist in the meta data and also that the type of
+  // all the keys is a string. The incoming |expected| value should already be
+  // filled with the expected keys.
+  base::Value* chrome_metadata = actual_policies->FindKeyOfType(
+      "chromeMetadata", base::Value::Type::DICTIONARY);
+  EXPECT_NE(chrome_metadata, nullptr);
+
+  base::DictionaryValue* chrome_metadata_dict = nullptr;
+  EXPECT_TRUE(chrome_metadata->GetAsDictionary(&chrome_metadata_dict));
+
+  // The |chrome_metadata| we compare against will have the actual values so
+  // those will be cleared to empty values so that the equals comparison below
+  // will just compare key existence and value types.
+  for (auto& key_value : *chrome_metadata_dict)
+    *(key_value.second) = base::Value(key_value.second->type());
+
   // Check that this dictionary is the same as expected.
   EXPECT_EQ(expected, *actual_policies);
 }
@@ -352,6 +383,8 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
   // Set policy values and generate expected dictionary.
   policy::PolicyMap values;
   base::DictionaryValue expected_values;
+
+  SetChromeMetaData(&expected_values);
 
   base::ListValue popups_blocked_for_urls;
   popups_blocked_for_urls.AppendString("aaa");
@@ -441,15 +474,14 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyNames) {
 
   // Expect that the policy table contains all known policies in alphabetical
   // order and none of the policies have a set value.
-  std::vector<std::vector<std::string> > expected_policies;
+  std::vector<std::vector<std::string>> expected_policies;
   policy::Schema chrome_schema =
       policy::Schema::Wrap(policy::GetChromeSchemaData());
   ASSERT_TRUE(chrome_schema.valid());
   for (policy::Schema::Iterator it = chrome_schema.GetPropertiesIterator();
        !it.IsAtEnd(); it.Advance()) {
-    expected_policies.push_back(
-        PopulateExpectedPolicy(
-            it.key(), std::string(), std::string(), nullptr, false));
+    expected_policies.push_back(PopulateExpectedPolicy(
+        it.key(), std::string(), std::string(), nullptr, false));
   }
 
   // Retrieve the contents of the policy table from the UI and verify that it
@@ -504,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   // * All known policies whose value has been set, in alphabetical order.
   // * The unknown policy.
   // * All known policies whose value has not been set, in alphabetical order.
-  std::vector<std::vector<std::string> > expected_policies;
+  std::vector<std::vector<std::string>> expected_policies;
   size_t first_unset_position = 0;
   policy::Schema chrome_schema =
       policy::Schema::Wrap(policy::GetChromeSchemaData());
@@ -519,17 +551,14 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
         it == expected_values.end() ? std::string() : "Cloud";
     const policy::PolicyMap::Entry* metadata = values.Get(props.key());
     expected_policies.insert(
-        metadata ? expected_policies.begin() + first_unset_position++ :
-                   expected_policies.end(),
+        metadata ? expected_policies.begin() + first_unset_position++
+                 : expected_policies.end(),
         PopulateExpectedPolicy(props.key(), value, source, metadata, false));
   }
   expected_policies.insert(
       expected_policies.begin() + first_unset_position++,
-      PopulateExpectedPolicy(kUnknownPolicy,
-                             expected_values[kUnknownPolicy],
-                             "Platform",
-                             values.Get(kUnknownPolicy),
-                             true));
+      PopulateExpectedPolicy(kUnknownPolicy, expected_values[kUnknownPolicy],
+                             "Platform", values.Get(kUnknownPolicy), true));
   expected_policies.insert(
       expected_policies.begin() + first_unset_position++,
       PopulateExpectedPolicy(

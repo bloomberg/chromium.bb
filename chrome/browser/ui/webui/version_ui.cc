@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/version_handler.h"
+#include "chrome/browser/ui/webui/version_util_win.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -40,7 +41,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/webui/version_handler_win.h"
-#include "chrome/install_static/install_details.h"
 #endif
 
 using content::WebUIDataSource;
@@ -138,15 +138,8 @@ WebUIDataSource* CreateVersionUIDataSource() {
 #endif
 
 #if defined(OS_WIN)
-  base::string16 update_cohort_name =
-      install_static::InstallDetails::Get().update_cohort_name();
-  if (!update_cohort_name.empty()) {
-    html_source->AddString(version_ui::kUpdateCohortName,
-                           l10n_util::GetStringFUTF16(
-                               IDS_VERSION_UI_COHORT_NAME, update_cohort_name));
-  } else {
-    html_source->AddString(version_ui::kUpdateCohortName, std::string());
-  }
+  html_source->AddString(version_ui::kUpdateCohortName,
+                         version_utils::win::GetCohortVersionInfo());
 #endif  // defined(OS_WIN)
 
   html_source->AddString(version_ui::kSanitizer, version_info::GetSanitizerList());

@@ -53,6 +53,11 @@ using base::Value;
 namespace em = enterprise_management;
 
 namespace policy {
+
+// Fills |policy_dump| with device specific information if this device is
+// enterprise managed.
+void FillIdentityFields(Value* policy_dump);
+
 namespace {
 
 // Maps known policy names to their schema. If a policy is not present, it is
@@ -508,6 +513,9 @@ Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
                       std::move(device_local_account_policies));
 #endif  // defined(OS_CHROMEOS)
 
+  if (with_device_data)
+    FillIdentityFields(&all_policies);
+
   return all_policies;
 }
 
@@ -571,9 +579,7 @@ std::string GetAllPolicyValuesAsJSON(content::BrowserContext* context,
   Value all_policies = GetAllPolicyValuesAsDictionary(
       context, with_user_policies, false /* convert_values */, with_device_data,
       is_pretty_print);
-  if (with_device_data) {
-    FillIdentityFields(&all_policies);
-  }
+
   return DictionaryToJSONString(all_policies, is_pretty_print);
 }
 

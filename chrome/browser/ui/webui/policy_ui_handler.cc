@@ -18,6 +18,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/time/time.h"
@@ -32,6 +34,8 @@
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/common/channel_info.h"
+#include "chrome/grit/chromium_strings.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/cloud/message_util.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
@@ -54,12 +58,17 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/shell_dialogs/select_file_policy.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/android/android_about_app_info.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part.h"
@@ -69,9 +78,14 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/dbus/util/version_loader.h"
 #include "components/user_manager/user_manager.h"
 #else
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
+#endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/ui/webui/version_util_win.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -145,12 +159,12 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
   if (policy && policy->has_gaia_id())
     dict->SetString("gaiaId", policy->gaia_id());
 
-  base::TimeDelta refresh_interval =
-      base::TimeDelta::FromMilliseconds(refresh_scheduler ?
-          refresh_scheduler->GetActualRefreshDelay() :
-          policy::CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
-  base::Time last_refresh_time = refresh_scheduler ?
-      refresh_scheduler->last_refresh() : base::Time();
+  base::TimeDelta refresh_interval = base::TimeDelta::FromMilliseconds(
+      refresh_scheduler
+          ? refresh_scheduler->GetActualRefreshDelay()
+          : policy::CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
+  base::Time last_refresh_time =
+      refresh_scheduler ? refresh_scheduler->last_refresh() : base::Time();
 
   bool no_error = store->status() == policy::CloudPolicyStore::STATUS_OK &&
                   client && client->status() == policy::DM_STATUS_SUCCESS;
@@ -160,16 +174,17 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
   dict->SetString("status", status);
   dict->SetString("clientId", client_id);
   dict->SetString("username", username);
-  dict->SetString("refreshInterval",
-                  ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
-                                         ui::TimeFormat::LENGTH_SHORT,
-                                         refresh_interval));
-  dict->SetString("timeSinceLastRefresh", last_refresh_time.is_null() ?
-      l10n_util::GetStringUTF16(IDS_POLICY_NEVER_FETCHED) :
-      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
-                             ui::TimeFormat::LENGTH_SHORT,
-                             base::Time::NowFromSystemTime() -
-                                 last_refresh_time));
+  dict->SetString(
+      "refreshInterval",
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_SHORT, refresh_interval));
+  dict->SetString(
+      "timeSinceLastRefresh",
+      last_refresh_time.is_null()
+          ? l10n_util::GetStringUTF16(IDS_POLICY_NEVER_FETCHED)
+          : ui::TimeFormat::Simple(
+                ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
+                base::Time::NowFromSystemTime() - last_refresh_time));
 }
 
 #if defined(OS_CHROMEOS)
@@ -407,7 +422,8 @@ void PolicyStatusProvider::NotifyStatusChange() {
 }
 
 CloudPolicyCoreStatusProvider::CloudPolicyCoreStatusProvider(
-    policy::CloudPolicyCore* core) : core_(core) {
+    policy::CloudPolicyCore* core)
+    : core_(core) {
   core_->store()->AddObserver(this);
   // TODO(bartfab): Add an observer that watches for client errors. Observing
   // core_->client() directly is not safe as the client may be destroyed and
@@ -551,8 +567,7 @@ void DeviceCloudPolicyStatusProviderChromeOS::GetStatus(
 DeviceLocalAccountPolicyStatusProvider::DeviceLocalAccountPolicyStatusProvider(
     const std::string& user_id,
     policy::DeviceLocalAccountPolicyService* service)
-      : user_id_(user_id),
-        service_(service) {
+    : user_id_(user_id), service_(service) {
   service_->AddObserver(this);
 }
 
@@ -664,9 +679,7 @@ void DeviceActiveDirectoryPolicyStatusProvider::GetStatus(
 
 #endif  // defined(OS_CHROMEOS)
 
-PolicyUIHandler::PolicyUIHandler()
-    : weak_factory_(this) {
-}
+PolicyUIHandler::PolicyUIHandler() : weak_factory_(this) {}
 
 PolicyUIHandler::~PolicyUIHandler() {
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
@@ -684,7 +697,7 @@ PolicyUIHandler::~PolicyUIHandler() {
 }
 
 void PolicyUIHandler::AddCommonLocalizedStringsToSource(
-      content::WebUIDataSource* source) {
+    content::WebUIDataSource* source) {
   AddLocalizedStringsBulk(source, policy::kPolicySources,
                           policy::POLICY_SOURCE_COUNT);
 
@@ -871,7 +884,7 @@ base::Value PolicyUIHandler::GetPolicyNames() const {
        extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
     // Skip this extension if it's not an enterprise extension.
     if (!extension->manifest()->HasPath(
-        extensions::manifest_keys::kStorageManagedSchema))
+            extensions::manifest_keys::kStorageManagedSchema))
       continue;
     auto extension_value = std::make_unique<base::DictionaryValue>();
     extension_value->SetString("name", extension->name());
@@ -1002,10 +1015,61 @@ void DoWritePoliciesToJSONFile(const base::FilePath& path,
 
 void PolicyUIHandler::WritePoliciesToJSONFile(
     const base::FilePath& path) const {
-  std::string json_policies = policy::GetAllPolicyValuesAsJSON(
+  constexpr bool is_pretty_print = true;
+  base::Value dict = policy::GetAllPolicyValuesAsDictionary(
       web_ui()->GetWebContents()->GetBrowserContext(),
-      true /* with_user_policies */, false /* with_device_data */,
-      true /* is_pretty_print */);
+      true /* with_user_policies */, false /* convert_values */,
+      false /* with_device_data */, is_pretty_print);
+
+  base::Value chrome_metadata(base::Value::Type::DICTIONARY);
+
+  chrome_metadata.SetKey(
+      "application", base::Value(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)));
+  std::string cohort_name;
+#if defined(OS_WIN)
+  base::string16 cohort_version_info =
+      version_utils::win::GetCohortVersionInfo();
+  if (!cohort_version_info.empty()) {
+    cohort_name = base::StringPrintf(
+        " %s", base::UTF16ToUTF8(cohort_version_info).c_str());
+  }
+#endif
+  std::string channel_name = chrome::GetChannelName();
+  std::string version = base::StringPrintf(
+      "%s (%s)%s %s%s", version_info::GetVersionNumber().c_str(),
+      l10n_util::GetStringUTF8(version_info::IsOfficialBuild()
+                                   ? IDS_VERSION_UI_OFFICIAL
+                                   : IDS_VERSION_UI_UNOFFICIAL)
+          .c_str(),
+      (channel_name.empty() ? "" : " " + channel_name).c_str(),
+      l10n_util::GetStringUTF8(sizeof(void*) == 8 ? IDS_VERSION_UI_64BIT
+                                                  : IDS_VERSION_UI_32BIT)
+          .c_str(),
+      cohort_name.c_str());
+  chrome_metadata.SetKey("version", base::Value(version));
+
+#if defined(OS_CHROMEOS)
+  chrome_metadata.SetKey("platform",
+                         base::Value(chromeos::version_loader::GetVersion(
+                             chromeos::version_loader::VERSION_FULL)));
+#else
+  std::string os = version_info::GetOSType();
+#if defined(OS_WIN)
+  os += " " + version_utils::win::GetFullWindowsVersion();
+#elif defined(OS_ANDROID)
+  os += " " + AndroidAboutAppInfo::GetOsInfo();
+#endif
+  chrome_metadata.SetKey("OS", base::Value(os));
+#endif
+  chrome_metadata.SetKey("revision",
+                         base::Value(version_info::GetLastChange()));
+
+  dict.SetKey("chromeMetadata", std::move(chrome_metadata));
+
+  std::string json_policies;
+  base::JSONWriter::WriteWithOptions(
+      dict, (is_pretty_print ? base::JSONWriter::OPTIONS_PRETTY_PRINT : 0),
+      &json_policies);
 
   base::PostTaskWithTraits(
       FROM_HERE,
