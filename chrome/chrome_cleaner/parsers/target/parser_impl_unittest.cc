@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
@@ -75,7 +76,7 @@ class ParserImplTest : public testing::Test {
   base::FilePath not_lnk_file_path_;
   base::ScopedTempDir temp_dir_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   SandboxedShortcutParser shortcut_parser_;
   ParsedLnkFile test_parsed_shortcut_;

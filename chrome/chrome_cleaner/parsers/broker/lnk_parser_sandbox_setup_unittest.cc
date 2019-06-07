@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/multiprocess_test.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/shortcut.h"
 #include "chrome/chrome_cleaner/interfaces/parser_interface.mojom.h"
@@ -54,7 +55,7 @@ class LnkParserSandboxSetupTest : public base::MultiProcessTest {
   ParsedLnkFile test_parsed_shortcut_;
   mojom::LnkParsingResult test_result_code_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   base::FilePath not_lnk_file_path_;
   base::ScopedTempDir temp_dir_;

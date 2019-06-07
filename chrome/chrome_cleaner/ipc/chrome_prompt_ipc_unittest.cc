@@ -11,10 +11,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/chrome_cleaner/ipc/ipc_test_util.h"
 #include "chrome/chrome_cleaner/logging/scoped_logging.h"
@@ -291,7 +291,7 @@ constexpr int kSuccessExitCode = 0;
 MULTIPROCESS_TEST_MAIN(ChromePromptIPCClientMain) {
   static constexpr int kInternalTestFailureExitCode = -1;
 
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
 
   scoped_refptr<MojoTaskRunner> mojo_task_runner = MojoTaskRunner::Create();
   auto child_process =

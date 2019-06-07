@@ -17,12 +17,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/chrome_cleaner/engines/common/registry_util.h"
@@ -182,7 +182,7 @@ class CleanerSandboxInterfaceDeleteFileTest : public ::testing::Test {
 
   std::unique_ptr<chrome_cleaner::FileRemoverAPI> file_remover_;
   bool reboot_required_ = false;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(CleanerSandboxInterfaceDeleteFileTest, DeleteFile_BasicFile) {
