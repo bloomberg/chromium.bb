@@ -228,11 +228,10 @@ cr.define('gpu', function() {
         'multiple_raster_threads': 'Multiple Raster Threads',
         'native_gpu_memory_buffers': 'Native GpuMemoryBuffers',
         'protected_video_decode': 'Hardware Protected Video Decode',
-        'surface_synchronization': 'Surface Synchronization',
         'surface_control': 'Surface Control',
         'vpx_decode': 'VPx Video Decode',
         'webgl2': 'WebGL2',
-        'viz_display_compositor': 'Viz Service Display Compositor',
+        'viz_display_compositor': 'Viz Display Compositor',
         'viz_hit_test_surface_layer': 'Viz Hit-test Surface Layer',
         'skia_renderer': 'Skia Renderer',
       };
