@@ -613,9 +613,12 @@ void SetFontFeatures(const Font* font, FeaturesVector* features) {
     }
   }
 
-  static hb_feature_t hwid = CreateFeature(HB_TAG('h', 'w', 'i', 'd'), 1);
-  static hb_feature_t twid = CreateFeature(HB_TAG('t', 'w', 'i', 'd'), 1);
-  static hb_feature_t qwid = CreateFeature(HB_TAG('q', 'w', 'i', 'd'), 1);
+  static constexpr hb_feature_t hwid =
+      CreateFeature(HB_TAG('h', 'w', 'i', 'd'), 1);
+  static constexpr hb_feature_t twid =
+      CreateFeature(HB_TAG('t', 'w', 'i', 'd'), 1);
+  static constexpr hb_feature_t qwid =
+      CreateFeature(HB_TAG('q', 'w', 'i', 'd'), 1);
   switch (description.WidthVariant()) {
     case kHalfWidth:
       features->push_back(hwid);
@@ -633,12 +636,18 @@ void SetFontFeatures(const Font* font, FeaturesVector* features) {
   // font-variant-east-asian:
   const FontVariantEastAsian east_asian = description.VariantEastAsian();
   if (UNLIKELY(!east_asian.IsAllNormal())) {
-    static hb_feature_t jp78 = CreateFeature(HB_TAG('j', 'p', '7', '8'), 1);
-    static hb_feature_t jp83 = CreateFeature(HB_TAG('j', 'p', '8', '3'), 1);
-    static hb_feature_t jp90 = CreateFeature(HB_TAG('j', 'p', '9', '0'), 1);
-    static hb_feature_t jp04 = CreateFeature(HB_TAG('j', 'p', '0', '4'), 1);
-    static hb_feature_t smpl = CreateFeature(HB_TAG('s', 'm', 'p', 'l'), 1);
-    static hb_feature_t trad = CreateFeature(HB_TAG('t', 'r', 'a', 'd'), 1);
+    static constexpr hb_feature_t jp78 =
+        CreateFeature(HB_TAG('j', 'p', '7', '8'), 1);
+    static constexpr hb_feature_t jp83 =
+        CreateFeature(HB_TAG('j', 'p', '8', '3'), 1);
+    static constexpr hb_feature_t jp90 =
+        CreateFeature(HB_TAG('j', 'p', '9', '0'), 1);
+    static constexpr hb_feature_t jp04 =
+        CreateFeature(HB_TAG('j', 'p', '0', '4'), 1);
+    static constexpr hb_feature_t smpl =
+        CreateFeature(HB_TAG('s', 'm', 'p', 'l'), 1);
+    static constexpr hb_feature_t trad =
+        CreateFeature(HB_TAG('t', 'r', 'a', 'd'), 1);
     switch (east_asian.Form()) {
       case FontVariantEastAsian::kNormalForm:
         break;
@@ -663,8 +672,10 @@ void SetFontFeatures(const Font* font, FeaturesVector* features) {
       default:
         NOTREACHED();
     }
-    static hb_feature_t fwid = CreateFeature(HB_TAG('f', 'w', 'i', 'd'), 1);
-    static hb_feature_t pwid = CreateFeature(HB_TAG('p', 'w', 'i', 'd'), 1);
+    static constexpr hb_feature_t fwid =
+        CreateFeature(HB_TAG('f', 'w', 'i', 'd'), 1);
+    static constexpr hb_feature_t pwid =
+        CreateFeature(HB_TAG('p', 'w', 'i', 'd'), 1);
     switch (east_asian.Width()) {
       case FontVariantEastAsian::kNormalWidth:
         break;
@@ -677,46 +688,55 @@ void SetFontFeatures(const Font* font, FeaturesVector* features) {
       default:
         NOTREACHED();
     }
-    static hb_feature_t ruby = CreateFeature(HB_TAG('r', 'u', 'b', 'y'), 1);
+    static constexpr hb_feature_t ruby =
+        CreateFeature(HB_TAG('r', 'u', 'b', 'y'), 1);
     if (east_asian.Ruby())
       features->push_back(ruby);
   }
 
   // font-variant-numeric:
-  static hb_feature_t lnum = CreateFeature(HB_TAG('l', 'n', 'u', 'm'), 1);
+  static constexpr hb_feature_t lnum =
+      CreateFeature(HB_TAG('l', 'n', 'u', 'm'), 1);
   if (description.VariantNumeric().NumericFigureValue() ==
       FontVariantNumeric::kLiningNums)
     features->push_back(lnum);
 
-  static hb_feature_t onum = CreateFeature(HB_TAG('o', 'n', 'u', 'm'), 1);
+  static constexpr hb_feature_t onum =
+      CreateFeature(HB_TAG('o', 'n', 'u', 'm'), 1);
   if (description.VariantNumeric().NumericFigureValue() ==
       FontVariantNumeric::kOldstyleNums)
     features->push_back(onum);
 
-  static hb_feature_t pnum = CreateFeature(HB_TAG('p', 'n', 'u', 'm'), 1);
+  static constexpr hb_feature_t pnum =
+      CreateFeature(HB_TAG('p', 'n', 'u', 'm'), 1);
   if (description.VariantNumeric().NumericSpacingValue() ==
       FontVariantNumeric::kProportionalNums)
     features->push_back(pnum);
-  static hb_feature_t tnum = CreateFeature(HB_TAG('t', 'n', 'u', 'm'), 1);
+  static constexpr hb_feature_t tnum =
+      CreateFeature(HB_TAG('t', 'n', 'u', 'm'), 1);
   if (description.VariantNumeric().NumericSpacingValue() ==
       FontVariantNumeric::kTabularNums)
     features->push_back(tnum);
 
-  static hb_feature_t afrc = CreateFeature(HB_TAG('a', 'f', 'r', 'c'), 1);
+  static constexpr hb_feature_t afrc =
+      CreateFeature(HB_TAG('a', 'f', 'r', 'c'), 1);
   if (description.VariantNumeric().NumericFractionValue() ==
       FontVariantNumeric::kStackedFractions)
     features->push_back(afrc);
-  static hb_feature_t frac = CreateFeature(HB_TAG('f', 'r', 'a', 'c'), 1);
+  static constexpr hb_feature_t frac =
+      CreateFeature(HB_TAG('f', 'r', 'a', 'c'), 1);
   if (description.VariantNumeric().NumericFractionValue() ==
       FontVariantNumeric::kDiagonalFractions)
     features->push_back(frac);
 
-  static hb_feature_t ordn = CreateFeature(HB_TAG('o', 'r', 'd', 'n'), 1);
+  static constexpr hb_feature_t ordn =
+      CreateFeature(HB_TAG('o', 'r', 'd', 'n'), 1);
   if (description.VariantNumeric().OrdinalValue() ==
       FontVariantNumeric::kOrdinalOn)
     features->push_back(ordn);
 
-  static hb_feature_t zero = CreateFeature(HB_TAG('z', 'e', 'r', 'o'), 1);
+  static constexpr hb_feature_t zero =
+      CreateFeature(HB_TAG('z', 'e', 'r', 'o'), 1);
   if (description.VariantNumeric().SlashedZeroValue() ==
       FontVariantNumeric::kSlashedZeroOn)
     features->push_back(zero);
@@ -775,12 +795,18 @@ CapsFeatureSettingsScopedOverlay::CapsFeatureSettingsScopedOverlay(
 
 void CapsFeatureSettingsScopedOverlay::OverlayCapsFeatures(
     FontDescription::FontVariantCaps variant_caps) {
-  static hb_feature_t smcp = CreateFeature(HB_TAG('s', 'm', 'c', 'p'), 1);
-  static hb_feature_t pcap = CreateFeature(HB_TAG('p', 'c', 'a', 'p'), 1);
-  static hb_feature_t c2sc = CreateFeature(HB_TAG('c', '2', 's', 'c'), 1);
-  static hb_feature_t c2pc = CreateFeature(HB_TAG('c', '2', 'p', 'c'), 1);
-  static hb_feature_t unic = CreateFeature(HB_TAG('u', 'n', 'i', 'c'), 1);
-  static hb_feature_t titl = CreateFeature(HB_TAG('t', 'i', 't', 'l'), 1);
+  static constexpr hb_feature_t smcp =
+      CreateFeature(HB_TAG('s', 'm', 'c', 'p'), 1);
+  static constexpr hb_feature_t pcap =
+      CreateFeature(HB_TAG('p', 'c', 'a', 'p'), 1);
+  static constexpr hb_feature_t c2sc =
+      CreateFeature(HB_TAG('c', '2', 's', 'c'), 1);
+  static constexpr hb_feature_t c2pc =
+      CreateFeature(HB_TAG('c', '2', 'p', 'c'), 1);
+  static constexpr hb_feature_t unic =
+      CreateFeature(HB_TAG('u', 'n', 'i', 'c'), 1);
+  static constexpr hb_feature_t titl =
+      CreateFeature(HB_TAG('t', 'i', 't', 'l'), 1);
   if (variant_caps == FontDescription::kSmallCaps ||
       variant_caps == FontDescription::kAllSmallCaps) {
     PrependCounting(smcp);
