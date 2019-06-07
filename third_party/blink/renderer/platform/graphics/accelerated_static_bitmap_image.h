@@ -44,7 +44,8 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       const gpu::SyncToken&,
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-      IntSize mailbox_size);
+      IntSize mailbox_size,
+      bool is_origin_top_left);
 
   // |release_callback| is an optional callback to be invoked when this image
   // is destroyed. It can be invoked on any thread.
@@ -57,6 +58,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       GLenum texture_target,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       PlatformThreadId context_thread_id,
+      bool is_origin_top_left,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   bool CurrentFrameKnownToBeOpaque() override;
@@ -120,7 +122,8 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       const gpu::SyncToken&,
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-      IntSize mailbox_size);
+      IntSize mailbox_size,
+      bool is_origin_top_left);
   AcceleratedStaticBitmapImage(
       const gpu::Mailbox&,
       const gpu::SyncToken&,
@@ -128,6 +131,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       GLenum texture_target,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
       PlatformThreadId context_thread_id,
+      bool is_origin_top_left,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   void CreateImageFromMailboxIfNeeded();

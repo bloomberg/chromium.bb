@@ -605,7 +605,7 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
   // in DrawingBuffer.
   return AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
       sk_image_mailbox, sk_image_sync_token, texture_id,
-      context_provider_->GetWeakPtr(), size_);
+      context_provider_->GetWeakPtr(), size_, opengl_flip_y_extension_);
 }
 
 scoped_refptr<DrawingBuffer::ColorBuffer>

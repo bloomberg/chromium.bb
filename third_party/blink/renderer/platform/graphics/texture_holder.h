@@ -61,13 +61,18 @@ class PLATFORM_EXPORT TextureHolder {
                : nullptr;
   }
 
+  bool IsOriginTopLeft() const { return is_origin_top_left_; }
+
  protected:
   TextureHolder(base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
-                    context_provider_wrapper)
-      : context_provider_wrapper_(std::move(context_provider_wrapper)) {}
+                    context_provider_wrapper,
+                bool is_origin_top_left)
+      : context_provider_wrapper_(std::move(context_provider_wrapper)),
+        is_origin_top_left_(is_origin_top_left) {}
 
  private:
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  bool is_origin_top_left_;
 };
 
 }  // namespace blink

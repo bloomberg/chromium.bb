@@ -41,10 +41,11 @@ AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
     unsigned texture_id,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
-    IntSize mailbox_size) {
+    IntSize mailbox_size,
+    bool is_origin_top_left) {
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size));
+      mailbox_size, is_origin_top_left));
 }
 
 scoped_refptr<AcceleratedStaticBitmapImage>
@@ -55,11 +56,12 @@ AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
     GLenum texture_target,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     PlatformThreadId context_thread_id,
+    bool is_origin_top_left,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       mailbox, sync_token, sk_image_info, texture_target,
       std::move(context_provider_wrapper), context_thread_id,
-      std::move(release_callback)));
+      is_origin_top_left, std::move(release_callback)));
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
@@ -78,11 +80,12 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     unsigned texture_id,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
-    IntSize mailbox_size)
+    IntSize mailbox_size,
+    bool is_origin_top_left)
     : paint_image_content_id_(cc::PaintImage::GetNextContentId()) {
   texture_holder_ = std::make_unique<MailboxTextureHolder>(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size);
+      mailbox_size, is_origin_top_left);
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
@@ -93,12 +96,13 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
     PlatformThreadId context_thread_id,
+    bool is_origin_top_left,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback)
     : paint_image_content_id_(cc::PaintImage::GetNextContentId()),
       release_callback_(std::move(release_callback)) {
   texture_holder_ = std::make_unique<MailboxTextureHolder>(
       mailbox, sync_token, std::move(context_provider_wrapper),
-      context_thread_id, sk_image_info, texture_target);
+      context_thread_id, sk_image_info, texture_target, is_origin_top_left);
 }
 
 namespace {

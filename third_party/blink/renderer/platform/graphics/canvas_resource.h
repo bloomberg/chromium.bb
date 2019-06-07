@@ -309,7 +309,8 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
       base::WeakPtr<CanvasResourceProvider>,
       SkFilterQuality,
       const CanvasColorParams&,
-      bool is_overlay_candidate);
+      bool is_overlay_candidate,
+      bool is_origin_top_left);
   ~CanvasResourceSharedImage() override;
 
   bool IsRecycleable() const final { return true; }
@@ -359,7 +360,8 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
                             base::WeakPtr<CanvasResourceProvider>,
                             SkFilterQuality,
                             const CanvasColorParams&,
-                            bool is_overlay_candidate);
+                            bool is_overlay_candidate,
+                            bool is_origin_top_left);
   void SetGLFilterIfNeeded();
 
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
@@ -373,6 +375,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   bool needs_gl_filter_reset_ = true;
   bool is_origin_clean_ = true;
   GLenum texture_target_ = GL_TEXTURE_2D;
+  bool is_origin_top_left_ = false;
 
   const PlatformThreadId owning_thread_id_;
   const scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;

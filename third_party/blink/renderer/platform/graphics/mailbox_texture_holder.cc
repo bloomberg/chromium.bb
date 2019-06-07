@@ -38,8 +38,9 @@ MailboxTextureHolder::MailboxTextureHolder(
     unsigned texture_id_to_delete_after_mailbox_consumed,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
-    IntSize mailbox_size)
-    : TextureHolder(std::move(context_provider_wrapper)),
+    IntSize mailbox_size,
+    bool is_origin_top_left)
+    : TextureHolder(std::move(context_provider_wrapper), is_origin_top_left),
       mailbox_(mailbox),
       sync_token_(sync_token),
       texture_id_(texture_id_to_delete_after_mailbox_consumed),
@@ -58,8 +59,9 @@ MailboxTextureHolder::MailboxTextureHolder(
         context_provider_wrapper,
     PlatformThreadId context_thread_id,
     const SkImageInfo& sk_image_info,
-    GLenum texture_target)
-    : TextureHolder(std::move(context_provider_wrapper)),
+    GLenum texture_target,
+    bool is_origin_top_left)
+    : TextureHolder(std::move(context_provider_wrapper), is_origin_top_left),
       mailbox_(mailbox),
       sync_token_(sync_token),
       texture_id_(0),
@@ -74,7 +76,8 @@ MailboxTextureHolder::MailboxTextureHolder(
 MailboxTextureHolder::MailboxTextureHolder(
     std::unique_ptr<TextureHolder> texture_holder,
     GLenum filter)
-    : TextureHolder(texture_holder->ContextProviderWrapper()),
+    : TextureHolder(texture_holder->ContextProviderWrapper(),
+                    texture_holder->IsOriginTopLeft()),
       texture_id_(0),
       is_converted_from_skia_texture_(true),
       thread_id_(0) {
