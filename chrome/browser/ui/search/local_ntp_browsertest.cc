@@ -103,8 +103,10 @@ class LocalNTPTest : public InProcessBrowserTest {
   }
 
   LocalNTPTest()
-      : LocalNTPTest(/*enabled_features=*/{},
-                     /*disabled_features=*/{features::kRemoveNtpFakebox}) {}
+      : LocalNTPTest(
+            /*enabled_features=*/{},
+            /*disabled_features=*/{features::kRemoveNtpFakebox,
+                                   ntp_tiles::kDefaultSearchShortcut}) {}
 
   void SetUpOnMainThread() override {
     // Some tests depend on the prepopulated most visited tiles coming from
