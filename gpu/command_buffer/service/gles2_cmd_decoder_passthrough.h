@@ -669,6 +669,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     base::subtle::Atomic32 submit_count = 0;
 
     std::unique_ptr<gl::GLFence> commands_completed_fence;
+    base::TimeDelta commands_issued_time;
 
     std::vector<base::OnceClosure> callbacks;
     std::unique_ptr<gl::GLFence> buffer_shadow_update_fence = nullptr;
@@ -689,6 +690,12 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     GLuint service_id = 0;
     scoped_refptr<gpu::Buffer> shm;
     QuerySync* sync = nullptr;
+
+    // Time at which the commands for this query started processing. This is
+    // used to ensure we only include the time when the decoder is scheduled in
+    // the |active_time|. Used for GL_COMMANDS_ISSUED_CHROMIUM type query.
+    base::TimeTicks command_processing_start_time;
+    base::TimeDelta active_time;
   };
   std::unordered_map<GLenum, ActiveQuery> active_queries_;
 

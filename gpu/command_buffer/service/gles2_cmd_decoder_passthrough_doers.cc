@@ -3405,6 +3405,8 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginQueryEXT(
   query.service_id = service_id;
   query.shm = std::move(buffer);
   query.sync = sync;
+  if (target == GL_COMMANDS_ISSUED_CHROMIUM)
+    query.command_processing_start_time = base::TimeTicks::Now();
   active_queries_[target] = std::move(query);
 
   return error::kNoError;
@@ -3465,6 +3467,12 @@ error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target,
 
     case GL_PROGRAM_COMPLETION_QUERY_CHROMIUM:
       pending_query.program_service_id = linking_program_service_id_;
+      break;
+
+    case GL_COMMANDS_ISSUED_CHROMIUM:
+      pending_query.commands_issued_time =
+          active_query.active_time +
+          (base::TimeTicks::Now() - active_query.command_processing_start_time);
       break;
 
     default:

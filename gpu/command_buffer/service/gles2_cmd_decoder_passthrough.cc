@@ -1627,10 +1627,24 @@ void GLES2DecoderPassthroughImpl::BeginDecoding() {
   gpu_tracer_->BeginDecoding();
   gpu_trace_commands_ = gpu_tracer_->IsTracing() && *gpu_decoder_category_;
   gpu_debug_commands_ = log_commands() || debug() || gpu_trace_commands_;
+
+  auto it = active_queries_.find(GL_COMMANDS_ISSUED_CHROMIUM);
+  if (it != active_queries_.end()) {
+    DCHECK_EQ(it->second.command_processing_start_time, base::TimeTicks());
+    it->second.command_processing_start_time = base::TimeTicks::Now();
+  }
 }
 
 void GLES2DecoderPassthroughImpl::EndDecoding() {
   gpu_tracer_->EndDecoding();
+
+  auto it = active_queries_.find(GL_COMMANDS_ISSUED_CHROMIUM);
+  if (it != active_queries_.end()) {
+    DCHECK_NE(it->second.command_processing_start_time, base::TimeTicks());
+    it->second.active_time +=
+        (base::TimeTicks::Now() - it->second.command_processing_start_time);
+    it->second.command_processing_start_time = base::TimeTicks();
+  }
 }
 
 const gpu::gles2::ContextState* GLES2DecoderPassthroughImpl::GetContextState() {
@@ -2095,7 +2109,7 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
 
       case GL_COMMANDS_ISSUED_CHROMIUM:
         result_available = GL_TRUE;
-        result = GL_TRUE;
+        result = query.commands_issued_time.InMicroseconds();
         break;
 
       case GL_LATENCY_QUERY_CHROMIUM:
