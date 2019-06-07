@@ -63,6 +63,15 @@ int64_t CalculateNewBytesTransferred(int64_t this_refresh_bytes,
 
 }  // namespace
 
+size_t BytesTransferredKey::Hasher::operator()(
+    const BytesTransferredKey& key) const {
+  return base::HashInts(key.child_id, key.route_id);
+}
+
+bool BytesTransferredKey::operator==(const BytesTransferredKey& other) const {
+  return child_id == other.child_id && route_id == other.route_id;
+}
+
 TaskManagerImpl::TaskManagerImpl()
     : on_background_data_ready_callback_(
           base::Bind(&TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone,
@@ -520,33 +529,9 @@ void TaskManagerImpl::TaskUnresponsive(Task* task) {
   NotifyObserversOnTaskUnresponsive(task->task_id());
 }
 
-// static
-void TaskManagerImpl::OnMultipleBytesTransferredUI(BytesTransferredMap params) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  for (const auto& entry : params) {
-    const BytesTransferredKey& process_info = entry.first;
-    const BytesTransferredParam& bytes_transferred = entry.second;
-
-    if (!GetInstance()->UpdateTasksWithBytesTransferred(process_info,
-                                                        bytes_transferred)) {
-      // We can't match a task to the notification.  That might mean the
-      // tab that started a download was closed, or the request may have had
-      // no originating task associated with it in the first place.
-      //
-      // Orphaned/unaccounted activity is credited to the Browser process.
-      BytesTransferredKey browser_process_key = {
-          content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE};
-      GetInstance()->UpdateTasksWithBytesTransferred(browser_process_key,
-                                                     bytes_transferred);
-    }
-  }
-}
-
 void TaskManagerImpl::OnTotalNetworkUsages(
     std::vector<network::mojom::NetworkUsagePtr> total_network_usages) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   BytesTransferredMap new_total_network_usages_map;
   for (const auto& entry : total_network_usages) {
     BytesTransferredKey process_info = {entry->process_id, entry->routing_id};
@@ -625,8 +610,7 @@ void TaskManagerImpl::Refresh() {
                                         std::move(callback));
   }
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      TaskManagerObserver::IsResourceRefreshEnabled(
+  if (TaskManagerObserver::IsResourceRefreshEnabled(
           REFRESH_TYPE_NETWORK_USAGE, enabled_resources_flags())) {
     content::GetNetworkService()->GetTotalNetworkUsages(
         base::BindOnce(&TaskManagerImpl::OnTotalNetworkUsages,
@@ -663,10 +647,6 @@ void TaskManagerImpl::StartUpdating() {
   for (const auto& provider : task_providers_)
     provider->SetObserver(this);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    io_thread_helper_manager_.reset(new IoThreadHelperManager(
-        base::BindRepeating(&TaskManagerImpl::OnMultipleBytesTransferredUI)));
-  }
   // Kick off fetch of asynchronous data, e.g., memory footprint, so that it
   // will be displayed sooner after opening the task manager.
   Refresh();
@@ -677,8 +657,6 @@ void TaskManagerImpl::StopUpdating() {
     return;
 
   is_running_ = false;
-
-  io_thread_helper_manager_.reset();
 
   for (const auto& provider : task_providers_)
     provider->ClearObserver();

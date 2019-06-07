@@ -3350,8 +3350,6 @@ jumbo_split_static_library("browser") {
       "task_manager/sampling/task_group_sampler.h",
       "task_manager/sampling/task_manager_impl.cc",
       "task_manager/sampling/task_manager_impl.h",
-      "task_manager/sampling/task_manager_io_thread_helper.cc",
-      "task_manager/sampling/task_manager_io_thread_helper.h",
       "task_manager/task_manager_interface.cc",
       "task_manager/task_manager_interface.h",
       "task_manager/task_manager_observer.cc",
