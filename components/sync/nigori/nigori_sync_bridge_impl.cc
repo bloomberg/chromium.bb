@@ -240,6 +240,20 @@ void NigoriSyncBridgeImpl::RemoveObserver(Observer* observer) {
 
 void NigoriSyncBridgeImpl::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Init() is called after the first sync cycle, so we can have
+  // |encrypt_everything_| enabled even if we don't persist the local state.
+  // TODO(crbug.com/922900): try to avoid double notification. Currently it
+  // happens iff we received explicit passphrase Nigori during the first
+  // sync cycle, and more complicated once we persist the local state.
+  ModelTypeSet encrypted_types;
+  if (encrypt_everything_) {
+    encrypted_types = EncryptableUserTypes();
+  } else {
+    encrypted_types = SensitiveTypes();
+  }
+  for (auto& observer : observers_) {
+    observer.OnEncryptedTypesChanged(encrypted_types, encrypt_everything_);
+  }
   NOTIMPLEMENTED();
   // TODO(crbug.com/922900): notify observers about cryptographer change in
   // case UpdateLocalState() is not called in this function (i.e.

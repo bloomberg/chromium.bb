@@ -216,6 +216,17 @@ class NigoriSyncBridgeImplTest : public testing::Test {
   testing::NiceMock<MockObserver> observer_;
 };
 
+// During initialization bridge should expose encrypted types via observers
+// notification.
+TEST_F(NigoriSyncBridgeImplTest, ShouldNotifyObserversOnInit) {
+  // TODO(crbug.com/922900): once persistence is supported for Nigori, this
+  // test should be extended to verify whole encryption state.
+  EXPECT_CALL(*observer(),
+              OnEncryptedTypesChanged(SyncEncryptionHandler::SensitiveTypes(),
+                                      /*encrypt_everything=*/false));
+  bridge()->Init();
+}
+
 // Simplest case of keystore Nigori: we have only one keystore key and no old
 // keys. This keystore key is encrypted in both encryption_keybag and
 // keystore_decryptor_token. Client receives such Nigori if initialization of
