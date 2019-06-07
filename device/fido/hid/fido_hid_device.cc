@@ -512,8 +512,7 @@ void FidoHidDevice::DiscoverSupportedProtocolAndDeviceInfo(
       "20a0:4287",  // Nitrokey FIDO U2F
   });
 
-  if (base::ContainsKey(kForceU2fCompatibilitySet,
-                        VidPidToString(device_info_))) {
+  if (base::Contains(kForceU2fCompatibilitySet, VidPidToString(device_info_))) {
     supported_protocol_ = ProtocolVersion::kU2f;
     DCHECK(SupportedProtocolIsInitialized());
     std::move(done).Run();

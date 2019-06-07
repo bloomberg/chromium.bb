@@ -140,7 +140,7 @@ static std::list<Credential> FindCredentialsImpl(
                                        CFDataGetBytePtr(application_label) +
                                            CFDataGetLength(application_label));
     if (!allowed_credential_ids.empty() &&
-        !base::ContainsKey(allowed_credential_ids, credential_id)) {
+        !base::Contains(allowed_credential_ids, credential_id)) {
       continue;
     }
     base::ScopedCFTypeRef<SecKeyRef> private_key(key,

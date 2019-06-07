@@ -228,7 +228,7 @@ TEST_F(FidoBleAdapterManagerTest, SuccessfulPairing) {
   const auto& pin_code_map =
       device_pincode_map(ble_pairing_delegate(*adapter_manager));
   EXPECT_EQ(1u, pin_code_map.size());
-  ASSERT_TRUE(base::ContainsKey(pin_code_map, kTestFidoBleAuthenticatorId));
+  ASSERT_TRUE(base::Contains(pin_code_map, kTestFidoBleAuthenticatorId));
   EXPECT_EQ(kTestPinCode,
             pin_code_map.find(kTestFidoBleAuthenticatorId)->second);
 }
@@ -275,7 +275,7 @@ TEST_F(FidoBleAdapterManagerTest, PairingCancelledOnDestruction) {
   const auto& pin_code_map =
       device_pincode_map(ble_pairing_delegate(*adapter_manager));
   EXPECT_EQ(1u, pin_code_map.size());
-  ASSERT_TRUE(base::ContainsKey(pin_code_map, kTestFidoBleAuthenticatorId));
+  ASSERT_TRUE(base::Contains(pin_code_map, kTestFidoBleAuthenticatorId));
   EXPECT_EQ(kTestPinCode,
             pin_code_map.find(kTestFidoBleAuthenticatorId)->second);
 

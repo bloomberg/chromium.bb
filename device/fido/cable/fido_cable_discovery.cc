@@ -306,7 +306,7 @@ void FidoCableDiscovery::ConductEncryptionHandshake(
     base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
     base::span<const uint8_t, 8> nonce) {
   // At most one handshake messages should be exchanged for each Cable device.
-  if (base::ContainsKey(cable_handshake_handlers_, cable_device->GetId())) {
+  if (base::Contains(cable_handshake_handlers_, cable_device->GetId())) {
     FIDO_LOG(DEBUG) << "We've already exchanged a handshake with this device.";
     return;
   }

@@ -222,7 +222,7 @@ CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
           {STRING16_LITERAL("UnknownError"),
            CtapDeviceResponseCode::kCtap2ErrOther},
       });
-  return base::ContainsKey(kResponseCodeMap, error_name)
+  return base::Contains(kResponseCodeMap, error_name)
              ? kResponseCodeMap[error_name]
              : CtapDeviceResponseCode::kCtap2ErrOther;
 }

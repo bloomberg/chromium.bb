@@ -111,27 +111,26 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
       GetAssertionRequestHandler* request_handler,
       base::flat_set<FidoTransportProtocol> transports) {
     using Transport = FidoTransportProtocol;
-    if (base::ContainsKey(transports, Transport::kUsbHumanInterfaceDevice))
+    if (base::Contains(transports, Transport::kUsbHumanInterfaceDevice))
       discovery()->WaitForCallToStartAndSimulateSuccess();
-    if (base::ContainsKey(transports, Transport::kBluetoothLowEnergy))
+    if (base::Contains(transports, Transport::kBluetoothLowEnergy))
       ble_discovery()->WaitForCallToStartAndSimulateSuccess();
-    if (base::ContainsKey(transports,
-                          Transport::kCloudAssistedBluetoothLowEnergy))
+    if (base::Contains(transports, Transport::kCloudAssistedBluetoothLowEnergy))
       cable_discovery()->WaitForCallToStartAndSimulateSuccess();
-    if (base::ContainsKey(transports, Transport::kNearFieldCommunication))
+    if (base::Contains(transports, Transport::kNearFieldCommunication))
       nfc_discovery()->WaitForCallToStartAndSimulateSuccess();
 
     scoped_task_environment_.FastForwardUntilNoTasksRemain();
     EXPECT_FALSE(get_assertion_callback().was_called());
 
-    if (!base::ContainsKey(transports, Transport::kUsbHumanInterfaceDevice))
+    if (!base::Contains(transports, Transport::kUsbHumanInterfaceDevice))
       EXPECT_FALSE(discovery()->is_start_requested());
-    if (!base::ContainsKey(transports, Transport::kBluetoothLowEnergy))
+    if (!base::Contains(transports, Transport::kBluetoothLowEnergy))
       EXPECT_FALSE(ble_discovery()->is_start_requested());
-    if (!base::ContainsKey(transports,
-                           Transport::kCloudAssistedBluetoothLowEnergy))
+    if (!base::Contains(transports,
+                        Transport::kCloudAssistedBluetoothLowEnergy))
       EXPECT_FALSE(cable_discovery()->is_start_requested());
-    if (!base::ContainsKey(transports, Transport::kNearFieldCommunication))
+    if (!base::Contains(transports, Transport::kNearFieldCommunication))
       EXPECT_FALSE(nfc_discovery()->is_start_requested());
 
     // Even with FidoTransportProtocol::kInternal allowed, unless the platform

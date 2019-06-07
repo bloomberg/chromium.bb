@@ -580,9 +580,9 @@ TEST(CTAPResponseTest, TestReadGetInfoResponse) {
   ASSERT_TRUE(get_info_response->max_msg_size);
   EXPECT_EQ(*get_info_response->max_msg_size, 1200u);
   EXPECT_TRUE(
-      base::ContainsKey(get_info_response->versions, ProtocolVersion::kCtap2));
+      base::Contains(get_info_response->versions, ProtocolVersion::kCtap2));
   EXPECT_TRUE(
-      base::ContainsKey(get_info_response->versions, ProtocolVersion::kU2f));
+      base::Contains(get_info_response->versions, ProtocolVersion::kU2f));
   EXPECT_TRUE(get_info_response->options.is_platform_device);
   EXPECT_TRUE(get_info_response->options.supports_resident_key);
   EXPECT_TRUE(get_info_response->options.supports_user_presence);

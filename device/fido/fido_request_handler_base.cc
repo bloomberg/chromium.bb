@@ -117,11 +117,10 @@ void FidoRequestHandlerBase::InitDiscoveries(
     discoveries_.push_back(std::move(discovery));
   }
 
-  if (base::ContainsKey(
-          available_transports,
-          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) ||
-      base::ContainsKey(available_transports,
-                        FidoTransportProtocol::kBluetoothLowEnergy)) {
+  if (base::Contains(available_transports,
+                     FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) ||
+      base::Contains(available_transports,
+                     FidoTransportProtocol::kBluetoothLowEnergy)) {
     ++transport_info_callback_count;
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -170,9 +169,8 @@ void FidoRequestHandlerBase::InitDiscoveriesWin(
   // device communication block (only GetAssertionRequestHandler uses
   // caBLE). Otherwise, do not instantiate any other transports.
   base::flat_set<FidoTransportProtocol> other_transports = {};
-  if (base::ContainsKey(
-          available_transports,
-          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy))
+  if (base::Contains(available_transports,
+                     FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy))
     other_transports = {
         FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
 
@@ -266,7 +264,7 @@ void FidoRequestHandlerBase::Start() {
 void FidoRequestHandlerBase::AuthenticatorAdded(
     FidoDiscoveryBase* discovery,
     FidoAuthenticator* authenticator) {
-  DCHECK(!base::ContainsKey(active_authenticators(), authenticator->GetId()));
+  DCHECK(!base::Contains(active_authenticators(), authenticator->GetId()));
   AddAuthenticator(authenticator);
 }
 
@@ -318,7 +316,7 @@ void FidoRequestHandlerBase::AuthenticatorPairingModeChanged(
 void FidoRequestHandlerBase::AddAuthenticator(
     FidoAuthenticator* authenticator) {
   DCHECK(authenticator &&
-         !base::ContainsKey(active_authenticators(), authenticator->GetId()));
+         !base::Contains(active_authenticators(), authenticator->GetId()));
   active_authenticators_.emplace(authenticator->GetId(), authenticator);
 
   // If |observer_| exists, dispatching request to |authenticator| is
@@ -361,8 +359,8 @@ void FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(
     base::Optional<PlatformAuthenticatorInfo> platform_authenticator_info) {
   DCHECK(!platform_authenticator_);
   if (platform_authenticator_info &&
-      base::ContainsKey(transport_availability_info_.available_transports,
-                        FidoTransportProtocol::kInternal)) {
+      base::Contains(transport_availability_info_.available_transports,
+                     FidoTransportProtocol::kInternal)) {
     DCHECK(platform_authenticator_info->authenticator);
     DCHECK(
         platform_authenticator_info->authenticator->AuthenticatorTransport() &&
@@ -384,7 +382,7 @@ void FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(
 
 bool FidoRequestHandlerBase::HasAuthenticator(
     const std::string& authenticator_id) const {
-  return base::ContainsKey(active_authenticators_, authenticator_id);
+  return base::Contains(active_authenticators_, authenticator_id);
 }
 
 void FidoRequestHandlerBase::NotifyObserverTransportAvailability() {

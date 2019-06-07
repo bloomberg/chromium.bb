@@ -160,8 +160,8 @@ std::set<std::vector<uint8_t>> FilterInapplicableEntriesFromAllowList(
   for (const auto& credential_descriptor : request.allow_list) {
     if (credential_descriptor.credential_type() == CredentialType::kPublicKey &&
         (credential_descriptor.transports().empty() ||
-         base::ContainsKey(credential_descriptor.transports(),
-                           FidoTransportProtocol::kInternal))) {
+         base::Contains(credential_descriptor.transports(),
+                        FidoTransportProtocol::kInternal))) {
       allowed_credential_ids.insert(credential_descriptor.id());
     }
   }

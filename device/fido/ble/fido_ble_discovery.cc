@@ -39,7 +39,7 @@ void FidoBleDiscovery::OnSetPowered() {
 
   for (BluetoothDevice* device : adapter()->GetDevices()) {
     if (!CheckForExcludedDeviceAndCacheAddress(device) &&
-        base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
+        base::Contains(device->GetUUIDs(), FidoServiceUUID())) {
       const auto& device_address = device->GetAddress();
       VLOG(2) << "FIDO BLE device: " << device_address;
       AddDevice(std::make_unique<FidoBleDevice>(adapter(), device_address));
@@ -65,7 +65,7 @@ void FidoBleDiscovery::OnSetPowered() {
 void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
                                    BluetoothDevice* device) {
   if (!CheckForExcludedDeviceAndCacheAddress(device) &&
-      base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
+      base::Contains(device->GetUUIDs(), FidoServiceUUID())) {
     const auto& device_address = device->GetAddress();
     VLOG(2) << "Discovered FIDO BLE device: " << device_address;
     AddDevice(std::make_unique<FidoBleDevice>(adapter, device_address));
@@ -77,7 +77,7 @@ void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
 void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
   if (CheckForExcludedDeviceAndCacheAddress(device) ||
-      !base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
+      !base::Contains(device->GetUUIDs(), FidoServiceUUID())) {
     return;
   }
 
@@ -99,7 +99,7 @@ void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
 
 void FidoBleDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
-  if (base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
+  if (base::Contains(device->GetUUIDs(), FidoServiceUUID())) {
     VLOG(2) << "FIDO BLE device removed: " << device->GetAddress();
     auto device_id = FidoBleDevice::GetId(device->GetAddress());
     RemoveDevice(device_id);

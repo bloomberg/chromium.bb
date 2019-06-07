@@ -1301,7 +1301,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
       }
       const std::vector<uint8_t>& credential_id =
           credential_id_it->second.GetBytestring();
-      if (!base::ContainsKey(mutable_state()->registrations, credential_id)) {
+      if (!base::Contains(mutable_state()->registrations, credential_id)) {
         return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
       }
       mutable_state()->registrations.erase(credential_id);
@@ -1413,7 +1413,7 @@ void VirtualCtap2Device::InitPendingRPs() {
     DCHECK(!registration.second.is_u2f);
     DCHECK(registration.second.user);
     DCHECK(registration.second.rp);
-    if (!base::ContainsKey(rp_ids, registration.second.rp->id)) {
+    if (!base::Contains(rp_ids, registration.second.rp->id)) {
       mutable_state()->pending_rps.push_back(*registration.second.rp);
     }
   }

@@ -90,8 +90,8 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
                         return credential.id() ==
                                    response.raw_credential_id() &&
                                (!opt_transport_used ||
-                                base::ContainsKey(credential.transports(),
-                                                  *opt_transport_used));
+                                base::Contains(credential.transports(),
+                                               *opt_transport_used));
                       }))) {
       return false;
     }
@@ -212,9 +212,8 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
   transport_availability_info().has_empty_allow_list =
       request_.allow_list.empty();
 
-  if (base::ContainsKey(
-          transport_availability_info().available_transports,
-          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
+  if (base::Contains(transport_availability_info().available_transports,
+                     FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
     DCHECK(request_.cable_extension);
     auto discovery =
         fido_discovery_factory_->CreateCable(*request_.cable_extension);

@@ -36,7 +36,7 @@ bool ShouldUseU2fBecauseCtapRequiresClientPin(
       device->device_info()->options.client_pin_availability ==
       AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet;
   bool supports_u2f =
-      base::ContainsKey(device->device_info()->versions, ProtocolVersion::kU2f);
+      base::Contains(device->device_info()->versions, ProtocolVersion::kU2f);
   return client_pin_set && supports_u2f;
 }
 
