@@ -181,16 +181,6 @@ bool RulesMonitorService::HasRegisteredRuleset(
          extensions_with_rulesets_.end();
 }
 
-void RulesMonitorService::AddObserver(Observer* observer) {
-  DCHECK(observer);
-  observers_.AddObserver(observer);
-}
-
-void RulesMonitorService::RemoveObserver(Observer* observer) {
-  DCHECK(observer);
-  observers_.RemoveObserver(observer);
-}
-
 void RulesMonitorService::UpdateDynamicRules(
     const Extension& extension,
     std::vector<api::declarative_net_request::Rule> rules,
@@ -380,8 +370,6 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
     return;
 
   extensions_with_rulesets_.insert(load_data.extension_id);
-  for (auto& observer : observers_)
-    observer.OnRulesetLoaded();
 
   base::OnceClosure load_ruleset_on_io =
       base::BindOnce(&LoadRulesetOnIOThread, load_data.extension_id,
