@@ -13,14 +13,19 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
+#include "components/version_info/version_info.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/common/user_agent.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace {
 
@@ -297,3 +302,45 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerStubResolverBrowsertest,
 INSTANTIATE_TEST_SUITE_P(,
                          SystemNetworkContextManagerStubResolverBrowsertest,
                          ::testing::Values(false, true));
+
+class SystemNetworkContextManagerFreezeQUICUaBrowsertest
+    : public SystemNetworkContextManagerBrowsertest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SystemNetworkContextManagerFreezeQUICUaBrowsertest() {
+    scoped_feature_list_.InitWithFeatureState(blink::features::kFreezeUserAgent,
+                                              GetParam());
+  }
+  ~SystemNetworkContextManagerFreezeQUICUaBrowsertest() override {}
+
+  void SetUpOnMainThread() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+bool ContainsSubstring(std::string super, std::string sub) {
+  return super.find(sub) != std::string::npos;
+}
+
+IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerFreezeQUICUaBrowsertest,
+                       QUICUaConfig) {
+  network::mojom::NetworkContextParamsPtr network_context_params =
+      g_browser_process->system_network_context_manager()
+          ->CreateDefaultNetworkContextParams();
+
+  std::string quic_ua = network_context_params->quic_user_agent_id;
+
+  if (GetParam()) {  // if the UA Freeze feature is turned on
+    EXPECT_EQ("", quic_ua);
+  } else {
+    EXPECT_TRUE(ContainsSubstring(quic_ua, chrome::GetChannelName()));
+    EXPECT_TRUE(ContainsSubstring(
+        quic_ua, version_info::GetProductNameAndVersionForUserAgent()));
+    EXPECT_TRUE(ContainsSubstring(quic_ua, content::BuildOSCpuInfo(false)));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SystemNetworkContextManagerFreezeQUICUaBrowsertest,
+                         ::testing::Values(true, false));

@@ -61,6 +61,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -642,18 +643,24 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
   // respect prefs::kEnableReferrers from the appropriate pref store.
   network_context_params->enable_referrers = false;
 
-  std::string quic_user_agent_id = chrome::GetChannelName();
-  if (!quic_user_agent_id.empty())
-    quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(
-      version_info::GetProductNameAndVersionForUserAgent());
-  quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(
-      content::BuildOSCpuInfo(false /* include_android_build_number */));
-  network_context_params->quic_user_agent_id = quic_user_agent_id;
-
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
+  std::string quic_user_agent_id;
+
+  if (base::FeatureList::IsEnabled(blink::features::kFreezeUserAgent)) {
+    quic_user_agent_id = "";
+  } else {
+    quic_user_agent_id = chrome::GetChannelName();
+    if (!quic_user_agent_id.empty())
+      quic_user_agent_id.push_back(' ');
+    quic_user_agent_id.append(
+        version_info::GetProductNameAndVersionForUserAgent());
+    quic_user_agent_id.push_back(' ');
+    quic_user_agent_id.append(
+        content::BuildOSCpuInfo(false /* include_android_build_number */));
+  }
+  network_context_params->quic_user_agent_id = quic_user_agent_id;
 
   // TODO(eroman): Figure out why this doesn't work in single-process mode,
   // or if it does work, now.
