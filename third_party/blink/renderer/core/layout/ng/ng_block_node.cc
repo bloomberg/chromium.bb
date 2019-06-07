@@ -950,7 +950,10 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
          To<LayoutBlock>(box_)->CreatesNewFormattingContext());
 
   scoped_refptr<const NGLayoutResult> layout_result =
-      box_->GetCachedLayoutResult();
+      box_->IsOutOfFlowPositioned()
+          ? CachedLayoutResultForOutOfFlowPositioned(
+                constraint_space.PercentageResolutionSize())
+          : box_->GetCachedLayoutResult();
 
   // We need to force a layout on the child if the constraint space given will
   // change the layout.
