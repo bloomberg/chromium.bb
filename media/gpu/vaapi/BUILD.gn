@@ -39,6 +39,8 @@ source_set("vaapi") {
     "vaapi_common.h",
     "vaapi_dmabuf_video_frame_mapper.cc",
     "vaapi_dmabuf_video_frame_mapper.h",
+    "vaapi_image_decoder.h",
+    "vaapi_image_decoder.cc",
     "vaapi_h264_accelerator.cc",
     "vaapi_h264_accelerator.h",
     "vaapi_jpeg_decode_accelerator_worker.cc",

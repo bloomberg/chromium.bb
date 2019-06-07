@@ -18,6 +18,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
+#include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -52,17 +53,17 @@ void DecodeTask(
   gpu::ImageDecodeAcceleratorWorker::CompletedDecodeCB scoped_decode_callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(decode_cb),
                                                   nullptr);
-  VaapiJpegDecodeStatus status;
+  VaapiImageDecodeStatus status;
   decoder->Decode(
       base::make_span<const uint8_t>(encoded_data.data(), encoded_data.size()),
       &status);
-  if (status != VaapiJpegDecodeStatus::kSuccess) {
+  if (status != VaapiImageDecodeStatus::kSuccess) {
     VLOGF(1) << "Failed to decode - status = " << static_cast<uint32_t>(status);
     return;
   }
   std::unique_ptr<ScopedVAImage> scoped_image =
       decoder->GetImage(VA_FOURCC_RGBX /* preferred_image_fourcc */, &status);
-  if (status != VaapiJpegDecodeStatus::kSuccess) {
+  if (status != VaapiImageDecodeStatus::kSuccess) {
     VLOGF(1) << "Failed to get image - status = "
              << static_cast<uint32_t>(status);
     return;

@@ -210,11 +210,6 @@ unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header) {
   return kInvalidVaRtFormat;
 }
 
-VaapiJpegDecoder::VaapiJpegDecoder()
-    : va_surface_id_(VA_INVALID_SURFACE), va_rt_format_(kInvalidVaRtFormat) {}
-
-VaapiJpegDecoder::~VaapiJpegDecoder() = default;
-
 bool VaapiJpegDecoder::Initialize(const base::RepeatingClosure& error_uma_cb) {
   vaapi_wrapper_ = VaapiWrapper::Create(VaapiWrapper::kDecode,
                                         VAProfileJPEGBaseline, error_uma_cb);
@@ -227,10 +222,10 @@ bool VaapiJpegDecoder::Initialize(const base::RepeatingClosure& error_uma_cb) {
 
 scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
     base::span<const uint8_t> encoded_image,
-    VaapiJpegDecodeStatus* status) {
+    VaapiImageDecodeStatus* status) {
   if (!vaapi_wrapper_) {
     VLOGF(1) << "VaapiJpegDecoder has not been initialized";
-    *status = VaapiJpegDecodeStatus::kInvalidState;
+    *status = VaapiImageDecodeStatus::kInvalidState;
     return nullptr;
   }
 
@@ -239,7 +234,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   if (!ParseJpegPicture(encoded_image.data(), encoded_image.size(),
                         &parse_result)) {
     VLOGF(1) << "ParseJpegPicture failed";
-    *status = VaapiJpegDecodeStatus::kParseJpegFailed;
+    *status = VaapiImageDecodeStatus::kParseJpegFailed;
     return nullptr;
   }
 
@@ -248,14 +243,14 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
       VaSurfaceFormatForJpeg(parse_result.frame_header);
   if (picture_va_rt_format == kInvalidVaRtFormat) {
     VLOGF(1) << "Unsupported subsampling";
-    *status = VaapiJpegDecodeStatus::kUnsupportedSubsampling;
+    *status = VaapiImageDecodeStatus::kUnsupportedSubsampling;
     return nullptr;
   }
 
   // Make sure this JPEG can be decoded.
   if (!IsVaapiSupportedJpeg(parse_result)) {
     VLOGF(1) << "The supplied JPEG is unsupported";
-    *status = VaapiJpegDecodeStatus::kUnsupportedJpeg;
+    *status = VaapiImageDecodeStatus::kUnsupportedJpeg;
     return nullptr;
   }
 
@@ -273,7 +268,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
     if (!vaapi_wrapper_->CreateContextAndSurfaces(va_rt_format_, new_coded_size,
                                                   1, &va_surfaces)) {
       VLOGF(1) << "Could not create the context or the surface";
-      *status = VaapiJpegDecodeStatus::kSurfaceCreationFailed;
+      *status = VaapiImageDecodeStatus::kSurfaceCreationFailed;
       return nullptr;
     }
     va_surface_id_ = va_surfaces[0];
@@ -285,7 +280,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   FillPictureParameters(parse_result.frame_header, &pic_param);
   if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType, &pic_param)) {
     VLOGF(1) << "Could not submit VAPictureParameterBufferType";
-    *status = VaapiJpegDecodeStatus::kSubmitPicParamsFailed;
+    *status = VaapiImageDecodeStatus::kSubmitPicParamsFailed;
     return nullptr;
   }
 
@@ -294,7 +289,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   FillIQMatrix(parse_result.q_table, &iq_matrix);
   if (!vaapi_wrapper_->SubmitBuffer(VAIQMatrixBufferType, &iq_matrix)) {
     VLOGF(1) << "Could not submit VAIQMatrixBufferType";
-    *status = VaapiJpegDecodeStatus::kSubmitIQMatrixFailed;
+    *status = VaapiImageDecodeStatus::kSubmitIQMatrixFailed;
     return nullptr;
   }
 
@@ -304,7 +299,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
                    &huffman_table);
   if (!vaapi_wrapper_->SubmitBuffer(VAHuffmanTableBufferType, &huffman_table)) {
     VLOGF(1) << "Could not submit VAHuffmanTableBufferType";
-    *status = VaapiJpegDecodeStatus::kSubmitHuffmanFailed;
+    *status = VaapiImageDecodeStatus::kSubmitHuffmanFailed;
     return nullptr;
   }
 
@@ -313,7 +308,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   FillSliceParameters(parse_result, &slice_param);
   if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType, &slice_param)) {
     VLOGF(1) << "Could not submit VASliceParameterBufferType";
-    *status = VaapiJpegDecodeStatus::kSubmitSliceParamsFailed;
+    *status = VaapiImageDecodeStatus::kSubmitSliceParamsFailed;
     return nullptr;
   }
 
@@ -322,18 +317,18 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
                                     parse_result.data_size,
                                     const_cast<char*>(parse_result.data))) {
     VLOGF(1) << "Could not submit VASliceDataBufferType";
-    *status = VaapiJpegDecodeStatus::kSubmitSliceDataFailed;
+    *status = VaapiImageDecodeStatus::kSubmitSliceDataFailed;
     return nullptr;
   }
 
   // Execute the decode.
   if (!vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(va_surface_id_)) {
     VLOGF(1) << "Executing the decode failed";
-    *status = VaapiJpegDecodeStatus::kExecuteDecodeFailed;
+    *status = VaapiImageDecodeStatus::kExecuteDecodeFailed;
     return nullptr;
   }
 
-  *status = VaapiJpegDecodeStatus::kSuccess;
+  *status = VaapiImageDecodeStatus::kSuccess;
   return base::MakeRefCounted<VASurface>(va_surface_id_, coded_size_,
                                          va_rt_format_,
                                          base::DoNothing() /* release_cb */);
@@ -341,10 +336,10 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
 
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(
     uint32_t preferred_image_fourcc,
-    VaapiJpegDecodeStatus* status) {
+    VaapiImageDecodeStatus* status) {
   if (va_surface_id_ == VA_INVALID_ID) {
     VLOGF(1) << "No decoded JPEG available";
-    *status = VaapiJpegDecodeStatus::kInvalidState;
+    *status = VaapiImageDecodeStatus::kInvalidState;
     return nullptr;
   }
 
@@ -352,7 +347,7 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(
   if (!VaapiWrapper::GetJpegDecodeSuitableImageFourCC(
           va_rt_format_, preferred_image_fourcc, &image_fourcc)) {
     VLOGF(1) << "Cannot determine the output FOURCC";
-    *status = VaapiJpegDecodeStatus::kCannotGetImage;
+    *status = VaapiImageDecodeStatus::kCannotGetImage;
     return nullptr;
   }
   VAImageFormat image_format{.fourcc = image_fourcc};
@@ -361,11 +356,11 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(
   if (!scoped_image) {
     VLOGF(1) << "Cannot get VAImage, FOURCC = "
              << FourccToString(image_format.fourcc);
-    *status = VaapiJpegDecodeStatus::kCannotGetImage;
+    *status = VaapiImageDecodeStatus::kCannotGetImage;
     return nullptr;
   }
 
-  *status = VaapiJpegDecodeStatus::kSuccess;
+  *status = VaapiImageDecodeStatus::kSuccess;
   return scoped_image;
 }
 

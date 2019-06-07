@@ -25,6 +25,7 @@
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
+#include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -53,13 +54,13 @@ static void ReportToVAJDAResponseToClientUMA(
 }
 
 static chromeos_camera::MjpegDecodeAccelerator::Error
-VaapiJpegDecodeStatusToError(VaapiJpegDecodeStatus status) {
+VaapiJpegDecodeStatusToError(VaapiImageDecodeStatus status) {
   switch (status) {
-    case VaapiJpegDecodeStatus::kSuccess:
+    case VaapiImageDecodeStatus::kSuccess:
       return chromeos_camera::MjpegDecodeAccelerator::Error::NO_ERRORS;
-    case VaapiJpegDecodeStatus::kParseJpegFailed:
+    case VaapiImageDecodeStatus::kParseJpegFailed:
       return chromeos_camera::MjpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
-    case VaapiJpegDecodeStatus::kUnsupportedSubsampling:
+    case VaapiImageDecodeStatus::kUnsupportedSubsampling:
       return chromeos_camera::MjpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;
     default:
       return chromeos_camera::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE;
@@ -226,17 +227,17 @@ void VaapiMjpegDecodeAccelerator::DecodeTask(
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("jpeg", "DecodeTask");
 
-  VaapiJpegDecodeStatus status;
+  VaapiImageDecodeStatus status;
   decoder_.Decode(
       base::make_span(static_cast<const uint8_t*>(shm->memory()), shm->size()),
       &status);
-  if (status != VaapiJpegDecodeStatus::kSuccess) {
+  if (status != VaapiImageDecodeStatus::kSuccess) {
     NotifyError(bitstream_buffer_id, VaapiJpegDecodeStatusToError(status));
     return;
   }
   std::unique_ptr<ScopedVAImage> image =
       decoder_.GetImage(VA_FOURCC_I420 /* preferred_image_fourcc */, &status);
-  if (status != VaapiJpegDecodeStatus::kSuccess) {
+  if (status != VaapiImageDecodeStatus::kSuccess) {
     NotifyError(bitstream_buffer_id, VaapiJpegDecodeStatusToError(status));
     return;
   }

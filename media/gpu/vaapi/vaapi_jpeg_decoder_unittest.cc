@@ -26,6 +26,7 @@
 #include "base/strings/string_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_types.h"
+#include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -354,11 +355,11 @@ class VaapiJpegDecoderTest : public testing::TestWithParam<TestParam> {
   std::unique_ptr<ScopedVAImage> Decode(
       base::span<const uint8_t> encoded_image,
       uint32_t preferred_fourcc,
-      VaapiJpegDecodeStatus* status = nullptr);
+      VaapiImageDecodeStatus* status = nullptr);
 
   std::unique_ptr<ScopedVAImage> Decode(
       base::span<const uint8_t> encoded_image,
-      VaapiJpegDecodeStatus* status = nullptr);
+      VaapiImageDecodeStatus* status = nullptr);
 
  protected:
   std::string test_data_path_;
@@ -382,29 +383,29 @@ base::FilePath VaapiJpegDecoderTest::FindTestDataFilePath(
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
     base::span<const uint8_t> encoded_image,
     uint32_t preferred_fourcc,
-    VaapiJpegDecodeStatus* status) {
-  VaapiJpegDecodeStatus decode_status;
+    VaapiImageDecodeStatus* status) {
+  VaapiImageDecodeStatus decode_status;
   scoped_refptr<VASurface> surface =
       decoder_.Decode(encoded_image, &decode_status);
-  EXPECT_EQ(!!surface, decode_status == VaapiJpegDecodeStatus::kSuccess);
+  EXPECT_EQ(!!surface, decode_status == VaapiImageDecodeStatus::kSuccess);
 
   // Still try to get image when decode fails.
-  VaapiJpegDecodeStatus image_status;
+  VaapiImageDecodeStatus image_status;
   std::unique_ptr<ScopedVAImage> scoped_image;
   scoped_image = decoder_.GetImage(preferred_fourcc, &image_status);
-  EXPECT_EQ(!!scoped_image, image_status == VaapiJpegDecodeStatus::kSuccess);
+  EXPECT_EQ(!!scoped_image, image_status == VaapiImageDecodeStatus::kSuccess);
 
   // Record the first fail status.
   if (status) {
-    *status = decode_status != VaapiJpegDecodeStatus::kSuccess ? decode_status
-                                                               : image_status;
+    *status = decode_status != VaapiImageDecodeStatus::kSuccess ? decode_status
+                                                                : image_status;
   }
   return scoped_image;
 }
 
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
     base::span<const uint8_t> encoded_image,
-    VaapiJpegDecodeStatus* status) {
+    VaapiImageDecodeStatus* status) {
   return Decode(encoded_image, VA_FOURCC_I420, status);
 }
 
@@ -585,13 +586,13 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForBelowMinSize) {
   for (const auto& test_size : test_sizes) {
     const std::vector<unsigned char> jpeg_data = GenerateJpegImage(test_size);
     ASSERT_FALSE(jpeg_data.empty());
-    VaapiJpegDecodeStatus status = VaapiJpegDecodeStatus::kSuccess;
+    VaapiImageDecodeStatus status = VaapiImageDecodeStatus::kSuccess;
     ASSERT_FALSE(Decode(base::make_span<const uint8_t>(
                             reinterpret_cast<const uint8_t*>(jpeg_data.data()),
                             jpeg_data.size()),
                         &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
-    EXPECT_EQ(VaapiJpegDecodeStatus::kUnsupportedJpeg, status);
+    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedJpeg, status);
   }
 }
 
@@ -632,13 +633,13 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForAboveMaxSize) {
   for (const auto& test_size : test_sizes) {
     const std::vector<unsigned char> jpeg_data = GenerateJpegImage(test_size);
     ASSERT_FALSE(jpeg_data.empty());
-    VaapiJpegDecodeStatus status = VaapiJpegDecodeStatus::kSuccess;
+    VaapiImageDecodeStatus status = VaapiImageDecodeStatus::kSuccess;
     ASSERT_FALSE(Decode(base::make_span<const uint8_t>(
                             reinterpret_cast<const uint8_t*>(jpeg_data.data()),
                             jpeg_data.size()),
                         &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
-    EXPECT_EQ(VaapiJpegDecodeStatus::kUnsupportedJpeg, status);
+    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedJpeg, status);
   }
 }
 
@@ -648,12 +649,12 @@ TEST_F(VaapiJpegDecoderTest, DecodeFails) {
   std::string jpeg_data;
   ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))
       << "failed to read input data from " << input_file.value();
-  VaapiJpegDecodeStatus status = VaapiJpegDecodeStatus::kSuccess;
+  VaapiImageDecodeStatus status = VaapiImageDecodeStatus::kSuccess;
   ASSERT_FALSE(Decode(
       base::make_span<const uint8_t>(
           reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size()),
       &status));
-  EXPECT_EQ(VaapiJpegDecodeStatus::kUnsupportedSubsampling, status);
+  EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedSubsampling, status);
 }
 
 std::string TestParamToString(
