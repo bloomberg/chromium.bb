@@ -67,7 +67,7 @@ IOSPaymentInstrumentFinder::FilterUnsupportedURLPaymentMethods(
   for (const GURL& method : queried_url_payment_method_identifiers) {
     // Ensure that the payment method is recognized by looking for an
     // "app-name://" scheme to query for its presence.
-    if (!base::ContainsKey(enum_map, method.spec()))
+    if (!base::Contains(enum_map, method.spec()))
       continue;
 
     // If there is an app that can handle |scheme| on this device, this payment

@@ -242,7 +242,7 @@ const std::set<std::string>& GetFailingTestNames() {
 // DISABLED_DataDrivenHeuristics.
 TEST_P(FormStructureBrowserTest, DataDrivenHeuristics) {
   bool is_expected_to_pass =
-      !base::ContainsKey(GetFailingTestNames(), GetParam().BaseName().value());
+      !base::Contains(GetFailingTestNames(), GetParam().BaseName().value());
   RunOneDataDrivenTest(GetParam(), GetIOSOutputDirectory(),
                        is_expected_to_pass);
 }

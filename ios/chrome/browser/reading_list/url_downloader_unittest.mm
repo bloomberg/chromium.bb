@@ -253,7 +253,7 @@ TEST_F(URLDownloaderTest, DownloadAndRemove) {
   // Wait for all asynchronous tasks to complete.
   task_environment_.RunUntilIdle();
 
-  ASSERT_TRUE(!base::ContainsValue(downloader_->downloaded_files_, url));
+  ASSERT_TRUE(!base::Contains(downloader_->downloaded_files_, url));
   ASSERT_EQ(1ul, downloader_->downloaded_files_.size());
   ASSERT_EQ(1ul, downloader_->removed_files_.size());
   ASSERT_FALSE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
@@ -272,8 +272,8 @@ TEST_F(URLDownloaderTest, DownloadAndRemoveAndRedownload) {
   // Wait for all asynchronous tasks to complete.
   task_environment_.RunUntilIdle();
 
-  ASSERT_TRUE(base::ContainsValue(downloader_->downloaded_files_, url));
-  ASSERT_TRUE(base::ContainsValue(downloader_->removed_files_, url));
+  ASSERT_TRUE(base::Contains(downloader_->downloaded_files_, url));
+  ASSERT_TRUE(base::Contains(downloader_->removed_files_, url));
   ASSERT_TRUE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
 }
 

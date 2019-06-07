@@ -72,7 +72,7 @@ std::vector<const BookmarkNode*> RootLevelFolders(BookmarkModel* model) {
 
 bool IsPrimaryPermanentNode(const BookmarkNode* node, BookmarkModel* model) {
   std::vector<const BookmarkNode*> primary_nodes(PrimaryPermanentNodes(model));
-  return base::ContainsValue(primary_nodes, node);
+  return base::Contains(primary_nodes, node);
 }
 
 const BookmarkNode* RootLevelFolderForNode(const BookmarkNode* node,
@@ -84,7 +84,7 @@ const BookmarkNode* RootLevelFolderForNode(const BookmarkNode* node,
 
   const std::vector<const BookmarkNode*> root_folders(RootLevelFolders(model));
   const BookmarkNode* top = node;
-  while (top && !base::ContainsValue(root_folders, top)) {
+  while (top && !base::Contains(root_folders, top)) {
     top = top->parent();
   }
   return top;

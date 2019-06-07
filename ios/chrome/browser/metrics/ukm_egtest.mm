@@ -68,7 +68,7 @@ class UkmEGTestHelper {
 
   static bool HasDummySource(ukm::SourceId source_id) {
     auto* service = ukm_service();
-    return service && base::ContainsKey(service->sources(), source_id);
+    return service && base::Contains(service->sources(), source_id);
   }
 
   static void RecordDummySource(ukm::SourceId source_id) {

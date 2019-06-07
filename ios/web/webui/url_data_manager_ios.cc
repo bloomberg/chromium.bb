@@ -135,7 +135,7 @@ bool URLDataManagerIOS::IsScheduledForDeletion(
   base::AutoLock lock(GetDeleteLock());
   if (!data_sources_)
     return false;
-  return base::ContainsValue(*data_sources_, data_source);
+  return base::Contains(*data_sources_, data_source);
 }
 
 }  // namespace web

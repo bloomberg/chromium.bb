@@ -60,7 +60,7 @@ bool CheckURLIsValid(const GURL& url) {
   std::vector<std::string> additional_schemes;
   DCHECK(GetWebClient()->IsAppSpecificURL(url) ||
          (GetWebClient()->GetAdditionalWebUISchemes(&additional_schemes),
-          base::ContainsValue(additional_schemes, url.scheme())));
+          base::Contains(additional_schemes, url.scheme())));
 
   if (!url.is_valid()) {
     NOTREACHED();

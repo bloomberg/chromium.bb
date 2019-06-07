@@ -61,8 +61,8 @@
     }
 
     // Currently only Payment Request parameters are supported.
-    if (base::ContainsKey(parameters, payments::kPaymentRequestIDExternal) &&
-        base::ContainsKey(parameters, payments::kPaymentRequestDataExternal)) {
+    if (base::Contains(parameters, payments::kPaymentRequestIDExternal) &&
+        base::Contains(parameters, payments::kPaymentRequestDataExternal)) {
       _externalURLParams = parameters;
       _completePaymentRequest = YES;
     }
