@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/media/media_notification_background.h"
+#include "components/media_message_center/media_notification_background.h"
 
 #include <algorithm>
 #include <vector>
@@ -15,7 +15,7 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
-namespace ash {
+namespace media_message_center {
 
 namespace {
 
@@ -409,4 +409,4 @@ SkPoint MediaNotificationBackground::GetGradientEndPoint(
                                                  : draw_bounds.right_center());
 }
 
-}  // namespace ash
+}  // namespace media_message_center

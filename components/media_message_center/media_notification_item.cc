@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/media/media_notification_item.h"
+#include "components/media_message_center/media_notification_item.h"
 
-#include "ash/media/media_notification_constants.h"
-#include "ash/media/media_notification_controller.h"
-#include "ash/media/media_notification_view.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "components/media_message_center/media_notification_constants.h"
+#include "components/media_message_center/media_notification_controller.h"
+#include "components/media_message_center/media_notification_view.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 
-namespace ash {
+namespace media_message_center {
 
 using media_session::mojom::MediaSessionAction;
 
@@ -224,4 +224,4 @@ void MediaNotificationItem::OnMediaSessionActionButtonPressed(
   }
 }
 
-}  // namespace ash
+}  // namespace media_message_center

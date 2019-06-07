@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MEDIA_MEDIA_NOTIFICATION_VIEW_H_
-#define ASH_MEDIA_MEDIA_NOTIFICATION_VIEW_H_
+#ifndef COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_VIEW_H_
+#define COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_VIEW_H_
 
-#include "ash/ash_export.h"
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/views/controls/button/button.h"
@@ -31,7 +31,7 @@ class ToggleImageButton;
 class View;
 }  // namespace views
 
-namespace ash {
+namespace media_message_center {
 
 class MediaNotificationBackground;
 class MediaNotificationContainer;
@@ -39,8 +39,9 @@ class MediaNotificationItem;
 
 // MediaNotificationView will show up as a custom view. It will show the
 // currently playing media and provide playback controls.
-class ASH_EXPORT MediaNotificationView : public views::View,
-                                         public views::ButtonListener {
+class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
+    : public views::View,
+      public views::ButtonListener {
  public:
   // The name of the histogram used when recorded whether the artwork was
   // present.
@@ -146,6 +147,6 @@ class ASH_EXPORT MediaNotificationView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationView);
 };
 
-}  // namespace ash
+}  // namespace media_message_center
 
-#endif  // ASH_MEDIA_MEDIA_NOTIFICATION_VIEW_H_
+#endif  // COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_VIEW_H_

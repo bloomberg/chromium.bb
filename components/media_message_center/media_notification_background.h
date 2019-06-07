@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MEDIA_MEDIA_NOTIFICATION_BACKGROUND_H_
-#define ASH_MEDIA_MEDIA_NOTIFICATION_BACKGROUND_H_
+#ifndef COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_BACKGROUND_H_
+#define COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_BACKGROUND_H_
 
 #include <vector>
 
-#include "ash/ash_export.h"
+#include "base/component_export.h"
 #include "base/optional.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
@@ -21,12 +21,13 @@ namespace views {
 class View;
 }  // namespace views
 
-namespace ash {
+namespace media_message_center {
 
 // MediaNotificationBackground draws a custom background for the media
 // notification showing the artwork clipped to a rounded rectangle faded into a
 // background color.
-class ASH_EXPORT MediaNotificationBackground : public views::Background {
+class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
+    : public views::Background {
  public:
   MediaNotificationBackground(views::View* owner,
                               int top_radius,
@@ -73,6 +74,6 @@ class ASH_EXPORT MediaNotificationBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationBackground);
 };
 
-}  // namespace ash
+}  // namespace media_message_center
 
-#endif  // ASH_MEDIA_MEDIA_NOTIFICATION_BACKGROUND_H_
+#endif  // COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_BACKGROUND_H_

@@ -2,27 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/media/media_notification_view.h"
+#include "components/media_message_center/media_notification_view.h"
 
 #include <memory>
 
-#include "ash/media/media_notification_background.h"
-#include "ash/media/media_notification_constants.h"
-#include "ash/media/media_notification_container.h"
-#include "ash/media/media_notification_controller.h"
-#include "ash/media/media_notification_item.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/unguessable_token.h"
+#include "components/media_message_center/media_notification_background.h"
+#include "components/media_message_center/media_notification_constants.h"
+#include "components/media_message_center/media_notification_container.h"
+#include "components/media_message_center/media_notification_controller.h"
+#include "components/media_message_center/media_notification_item.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_view_factory.h"
@@ -31,7 +30,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/test/views_test_base.h"
 
-namespace ash {
+namespace media_message_center {
 
 using media_session::mojom::MediaSessionAction;
 using media_session::test::TestMediaController;
@@ -894,4 +893,4 @@ TEST_F(MediaNotificationViewTest, AccessibleNodeData) {
   EXPECT_EQ(base::ASCIIToUTF16("title - artist"), accessible_name());
 }
 
-}  // namespace ash
+}  // namespace media_message_center

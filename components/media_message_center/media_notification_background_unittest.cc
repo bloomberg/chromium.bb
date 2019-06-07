@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/media/media_notification_background.h"
+#include "components/media_message_center/media_notification_background.h"
 
 #include <memory>
 
@@ -15,7 +15,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/test/test_views.h"
 
-namespace ash {
+namespace media_message_center {
 
 namespace {
 
@@ -385,4 +385,4 @@ TEST_P(MediaNotificationBackgroundRTLTest, BoundsSanityCheck) {
   EXPECT_EQ(25, background()->GetGradientEndPoint(gradient_bounds).y());
 }
 
-}  // namespace ash
+}  // namespace media_message_center

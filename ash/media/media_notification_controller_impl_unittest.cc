@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/media/media_notification_constants.h"
-#include "ash/media/media_notification_item.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/session/session_controller_impl.h"
@@ -18,6 +17,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
+#include "components/media_message_center/media_notification_item.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "ui/message_center/message_center.h"
 
@@ -80,9 +80,10 @@ class MediaNotificationControllerImplTest : public AshTestBase {
         MediaNotificationControllerImpl::kCountHistogramName, count, size);
   }
 
-  void ExpectHistogramSourceRecorded(MediaNotificationItem::Source source) {
+  void ExpectHistogramSourceRecorded(
+      media_message_center::MediaNotificationItem::Source source) {
     histogram_tester_.ExpectUniqueSample(
-        MediaNotificationItem::kSourceHistogramName,
+        media_message_center::MediaNotificationItem::kSourceHistogramName,
         static_cast<base::HistogramBase::Sample>(source), 1);
   }
 
@@ -169,8 +170,8 @@ TEST_F(MediaNotificationControllerImplTest, OnFocusGainedLost_MultipleIds) {
 }
 
 // Test that a notification is hidden when it becomes uncontrollable. We still
-// keep the MediaNotificationItem around in case it becomes
-// controllable again.
+// keep the media_message_center::MediaNotificationItem around in case it
+// becomes controllable again.
 TEST_F(MediaNotificationControllerImplTest,
        OnFocusGained_ControllableBecomesUncontrollable) {
   base::UnguessableToken id = base::UnguessableToken::Create();
@@ -363,7 +364,8 @@ TEST_F(MediaNotificationControllerImplTest, RecordHistogramSource_Unknown) {
       ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
-  ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kUnknown);
+  ExpectHistogramSourceRecorded(
+      media_message_center::MediaNotificationItem::Source::kUnknown);
 }
 
 TEST_F(MediaNotificationControllerImplTest, RecordHistogramSource_Web) {
@@ -384,7 +386,8 @@ TEST_F(MediaNotificationControllerImplTest, RecordHistogramSource_Web) {
       ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
-  ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kWeb);
+  ExpectHistogramSourceRecorded(
+      media_message_center::MediaNotificationItem::Source::kWeb);
 }
 
 TEST_F(MediaNotificationControllerImplTest, RecordHistogramSource_Assistant) {
@@ -405,7 +408,8 @@ TEST_F(MediaNotificationControllerImplTest, RecordHistogramSource_Assistant) {
       ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
-  ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kAssistant);
+  ExpectHistogramSourceRecorded(
+      media_message_center::MediaNotificationItem::Source::kAssistant);
 }
 
 TEST_F(MediaNotificationControllerImplTest, RecordHistogramSource_Arc) {
@@ -426,7 +430,8 @@ TEST_F(MediaNotificationControllerImplTest, RecordHistogramSource_Arc) {
       ->MediaSessionMetadataChanged(BuildMediaMetadata());
 
   ExpectNotificationCount(1);
-  ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kArc);
+  ExpectHistogramSourceRecorded(
+      media_message_center::MediaNotificationItem::Source::kArc);
 }
 
 // Test that locking the screen will hide the media notifications. Unlocking the

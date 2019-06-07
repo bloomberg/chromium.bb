@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MEDIA_MEDIA_NOTIFICATION_ITEM_H_
-#define ASH_MEDIA_MEDIA_NOTIFICATION_ITEM_H_
+#ifndef COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ITEM_H_
+#define COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ITEM_H_
 
 #include <set>
 #include <string>
 
-#include "ash/ash_export.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -17,14 +17,14 @@
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace ash {
+namespace media_message_center {
 
 class MediaNotificationController;
 class MediaNotificationView;
 
 // MediaNotificationItem manages hiding/showing a media notification and
 // updating the metadata for a single media session.
-class ASH_EXPORT MediaNotificationItem
+class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
     : public media_session::mojom::MediaControllerObserver,
       public media_session::mojom::MediaControllerImageObserver {
  public:
@@ -131,6 +131,6 @@ class ASH_EXPORT MediaNotificationItem
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationItem);
 };
 
-}  // namespace ash
+}  // namespace media_message_center
 
-#endif  // ASH_MEDIA_MEDIA_NOTIFICATION_ITEM_H_
+#endif  // COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ITEM_H_

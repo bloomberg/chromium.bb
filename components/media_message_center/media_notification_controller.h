@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MEDIA_MEDIA_NOTIFICATION_CONTROLLER_H_
-#define ASH_MEDIA_MEDIA_NOTIFICATION_CONTROLLER_H_
+#ifndef COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_CONTROLLER_H_
+#define COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_CONTROLLER_H_
 
 #include <string>
 
-#include "ash/ash_export.h"
+#include "base/component_export.h"
 
-namespace ash {
+namespace media_message_center {
 
 // MediaNotificationController does the actual hiding and showing of the media
 // notification.
-class ASH_EXPORT MediaNotificationController {
+class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationController {
  public:
   // Shows/hides a notification with the given request id. Called by
   // MediaNotificationItem when the notification should be shown/hidden.
@@ -21,6 +21,6 @@ class ASH_EXPORT MediaNotificationController {
   virtual void HideNotification(const std::string& id) = 0;
 };
 
-}  // namespace ash
+}  // namespace media_message_center
 
-#endif  // ASH_MEDIA_MEDIA_NOTIFICATION_CONTROLLER_H_
+#endif  // COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_CONTROLLER_H_

@@ -10,9 +10,9 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/media/media_notification_controller.h"
-#include "ash/media/media_notification_item.h"
 #include "base/macros.h"
+#include "components/media_message_center/media_notification_controller.h"
+#include "components/media_message_center/media_notification_item.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -38,7 +38,7 @@ class MediaNotificationContainerImpl;
 // controls.
 class ASH_EXPORT MediaNotificationControllerImpl
     : public media_session::mojom::AudioFocusObserver,
-      public MediaNotificationController {
+      public media_message_center::MediaNotificationController {
  public:
   // The name of the histogram used to record the number of concurrent media
   // notifications.
@@ -54,14 +54,14 @@ class ASH_EXPORT MediaNotificationControllerImpl
   void OnFocusLost(
       media_session::mojom::AudioFocusRequestStatePtr session) override;
 
-  // MediaNotificationController:
+  // media_message_center::MediaNotificationController:
   void ShowNotification(const std::string& id) override;
   void HideNotification(const std::string& id) override;
 
   std::unique_ptr<MediaNotificationContainerImpl> CreateMediaNotification(
       const message_center::Notification& notification);
 
-  ash::MediaNotificationItem* GetItem(const std::string& id) {
+  media_message_center::MediaNotificationItem* GetItem(const std::string& id) {
     auto it = notifications_.find(id);
     DCHECK(it != notifications_.end());
     return &it->second;
@@ -77,9 +77,10 @@ class ASH_EXPORT MediaNotificationControllerImpl
   mojo::Binding<media_session::mojom::AudioFocusObserver>
       audio_focus_observer_binding_{this};
 
-  // Stores a |MediaNotificationItem| for each media session keyed by its
-  // |request_id| in string format.
-  std::map<const std::string, MediaNotificationItem> notifications_;
+  // Stores a |media_message_center::MediaNotificationItem| for each media
+  // session keyed by its |request_id| in string format.
+  std::map<const std::string, media_message_center::MediaNotificationItem>
+      notifications_;
 
   std::unique_ptr<MediaNotificationBlocker> blocker_;
 

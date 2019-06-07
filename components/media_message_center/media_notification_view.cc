@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/media/media_notification_view.h"
+#include "components/media_message_center/media_notification_view.h"
 
-#include "ash/media/media_notification_background.h"
-#include "ash/media/media_notification_constants.h"
-#include "ash/media/media_notification_container.h"
-#include "ash/media/media_notification_item.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/media_message_center/media_notification_background.h"
+#include "components/media_message_center/media_notification_constants.h"
+#include "components/media_message_center/media_notification_container.h"
+#include "components/media_message_center/media_notification_item.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -25,7 +25,7 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 
-namespace ash {
+namespace media_message_center {
 
 using media_session::mojom::MediaSessionAction;
 
@@ -174,30 +174,34 @@ MediaNotificationView::MediaNotificationView(
   button_row->SetPreferredSize(kMediaNotificationButtonRowSize);
   button_row_ = main_row_->AddChildView(std::move(button_row));
 
-  CreateMediaButton(MediaSessionAction::kPreviousTrack,
-                    l10n_util::GetStringUTF16(
-                        IDS_ASH_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK));
-  CreateMediaButton(MediaSessionAction::kSeekBackward,
-                    l10n_util::GetStringUTF16(
-                        IDS_ASH_MEDIA_NOTIFICATION_ACTION_SEEK_BACKWARD));
+  CreateMediaButton(
+      MediaSessionAction::kPreviousTrack,
+      l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK));
+  CreateMediaButton(
+      MediaSessionAction::kSeekBackward,
+      l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SEEK_BACKWARD));
 
   // |play_pause_button_| toggles playback.
   auto play_pause_button = views::CreateVectorToggleImageButton(this);
   play_pause_button->set_tag(static_cast<int>(MediaSessionAction::kPlay));
   play_pause_button->SetPreferredSize(kMediaButtonSize);
   play_pause_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  play_pause_button->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_PLAY));
-  play_pause_button->SetToggledTooltipText(
-      l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_PAUSE));
+  play_pause_button->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PLAY));
+  play_pause_button->SetToggledTooltipText(l10n_util::GetStringUTF16(
+      IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PAUSE));
   play_pause_button_ = button_row_->AddChildView(std::move(play_pause_button));
 
-  CreateMediaButton(MediaSessionAction::kSeekForward,
-                    l10n_util::GetStringUTF16(
-                        IDS_ASH_MEDIA_NOTIFICATION_ACTION_SEEK_FORWARD));
+  CreateMediaButton(
+      MediaSessionAction::kSeekForward,
+      l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SEEK_FORWARD));
   CreateMediaButton(
       MediaSessionAction::kNextTrack,
-      l10n_util::GetStringUTF16(IDS_ASH_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK));
+      l10n_util::GetStringUTF16(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK));
 
   SetBackground(std::make_unique<MediaNotificationBackground>(
       this, message_center::kNotificationCornerRadius,
@@ -240,7 +244,8 @@ void MediaNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kListItem;
   node_data->AddStringAttribute(
       ax::mojom::StringAttribute::kRoleDescription,
-      l10n_util::GetStringUTF8(IDS_ASH_MEDIA_NOTIFICATION_ACCESSIBLE_NAME));
+      l10n_util::GetStringUTF8(
+          IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACCESSIBLE_NAME));
 
   if (!accessible_name_.empty())
     node_data->SetName(accessible_name_);
@@ -507,4 +512,4 @@ void MediaNotificationView::UpdateForegroundColor() {
   }
 }
 
-}  // namespace ash
+}  // namespace media_message_center
