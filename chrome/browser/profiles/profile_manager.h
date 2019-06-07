@@ -348,7 +348,7 @@ class ProfileManager : public content::NotificationObserver,
   // (desktop) Guest User profile and (desktop) System Profile.
   void SetNonPersonalProfilePrefs(Profile* profile);
 
-  // For ChromeOS, determines if profile should be otr.
+  // Determines if profile should be OTR.
   bool ShouldGoOffTheRecord(Profile* profile);
 
   void RunCallbacks(const std::vector<CreateCallback>& callbacks,

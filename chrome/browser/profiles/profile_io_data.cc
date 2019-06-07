@@ -391,8 +391,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
 
-  // These members are used only for sign in, which is not enabled
-  // in incognito mode.  So no need to initialize them.
+  // These members are used only for sign in, which is not enabled in incognito
+  // and guest modes. So no need to initialize them.
   if (!IsOffTheRecord()) {
     google_services_user_account_id_.Init(prefs::kGoogleServicesUserAccountId,
                                           pref_service);

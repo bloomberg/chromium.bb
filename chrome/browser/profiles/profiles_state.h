@@ -66,9 +66,10 @@ void UpdateProfileName(Profile* profile,
 
 #endif  // !defined(OS_CHROMEOS)
 
-// Returns whether the |browser|'s profile is a non-incognito or guest profile.
-// The distinction is needed because guest profiles are implemented as
-// incognito profiles.
+// Returns whether the |browser|'s profile is not incognito (a regular profile
+// or a guest session).
+// The distinction is needed because guest profiles and incognito profiles are
+// implemented as off-the-record profiles.
 bool IsRegularOrGuestSession(Browser* browser);
 
 // Returns true if sign in is required to browse as this profile.  Call with
