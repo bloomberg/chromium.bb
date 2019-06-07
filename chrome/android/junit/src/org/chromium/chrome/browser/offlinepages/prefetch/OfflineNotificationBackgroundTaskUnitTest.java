@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
+import android.os.Build;
 
 import org.junit.After;
 import org.junit.Before;
@@ -156,6 +157,7 @@ public class OfflineNotificationBackgroundTaskUnitTest {
         mCalendar.set(2017, 1, 1, 0, 0, 0);
 
         OfflineNotificationBackgroundTask.setCalendarForTesting(mCalendar);
+        PrefetchPrefs.setNotificationEnabled(true);
     }
 
     @After
@@ -457,5 +459,42 @@ public class OfflineNotificationBackgroundTaskUnitTest {
         assertTaskScheduledForOfflineDelay(
                 "After waiting for tomorrow morning, the next delay should be normal "
                 + "even if the last notification was sent well in the future.");
+    }
+
+    @Test
+    @Config(sdk = Build.VERSION_CODES.O)
+    public void disabledPrefDoesNothingSdkO() {
+        // Set up the prefs so that a notification should be shown.
+        PrefetchPrefs.setHasNewPages(true);
+        PrefetchPrefs.setOfflineCounter(OfflineNotificationBackgroundTask.OFFLINE_POLLING_ATTEMPTS);
+        PrefetchPrefs.setIgnoredNotificationCounter(0);
+        setupDeviceOnlineStatus(false);
+
+        // Set up the Content Suggestions notifications preference.
+        PrefetchPrefs.setNotificationEnabled(false);
+
+        runTaskAndExpectTaskDone();
+        assertNativeStarted();
+        assertNotificationShown();
+    }
+
+    @Test
+    @Config(sdk = Build.VERSION_CODES.N_MR1)
+    public void disabledPrefPreventsNotificationShow() {
+        // Set up the prefs so that a notification would be shown, if not for the Content
+        // Suggestions notifications preference.
+        PrefetchPrefs.setHasNewPages(true);
+        PrefetchPrefs.setOfflineCounter(OfflineNotificationBackgroundTask.OFFLINE_POLLING_ATTEMPTS);
+        PrefetchPrefs.setIgnoredNotificationCounter(0);
+        setupDeviceOnlineStatus(false);
+
+        // Set up the Content Suggestions notifications preference.
+        PrefetchPrefs.setNotificationEnabled(false);
+
+        runTask();
+        assertNativeDidNotStart();
+        assertNoTaskScheduled("If the notifications preference was disabled, the task should not "
+                + "reschedule itself.");
+        assertNotificationNotShown();
     }
 }

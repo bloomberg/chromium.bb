@@ -8,15 +8,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.support.annotation.Nullable;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
+import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
+import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchPrefs;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
-import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Settings fragment that allows the user to configure notifications. It contains general
@@ -30,10 +30,10 @@ public class NotificationsPreferences extends PreferenceFragment {
 
     private Preference mFromWebsitesPref;
 
-    // The following fields are only set if Feed is disabled, and should be null checked before
+    // The following field is only set if Feed is disabled, and should be null checked before
     // being used.
+    @Nullable
     private ChromeSwitchPreference mSuggestionsPref;
-    private SnippetsBridge mSnippetsBridge;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,20 +44,11 @@ public class NotificationsPreferences extends PreferenceFragment {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.notifications_preferences);
         getActivity().setTitle(R.string.prefs_notifications);
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
-            mSnippetsBridge = new SnippetsBridge(Profile.getLastUsedProfile());
-
-            mSuggestionsPref = (ChromeSwitchPreference) findPreference(PREF_SUGGESTIONS);
-            mSuggestionsPref.setOnPreferenceChangeListener(
-                    (Preference preference, Object newValue) -> {
-                        PrefServiceBridge.getInstance().setBoolean(
-                                Pref.CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED, (boolean) newValue);
-                        return true;
-                    });
-        } else {
-            // This preference is not applicable, does not currently affect Feed.
-            getPreferenceScreen().removePreference(findPreference(PREF_SUGGESTIONS));
-        }
+        mSuggestionsPref = (ChromeSwitchPreference) findPreference(PREF_SUGGESTIONS);
+        mSuggestionsPref.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
+            PrefetchPrefs.setNotificationEnabled((boolean) newValue);
+            return true;
+        });
 
         mFromWebsitesPref = findPreference(PREF_FROM_WEBSITES);
         mFromWebsitesPref.getExtras().putString(SingleCategoryPreferences.EXTRA_CATEGORY,
@@ -70,27 +61,16 @@ public class NotificationsPreferences extends PreferenceFragment {
         update();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mSnippetsBridge != null) {
-            mSnippetsBridge.destroy();
-        }
-    }
-
     /**
      * Updates the state of displayed preferences.
      */
     private void update() {
         if (mSuggestionsPref != null) {
-            mSuggestionsPref.setShouldDisableView(mSnippetsBridge == null);
-            boolean suggestionsEnabled =
-                    mSnippetsBridge != null && mSnippetsBridge.areRemoteSuggestionsEnabled();
-            mSuggestionsPref.setChecked(suggestionsEnabled
-                    && PrefServiceBridge.getInstance().getBoolean(
-                            Pref.CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED));
-            mSuggestionsPref.setEnabled(suggestionsEnabled);
-            mSuggestionsPref.setSummary(suggestionsEnabled
+            boolean prefetchingFeatureEnabled = PrefetchConfiguration.isPrefetchingFlagEnabled();
+            boolean notificationsEnabled = PrefetchPrefs.getNotificationEnabled();
+            mSuggestionsPref.setChecked(prefetchingFeatureEnabled && notificationsEnabled);
+            mSuggestionsPref.setEnabled(prefetchingFeatureEnabled);
+            mSuggestionsPref.setSummary(prefetchingFeatureEnabled
                             ? R.string.notifications_content_suggestions_summary
                             : R.string.notifications_content_suggestions_summary_disabled);
         }

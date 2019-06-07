@@ -436,6 +436,11 @@ const char kContentSuggestionsNotificationsSentCount[] =
     "ntp.content_suggestions.notifications.sent_count";
 const char kNotificationIDWithinCategory[] =
     "ContentSuggestionsNotificationIDWithinCategory";
+
+// Deprecated 5/2019.
+const char kContentSuggestionsNotificationsEnabled[] =
+    "ntp.content_suggestions.notifications.enabled";
+
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
@@ -499,6 +504,7 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kContentSuggestionsNotificationsSentDay, 0);
   registry->RegisterIntegerPref(kContentSuggestionsNotificationsSentCount, 0);
   registry->RegisterStringPref(kNotificationIDWithinCategory, std::string());
+  registry->RegisterBooleanPref(kContentSuggestionsNotificationsEnabled, true);
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
@@ -1080,6 +1086,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kContentSuggestionsNotificationsSentDay);
   profile_prefs->ClearPref(kContentSuggestionsNotificationsSentCount);
   profile_prefs->ClearPref(kNotificationIDWithinCategory);
+
+  // Added 5/2019.
+  profile_prefs->ClearPref(kContentSuggestionsNotificationsEnabled);
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)

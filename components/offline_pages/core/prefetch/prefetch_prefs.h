@@ -18,7 +18,6 @@ namespace prefetch_prefs {
 
 extern const char kBackoff[];
 extern const char kUserSettingEnabled[];
-extern const char kContentSuggestionsNotificationsEnabled[];
 
 void RegisterPrefs(PrefRegistrySimple* registry);
 

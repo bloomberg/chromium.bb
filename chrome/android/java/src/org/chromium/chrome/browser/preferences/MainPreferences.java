@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
+import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
@@ -140,14 +141,12 @@ public class MainPreferences extends PreferenceFragment
                 // isn't triggered.
                 return true;
             });
-        } else {
-            // Since the Content Suggestions Notification feature has been removed, the
-            // Notifications Preferences page only contains a link to per-website notification
-            // settings, which can be access through Site Settings, so don't show the Notifications
-            // Preferences page.
-
-            // TODO(crbug.com/944912): Have the Offline Pages Prefetch Notifier start using the pref
-            // that can be set on this page, then re-enable.
+        } else if (!PrefetchConfiguration.isPrefetchingFlagEnabled()) {
+            // The Notifications Preferences page currently contains the Content Suggestions
+            // Notifications setting (used only by the Offline Prefetch feature) and an entry to the
+            // per-website notification settings page. The latter can be accessed from Site
+            // Settings, so we only show the entry to the Notifications Preferences page if the
+            // Prefetching feature flag is enabled.
             getPreferenceScreen().removePreference(findPreference(PREF_NOTIFICATIONS));
         }
 
