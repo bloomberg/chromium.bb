@@ -116,11 +116,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
 
   // PolicyApplicator::ConfigurationHandler overrides
   void CreateConfigurationFromPolicy(
-      const base::DictionaryValue& shill_properties) override;
+      const base::DictionaryValue& shill_properties,
+      base::OnceClosure callback) override;
 
   void UpdateExistingConfigurationWithPropertiesFromPolicy(
       const base::DictionaryValue& existing_properties,
-      const base::DictionaryValue& new_properties) override;
+      const base::DictionaryValue& new_properties,
+      base::OnceClosure callback) override;
 
   void OnPoliciesApplied(const NetworkProfile& profile) override;
 
@@ -176,7 +178,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   // user or device policies.
   const Policies* GetPoliciesForProfile(const NetworkProfile& profile) const;
 
-  void OnPolicyAppliedToNetwork(const std::string& service_path,
+  // Called when a policy identified by |guid| has been applied to the network
+  // identified by |service_path|. Notifies observers and calls |callback|.
+  void OnPolicyAppliedToNetwork(base::OnceClosure callback,
+                                const std::string& service_path,
                                 const std::string& guid);
 
   // Helper method to append associated Device properties to |properties|.

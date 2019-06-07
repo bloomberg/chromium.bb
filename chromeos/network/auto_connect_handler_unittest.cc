@@ -127,6 +127,7 @@ class AutoConnectHandlerTest : public testing::Test {
     NetworkCertLoader::ForceHardwareBackedForTesting();
 
     LoginState::Initialize();
+    LoginState::Get()->set_always_logged_in(false);
 
     network_config_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
@@ -357,12 +358,14 @@ TEST_F(AutoConnectHandlerTest, ReconnectOnCertPatternResolved) {
   SetupPolicy(std::string(),            // no device policy
               base::DictionaryValue(),  // no global config
               false);                   // load as device policy
+  EXPECT_EQ(0, test_observer_->num_auto_connect_events());
+
   LoginToRegularUser();
-  StartNetworkCertLoader();
   SetupPolicy(kPolicyCertPattern,
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
-  EXPECT_EQ(2, test_observer_->num_auto_connect_events());
+  StartNetworkCertLoader();
+  EXPECT_EQ(1, test_observer_->num_auto_connect_events());
   EXPECT_EQ(AutoConnectHandler::AUTO_CONNECT_REASON_LOGGED_IN |
                 AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED |
                 AutoConnectHandler::AUTO_CONNECT_REASON_CERTIFICATE_RESOLVED,
@@ -382,7 +385,7 @@ TEST_F(AutoConnectHandlerTest, ReconnectOnCertPatternResolved) {
 
   EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
   EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi1"));
-  EXPECT_EQ(3, test_observer_->num_auto_connect_events());
+  EXPECT_EQ(2, test_observer_->num_auto_connect_events());
   EXPECT_EQ(AutoConnectHandler::AUTO_CONNECT_REASON_LOGGED_IN |
                 AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED |
                 AutoConnectHandler::AUTO_CONNECT_REASON_CERTIFICATE_RESOLVED,
