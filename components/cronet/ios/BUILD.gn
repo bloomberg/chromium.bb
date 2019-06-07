@@ -226,13 +226,6 @@ action("cronet_static_complete") {
     args += [ "--use_custom_libcxx" ]
   }
 
-  if (!use_system_xcode) {
-    args += [
-      "--developer_dir",
-      hermetic_xcode_path,
-    ]
-  }
-
   public_configs = [ ":cronet_static_config" ]
 }
 

@@ -55,18 +55,11 @@ def main():
   parser.add_option(
       '--use_custom_libcxx', default=False, action='store_true',
       help='Confirm there is a custom libc++ linked in.')
-  parser.add_option(
-      '--developer_dir',
-      help='Path to Xcode.')
   (options, args) = parser.parse_args()
   assert not args
 
-  if options.developer_dir:
-    os.environ['DEVELOPER_DIR'] = options.developer_dir
-    developer_dir = options.developer_dir + '/Contents/Developer'
-  else:
-    developer_dir = subprocess.check_output(
-        ['xcode-select', '--print-path']).strip()
+  developer_dir = subprocess.check_output(
+      ['xcode-select', '--print-path']).strip()
 
   xctoolchain_libs = glob.glob(developer_dir
       + '/Toolchains/XcodeDefault.xctoolchain/usr/lib'
