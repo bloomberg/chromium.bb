@@ -20,12 +20,7 @@ def main():
                       help='Path to output bundle.')
   parser.add_argument('-i', '--input', required=True,
                       help='Path to input xib or storyboard.')
-  parser.add_argument('--developer_dir', required=False,
-                      help='Path to Xcode.')
   args, unknown_args = parser.parse_known_args()
-
-  if args.developer_dir:
-    os.environ['DEVELOPER_DIR'] = args.developer_dir
 
   ibtool_args = [
       'xcrun', 'ibtool',
