@@ -30,6 +30,7 @@
 #include "net/cert/crl_set.h"
 #include "net/cert/internal/ocsp.h"
 #include "net/cert/internal/parse_certificate.h"
+#include "net/cert/internal/revocation_checker.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/known_roots.h"
 #include "net/cert/ocsp_revocation_status.h"
@@ -243,7 +244,7 @@ void BestEffortCheckOCSP(const std::string& raw_response,
 
   verify_result->revocation_status =
       CheckOCSP(raw_response, cert_der, issuer_der, base::Time::Now(),
-                kMaxOCSPLeafUpdateAge, &verify_result->response_status);
+                kMaxRevocationLeafUpdateAge, &verify_result->response_status);
 }
 
 // Records histograms indicating whether the certificate |cert|, which

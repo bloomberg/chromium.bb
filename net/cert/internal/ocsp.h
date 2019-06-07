@@ -224,24 +224,6 @@ struct NET_EXPORT OCSPResponse {
   std::vector<der::Input> certs;
 };
 
-// Baseline Requirements 1.5.6, section 4.9.10:
-//   For the status of Subscriber Certificates: The CA SHALL update information
-//     provided via an Online Certificate Status Protocol at least every four
-//     days.  OCSP responses from this service MUST have a maximum expiration
-//     time of ten days.
-// TODO(mattm): Document the rationale for 7 days.
-constexpr base::TimeDelta kMaxOCSPLeafUpdateAge = base::TimeDelta::FromDays(7);
-
-// Baseline Requirements 1.5.6, section 4.9.10:
-//   For the status of Subordinate CA Certificates: The CA SHALL update
-//     information provided via an Online Certificate Status Protocol at least
-//     (i) every twelve months and (ii) within 24 hours after revoking a
-//     Subordinate CA Certificate.
-// Use 366 days to allow for leap years, though it is overly permissive in
-// other years.
-constexpr base::TimeDelta kMaxOCSPIntermediateUpdateAge =
-    base::TimeDelta::FromDays(366);
-
 // From RFC 6960:
 //
 // id-pkix-ocsp           OBJECT IDENTIFIER ::= { id-ad-ocsp }

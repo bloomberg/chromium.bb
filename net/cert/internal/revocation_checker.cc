@@ -206,8 +206,11 @@ void CheckValidatedChainRevocation(const ParsedCertificateList& certs,
     base::StringPiece stapled_ocsp =
         (i == 0) ? stapled_leaf_ocsp_response : base::StringPiece();
 
-    base::TimeDelta max_age =
-        (i == 0) ? kMaxOCSPLeafUpdateAge : kMaxOCSPIntermediateUpdateAge;
+    // TODO(https://crbug.com/971714): This applies Baseline Requirements max
+    // update age to all revocation checks, including locally trusted anchors.
+    // Confirm whether this causes any issues in enterprise deployments.
+    base::TimeDelta max_age = (i == 0) ? kMaxRevocationLeafUpdateAge
+                                       : kMaxRevocationIntermediateUpdateAge;
 
     // Check whether this certificate's revocation status complies with the
     // policy.
