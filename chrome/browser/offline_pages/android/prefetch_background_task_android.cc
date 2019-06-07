@@ -5,7 +5,6 @@
 
 #include <memory>
 
-#include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/profile_key_util.h"
@@ -27,9 +26,7 @@ namespace prefetch {
 // JNI call to start request processing in scheduled mode.
 static jboolean JNI_PrefetchBackgroundTask_StartPrefetchTask(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    // TODO(https://crbug.com/972218): remove unused param
-    const JavaParamRef<jstring>& gcm_token) {
+    const JavaParamRef<jobject>& jcaller) {
   ProfileKey* profile_key = ::android::GetMainProfileKey();
   DCHECK(profile_key);
 

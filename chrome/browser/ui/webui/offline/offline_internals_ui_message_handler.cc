@@ -34,7 +34,6 @@
 #include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
-#include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -266,8 +265,8 @@ void OfflineInternalsUIMessageHandler::HandleScheduleNwake(
 
   if (prefetch_service_) {
     prefetch_service_->ForceRefreshSuggestions();
-    prefetch_service_->GetPrefetchBackgroundTaskHandler()->EnsureTaskScheduled(
-        prefetch_service_->GetCachedGCMToken());
+    prefetch_service_->GetPrefetchBackgroundTaskHandler()
+        ->EnsureTaskScheduled();
     ResolveJavascriptCallback(*callback_id, base::Value("Scheduled."));
   } else {
     RejectJavascriptCallback(*callback_id,

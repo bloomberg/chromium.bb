@@ -91,8 +91,7 @@ void PrefetchDispatcherImpl::EnsureTaskScheduled() {
     background_task_->SetReschedule(
         PrefetchBackgroundTaskRescheduleType::RESCHEDULE_WITHOUT_BACKOFF);
   } else {
-    service_->GetPrefetchBackgroundTaskHandler()->EnsureTaskScheduled(
-        service_->GetCachedGCMToken());
+    service_->GetPrefetchBackgroundTaskHandler()->EnsureTaskScheduled();
   }
 }
 

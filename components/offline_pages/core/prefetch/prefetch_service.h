@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;

@@ -102,7 +102,6 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
             "https://www.nytimes.com/2017/11/10/world/asia/trump-apec-asia-trade.html";
     private static final String THUMBNAIL_URL2 =
             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh1tEaJT-br6mBxM89U3vgjDldwb9L_baZszhstAGMQh3_fuG13ax3C9ewR2tq45tbZj74CHl3KNU";
-    private static final String GCM_TOKEN = "dummy_gcm_token";
 
     // Returns a small PNG image data.
     private static byte[] testImageData() {
@@ -256,9 +255,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
         PrefetchBackgroundTask task = new PrefetchBackgroundTask();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TaskParameters.Builder builder =
-                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
-                            .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(
-                                    GCM_TOKEN));
+                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
             PrefetchBackgroundTask.skipConditionCheckingForTesting();
             task.onStartTask(ContextUtils.getApplicationContext(), builder.build(),
                     (boolean needsReschedule) -> { finished.notifyCalled(); });

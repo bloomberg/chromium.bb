@@ -38,10 +38,8 @@ PrefetchBackgroundTask::~PrefetchBackgroundTask() {
       break;
   }
 
-  if (reschedule_type_ != PrefetchBackgroundTaskRescheduleType::NO_RESCHEDULE) {
-    DCHECK(!service_->GetCachedGCMToken().empty());
-    handler->EnsureTaskScheduled(service_->GetCachedGCMToken());
-  }
+  if (reschedule_type_ != PrefetchBackgroundTaskRescheduleType::NO_RESCHEDULE)
+    handler->EnsureTaskScheduled();
 }
 
 void PrefetchBackgroundTask::SetReschedule(
