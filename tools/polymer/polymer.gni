@@ -1,0 +1,31 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+template("js_html_template") {
+  action(target_name + "_js_html_template") {
+    script = "//tools/polymer/polymer.py"
+
+    inputs = [
+      invoker.js_file,
+      invoker.html_file,
+    ]
+
+    outputs = [
+      "$target_gen_dir/" + invoker.js_file,
+    ]
+
+    args = [
+      "--js_file",
+      invoker.js_file,
+      "--html_file",
+      invoker.html_file,
+      "--html_type",
+      invoker.html_type,
+      "--in_folder",
+      rebase_path(".", root_build_dir),
+      "--out_folder",
+      rebase_path(target_gen_dir, root_build_dir),
+    ]
+  }
+}
