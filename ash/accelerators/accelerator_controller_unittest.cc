@@ -22,6 +22,7 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -52,6 +53,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -1823,6 +1826,8 @@ TEST_F(AcceleratorControllerGuestModeTest, IncognitoWindowDisabled) {
 
 namespace {
 
+constexpr char kUserEmail[] = "user@magnifier";
+
 class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
  public:
   MagnifiersAcceleratorsTester() = default;
@@ -1836,13 +1841,55 @@ class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
     return Shell::Get()->magnification_controller();
   }
 
+  PrefService* user_pref_service() {
+    return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
+        AccountId::FromUserEmail(kUserEmail));
+  }
+
+  void SetUp() override {
+    AcceleratorControllerTest::SetUp();
+
+    // Create user session and simulate its login.
+    SimulateUserLogin(kUserEmail);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MagnifiersAcceleratorsTester);
 };
 
 }  // namespace
 
+// TODO (afakhry): Remove this class after refactoring MagnificationManager.
+// Mocked chrome/browser/chromeos/accessibility/magnification_manager.cc
+class FakeMagnificationManager {
+ public:
+  FakeMagnificationManager() = default;
+
+  void SetPrefs(PrefService* prefs) {
+    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+    pref_change_registrar_->Init(prefs);
+    pref_change_registrar_->Add(
+        prefs::kAccessibilityScreenMagnifierEnabled,
+        base::BindRepeating(&FakeMagnificationManager::UpdateMagnifierFromPrefs,
+                            base::Unretained(this)));
+    prefs_ = prefs;
+  }
+
+  void UpdateMagnifierFromPrefs() {
+    Shell::Get()->magnification_controller()->SetEnabled(
+        prefs_->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled));
+  }
+
+ private:
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  PrefService* prefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeMagnificationManager);
+};
+
 TEST_F(MagnifiersAcceleratorsTester, TestToggleFullscreenMagnifier) {
+  FakeMagnificationManager manager;
+  manager.SetPrefs(user_pref_service());
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
   EXPECT_FALSE(IsConfirmationDialogOpen());

@@ -3940,6 +3940,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeNone) {
   // Verify that the screen magnifier cannot be enabled manually anymore.
   magnification_manager->SetMagnifierEnabled(true);
   EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
+  // Verify that the docked magnifier cannot be enabled manually anymore.
+  magnification_manager->SetDockedMagnifierEnabled(true);
+  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeFull) {
@@ -3962,6 +3965,29 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeFull) {
   // Verify that the screen magnifier cannot be disabled manually anymore.
   magnification_manager->SetMagnifierEnabled(false);
   EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeDocked) {
+  // Verifies that the docked magnifier accessibility feature can be
+  // controlled through policy.
+  chromeos::MagnificationManager* magnification_manager =
+      chromeos::MagnificationManager::Get();
+
+  // Verify that the docked magnifier is initially disabled
+  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(chromeos::MAGNIFIER_DOCKED),
+               nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(magnification_manager->IsDockedMagnifierEnabled());
+
+  // Verify that the docked magnifier cannot be disabled manually anymore.
+  magnification_manager->SetDockedMagnifierEnabled(false);
+  EXPECT_TRUE(magnification_manager->IsDockedMagnifierEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, AccessibilityVirtualKeyboardEnabled) {
@@ -4013,31 +4039,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, StickyKeysEnabled) {
   EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, DockedMagnifierEnabled) {
-  // Verifies that the docked magnifier accessibility feature can be
-  // controlled through policy.
-  chromeos::MagnificationManager* magnification_manager =
-      chromeos::MagnificationManager::Get();
-
-  // Verify that the docked magnifier is initially disabled
-  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
-
-  // Manually enable the docked magnifier.
-  magnification_manager->SetDockedMagnifierEnabled(true);
-  EXPECT_TRUE(magnification_manager->IsDockedMagnifierEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kDockedMagnifierEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
-
-  // Verify that the docked magnifier cannot be enabled manually anymore.
-  magnification_manager->SetDockedMagnifierEnabled(true);
-  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
-}
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();

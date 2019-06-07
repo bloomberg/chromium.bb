@@ -617,7 +617,6 @@
         'HighContrastEnabled',
         'VirtualKeyboardEnabled',
         'StickyKeysEnabled',
-        'DockedMagnifierEnabled',
         'KeyboardDefaultToFunctionKeys',
         'ScreenMagnifierType',
         'DeviceLoginScreenDefaultLargeCursorEnabled',
@@ -9359,30 +9358,6 @@
           If this policy is left unset, the sticky keys is disabled initially but can be enabled by the user anytime.'''
     },
     {
-      'name': 'DockedMagnifierEnabled',
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:76-'],
-      'features': {
-        'can_be_recommended': True,
-        'dynamic_refresh': True,
-        'per_profile': True,
-      },
-      'example_value': True,
-      'id': 562,
-      'caption': '''Enable docked magnifier''',
-      'tags': [],
-      'desc': '''Enable the docked magnifier accessibility feature.
-
-          If this policy is set to true, the docked magnifier will always be enabled.
-
-          If this policy is set to false, the docked magnifier will always be disabled.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, the docked magnifier is disabled initially but can be enabled by the user anytime.'''
-    },
-    {
       'name': 'KeyboardDefaultToFunctionKeys',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -9407,7 +9382,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1 ],
+        'enum': [ 0, 1, 2 ],
       },
       'items': [
         {
@@ -9419,6 +9394,11 @@
           'name': 'Full-screen',
           'value': 1,
           'caption': '''Full-screen magnifier enabled''',
+        },
+        {
+          'name': 'Docked',
+          'value': 2,
+          'caption': '''Docked magnifier enabled''',
         },
       ],
       'supported_on': ['chrome_os:29-'],
@@ -9534,7 +9514,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1 ],
+        'enum': [ 0, 1, 2 ],
       },
       'items': [
         {
@@ -9546,6 +9526,11 @@
           'name': 'Full-screen',
           'value': 1,
           'caption': '''Full-screen magnifier enabled''',
+        },
+        {
+          'name': 'Docked',
+          'value': 2,
+          'caption': '''Docked magnifier enabled''',
         },
       ],
       'supported_on': ['chrome_os:29-'],
@@ -16851,7 +16836,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [412, 546],
+  'deleted_policy_ids': [412, 546, 562],
   'highest_id_currently_used': 569,
   'highest_atomic_group_id_currently_used': 37
 }

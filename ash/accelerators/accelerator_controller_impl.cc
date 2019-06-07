@@ -918,7 +918,6 @@ void SetFullscreenMagnifierEnabled(bool enabled) {
   // prefs iteself.
   Shell* shell = Shell::Get();
   shell->accessibility_controller()->SetFullscreenMagnifierEnabled(enabled);
-  shell->magnification_controller()->SetEnabled(enabled);
 }
 
 void SetHighContrastEnabled(bool enabled) {
