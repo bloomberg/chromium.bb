@@ -249,7 +249,7 @@ void BluetoothDeviceAndroid::CreateGattRemoteService(
   std::string instance_id_string =
       base::android::ConvertJavaStringToUTF8(env, instance_id);
 
-  if (base::ContainsKey(gatt_services_, instance_id_string))
+  if (base::Contains(gatt_services_, instance_id_string))
     return;
 
   std::unique_ptr<BluetoothRemoteGattServiceAndroid> service =

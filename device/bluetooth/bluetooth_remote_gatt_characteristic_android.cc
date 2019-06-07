@@ -236,7 +236,7 @@ void BluetoothRemoteGattCharacteristicAndroid::CreateGattRemoteDescriptor(
   std::string instanceIdString =
       base::android::ConvertJavaStringToUTF8(env, instanceId);
 
-  DCHECK(!base::ContainsKey(descriptors_, instanceIdString));
+  DCHECK(!base::Contains(descriptors_, instanceIdString));
   AddDescriptor(BluetoothRemoteGattDescriptorAndroid::Create(
       instanceIdString, bluetooth_gatt_descriptor_wrapper,
       chrome_bluetooth_device));

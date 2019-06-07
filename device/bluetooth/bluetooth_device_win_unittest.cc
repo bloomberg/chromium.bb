@@ -88,8 +88,8 @@ TEST_F(BluetoothDeviceWinTest, GetUUIDs) {
   BluetoothDevice::UUIDSet uuids = device_->GetUUIDs();
 
   EXPECT_EQ(2u, uuids.size());
-  EXPECT_TRUE(base::ContainsKey(uuids, kTestAudioSdpUuid));
-  EXPECT_TRUE(base::ContainsKey(uuids, kTestVideoSdpUuid));
+  EXPECT_TRUE(base::Contains(uuids, kTestAudioSdpUuid));
+  EXPECT_TRUE(base::Contains(uuids, kTestVideoSdpUuid));
 
   uuids = empty_device_->GetUUIDs();
   EXPECT_EQ(0u, uuids.size());

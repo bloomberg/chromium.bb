@@ -107,7 +107,7 @@ bool BluetoothAdapterFactoryWrapper::HasAdapter(
     BluetoothAdapter::Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return base::ContainsKey(adapter_observers_, observer);
+  return base::Contains(adapter_observers_, observer);
 }
 
 void BluetoothAdapterFactoryWrapper::AddAdapterObserver(

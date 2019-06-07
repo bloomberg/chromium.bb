@@ -77,10 +77,10 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
       // For LE devices, check the service UUID to determine if it supports HID
       // or second factor authenticator (security key).
       case BLUETOOTH_TRANSPORT_LE:
-        if (base::ContainsKey(device->GetUUIDs(),
-                              device::BluetoothUUID(kHIDServiceUUID)) ||
-            base::ContainsKey(device->GetUUIDs(),
-                              device::BluetoothUUID(kSecurityKeyServiceUUID))) {
+        if (base::Contains(device->GetUUIDs(),
+                           device::BluetoothUUID(kHIDServiceUUID)) ||
+            base::Contains(device->GetUUIDs(),
+                           device::BluetoothUUID(kSecurityKeyServiceUUID))) {
           result.push_back(device);
         }
         break;

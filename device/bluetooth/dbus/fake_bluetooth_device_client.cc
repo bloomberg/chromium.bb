@@ -711,7 +711,7 @@ void FakeBluetoothDeviceClient::SetSimulationIntervalMs(int interval_ms) {
 void FakeBluetoothDeviceClient::CreateDevice(
     const dbus::ObjectPath& adapter_path,
     const dbus::ObjectPath& device_path) {
-  if (base::ContainsValue(device_list_, device_path))
+  if (base::Contains(device_list_, device_path))
     return;
 
   std::unique_ptr<Properties> properties(
@@ -846,7 +846,7 @@ void FakeBluetoothDeviceClient::CreateDeviceWithProperties(
     const dbus::ObjectPath& adapter_path,
     const IncomingDeviceProperties& props) {
   dbus::ObjectPath device_path(props.device_path);
-  if (base::ContainsValue(device_list_, device_path))
+  if (base::Contains(device_list_, device_path))
     return;
 
   std::unique_ptr<Properties> properties(
@@ -1902,7 +1902,7 @@ void FakeBluetoothDeviceClient::CreateTestDevice(
     base::Base64Encode(base::RandBytesAsString(10), &id);
     base::RemoveChars(id, "+/=", &id);
     device_path = dbus::ObjectPath(adapter_path.value() + "/dev" + id);
-  } while (base::ContainsValue(device_list_, device_path));
+  } while (base::Contains(device_list_, device_path));
 
   std::unique_ptr<Properties> properties(
       new Properties(base::Bind(&FakeBluetoothDeviceClient::OnPropertyChanged,
