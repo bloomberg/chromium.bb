@@ -31,6 +31,7 @@ class Event;
 namespace views {
 class EditableComboboxMenuModel;
 class EditableComboboxListener;
+class EditableComboboxPreTargetHandler;
 class MenuRunner;
 class Textfield;
 
@@ -104,6 +105,7 @@ class VIEWS_EXPORT EditableCombobox : public View,
 
  private:
   class EditableComboboxMenuModel;
+  class EditableComboboxPreTargetHandler;
 
   void CloseMenu();
 
@@ -141,6 +143,11 @@ class VIEWS_EXPORT EditableCombobox : public View,
 
   // The EditableComboboxMenuModel used by |menu_runner_|.
   std::unique_ptr<EditableComboboxMenuModel> menu_model_;
+
+  // Pre-target handler that closes the menu when press events happen in the
+  // root view (outside of the open menu's boundaries) but not inside the
+  // textfield.
+  std::unique_ptr<EditableComboboxPreTargetHandler> pre_target_handler_;
 
   // Typography context for the text written in the textfield and the options
   // shown in the drop-down menu.

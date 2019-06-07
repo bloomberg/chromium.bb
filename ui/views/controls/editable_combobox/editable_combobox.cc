@@ -249,6 +249,51 @@ class EditableCombobox::EditableComboboxMenuModel
   DISALLOW_COPY_AND_ASSIGN(EditableComboboxMenuModel);
 };
 
+// This class adds itself as the pre-target handler for the RootView of the
+// EditableCombobox. We use it to close the menu when press events happen in the
+// RootView but not inside the EditableComboobox's textfield.
+class EditableCombobox::EditableComboboxPreTargetHandler
+    : public ui::EventHandler {
+ public:
+  EditableComboboxPreTargetHandler(EditableCombobox* owner, View* root_view)
+      : owner_(owner), root_view_(root_view) {
+    root_view_->AddPreTargetHandler(this);
+  }
+
+  ~EditableComboboxPreTargetHandler() override { StopObserving(); }
+
+  // ui::EventHandler overrides.
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    if (event->type() == ui::ET_MOUSE_PRESSED &&
+        event->flags() == event->changed_button_flags())
+      HandlePressEvent(event->root_location());
+  }
+  void OnTouchEvent(ui::TouchEvent* event) override {
+    if (event->type() == ui::ET_TOUCH_PRESSED)
+      HandlePressEvent(event->root_location());
+  }
+
+ private:
+  void HandlePressEvent(const gfx::Point& root_location) {
+    View* handler = root_view_->GetEventHandlerForPoint(root_location);
+    if (handler == owner_->textfield_ || handler == owner_->arrow_)
+      return;
+    owner_->CloseMenu();
+  }
+
+  void StopObserving() {
+    if (!root_view_)
+      return;
+    root_view_->RemovePreTargetHandler(this);
+    root_view_ = nullptr;
+  }
+
+  EditableCombobox* owner_;
+  View* root_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(EditableComboboxPreTargetHandler);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // EditableCombobox, public, non-overridden methods:
 EditableCombobox::EditableCombobox(
@@ -423,6 +468,7 @@ void EditableCombobox::ButtonPressed(Button* sender, const ui::Event& event) {
 
 void EditableCombobox::CloseMenu() {
   menu_runner_.reset();
+  pre_target_handler_.reset();
 }
 
 void EditableCombobox::OnItemSelected(int index) {
@@ -465,6 +511,15 @@ void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   }
   if (!textfield_->HasFocus() || (menu_runner_ && menu_runner_->IsRunning()))
     return;
+
+  // Since we don't capture the mouse, we want to see the events that happen in
+  // the EditableCombobox's RootView to get a chance to close the menu if they
+  // happen outside |textfield_|. Events that happen over the menu belong to
+  // another Widget and they don't go through this pre-target handler.
+  // Events that happen outside both the menu and the RootView cause
+  // OnViewBlurred to be called, which also closes the menu.
+  pre_target_handler_ = std::make_unique<EditableComboboxPreTargetHandler>(
+      this, GetWidget()->GetRootView());
 
   gfx::Rect local_bounds = textfield_->GetLocalBounds();
   gfx::Point menu_position(local_bounds.origin());
