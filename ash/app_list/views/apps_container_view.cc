@@ -450,6 +450,7 @@ void AppsContainerView::SetShowState(ShowState show_state,
 
   switch (show_state_) {
     case SHOW_APPS:
+      page_switcher_->set_can_process_events_within_subtree(true);
       folder_background_view_->SetVisible(false);
       apps_grid_view_->ResetForShowApps();
       if (show_apps_with_animation)
@@ -458,10 +459,12 @@ void AppsContainerView::SetShowState(ShowState show_state,
         app_list_folder_view_->HideViewImmediately();
       break;
     case SHOW_ACTIVE_FOLDER:
+      page_switcher_->set_can_process_events_within_subtree(false);
       folder_background_view_->SetVisible(true);
       app_list_folder_view_->ScheduleShowHideAnimation(true, false);
       break;
     case SHOW_ITEM_REPARENT:
+      page_switcher_->set_can_process_events_within_subtree(true);
       folder_background_view_->SetVisible(false);
       app_list_folder_view_->ScheduleShowHideAnimation(false, true);
       break;
