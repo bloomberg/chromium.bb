@@ -1427,13 +1427,14 @@ QuicChromiumClientSession::CreateIncomingReliableStreamImpl(
 
 void QuicChromiumClientSession::CloseStream(quic::QuicStreamId stream_id) {
   most_recent_stream_close_time_ = tick_clock_->NowTicks();
-  quic::QuicStream* stream = GetOrCreateStream(stream_id);
-  if (stream) {
-    logger_->UpdateReceivedFrameCounts(stream_id, stream->num_frames_received(),
-                                       stream->num_duplicate_frames_received());
+  auto it = dynamic_streams().find(stream_id);
+  if (it != dynamic_streams().end()) {
+    logger_->UpdateReceivedFrameCounts(
+        stream_id, it->second->num_frames_received(),
+        it->second->num_duplicate_frames_received());
     if (quic::QuicUtils::IsServerInitiatedStreamId(
             connection()->transport_version(), stream_id)) {
-      bytes_pushed_count_ += stream->stream_bytes_read();
+      bytes_pushed_count_ += it->second->stream_bytes_read();
     }
   }
   quic::QuicSpdySession::CloseStream(stream_id);
