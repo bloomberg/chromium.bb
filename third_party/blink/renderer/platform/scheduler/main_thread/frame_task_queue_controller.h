@@ -78,6 +78,10 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   // Return the best effort task queue and create it if it doesn't exist.
   scoped_refptr<MainThreadTaskQueue> BestEffortTaskQueue();
 
+  // Return the continue script loading task queue and create it if it doesn't
+  // exist.
+  scoped_refptr<MainThreadTaskQueue> VeryHighPriorityTaskQueue();
+
   enum WebSchedulingTaskQueueType : unsigned {
     kWebSchedulingUserVisiblePriority,
     kWebSchedulingBestEffortPriority,
@@ -146,6 +150,8 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   scoped_refptr<MainThreadTaskQueue> inspector_task_queue_;
 
   scoped_refptr<MainThreadTaskQueue> best_effort_task_queue_;
+
+  scoped_refptr<MainThreadTaskQueue> very_high_priority_task_queue_;
 
   scoped_refptr<MainThreadTaskQueue>
       web_scheduling_task_queues_[kWebSchedulingPriorityCount];

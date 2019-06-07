@@ -213,6 +213,9 @@ enum class TaskType : unsigned char {
   // Legacy IPCs that are freezable.
   kInternalFreezableIPC = 64,
 
+  // Task used to split a script loading task for cooperative scheduling
+  kInternalContinueScriptLoading = 65,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -236,7 +239,7 @@ enum class TaskType : unsigned char {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 65,
+  kCount = 66,
 };
 
 }  // namespace blink

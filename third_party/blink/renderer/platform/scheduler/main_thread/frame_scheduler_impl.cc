@@ -458,6 +458,7 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalIntersectionObserver:
+    case TaskType::kInternalContinueScriptLoading:
       return PausableTaskQueueTraits();
     case TaskType::kInternalFreezableIPC:
       return FreezableTaskQueueTraits();
@@ -510,6 +511,8 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
 scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
     TaskType type) {
   switch (type) {
+    case TaskType::kInternalContinueScriptLoading:
+      return frame_task_queue_controller_->VeryHighPriorityTaskQueue();
     case TaskType::kInternalLoading:
     case TaskType::kNetworking:
     case TaskType::kNetworkingWithURLLoaderAnnotation:

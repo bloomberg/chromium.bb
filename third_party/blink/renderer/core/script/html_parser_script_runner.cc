@@ -299,7 +299,14 @@ void HTMLParserScriptRunner::PendingScriptFinished(
     return;
   }
 
-  host_->NotifyScriptLoaded(pending_script);
+  // Posting the script execution part to a new task so that we can allow
+  // yielding for cooperative scheduling. Cooperative scheduling requires that
+  // the Blink C++ stack be thin when it executes JavaScript.
+  document_->GetTaskRunner(TaskType::kInternalContinueScriptLoading)
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&HTMLParserScriptRunnerHost::NotifyScriptLoaded,
+                           WrapPersistent(host_.Get()),
+                           WrapPersistent(pending_script)));
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#scriptEndTag">

@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -1070,6 +1071,10 @@ void HTMLDocumentParser::AppendCurrentInputStreamToPreloadScannerAndScan() {
 void HTMLDocumentParser::NotifyScriptLoaded(PendingScript* pending_script) {
   DCHECK(script_runner_);
   DCHECK(!IsExecutingScript());
+
+  scheduler::CooperativeSchedulingManager::AllowedStackScope
+      whitelisted_stack_scope(
+          scheduler::CooperativeSchedulingManager::Instance());
 
   if (IsStopped()) {
     return;

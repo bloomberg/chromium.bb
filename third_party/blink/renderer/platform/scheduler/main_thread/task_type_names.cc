@@ -133,6 +133,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalNavigationAssociated";
     case TaskType::kInternalFreezableIPC:
       return "InternalFreezableIPC";
+    case TaskType::kInternalContinueScriptLoading:
+      return "InternalContinueScriptLoading";
     case TaskType::kCount:
       return "Count";
   }

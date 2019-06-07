@@ -49329,6 +49329,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="61" label="InternalContentCapture"/>
   <int value="62" label="MainThreadTaskQueueMemoryPurge"/>
   <int value="63" label="InternalNavigation"/>
+  <int value="64" label="InternalContinueScriptLoading"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">
