@@ -267,15 +267,8 @@ template("mac_toolchain") {
       rspfile = "{{output}}.rsp"
       rspfile_content = "{{inputs_newline}}"
 
-      # libtool is part of the default path at /usr/bin/libtool. That binary is
-      # just a shim that calls out to xcrun to find the actual libtool. If we're
-      # using hermetic xcode, then we can explicitly specify the path to avoid
-      # invoking xcrun.
-      if (use_system_xcode) {
-        libtool = "libtool"
-      } else {
-        libtool = "$hermetic_xcode_path/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool"
-      }
+      # Specify explicit path for libtool.
+      libtool = "$mac_bin_path" + "libtool"
       command = "$env_wrapper rm -f {{output}} && TOOL_VERSION=${tool_versions.filter_libtool} python $script $libtool -static {{arflags}} -o {{output}} -filelist $rspfile"
       description = "LIBTOOL-STATIC {{output}}"
       outputs = [
