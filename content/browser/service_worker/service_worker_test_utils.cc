@@ -385,6 +385,7 @@ void MockServiceWorkerResponseReader::ReadData(
   DCHECK(!expected_reads_.empty());
   ExpectedRead expected = expected_reads_.front();
   EXPECT_FALSE(expected.info);
+  EXPECT_LE(static_cast<int>(expected.len), buf_len);
   if (expected.async) {
     pending_callback_ = std::move(callback);
     pending_buffer_ = buf;

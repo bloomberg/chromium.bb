@@ -345,17 +345,6 @@ void ServiceWorkerSingleScriptUpdateChecker::OnWriteHeadersComplete(
     return;
   }
 
-  // Response body is empty.
-  if (network_loader_state_ ==
-          ServiceWorkerNewScriptLoader::NetworkLoaderState::kCompleted &&
-      body_writer_state_ ==
-          ServiceWorkerNewScriptLoader::WriterState::kCompleted) {
-    // Compare the cached data with an empty data to notify |cache_writer_|
-    // the end of the comparison.
-    CompareData(nullptr /* pending_buffer */, 0 /* bytes_available */);
-    return;
-  }
-
   MaybeStartNetworkConsumerHandleWatcher();
 }
 
@@ -422,9 +411,14 @@ void ServiceWorkerSingleScriptUpdateChecker::OnNetworkDataAvailable(
   NOTREACHED() << static_cast<int>(result);
 }
 
+// |pending_buffer| is a buffer keeping a Mojo data pipe which is going to be
+// read by a cache writer. It should be kept alive until the read is done. It's
+// nullptr when there is no data to be read, and that means the body from the
+// network reaches the end. In that case, |bytes_to_compare| is zero.
 void ServiceWorkerSingleScriptUpdateChecker::CompareData(
     scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer,
     uint32_t bytes_to_compare) {
+  DCHECK(pending_buffer || bytes_to_compare == 0);
   auto buffer = base::MakeRefCounted<WrappedIOBuffer>(
       pending_buffer ? pending_buffer->buffer() : nullptr);
 
@@ -435,11 +429,6 @@ void ServiceWorkerSingleScriptUpdateChecker::CompareData(
           &ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete,
           weak_factory_.GetWeakPtr(), pending_buffer, bytes_to_compare));
 
-  if (pending_buffer) {
-    pending_buffer->CompleteRead(bytes_to_compare);
-    network_consumer_ = pending_buffer->ReleaseHandle();
-  }
-
   if (error == net::ERR_IO_PENDING && !cache_writer_->is_pausing()) {
     // OnCompareDataComplete() will be called asynchronously.
     return;
@@ -449,10 +438,25 @@ void ServiceWorkerSingleScriptUpdateChecker::CompareData(
   OnCompareDataComplete(std::move(pending_buffer), bytes_to_compare, error);
 }
 
+// |pending_buffer| is a buffer passed from CompareData(). Please refer to the
+// comment on CompareData(). |error| is the result of the comparison done by the
+// cache writer (which is actually reading and not yet writing to the cache,
+// since it's in the comparison phase). It's net::OK when the body from the
+// network and from the disk cache are the same, net::ERR_IO_PENDING if it
+// detects a change in the script, or other error code if something went wrong
+// reading from the disk cache.
 void ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete(
     scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer,
     uint32_t bytes_written,
     net::Error error) {
+  DCHECK(pending_buffer || bytes_written == 0);
+  if (pending_buffer) {
+    // We consumed |bytes_written| bytes of data from the network so call
+    // CompleteRead(), regardless of what |error| is.
+    pending_buffer->CompleteRead(bytes_written);
+    network_consumer_ = pending_buffer->ReleaseHandle();
+  }
+
   if (cache_writer_->is_pausing()) {
     // |cache_writer_| can be pausing only when it finds difference between
     // stored body and network body.
@@ -460,11 +464,21 @@ void ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete(
     Succeed(Result::kDifferent);
     return;
   }
-  if (!pending_buffer || error != net::OK) {
+
+  if (error != net::OK) {
+    // Something went wrong reading from the disk cache.
+    Fail(blink::ServiceWorkerStatusCode::kErrorDiskCache,
+         kServiceWorkerFetchScriptError);
+    return;
+  }
+
+  if (bytes_written == 0) {
+    // All data has been read. If we reach here without any error, the script
+    // from the network was identical to the one in the disk cache.
     Succeed(Result::kIdentical);
     return;
   }
-  DCHECK(pending_buffer);
+
   network_watcher_.ArmOrNotify();
 }
 
