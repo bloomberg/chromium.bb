@@ -124,6 +124,150 @@ AXPlatformNodeAuraLinux* g_current_selected = nullptr;
 // null if if the AtkObject is destroyed.
 AtkObject* g_active_top_level_frame = nullptr;
 
+// TODO(aleventhal) Remove this and use atk_role_get_name() once the following
+// GNOME bug is fixed: https://bugzilla.gnome.org/show_bug.cgi?id=795983
+const char* const kRoleNames[] = {
+    "invalid",  // ATK_ROLE_INVALID.
+    "accelerator label",
+    "alert",
+    "animation",
+    "arrow",
+    "calendar",
+    "canvas",
+    "check box",
+    "check menu item",
+    "color chooser",
+    "column header",
+    "combo box",
+    "dateeditor",
+    "desktop icon",
+    "desktop frame",
+    "dial",
+    "dialog",
+    "directory pane",
+    "drawing area",
+    "file chooser",
+    "filler",
+    "fontchooser",
+    "frame",
+    "glass pane",
+    "html container",
+    "icon",
+    "image",
+    "internal frame",
+    "label",
+    "layered pane",
+    "list",
+    "list item",
+    "menu",
+    "menu bar",
+    "menu item",
+    "option pane",
+    "page tab",
+    "page tab list",
+    "panel",
+    "password text",
+    "popup menu",
+    "progress bar",
+    "push button",
+    "radio button",
+    "radio menu item",
+    "root pane",
+    "row header",
+    "scroll bar",
+    "scroll pane",
+    "separator",
+    "slider",
+    "split pane",
+    "spin button",
+    "statusbar",
+    "table",
+    "table cell",
+    "table column header",
+    "table row header",
+    "tear off menu item",
+    "terminal",
+    "text",
+    "toggle button",
+    "tool bar",
+    "tool tip",
+    "tree",
+    "tree table",
+    "unknown",
+    "viewport",
+    "window",
+    "header",
+    "footer",
+    "paragraph",
+    "ruler",
+    "application",
+    "autocomplete",
+    "edit bar",
+    "embedded component",
+    "entry",
+    "chart",
+    "caption",
+    "document frame",
+    "heading",
+    "page",
+    "section",
+    "redundant object",
+    "form",
+    "link",
+    "input method window",
+    "table row",
+    "tree item",
+    "document spreadsheet",
+    "document presentation",
+    "document text",
+    "document web",
+    "document email",
+    "comment",
+    "list box",
+    "grouping",
+    "image map",
+    "notification",
+    "info bar",
+    "level bar",
+    "title bar",
+    "block quote",
+    "audio",
+    "video",
+    "definition",
+    "article",
+    "landmark",
+    "log",
+    "marquee",
+    "math",
+    "rating",
+    "timer",
+    "description list",
+    "description term",
+    "description value",
+    "static",
+    "math fraction",
+    "math root",
+    "subscript",
+    "superscript",
+    "footnote",  // ATK_ROLE_FOOTNOTE = 122.
+};
+
+#if defined(ATK_216)
+constexpr AtkRole kStaticRole = ATK_ROLE_STATIC;
+constexpr AtkRole kSubscriptRole = ATK_ROLE_SUBSCRIPT;
+constexpr AtkRole kSuperscriptRole = ATK_ROLE_SUPERSCRIPT;
+#else
+constexpr AtkRole kStaticRole = ATK_ROLE_TEXT;
+constexpr AtkRole kSubscriptRole = ATK_ROLE_TEXT;
+constexpr AtkRole kSuperscriptRole = ATK_ROLE_TEXT;
+#endif
+
+#if defined(ATK_226)
+constexpr AtkRole kAtkFootnoteRole = ATK_ROLE_FOOTNOTE;
+#else
+constexpr AtkRole kAtkFootnoteRole = ATK_ROLE_LIST_ITEM;
+#endif
+
 // AtkTableCell was introduced in ATK 2.12. Ubuntu Trusty has ATK 2.10.
 // Compile-time checks are in place for ATK versions that are older than 2.12.
 // However, we also need runtime checks in case the version we are building
@@ -134,36 +278,45 @@ AtkObject* g_active_top_level_frame = nullptr;
 // The definitions below ensure we have no missing symbols. Note that in
 // environments where we have ATK > 2.12, the definitions of AtkTableCell and
 // AtkTableCellIface below are overridden by the runtime version.
-// TODO(accessibility) Remove these definitions, along with the use of
-// LoadTableCellMethods() when 2.12 is the minimum supported version.
-typedef struct _AtkTableCell AtkTableCell;
-typedef struct _AtkTableCellIface AtkTableCellIface;
-typedef GType (*cell_get_type_func)();
-typedef GPtrArray* (*get_column_header_cells_func)(AtkTableCell* cell);
-typedef GPtrArray* (*get_row_header_cells_func)(AtkTableCell* cell);
-typedef bool (*get_row_column_span_func)(AtkTableCell* cell,
-                                         gint* row,
-                                         gint* column,
-                                         gint* row_span,
-                                         gint* col_span);
+// TODO(accessibility) Remove AtkTableCellInterface when 2.12 is the minimum
+// supported version.
+struct AtkTableCellInterface {
+  typedef struct _AtkTableCell AtkTableCell;
+  typedef struct _AtkTableCellIface AtkTableCellIface;
+  typedef GType (*GetTypeFunc)();
+  typedef GPtrArray* (*GetColumnHeaderCellsFunc)(AtkTableCell* cell);
+  typedef GPtrArray* (*GetRowHeaderCellsFunc)(AtkTableCell* cell);
+  typedef bool (*GetRowColumnSpanFunc)(AtkTableCell* cell,
+                                       gint* row,
+                                       gint* column,
+                                       gint* row_span,
+                                       gint* col_span);
 
-cell_get_type_func cell_get_type = nullptr;
-get_column_header_cells_func get_column_header_cells = nullptr;
-get_row_header_cells_func get_row_header_cells = nullptr;
-get_row_column_span_func get_row_column_span = nullptr;
+  GetTypeFunc GetType = nullptr;
+  GetColumnHeaderCellsFunc GetColumnHeaderCells = nullptr;
+  GetRowHeaderCellsFunc GetRowHeaderCells = nullptr;
+  GetRowColumnSpanFunc GetRowColumnSpan = nullptr;
+  bool initialized = false;
 
-bool LoadTableCellMethods() {
-  cell_get_type = reinterpret_cast<cell_get_type_func>(
-      dlsym(RTLD_DEFAULT, "atk_table_cell_get_type"));
-  get_column_header_cells = reinterpret_cast<get_column_header_cells_func>(
-      dlsym(RTLD_DEFAULT, "atk_table_cell_get_column_header_cells"));
-  get_row_header_cells = reinterpret_cast<get_row_header_cells_func>(
-      dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_header_cells"));
-  get_row_column_span = reinterpret_cast<get_row_column_span_func>(
-      dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span"));
+  static base::Optional<AtkTableCellInterface> Get() {
+    static base::Optional<AtkTableCellInterface> interface = base::nullopt;
+    if (interface.has_value())
+      return interface->GetType ? interface : base::nullopt;
 
-  return cell_get_type;
-}
+    interface.emplace();
+    interface->GetType = reinterpret_cast<GetTypeFunc>(
+        dlsym(RTLD_DEFAULT, "atk_table_cell_get_type"));
+    interface->GetColumnHeaderCells =
+        reinterpret_cast<GetColumnHeaderCellsFunc>(
+            dlsym(RTLD_DEFAULT, "atk_table_cell_get_column_header_cells"));
+    interface->GetRowHeaderCells = reinterpret_cast<GetRowHeaderCellsFunc>(
+        dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_header_cells"));
+    interface->GetRowColumnSpan = reinterpret_cast<GetRowColumnSpanFunc>(
+        dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span"));
+    interface->initialized = true;
+    return interface->GetType ? interface : base::nullopt;
+  }
+};
 
 AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
     AtkObject* atk_object) {
@@ -364,149 +517,21 @@ AtkAttributeSet* PrependAtkAttributeToAtkAttributeSet(
   return g_slist_prepend(attribute_set, attribute);
 }
 
-// TODO(aleventhal) Remove this and use atk_role_get_name() once the following
-// GNOME bug is fixed: https://bugzilla.gnome.org/show_bug.cgi?id=795983
-const char* const kRoleNames[] = {
-    "invalid",  // ATK_ROLE_INVALID.
-    "accelerator label",
-    "alert",
-    "animation",
-    "arrow",
-    "calendar",
-    "canvas",
-    "check box",
-    "check menu item",
-    "color chooser",
-    "column header",
-    "combo box",
-    "dateeditor",
-    "desktop icon",
-    "desktop frame",
-    "dial",
-    "dialog",
-    "directory pane",
-    "drawing area",
-    "file chooser",
-    "filler",
-    "fontchooser",
-    "frame",
-    "glass pane",
-    "html container",
-    "icon",
-    "image",
-    "internal frame",
-    "label",
-    "layered pane",
-    "list",
-    "list item",
-    "menu",
-    "menu bar",
-    "menu item",
-    "option pane",
-    "page tab",
-    "page tab list",
-    "panel",
-    "password text",
-    "popup menu",
-    "progress bar",
-    "push button",
-    "radio button",
-    "radio menu item",
-    "root pane",
-    "row header",
-    "scroll bar",
-    "scroll pane",
-    "separator",
-    "slider",
-    "split pane",
-    "spin button",
-    "statusbar",
-    "table",
-    "table cell",
-    "table column header",
-    "table row header",
-    "tear off menu item",
-    "terminal",
-    "text",
-    "toggle button",
-    "tool bar",
-    "tool tip",
-    "tree",
-    "tree table",
-    "unknown",
-    "viewport",
-    "window",
-    "header",
-    "footer",
-    "paragraph",
-    "ruler",
-    "application",
-    "autocomplete",
-    "edit bar",
-    "embedded component",
-    "entry",
-    "chart",
-    "caption",
-    "document frame",
-    "heading",
-    "page",
-    "section",
-    "redundant object",
-    "form",
-    "link",
-    "input method window",
-    "table row",
-    "tree item",
-    "document spreadsheet",
-    "document presentation",
-    "document text",
-    "document web",
-    "document email",
-    "comment",
-    "list box",
-    "grouping",
-    "image map",
-    "notification",
-    "info bar",
-    "level bar",
-    "title bar",
-    "block quote",
-    "audio",
-    "video",
-    "definition",
-    "article",
-    "landmark",
-    "log",
-    "marquee",
-    "math",
-    "rating",
-    "timer",
-    "description list",
-    "description term",
-    "description value",
-    "static",
-    "math fraction",
-    "math root",
-    "subscript",
-    "superscript",
-    "footnote",  // ATK_ROLE_FOOTNOTE = 122.
-};
+AtkObject* GetActiveDescendantOfCurrentFocused() {
+  if (!g_current_focused)
+    return nullptr;
 
-#if defined(ATK_216)
-constexpr AtkRole kStaticRole = ATK_ROLE_STATIC;
-constexpr AtkRole kSubscriptRole = ATK_ROLE_SUBSCRIPT;
-constexpr AtkRole kSuperscriptRole = ATK_ROLE_SUPERSCRIPT;
-#else
-constexpr AtkRole kStaticRole = ATK_ROLE_TEXT;
-constexpr AtkRole kSubscriptRole = ATK_ROLE_TEXT;
-constexpr AtkRole kSuperscriptRole = ATK_ROLE_TEXT;
-#endif
+  auto* node = AtkObjectToAXPlatformNodeAuraLinux(g_current_focused);
+  if (!node)
+    return nullptr;
 
-#if defined(ATK_226)
-constexpr AtkRole kAtkFootnoteRole = ATK_ROLE_FOOTNOTE;
-#else
-constexpr AtkRole kAtkFootnoteRole = ATK_ROLE_LIST_ITEM;
-#endif
+  int32_t id =
+      node->GetIntAttribute(ax::mojom::IntAttribute::kActivedescendantId);
+  if (auto* descendant = node->GetDelegate()->GetFromNodeID(id))
+    return descendant->GetNativeViewAccessible();
+
+  return nullptr;
+}
 
 namespace atk_component {
 
@@ -2123,10 +2148,14 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
   if (interface_mask_ & (1 << ATK_TABLE_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_TABLE, &atk_table::Info);
 
-  // Run-time check to ensure AtkTableCell is supported (requires ATK 2.12).
-  if (LoadTableCellMethods() &&
-      interface_mask_ & (1 << ATK_TABLE_CELL_INTERFACE))
-    g_type_add_interface_static(type, cell_get_type(), &atk_table_cell::Info);
+  if (interface_mask_ & (1 << ATK_TABLE_CELL_INTERFACE)) {
+    // Run-time check to ensure AtkTableCell is supported (requires ATK 2.12).
+    auto interface = AtkTableCellInterface::Get();
+    if (interface.has_value()) {
+      g_type_add_interface_static(type, interface->GetType(),
+                                  &atk_table_cell::Info);
+    }
+  }
 
   return type;
 }
@@ -2570,22 +2599,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
   }
 }
 
-static AtkObject* GetActiveDescendantOfCurrentFocused() {
-  if (!g_current_focused)
-    return nullptr;
-
-  auto* node = AtkObjectToAXPlatformNodeAuraLinux(g_current_focused);
-  if (!node)
-    return nullptr;
-
-  int32_t id =
-      node->GetIntAttribute(ax::mojom::IntAttribute::kActivedescendantId);
-  if (auto* descendant = node->GetDelegate()->GetFromNodeID(id))
-    return descendant->GetNativeViewAccessible();
-
-  return nullptr;
-}
-
 void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   AXNodeData data = GetData();
 
@@ -2993,12 +3006,13 @@ void AXPlatformNodeAuraLinux::AddAccessibilityTreeProperties(
     int row, col, row_span, col_span;
     GPtrArray* col_headers;
     GPtrArray* row_headers;
-    if (cell_get_type) {
+    auto cell_interface = AtkTableCellInterface::Get();
+    if (cell_interface.has_value()) {
       AtkTableCell* cell = G_TYPE_CHECK_INSTANCE_CAST(
-          (atk_object_), cell_get_type(), AtkTableCell);
-      col_headers = get_column_header_cells(cell);
-      row_headers = get_row_header_cells(cell);
-      get_row_column_span(cell, &row, &col, &row_span, &col_span);
+          (atk_object_), cell_interface->GetType(), AtkTableCell);
+      col_headers = cell_interface->GetColumnHeaderCells(cell);
+      row_headers = cell_interface->GetRowHeaderCells(cell);
+      cell_interface->GetRowColumnSpan(cell, &row, &col, &row_span, &col_span);
     } else {
       auto* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object_);
       if (!obj)
