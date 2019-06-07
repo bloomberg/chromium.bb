@@ -56,18 +56,6 @@ MultiDeviceNotificationPresenter::GetNotificationDescriptionForLogging(
   NOTREACHED();
 }
 
-MultiDeviceNotificationPresenter::OpenUiDelegate::~OpenUiDelegate() = default;
-
-void MultiDeviceNotificationPresenter::OpenUiDelegate::
-    OpenMultiDeviceSetupUi() {
-  Shell::Get()->system_tray_model()->client()->ShowMultiDeviceSetup();
-}
-
-void MultiDeviceNotificationPresenter::OpenUiDelegate::
-    OpenConnectedDevicesSettings() {
-  Shell::Get()->system_tray_model()->client()->ShowConnectedDevicesSettings();
-}
-
 // static
 MultiDeviceNotificationPresenter::NotificationType
 MultiDeviceNotificationPresenter::GetMetricValueForNotification(
@@ -91,7 +79,6 @@ MultiDeviceNotificationPresenter::MultiDeviceNotificationPresenter(
     : message_center_(message_center),
       connector_(connector),
       binding_(this),
-      open_ui_delegate_(std::make_unique<OpenUiDelegate>()),
       weak_ptr_factory_(this) {
   DCHECK(message_center_);
   DCHECK(connector_);
@@ -191,14 +178,17 @@ void MultiDeviceNotificationPresenter::OnNotificationClicked(
                             kNotificationTypeMax);
   switch (notification_status_) {
     case Status::kNewUserNotificationVisible:
-      open_ui_delegate_->OpenMultiDeviceSetupUi();
+      Shell::Get()->system_tray_model()->client()->ShowMultiDeviceSetup();
       break;
     case Status::kExistingUserHostSwitchedNotificationVisible:
       // Clicks on the 'host switched' and 'Chromebook added' notifications have
       // the same effect, i.e. opening the Settings subpage.
       FALLTHROUGH;
     case Status::kExistingUserNewChromebookNotificationVisible:
-      open_ui_delegate_->OpenConnectedDevicesSettings();
+      Shell::Get()
+          ->system_tray_model()
+          ->client()
+          ->ShowConnectedDevicesSettings();
       break;
     case Status::kNoNotificationVisible:
       NOTREACHED();

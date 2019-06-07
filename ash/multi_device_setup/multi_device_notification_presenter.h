@@ -84,16 +84,6 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
   // MultiDevice setup notification ID.
   static const char kNotificationId[];
 
-  // These methods are delegated to a nested class to make them easier to stub
-  // in unit tests. This way they can all be stubbed simultaneously by building
-  // a test delegate class deriving from OpenUiDelegate.
-  class OpenUiDelegate {
-   public:
-    virtual ~OpenUiDelegate();
-    virtual void OpenMultiDeviceSetupUi();
-    virtual void OpenConnectedDevicesSettings();
-  };
-
   // Represents each possible MultiDevice setup notification that the setup flow
   // can show with a "none" option for the general state with no notification
   // present.
@@ -141,7 +131,6 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
   mojo::Binding<chromeos::multidevice_setup::mojom::AccountStatusChangeDelegate>
       binding_;
 
-  std::unique_ptr<OpenUiDelegate> open_ui_delegate_;
   base::WeakPtrFactory<MultiDeviceNotificationPresenter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceNotificationPresenter);

@@ -62,14 +62,6 @@ class ASH_EXPORT BluetoothNotificationController
   friend class BluetoothNotificationControllerTest;
   class BluetoothPairedNotificationDelegate;
 
-  // Wraps calls to settings code which are mocked out for tests.
-  class OpenUiDelegate {
-   public:
-    OpenUiDelegate() = default;
-    virtual ~OpenUiDelegate() = default;
-    virtual void OpenBluetoothSettings();
-  };
-
   static const char kBluetoothDeviceDiscoverableNotificationId[];
   // Identifier for the pairing notification; the Bluetooth code ensures we
   // only receive one pairing request at a time, so a single id is sufficient
@@ -97,8 +89,6 @@ class ASH_EXPORT BluetoothNotificationController
 
   // Clears any shown pairing notification now that the device has been paired.
   void NotifyPairedDevice(device::BluetoothDevice* device);
-
-  std::unique_ptr<OpenUiDelegate> open_delegate_;
 
   message_center::MessageCenter* const message_center_;
 

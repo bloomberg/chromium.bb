@@ -67,6 +67,7 @@ class AppListTestHelper;
 class AshTestHelper;
 class Shelf;
 class TestScreenshotDelegate;
+class TestSystemTrayClient;
 class UnifiedSystemTray;
 class WorkAreaInsets;
 
@@ -193,6 +194,8 @@ class AshTestBase : public testing::Test {
   TestScreenshotDelegate* GetScreenshotDelegate();
 
   TestSessionControllerClient* GetSessionControllerClient();
+
+  TestSystemTrayClient* GetSystemTrayClient();
 
   AppListTestHelper* GetAppListTestHelper();
 

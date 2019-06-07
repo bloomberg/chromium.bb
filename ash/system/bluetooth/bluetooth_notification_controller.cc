@@ -137,36 +137,25 @@ const char
 class BluetoothNotificationController::BluetoothPairedNotificationDelegate
     : public message_center::NotificationDelegate {
  public:
-  explicit BluetoothPairedNotificationDelegate(OpenUiDelegate* open_delegate)
-      : open_delegate_(open_delegate) {}
+  BluetoothPairedNotificationDelegate() = default;
 
  protected:
   ~BluetoothPairedNotificationDelegate() override = default;
 
+  // message_center::NotificationDelegate:
   void Click(const base::Optional<int>& button_index,
-             const base::Optional<base::string16>& reply) override;
+             const base::Optional<base::string16>& reply) override {
+    if (TrayPopupUtils::CanOpenWebUISettings())
+      Shell::Get()->system_tray_model()->client()->ShowBluetoothSettings();
+  }
 
  private:
-  OpenUiDelegate* open_delegate_;
   DISALLOW_COPY_AND_ASSIGN(BluetoothPairedNotificationDelegate);
 };
 
-void BluetoothNotificationController::BluetoothPairedNotificationDelegate::
-    Click(const base::Optional<int>& button_index,
-          const base::Optional<base::string16>& reply) {
-  if (TrayPopupUtils::CanOpenWebUISettings())
-    open_delegate_->OpenBluetoothSettings();
-}
-
-void BluetoothNotificationController::OpenUiDelegate::OpenBluetoothSettings() {
-  Shell::Get()->system_tray_model()->client()->ShowBluetoothSettings();
-}
-
 BluetoothNotificationController::BluetoothNotificationController(
     message_center::MessageCenter* message_center)
-    : open_delegate_(std::make_unique<OpenUiDelegate>()),
-      message_center_(message_center),
-      weak_ptr_factory_(this) {
+    : message_center_(message_center), weak_ptr_factory_(this) {
   BluetoothAdapterFactory::GetAdapter(
       base::BindOnce(&BluetoothNotificationController::OnGetAdapter,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -365,8 +354,7 @@ void BluetoothNotificationController::NotifyPairedDevice(
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierBluetooth),
       message_center::RichNotificationData(),
-      base::MakeRefCounted<BluetoothPairedNotificationDelegate>(
-          open_delegate_.get()),
+      base::MakeRefCounted<BluetoothPairedNotificationDelegate>(),
       kNotificationBluetoothIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
   message_center_->AddNotification(std::move(notification));

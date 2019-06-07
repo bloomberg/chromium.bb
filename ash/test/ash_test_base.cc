@@ -361,6 +361,10 @@ TestSessionControllerClient* AshTestBase::GetSessionControllerClient() {
   return ash_test_helper_->test_session_controller_client();
 }
 
+TestSystemTrayClient* AshTestBase::GetSystemTrayClient() {
+  return ash_test_helper_->system_tray_client();
+}
+
 AppListTestHelper* AshTestBase::GetAppListTestHelper() {
   return ash_test_helper_->app_list_test_helper();
 }

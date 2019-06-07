@@ -7,11 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/test/test_system_tray_client.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -47,27 +47,6 @@ class TestMessageCenter : public message_center::FakeMessageCenter {
 
 class BluetoothNotificationControllerTest : public AshTestBase {
  public:
-  class TestOpenUiDelegate
-      : public BluetoothNotificationController::OpenUiDelegate {
-   public:
-    TestOpenUiDelegate() = default;
-    ~TestOpenUiDelegate() override = default;
-
-    size_t open_bluetooth_settings_ui_count() const {
-      return open_bluetooth_settings_ui_count_;
-    }
-
-    void OpenBluetoothSettings() override {
-      ++open_bluetooth_settings_ui_count_;
-    }
-
-   private:
-    size_t open_bluetooth_settings_ui_count_ = 0u;
-
-    DISALLOW_COPY_AND_ASSIGN(TestOpenUiDelegate);
-  };
-
- protected:
   BluetoothNotificationControllerTest() = default;
 
   void SetUp() override {
@@ -75,9 +54,7 @@ class BluetoothNotificationControllerTest : public AshTestBase {
     notification_controller_ =
         std::make_unique<BluetoothNotificationController>(
             &test_message_center_);
-    auto open_delegate = std::make_unique<TestOpenUiDelegate>();
-    open_ui_delegate_ = open_delegate.get();
-    notification_controller_->open_delegate_ = std::move(open_delegate);
+    system_tray_client_ = GetSystemTrayClient();
     bluetooth_device_ =
         std::make_unique<testing::NiceMock<device::MockBluetoothDevice>>(
             nullptr /* adapter */, 0 /* bluetooth_class */, "name", "address",
@@ -126,7 +103,7 @@ class BluetoothNotificationControllerTest : public AshTestBase {
 
   TestMessageCenter test_message_center_;
   std::unique_ptr<BluetoothNotificationController> notification_controller_;
-  TestOpenUiDelegate* open_ui_delegate_;
+  TestSystemTrayClient* system_tray_client_;
   std::unique_ptr<device::MockBluetoothDevice> bluetooth_device_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothNotificationControllerTest);
@@ -146,7 +123,7 @@ TEST_F(BluetoothNotificationControllerTest,
   VerifyPairedNotificationIsVisible(bluetooth_device_.get());
 
   // Check the notification controller tried to open the UI.
-  EXPECT_EQ(1u, open_ui_delegate_->open_bluetooth_settings_ui_count());
+  EXPECT_EQ(1, system_tray_client_->show_bluetooth_settings_count());
 }
 
 TEST_F(BluetoothNotificationControllerTest,
@@ -160,7 +137,7 @@ TEST_F(BluetoothNotificationControllerTest,
 
   VerifyPairedNotificationIsNotVisible();
   // The settings UI should not open when closing the notification.
-  EXPECT_EQ(0u, open_ui_delegate_->open_bluetooth_settings_ui_count());
+  EXPECT_EQ(0, system_tray_client_->show_bluetooth_settings_count());
 }
 
 TEST_F(BluetoothNotificationControllerTest,
@@ -173,7 +150,7 @@ TEST_F(BluetoothNotificationControllerTest,
   DismissPairedNotification(false /* by_user */);
 
   VerifyPairedNotificationIsNotVisible();
-  EXPECT_EQ(0u, open_ui_delegate_->open_bluetooth_settings_ui_count());
+  EXPECT_EQ(0, system_tray_client_->show_bluetooth_settings_count());
 }
 
 }  // namespace ash
