@@ -33471,6 +33471,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
   <int value="-1604051051" label="SpecialLocale:disabled"/>
   <int value="-1603404046" label="V8VmFuture:disabled"/>
+  <int value="-1601374850" label="DialMediaRouteProvider:disabled"/>
   <int value="-1599538279" label="enable-md-policy-page"/>
   <int value="-1596859081" label="WebAuthenticationPINSupport:enabled"/>
   <int value="-1596559650" label="max-tiles-for-interest-area"/>
@@ -33675,6 +33676,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1340055960" label="enable-streamlined-hosted-apps"/>
   <int value="-1338306372" label="BrowserTouchBar:enabled"/>
   <int value="-1337185440" label="enable-webvr"/>
+  <int value="-1336110789" label="CastMediaRouteProvider:disabled"/>
   <int value="-1335017208" label="KeyboardLockAPI:enabled"/>
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
   <int value="-1332267458" label="RemoveNavigationHistory:enabled"/>
@@ -34064,6 +34066,7 @@ from previous Chrome versions.
   <int value="-771080109" label="GrantNotificationsToDSE:disabled"/>
   <int value="-770319039" label="enable-touch-editing"/>
   <int value="-769865314" label="AutofillCacheQueryResponses:disabled"/>
+  <int value="-766805224" label="MirroringService:enabled"/>
   <int value="-763900417" label="CCTModuleUseIntentExtras:enabled"/>
   <int value="-763759697" label="enable-audio-support-for-desktop-share"/>
   <int value="-763730918" label="CCTTargetTranslateLanguage:disabled"/>
@@ -34251,6 +34254,7 @@ from previous Chrome versions.
   <int value="-478462945" label="enable-ephemeral-apps"/>
   <int value="-477101783" label="HandwritingGesture:disabled"/>
   <int value="-475049740" label="disable-vr-shell"/>
+  <int value="-475042780" label="DialMediaRouteProvider:enabled"/>
   <int value="-474806100" label="DataReductionProxyMainMenu:enabled"/>
   <int value="-474322576" label="disable-quick-unlock-pin"/>
   <int value="-473087416" label="DragTabsInTabletMode:enabled"/>
@@ -34711,6 +34715,7 @@ from previous Chrome versions.
   <int value="219117936" label="AllowReaderForAccessibility:enabled"/>
   <int value="222184258"
       label="AutofillEnforceMinRequiredFieldsForHeuristics:disabled"/>
+  <int value="223591010" label="CastMediaRouteProvider:enabled"/>
   <int value="223662457" label="BackgroundLoadingForDownloads:enabled"/>
   <int value="229476202" label="CryptAuthV2Enrollment:enabled"/>
   <int value="233721248" label="DownloadRename:disabled"/>
@@ -34860,6 +34865,7 @@ from previous Chrome versions.
   <int value="453102772" label="OfflinePagesLoadSignalCollecting:disabled"/>
   <int value="455698038"
       label="disable-gesture-requirement-for-media-playback"/>
+  <int value="455754036" label="MirroringService:disabled"/>
   <int value="457881889" label="enable-autoplay-muted-videos"/>
   <int value="458410433" label="disable-views-rect-based-targeting"/>
   <int value="460136092" label="MidiManagerAndroid:disabled"/>

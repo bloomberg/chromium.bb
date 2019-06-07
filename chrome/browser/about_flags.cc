@@ -153,6 +153,7 @@
 #include "ui/android/buildflags.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "components/mirroring/service/features.h"
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
@@ -1813,6 +1814,17 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaRouterCastAllowAllIPsName,
      flag_descriptions::kMediaRouterCastAllowAllIPsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media_router::kCastAllowAllIPsFeature)},
+    {"cast-media-route-provider",
+     flag_descriptions::kCastMediaRouteProviderName,
+     flag_descriptions::kCastMediaRouteProviderDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media_router::kCastMediaRouteProvider)},
+    {"dial-media-route-provider",
+     flag_descriptions::kDialMediaRouteProviderName,
+     flag_descriptions::kDialMediaRouteProviderDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media_router::kDialMediaRouteProvider)},
+    {"mirroring-service", flag_descriptions::kMirroringServiceName,
+     flag_descriptions::kMirroringServiceDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(mirroring::features::kMirroringService)},
 #endif  // !OS_ANDROID
 #if defined(OS_ANDROID)
     {"autofill-keyboard-accessory-view",

@@ -346,6 +346,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "cast-media-route-provider",
+    "owners": [ "mfoltz", "takumif" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "cct-module",
     "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
     "expiry_milestone": 76
@@ -532,6 +537,11 @@
     "name": "device-discovery-notifications",
     "owners": [ "thestig" ],
     "expiry_milestone": 78
+  },
+  {
+    "name": "dial-media-route-provider",
+    "owners": [ "mfoltz", "takumif" ],
+    "expiry_milestone": 83
   },
   {
     "name": "direct-manipulation-stylus",
@@ -2259,6 +2269,11 @@
     "name": "mime-handler-view-in-cross-process-frame",
     "owners": [ "ekaramad" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "mirroring-service",
+    "owners": [ "mfoltz", "takumif" ],
+    "expiry_milestone": 83
   },
   {
     "name": "mobile-identity-consistency",

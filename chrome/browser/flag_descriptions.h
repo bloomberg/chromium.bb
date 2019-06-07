@@ -1496,8 +1496,14 @@ extern const char kAppManagementDescription[];
 extern const char kAutofillDropdownLayoutName[];
 extern const char kAutofillDropdownLayoutDescription[];
 
+extern const char kCastMediaRouteProviderName[];
+extern const char kCastMediaRouteProviderDescription[];
+
 extern const char kChromeColorsName[];
 extern const char kChromeColorsDescription[];
+
+extern const char kDialMediaRouteProviderName[];
+extern const char kDialMediaRouteProviderDescription[];
 
 extern const char kGridLayoutForNtpShortcutsName[];
 extern const char kGridLayoutForNtpShortcutsDescription[];
@@ -1531,6 +1537,9 @@ extern const char kIntentPickerDescription[];
 
 extern const char kKernelnextVMsName[];
 extern const char kKernelnextVMsDescription[];
+
+extern const char kMirroringServiceName[];
+extern const char kMirroringServiceDescription[];
 
 extern const char kOmniboxDriveSuggestionsName[];
 extern const char kOmniboxDriveSuggestionsDescriptions[];

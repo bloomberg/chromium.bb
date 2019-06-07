@@ -130,7 +130,11 @@ bool ShouldUseViewsDialog() {
 }
 
 bool ShouldUseMirroringService() {
-  return base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
+  // The native Cast MRP requires the mirroring service to do mirroring, so try
+  // to enable the service if the native Cast MRP is being used.
+  return (base::FeatureList::IsEnabled(
+              mirroring::features::kMirroringService) ||
+          base::FeatureList::IsEnabled(kCastMediaRouteProvider)) &&
          base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
          base::FeatureList::IsEnabled(network::features::kNetworkService);
 }

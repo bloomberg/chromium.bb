@@ -2533,9 +2533,19 @@ const char kAppManagementName[] = "Enable App Management page";
 const char kAppManagementDescription[] =
     "Shows the new app management page at chrome://apps.";
 
+const char kCastMediaRouteProviderName[] = "Cast Media Route Provider";
+const char kCastMediaRouteProviderDescription[] =
+    "Enables the native Cast Media Route Provider implementation to be used "
+    "instead of the implementation in the Media Router component extension.";
+
 const char kChromeColorsName[] = "Chrome Colors menu";
 const char kChromeColorsDescription[] =
     "Show Chrome Colors menu in the NTP customization menu.";
+
+const char kDialMediaRouteProviderName[] = "DIAL Media Route Provider";
+const char kDialMediaRouteProviderDescription[] =
+    "Enables the native DIAL Media Route Provider implementation to be used "
+    "instead of the implementation in the Media Router component extension.";
 
 const char kGridLayoutForNtpShortcutsName[] =
     "Enable grid layout for NTP shortcuts";
@@ -2594,6 +2604,11 @@ const char kIntentPickerDescription[] =
 const char kKernelnextVMsName[] = "Enable VMs on experimental kernels.";
 const char kKernelnextVMsDescription[] =
     "Enables VM support on devices running experimental kernel versions.";
+
+const char kMirroringServiceName[] = "Mirroring Service";
+const char kMirroringServiceDescription[] =
+    "Enables the native Mirroring Service for mirroring tabs or desktop to "
+    "Chromecast.  Requires AudioServiceAudioStreams to also be enabled.";
 
 const char kOmniboxDriveSuggestionsName[] =
     "Omnibox Google Drive Document suggestions";
