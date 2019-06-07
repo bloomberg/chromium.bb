@@ -128,34 +128,6 @@ void SecurityStateTabHelper::DidFinishNavigation(
     // the number of times it was available.
     UMA_HISTOGRAM_BOOLEAN("interstitial.ssl.visited_site_after_warning", true);
   }
-
-  // Security indicator UI study (https://crbug.com/803501): Show a message in
-  // the console to reduce developer confusion about the experimental UI
-  // treatments for HTTPS pages with EV certificates.
-  const std::string parameter =
-      base::FeatureList::IsEnabled(omnibox::kSimplifyHttpsIndicator)
-          ? base::GetFieldTrialParamValueByFeature(
-                omnibox::kSimplifyHttpsIndicator,
-                OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName)
-          : std::string();
-  if (GetSecurityLevel() == security_state::EV_SECURE) {
-    if (parameter ==
-        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure) {
-      web_contents()->GetMainFrame()->AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kInfo,
-          "As part of an experiment, Chrome temporarily shows only the "
-          "\"Secure\" text in the address bar. Your SSL certificate with "
-          "Extended Validation is still valid.");
-    }
-    if (parameter ==
-        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock) {
-      web_contents()->GetMainFrame()->AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kInfo,
-          "As part of an experiment, Chrome temporarily shows only the lock "
-          "icon in the address bar. Your SSL certificate with Extended "
-          "Validation is still valid.");
-    }
-  }
 }
 
 void SecurityStateTabHelper::DidChangeVisibleSecurityState() {

@@ -4939,27 +4939,6 @@
             ]
         }
     ],
-    "SimplifyHttpsIndicatorPhase3": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "windows",
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "BothToLock",
-                    "params": {
-                        "treatment": "both-to-lock"
-                    },
-                    "enable_features": [
-                        "SimplifyHttpsIndicator"
-                    ]
-                }
-            ]
-        }
-    ],
     "SkipPassthroughTouchEventQueueFilter": [
         {
             "platforms": [

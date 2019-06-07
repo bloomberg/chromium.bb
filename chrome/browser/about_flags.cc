@@ -846,31 +846,6 @@ const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
      kMarkHttpAsWarningAndDangerousOnFormEdits,
      base::size(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr}};
 
-const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorEvToSecure[] = {
-    {OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
-     OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure}};
-const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorSecureToLock[] = {
-    {OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
-     OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterSecureToLock}};
-const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorBothToLock[] = {
-    {OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
-     OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock}};
-const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorKeepSecureChip[] = {
-    {OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
-     OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip}};
-
-const FeatureEntry::FeatureVariation kSimplifyHttpsIndicatorVariations[] = {
-    {"(show Secure chip for EV pages)", kSimplifyHttpsIndicatorEvToSecure,
-     base::size(kSimplifyHttpsIndicatorEvToSecure), nullptr},
-    {"(show Lock icon for non-EV HTTPS pages)",
-     kSimplifyHttpsIndicatorSecureToLock,
-     base::size(kSimplifyHttpsIndicatorSecureToLock), nullptr},
-    {"(show Lock icon for all HTTPS pages)", kSimplifyHttpsIndicatorBothToLock,
-     base::size(kSimplifyHttpsIndicatorBothToLock), nullptr},
-    {"(show Secure chip for non-EV HTTPS pages)",
-     kSimplifyHttpsIndicatorKeepSecureChip,
-     base::size(kSimplifyHttpsIndicatorKeepSecureChip), nullptr}};
-
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishHeuristic[] = {
     {language::kOverrideModelKey, language::kOverrideModelHeuristicValue},
@@ -2886,9 +2861,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"simplify-https-indicator", flag_descriptions::kSimplifyHttpsIndicatorName,
      flag_descriptions::kSimplifyHttpsIndicatorDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kSimplifyHttpsIndicator,
-                                    kSimplifyHttpsIndicatorVariations,
-                                    "SimplifyHttpsIndicator")},
+     FEATURE_VALUE_TYPE(omnibox::kSimplifyHttpsIndicator)},
 
 #if defined(OS_WIN)
     {"enable-gpu-appcontainer", flag_descriptions::kEnableGpuAppcontainerName,

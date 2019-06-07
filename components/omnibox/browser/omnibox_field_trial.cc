@@ -802,17 +802,6 @@ const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesByProviderParam[] =
     "UIMaxAutocompleteMatchesByProvider";
 const char OmniboxFieldTrial::kUIVerticalMarginParam[] = "UIVerticalMargin";
 
-const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName[] =
-    "treatment";
-const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure[] =
-    "ev-to-secure";
-const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterSecureToLock[] =
-    "secure-to-lock";
-const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock[] =
-    "both-to-lock";
-const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip[] =
-    "keep-secure-chip";
-
 const char OmniboxFieldTrial::kOnFocusSuggestionsEndpointExperimentIdParam[] =
     "CustomEndpointExperimentID";
 const char OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam[] =

@@ -56,17 +56,12 @@ const base::Feature kHideSteadyStateUrlPathQueryAndRef {
 const base::Feature kOneClickUnelide{"OmniboxOneClickUnelide",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// This feature simplifies the security indiciator UI for https:// pages. The
-// exact UI treatment is dependent on the parameter 'treatment' which can have
-// the following value:
-// - 'ev-to-secure': Show the "Secure" chip for pages with an EV certificate.
-// - 'secure-to-lock': Show only the lock icon for non-EV https:// pages.
-// - 'both-to-lock': Show only the lock icon for all https:// pages.
-// - 'keep-secure-chip': Show the old "Secure" chip for non-EV https:// pages.
-// The default behavior is the same as 'secure-to-lock'.
+// This feature simplifies the security indiciator UI for https:// pages.
+// The default behavior is to show no verbose text for EV pages. When disabled,
+// the verbose EV indicator text will be displayed.
 // This feature is used for EV UI removal experiment (https://crbug.com/803501).
 const base::Feature kSimplifyHttpsIndicator{"SimplifyHttpsIndicator",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // This feature is used to have final suggestions within the Omnibox grouped
 // by major type. i.e. search types are first, followed by all others,

@@ -251,52 +251,26 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
   const GURL kMockNonsecureURL =
       embedded_test_server()->GetURL("example.test", "/");
   const base::string16 kEvString = base::ASCIIToUTF16("Test CA [US]");
-  const base::string16 kSecureString = base::ASCIIToUTF16("Secure");
   const base::string16 kEmptyString = base::string16();
 
-  const std::string kDefaultVariation = std::string();
-  const std::string kEvToSecureVariation(
-      OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure);
-  const std::string kBothToLockVariation(
-      OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock);
-  const std::string kKeepSecureChipVariation(
-      OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip);
-
   const struct {
-    std::string feature_param;
+    bool is_enabled;
     GURL url;
     net::CertStatus cert_status;
     security_state::SecurityLevel security_level;
     bool should_show_text;
     base::string16 indicator_text;
-  } cases[]{// Default
-            {kDefaultVariation, kMockSecureURL, net::CERT_STATUS_IS_EV,
-             security_state::EV_SECURE, true, kEvString},
-            {kDefaultVariation, kMockSecureURL, 0, security_state::SECURE,
-             false, kEmptyString},
-            {kDefaultVariation, kMockNonsecureURL, 0, security_state::NONE,
-             false, kEmptyString},
-            // Variation: EV To Secure
-            {kEvToSecureVariation, kMockSecureURL, net::CERT_STATUS_IS_EV,
-             security_state::EV_SECURE, true, kSecureString},
-            {kEvToSecureVariation, kMockSecureURL, 0, security_state::SECURE,
-             false, kEmptyString},
-            {kEvToSecureVariation, kMockNonsecureURL, 0, security_state::NONE,
-             false, kEmptyString},
-            // Variation: Keep Secure chip
-            {kKeepSecureChipVariation, kMockSecureURL, net::CERT_STATUS_IS_EV,
-             security_state::EV_SECURE, true, kEvString},
-            {kKeepSecureChipVariation, kMockSecureURL, 0,
-             security_state::SECURE, true, kSecureString},
-            {kKeepSecureChipVariation, kMockNonsecureURL, 0,
-             security_state::NONE, false, kEmptyString},
-            // Variation: Both to Lock
-            {kBothToLockVariation, kMockSecureURL, net::CERT_STATUS_IS_EV,
-             security_state::EV_SECURE, false, kEmptyString},
-            {kBothToLockVariation, kMockSecureURL, 0, security_state::SECURE,
-             false, kEmptyString},
-            {kBothToLockVariation, kMockNonsecureURL, 0, security_state::NONE,
-             false, kEmptyString}};
+  } cases[]{
+      // Disabled (show EV UI in omnibox)
+      {false, kMockSecureURL, net::CERT_STATUS_IS_EV, security_state::EV_SECURE,
+       true, kEvString},
+      {false, kMockSecureURL, 0, security_state::SECURE, false, kEmptyString},
+      {false, kMockNonsecureURL, 0, security_state::NONE, false, kEmptyString},
+      // Default (lock-only in omnibox)
+      {true, kMockSecureURL, net::CERT_STATUS_IS_EV, security_state::EV_SECURE,
+       false, kEmptyString},
+      {true, kMockSecureURL, 0, security_state::SECURE, false, kEmptyString},
+      {true, kMockNonsecureURL, 0, security_state::NONE, false, kEmptyString}};
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -307,14 +281,12 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
 
   for (const auto& c : cases) {
     base::test::ScopedFeatureList scoped_feature_list;
-    if (c.feature_param.empty()) {
-      scoped_feature_list.InitAndDisableFeature(
+    if (c.is_enabled) {
+      scoped_feature_list.InitAndEnableFeature(
           omnibox::kSimplifyHttpsIndicator);
     } else {
-      scoped_feature_list.InitAndEnableFeatureWithParameters(
-          omnibox::kSimplifyHttpsIndicator,
-          {{OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
-            c.feature_param}});
+      scoped_feature_list.InitAndDisableFeature(
+          omnibox::kSimplifyHttpsIndicator);
     }
     SetUpInterceptor(c.cert_status);
     ui_test_utils::NavigateToURL(browser(), c.url);

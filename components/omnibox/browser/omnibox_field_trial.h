@@ -510,13 +510,6 @@ extern const char kUIMaxAutocompleteMatchesParam[];
 extern const char kUIMaxAutocompleteMatchesByProviderParam[];
 extern const char kUIVerticalMarginParam[];
 
-// Parameter name and values used by the Simplify HTTPS experiment.
-extern const char kSimplifyHttpsIndicatorParameterName[];
-extern const char kSimplifyHttpsIndicatorParameterEvToSecure[];
-extern const char kSimplifyHttpsIndicatorParameterSecureToLock[];
-extern const char kSimplifyHttpsIndicatorParameterBothToLock[];
-extern const char kSimplifyHttpsIndicatorParameterKeepSecureChip[];
-
 // Parameter names used by On Focus Suggestions Custom Endpoint.
 extern const char kOnFocusSuggestionsEndpointExperimentIdParam[];
 extern const char kOnFocusSuggestionsEndpointURLParam[];
