@@ -292,6 +292,12 @@ uint32_t DetermineGroups(const std::vector<ServerFieldType>& types) {
   return group_bitmask;
 }
 
+bool IsSupportedFormType(uint32_t groups) {
+  return ContainsAddress(groups) ||
+         ContainsName(groups) + ContainsEmail(groups) + ContainsPhone(groups) >=
+             2;
+}
+
 std::string TruncateUTF8(const std::string& data) {
   std::string trimmed_value;
   base::TruncateUTF8ToByteSize(data, AutofillTable::kMaxDataLength,

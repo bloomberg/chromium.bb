@@ -30,18 +30,6 @@ using data_util::bit_field_type_groups::kEmail;
 using data_util::bit_field_type_groups::kName;
 using data_util::bit_field_type_groups::kPhone;
 
-namespace {
-
-// Returns true if a form has address fields or has least two supported
-// non-address fields.
-bool IsSupportedFormType(uint32_t groups) {
-  return ContainsAddress(groups) ||
-         ContainsName(groups) + ContainsEmail(groups) + ContainsPhone(groups) >=
-             2;
-}
-
-}  // namespace
-
 LabelFormatter::LabelFormatter(const std::vector<AutofillProfile*>& profiles,
                                const std::string& app_locale,
                                ServerFieldType focused_field_type,
@@ -100,7 +88,7 @@ std::unique_ptr<LabelFormatter> LabelFormatter::Create(
     ServerFieldType focused_field_type,
     const std::vector<ServerFieldType>& field_types) {
   const uint32_t groups = data_util::DetermineGroups(field_types);
-  if (!IsSupportedFormType(groups)) {
+  if (!data_util::IsSupportedFormType(groups)) {
     return nullptr;
   }
 
