@@ -955,6 +955,8 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	pixman_region32_t surface_blend;
 	GLint filter;
 	int i;
+	bool shader_replaced = false;
+	struct gl_shader *tmp_shader = NULL;
 
 	/* In case of a runtime switch of renderers, we may not have received
 	 * an attach for this surface since the switch. In that case we don't
@@ -972,6 +974,17 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 
 	if (ensure_surface_buffer_is_ready(gr, gs) < 0)
 		goto out;
+
+	if (ev->surface->protection_mode == WESTON_SURFACE_PROTECTION_MODE_ENFORCED &&
+	    ev->surface->desired_protection > output->current_protection) {
+		tmp_shader = gs->shader;
+		shader_replaced = true;
+		gs->color[0] = 0.40;
+		gs->color[1] = 0.0;
+		gs->color[2] = 0.0;
+		gs->color[3] = 1.0;
+		gs->shader = &gr->solid_shader;
+	}
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -1046,6 +1059,9 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 
 out:
 	pixman_region32_fini(&repaint);
+
+	if (shader_replaced)
+		gs->shader = tmp_shader;
 }
 
 static void
