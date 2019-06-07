@@ -61,6 +61,15 @@ class TouchToFillController
   explicit TouchToFillController(
       base::WeakPtr<ManualFillingController> mf_controller);
 
+  // Lazy-initializes and returns the ManualFillingController for the current
+  // |web_contents_|. The lazy initialization is required to break a circular
+  // dependency between the constructors of the TouchToFillController and
+  // ManualFillingController.
+  ManualFillingController* GetManualFillingController();
+
+  // The tab for which this class is scoped.
+  content::WebContents* web_contents_ = nullptr;
+
   // The manual filling controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> mf_controller_;
 

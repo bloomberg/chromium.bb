@@ -63,7 +63,8 @@ void TouchToFillController::Show(
                         /*is_selectable=*/false);
   }
 
-  mf_controller_->ShowTouchToFillSheet(std::move(builder).Build());
+  GetManualFillingController()->ShowTouchToFillSheet(
+      std::move(builder).Build());
 }
 
 void TouchToFillController::OnFillingTriggered(
@@ -79,14 +80,19 @@ void TouchToFillController::OnOptionSelected(
 }
 
 TouchToFillController::TouchToFillController(WebContents* web_contents)
-    : mf_controller_(ManualFillingController::GetOrCreate(web_contents)) {
-  DCHECK(mf_controller_);
-}
+    : web_contents_(web_contents) {}
 
 TouchToFillController::TouchToFillController(
     base::WeakPtr<ManualFillingController> mf_controller)
     : mf_controller_(std::move(mf_controller)) {
   DCHECK(mf_controller_);
+}
+
+ManualFillingController* TouchToFillController::GetManualFillingController() {
+  if (!mf_controller_)
+    mf_controller_ = ManualFillingController::GetOrCreate(web_contents_);
+  DCHECK(mf_controller_);
+  return mf_controller_.get();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(TouchToFillController)
