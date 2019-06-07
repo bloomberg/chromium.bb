@@ -440,7 +440,7 @@ void RTCVideoDecoderAdapter::OnOutput(scoped_refptr<media::VideoFrame> frame) {
 
   base::AutoLock auto_lock(lock_);
 
-  if (!base::ContainsValue(decode_timestamps_, timestamp)) {
+  if (!base::Contains(decode_timestamps_, timestamp)) {
     DVLOG(2) << "Discarding frame with timestamp " << timestamp;
     return;
   }

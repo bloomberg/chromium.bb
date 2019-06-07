@@ -379,7 +379,7 @@ void WebRtcAudioDeviceImpl::AddAudioCapturer(
   DCHECK(!capturer->device().id.empty());
 
   base::AutoLock auto_lock(lock_);
-  DCHECK(!base::ContainsValue(capturers_, capturer));
+  DCHECK(!base::Contains(capturers_, capturer));
   capturers_.push_back(capturer);
   capturer->SetOutputDeviceForAec(output_device_id_for_aec_);
 }
@@ -398,7 +398,7 @@ void WebRtcAudioDeviceImpl::AddPlayoutSink(
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(sink);
   base::AutoLock auto_lock(lock_);
-  DCHECK(!base::ContainsValue(playout_sinks_, sink));
+  DCHECK(!base::Contains(playout_sinks_, sink));
   playout_sinks_.push_back(sink);
 }
 

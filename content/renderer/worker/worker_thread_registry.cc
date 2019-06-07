@@ -122,7 +122,7 @@ void WorkerThreadRegistry::WillStopCurrentWorkerThread() {
 
 base::TaskRunner* WorkerThreadRegistry::GetTaskRunnerFor(int worker_id) {
   base::AutoLock locker(task_runner_map_lock_);
-  return base::ContainsKey(task_runner_map_, worker_id)
+  return base::Contains(task_runner_map_, worker_id)
              ? task_runner_map_[worker_id]
              : task_runner_for_dead_worker_.get();
 }

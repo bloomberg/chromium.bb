@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_AsyncMultiWindowTest) {
       ExpectedColor expected;
       do {
         PickRandomColor(&expected);
-      } while (base::ContainsValue(expected_snapshots, expected));
+      } while (base::Contains(expected_snapshots, expected));
       expected_snapshots.push_back(expected);
 
       std::string colorString = base::StringPrintf("#%02x%02x%02x", expected.r,

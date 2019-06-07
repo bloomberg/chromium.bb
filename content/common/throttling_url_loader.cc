@@ -21,7 +21,7 @@ namespace {
 void MergeRemovedHeaders(std::vector<std::string>* removed_headers_A,
                          const std::vector<std::string>& removed_headers_B) {
   for (auto& header : removed_headers_B) {
-    if (!base::ContainsValue(*removed_headers_A, header))
+    if (!base::Contains(*removed_headers_A, header))
       removed_headers_A->emplace_back(std::move(header));
   }
 }

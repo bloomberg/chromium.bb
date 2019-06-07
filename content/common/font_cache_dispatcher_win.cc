@@ -45,7 +45,7 @@ class FontCache {
 
     base::string16 font_name = font.lfFaceName;
     int ref_count_inc = 1;
-    if (!base::ContainsValue(dispatcher_font_map_[dispatcher], font_name)) {
+    if (!base::Contains(dispatcher_font_map_[dispatcher], font_name)) {
       // Requested font is new to cache.
       dispatcher_font_map_[dispatcher].push_back(font_name);
     } else {

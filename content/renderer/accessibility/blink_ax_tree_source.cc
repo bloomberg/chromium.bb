@@ -344,7 +344,7 @@ bool BlinkAXTreeSource::ShouldLoadInlineTextBoxes(
   WebAXObject ancestor = obj;
   while (!ancestor.IsDetached()) {
     int32_t ancestor_id = ancestor.AxID();
-    if (base::ContainsKey(load_inline_text_boxes_ids_, ancestor_id) ||
+    if (base::Contains(load_inline_text_boxes_ids_, ancestor_id) ||
         (ancestor_id == focus_id && ancestor.IsEditable())) {
       return true;
     }

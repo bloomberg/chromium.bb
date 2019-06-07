@@ -440,7 +440,7 @@ void UserMediaProcessor::RequestInfo::OnAudioSourceStarted(
     const blink::WebString& result_name) {
   // Check if we're waiting to be notified of this source.  If not, then we'll
   // ignore the notification.
-  if (base::ContainsValue(sources_waiting_for_callback_, source))
+  if (base::Contains(sources_waiting_for_callback_, source))
     OnTrackStarted(source, result, result_name);
 }
 

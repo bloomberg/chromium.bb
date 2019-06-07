@@ -236,7 +236,7 @@ bool CategorizedWorkerPool::PostDelayedTask(const base::Location& from_here,
   CollectCompletedTasksWithLockAcquired(namespace_token_, &completed_tasks_);
 
   base::EraseIf(tasks_, [this](const scoped_refptr<cc::Task>& e) {
-    return base::ContainsValue(this->completed_tasks_, e);
+    return base::Contains(this->completed_tasks_, e);
   });
 
   tasks_.push_back(base::MakeRefCounted<ClosureTask>(std::move(task)));

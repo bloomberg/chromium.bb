@@ -263,7 +263,7 @@ size_t WrapperTestLauncherDelegate::RunTests(
     // Stack all dependent tests and run them sequentially.
     test_list.push_back(test_name);
     if (!IsPreTestName(test_name)) {
-      if (!base::ContainsKey(user_data_dir_map_, test_name)) {
+      if (!base::Contains(user_data_dir_map_, test_name)) {
         base::FilePath temp_dir;
         CHECK(base::CreateTemporaryDirInDir(temp_dir_.GetPath(),
                                             FILE_PATH_LITERAL("d"), &temp_dir));
@@ -293,7 +293,7 @@ size_t WrapperTestLauncherDelegate::RetryTests(
     // Make sure PRE_ tests and tests that depend on them share the same
     // data directory - based it on the test name without prefixes.
     std::string test_name_no_pre(RemoveAnyPrePrefixes(full_name));
-    if (!base::ContainsKey(user_data_dir_map_, test_name_no_pre)) {
+    if (!base::Contains(user_data_dir_map_, test_name_no_pre)) {
       base::FilePath temp_dir;
       CHECK(base::CreateTemporaryDirInDir(temp_dir_.GetPath(),
                                           FILE_PATH_LITERAL("d"), &temp_dir));
@@ -429,7 +429,7 @@ void WrapperTestLauncherDelegate::GTestCallback(
 
     // No other tests depend on this, we can delete the temporary directory now.
     // Do so to avoid too many temporary files using lots of disk space.
-  if (base::ContainsKey(user_data_dir_map_, test_name)) {
+  if (base::Contains(user_data_dir_map_, test_name)) {
     if (!base::DeleteFile(user_data_dir_map_[test_name], true)) {
       LOG(WARNING) << "Failed to delete "
                    << user_data_dir_map_[test_name].value();

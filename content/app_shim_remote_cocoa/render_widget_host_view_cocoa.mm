@@ -680,7 +680,7 @@ void ExtractUnderlines(NSAttributedString* string,
   // to exit fullscreen and we don't want to prevent them from exiting.
   ui::DomCode domCode = ui::KeycodeConverter::NativeKeycodeToDomCode(keyCode);
   return keyboardLockActive_ && domCode != ui::DomCode::ESCAPE &&
-         (!lockedKeys_ || base::ContainsKey(lockedKeys_.value(), domCode));
+         (!lockedKeys_ || base::Contains(lockedKeys_.value(), domCode));
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {

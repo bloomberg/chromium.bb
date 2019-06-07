@@ -5433,7 +5433,7 @@ void RenderFrameImpl::DidRunContentWithCertificateErrors() {
 void RenderFrameImpl::ReportLegacyTLSVersion(const blink::WebURL& url) {
   url::Origin origin = url::Origin::Create(GURL(url));
   // To prevent log spam, only log the message once per origin.
-  if (base::ContainsKey(tls_version_warning_origins_, origin))
+  if (base::Contains(tls_version_warning_origins_, origin))
     return;
 
   size_t num_warnings = tls_version_warning_origins_.size();

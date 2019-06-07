@@ -1763,7 +1763,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest, AddRequestHeaderOnRedirect) {
   shell()->LoadURL(embedded_test_server()->GetURL("/doc"));
   response_1.WaitForRequest();
   EXPECT_FALSE(
-      base::ContainsKey(response_1.http_request()->headers, "header_name"));
+      base::Contains(response_1.http_request()->headers, "header_name"));
   response_1.Send(
       "HTTP/1.1 302 Moved Temporarily\r\nLocation: /new_doc\r\n\r\n");
   response_1.Done();
@@ -1859,7 +1859,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
   // 2) The header is removed from the second request after the redirect.
   response_2.WaitForRequest();
   EXPECT_FALSE(
-      base::ContainsKey(response_2.http_request()->headers, "header_name"));
+      base::Contains(response_2.http_request()->headers, "header_name"));
 }
 
 struct NewWebContentsData {

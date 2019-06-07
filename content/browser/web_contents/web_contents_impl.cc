@@ -2496,7 +2496,7 @@ void WebContentsImpl::FullscreenStateChanged(RenderFrameHost* rfh,
   RenderFrameHostImpl* frame = static_cast<RenderFrameHostImpl*>(rfh);
 
   if (is_fullscreen) {
-    if (!base::ContainsKey(fullscreen_frames_, frame)) {
+    if (!base::Contains(fullscreen_frames_, frame)) {
       fullscreen_frames_.insert(frame);
       FullscreenFrameSetUpdated();
     }
@@ -6913,7 +6913,7 @@ void WebContentsImpl::MediaEffectivelyFullscreenChanged(bool is_fullscreen) {
 base::Optional<gfx::Size> WebContentsImpl::GetFullscreenVideoSize() {
   base::Optional<MediaPlayerId> id =
       media_web_contents_observer_->GetFullscreenVideoMediaPlayerId();
-  if (id && base::ContainsKey(cached_video_sizes_, id.value()))
+  if (id && base::Contains(cached_video_sizes_, id.value()))
     return base::Optional<gfx::Size>(cached_video_sizes_[id.value()]);
   return base::nullopt;
 }

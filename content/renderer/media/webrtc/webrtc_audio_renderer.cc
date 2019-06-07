@@ -546,7 +546,7 @@ bool WebRtcAudioRenderer::AddPlayingState(
   DCHECK(state->playing());
   // Look up or add the |source| to the map.
   PlayingStates& array = source_playing_states_[source];
-  if (base::ContainsValue(array, state))
+  if (base::Contains(array, state))
     return false;
 
   array.push_back(state);

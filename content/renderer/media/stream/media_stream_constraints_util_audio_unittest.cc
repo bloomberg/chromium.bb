@@ -63,7 +63,7 @@ using AudioPropertiesBoolMembers =
 
 template <typename T>
 static bool Contains(const std::vector<T>& vector, T value) {
-  return base::ContainsValue(vector, value);
+  return base::Contains(vector, value);
 }
 
 }  // namespace

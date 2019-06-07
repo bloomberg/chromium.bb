@@ -66,7 +66,7 @@ bool PosixFileDescriptorInfoImpl::HasID(int id) const {
 }
 
 bool PosixFileDescriptorInfoImpl::OwnsFD(base::PlatformFile file) {
-  return base::ContainsValue(owned_descriptors_, file);
+  return base::Contains(owned_descriptors_, file);
 }
 
 base::ScopedFD PosixFileDescriptorInfoImpl::ReleaseFD(base::PlatformFile file) {

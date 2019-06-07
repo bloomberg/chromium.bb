@@ -418,7 +418,7 @@ void ClearPluginPrivateDataOnFileTaskRunner(
   if (!storage_origin.is_empty()) {
     DCHECK(origin_matcher.is_null()) << "Only 1 of |storage_origin| and "
                                         "|origin_matcher| should be specified.";
-    if (!base::ContainsKey(origins, storage_origin)) {
+    if (!base::Contains(origins, storage_origin)) {
       // Nothing matches, so nothing to do.
       callback.Run();
       return;

@@ -70,12 +70,12 @@ bool AXImageAnnotator::HasAnnotationInCache(blink::WebAXObject& image) const {
 
 bool AXImageAnnotator::HasImageInCache(const blink::WebAXObject& image) const {
   DCHECK(!image.IsDetached());
-  return base::ContainsKey(image_annotations_, image.AxID());
+  return base::Contains(image_annotations_, image.AxID());
 }
 
 void AXImageAnnotator::OnImageAdded(blink::WebAXObject& image) {
   DCHECK(!image.IsDetached());
-  DCHECK(!base::ContainsKey(image_annotations_, image.AxID()));
+  DCHECK(!base::Contains(image_annotations_, image.AxID()));
   const std::string image_id = GenerateImageSourceId(image);
   if (image_id.empty())
     return;
@@ -93,7 +93,7 @@ void AXImageAnnotator::OnImageAdded(blink::WebAXObject& image) {
 
 void AXImageAnnotator::OnImageUpdated(blink::WebAXObject& image) {
   DCHECK(!image.IsDetached());
-  DCHECK(base::ContainsKey(image_annotations_, image.AxID()));
+  DCHECK(base::Contains(image_annotations_, image.AxID()));
   const std::string image_id = GenerateImageSourceId(image);
   if (image_id.empty())
     return;
@@ -242,7 +242,7 @@ SkBitmap AXImageAnnotator::GetImageData(const blink::WebAXObject& image) {
 void AXImageAnnotator::OnImageAnnotated(
     const blink::WebAXObject& image,
     image_annotation::mojom::AnnotateImageResultPtr result) {
-  if (!base::ContainsKey(image_annotations_, image.AxID()))
+  if (!base::Contains(image_annotations_, image.AxID()))
     return;
 
   if (image.IsDetached()) {

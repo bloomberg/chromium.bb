@@ -1820,7 +1820,7 @@ void TestRunner::RemoveLoadingFrame(blink::WebFrame* frame) {
   if (!IsFramePartOfMainTestWindow(frame))
     return;
 
-  if (!base::ContainsValue(loading_frames_, frame))
+  if (!base::Contains(loading_frames_, frame))
     return;
 
   DCHECK(web_test_runtime_flags_.have_loading_frame());
