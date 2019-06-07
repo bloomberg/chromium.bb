@@ -15,13 +15,6 @@
       <structure type="chrome_scaled_image" name="IDR_APP_TOP_CENTER" file="app_top_center.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_TOP_LEFT" file="app_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_TOP_RIGHT" file="app_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUTTON_DISABLED" file="common/button_inactive.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER" file="common/button_focused_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_NORMAL" file="common/button_focused.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_PRESSED" file="common/button_focused_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER" file="common/button_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL" file="common/button.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED" file="common/button_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE" file="close.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_H" file="close_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_P" file="close_pressed.png" />

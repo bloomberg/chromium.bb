@@ -27,36 +27,6 @@ without changes to the corresponding grd file. -->
       </if>
 
       <!-- Component apps common image resources - 1x -->
-      <!-- White button -->
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON"
-               file="../../views/resources/default_100_percent/common/button.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_PRESSED"
-               file="../../views/resources/default_100_percent/common/button_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_HOVER"
-               file="../../views/resources/default_100_percent/common/button_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_DISABLED"
-               file="../../views/resources/default_100_percent/common/button_inactive.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_FOCUSED"
-               file="../../views/resources/default_100_percent/common/button_focused.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_FOCUSED_PRESSED"
-               file="../../views/resources/default_100_percent/common/button_focused_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_FOCUSED_HOVER"
-               file="../../views/resources/default_100_percent/common/button_focused_hover.png" type="BINDATA" />
-      <!-- Blue button -->
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON"
-               file="../../views/resources/default_100_percent/common/blue_button.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_PRESSED"
-               file="../../views/resources/default_100_percent/common/blue_button_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_HOVER"
-               file="../../views/resources/default_100_percent/common/blue_button_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_DISABLED"
-               file="../../views/resources/default_100_percent/common/blue_button_inactive.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_FOCUSED"
-               file="../../views/resources/default_100_percent/common/blue_button_focused.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_FOCUSED_PRESSED"
-               file="../../views/resources/default_100_percent/common/blue_button_focused_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_FOCUSED_HOVER"
-               file="../../views/resources/default_100_percent/common/blue_button_focused_hover.png" type="BINDATA" />
       <!-- Misc buttons -->
       <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_CLOSE"
                file="images/apps/topbar_button_close.png" type="BINDATA" />
@@ -72,36 +42,6 @@ without changes to the corresponding grd file. -->
                file="images/apps/button_butter_bar_close_pressed.png" type="BINDATA" />
 
       <!-- Component apps common image resources - 2x -->
-      <!-- White button -->
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_2X"
-               file="../../views/resources/default_200_percent/common/button.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_2X_PRESSED"
-               file="../../views/resources/default_200_percent/common/button_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_2X_HOVER"
-               file="../../views/resources/default_200_percent/common/button_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_2X_DISABLED"
-               file="../../views/resources/default_200_percent/common/button_inactive.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_2X_FOCUSED"
-               file="../../views/resources/default_200_percent/common/button_focused.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_2X_FOCUSED_PRESSED"
-               file="../../views/resources/default_200_percent/common/button_focused_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_2X_FOCUSED_HOVER"
-               file="../../views/resources/default_200_percent/common/button_focused_hover.png" type="BINDATA" />
-      <!-- Blue button -->
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_2X"
-               file="../../views/resources/default_200_percent/common/blue_button.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_2X_PRESSED"
-               file="../../views/resources/default_200_percent/common/blue_button_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_2X_HOVER"
-               file="../../views/resources/default_200_percent/common/blue_button_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_2X_DISABLED"
-               file="../../views/resources/default_200_percent/common/blue_button_inactive.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_2X_FOCUSED"
-               file="../../views/resources/default_200_percent/common/blue_button_focused.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_2X_FOCUSED_PRESSED"
-               file="../../views/resources/default_200_percent/common/blue_button_focused_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_2X_FOCUSED_HOVER"
-               file="../../views/resources/default_200_percent/common/blue_button_focused_hover.png" type="BINDATA" />
       <!-- Misc buttons -->
       <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_CLOSE"
                file="images/2x/apps/topbar_button_close.png" type="BINDATA" />
