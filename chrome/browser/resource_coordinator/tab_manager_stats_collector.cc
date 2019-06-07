@@ -27,7 +27,6 @@
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/sessions/session_restore.h"
-#include "components/metrics/system_memory_stats_recorder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/swap_metrics_driver.h"
@@ -160,13 +159,6 @@ void TabManagerStatsCollector::RecordWillDiscardUrgently(int num_alive_tabs) {
                                base::TimeDelta::FromMilliseconds(100),
                                base::TimeDelta::FromDays(1), 50);
   }
-
-// TODO(fdoray): Remove this #if when RecordMemoryStats is implemented for all
-// platforms.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-  // Record system memory usage at the time of the discard.
-  metrics::RecordMemoryStats(metrics::RECORD_MEMORY_STATS_TAB_DISCARDED);
-#endif
 
   last_urgent_discard_time_ = discard_time;
 }

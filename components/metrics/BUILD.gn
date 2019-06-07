@@ -93,7 +93,6 @@ jumbo_static_library("metrics") {
     "stability_metrics_provider.h",
     "system_memory_stats_recorder.h",
     "system_memory_stats_recorder_linux.cc",
-    "system_memory_stats_recorder_win.cc",
     "system_session_analyzer_win.cc",
     "system_session_analyzer_win.h",
     "unsent_log_store.cc",
