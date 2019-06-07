@@ -4,6 +4,51 @@
 
 module chromeos.ime.mojom;
 
+
+// Method of an operation to apply to a text field
+enum OperationMethod {
+  COMMIT_TEXT = 0,
+  SET_COMPOSITION = 1,
+};
+
+// Operation to apply to a text field, in response to a Keypress
+struct Operation {
+  // The operation we wish to apply to the text field
+  OperationMethod method;
+
+  // Additional arguments of the method to apply to the text field
+  string arguments;
+};
+
+// KeypressResponse represents the Rulebased engine response to a keypress
+struct KeypressResponse {
+  // result indicates if the function call was successful
+  // There must be a valid engine and the keypress must be valid for
+  // this to be the case
+  bool result;
+
+  // An array of operations to apply to the text field in respoonse to
+  // the Keypress
+  array<Operation> operations;
+};
+
+// Information about a specific keypress
+struct KeypressInfo {
+
+  // Keypress Type (Eg; "keydown", "keyup", etc)
+  string type;
+
+  // Keypress key code (eg; "KeyA", "KeyB", "Enter", etc )
+  string code;
+
+  // Booleans to indicate if an option key is active / pressed down
+  bool shift;
+  bool altgr;
+  bool caps;
+  bool ctrl;
+  bool alt;
+};
+
 // Manages access to a set of IME engines.
 interface InputEngineManager {
   // Sets up the connection by binding the |to_engine_request| to the input
@@ -32,4 +77,16 @@ interface InputChannel {
   // Returns a serialized protobuf result after processing a serialized
   // protobuf message.
   ProcessMessage(array<uint8> message) => (array<uint8> result);
+
+  // Process a KeypressInfo mojo object and return a KeypressResponse object
+  // with a list of operations to be handled by the caller's callback
+  // (for rulebased logic)
+  ProcessKeypressForRulebased(KeypressInfo message)
+                              => (KeypressResponse result);
+
+  // Resets the engine for rulebased logic
+  ResetForRulebased();
+
+  // Gets the keypress count for rulebased logic
+  GetRulebasedKeypressCountForTesting() => (int32 count);
 };

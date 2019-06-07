@@ -24,6 +24,43 @@ std::string GetIdFromImeSpec(const std::string& ime_spec) {
              : std::string();
 }
 
+uint8_t GenerateModifierValueForRulebased(bool shift, bool altgr, bool caps) {
+  uint8_t modifiers = 0;
+  if (shift)
+    modifiers |= rulebased::MODIFIER_SHIFT;
+  if (altgr)
+    modifiers |= rulebased::MODIFIER_ALTGR;
+  if (caps)
+    modifiers |= rulebased::MODIFIER_CAPSLOCK;
+  return modifiers;
+}
+
+mojom::KeypressResponsePtr GenerateKeypressResponseForRulebased(
+    rulebased::ProcessKeyResult& process_key_result) {
+  mojom::KeypressResponsePtr keypress_response = mojom::KeypressResponse::New();
+  keypress_response->result = process_key_result.key_handled;
+  if (!process_key_result.commit_text.empty()) {
+    std::string commit_text;
+    base::EscapeJSONString(process_key_result.commit_text, false, &commit_text);
+    keypress_response->operations.push_back(mojom::Operation::New(
+        mojom::OperationMethod::COMMIT_TEXT, commit_text));
+  }
+  // Need to add the setComposition operation to the result when the key is
+  // handled and commit_text and composition_text are both empty.
+  // That is the case of using Backspace to delete the last character in
+  // composition.
+  if (!process_key_result.composition_text.empty() ||
+      (process_key_result.key_handled &&
+       process_key_result.commit_text.empty())) {
+    std::string composition_text;
+    base::EscapeJSONString(process_key_result.composition_text, false,
+                           &composition_text);
+    keypress_response->operations.push_back(mojom::Operation::New(
+        mojom::OperationMethod::SET_COMPOSITION, composition_text));
+  }
+  return keypress_response;
+}
+
 }  // namespace
 
 InputEngineContext::InputEngineContext(const std::string& ime) : ime_spec(ime) {
@@ -74,7 +111,6 @@ void InputEngine::ProcessMessage(const std::vector<uint8_t>& message,
 
 std::string InputEngine::Process(const std::string& message,
                                  const InputEngineContext* context) {
-  std::string ime_spec = context->ime_spec;
   auto& engine = context->engine;
   if (!engine)
     return std::string();
@@ -183,6 +219,46 @@ std::string InputEngine::Process(const std::string& message,
   }
 
   return response_str;
+}
+
+void InputEngine::ProcessKeypressForRulebased(
+    mojom::KeypressInfoPtr keypress_info,
+    ProcessKeypressForRulebasedCallback callback) {
+  auto& context = channel_receivers_.current_context();
+  auto& engine = context.get()->engine;
+
+  if (!engine || keypress_info->type.empty() ||
+      keypress_info->type != "keydown") {
+    std::move(callback).Run(mojom::KeypressResponse::New(
+        false, std::vector<mojom::OperationPtr>(0)));
+    return;
+  }
+
+  rulebased::ProcessKeyResult process_key_result = engine->ProcessKey(
+      keypress_info->code,
+      GenerateModifierValueForRulebased(
+          keypress_info->shift, keypress_info->altgr, keypress_info->caps));
+  mojom::KeypressResponsePtr keypress_response =
+      GenerateKeypressResponseForRulebased(process_key_result);
+
+  std::move(callback).Run(std::move(keypress_response));
+}
+
+void InputEngine::ResetForRulebased() {
+  auto& context = channel_receivers_.current_context();
+  auto& engine = context.get()->engine;
+  // TODO(https://crbug.com/1633694) Handle the case when the engine is not
+  // defined
+  if (engine) {
+    engine->Reset();
+  }
+}
+
+void InputEngine::GetRulebasedKeypressCountForTesting(
+    GetRulebasedKeypressCountForTestingCallback callback) {
+  auto& context = channel_receivers_.current_context();
+  auto& engine = context.get()->engine;
+  std::move(callback).Run(engine ? engine->process_key_count() : -1);
 }
 
 }  // namespace ime

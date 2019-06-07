@@ -50,6 +50,12 @@ class InputEngine : public mojom::InputChannel {
                    ProcessTextCallback callback) override;
   void ProcessMessage(const std::vector<uint8_t>& message,
                       ProcessMessageCallback callback) override;
+  void ProcessKeypressForRulebased(
+      mojom::KeypressInfoPtr keypress_info,
+      ProcessKeypressForRulebasedCallback callback) override;
+  void ResetForRulebased() override;
+  void GetRulebasedKeypressCountForTesting(
+      GetRulebasedKeypressCountForTestingCallback callback) override;
 
   // TODO(https://crbug.com/837156): Implement a state for the interface.
 
