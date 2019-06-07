@@ -212,6 +212,13 @@
   'kitkat': {
     'swarming': {
       'dimensions': {
+        'device_os': 'KTU84P',
+      },
+    },
+  },
+  'kitkat_generic': {
+    'swarming': {
+      'dimensions': {
         'device_os': 'K',
       },
     },

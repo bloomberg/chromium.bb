@@ -196,17 +196,12 @@
         },
       },
       'KitKat Phone Tester (dbg)': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
         },
         'os_type': 'android',
       },
@@ -322,6 +317,10 @@
         },
       },
       'android-cronet-arm-dbg': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
         'additional_compile_targets': [
           'cronet_package',
           'cronet_perf_test_apk',
@@ -329,15 +328,6 @@
         'test_suites': {
           'gtest_tests': 'cronet_gtests',
           'isolated_scripts': 'cronet_dbg_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
         },
         'os_type': 'android',
       },
@@ -382,6 +372,10 @@
         },
       },
       'android-cronet-asan-arm-rel': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
         'additional_compile_targets': [
           'cronet_package',
           'cronet_perf_test_apk',
@@ -389,29 +383,15 @@
         'test_suites': {
           'gtest_tests': 'cronet_gtests',
         },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
-        },
         'os_type': 'android',
       },
       'android-cronet-kitkat-arm-rel': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
         'test_suites': {
           'gtest_tests': 'cronet_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
         },
         'os_type': 'android',
       },
@@ -484,6 +464,10 @@
         ]
       },
       'android-kitkat-arm-rel': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
         'additional_compile_targets': [
           'cronet_test_instrumentation_apk',
           'monochrome_static_initializers',
@@ -492,15 +476,6 @@
           'gtest_tests': 'chromium_android_gtests',
           'junit_tests': 'chromium_junit_tests',
           'isolated_scripts': 'monochrome_apk_checker_isolated_script',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
         },
         'os_type': 'android',
       },
@@ -566,14 +541,11 @@
         'os_type': 'android',
       },
       'Memory Infra Tester': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
           'expiration': 36000,
           'hard_timeout': 10800,
           'ignore_task_failure': False,
@@ -755,6 +727,10 @@
         },
       },
       'ToTAndroid': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
         'additional_compile_targets': [
           'all',
         ],
@@ -763,15 +739,6 @@
           'gtest_tests': 'chromium_android_gtests',
           'junit_tests': 'chromium_junit_tests',
           'isolated_scripts': 'monochrome_apk_checker_isolated_script',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
         },
         'os_type': 'android',
       },
@@ -1601,10 +1568,14 @@
       'android-code-coverage': {
         'mixins': [
           'code-coverage',
+          'kitkat',
+          'hammerhead',
         ],
         'test_suites': {
-          'junit_tests': 'android_code_coverage_junit_tests',
-        }
+          'gtest_tests': 'chromium_android_gtests',
+          'junit_tests': 'chromium_junit_tests',
+        },
+        'os_type': 'android',
       },
       'android-mojo-webview-rel': {
         'swarming': {
@@ -3843,17 +3814,14 @@
     'name': 'chromium.swarm',
     'machines': {
       'Android N5 Swarm': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_android_gtests',
         },
         'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
           'expiration': 10800,
         },
         'os_type': 'android',
@@ -4029,7 +3997,7 @@
       'WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)': {
         'os_type': 'android',
         'mixins': [
-          'kitkat',
+          'kitkat_generic',
           'hammerhead',
         ],
         'test_suites': {
@@ -4374,18 +4342,13 @@
     'name': 'tryserver.chromium.android',
     'machines': {
       'android_blink_rel': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_android_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-              'os': 'Android',
-            },
-          ],
         },
         'os_type': 'android',
       },
