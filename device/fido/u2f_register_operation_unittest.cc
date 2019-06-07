@@ -41,7 +41,7 @@ CtapMakeCredentialRequest CreateRegisterRequestWithRegisteredKeys(
   request.exclude_list = std::move(registered_keys);
   if (is_individual_attestation)
     request.attestation_preference =
-        AttestationConveyancePreference::ENTERPRISE;
+        AttestationConveyancePreference::kEnterprise;
 
   return request;
 }

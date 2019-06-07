@@ -814,14 +814,14 @@ void AuthenticatorCommon::MakeCredential(
   // |attestation_requested_| for showing the attestation consent prompt later.
   auto attestation = mojo::ConvertTo<::device::AttestationConveyancePreference>(
       options->attestation);
-  if (attestation == ::device::AttestationConveyancePreference::ENTERPRISE &&
+  if (attestation == ::device::AttestationConveyancePreference::kEnterprise &&
       !request_delegate_->ShouldPermitIndividualAttestation(
           relying_party_id_)) {
-    attestation = ::device::AttestationConveyancePreference::DIRECT;
+    attestation = ::device::AttestationConveyancePreference::kDirect;
   }
   ctap_make_credential_request_->attestation_preference = attestation;
   attestation_requested_ =
-      attestation != ::device::AttestationConveyancePreference::NONE;
+      attestation != ::device::AttestationConveyancePreference::kNone;
 
   switch (options->protection_policy) {
     case blink::mojom::ProtectionPolicy::UNSPECIFIED:
@@ -1099,7 +1099,7 @@ void AuthenticatorCommon::OnRegisterResponse(
         // the extension is not associated with any tab and therefore cannot
         // draw modal dialogs for the UI.
         //
-        // Note that for AttestationConveyancePreference::NONE, attestation
+        // Note that for AttestationConveyancePreference::kNone, attestation
         // erasure is still performed as usual.
         if (OriginIsCryptoTokenExtension(caller_origin_)) {
           InvokeCallbackAndCleanup(

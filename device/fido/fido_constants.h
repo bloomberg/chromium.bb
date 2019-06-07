@@ -403,12 +403,12 @@ extern const base::TimeDelta kBleDevicePairingModeWaitingInterval;
 
 // https://w3c.github.io/webauthn/#attestation-convey
 enum class AttestationConveyancePreference : uint8_t {
-  NONE,
-  INDIRECT,
-  DIRECT,
+  kNone,
+  kIndirect,
+  kDirect,
   // Non-standard value for individual attestation that we hope to end up in
   // the standard eventually.
-  ENTERPRISE,
+  kEnterprise,
 };
 
 // CredProtect enumerates the levels of credential protection specified by the

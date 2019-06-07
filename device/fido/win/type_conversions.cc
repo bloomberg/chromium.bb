@@ -230,13 +230,13 @@ CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
 uint32_t ToWinAttestationConveyancePreference(
     const AttestationConveyancePreference& value) {
   switch (value) {
-    case AttestationConveyancePreference::NONE:
+    case AttestationConveyancePreference::kNone:
       return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
-    case AttestationConveyancePreference::INDIRECT:
+    case AttestationConveyancePreference::kIndirect:
       return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
-    case AttestationConveyancePreference::DIRECT:
+    case AttestationConveyancePreference::kDirect:
       return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
-    case AttestationConveyancePreference::ENTERPRISE:
+    case AttestationConveyancePreference::kEnterprise:
       // Windows does not support enterprise attestation.
       return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
   }

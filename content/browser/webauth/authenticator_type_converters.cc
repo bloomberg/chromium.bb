@@ -228,16 +228,16 @@ TypeConverter<::device::AttestationConveyancePreference,
     Convert(const AttestationConveyancePreference& input) {
   switch (input) {
     case AttestationConveyancePreference::NONE:
-      return ::device::AttestationConveyancePreference::NONE;
+      return ::device::AttestationConveyancePreference::kNone;
     case AttestationConveyancePreference::INDIRECT:
-      return ::device::AttestationConveyancePreference::INDIRECT;
+      return ::device::AttestationConveyancePreference::kIndirect;
     case AttestationConveyancePreference::DIRECT:
-      return ::device::AttestationConveyancePreference::DIRECT;
+      return ::device::AttestationConveyancePreference::kDirect;
     case AttestationConveyancePreference::ENTERPRISE:
-      return ::device::AttestationConveyancePreference::ENTERPRISE;
+      return ::device::AttestationConveyancePreference::kEnterprise;
   }
   NOTREACHED();
-  return ::device::AttestationConveyancePreference::NONE;
+  return ::device::AttestationConveyancePreference::kNone;
 }
 
 // static
