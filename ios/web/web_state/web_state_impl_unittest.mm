@@ -30,6 +30,7 @@
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
+#import "ios/web/public/test/fakes/test_java_script_dialog_presenter.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state_observer.h"
 #include "ios/web/public/test/web_test.h"
@@ -1067,6 +1068,32 @@ TEST_P(WebStateImplTest, ShowAndClearInterstitialWithoutChangingSslStatus) {
   // DidChangeVisibleSecurityState is not called, because last committed and
   // transient items had the same SSL status.
   EXPECT_FALSE(observer.did_change_visible_security_state_info());
+}
+
+// Tests that CanTakeSnapshot() is false when a JavaScript dialog is being
+// presented.
+TEST_P(WebStateImplTest, DisallowSnapshotsDuringDialogPresentation) {
+  TestWebStateDelegate delegate;
+  web_state_->SetDelegate(&delegate);
+
+  EXPECT_TRUE(web_state_->CanTakeSnapshot());
+
+  // Pause the callback execution to allow testing while the dialog is
+  // presented.
+  delegate.GetTestJavaScriptDialogPresenter()->set_callback_execution_paused(
+      true);
+  web_state_->RunJavaScriptDialog(GURL(), JAVASCRIPT_DIALOG_TYPE_ALERT,
+                                  @"message", @"",
+                                  base::BindOnce(^(bool, NSString*){
+                                  }));
+
+  // Verify that CanTakeSnapshot() returns no while the dialog is presented.
+  EXPECT_FALSE(web_state_->CanTakeSnapshot());
+
+  // Unpause the presenter and verify that snapshots are enabled again.
+  delegate.GetTestJavaScriptDialogPresenter()->set_callback_execution_paused(
+      false);
+  EXPECT_TRUE(web_state_->CanTakeSnapshot());
 }
 
 INSTANTIATE_TEST_SUITE_P(ProgrammaticWebStateImplTest,

@@ -84,6 +84,7 @@ class TestWebState : public WebState {
   void DidChangeVisibleSecurityState() override {}
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
+  bool CanTakeSnapshot() const override;
   void TakeSnapshot(const gfx::RectF& rect, SnapshotCallback callback) override;
 
   // Setters for test data.
@@ -105,6 +106,7 @@ class TestWebState : public WebState {
   void CreateWebFramesManager();
   void AddWebFrame(std::unique_ptr<web::WebFrame> frame);
   void RemoveWebFrame(std::string frame_id);
+  void SetCanTakeSnapshot(bool can_take_snapshot);
 
   // Getters for test data.
   // Uses |policy_deciders| to return whether the navigation corresponding to
@@ -135,6 +137,7 @@ class TestWebState : public WebState {
   bool is_crashed_;
   bool is_evicted_;
   bool has_opener_;
+  bool can_take_snapshot_;
   GURL url_;
   base::string16 title_;
   base::string16 last_executed_javascript_;

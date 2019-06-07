@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_task_traits.h"
@@ -132,7 +133,9 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 }
 
 - (void)updateWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
-  DCHECK(self.webState->ContentIsHTML());
+  DCHECK(!web::GetWebClient()->IsAppSpecificURL(
+      self.webState->GetLastCommittedURL()));
+
   if (![self canTakeSnapshot]) {
     if (completion) {
       base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},

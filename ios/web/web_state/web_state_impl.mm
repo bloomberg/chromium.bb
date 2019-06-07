@@ -88,7 +88,8 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       is_being_destroyed_(false),
       web_controller_(nil),
       interstitial_(nullptr),
-      created_with_opener_(params.created_with_opener) {
+      created_with_opener_(params.created_with_opener),
+      weak_factory_(this) {
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     navigation_manager_ = std::make_unique<WKBasedNavigationManagerImpl>();
   } else {
@@ -417,9 +418,20 @@ void WebStateImpl::RunJavaScriptDialog(
     std::move(callback).Run(false, nil);
     return;
   }
+  running_javascript_dialog_ = true;
+  DialogClosedCallback presenter_callback =
+      base::BindOnce(&WebStateImpl::JavaScriptDialogClosed,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
   presenter->RunJavaScriptDialog(this, origin_url, javascript_dialog_type,
                                  message_text, default_prompt_text,
-                                 std::move(callback));
+                                 std::move(presenter_callback));
+}
+
+void WebStateImpl::JavaScriptDialogClosed(DialogClosedCallback callback,
+                                          bool success,
+                                          NSString* user_input) {
+  running_javascript_dialog_ = false;
+  std::move(callback).Run(success, user_input);
 }
 
 WebState* WebStateImpl::CreateNewWebState(const GURL& url,
@@ -762,8 +774,15 @@ void WebStateImpl::SetHasOpener(bool has_opener) {
   created_with_opener_ = has_opener;
 }
 
+bool WebStateImpl::CanTakeSnapshot() const {
+  // The WKWebView snapshot API depends on IPC execution that does not function
+  // properly when JavaScript dialogs are running.
+  return !running_javascript_dialog_;
+}
+
 void WebStateImpl::TakeSnapshot(const gfx::RectF& rect,
                                 SnapshotCallback callback) {
+  DCHECK(CanTakeSnapshot());
   __block SnapshotCallback shared_callback = std::move(callback);
   [web_controller_
       takeSnapshotWithRect:rect.ToCGRect()

@@ -323,6 +323,11 @@ class WebState : public base::SupportsUserData {
   // Callback used to handle snapshots. The parameter is the snapshot image.
   typedef base::OnceCallback<void(const gfx::Image&)> SnapshotCallback;
 
+  // Returns whether TakeSnapshot() can be executed.  The API may be disabled if
+  // the WKWebView IPC mechanism is blocked due to an outstanding JavaScript
+  // dialog.
+  virtual bool CanTakeSnapshot() const = 0;
+
   // Takes a snapshot of this WebState with |rect|. |rect| should be specified
   // in the coordinate system of the view returned by GetView(). |callback| is
   // asynchronously invoked after performing the snapshot. Prior to iOS 11, the

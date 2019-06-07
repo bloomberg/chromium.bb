@@ -15,6 +15,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
@@ -226,6 +227,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
       mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
+  bool CanTakeSnapshot() const override;
   void TakeSnapshot(const gfx::RectF& rect, SnapshotCallback callback) override;
   void AddObserver(WebStateObserver* observer) override;
   void RemoveObserver(WebStateObserver* observer) override;
@@ -304,6 +306,13 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // WebStateImpl.
   friend SessionStorageBuilder;
 
+  // Called when a dialog presented by the JavaScriptDialogPresenter is
+  // dismissed.  |original_callback| is the callback provided to
+  // RunJavaScriptDialog(), and is executed with |success| and |user_input|.
+  void JavaScriptDialogClosed(DialogClosedCallback callback,
+                              bool success,
+                              NSString* user_input);
+
   // Creates a WebUIIOS object for |url| that is owned by the caller. Returns
   // nullptr if |url| does not correspond to a WebUI page.
   std::unique_ptr<web::WebUIIOS> CreateWebUIIOS(const GURL& url);
@@ -380,6 +389,11 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // navigations, so this cache will be used to avoid running expensive favicon
   // fetching JavaScript.
   std::vector<web::FaviconURL> cached_favicon_urls_;
+
+  // Whether a JavaScript dialog is currently being presented.
+  bool running_javascript_dialog_ = false;
+
+  base::WeakPtrFactory<WebStateImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateImpl);
 };

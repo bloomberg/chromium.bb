@@ -412,7 +412,8 @@ class JavaScriptDialogPresenterTest : public ProgrammaticWebTestWithWebState {
   TestJavaScriptDialogPresenter* js_dialog_presenter() {
     return test_web_delegate_.GetTestJavaScriptDialogPresenter();
   }
-  const std::vector<TestJavaScriptDialog>& requested_dialogs() {
+  const std::vector<std::unique_ptr<TestJavaScriptDialog>>&
+  requested_dialogs() {
     return js_dialog_presenter()->requested_dialogs();
   }
   const GURL& page_url() { return page_url_; }
@@ -429,12 +430,12 @@ TEST_P(JavaScriptDialogPresenterTest, Alert) {
   ExecuteJavaScript(@"alert('test')");
 
   ASSERT_EQ(1U, requested_dialogs().size());
-  TestJavaScriptDialog dialog = requested_dialogs()[0];
-  EXPECT_EQ(web_state(), dialog.web_state);
-  EXPECT_EQ(page_url(), dialog.origin_url);
-  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_ALERT, dialog.java_script_dialog_type);
-  EXPECT_NSEQ(@"test", dialog.message_text);
-  EXPECT_FALSE(dialog.default_prompt_text);
+  auto& dialog = requested_dialogs().front();
+  EXPECT_EQ(web_state(), dialog->web_state);
+  EXPECT_EQ(page_url(), dialog->origin_url);
+  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_ALERT, dialog->java_script_dialog_type);
+  EXPECT_NSEQ(@"test", dialog->message_text);
+  EXPECT_FALSE(dialog->default_prompt_text);
 }
 
 // Tests that window.confirm dialog is shown and its result is true.
@@ -446,12 +447,12 @@ TEST_P(JavaScriptDialogPresenterTest, ConfirmWithTrue) {
   EXPECT_NSEQ(@YES, ExecuteJavaScript(@"confirm('test')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
-  TestJavaScriptDialog dialog = requested_dialogs()[0];
-  EXPECT_EQ(web_state(), dialog.web_state);
-  EXPECT_EQ(page_url(), dialog.origin_url);
-  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog.java_script_dialog_type);
-  EXPECT_NSEQ(@"test", dialog.message_text);
-  EXPECT_FALSE(dialog.default_prompt_text);
+  auto& dialog = requested_dialogs().front();
+  EXPECT_EQ(web_state(), dialog->web_state);
+  EXPECT_EQ(page_url(), dialog->origin_url);
+  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog->java_script_dialog_type);
+  EXPECT_NSEQ(@"test", dialog->message_text);
+  EXPECT_FALSE(dialog->default_prompt_text);
 }
 
 // Tests that window.confirm dialog is shown and its result is false.
@@ -461,12 +462,12 @@ TEST_P(JavaScriptDialogPresenterTest, ConfirmWithFalse) {
   EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
-  TestJavaScriptDialog dialog = requested_dialogs()[0];
-  EXPECT_EQ(web_state(), dialog.web_state);
-  EXPECT_EQ(page_url(), dialog.origin_url);
-  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog.java_script_dialog_type);
-  EXPECT_NSEQ(@"test", dialog.message_text);
-  EXPECT_FALSE(dialog.default_prompt_text);
+  auto& dialog = requested_dialogs().front();
+  EXPECT_EQ(web_state(), dialog->web_state);
+  EXPECT_EQ(page_url(), dialog->origin_url);
+  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog->java_script_dialog_type);
+  EXPECT_NSEQ(@"test", dialog->message_text);
+  EXPECT_FALSE(dialog->default_prompt_text);
 }
 
 // Tests that window.prompt dialog is shown.
@@ -478,12 +479,12 @@ TEST_P(JavaScriptDialogPresenterTest, Prompt) {
   EXPECT_NSEQ(@"Maybe", ExecuteJavaScript(@"prompt('Yes?', 'No')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
-  TestJavaScriptDialog dialog = requested_dialogs()[0];
-  EXPECT_EQ(web_state(), dialog.web_state);
-  EXPECT_EQ(page_url(), dialog.origin_url);
-  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_PROMPT, dialog.java_script_dialog_type);
-  EXPECT_NSEQ(@"Yes?", dialog.message_text);
-  EXPECT_NSEQ(@"No", dialog.default_prompt_text);
+  auto& dialog = requested_dialogs().front();
+  EXPECT_EQ(web_state(), dialog->web_state);
+  EXPECT_EQ(page_url(), dialog->origin_url);
+  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_PROMPT, dialog->java_script_dialog_type);
+  EXPECT_NSEQ(@"Yes?", dialog->message_text);
+  EXPECT_NSEQ(@"No", dialog->default_prompt_text);
 }
 
 INSTANTIATE_TEST_SUITES(JavaScriptDialogPresenterTest);

@@ -42,6 +42,7 @@ TestWebState::TestWebState()
       is_crashed_(false),
       is_evicted_(false),
       has_opener_(false),
+      can_take_snapshot_(false),
       trust_level_(kAbsolute),
       content_is_html_(true),
       web_view_proxy_(nil) {}
@@ -366,6 +367,10 @@ void TestWebState::RemoveWebFrame(std::string frame_id) {
   manager->RemoveFrameWithId(frame_id);
 }
 
+void TestWebState::SetCanTakeSnapshot(bool can_take_snapshot) {
+  can_take_snapshot_ = can_take_snapshot;
+}
+
 CRWWebViewProxyType TestWebState::GetWebViewProxy() const {
   return web_view_proxy_;
 }
@@ -388,6 +393,10 @@ bool TestWebState::HasOpener() const {
 
 void TestWebState::SetHasOpener(bool has_opener) {
   has_opener_ = has_opener;
+}
+
+bool TestWebState::CanTakeSnapshot() const {
+  return can_take_snapshot_;
 }
 
 void TestWebState::TakeSnapshot(const gfx::RectF& rect,
