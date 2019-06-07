@@ -43,6 +43,4 @@
 # To report any bugs or any suggestion, please write to tsengel.braille.dev@gmail.com and angaragerdene.b@gmail.com
 
 include mn-MN-common.cti
-include en-ueb-g1.ctb
-
-	
+include en-ueb-g2.ctb
