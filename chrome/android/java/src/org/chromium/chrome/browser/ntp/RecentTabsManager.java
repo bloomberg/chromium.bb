@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
 
 import org.chromium.base.VisibleForTesting;
@@ -248,13 +247,16 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     }
 
     /**
-     * Returns a 16x16 favicon for a given synced url.
+     * Returns a favicon for a given foreign url.
      *
      * @param url The url to fetch the favicon for.
-     * @return 16x16 favicon or null if favicon unavailable.
+     * @param size the desired favicon size.
+     * @param faviconCallback the callback to be invoked when the favicon is available.
+     * @return favicon or null if favicon unavailable.
      */
-    public Bitmap getSyncedFaviconImageForURL(String url) {
-        return mFaviconHelper.getSyncedFaviconImageForURL(mProfile, url);
+    public boolean getForeignFaviconForUrl(
+            String url, int size, FaviconImageCallback faviconCallback) {
+        return mFaviconHelper.getForeignFaviconImageForURL(mProfile, url, size, faviconCallback);
     }
 
     /**
