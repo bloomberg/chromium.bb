@@ -1031,8 +1031,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
        AltJobSucceedsMainJobBlockedControllerDestroyed) {
   quic_data_ = std::make_unique<MockQuicData>(
       HttpNetworkSession::Params().quic_supported_versions.front());
-  quic_data_->AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  quic_data_->AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data_->AddRead(ASYNC, OK);
 
   HttpRequestInfo request_info;
@@ -2301,8 +2300,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 TEST_F(HttpStreamFactoryJobControllerTest, PreconnectToHostWithValidAltSvc) {
   quic_data_ = std::make_unique<MockQuicData>(
       HttpNetworkSession::Params().quic_supported_versions.front());
-  quic_data_->AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  quic_data_->AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
   quic_data_->AddRead(ASYNC, OK);
 
   HttpRequestInfo request_info;
@@ -2801,7 +2799,7 @@ TEST_P(HttpStreamFactoryJobControllerMisdirectedRequestRetry,
         HttpNetworkSession::Params().quic_supported_versions.front());
     quic_data_->AddConnect(SYNCHRONOUS, OK);
     quic_data_->AddWrite(SYNCHRONOUS,
-                         client_maker_.MakeInitialSettingsPacket(1, nullptr));
+                         client_maker_.MakeInitialSettingsPacket(1));
     quic_data_->AddRead(ASYNC, OK);
   }
   tcp_data_ = std::make_unique<SequencedSocketData>();

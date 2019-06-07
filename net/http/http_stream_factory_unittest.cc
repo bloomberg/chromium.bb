@@ -48,6 +48,7 @@
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_stream_factory_peer.h"
 #include "net/quic/quic_test_packet_maker.h"
+#include "net/quic/quic_test_packet_printer.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/connect_job.h"
@@ -835,7 +836,8 @@ class TestBidirectionalDelegate : public BidirectionalStreamImpl::Delegate {
 // Simplify ownership issues and the interaction with the MockSocketFactory.
 class MockQuicData {
  public:
-  MockQuicData() : packet_number_(0) {}
+  explicit MockQuicData(quic::ParsedQuicVersion version)
+      : packet_number_(0), printer_(version) {}
 
   ~MockQuicData() = default;
 
@@ -857,6 +859,7 @@ class MockQuicData {
 
   void AddSocketDataToFactory(MockClientSocketFactory* factory) {
     socket_data_ = std::make_unique<SequencedSocketData>(reads_, writes_);
+    socket_data_->set_printer(&printer_);
     factory->AddSocketDataProvider(socket_data_.get());
   }
 
@@ -865,6 +868,7 @@ class MockQuicData {
   std::vector<MockWrite> writes_;
   std::vector<MockRead> reads_;
   size_t packet_number_;
+  QuicPacketPrinter printer_;
   std::unique_ptr<SequencedSocketData> socket_data_;
 };
 
@@ -2268,6 +2272,8 @@ class HttpStreamFactoryBidirectionalQuicTest
         version_.transport_version, n);
   }
 
+  quic::ParsedQuicVersion version() const { return version_; }
+
  private:
   const quic::ParsedQuicVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
@@ -2298,20 +2304,17 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {
-  MockQuicData mock_quic_data;
+  MockQuicData mock_quic_data(version());
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  quic::QuicStreamOffset header_stream_offset = 0;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
-      1, &header_stream_offset));
+  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
       2, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
-      /*parent_stream_id=*/0, &spdy_headers_frame_length,
-      &header_stream_offset));
+      /*parent_stream_id=*/0, &spdy_headers_frame_length));
   size_t spdy_response_headers_frame_length;
   mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, GetNthClientInitiatedBidirectionalStreamId(0),
@@ -2426,20 +2429,17 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplHttpJobFailsQuicJobSucceeds) {
   // Set up Quic data.
-  MockQuicData mock_quic_data;
+  MockQuicData mock_quic_data(version());
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  quic::QuicStreamOffset header_stream_offset = 0;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
-      1, &header_stream_offset));
+  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
       2, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
-      /*parent_stream_id=*/0, &spdy_headers_frame_length,
-      &header_stream_offset));
+      /*parent_stream_id=*/0, &spdy_headers_frame_length));
   size_t spdy_response_headers_frame_length;
   mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, GetNthClientInitiatedBidirectionalStreamId(0),
@@ -2680,20 +2680,17 @@ TEST_F(HttpStreamFactoryTest, Tag) {
 // should not be shared amongst streams with different socket tags).
 TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   // Prepare mock QUIC data for a first session establishment.
-  MockQuicData mock_quic_data;
+  MockQuicData mock_quic_data(version());
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  quic::QuicStreamOffset header_stream_offset = 0;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
-      1, &header_stream_offset));
+  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
       2, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
-      /*parent_stream_id=*/0, &spdy_headers_frame_length,
-      &header_stream_offset));
+      /*parent_stream_id=*/0, &spdy_headers_frame_length));
   size_t spdy_response_headers_frame_length;
   mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, GetNthClientInitiatedBidirectionalStreamId(0),
@@ -2704,17 +2701,15 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   mock_quic_data.AddSocketDataToFactory(&socket_factory());
 
   // Prepare mock QUIC data for a second session establishment.
-  MockQuicData mock_quic_data2;
-  quic::QuicStreamOffset header_stream_offset2 = 0;
-  mock_quic_data2.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
-      1, &header_stream_offset2));
+  client_packet_maker().Reset();
+  MockQuicData mock_quic_data2(version());
+  mock_quic_data2.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
   mock_quic_data2.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
       2, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
-      /*parent_stream_id=*/0, &spdy_headers_frame_length,
-      &header_stream_offset));
+      /*parent_stream_id=*/0, &spdy_headers_frame_length));
   mock_quic_data2.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/false,

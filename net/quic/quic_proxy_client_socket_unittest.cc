@@ -145,8 +145,6 @@ class QuicProxyClientSocketTest
                       quic::Perspective::IS_SERVER,
                       false),
         random_generator_(0),
-        header_stream_offset_(0),
-        response_offset_(0),
         user_agent_(kUserAgent),
         proxy_host_port_(kProxyHost, kProxyPort),
         endpoint_host_port_(kOriginHost, kOriginPort),
@@ -279,8 +277,7 @@ class QuicProxyClientSocketTest
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructSettingsPacket(
       uint64_t packet_number) {
-    return client_maker_.MakeInitialSettingsPacket(packet_number,
-                                                   &header_stream_offset_);
+    return client_maker_.MakeInitialSettingsPacket(packet_number);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstPacket(
@@ -340,7 +337,7 @@ class QuicProxyClientSocketTest
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, client_data_stream_id1_, kIncludeVersion, !kFin,
         ConvertRequestPriorityToQuicPriority(request_priority),
-        std::move(block), 0, nullptr, &header_stream_offset_);
+        std::move(block), 0, nullptr);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructConnectAuthRequestPacket(
@@ -351,7 +348,7 @@ class QuicProxyClientSocketTest
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, client_data_stream_id1_, kIncludeVersion, !kFin,
         ConvertRequestPriorityToQuicPriority(LOWEST), std::move(block), 0,
-        nullptr, &header_stream_offset_);
+        nullptr);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructDataPacket(
@@ -444,7 +441,7 @@ class QuicProxyClientSocketTest
 
     return server_maker_.MakeResponseHeadersPacket(
         packet_number, client_data_stream_id1_, !kIncludeVersion, fin,
-        std::move(block), nullptr, &response_offset_);
+        std::move(block), nullptr);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket>
@@ -454,7 +451,7 @@ class QuicProxyClientSocketTest
     block["proxy-authenticate"] = "Basic realm=\"MyRealm1\"";
     return server_maker_.MakeResponseHeadersPacket(
         packet_number, client_data_stream_id1_, !kIncludeVersion, fin,
-        std::move(block), nullptr, &response_offset_);
+        std::move(block), nullptr);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket>
@@ -465,7 +462,7 @@ class QuicProxyClientSocketTest
     block["set-cookie"] = "foo=bar";
     return server_maker_.MakeResponseHeadersPacket(
         packet_number, client_data_stream_id1_, !kIncludeVersion, fin,
-        std::move(block), nullptr, &response_offset_);
+        std::move(block), nullptr);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket>
@@ -475,7 +472,7 @@ class QuicProxyClientSocketTest
 
     return server_maker_.MakeResponseHeadersPacket(
         packet_number, client_data_stream_id1_, !kIncludeVersion, fin,
-        std::move(block), nullptr, &response_offset_);
+        std::move(block), nullptr);
   }
 
   void AssertConnectSucceeds() {
@@ -593,8 +590,6 @@ class QuicProxyClientSocketTest
   quic::test::MockRandom random_generator_;
   ProofVerifyDetailsChromium verify_details_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  quic::QuicStreamOffset header_stream_offset_;
-  quic::QuicStreamOffset response_offset_;
 
   std::string user_agent_;
   HostPortPair proxy_host_port_;
