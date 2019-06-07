@@ -97,12 +97,10 @@ PaintRenderingContext2DSettings* ParsePaintRenderingContext2DSettings(
 PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
     LocalFrame* frame,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    WorkerReportingProxy& reporting_proxy,
-    PaintWorkletPendingGeneratorRegistry* pending_generator_registry) {
+    WorkerReportingProxy& reporting_proxy) {
   DCHECK(!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
   auto* global_scope = MakeGarbageCollected<PaintWorkletGlobalScope>(
-      frame, std::move(creation_params), reporting_proxy,
-      pending_generator_registry);
+      frame, std::move(creation_params), reporting_proxy);
   global_scope->ScriptController()->Initialize(NullURL());
   MainThreadDebugger::Instance()->ContextCreated(
       global_scope->ScriptController()->GetScriptState(),
@@ -122,10 +120,8 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
 PaintWorkletGlobalScope::PaintWorkletGlobalScope(
     LocalFrame* frame,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    WorkerReportingProxy& reporting_proxy,
-    PaintWorkletPendingGeneratorRegistry* pending_generator_registry)
-    : WorkletGlobalScope(std::move(creation_params), reporting_proxy, frame),
-      pending_generator_registry_(pending_generator_registry) {}
+    WorkerReportingProxy& reporting_proxy)
+    : WorkletGlobalScope(std::move(creation_params), reporting_proxy, frame) {}
 
 PaintWorkletGlobalScope::PaintWorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
@@ -145,7 +141,6 @@ void PaintWorkletGlobalScope::Dispose() {
   } else {
     MainThreadDebugger::Instance()->ContextWillBeDestroyed(
         ScriptController()->GetScriptState());
-    pending_generator_registry_ = nullptr;
   }
   WorkletGlobalScope::Dispose();
 }
@@ -246,7 +241,6 @@ double PaintWorkletGlobalScope::devicePixelRatio() const {
 
 void PaintWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(paint_definitions_);
-  visitor->Trace(pending_generator_registry_);
   WorkletGlobalScope::Trace(visitor);
 }
 

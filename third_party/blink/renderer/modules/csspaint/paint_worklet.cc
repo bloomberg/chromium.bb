@@ -205,7 +205,7 @@ WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
   if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
     return MakeGarbageCollected<PaintWorkletGlobalScopeProxy>(
         To<Document>(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
-        pending_generator_registry_, GetNumberOfGlobalScopes() + 1);
+        GetNumberOfGlobalScopes() + 1);
   }
 
   if (!proxy_client_) {

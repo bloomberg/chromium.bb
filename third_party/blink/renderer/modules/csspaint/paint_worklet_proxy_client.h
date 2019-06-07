@@ -16,6 +16,8 @@
 
 namespace blink {
 
+class DocumentPaintDefinition;
+class PaintWorklet;
 class WorkletGlobalScope;
 
 // Mediates between the (multiple) PaintWorkletGlobalScopes on the worklet

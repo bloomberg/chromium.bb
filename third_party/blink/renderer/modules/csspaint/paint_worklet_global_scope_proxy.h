@@ -29,7 +29,6 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
 
   PaintWorkletGlobalScopeProxy(LocalFrame*,
                                WorkletModuleResponsesMap*,
-                               PaintWorkletPendingGeneratorRegistry*,
                                size_t global_scope_number);
   ~PaintWorkletGlobalScopeProxy() override = default;
 
