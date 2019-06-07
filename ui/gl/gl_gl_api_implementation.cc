@@ -15,6 +15,7 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/shader_tracking.h"
 
 namespace gl {
 
@@ -465,6 +466,34 @@ void RealGLApi::glDepthRangeFn(GLclampd z_near, GLclampd z_far) {
     DCHECK(driver_->fn.glDepthRangeFn);
     GLApiBase::glDepthRangeFn(z_near, z_far);
   }
+}
+
+void RealGLApi::glUseProgramFn(GLuint program) {
+  ui::gl::ShaderTracking* shader_tracking =
+      ui::gl::ShaderTracking::GetInstance();
+  if (shader_tracking) {
+    std::vector<char> buffers[2];
+    char* strings[2] = {nullptr, nullptr};
+    if (program) {
+      // The following only works with ANGLE backend because ANGLE makes sure
+      // a program's shaders are not actually deleted and source can still be
+      // queried even if glDeleteShaders() has been called on them.
+
+      // Also, in theory, different shaders can be attached to the program
+      // after the last link, but for now, ignore such corner case patterns.
+      GLsizei count = 0;
+      GLuint shaders[2] = {0};
+      glGetAttachedShadersFn(program, 2, &count, shaders);
+      for (GLsizei ii = 0; ii < std::min(2, count); ++ii) {
+        buffers[ii].resize(ui::gl::ShaderTracking::kMaxShaderSize);
+        glGetShaderSourceFn(shaders[ii], ui::gl::ShaderTracking::kMaxShaderSize,
+                            nullptr, buffers[ii].data());
+        strings[ii] = buffers[ii].data();
+      }
+    }
+    shader_tracking->SetShaders(strings[0], strings[1]);
+  }
+  GLApiBase::glUseProgramFn(program);
 }
 
 void RealGLApi::InitializeFilteredExtensionsIfNeeded() {

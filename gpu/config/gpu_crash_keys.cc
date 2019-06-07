@@ -24,6 +24,8 @@ crash_reporter::CrashKeyString<4> gpu_gl_context_is_virtual(
     "gpu-gl-context-is-virtual");
 crash_reporter::CrashKeyString<20> available_physical_memory_in_mb(
     "available-physical-memory-in-mb");
+crash_reporter::CrashKeyString<1024> current_shader_0("current-shader-0");
+crash_reporter::CrashKeyString<1024> current_shader_1("current-shader-1");
 
 }  // namespace crash_keys
 }  // namespace gpu

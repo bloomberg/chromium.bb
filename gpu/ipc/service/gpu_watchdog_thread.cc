@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_crash_keys.h"
+#include "ui/gl/shader_tracking.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -477,6 +478,15 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
       base::SysInfo::AmountOfAvailablePhysicalMemory() >> 20;
   crash_keys::available_physical_memory_in_mb.Set(
       base::NumberToString(available_physical_memory));
+
+  ui::gl::ShaderTracking* shader_tracking =
+      ui::gl::ShaderTracking::GetInstance();
+  if (shader_tracking) {
+    std::string shaders[2];
+    shader_tracking->GetShaders(shaders, shaders + 1);
+    crash_keys::current_shader_0.Set(shaders[0]);
+    crash_keys::current_shader_1.Set(shaders[1]);
+  }
 
   // Check it one last time before crashing.
   if (!base::subtle::NoBarrier_Load(&awaiting_acknowledge_)) {

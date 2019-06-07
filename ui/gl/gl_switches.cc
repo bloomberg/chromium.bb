@@ -174,4 +174,10 @@ const base::Feature kDefaultANGLEOpenGL{"DefaultANGLEOpenGL",
 const base::Feature kSwapChainFrameStatistics{
     "SwapChainFrameStatistics", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Track current program's shaders at glUseProgram() call for crash report
+// purpose. Only effective on Windows because the attached shaders may only
+// be reliably retrieved with ANGLE backend.
+const base::Feature kTrackCurrentShaders{"TrackCurrentShaders",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
