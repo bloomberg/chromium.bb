@@ -62,6 +62,7 @@
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "chrome/browser/search/local_ntp_first_run_field_trial_handler.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
@@ -723,6 +724,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   safe_browsing::RegisterProfilePrefs(registry);
   SafeBrowsingTriggeredPopupBlocker::RegisterProfilePrefs(registry);
   SessionStartupPref::RegisterProfilePrefs(registry);
+  SharingSyncPreference::RegisterProfilePrefs(registry);
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
   syncer::PerUserTopicRegistrationManager::RegisterProfilePrefs(registry);

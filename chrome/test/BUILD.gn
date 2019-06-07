@@ -3051,6 +3051,7 @@ test("unit_tests") {
     "../browser/sessions/chrome_serialized_navigation_driver_unittest.cc",
     "../browser/sessions/restore_on_startup_policy_handler_unittest.cc",
     "../browser/sessions/session_common_utils_unittest.cc",
+    "../browser/sharing/sharing_sync_preference_unittest.cc",
     "../browser/shell_integration_win_unittest.cc",
     "../browser/signin/account_consistency_mode_manager_unittest.cc",
     "../browser/signin/chrome_device_id_helper_unittest.cc",

@@ -1510,6 +1510,8 @@ jumbo_split_static_library("browser") {
     "sharing/sharing_service.h",
     "sharing/sharing_service_factory.cc",
     "sharing/sharing_service_factory.h",
+    "sharing/sharing_sync_preference.cc",
+    "sharing/sharing_sync_preference.h",
     "shell_integration.cc",
     "shell_integration.h",
     "shell_integration_android.cc",
