@@ -76,9 +76,9 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
       fidl::InterfaceRequest<fuchsia::ui::scenic::Session> session_request,
       fidl::InterfaceHandle<fuchsia::ui::scenic::SessionListener> listener);
 
-  // Links a surface to its parent in the host process.
-  void LinkSurfaceToParent(gfx::AcceleratedWidget widget,
-                           mojo::ScopedHandle export_token_mojo);
+  // Links a surface to its parent window in the host process.
+  void AttachSurfaceToWindow(gfx::AcceleratedWidget window,
+                             mojo::ScopedHandle surface_view_holder_token_mojo);
 
   base::flat_map<gfx::AcceleratedWidget, ScenicSurface*> surface_map_
       GUARDED_BY(surface_lock_);

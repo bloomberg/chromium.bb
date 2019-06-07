@@ -58,14 +58,14 @@ ScenicWindow::~ScenicWindow() {
   manager_->RemoveWindow(window_id_, this);
 }
 
-void ScenicWindow::ExportRenderingEntity(
-    fuchsia::ui::gfx::ExportToken export_token) {
-  scenic::EntityNode export_node(&scenic_session_);
+void ScenicWindow::AttachSurfaceView(
+    fuchsia::ui::views::ViewHolderToken token) {
+  scenic::ViewHolder surface_view_holder(&scenic_session_, std::move(token),
+                                         "chromium window surface");
 
   render_node_.DetachChildren();
-  render_node_.AddChild(export_node);
+  render_node_.Attach(surface_view_holder);
 
-  export_node.Export(std::move(export_token.value));
   scenic_session_.Present(
       /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 }

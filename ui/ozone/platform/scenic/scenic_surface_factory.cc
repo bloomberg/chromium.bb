@@ -100,14 +100,14 @@ GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
 
 std::unique_ptr<PlatformWindowSurface>
 ScenicSurfaceFactory::CreatePlatformWindowSurface(
-    gfx::AcceleratedWidget widget) {
+    gfx::AcceleratedWidget window) {
   DCHECK(gpu_host_);
   auto surface =
-      std::make_unique<ScenicSurface>(this, widget, CreateScenicSession());
+      std::make_unique<ScenicSurface>(this, window, CreateScenicSession());
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ScenicSurfaceFactory::LinkSurfaceToParent,
-                                weak_ptr_factory_.GetWeakPtr(), widget,
-                                surface->CreateParentExportToken()));
+      FROM_HERE, base::BindOnce(&ScenicSurfaceFactory::AttachSurfaceToWindow,
+                                weak_ptr_factory_.GetWeakPtr(), window,
+                                surface->CreateView()));
   return surface;
 }
 
@@ -205,11 +205,12 @@ void ScenicSurfaceFactory::CreateScenicSessionOnMainThread(
   scenic_->CreateSession(std::move(session_request), std::move(listener));
 }
 
-void ScenicSurfaceFactory::LinkSurfaceToParent(
-    gfx::AcceleratedWidget widget,
-    mojo::ScopedHandle export_token_mojo) {
+void ScenicSurfaceFactory::AttachSurfaceToWindow(
+    gfx::AcceleratedWidget window,
+    mojo::ScopedHandle surface_view_holder_token_mojo) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  gpu_host_->ExportParent(widget, std::move(export_token_mojo));
+  gpu_host_->AttachSurfaceToWindow(window,
+                                   std::move(surface_view_holder_token_mojo));
 }
 
 }  // namespace ui
