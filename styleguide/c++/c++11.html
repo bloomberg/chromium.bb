@@ -286,6 +286,20 @@ enum <i>enumname</i> : <i>base-type</i></code></td>
 </tr>
 
 <tr>
+<td>Ref-qualified Member Functions</td>
+<td><code>class T {<br />
+&nbsp;&nbsp;void f() &amp; {}<br />
+&nbsp;&nbsp;void f() &amp;&amp; {}<br />
+};<br />
+t.f();&nbsp;&nbsp;// first<br />
+T().f();&nbsp;&nbsp;// second<br />
+std::move(t).f();&nbsp;&nbsp;// second</code></td>
+<td>Allows class member functions to only bind to |this| as an rvalue or lvalue.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/member_functions#const-.2C_volatile-.2C_and_ref-qualified_member_functions">const-, volatile-, and ref-qualified member functions</a></td>
+<td>Use sparingly, since this feature may not be understood well by all developers. Consult with <code>styleguide/c++/OWNERS</code> when in doubt. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/gowclr2LPQA">Discussion Thread</a></td>
+</tr>
+
+<tr>
 <td>Rvalue References</td>
 <td><code>T(T&amp;&amp; t)</code> and <code>T&amp; operator=(T&amp;&amp; t)<br/><br/>
 template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
@@ -776,20 +790,6 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <td>An integer of at least 64 bits</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/types">Fundamental types</a></td>
 <td>Use a stdint.h type if you need a 64bit number. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/RxugZ-pIDxk">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Ref-qualified Member Functions</td>
-<td><code>class T {<br />
-&nbsp;&nbsp;void f() &amp; {}<br />
-&nbsp;&nbsp;void f() &amp;&amp; {}<br />
-};<br />
-t.f();&nbsp;&nbsp;// first<br />
-T().f();&nbsp;&nbsp;// second<br />
-std::move(t).f();&nbsp;&nbsp;// second</code></td>
-<td>Allows class member functions to only bind to |this| as an rvalue or lvalue.</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/member_functions#const-.2C_volatile-.2C_and_ref-qualified_member_functions">const-, volatile-, and ref-qualified member functions</a></td>
-<td>Banned in the <a href="https://google.github.io/styleguide/cppguide.html#C++11">Google Style Guide</a>. May only be used in Chromium with explicit approval from <code>styleguide/c++/OWNERS</code>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/gowclr2LPQA">Discussion Thread</a></td>
 </tr>
 
 <tr>
