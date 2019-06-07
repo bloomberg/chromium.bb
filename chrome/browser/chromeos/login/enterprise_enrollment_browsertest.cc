@@ -57,6 +57,8 @@ constexpr char kAdPasswordInput[] = "passwordInput";
 constexpr char kAdConfigurationSelect[] = "joinConfigSelect";
 constexpr char kSubmitButton[] = "submitButton";
 constexpr char kNextButton[] = "nextButton";
+constexpr char kWebview[] = "oauth-enroll-auth-view";
+constexpr char kPartitionAttribute[] = ".partition";
 
 constexpr char kAdEncryptionTypesSelect[] = "encryptionList";
 constexpr char kAdMachineOrgUnitInput[] = "orgUnitInput";
@@ -523,6 +525,28 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, TestLicenseSelection) {
   enrollment_ui_.SelectEnrollmentLicense(test::values::kLicenseTypeAnnual);
   enrollment_ui_.UseSelectedLicense();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+}
+
+// Verifies that the storage partition is updated when the enrollment screen is
+// shown again.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, StoragePartitionUpdated) {
+  ShowEnrollmentScreen();
+  ExecutePendingJavaScript();
+
+  std::string webview_partition_path =
+      test::GetOobeElementPath({kEnrollmentUI, kWebview}) + kPartitionAttribute;
+  std::string webview_partition_name_1 =
+      test::OobeJS().GetString(webview_partition_path);
+
+  // Simulate navigating over the enrollment screen a second time (without using
+  // 'Back' and 'Next' buttons).
+  ShowEnrollmentScreen();
+  ExecutePendingJavaScript();
+  std::string webview_partition_name_2 =
+      test::OobeJS().GetString(webview_partition_path);
+
+  // Check that the partition was updated.
+  EXPECT_NE(webview_partition_name_1, webview_partition_name_2);
 }
 
 // Shows the enrollment screen and mocks the enrollment helper to show Active

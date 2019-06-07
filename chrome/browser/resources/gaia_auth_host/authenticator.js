@@ -288,8 +288,9 @@ cr.define('cr.login', function() {
     /**
      * Re-binds to another webview.
      * @param {Object} webview the new webview to be used by this Authenticator.
+     * @private
      */
-    rebindWebview(webview) {
+    rebindWebview_(webview) {
       if (!this.isDomLoaded_) {
         // We haven't bound to the previously set webview yet, so simply update
         // |webview_| to use the new element during the delayed initialization.
@@ -300,6 +301,51 @@ cr.define('cr.login', function() {
       assert(!this.webview_);
       this.webview_ = webview;
       this.bindToWebview_();
+    }
+
+    /**
+     * Copies attributes between nodes.
+     * @param {!Element} fromNode source to copy attributes from
+     * @param {!Element} toNode target to copy attributes to
+     * @param {!Set<string>} skipAttributes specifies attributes to be skipped
+     * @private
+     */
+    copyAttributes_(fromNode, toNode, skipAttributes) {
+      for (let i = 0; i < fromNode.attributes.length; ++i) {
+        const attribute = fromNode.attributes[i];
+        if (!skipAttributes.has(attribute.nodeName)) {
+          toNode.setAttribute(attribute.nodeName, attribute.nodeValue);
+        }
+      }
+    }
+
+    /**
+     * Changes the 'partition' attribute of |webview_|. If |webview_| has
+     * already navigated, this function re-creates it since the storage
+     * partition of an active renderer process cannot change.
+     * @param {string} newWebviewPartitionName the new partition
+     * @private
+     */
+    setWebviewPartition(newWebviewPartitionName) {
+      if (!this.webview_.src) {
+        // We have not navigated anywhere yet. Note that a webview's src
+        // attribute does not allow a change back to "".
+        this.webview_.partition = newWebviewPartitionName;
+      } else if (this.webview_.partition != newWebviewPartitionName) {
+        // The webview has already navigated. We have to re-create it.
+        const webivewParent = this.webview_.parentElement;
+
+        // Copy all attributes except for partition and src from the previous
+        // webview. Use the specified |newWebviewPartitionName|.
+        const newWebview = document.createElement('webview');
+        this.copyAttributes_(
+            this.webview_, newWebview, new Set(['src', 'partition']));
+        newWebview.partition = newWebviewPartitionName;
+
+        webivewParent.replaceChild(newWebview, this.webview_);
+
+        this.rebindWebview_(newWebview);
+      }
     }
 
     /**

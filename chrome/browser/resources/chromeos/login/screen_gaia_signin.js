@@ -631,7 +631,7 @@ Polymer({
   getSigninFrame_: function() {
     // Note: Can't use |this.$|, since it returns cached references to elements
     // originally present in DOM, while the signin-frame is dynamically
-    // recreated (see setSigninFramePartition_()).
+    // recreated (see Authenticator.setWebviewPartition()).
     const signinFrame = this.shadowRoot.getElementById('signin-frame');
     assert(signinFrame);
     return signinFrame;
@@ -672,52 +672,6 @@ Polymer({
   },
 
   /**
-   * Copies attributes between nodes.
-   * @param {!Element} fromNode source to copy attributes from
-   * @param {!Element} toNode target to copy attributes to
-   * @param {!Set<string>} skipAttributes specifies attributes to be skipped
-   * @private
-   */
-  copyAttributes_: function(fromNode, toNode, skipAttributes) {
-    for (let i = 0; i < fromNode.attributes.length; ++i) {
-      const attribute = fromNode.attributes[i];
-      if (!skipAttributes.has(attribute.nodeName))
-        toNode.setAttribute(attribute.nodeName, attribute.nodeValue);
-    }
-  },
-
-  /**
-   * Changes the 'partition' attribute of the sign-in frame. If the sign-in
-   * frame has already navigated, this function re-creates it.
-   * @param {string} newWebviewPartitionName the new partition
-   * @private
-   */
-  setSigninFramePartition_: function(newWebviewPartitionName) {
-    const signinFrame = this.getSigninFrame_();
-
-    if (!signinFrame.src) {
-      // We have not navigated anywhere yet. Note that a webview's src
-      // attribute does not allow a change back to "".
-      signinFrame.partition = newWebviewPartitionName;
-    } else if (signinFrame.partition != newWebviewPartitionName) {
-      // The webview has already navigated. We have to re-create it.
-      const signinFrameParent = signinFrame.parentElement;
-
-      // Copy all attributes except for partition and src from the previous
-      // webview. Use the specified |newWebviewPartitionName|.
-      const newSigninFrame = document.createElement('webview');
-      this.copyAttributes_(
-          signinFrame, newSigninFrame, new Set(['src', 'partition']));
-      newSigninFrame.partition = newWebviewPartitionName;
-
-      signinFrameParent.replaceChild(newSigninFrame, signinFrame);
-
-      // Make sure the authenticator uses the new webview from now on.
-      this.authenticator_.rebindWebview(newSigninFrame);
-    }
-  },
-
-  /**
    * Loads the authentication extension into the iframe.
    * @param {!Object} data Extension parameters bag.
    */
@@ -729,7 +683,7 @@ Polymer({
       this.authenticator_.resetWebview();
     }
 
-    this.setSigninFramePartition_(data.webviewPartitionName);
+    this.authenticator_.setWebviewPartition(data.webviewPartitionName);
 
     // This triggers updateSigninFrameContainers_()
     this.screenMode_ = data.screenMode;

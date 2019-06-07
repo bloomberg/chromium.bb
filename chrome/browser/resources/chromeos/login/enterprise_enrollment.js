@@ -271,7 +271,7 @@ Polymer({
       }]);
     }
 
-    this.$['oauth-enroll-auth-view'].partition = data.webviewPartitionName;
+    this.authenticator_.setWebviewPartition(data.webviewPartitionName);
 
     Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.ENROLLMENT);
     this.classList.remove('saml');
