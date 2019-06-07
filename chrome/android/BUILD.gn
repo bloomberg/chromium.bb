@@ -1234,21 +1234,14 @@ if (current_toolchain == default_toolchain) {
 
     if (enable_resource_whitelist_generation) {
       if (_is_trichrome || _is_monochrome) {
-        _lib = "monochrome"
+        _lib = "libmonochrome"
       } else {
-        _lib = "chrome"
+        _lib = "libchrome"
       }
       _resource_whitelist_target = "${_variant}_resource_whitelist"
       _resource_whitelist_file =
           "$target_gen_dir/${_variant}_resource_whitelist.txt"
-
-      if (_is_trichrome || _is_monochrome) {
-        _target_prefix = ""
-      } else {
-        _target_prefix = "lib"
-      }
-      _lib_path = "/lib.unstripped/lib" + _lib + shlib_extension
-      _lib_target = _target_prefix + _lib
+      _lib_path = "/lib.unstripped/" + _lib + shlib_extension
 
       generate_resource_whitelist(_resource_whitelist_target) {
         _fat_lib_toolchain = ""
@@ -1262,7 +1255,7 @@ if (current_toolchain == default_toolchain) {
           }
         }
         deps = [
-          ":${_lib_target}($_fat_lib_toolchain)",
+          ":${_lib}($_fat_lib_toolchain)",
         ]
 
         inputs = [
@@ -1439,25 +1432,25 @@ template("libmonochrome_apk_or_bundle_tmpl") {
 if (!android_64bit_target_cpu ||
     current_toolchain == android_secondary_abi_toolchain) {
   # Monochrome APK native library.
-  libmonochrome_apk_or_bundle_tmpl("monochrome") {
+  libmonochrome_apk_or_bundle_tmpl("libmonochrome") {
   }
 
   if (android_64bit_target_cpu) {
     group("monochrome_64_secondary_abi_lib") {
       public_deps = [
-        ":monochrome_64($android_secondary_abi_toolchain)",
+        ":libmonochrome_64($android_secondary_abi_toolchain)",
       ]
     }
   }
 } else {
   # 64-bit browser library targets (APK and bundle).
-  libmonochrome_apk_or_bundle_tmpl("monochrome_64") {
+  libmonochrome_apk_or_bundle_tmpl("libmonochrome_64") {
   }
 
   # 32-bit browser library alias targets, pulled in by 64-bit WebView builds.
   group("monochrome_secondary_abi_lib") {
     public_deps = [
-      ":monochrome($android_secondary_abi_toolchain)",
+      ":libmonochrome($android_secondary_abi_toolchain)",
     ]
   }
 }
