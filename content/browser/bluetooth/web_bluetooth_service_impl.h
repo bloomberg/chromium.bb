@@ -86,6 +86,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
                            BluetoothScanningPermissionRevokedWhenTabHidden);
   FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
                            BluetoothScanningPermissionRevokedWhenTabOccluded);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           BluetoothScanningPermissionRevokedWhenBlocked);
   friend class FrameConnectedBluetoothDevicesTest;
   friend class WebBluetoothServiceImplTest;
   using PrimaryServicesRequestCallback =

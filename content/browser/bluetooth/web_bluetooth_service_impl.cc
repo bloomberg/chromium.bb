@@ -280,10 +280,21 @@ void WebBluetoothServiceImpl::OnBluetoothScanningPromptEvent(
 
   (*client)->RunRequestScanningStartCallback(std::move(result));
   (*client)->set_prompt_controller(nullptr);
-  if (event == BluetoothScanningPrompt::Event::kAllow)
+  if (event == BluetoothScanningPrompt::Event::kAllow) {
     (*client)->set_allow_send_event(true);
-  else
+  } else if (event == BluetoothScanningPrompt::Event::kBlock) {
+    // Here because user explicitly blocks the permission to do Bluetooth
+    // scanning in one request, it can be interpreted as user wants the current
+    // and all previous scanning to be blocked, so remove all existing scanning
+    // clients.
+    scanning_clients_.clear();
+    allowed_scan_filters_.clear();
+    accept_all_advertisements_ = false;
+  } else if (event == BluetoothScanningPrompt::Event::kCanceled) {
     scanning_clients_.erase(client);
+  } else {
+    NOTREACHED();
+  }
 }
 
 WebBluetoothServiceImpl::ScanningClient::ScanningClient(
@@ -1200,10 +1211,6 @@ void WebBluetoothServiceImpl::RequestScanningStartImpl(
       return;
     }
 
-    // TODO(https://crbug.com/953075): If the scan filters aren't allowed by
-    // user, we need to update the filters which are used on the previously
-    // started discovery session.
-
     // By resetting |device_scanning_prompt_controller_|, it returns an error if
     // there are duplicate calls to RequestScanningStart().
     device_scanning_prompt_controller_ =
@@ -1219,6 +1226,9 @@ void WebBluetoothServiceImpl::RequestScanningStartImpl(
 
   discovery_callback_ = std::move(callback);
 
+  // TODO(https://crbug.com/969109): Since scanning without a filter wastes
+  // resources, we need use StartDiscoverySessionWithFilter() instead of
+  // StartDiscoverySession() here.
   adapter->StartDiscoverySession(
       base::Bind(&WebBluetoothServiceImpl::OnStartDiscoverySession,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&client),
