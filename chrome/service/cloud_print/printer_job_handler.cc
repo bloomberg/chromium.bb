@@ -652,8 +652,8 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
   // continue in OnReceivePrinterCaps.
   print_system_->GetPrinterCapsAndDefaults(
       printer_info.printer_name,
-      base::Bind(&PrinterJobHandler::OnReceivePrinterCaps,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PrinterJobHandler::OnReceivePrinterCaps,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   // While we are waiting for the data, pretend we have work to do and return
   // true.

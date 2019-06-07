@@ -574,8 +574,8 @@ void CloudPrintConnector::OnPrinterRegister(
   // continue in OnReceivePrinterCaps.
   print_system_->GetPrinterCapsAndDefaults(
       info.printer_name.c_str(),
-      base::Bind(&CloudPrintConnector::OnReceivePrinterCaps,
-                 base::Unretained(this)));
+      base::BindOnce(&CloudPrintConnector::OnReceivePrinterCaps,
+                     base::Unretained(this)));
 }
 
 void CloudPrintConnector::OnPrinterDelete(const std::string& printer_id) {

@@ -86,7 +86,7 @@ class PrintSystemCUPS : public PrintSystem {
       printing::PrinterList* printer_list) override;
   void GetPrinterCapsAndDefaults(
       const std::string& printer_name,
-      const PrinterCapsAndDefaultsCallback& callback) override;
+      PrinterCapsAndDefaultsCallback callback) override;
   bool IsValidPrinter(const std::string& printer_name) override;
   bool ValidatePrintTicket(const std::string& printer_name,
                            const std::string& print_ticket_data,
@@ -164,7 +164,7 @@ class PrintSystemCUPS : public PrintSystem {
 
   // Helper method to invoke a PrinterCapsAndDefaultsCallback.
   static void RunCapsCallback(
-      const PrinterCapsAndDefaultsCallback& callback,
+      PrinterCapsAndDefaultsCallback callback,
       bool succeeded,
       const std::string& printer_name,
       const printing::PrinterCapsAndDefaults& printer_info);
@@ -512,12 +512,13 @@ PrintSystem::PrintSystemResult PrintSystemCUPS::EnumeratePrinters(
 
 void PrintSystemCUPS::GetPrinterCapsAndDefaults(
     const std::string& printer_name,
-    const PrinterCapsAndDefaultsCallback& callback) {
+    PrinterCapsAndDefaultsCallback callback) {
   printing::PrinterCapsAndDefaults printer_info;
   bool succeeded = GetPrinterCapsAndDefaults(printer_name, &printer_info);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&PrintSystemCUPS::RunCapsCallback, callback,
-                                succeeded, printer_name, printer_info));
+      FROM_HERE,
+      base::BindOnce(&PrintSystemCUPS::RunCapsCallback, std::move(callback),
+                     succeeded, printer_name, printer_info));
 }
 
 bool PrintSystemCUPS::IsValidPrinter(const std::string& printer_name) {
@@ -852,11 +853,11 @@ PrintServerInfoCUPS* PrintSystemCUPS::FindServerByFullName(
 }
 
 void PrintSystemCUPS::RunCapsCallback(
-    const PrinterCapsAndDefaultsCallback& callback,
+    PrinterCapsAndDefaultsCallback callback,
     bool succeeded,
     const std::string& printer_name,
     const printing::PrinterCapsAndDefaults& printer_info) {
-  callback.Run(succeeded, printer_name, printer_info);
+  std::move(callback).Run(succeeded, printer_name, printer_info);
 }
 
 }  // namespace cloud_print

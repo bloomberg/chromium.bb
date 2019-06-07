@@ -410,10 +410,9 @@ class MockPrintSystem : public PrintSystem {
   MOCK_METHOD1(EnumeratePrinters, PrintSystem::PrintSystemResult(
       printing::PrinterList* printer_list));
 
-  MOCK_METHOD2(
-      GetPrinterCapsAndDefaults,
-      void(const std::string& printer_name,
-           const PrintSystem::PrinterCapsAndDefaultsCallback& callback));
+  MOCK_METHOD2(GetPrinterCapsAndDefaults,
+               void(const std::string& printer_name,
+                    PrintSystem::PrinterCapsAndDefaultsCallback callback));
 
   MOCK_METHOD1(IsValidPrinter, bool(const std::string& printer_name));
 
@@ -456,7 +455,7 @@ class PrinterJobHandlerTest : public ::testing::Test {
   bool GetPrinterInfo(printing::PrinterBasicInfo* info);
   void SendCapsAndDefaults(
       const std::string& printer_name,
-      const PrintSystem::PrinterCapsAndDefaultsCallback& callback);
+      PrintSystem::PrinterCapsAndDefaultsCallback callback);
   void AddMimeHeader(const GURL& url, net::FakeURLFetcher* fetcher);
   void AddTicketMimeHeader(const GURL& url, net::FakeURLFetcher* fetcher);
   bool PostSpoolSuccess();
@@ -522,9 +521,9 @@ void PrinterJobHandlerTest::MakeJobFetchReturnNoJobs() {
 }
 
 PrinterJobHandlerTest::PrinterJobHandlerTest()
-    : factory_(NULL, base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                                base::Unretained(&url_callback_))) {
-}
+    : factory_(nullptr,
+               base::BindRepeating(&TestURLFetcherCallback::CreateURLFetcher,
+                                   base::Unretained(&url_callback_))) {}
 
 bool PrinterJobHandlerTest::PostSpoolSuccess() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -614,8 +613,8 @@ void PrinterJobHandlerTest::BeginTest(int timeout_seconds) {
 
 void PrinterJobHandlerTest::SendCapsAndDefaults(
     const std::string& printer_name,
-    const PrintSystem::PrinterCapsAndDefaultsCallback& callback) {
-  callback.Run(true, printer_name, caps_and_defaults_);
+    PrintSystem::PrinterCapsAndDefaultsCallback callback) {
+  std::move(callback).Run(true, printer_name, caps_and_defaults_);
 }
 
 bool PrinterJobHandlerTest::GetPrinterInfo(printing::PrinterBasicInfo* info) {

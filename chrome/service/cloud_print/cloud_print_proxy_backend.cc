@@ -129,7 +129,7 @@ class CloudPrintProxyBackend::Core
   CloudPrintProxyFrontend* frontend() { return backend_->frontend_; }
 
   bool PostFrontendTask(const base::Location& from_here,
-                        const base::Closure& task);
+                        base::OnceClosure task);
 
   bool CurrentlyOnFrontendThread() const;
   bool CurrentlyOnCoreThread() const;
@@ -240,9 +240,10 @@ bool CloudPrintProxyBackend::InitializeWithToken(
     const std::string& cloud_print_token) {
   if (!core_thread_.Start())
     return false;
-  PostCoreTask(FROM_HERE,
-               base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithToken,
-                          core_, cloud_print_token));
+  PostCoreTask(
+      FROM_HERE,
+      base::BindOnce(&CloudPrintProxyBackend::Core::DoInitializeWithToken,
+                     core_, cloud_print_token));
   return true;
 }
 
@@ -253,8 +254,8 @@ bool CloudPrintProxyBackend::InitializeWithRobotToken(
     return false;
   PostCoreTask(
       FROM_HERE,
-      base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithRobotToken,
-                 core_, robot_oauth_refresh_token, robot_email));
+      base::BindOnce(&CloudPrintProxyBackend::Core::DoInitializeWithRobotToken,
+                     core_, robot_oauth_refresh_token, robot_email));
   return true;
 }
 
@@ -263,29 +264,30 @@ bool CloudPrintProxyBackend::InitializeWithRobotAuthCode(
     const std::string& robot_email) {
   if (!core_thread_.Start())
     return false;
-  PostCoreTask(
-      FROM_HERE,
-      base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithRobotAuthCode,
-                 core_, robot_oauth_auth_code, robot_email));
+  PostCoreTask(FROM_HERE,
+               base::BindOnce(
+                   &CloudPrintProxyBackend::Core::DoInitializeWithRobotAuthCode,
+                   core_, robot_oauth_auth_code, robot_email));
   return true;
 }
 
 void CloudPrintProxyBackend::Shutdown() {
-  PostCoreTask(FROM_HERE, base::Bind(&CloudPrintProxyBackend::Core::DoShutdown,
-                                     core_));
+  PostCoreTask(
+      FROM_HERE,
+      base::BindOnce(&CloudPrintProxyBackend::Core::DoShutdown, core_));
   core_thread_.Stop();
   core_ = nullptr;  // Releases reference to |core_|.
 }
 
 void CloudPrintProxyBackend::UnregisterPrinters() {
   PostCoreTask(FROM_HERE,
-               base::Bind(&CloudPrintProxyBackend::Core::DoUnregisterPrinters,
-                          core_));
+               base::BindOnce(
+                   &CloudPrintProxyBackend::Core::DoUnregisterPrinters, core_));
 }
 
 bool CloudPrintProxyBackend::PostCoreTask(const base::Location& from_here,
-                                          const base::Closure& task) {
-  return core_thread_.task_runner()->PostTask(from_here, task);
+                                          base::OnceClosure task) {
+  return core_thread_.task_runner()->PostTask(from_here, std::move(task));
 }
 
 CloudPrintProxyBackend::Core::Core(
@@ -308,8 +310,8 @@ CloudPrintProxyBackend::Core::Core(
 
 bool CloudPrintProxyBackend::Core::PostFrontendTask(
     const base::Location& from_here,
-    const base::Closure& task) {
-  return backend_->frontend_task_runner_->PostTask(from_here, task);
+    base::OnceClosure task) {
+  return backend_->frontend_task_runner_->PostTask(from_here, std::move(task));
 }
 
 bool CloudPrintProxyBackend::Core::CurrentlyOnFrontendThread() const {
@@ -380,9 +382,9 @@ void CloudPrintProxyBackend::Core::OnAuthenticationComplete(
   token_store->SetToken(access_token);
   robot_email_ = robot_email;
   // Let the frontend know that we have authenticated.
-  PostFrontendTask(FROM_HERE, base::Bind(&Core::NotifyAuthenticated, this,
-                                         robot_oauth_refresh_token, robot_email,
-                                         user_email));
+  PostFrontendTask(FROM_HERE, base::BindOnce(&Core::NotifyAuthenticated, this,
+                                             robot_oauth_refresh_token,
+                                             robot_email, user_email));
   if (first_time) {
     InitNotifications(robot_email, access_token);
   } else {
@@ -397,8 +399,8 @@ void CloudPrintProxyBackend::Core::OnAuthenticationComplete(
   if (!connector_->IsRunning()) {
     if (!connector_->Start()) {
       // Let the frontend know that we do not have a print system.
-      PostFrontendTask(FROM_HERE,
-                       base::Bind(&Core::NotifyPrintSystemUnavailable, this));
+      PostFrontendTask(
+          FROM_HERE, base::BindOnce(&Core::NotifyPrintSystemUnavailable, this));
     }
   }
 }
@@ -407,7 +409,7 @@ void CloudPrintProxyBackend::Core::OnInvalidCredentials() {
   DCHECK(CurrentlyOnCoreThread());
   VLOG(1) << "CP_CONNECTOR: Auth Error";
   PostFrontendTask(FROM_HERE,
-                   base::Bind(&Core::NotifyAuthenticationFailed, this));
+                   base::BindOnce(&Core::NotifyAuthenticationFailed, this));
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -435,8 +437,8 @@ void CloudPrintProxyBackend::Core::OnAuthFailed() {
 
 void CloudPrintProxyBackend::Core::OnXmppPingUpdated(int ping_timeout) {
   settings_.SetXmppPingTimeoutSec(ping_timeout);
-  PostFrontendTask(
-      FROM_HERE, base::Bind(&Core::NotifyXmppPingUpdated, this, ping_timeout));
+  PostFrontendTask(FROM_HERE, base::BindOnce(&Core::NotifyXmppPingUpdated, this,
+                                             ping_timeout));
 }
 
 void CloudPrintProxyBackend::Core::InitNotifications(
@@ -497,8 +499,8 @@ void CloudPrintProxyBackend::Core::DoUnregisterPrinters() {
 
   std::string access_token = GetTokenStore()->token();
   std::list<std::string> printer_ids = connector_->GetPrinterIds();
-  PostFrontendTask(FROM_HERE, base::Bind(&Core::NotifyUnregisterPrinters, this,
-                                         access_token, printer_ids));
+  PostFrontendTask(FROM_HERE, base::BindOnce(&Core::NotifyUnregisterPrinters,
+                                             this, access_token, printer_ids));
 }
 
 void CloudPrintProxyBackend::Core::HandlePrinterNotification(
