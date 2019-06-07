@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.widget;
 
+import static org.chromium.chrome.browser.compositor.animation.CompositorAnimator.FAST_OUT_SLOW_IN_INTERPOLATOR;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -32,7 +34,6 @@ import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
-import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.widget.Toast;
 
@@ -50,6 +51,7 @@ public class GridTabSwitcherLayout
     // Duration of the transition animation
     @VisibleForTesting
     static final long ZOOMING_DURATION = 300;
+    private static final int BACKGROUND_FADING_DURATION_MS = 150;
 
     /** Field trial parameter for whether skipping slow zooming animation */
     private static final String SKIP_SLOW_ZOOMING_PARAM = "skip-slow-zooming";
@@ -63,6 +65,8 @@ public class GridTabSwitcherLayout
     private final GridTabSwitcher.GridController mGridController;
     // To force Toolbar finishes its animation when this Layout finished hiding.
     private final LayoutTab mDummyLayoutTab;
+
+    private float mBackgroundAlpha;
 
     private int mFrameCount;
     private long mStartTime;
@@ -204,6 +208,7 @@ public class GridTabSwitcherLayout
     private void shrinkTab(Supplier<Rect> target) {
         LayoutTab sourceLayoutTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
                 mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NEED_TITLE);
+        sourceLayoutTab.setDecorationAlpha(0);
 
         mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
 
@@ -216,18 +221,26 @@ public class GridTabSwitcherLayout
         animationList.add(CompositorAnimator.ofFloatProperty(
                 handler, sourceLayoutTab, LayoutTab.SCALE, () -> 1f, () -> {
                     return target.get().width() / (getWidth() * mDpToPx);
-                }, ZOOMING_DURATION));
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.X,
-                () -> 0f, () -> { return target.get().left / mDpToPx; }, ZOOMING_DURATION));
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.Y,
-                () -> 0f, () -> { return target.get().top / mDpToPx; }, ZOOMING_DURATION));
+                }, ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
         animationList.add(CompositorAnimator.ofFloatProperty(
-                handler, sourceLayoutTab, LayoutTab.DECORATION_ALPHA, 1f, 0f, ZOOMING_DURATION));
+                handler, sourceLayoutTab, LayoutTab.X, () -> 0f, () -> {
+                    return target.get().left / mDpToPx;
+                }, ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
+        animationList.add(CompositorAnimator.ofFloatProperty(
+                handler, sourceLayoutTab, LayoutTab.Y, () -> 0f, () -> {
+                    return target.get().top / mDpToPx;
+                }, ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
         // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
         // down, making the "create group" visible for a while.
         animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT, sourceLayoutTab.getUnclampedOriginalContentHeight(),
-                getWidth(), ZOOMING_DURATION, BakedBezierInterpolator.FADE_OUT_CURVE));
+                getWidth(), ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
+
+        CompositorAnimator backgroundAlpha =
+                CompositorAnimator.ofFloat(handler, 0f, 1f, BACKGROUND_FADING_DURATION_MS,
+                        animator -> mBackgroundAlpha = animator.getAnimatedValue());
+        backgroundAlpha.setInterpolator(CompositorAnimator.FAST_OUT_LINEAR_IN_INTERPOLATOR);
+        animationList.add(backgroundAlpha);
 
         mTabToSwitcherAnimation = new AnimatorSet();
         mTabToSwitcherAnimation.playTogether(animationList);
@@ -255,6 +268,7 @@ public class GridTabSwitcherLayout
     private void expandTab(Rect source) {
         LayoutTab sourceLayoutTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
                 mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NEED_TITLE);
+        sourceLayoutTab.setDecorationAlpha(0);
 
         mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
 
@@ -265,19 +279,24 @@ public class GridTabSwitcherLayout
 
         // Zoom in the source tab
         animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
-                LayoutTab.SCALE, source.width() / (getWidth() * mDpToPx), 1, ZOOMING_DURATION));
+                LayoutTab.SCALE, source.width() / (getWidth() * mDpToPx), 1, ZOOMING_DURATION,
+                FAST_OUT_SLOW_IN_INTERPOLATOR));
         animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.X,
-                source.left / mDpToPx, 0f, ZOOMING_DURATION));
-        animationList.add(CompositorAnimator.ofFloatProperty(
-                handler, sourceLayoutTab, LayoutTab.Y, source.top / mDpToPx, 0f, ZOOMING_DURATION));
-        animationList.add(CompositorAnimator.ofFloatProperty(
-                handler, sourceLayoutTab, LayoutTab.DECORATION_ALPHA, 0f, 1f, ZOOMING_DURATION));
+                source.left / mDpToPx, 0f, ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
+        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.Y,
+                source.top / mDpToPx, 0f, ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
         // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
         // down, making the "create group" visible for a while.
         animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT, getWidth(),
                 sourceLayoutTab.getUnclampedOriginalContentHeight(), ZOOMING_DURATION,
-                BakedBezierInterpolator.FADE_IN_CURVE));
+                FAST_OUT_SLOW_IN_INTERPOLATOR));
+
+        CompositorAnimator backgroundAlpha =
+                CompositorAnimator.ofFloat(handler, 1f, 0f, BACKGROUND_FADING_DURATION_MS,
+                        animator -> mBackgroundAlpha = animator.getAnimatedValue());
+        backgroundAlpha.setInterpolator(CompositorAnimator.FAST_OUT_LINEAR_IN_INTERPOLATOR);
+        animationList.add(backgroundAlpha);
 
         mTabToSwitcherAnimation = new AnimatorSet();
         mTabToSwitcherAnimation.playTogether(animationList);
@@ -355,7 +374,8 @@ public class GridTabSwitcherLayout
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
                 ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
                         ? mGridTabSwitcher.getResourceId()
-                        : 0);
+                        : 0,
+                mBackgroundAlpha);
         mFrameCount++;
         if (mLastFrameTime != 0) {
             long elapsed = SystemClock.elapsedRealtime() - mLastFrameTime;

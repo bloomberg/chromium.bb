@@ -110,7 +110,8 @@ class TabListSceneLayer : public SceneLayer {
 
   void PutBackgroundLayer(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& jobj,
-                          jint resource_id);
+                          jint resource_id,
+                          jfloat alpha);
 
   void OnDetach() override;
   bool ShouldShowBackground() override;

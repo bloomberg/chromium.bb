@@ -17,17 +17,23 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivity;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -39,6 +45,14 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
+    /**
+     * DummyUiActivityTestCase also needs {@link ChromeFeatureList}'s
+     * internal test-only feature map, not the {@link CommandLine} provided by
+     * {@link Features.InstrumentationProcessor}.
+     */
+    @Rule
+    public TestRule mProcessor = new Features.JUnitProcessor();
+
     private static final int CONTAINER_HEIGHT = 56;
     private TabGridContainerViewBinder mTabGridContainerViewHolder;
     private PropertyModel mContainerModel;
@@ -83,6 +97,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
+        FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mRecyclerView = getActivity().findViewById(R.id.tab_list_view); });
@@ -100,6 +115,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @DisabledTest
     // Failed multiple times on Android CFI https://crbug.com/954145
     public void testShowWithAnimation() throws Exception {
@@ -129,6 +145,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testShowWithoutAnimation() throws Exception {
         mContainerModel.set(
                 TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
@@ -145,6 +162,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testHidesWithAnimation() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainerModel.set(
@@ -182,6 +200,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testHidesWithoutAnimation() throws Exception {
         mContainerModel.set(
                 TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);

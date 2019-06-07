@@ -56,7 +56,7 @@ public class TabListSceneLayer extends SceneLayer {
     public void pushLayers(Context context, RectF viewport, RectF contentViewport, Layout layout,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
             ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager,
-            int backgroundResourceId) {
+            int backgroundResourceId, float backgroundAlpha) {
         if (mNativePtr == 0) return;
 
         Resources res = context.getResources();
@@ -72,7 +72,7 @@ public class TabListSceneLayer extends SceneLayer {
                 viewport.height(), layerTitleCache, tabContentManager, resourceManager);
 
         if (backgroundResourceId != INVALID_RESOURCE_ID) {
-            nativePutBackgroundLayer(mNativePtr, backgroundResourceId);
+            nativePutBackgroundLayer(mNativePtr, backgroundResourceId, backgroundAlpha);
         }
 
         boolean isHTSEnabled =
@@ -207,5 +207,6 @@ public class TabListSceneLayer extends SceneLayer {
             float toolbarTextBoxAlpha, float toolbarAlpha, float toolbarYOffset,
             float sideBorderScale, boolean insetVerticalBorder);
 
-    private native void nativePutBackgroundLayer(long nativeTabListSceneLayer, int resourceId);
+    private native void nativePutBackgroundLayer(
+            long nativeTabListSceneLayer, int resourceId, float alpha);
 }
