@@ -202,11 +202,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void RemoveSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
 
  private:
-  // Sets the active launcher page, accounting for whether the change is for
-  // search results.
-  void SetActiveStateInternal(int page_index,
-                              bool show_search_or_assistant_results,
-                              bool animate);
+  // Sets the active launcher page.
+  void SetActiveStateInternal(int page_index, bool animate);
 
   // Invoked when active view is changed.
   void ActivePageChanged();
@@ -286,6 +283,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // The page that was showing before ShowSearchResults(true) was invoked.
   int page_before_search_ = 0;
+
+  // The page that was showing before ShowEmbeddedAssistantUi(true) was invoked.
+  int page_before_assistant_ = 0;
 
   // Manages the pagination for the launcher pages.
   ash::PaginationModel pagination_model_;

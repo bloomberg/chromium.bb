@@ -20,13 +20,14 @@ class AssistantWebView;
 namespace app_list {
 
 class AssistantMainView;
+class ContentsView;
 
 // The Assistant page for the app list.
 class APP_LIST_EXPORT AssistantPageView : public AppListPage,
                                           public ash::AssistantUiModelObserver {
  public:
-  explicit AssistantPageView(
-      ash::AssistantViewDelegate* assistant_view_delegate);
+  AssistantPageView(ash::AssistantViewDelegate* assistant_view_delegate,
+                    ContentsView* contents_view);
   ~AssistantPageView() override;
 
   void InitLayout();
@@ -34,8 +35,12 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+  void OnBoundsChanged(const gfx::Rect& prev_bounds) override;
   void RequestFocus() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void ChildVisibilityChanged(views::View* child) override;
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -43,7 +48,6 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
 
   // AppListPage:
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
-  gfx::Rect GetSearchBoxBounds() const override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
 
@@ -56,14 +60,19 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
       base::Optional<ash::AssistantEntryPoint> entry_point,
       base::Optional<ash::AssistantExitPoint> exit_point) override;
 
+ private:
+  int GetChildViewPreferredHeight() const;
+  void MaybeUpdateAppListState(int child_height);
   gfx::Rect AddShadowBorderToBounds(const gfx::Rect& bounds) const;
 
- private:
   ash::AssistantViewDelegate* const assistant_view_delegate_;
+  ContentsView* contents_view_;
 
   // Owned by the views hierarchy.
   AssistantMainView* assistant_main_view_ = nullptr;
   ash::AssistantWebView* assistant_web_view_ = nullptr;
+
+  int min_height_dip_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantPageView);
 };
