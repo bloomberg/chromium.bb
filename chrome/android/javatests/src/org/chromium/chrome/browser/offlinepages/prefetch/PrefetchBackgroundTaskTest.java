@@ -192,6 +192,7 @@ public class PrefetchBackgroundTaskTest {
             BackgroundTaskSchedulerFactory.setSchedulerForTesting(mScheduler);
         });
         OfflineTestUtil.setPrefetchingEnabledByServer(true);
+        OfflineTestUtil.setGCMTokenForTesting("dummy_gcm_token");
 
         PrefetchBackgroundTask.alwaysSupportServiceManagerOnlyForTesting();
     }

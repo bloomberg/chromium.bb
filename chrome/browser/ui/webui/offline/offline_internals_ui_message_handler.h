@@ -85,8 +85,6 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
 
   // Schedules an NWake signal.
   void HandleScheduleNwake(const base::ListValue* args);
-  void ScheduleNwakeWithGCMToken(base::Value callback_id,
-                                 const std::string& gcm_token);
 
   // Cancels an NWake signal.
   void HandleCancelNwake(const base::ListValue* args);

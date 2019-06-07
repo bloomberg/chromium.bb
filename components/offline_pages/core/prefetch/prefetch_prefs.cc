@@ -20,6 +20,7 @@ const char kPrefetchTestingHeaderPref[] =
 const char kEnabledByServer[] = "offline_prefetch.enabled_by_server";
 const char kNextForbiddenCheckTimePref[] = "offline_prefetch.next_gpb_check";
 const base::TimeDelta kForbiddenCheckDelay = base::TimeDelta::FromDays(7);
+const char kPrefetchCachedGCMToken[] = "offline_prefetch.gcm_token";
 
 }  // namespace
 
@@ -34,6 +35,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kPrefetchTestingHeaderPref, std::string());
   registry->RegisterBooleanPref(kEnabledByServer, false);
   registry->RegisterTimePref(kNextForbiddenCheckTimePref, base::Time());
+  registry->RegisterStringPref(kPrefetchCachedGCMToken, std::string());
 }
 
 void SetPrefetchingEnabledInSettings(PrefService* prefs, bool enabled) {
@@ -118,6 +120,16 @@ void ResetForbiddenStateForTesting(PrefService* prefs) {
   DCHECK(prefs);
   SetEnabledByServer(prefs, false);
   prefs->SetTime(kNextForbiddenCheckTimePref, base::Time());
+}
+
+void SetCachedPrefetchGCMToken(PrefService* prefs, const std::string& value) {
+  DCHECK(prefs);
+  prefs->SetString(kPrefetchCachedGCMToken, value);
+}
+
+std::string GetCachedPrefetchGCMToken(PrefService* prefs) {
+  DCHECK(prefs);
+  return prefs->GetString(kPrefetchCachedGCMToken);
 }
 
 }  // namespace prefetch_prefs

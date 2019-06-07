@@ -69,8 +69,8 @@ void OnProfileCreated(PrefetchServiceImpl* service, Profile* profile) {
     base::PostTaskWithTraits(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&PrefetchServiceImpl::GetGCMToken, service->GetWeakPtr(),
-                       base::DoNothing::Once<const std::string&>()));
+        base::BindOnce(&PrefetchServiceImpl::RefreshGCMToken,
+                       service->GetWeakPtr()));
   }
 }
 
@@ -177,7 +177,7 @@ std::unique_ptr<KeyedService> PrefetchServiceFactory::BuildServiceInstanceFor(
       std::move(prefetch_store), std::move(suggested_articles_observer),
       std::move(prefetch_downloader), std::move(prefetch_importer),
       std::move(prefetch_background_task_handler), std::move(thumbnail_fetcher),
-      image_fetcher);
+      image_fetcher, profile_key->GetPrefs());
 
   auto callback = base::BindOnce(&OnProfileCreated, service.get());
   FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(

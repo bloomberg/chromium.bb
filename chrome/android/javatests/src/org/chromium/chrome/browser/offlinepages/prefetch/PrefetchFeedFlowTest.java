@@ -200,6 +200,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
         });
 
         OfflineTestUtil.setPrefetchingEnabledByServer(true);
+        OfflineTestUtil.setGCMTokenForTesting("dummy_gcm_token");
     }
 
     @After

@@ -28,6 +28,7 @@ namespace prefetch {
 static jboolean JNI_PrefetchBackgroundTask_StartPrefetchTask(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
+    // TODO(https://crbug.com/972218): remove unused param
     const JavaParamRef<jstring>& gcm_token) {
   ProfileKey* profile_key = ::android::GetMainProfileKey();
   DCHECK(profile_key);
@@ -36,9 +37,6 @@ static jboolean JNI_PrefetchBackgroundTask_StartPrefetchTask(
       PrefetchServiceFactory::GetForKey(profile_key);
   if (!prefetch_service)
     return false;
-
-  prefetch_service->SetCachedGCMToken(
-      base::android::ConvertJavaStringToUTF8(env, gcm_token));
 
   prefetch_service->GetPrefetchDispatcher()->BeginBackgroundTask(
       std::make_unique<PrefetchBackgroundTaskAndroid>(env, jcaller,

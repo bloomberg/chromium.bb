@@ -39,7 +39,8 @@ PrefetchServiceImpl::PrefetchServiceImpl(
     std::unique_ptr<PrefetchBackgroundTaskHandler>
         prefetch_background_task_handler,
     std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher,
-    image_fetcher::ImageFetcher* image_fetcher)
+    image_fetcher::ImageFetcher* image_fetcher,
+    PrefService* prefs)
     : offline_metrics_collector_(std::move(offline_metrics_collector)),
       prefetch_dispatcher_(std::move(dispatcher)),
       network_request_factory_(std::move(network_request_factory)),
@@ -49,6 +50,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
       prefetch_importer_(std::move(prefetch_importer)),
       prefetch_background_task_handler_(
           std::move(prefetch_background_task_handler)),
+      prefs_(prefs),
       suggested_articles_observer_(std::move(suggested_articles_observer)),
       thumbnail_fetcher_(std::move(thumbnail_fetcher)),
       image_fetcher_(image_fetcher),
@@ -76,37 +78,24 @@ void PrefetchServiceImpl::ForceRefreshSuggestions() {
   }
 }
 
-void PrefetchServiceImpl::SetCachedGCMToken(const std::string& gcm_token) {
-  // This method is passed a cached token that was stored in the job scheduler,
-  // to be used until the PrefetchGCMHandler is created. In some cases, the
-  // PrefetchGCMHandler could have been already created and a fresher token
-  // requested before this function is called. Make sure to not override a
-  // fresher token with a stale one.
-  if (gcm_token_.empty())
-    gcm_token_ = gcm_token;
+std::string PrefetchServiceImpl::GetCachedGCMToken() const {
+  return prefetch_prefs::GetCachedPrefetchGCMToken(prefs_);
 }
 
-const std::string& PrefetchServiceImpl::GetCachedGCMToken() const {
-  DCHECK(!gcm_token_.empty()) << "No cached token is set, you should call "
-                                 "PrefetchService::GetGCMToken instead";
-  return gcm_token_;
-}
-
-void PrefetchServiceImpl::GetGCMToken(GCMTokenCallback callback) {
+void PrefetchServiceImpl::RefreshGCMToken() {
   DCHECK(prefetch_gcm_handler_);
   prefetch_gcm_handler_->GetGCMToken(base::AdaptCallbackForRepeating(
-      base::BindOnce(&PrefetchServiceImpl::OnGCMTokenReceived, GetWeakPtr(),
-                     std::move(callback))));
+      base::BindOnce(&PrefetchServiceImpl::OnGCMTokenReceived, GetWeakPtr())));
 }
 
 void PrefetchServiceImpl::OnGCMTokenReceived(
-    GCMTokenCallback callback,
     const std::string& gcm_token,
     instance_id::InstanceID::Result result) {
   // TODO(dimich): Add UMA reporting on instance_id::InstanceID::Result.
-  // Keep the cached token fresh
-  gcm_token_ = gcm_token;
-  std::move(callback).Run(gcm_token);
+  if (result == instance_id::InstanceID::Result::SUCCESS) {
+    // Keep the cached token fresh
+    prefetch_prefs::SetCachedPrefetchGCMToken(prefs_, gcm_token);
+  }
 }
 
 void PrefetchServiceImpl::SetContentSuggestionsService(

@@ -88,13 +88,9 @@ class PrefetchService : public KeyedService {
   // mode.
   virtual PrefetchGCMHandler* GetPrefetchGCMHandler() = 0;
 
-  // Obtains the current GCM token from the PrefetchGCMHandler
-  virtual void GetGCMToken(GCMTokenCallback callback) = 0;
-
-  // Stores and retrieves a cached GCM token to be used if PrefetchGCMHandler is
+  // Retrieves a cached GCM token from prefs to be used if PrefetchGCMHandler is
   // unavailable.
-  virtual void SetCachedGCMToken(const std::string& gcm_token) = 0;
-  virtual const std::string& GetCachedGCMToken() const = 0;
+  virtual std::string GetCachedGCMToken() const = 0;
 
   virtual void SetEnabledByServer(PrefService* pref_service, bool enabled) = 0;
 

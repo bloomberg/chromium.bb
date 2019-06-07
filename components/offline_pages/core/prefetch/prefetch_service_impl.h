@@ -33,7 +33,8 @@ class PrefetchServiceImpl : public PrefetchService {
       std::unique_ptr<PrefetchImporter> prefetch_importer,
       std::unique_ptr<PrefetchBackgroundTaskHandler> background_task_handler,
       std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher,
-      image_fetcher::ImageFetcher* image_fetcher_);
+      image_fetcher::ImageFetcher* image_fetcher_,
+      PrefService* prefs);
 
   ~PrefetchServiceImpl() override;
 
@@ -46,9 +47,7 @@ class PrefetchServiceImpl : public PrefetchService {
   void NewSuggestionsAvailable() override;
   void RemoveSuggestion(GURL url) override;
   PrefetchGCMHandler* GetPrefetchGCMHandler() override;
-  void SetCachedGCMToken(const std::string& gcm_token) override;
-  const std::string& GetCachedGCMToken() const override;
-  void GetGCMToken(GCMTokenCallback callback) override;
+  std::string GetCachedGCMToken() const override;
   void SetEnabledByServer(PrefService* pref_service, bool enabled) override;
 
   // Internal usage only functions.
@@ -64,6 +63,7 @@ class PrefetchServiceImpl : public PrefetchService {
   PrefetchBackgroundTaskHandler* GetPrefetchBackgroundTaskHandler() override;
 
   void SetPrefetchGCMHandler(std::unique_ptr<PrefetchGCMHandler> handler);
+  void RefreshGCMToken();
 
   // Thumbnail fetchers. With Feed, GetImageFetcher() is available
   // and GetThumbnailFetcher() is null.
@@ -78,12 +78,10 @@ class PrefetchServiceImpl : public PrefetchService {
   void Shutdown() override;
 
  private:
-  void OnGCMTokenReceived(GCMTokenCallback callback,
-                          const std::string& gcm_token,
+  void OnGCMTokenReceived(const std::string& gcm_token,
                           instance_id::InstanceID::Result result);
 
   OfflineEventLogger logger_;
-  std::string gcm_token_;
   std::unique_ptr<PrefetchGCMHandler> prefetch_gcm_handler_;
 
   std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector_;
@@ -95,6 +93,7 @@ class PrefetchServiceImpl : public PrefetchService {
   std::unique_ptr<PrefetchImporter> prefetch_importer_;
   std::unique_ptr<PrefetchBackgroundTaskHandler>
       prefetch_background_task_handler_;
+  PrefService* prefs_;
 
   // Zine/Feed: only non-null when using Zine.
   std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer_;

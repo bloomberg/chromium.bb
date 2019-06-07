@@ -168,6 +168,10 @@ public class OfflineTestUtil {
                 () -> { nativeSetPrefetchingEnabledByServer(enabled); });
     }
 
+    public static void setGCMTokenForTesting(String gcmToken) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> { nativeSetGCMTokenForTesting(gcmToken); });
+    }
+
     private static native void nativeGetRequestsInQueue(Callback<SavePageRequest[]> callback);
     private static native void nativeGetAllPages(
             List<OfflinePageItem> offlinePages, final Callback<List<OfflinePageItem>> callback);
@@ -177,4 +181,5 @@ public class OfflineTestUtil {
     private static native void nativeDumpRequestCoordinatorState(Callback<String> callback);
     private static native void nativeWaitForConnectivityState(boolean connected, Runnable callback);
     private static native void nativeSetPrefetchingEnabledByServer(boolean enabled);
+    private static native void nativeSetGCMTokenForTesting(String gcmToken);
 }

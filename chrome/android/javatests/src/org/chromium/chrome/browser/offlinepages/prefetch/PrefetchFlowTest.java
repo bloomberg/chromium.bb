@@ -138,6 +138,7 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
             PrefetchTestBridge.skipNTPSuggestionsAPIKeyCheck();
         });
         OfflineTestUtil.setPrefetchingEnabledByServer(true);
+        OfflineTestUtil.setGCMTokenForTesting("dummy_gcm_token");
     }
 
     @After

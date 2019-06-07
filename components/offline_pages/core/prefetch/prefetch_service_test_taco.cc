@@ -200,7 +200,8 @@ void PrefetchServiceTestTaco::CreatePrefetchService() {
       std::move(prefetch_store_), std::move(suggested_articles_observer_),
       std::move(prefetch_downloader_), std::move(prefetch_importer_),
       std::move(prefetch_background_task_handler_),
-      std::move(thumbnail_fetcher_), thumbnail_image_fetcher_.get());
+      std::move(thumbnail_fetcher_), thumbnail_image_fetcher_.get(),
+      pref_service_.get());
   service->SetPrefetchGCMHandler(std::move(gcm_handler_));
   prefetch_service_ = std::move(service);
 }

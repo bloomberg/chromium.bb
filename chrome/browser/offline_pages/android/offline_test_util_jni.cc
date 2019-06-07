@@ -266,4 +266,12 @@ void JNI_OfflineTestUtil_SetPrefetchingEnabledByServer(
   }
 }
 
+void JNI_OfflineTestUtil_SetGCMTokenForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& gcm_token) {
+  prefetch_prefs::SetCachedPrefetchGCMToken(
+      ::android::GetMainProfileKey()->GetPrefs(),
+      base::android::ConvertJavaStringToUTF8(env, gcm_token));
+}
+
 }  // namespace offline_pages
