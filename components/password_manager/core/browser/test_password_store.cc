@@ -71,7 +71,8 @@ PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
 }
 
 PasswordStoreChangeList TestPasswordStore::UpdateLoginImpl(
-    const autofill::PasswordForm& form) {
+    const autofill::PasswordForm& form,
+    UpdateLoginError* error) {
   PasswordStoreChangeList changes;
   std::vector<autofill::PasswordForm>& forms =
       stored_passwords_[form.signon_realm];

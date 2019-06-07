@@ -68,6 +68,21 @@ enum class AddLoginError {
   kMaxValue = kDbError,
 };
 
+// Error values for updating a login in the store.
+enum class UpdateLoginError {
+  // Success.
+  kNone,
+  // Database not available.
+  kDbNotAvailable,
+  // No records were updated.
+  kNoUpdatedRecords,
+  // A service-level failure (e.g., on a platform using a keyring, the keyring
+  // is temporarily unavailable).
+  kEncrytionServiceFailure,
+  // Database error.
+  kDbError
+};
+
 // PasswordStore interface for PasswordSyncableService. It provides access to
 // synchronous methods of PasswordStore which shouldn't be accessible to other
 // classes. These methods are to be called on the PasswordStore background
@@ -114,7 +129,8 @@ class PasswordStoreSync {
 
   // Synchronous implementation to update the given login.
   virtual PasswordStoreChangeList UpdateLoginSync(
-      const autofill::PasswordForm& form) = 0;
+      const autofill::PasswordForm& form,
+      UpdateLoginError* error = nullptr) = 0;
 
   // Synchronous implementation to remove the given login.
   virtual PasswordStoreChangeList RemoveLoginSync(

@@ -77,11 +77,13 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   PasswordStoreChangeList AddBlacklistedLoginForTesting(
       const autofill::PasswordForm& form) WARN_UNUSED_RESULT;
 
-  // Updates existing password form. Returns the list of applied changes
-  // ({}, {UPDATE}). The password is looked up by the tuple {origin,
-  // username_element, username_value, password_element, signon_realm}.
-  // These columns stay intact.
-  PasswordStoreChangeList UpdateLogin(const autofill::PasswordForm& form)
+  // Updates existing password form. Returns the list of applied changes ({},
+  // {UPDATE}). The password is looked up by the tuple {origin,
+  // username_element, username_value, password_element, signon_realm}. These
+  // columns stay intact. In case of error, it sets |error| if |error| isn't
+  // null.
+  PasswordStoreChangeList UpdateLogin(const autofill::PasswordForm& form,
+                                      UpdateLoginError* error = nullptr)
       WARN_UNUSED_RESULT;
 
   // Removes |form| from the list of remembered password forms. Returns true if

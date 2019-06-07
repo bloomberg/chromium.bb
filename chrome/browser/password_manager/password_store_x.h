@@ -158,7 +158,8 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
       const autofill::PasswordForm& form,
       password_manager::AddLoginError* error = nullptr) override;
   password_manager::PasswordStoreChangeList UpdateLoginImpl(
-      const autofill::PasswordForm& form) override;
+      const autofill::PasswordForm& form,
+      password_manager::UpdateLoginError* error = nullptr) override;
   password_manager::PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
   password_manager::PasswordStoreChangeList RemoveLoginsByURLAndTimeImpl(

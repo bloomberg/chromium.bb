@@ -188,13 +188,14 @@ PasswordStoreChangeList PasswordStoreX::AddLoginImpl(
 }
 
 PasswordStoreChangeList PasswordStoreX::UpdateLoginImpl(
-    const PasswordForm& form) {
+    const PasswordForm& form,
+    password_manager::UpdateLoginError* error) {
   CheckMigration();
   PasswordStoreChangeList changes;
   if (use_native_backend() && backend_->UpdateLogin(form, &changes)) {
     allow_fallback_ = false;
   } else if (allow_default_store()) {
-    changes = PasswordStoreDefault::UpdateLoginImpl(form);
+    changes = PasswordStoreDefault::UpdateLoginImpl(form, error);
   }
   return changes;
 }

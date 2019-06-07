@@ -48,8 +48,8 @@ class TestPasswordStore : public PasswordStore {
   // PasswordStore interface
   PasswordStoreChangeList AddLoginImpl(const autofill::PasswordForm& form,
                                        AddLoginError* error) override;
-  PasswordStoreChangeList UpdateLoginImpl(
-      const autofill::PasswordForm& form) override;
+  PasswordStoreChangeList UpdateLoginImpl(const autofill::PasswordForm& form,
+                                          UpdateLoginError* error) override;
   PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
   std::vector<std::unique_ptr<autofill::PasswordForm>> FillMatchingLogins(

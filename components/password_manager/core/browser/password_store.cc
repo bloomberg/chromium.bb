@@ -552,7 +552,8 @@ PasswordStoreChangeList PasswordStore::AddLoginSync(const PasswordForm& form,
 }
 
 PasswordStoreChangeList PasswordStore::UpdateLoginSync(
-    const PasswordForm& form) {
+    const PasswordForm& form,
+    UpdateLoginError* error) {
   if (AffiliatedMatchHelper::IsValidAndroidCredential(
           PasswordStore::FormDigest(form))) {
     // Ideally, a |form| would not be updated in any way unless it was ensured
@@ -566,7 +567,7 @@ PasswordStoreChangeList PasswordStore::UpdateLoginSync(
     if (old_form && form.password_value != old_form->password_value)
       ScheduleFindAndUpdateAffiliatedWebLogins(form);
   }
-  return UpdateLoginImpl(form);
+  return UpdateLoginImpl(form, error);
 }
 
 PasswordStoreChangeList PasswordStore::RemoveLoginSync(

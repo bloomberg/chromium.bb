@@ -1041,11 +1041,19 @@ PasswordStoreChangeList LoginDatabase::AddBlacklistedLoginForTesting(
   return list;
 }
 
-PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
+PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
+                                                   UpdateLoginError* error) {
+  if (error) {
+    *error = UpdateLoginError::kNone;
+  }
   std::string encrypted_password;
   if (EncryptedString(form.password_value, &encrypted_password) !=
-      ENCRYPTION_RESULT_SUCCESS)
+      ENCRYPTION_RESULT_SUCCESS) {
+    if (error) {
+      *error = UpdateLoginError::kEncrytionServiceFailure;
+    }
     return PasswordStoreChangeList();
+  }
 
 #if defined(OS_IOS)
   DeleteEncryptedPassword(form);
@@ -1093,12 +1101,19 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   // NOTE: Add new fields here only if the field is a part of the unique key.
   // Otherwise, add the field above "WHERE starts here" comment.
 
-  if (!s.Run())
+  if (!s.Run()) {
+    if (error) {
+      *error = UpdateLoginError::kDbError;
+    }
     return PasswordStoreChangeList();
+  }
 
   PasswordStoreChangeList list;
-  if (db_.GetLastChangeCount())
+  if (db_.GetLastChangeCount()) {
     list.emplace_back(PasswordStoreChange::UPDATE, form, GetPrimaryKey(form));
+  } else if (error) {
+    *error = UpdateLoginError::kNoUpdatedRecords;
+  }
 
   return list;
 }

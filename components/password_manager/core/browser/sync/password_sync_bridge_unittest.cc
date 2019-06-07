@@ -140,7 +140,11 @@ class FakeDatabase {
     return {PasswordStoreChange(PasswordStoreChange::ADD, form, primary_key)};
   }
 
-  PasswordStoreChangeList UpdateLogin(const autofill::PasswordForm& form) {
+  PasswordStoreChangeList UpdateLogin(const autofill::PasswordForm& form,
+                                      UpdateLoginError* error) {
+    if (error) {
+      *error = UpdateLoginError::kNone;
+    }
     int key = GetPrimaryKey(form);
     DCHECK_NE(-1, key);
     data_[key] = std::make_unique<autofill::PasswordForm>(form);
@@ -205,8 +209,9 @@ class MockPasswordStoreSync : public PasswordStoreSync {
   MOCK_METHOD2(AddLoginSync,
                PasswordStoreChangeList(const autofill::PasswordForm&,
                                        AddLoginError*));
-  MOCK_METHOD1(UpdateLoginSync,
-               PasswordStoreChangeList(const autofill::PasswordForm&));
+  MOCK_METHOD2(UpdateLoginSync,
+               PasswordStoreChangeList(const autofill::PasswordForm&,
+                                       UpdateLoginError*));
   MOCK_METHOD1(RemoveLoginSync,
                PasswordStoreChangeList(const autofill::PasswordForm&));
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
@@ -227,7 +232,7 @@ class PasswordSyncBridgeTest : public testing::Test {
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::ReadAllLogins));
     ON_CALL(mock_password_store_sync_, AddLoginSync(_, _))
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::AddLogin));
-    ON_CALL(mock_password_store_sync_, UpdateLoginSync(_))
+    ON_CALL(mock_password_store_sync_, UpdateLoginSync(_, _))
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::UpdateLogin));
     ON_CALL(mock_password_store_sync_, RemoveLoginByPrimaryKeySync(_))
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::RemoveLogin));
@@ -443,7 +448,7 @@ TEST_F(PasswordSyncBridgeTest, ShouldApplyRemoteUpdate) {
   testing::InSequence in_sequence;
   EXPECT_CALL(*mock_password_store_sync(), BeginTransaction());
   EXPECT_CALL(*mock_password_store_sync(),
-              UpdateLoginSync(FormHasSignonRealm(kSignonRealm1)));
+              UpdateLoginSync(FormHasSignonRealm(kSignonRealm1), _));
   EXPECT_CALL(*mock_password_store_sync(), CommitTransaction());
   EXPECT_CALL(*mock_password_store_sync(),
               NotifyLoginsChanged(
@@ -569,7 +574,7 @@ TEST_F(PasswordSyncBridgeTest, ShouldMergeSyncRemoteAndLocalPasswords) {
       .InSequence(s2);
 
   EXPECT_CALL(*mock_password_store_sync(),
-              UpdateLoginSync(FormHasSignonRealm(kSignonRealm2)))
+              UpdateLoginSync(FormHasSignonRealm(kSignonRealm2), _))
       .InSequence(s3);
 
   EXPECT_CALL(*mock_password_store_sync(),
@@ -645,7 +650,7 @@ TEST_F(PasswordSyncBridgeTest,
   // Since the remote Form 2 is more recent, it will be updated in the password
   // store.
   EXPECT_CALL(*mock_password_store_sync(),
-              UpdateLoginSync(FormHasSignonRealm(kSignonRealm2)));
+              UpdateLoginSync(FormHasSignonRealm(kSignonRealm2), _));
   syncer::EntityChangeList entity_change_list;
   entity_change_list.push_back(syncer::EntityChange::CreateAdd(
       /*storage_key=*/"", SpecificsToEntity(specifics1)));
