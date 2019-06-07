@@ -28,10 +28,6 @@
 
 # ----------- define all chars --------------------------------------
 
-space \t 0
-space \x000A 0
-space \x000D 0
-space \s 0 blank
 replace \x0007
 
 # The Alphabet
