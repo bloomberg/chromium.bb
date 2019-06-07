@@ -124,134 +124,6 @@ AXPlatformNodeAuraLinux* g_current_selected = nullptr;
 // null if if the AtkObject is destroyed.
 AtkObject* g_active_top_level_frame = nullptr;
 
-// TODO(aleventhal) Remove this and use atk_role_get_name() once the following
-// GNOME bug is fixed: https://bugzilla.gnome.org/show_bug.cgi?id=795983
-const char* const kRoleNames[] = {
-    "invalid",  // ATK_ROLE_INVALID.
-    "accelerator label",
-    "alert",
-    "animation",
-    "arrow",
-    "calendar",
-    "canvas",
-    "check box",
-    "check menu item",
-    "color chooser",
-    "column header",
-    "combo box",
-    "dateeditor",
-    "desktop icon",
-    "desktop frame",
-    "dial",
-    "dialog",
-    "directory pane",
-    "drawing area",
-    "file chooser",
-    "filler",
-    "fontchooser",
-    "frame",
-    "glass pane",
-    "html container",
-    "icon",
-    "image",
-    "internal frame",
-    "label",
-    "layered pane",
-    "list",
-    "list item",
-    "menu",
-    "menu bar",
-    "menu item",
-    "option pane",
-    "page tab",
-    "page tab list",
-    "panel",
-    "password text",
-    "popup menu",
-    "progress bar",
-    "push button",
-    "radio button",
-    "radio menu item",
-    "root pane",
-    "row header",
-    "scroll bar",
-    "scroll pane",
-    "separator",
-    "slider",
-    "split pane",
-    "spin button",
-    "statusbar",
-    "table",
-    "table cell",
-    "table column header",
-    "table row header",
-    "tear off menu item",
-    "terminal",
-    "text",
-    "toggle button",
-    "tool bar",
-    "tool tip",
-    "tree",
-    "tree table",
-    "unknown",
-    "viewport",
-    "window",
-    "header",
-    "footer",
-    "paragraph",
-    "ruler",
-    "application",
-    "autocomplete",
-    "edit bar",
-    "embedded component",
-    "entry",
-    "chart",
-    "caption",
-    "document frame",
-    "heading",
-    "page",
-    "section",
-    "redundant object",
-    "form",
-    "link",
-    "input method window",
-    "table row",
-    "tree item",
-    "document spreadsheet",
-    "document presentation",
-    "document text",
-    "document web",
-    "document email",
-    "comment",
-    "list box",
-    "grouping",
-    "image map",
-    "notification",
-    "info bar",
-    "level bar",
-    "title bar",
-    "block quote",
-    "audio",
-    "video",
-    "definition",
-    "article",
-    "landmark",
-    "log",
-    "marquee",
-    "math",
-    "rating",
-    "timer",
-    "description list",
-    "description term",
-    "description value",
-    "static",
-    "math fraction",
-    "math root",
-    "subscript",
-    "superscript",
-    "footnote",  // ATK_ROLE_FOOTNOTE = 122.
-};
-
 #if defined(ATK_216)
 constexpr AtkRole kStaticRole = ATK_ROLE_STATIC;
 constexpr AtkRole kSubscriptRole = ATK_ROLE_SUBSCRIPT;
@@ -267,56 +139,6 @@ constexpr AtkRole kAtkFootnoteRole = ATK_ROLE_FOOTNOTE;
 #else
 constexpr AtkRole kAtkFootnoteRole = ATK_ROLE_LIST_ITEM;
 #endif
-
-// AtkTableCell was introduced in ATK 2.12. Ubuntu Trusty has ATK 2.10.
-// Compile-time checks are in place for ATK versions that are older than 2.12.
-// However, we also need runtime checks in case the version we are building
-// against is newer than the runtime version. To prevent a runtime error, we
-// check that we have a version of ATK that supports AtkTableCell. If we do,
-// we dynamically load the symbol; if we don't, the interface is absent from
-// the accessible object and its methods will not be exposed or callable.
-// The definitions below ensure we have no missing symbols. Note that in
-// environments where we have ATK > 2.12, the definitions of AtkTableCell and
-// AtkTableCellIface below are overridden by the runtime version.
-// TODO(accessibility) Remove AtkTableCellInterface when 2.12 is the minimum
-// supported version.
-struct AtkTableCellInterface {
-  typedef struct _AtkTableCell AtkTableCell;
-  typedef struct _AtkTableCellIface AtkTableCellIface;
-  typedef GType (*GetTypeFunc)();
-  typedef GPtrArray* (*GetColumnHeaderCellsFunc)(AtkTableCell* cell);
-  typedef GPtrArray* (*GetRowHeaderCellsFunc)(AtkTableCell* cell);
-  typedef bool (*GetRowColumnSpanFunc)(AtkTableCell* cell,
-                                       gint* row,
-                                       gint* column,
-                                       gint* row_span,
-                                       gint* col_span);
-
-  GetTypeFunc GetType = nullptr;
-  GetColumnHeaderCellsFunc GetColumnHeaderCells = nullptr;
-  GetRowHeaderCellsFunc GetRowHeaderCells = nullptr;
-  GetRowColumnSpanFunc GetRowColumnSpan = nullptr;
-  bool initialized = false;
-
-  static base::Optional<AtkTableCellInterface> Get() {
-    static base::Optional<AtkTableCellInterface> interface = base::nullopt;
-    if (interface.has_value())
-      return interface->GetType ? interface : base::nullopt;
-
-    interface.emplace();
-    interface->GetType = reinterpret_cast<GetTypeFunc>(
-        dlsym(RTLD_DEFAULT, "atk_table_cell_get_type"));
-    interface->GetColumnHeaderCells =
-        reinterpret_cast<GetColumnHeaderCellsFunc>(
-            dlsym(RTLD_DEFAULT, "atk_table_cell_get_column_header_cells"));
-    interface->GetRowHeaderCells = reinterpret_cast<GetRowHeaderCellsFunc>(
-        dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_header_cells"));
-    interface->GetRowColumnSpan = reinterpret_cast<GetRowColumnSpanFunc>(
-        dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span"));
-    interface->initialized = true;
-    return interface->GetType ? interface : base::nullopt;
-  }
-};
 
 AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
     AtkObject* atk_object) {
@@ -2039,6 +1861,25 @@ void Detach(AXPlatformNodeAuraLinuxObject* atk_object) {
 
 }  // namespace
 
+// static
+base::Optional<AtkTableCellInterface> AtkTableCellInterface::Get() {
+  static base::Optional<AtkTableCellInterface> interface = base::nullopt;
+  if (interface.has_value())
+    return interface->GetType ? interface : base::nullopt;
+
+  interface.emplace();
+  interface->GetType = reinterpret_cast<GetTypeFunc>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_type"));
+  interface->GetColumnHeaderCells = reinterpret_cast<GetColumnHeaderCellsFunc>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_column_header_cells"));
+  interface->GetRowHeaderCells = reinterpret_cast<GetRowHeaderCellsFunc>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_header_cells"));
+  interface->GetRowColumnSpan = reinterpret_cast<GetRowColumnSpanFunc>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span"));
+  interface->initialized = true;
+  return interface->GetType ? interface : base::nullopt;
+}
+
 void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
 #if !GLIB_CHECK_VERSION(2, 36, 0)
   static bool first_time = true;
@@ -2870,177 +2711,6 @@ void AXPlatformNodeAuraLinux::DataChanged() {
   if (!atk_object_) {
     atk_object_ = CreateAtkObject();
   }
-}
-
-void AXPlatformNodeAuraLinux::AddAccessibilityTreeProperties(
-    base::DictionaryValue* dict) {
-  AtkRole role = GetAtkRole();
-  if (role != ATK_ROLE_UNKNOWN) {
-    int role_index = static_cast<int>(role);
-    dict->SetString("role", kRoleNames[role_index]);
-  }
-  const gchar* name = atk_object_get_name(atk_object_);
-  if (name)
-    dict->SetString("name", std::string(name));
-  const gchar* description = atk_object_get_description(atk_object_);
-  if (description)
-    dict->SetString("description", std::string(description));
-
-  AtkStateSet* state_set = atk_object_ref_state_set(atk_object_);
-  auto states = std::make_unique<base::ListValue>();
-  for (int i = ATK_STATE_INVALID; i < ATK_STATE_LAST_DEFINED; i++) {
-    AtkStateType state_type = static_cast<AtkStateType>(i);
-    if (atk_state_set_contains_state(state_set, state_type))
-      states->AppendString(atk_state_type_get_name(state_type));
-  }
-  dict->Set("states", std::move(states));
-
-  AtkRelationSet* relation_set = atk_object_ref_relation_set(atk_object_);
-  auto relations = std::make_unique<base::ListValue>();
-  for (int i = ATK_RELATION_NULL; i < ATK_RELATION_LAST_DEFINED; i++) {
-    AtkRelationType relation_type = static_cast<AtkRelationType>(i);
-    if (atk_relation_set_contains(relation_set, relation_type))
-      relations->AppendString(atk_relation_type_get_name(relation_type));
-  }
-  dict->Set("relations", std::move(relations));
-
-  AtkAttributeSet* attributes = atk_object_get_attributes(atk_object_);
-  for (AtkAttributeSet* attr = attributes; attr; attr = attr->next) {
-    AtkAttribute* attribute = static_cast<AtkAttribute*>(attr->data);
-    dict->SetString(attribute->name, attribute->value);
-  }
-  atk_attribute_set_free(attributes);
-
-  // Properties obtained via AtkValue.
-  auto value_properties = std::make_unique<base::ListValue>();
-  if (ATK_IS_VALUE(atk_object_)) {
-    AtkValue* value = ATK_VALUE(atk_object_);
-    GValue current = G_VALUE_INIT;
-    g_value_init(&current, G_TYPE_FLOAT);
-    atk_value_get_current_value(value, &current);
-    value_properties->AppendString(
-        base::StringPrintf("current=%f", g_value_get_float(&current)));
-
-    GValue minimum = G_VALUE_INIT;
-    g_value_init(&minimum, G_TYPE_FLOAT);
-    atk_value_get_minimum_value(value, &minimum);
-    value_properties->AppendString(
-        base::StringPrintf("minimum=%f", g_value_get_float(&minimum)));
-
-    GValue maximum = G_VALUE_INIT;
-    g_value_init(&maximum, G_TYPE_FLOAT);
-    atk_value_get_maximum_value(value, &maximum);
-    value_properties->AppendString(
-        base::StringPrintf("maximum=%f", g_value_get_float(&maximum)));
-  }
-  dict->Set("value", std::move(value_properties));
-
-  // Properties obtained via AtkTable.
-  auto table_properties = std::make_unique<base::ListValue>();
-  if (ATK_IS_TABLE(atk_object_)) {
-    AtkTable* table = ATK_TABLE(atk_object_);
-
-    // Column details.
-    int n_cols = atk_table_get_n_columns(table);
-    table_properties->AppendString(base::StringPrintf("cols=%i", n_cols));
-
-    std::vector<std::string> col_headers;
-    for (int i = 0; i < n_cols; i++) {
-      std::string header = atk_table_get_column_description(table, i);
-      if (!header.empty())
-        col_headers.push_back(base::StringPrintf("'%s'", header.c_str()));
-    }
-
-    if (!col_headers.size())
-      col_headers.push_back("NONE");
-
-    table_properties->AppendString(base::StringPrintf(
-        "headers=(%s);", base::JoinString(col_headers, ", ").c_str()));
-
-    // Row details.
-    int n_rows = atk_table_get_n_rows(table);
-    table_properties->AppendString(base::StringPrintf("rows=%i", n_rows));
-
-    std::vector<std::string> row_headers;
-    for (int i = 0; i < n_rows; i++) {
-      std::string header = atk_table_get_row_description(table, i);
-      if (!header.empty())
-        row_headers.push_back(base::StringPrintf("'%s'", header.c_str()));
-    }
-
-    if (!row_headers.size())
-      row_headers.push_back("NONE");
-
-    table_properties->AppendString(base::StringPrintf(
-        "headers=(%s);", base::JoinString(row_headers, ", ").c_str()));
-
-    // Caption details.
-    AtkObject* caption = atk_table_get_caption(table);
-    table_properties->AppendString(
-        base::StringPrintf("caption=%s;", caption ? "true" : "false"));
-
-    // Summarize information about the cells from the table's perspective here.
-    std::vector<std::string> span_info;
-    for (int r = 0; r < n_rows; r++) {
-      for (int c = 0; c < n_cols; c++) {
-        int row_span = atk_table_get_row_extent_at(table, r, c);
-        int col_span = atk_table_get_column_extent_at(table, r, c);
-        if (row_span != 1 || col_span != 1) {
-          span_info.push_back(base::StringPrintf("cell at %i,%i: %ix%i", r, c,
-                                                 row_span, col_span));
-        }
-      }
-    }
-    if (!span_info.size())
-      span_info.push_back("all: 1x1");
-
-    table_properties->AppendString(base::StringPrintf(
-        "spans=(%s)", base::JoinString(span_info, ", ").c_str()));
-  }
-
-  dict->Set("table", std::move(table_properties));
-
-  // Properties obtained via AtkTableCell, if possible. If we do not have at
-  // least ATK 2.12, use the same logic in our AtkTableCell implementation so
-  // that tests can still be run.
-  auto cell_properties = std::make_unique<base::ListValue>();
-  if (role == ATK_ROLE_TABLE_CELL || role == ATK_ROLE_COLUMN_HEADER ||
-      role == ATK_ROLE_ROW_HEADER) {
-    int row, col, row_span, col_span;
-    int n_row_headers = 0, n_column_headers = 0;
-    auto cell_interface = AtkTableCellInterface::Get();
-    if (cell_interface.has_value()) {
-      AtkTableCell* cell = G_TYPE_CHECK_INSTANCE_CAST(
-          (atk_object_), cell_interface->GetType(), AtkTableCell);
-      GPtrArray* column_headers = cell_interface->GetColumnHeaderCells(cell);
-      GPtrArray* row_headers = cell_interface->GetRowHeaderCells(cell);
-      n_column_headers = column_headers->len;
-      n_row_headers = row_headers->len;
-      g_ptr_array_unref(column_headers);
-      g_ptr_array_unref(row_headers);
-      cell_interface->GetRowColumnSpan(cell, &row, &col, &row_span, &col_span);
-    } else {
-      auto* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object_);
-      if (!obj)
-        return;
-      row = obj->GetTableRow();
-      col = obj->GetTableColumn();
-      row_span = obj->GetTableRowSpan();
-      col_span = obj->GetTableColumnSpan();
-      if (role == ATK_ROLE_TABLE_CELL) {
-        auto* delegate = obj->GetTable()->GetDelegate();
-        n_column_headers = delegate->GetColHeaderNodeIds(col).size();
-        n_row_headers = delegate->GetRowHeaderNodeIds(row).size();
-      }
-    }
-    cell_properties->AppendString(
-        base::StringPrintf("(row=%i, col=%i, row_span=%i, col_span=%i", row,
-                           col, row_span, col_span));
-    cell_properties->AppendString(
-        base::StringPrintf("n_row_headers=%i, n_col_headers=%i)", n_row_headers,
-                           n_column_headers));
-  }
-  dict->Set("cell", std::move(cell_properties));
 }
 
 gfx::NativeViewAccessible AXPlatformNodeAuraLinux::GetNativeViewAccessible() {

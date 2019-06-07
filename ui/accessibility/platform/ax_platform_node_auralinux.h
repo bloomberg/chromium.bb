@@ -28,6 +28,39 @@
 
 namespace ui {
 
+// AtkTableCell was introduced in ATK 2.12. Ubuntu Trusty has ATK 2.10.
+// Compile-time checks are in place for ATK versions that are older than 2.12.
+// However, we also need runtime checks in case the version we are building
+// against is newer than the runtime version. To prevent a runtime error, we
+// check that we have a version of ATK that supports AtkTableCell. If we do,
+// we dynamically load the symbol; if we don't, the interface is absent from
+// the accessible object and its methods will not be exposed or callable.
+// The definitions below ensure we have no missing symbols. Note that in
+// environments where we have ATK > 2.12, the definitions of AtkTableCell and
+// AtkTableCellIface below are overridden by the runtime version.
+// TODO(accessibility) Remove AtkTableCellInterface when 2.12 is the minimum
+// supported version.
+struct AX_EXPORT AtkTableCellInterface {
+  typedef struct _AtkTableCell AtkTableCell;
+  typedef struct _AtkTableCellIface AtkTableCellIface;
+  typedef GType (*GetTypeFunc)();
+  typedef GPtrArray* (*GetColumnHeaderCellsFunc)(AtkTableCell* cell);
+  typedef GPtrArray* (*GetRowHeaderCellsFunc)(AtkTableCell* cell);
+  typedef bool (*GetRowColumnSpanFunc)(AtkTableCell* cell,
+                                       gint* row,
+                                       gint* column,
+                                       gint* row_span,
+                                       gint* col_span);
+
+  GetTypeFunc GetType = nullptr;
+  GetColumnHeaderCellsFunc GetColumnHeaderCells = nullptr;
+  GetRowHeaderCellsFunc GetRowHeaderCells = nullptr;
+  GetRowColumnSpanFunc GetRowColumnSpan = nullptr;
+  bool initialized = false;
+
+  static base::Optional<AtkTableCellInterface> Get();
+};
+
 // Implements accessibility on Aura Linux using ATK.
 class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
  public:
@@ -46,7 +79,6 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   void DataChanged();
   void Destroy() override;
-  void AddAccessibilityTreeProperties(base::DictionaryValue* dict);
 
   AtkRole GetAtkRole();
   void GetAtkState(AtkStateSet* state_set);
