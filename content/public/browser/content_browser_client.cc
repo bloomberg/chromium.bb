@@ -837,6 +837,10 @@ SerialDelegate* ContentBrowserClient::GetSerialDelegate() {
 }
 #endif
 
+HidDelegate* ContentBrowserClient::GetHidDelegate() {
+  return nullptr;
+}
+
 bool ContentBrowserClient::ShowPaymentHandlerWindow(
     content::BrowserContext* browser_context,
     const GURL& url,

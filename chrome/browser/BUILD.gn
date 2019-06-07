@@ -2935,6 +2935,8 @@ jumbo_split_static_library("browser") {
       "first_run/upgrade_util_win.h",
       "font_family_cache.cc",
       "font_family_cache.h",
+      "hid/chrome_hid_delegate.cc",
+      "hid/chrome_hid_delegate.h",
       "hid/hid_chooser_context.cc",
       "hid/hid_chooser_context.h",
       "hid/hid_chooser_context_factory.cc",

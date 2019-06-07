@@ -7,12 +7,13 @@
 
 #include "base/macros.h"
 #include "components/bubble/bubble_reference.h"
+#include "content/public/browser/hid_chooser.h"
 
 // Owns a HID device chooser dialog and closes it when destroyed.
-class HidChooser {
+class HidChooser : public content::HidChooser {
  public:
   explicit HidChooser(BubbleReference bubble);
-  ~HidChooser();
+  ~HidChooser() override;
 
  private:
   BubbleReference bubble_;

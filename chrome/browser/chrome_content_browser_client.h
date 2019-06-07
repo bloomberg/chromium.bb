@@ -77,6 +77,7 @@ namespace url {
 class Origin;
 }
 
+class ChromeHidDelegate;
 class ChromeSerialDelegate;
 
 // Returns the user agent of Chrome.
@@ -512,6 +513,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       mojo::InterfaceRequest<blink::mojom::WebUsbService> request) override;
 #if !defined(OS_ANDROID)
   content::SerialDelegate* GetSerialDelegate() override;
+  content::HidDelegate* GetHidDelegate() override;
 #endif
   bool ShowPaymentHandlerWindow(
       content::BrowserContext* browser_context,
@@ -716,6 +718,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<ChromeSerialDelegate> serial_delegate_;
+  std::unique_ptr<ChromeHidDelegate> hid_delegate_;
 #endif
 
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;

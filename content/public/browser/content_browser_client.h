@@ -166,6 +166,7 @@ class BrowserURLHandler;
 class ClientCertificateDelegate;
 class ControllerPresentationServiceDelegate;
 class DevToolsManagerDelegate;
+class HidDelegate;
 class LoginDelegate;
 class MediaObserver;
 class NavigationHandle;
@@ -1363,6 +1364,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to provide an implementation of the Serial API.
   virtual SerialDelegate* GetSerialDelegate();
 #endif
+
+  // Allows the embedder to provide an implementation of the WebHID API.
+  virtual HidDelegate* GetHidDelegate();
 
   // Attempt to open the Payment Handler window inside its corresponding
   // PaymentRequest UI surface. Returns true if the ContentBrowserClient

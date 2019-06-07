@@ -19,7 +19,7 @@
 
 HidChooserController::HidChooserController(
     content::RenderFrameHost* render_frame_host,
-    HidChooserCallback callback)
+    content::HidChooser::Callback callback)
     : ChooserController(render_frame_host,
                         IDS_HID_CHOOSER_PROMPT_ORIGIN,
                         IDS_HID_CHOOSER_PROMPT_EXTENSION_NAME),

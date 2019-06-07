@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
+#include "content/public/browser/hid_chooser.h"
 #include "services/device/public/mojom/hid.mojom-forward.h"
 #include "url/origin.h"
 
@@ -25,9 +26,6 @@ class HidChooserContext;
 // It is owned by ChooserBubbleDelegate.
 class HidChooserController : public ChooserController {
  public:
-  using HidChooserCallback =
-      base::OnceCallback<void(device::mojom::HidDeviceInfoPtr)>;
-
   // Construct a chooser controller for Human Interface Devices (HID).
   // |render_frame_host| is used to initialize the chooser strings and to access
   // the requesting and embedding origins. |callback| is called when the chooser
@@ -35,7 +33,7 @@ class HidChooserController : public ChooserController {
   // The callback is called with the selected device, or nullptr if no device is
   // selected.
   HidChooserController(content::RenderFrameHost* render_frame_host,
-                       HidChooserCallback callback);
+                       content::HidChooser::Callback callback);
   ~HidChooserController() override;
 
   // ChooserController:
@@ -53,7 +51,7 @@ class HidChooserController : public ChooserController {
  private:
   void OnGotDevices(std::vector<device::mojom::HidDeviceInfoPtr> devices);
 
-  HidChooserCallback callback_;
+  content::HidChooser::Callback callback_;
   const url::Origin requesting_origin_;
   const url::Origin embedding_origin_;
 

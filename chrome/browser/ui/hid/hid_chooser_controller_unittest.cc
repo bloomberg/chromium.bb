@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/hid_chooser.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/device/public/cpp/hid/fake_hid_manager.h"
 #include "services/device/public/mojom/hid.mojom.h"
@@ -73,7 +74,7 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
         std::move(hid_manager_ptr));
 
     hid_chooser_controller_ = std::make_unique<HidChooserController>(
-        main_rfh(), HidChooserController::HidChooserCallback());
+        main_rfh(), content::HidChooser::Callback());
     fake_hid_chooser_view_ = std::make_unique<FakeHidChooserView>();
     hid_chooser_controller_->set_view(fake_hid_chooser_view_.get());
   }

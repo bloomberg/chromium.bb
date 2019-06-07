@@ -165,6 +165,8 @@ jumbo_source_set("browser_sources") {
     "guest_host.h",
     "guest_mode.cc",
     "guest_mode.h",
+    "hid_chooser.h",
+    "hid_delegate.h",
     "histogram_fetcher.h",
     "indexed_db_context.h",
     "interstitial_page.h",
