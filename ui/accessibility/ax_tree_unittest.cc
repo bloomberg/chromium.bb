@@ -622,9 +622,9 @@ TEST(AXTreeTest, ReparentingDoesNotTriggerNodeCreated) {
       test_observer.subtree_reparented_finished_ids();
   std::vector<int> node_reparented =
       test_observer.node_reparented_finished_ids();
-  ASSERT_FALSE(base::ContainsValue(created, 3));
-  ASSERT_TRUE(base::ContainsValue(subtree_reparented, 3));
-  ASSERT_FALSE(base::ContainsValue(node_reparented, 3));
+  ASSERT_FALSE(base::Contains(created, 3));
+  ASSERT_TRUE(base::Contains(subtree_reparented, 3));
+  ASSERT_FALSE(base::Contains(node_reparented, 3));
 }
 
 TEST(AXTreeTest, TreeObserverIsNotCalledForReparenting) {
@@ -1198,7 +1198,7 @@ TEST(AXTreeTest, IntReverseRelations) {
   auto reverse_active_descendant =
       tree.GetReverseRelations(ax::mojom::IntAttribute::kActivedescendantId, 2);
   ASSERT_EQ(1U, reverse_active_descendant.size());
-  EXPECT_TRUE(base::ContainsKey(reverse_active_descendant, 1));
+  EXPECT_TRUE(base::Contains(reverse_active_descendant, 1));
 
   reverse_active_descendant =
       tree.GetReverseRelations(ax::mojom::IntAttribute::kActivedescendantId, 1);
@@ -1211,8 +1211,8 @@ TEST(AXTreeTest, IntReverseRelations) {
   auto reverse_member_of =
       tree.GetReverseRelations(ax::mojom::IntAttribute::kMemberOfId, 1);
   ASSERT_EQ(2U, reverse_member_of.size());
-  EXPECT_TRUE(base::ContainsKey(reverse_member_of, 3));
-  EXPECT_TRUE(base::ContainsKey(reverse_member_of, 4));
+  EXPECT_TRUE(base::Contains(reverse_member_of, 3));
+  EXPECT_TRUE(base::Contains(reverse_member_of, 4));
 
   AXTreeUpdate update = initial_state;
   update.nodes.resize(5);
@@ -1233,13 +1233,13 @@ TEST(AXTreeTest, IntReverseRelations) {
   reverse_active_descendant =
       tree.GetReverseRelations(ax::mojom::IntAttribute::kActivedescendantId, 5);
   ASSERT_EQ(1U, reverse_active_descendant.size());
-  EXPECT_TRUE(base::ContainsKey(reverse_active_descendant, 1));
+  EXPECT_TRUE(base::Contains(reverse_active_descendant, 1));
 
   reverse_member_of =
       tree.GetReverseRelations(ax::mojom::IntAttribute::kMemberOfId, 1);
   ASSERT_EQ(2U, reverse_member_of.size());
-  EXPECT_TRUE(base::ContainsKey(reverse_member_of, 4));
-  EXPECT_TRUE(base::ContainsKey(reverse_member_of, 5));
+  EXPECT_TRUE(base::Contains(reverse_member_of, 4));
+  EXPECT_TRUE(base::Contains(reverse_member_of, 5));
 }
 
 TEST(AXTreeTest, IntListReverseRelations) {
@@ -1266,7 +1266,7 @@ TEST(AXTreeTest, IntListReverseRelations) {
   auto reverse_labelled_by =
       tree.GetReverseRelations(ax::mojom::IntListAttribute::kLabelledbyIds, 2);
   ASSERT_EQ(1U, reverse_labelled_by.size());
-  EXPECT_TRUE(base::ContainsKey(reverse_labelled_by, 1));
+  EXPECT_TRUE(base::Contains(reverse_labelled_by, 1));
 
   reverse_labelled_by =
       tree.GetReverseRelations(ax::mojom::IntListAttribute::kLabelledbyIds, 3);
@@ -1282,7 +1282,7 @@ TEST(AXTreeTest, IntListReverseRelations) {
   reverse_labelled_by =
       tree.GetReverseRelations(ax::mojom::IntListAttribute::kLabelledbyIds, 3);
   ASSERT_EQ(1U, reverse_labelled_by.size());
-  EXPECT_TRUE(base::ContainsKey(reverse_labelled_by, 1));
+  EXPECT_TRUE(base::Contains(reverse_labelled_by, 1));
 }
 
 TEST(AXTreeTest, DeletingNodeUpdatesReverseRelations) {
@@ -1300,7 +1300,7 @@ TEST(AXTreeTest, DeletingNodeUpdatesReverseRelations) {
   auto reverse_active_descendant =
       tree.GetReverseRelations(ax::mojom::IntAttribute::kActivedescendantId, 2);
   ASSERT_EQ(1U, reverse_active_descendant.size());
-  EXPECT_TRUE(base::ContainsKey(reverse_active_descendant, 3));
+  EXPECT_TRUE(base::Contains(reverse_active_descendant, 3));
 
   AXTreeUpdate update;
   update.root_id = 1;
@@ -1588,12 +1588,12 @@ TEST(AXTreeTest, ChildTreeIds) {
 
   auto child_tree_2_nodes = tree.GetNodeIdsForChildTreeId(tree_id_2);
   EXPECT_EQ(1U, child_tree_2_nodes.size());
-  EXPECT_TRUE(base::ContainsKey(child_tree_2_nodes, 2));
+  EXPECT_TRUE(base::Contains(child_tree_2_nodes, 2));
 
   auto child_tree_3_nodes = tree.GetNodeIdsForChildTreeId(tree_id_3);
   EXPECT_EQ(2U, child_tree_3_nodes.size());
-  EXPECT_TRUE(base::ContainsKey(child_tree_3_nodes, 3));
-  EXPECT_TRUE(base::ContainsKey(child_tree_3_nodes, 4));
+  EXPECT_TRUE(base::Contains(child_tree_3_nodes, 3));
+  EXPECT_TRUE(base::Contains(child_tree_3_nodes, 4));
 
   AXTreeUpdate update = initial_state;
   update.nodes[2].string_attributes.clear();
@@ -1605,8 +1605,8 @@ TEST(AXTreeTest, ChildTreeIds) {
 
   child_tree_2_nodes = tree.GetNodeIdsForChildTreeId(tree_id_2);
   EXPECT_EQ(2U, child_tree_2_nodes.size());
-  EXPECT_TRUE(base::ContainsKey(child_tree_2_nodes, 2));
-  EXPECT_TRUE(base::ContainsKey(child_tree_2_nodes, 3));
+  EXPECT_TRUE(base::Contains(child_tree_2_nodes, 2));
+  EXPECT_TRUE(base::Contains(child_tree_2_nodes, 3));
 
   child_tree_3_nodes = tree.GetNodeIdsForChildTreeId(tree_id_3);
   EXPECT_EQ(0U, child_tree_3_nodes.size());

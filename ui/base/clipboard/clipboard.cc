@@ -176,7 +176,7 @@ base::PlatformThreadId Clipboard::GetAndValidateThreadID() {
   // was whitelisted to use the clipboard. This is a CHECK rather than a DCHECK
   // to catch incorrect usage in production (e.g. https://crbug.com/872737).
   AllowedThreadsVector* allowed_threads = allowed_threads_.Pointer();
-  CHECK(allowed_threads->empty() || base::ContainsValue(*allowed_threads, id));
+  CHECK(allowed_threads->empty() || base::Contains(*allowed_threads, id));
 
   return id;
 }

@@ -1047,7 +1047,7 @@ void DisplayManager::UpdateDisplaysWith(
   std::vector<size_t> updated_indices;
   UpdateNonPrimaryDisplayBoundsForLayout(&new_displays, &updated_indices);
   for (size_t updated_index : updated_indices) {
-    if (!base::ContainsValue(added_display_indices, updated_index)) {
+    if (!base::Contains(added_display_indices, updated_index)) {
       uint32_t metrics = DisplayObserver::DISPLAY_METRIC_BOUNDS |
                          DisplayObserver::DISPLAY_METRIC_WORK_AREA;
       if (display_changes.find(updated_index) != display_changes.end())

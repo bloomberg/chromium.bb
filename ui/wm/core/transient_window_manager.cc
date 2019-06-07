@@ -65,7 +65,7 @@ void TransientWindowManager::AddTransientChild(Window* child) {
   TransientWindowManager* child_manager = GetOrCreate(child);
   if (child_manager->transient_parent_)
     GetOrCreate(child_manager->transient_parent_)->RemoveTransientChild(child);
-  DCHECK(!base::ContainsValue(transient_children_, child));
+  DCHECK(!base::Contains(transient_children_, child));
   transient_children_.push_back(child);
   child_manager->transient_parent_ = window_;
 

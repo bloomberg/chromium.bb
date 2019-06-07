@@ -269,7 +269,7 @@ class AXPosition {
       case AXPositionKind::TEXT_POSITION: {
         const std::vector<int32_t> word_starts =
             text_position->GetWordStartOffsets();
-        return base::ContainsValue(
+        return base::Contains(
             word_starts, static_cast<int32_t>(text_position->text_offset_));
       }
     }
@@ -287,7 +287,7 @@ class AXPosition {
       case AXPositionKind::TEXT_POSITION: {
         const std::vector<int32_t> word_ends =
             text_position->GetWordEndOffsets();
-        return base::ContainsValue(
+        return base::Contains(
             word_ends, static_cast<int32_t>(text_position->text_offset_));
       }
     }

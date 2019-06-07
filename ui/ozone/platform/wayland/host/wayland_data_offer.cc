@@ -55,7 +55,7 @@ void WaylandDataOffer::Reject(uint32_t serial) {
 }
 
 void WaylandDataOffer::EnsureTextMimeTypeIfNeeded() {
-  if (base::ContainsValue(mime_types_, kTextPlain))
+  if (base::Contains(mime_types_, kTextPlain))
     return;
 
   if (std::any_of(mime_types_.begin(), mime_types_.end(),
@@ -70,7 +70,7 @@ void WaylandDataOffer::EnsureTextMimeTypeIfNeeded() {
 }
 
 base::ScopedFD WaylandDataOffer::Receive(const std::string& mime_type) {
-  if (!base::ContainsValue(mime_types_, mime_type))
+  if (!base::Contains(mime_types_, mime_type))
     return base::ScopedFD();
 
   base::ScopedFD read_fd;

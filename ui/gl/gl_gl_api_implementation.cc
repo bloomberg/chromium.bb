@@ -513,7 +513,7 @@ void RealGLApi::InitializeFilteredExtensionsIfNeeded() {
       const char* gl_extension = reinterpret_cast<const char*>(
           GLApiBase::glGetStringiFn(GL_EXTENSIONS, i));
       DCHECK(gl_extension);
-      if (!base::ContainsValue(disabled_exts_, gl_extension))
+      if (!base::Contains(disabled_exts_, gl_extension))
         filtered_exts_.push_back(gl_extension);
     }
     filtered_exts_str_ = base::JoinString(filtered_exts_, " ");

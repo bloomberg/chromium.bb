@@ -522,18 +522,18 @@ void WindowOcclusionTracker::SetOccluded(Window* window,
 }
 
 bool WindowOcclusionTracker::WindowIsTracked(Window* window) const {
-  return base::ContainsKey(tracked_windows_, window);
+  return base::Contains(tracked_windows_, window);
 }
 
 bool WindowOcclusionTracker::WindowIsAnimated(Window* window) const {
   return !ShouldUseTargetValues() &&
-         base::ContainsKey(animated_windows_, window) &&
+         base::Contains(animated_windows_, window) &&
          window->layer()->GetAnimator()->IsAnimatingOnePropertyOf(
              kSkipWindowWhenPropertiesAnimated);
 }
 
 bool WindowOcclusionTracker::WindowIsExcluded(Window* window) const {
-  return base::ContainsKey(excluded_windows_, window);
+  return base::Contains(excluded_windows_, window);
 }
 
 bool WindowOcclusionTracker::WindowIsVisible(Window* window) const {
@@ -798,7 +798,7 @@ void WindowOcclusionTracker::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   Window* const window = params.target;
   Window* const root_window = window->GetRootWindow();
-  if (root_window && base::ContainsKey(root_windows_, root_window) &&
+  if (root_window && base::Contains(root_windows_, root_window) &&
       !window_observer_.IsObserving(window)) {
     AddObserverToWindowAndDescendants(window);
   }

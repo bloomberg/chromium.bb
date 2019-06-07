@@ -34,7 +34,7 @@ void GLImageTestSupport::InitializeGL(
   DCHECK(!allowed_impls.empty());
 
   GLImplementation impl = prefered_impl ? *prefered_impl : allowed_impls[0];
-  DCHECK(base::ContainsValue(allowed_impls, impl));
+  DCHECK(base::Contains(allowed_impls, impl));
 
   GLSurfaceTestSupport::InitializeOneOffImplementation(impl, true);
 #if defined(USE_OZONE)

@@ -100,12 +100,11 @@ void AXEventGenerator::AddEvent(ui::AXNode* node,
   // A newly created live region or alert should not *also* fire a
   // live region changed event.
   if (event == Event::LIVE_REGION_CHANGED &&
-      (base::ContainsKey(
-           tree_events_[node],
-           EventParams(Event::ALERT, ax::mojom::EventFrom::kNone)) ||
-       base::ContainsKey(tree_events_[node],
-                         EventParams(Event::LIVE_REGION_CREATED,
-                                     ax::mojom::EventFrom::kNone)))) {
+      (base::Contains(tree_events_[node],
+                      EventParams(Event::ALERT, ax::mojom::EventFrom::kNone)) ||
+       base::Contains(tree_events_[node],
+                      EventParams(Event::LIVE_REGION_CREATED,
+                                  ax::mojom::EventFrom::kNone)))) {
     return;
   }
 

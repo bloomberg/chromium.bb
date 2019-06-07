@@ -52,7 +52,7 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
   bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
     std::vector<Atom> hints;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &hints))
-      return base::ContainsValue(hints, gfx::GetAtom(hint_)) != wait_till_set_;
+      return base::Contains(hints, gfx::GetAtom(hint_)) != wait_till_set_;
     return true;
   }
 

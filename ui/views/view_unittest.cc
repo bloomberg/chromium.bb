@@ -3648,8 +3648,8 @@ TEST_F(ViewTest, GetViewByID) {
   View::Views views;
   v1.GetViewsInGroup(kGroup, &views);
   EXPECT_EQ(2U, views.size());
-  EXPECT_TRUE(base::ContainsValue(views, &v3));
-  EXPECT_TRUE(base::ContainsValue(views, &v4));
+  EXPECT_TRUE(base::Contains(views, &v3));
+  EXPECT_TRUE(base::Contains(views, &v4));
 }
 
 TEST_F(ViewTest, AddExistingChild) {

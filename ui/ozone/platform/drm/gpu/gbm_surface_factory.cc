@@ -123,7 +123,7 @@ std::vector<gfx::BufferFormat> EnumerateSupportedBufferFormatsForTexturing() {
 
     for (int i = 0; i <= static_cast<int>(gfx::BufferFormat::LAST); ++i) {
       const gfx::BufferFormat buffer_format = static_cast<gfx::BufferFormat>(i);
-      if (base::ContainsValue(supported_buffer_formats, buffer_format))
+      if (base::Contains(supported_buffer_formats, buffer_format))
         continue;
       if (gbm_device_is_format_supported(
               device.get(), GetFourCCFormatFromBufferFormat(buffer_format),

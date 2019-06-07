@@ -206,7 +206,7 @@ std::string FilterGLExtensionList(
       extensions, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   auto is_disabled = [&disabled_extensions](const base::StringPiece& ext) {
-    return base::ContainsValue(disabled_extensions, ext);
+    return base::Contains(disabled_extensions, ext);
   };
   base::EraseIf(extension_vec, is_disabled);
 

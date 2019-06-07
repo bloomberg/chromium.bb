@@ -543,8 +543,7 @@ void View::DestroyLayer() {
 
 void View::AddLayerBeneathView(ui::Layer* new_layer) {
   DCHECK(new_layer);
-  DCHECK(!base::ContainsValue(layers_beneath_, new_layer))
-      << "Layer already added.";
+  DCHECK(!base::Contains(layers_beneath_, new_layer)) << "Layer already added.";
 
   new_layer->AddObserver(this);
   new_layer->SetVisible(GetVisible());
@@ -1257,7 +1256,7 @@ void View::AddAccelerator(const ui::Accelerator& accelerator) {
   if (!accelerators_)
     accelerators_ = std::make_unique<std::vector<ui::Accelerator>>();
 
-  if (!base::ContainsValue(*accelerators_, accelerator))
+  if (!base::Contains(*accelerators_, accelerator))
     accelerators_->push_back(accelerator);
 
   RegisterPendingAccelerators();

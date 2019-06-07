@@ -32,7 +32,7 @@ AXRootObjWrapper::~AXRootObjWrapper() {
 bool AXRootObjWrapper::HasChild(views::AXAuraObjWrapper* child) {
   std::vector<views::AXAuraObjWrapper*> children;
   GetChildren(&children);
-  return base::ContainsValue(children, child);
+  return base::Contains(children, child);
 }
 
 bool AXRootObjWrapper::IsIgnored() {

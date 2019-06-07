@@ -2642,8 +2642,8 @@ TEST_F(AXPlatformNodeWinTest, TestUnlabeledImageAttributes) {
 
     std::vector<base::string16> attribute_vector = base::SplitString(
         attributes, L";", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    EXPECT_TRUE(base::ContainsValue(attribute_vector,
-                                    L"roledescription:Unlabeled image"));
+    EXPECT_TRUE(
+        base::Contains(attribute_vector, L"roledescription:Unlabeled image"));
   }
 }
 

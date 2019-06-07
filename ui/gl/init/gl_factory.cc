@@ -66,7 +66,7 @@ bool InitializeGLOneOffHelper(bool init_extensions) {
       impl = kGLImplementationEGLGLES2;
     } else {
       impl = GetNamedGLImplementation(requested_implementation_name);
-      if (!base::ContainsValue(allowed_impls, impl)) {
+      if (!base::Contains(allowed_impls, impl)) {
         LOG(ERROR) << "Requested GL implementation is not available.";
         return false;
       }

@@ -516,7 +516,7 @@ void ColumnSet::AccumulateMasterColumns() {
   DCHECK(master_columns_.empty());
   for (const auto& column : columns_) {
     Column* master_column = column->GetLastMasterColumn();
-    if (master_column && !base::ContainsValue(master_columns_, master_column)) {
+    if (master_column && !base::Contains(master_columns_, master_column)) {
       master_columns_.push_back(master_column);
     }
     // At this point, GetLastMasterColumn may not == master_column

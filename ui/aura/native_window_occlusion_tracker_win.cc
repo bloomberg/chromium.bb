@@ -538,7 +538,7 @@ bool NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   DWORD pid;
   GetWindowThreadProcessId(hwnd, &pid);
   current_pids_with_visible_windows->insert(pid);
-  if (!base::ContainsKey(process_event_hooks_, pid))
+  if (!base::Contains(process_event_hooks_, pid))
     RegisterEventHookForProcess(pid);
 
   SkRegion window_region(SkIRect::MakeLTRB(window_rect.x(), window_rect.y(),

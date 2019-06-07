@@ -711,7 +711,7 @@ ScaleFactor ResourceBundle::GetMaxScaleFactor() const {
 bool ResourceBundle::IsScaleFactorSupported(ScaleFactor scale_factor) {
   const std::vector<ScaleFactor>& supported_scale_factors =
       ui::GetSupportedScaleFactors();
-  return base::ContainsValue(supported_scale_factors, scale_factor);
+  return base::Contains(supported_scale_factors, scale_factor);
 }
 
 void ResourceBundle::CheckCanOverrideStringResources() {

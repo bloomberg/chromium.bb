@@ -123,7 +123,7 @@ ScopedJavaLocalRef<jobject> ViewAndroid::GetEventForwarder() {
 
 void ViewAndroid::AddChild(ViewAndroid* child) {
   DCHECK(child);
-  DCHECK(!base::ContainsValue(children_, child));
+  DCHECK(!base::Contains(children_, child));
   DCHECK(!RootPathHasEventForwarder(this) || !SubtreeHasEventForwarder(child))
       << "Some view tree path will have more than one event forwarder "
          "if the child is added.";

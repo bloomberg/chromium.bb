@@ -126,7 +126,7 @@ void ClipboardMap::ClearLastModifiedTime() {
 bool ClipboardMap::HasFormat(const std::string& format) {
   base::AutoLock lock(lock_);
   UpdateFromAndroidClipboard();
-  return base::ContainsKey(map_, format);
+  return base::Contains(map_, format);
 }
 
 void ClipboardMap::OnPrimaryClipboardChanged() {
@@ -153,11 +153,11 @@ void ClipboardMap::Set(const std::string& format, const std::string& data) {
 void ClipboardMap::CommitToAndroidClipboard() {
   JNIEnv* env = AttachCurrentThread();
   base::AutoLock lock(lock_);
-  if (base::ContainsKey(map_, ClipboardFormatType::GetHtmlType().ToString())) {
+  if (base::Contains(map_, ClipboardFormatType::GetHtmlType().ToString())) {
     // Android's API for storing HTML content on the clipboard requires a plain-
     // text representation to be available as well.
-    if (!base::ContainsKey(map_,
-                           ClipboardFormatType::GetPlainTextType().ToString()))
+    if (!base::Contains(map_,
+                        ClipboardFormatType::GetPlainTextType().ToString()))
       return;
 
     ScopedJavaLocalRef<jstring> html = ConvertUTF8ToJavaString(
@@ -167,7 +167,7 @@ void ClipboardMap::CommitToAndroidClipboard() {
 
     DCHECK(html.obj() && text.obj());
     Java_Clipboard_setHTMLText(env, clipboard_manager_, html, text);
-  } else if (base::ContainsKey(
+  } else if (base::Contains(
                  map_, ClipboardFormatType::GetPlainTextType().ToString())) {
     ScopedJavaLocalRef<jstring> str = ConvertUTF8ToJavaString(
         env, map_[ClipboardFormatType::GetPlainTextType().ToString()]);

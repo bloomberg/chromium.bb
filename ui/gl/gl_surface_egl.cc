@@ -500,7 +500,7 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
 void AddInitDisplay(std::vector<DisplayType>* init_displays,
                     DisplayType display_type) {
   // Make sure to not add the same display type twice.
-  if (!base::ContainsValue(*init_displays, display_type))
+  if (!base::Contains(*init_displays, display_type))
     init_displays->push_back(display_type);
 }
 

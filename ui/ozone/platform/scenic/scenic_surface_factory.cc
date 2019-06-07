@@ -146,7 +146,7 @@ ScenicSurfaceFactory::CreateVulkanImplementation() {
 void ScenicSurfaceFactory::AddSurface(gfx::AcceleratedWidget widget,
                                       ScenicSurface* surface) {
   base::AutoLock lock(surface_lock_);
-  DCHECK(!base::ContainsKey(surface_map_, widget));
+  DCHECK(!base::Contains(surface_map_, widget));
   surface->AssertBelongsToCurrentThread();
   surface_map_.insert(std::make_pair(widget, surface));
 }

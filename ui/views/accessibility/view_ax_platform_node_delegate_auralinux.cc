@@ -50,7 +50,7 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
       return;
 
     widget = widget->GetTopLevelWidget();
-    if (base::ContainsValue(widgets_, widget))
+    if (base::Contains(widgets_, widget))
       return;
 
     widgets_.push_back(widget);

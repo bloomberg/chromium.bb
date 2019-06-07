@@ -536,7 +536,7 @@ bool IsWindowVisible(XID window) {
   std::vector<XAtom> wm_states;
   if (GetAtomArrayProperty(window, "_NET_WM_STATE", &wm_states)) {
     XAtom hidden_atom = gfx::GetAtom("_NET_WM_STATE_HIDDEN");
-    if (base::ContainsValue(wm_states, hidden_atom))
+    if (base::Contains(wm_states, hidden_atom))
       return false;
   }
 
@@ -1236,7 +1236,7 @@ bool IsX11WindowFullScreen(XID window) {
     if (GetAtomArrayProperty(window,
                              "_NET_WM_STATE",
                              &atom_properties)) {
-      return base::ContainsValue(atom_properties, fullscreen_atom);
+      return base::Contains(atom_properties, fullscreen_atom);
     }
   }
 
@@ -1267,7 +1267,7 @@ bool WmSupportsHint(XAtom atom) {
     return false;
   }
 
-  return base::ContainsValue(supported_atoms, atom);
+  return base::Contains(supported_atoms, atom);
 }
 
 gfx::ICCProfile GetICCProfileForMonitor(int monitor) {

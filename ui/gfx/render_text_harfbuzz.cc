@@ -79,7 +79,7 @@ bool IsBracket(UChar32 character) {
   // 0x300c and 0x300d are「foo」 style brackets.
   constexpr UChar32 kBrackets[] = {'(', ')', '{',       '}',
                                    '<', '>', L'\u300c', L'\u300d'};
-  return base::ContainsValue(kBrackets, character);
+  return base::Contains(kBrackets, character);
 }
 
 // If the given scripts match, returns the one that isn't USCRIPT_INHERITED,
