@@ -107,7 +107,7 @@ struct CNN_LAYER_CONFIG {
   int maxpool;            // whether to use maxpool or not (only effective when
                           // skip width or skip_height are > 1)
   const float *weights;   // array of length filter_height x filter_width x
-                          // in_channels // x out_channels where the inner-most
+                          // in_channels x out_channels where the inner-most
                           // scan is out_channels and the outer most scan is
                           // filter_height.
   const float *bias;      // array of length out_channels
@@ -124,8 +124,14 @@ struct CNN_LAYER_CONFIG {
   BRANCH_COMBINE branch_combine_type;
   struct CNN_BRANCH_CONFIG branch_config;
   struct CNN_BATCHNORM_PARAMS
-      bn_params;  // A struct that contains the parameters
-                  // used for batch normalization.
+      bn_params;   // A struct that contains the parameters
+                   // used for batch normalization.
+  int output_num;  // The output buffer idx to which the layer output is
+                   // written. Set to -1 to disable writing it to the output. In
+                   // the case that branch_combine_type is BRANCH_CAT, all
+                   // concatenated channels will be written to output. In the
+                   // case of BRANCH_ADD, the output will be the result of
+                   // summation.
 };
 
 struct CNN_CONFIG {
@@ -144,12 +150,27 @@ struct CNN_THREAD_DATA {
   AVxWorker *workers;
 };
 
+struct CNN_MULTI_OUT {
+  int num_outputs;
+  const int *output_channels;
+  const int *output_strides;
+  float **output_buffer;
+};
+
 // Function to return size of output
 void av1_find_cnn_output_size(int in_width, int in_height,
                               const CNN_CONFIG *cnn_config, int *out_width,
                               int *out_height, int *out_channels);
 
-// Prediction functions from set of input image buffers
+// Prediction functions from set of input image buffers. This function supports
+// CNN with multiple outputs.
+void av1_cnn_predict_img_multi_out(uint8_t **dgd, int width, int height,
+                                   int stride, const CNN_CONFIG *cnn_config,
+                                   const CNN_THREAD_DATA *thread_data,
+                                   struct CNN_MULTI_OUT *output);
+
+// Prediction functions from set of input image buffers. This function only
+// supports a single output.
 void av1_cnn_predict_img(uint8_t **dgd, int width, int height, int stride,
                          const CNN_CONFIG *cnn_config,
                          const CNN_THREAD_DATA *thread_data, float **output,
