@@ -1868,6 +1868,7 @@ jumbo_source_set("unit_tests") {
     "html/custom/custom_element_upgrade_sorter_test.cc",
     "html/forms/email_input_type_test.cc",
     "html/forms/external_popup_menu_test.cc",
+    "html/forms/file_chooser_test.cc",
     "html/forms/file_input_type_test.cc",
     "html/forms/form_controller_test.cc",
     "html/forms/form_data_test.cc",

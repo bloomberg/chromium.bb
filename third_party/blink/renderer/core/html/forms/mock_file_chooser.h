@@ -74,5 +74,28 @@ class MockFileChooser : public mojom::blink::FileChooser {
   base::OnceClosure reached_callback_;
 };
 
+// A FileChooserClient which makes FileChooser::OpenFileChooser() success.
+class MockFileChooserClient
+    : public GarbageCollectedFinalized<MockFileChooserClient>,
+      public FileChooserClient {
+  USING_GARBAGE_COLLECTED_MIXIN(MockFileChooserClient);
+
+ public:
+  explicit MockFileChooserClient(LocalFrame* frame) : frame_(frame) {}
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(frame_);
+    FileChooserClient::Trace(visitor);
+  }
+
+ private:
+  // FilesChosen() and WillOpenPopup() are never called in the test.
+  void FilesChosen(FileChooserFileInfoList, const base::FilePath&) override {}
+  void WillOpenPopup() override {}
+
+  LocalFrame* FrameOrNull() const override { return frame_; }
+
+  Member<LocalFrame> frame_;
+};
+
 }  // namespace blink
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_MOCK_FILE_CHOOSER_H_
