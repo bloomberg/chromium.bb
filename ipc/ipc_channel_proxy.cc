@@ -340,7 +340,7 @@ void ChannelProxy::Context::AddListenerTaskRunner(
   DCHECK(default_listener_task_runner_->BelongsToCurrentThread());
   DCHECK(task_runner);
   base::AutoLock lock(listener_thread_task_runners_lock_);
-  if (!base::ContainsKey(listener_thread_task_runners_, routing_id))
+  if (!base::Contains(listener_thread_task_runners_, routing_id))
     listener_thread_task_runners_.insert({routing_id, std::move(task_runner)});
 }
 
@@ -348,7 +348,7 @@ void ChannelProxy::Context::AddListenerTaskRunner(
 void ChannelProxy::Context::RemoveListenerTaskRunner(int32_t routing_id) {
   DCHECK(default_listener_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(listener_thread_task_runners_lock_);
-  if (base::ContainsKey(listener_thread_task_runners_, routing_id))
+  if (base::Contains(listener_thread_task_runners_, routing_id))
     listener_thread_task_runners_.erase(routing_id);
 }
 
