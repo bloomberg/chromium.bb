@@ -176,5 +176,21 @@ TEST_F(BioEnrollmentHandlerTest, Enroll) {
   EXPECT_EQ(v->remaining_samples, 0);
 }
 
+// Tests cancelling fingerprint without an ongoing enrollment.
+TEST_F(BioEnrollmentHandlerTest, CancelNoEnroll) {
+  VirtualCtap2Device::Config config;
+  config.pin_support = true;
+  config.bio_enrollment_support = true;
+
+  virtual_device_factory_.SetCtap2Config(config);
+
+  auto handler = MakeHandler();
+  ready_callback_.WaitForCallback();
+
+  test::TestCallbackReceiver<> cb;
+  handler->Cancel(cb.callback());
+  cb.WaitForCallback();
+}
+
 }  // namespace
 }  // namespace device

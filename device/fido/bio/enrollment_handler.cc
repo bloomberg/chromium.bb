@@ -65,6 +65,14 @@ void BioEnrollmentHandler::Enroll(ResponseCallback callback) {
                                                 weak_factory_.GetWeakPtr()));
 }
 
+void BioEnrollmentHandler::Cancel(base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+
+  status_callback_ = std::move(callback);
+  authenticator_->BioEnrollCancel(base::BindOnce(
+      &BioEnrollmentHandler::OnCancel, weak_factory_.GetWeakPtr()));
+}
+
 void BioEnrollmentHandler::DispatchRequest(FidoAuthenticator* authenticator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
   authenticator->GetTouch(base::BindOnce(&BioEnrollmentHandler::OnTouch,
@@ -159,6 +167,11 @@ void BioEnrollmentHandler::OnEnroll(
   FIDO_LOG(DEBUG) << "Finished bio enrollment with code "
                   << static_cast<int>(code);
   std::move(response_callback_).Run(code, std::move(response));
+}
+
+void BioEnrollmentHandler::OnCancel(CtapDeviceResponseCode,
+                                    base::Optional<BioEnrollmentResponse>) {
+  std::move(status_callback_).Run();
 }
 
 }  // namespace device

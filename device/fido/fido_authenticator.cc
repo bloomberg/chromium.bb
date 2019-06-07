@@ -96,6 +96,10 @@ void FidoAuthenticator::BioEnrollFingerprint(pin::TokenResponse,
   NOTREACHED();
 }
 
+void FidoAuthenticator::BioEnrollCancel(BioEnrollmentCallback) {
+  NOTREACHED();
+}
+
 void FidoAuthenticator::Reset(ResetCallback callback) {
   std::move(callback).Run(CtapDeviceResponseCode::kCtap1ErrInvalidCommand,
                           base::nullopt);

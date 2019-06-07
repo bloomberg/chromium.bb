@@ -172,6 +172,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual void GetModality(BioEnrollmentCallback callback);
   virtual void GetSensorInfo(BioEnrollmentCallback callback);
   virtual void BioEnrollFingerprint(pin::TokenResponse, BioEnrollmentCallback);
+  virtual void BioEnrollCancel(BioEnrollmentCallback);
 
   // Reset triggers a reset operation on the authenticator. This erases all
   // stored resident keys and any configured PIN.

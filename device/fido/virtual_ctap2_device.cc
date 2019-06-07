@@ -1394,6 +1394,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples), 0);
       break;
+    case static_cast<int>(SubCmd::kCancelCurrentEnrollment):
+      return CtapDeviceResponseCode::kSuccess;
     default:
       // Handle all other commands as if they were unsupported (will change
       // when support is added).

@@ -61,6 +61,14 @@ BioEnrollmentRequest BioEnrollmentRequest::ForEnrollNextSample(
   return request;
 }
 
+// static
+BioEnrollmentRequest BioEnrollmentRequest::ForCancel() {
+  BioEnrollmentRequest request;
+  request.modality = BioEnrollmentModality::kFingerprint;
+  request.subcommand = BioEnrollmentSubCommand::kCancelCurrentEnrollment;
+  return request;
+}
+
 BioEnrollmentRequest::BioEnrollmentRequest(BioEnrollmentRequest&&) = default;
 BioEnrollmentRequest& BioEnrollmentRequest::operator=(BioEnrollmentRequest&&) =
     default;
