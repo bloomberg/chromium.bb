@@ -449,7 +449,6 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
 }
 
 void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
-
     std::vector<RenderPassId> ids) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!ids.empty());
@@ -458,18 +457,23 @@ void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
   image_contexts.reserve(ids.size());
   for (const auto id : ids) {
     auto it = render_pass_image_cache_.find(id);
-    DCHECK(it != render_pass_image_cache_.end());
-    it->second->image = nullptr;
-    image_contexts.push_back(std::move(it->second));
-    render_pass_image_cache_.erase(it);
+    // TODO(sgilhuly): This is a speculative fix for https://crbug.com/926194.
+    // Find out the cause of the crash and create a test that would repro it.
+    if (it != render_pass_image_cache_.end()) {
+      it->second->image = nullptr;
+      image_contexts.push_back(std::move(it->second));
+      render_pass_image_cache_.erase(it);
+    }
   }
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  auto callback = base::BindOnce(
-      &SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource,
-      base::Unretained(impl_on_gpu_.get()), std::move(image_contexts));
-  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
+  if (!image_contexts.empty()) {
+    auto callback = base::BindOnce(
+        &SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource,
+        base::Unretained(impl_on_gpu_.get()), std::move(image_contexts));
+    ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
+  }
 }
 
 void SkiaOutputSurfaceImpl::CopyOutput(
