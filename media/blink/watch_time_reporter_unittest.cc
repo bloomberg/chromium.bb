@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/watch_time_keys.h"
 #include "media/blink/watch_time_reporter.h"
@@ -258,7 +259,7 @@ class WatchTimeReporterTest
         fake_metrics_provider_(this) {
     // Do this first. Lots of pieces depend on the task runner.
     auto message_loop = base::MessageLoopCurrent::Get();
-    original_task_runner_ = message_loop.task_runner();
+    original_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     task_runner_ = new base::TestMockTimeTaskRunner();
     message_loop.SetTaskRunner(task_runner_);
   }
