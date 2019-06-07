@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_title_source.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
 // ID used by Instant code to refer to objects (e.g. Autocomplete results, Most
@@ -41,22 +42,6 @@ enum ThemeBackgroundImageTiling {
   THEME_BKGRND_IMAGE_LAST = THEME_BKGRND_IMAGE_REPEAT,
 };
 
-// The RGBA color components for the text and links of the theme.
-struct RGBAColor {
-  RGBAColor();
-  RGBAColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-  ~RGBAColor();
-
-  bool operator==(const RGBAColor& rhs) const;
-
-  // The color in RGBA format where the R, G, B and A values
-  // are between 0 and 255 inclusive and always valid.
-  uint8_t r;
-  uint8_t g;
-  uint8_t b;
-  uint8_t a;
-};
-
 // Theme background settings for the NTP.
 struct ThemeBackgroundInfo {
   ThemeBackgroundInfo();
@@ -82,14 +67,14 @@ struct ThemeBackgroundInfo {
   // Url to learn more info about the custom background.
   GURL custom_background_attribution_action_url;
 
-  // The theme background color in RGBA format always valid.
-  RGBAColor background_color;
+  // The theme background color. Always valid.
+  SkColor background_color;
 
-  // The theme text color in RGBA format.
-  RGBAColor text_color;
+  // The theme text color.
+  SkColor text_color;
 
-  // The theme text color light in RGBA format.
-  RGBAColor text_color_light;
+  // The theme text color light.
+  SkColor text_color_light;
 
   // The theme id for the theme background image.
   // Value is only valid if there's a custom theme background image.

@@ -584,20 +584,6 @@ bool InstantService::IsCustomLinksEnabled() {
          !pref_service_->GetBoolean(prefs::kNtpUseMostVisitedTiles);
 }
 
-namespace {
-
-// Converts SkColor to RGBAColor
-RGBAColor SkColorToRGBAColor(const SkColor& sKColor) {
-  RGBAColor color;
-  color.r = SkColorGetR(sKColor);
-  color.g = SkColorGetG(sKColor);
-  color.b = SkColorGetB(sKColor);
-  color.a = SkColorGetA(sKColor);
-  return color;
-}
-
-}  // namespace
-
 void InstantService::BuildThemeInfo() {
   // Get theme information from theme service.
   theme_info_.reset(new ThemeBackgroundInfo());
@@ -618,9 +604,9 @@ void InstantService::BuildThemeInfo() {
       theme_provider.GetColor(ThemeProperties::COLOR_NTP_TEXT_LIGHT);
 
   // Set colors.
-  theme_info_->background_color = SkColorToRGBAColor(background_color);
-  theme_info_->text_color = SkColorToRGBAColor(text_color);
-  theme_info_->text_color_light = SkColorToRGBAColor(text_color_light);
+  theme_info_->background_color = background_color;
+  theme_info_->text_color = text_color;
+  theme_info_->text_color_light = text_color_light;
 
   int logo_alternate =
       theme_provider.GetDisplayProperty(ThemeProperties::NTP_LOGO_ALTERNATE);

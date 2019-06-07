@@ -55,7 +55,7 @@ TEST(SearchboxExtensionTest, TestGetIconColor) {
   ThemeBackgroundInfo theme_info;
   theme_info.using_default_theme = true;
   theme_info.using_dark_mode = false;
-  theme_info.background_color = RGBAColor(255, 0, 0, 255);  // red
+  theme_info.background_color = SK_ColorRED;
 
   // // Default theme in light mode.
   EXPECT_EQ(kLightIconColor, GetIconColor(theme_info));

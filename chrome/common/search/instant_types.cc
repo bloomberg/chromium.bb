@@ -4,26 +4,6 @@
 
 #include "chrome/common/search/instant_types.h"
 
-RGBAColor::RGBAColor()
-    : r(0),
-      g(0),
-      b(0),
-      a(0) {
-}
-
-RGBAColor::RGBAColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-    : r(r), g(g), b(b), a(a) {}
-
-RGBAColor::~RGBAColor() {
-}
-
-bool RGBAColor::operator==(const RGBAColor& rhs) const {
-  return r == rhs.r &&
-      g == rhs.g &&
-      b == rhs.b &&
-      a == rhs.a;
-}
-
 ThemeBackgroundInfo::ThemeBackgroundInfo()
     : using_default_theme(true),
       using_dark_mode(false),
