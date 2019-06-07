@@ -7,9 +7,9 @@
 
 #include <map>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/base/x/ui_base_x_export.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace base {
@@ -23,7 +23,7 @@ class XWindowEventManager;
 
 // Ensures events in |event_mask| are selected on |xid| for the duration of this
 // object's lifetime.
-class UI_BASE_X_EXPORT XScopedEventSelector {
+class COMPONENT_EXPORT(UI_BASE_X) XScopedEventSelector {
  public:
   XScopedEventSelector(XID xid, uint32_t event_mask);
   ~XScopedEventSelector();

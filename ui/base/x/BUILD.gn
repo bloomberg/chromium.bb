@@ -12,7 +12,6 @@ jumbo_component("x") {
   output_name = "ui_base_x"
 
   sources = [
-    "ui_base_x_export.h",
     "x11_display_util.cc",
     "x11_display_util.h",
     "x11_menu_list.cc",
@@ -31,7 +30,7 @@ jumbo_component("x") {
     "//build/config/linux:xrandr",
   ]
 
-  defines = [ "UI_BASE_X_IMPLEMENTATION" ]
+  defines = [ "IS_UI_BASE_X_IMPL" ]
 
   deps = [
     "//base",
