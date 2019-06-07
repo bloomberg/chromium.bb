@@ -110,6 +110,8 @@ FontPlatformData* FontCache::GetFontPlatformData(
     const FontDescription& font_description,
     const FontFaceCreationParams& creation_params,
     AlternateFontName alternate_font_name) {
+  TRACE_EVENT0("fonts", "FontCache::GetFontPlatformData");
+
   if (!platform_init_) {
     platform_init_ = true;
     PlatformInit();
@@ -193,7 +195,7 @@ std::unique_ptr<FontPlatformData> FontCache::ScaleFontPlatformData(
     const FontDescription& font_description,
     const FontFaceCreationParams& creation_params,
     float font_size) {
-  TRACE_EVENT0("ui", "FontCache::ScaleFontPlatformData");
+  TRACE_EVENT0("fonts,ui", "FontCache::ScaleFontPlatformData");
 
 #if defined(OS_MACOSX)
   return CreateFontPlatformData(font_description, creation_params, font_size);
@@ -295,6 +297,8 @@ scoped_refptr<SimpleFontData> FontCache::FallbackFontForCharacter(
     UChar32 lookup_char,
     const SimpleFontData* font_data_to_substitute,
     FontFallbackPriority fallback_priority) {
+  TRACE_EVENT0("fonts", "FontCache::FallbackFontForCharacter");
+
   // In addition to PUA, do not perform fallback for non-characters either. Some
   // of these are sentinel characters to detect encodings and do appear on
   // websites. More details on
@@ -313,7 +317,7 @@ void FontCache::ReleaseFontData(const SimpleFontData* font_data) {
 }
 
 void FontCache::PurgePlatformFontDataCache() {
-  TRACE_EVENT0("ui", "FontCache::PurgePlatformFontDataCache");
+  TRACE_EVENT0("fonts,ui", "FontCache::PurgePlatformFontDataCache");
   Vector<FontCacheKey> keys_to_remove;
   keys_to_remove.ReserveInitialCapacity(font_platform_data_cache_.size());
   for (auto& sized_fonts : font_platform_data_cache_) {
@@ -332,7 +336,7 @@ void FontCache::PurgePlatformFontDataCache() {
 }
 
 void FontCache::PurgeFallbackListShaperCache() {
-  TRACE_EVENT0("ui", "FontCache::PurgeFallbackListShaperCache");
+  TRACE_EVENT0("fonts,ui", "FontCache::PurgeFallbackListShaperCache");
   unsigned items = 0;
   FallbackListShaperCache::iterator iter;
   for (iter = fallback_list_shaper_cache_.begin();
@@ -379,7 +383,7 @@ uint16_t FontCache::Generation() {
 }
 
 void FontCache::Invalidate() {
-  TRACE_EVENT0("ui", "FontCache::Invalidate");
+  TRACE_EVENT0("fonts,ui", "FontCache::Invalidate");
   font_platform_data_cache_.clear();
   generation_++;
 
