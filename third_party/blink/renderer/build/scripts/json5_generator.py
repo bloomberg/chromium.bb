@@ -288,12 +288,8 @@ class Maker(object):
         parser.add_argument("files", nargs="+")
 
         parser.add_argument("--gperf", default="gperf")
-        parser.add_argument("--developer_dir", help="Path to Xcode.")
         parser.add_argument("--output_dir", default=os.getcwd())
         args = parser.parse_args()
-
-        if args.developer_dir:
-            os.environ["DEVELOPER_DIR"] = args.developer_dir
 
         writer = self._writer_class(args.files, args.output_dir)
         writer.set_gperf_path(args.gperf)

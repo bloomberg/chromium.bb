@@ -72,15 +72,7 @@ blink_python_runner("color_data") {
     output_file,
   ]
 
-  args = []
-  if (is_mac && !use_system_xcode) {
-    args += [
-      "--developer_dir",
-      hermetic_xcode_path,
-    ]
-  }
-
-  args += [
+  args = [
     gperf_exe,
     "--key-positions=*",
     "-D",

@@ -1435,12 +1435,6 @@ blink_python_runner("make_core_generated_css_tokenizer_codepoints") {
     "--output_dir",
     "$rel_blink_core_gen_dir/css",
   ]
-  if (is_mac && !use_system_xcode) {
-    args += [
-      "--developer_dir",
-      hermetic_xcode_path,
-    ]
-  }
 
   deps = make_core_generated_deps
 }
@@ -1464,12 +1458,6 @@ blink_python_runner("make_core_generated_css_primitive_value_unit_trie") {
     "--output_dir",
     "$rel_blink_core_gen_dir/css",
   ]
-  if (is_mac && !use_system_xcode) {
-    args += [
-      "--developer_dir",
-      hermetic_xcode_path,
-    ]
-  }
 
   deps = make_core_generated_deps
 }
@@ -1493,12 +1481,6 @@ blink_python_runner("make_core_generated_feature_policy_helper") {
     "--output_dir",
     "$rel_blink_core_gen_dir/feature_policy",
   ]
-  if (is_mac && !use_system_xcode) {
-    args += [
-      "--developer_dir",
-      hermetic_xcode_path,
-    ]
-  }
 }
 
 blink_python_runner("make_core_generated_html_element_lookup_trie") {
@@ -1522,12 +1504,6 @@ blink_python_runner("make_core_generated_html_element_lookup_trie") {
     "--output_dir",
     rel_blink_core_gen_dir,
   ]
-  if (is_mac && !use_system_xcode) {
-    args += [
-      "--developer_dir",
-      hermetic_xcode_path,
-    ]
-  }
 
   deps = make_core_generated_deps
 }
@@ -1549,12 +1525,6 @@ blink_python_runner("make_core_generated_origin_trials") {
     "--output_dir",
     "$rel_blink_core_gen_dir/origin_trials",
   ]
-  if (is_mac && !use_system_xcode) {
-    args += [
-      "--developer_dir",
-      hermetic_xcode_path,
-    ]
-  }
 }
 blink_python_runner("make_core_generated_web_origin_trials") {
   script = "../build/scripts/make_web_origin_trials.py"
@@ -1573,12 +1543,6 @@ blink_python_runner("make_core_generated_web_origin_trials") {
     "--output_dir",
     "$rel_blink_core_gen_dir/exported",
   ]
-  if (is_mac && !use_system_xcode) {
-    args += [
-      "--developer_dir",
-      hermetic_xcode_path,
-    ]
-  }
 }
 
 action_foreach("make_core_generated_bison") {
@@ -1595,9 +1559,6 @@ action_foreach("make_core_generated_bison") {
     rel_blink_core_gen_dir,
     bison_exe,
   ]
-  if (is_mac && !use_system_xcode) {
-    args += [ hermetic_xcode_path ]
-  }
 
   deps = make_core_generated_deps
 }

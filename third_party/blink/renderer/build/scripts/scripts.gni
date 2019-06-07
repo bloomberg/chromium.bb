@@ -5,6 +5,10 @@
 import("//build/toolchain/toolchain.gni")
 import("//third_party/blink/renderer/config.gni")
 
+if (is_mac) {
+  import("//build/config/mac/mac_sdk.gni")
+}
+
 # All paths in this file should be absolute so targets in any directory can use
 # them without worrying about the current directory.
 _scripts_dir = "//third_party/blink/renderer/build/scripts"
@@ -68,6 +72,9 @@ make_trie_helpers_files =
 if (host_os == "win") {
   gperf_exe = rebase_path("//third_party/gperf/bin/gperf.exe", root_build_dir)
   bison_exe = rebase_path("//third_party/bison/bin/bison.exe", root_build_dir)
+} else if (is_mac) {
+  gperf_exe = mac_bin_path + "gperf"
+  bison_exe = mac_bin_path + "bison"
 } else {
   gperf_exe = "gperf"
   bison_exe = "bison"
@@ -143,12 +150,6 @@ template("process_json5_files") {
              "--output_dir",
              rebase_path(output_dir, root_build_dir),
            ]
-    if (is_mac && !use_system_xcode) {
-      args += [
-        "--developer_dir",
-        hermetic_xcode_path,
-      ]
-    }
     if (defined(invoker.other_args)) {
       args += invoker.other_args
     }
@@ -189,12 +190,6 @@ template("code_generator") {
              "--output_dir",
              rebase_path(output_dir, root_build_dir),
            ]
-    if (is_mac && !use_system_xcode) {
-      args += [
-        "--developer_dir",
-        hermetic_xcode_path,
-      ]
-    }
     if (defined(invoker.other_args)) {
       args += invoker.other_args
     }
