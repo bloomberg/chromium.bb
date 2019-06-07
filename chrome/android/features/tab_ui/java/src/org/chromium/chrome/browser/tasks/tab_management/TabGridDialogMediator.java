@@ -126,7 +126,7 @@ public class TabGridDialogMediator {
     private void updateGridTabSwitcher() {
         if (!mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE)) return;
         mGridTabSwitcherResetHandler.resetWithTabList(
-                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter());
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false);
     }
 
     private void updateDialog() {

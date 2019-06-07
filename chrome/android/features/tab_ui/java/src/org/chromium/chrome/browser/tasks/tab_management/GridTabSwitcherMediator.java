@@ -108,9 +108,12 @@ class GridTabSwitcherMediator
      */
     interface ResetHandler {
         /**
+         * Reset the tab grid with the given {@link TabList}, which can be null.
+         * @param tabList The {@link TabList} to show the tabs for in the grid.
+         * @param quickMode Whether to skip capturing the selected live tab for the thumbnail.
          * @return Whether the {@link TabListRecyclerView} can be shown quickly.
          */
-        boolean resetWithTabList(TabList tabList);
+        boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode);
 
         /**
          * Release the thumbnail {@link Bitmap} but keep the {@link TabGridViewHolder}.
@@ -143,7 +146,7 @@ class GridTabSwitcherMediator
 
                 TabList currentTabModelFilter =
                         mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
-                mResetHandler.resetWithTabList(currentTabModelFilter);
+                mResetHandler.resetWithTabList(currentTabModelFilter, false);
                 mContainerViewModel.set(IS_INCOGNITO, currentTabModelFilter.isIncognito());
             }
         };
@@ -195,7 +198,7 @@ class GridTabSwitcherMediator
         mTabGridDialogResetHandler = tabGridDialogResetHandler;
 
         mSoftClearTabListRunnable = mResetHandler::softCleanup;
-        mClearTabListRunnable = () -> mResetHandler.resetWithTabList(null);
+        mClearTabListRunnable = () -> mResetHandler.resetWithTabList(null, false);
         mHandler = new Handler();
     }
 
@@ -263,7 +266,7 @@ class GridTabSwitcherMediator
         mHandler.removeCallbacks(mSoftClearTabListRunnable);
         mHandler.removeCallbacks(mClearTabListRunnable);
         boolean quick = mResetHandler.resetWithTabList(
-                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter());
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false);
         int initialPosition = Math.max(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index()
                         - INITIAL_SCROLL_INDEX_OFFSET,
@@ -274,6 +277,8 @@ class GridTabSwitcherMediator
 
     @Override
     public void showOverview(boolean animate) {
+        mResetHandler.resetWithTabList(
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), true);
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
         setVisibility(true);
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);

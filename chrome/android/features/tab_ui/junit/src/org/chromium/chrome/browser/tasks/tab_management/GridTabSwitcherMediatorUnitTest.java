@@ -286,7 +286,7 @@ public class GridTabSwitcherMediatorUnitTest {
         mMediator.setCleanupDelayForTesting(0);
         mMediator.postHiding();
         verify(mResetHandler).softCleanup();
-        verify(mResetHandler).resetWithTabList(eq(null));
+        verify(mResetHandler).resetWithTabList(eq(null), eq(false));
     }
 
     @Test
@@ -295,7 +295,7 @@ public class GridTabSwitcherMediatorUnitTest {
 
         doReturn(true).when(mTabModelFilter).isIncognito();
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
-        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter));
+        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false));
         assertThat(mModel.get(TabListContainerProperties.IS_INCOGNITO), equalTo(true));
 
         // Switching TabModels by itself shouldn't cause visibility changes.
