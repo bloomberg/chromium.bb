@@ -41,7 +41,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
   DCHECK(base::IsValidGUID(entry.guid()));
 
   auto entity_data = std::make_unique<EntityData>();
-  entity_data->non_unique_name = entry.guid();
+  entity_data->name = entry.guid();
   AutofillProfileSpecifics* specifics =
       entity_data->specifics.mutable_autofill_profile();
 

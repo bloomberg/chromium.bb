@@ -104,7 +104,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillMetadata(
     const AutofillMetadata& local_metadata) {
   auto entity_data = std::make_unique<EntityData>();
   std::string specifics_id = GetSpecificsIdForMetadataId(local_metadata.id);
-  entity_data->non_unique_name = GetClientTagForSpecificsId(type, specifics_id);
+  entity_data->name = GetClientTagForSpecificsId(type, specifics_id);
 
   WalletMetadataSpecifics* remote_metadata =
       entity_data->specifics.mutable_wallet_metadata();

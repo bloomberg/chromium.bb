@@ -589,7 +589,7 @@ std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
   NOTIMPLEMENTED();
   auto entity_data = std::make_unique<EntityData>();
   *entity_data->specifics.mutable_nigori() = std::move(specifics);
-  entity_data->non_unique_name = kNigoriNonUniqueName;
+  entity_data->name = kNigoriNonUniqueName;
   return entity_data;
 }
 

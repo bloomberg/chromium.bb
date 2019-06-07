@@ -1176,7 +1176,7 @@ std::unique_ptr<EntityData> TypedURLSyncBridge::CreateEntityData(
     // Cannot write to specifics, ex. no TYPED visits.
     return nullptr;
   }
-  entity_data->non_unique_name = row.url().spec();
+  entity_data->name = row.url().spec();
   return entity_data;
 }
 

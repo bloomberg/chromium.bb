@@ -36,7 +36,7 @@ std::unique_ptr<EntityData> CopyToEntityData(
     const sync_pb::PrinterSpecifics& specifics) {
   auto entity_data = std::make_unique<EntityData>();
   *entity_data->specifics.mutable_printer() = specifics;
-  entity_data->non_unique_name =
+  entity_data->name =
       specifics.display_name().empty() ? "PRINTER" : specifics.display_name();
   return entity_data;
 }

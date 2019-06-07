@@ -91,7 +91,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillServerProfile(
     const AutofillProfile& address,
     bool enforce_utf8) {
   auto entity_data = std::make_unique<EntityData>();
-  entity_data->non_unique_name =
+  entity_data->name =
       "Server profile " +
       GetBase64EncodedId(GetSpecificsIdFromAutofillProfile(address));
 
@@ -107,7 +107,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillServerProfile(
 std::unique_ptr<EntityData> CreateEntityDataFromCard(const CreditCard& card,
                                                      bool enforce_utf8) {
   auto entity_data = std::make_unique<EntityData>();
-  entity_data->non_unique_name =
+  entity_data->name =
       "Server card " + GetBase64EncodedId(GetSpecificsIdFromCreditCard(card));
 
   AutofillWalletSpecifics* wallet_specifics =
@@ -122,7 +122,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromCard(const CreditCard& card,
 std::unique_ptr<EntityData> CreateEntityDataFromPaymentsCustomerData(
     const PaymentsCustomerData& customer_data) {
   auto entity_data = std::make_unique<EntityData>();
-  entity_data->non_unique_name =
+  entity_data->name =
       "Payments customer data " +
       GetBase64EncodedId(GetSpecificsIdFromPaymentsCustomerData(customer_data));
 

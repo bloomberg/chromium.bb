@@ -35,8 +35,7 @@ std::string GetStorageKeyFromSpecifics(
 std::unique_ptr<syncer::EntityData> ToEntityData(
     sync_pb::SecurityEventSpecifics specifics) {
   auto entity_data = std::make_unique<syncer::EntityData>();
-  entity_data->non_unique_name =
-      base::NumberToString(specifics.event_time_usec());
+  entity_data->name = base::NumberToString(specifics.event_time_usec());
   entity_data->specifics.set_allocated_security_event(&specifics);
   return entity_data;
 }

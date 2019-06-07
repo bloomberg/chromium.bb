@@ -72,7 +72,7 @@ std::unique_ptr<EntityData> CreateEntityData(const AutofillEntry& entry) {
   autofill->add_usage_timestamp(entry.date_created().ToInternalValue());
   if (entry.date_created() != entry.date_last_used())
     autofill->add_usage_timestamp(entry.date_last_used().ToInternalValue());
-  entity_data->non_unique_name = EscapeIdentifiers(*autofill);
+  entity_data->name = EscapeIdentifiers(*autofill);
   return entity_data;
 }
 

@@ -61,7 +61,7 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoDefault) {
   // to make this item look more realistic.
   data->creation_time = creation_time;
   data->modification_time = modification_time;
-  data->non_unique_name = "Name:";
+  data->name = "Name:";
 
   CommitRequestData request_data;
   request_data.sequence_number = 2;
@@ -105,7 +105,7 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoBookmark) {
   // to make this item look more realistic.
   data->creation_time = creation_time;
   data->modification_time = modification_time;
-  data->non_unique_name = "Name:";
+  data->name = "Name:";
   data->parent_id = "ParentOf:";
   data->is_folder = true;
   syncer::UniquePosition uniquePosition = syncer::UniquePosition::FromInt64(

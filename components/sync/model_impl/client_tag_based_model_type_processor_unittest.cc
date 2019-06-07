@@ -756,7 +756,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldCommitLocalCreation) {
   EXPECT_TRUE(tag1_data.id.empty());
   EXPECT_FALSE(tag1_data.creation_time.is_null());
   EXPECT_FALSE(tag1_data.modification_time.is_null());
-  EXPECT_EQ(kKey1, tag1_data.non_unique_name);
+  EXPECT_EQ(kKey1, tag1_data.name);
   EXPECT_FALSE(tag1_data.is_deleted());
   EXPECT_EQ(kKey1, tag1_data.specifics.preference().name());
   EXPECT_EQ(kValue1, tag1_data.specifics.preference().value());
@@ -807,7 +807,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   entity_data->specifics.mutable_preference()->set_name(kKey1);
   entity_data->specifics.mutable_preference()->set_value(kValue1);
 
-  entity_data->non_unique_name = kKey1;
+  entity_data->name = kKey1;
   entity_data->client_tag_hash = kHash1;
   entity_data->id = kId1;
   bridge()->WriteItem(kKey1, std::move(entity_data));
@@ -832,7 +832,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   // storage key and client tag values.
   entity_data->specifics.mutable_preference()->set_name(kKey2);
   entity_data->specifics.mutable_preference()->set_value(kValue2);
-  entity_data->non_unique_name = kKey2;
+  entity_data->name = kKey2;
   entity_data->client_tag_hash = kHash3;
   // Make sure ID isn't overwritten either.
   entity_data->id = kId2;
@@ -912,7 +912,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldCommitLocalUpdate) {
   EXPECT_FALSE(data_v2.id.empty());
   EXPECT_EQ(ctime, data_v2.creation_time);
   EXPECT_EQ(mtime, data_v2.modification_time);
-  EXPECT_EQ(kKey1, data_v2.non_unique_name);
+  EXPECT_EQ(kKey1, data_v2.name);
   EXPECT_FALSE(data_v2.is_deleted());
   EXPECT_EQ(kKey1, data_v2.specifics.preference().name());
   EXPECT_EQ(kValue2, data_v2.specifics.preference().value());
@@ -983,7 +983,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_TRUE(data_v2.id.empty());
   EXPECT_EQ(ctime, data_v2.creation_time);
   EXPECT_EQ(mtime, data_v2.modification_time);
-  EXPECT_EQ(kKey1, data_v2.non_unique_name);
+  EXPECT_EQ(kKey1, data_v2.name);
   EXPECT_FALSE(data_v2.is_deleted());
   EXPECT_EQ(kKey1, data_v2.specifics.preference().name());
   EXPECT_EQ(kValue2, data_v2.specifics.preference().value());
@@ -1040,7 +1040,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldProcessRemoteCreation) {
   EXPECT_EQ(kValue1, data.specifics.preference().value());
   EXPECT_FALSE(data.creation_time.is_null());
   EXPECT_FALSE(data.modification_time.is_null());
-  EXPECT_EQ(kKey1, data.non_unique_name);
+  EXPECT_EQ(kKey1, data.name);
   EXPECT_FALSE(data.is_deleted());
 
   const EntityMetadata metadata = db()->GetMetadata(kKey1);
@@ -1401,7 +1401,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_FALSE(tag1_data.id.empty());
   EXPECT_FALSE(tag1_data.creation_time.is_null());
   EXPECT_FALSE(tag1_data.modification_time.is_null());
-  EXPECT_EQ(kKey1, tag1_data.non_unique_name);
+  EXPECT_EQ(kKey1, tag1_data.name);
   EXPECT_FALSE(tag1_data.is_deleted());
   EXPECT_EQ(kKey1, tag1_data.specifics.preference().name());
   EXPECT_EQ(kValue1, tag1_data.specifics.preference().value());

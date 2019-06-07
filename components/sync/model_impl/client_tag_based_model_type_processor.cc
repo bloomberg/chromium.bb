@@ -379,7 +379,7 @@ void ClientTagBasedModelTypeProcessor::Put(
   DCHECK(IsAllowingChanges());
   DCHECK(data);
   DCHECK(!data->is_deleted());
-  DCHECK(!data->non_unique_name.empty());
+  DCHECK(!data->name.empty());
   DCHECK(!data->specifics.has_encrypted());
   DCHECK_EQ(type_, GetModelTypeFromSpecifics(data->specifics));
 

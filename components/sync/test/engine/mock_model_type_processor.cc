@@ -86,7 +86,7 @@ std::unique_ptr<CommitRequestData> MockModelTypeProcessor::CommitRequest(
   data->creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
   data->modification_time =
       data->creation_time + base::TimeDelta::FromSeconds(base_version);
-  data->non_unique_name = "Name: " + tag_hash;
+  data->name = "Name: " + tag_hash;
 
   auto request_data = std::make_unique<CommitRequestData>();
   request_data->entity = std::move(data);
@@ -113,7 +113,7 @@ std::unique_ptr<CommitRequestData> MockModelTypeProcessor::DeleteRequest(
   // These fields have little or no effect on behavior.  We set them anyway to
   // make the test more realistic.
   data->creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data->non_unique_name = "Name deleted";
+  data->name = "Name deleted";
 
   data->modification_time =
       data->creation_time + base::TimeDelta::FromSeconds(base_version);

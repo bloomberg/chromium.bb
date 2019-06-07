@@ -101,7 +101,7 @@ std::unique_ptr<syncer::EntityData> CreateEntityData(
     const autofill::PasswordForm& form) {
   auto entity_data = std::make_unique<syncer::EntityData>();
   *entity_data->specifics.mutable_password() = SpecificsFromPassword(form);
-  entity_data->non_unique_name = form.signon_realm;
+  entity_data->name = form.signon_realm;
   return entity_data;
 }
 

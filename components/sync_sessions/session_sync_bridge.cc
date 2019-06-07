@@ -48,7 +48,7 @@ std::unique_ptr<syncer::EntityData> MoveToEntityData(
     const std::string& client_name,
     SessionSpecifics* specifics) {
   auto entity_data = std::make_unique<syncer::EntityData>();
-  entity_data->non_unique_name = client_name;
+  entity_data->name = client_name;
   entity_data->specifics.mutable_session()->Swap(specifics);
   return entity_data;
 }

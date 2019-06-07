@@ -250,7 +250,7 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   data->client_tag_hash = update_entity.client_defined_unique_tag();
   data->creation_time = ProtoTimeToTime(update_entity.ctime());
   data->modification_time = ProtoTimeToTime(update_entity.mtime());
-  data->non_unique_name = update_entity.name();
+  data->name = update_entity.name();
   data->is_folder = update_entity.folder();
   data->parent_id = update_entity.parent_id_string();
 

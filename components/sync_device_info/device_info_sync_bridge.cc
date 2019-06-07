@@ -67,7 +67,7 @@ std::unique_ptr<EntityData> CopyToEntityData(
     const DeviceInfoSpecifics& specifics) {
   auto entity_data = std::make_unique<EntityData>();
   *entity_data->specifics.mutable_device_info() = specifics;
-  entity_data->non_unique_name = specifics.client_name();
+  entity_data->name = specifics.client_name();
   return entity_data;
 }
 

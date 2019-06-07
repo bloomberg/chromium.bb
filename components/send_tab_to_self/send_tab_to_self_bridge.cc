@@ -64,7 +64,7 @@ std::unique_ptr<syncer::EntityData> CopyToEntityData(
     const sync_pb::SendTabToSelfSpecifics& specifics) {
   auto entity_data = std::make_unique<syncer::EntityData>();
   *entity_data->specifics.mutable_send_tab_to_self() = specifics;
-  entity_data->non_unique_name = specifics.url();
+  entity_data->name = specifics.url();
   entity_data->creation_time = ProtoTimeToTime(specifics.shared_time_usec());
   return entity_data;
 }

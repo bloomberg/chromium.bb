@@ -180,7 +180,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
 
     *(entity_data->specifics.mutable_send_tab_to_self()) =
         specifics.specifics();
-    entity_data->non_unique_name = entry.GetURL().spec();
+    entity_data->name = entry.GetURL().spec();
     return entity_data;
   }
 
@@ -194,7 +194,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
       auto entity_data = std::make_unique<syncer::EntityData>();
 
       *(entity_data->specifics.mutable_send_tab_to_self()) = specifics;
-      entity_data->non_unique_name = specifics.url();
+      entity_data->name = specifics.url();
 
       changes.push_back(syncer::EntityChange::CreateAdd(
           specifics.guid(), std::move(entity_data)));

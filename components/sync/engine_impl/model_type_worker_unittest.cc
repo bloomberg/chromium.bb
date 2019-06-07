@@ -737,7 +737,7 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
   EXPECT_LT(0, update.response_version);
   EXPECT_FALSE(entity.creation_time.is_null());
   EXPECT_FALSE(entity.modification_time.is_null());
-  EXPECT_FALSE(entity.non_unique_name.empty());
+  EXPECT_FALSE(entity.name.empty());
   EXPECT_FALSE(entity.is_deleted());
   EXPECT_EQ(kTag1, entity.specifics.preference().name());
   EXPECT_EQ(kValue1, entity.specifics.preference().value());

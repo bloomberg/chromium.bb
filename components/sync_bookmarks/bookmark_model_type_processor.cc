@@ -564,7 +564,7 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
   data.creation_time = node->date_added();
   data.modification_time =
       syncer::ProtoTimeToTime(metadata->modification_time());
-  data.non_unique_name = base::UTF16ToUTF8(node->GetTitle());
+  data.name = base::UTF16ToUTF8(node->GetTitle());
   data.is_folder = node->is_folder();
   data.unique_position = metadata->unique_position();
   data.specifics = CreateSpecificsFromBookmarkNode(

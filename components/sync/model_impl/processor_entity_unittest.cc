@@ -42,7 +42,7 @@ std::unique_ptr<EntityData> GenerateEntityData(const std::string& hash,
   std::unique_ptr<EntityData> entity_data(new EntityData());
   entity_data->client_tag_hash = hash;
   entity_data->specifics = GenerateSpecifics(name, value);
-  entity_data->non_unique_name = name;
+  entity_data->name = name;
   return entity_data;
 }
 
@@ -72,7 +72,7 @@ std::unique_ptr<UpdateResponseData> GenerateTombstone(
     int64_t version) {
   std::unique_ptr<EntityData> data = std::make_unique<EntityData>();
   data->client_tag_hash = hash;
-  data->non_unique_name = name;
+  data->name = name;
   data->id = id;
   data->modification_time = mtime;
   auto update = std::make_unique<UpdateResponseData>();
@@ -199,7 +199,7 @@ TEST_F(ProcessorEntityTest, NewLocalItem) {
   const EntityData& data = *request.entity;
   EXPECT_EQ("", data.id);
   EXPECT_EQ(kHash, data.client_tag_hash);
-  EXPECT_EQ(kName, data.non_unique_name);
+  EXPECT_EQ(kName, data.name);
   EXPECT_EQ(kValue1, data.specifics.preference().value());
   EXPECT_EQ(TimeToProtoTime(ctime_), TimeToProtoTime(data.creation_time));
   EXPECT_EQ(entity->metadata().modification_time(),
@@ -419,7 +419,7 @@ TEST_F(ProcessorEntityTest, LocalDeletion) {
   const EntityData& data = *request.entity;
   EXPECT_EQ(kId, data.id);
   EXPECT_EQ(kHash, data.client_tag_hash);
-  EXPECT_EQ("", data.non_unique_name);
+  EXPECT_EQ("", data.name);
   EXPECT_EQ(TimeToProtoTime(ctime_), TimeToProtoTime(data.creation_time));
   EXPECT_EQ(entity->metadata().modification_time(),
             TimeToProtoTime(data.modification_time));

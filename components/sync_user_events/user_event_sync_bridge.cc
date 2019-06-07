@@ -52,8 +52,7 @@ int64_t GetEventTimeFromStorageKey(const std::string& storage_key) {
 std::unique_ptr<EntityData> MoveToEntityData(
     std::unique_ptr<UserEventSpecifics> specifics) {
   auto entity_data = std::make_unique<EntityData>();
-  entity_data->non_unique_name =
-      base::NumberToString(specifics->event_time_usec());
+  entity_data->name = base::NumberToString(specifics->event_time_usec());
   entity_data->specifics.set_allocated_user_event(specifics.release());
   return entity_data;
 }

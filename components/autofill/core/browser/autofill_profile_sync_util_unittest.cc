@@ -127,7 +127,7 @@ TEST_F(AutofillProfileSyncUtilTest, CreateEntityDataFromAutofillProfile) {
   std::unique_ptr<EntityData> entity_data =
       CreateEntityDataFromAutofillProfile(profile);
   // The non-unique name should be set to the guid of the profile.
-  EXPECT_EQ(entity_data->non_unique_name, profile.guid());
+  EXPECT_EQ(entity_data->name, profile.guid());
 
   EXPECT_EQ(specifics.SerializeAsString(),
             entity_data->specifics.autofill_profile().SerializeAsString());
