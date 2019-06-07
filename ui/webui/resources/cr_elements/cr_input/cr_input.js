@@ -31,7 +31,7 @@
  * center-aligned with the input field, regardless of position of the label and
  * error-message. Example:
  *   <cr-input>
- *     <paper-button slot="suffix"></paper-button>
+ *     <cr-button slot="suffix"></cr-button>
  *   </cr-input>
  */
 Polymer({

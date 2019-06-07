@@ -1,21 +1,20 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="smb_browser_proxy.html">
 
 <dom-module id="add-smb-share-dialog">
   <template>
-    <style include="md-select paper-button-style">
+    <style include="md-select">
       #dialog [slot=body] {
         height: 400px;
       }
@@ -38,7 +37,7 @@
         margin-bottom: var(--cr-form-field-bottom-spacing);
       }
 
-      paper-button {
+      cr-button {
         position: relative;
       }
 
@@ -112,13 +111,14 @@
         </div>
       </div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-click="cancel_" id="cancel">
+        <cr-button class="cancel-button" on-click="cancel_" id="cancel">
           [[i18n('cancel')]]
-        </paper-button>
-        <paper-button class="action-button" on-click="onAddButtonTap_"
-            disabled="[[!canAddShare_(mountUrl_, inProgress_, currentMountError_)]]">
+        </cr-button>
+        <cr-button class="action-button" on-click="onAddButtonTap_"
+            disabled="[[!canAddShare_(mountUrl_, inProgress_,
+                currentMountError_)]]">
           [[i18n('add')]]
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
   </template>

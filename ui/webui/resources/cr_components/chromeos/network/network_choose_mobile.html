@@ -1,16 +1,15 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="network_shared_css.html">
 
 <dom-module id="network-choose-mobile">
   <template>
-    <style include="network-shared md-select iron-flex paper-button-style">
+    <style include="network-shared md-select iron-flex">
       /* Leave some space between button and select. */
       select {
         margin-inline-start: 8px;
@@ -21,10 +20,10 @@
         <div>[[i18n('networkChooseMobile')]]</div>
         <div class="secondary">[[getSecondaryText_(networkProperties)]]</div>
       </div>
-      <paper-button on-tap="onScanTap_"
+      <cr-button on-click="onScanTap_"
           disabled="[[!getEnableScanButton_(networkProperties)]]">
         [[i18n('networkCellularScan')]]
-      </paper-button>
+      </cr-button>
       <select class="md-select" on-change="onChange_"
           value="[[selectedMobileNetworkId_]]"
           disabled="[[!getEnableSelectNetwork_(networkProperties)]]"

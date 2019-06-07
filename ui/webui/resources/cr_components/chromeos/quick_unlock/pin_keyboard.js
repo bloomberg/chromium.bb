@@ -47,6 +47,11 @@ const INITIAL_BACKSPACE_DELAY_MS = 500;
  */
 const PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES = [8, 9, 37, 39];
 
+/** @return {boolean} */
+function receivedFocusFromKeyboard() {
+  return !!document.querySelector('html.focus-outline-visible');
+}
+
 Polymer({
   is: 'pin-keyboard',
 
@@ -229,7 +234,7 @@ Polymer({
     // button, therefore we transfer focus back to the input, but if a number
     // button is tabbed into, it should keep focus, so users can use tab and
     // spacebar/return to enter their PIN.
-    if (!event.target.receivedFocusFromKeyboard) {
+    if (!receivedFocusFromKeyboard()) {
       this.focusInput(selectionStart + 1, selectionStart + 1);
     }
     event.stopImmediatePropagation();
@@ -286,7 +291,7 @@ Polymer({
    * @private
    */
   onBackspaceTap_: function(event) {
-    if (!event.target.receivedFocusFromKeyboard) {
+    if (!receivedFocusFromKeyboard()) {
       return;
     }
 
@@ -308,7 +313,7 @@ Polymer({
           setInterval(this.onPinClear_.bind(this), REPEAT_BACKSPACE_DELAY_MS);
     }.bind(this), INITIAL_BACKSPACE_DELAY_MS);
 
-    if (!event.target.receivedFocusFromKeyboard) {
+    if (!receivedFocusFromKeyboard()) {
       this.focusInput(this.selectionStart_, this.selectionEnd_);
     }
     event.stopImmediatePropagation();
@@ -344,7 +349,7 @@ Polymer({
     // virtual keyboard, even if focusInput() is wrapped in a setTimeout. Blur
     // the input element first to workaround this.
     this.blur();
-    if (!event.target.receivedFocusFromKeyboard) {
+    if (!receivedFocusFromKeyboard()) {
       this.focusInput(this.selectionStart_, this.selectionEnd_);
     }
     event.stopImmediatePropagation();

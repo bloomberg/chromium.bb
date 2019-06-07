@@ -54,7 +54,10 @@
         color: var(--cr-toast-text-color);
       }
 
-      :host ::slotted(paper-button) {
+      /* TODO(aee): remove paper-button selector when paper-button is removed.
+       */
+      :host ::slotted(paper-button),
+      :host ::slotted(cr-button) {
         background-color: transparent !important;
         border: none !important;
         color: var(--cr-toast-button-color) !important;
@@ -63,7 +66,8 @@
         padding: 8px !important;
       }
 
-      :host ::slotted(paper-button:hover) {
+      :host ::slotted(paper-button:hover),
+      :host ::slotted(cr-button:hover) {
         background-color: transparent !important;
       }
     </style>
