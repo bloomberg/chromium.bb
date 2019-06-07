@@ -36,7 +36,7 @@ bool SyncHandleRegistry::RegisterHandle(const Handle& handle,
                                         const HandleCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (base::ContainsKey(handles_, handle))
+  if (base::Contains(handles_, handle))
     return false;
 
   MojoResult result = wait_set_.AddHandle(handle, handle_signals);
@@ -49,7 +49,7 @@ bool SyncHandleRegistry::RegisterHandle(const Handle& handle,
 
 void SyncHandleRegistry::UnregisterHandle(const Handle& handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!base::ContainsKey(handles_, handle))
+  if (!base::Contains(handles_, handle))
     return;
 
   MojoResult result = wait_set_.RemoveHandle(handle);
