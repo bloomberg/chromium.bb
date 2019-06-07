@@ -41,8 +41,10 @@ class SchemePageLoadMetricsObserverTest
     PopulateRequiredTimingFields(timing);
   }
 
-  void SimulateNavigation(std::string scheme) {
-    NavigateAndCommit(GURL(scheme.append("://google.com")));
+  void SimulateNavigation(
+      std::string scheme,
+      ui::PageTransition transition = ui::PAGE_TRANSITION_LINK) {
+    NavigateAndCommit(GURL(scheme.append("://google.com")), transition);
 
     page_load_metrics::mojom::PageLoadTiming timing;
     InitializeTestPageLoadTiming(&timing);
@@ -88,7 +90,9 @@ class SchemePageLoadMetricsObserverTest
     return 0;
   }
 
-  void CheckHistograms(int expected_count, const std::string& protocol) {
+  void CheckHistograms(int expected_count,
+                       const std::string& protocol,
+                       bool new_navigation = true) {
     EXPECT_EQ(expected_count, CountTotalProtocolMetricsRecorded(protocol));
     if (expected_count == 0)
       return;
@@ -99,6 +103,8 @@ class SchemePageLoadMetricsObserverTest
     std::string fcp_histogram_name(
         prefix + ".PaintTiming.NavigationToFirstContentfulPaint");
     std::string fcp_understat_histogram_name(prefix + ".PaintTiming.UnderStat");
+    std::string fcp_understat_new_nav_histogram_name(
+        fcp_understat_histogram_name + ".UserInitiated.NewNavigation");
 
     histogram_tester().ExpectTotalCount(
         prefix + ".ParseTiming.NavigationToParseStart", 1);
@@ -113,6 +119,13 @@ class SchemePageLoadMetricsObserverTest
         1);
 
     histogram_tester().ExpectBucketCount(fcp_understat_histogram_name, 0, 1);
+    if (new_navigation) {
+      histogram_tester().ExpectBucketCount(fcp_understat_new_nav_histogram_name,
+                                           0, 1);
+    } else {
+      histogram_tester().ExpectTotalCount(fcp_understat_new_nav_histogram_name,
+                                          0);
+    }
 
     // Must remain synchronized with the array of the same name in
     // scheme_page_load_metrics_observer.cc.
@@ -129,6 +142,10 @@ class SchemePageLoadMetricsObserverTest
       if (recorded_fcp_value <= threshold) {
         histogram_tester().ExpectBucketCount(fcp_understat_histogram_name,
                                              index + 1, 1);
+        if (new_navigation) {
+          histogram_tester().ExpectBucketCount(
+              fcp_understat_new_nav_histogram_name, index + 1, 1);
+        }
       }
     }
 
@@ -157,4 +174,14 @@ TEST_F(SchemePageLoadMetricsObserverTest, HTTPSNavigation) {
 TEST_F(SchemePageLoadMetricsObserverTest, AboutNavigation) {
   SimulateNavigation(url::kAboutScheme);
   CheckHistograms(0, "");
+}
+
+TEST_F(SchemePageLoadMetricsObserverTest, HTTPForwardBackNavigation) {
+  SimulateNavigation(url::kHttpScheme, ui::PAGE_TRANSITION_FORWARD_BACK);
+  CheckHistograms(6, url::kHttpScheme, false /* new_navigation */);
+}
+
+TEST_F(SchemePageLoadMetricsObserverTest, HTTPSReloadNavigation) {
+  SimulateNavigation(url::kHttpsScheme, ui::PAGE_TRANSITION_RELOAD);
+  CheckHistograms(6, url::kHttpsScheme, false /* new_navigation */);
 }

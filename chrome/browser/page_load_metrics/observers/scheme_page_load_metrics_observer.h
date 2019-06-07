@@ -38,6 +38,9 @@ class SchemePageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
+  // The ui transition for the committed navigation.
+  ui::PageTransition transition_ = ui::PAGE_TRANSITION_FIRST;
+
   DISALLOW_COPY_AND_ASSIGN(SchemePageLoadMetricsObserver);
 };
 
