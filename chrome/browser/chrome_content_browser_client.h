@@ -65,16 +65,20 @@ class SafeBrowsingService;
 class UrlCheckerDelegate;
 }
 
+namespace ui {
+class NativeTheme;
+}
+
+namespace url {
+class Origin;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
 namespace version_info {
 enum class Channel;
-}
-
-namespace url {
-class Origin;
 }
 
 class ChromeHidDelegate;
@@ -637,6 +641,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
   static bool HandleWebUIReverse(GURL* url,
                                  content::BrowserContext* browser_context);
+  virtual const ui::NativeTheme* GetWebTheme() const;  // For testing.
 
  private:
   friend class DisableWebRtcEncryptionFlagTest;

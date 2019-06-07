@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search/instant_test_base.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -36,8 +38,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -49,6 +53,8 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/test_native_theme.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -545,22 +551,57 @@ IN_PROC_BROWSER_TEST_F(OpenWindowFromNTPBrowserTest,
 class PrefersColorSchemeTest : public testing::WithParamInterface<bool>,
                                public InProcessBrowserTest {
  protected:
-  PrefersColorSchemeTest() = default;
-  const char* ExpectedColorScheme() const {
-    return ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
-               ? "dark"
-               : "light";
+  PrefersColorSchemeTest() : theme_client_(&test_theme_) {}
+
+  ~PrefersColorSchemeTest() {
+    CHECK_EQ(&theme_client_, SetBrowserClientForTesting(original_client_));
   }
+
+  const char* ExpectedColorScheme() const {
+    return GetParam() ? "dark" : "light";
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("enable-blink-features",
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "MediaQueryPrefersColorScheme");
-    if (GetParam())
-      command_line->AppendSwitch("force-dark-mode");
   }
+
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    original_client_ = SetBrowserClientForTesting(&theme_client_);
+  }
+
+ protected:
+  ui::TestNativeTheme test_theme_;
+
+ private:
+  content::ContentBrowserClient* original_client_ = nullptr;
+
+  class ChromeContentBrowserClientWithWebTheme
+      : public ChromeContentBrowserClient {
+   public:
+    explicit ChromeContentBrowserClientWithWebTheme(
+        const ui::NativeTheme* theme)
+        : theme_(theme) {}
+
+   protected:
+    const ui::NativeTheme* GetWebTheme() const override { return theme_; }
+
+   private:
+    const ui::NativeTheme* const theme_;
+  };
+
+  ChromeContentBrowserClientWithWebTheme theme_client_;
 };
 
 IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, PrefersColorScheme) {
+  test_theme_.SetDarkMode(GetParam());
+  browser()
+      ->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetRenderViewHost()
+      ->OnWebkitPreferencesChanged();
   ui_test_utils::NavigateToURL(
       browser(),
       ui_test_utils::GetTestUrl(
@@ -569,6 +610,23 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, PrefersColorScheme) {
   base::string16 tab_title;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
   EXPECT_EQ(base::ASCIIToUTF16(ExpectedColorScheme()), tab_title);
+}
+
+IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, WebUIFeatureOverrides) {
+  test_theme_.SetDarkMode(true);
+
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatureState(features::kWebUIDarkMode, GetParam());
+
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
+
+  bool in_dark_mode;  // A default shouldn't matter because of the ASSERT().
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send("
+      "    window.matchMedia('(prefers-color-scheme: dark)').matches)",
+      &in_dark_mode));
+  EXPECT_EQ(in_dark_mode, GetParam());
 }
 
 INSTANTIATE_TEST_SUITE_P(All, PrefersColorSchemeTest, testing::Bool());

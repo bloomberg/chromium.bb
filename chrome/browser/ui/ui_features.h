@@ -31,9 +31,7 @@ extern const char kTabHoverCardsFeatureParameterName[];
 
 extern const base::Feature kTabHoverCardImages;
 
-#if !defined(OS_ANDROID)
 extern const base::Feature kWebUIDarkMode;
-#endif
 
 }  // namespace features
 

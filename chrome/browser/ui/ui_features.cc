@@ -39,7 +39,6 @@ const char kTabHoverCardsFeatureParameterName[] = "setting";
 const base::Feature kTabHoverCardImages{"TabHoverCardImages",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID)
 // Whether to enable "dark mode" enhancements in Mac Mojave or Windows 10 for
 // UIs implemented with web technologies.
 const base::Feature kWebUIDarkMode {
@@ -50,6 +49,5 @@ const base::Feature kWebUIDarkMode {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)
 };
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace features

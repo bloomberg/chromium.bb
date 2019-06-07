@@ -155,6 +155,7 @@
 #include "chrome/browser/ui/prefs/pref_watcher.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
@@ -3425,7 +3426,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
-  auto* native_theme = ui::NativeTheme::GetInstanceForWeb();
+  auto* native_theme = GetWebTheme();
 #if !defined(OS_ANDROID)
   if (IsAutoplayAllowedByPolicy(contents, prefs)) {
     // If autoplay is allowed by policy then force the no user gesture required
@@ -3449,6 +3450,15 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #endif  // !defined(OS_ANDROID)
 
   web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);
+
+  // Force a light preferred color scheme on chrome:// pages if kWebUIDarkMode
+  // is disabled until all UI is correctly themed and OSes support dark mode.
+  // Note: the WebUI CSS explicitly uses light (instead of not dark), which is
+  // why we don't reset back to no-preference. https://crbug.com/965811
+  if (contents && contents->GetURL().SchemeIs(content::kChromeUIScheme) &&
+      !base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
+    web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
+  }
 
   // Apply native CaptionStyle parameters.
   // TODO(ellyjones): Support more native caption styling.
@@ -5299,6 +5309,10 @@ bool ChromeContentBrowserClient::HandleWebUIReverse(
   // displayed URL when rewriting chrome://help to chrome://settings/help.
   return url->SchemeIs(content::kChromeUIScheme) &&
          url->host() == chrome::kChromeUISettingsHost;
+}
+
+const ui::NativeTheme* ChromeContentBrowserClient::GetWebTheme() const {
+  return ui::NativeTheme::GetInstanceForWeb();
 }
 
 // static
