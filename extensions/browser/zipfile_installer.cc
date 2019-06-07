@@ -203,7 +203,7 @@ bool ZipFileInstaller::ShouldExtractFile(bool is_theme,
     // Allow filenames with no extension.
     if (extension.empty())
       return true;
-    return base::ContainsValue(kAllowedThemeFiletypes, extension);
+    return base::Contains(kAllowedThemeFiletypes, extension);
   }
   return !base::FilePath::CompareEqualIgnoreCase(file_path.FinalExtension(),
                                                  FILE_PATH_LITERAL(".exe"));

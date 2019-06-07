@@ -225,7 +225,7 @@ void UsbDeviceManager::OnDeviceAdded(
     device::mojom::UsbDeviceInfoPtr device_info) {
   DCHECK(device_info);
   // Update the device list.
-  DCHECK(!base::ContainsKey(devices_, device_info->guid));
+  DCHECK(!base::Contains(devices_, device_info->guid));
   std::string guid = device_info->guid;
   auto result =
       devices_.insert(std::make_pair(std::move(guid), std::move(device_info)));
@@ -242,7 +242,7 @@ void UsbDeviceManager::OnDeviceRemoved(
     device::mojom::UsbDeviceInfoPtr device_info) {
   DCHECK(device_info);
   // Update the device list.
-  DCHECK(base::ContainsKey(devices_, device_info->guid));
+  DCHECK(base::Contains(devices_, device_info->guid));
   devices_.erase(device_info->guid);
 
   DispatchEvent(usb::OnDeviceRemoved::kEventName, *device_info);

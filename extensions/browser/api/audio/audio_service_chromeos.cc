@@ -200,10 +200,10 @@ bool AudioServiceImpl::GetDevices(const api::audio::DeviceFilter* filter,
 
   bool accept_input =
       !(filter && filter->stream_types) ||
-      base::ContainsValue(*filter->stream_types, api::audio::STREAM_TYPE_INPUT);
-  bool accept_output = !(filter && filter->stream_types) ||
-                       base::ContainsValue(*filter->stream_types,
-                                           api::audio::STREAM_TYPE_OUTPUT);
+      base::Contains(*filter->stream_types, api::audio::STREAM_TYPE_INPUT);
+  bool accept_output =
+      !(filter && filter->stream_types) ||
+      base::Contains(*filter->stream_types, api::audio::STREAM_TYPE_OUTPUT);
 
   for (const auto& device : devices) {
     if (filter && filter->is_active && *filter->is_active != device.active)

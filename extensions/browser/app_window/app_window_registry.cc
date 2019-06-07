@@ -182,7 +182,7 @@ void AppWindowRegistry::DevToolsAgentHostDetached(
 }
 
 void AppWindowRegistry::AddAppWindowToList(AppWindow* app_window) {
-  if (base::ContainsValue(app_windows_, app_window))
+  if (base::Contains(app_windows_, app_window))
     return;
   app_windows_.push_back(app_window);
 }

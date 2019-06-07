@@ -227,7 +227,7 @@ void HidDeviceManager::DeviceAdded(device::mojom::HidDeviceInfoPtr device) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_LT(next_resource_id_, std::numeric_limits<int>::max());
   int new_id = next_resource_id_++;
-  DCHECK(!base::ContainsKey(resource_ids_, device->guid));
+  DCHECK(!base::Contains(resource_ids_, device->guid));
   resource_ids_[device->guid] = new_id;
   devices_[new_id] = std::move(device);
 

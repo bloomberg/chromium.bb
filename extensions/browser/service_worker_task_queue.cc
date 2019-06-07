@@ -324,8 +324,8 @@ void ServiceWorkerTaskQueue::RunPendingTasksIfWorkerReady(
     int64_t version_id,
     int process_id,
     int thread_id) {
-  if (!base::ContainsKey(loaded_workers_, context_id) ||
-      !base::ContainsKey(started_workers_, context_id)) {
+  if (!base::Contains(loaded_workers_, context_id) ||
+      !base::Contains(started_workers_, context_id)) {
     // The worker hasn't finished starting (DidStartWorkerForScope) or hasn't
     // finished loading (DidStartServiceWorkerContext).
     // Wait for the next event, and run the tasks then.

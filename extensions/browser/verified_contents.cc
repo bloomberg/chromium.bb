@@ -246,13 +246,13 @@ bool VerifiedContents::HasTreeHashRoot(
     const base::FilePath& relative_path) const {
   base::FilePath::StringType path = base::ToLowerASCII(
       relative_path.NormalizePathSeparatorsTo('/').value());
-  if (base::ContainsKey(root_hashes_, path))
+  if (base::Contains(root_hashes_, path))
     return true;
 
 #if defined(OS_WIN)
   base::FilePath::StringType trimmed_path;
   if (TrimDotSpaceSuffix(path, &trimmed_path))
-    return base::ContainsKey(root_hashes_, trimmed_path);
+    return base::Contains(root_hashes_, trimmed_path);
 #endif  // defined(OS_WIN)
   return false;
 }

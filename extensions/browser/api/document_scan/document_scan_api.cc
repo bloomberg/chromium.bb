@@ -48,7 +48,7 @@ void DocumentScanScanFunction::OnScannerListReceived(
   if (params_->options.mime_types) {
     std::vector<std::string>& mime_types = *params_->options.mime_types;
     for (; scanner_i != scanner_descriptions.end(); ++scanner_i) {
-      if (base::ContainsValue(mime_types, scanner_i->image_mime_type)) {
+      if (base::Contains(mime_types, scanner_i->image_mime_type)) {
         break;
       }
     }

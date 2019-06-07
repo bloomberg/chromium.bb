@@ -362,7 +362,7 @@ GURL ScriptContext::GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
 
     // Avoid an infinite loop - see https://crbug.com/568432 and
     // https://crbug.com/883526.
-    if (base::ContainsKey(already_visited_frames, parent))
+    if (base::Contains(already_visited_frames, parent))
       return document_url;
 
     parent_document = parent && parent->IsWebLocalFrame()

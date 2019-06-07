@@ -83,7 +83,7 @@ bool PermissionsData::CanExecuteScriptEverywhere(
   const ExtensionsClient::ScriptingWhitelist& whitelist =
       ExtensionsClient::Get()->GetScriptingWhitelist();
 
-  return base::ContainsValue(whitelist, extension_id);
+  return base::Contains(whitelist, extension_id);
 }
 
 bool PermissionsData::IsRestrictedUrl(const GURL& document_url,

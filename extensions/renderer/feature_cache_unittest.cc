@@ -34,7 +34,7 @@ struct FakeContext {
 bool HasFeature(FeatureCache& cache,
                 const FakeContext& context,
                 const std::string& feature) {
-  return base::ContainsValue(
+  return base::Contains(
       cache.GetAvailableFeatures(context.context_type, context.extension,
                                  context.url),
       feature);

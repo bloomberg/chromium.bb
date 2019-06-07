@@ -682,7 +682,7 @@ NetworkingPrivateChromeOS::GetDeviceStateList() {
       ::onc::network_type::kEthernet, ::onc::network_type::kWiFi,
       ::onc::network_type::kWimax, ::onc::network_type::kCellular};
   for (const char* technology : technology_types) {
-    if (base::ContainsKey(technologies_found, technology))
+    if (base::Contains(technologies_found, technology))
       continue;
     AppendDeviceState(technology, nullptr /* device */,
                       device_state_list.get());

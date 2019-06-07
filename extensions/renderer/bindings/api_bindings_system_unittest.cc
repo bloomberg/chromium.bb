@@ -159,7 +159,7 @@ v8::Local<v8::Object> APIBindingsSystemTest::GetLastErrorParent(
 
 const base::DictionaryValue& APIBindingsSystemTest::GetAPISchema(
     const std::string& api_name) {
-  EXPECT_TRUE(base::ContainsKey(api_schemas_, api_name));
+  EXPECT_TRUE(base::Contains(api_schemas_, api_name));
   return *api_schemas_[api_name];
 }
 

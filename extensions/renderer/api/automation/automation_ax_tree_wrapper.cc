@@ -297,7 +297,7 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
 
   // Refresh child tree id  mappings.
   for (const ui::AXTreeID& tree_id : tree_.GetAllChildTreeIds()) {
-    DCHECK(!base::ContainsKey(child_tree_id_reverse_map, tree_id));
+    DCHECK(!base::Contains(child_tree_id_reverse_map, tree_id));
     child_tree_id_reverse_map.insert(std::make_pair(tree_id, this));
   }
 

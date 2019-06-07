@@ -268,7 +268,7 @@ TEST_F(ImageSanitizerTest, ValidCase) {
     EXPECT_TRUE(base::GetFileSize(full_path, &file_size));
     EXPECT_GT(file_size, 0);
 
-    ASSERT_TRUE(base::ContainsKey(*decoded_images(), path));
+    ASSERT_TRUE(base::Contains(*decoded_images(), path));
     EXPECT_FALSE((*decoded_images())[path].drawsNothing());
   }
   // No extra images should have been reported.

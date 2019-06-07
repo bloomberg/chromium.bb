@@ -431,7 +431,7 @@ bool SimpleFeature::IsIdInList(const HashedExtensionId& hashed_id,
   if (!IsValidHashedExtensionId(hashed_id))
     return false;
 
-  return base::ContainsValue(list, hashed_id.value());
+  return base::Contains(list, hashed_id.value());
 }
 
 bool SimpleFeature::MatchesManifestLocation(
@@ -454,14 +454,14 @@ bool SimpleFeature::MatchesSessionTypes(FeatureSessionType session_type) const {
   if (session_types_.empty())
     return true;
 
-  if (base::ContainsValue(session_types_, session_type))
+  if (base::Contains(session_types_, session_type))
     return true;
 
   // AUTOLAUNCHED_KIOSK session type is subset of KIOSK - accept auto-lauched
   // kiosk session if kiosk session is allowed. This is the only exception to
   // rejecting session type that is not present in |session_types_|
   return session_type == FeatureSessionType::AUTOLAUNCHED_KIOSK &&
-         base::ContainsValue(session_types_, FeatureSessionType::KIOSK);
+         base::Contains(session_types_, FeatureSessionType::KIOSK);
 }
 
 Feature::Availability SimpleFeature::CheckDependencies(
@@ -545,7 +545,7 @@ Feature::Availability SimpleFeature::GetEnvironmentAvailability(
     version_info::Channel channel,
     FeatureSessionType session_type) const {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!platforms_.empty() && !base::ContainsValue(platforms_, platform))
+  if (!platforms_.empty() && !base::Contains(platforms_, platform))
     return CreateAvailability(INVALID_PLATFORM);
 
   if (channel_ && *channel_ < GetCurrentChannel()) {
@@ -582,7 +582,7 @@ Feature::Availability SimpleFeature::GetManifestAvailability(
   Manifest::Type type_to_check =
       (type == Manifest::TYPE_USER_SCRIPT) ? Manifest::TYPE_EXTENSION : type;
   if (!extension_types_.empty() &&
-      !base::ContainsValue(extension_types_, type_to_check)) {
+      !base::Contains(extension_types_, type_to_check)) {
     return CreateAvailability(INVALID_TYPE, type);
   }
 
@@ -622,7 +622,7 @@ Feature::Availability SimpleFeature::GetContextAvailability(
   // extension API calls, since there's no guarantee that the extension is
   // "active" in current renderer process when the API permission check is
   // done.
-  if (!contexts_.empty() && !base::ContainsValue(contexts_, context))
+  if (!contexts_.empty() && !base::Contains(contexts_, context))
     return CreateAvailability(INVALID_CONTEXT, context);
 
   // TODO(kalman): Consider checking |matches_| regardless of context type.

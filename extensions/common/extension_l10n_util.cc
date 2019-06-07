@@ -472,7 +472,7 @@ bool ShouldSkipValidation(const base::FilePath& locales_path,
   if (subdir.empty())
     return true;  // Non-ASCII.
 
-  if (base::ContainsValue(subdir, '.'))
+  if (base::Contains(subdir, '.'))
     return true;
 
   if (all_locales.find(subdir) == all_locales.end())

@@ -1963,7 +1963,7 @@ bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListenerOnUI(
 
 bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListenerImpl(
     void* browser_context) {
-  return base::ContainsKey(extra_headers_listener_count_, browser_context);
+  return base::Contains(extra_headers_listener_count_, browser_context);
 }
 
 void ExtensionWebRequestEventRouter::UpdateExtraHeadersListenerOnUI(
@@ -2070,8 +2070,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     }
 
     const std::vector<WebRequestResourceType>& types = listener->filter.types;
-    if (!types.empty() &&
-        !base::ContainsValue(types, request->web_request_type)) {
+    if (!types.empty() && !base::Contains(types, request->web_request_type)) {
       continue;
     }
 
@@ -2337,7 +2336,7 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
     Listeners& listeners = listeners_[browser_context][event_name];
 
     for (const auto& listener : listeners) {
-      if (!base::ContainsKey(listener->blocked_requests, request_id))
+      if (!base::Contains(listener->blocked_requests, request_id))
         continue;
       std::string delegate_info = l10n_util::GetStringFUTF8(
           IDS_LOAD_STATE_PARAMETER_EXTENSION,

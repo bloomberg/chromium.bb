@@ -636,8 +636,7 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
 
       // If we still need to find suggested_extension, hunt for it inside the
       // extensions returned from GetFileTypesFromAcceptOption.
-      if (need_suggestion &&
-          base::ContainsValue(extensions, suggested_extension)) {
+      if (need_suggestion && base::Contains(extensions, suggested_extension)) {
         need_suggestion = false;
       }
     }

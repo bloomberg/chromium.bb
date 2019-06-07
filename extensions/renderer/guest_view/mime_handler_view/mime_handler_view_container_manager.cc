@@ -62,7 +62,7 @@ MimeHandlerViewContainerManager* MimeHandlerViewContainerManager::Get(
   }
   int32_t routing_id = render_frame->GetRoutingID();
   auto& map = *GetRenderFrameMap();
-  if (base::ContainsKey(map, routing_id))
+  if (base::Contains(map, routing_id))
     return map[routing_id].get();
   if (create_if_does_not_exits) {
     map[routing_id] =

@@ -183,7 +183,7 @@ bool WebRequestConditionAttributeResourceType::IsFulfilled(
     const WebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
-  return base::ContainsValue(types_, request_data.request->web_request_type);
+  return base::Contains(types_, request_data.request->web_request_type);
 }
 
 WebRequestConditionAttribute::Type
@@ -266,9 +266,9 @@ bool WebRequestConditionAttributeContentType::IsFulfilled(
       content_type, &mime_type, &charset, &had_charset, NULL);
 
   if (inclusive_) {
-    return base::ContainsValue(content_types_, mime_type);
+    return base::Contains(content_types_, mime_type);
   } else {
-    return !base::ContainsValue(content_types_, mime_type);
+    return !base::Contains(content_types_, mime_type);
   }
 }
 

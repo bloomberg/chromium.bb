@@ -696,10 +696,10 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
 
     // Background pages, scripts and content scripts should always be verified
     // regardless of their file type.
-    if (base::ContainsKey(background_or_content_paths, relative_unix_path))
+    if (base::Contains(background_or_content_paths, relative_unix_path))
       return true;
 
-    if (base::ContainsKey(browser_images, relative_unix_path))
+    if (base::Contains(browser_images, relative_unix_path))
       continue;
 
     base::FilePath full_path =
@@ -723,8 +723,8 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
       // _locales/<some locale>/messages.json - if so then skip it.
       if (full_path.BaseName() == messages_file &&
           full_path.DirName().DirName() == locales_dir &&
-          base::ContainsKey(*all_locales,
-                            full_path.DirName().BaseName().MaybeAsASCII())) {
+          base::Contains(*all_locales,
+                         full_path.DirName().BaseName().MaybeAsASCII())) {
         continue;
       }
     }

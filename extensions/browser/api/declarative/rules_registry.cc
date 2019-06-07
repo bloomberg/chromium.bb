@@ -344,7 +344,7 @@ void RulesRegistry::MarkReady(base::Time storage_init_time) {
 void RulesRegistry::ProcessChangedRules(const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(owner_thread());
 
-  DCHECK(base::ContainsKey(process_changed_rules_requested_, extension_id));
+  DCHECK(base::Contains(process_changed_rules_requested_, extension_id));
   process_changed_rules_requested_[extension_id] = NOT_SCHEDULED_FOR_PROCESSING;
 
   std::vector<const api::events::Rule*> new_rules;

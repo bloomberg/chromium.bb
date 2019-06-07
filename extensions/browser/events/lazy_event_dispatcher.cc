@@ -53,7 +53,7 @@ void LazyEventDispatcher::Dispatch(
 
 bool LazyEventDispatcher::HasAlreadyDispatched(
     const LazyContextId& dispatch_context) const {
-  return base::ContainsKey(dispatched_ids_, dispatch_context);
+  return base::Contains(dispatched_ids_, dispatch_context);
 }
 
 bool LazyEventDispatcher::QueueEventDispatch(

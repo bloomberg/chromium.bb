@@ -949,7 +949,7 @@ void MergeOnBeforeSendHeadersResponses(
         const std::string& value = modification.value();
 
         // We must not modify anything that has been deleted before.
-        if (base::ContainsKey(*removed_headers, key)) {
+        if (base::Contains(*removed_headers, key)) {
           extension_conflicts = true;
           break;
         }
@@ -970,7 +970,7 @@ void MergeOnBeforeSendHeadersResponses(
 
         // We must not modify anything that has been set to a *different*
         // value before.
-        if (base::ContainsKey(*set_headers, key)) {
+        if (base::Contains(*set_headers, key)) {
           std::string current_value;
           if (!request_headers->GetHeader(key, &current_value) ||
               current_value != value) {
@@ -985,7 +985,7 @@ void MergeOnBeforeSendHeadersResponses(
     // modified before.
     {
       for (const std::string& key : delta.deleted_request_headers) {
-        if (base::ContainsKey(*set_headers, base::ToLowerASCII(key))) {
+        if (base::Contains(*set_headers, base::ToLowerASCII(key))) {
           extension_conflicts = true;
           break;
         }
@@ -1002,7 +1002,7 @@ void MergeOnBeforeSendHeadersResponses(
         std::string key = base::ToLowerASCII(modification.name());
         if (!request_headers->HasHeader(key)) {
           added_headers.insert(key);
-        } else if (!base::ContainsKey(added_headers, key)) {
+        } else if (!base::Contains(added_headers, key)) {
           // Note: |key| will only be present in |added_headers| if this is an
           // identical edit.
           overridden_headers.insert(key);

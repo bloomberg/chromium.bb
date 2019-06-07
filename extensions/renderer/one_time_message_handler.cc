@@ -155,8 +155,8 @@ bool OneTimeMessageHandler::HasPort(ScriptContext* script_context,
                                                    kDontCreateIfMissing);
   if (!data)
     return false;
-  return port_id.is_opener ? base::ContainsKey(data->openers, port_id)
-                           : base::ContainsKey(data->receivers, port_id);
+  return port_id.is_opener ? base::Contains(data->openers, port_id)
+                           : base::Contains(data->receivers, port_id);
 }
 
 void OneTimeMessageHandler::SendMessage(
@@ -220,7 +220,7 @@ void OneTimeMessageHandler::AddReceiver(ScriptContext* script_context,
   OneTimeMessageContextData* data =
       GetPerContextData<OneTimeMessageContextData>(context, kCreateIfMissing);
   DCHECK(data);
-  DCHECK(!base::ContainsKey(data->receivers, target_port_id));
+  DCHECK(!base::Contains(data->receivers, target_port_id));
   OneTimeReceiver& receiver = data->receivers[target_port_id];
   receiver.sender.Reset(isolate, sender);
   receiver.routing_id = RoutingIdForScriptContext(script_context);

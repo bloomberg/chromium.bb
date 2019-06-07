@@ -144,7 +144,7 @@ std::vector<dnr_api::Rule> RemoveRulesFromVector(
 
   std::vector<dnr_api::Rule> result = std::move(current_rules);
   base::EraseIf(result, [&ids_to_remove](const dnr_api::Rule& rule) {
-    return base::ContainsKey(ids_to_remove, rule.id);
+    return base::Contains(ids_to_remove, rule.id);
   });
 
   return result;

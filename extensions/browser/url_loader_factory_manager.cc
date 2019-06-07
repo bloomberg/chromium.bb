@@ -317,7 +317,7 @@ bool DoContentScriptsDependOnRelaxedCorb(const Extension& extension) {
 
     const std::string& hash = extension.hashed_id().value();
     DCHECK(IsValidHashedExtensionId(hash));
-    return base::ContainsKey(GetExtensionsAllowlist(), hash);
+    return base::Contains(GetExtensionsAllowlist(), hash);
   }
 
   // Safe fallback for future extension manifest versions.
@@ -435,7 +435,7 @@ GURL GetEffectiveDocumentURL(content::RenderFrameHost* frame,
           content::WebContents::FromRenderFrameHost(found_frame)->GetOpener();
     }
     if (!next_candidate ||
-        base::ContainsKey(already_visited_frames, next_candidate)) {
+        base::Contains(already_visited_frames, next_candidate)) {
       break;
     }
 

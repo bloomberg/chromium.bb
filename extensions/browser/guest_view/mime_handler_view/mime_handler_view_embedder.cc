@@ -50,8 +50,8 @@ void MimeHandlerViewEmbedder::Create(int32_t frame_tree_node_id,
                                      const std::string& mime_type,
                                      const std::string& stream_id,
                                      const std::string& internal_id) {
-  DCHECK(!base::ContainsKey(*GetMimeHandlerViewEmbeddersMap(),
-                            frame_tree_node_id));
+  DCHECK(
+      !base::Contains(*GetMimeHandlerViewEmbeddersMap(), frame_tree_node_id));
   GetMimeHandlerViewEmbeddersMap()->insert_or_assign(
       frame_tree_node_id, base::WrapUnique(new MimeHandlerViewEmbedder(
                               frame_tree_node_id, resource_url, mime_type,

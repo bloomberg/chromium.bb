@@ -306,7 +306,7 @@ PermissionIDSet PermissionIDSet::GetAllPermissionsWithIDs(
     const std::set<APIPermission::ID>& permission_ids) const {
   PermissionIDSet subset;
   for (const auto& permission : permissions_) {
-    if (base::ContainsKey(permission_ids, permission.id())) {
+    if (base::Contains(permission_ids, permission.id())) {
       subset.permissions_.insert(permission);
     }
   }
