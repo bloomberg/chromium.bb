@@ -85,17 +85,14 @@ void SyncHandleRegistry::UnregisterEvent(base::WaitableEvent* event,
     // Not safe to remove any elements from |callbacks| here since an outer
     // stack frame is currently iterating over it in Wait().
     for (auto& cb : callbacks) {
-      if (cb.Equals(callback))
+      if (cb == callback)
         cb.Reset();
       else if (cb)
         has_valid_callbacks = true;
     }
     remove_invalid_event_callbacks_after_dispatch_ = true;
   } else {
-    callbacks.erase(std::remove_if(callbacks.begin(), callbacks.end(),
-                                   [&callback](const base::Closure& cb) {
-                                     return cb.Equals(callback);
-                                   }),
+    callbacks.erase(std::remove(callbacks.begin(), callbacks.end(), callback),
                     callbacks.end());
     if (callbacks.empty())
       events_.erase(it);
