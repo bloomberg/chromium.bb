@@ -314,6 +314,25 @@ base::Time NigoriSyncBridgeImpl::GetKeystoreMigrationTime() const {
   return base::Time();
 }
 
+Cryptographer* NigoriSyncBridgeImpl::GetCryptographerUnsafe() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // This method exposes Cryptographer to Directory, and it's redundant in case
+  // USS implementation is enabled.
+  return nullptr;
+}
+
+KeystoreKeysHandler* NigoriSyncBridgeImpl::GetKeystoreKeysHandler() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return this;
+}
+
+syncable::NigoriHandler* NigoriSyncBridgeImpl::GetNigoriHandler() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Note: GetNigoriHandler() is a workaround for coexistence with Directory
+  // implementation, returning nullptr here is expected behavior.
+  return nullptr;
+}
+
 bool NigoriSyncBridgeImpl::NeedKeystoreKey() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // We explicitly ask the server for keystore keys iff it's first-time sync,

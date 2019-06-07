@@ -743,6 +743,21 @@ base::Time SyncEncryptionHandlerImpl::GetKeystoreMigrationTime() const {
   return keystore_migration_time_;
 }
 
+Cryptographer* SyncEncryptionHandlerImpl::GetCryptographerUnsafe() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return &vault_unsafe_.cryptographer;
+}
+
+KeystoreKeysHandler* SyncEncryptionHandlerImpl::GetKeystoreKeysHandler() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return this;
+}
+
+syncable::NigoriHandler* SyncEncryptionHandlerImpl::GetNigoriHandler() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return this;
+}
+
 // Note: this is called from within a syncable transaction, so we need to post
 // tasks if we want to do any work that creates a new sync_api transaction.
 void SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
@@ -865,11 +880,6 @@ ModelTypeSet SyncEncryptionHandlerImpl::GetEncryptedTypes(
 PassphraseType SyncEncryptionHandlerImpl::GetPassphraseType(
     syncable::BaseTransaction* const trans) const {
   return UnlockVault(trans).passphrase_type;
-}
-
-Cryptographer* SyncEncryptionHandlerImpl::GetCryptographerUnsafe() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return &vault_unsafe_.cryptographer;
 }
 
 ModelTypeSet SyncEncryptionHandlerImpl::GetEncryptedTypesUnsafe() {

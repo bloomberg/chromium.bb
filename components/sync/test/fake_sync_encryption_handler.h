@@ -43,6 +43,9 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   PassphraseType GetPassphraseType(
       syncable::BaseTransaction* const trans) const override;
   base::Time GetKeystoreMigrationTime() const override;
+  Cryptographer* GetCryptographerUnsafe() override;
+  KeystoreKeysHandler* GetKeystoreKeysHandler() override;
+  syncable::NigoriHandler* GetNigoriHandler() override;
 
   // NigoriHandler implemenation.
   void ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
@@ -56,8 +59,6 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;
   bool SetKeystoreKeys(const std::vector<std::string>& keys) override;
-
-  Cryptographer* cryptographer() { return &cryptographer_; }
 
  private:
   base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;

@@ -128,4 +128,16 @@ base::Time FakeSyncEncryptionHandler::GetKeystoreMigrationTime() const {
   return base::Time();
 }
 
+Cryptographer* FakeSyncEncryptionHandler::GetCryptographerUnsafe() {
+  return &cryptographer_;
+}
+
+KeystoreKeysHandler* FakeSyncEncryptionHandler::GetKeystoreKeysHandler() {
+  return this;
+}
+
+syncable::NigoriHandler* FakeSyncEncryptionHandler::GetNigoriHandler() {
+  return this;
+}
+
 }  // namespace syncer

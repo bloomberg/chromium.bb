@@ -299,25 +299,14 @@ void SyncManagerImpl::Init(InitArgs* args) {
   allstatus_.SetHasKeystoreKey(
       !args->restored_keystore_key_for_bootstrapping.empty());
 
-  Cryptographer* cryptographer_for_directory = nullptr;
-  syncable::NigoriHandler* nigori_handler = nullptr;
-  KeystoreKeysHandler* keystore_keys_handler = nullptr;
   if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
-    auto nigori_sync_bridge_impl = std::make_unique<NigoriSyncBridgeImpl>(
+    sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
         std::make_unique<NigoriModelTypeProcessor>(), args->encryptor);
-    keystore_keys_handler = nigori_sync_bridge_impl.get();
-    sync_encryption_handler_ = std::move(nigori_sync_bridge_impl);
   } else {
-    auto sync_encryption_handler_impl =
-        std::make_unique<SyncEncryptionHandlerImpl>(
-            &share_, args->encryptor, args->restored_key_for_bootstrapping,
-            args->restored_keystore_key_for_bootstrapping,
-            base::BindRepeating(&Nigori::GenerateScryptSalt));
-    cryptographer_for_directory =
-        sync_encryption_handler_impl->GetCryptographerUnsafe();
-    nigori_handler = sync_encryption_handler_impl.get();
-    keystore_keys_handler = sync_encryption_handler_impl.get();
-    sync_encryption_handler_ = std::move(sync_encryption_handler_impl);
+    sync_encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
+        &share_, args->encryptor, args->restored_key_for_bootstrapping,
+        args->restored_keystore_key_for_bootstrapping,
+        base::BindRepeating(&Nigori::GenerateScryptSalt));
   }
 
   // Register for encryption related changes now. We have to do this before
@@ -356,12 +345,13 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   DCHECK(backing_store);
 
-  // Note: |nigori_handler| and |cryptographer_for_directory| are nullptrs iff
-  // kSyncUSSNigori is enabled.
+  // Note: NigoriHandler and Cryptographer passed to Directory are nullptrs iff
+  // USS implementation of Nigori is enabled.
   share_.directory = std::make_unique<syncable::Directory>(
       std::move(backing_store), args->unrecoverable_error_handler,
-      report_unrecoverable_error_function_, nigori_handler,
-      cryptographer_for_directory);
+      report_unrecoverable_error_function_,
+      sync_encryption_handler_->GetNigoriHandler(),
+      sync_encryption_handler_->GetCryptographerUnsafe());
 
   DVLOG(1) << "AccountId: " << args->authenticated_account_id;
   if (!OpenDirectory(args)) {
@@ -395,7 +385,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   model_type_registry_ = std::make_unique<ModelTypeRegistry>(
       args->workers, &share_, this, base::Bind(&MigrateDirectoryData),
-      args->cancelation_signal, keystore_keys_handler);
+      args->cancelation_signal,
+      sync_encryption_handler_->GetKeystoreKeysHandler());
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
 
   // Build a SyncCycleContext and store the worker in it.

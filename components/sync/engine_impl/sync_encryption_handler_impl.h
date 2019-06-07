@@ -69,6 +69,9 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
+  Cryptographer* GetCryptographerUnsafe() override;
+  KeystoreKeysHandler* GetKeystoreKeysHandler() override;
+  syncable::NigoriHandler* GetNigoriHandler() override;
 
   // NigoriHandler implementation.
   // Note: all methods are invoked while the caller holds a transaction.
@@ -89,7 +92,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
 
   // Unsafe getters. Use only if sync is not up and running and there is no risk
   // of other threads calling this.
-  Cryptographer* GetCryptographerUnsafe();
+
   ModelTypeSet GetEncryptedTypesUnsafe();
 
   bool MigratedToKeystore();
