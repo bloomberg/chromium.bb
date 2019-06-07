@@ -52,7 +52,7 @@ if (current_toolchain == default_toolchain) {
 tool_versions =
     exec_script("get_tool_mtime.py",
                 rebase_path([
-                              "//build/toolchain/mac/compile_xcassets.py",
+                              "//build/config/ios/compile_xcassets.py",
                               "//build/toolchain/mac/filter_libtool.py",
                               "//build/toolchain/mac/linker_driver.py",
                             ],
@@ -460,7 +460,7 @@ template("mac_toolchain") {
     # disallow future uses of xcassets on macOS. https://crbug.com/965663.
     if (toolchain_args.current_os == "ios") {
       tool("compile_xcassets") {
-        _tool = rebase_path("//build/toolchain/mac/compile_xcassets.py",
+        _tool = rebase_path("//build/config/ios/compile_xcassets.py",
                             root_build_dir)
         if (is_ios) {
           _sdk_name = ios_sdk_name
