@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/favicon_base/favicon_request_metrics.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/prefs/scoped_user_pref_update.h"

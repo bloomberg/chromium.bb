@@ -13,7 +13,6 @@
 #include "components/favicon/core/features.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
-#include "components/favicon_base/favicon_request_metrics.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/features.h"
@@ -19,6 +21,52 @@
 namespace favicon {
 
 namespace {
+
+void RecordFaviconAvailabilityMetric(FaviconRequestOrigin origin,
+                                     FaviconAvailability availability) {
+  switch (origin) {
+    case FaviconRequestOrigin::HISTORY:
+      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.HISTORY",
+                                availability);
+      break;
+    case FaviconRequestOrigin::HISTORY_SYNCED_TABS:
+      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.SYNCED_TABS",
+                                availability);
+      break;
+    case FaviconRequestOrigin::RECENTLY_CLOSED_TABS:
+      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.RECENTLY_CLOSED_TABS",
+                                availability);
+      break;
+    case FaviconRequestOrigin::UNKNOWN:
+      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.UNKNOWN",
+                                availability);
+      break;
+  }
+}
+
+void RecordFaviconServerGroupingMetric(FaviconRequestOrigin origin,
+                                       int group_size) {
+  DCHECK_GE(group_size, 0);
+  switch (origin) {
+    case FaviconRequestOrigin::HISTORY:
+      base::UmaHistogramCounts100(
+          "Sync.SizeOfFaviconServerRequestGroup.HISTORY", group_size);
+      break;
+    case FaviconRequestOrigin::HISTORY_SYNCED_TABS:
+      base::UmaHistogramCounts100(
+          "Sync.SizeOfFaviconServerRequestGroup.SYNCED_TABS", group_size);
+      break;
+    case FaviconRequestOrigin::RECENTLY_CLOSED_TABS:
+      base::UmaHistogramCounts100(
+          "Sync.SizeOfFaviconServerRequestGroup.RECENTLY_CLOSED_TABS",
+          group_size);
+      break;
+    case FaviconRequestOrigin::UNKNOWN:
+      base::UmaHistogramCounts100(
+          "Sync.SizeOfFaviconServerRequestGroup.UNKNOWN", group_size);
+      break;
+  }
+}
 
 // Parameter used for local bitmap queries by page url. The url is an origin,
 // and it may not have had a favicon associated with it. A trickier case is when
