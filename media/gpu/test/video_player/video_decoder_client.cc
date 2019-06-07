@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/waiting.h"
 #include "media/gpu/macros.h"
@@ -16,6 +18,12 @@
 #include "media/gpu/test/video_player/frame_renderer.h"
 #include "media/gpu/test/video_player/test_vda_video_decoder.h"
 #include "media/gpu/test/video_player/video.h"
+
+#if defined(OS_LINUX)
+#include "media/gpu/linux/linux_video_decoder_factory.h"
+#include "media/gpu/linux/platform_video_frame_pool.h"
+#include "media/gpu/video_frame_converter.h"
+#endif  // defined(OS_LINUX)
 
 namespace media {
 namespace test {
@@ -169,8 +177,11 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
       base::BindRepeating([](WaitingReason) { NOTIMPLEMENTED(); });
 
   if (decoder_client_config_.use_vd) {
-    // TODO(dstaessens@) Create VD-based video decoder.
-    NOTIMPLEMENTED();
+#if defined(OS_LINUX)
+    decoder_ = LinuxVideoDecoderFactory::CreateForTesting(
+        base::ThreadTaskRunnerHandle::Get());
+#endif  // defined(OS_LINUX)
+    LOG_ASSERT(decoder_) << "Failed to create decoder.";
   } else {
     // The video decoder client expects decoders to use the VD interface. We can
     // use the TestVDAVideoDecoder wrapper here to test VDA-based video
@@ -178,9 +189,10 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
     decoder_ = std::make_unique<TestVDAVideoDecoder>(
         decoder_client_config_.allocation_mode, gfx::ColorSpace(),
         frame_renderer_.get());
-    decoder_->Initialize(config, false, nullptr, std::move(init_cb), output_cb,
-                         waiting_cb);
   }
+
+  decoder_->Initialize(config, false, nullptr, std::move(init_cb), output_cb,
+                       waiting_cb);
 
   DCHECK_LE(decoder_client_config_.max_outstanding_decode_requests,
             static_cast<size_t>(decoder_->GetMaxDecodeRequests()));
