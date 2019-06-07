@@ -1680,8 +1680,9 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
     }
   }
 
-  // Assume all desktop (!gl_version_info_->is_es) supports float blend
-  if (!gl_version_info_->is_es ||
+  // Assume all desktop (!gl_version_info_->is_es) supports float blend.
+  // Floating-point format blending is core of ES 3.2.
+  if (!gl_version_info_->is_es || gl_version_info_->IsAtLeastGLES(3, 2) ||
       gfx::HasExtension(extensions, "GL_EXT_float_blend")) {
     if (!disallowed_features_.ext_float_blend) {
       EnableEXTFloatBlend();
