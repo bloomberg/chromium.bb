@@ -60,6 +60,14 @@ function ImageRequest(id, cache, piexLoader, request, callback) {
   this.contentType_ = null;
 
   /**
+   * IFD data of the fetched image. Only RAW images provide non-null ifd
+   * data at this time; images on Drive might provide ifd in future.
+   * @type {?string}
+   * @private
+   */
+  this.ifd_ = null;
+
+  /**
    * Used to download remote images using http:// or https:// protocols.
    * @type {AuthorizedXHR}
    * @private
@@ -136,7 +144,8 @@ ImageRequest.prototype.getPriority = function() {
 };
 
 /**
- * Tries to load the image from cache if exists and sends the response.
+ * Tries to load the image from cache, if it exists in the cache, and sends
+ * the response. Fails if the image is not found in the cache.
  *
  * @param {function()} onSuccess Success callback.
  * @param {function()} onFailure Failure callback.
@@ -144,8 +153,9 @@ ImageRequest.prototype.getPriority = function() {
 ImageRequest.prototype.loadFromCacheAndProcess = function(
     onSuccess, onFailure) {
   this.loadFromCache_(
-      function(data, width, height) {  // Found in cache.
-        this.sendImageData_(data, width, height);
+      function(width, height, ifd, data) {  // Found in cache.
+        this.ifd_ = ifd;
+        this.sendImageData_(width, height, data);
         onSuccess();
       }.bind(this),
       onFailure);  // Not found in cache.
@@ -153,6 +163,7 @@ ImageRequest.prototype.loadFromCacheAndProcess = function(
 
 /**
  * Tries to download the image, resizes and sends the response.
+ *
  * @param {function()} callback Completion callback.
  */
 ImageRequest.prototype.downloadAndProcess = function(callback) {
@@ -168,12 +179,13 @@ ImageRequest.prototype.downloadAndProcess = function(callback) {
 /**
  * Fetches the image from the persistent cache.
  *
- * @param {function(string, number, number)} onSuccess Success callback.
+ * @param {function(number, number, ?string, string)} onSuccess
+ *    Success callback with the image width, height, ?ifd, and data.
  * @param {function()} onFailure Failure callback.
  * @private
  */
 ImageRequest.prototype.loadFromCache_ = function(onSuccess, onFailure) {
-  let cacheKey = LoadImageRequest.cacheKey(this.request_);
+  const cacheKey = LoadImageRequest.cacheKey(this.request_);
 
   if (!cacheKey) {
     // Cache key is not provided for the request.
@@ -189,43 +201,39 @@ ImageRequest.prototype.loadFromCache_ = function(onSuccess, onFailure) {
     return;
   }
 
-  if (!this.request_.timestamp) {
+  const timestamp = this.request_.timestamp;
+  if (!timestamp) {
     // Persistent cache is available only when a timestamp is provided.
     onFailure();
     return;
   }
 
-  this.cache_.loadImage(cacheKey,
-                        this.request_.timestamp,
-                        onSuccess,
-                        onFailure);
+  this.cache_.loadImage(cacheKey, timestamp, onSuccess, onFailure);
 };
 
 /**
  * Saves the image to the persistent cache.
  *
- * @param {string} data The image's data.
  * @param {number} width Image width.
  * @param {number} height Image height.
+ * @param {string} data Image data.
  * @private
  */
-ImageRequest.prototype.saveToCache_ = function(data, width, height) {
-  if (!this.request_.cache || !this.request_.timestamp) {
+ImageRequest.prototype.saveToCache_ = function(width, height, data) {
+  const timestamp = this.request_.timestamp;
+
+  if (!this.request_.cache || !timestamp) {
     // Persistent cache is available only when a timestamp is provided.
     return;
   }
 
-  let cacheKey = LoadImageRequest.cacheKey(this.request_);
+  const cacheKey = LoadImageRequest.cacheKey(this.request_);
   if (!cacheKey) {
     // Cache key is not provided for the request.
     return;
   }
 
-  this.cache_.saveImage(cacheKey,
-                        data,
-                        width,
-                        height,
-                        this.request_.timestamp);
+  this.cache_.saveImage(cacheKey, timestamp, width, height, this.ifd_, data);
 };
 
 /**
@@ -283,6 +291,7 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
       this.image_.src = url;
       this.request_.orientation = data.orientation;
       this.request_.colorSpace = data.colorSpace;
+      this.ifd_ = data.ifd;
     }.bind(this), function() {
       // The error has already been logged in PiexLoader.
       onFailure();
@@ -524,15 +533,16 @@ AuthorizedXHR.load_ = function(token, url, onSuccess, onFailure) {
  * @private
  */
 ImageRequest.prototype.sendImage_ = function(imageChanged) {
-  var imageData;
-  var width;
-  var height;
+  let width;
+  let height;
+  let data;
+
   if (!imageChanged) {
     // The image hasn't been processed, so the raw data can be directly
     // forwarded for speed (no need to encode the image again).
-    imageData = this.image_.src;
     width = this.image_.width;
     height = this.image_.height;
+    data = this.image_.src;
   } else {
     // The image has been resized or rotated, therefore the canvas has to be
     // encoded to get the correct compressed image data.
@@ -544,30 +554,32 @@ ImageRequest.prototype.sendImage_ = function(imageChanged) {
       case 'image/png':
       case 'image/svg':
       case 'image/bmp':
-        imageData = this.canvas_.toDataURL('image/png');
+        data = this.canvas_.toDataURL('image/png');
         break;
       case 'image/jpeg':
       default:
-        imageData = this.canvas_.toDataURL('image/jpeg', 0.9);
+        data = this.canvas_.toDataURL('image/jpeg', 0.9);
+        break;
     }
   }
 
-  // Send and store in the persistent cache.
-  this.sendImageData_(imageData, width, height);
-  this.saveToCache_(imageData, width, height);
+  // Send the image data and also save it in the persistent cache.
+  this.sendImageData_(width, height, data);
+  this.saveToCache_(width, height, data);
 };
 
 /**
  * Sends the resized image via the callback.
- * @param {string} data Compressed image data.
- * @param {number} width Width.
- * @param {number} height Height.
+ *
+ * @param {number} width Image width.
+ * @param {number} height Image height.
+ * @param {string} data Image data.
  * @private
  */
-ImageRequest.prototype.sendImageData_ = function(data, width, height) {
+ImageRequest.prototype.sendImageData_ = function(width, height, data) {
+  const result = {width, height, ifd: this.ifd_, data};
   this.sendResponse_(new LoadImageResponse(
-      LoadImageResponseStatus.SUCCESS, this.getClientTaskId(),
-      {width: width, height: height, data: data}));
+      LoadImageResponseStatus.SUCCESS, this.getClientTaskId(), result));
 };
 
 /**
