@@ -57,14 +57,13 @@ void ContextProviderImpl::Create(
     fuchsia::web::CreateContextParams params,
     fidl::InterfaceRequest<fuchsia::web::Context> context_request) {
   if (!context_request.is_valid()) {
-    // TODO(crbug.com/934539): Add type epitaph.
-    DLOG(WARNING) << "Invalid |context_request|.";
+    DLOG(ERROR) << "Invalid |context_request|.";
     return;
   }
   if (!params.has_service_directory()) {
-    // TODO(crbug.com/934539): Add type epitaph.
-    DLOG(WARNING)
+    DLOG(ERROR)
         << "Missing argument |service_directory| in CreateContextParams.";
+    context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
   }
 
@@ -77,25 +76,23 @@ void ContextProviderImpl::Create(
 
   // Transfer the ContextRequest handle to a well-known location in the child
   // process' handle table.
-  zx::channel context_handle(context_request.TakeChannel());
   launch_options.handles_to_transfer.push_back(
-      {kContextRequestHandleId, context_handle.get()});
+      {kContextRequestHandleId, context_request.channel().get()});
 
   // Bind |data_directory| to /data directory, if provided.
   if (params.has_data_directory()) {
     zx::channel data_directory_channel = ValidateDirectoryAndTakeChannel(
         std::move(*params.mutable_data_directory()));
     if (data_directory_channel.get() == ZX_HANDLE_INVALID) {
-      // TODO(crbug.com/934539): Add type epitaph.
-      DLOG(WARNING)
+      DLOG(ERROR)
           << "Invalid argument |data_directory| in CreateContextParams.";
+      context_request.Close(ZX_ERR_INVALID_ARGS);
       return;
     }
 
     base::FilePath data_path;
     if (!base::PathService::Get(base::DIR_APP_DATA, &data_path)) {
-      // TODO(crbug.com/934539): Add type epitaph.
-      DLOG(WARNING) << "Failed to get data directory service path.";
+      DLOG(ERROR) << "Failed to get data directory service path.";
       return;
     }
     launch_options.paths_to_transfer.push_back(
@@ -107,12 +104,14 @@ void ContextProviderImpl::Create(
   zx::job job;
   zx_status_t status = zx::job::create(*base::GetDefaultJob(), 0, &job);
   if (status != ZX_OK) {
-    ZX_LOG(FATAL, status) << "zx_job_create";
+    ZX_LOG(ERROR, status) << "zx_job_create";
     return;
   }
   launch_options.job_handle = job.get();
 
+  // Connect DevTools listeners to the new Context process.
   base::CommandLine launch_command(*base::CommandLine::ForCurrentProcess());
+  std::vector<zx::channel> devtools_listener_channels;
   if (devtools_listeners_.size() != 0) {
     std::vector<std::string> handles_ids;
     for (auto& devtools_listener : devtools_listeners_.ptrs()) {
@@ -120,10 +119,11 @@ void ContextProviderImpl::Create(
           client_listener;
       devtools_listener.get()->get()->OnContextDevToolsAvailable(
           client_listener.NewRequest());
+      devtools_listener_channels.emplace_back(client_listener.TakeChannel());
       handles_ids.push_back(
           base::NumberToString(base::LaunchOptions::AddHandleToTransfer(
               &launch_options.handles_to_transfer,
-              client_listener.TakeChannel().release())));
+              devtools_listener_channels.back().get())));
     }
     launch_command.AppendSwitchNative(kRemoteDebuggerHandles,
                                       base::JoinString(handles_ids, ","));
@@ -134,8 +134,11 @@ void ContextProviderImpl::Create(
   else
     base::LaunchProcess(launch_command, launch_options);
 
-  // |context_handle| was transferred (not copied) to the Context process.
-  ignore_result(context_handle.release());
+  // |context_request| and any DevTools channels were transferred (not copied)
+  // to the Context process.
+  ignore_result(context_request.TakeChannel().release());
+  for (auto& channel : devtools_listener_channels)
+    ignore_result(channel.release());
 }
 
 void ContextProviderImpl::SetLaunchCallbackForTest(
