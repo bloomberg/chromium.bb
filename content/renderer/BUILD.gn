@@ -240,8 +240,6 @@ target(link_target_type, "renderer") {
     "media/stream/user_media_client_impl.h",
     "media/stream/user_media_processor.cc",
     "media/stream/user_media_processor.h",
-    "media/stream/webaudio_media_stream_source.cc",
-    "media/stream/webaudio_media_stream_source.h",
     "media/stream/webmediaplayer_ms.cc",
     "media/stream/webmediaplayer_ms.h",
     "media/stream/webmediaplayer_ms_compositor.cc",

@@ -14,12 +14,12 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
-#include "content/renderer/media/stream/webaudio_media_stream_source.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "media/base/sample_format.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/webaudio_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -52,7 +52,8 @@ void CreateNativeAudioMediaStreamTrack(
   // special case code isn't needed here.
   if (!media_stream_source && source.RequiresAudioConsumer()) {
     DVLOG(1) << "Creating WebAudio media stream source.";
-    media_stream_source = new WebAudioMediaStreamSource(&source, task_runner);
+    media_stream_source =
+        new blink::WebAudioMediaStreamSource(&source, task_runner);
     source.SetPlatformSource(
         base::WrapUnique(media_stream_source));  // Takes ownership.
 

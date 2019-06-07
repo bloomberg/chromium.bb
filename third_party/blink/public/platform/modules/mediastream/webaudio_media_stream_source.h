@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_
 
 #include <memory>
 
@@ -12,21 +12,22 @@
 #include "media/base/audio_push_fifo.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_audio_destination_consumer.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
-namespace content {
+namespace blink {
 
 // Implements the WebAudioDestinationConsumer interface to provide a source of
 // audio data (i.e., the output from a graph of WebAudio nodes) to one or more
 // MediaStreamAudioTracks. Audio data is transported directly to the tracks in
 // 10 ms chunks.
-class WebAudioMediaStreamSource final
-    : public blink::MediaStreamAudioSource,
-      public blink::WebAudioDestinationConsumer {
+class BLINK_PLATFORM_EXPORT WebAudioMediaStreamSource final
+    : public MediaStreamAudioSource,
+      public WebAudioDestinationConsumer {
  public:
   WebAudioMediaStreamSource(
-      blink::WebMediaStreamSource* blink_source,
+      WebMediaStreamSource* blink_source,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~WebAudioMediaStreamSource() override;
@@ -38,7 +39,7 @@ class WebAudioMediaStreamSource final
   // concurrently across threads, but these methods could be called on any
   // thread.
   void SetFormat(size_t number_of_channels, float sample_rate) override;
-  void ConsumeAudio(const blink::WebVector<const float*>& audio_data,
+  void ConsumeAudio(const WebVector<const float*>& audio_data,
                     size_t number_of_frames) override;
 
   // Called by AudioPushFifo zero or more times during the call to
@@ -72,13 +73,13 @@ class WebAudioMediaStreamSource final
   // DeliverRebufferedAudio().
   base::TimeTicks current_reference_time_;
 
-  // This object registers with a blink::WebMediaStreamSource. We keep track of
+  // This object registers with a WebMediaStreamSource. We keep track of
   // that in order to be able to deregister before stopping this source.
-  blink::WebMediaStreamSource blink_source_;
+  WebMediaStreamSource blink_source_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAudioMediaStreamSource);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_

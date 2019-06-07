@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/webaudio_media_stream_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/webaudio_media_stream_source.h"
 
 #include <utility>
 
@@ -10,13 +10,12 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 
-namespace content {
+namespace blink {
 
 WebAudioMediaStreamSource::WebAudioMediaStreamSource(
-    blink::WebMediaStreamSource* blink_source,
+    WebMediaStreamSource* blink_source,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : blink::MediaStreamAudioSource(std::move(task_runner),
-                                    false /* is_remote */),
+    : MediaStreamAudioSource(std::move(task_runner), false /* is_remote */),
       is_registered_consumer_(false),
       fifo_(base::Bind(&WebAudioMediaStreamSource::DeliverRebufferedAudio,
                        base::Unretained(this))),
@@ -53,7 +52,7 @@ void WebAudioMediaStreamSource::SetFormat(size_t number_of_channels,
                                 fifo_.frames_per_buffer());
   // Take care of the discrete channel layout case.
   params.set_channels_for_discrete(number_of_channels);
-  blink::MediaStreamAudioSource::SetFormat(params);
+  MediaStreamAudioSource::SetFormat(params);
 
   if (!wrapper_bus_ || wrapper_bus_->channels() != params.channels())
     wrapper_bus_ = media::AudioBus::CreateWrapper(params.channels());
@@ -84,7 +83,7 @@ void WebAudioMediaStreamSource::EnsureSourceIsStopped() {
 }
 
 void WebAudioMediaStreamSource::ConsumeAudio(
-    const blink::WebVector<const float*>& audio_data,
+    const WebVector<const float*>& audio_data,
     size_t number_of_frames) {
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
@@ -108,8 +107,8 @@ void WebAudioMediaStreamSource::DeliverRebufferedAudio(
       current_reference_time_ +
       base::TimeDelta::FromMicroseconds(
           frame_delay * base::Time::kMicrosecondsPerSecond /
-          blink::MediaStreamAudioSource::GetAudioParameters().sample_rate());
-  blink::MediaStreamAudioSource::DeliverDataToTracks(audio_bus, reference_time);
+          MediaStreamAudioSource::GetAudioParameters().sample_rate());
+  MediaStreamAudioSource::DeliverDataToTracks(audio_bus, reference_time);
 }
 
-}  // namespace content
+}  // namespace blink

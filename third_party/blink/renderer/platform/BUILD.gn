@@ -482,6 +482,7 @@ jumbo_component("platform") {
     "exported/mediastream/media_stream_audio_track.cc",
     "exported/mediastream/web_platform_media_stream_source.cc",
     "exported/mediastream/web_platform_media_stream_track.cc",
+    "exported/mediastream/webaudio_media_stream_source.cc",
     "exported/mediastream/webrtc_uma_histograms.cc",
     "exported/platform.cc",
     "exported/service_registry.cc",
