@@ -11,4 +11,4 @@
 package: chromium/third_party/google-truth
 description: Google Truth Fluent Assertions Java Library
 data:
-  - file: lib/truth-0.44.jar
+  - file: lib/truth-0.45.jar

@@ -912,7 +912,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/google-truth',
-              'version': '0VVeotkT0RWtPio6D5NOjDWUwgzDXEbOlqAdmRZ4ku4C',
+              'version': 'u8oovXxp24lStqX4d54htRovta-75Sy2w7ijg1TL07gC',
           },
       ],
       'condition': 'checkout_android',
