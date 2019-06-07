@@ -657,7 +657,9 @@ class Popen(subprocess.Popen):
     self.wait()
     return stdout, stderr
 
-  def wait(self, timeout=None):  # pylint: disable=arguments-differ
+  def wait(self, timeout=None,
+           poll_initial_interval=0.001,
+           poll_max_interval=0.05):  # pylint: disable=arguments-differ
     """Implements python3's timeout support.
 
     Raises:
@@ -680,7 +682,7 @@ class Popen(subprocess.Popen):
         # If you think the following code is horrible, it's because it is
         # inspired by python3's stdlib.
         end = time.time() + timeout
-        delay = 0.001
+        delay = poll_initial_interval
         while True:
           try:
             pid, sts = subprocess._eintr_retry_call(
@@ -697,7 +699,7 @@ class Popen(subprocess.Popen):
           remaining = end - time.time()
           if remaining <= 0:
             raise TimeoutExpired(self.args, timeout)
-          delay = min(delay * 2, remaining, .05)
+          delay = min(delay * 2, remaining, poll_max_interval)
           time.sleep(delay)
 
     if not self.end:
