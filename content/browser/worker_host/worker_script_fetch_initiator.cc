@@ -98,6 +98,20 @@ void WorkerScriptFetchInitiator::Start(
     resource_request->request_initiator = request_initiator;
     resource_request->resource_type = static_cast<int>(resource_type);
 
+    switch (resource_type) {
+      case ResourceType::kWorker:
+        resource_request->fetch_request_context_type =
+            static_cast<int>(blink::mojom::RequestContextType::WORKER);
+        break;
+      case ResourceType::kSharedWorker:
+        resource_request->fetch_request_context_type =
+            static_cast<int>(blink::mojom::RequestContextType::SHARED_WORKER);
+        break;
+      default:
+        NOTREACHED() << static_cast<int>(resource_type);
+        break;
+    }
+
     AddAdditionalRequestHeaders(resource_request.get(), browser_context);
   }
 
