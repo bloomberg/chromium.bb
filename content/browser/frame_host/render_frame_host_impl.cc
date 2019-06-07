@@ -6340,6 +6340,33 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
                                             base::debug::CrashKeySize::Size256),
         GetSiteInstance()->lock_url().spec());
 
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("original_url_origin",
+                                            base::debug::CrashKeySize::Size256),
+        GetSiteInstance()->original_url().GetOrigin().spec());
+
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_transfer_needed",
+                                            base::debug::CrashKeySize::Size32),
+        bool_to_crash_key(frame_tree_node_->render_manager()
+                              ->IsRendererTransferNeededForNavigation(
+                                  this, validated_params->url)));
+
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_mhtml_document",
+                                            base::debug::CrashKeySize::Size32),
+        bool_to_crash_key(is_mhtml_document()));
+
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("last_committed_url_origin",
+                                            base::debug::CrashKeySize::Size256),
+        GetLastCommittedURL().GetOrigin().spec());
+
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("last_successful_url_origin",
+                                            base::debug::CrashKeySize::Size256),
+        last_successful_url().GetOrigin().spec());
+
     if (navigation_request && navigation_request->navigation_handle()) {
       NavigationHandleImpl* handle = navigation_request->navigation_handle();
       base::debug::SetCrashKeyString(
@@ -6364,6 +6391,11 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
 
       base::debug::SetCrashKeyString(
           base::debug::AllocateCrashKeyString(
+              "from_begin_navigation", base::debug::CrashKeySize::Size32),
+          bool_to_crash_key(navigation_request->from_begin_navigation()));
+
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
               "net_error_code", base::debug::CrashKeySize::Size32),
           base::NumberToString(navigation_request->net_error()));
 
@@ -6378,6 +6410,17 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
           base::debug::AllocateCrashKeyString(
               "starting_site_instance", base::debug::CrashKeySize::Size64),
           handle->GetStartingSiteInstance()->GetSiteURL().spec());
+
+      // Recompute the target SiteInstance to see if it matches the current one
+      // at commit time.
+      scoped_refptr<SiteInstance> dest_instance =
+          frame_tree_node_->render_manager()
+              ->GetSiteInstanceForNavigationRequest(*navigation_request);
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "does_recomputed_site_instance_match",
+              base::debug::CrashKeySize::Size32),
+          bool_to_crash_key(dest_instance == GetSiteInstance()));
     }
 
     // Kills the process.
