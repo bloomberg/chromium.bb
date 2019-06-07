@@ -4,6 +4,8 @@
 
 #include "device/gamepad/public/cpp/gamepad.h"
 
+#include <string.h>
+
 namespace device {
 
 const float GamepadButton::kDefaultButtonPressedThreshold;
