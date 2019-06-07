@@ -1321,6 +1321,15 @@ bool OverviewGrid::IsDesksBarViewActive() const {
          (desks_bar_view_ && !desks_bar_view_->mini_views().empty());
 }
 
+gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
+  if (!features::IsVirtualDesksEnabled() || !IsDesksBarViewActive())
+    return bounds_;
+
+  gfx::Rect effective_bounds = bounds_;
+  effective_bounds.Inset(0, DesksBarView::GetBarHeight(), 0, 0);
+  return effective_bounds;
+}
+
 bool OverviewGrid::UpdateDesksBarDragDetails(
     const gfx::Point& screen_location) {
   DCHECK(features::IsVirtualDesksEnabled());
@@ -1506,19 +1515,7 @@ void OverviewGrid::MoveSelectionWidgetToTarget(bool animate) {
 
 std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
     const base::flat_set<OverviewItem*>& ignored_items) {
-  gfx::Rect total_bounds = bounds_;
-
-  if (features::IsVirtualDesksEnabled()) {
-    const int desks_bar_height = DesksBarView::GetBarHeight();
-
-    // Always reduce the grid's height, even if the desks bar is not active. We
-    // do this to avoid changing the overview windows sizes once the desks bar
-    // becomes active, and we shift the grid downwards.
-    total_bounds.set_height(total_bounds.height() - desks_bar_height);
-
-    if (IsDesksBarViewActive())
-      total_bounds.Offset(0, desks_bar_height);
-  }
+  gfx::Rect total_bounds = GetGridEffectiveBounds();
 
   // Windows occupy vertically centered area with additional vertical insets.
   int horizontal_inset =

@@ -260,6 +260,10 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // show them once it is created).
   bool IsDesksBarViewActive() const;
 
+  // Gets the effective bounds of this grid (the area in which the windows are
+  // positioned, taking into account the availability of the Desks bar).
+  gfx::Rect GetGridEffectiveBounds() const;
+
   // Called when a window is being dragged in Overview Mode to update the drag
   // details (screen_location, and whether that location intersects with the
   // desks bar widget.

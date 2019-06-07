@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -104,8 +105,14 @@ gfx::Rect RoundedLabelWidget::GetBoundsCenteredIn(const gfx::Rect& bounds) {
   return widget_bounds;
 }
 
-void RoundedLabelWidget::SetBoundsCenteredIn(const gfx::Rect& bounds) {
-  GetNativeWindow()->SetBounds(GetBoundsCenteredIn(bounds));
+void RoundedLabelWidget::SetBoundsCenteredIn(const gfx::Rect& bounds,
+                                             bool animate) {
+  auto* window = GetNativeWindow();
+  ScopedOverviewAnimationSettings animation_settings{
+      animate ? OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW
+              : OVERVIEW_ANIMATION_NONE,
+      window};
+  window->SetBounds(GetBoundsCenteredIn(bounds));
 }
 
 }  // namespace ash

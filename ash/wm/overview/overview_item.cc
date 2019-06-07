@@ -583,7 +583,7 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
   gfx::Rect bounds = gfx::ToEnclosingRect(target_bounds());
   bounds.Inset(kWindowMargin, kWindowMargin);
   bounds.Inset(gfx::Insets(kHeaderHeightDp, 0, 0, 0));
-  cannot_snap_widget_->SetBoundsCenteredIn(bounds);
+  cannot_snap_widget_->SetBoundsCenteredIn(bounds, /*animate=*/false);
 }
 
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {

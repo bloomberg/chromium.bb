@@ -1955,14 +1955,6 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
   expected_x = /*bounds_right=*/(200 - 4) / 2;
   EXPECT_EQ(gfx::Point(expected_x, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
-
-  // Tests that when moving the split view divider, the no windows indicator
-  // stays centered.
-  split_view_controller->StartResize(gfx::Point(200, 10));
-  split_view_controller->EndResize(gfx::Point(100, 10));
-  expected_x = /*bounds_right=*/(100 - 4) / 2;
-  EXPECT_EQ(gfx::Point(expected_x, expected_y),
-            no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 }
 
 // Tests that the no windows indicator shows properly after adding an item.

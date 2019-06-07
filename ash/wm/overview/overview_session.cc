@@ -589,6 +589,8 @@ void OverviewSession::PositionWindows(
     const base::flat_set<OverviewItem*>& ignored_items) {
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
     grid->PositionWindows(animate, ignored_items);
+
+  RefreshNoWindowsWidgetBounds(animate);
 }
 
 bool OverviewSession::IsWindowInOverview(const aura::Window* window) {
@@ -1043,21 +1045,17 @@ void OverviewSession::UpdateNoWindowsWidget() {
     no_windows_widget_->SetOpacity(1.f);
   }
 
-  // The widget is centered in the work area, unless we are in split view with
-  // one window snapped.
-  aura::Window* window = no_windows_widget_->GetNativeWindow();
-  gfx::Rect bounds =
-      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
-  auto* split_view_controller = Shell::Get()->split_view_controller();
-  if (split_view_controller->state() == SplitViewState::kLeftSnapped) {
-    bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
-        window, SplitViewController::RIGHT);
-  } else if (split_view_controller->state() == SplitViewState::kRightSnapped) {
-    bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
-        window, SplitViewController::LEFT);
-  }
+  RefreshNoWindowsWidgetBounds(/*animate=*/false);
+}
 
-  no_windows_widget_->SetBoundsCenteredIn(bounds);
+void OverviewSession::RefreshNoWindowsWidgetBounds(bool animate) {
+  if (!no_windows_widget_)
+    return;
+
+  auto* grid = GetGridWithRootWindow(Shell::GetPrimaryRootWindow());
+  DCHECK(grid);
+  no_windows_widget_->SetBoundsCenteredIn(grid->GetGridEffectiveBounds(),
+                                          animate);
 }
 
 }  // namespace ash
