@@ -2347,7 +2347,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // TODO(twellington): Move this shadow state information to ToolbarDataProvider and show
         // shadow when incognito NTP is scrolled.
         return mTabSwitcherState == STATIC_TAB && !hideShadowForIncognitoNtp()
-                && !hideShadowForInterstitial();
+                && !hideShadowForInterstitial()
+                && (getToolbarDataProvider() != null
+                        && !getToolbarDataProvider().isInOverviewAndShowingOmnibox());
     }
 
     private boolean hideShadowForIncognitoNtp() {
