@@ -11,6 +11,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_request_handler_base.h"
+#include "device/fido/pin.h"
 
 namespace service_manager {
 class Connector;
@@ -21,19 +22,26 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
     : public FidoRequestHandlerBase {
  public:
-  using GetInfoCallback =
+  using ReadyCallback = base::OnceCallback<void(CtapDeviceResponseCode)>;
+  using GetPINCallback = base::RepeatingCallback<void(
+      int64_t retries,
+      base::OnceCallback<void(std::string)> pin_callback)>;
+  using ResponseCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<BioEnrollmentResponse>)>;
 
   BioEnrollmentHandler(
       service_manager::Connector* connector,
-      FidoDiscoveryFactory* factory,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
-      base::OnceClosure ready_callback);
+      ReadyCallback ready_callback,
+      GetPINCallback get_pin_callback,
+      FidoDiscoveryFactory* factory =
+          std::make_unique<FidoDiscoveryFactory>().get());
   ~BioEnrollmentHandler() override;
 
-  void GetModality(GetInfoCallback callback);
-  void GetSensorInfo(GetInfoCallback callback);
+  void GetModality(ResponseCallback);
+  void GetSensorInfo(ResponseCallback);
+  void Enroll(ResponseCallback);
 
  private:
   // FidoRequestHandlerBase:
@@ -41,13 +49,23 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   void AuthenticatorRemoved(FidoDiscoveryBase*, FidoAuthenticator*) override;
 
   void OnTouch(FidoAuthenticator* authenticator);
-  void OnGetInfo(CtapDeviceResponseCode, base::Optional<BioEnrollmentResponse>);
+  void OnRetriesResponse(CtapDeviceResponseCode,
+                         base::Optional<pin::RetriesResponse>);
+  void OnHavePIN(std::string pin);
+  void OnHaveEphemeralKey(std::string,
+                          CtapDeviceResponseCode,
+                          base::Optional<pin::KeyAgreementResponse>);
+  void OnHavePINToken(CtapDeviceResponseCode,
+                      base::Optional<pin::TokenResponse>);
+  void OnEnroll(CtapDeviceResponseCode, base::Optional<BioEnrollmentResponse>);
 
   SEQUENCE_CHECKER(sequence_checker);
 
   FidoAuthenticator* authenticator_ = nullptr;
-  base::OnceClosure ready_callback_;
-  GetInfoCallback callback_;
+  ReadyCallback ready_callback_;
+  GetPINCallback get_pin_callback_;
+  ResponseCallback response_callback_;
+  base::Optional<pin::TokenResponse> pin_token_response_;
   base::WeakPtrFactory<BioEnrollmentHandler> weak_factory_;
 
   BioEnrollmentHandler(const BioEnrollmentHandler&) = delete;

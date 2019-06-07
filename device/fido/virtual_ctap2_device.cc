@@ -1349,7 +1349,9 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
     return CtapDeviceResponseCode::kSuccess;
   }
 
-  // Check for the get-sensor-info command.
+  // Check for subcommands.
+  using SubCmd = BioEnrollmentSubCommand;
+
   it = request_map.find(
       cbor::Value(static_cast<int>(BioEnrollmentRequestKey::kSubCommand)));
   if (it == request_map.end()) {
@@ -1362,12 +1364,11 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
     return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
   }
 
-  switch (static_cast<BioEnrollmentSubCommand>(it->second.GetUnsigned())) {
-    case BioEnrollmentSubCommand::kGetFingerprintSensorInfo:
+  switch (it->second.GetUnsigned()) {
+    case static_cast<int>(SubCmd::kGetFingerprintSensorInfo):
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kModality),
           static_cast<int>(BioEnrollmentModality::kFingerprint));
-
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kFingerprintKind),
           static_cast<int>(BioEnrollmentFingerprintKind::kTouch));
@@ -1375,16 +1376,31 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
           static_cast<int>(
               BioEnrollmentResponseKey::kMaxCaptureSamplesRequiredForEnroll),
           7);
-
-      *response =
-          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
-      return CtapDeviceResponseCode::kSuccess;
-
+      break;
+    case static_cast<int>(SubCmd::kEnrollBegin):
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kTemplateId),
+          cbor::Value(std::vector<uint8_t>{0, 0, 0, 1}));
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kLastEnrollSampleStatus),
+          static_cast<int>(BioEnrollmentSampleStatus::kGood));
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples), 1);
+      break;
+    case static_cast<int>(SubCmd::kEnrollCaptureNextSample):
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kLastEnrollSampleStatus),
+          static_cast<int>(BioEnrollmentSampleStatus::kGood));
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples), 0);
+      break;
     default:
       // Handle all other commands as if they were unsupported (will change
       // when support is added).
       return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
   }
+  *response = cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+  return CtapDeviceResponseCode::kSuccess;
 }
 
 void VirtualCtap2Device::InitPendingRPs() {

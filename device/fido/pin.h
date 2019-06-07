@@ -166,7 +166,7 @@ class TokenResponse {
   std::vector<uint8_t> PinAuth(
       base::span<const uint8_t> client_data_hash) const;
 
-  const std::vector<uint8_t>& token() { return token_; }
+  const std::vector<uint8_t>& token() const { return token_; }
 
  private:
   TokenResponse();

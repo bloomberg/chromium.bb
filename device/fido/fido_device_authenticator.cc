@@ -488,8 +488,7 @@ void FidoDeviceAuthenticator::DeleteCredential(
   operation_->Start();
 }
 
-void FidoDeviceAuthenticator::GetModality(
-    GetBioEnrollmentInfoCallback callback) {
+void FidoDeviceAuthenticator::GetModality(BioEnrollmentCallback callback) {
   DCHECK(
       Options()->bio_enrollment_availability_preview !=
       AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
@@ -498,12 +497,11 @@ void FidoDeviceAuthenticator::GetModality(
       Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
       device_.get(), BioEnrollmentRequest::ForGetModality(),
       std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse),
-      nullptr);
+      /*string_fixup_predicate=*/nullptr);
   operation_->Start();
 }
 
-void FidoDeviceAuthenticator::GetSensorInfo(
-    GetBioEnrollmentInfoCallback callback) {
+void FidoDeviceAuthenticator::GetSensorInfo(BioEnrollmentCallback callback) {
   DCHECK(
       Options()->bio_enrollment_availability_preview !=
       AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
@@ -512,7 +510,51 @@ void FidoDeviceAuthenticator::GetSensorInfo(
       Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
       device_.get(), BioEnrollmentRequest::ForGetSensorInfo(),
       std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse),
-      nullptr);
+      /*string_fixup_predicate=*/nullptr);
+  operation_->Start();
+}
+
+void FidoDeviceAuthenticator::BioEnrollFingerprint(
+    pin::TokenResponse token,
+    BioEnrollmentCallback callback) {
+  DCHECK(
+      Options()->bio_enrollment_availability_preview !=
+      AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
+
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
+      device_.get(), BioEnrollmentRequest::ForEnrollBegin(token),
+      base::BindOnce(&FidoDeviceAuthenticator::OnBioEnroll,
+                     weak_factory_.GetWeakPtr(), std::move(token),
+                     std::move(callback)),
+      base::BindOnce(&BioEnrollmentResponse::Parse),
+      /*string_fixup_predicate=*/nullptr);
+  operation_->Start();
+}
+
+void FidoDeviceAuthenticator::OnBioEnroll(
+    pin::TokenResponse token,
+    BioEnrollmentCallback callback,
+    CtapDeviceResponseCode code,
+    base::Optional<BioEnrollmentResponse> bio) {
+  static base::Optional<std::vector<uint8_t>> template_id_;
+  if (code != CtapDeviceResponseCode::kSuccess || bio->remaining_samples == 0) {
+    std::move(callback).Run(code, std::move(bio));
+    return;
+  }
+  if (bio->template_id) {
+    template_id_ = std::move(bio->template_id);
+  }
+
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
+      device_.get(),
+      BioEnrollmentRequest::ForEnrollNextSample(token, *template_id_),
+      base::BindOnce(&FidoDeviceAuthenticator::OnBioEnroll,
+                     weak_factory_.GetWeakPtr(), std::move(token),
+                     std::move(callback)),
+      base::BindOnce(&BioEnrollmentResponse::Parse),
+      /*string_fixup_predicate=*/nullptr);
   operation_->Start();
 }
 

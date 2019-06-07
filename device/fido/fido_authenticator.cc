@@ -83,11 +83,16 @@ void FidoAuthenticator::DeleteCredential(
   NOTREACHED();
 }
 
-void FidoAuthenticator::GetModality(GetBioEnrollmentInfoCallback) {
+void FidoAuthenticator::GetModality(BioEnrollmentCallback) {
   NOTREACHED();
 }
 
-void FidoAuthenticator::GetSensorInfo(GetBioEnrollmentInfoCallback) {
+void FidoAuthenticator::GetSensorInfo(BioEnrollmentCallback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::BioEnrollFingerprint(pin::TokenResponse,
+                                             BioEnrollmentCallback) {
   NOTREACHED();
 }
 

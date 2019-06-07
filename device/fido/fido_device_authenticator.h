@@ -79,8 +79,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                         base::span<const uint8_t> credential_id,
                         DeleteCredentialCallback callback) override;
 
-  void GetModality(GetBioEnrollmentInfoCallback callback) override;
-  void GetSensorInfo(GetBioEnrollmentInfoCallback callback) override;
+  void GetModality(BioEnrollmentCallback callback) override;
+  void GetSensorInfo(BioEnrollmentCallback callback) override;
+  void BioEnrollFingerprint(pin::TokenResponse, BioEnrollmentCallback) override;
 
   void Reset(ResetCallback callback) override;
   void Cancel() override;
@@ -118,6 +119,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
       EnumerateCredentialsState state,
       CtapDeviceResponseCode status,
       base::Optional<EnumerateCredentialsResponse> response);
+
+  void OnBioEnroll(pin::TokenResponse,
+                   BioEnrollmentCallback callback,
+                   CtapDeviceResponseCode,
+                   base::Optional<BioEnrollmentResponse>);
 
   const std::unique_ptr<FidoDevice> device_;
   base::Optional<AuthenticatorSupportedOptions> options_;

@@ -5,43 +5,88 @@
 #include "device/fido/bio/enrollment.h"
 
 #include "components/cbor/diagnostic_writer.h"
+#include "components/cbor/writer.h"
 #include "components/device_event_log/device_event_log.h"
 
 namespace device {
 
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForGetModality() {
-  return BioEnrollmentRequest(true);
+  BioEnrollmentRequest request;
+  request.get_modality = true;
+  return request;
 }
 
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForGetSensorInfo() {
-  return BioEnrollmentRequest(
-      BioEnrollmentModality::kFingerprint,
-      BioEnrollmentSubCommand::kGetFingerprintSensorInfo);
+  BioEnrollmentRequest request;
+  request.modality = BioEnrollmentModality::kFingerprint;
+  request.subcommand = BioEnrollmentSubCommand::kGetFingerprintSensorInfo;
+  return request;
+}
+
+// static
+BioEnrollmentRequest BioEnrollmentRequest::ForEnrollBegin(
+    const pin::TokenResponse& response) {
+  BioEnrollmentRequest request;
+  request.pin_protocol = 1;
+  request.modality = BioEnrollmentModality::kFingerprint;
+  request.subcommand = BioEnrollmentSubCommand::kEnrollBegin;
+  request.pin_auth = response.PinAuth(
+      std::vector<uint8_t>{static_cast<uint8_t>(*request.modality),
+                           static_cast<uint8_t>(*request.subcommand)});
+  return request;
+}
+
+// static
+BioEnrollmentRequest BioEnrollmentRequest::ForEnrollNextSample(
+    const pin::TokenResponse& response,
+    std::vector<uint8_t> template_id) {
+  BioEnrollmentRequest request;
+  request.pin_protocol = 1;
+  request.modality = BioEnrollmentModality::kFingerprint;
+  request.subcommand = BioEnrollmentSubCommand::kEnrollCaptureNextSample;
+  request.params = cbor::Value::MapValue();
+  request.params->emplace(
+      static_cast<int>(BioEnrollmentSubCommandParam::kTemplateId),
+      cbor::Value(template_id));
+
+  std::vector<uint8_t> pin_auth =
+      *cbor::Writer::Write(cbor::Value(*request.params));
+  pin_auth.insert(pin_auth.begin(), static_cast<int>(*request.subcommand));
+  pin_auth.insert(pin_auth.begin(), static_cast<int>(*request.modality));
+
+  request.pin_auth = response.PinAuth(std::move(pin_auth));
+
+  return request;
 }
 
 BioEnrollmentRequest::BioEnrollmentRequest(BioEnrollmentRequest&&) = default;
-
+BioEnrollmentRequest& BioEnrollmentRequest::operator=(BioEnrollmentRequest&&) =
+    default;
+BioEnrollmentRequest::BioEnrollmentRequest() = default;
 BioEnrollmentRequest::~BioEnrollmentRequest() = default;
 
-BioEnrollmentRequest::BioEnrollmentRequest(bool get_modality_)
-    : get_modality(get_modality_) {}
-
-BioEnrollmentRequest::BioEnrollmentRequest(BioEnrollmentModality modality_,
-                                           BioEnrollmentSubCommand subcommand_)
-    : modality(modality_), subcommand(subcommand_) {}
+template <typename T>
+static base::Optional<T> ToBioEnrollmentEnum(uint8_t v) {
+  // Check if enum-class is in range...
+  if (v < static_cast<int>(T::kMin) || v > static_cast<int>(T::kMax)) {
+    // ...to avoid UB.
+    return base::nullopt;
+  }
+  return static_cast<T>(v);
+}
 
 // static
 base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
     const base::Optional<cbor::Value>& cbor_response) {
+  BioEnrollmentResponse response;
+
   if (!cbor_response || !cbor_response->is_map()) {
-    return base::nullopt;
+    return response;
   }
 
   const auto& response_map = cbor_response->GetMap();
-
-  BioEnrollmentResponse response;
 
   // modality
   auto it = response_map.find(
@@ -51,7 +96,10 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
       return base::nullopt;
     }
     response.modality =
-        static_cast<BioEnrollmentModality>(it->second.GetUnsigned());
+        ToBioEnrollmentEnum<BioEnrollmentModality>(it->second.GetUnsigned());
+    if (!response.modality) {
+      return base::nullopt;
+    }
   }
 
   // fingerprint kind
@@ -62,7 +110,11 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
       return base::nullopt;
     }
     response.fingerprint_kind =
-        static_cast<BioEnrollmentFingerprintKind>(it->second.GetUnsigned());
+        ToBioEnrollmentEnum<BioEnrollmentFingerprintKind>(
+            it->second.GetUnsigned());
+    if (!response.fingerprint_kind) {
+      return base::nullopt;
+    }
   }
 
   // max captures required for enroll
@@ -75,8 +127,46 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
     response.max_samples_for_enroll = it->second.GetUnsigned();
   }
 
+  // template id
+  it = response_map.find(
+      cbor::Value(static_cast<int>(BioEnrollmentResponseKey::kTemplateId)));
+  if (it != response_map.end()) {
+    if (!it->second.is_bytestring()) {
+      return base::nullopt;
+    }
+    response.template_id = it->second.GetBytestring();
+  }
+
+  // last enroll sample status
+  it = response_map.find(cbor::Value(
+      static_cast<int>(BioEnrollmentResponseKey::kLastEnrollSampleStatus)));
+  if (it != response_map.end()) {
+    if (!it->second.is_unsigned()) {
+      return base::nullopt;
+    }
+    response.last_status = ToBioEnrollmentEnum<BioEnrollmentSampleStatus>(
+        it->second.GetUnsigned());
+    if (!response.last_status) {
+      return base::nullopt;
+    }
+  }
+
+  // remaining samples
+  it = response_map.find(cbor::Value(
+      static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples)));
+  if (it != response_map.end()) {
+    if (!it->second.is_unsigned()) {
+      return base::nullopt;
+    }
+    response.remaining_samples = it->second.GetUnsigned();
+  }
+
   return response;
 }
+
+BioEnrollmentResponse::BioEnrollmentResponse() = default;
+BioEnrollmentResponse::BioEnrollmentResponse(BioEnrollmentResponse&&) = default;
+BioEnrollmentResponse::~BioEnrollmentResponse() = default;
 
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
 AsCTAPRequestValuePair(const BioEnrollmentRequest& request) {
