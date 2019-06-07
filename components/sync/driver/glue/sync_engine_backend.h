@@ -27,6 +27,7 @@
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/syncable/user_share.h"
 #include "url/gurl.h"
 
 namespace syncer {
@@ -207,6 +208,15 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
 
   // Our encryptor, which uses Chrome's encryption functions.
   SystemEncryptor encryptor_;
+
+  // We hold |user_share_| here as a dependency for |sync_encryption_handler_|.
+  // Should outlive |sync_encryption_handler_| and |sync_manager_|.
+  UserShare user_share_;
+
+  // Points to either SyncEncryptionHandlerImpl or NigoriSyncBridgeImpl
+  // depending on whether USS implementation of Nigori is enabled or not.
+  // Should outlive |sync_manager_|.
+  std::unique_ptr<SyncEncryptionHandler> sync_encryption_handler_;
 
   // The top-level syncapi entry point.  Lives on the sync thread.
   std::unique_ptr<SyncManager> sync_manager_;

@@ -17,6 +17,7 @@
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -27,6 +28,9 @@
 #include "components/sync/engine/sync_backend_registrar.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/engine/sync_manager_factory.h"
+#include "components/sync/engine_impl/sync_encryption_handler_impl.h"
+#include "components/sync/nigori/nigori_model_type_processor.h"
+#include "components/sync/nigori/nigori_sync_bridge_impl.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/user_share.h"
 
@@ -309,6 +313,16 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   DCHECK(params.registrar);
   registrar_ = std::move(params.registrar);
 
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
+    sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
+        std::make_unique<NigoriModelTypeProcessor>(), &encryptor_);
+  } else {
+    sync_encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
+        &user_share_, &encryptor_, params.restored_key_for_bootstrapping,
+        params.restored_keystore_key_for_bootstrapping,
+        base::BindRepeating(&Nigori::GenerateScryptSalt));
+  }
+
   sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
 
@@ -329,11 +343,9 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.change_delegate = registrar_.get();  // as SyncManager::ChangeDelegate
   args.authenticated_account_id = params.authenticated_account_id;
   args.invalidator_client_id = params.invalidator_client_id;
-  args.restored_key_for_bootstrapping = params.restored_key_for_bootstrapping;
-  args.restored_keystore_key_for_bootstrapping =
-      params.restored_keystore_key_for_bootstrapping;
   args.engine_components_factory = std::move(params.engine_components_factory);
-  args.encryptor = &encryptor_;
+  args.user_share = &user_share_;
+  args.encryption_handler = sync_encryption_handler_.get();
   args.unrecoverable_error_handler = params.unrecoverable_error_handler;
   args.report_unrecoverable_error_function =
       params.report_unrecoverable_error_function;

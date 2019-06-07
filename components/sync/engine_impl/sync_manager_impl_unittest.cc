@@ -35,6 +35,7 @@
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/test_engine_components_factory.h"
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
+#include "components/sync/engine_impl/sync_encryption_handler_impl.h"
 #include "components/sync/engine_impl/sync_scheduler.h"
 #include "components/sync/engine_impl/test_entry_factory.h"
 #include "components/sync/js/js_event_handler.h"
@@ -952,6 +953,11 @@ class SyncManagerTest : public testing::Test,
         std::make_unique<StrictMock<SyncEncryptionHandlerObserverMock>>();
     encryption_observer_ = encryption_observer.get();
 
+    encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
+        &user_share_, &encryptor_, /*restored_key_for_bootstrapping=*/"",
+        /*restored_keystore_key_for_bootstrapping=*/"",
+        base::BindRepeating(&Nigori::GenerateScryptSalt));
+
     SyncManager::InitArgs args;
     args.database_location = temp_dir_.GetPath();
     args.service_url = GURL("https://example.com/");
@@ -967,7 +973,8 @@ class SyncManagerTest : public testing::Test,
     args.enable_local_sync_backend = enable_local_sync_backend;
     args.local_sync_backend_folder = temp_dir_.GetPath();
     args.engine_components_factory.reset(GetFactory());
-    args.encryptor = &encryptor_;
+    args.user_share = &user_share_;
+    args.encryption_handler = encryption_handler_.get();
     args.unrecoverable_error_handler =
         MakeWeakHandle(mock_unrecoverable_error_handler_.GetWeakPtr());
     args.cancelation_signal = &cancelation_signal_;
@@ -1163,6 +1170,8 @@ class SyncManagerTest : public testing::Test,
 
  protected:
   FakeEncryptor encryptor_;
+  UserShare user_share_;
+  std::unique_ptr<SyncEncryptionHandler> encryption_handler_;
   SyncManagerImpl sync_manager_;
   CancelationSignal cancelation_signal_;
   WeakHandle<JsBackend> js_backend_;

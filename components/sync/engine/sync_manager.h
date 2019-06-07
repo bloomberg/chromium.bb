@@ -45,7 +45,6 @@ namespace syncer {
 class BaseTransaction;
 class CancelationSignal;
 class DataTypeDebugInfoListener;
-class Encryptor;
 class EngineComponentsFactory;
 class ExtensionsActivity;
 class JsBackend;
@@ -226,14 +225,13 @@ class SyncManager {
     // Unqiuely identifies this client to the invalidation notification server.
     std::string invalidator_client_id;
 
-    // Used to boostrap the cryptographer.
-    std::string restored_key_for_bootstrapping;
-    std::string restored_keystore_key_for_bootstrapping;
-
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
 
     // Must outlive SyncManager.
-    Encryptor* encryptor;
+    UserShare* user_share;
+
+    // Must outlive SyncManager.
+    SyncEncryptionHandler* encryption_handler;
 
     WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
     base::Closure report_unrecoverable_error_function;

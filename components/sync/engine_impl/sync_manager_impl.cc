@@ -26,7 +26,6 @@
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/polling_constants.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/loopback_server/loopback_connection_manager.h"
 #include "components/sync/engine_impl/model_type_connector_proxy.h"
@@ -35,9 +34,8 @@
 #include "components/sync/engine_impl/sync_scheduler.h"
 #include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/engine_impl/uss_migrator.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/nigori/nigori.h"
-#include "components/sync/nigori/nigori_model_type_processor.h"
-#include "components/sync/nigori/nigori_sync_bridge_impl.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/base_node.h"
 #include "components/sync/syncable/directory.h"
@@ -147,9 +145,11 @@ SyncManagerImpl::SyncManagerImpl(
     network::NetworkConnectionTracker* network_connection_tracker)
     : name_(name),
       network_connection_tracker_(network_connection_tracker),
+      share_(nullptr),
       change_delegate_(nullptr),
       initialized_(false),
       observing_network_connectivity_changes_(false),
+      sync_encryption_handler_(nullptr),
       weak_ptr_factory_(this) {
   // Pre-fill |notification_info_map_|.
   for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
@@ -296,18 +296,11 @@ void SyncManagerImpl::Init(InitArgs* args) {
   report_unrecoverable_error_function_ =
       args->report_unrecoverable_error_function;
 
-  allstatus_.SetHasKeystoreKey(
-      !args->restored_keystore_key_for_bootstrapping.empty());
+  DCHECK(args->user_share);
+  share_ = args->user_share;
 
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
-    sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
-        std::make_unique<NigoriModelTypeProcessor>(), args->encryptor);
-  } else {
-    sync_encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
-        &share_, args->encryptor, args->restored_key_for_bootstrapping,
-        args->restored_keystore_key_for_bootstrapping,
-        base::BindRepeating(&Nigori::GenerateScryptSalt));
-  }
+  DCHECK(args->encryption_handler);
+  sync_encryption_handler_ = args->encryption_handler;
 
   // Register for encryption related changes now. We have to do this before
   // the initial download of control types or initializing the encryption
@@ -347,7 +340,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   // Note: NigoriHandler and Cryptographer passed to Directory are nullptrs iff
   // USS implementation of Nigori is enabled.
-  share_.directory = std::make_unique<syncable::Directory>(
+  share_->directory = std::make_unique<syncable::Directory>(
       std::move(backing_store), args->unrecoverable_error_handler,
       report_unrecoverable_error_function_,
       sync_encryption_handler_->GetNigoriHandler(),
@@ -359,6 +352,9 @@ void SyncManagerImpl::Init(InitArgs* args) {
     DLOG(ERROR) << "Sync manager initialization failed!";
     return;
   }
+
+  allstatus_.SetHasKeystoreKey(
+      !sync_encryption_handler_->GetKeystoreKeysHandler()->NeedKeystoreKey());
 
   if (args->enable_local_sync_backend) {
     VLOG(1) << "Running against local sync backend.";
@@ -384,7 +380,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   allstatus_.SetInvalidatorClientId(args->invalidator_client_id);
 
   model_type_registry_ = std::make_unique<ModelTypeRegistry>(
-      args->workers, &share_, this, base::Bind(&MigrateDirectoryData),
+      args->workers, share_, this, base::Bind(&MigrateDirectoryData),
       args->cancelation_signal,
       sync_encryption_handler_->GetKeystoreKeysHandler());
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
@@ -496,7 +492,8 @@ void SyncManagerImpl::StartConfiguration() {
 }
 
 syncable::Directory* SyncManagerImpl::directory() {
-  return share_.directory.get();
+  DCHECK(share_);
+  return share_->directory.get();
 }
 
 const SyncScheduler* SyncManagerImpl::scheduler() const {
@@ -662,7 +659,10 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
     directory()->SaveChanges();
   }
 
-  share_.directory.reset();
+  // TODO(crbug.com/922900): can this be replaced with DCHECK(share_)?
+  if (share_) {
+    share_->directory.reset();
+  }
 
   change_delegate_ = nullptr;
 
@@ -1000,7 +1000,8 @@ void SyncManagerImpl::SaveChanges() {
 
 UserShare* SyncManagerImpl::GetUserShare() {
   DCHECK(initialized_);
-  return &share_;
+  DCHECK(share_);
+  return share_;
 }
 
 std::unique_ptr<ModelTypeConnector>
@@ -1033,7 +1034,8 @@ bool SyncManagerImpl::HasUnsyncedItemsForTest() {
 }
 
 SyncEncryptionHandler* SyncManagerImpl::GetEncryptionHandler() {
-  return sync_encryption_handler_.get();
+  DCHECK(sync_encryption_handler_);
+  return sync_encryption_handler_;
 }
 
 std::vector<std::unique_ptr<ProtocolEvent>>

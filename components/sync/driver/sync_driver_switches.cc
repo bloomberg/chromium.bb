@@ -75,6 +75,10 @@ const base::Feature kSyncUSSPasswords{"SyncUSSPasswords",
 const base::Feature kSyncUSSAutofillWalletMetadata{
     "SyncUSSAutofillWalletMetadata", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable USS implementation of Nigori datatype.
+const base::Feature kSyncUSSNigori{"SyncUSSNigori",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable syncing of Wi-Fi configurations.
 const base::Feature kSyncWifiConfigurations{"SyncWifiConfigurations",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
