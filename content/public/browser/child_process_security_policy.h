@@ -19,6 +19,7 @@ class FilePath;
 namespace content {
 
 class BrowserContext;
+class IsolatedOriginPattern;
 
 // The ChildProcessSecurityPolicy class is used to grant and revoke security
 // capabilities for child processes.  For example, it restricts whether a child
@@ -264,7 +265,15 @@ class ChildProcessSecurityPolicy {
   // attempts to re-add an origin for the same |browser_context| will be
   // ignored.
   virtual void AddIsolatedOrigins(
-      std::vector<url::Origin> origins,
+      const std::vector<url::Origin>& origins,
+      BrowserContext* browser_context = nullptr) = 0;
+
+  // Semantically identical to the above, but accepts IsolatedOriginPatterns, a
+  // container class which holds wildcard patterns for isolated origins, such as
+  // https://**.foo.com indicating that all domains that match the pattern are
+  // to be given their own isolated process.
+  virtual void AddIsolatedOrigins(
+      const std::vector<IsolatedOriginPattern>& patterns,
       BrowserContext* browser_context = nullptr) = 0;
 
   // Returns true if |origin| is a globally (not per-profile) isolated origin.

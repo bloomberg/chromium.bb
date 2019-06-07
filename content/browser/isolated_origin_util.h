@@ -5,10 +5,68 @@
 #ifndef CONTENT_BROWSER_ISOLATED_ORIGIN_UTIL_H_
 #define CONTENT_BROWSER_ISOLATED_ORIGIN_UTIL_H_
 
+#include <string>
+
+#include "base/gtest_prod_util.h"
+#include "base/strings/string_util.h"
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
 namespace content {
+
+// This class holds isolated origin patterns, providing support for double
+// wildcard origins, e.g. https://**.foo.com indicates that all domains under
+// foo.com are to be treated as if they are distinct isolated
+// origins. Non-wildcard origins to be isolated are also supported, e.g.
+// https://bar.com.
+class CONTENT_EXPORT IsolatedOriginPattern {
+ public:
+  explicit IsolatedOriginPattern(base::StringPiece pattern);
+  explicit IsolatedOriginPattern(const url::Origin& origin);
+  ~IsolatedOriginPattern();
+
+  // Copying and moving supported.
+  IsolatedOriginPattern(const IsolatedOriginPattern& other);
+  IsolatedOriginPattern& operator=(const IsolatedOriginPattern& other);
+
+  IsolatedOriginPattern(IsolatedOriginPattern&& other);
+  IsolatedOriginPattern& operator=(IsolatedOriginPattern&& other);
+
+  bool operator==(const IsolatedOriginPattern& other) const {
+    return pattern_ == other.pattern_ && origin_ == other.origin_ &&
+           isolate_all_subdomains_ == other.isolate_all_subdomains_;
+  }
+
+  // Returns the url::Origin corresponding to the pattern supplied at
+  // construction time or via a call to Parse. In the event of parsing failure
+  // this oriqin will be opaque.
+  const url::Origin& origin() const { return origin_; }
+
+  // True if the supplied pattern was of the form https://**.foo.com, indicating
+  // all subdomains of foo.com are to be isolated.
+  bool isolate_all_subdomains() const { return isolate_all_subdomains_; }
+
+  // Return the original pattern used to construct this instance.
+  const base::StringPiece pattern() const { return pattern_; }
+
+  // Return if this origin is valid for isolation purposes.
+  bool is_valid() const { return is_valid_; }
+
+ private:
+  friend class ChildProcessSecurityPolicyTest;
+  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest,
+                           IsolatedOriginPattern);
+
+  // Checks if |pattern| is a wildcard pattern, checks the scheme is one of
+  // {http, https} and constructs a url::Origin() that can be retrieved if
+  // parsing is successful. Returns true on successful parsing.
+  bool Parse(const base::StringPiece& pattern);
+
+  std::string pattern_;
+  url::Origin origin_;
+  bool isolate_all_subdomains_;
+  bool is_valid_;
+};
 
 class CONTENT_EXPORT IsolatedOriginUtil {
  public:
