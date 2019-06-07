@@ -124,8 +124,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         // Used by ShelfTestApi and ShelfIntegrationTestApi
         .RequireCapability("ash", "test")
         .RequireCapability("ash", "display")
-        // Only used in the classic Ash case
-        .RequireCapability("ash_pref_connector", "pref_connector")
         .RequireCapability("assistant", "assistant")
         .RequireCapability("cellular_setup", "cellular_setup")
         // Only used in the classic Ash case
@@ -146,8 +144,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability(image_annotation::mojom::kServiceName,
                            image_annotation::mojom::kAnnotationCapability)
         .RequireCapability("ime", "input_engine")
-        // Only used in the classic Ash case
-        .RequireCapability("local_state", "pref_client")
         .RequireCapability("media_gallery_util", "parse_media")
         .RequireCapability("mirroring", "mirroring")
         .RequireCapability("multidevice_setup", "multidevice_setup")

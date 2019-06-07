@@ -63,8 +63,6 @@ const service_manager::Manifest& GetManifest() {
                                         mojom::ShelfIntegrationTestApi>())
           .RequireCapability("*", "accessibility")
           .RequireCapability("*", "app")
-          .RequireCapability(prefs::mojom::kLocalStateServiceName,
-                             "pref_client")
           .RequireCapability(content::mojom::kServiceName, "navigation")
           .RequireCapability(data_decoder::mojom::kServiceName, "image_decoder")
           .RequireCapability(viz::mojom::kVizServiceName, "ozone")
