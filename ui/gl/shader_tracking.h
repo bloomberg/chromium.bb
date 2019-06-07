@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "ui/gl/gl_export.h"
 
-namespace ui {
 namespace gl {
 
 class GL_EXPORT ShaderTracking {
@@ -39,6 +38,5 @@ class GL_EXPORT ShaderTracking {
 };
 
 }  // namespace gl
-}  // namespace ui
 
 #endif  // UI_GL_SHADER_TRACKING_H_

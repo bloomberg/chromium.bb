@@ -479,8 +479,7 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   crash_keys::available_physical_memory_in_mb.Set(
       base::NumberToString(available_physical_memory));
 
-  ui::gl::ShaderTracking* shader_tracking =
-      ui::gl::ShaderTracking::GetInstance();
+  gl::ShaderTracking* shader_tracking = gl::ShaderTracking::GetInstance();
   if (shader_tracking) {
     std::string shaders[2];
     shader_tracking->GetShaders(shaders, shaders + 1);

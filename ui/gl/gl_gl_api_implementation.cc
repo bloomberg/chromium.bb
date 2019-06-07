@@ -469,8 +469,7 @@ void RealGLApi::glDepthRangeFn(GLclampd z_near, GLclampd z_far) {
 }
 
 void RealGLApi::glUseProgramFn(GLuint program) {
-  ui::gl::ShaderTracking* shader_tracking =
-      ui::gl::ShaderTracking::GetInstance();
+  ShaderTracking* shader_tracking = ShaderTracking::GetInstance();
   if (shader_tracking) {
     std::vector<char> buffers[2];
     char* strings[2] = {nullptr, nullptr};
@@ -485,8 +484,8 @@ void RealGLApi::glUseProgramFn(GLuint program) {
       GLuint shaders[2] = {0};
       glGetAttachedShadersFn(program, 2, &count, shaders);
       for (GLsizei ii = 0; ii < std::min(2, count); ++ii) {
-        buffers[ii].resize(ui::gl::ShaderTracking::kMaxShaderSize);
-        glGetShaderSourceFn(shaders[ii], ui::gl::ShaderTracking::kMaxShaderSize,
+        buffers[ii].resize(ShaderTracking::kMaxShaderSize);
+        glGetShaderSourceFn(shaders[ii], ShaderTracking::kMaxShaderSize,
                             nullptr, buffers[ii].data());
         strings[ii] = buffers[ii].data();
       }

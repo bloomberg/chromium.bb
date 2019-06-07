@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "ui/gl/gl_switches.h"
 
-namespace ui {
 namespace gl {
 
 // static
@@ -39,4 +38,3 @@ void ShaderTracking::SetShaders(const char* shader0, const char* shader1) {
 }
 
 }  // namespace gl
-}  // namespace ui
