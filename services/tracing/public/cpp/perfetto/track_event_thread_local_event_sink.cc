@@ -7,7 +7,6 @@
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/strcat.h"
-#include "base/threading/thread_id_name_manager.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_log.h"
@@ -170,9 +169,13 @@ TrackEventThreadLocalEventSink::TrackEventThreadLocalEventSink(
       interned_source_locations_(1000),
       process_id_(TraceLog::GetInstance()->process_id()),
       thread_id_(static_cast<int>(base::PlatformThread::CurrentId())),
-      privacy_filtering_enabled_(proto_writer_filtering_enabled) {}
+      privacy_filtering_enabled_(proto_writer_filtering_enabled) {
+  base::ThreadIdNameManager::GetInstance()->AddObserver(this);
+}
 
-TrackEventThreadLocalEventSink::~TrackEventThreadLocalEventSink() {}
+TrackEventThreadLocalEventSink::~TrackEventThreadLocalEventSink() {
+  base::ThreadIdNameManager::GetInstance()->RemoveObserver(this);
+}
 
 // static
 void TrackEventThreadLocalEventSink::ClearIncrementalState() {
@@ -503,25 +506,29 @@ void TrackEventThreadLocalEventSink::Flush() {
   trace_writer_->Flush();
 }
 
-void TrackEventThreadLocalEventSink::DoResetIncrementalState(
-    base::trace_event::TraceEvent* trace_event,
-    bool explicit_timestamp) {
-  interned_event_categories_.ResetEmittedState();
-  interned_event_names_.ResetEmittedState();
-  interned_annotation_names_.ResetEmittedState();
-  interned_source_locations_.ResetEmittedState();
-
-  // Emit a new thread descriptor in a separate packet, where we also set
-  // the |reset_incremental_state| field.
+void TrackEventThreadLocalEventSink::OnThreadNameChanged(const char* name) {
+  if (thread_id_ != static_cast<int>(base::PlatformThread::CurrentId()))
+    return;
   auto trace_packet = trace_writer_->NewTracePacket();
-  trace_packet->set_incremental_state_cleared(true);
-  auto* thread_descriptor = trace_packet->set_thread_descriptor();
+  EmitThreadDescriptor(&trace_packet, nullptr, true, name);
+}
+
+void TrackEventThreadLocalEventSink::EmitThreadDescriptor(
+    protozero::MessageHandle<perfetto::protos::pbzero::TracePacket>*
+        trace_packet,
+    base::trace_event::TraceEvent* trace_event,
+    bool explicit_timestamp,
+    const char* maybe_new_name) {
+  auto* thread_descriptor = (*trace_packet)->set_thread_descriptor();
   thread_descriptor->set_pid(process_id_);
   thread_descriptor->set_tid(thread_id_);
 
-  const char* const maybe_new_name =
-      base::ThreadIdNameManager::GetInstance()->GetName(thread_id_);
-  if (maybe_new_name && base::StringPiece(thread_name_) != maybe_new_name) {
+  if (!maybe_new_name) {
+    maybe_new_name =
+        base::ThreadIdNameManager::GetInstance()->GetNameForCurrentThread();
+  }
+  if (maybe_new_name && *maybe_new_name &&
+      base::StringPiece(thread_name_) != maybe_new_name) {
     thread_name_ = maybe_new_name;
     thread_type_ = GetThreadType(maybe_new_name);
   }
@@ -530,13 +537,13 @@ void TrackEventThreadLocalEventSink::DoResetIncrementalState(
   }
   thread_descriptor->set_chrome_thread_type(thread_type_);
 
-  if (explicit_timestamp) {
+  if (explicit_timestamp || !trace_event) {
     // Don't use a user-provided timestamp as a reference timestamp.
     last_timestamp_ = TRACE_TIME_TICKS_NOW();
   } else {
     last_timestamp_ = trace_event->timestamp();
   }
-  if (trace_event->thread_timestamp().is_null()) {
+  if (!trace_event || trace_event->thread_timestamp().is_null()) {
     last_thread_time_ = ThreadNow();
   } else {
     // Thread timestamp is never user-provided.
@@ -548,7 +555,21 @@ void TrackEventThreadLocalEventSink::DoResetIncrementalState(
   thread_descriptor->set_reference_thread_time_us(
       last_thread_time_.since_origin().InMicroseconds());
   // TODO(eseckler): Fill in remaining fields in ThreadDescriptor.
+}
 
+void TrackEventThreadLocalEventSink::DoResetIncrementalState(
+    base::trace_event::TraceEvent* trace_event,
+    bool explicit_timestamp) {
+  interned_event_categories_.ResetEmittedState();
+  interned_event_names_.ResetEmittedState();
+  interned_annotation_names_.ResetEmittedState();
+  interned_source_locations_.ResetEmittedState();
+
+  // Emit a new thread descriptor in a separate packet, where we also set
+  // the |incremental_state_cleared| flag.
+  auto trace_packet = trace_writer_->NewTracePacket();
+  trace_packet->set_incremental_state_cleared(true);
+  EmitThreadDescriptor(&trace_packet, trace_event, explicit_timestamp);
   reset_incremental_state_ = false;
 }
 

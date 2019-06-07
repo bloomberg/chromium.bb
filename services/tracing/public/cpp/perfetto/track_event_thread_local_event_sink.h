@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/component_export.h"
+#include "base/threading/thread_id_name_manager.h"
 #include "base/time/time.h"
 #include "services/tracing/public/cpp/perfetto/interning_index.h"
 #include "services/tracing/public/cpp/perfetto/thread_local_event_sink.h"
@@ -26,7 +27,8 @@ namespace tracing {
 
 // ThreadLocalEventSink that emits TrackEvent protos.
 class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
-    : public ThreadLocalEventSink {
+    : public ThreadLocalEventSink,
+      public base::ThreadIdNameManager::Observer {
  public:
   TrackEventThreadLocalEventSink(
       std::unique_ptr<perfetto::StartupTraceWriter> trace_writer,
@@ -47,9 +49,18 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
                       const base::ThreadTicks& thread_now) override;
   void Flush() override;
 
+  // ThreadIdNameManager::Observer implementation:
+  void OnThreadNameChanged(const char* name) override;
+
  private:
   static constexpr size_t kMaxCompleteEventDepth = 30;
 
+  void EmitThreadDescriptor(
+      protozero::MessageHandle<perfetto::protos::pbzero::TracePacket>*
+          trace_packet,
+      base::trace_event::TraceEvent* trace_event,
+      bool explicit_timestamp,
+      const char* maybe_new_name = nullptr);
   void DoResetIncrementalState(base::trace_event::TraceEvent* trace_event,
                                bool explicit_timestamp);
 
