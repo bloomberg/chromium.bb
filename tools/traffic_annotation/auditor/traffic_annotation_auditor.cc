@@ -89,7 +89,7 @@ const base::FilePath kRunToolScript =
 // TODO(https://crbug.com/690323): Update to a more general policy.
 bool PathFiltersMatch(const std::vector<std::string>& path_filters,
                       const std::string file_path) {
-  if (base::ContainsValue(path_filters, file_path))
+  if (base::Contains(path_filters, file_path))
     return true;
   for (const std::string& path_filter : path_filters) {
     if (path_filter.find(".") == std::string::npos &&
@@ -612,7 +612,7 @@ bool TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated(
     return false;
 
   // Already checked?
-  if (base::ContainsKey(checked_dependencies_, call.file_path))
+  if (base::Contains(checked_dependencies_, call.file_path))
     return checked_dependencies_[call.file_path];
 
   std::string gn_output;
@@ -732,7 +732,7 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
   }
 
   for (AnnotationInstance* instance : completing_annotations) {
-    if (!base::ContainsKey(used_completing_annotations, instance)) {
+    if (!base::Contains(used_completing_annotations, instance)) {
       errors_.push_back(
           AuditorResult(AuditorResult::Type::ERROR_INCOMPLETED_ANNOTATION,
                         instance->proto.unique_id()));

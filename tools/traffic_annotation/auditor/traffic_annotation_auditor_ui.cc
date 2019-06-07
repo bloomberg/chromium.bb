@@ -432,7 +432,7 @@ int main(int argc, char* argv[]) {
   }
 
   for (const AuditorResult& result : raw_errors) {
-    if (base::ContainsKey(warning_types, result.type()))
+    if (base::Contains(warning_types, result.type()))
       warnings.push_back(result);
     else
       errors.push_back(result);

@@ -203,11 +203,11 @@ TEST_F(TrafficAnnotationAuditorTest, GetFilesFromGit) {
 
   EXPECT_EQ(git_files.size(), base::size(kRelevantFiles));
   for (const char* filepath : kRelevantFiles) {
-    EXPECT_TRUE(base::ContainsValue(git_files, filepath));
+    EXPECT_TRUE(base::Contains(git_files, filepath));
   }
 
   for (const char* filepath : kIrrelevantFiles) {
-    EXPECT_FALSE(base::ContainsValue(git_files, filepath));
+    EXPECT_FALSE(base::Contains(git_files, filepath));
   }
 }
 
@@ -233,7 +233,7 @@ TEST_F(TrafficAnnotationAuditorTest, RelevantFilesReceived) {
   file_paths.clear();
   filter.GetRelevantFiles(base::FilePath(), ignore_list, "", &file_paths);
   EXPECT_EQ(file_paths.size(), git_files_count - 1);
-  EXPECT_FALSE(base::ContainsValue(file_paths, ignore_list[0]));
+  EXPECT_FALSE(base::Contains(file_paths, ignore_list[0]));
 
   // Check if files are filtered based on given directory.
   ignore_list.clear();
@@ -410,7 +410,7 @@ TEST_F(TrafficAnnotationAuditorTest, GetReservedIDsCoverage) {
       TrafficAnnotationAuditor::GetReservedIDsMap();
 
   for (int id : expected_ids) {
-    EXPECT_TRUE(base::ContainsKey(reserved_words, id));
+    EXPECT_TRUE(base::Contains(reserved_words, id));
     EXPECT_EQ(id, TrafficAnnotationAuditor::ComputeHashValue(
                       reserved_words.find(id)->second));
   }
