@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
 #import "ios/chrome/browser/ui/overlays/overlay_coordinator_factory+initialization.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator.h"
+#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_alert_overlay_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -35,8 +36,8 @@ void JavaScriptDialogOverlayCoordinatorTest::SetRequest(
   DCHECK(!request_);
   DCHECK(request);
   request_ = std::move(request);
-  // TODO(crbug.com/941745): Add supported overlay coordinator classes.
-  NSArray<Class>* coordinator_classes = @[];
+  NSArray<Class>* coordinator_classes =
+      @ [[JavaScriptAlertOverlayCoordinator class]];
   OverlayRequestCoordinatorFactory* factory =
       [[OverlayRequestCoordinatorFactory alloc]
                                     initWithBrowser:browser_.get()
