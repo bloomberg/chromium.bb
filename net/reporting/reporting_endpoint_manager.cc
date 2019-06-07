@@ -50,7 +50,7 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
     int total_weight = 0;
 
     for (const ReportingEndpoint endpoint : endpoints) {
-      if (base::ContainsKey(endpoint_backoff_, endpoint.info.url) &&
+      if (base::Contains(endpoint_backoff_, endpoint.info.url) &&
           endpoint_backoff_[endpoint.info.url]->ShouldRejectRequest()) {
         continue;
       }
@@ -102,7 +102,7 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
   }
 
   void InformOfEndpointRequest(const GURL& endpoint, bool succeeded) override {
-    if (!base::ContainsKey(endpoint_backoff_, endpoint)) {
+    if (!base::Contains(endpoint_backoff_, endpoint)) {
       endpoint_backoff_[endpoint] = std::make_unique<BackoffEntry>(
           &policy().endpoint_backoff_policy, tick_clock());
     }

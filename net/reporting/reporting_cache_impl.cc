@@ -53,7 +53,7 @@ ReportingCacheImpl::~ReportingCacheImpl() {
   // all remaining reports (doomed or not).
   for (auto it = reports_.begin(); it != reports_.end(); ++it) {
     ReportingReport* report = it->second.get();
-    if (!base::ContainsKey(doomed_reports_, report))
+    if (!base::Contains(doomed_reports_, report))
       report->outcome = ReportingReport::Outcome::ERASED_REPORTING_SHUT_DOWN;
     report->RecordOutcome(now);
   }
@@ -84,7 +84,7 @@ void ReportingCacheImpl::AddReport(const GURL& url,
     DCHECK_NE(nullptr, to_evict);
     // The newly-added report isn't pending, so even if all other reports are
     // pending, the cache should have a report to evict.
-    DCHECK(!base::ContainsKey(pending_reports_, to_evict));
+    DCHECK(!base::Contains(pending_reports_, to_evict));
     reports_[to_evict]->outcome = ReportingReport::Outcome::ERASED_EVICTED;
     RemoveReportInternal(to_evict);
   }
@@ -96,7 +96,7 @@ void ReportingCacheImpl::GetReports(
     std::vector<const ReportingReport*>* reports_out) const {
   reports_out->clear();
   for (const auto& it : reports_) {
-    if (!base::ContainsKey(doomed_reports_, it.first))
+    if (!base::Contains(doomed_reports_, it.first))
       reports_out->push_back(it.second.get());
   }
 }
@@ -131,9 +131,9 @@ base::Value ReportingCacheImpl::GetReportsAsValue() const {
     if (report->body) {
       report_dict.SetKey("body", report->body->Clone());
     }
-    if (base::ContainsKey(doomed_reports_, report)) {
+    if (base::Contains(doomed_reports_, report)) {
       report_dict.SetKey("status", base::Value("doomed"));
-    } else if (base::ContainsKey(pending_reports_, report)) {
+    } else if (base::Contains(pending_reports_, report)) {
       report_dict.SetKey("status", base::Value("pending"));
     } else {
       report_dict.SetKey("status", base::Value("queued"));
@@ -147,8 +147,8 @@ void ReportingCacheImpl::GetNonpendingReports(
     std::vector<const ReportingReport*>* reports_out) const {
   reports_out->clear();
   for (const auto& it : reports_) {
-    if (!base::ContainsKey(pending_reports_, it.first) &&
-        !base::ContainsKey(doomed_reports_, it.first)) {
+    if (!base::Contains(pending_reports_, it.first) &&
+        !base::Contains(doomed_reports_, it.first)) {
       reports_out->push_back(it.second.get());
     }
   }
@@ -169,7 +169,7 @@ void ReportingCacheImpl::ClearReportsPending(
   for (const ReportingReport* report : reports) {
     size_t erased = pending_reports_.erase(report);
     DCHECK_EQ(1u, erased);
-    if (base::ContainsKey(doomed_reports_, report)) {
+    if (base::Contains(doomed_reports_, report)) {
       reports_to_remove.push_back(report);
       doomed_reports_.erase(report);
     }
@@ -182,7 +182,7 @@ void ReportingCacheImpl::ClearReportsPending(
 void ReportingCacheImpl::IncrementReportsAttempts(
     const std::vector<const ReportingReport*>& reports) {
   for (const ReportingReport* report : reports) {
-    DCHECK(base::ContainsKey(reports_, report));
+    DCHECK(base::Contains(reports_, report));
     reports_[report]->attempts++;
   }
 
@@ -216,10 +216,10 @@ void ReportingCacheImpl::RemoveReports(
     ReportingReport::Outcome outcome) {
   for (const ReportingReport* report : reports) {
     reports_[report]->outcome = outcome;
-    if (base::ContainsKey(pending_reports_, report)) {
+    if (base::Contains(pending_reports_, report)) {
       doomed_reports_.insert(report);
     } else {
-      DCHECK(!base::ContainsKey(doomed_reports_, report));
+      DCHECK(!base::Contains(doomed_reports_, report));
       RemoveReportInternal(report);
     }
   }
@@ -232,7 +232,7 @@ void ReportingCacheImpl::RemoveAllReports(ReportingReport::Outcome outcome) {
   for (auto it = reports_.begin(); it != reports_.end(); ++it) {
     ReportingReport* report = it->second.get();
     report->outcome = outcome;
-    if (!base::ContainsKey(pending_reports_, report))
+    if (!base::Contains(pending_reports_, report))
       reports_to_remove.push_back(report);
     else
       doomed_reports_.insert(report);
@@ -250,12 +250,12 @@ size_t ReportingCacheImpl::GetFullReportCountForTesting() const {
 
 bool ReportingCacheImpl::IsReportPendingForTesting(
     const ReportingReport* report) const {
-  return base::ContainsKey(pending_reports_, report);
+  return base::Contains(pending_reports_, report);
 }
 
 bool ReportingCacheImpl::IsReportDoomedForTesting(
     const ReportingReport* report) const {
-  return base::ContainsKey(doomed_reports_, report);
+  return base::Contains(doomed_reports_, report);
 }
 
 void ReportingCacheImpl::OnParsedHeader(
@@ -411,7 +411,7 @@ ReportingCacheImpl::GetCandidateEndpointsForDelivery(
       // Client for a superdomain of |origin|
       const OriginClient& client = client_it->second;
       // Check if |client| has a group with the requested name.
-      if (!base::ContainsKey(client.endpoint_group_names, group_name))
+      if (!base::Contains(client.endpoint_group_names, group_name))
         continue;
 
       ReportingEndpointGroupKey group_key(client.origin, group_name);
@@ -576,7 +576,7 @@ const ReportingReport* ReportingCacheImpl::FindReportToEvict() const {
 
   for (const auto& it : reports_) {
     const ReportingReport* report = it.first;
-    if (base::ContainsKey(pending_reports_, report))
+    if (base::Contains(pending_reports_, report))
       continue;
     if (!earliest_queued || report->queued < earliest_queued->queued) {
       earliest_queued = report;
@@ -601,7 +601,7 @@ void ReportingCacheImpl::SanityCheckClients() const {
     total_endpoint_group_count += SanityCheckOriginClient(domain, client);
 
     // We have not seen a duplicate client with the same origin.
-    DCHECK(!base::ContainsKey(origins_in_cache, client.origin));
+    DCHECK(!base::Contains(origins_in_cache, client.origin));
     origins_in_cache.insert(client.origin);
   }
 
@@ -672,7 +672,7 @@ size_t ReportingCacheImpl::SanityCheckEndpointGroup(
 
     // We have not seen a duplicate endpoint with the same URL in this
     // group.
-    DCHECK(!base::ContainsKey(endpoint_urls_in_group, endpoint.info.url));
+    DCHECK(!base::Contains(endpoint_urls_in_group, endpoint.info.url));
     endpoint_urls_in_group.insert(endpoint.info.url);
 
     ++endpoint_count_in_group;
@@ -693,14 +693,14 @@ void ReportingCacheImpl::SanityCheckEndpoint(
   DCHECK_LE(0, endpoint.info.weight);
 
   // The endpoint is in the |endpoint_its_by_url_| index.
-  DCHECK(base::ContainsKey(endpoint_its_by_url_, endpoint.info.url));
+  DCHECK(base::Contains(endpoint_its_by_url_, endpoint.info.url));
   auto url_range = endpoint_its_by_url_.equal_range(endpoint.info.url);
   std::vector<EndpointMap::iterator> endpoint_its_for_url;
   for (auto index_it = url_range.first; index_it != url_range.second;
        ++index_it) {
     endpoint_its_for_url.push_back(index_it->second);
   }
-  DCHECK(base::ContainsValue(endpoint_its_for_url, endpoint_it));
+  DCHECK(base::Contains(endpoint_its_for_url, endpoint_it));
 #endif  // DCHECK_IS_ON()
 }
 
@@ -822,7 +822,7 @@ void ReportingCacheImpl::RemoveEndpointsInGroupOtherThan(
 
   const auto group_range = endpoints_.equal_range(group_key);
   for (auto it = group_range.first; it != group_range.second;) {
-    if (base::ContainsKey(endpoints_to_keep_urls, it->second.info.url)) {
+    if (base::Contains(endpoints_to_keep_urls, it->second.info.url)) {
       ++it;
       continue;
     }

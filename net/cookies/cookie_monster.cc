@@ -523,7 +523,7 @@ void CookieMonster::SetPersistSessionCookies(bool persist_session_cookies) {
 bool CookieMonster::IsCookieableScheme(const std::string& scheme) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return base::ContainsValue(cookieable_schemes_, scheme);
+  return base::Contains(cookieable_schemes_, scheme);
 }
 
 const char* const CookieMonster::kDefaultCookieableSchemes[] = {"http", "https",

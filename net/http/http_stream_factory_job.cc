@@ -362,10 +362,10 @@ bool HttpStreamFactory::Job::ShouldForceQuic(HttpNetworkSession* session,
   // handled by the socket pools, using an HttpProxyConnectJob.
   if (proxy_info.is_quic())
     return !using_ssl;
-  return (base::ContainsKey(session->params().origins_to_force_quic_on,
-                            HostPortPair()) ||
-          base::ContainsKey(session->params().origins_to_force_quic_on,
-                            destination)) &&
+  return (base::Contains(session->params().origins_to_force_quic_on,
+                         HostPortPair()) ||
+          base::Contains(session->params().origins_to_force_quic_on,
+                         destination)) &&
          proxy_info.is_direct() && origin_url.SchemeIs(url::kHttpsScheme);
 }
 

@@ -330,7 +330,7 @@ TEST(MimeUtilTest, TestGetExtensionsForMimeType) {
           test.contained_result,
           test.contained_result + strlen(test.contained_result));
 
-      bool found = base::ContainsValue(extensions, contained_result);
+      bool found = base::Contains(extensions, contained_result);
 
       ASSERT_TRUE(found) << "Must find at least the contained result within "
                          << test.mime_type;

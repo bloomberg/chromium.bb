@@ -496,7 +496,7 @@ void SpdySessionPool::RemoveRequestForSpdySession(SpdySessionRequest* request) {
                        weak_ptr_factory_.GetWeakPtr(), request->key()));
   }
 
-  DCHECK(base::ContainsKey(iter->second.request_set, request));
+  DCHECK(base::Contains(iter->second.request_set, request));
   RemoveRequestInternal(iter, iter->second.request_set.find(request));
 }
 
@@ -563,7 +563,7 @@ bool SpdySessionPool::IsSessionAvailable(
 void SpdySessionPool::MapKeyToAvailableSession(
     const SpdySessionKey& key,
     const base::WeakPtr<SpdySession>& session) {
-  DCHECK(base::ContainsKey(sessions_, session.get()));
+  DCHECK(base::Contains(sessions_, session.get()));
   std::pair<AvailableSessionMap::iterator, bool> result =
       available_sessions_.insert(std::make_pair(key, session));
   CHECK(result.second);

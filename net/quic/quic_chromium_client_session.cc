@@ -1012,12 +1012,12 @@ void QuicChromiumClientSession::AddHandle(Handle* handle) {
     return;
   }
 
-  DCHECK(!base::ContainsKey(handles_, handle));
+  DCHECK(!base::Contains(handles_, handle));
   handles_.insert(handle);
 }
 
 void QuicChromiumClientSession::RemoveHandle(Handle* handle) {
-  DCHECK(base::ContainsKey(handles_, handle));
+  DCHECK(base::Contains(handles_, handle));
   handles_.erase(handle);
 }
 

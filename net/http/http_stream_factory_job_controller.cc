@@ -1243,7 +1243,7 @@ bool HttpStreamFactory::JobController::IsQuicWhitelistedForHost(
     return true;
 
   std::string lowered_host = base::ToLowerASCII(host);
-  return base::ContainsKey(host_whitelist, lowered_host);
+  return base::Contains(host_whitelist, lowered_host);
 }
 
 }  // namespace net

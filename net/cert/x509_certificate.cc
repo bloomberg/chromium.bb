@@ -439,13 +439,13 @@ bool X509Certificate::IsIssuedByEncoded(
   std::string normalized_cert_issuer;
   if (!GetNormalizedCertIssuer(cert_buffer_.get(), &normalized_cert_issuer))
     return false;
-  if (base::ContainsValue(normalized_issuers, normalized_cert_issuer))
+  if (base::Contains(normalized_issuers, normalized_cert_issuer))
     return true;
 
   for (const auto& intermediate : intermediate_ca_certs_) {
     if (!GetNormalizedCertIssuer(intermediate.get(), &normalized_cert_issuer))
       return false;
-    if (base::ContainsValue(normalized_issuers, normalized_cert_issuer))
+    if (base::Contains(normalized_issuers, normalized_cert_issuer))
       return true;
   }
   return false;
@@ -488,7 +488,7 @@ bool X509Certificate::VerifyHostname(
     base::StringPiece ip_addr_string(
         reinterpret_cast<const char*>(host_info.address),
         host_info.AddressLength());
-    return base::ContainsValue(cert_san_ip_addrs, ip_addr_string);
+    return base::Contains(cert_san_ip_addrs, ip_addr_string);
   }
 
   // |reference_domain| is the remainder of |host| after the leading host

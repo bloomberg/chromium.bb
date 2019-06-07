@@ -293,14 +293,14 @@ HttpNetworkSession::~HttpNetworkSession() {
 
 void HttpNetworkSession::AddResponseDrainer(
     std::unique_ptr<HttpResponseBodyDrainer> drainer) {
-  DCHECK(!base::ContainsKey(response_drainers_, drainer.get()));
+  DCHECK(!base::Contains(response_drainers_, drainer.get()));
   HttpResponseBodyDrainer* drainer_ptr = drainer.get();
   response_drainers_[drainer_ptr] = std::move(drainer);
 }
 
 void HttpNetworkSession::RemoveResponseDrainer(
     HttpResponseBodyDrainer* drainer) {
-  DCHECK(base::ContainsKey(response_drainers_, drainer));
+  DCHECK(base::Contains(response_drainers_, drainer));
   response_drainers_[drainer].release();
   response_drainers_.erase(drainer);
 }

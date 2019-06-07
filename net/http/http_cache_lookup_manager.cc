@@ -71,7 +71,7 @@ void HttpCacheLookupManager::OnPush(
   GURL pushed_url = push_helper->GetURL();
 
   // There's a pending lookup transaction sent over already.
-  if (base::ContainsKey(lookup_transactions_, pushed_url))
+  if (base::Contains(lookup_transactions_, pushed_url))
     return;
 
   auto lookup = std::make_unique<LookupTransaction>(std::move(push_helper),

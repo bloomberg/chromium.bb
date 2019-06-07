@@ -1284,7 +1284,7 @@ bool QuicStreamFactory::CanUseExistingSession(const QuicSessionKey& session_key,
   if (active_sessions_.empty())
     return false;
 
-  if (base::ContainsKey(active_sessions_, session_key))
+  if (base::Contains(active_sessions_, session_key))
     return true;
 
   for (const auto& key_value : active_sessions_) {
@@ -1450,7 +1450,7 @@ bool QuicStreamFactory::HasMatchingIpSession(const QuicSessionAliasKey& key,
   const quic::QuicServerId& server_id(key.server_id());
   DCHECK(!HasActiveSession(key.session_key()));
   for (const IPEndPoint& address : address_list) {
-    if (!base::ContainsKey(ip_aliases_, address))
+    if (!base::Contains(ip_aliases_, address))
       continue;
 
     const SessionSet& sessions = ip_aliases_[address];
@@ -1515,7 +1515,7 @@ void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
   }
   ProcessGoingAwaySession(session, all_sessions_[session].server_id(), false);
   if (!aliases.empty()) {
-    DCHECK(base::ContainsKey(session_peer_ip_, session));
+    DCHECK(base::Contains(session_peer_ip_, session));
     const IPEndPoint peer_address = session_peer_ip_[session];
     ip_aliases_[peer_address].erase(session);
     if (ip_aliases_[peer_address].empty())
@@ -1729,16 +1729,16 @@ bool QuicStreamFactory::HasActiveSession(
   // TODO(rtenneti): crbug.com/498823 - delete active_sessions_.empty() check.
   if (active_sessions_.empty())
     return false;
-  return base::ContainsKey(active_sessions_, session_key);
+  return base::Contains(active_sessions_, session_key);
 }
 
 bool QuicStreamFactory::HasActiveJob(const QuicSessionKey& session_key) const {
-  return base::ContainsKey(active_jobs_, session_key);
+  return base::Contains(active_jobs_, session_key);
 }
 
 bool QuicStreamFactory::HasActiveCertVerifierJob(
     const quic::QuicServerId& server_id) const {
-  return base::ContainsKey(active_cert_verifier_jobs_, server_id);
+  return base::Contains(active_cert_verifier_jobs_, server_id);
 }
 
 int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
@@ -1921,7 +1921,7 @@ int QuicStreamFactory::CreateSession(
   writer->set_delegate(*session);
 
   (*session)->Initialize();
-  bool closed_during_initialize = !base::ContainsKey(all_sessions_, *session) ||
+  bool closed_during_initialize = !base::Contains(all_sessions_, *session) ||
                                   !(*session)->connection()->connected();
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ClosedDuringInitializeSession",
                         closed_during_initialize);
@@ -1946,9 +1946,9 @@ void QuicStreamFactory::ActivateSession(const QuicSessionAliasKey& key,
   session_aliases_[session].insert(key);
   const IPEndPoint peer_address =
       ToIPEndPoint(session->connection()->peer_address());
-  DCHECK(!base::ContainsKey(ip_aliases_[peer_address], session));
+  DCHECK(!base::Contains(ip_aliases_[peer_address], session));
   ip_aliases_[peer_address].insert(session);
-  DCHECK(!base::ContainsKey(session_peer_ip_, session));
+  DCHECK(!base::Contains(session_peer_ip_, session));
   session_peer_ip_[session] = peer_address;
 }
 

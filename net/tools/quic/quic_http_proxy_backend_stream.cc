@@ -147,7 +147,7 @@ void QuicHttpProxyBackendStream::CopyHeaders(
     // Ignore the spdy headers
     if (!key.empty() && key[0] != ':') {
       // Remove hop-by-hop headers
-      if (base::ContainsKey(kHopHeaders, key)) {
+      if (base::Contains(kHopHeaders, key)) {
         LOG(INFO) << "QUIC Proxy Ignoring Hop-by-hop Request Header: " << key
                   << ":" << value;
       } else {
@@ -371,7 +371,7 @@ spdy::SpdyHeaderBlock QuicHttpProxyBackendStream::getAsQuicHeaders(
       if (header_name.compare("status") != 0) {
         if (header_name.compare("content-encoding") != 0) {
           // Remove hop-by-hop headers
-          if (base::ContainsKey(kHopHeaders, header_name)) {
+          if (base::Contains(kHopHeaders, header_name)) {
             LOG(INFO) << "Quic Proxy Ignoring Hop-by-hop Response Header: "
                       << header_name << ":" << header_value;
           } else {

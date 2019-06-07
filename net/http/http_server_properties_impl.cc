@@ -92,7 +92,7 @@ void HttpServerPropertiesImpl::SetAlternativeServiceServers(
     url::SchemeHostPort canonical_server(kCanonicalScheme, canonical_suffix,
                                          kCanonicalPort);
     // If we already have a valid canonical server, we're done.
-    if (base::ContainsKey(canonical_alt_svc_map_, canonical_server) &&
+    if (base::Contains(canonical_alt_svc_map_, canonical_server) &&
         (alternative_service_map_.Peek(
              canonical_alt_svc_map_[canonical_server]) !=
          alternative_service_map_.end())) {

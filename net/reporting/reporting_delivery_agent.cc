@@ -170,7 +170,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       const url::Origin& report_origin = origin_group.first;
       const std::string& group = origin_group.second;
 
-      if (base::ContainsKey(pending_origin_groups_, origin_group))
+      if (base::Contains(pending_origin_groups_, origin_group))
         continue;
 
       const ReportingEndpoint endpoint =

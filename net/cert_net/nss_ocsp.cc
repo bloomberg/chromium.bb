@@ -519,12 +519,12 @@ void OCSPIOLoop::PostTaskToIOLoop(const base::Location& from_here,
 }
 
 void OCSPIOLoop::AddRequest(OCSPRequestSession* request) {
-  DCHECK(!base::ContainsKey(requests_, request));
+  DCHECK(!base::Contains(requests_, request));
   requests_.insert(request);
 }
 
 void OCSPIOLoop::RemoveRequest(OCSPRequestSession* request) {
-  DCHECK(base::ContainsKey(requests_, request));
+  DCHECK(base::Contains(requests_, request));
   requests_.erase(request);
 }
 

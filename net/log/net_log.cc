@@ -191,7 +191,7 @@ void NetLog::UpdateIsCapturing() {
 
 bool NetLog::HasObserver(ThreadSafeObserver* observer) {
   lock_.AssertAcquired();
-  return base::ContainsValue(observers_, observer);
+  return base::Contains(observers_, observer);
 }
 
 // static

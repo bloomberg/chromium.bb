@@ -959,12 +959,10 @@ SpdySession::SpdySession(
       NetLogEventType::HTTP2_SESSION,
       base::Bind(&NetLogSpdySessionCallback, &host_port_proxy_pair()));
 
+  DCHECK(base::Contains(initial_settings_, spdy::SETTINGS_HEADER_TABLE_SIZE));
   DCHECK(
-      base::ContainsKey(initial_settings_, spdy::SETTINGS_HEADER_TABLE_SIZE));
-  DCHECK(base::ContainsKey(initial_settings_,
-                           spdy::SETTINGS_MAX_CONCURRENT_STREAMS));
-  DCHECK(
-      base::ContainsKey(initial_settings_, spdy::SETTINGS_INITIAL_WINDOW_SIZE));
+      base::Contains(initial_settings_, spdy::SETTINGS_MAX_CONCURRENT_STREAMS));
+  DCHECK(base::Contains(initial_settings_, spdy::SETTINGS_INITIAL_WINDOW_SIZE));
 
   if (greased_http2_frame_) {
     // See https://tools.ietf.org/html/draft-bishop-httpbis-grease-00
@@ -1335,7 +1333,7 @@ void SpdySession::ResetStream(spdy::SpdyStreamId stream_id,
 }
 
 bool SpdySession::IsStreamActive(spdy::SpdyStreamId stream_id) const {
-  return base::ContainsKey(active_streams_, stream_id);
+  return base::Contains(active_streams_, stream_id);
 }
 
 LoadState SpdySession::GetLoadState() const {

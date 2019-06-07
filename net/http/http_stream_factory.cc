@@ -256,8 +256,8 @@ bool HttpStreamFactory::OnInitConnection(const JobController& controller,
   PreconnectingProxyServer preconnecting_proxy_server(proxy_info.proxy_server(),
                                                       privacy_mode);
 
-  if (base::ContainsKey(preconnecting_proxy_servers_,
-                        preconnecting_proxy_server)) {
+  if (base::Contains(preconnecting_proxy_servers_,
+                     preconnecting_proxy_server)) {
     UMA_HISTOGRAM_EXACT_LINEAR("Net.PreconnectSkippedToProxyServers", 1, 2);
     // Skip preconnect to the proxy server since we are already preconnecting
     // (probably via some other job). See https://crbug.com/682041 for details.
