@@ -79,8 +79,22 @@ void RecordFaviconServerGroupingMetric(FaviconRequestOrigin origin,
 const bool kFallbackToHost = true;
 
 // Parameter used for local bitmap queries by page url.
-favicon_base::IconTypeSet GetIconTypesForLocalQuery() {
-  return favicon_base::IconTypeSet{favicon_base::IconType::kFavicon};
+favicon_base::IconTypeSet GetIconTypesForLocalQuery(
+    FaviconRequestPlatform platform) {
+  // The value must agree with the one written in the local data for retrieved
+  // server icons so that we can find them on the second lookup. This depends on
+  // whether the caller is a mobile UI or not.
+  switch (platform) {
+    case FaviconRequestPlatform::kMobile:
+      return favicon_base::IconTypeSet{
+          favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
+          favicon_base::IconType::kTouchPrecomposedIcon,
+          favicon_base::IconType::kWebManifestIcon};
+    case FaviconRequestPlatform::kDesktop:
+      return favicon_base::IconTypeSet{favicon_base::IconType::kFavicon};
+  }
+  NOTREACHED();
+  return favicon_base::IconTypeSet{};
 }
 
 bool CanOriginQueryGoogleServer(FaviconRequestOrigin origin) {
@@ -92,6 +106,7 @@ bool CanOriginQueryGoogleServer(FaviconRequestOrigin origin) {
     case FaviconRequestOrigin::UNKNOWN:
       return false;
   }
+  NOTREACHED();
   return false;
 }
 
@@ -101,17 +116,15 @@ GURL GetGroupIdentifier(const GURL& page_url, const GURL& icon_url) {
   return !icon_url.is_empty() ? icon_url : page_url;
 }
 
-}  // namespace
-
-// static
-bool FaviconRequestHandler::CanQueryGoogleServer(
-    LargeIconService* large_icon_service,
-    FaviconRequestOrigin origin,
-    bool can_send_history_data) {
+bool CanQueryGoogleServer(LargeIconService* large_icon_service,
+                          FaviconRequestOrigin origin,
+                          bool can_send_history_data) {
   return large_icon_service && CanOriginQueryGoogleServer(origin) &&
          can_send_history_data &&
          base::FeatureList::IsEnabled(kEnableHistoryFaviconsGoogleServerQuery);
 }
+
+}  // namespace
 
 FaviconRequestHandler::FaviconRequestHandler() {}
 
@@ -122,6 +135,7 @@ void FaviconRequestHandler::GetRawFaviconForPageURL(
     int desired_size_in_pixel,
     favicon_base::FaviconRawBitmapCallback callback,
     FaviconRequestOrigin request_origin,
+    FaviconRequestPlatform request_platform,
     FaviconService* favicon_service,
     LargeIconService* large_icon_service,
     const GURL& icon_url_for_uma,
@@ -137,14 +151,14 @@ void FaviconRequestHandler::GetRawFaviconForPageURL(
 
   // First attempt to find the icon locally.
   favicon_service->GetRawFaviconForPageURL(
-      page_url, GetIconTypesForLocalQuery(), desired_size_in_pixel,
-      kFallbackToHost,
+      page_url, GetIconTypesForLocalQuery(request_platform),
+      desired_size_in_pixel, kFallbackToHost,
       base::BindOnce(&FaviconRequestHandler::OnBitmapLocalDataAvailable,
                      weak_ptr_factory_.GetWeakPtr(), page_url,
                      desired_size_in_pixel,
                      /*response_callback=*/std::move(callback), request_origin,
-                     favicon_service, large_icon_service, icon_url_for_uma,
-                     std::move(synced_favicon_getter),
+                     request_platform, favicon_service, large_icon_service,
+                     icon_url_for_uma, std::move(synced_favicon_getter),
                      CanQueryGoogleServer(large_icon_service, request_origin,
                                           can_send_history_data),
                      tracker),
@@ -187,6 +201,7 @@ void FaviconRequestHandler::OnBitmapLocalDataAvailable(
     int desired_size_in_pixel,
     favicon_base::FaviconRawBitmapCallback response_callback,
     FaviconRequestOrigin origin,
+    FaviconRequestPlatform platform,
     FaviconService* favicon_service,
     LargeIconService* large_icon_service,
     const GURL& icon_url_for_uma,
@@ -207,8 +222,15 @@ void FaviconRequestHandler::OnBitmapLocalDataAvailable(
     base::RepeatingCallback<void(const favicon_base::FaviconRawBitmapResult&)>
         repeating_response_callback =
             base::AdaptCallbackForRepeating(std::move(response_callback));
+    // TODO(victorvianna): Set |min_source_size_in_pixel| correctly.
+    std::unique_ptr<FaviconServerFetcherParams> server_parameters =
+        platform == FaviconRequestPlatform::kMobile
+            ? FaviconServerFetcherParams::CreateForMobile(
+                  page_url, /*min_source_size_in_pixel=*/1,
+                  desired_size_in_pixel)
+            : FaviconServerFetcherParams::CreateForDesktop(page_url);
     RequestFromGoogleServer(
-        page_url,
+        page_url, std::move(server_parameters),
         /*empty_response_callback=*/
         base::BindOnce(repeating_response_callback,
                        favicon_base::FaviconRawBitmapResult()),
@@ -216,8 +238,8 @@ void FaviconRequestHandler::OnBitmapLocalDataAvailable(
         base::BindOnce(
             base::IgnoreResult(&FaviconService::GetRawFaviconForPageURL),
             base::Unretained(favicon_service), page_url,
-            GetIconTypesForLocalQuery(), desired_size_in_pixel, kFallbackToHost,
-            repeating_response_callback, tracker),
+            GetIconTypesForLocalQuery(platform), desired_size_in_pixel,
+            kFallbackToHost, repeating_response_callback, tracker),
         large_icon_service, icon_url_for_uma, origin);
     return;
   }
@@ -262,8 +284,10 @@ void FaviconRequestHandler::OnImageLocalDataAvailable(
     base::RepeatingCallback<void(const favicon_base::FaviconImageResult&)>
         repeating_response_callback =
             base::AdaptCallbackForRepeating(std::move(response_callback));
+    // We use CreateForDesktop because GetFaviconImageForPageURL is only called
+    // by desktop.
     RequestFromGoogleServer(
-        page_url,
+        page_url, FaviconServerFetcherParams::CreateForDesktop(page_url),
         /*empty_response_callback=*/
         base::BindOnce(repeating_response_callback,
                        favicon_base::FaviconImageResult()),
@@ -296,6 +320,7 @@ void FaviconRequestHandler::OnImageLocalDataAvailable(
 
 void FaviconRequestHandler::RequestFromGoogleServer(
     const GURL& page_url,
+    std::unique_ptr<FaviconServerFetcherParams> server_parameters,
     base::OnceClosure empty_response_callback,
     base::OnceClosure local_lookup_callback,
     LargeIconService* large_icon_service,
@@ -345,7 +370,7 @@ void FaviconRequestHandler::RequestFromGoogleServer(
       /* default_value= */ false);
   large_icon_service
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-          FaviconServerFetcherParams::CreateForDesktop(page_url),
+          std::move(server_parameters),
           /*may_page_url_be_private=*/true, should_trim_url_path,
           traffic_annotation,
           base::BindOnce(&FaviconRequestHandler::OnGoogleServerDataAvailable,
