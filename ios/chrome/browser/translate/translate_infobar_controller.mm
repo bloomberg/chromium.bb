@@ -161,13 +161,12 @@ enum class InfobarEvent {
 - (UIView*)infobarView {
   TranslateInfobarView* infobarView =
       [[TranslateInfobarView alloc] initWithFrame:CGRectZero];
+  // |_infobarView| is referenced inside |-updateUIForTranslateStep:|.
+  _infobarView = infobarView;
   infobarView.sourceLanguage = self.sourceLanguage;
   infobarView.targetLanguage = self.targetLanguage;
   infobarView.delegate = self;
-  infobarView.state =
-      [self translateInfobarViewStateForTranslateStep:self.infoBarDelegate
-                                                          ->translate_step()];
-  _infobarView = infobarView;
+  [self updateUIForTranslateStep:self.infoBarDelegate->translate_step()];
   return infobarView;
 }
 
@@ -176,13 +175,7 @@ enum class InfobarEvent {
 - (void)translateInfoBarDelegate:(translate::TranslateInfoBarDelegate*)delegate
           didChangeTranslateStep:(translate::TranslateStep)step
                    withErrorType:(translate::TranslateErrors::Type)errorType {
-  _infobarView.state = [self translateInfobarViewStateForTranslateStep:step];
-
-  if (step == translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR) {
-    [self.translateNotificationHandler
-        showTranslateNotificationWithDelegate:self
-                             notificationType:TranslateNotificationTypeError];
-  }
+  [self updateUIForTranslateStep:step];
 
   if (step == translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR ||
       step == translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE) {
@@ -484,20 +477,27 @@ enum class InfobarEvent {
 
 #pragma mark - Private
 
-// Returns the infobar view state for the given translate::TranslateStep.
-- (TranslateInfobarViewState)translateInfobarViewStateForTranslateStep:
-    (translate::TranslateStep)step {
+// Updates the infobar view state for the given translate::TranslateStep. Shows
+// an error for translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR.
+- (void)updateUIForTranslateStep:(translate::TranslateStep)step {
   switch (step) {
-    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
     case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
-      return TranslateInfobarViewStateBeforeTranslate;
+      [self.translateNotificationHandler
+          showTranslateNotificationWithDelegate:self
+                               notificationType:TranslateNotificationTypeError];
+      FALLTHROUGH;
+    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
+      _infobarView.state = TranslateInfobarViewStateBeforeTranslate;
+      break;
     case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
-      return TranslateInfobarViewStateTranslating;
+      _infobarView.state = TranslateInfobarViewStateTranslating;
+      break;
     case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE:
-      return TranslateInfobarViewStateAfterTranslate;
+      _infobarView.state = TranslateInfobarViewStateAfterTranslate;
+      break;
     case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
       NOTREACHED() << "Translate infobar should never be in this state.";
-      return TranslateInfobarViewStateBeforeTranslate;
+      break;
   }
 }
 
