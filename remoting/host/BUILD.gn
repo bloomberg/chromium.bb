@@ -511,6 +511,7 @@ source_set("unit_tests") {
     "policy_watcher_unittest.cc",
     "process_stats_sender_unittest.cc",
     "remote_input_filter_unittest.cc",
+    "remoting_register_support_host_request_unittest.cc",
     "resizing_host_observer_unittest.cc",
     "resources_unittest.cc",
     "screen_resolution_unittest.cc",
