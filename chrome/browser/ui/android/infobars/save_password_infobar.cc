@@ -39,9 +39,7 @@ SavePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   base::android::ScopedJavaLocalRef<jobject> infobar;
   infobar.Reset(Java_SavePasswordInfoBar_show(
-      env, GetEnumeratedIconId(), message_text,
-      save_password_delegate->message_link_range().start(),
-      save_password_delegate->message_link_range().end(), details_message_text,
+      env, GetEnumeratedIconId(), message_text, details_message_text,
       ok_button_text, cancel_button_text));
 
   java_infobar_.Reset(env, infobar.obj());

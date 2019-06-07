@@ -255,6 +255,10 @@ bool PasswordFormManager::IsNewLogin() const {
   return is_new_login_;
 }
 
+FormFetcher* PasswordFormManager::GetFormFetcher() {
+  return form_fetcher_;
+}
+
 bool PasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
   return pending_credentials_.is_public_suffix_match;
 }
@@ -875,7 +879,7 @@ void PasswordFormManager::SetGenerationPopupWasShown(
 bool PasswordFormManager::IsPasswordUpdate() const {
   return (!GetBestMatches().empty() &&
           IsPossibleChangePasswordFormWithoutUsername()) ||
-         IsPasswordOverridden() || retry_password_form_password_update_;
+         password_overridden_ || retry_password_form_password_update_;
 }
 
 void PasswordFormManager::LogSubmitPassed() {
@@ -903,13 +907,14 @@ const PasswordForm* PasswordFormManager::GetSubmittedForm() const {
   return submitted_form_.get();
 }
 
-FormFetcher* PasswordFormManager::GetFormFetcher() {
-  return form_fetcher_;
-}
-
 const std::map<base::string16, const autofill::PasswordForm*>&
 PasswordFormManager::GetBestMatches() const {
   return best_matches_;
+}
+
+std::vector<const autofill::PasswordForm*>
+PasswordFormManager::GetFederatedMatches() const {
+  return form_fetcher_->GetFederatedMatches();
 }
 
 const GURL& PasswordFormManager::GetOrigin() const {
@@ -929,18 +934,19 @@ PasswordFormMetricsRecorder* PasswordFormManager::GetMetricsRecorder() {
   return metrics_recorder_.get();
 }
 
-const std::vector<const autofill::PasswordForm*>&
+base::span<const autofill::PasswordForm* const>
 PasswordFormManager::GetBlacklistedMatches() const {
-  return blacklisted_matches_;
+  return base::make_span(blacklisted_matches_);
+}
+
+base::span<const InteractionsStats> PasswordFormManager::GetInteractionsStats()
+    const {
+  return base::make_span(form_fetcher_->GetInteractionsStats());
 }
 
 bool PasswordFormManager::IsBlacklisted() const {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   return !blacklisted_matches_.empty();
-}
-
-bool PasswordFormManager::IsPasswordOverridden() const {
-  return password_overridden_;
 }
 
 void PasswordFormManager::ResetStoredMatches() {

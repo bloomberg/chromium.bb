@@ -128,17 +128,18 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
                                    const base::string16& password);
 
   // PasswordFormManagerForUI:
-  FormFetcher* GetFormFetcher() override;
   const GURL& GetOrigin() const override;
   const std::map<base::string16, const autofill::PasswordForm*>&
   GetBestMatches() const override;
+  std::vector<const autofill::PasswordForm*> GetFederatedMatches()
+      const override;
   const autofill::PasswordForm& GetPendingCredentials() const override;
   metrics_util::CredentialSourceType GetCredentialSource() override;
   PasswordFormMetricsRecorder* GetMetricsRecorder() override;
-  const std::vector<const autofill::PasswordForm*>& GetBlacklistedMatches()
+  base::span<const autofill::PasswordForm* const> GetBlacklistedMatches()
       const override;
+  base::span<const InteractionsStats> GetInteractionsStats() const override;
   bool IsBlacklisted() const override;
-  bool IsPasswordOverridden() const override;
 
   void Save() override;
   void Update(const autofill::PasswordForm& credentials_to_update) override;
@@ -153,6 +154,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
 
   // PasswordFormManagerInterface:
   bool IsNewLogin() const override;
+  FormFetcher* GetFormFetcher() override;
   bool IsPendingCredentialsPublicSuffixMatch() const override;
   void PresaveGeneratedPassword(const autofill::PasswordForm& form) override;
   void PasswordNoLongerGenerated() override;

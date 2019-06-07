@@ -956,7 +956,7 @@ TEST_F(NewPasswordFormManagerTest, OverridePassword) {
   EXPECT_TRUE(
       form_manager_->ProvisionallySave(submitted_form, &driver_, false));
   EXPECT_FALSE(form_manager_->IsNewLogin());
-  EXPECT_TRUE(form_manager_->IsPasswordOverridden());
+  EXPECT_TRUE(form_manager_->IsPasswordUpdate());
 
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
   PasswordForm updated_form;
@@ -992,7 +992,6 @@ TEST_F(NewPasswordFormManagerTest, UpdatePasswordOnChangePasswordForm) {
   EXPECT_TRUE(
       form_manager_->ProvisionallySave(submitted_form, &driver_, false));
   EXPECT_FALSE(form_manager_->IsNewLogin());
-  EXPECT_TRUE(form_manager_->IsPasswordOverridden());
   EXPECT_TRUE(form_manager_->IsPasswordUpdate());
 
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
@@ -1121,7 +1120,7 @@ TEST_F(NewPasswordFormManagerTest, UpdateUsernameToAlreadyExisting) {
 
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
   EXPECT_FALSE(form_manager_->IsNewLogin());
-  EXPECT_TRUE(form_manager_->IsPasswordOverridden());
+  EXPECT_TRUE(form_manager_->IsPasswordUpdate());
 }
 
 TEST_F(NewPasswordFormManagerTest, UpdatePasswordValueEmptyStore) {
@@ -1164,7 +1163,7 @@ TEST_F(NewPasswordFormManagerTest, UpdatePasswordValueToAlreadyExisting) {
 
   CheckPendingCredentials(saved_match_, form_manager_->GetPendingCredentials());
   EXPECT_FALSE(form_manager_->IsNewLogin());
-  EXPECT_FALSE(form_manager_->IsPasswordOverridden());
+  EXPECT_FALSE(form_manager_->IsPasswordUpdate());
 }
 
 TEST_F(NewPasswordFormManagerTest, UpdatePasswordValueMultiplePasswordFields) {
@@ -1918,7 +1917,7 @@ TEST_F(NewPasswordFormManagerTest, HTTPAuthAlreadySaved) {
   // in state new login nor password overridden.
   ASSERT_TRUE(form_manager_->ProvisionallySaveHttpAuthForm(http_auth_form));
   EXPECT_FALSE(form_manager_->IsNewLogin());
-  EXPECT_FALSE(form_manager_->IsPasswordOverridden());
+  EXPECT_FALSE(form_manager_->IsPasswordUpdate());
 }
 
 TEST_F(NewPasswordFormManagerTest, HTTPAuthPasswordOverridden) {
@@ -1945,7 +1944,7 @@ TEST_F(NewPasswordFormManagerTest, HTTPAuthPasswordOverridden) {
   ASSERT_TRUE(
       form_manager_->ProvisionallySaveHttpAuthForm(submitted_http_auth_form));
   EXPECT_FALSE(form_manager_->IsNewLogin());
-  EXPECT_TRUE(form_manager_->IsPasswordOverridden());
+  EXPECT_TRUE(form_manager_->IsPasswordUpdate());
 
   // Check that the password is updated in the stored credential.
   PasswordForm updated_form;

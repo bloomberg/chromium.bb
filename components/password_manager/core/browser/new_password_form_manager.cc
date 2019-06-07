@@ -28,6 +28,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 
 using autofill::FormData;
 using autofill::FormFieldData;
@@ -206,10 +207,6 @@ bool NewPasswordFormManager::IsEqualToSubmittedForm(
   return false;
 }
 
-FormFetcher* NewPasswordFormManager::GetFormFetcher() {
-  return form_fetcher_;
-}
-
 const GURL& NewPasswordFormManager::GetOrigin() const {
   if (IsHttpAuth())
     return observed_http_auth_digest_->origin;
@@ -219,6 +216,11 @@ const GURL& NewPasswordFormManager::GetOrigin() const {
 const std::map<base::string16, const PasswordForm*>&
 NewPasswordFormManager::GetBestMatches() const {
   return best_matches_;
+}
+
+std::vector<const autofill::PasswordForm*>
+NewPasswordFormManager::GetFederatedMatches() const {
+  return form_fetcher_->GetFederatedMatches();
 }
 
 const PasswordForm& NewPasswordFormManager::GetPendingCredentials() const {
@@ -234,17 +236,18 @@ PasswordFormMetricsRecorder* NewPasswordFormManager::GetMetricsRecorder() {
   return metrics_recorder_.get();
 }
 
-const std::vector<const PasswordForm*>&
+base::span<const autofill::PasswordForm* const>
 NewPasswordFormManager::GetBlacklistedMatches() const {
-  return blacklisted_matches_;
+  return base::make_span(blacklisted_matches_);
+}
+
+base::span<const InteractionsStats>
+NewPasswordFormManager::GetInteractionsStats() const {
+  return base::make_span(form_fetcher_->GetInteractionsStats());
 }
 
 bool NewPasswordFormManager::IsBlacklisted() const {
   return !blacklisted_matches_.empty();
-}
-
-bool NewPasswordFormManager::IsPasswordOverridden() const {
-  return password_overridden_;
 }
 
 void NewPasswordFormManager::Save() {
@@ -411,6 +414,10 @@ bool NewPasswordFormManager::IsNewLogin() const {
   return is_new_login_;
 }
 
+FormFetcher* NewPasswordFormManager::GetFormFetcher() {
+  return form_fetcher_;
+}
+
 bool NewPasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
   return pending_credentials_.is_public_suffix_match;
 }
@@ -460,7 +467,7 @@ bool NewPasswordFormManager::IsPossibleChangePasswordFormWithoutUsername()
 }
 
 bool NewPasswordFormManager::IsPasswordUpdate() const {
-  return IsPasswordOverridden();
+  return password_overridden_;
 }
 
 std::vector<base::WeakPtr<PasswordManagerDriver>>
