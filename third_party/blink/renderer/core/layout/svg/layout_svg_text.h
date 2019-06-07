@@ -78,7 +78,7 @@ class LayoutSVGText final : public LayoutSVGBlock {
                    const HitTestLocation& location_in_parent,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   void UpdateLayout() override;
 

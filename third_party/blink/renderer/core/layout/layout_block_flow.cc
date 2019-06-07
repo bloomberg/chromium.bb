@@ -4613,7 +4613,7 @@ void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
 }
 
 PositionWithAffinity LayoutBlockFlow::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   if (IsAtomicInlineLevel()) {
     PositionWithAffinity position =
         PositionForPointIfOutsideAtomicInlineLevel(point);
@@ -4623,9 +4623,9 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
   if (!ChildrenInline())
     return LayoutBlock::PositionForPoint(point);
 
-  LayoutPoint point_in_contents = point;
+  PhysicalOffset point_in_contents = point;
   OffsetForContents(point_in_contents);
-  LayoutPoint point_in_logical_contents(point_in_contents);
+  LayoutPoint point_in_logical_contents = FlipForWritingMode(point_in_contents);
   if (!IsHorizontalWritingMode())
     point_in_logical_contents = point_in_logical_contents.TransposedPoint();
 
@@ -4720,7 +4720,8 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
       if (!IsHorizontalWritingMode())
         point = point.TransposedPoint();
       return PositionForPointRespectingEditingBoundaries(
-          LineLayoutBox(closest_box->GetLineLayoutItem()), point);
+          LineLayoutBox(closest_box->GetLineLayoutItem()),
+          FlipForWritingMode(point));
     }
 
     // pass the box a top position that is inside it
@@ -4728,7 +4729,8 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
                       closest_box->Root().BlockDirectionPointInLine());
     if (!IsHorizontalWritingMode())
       point = point.TransposedPoint();
-    return closest_box->GetLineLayoutItem().PositionForPoint(point);
+    return closest_box->GetLineLayoutItem().PositionForPoint(
+        FlipForWritingMode(point));
   }
 
   if (last_root_box_with_children) {

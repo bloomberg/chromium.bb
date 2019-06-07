@@ -133,12 +133,8 @@ base::Optional<PositionWithAffinity> PositionForPointInChild(
   const bool should_fallback = child.PhysicalFragment().IsBlockFlow() ||
                                child.PhysicalFragment().IsLegacyLayoutRoot();
   const PositionWithAffinity result =
-      should_fallback
-          ? child.GetLayoutObject()->PositionForPoint(
-                // Flip because LayoutObject::PositionForPoint() requires
-                // flipped physical coordinates.
-                child.GetLayoutObject()->FlipForWritingMode(child_point))
-          : child.PositionForPoint(child_point);
+      should_fallback ? child.GetLayoutObject()->PositionForPoint(child_point)
+                      : child.PositionForPoint(child_point);
   if (result.IsNotNull())
     return result;
   return base::nullopt;

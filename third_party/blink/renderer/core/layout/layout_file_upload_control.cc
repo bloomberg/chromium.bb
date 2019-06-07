@@ -153,7 +153,7 @@ void LayoutFileUploadControl::ComputePreferredLogicalWidths() {
 }
 
 PositionWithAffinity LayoutFileUploadControl::PositionForPoint(
-    const LayoutPoint&) const {
+    const PhysicalOffset&) const {
   return PositionWithAffinity();
 }
 

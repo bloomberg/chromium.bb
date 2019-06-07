@@ -475,15 +475,17 @@ void LayoutMultiColumnSet::ComputeLogicalHeight(
 }
 
 PositionWithAffinity LayoutMultiColumnSet::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
+  LayoutPoint flipped_point = FlipForWritingMode(point);
   // Convert the visual point to a flow thread point.
   const MultiColumnFragmentainerGroup& row =
-      FragmentainerGroupAtVisualPoint(point);
+      FragmentainerGroupAtVisualPoint(flipped_point);
   LayoutPoint flow_thread_point = row.VisualPointToFlowThreadPoint(
-      point + row.OffsetFromColumnSet(),
+      flipped_point + row.OffsetFromColumnSet(),
       MultiColumnFragmentainerGroup::kSnapToColumn);
   // Then drill into the flow thread, where we'll find the actual content.
-  return FlowThread()->PositionForPoint(flow_thread_point);
+  return FlowThread()->PositionForPoint(
+      FlowThread()->FlipForWritingMode(flow_thread_point));
 }
 
 LayoutUnit LayoutMultiColumnSet::ColumnGap() const {

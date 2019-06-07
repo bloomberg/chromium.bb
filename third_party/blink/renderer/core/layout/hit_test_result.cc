@@ -144,7 +144,7 @@ PositionWithAffinity HitTestResult::GetPosition() const {
     return PositionWithAffinity(MostForwardCaretPosition(
         Position(inner_node_, PositionAnchorType::kBeforeChildren)));
   }
-  return layout_object->PositionForPoint(FlippedLocalPoint());
+  return layout_object->PositionForPoint(LocalPoint());
 }
 
 LayoutObject* HitTestResult::GetLayoutObject() const {
@@ -500,12 +500,6 @@ Node* HitTestResult::InnerNodeOrImageMapImage() const {
     return inner_node_.Get();
 
   return image_map_image_element;
-}
-
-LayoutPoint HitTestResult::FlippedLocalPoint() const {
-  if (!inner_node_ || !inner_node_->GetLayoutObject())
-    return local_point_.ToLayoutPoint();
-  return inner_node_->GetLayoutObject()->FlipForWritingMode(local_point_);
 }
 
 }  // namespace blink

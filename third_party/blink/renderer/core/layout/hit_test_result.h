@@ -112,9 +112,6 @@ class CORE_EXPORT HitTestResult {
 
   // The hit-tested point in the coordinates of the inner node.
   const PhysicalOffset& LocalPoint() const { return local_point_; }
-  // TODO(wangxianzhu): This is used in PositionForPoint() where we still
-  // expect flipped blocks coordinates.
-  LayoutPoint FlippedLocalPoint() const;
   void SetNodeAndPosition(Node* node, const PhysicalOffset& p) {
     local_point_ = p;
     SetInnerNode(node);

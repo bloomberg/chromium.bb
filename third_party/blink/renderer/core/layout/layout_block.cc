@@ -1310,15 +1310,13 @@ static inline bool IsEditingBoundary(const LayoutObject* ancestor,
 // prevent crossing editable boundaries. This would require many tests.
 PositionWithAffinity LayoutBlock::PositionForPointRespectingEditingBoundaries(
     LineLayoutBox child,
-    const LayoutPoint& point_in_parent_coordinates) const {
-  LayoutPoint child_location = child.Location();
+    const PhysicalOffset& point_in_parent_coordinates) const {
+  PhysicalOffset child_location = child.PhysicalLocation();
   if (child.IsInFlowPositioned())
-    child_location += child.OffsetForInFlowPosition().ToLayoutPoint();
+    child_location += child.OffsetForInFlowPosition();
 
-  // FIXME: This is wrong if the child's writing-mode is different from the
-  // parent's.
-  LayoutPoint point_in_child_coordinates(
-      ToLayoutPoint(point_in_parent_coordinates - child_location));
+  PhysicalOffset point_in_child_coordinates =
+      point_in_parent_coordinates - child_location;
 
   // If this is an anonymous layoutObject, we just recur normally
   const Node* child_node = child.NonPseudoNode();
@@ -1341,8 +1339,8 @@ PositionWithAffinity LayoutBlock::PositionForPointRespectingEditingBoundaries(
   // to the logical left or logical right of the child
   LayoutUnit child_middle = LogicalWidthForChildSize(child.Size()) / 2;
   LayoutUnit logical_left = IsHorizontalWritingMode()
-                                ? point_in_child_coordinates.X()
-                                : point_in_child_coordinates.Y();
+                                ? point_in_child_coordinates.left
+                                : point_in_child_coordinates.top;
   if (logical_left < child_middle)
     return ancestor->CreatePositionWithAffinity(child_node->NodeIndex());
   return ancestor->CreatePositionWithAffinity(child_node->NodeIndex() + 1,
@@ -1350,27 +1348,18 @@ PositionWithAffinity LayoutBlock::PositionForPointRespectingEditingBoundaries(
 }
 
 PositionWithAffinity LayoutBlock::PositionForPointIfOutsideAtomicInlineLevel(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   DCHECK(IsAtomicInlineLevel());
-  // FIXME: This seems wrong when the object's writing-mode doesn't match the
-  // line's writing-mode.
-  LayoutUnit point_logical_left =
-      IsHorizontalWritingMode() ? point.X() : point.Y();
-  LayoutUnit point_logical_top =
-      IsHorizontalWritingMode() ? point.Y() : point.X();
-
-  const bool is_ltr = IsLtr(ResolvedDirection());
-  if (point_logical_left < 0) {
-    return CreatePositionWithAffinity(is_ltr ? CaretMinOffset()
-                                             : CaretMaxOffset());
-  }
-  if (point_logical_left >= LogicalWidth()) {
-    return CreatePositionWithAffinity(is_ltr ? CaretMaxOffset()
-                                             : CaretMinOffset());
-  }
-  if (point_logical_top < 0)
+  LogicalOffset logical_offset =
+      point.ConvertToLogical(StyleRef().GetWritingMode(), ResolvedDirection(),
+                             PhysicalSize(Size()), PhysicalSize());
+  if (logical_offset.inline_offset < 0)
     return CreatePositionWithAffinity(CaretMinOffset());
-  if (point_logical_top >= LogicalHeight())
+  if (logical_offset.inline_offset >= LogicalWidth())
+    return CreatePositionWithAffinity(CaretMaxOffset());
+  if (logical_offset.block_offset < 0)
+    return CreatePositionWithAffinity(CaretMinOffset());
+  if (logical_offset.block_offset >= LogicalHeight())
     return CreatePositionWithAffinity(CaretMaxOffset());
   return PositionWithAffinity();
 }
@@ -1382,7 +1371,7 @@ static inline bool IsChildHitTestCandidate(LayoutBox* box) {
 }
 
 PositionWithAffinity LayoutBlock::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   if (IsTable())
     return LayoutBox::PositionForPoint(point);
 
@@ -1393,9 +1382,9 @@ PositionWithAffinity LayoutBlock::PositionForPoint(
       return position;
   }
 
-  LayoutPoint point_in_contents = point;
+  PhysicalOffset point_in_contents = point;
   OffsetForContents(point_in_contents);
-  LayoutPoint point_in_logical_contents(point_in_contents);
+  LayoutPoint point_in_logical_contents = FlipForWritingMode(point_in_contents);
   if (!IsHorizontalWritingMode())
     point_in_logical_contents = point_in_logical_contents.TransposedPoint();
 
@@ -1434,15 +1423,6 @@ PositionWithAffinity LayoutBlock::PositionForPoint(
   // We only get here if there are no hit test candidate children below the
   // click.
   return LayoutBox::PositionForPoint(point);
-}
-
-void LayoutBlock::OffsetForContents(LayoutPoint& offset) const {
-  offset = DeprecatedFlipForWritingMode(offset);
-
-  if (HasOverflowClip())
-    offset += LayoutSize(ScrolledContentOffset());
-
-  offset = DeprecatedFlipForWritingMode(offset);
 }
 
 void LayoutBlock::OffsetForContents(PhysicalOffset& offset) const {

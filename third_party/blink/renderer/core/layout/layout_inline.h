@@ -358,7 +358,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
       TransformState&,
       VisualRectFlags = kDefaultVisualRectFlags) const final;
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   IntRect BorderBoundingBox() const final {
     IntRect bounding_box = EnclosingIntRect(PhysicalLinesBoundingBox());

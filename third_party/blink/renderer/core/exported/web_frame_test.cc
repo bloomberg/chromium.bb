@@ -6028,7 +6028,7 @@ TEST_F(WebFrameTest, SmartClipDoesNotCrashPositionReversed) {
 }
 
 static int ComputeOffset(LayoutObject* layout_object, int x, int y) {
-  return layout_object->PositionForPoint(LayoutPoint(x, y))
+  return layout_object->PositionForPoint(PhysicalOffset(x, y))
       .GetPosition()
       .ComputeOffsetInContainerNode();
 }

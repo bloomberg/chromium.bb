@@ -3273,7 +3273,8 @@ void LayoutObject::Destroy() {
   delete this;
 }
 
-PositionWithAffinity LayoutObject::PositionForPoint(const LayoutPoint&) const {
+PositionWithAffinity LayoutObject::PositionForPoint(
+    const PhysicalOffset&) const {
   return CreatePositionWithAffinity(CaretMinOffset());
 }
 

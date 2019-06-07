@@ -722,7 +722,7 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
 }  // namespace
 
 PositionWithAffinity LayoutText::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   if (const LayoutBlockFlow* ng_block_flow = ContainingNGBlockFlow())
     return ng_block_flow->PositionForPoint(point);
 
@@ -730,10 +730,11 @@ PositionWithAffinity LayoutText::PositionForPoint(
   if (!FirstTextBox() || TextLength() == 0)
     return CreatePositionWithAffinity(0);
 
+  LayoutPoint flipped_point = FlipForWritingMode(point);
   LayoutUnit point_line_direction =
-      FirstTextBox()->IsHorizontal() ? point.X() : point.Y();
+      IsHorizontalWritingMode() ? flipped_point.X() : flipped_point.Y();
   LayoutUnit point_block_direction =
-      FirstTextBox()->IsHorizontal() ? point.Y() : point.X();
+      IsHorizontalWritingMode() ? flipped_point.Y() : flipped_point.X();
   bool blocks_are_flipped = StyleRef().IsFlippedBlocksWritingMode();
 
   InlineTextBox* last_box = nullptr;

@@ -352,15 +352,15 @@ bool LayoutSVGText::NodeAtPoint(HitTestResult& result,
 }
 
 PositionWithAffinity LayoutSVGText::PositionForPoint(
-    const LayoutPoint& point_in_contents) const {
+    const PhysicalOffset& point_in_contents) const {
   RootInlineBox* root_box = FirstRootBox();
   if (!root_box)
     return CreatePositionWithAffinity(0);
 
-  LayoutPoint clipped_point_in_contents(point_in_contents);
-  clipped_point_in_contents.MoveBy(-root_box->Location());
+  PhysicalOffset clipped_point_in_contents(point_in_contents);
+  clipped_point_in_contents -= root_box->PhysicalLocation();
   clipped_point_in_contents.ClampNegativeToZero();
-  clipped_point_in_contents.MoveBy(root_box->Location());
+  clipped_point_in_contents += root_box->PhysicalLocation();
 
   DCHECK(!root_box->NextRootBox());
   DCHECK(ChildrenInline());
@@ -372,7 +372,7 @@ PositionWithAffinity LayoutSVGText::PositionForPoint(
     return CreatePositionWithAffinity(0);
 
   return closest_box->GetLineLayoutItem().PositionForPoint(
-      LayoutPoint(clipped_point_in_contents.X(), closest_box->Y()));
+      PhysicalOffset(clipped_point_in_contents.left, closest_box->Y()));
 }
 
 void LayoutSVGText::AbsoluteQuads(Vector<FloatQuad>& quads,

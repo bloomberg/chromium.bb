@@ -122,7 +122,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void LocalQuadsInFlippedBlocksDirection(Vector<FloatQuad>&,
                                           ClippingOption = kNoClipping) const;
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   bool Is8Bit() const { return text_.Is8Bit(); }
   const LChar* Characters8() const { return text_.Impl()->Characters8(); }

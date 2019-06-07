@@ -54,7 +54,7 @@ bool LayoutNGListMarker::NeedsOccupyWholeLine() const {
 }
 
 PositionWithAffinity LayoutNGListMarker::PositionForPoint(
-    const LayoutPoint&) const {
+    const PhysicalOffset&) const {
   return CreatePositionWithAffinity(0);
 }
 

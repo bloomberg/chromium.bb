@@ -48,7 +48,7 @@ class LayoutNGMixin : public Base {
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) final;
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   const NGPaintFragment* PaintFragment() const final {
     // TODO(layout-dev) crbug.com/963103

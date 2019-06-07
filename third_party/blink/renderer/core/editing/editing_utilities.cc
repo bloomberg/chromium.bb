@@ -1333,10 +1333,7 @@ PositionWithAffinity PositionRespectingEditingBoundary(
     target_object = editable_object;
   }
 
-  // TODO(wangxianzhu): LayoutObject::PositionForPoint() still expects flipped
-  // coordinates.
-  return target_object->PositionForPoint(
-      target_object->FlipForWritingMode(selection_end_point));
+  return target_object->PositionForPoint(selection_end_point);
 }
 
 Position ComputePositionForNodeRemoval(const Position& position,

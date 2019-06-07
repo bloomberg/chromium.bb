@@ -1462,7 +1462,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                            const PhysicalOffset& accumulated_offset,
                            HitTestAction);
 
-  virtual PositionWithAffinity PositionForPoint(const LayoutPoint&) const;
+  virtual PositionWithAffinity PositionForPoint(const PhysicalOffset&) const;
   PositionWithAffinity CreatePositionWithAffinity(int offset,
                                                   TextAffinity) const;
   PositionWithAffinity CreatePositionWithAffinity(int offset) const;

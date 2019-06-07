@@ -1104,7 +1104,7 @@ bool LayoutInline::HitTestCulledInline(
 }
 
 PositionWithAffinity LayoutInline::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   // FIXME: Does not deal with relative positioned inlines (should it?)
 
   // If there are continuations, test them first because our containing block

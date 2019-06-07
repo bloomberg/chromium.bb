@@ -5223,7 +5223,7 @@ LayoutRect LayoutBox::LocalCaretRect(
 }
 
 PositionWithAffinity LayoutBox::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   // no children...return this layout object's element, if there is one, and
   // offset 0
   LayoutObject* first_child = SlowFirstChild();
@@ -5234,12 +5234,10 @@ PositionWithAffinity LayoutBox::PositionForPoint(
 
   if (IsTable() && NonPseudoNode()) {
     const Node& node = *NonPseudoNode();
-    LayoutUnit right = Size().Width() - VerticalScrollbarWidth();
-    LayoutUnit bottom = Size().Height() - HorizontalScrollbarHeight();
-
-    if (point.X() < 0 || point.X() > right || point.Y() < 0 ||
-        point.Y() > bottom) {
-      if (point.X() <= right / 2) {
+    LayoutUnit x_in_block_direction = FlipForWritingMode(point.left);
+    if (x_in_block_direction < 0 || x_in_block_direction > Size().Width() ||
+        point.top < 0 || point.top > Size().Height()) {
+      if (x_in_block_direction <= Size().Width() / 2) {
         return CreatePositionWithAffinity(FirstPositionInOrBeforeNode(node));
       }
       return CreatePositionWithAffinity(LastPositionInOrAfterNode(node));
@@ -5249,9 +5247,9 @@ PositionWithAffinity LayoutBox::PositionForPoint(
   // Pass off to the closest child.
   LayoutUnit min_dist = LayoutUnit::Max();
   LayoutBox* closest_layout_object = nullptr;
-  LayoutPoint adjusted_point = point;
+  PhysicalOffset adjusted_point = point;
   if (IsTableRow())
-    adjusted_point.MoveBy(Location());
+    adjusted_point += PhysicalLocation();
 
   for (LayoutObject* layout_object = first_child; layout_object;
        layout_object = layout_object->NextSibling()) {
@@ -5270,55 +5268,58 @@ PositionWithAffinity LayoutBox::PositionForPoint(
     LayoutUnit bottom = top + layout_box->ContentHeight();
     LayoutUnit left =
         layout_box->BorderLeft() + layout_box->PaddingLeft() +
-        (IsTableRow() ? LayoutUnit() : layout_box->Location().X());
+        (IsTableRow() ? LayoutUnit() : layout_box->PhysicalLocation().left);
     LayoutUnit right = left + layout_box->ContentWidth();
 
-    if (point.X() <= right && point.X() >= left && point.Y() <= top &&
-        point.Y() >= bottom) {
-      if (layout_box->IsTableRow())
+    if (point.left <= right && point.left >= left && point.top <= top &&
+        point.top >= bottom) {
+      if (layout_box->IsTableRow()) {
         return layout_box->PositionForPoint(point + adjusted_point -
-                                            layout_box->LocationOffset());
-      return layout_box->PositionForPoint(point - layout_box->LocationOffset());
+                                            layout_box->PhysicalLocation());
+      }
+      return layout_box->PositionForPoint(point -
+                                          layout_box->PhysicalLocation());
     }
 
     // Find the distance from (x, y) to the box.  Split the space around the box
     // into 8 pieces and use a different compare depending on which piece (x, y)
     // is in.
-    LayoutPoint cmp;
-    if (point.X() > right) {
-      if (point.Y() < top)
-        cmp = LayoutPoint(right, top);
-      else if (point.Y() > bottom)
-        cmp = LayoutPoint(right, bottom);
+    PhysicalOffset cmp;
+    if (point.left > right) {
+      if (point.top < top)
+        cmp = PhysicalOffset(right, top);
+      else if (point.top > bottom)
+        cmp = PhysicalOffset(right, bottom);
       else
-        cmp = LayoutPoint(right, point.Y());
-    } else if (point.X() < left) {
-      if (point.Y() < top)
-        cmp = LayoutPoint(left, top);
-      else if (point.Y() > bottom)
-        cmp = LayoutPoint(left, bottom);
+        cmp = PhysicalOffset(right, point.top);
+    } else if (point.left < left) {
+      if (point.top < top)
+        cmp = PhysicalOffset(left, top);
+      else if (point.top > bottom)
+        cmp = PhysicalOffset(left, bottom);
       else
-        cmp = LayoutPoint(left, point.Y());
+        cmp = PhysicalOffset(left, point.top);
     } else {
-      if (point.Y() < top)
-        cmp = LayoutPoint(point.X(), top);
+      if (point.top < top)
+        cmp = PhysicalOffset(point.left, top);
       else
-        cmp = LayoutPoint(point.X(), bottom);
+        cmp = PhysicalOffset(point.left, bottom);
     }
 
-    LayoutSize difference = cmp - point;
+    PhysicalOffset difference = cmp - point;
 
-    LayoutUnit dist = difference.Width() * difference.Width() +
-                      difference.Height() * difference.Height();
+    LayoutUnit dist =
+        difference.left * difference.left + difference.top * difference.top;
     if (dist < min_dist) {
       closest_layout_object = layout_box;
       min_dist = dist;
     }
   }
 
-  if (closest_layout_object)
+  if (closest_layout_object) {
     return closest_layout_object->PositionForPoint(
-        adjusted_point - closest_layout_object->LocationOffset());
+        adjusted_point - closest_layout_object->PhysicalLocation());
+  }
   return CreatePositionWithAffinity(
       NonPseudoNode() ? FirstPositionInOrBeforeNode(*NonPseudoNode())
                       : Position());
@@ -5879,19 +5880,6 @@ LayoutUnit LayoutBox::OffsetTop(const Element* parent) const {
   return OffsetPoint(parent).top;
 }
 
-LayoutPoint LayoutBox::FlipForWritingModeForChild(
-    const LayoutBox* child,
-    const LayoutPoint& point) const {
-  if (!StyleRef().IsFlippedBlocksWritingMode())
-    return point;
-
-  // The child is going to add in its x(), so we have to make sure it ends up in
-  // the right place.
-  return LayoutPoint(point.X() + Size().Width() - child->Size().Width() -
-                         (2 * child->Location().X()),
-                     point.Y());
-}
-
 LayoutBox* LayoutBox::LocationContainer() const {
   // Location of a non-root SVG object derived from LayoutBox should not be
   // affected by writing-mode of the containing box (SVGRoot).
@@ -5914,10 +5902,14 @@ PhysicalOffset LayoutBox::PhysicalLocation(
   } else {
     container_box = LocationContainer();
   }
-  if (!container_box)
+  if (!container_box || !container_box->HasFlippedBlocksWritingMode())
     return PhysicalOffset(Location());
+
+  // The child is going to add in its x(), so we have to make sure it ends up in
+  // the right place.
   return PhysicalOffset(
-      container_box->FlipForWritingModeForChild(this, Location()));
+      container_box->Size().Width() - Size().Width() - Location().X(),
+      Location().Y());
 }
 
 bool LayoutBox::HasRelativeLogicalWidth() const {

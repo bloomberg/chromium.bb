@@ -955,17 +955,19 @@ static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
 }
 
 PositionWithAffinity LayoutReplaced::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   LayoutUnit top;
   LayoutUnit bottom;
   std::tie(top, bottom) = SelectionTopAndBottom(*this);
 
+  LayoutPoint flipped_point_in_container =
+      LocationContainer()->FlipForWritingMode(point + PhysicalLocation());
   LayoutUnit block_direction_position = IsHorizontalWritingMode()
-                                            ? point.Y() + Location().Y()
-                                            : point.X() + Location().X();
+                                            ? flipped_point_in_container.Y()
+                                            : flipped_point_in_container.X();
   LayoutUnit line_direction_position = IsHorizontalWritingMode()
-                                           ? point.X() + Location().X()
-                                           : point.Y() + Location().Y();
+                                           ? flipped_point_in_container.X()
+                                           : flipped_point_in_container.Y();
 
   if (block_direction_position < top)
     return CreatePositionWithAffinity(

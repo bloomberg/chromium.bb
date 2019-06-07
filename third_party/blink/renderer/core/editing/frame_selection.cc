@@ -596,10 +596,7 @@ bool FrameSelection::Contains(const PhysicalOffset& point) {
 
   const PositionInFlatTreeWithAffinity pos_with_affinity =
       FromPositionInDOMTree<EditingInFlatTreeStrategy>(
-          // TODO(wangxianzhu): PositionForPoint still requires flipped
-          // coordinates.
-          inner_node->GetLayoutObject()->PositionForPoint(
-              result.FlippedLocalPoint()));
+          inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint()));
   if (pos_with_affinity.IsNull())
     return false;
 

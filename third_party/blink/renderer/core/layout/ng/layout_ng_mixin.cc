@@ -311,7 +311,7 @@ bool LayoutNGMixin<Base>::NodeAtPoint(
 
 template <typename Base>
 PositionWithAffinity LayoutNGMixin<Base>::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   if (Base::IsAtomicInlineLevel()) {
     const PositionWithAffinity atomic_inline_position =
         Base::PositionForPointIfOutsideAtomicInlineLevel(point);
@@ -325,10 +325,8 @@ PositionWithAffinity LayoutNGMixin<Base>::PositionForPoint(
   if (!PaintFragment())
     return Base::CreatePositionWithAffinity(0);
 
-  // Flip because |point| is in flipped physical coordinates while
-  // NGPaintFragment::PositionForPoint() requires pure physical coordinates.
   const PositionWithAffinity ng_position =
-      PaintFragment()->PositionForPoint(Base::FlipForWritingMode(point));
+      PaintFragment()->PositionForPoint(point);
   if (ng_position.IsNotNull())
     return ng_position;
   return Base::CreatePositionWithAffinity(0);

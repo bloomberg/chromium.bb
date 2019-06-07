@@ -387,7 +387,7 @@ void LayoutSVGRoot::WillBeRemovedFromTree() {
 }
 
 PositionWithAffinity LayoutSVGRoot::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   FloatPoint absolute_point = FloatPoint(point);
   absolute_point =
       local_to_border_box_transform_.Inverse().MapPoint(absolute_point);
@@ -410,7 +410,8 @@ PositionWithAffinity LayoutSVGRoot::PositionForPoint(
 
   absolute_point = transform.Inverse().MapPoint(absolute_point);
 
-  return closest_descendant->PositionForPoint(LayoutPoint(absolute_point));
+  return closest_descendant->PositionForPoint(
+      PhysicalOffset::FromFloatPointRound(absolute_point));
 }
 
 // LayoutBox methods will expect coordinates w/o any transforms in coordinates

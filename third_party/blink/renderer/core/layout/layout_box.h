@@ -1232,7 +1232,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void LogicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& logical_top,
                                               LogicalExtentComputedValues&);
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   void RemoveFloatingOrPositionedChildFromBlockLists();
 
@@ -1304,11 +1304,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   PhysicalOffset OffsetPoint(const Element* parent) const;
   LayoutUnit OffsetLeft(const Element*) const final;
   LayoutUnit OffsetTop(const Element*) const final;
-
-  // TODO(wangxianzhu): This should be also type-safe. Will do when converting
-  // hit testing geometry to use physical geometry types.
-  LayoutPoint FlipForWritingModeForChild(const LayoutBox* child,
-                                         const LayoutPoint&) const;
 
   WARN_UNUSED_RESULT LayoutUnit
   FlipForWritingMode(LayoutUnit position,

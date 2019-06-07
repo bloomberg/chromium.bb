@@ -256,7 +256,7 @@ class LineLayoutItem {
 
   // TODO(dgrogan/eae): Can we change this to GlobalToLocal and vice versa
   // instead of having 4 methods? See localToAbsoluteQuad below.
-  PositionWithAffinity PositionForPoint(const LayoutPoint& point) {
+  PositionWithAffinity PositionForPoint(const PhysicalOffset& point) {
     return layout_object_->PositionForPoint(point);
   }
 

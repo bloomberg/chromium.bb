@@ -13,31 +13,13 @@
 
 namespace blink {
 
-class LayoutViewTest : public testing::WithParamInterface<bool>,
-                       private ScopedLayoutNGForTest,
-                       public RenderingTest {
+class LayoutViewTest : public RenderingTest {
  public:
   LayoutViewTest()
-      : ScopedLayoutNGForTest(LayoutNG()),
-        RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
-
- protected:
-  bool LayoutNG() { return GetParam(); }
-  bool LayoutNGOrAndroidOrWindows() {
-#if defined(OS_WIN) || defined(OS_ANDROID)
-    // To deal with platform-specific editing behaviors.
-    return true;
-#else
-    // TODO(crbug.com/971414): For now LayoutNG always uses Android/Windows
-    // behavior for ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom().
-    return LayoutNG();
-#endif
-  }
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 };
 
-INSTANTIATE_TEST_SUITE_P(All, LayoutViewTest, testing::Bool());
-
-TEST_P(LayoutViewTest, UpdateCountersLayout) {
+TEST_F(LayoutViewTest, UpdateCountersLayout) {
   SetBodyInnerHTML(R"HTML(
     <style>
       div.incX { counter-increment: x }
@@ -60,7 +42,7 @@ TEST_P(LayoutViewTest, UpdateCountersLayout) {
   EXPECT_TRUE(GetDocument().View()->NeedsLayout());
 }
 
-TEST_P(LayoutViewTest, DisplayNoneFrame) {
+TEST_F(LayoutViewTest, DisplayNoneFrame) {
   SetBodyInnerHTML(R"HTML(
     <iframe id="iframe" style="display:none"></iframe>
   )HTML");
@@ -86,7 +68,52 @@ TEST_P(LayoutViewTest, DisplayNoneFrame) {
   EXPECT_FALSE(div->GetComputedStyle());
 }
 
-TEST_P(LayoutViewTest, HitTestHorizontal) {
+struct HitTestConfig {
+  bool layout_ng;
+  EditingBehaviorType editing_behavior;
+};
+
+class LayoutViewHitTestTest : public testing::WithParamInterface<HitTestConfig>,
+                              private ScopedLayoutNGForTest,
+                              public RenderingTest {
+ public:
+  LayoutViewHitTestTest()
+      : ScopedLayoutNGForTest(LayoutNG()),
+        RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+
+ protected:
+  bool LayoutNG() { return GetParam().layout_ng; }
+  bool IsAndroidOrWindowsEditingBehavior() {
+    // TODO(crbug.com/971414): For now LayoutNG always uses Android/Windows
+    // behavior for ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom().
+    if (LayoutNG())
+      return true;
+    return GetParam().editing_behavior == kEditingAndroidBehavior ||
+           GetParam().editing_behavior == kEditingWindowsBehavior;
+  }
+
+  void SetUp() override {
+    RenderingTest::SetUp();
+    GetFrame().GetSettings()->SetEditingBehaviorType(
+        GetParam().editing_behavior);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         LayoutViewHitTestTest,
+                         ::testing::Values(
+                             // Legacy
+                             HitTestConfig{false, kEditingMacBehavior},
+                             HitTestConfig{false, kEditingWindowsBehavior},
+                             HitTestConfig{false, kEditingUnixBehavior},
+                             HitTestConfig{false, kEditingAndroidBehavior},
+                             // LayoutNG
+                             HitTestConfig{true, kEditingMacBehavior},
+                             HitTestConfig{true, kEditingWindowsBehavior},
+                             HitTestConfig{true, kEditingUnixBehavior},
+                             HitTestConfig{true, kEditingAndroidBehavior}));
+
+TEST_P(LayoutViewHitTestTest, HitTestHorizontal) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0 }</style>
@@ -165,7 +192,7 @@ TEST_P(LayoutViewTest, HitTestHorizontal) {
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
   EXPECT_EQ(PhysicalOffset(51, 181), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
           : PositionWithAffinity(Position(text2, 3), TextAffinity::kDownstream),
       result.GetPosition());
@@ -176,7 +203,7 @@ TEST_P(LayoutViewTest, HitTestHorizontal) {
   EXPECT_EQ(div, result.InnerNode());
   EXPECT_EQ(PhysicalOffset(1, 79), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
           : PositionWithAffinity(Position(text2, 3), TextAffinity::kDownstream),
       result.GetPosition());
@@ -187,7 +214,7 @@ TEST_P(LayoutViewTest, HitTestHorizontal) {
   EXPECT_EQ(div, result.InnerNode());
   EXPECT_EQ(PhysicalOffset(1, 11), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
           : PositionWithAffinity(Position(text2, 3), TextAffinity::kDownstream),
       result.GetPosition());
@@ -201,7 +228,7 @@ TEST_P(LayoutViewTest, HitTestHorizontal) {
             result.GetPosition());
 }
 
-TEST_P(LayoutViewTest, HitTestVerticalLR) {
+TEST_P(LayoutViewHitTestTest, HitTestVerticalLR) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0 }</style>
@@ -251,7 +278,7 @@ TEST_P(LayoutViewTest, HitTestVerticalLR) {
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
   EXPECT_EQ(PhysicalOffset(251, 101), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
           : PositionWithAffinity(Position(text2, 3), TextAffinity::kDownstream),
       result.GetPosition());
@@ -262,7 +289,7 @@ TEST_P(LayoutViewTest, HitTestVerticalLR) {
   EXPECT_EQ(div, result.InnerNode());
   EXPECT_EQ(PhysicalOffset(199, 1), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
           : PositionWithAffinity(Position(text2, 3), TextAffinity::kDownstream),
       result.GetPosition());
@@ -281,7 +308,7 @@ TEST_P(LayoutViewTest, HitTestVerticalLR) {
   EXPECT_EQ(div, result.InnerNode());
   EXPECT_EQ(PhysicalOffset(11, 1), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
           : PositionWithAffinity(Position(text2, 3), TextAffinity::kDownstream),
       result.GetPosition());
@@ -311,7 +338,7 @@ TEST_P(LayoutViewTest, HitTestVerticalLR) {
             result.GetPosition());
 }
 
-TEST_P(LayoutViewTest, HitTestVerticalRL) {
+TEST_P(LayoutViewHitTestTest, HitTestVerticalRL) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0 }</style>
@@ -341,11 +368,15 @@ TEST_P(LayoutViewTest, HitTestVerticalRL) {
 
   HitTestResult result;
   // In body, but not in any descendants.
+  // XXX1
   GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(1, 1)), result);
   EXPECT_EQ(GetDocument().body(), result.InnerNode());
   EXPECT_EQ(PhysicalOffset(1, 1), result.LocalPoint());
-  EXPECT_EQ(PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream),
-            result.GetPosition());
+  EXPECT_EQ(
+      IsAndroidOrWindowsEditingBehavior()
+          ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
+          : PositionWithAffinity(Position(text2, 3), TextAffinity::kDownstream),
+      result.GetPosition());
 
   // Top-left corner of div.
   result = HitTestResult();
@@ -353,7 +384,7 @@ TEST_P(LayoutViewTest, HitTestVerticalRL) {
   EXPECT_EQ(div, result.InnerNode());
   EXPECT_EQ(PhysicalOffset(1, 1), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
           : PositionWithAffinity(Position(text2, 3), TextAffinity::kDownstream),
       result.GetPosition());
@@ -363,11 +394,8 @@ TEST_P(LayoutViewTest, HitTestVerticalRL) {
   GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(251, 101)), result);
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
   EXPECT_EQ(PhysicalOffset(251, 101), result.LocalPoint());
-  EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
-          ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
-          : PositionWithAffinity(Position(text2, 3), TextAffinity::kDownstream),
-      result.GetPosition());
+  EXPECT_EQ(PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream),
+            result.GetPosition());
 
   // Top-right corner (inside) of div and span1.
   result = HitTestResult();
@@ -394,12 +422,16 @@ TEST_P(LayoutViewTest, HitTestVerticalRL) {
             result.GetPosition());
 
   // Bottom-left corner (outside) of div.
+  // XXX2
   result = HitTestResult();
   GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(51, 181)), result);
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
   EXPECT_EQ(PhysicalOffset(51, 181), result.LocalPoint());
-  EXPECT_EQ(PositionWithAffinity(Position(text2, 3), TextAffinity::kUpstream),
-            result.GetPosition());
+  EXPECT_EQ(
+      IsAndroidOrWindowsEditingBehavior()
+          ? PositionWithAffinity(Position(text2, 3), TextAffinity::kUpstream)
+          : PositionWithAffinity(Position(text2, 3), TextAffinity::kDownstream),
+      result.GetPosition());
 
   // Bottom-left corner (inside) of div.
   result = HitTestResult();
@@ -407,7 +439,7 @@ TEST_P(LayoutViewTest, HitTestVerticalRL) {
   EXPECT_EQ(div, result.InnerNode());
   EXPECT_EQ(PhysicalOffset(1, 79), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text2, 3), TextAffinity::kUpstream)
           : PositionWithAffinity(Position(text2, 3), TextAffinity::kDownstream),
       result.GetPosition());
@@ -429,7 +461,7 @@ TEST_P(LayoutViewTest, HitTestVerticalRL) {
             result.GetPosition());
 }
 
-TEST_P(LayoutViewTest, HitTestVerticalRLRoot) {
+TEST_P(LayoutViewHitTestTest, HitTestVerticalRLRoot) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -463,7 +495,7 @@ TEST_P(LayoutViewTest, HitTestVerticalRLRoot) {
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
   EXPECT_EQ(PhysicalOffset(-599, 1), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text, 0), TextAffinity::kDownstream)
           : PositionWithAffinity(Position(text, 5), TextAffinity::kDownstream),
       result.GetPosition());
@@ -474,7 +506,7 @@ TEST_P(LayoutViewTest, HitTestVerticalRLRoot) {
   EXPECT_EQ(div, result.InnerNode());
   EXPECT_EQ(PhysicalOffset(1, 1), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text, 0), TextAffinity::kDownstream)
           : PositionWithAffinity(Position(text, 5), TextAffinity::kDownstream),
       result.GetPosition());
@@ -485,7 +517,7 @@ TEST_P(LayoutViewTest, HitTestVerticalRLRoot) {
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
   EXPECT_EQ(PhysicalOffset(201, 1), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text, 0), TextAffinity::kDownstream)
           : PositionWithAffinity(Position(text, 0), TextAffinity::kDownstream),
       result.GetPosition());
@@ -512,7 +544,7 @@ TEST_P(LayoutViewTest, HitTestVerticalRLRoot) {
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
   EXPECT_EQ(PhysicalOffset(-1, 81), result.LocalPoint());
   EXPECT_EQ(
-      LayoutNGOrAndroidOrWindows()
+      IsAndroidOrWindowsEditingBehavior()
           ? PositionWithAffinity(Position(text, 5), TextAffinity::kUpstream)
           : PositionWithAffinity(Position(text, 5), TextAffinity::kDownstream),
       result.GetPosition());

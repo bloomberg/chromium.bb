@@ -124,7 +124,7 @@ PositionInFlatTreeWithAffinity PositionWithAffinityOfHitTestResult(
     const HitTestResult& hit_test_result) {
   return FromPositionInDOMTree<EditingInFlatTreeStrategy>(
       hit_test_result.InnerNode()->GetLayoutObject()->PositionForPoint(
-          hit_test_result.FlippedLocalPoint()));
+          hit_test_result.LocalPoint()));
 }
 
 DocumentMarker* SpellCheckMarkerAtPosition(
@@ -1191,8 +1191,7 @@ static bool HitTestResultIsMisspelled(const HitTestResult& result) {
   if (!inner_node || !inner_node->GetLayoutObject())
     return false;
   PositionWithAffinity pos_with_affinity =
-      inner_node->GetLayoutObject()->PositionForPoint(
-          result.FlippedLocalPoint());
+      inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint());
   if (pos_with_affinity.IsNull())
     return false;
   // TODO(xiaochengh): Don't use |ParentAnchoredEquivalent()|.

@@ -55,12 +55,6 @@ class LineLayoutBox : public LineLayoutBoxModel {
     return ToBox()->DeprecatedFlipForWritingMode(point);
   }
 
-  LayoutPoint FlipForWritingModeForChild(const LineLayoutBox& child,
-                                         LayoutPoint child_point) const {
-    return ToBox()->FlipForWritingModeForChild(
-        ToLayoutBox(child.GetLayoutObject()), child_point);
-  }
-
   void MoveWithEdgeOfInlineContainerIfNecessary(bool is_horizontal) {
     ToBox()->MoveWithEdgeOfInlineContainerIfNecessary(is_horizontal);
   }
