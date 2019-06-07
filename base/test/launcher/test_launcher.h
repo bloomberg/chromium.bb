@@ -184,8 +184,10 @@ class TestLauncher {
   // Move all PRE_ tests prior to the final test in order.
   // Validate tests names. This includes no name conflict between tests
   // without DISABLED_ prefix, and orphaned PRE_ tests.
+  // Add all tests and disabled tests names to result tracker.
+  // Filter Disabled tests if not flagged to run.
   // Returns false if any violation is found.
-  bool ReorderAndValidateTests();
+  bool ProcessAndValidateTests();
 
   // Runs all tests in current iteration.
   void RunTests();

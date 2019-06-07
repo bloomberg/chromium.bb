@@ -1054,13 +1054,17 @@ bool TestLauncher::Init(CommandLine* command_line) {
     }
   }
 
+  skip_diabled_tests_ =
+      !command_line->HasSwitch(kGTestRunDisabledTestsFlag) &&
+      !command_line->HasSwitch(kIsolatedScriptRunDisabledTestsFlag);
+
   if (!InitTests())
     return false;
 
   if (!ShuffleTests(command_line))
     return false;
 
-  if (!ReorderAndValidateTests())
+  if (!ProcessAndValidateTests())
     return false;
 
   if (command_line->HasSwitch(switches::kTestLauncherPrintTestStdio)) {
@@ -1079,10 +1083,6 @@ bool TestLauncher::Init(CommandLine* command_line) {
       return false;
     }
   }
-
-  skip_diabled_tests_ =
-      !command_line->HasSwitch(kGTestRunDisabledTestsFlag) &&
-      !command_line->HasSwitch(kIsolatedScriptRunDisabledTestsFlag);
 
   stop_on_failure_ = command_line->HasSwitch(kGTestBreakOnFailure);
 
@@ -1226,25 +1226,29 @@ bool TestLauncher::ShuffleTests(CommandLine* command_line) {
   return true;
 }
 
-bool TestLauncher::ReorderAndValidateTests() {
+bool TestLauncher::ProcessAndValidateTests() {
   bool result = true;
   std::unordered_set<std::string> disabled_tests;
   std::unordered_map<std::string, TestInfo> pre_tests;
 
   // Find disabled and pre tests
   for (const TestInfo& test_info : tests_) {
-    if (test_info.disabled())
+    std::string test_name = test_info.GetFullName();
+    results_tracker_.AddTest(test_name);
+    if (test_info.disabled()) {
       disabled_tests.insert(test_info.GetDisabledStrippedName());
+      results_tracker_.AddDisabledTest(test_name);
+    }
     if (test_info.pre_test())
       pre_tests[test_info.GetDisabledStrippedName()] = test_info;
   }
 
   std::vector<TestInfo> tests_to_run;
   for (const TestInfo& test_info : tests_) {
+    std::string test_name = test_info.GetFullName();
     // If any test has a matching disabled test, fail and log for audit.
-    if (base::Contains(disabled_tests, test_info.GetFullName())) {
-      LOG(ERROR) << test_info.GetFullName()
-                 << " duplicated by a DISABLED_ test";
+    if (base::Contains(disabled_tests, test_name)) {
+      LOG(ERROR) << test_name << " duplicated by a DISABLED_ test";
       result = false;
     }
 
@@ -1259,8 +1263,10 @@ bool TestLauncher::ReorderAndValidateTests() {
       test_sequence.push_back(pre_tests[test_sequence.back().GetPreName()]);
       pre_tests.erase(test_sequence.back().GetDisabledStrippedName());
     }
-    tests_to_run.insert(tests_to_run.end(), test_sequence.rbegin(),
-                        test_sequence.rend());
+    // Skip disabled tests unless explicitly requested.
+    if (!test_info.disabled() || !skip_diabled_tests_)
+      tests_to_run.insert(tests_to_run.end(), test_sequence.rbegin(),
+                          test_sequence.rend());
   }
   tests_ = std::move(tests_to_run);
 
@@ -1313,13 +1319,6 @@ void TestLauncher::RunTests() {
   size_t test_found_count = 0;
   for (const TestInfo& test_info : tests_) {
     std::string test_name = test_info.GetFullName();
-    results_tracker_.AddTest(test_name);
-    // Skip disabled tests unless explicitly requested.
-    if (test_info.disabled()) {
-      results_tracker_.AddDisabledTest(test_name);
-      if (skip_diabled_tests_)
-        continue;
-    }
 
     bool will_run_test = launcher_delegate_->WillRunTest(
         test_info.test_case_name(), test_info.test_name());

@@ -338,6 +338,20 @@ TEST_F(TestLauncherTest, RunDisabledTests) {
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
+// Disabled test should disable all pre tests
+TEST_F(TestLauncherTest, DisablePreTests) {
+  AddMockedTests("Test",
+                 {"DISABLED_firstTest", "PRE_PRE_firstTest", "PRE_firstTest"});
+  SetUpExpectCalls();
+  using ::testing::_;
+  std::vector<std::string> tests_names;
+  EXPECT_CALL(delegate,
+              RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                    tests_names.cend())))
+      .WillOnce(testing::Return(0));
+  EXPECT_TRUE(test_launcher.Run(command_line.get()));
+}
+
 // Shard index must be lesser than total shards
 TEST_F(TestLauncherTest, FaultyShardSetup) {
   command_line->AppendSwitchASCII("test-launcher-total-shards", "2");
