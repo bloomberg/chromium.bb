@@ -2,15 +2,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-:host {
+:host(.saml-interstitial) {
   height: 528px;
   width: 448px;
-}
-
-:host(.v2) {
-  height: unset;
-  padding: unset;
-  width: unset;
 }
 
 .signin-link {
@@ -71,8 +65,8 @@
 }
 
 #saml-notice-recording-indicator {
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-inline-end: 10px;
+  padding-inline-start: 10px;
 }
 
 #saml-notice-message {
@@ -115,11 +109,11 @@
   visibility: visible;
 }
 
-:host(.v2) #gaia-step-contents {
+:host(:not(.saml-interstitial)) #gaia-step-contents {
   display: none;
 }
 
-:host(.v2.saml) #signin-frame {
+:host(.saml) #signin-frame {
   height: 516px;
   padding-top: 44px;
 }

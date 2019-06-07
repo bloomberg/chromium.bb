@@ -790,18 +790,15 @@ Polymer({
    * @private
    */
   updateSigninFrameContainers_: function() {
-    let oldState = this.classList.contains('v2');
-    this.classList.toggle('v2', false);
-    if (this.screenMode_ == ScreenMode.DEFAULT ||
-        this.screenMode_ == ScreenMode.OFFLINE ||
-        this.screenMode_ == ScreenMode.AD_AUTH) {
-      this.classList.toggle('v2', true);
-    }
+    const samlClass = 'saml-interstitial';
+    const containedSamlClass = this.classList.contains(samlClass);
+    this.classList.toggle(
+        samlClass, this.screenMode_ == ScreenMode.SAML_INTERSTITIAL);
     if (Oobe.getInstance().currentScreen.id != 'gaia-signin')
       return;
     // Switching between signin-frame-dialog and gaia-step-contents
     // updates screen size.
-    if (oldState != this.classList.contains('v2'))
+    if (containedSamlClass != this.classList.contains(samlClass))
       Oobe.getInstance().updateScreenSize(this);
   },
 
