@@ -1236,6 +1236,13 @@ void RenderWidget::SetShowFPSCounter(bool show) {
   host->SetDebugState(debug_state);
 }
 
+void RenderWidget::SetShowLayoutShiftRegions(bool show) {
+  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
+  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  debug_state.show_layout_shift_regions = show;
+  host->SetDebugState(debug_state);
+}
+
 void RenderWidget::SetShowPaintRects(bool show) {
   cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
   cc::LayerTreeDebugState debug_state = host->GetDebugState();

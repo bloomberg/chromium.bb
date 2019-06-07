@@ -122,6 +122,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   protocol::Response disable() override;
   protocol::Response setShowAdHighlights(bool) override;
   protocol::Response setShowPaintRects(bool) override;
+  protocol::Response setShowLayoutShiftRegions(bool) override;
   protocol::Response setShowDebugBorders(bool) override;
   protocol::Response setShowFPSCounter(bool) override;
   protocol::Response setShowScrollBottleneckRects(bool) override;
@@ -232,6 +233,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   InspectorAgentState::Boolean show_debug_borders_;
   InspectorAgentState::Boolean show_fps_counter_;
   InspectorAgentState::Boolean show_paint_rects_;
+  InspectorAgentState::Boolean show_layout_shift_regions_;
   InspectorAgentState::Boolean show_scroll_bottleneck_rects_;
   InspectorAgentState::Boolean show_hit_test_borders_;
   InspectorAgentState::Boolean show_size_on_resize_;

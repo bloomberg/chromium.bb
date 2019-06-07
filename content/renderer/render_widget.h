@@ -384,6 +384,7 @@ class CONTENT_EXPORT RenderWidget
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
   void ScheduleAnimation() override;
   void SetShowFPSCounter(bool show) override;
+  void SetShowLayoutShiftRegions(bool) override;
   void SetShowPaintRects(bool) override;
   void SetShowDebugBorders(bool) override;
   void SetShowScrollBottleneckRects(bool) override;

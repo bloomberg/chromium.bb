@@ -99,6 +99,7 @@ class WebWidgetClient {
   // Show or hide compositor debug visualizations.
   virtual void SetShowFPSCounter(bool) {}
   virtual void SetShowPaintRects(bool) {}
+  virtual void SetShowLayoutShiftRegions(bool) {}
   virtual void SetShowDebugBorders(bool) {}
   virtual void SetShowScrollBottleneckRects(bool) {}
   virtual void SetShowHitTestBorders(bool) {}

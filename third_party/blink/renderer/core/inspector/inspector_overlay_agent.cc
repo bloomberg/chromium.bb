@@ -331,6 +331,7 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       show_debug_borders_(&agent_state_, false),
       show_fps_counter_(&agent_state_, false),
       show_paint_rects_(&agent_state_, false),
+      show_layout_shift_regions_(&agent_state_, false),
       show_scroll_bottleneck_rects_(&agent_state_, false),
       show_hit_test_borders_(&agent_state_, false),
       show_size_on_resize_(&agent_state_, false),
@@ -360,6 +361,7 @@ void InspectorOverlayAgent::Restore() {
   setShowDebugBorders(show_debug_borders_.Get());
   setShowFPSCounter(show_fps_counter_.Get());
   setShowPaintRects(show_paint_rects_.Get());
+  setShowLayoutShiftRegions(show_layout_shift_regions_.Get());
   setShowScrollBottleneckRects(show_scroll_bottleneck_rects_.Get());
   setShowHitTestBorders(show_hit_test_borders_.Get());
   setShowViewportSizeOnResize(show_size_on_resize_.Get());
@@ -390,6 +392,7 @@ Response InspectorOverlayAgent::disable() {
   setShowDebugBorders(false);
   setShowFPSCounter(false);
   setShowPaintRects(false);
+  setShowLayoutShiftRegions(false);
   setShowScrollBottleneckRects(false);
   setShowHitTestBorders(false);
   setShowViewportSizeOnResize(false);
@@ -463,6 +466,24 @@ Response InspectorOverlayAgent::setShowPaintRects(bool show) {
   // turn off debug overlays, but the WebFrameWidget is already gone.
   if (widget_impl)
     widget_impl->Client()->SetShowPaintRects(show);
+  if (!show && frame_impl_->GetFrameView())
+    frame_impl_->GetFrameView()->Invalidate();
+  return Response::OK();
+}
+
+Response InspectorOverlayAgent::setShowLayoutShiftRegions(bool show) {
+  show_layout_shift_regions_.Set(show);
+  if (show) {
+    Response response = CompositingEnabled();
+    if (!response.isSuccess())
+      return response;
+  }
+  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
+  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
+  // While a frame is being detached the inspector will shutdown and
+  // turn off debug overlays, but the WebFrameWidget is already gone.
+  if (widget_impl)
+    widget_impl->Client()->SetShowLayoutShiftRegions(show);
   if (!show && frame_impl_->GetFrameView())
     frame_impl_->GetFrameView()->Invalidate();
   return Response::OK();
