@@ -27,7 +27,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/common/chrome_content_client.h"
@@ -35,7 +34,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
-#include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_session_configurator/common/network_features.h"
@@ -135,8 +133,6 @@ void IOThread::Init() {
   DCHECK(!globals_);
   globals_ = new Globals;
 
-  globals_->data_use_ascriber =
-      std::make_unique<data_use_measurement::ChromeDataUseAscriber>();
 
 #if defined(OS_MACOSX)
   // Start observing Keychain events. This needs to be done on the UI thread,

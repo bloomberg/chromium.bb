@@ -8,7 +8,6 @@
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/web_contents.h"
@@ -51,8 +50,6 @@ AccessibilityPanel::AccessibilityPanel(content::BrowserContext* browser_context,
   web_contents_ = web_view->GetWebContents();
   web_contents_observer_.reset(
       new AccessibilityPanelWebContentsObserver(web_contents_, this));
-  data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
-      web_contents_);
   web_contents_->SetDelegate(this);
   extensions::SetViewType(web_contents_, extensions::VIEW_TYPE_COMPONENT);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(

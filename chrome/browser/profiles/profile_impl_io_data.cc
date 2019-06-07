@@ -30,7 +30,6 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_io_data.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/profile_network_context_service.h"

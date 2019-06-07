@@ -23,7 +23,6 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "chrome/browser/data_use_measurement/chrome_data_use_ascriber_service_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -252,7 +251,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   ContentSuggestionsServiceFactory::GetInstance();
   CookieSettingsFactory::GetInstance();
   NotifierStateTrackerFactory::GetInstance();
-  data_use_measurement::ChromeDataUseAscriberServiceFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   DownloadCoreServiceFactory::GetInstance();
   DownloadServiceFactory::GetInstance();

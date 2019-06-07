@@ -35,6 +35,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_request_headers.h"

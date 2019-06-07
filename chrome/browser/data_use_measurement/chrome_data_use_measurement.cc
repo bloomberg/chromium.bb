@@ -13,8 +13,6 @@
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "components/data_use_measurement/core/data_use_ascriber.h"
-#include "components/data_use_measurement/core/url_request_classifier.h"
 #include "components/metrics/data_use_tracker.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -75,7 +73,7 @@ void ChromeDataUseMeasurement::CreateInstance(PrefService* local_state) {
     return;
 
   g_chrome_data_use_measurement = new ChromeDataUseMeasurement(
-      nullptr, nullptr, content::GetNetworkConnectionTracker(), local_state);
+      content::GetNetworkConnectionTracker(), local_state);
 }
 
 // static
@@ -95,26 +93,11 @@ void ChromeDataUseMeasurement::DeleteInstance() {
 }
 
 ChromeDataUseMeasurement::ChromeDataUseMeasurement(
-    std::unique_ptr<URLRequestClassifier> url_request_classifier,
-    DataUseAscriber* ascriber,
     network::NetworkConnectionTracker* network_connection_tracker,
     PrefService* local_state)
-    : DataUseMeasurement(std::move(url_request_classifier),
-                         ascriber,
-                         network_connection_tracker),
+    : DataUseMeasurement(network_connection_tracker),
       local_state_(local_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void ChromeDataUseMeasurement::UpdateDataUseToMetricsService(
-    int64_t total_bytes,
-    bool is_cellular,
-    bool is_metrics_service_usage) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Update data use of user traffic and services distinguishing cellular and
-  // metrics services data use.
-  UpdateMetricsUsagePrefsOnUIThread(total_bytes, is_cellular,
-                                    is_metrics_service_usage);
 }
 
 void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
@@ -190,22 +173,6 @@ void ChromeDataUseMeasurement::UpdateMetricsUsagePrefs(
   metrics::DataUseTracker::UpdateMetricsUsagePrefs(
       base::saturated_cast<int>(total_bytes), is_cellular,
       is_metrics_service_usage, local_state);
-}
-
-// This function is for forwarding metrics usage pref changes to the metrics
-// service on the appropriate thread.
-// TODO(gayane): Reduce the frequency of posting tasks from IO to UI thread.
-void ChromeDataUseMeasurement::UpdateMetricsUsagePrefsOnUIThread(
-    int64_t total_bytes,
-    bool is_cellular,
-    bool is_metrics_service_usage) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  base::PostTaskWithTraits(
-      FROM_HERE, content::BrowserThread::UI,
-      base::BindOnce(&ChromeDataUseMeasurement::UpdateMetricsUsagePrefs,
-                     base::Unretained(this), total_bytes, is_cellular,
-                     is_metrics_service_usage));
 }
 
 }  // namespace data_use_measurement

@@ -9,13 +9,10 @@
 
 #include "base/macros.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
-#include "components/data_use_measurement/core/url_request_classifier.h"
 
 class PrefService;
 
 namespace data_use_measurement {
-
-class DataUseAscriber;
 
 class ChromeDataUseMeasurement : public DataUseMeasurement {
  public:
@@ -24,14 +21,8 @@ class ChromeDataUseMeasurement : public DataUseMeasurement {
   static void DeleteInstance();
 
   ChromeDataUseMeasurement(
-      std::unique_ptr<URLRequestClassifier> url_request_classifier,
-      DataUseAscriber* ascriber,
       network::NetworkConnectionTracker* network_connection_tracker,
       PrefService* local_state);
-
-  void UpdateDataUseToMetricsService(int64_t total_bytes,
-                                     bool is_cellular,
-                                     bool is_metrics_service_usage) override;
 
   // Called when requests complete from NetworkService.
   void ReportNetworkServiceDataUse(int32_t network_traffic_annotation_id_hash,
@@ -50,9 +41,6 @@ class ChromeDataUseMeasurement : public DataUseMeasurement {
   void UpdateMetricsUsagePrefs(int64_t total_bytes,
                                bool is_cellular,
                                bool is_metrics_service_usage);
-  void UpdateMetricsUsagePrefsOnUIThread(int64_t total_bytes,
-                                         bool is_cellular,
-                                         bool is_metrics_service_usage);
 
   PrefService* local_state_ = nullptr;
 };

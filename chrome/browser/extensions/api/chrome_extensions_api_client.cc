@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/api/automation_internal/chrome_automation_internal_api_delegate.h"
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
@@ -99,8 +98,6 @@ void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
       web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
 
-  data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
-      web_contents);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
   if (performance_manager::PerformanceManager::GetInstance()) {

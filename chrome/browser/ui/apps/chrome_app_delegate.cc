@@ -14,7 +14,6 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/audio_focus_web_contents_observer.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/file_select_helper.h"
@@ -206,8 +205,6 @@ void ChromeAppDelegate::DisableExternalOpenForTesting() {
 }
 
 void ChromeAppDelegate::InitWebContents(content::WebContents* web_contents) {
-  data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
-      web_contents);
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
 
 #if BUILDFLAG(ENABLE_PRINTING)

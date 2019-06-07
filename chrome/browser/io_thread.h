@@ -36,10 +36,6 @@ class PrefRegistrySimple;
 class PrefService;
 class SystemNetworkContextManager;
 
-namespace data_use_measurement {
-class ChromeDataUseAscriber;
-}
-
 namespace net {
 class NetworkQualityEstimator;
 }  // namespace net
@@ -65,10 +61,6 @@ class IOThread : public content::BrowserThreadDelegate {
     ~Globals();
 
     bool quic_disabled = false;
-
-    // Ascribes all data use in Chrome to a source, such as page loads.
-    std::unique_ptr<data_use_measurement::ChromeDataUseAscriber>
-        data_use_ascriber;
 
     // NetworkQualityEstimator only for use in dummy in-process
     // URLRequestContext when network service is enabled.
