@@ -572,7 +572,7 @@ TEST_F(RenderWidgetHostViewMacTest, NSTextInputClientConformance) {
 
   rwhv_mac_->SelectionChanged(base::UTF8ToUTF16("llo, world!"), 2,
                               gfx::Range(5, 10));
-  EXPECT_NSEQ(NSMakeRange(7, 5), [rwhv_cocoa_ selectedRange]);
+  EXPECT_NSEQ(NSMakeRange(5, 5), [rwhv_cocoa_ selectedRange]);
 
   NSRange actualRange = NSMakeRange(1u, 2u);
   NSAttributedString* actualString = [rwhv_cocoa_
