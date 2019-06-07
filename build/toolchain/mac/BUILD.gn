@@ -152,6 +152,10 @@ template("mac_toolchain") {
         "TOOL_VERSION=${tool_versions.linker_driver} " +
         rebase_path("//build/toolchain/mac/linker_driver.py", root_build_dir)
 
+    # Specify an explicit path for the strip binary.
+    _strippath = "$mac_bin_path" + "strip"
+    linker_driver += " -Wcrl,strippath," + _strippath
+
     # On iOS, the final applications are assembled using lipo (to support fat
     # builds). The correct flags are passed to the linker_driver.py script
     # directly during the lipo call.
