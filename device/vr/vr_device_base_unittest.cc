@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_service_client.h"
@@ -116,7 +116,7 @@ class VRDeviceTest : public testing::Test {
   FakeVRServiceClient* client() { return client_.get(); }
 
   std::unique_ptr<FakeVRServiceClient> client_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDeviceTest);
 };

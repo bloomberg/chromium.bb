@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_service_client.h"
@@ -56,7 +56,7 @@ class VRDisplayImplTest : public testing::Test {
   VRDeviceBase* device() { return device_.get(); }
   FakeVRServiceClient* client() { return client_.get(); }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<FakeVRDevice> device_;
   std::unique_ptr<FakeVRServiceClient> client_;
 
