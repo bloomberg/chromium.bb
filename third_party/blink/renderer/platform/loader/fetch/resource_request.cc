@@ -37,7 +37,7 @@
 
 namespace blink {
 
-base::TimeDelta ResourceRequest::default_timeout_interval_ =
+const base::TimeDelta ResourceRequest::default_timeout_interval_ =
     base::TimeDelta::Max();
 
 ResourceRequest::ResourceRequest() : ResourceRequest(NullURL()) {}

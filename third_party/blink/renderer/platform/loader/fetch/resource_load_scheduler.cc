@@ -102,10 +102,10 @@ size_t GetOutstandingThrottledLimit(
   if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
     return ResourceLoadScheduler::kOutstandingUnlimited;
 
-  static size_t main_frame_limit = GetFieldTrialUint32Param(
+  static const size_t main_frame_limit = GetFieldTrialUint32Param(
       kResourceLoadThrottlingTrial, kOutstandingLimitForBackgroundMainFrameName,
       kOutstandingLimitForBackgroundMainFrameDefault);
-  static size_t sub_frame_limit = GetFieldTrialUint32Param(
+  static const size_t sub_frame_limit = GetFieldTrialUint32Param(
       kResourceLoadThrottlingTrial, kOutstandingLimitForBackgroundSubFrameName,
       kOutstandingLimitForBackgroundSubFrameDefault);
 

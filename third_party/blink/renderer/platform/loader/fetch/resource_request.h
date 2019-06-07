@@ -492,7 +492,7 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   mutable CacheControlHeader cache_control_header_cache_;
 
-  static base::TimeDelta default_timeout_interval_;
+  static const base::TimeDelta default_timeout_interval_;
 
   bool is_ad_resource_ = false;
 
