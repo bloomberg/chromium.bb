@@ -46,6 +46,9 @@ void FeedbackUploaderChrome::AccessTokenAvailable(
 }
 
 void FeedbackUploaderChrome::StartDispatchingReport() {
+  if (delegate_)
+    delegate_->OnStartDispatchingReport();
+
   access_token_.clear();
 
   // TODO(crbug.com/849591): Instead of getting the IdentityManager from the

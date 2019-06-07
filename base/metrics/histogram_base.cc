@@ -143,8 +143,8 @@ void HistogramBase::ValidateHistogramContents() const {}
 
 void HistogramBase::WriteJSON(std::string* output,
                               JSONVerbosityLevel verbosity_level) const {
-  Count count;
-  int64_t sum;
+  Count count = 0;
+  int64_t sum = 0;
   std::unique_ptr<ListValue> buckets(new ListValue());
   GetCountAndBucketData(&count, &sum, buckets.get());
   std::unique_ptr<DictionaryValue> parameters(new DictionaryValue());
