@@ -51,10 +51,13 @@ void AddImpressionTestData(
     std::vector<std::unique_ptr<ClientState>>* client_states);
 
 // Generates a debug string to print details of |data|.
-std::string DebugString(NotificationData* data);
+std::string DebugString(const NotificationData* data);
 
 // Generates a debug string to print details of |entry|.
-std::string DebugString(NotificationEntry* entry);
+std::string DebugString(const NotificationEntry* entry);
+
+// Generates a debug string to print details of |client_state|.
+std::string DebugString(const ClientState* client_state);
 
 }  // namespace test
 }  // namespace notifications

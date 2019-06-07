@@ -28,8 +28,9 @@ void TestClientStateConversion(ClientState* client_state) {
   ClientStateToProto(client_state, &proto);
   ClientStateFromProto(&proto, &expected);
   EXPECT_EQ(*client_state, expected)
-      << " \n Output: \n " << client_state->DebugPrint() << " \n Expected: \n"
-      << expected.DebugPrint();
+      << " \n Output: \n " << test::DebugString(client_state)
+      << " \n Expected: \n"
+      << test::DebugString(&expected);
 }
 
 void TestNotificationEntryConversion(NotificationEntry* entry) {

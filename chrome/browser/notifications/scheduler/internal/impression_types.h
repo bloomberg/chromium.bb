@@ -88,9 +88,6 @@ struct ClientState {
 
   bool operator==(const ClientState& other) const;
 
-  // Dumps data for debugging.
-  std::string DebugPrint() const;
-
   // The type of notification using the scheduler.
   SchedulerClientType type;
 

@@ -137,9 +137,9 @@ class ImpressionHistoryTrackerTest : public ::testing::Test {
       EXPECT_EQ(*expected.second, *output_it->second)
           << "Unmatch client states: \n"
           << "Expected: \n"
-          << expected.second->DebugPrint() << " \n"
+          << test::DebugString(expected.second.get()) << " \n"
           << "Acutual: \n"
-          << output_it->second->DebugPrint();
+          << test::DebugString(output_it->second);
     }
   }
 

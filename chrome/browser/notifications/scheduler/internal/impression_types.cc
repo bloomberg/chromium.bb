@@ -4,11 +4,6 @@
 
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
 
-#include <sstream>
-
-#include "base/format_macros.h"
-#include "base/strings/stringprintf.h"
-
 namespace notifications {
 
 bool Impression::operator==(const Impression& other) const {
@@ -45,42 +40,6 @@ bool ClientState::operator==(const ClientState& other) const {
          current_max_daily_show == other.current_max_daily_show &&
          impressions == other.impressions &&
          suppression_info == other.suppression_info;
-}
-
-std::string ClientState::DebugPrint() const {
-  std::string log = base::StringPrintf(
-      "Client state: type: %d \n"
-      "current_max_daily_show: %d \n"
-      "impressions.size(): %zu \n",
-      static_cast<int>(type), current_max_daily_show, impressions.size());
-
-  for (const auto& impression : impressions) {
-    std::ostringstream stream;
-    stream << "Impression, create_time:" << impression.create_time << "\n"
-           << " create_time in microseconds:"
-           << impression.create_time.ToDeltaSinceWindowsEpoch().InMicroseconds()
-           << "\n"
-           << "feedback: " << static_cast<int>(impression.feedback) << "\n"
-           << "impression result: " << static_cast<int>(impression.impression)
-           << " \n"
-           << "integrated: " << impression.integrated << "\n"
-           << "task start time: "
-           << static_cast<int>(impression.task_start_time) << "\n"
-           << "guid: " << impression.guid << "\n"
-           << "type: " << static_cast<int>(impression.type);
-    log += stream.str();
-  }
-
-  if (suppression_info.has_value()) {
-    std::ostringstream stream;
-    stream << "Suppression info, last_trigger_time:"
-           << suppression_info->last_trigger_time << "\n"
-           << "duration:" << suppression_info->duration << "\n"
-           << "recover_goal:" << suppression_info->recover_goal;
-    log += stream.str();
-  }
-
-  return log;
 }
 
 }  // namespace notifications
