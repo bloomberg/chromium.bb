@@ -17,7 +17,9 @@ namespace syncer {
 namespace {
 
 // Helper object that allows constructing and destructing the
-// SyncableServiceBasedBridge on the model thread.
+// SyncableServiceBasedBridge on the model thread. Gets constructed on the UI
+// thread, but all other operations including destruction happen on the model
+// thread.
 class BridgeBuilder {
  public:
   BridgeBuilder(
@@ -27,19 +29,20 @@ class BridgeBuilder {
           syncable_service_provider,
       const base::RepeatingClosure& dump_stack,
       scoped_refptr<base::SequencedTaskRunner> task_runner)
-      : task_runner_(task_runner),
-        bridge_(nullptr, base::OnTaskRunnerDeleter(task_runner)),
-        weak_ptr_factory_(this) {
+      : task_runner_(task_runner) {
     DCHECK(store_factory);
     DCHECK(syncable_service_provider);
 
+    // Unretained is safe because destruction also happens on |task_runner_| and
+    // can't overtake this task.
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&BridgeBuilder::BuildBridgeDelegate,
-                       weak_ptr_factory_.GetWeakPtr(), type,
-                       std::move(store_factory),
+        base::BindOnce(&BridgeBuilder::InitOnModelThread,
+                       base::Unretained(this), type, std::move(store_factory),
                        std::move(syncable_service_provider), dump_stack));
   }
+
+  ~BridgeBuilder() { DCHECK(task_runner_->RunsTasksInCurrentSequence()); }
 
   base::WeakPtr<ModelTypeControllerDelegate> GetBridgeDelegate() {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -48,7 +51,7 @@ class BridgeBuilder {
   }
 
  private:
-  void BuildBridgeDelegate(
+  void InitOnModelThread(
       ModelType type,
       OnceModelTypeStoreFactory store_factory,
       NonUiSyncableServiceBasedModelTypeController::SyncableServiceProvider
@@ -61,21 +64,36 @@ class BridgeBuilder {
         std::move(syncable_service_provider).Run();
     // |syncable_service| can be null in tests.
     if (syncable_service) {
-      // std::make_unique() avoided here due to custom deleter.
-      bridge_.reset(new SyncableServiceBasedBridge(
+      bridge_ = std::make_unique<SyncableServiceBasedBridge>(
           type, std::move(store_factory),
           std::make_unique<ClientTagBasedModelTypeProcessor>(type, dump_stack),
-          syncable_service.get()));
+          syncable_service.get());
     }
   }
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  std::unique_ptr<ModelTypeSyncBridge, base::OnTaskRunnerDeleter> bridge_;
-
-  base::WeakPtrFactory<BridgeBuilder> weak_ptr_factory_;
+  std::unique_ptr<ModelTypeSyncBridge> bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(BridgeBuilder);
 };
+
+ProxyModelTypeControllerDelegate::DelegateProvider BuildDelegateProvider(
+    ModelType type,
+    OnceModelTypeStoreFactory store_factory,
+    NonUiSyncableServiceBasedModelTypeController::SyncableServiceProvider
+        syncable_service_provider,
+    const base::RepeatingClosure& dump_stack,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  // Can't use std::make_unique or base::WrapUnique because of custom deleter.
+  auto bridge_builder =
+      std::unique_ptr<BridgeBuilder, base::OnTaskRunnerDeleter>(
+          new BridgeBuilder(type, std::move(store_factory),
+                            std::move(syncable_service_provider), dump_stack,
+                            task_runner),
+          base::OnTaskRunnerDeleter(task_runner));
+  return base::BindRepeating(&BridgeBuilder::GetBridgeDelegate,
+                             std::move(bridge_builder));
+}
 
 }  // namespace
 
@@ -90,13 +108,11 @@ NonUiSyncableServiceBasedModelTypeController::
           type,
           std::make_unique<ProxyModelTypeControllerDelegate>(
               task_runner,
-              base::BindRepeating(&BridgeBuilder::GetBridgeDelegate,
-                                  std::make_unique<BridgeBuilder>(
-                                      type,
-                                      std::move(store_factory),
-                                      std::move(syncable_service_provider),
-                                      dump_stack,
-                                      task_runner)))) {}
+              BuildDelegateProvider(type,
+                                    std::move(store_factory),
+                                    std::move(syncable_service_provider),
+                                    dump_stack,
+                                    task_runner))) {}
 
 NonUiSyncableServiceBasedModelTypeController::
     ~NonUiSyncableServiceBasedModelTypeController() {}
