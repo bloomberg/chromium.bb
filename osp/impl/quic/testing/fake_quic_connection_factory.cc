@@ -67,7 +67,7 @@ void FakeQuicConnectionFactoryBridge::RunTasks() {
   }
 
   const size_t num_streams = connections_.controller->streams().size();
-  OSP_CHECK(num_streams == connections_.receiver->streams().size());
+  OSP_CHECK_EQ(num_streams, connections_.receiver->streams().size());
 
   auto stream_it_pair =
       std::make_pair(connections_.controller->streams().begin(),

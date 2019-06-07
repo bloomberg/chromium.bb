@@ -49,6 +49,11 @@ Connection::~Connection() {
   parent_delegate_->OnConnectionDestroyed(this);
 }
 
+void Connection::OnConnecting() {
+  OSP_DCHECK(!protocol_connection_);
+  state_ = State::kConnecting;
+}
+
 void Connection::OnConnected(
     uint64_t connection_id,
     uint64_t endpoint_id,
@@ -181,9 +186,9 @@ ErrorOr<size_t> ConnectionManager::OnStreamMessage(
   switch (message_type) {
     case msgs::Type::kPresentationConnectionMessage: {
       msgs::PresentationConnectionMessage message;
-      ssize_t result = msgs::DecodePresentationConnectionMessage(
+      ssize_t bytes_decoded = msgs::DecodePresentationConnectionMessage(
           buffer, buffer_size, &message);
-      if (result < 0) {
+      if (bytes_decoded < 0) {
         OSP_LOG_WARN << "presentation-connection-message parse error";
         return Error::Code::kParseError;
       }
@@ -205,36 +210,54 @@ ErrorOr<size_t> ConnectionManager::OnStreamMessage(
                           "presentation-connection-message";
           break;
       }
-      return result;
+      return bytes_decoded;
     }
 
     case msgs::Type::kPresentationConnectionCloseRequest: {
       msgs::PresentationConnectionCloseRequest request;
-      ssize_t result = msgs::DecodePresentationConnectionCloseRequest(
+      ssize_t bytes_decoded = msgs::DecodePresentationConnectionCloseRequest(
           buffer, buffer_size, &request);
-      if (result < 0) {
-        OSP_LOG_WARN << "decode presentation-connection-close-event error: "
-                     << result;
+      if (bytes_decoded < 0) {
+        OSP_LOG_WARN << "decode presentation-connection-close-request error: "
+                     << bytes_decoded;
         return Error::Code::kCborInvalidMessage;
       }
 
+      msgs::PresentationConnectionCloseResponse response;
+      response.request_id = request.request_id;
+
       Connection* connection = GetConnection(request.connection_id);
-      if (!connection) {
-        return Error::Code::kNoActiveConnection;
+      if (connection) {
+        response.result =
+            msgs::PresentationConnectionCloseResponse_result::kSuccess;
+        connection->OnClosedByRemote();
+      } else {
+        response.result = msgs::PresentationConnectionCloseResponse_result::
+            kInvalidConnectionId;
       }
 
-      // TODO(btolsch): Do we want closed/discarded/error here?
-      connection->OnClosedByRemote();
-      return result;
+      std::unique_ptr<ProtocolConnection> protocol_connection =
+          NetworkServiceManager::Get()
+              ->GetProtocolConnectionServer()
+              ->CreateProtocolConnection(endpoint_id);
+      if (protocol_connection) {
+        protocol_connection->WriteMessage(
+            response, &msgs::EncodePresentationConnectionCloseResponse);
+      }
+
+      return (response.result ==
+              msgs::PresentationConnectionCloseResponse_result::kSuccess)
+                 ? ErrorOr<size_t>(bytes_decoded)
+                 : Error::Code::kNoActiveConnection;
     }
 
     case msgs::Type::kPresentationConnectionCloseEvent: {
       msgs::PresentationConnectionCloseEvent event;
-      ssize_t result = msgs::DecodePresentationConnectionCloseEvent(
+      ssize_t bytes_decoded = msgs::DecodePresentationConnectionCloseEvent(
           buffer, buffer_size, &event);
-      if (result < 0) {
+      if (bytes_decoded < 0) {
         OSP_LOG_WARN << "decode presentation-connection-close-event error: "
-                     << result;
+                     << bytes_decoded;
         return Error::Code::kParseError;
       }
 
@@ -244,7 +267,7 @@ ErrorOr<size_t> ConnectionManager::OnStreamMessage(
       }
 
       connection->OnClosedByRemote();
-      return result;
+      return bytes_decoded;
     }
 
     // TODO(jophba): The spec says to close the connection if we get a message

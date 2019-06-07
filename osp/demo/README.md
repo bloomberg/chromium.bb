@@ -43,6 +43,10 @@ Then `cat` them in separate terminals while the demo is running.
    log once `avail` has been run.  The demo only supports starting one
    presentation at a time.
  - `msg <string>`: Sends a string message on the open presentation connection.
+ - `close`: Close the open presentation connection without terminating the
+   presentation.
+ - `reconnect`: Reconnect the previously-connected presentation connection.
+   This allows using the `msg` command again.
  - `term`: Terminate the previously started presentation.
 
 ## Receiver commands

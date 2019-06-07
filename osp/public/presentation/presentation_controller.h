@@ -170,6 +170,7 @@ class Controller final : public ServiceListener::Observer,
   static std::string MakePresentationId(const std::string& url,
                                         const std::string& service_id);
 
+  void AddConnection(Connection* connection);
   void OpenConnection(uint64_t connection_id,
                       uint64_t endpoint_id,
                       const std::string& service_id,

@@ -42,10 +42,14 @@ FakeQuicBridge::FakeQuicBridge(platform::ClockNowFunctionPtr now_function) {
 FakeQuicBridge::~FakeQuicBridge() = default;
 
 void FakeQuicBridge::RunTasksUntilIdle() {
+  bool client_idle = true;
+  bool server_idle = true;
   do {
     NetworkServiceManager::Get()->GetProtocolConnectionClient()->RunTasks();
+    client_idle = fake_bridge->idle();
     NetworkServiceManager::Get()->GetProtocolConnectionServer()->RunTasks();
-  } while (!fake_bridge->idle());
+    server_idle = fake_bridge->idle();
+  } while (!client_idle || !server_idle);
 }
 
 }  // namespace openscreen

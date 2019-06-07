@@ -416,6 +416,7 @@ Error Receiver::OnConnectionCreated(uint64_t request_id,
   msgs::PresentationConnectionOpenResponse response;
   response.request_id = request_id;
   response.result = msgs::PresentationConnectionOpenResponse_result::kSuccess;
+  response.connection_id = connection->connection_id();
 
   auto protocol_connection =
       GetProtocolConnection(connection_response.value()->endpoint_id);

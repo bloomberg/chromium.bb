@@ -403,6 +403,12 @@ void RunControllerPollLoop(presentation::Controller* controller) {
     } else if (command_result.command_line.command == "msg") {
       request_delegate.connection->SendString(
           command_result.command_line.argument_tail);
+    } else if (command_result.command_line.command == "close") {
+      request_delegate.connection->Close(
+          presentation::Connection::CloseReason::kClosed);
+    } else if (command_result.command_line.command == "reconnect") {
+      connect_request = controller->ReconnectConnection(
+          std::move(request_delegate.connection), &request_delegate);
     } else if (command_result.command_line.command == "term") {
       request_delegate.connection->Terminate(
           presentation::TerminationReason::kControllerTerminateCalled);
@@ -539,6 +545,7 @@ void PublisherDemo(absl::string_view friendly_name) {
 
   RunReceiverPollLoop(stdin_pollfd, network_service, receiver_delegate);
 
+  receiver_delegate.connection.reset();
   CleanupPublisherDemo(network_service);
 }
 

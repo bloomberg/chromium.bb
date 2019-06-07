@@ -39,6 +39,21 @@ struct StartRequest {
   Connection::Delegate* presentation_connection_delegate;
 };
 
+struct ConnectionOpenRequest {
+  DECLARE_MSG_REQUEST_RESPONSE(ConnectionOpen);
+
+  msgs::PresentationConnectionOpenRequest request;
+  RequestDelegate* delegate;
+  Connection::Delegate* presentation_connection_delegate;
+  std::unique_ptr<Connection> connection;
+};
+
+struct ConnectionCloseRequest {
+  DECLARE_MSG_REQUEST_RESPONSE(ConnectionClose);
+
+  msgs::PresentationConnectionCloseRequest request;
+};
+
 struct TerminationRequest {
   DECLARE_MSG_REQUEST_RESPONSE(Termination);
 
@@ -49,6 +64,8 @@ class Controller::MessageGroupStreams final
     : public ProtocolConnectionClient::ConnectionRequestCallback,
       public ProtocolConnection::Observer,
       public RequestResponseHandler<StartRequest>::Delegate,
+      public RequestResponseHandler<ConnectionOpenRequest>::Delegate,
+      public RequestResponseHandler<ConnectionCloseRequest>::Delegate,
       public RequestResponseHandler<TerminationRequest>::Delegate {
  public:
   MessageGroupStreams(Controller* controller, const std::string& service_id);
@@ -60,6 +77,19 @@ class Controller::MessageGroupStreams final
                          msgs::PresentationStartResponse* response,
                          uint64_t endpoint_id) override;
   void OnError(StartRequest* request, Error error) override;
+
+  uint64_t SendConnectionOpenRequest(ConnectionOpenRequest request);
+  void CancelConnectionOpenRequest(uint64_t request_id);
+  void OnMatchedResponse(ConnectionOpenRequest* request,
+                         msgs::PresentationConnectionOpenResponse* response,
+                         uint64_t endpoint_id) override;
+  void OnError(ConnectionOpenRequest* request, Error error) override;
+
+  void SendConnectionCloseRequest(ConnectionCloseRequest request);
+  void OnMatchedResponse(ConnectionCloseRequest* request,
+                         msgs::PresentationConnectionCloseResponse* response,
+                         uint64_t endpoint_id) override;
+  void OnError(ConnectionCloseRequest* request, Error error) override;
 
   void SendTerminationRequest(TerminationRequest request);
   void OnMatchedResponse(TerminationRequest* request,
@@ -85,11 +115,16 @@ class Controller::MessageGroupStreams final
   uint64_t next_internal_request_id_ = 1;
   ProtocolConnectionClient::ConnectRequest initiation_connect_request_;
   std::unique_ptr<ProtocolConnection> initiation_protocol_connection_;
+  ProtocolConnectionClient::ConnectRequest connection_connect_request_;
+  std::unique_ptr<ProtocolConnection> connection_protocol_connection_;
 
   // TODO(btolsch): Improve the ergo of QuicClient::Connect because this is bad.
   bool initiation_connect_request_stack_{false};
+  bool connection_connect_request_stack_{false};
 
   RequestResponseHandler<StartRequest> initiation_handler_;
+  RequestResponseHandler<ConnectionOpenRequest> connection_open_handler_;
+  RequestResponseHandler<ConnectionCloseRequest> connection_close_handler_;
   RequestResponseHandler<TerminationRequest> termination_handler_;
 };
 
@@ -99,6 +134,8 @@ Controller::MessageGroupStreams::MessageGroupStreams(
     : controller_(controller),
       service_id_(service_id),
       initiation_handler_(this),
+      connection_open_handler_(this),
+      connection_close_handler_(this),
       termination_handler_(this) {}
 
 Controller::MessageGroupStreams::~MessageGroupStreams() = default;
@@ -113,7 +150,7 @@ uint64_t Controller::MessageGroupStreams::SendStartRequest(
             controller_->receiver_endpoints_[service_id_], this);
     initiation_connect_request_stack_ = false;
   }
-  initiation_handler_.WriteMessage(request_id, &request);
+  initiation_handler_.WriteMessage(request_id, std::move(request));
   return request_id;
 }
 
@@ -154,7 +191,92 @@ void Controller::MessageGroupStreams::OnMatchedResponse(
 
 void Controller::MessageGroupStreams::OnError(StartRequest* request,
                                               Error error) {
-  request->delegate->OnError(error);
+  request->delegate->OnError(std::move(error));
+}
+
+uint64_t Controller::MessageGroupStreams::SendConnectionOpenRequest(
+    ConnectionOpenRequest request) {
+  uint64_t request_id = GetNextInternalRequestId();
+  if (!connection_protocol_connection_ && !connection_connect_request_) {
+    connection_connect_request_stack_ = true;
+    connection_connect_request_ =
+        NetworkServiceManager::Get()->GetProtocolConnectionClient()->Connect(
+            controller_->receiver_endpoints_[service_id_], this);
+    connection_connect_request_stack_ = false;
+  }
+  connection_open_handler_.WriteMessage(request_id, std::move(request));
+  return request_id;
+}
+
+void Controller::MessageGroupStreams::CancelConnectionOpenRequest(
+    uint64_t request_id) {
+  connection_open_handler_.CancelMessage(request_id);
+}
+
+void Controller::MessageGroupStreams::OnMatchedResponse(
+    ConnectionOpenRequest* request,
+    msgs::PresentationConnectionOpenResponse* response,
+    uint64_t endpoint_id) {
+  if (response->result !=
+      msgs::PresentationConnectionOpenResponse_result::kSuccess) {
+    std::stringstream ss;
+    ss << "presentation-connection-open-response for " << request->request.url
+       << " failed: " << static_cast<int>(response->result);
+    Error error(Error::Code::kUnknownStartError, ss.str());
+    OSP_LOG_INFO << error.message();
+    request->delegate->OnError(std::move(error));
+    return;
+  }
+  OSP_LOG_INFO << "presentation connection opened to "
+               << request->request.presentation_id;
+  if (request->presentation_connection_delegate) {
+    request->connection = std::make_unique<Connection>(
+        Connection::PresentationInfo{request->request.presentation_id,
+                                     request->request.url},
+        request->presentation_connection_delegate, controller_);
+  }
+  std::unique_ptr<ProtocolConnection> protocol_connection =
+      NetworkServiceManager::Get()
+          ->GetProtocolConnectionClient()
+          ->CreateProtocolConnection(endpoint_id);
+  request->connection->OnConnected(response->connection_id, endpoint_id,
+                                   std::move(protocol_connection));
+  controller_->AddConnection(request->connection.get());
+  request->delegate->OnConnection(std::move(request->connection));
+}
+
+void Controller::MessageGroupStreams::OnError(ConnectionOpenRequest* request,
+                                              Error error) {
+  request->delegate->OnError(std::move(error));
+}
+
+void Controller::MessageGroupStreams::SendConnectionCloseRequest(
+    ConnectionCloseRequest request) {
+  if (!connection_protocol_connection_ && !connection_connect_request_) {
+    connection_connect_request_stack_ = true;
+    connection_connect_request_ =
+        NetworkServiceManager::Get()->GetProtocolConnectionClient()->Connect(
+            controller_->receiver_endpoints_[service_id_], this);
+    connection_connect_request_stack_ = false;
+  }
+  connection_close_handler_.WriteMessage(std::move(request));
+}
+
+void Controller::MessageGroupStreams::OnMatchedResponse(
+    ConnectionCloseRequest* request,
+    msgs::PresentationConnectionCloseResponse* response,
+    uint64_t endpoint_id) {
+  OSP_LOG_IF(INFO,
+             response->result !=
+                 msgs::PresentationConnectionCloseResponse_result::kSuccess)
+      << "error in presentation-connection-close-response: "
+      << static_cast<int>(response->result);
+}
+
+void Controller::MessageGroupStreams::OnError(ConnectionCloseRequest* request,
+                                              Error error) {
+  OSP_LOG_INFO << "got error when closing connection "
+               << request->request.connection_id << ": " << error;
 }
 
 void Controller::MessageGroupStreams::SendTerminationRequest(
@@ -164,7 +286,7 @@ void Controller::MessageGroupStreams::SendTerminationRequest(
         NetworkServiceManager::Get()->GetProtocolConnectionClient()->Connect(
             controller_->receiver_endpoints_[service_id_], this);
   }
-  termination_handler_.WriteMessage(absl::nullopt, &request);
+  termination_handler_.WriteMessage(std::move(request));
 }
 
 void Controller::MessageGroupStreams::OnMatchedResponse(
@@ -191,6 +313,16 @@ void Controller::MessageGroupStreams::OnConnectionOpened(
     initiation_connect_request_.MarkComplete();
     initiation_handler_.SetConnection(initiation_protocol_connection_.get());
     termination_handler_.SetConnection(initiation_protocol_connection_.get());
+  } else if ((connection_connect_request_ &&
+              connection_connect_request_.request_id() == request_id) ||
+             connection_connect_request_stack_) {
+    connection_protocol_connection_ = std::move(connection);
+    connection_protocol_connection_->SetObserver(this);
+    connection_connect_request_.MarkComplete();
+    connection_open_handler_.SetConnection(
+        connection_protocol_connection_.get());
+    connection_close_handler_.SetConnection(
+        connection_protocol_connection_.get());
   }
 }
 
@@ -200,6 +332,11 @@ void Controller::MessageGroupStreams::OnConnectionFailed(uint64_t request_id) {
     initiation_connect_request_.MarkComplete();
     initiation_handler_.Reset();
     termination_handler_.Reset();
+  } else if (connection_connect_request_ &&
+             connection_connect_request_.request_id() == request_id) {
+    connection_connect_request_.MarkComplete();
+    connection_open_handler_.Reset();
+    connection_close_handler_.Reset();
   }
 }
 
@@ -328,7 +465,7 @@ Controller::ConnectRequest Controller::StartPresentation(
   request.presentation_connection_delegate = conn_delegate;
   uint64_t request_id =
       group_streams_[service_id]->SendStartRequest(std::move(request));
-  const bool is_reconnect = false;
+  constexpr bool is_reconnect = false;
   return ConnectRequest(this, service_id, is_reconnect, request_id);
 }
 
@@ -338,20 +475,79 @@ Controller::ConnectRequest Controller::ReconnectPresentation(
     const std::string& service_id,
     RequestDelegate* delegate,
     Connection::Delegate* conn_delegate) {
-  OSP_UNIMPLEMENTED();
-  return ConnectRequest();
+  auto presentation_entry = presentations_.find(presentation_id);
+  if (presentation_entry == presentations_.end()) {
+    delegate->OnError(Error::Code::kNoPresentationFound);
+    return ConnectRequest();
+  }
+  auto matching_url_it =
+      std::find(urls.begin(), urls.end(), presentation_entry->second.url);
+  if (matching_url_it == urls.end()) {
+    delegate->OnError(Error::Code::kNoPresentationFound);
+    return ConnectRequest();
+  }
+  ConnectionOpenRequest request;
+  request.request.url = presentation_entry->second.url;
+  request.request.presentation_id = presentation_id;
+  request.delegate = delegate;
+  request.presentation_connection_delegate = conn_delegate;
+  request.connection = nullptr;
+  uint64_t request_id =
+      group_streams_[service_id]->SendConnectionOpenRequest(std::move(request));
+  constexpr bool is_reconnect = true;
+  return ConnectRequest(this, service_id, is_reconnect, request_id);
 }
 
 Controller::ConnectRequest Controller::ReconnectConnection(
     std::unique_ptr<Connection> connection,
     RequestDelegate* delegate) {
-  OSP_UNIMPLEMENTED();
-  return ConnectRequest();
+  if (connection->state() != Connection::State::kClosed) {
+    delegate->OnError(Error::Code::kInvalidConnectionState);
+    return ConnectRequest();
+  }
+  const Connection::PresentationInfo& info = connection->presentation_info();
+  auto presentation_entry = presentations_.find(info.id);
+  if (presentation_entry == presentations_.end() ||
+      presentation_entry->second.url != info.url) {
+    OSP_LOG_ERROR << "missing ControlledPresentation for non-terminated "
+                     "connection with info ("
+                  << info.id << ", " << info.url << ")";
+    delegate->OnError(Error::Code::kNoPresentationFound);
+    return ConnectRequest();
+  }
+  OSP_DCHECK(connection_manager_->GetConnection(connection->connection_id()))
+      << "otherwise valid connection for reconnect is unknown to the "
+         "connection manager";
+  connection_manager_->RemoveConnection(connection.get());
+  connection->OnConnecting();
+  ConnectionOpenRequest request;
+  request.request.url = info.url;
+  request.request.presentation_id = info.id;
+  request.delegate = delegate;
+  request.presentation_connection_delegate = nullptr;
+  request.connection = std::move(connection);
+  const std::string& service_id = presentation_entry->second.service_id;
+  uint64_t request_id =
+      group_streams_[service_id]->SendConnectionOpenRequest(std::move(request));
+  constexpr bool is_reconnect = true;
+  return ConnectRequest(this, service_id, is_reconnect, request_id);
 }
 
 Error Controller::CloseConnection(Connection* connection,
                                   Connection::CloseReason reason) {
-  OSP_UNIMPLEMENTED();
+  auto presentation_entry =
+      presentations_.find(connection->presentation_info().id);
+  if (presentation_entry == presentations_.end()) {
+    std::stringstream ss;
+    ss << "no presentation found when trying to close connection "
+       << connection->presentation_info().id << ":"
+       << connection->connection_id();
+    return Error(Error::Code::kNoPresentationFound, ss.str());
+  }
+  ConnectionCloseRequest request;
+  request.request.connection_id = connection->connection_id();
+  group_streams_[presentation_entry->second.service_id]
+      ->SendConnectionCloseRequest(std::move(request));
   return Error::None();
 }
 
@@ -492,6 +688,10 @@ std::string Controller::MakePresentationId(const std::string& url,
   return safe_id + ":" + url;
 }
 
+void Controller::AddConnection(Connection* connection) {
+  connection_manager_->AddConnection(connection);
+}
+
 void Controller::OpenConnection(
     uint64_t connection_id,
     uint64_t endpoint_id,
@@ -512,7 +712,7 @@ void Controller::OpenConnection(
   }
   ControlledPresentation& presentation = presentation_entry->second;
   presentation.connections.push_back(connection.get());
-  connection_manager_->AddConnection(connection.get());
+  AddConnection(connection.get());
 
   auto terminate_entry = termination_listener_by_id_.find(presentation_id);
   if (terminate_entry == termination_listener_by_id_.end()) {
@@ -544,7 +744,11 @@ void Controller::CancelConnectRequest(const std::string& service_id,
   auto group_streams_entry = group_streams_.find(service_id);
   if (group_streams_entry == group_streams_.end())
     return;
-  group_streams_entry->second->CancelStartRequest(request_id);
+  if (is_reconnect) {
+    group_streams_entry->second->CancelConnectionOpenRequest(request_id);
+  } else {
+    group_streams_entry->second->CancelStartRequest(request_id);
+  }
 }
 
 void Controller::OnStarted() {}

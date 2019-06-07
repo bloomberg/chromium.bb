@@ -71,6 +71,7 @@ class Error {
 
     kNoActiveConnection,
     kAlreadyClosed,
+    kInvalidConnectionState,
     kNoStartedPresentation,
     kPresentationAlreadyStarted,
 

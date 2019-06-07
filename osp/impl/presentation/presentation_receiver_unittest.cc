@@ -8,6 +8,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "osp/impl/presentation/testing/mock_connection_delegate.h"
 #include "osp/impl/quic/quic_client.h"
 #include "osp/impl/quic/quic_server.h"
 #include "osp/impl/quic/testing/fake_quic_connection_factory.h"
@@ -23,19 +24,6 @@ namespace {
 
 using ::testing::_;
 using ::testing::Invoke;
-
-class MockConnectionDelegate final : public Connection::Delegate {
- public:
-  ~MockConnectionDelegate() override = default;
-
-  MOCK_METHOD0(OnConnected, void());
-  MOCK_METHOD0(OnClosedByRemote, void());
-  MOCK_METHOD0(OnDiscarded, void());
-  MOCK_METHOD1(OnError, void(const absl::string_view message));
-  MOCK_METHOD0(OnTerminated, void());
-  MOCK_METHOD1(OnStringMessage, void(const absl::string_view message));
-  MOCK_METHOD1(OnBinaryMessage, void(const std::vector<uint8_t>& data));
-};
 
 class MockConnectRequest final
     : public ProtocolConnectionClient::ConnectionRequestCallback {

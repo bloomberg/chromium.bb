@@ -7,7 +7,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
+#include "absl/types/optional.h"
 #include "osp/public/message_demuxer.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/protocol_connection.h"
@@ -81,8 +83,14 @@ class RequestResponseHandler : public MessageDemuxer::MessageCallback {
   // Write a message to the underlying protocol connection, or queue it until
   // one is provided via SetConnection.  If |id| is provided, it can be used to
   // cancel the message via CancelMessage.
-  Error WriteMessage(absl::optional<uint64_t> id, RequestT* message) {
-    auto* request_msg = RequestCoderTraits::serial_request(*message);
+  template <typename RequestTRval>
+  typename std::enable_if<
+      !std::is_lvalue_reference<RequestTRval>::value &&
+          std::is_same<typename std::decay<RequestTRval>::type,
+                       RequestT>::value,
+      Error>::type
+  WriteMessage(absl::optional<uint64_t> id, RequestTRval&& message) {
+    auto* request_msg = RequestCoderTraits::serial_request(message);
     if (connection_) {
       request_msg->request_id = GetNextRequestId(connection_->endpoint_id());
       Error result =
@@ -90,12 +98,22 @@ class RequestResponseHandler : public MessageDemuxer::MessageCallback {
       if (!result.ok()) {
         return result;
       }
-      sent_.emplace_back(RequestWithId{id, std::move(*message)});
+      sent_.emplace_back(RequestWithId{id, std::move(message)});
       EnsureResponseWatch();
     } else {
-      to_send_.emplace_back(RequestWithId{id, std::move(*message)});
+      to_send_.emplace_back(RequestWithId{id, std::move(message)});
     }
     return Error::None();
+  }
+
+  template <typename RequestTRval>
+  typename std::enable_if<
+      !std::is_lvalue_reference<RequestTRval>::value &&
+          std::is_same<typename std::decay<RequestTRval>::type,
+                       RequestT>::value,
+      Error>::type
+  WriteMessage(RequestTRval&& message) {
+    return WriteMessage(absl::nullopt, std::move(message));
   }
 
   // Remove the message that was originally written with |id| from the send and

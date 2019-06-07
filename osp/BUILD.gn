@@ -32,6 +32,7 @@ source_set("osp_unittests") {
     "impl/presentation/presentation_connection_unittest.cc",
     "impl/presentation/presentation_controller_unittest.cc",
     "impl/presentation/presentation_receiver_unittest.cc",
+    "impl/presentation/testing/mock_connection_delegate.h",
     "impl/presentation/url_availability_requester_unittest.cc",
     "impl/quic/quic_client_unittest.cc",
     "impl/quic/quic_server_unittest.cc",
