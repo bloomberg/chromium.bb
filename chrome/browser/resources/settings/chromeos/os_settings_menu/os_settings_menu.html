@@ -128,9 +128,10 @@
         <iron-icon icon="settings:laptop-chromebook"></iron-icon>
         $i18n{devicePageTitle}
       </a>
-      <a href="/search">
+      <!-- TODO(jamescook): Rename path to "/assistant". -->
+      <a href="/search" hidden="[[!showAssistant]]">
         <iron-icon icon="cr:search"></iron-icon>
-        $i18n{osSearchPageTitle}
+        $i18n{osAssistantPageTitle}
       </a>
       <a href="/apps" hidden="[[!showApps]]">
         <iron-icon icon="settings:apps"></iron-icon>

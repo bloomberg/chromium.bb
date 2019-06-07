@@ -63,7 +63,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
-#include "base/strings/strcat.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -2309,9 +2308,7 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #endif
     {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
 #if defined(OS_CHROMEOS)
-    {"osSearchPageTitle", is_assistant_allowed
-                              ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
-                              : IDS_SETTINGS_SEARCH},
+    {"osAssistantPageTitle", IDS_OS_SETTINGS_ASSISTANT},
     {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
     {"searchGoogleAssistantEnabled",
      IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED},
@@ -2326,12 +2323,6 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
       base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL));
   html_source->AddString("searchExplanation", search_explanation_text);
 #if defined(OS_CHROMEOS)
-  std::string settings_search_url =
-      base::StrCat({chrome::kChromeUISettingsURL, chrome::kSearchSubPage});
-  html_source->AddString(
-      "osSearchEngineLabel",
-      l10n_util::GetStringFUTF16(IDS_OS_SETTINGS_SEARCH_ENGINE_LABEL,
-                                 base::ASCIIToUTF16(settings_search_url)));
   html_source->AddBoolean("isAssistantAllowed", is_assistant_allowed);
 #endif
 }

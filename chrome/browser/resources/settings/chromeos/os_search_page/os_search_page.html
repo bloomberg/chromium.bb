@@ -6,7 +6,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="../../google_assistant_page/google_assistant_page.html">
 <link rel="import" href="../../google_assistant_page/google_assistant_browser_proxy.html">
-<link rel="import" href="../../icons.html">
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../route.html">
 <link rel="import" href="../../settings_page/settings_animated_pages.html">
@@ -14,52 +13,37 @@
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../../settings_vars_css.html">
 
+<!-- TODO(jamescook): Rename to "os-assistant-page". -->
 <dom-module id="os-settings-search-page">
   <template>
-    <style include="settings-shared md-select">
-      iron-icon {
-        padding-inline-end: 16px;
-      }
+    <style include="settings-shared">
     </style>
+    <!-- TODO(jamescook): Rename section to "assistant". -->
     <settings-animated-pages id="pages" section="search"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-
         <!-- Google Assistant -->
-        <template is="dom-if" if="[[isAssistantAllowed_]]">
-          <div id="assistantSubpageTrigger" class="settings-box first two-line"
-              on-click="onGoogleAssistantTap_" actionable>
-            <div class="start">
-              $i18n{searchGoogleAssistant}
-              <div class="secondary">
-                [[getAssistantEnabledDisabledLabel_(
-                    prefs.settings.voice_interaction.enabled.value)]]
-              </div>
-            </div>
-            <cr-icon-button class="subpage-arrow"
-                aria-label="$i18n{searchGoogleAssistant}"></cr-icon-button>
-          </div>
-        </template>
-
-        <!-- Label explaining that the app launcher search box uses the
-              browser's search engine. -->
-        <div class="settings-box">
+        <div id="assistantSubpageTrigger" class="settings-box first two-line"
+            on-click="onGoogleAssistantTap_" actionable>
           <div class="start">
-            <iron-icon icon="cr:info-outline"></iron-icon>
-            $i18nRaw{osSearchEngineLabel}
+            $i18n{searchGoogleAssistant}
+            <div class="secondary">
+              [[getAssistantEnabledDisabledLabel_(
+                  prefs.settings.voice_interaction.enabled.value)]]
+            </div>
           </div>
+          <cr-icon-button class="subpage-arrow"
+              aria-label="$i18n{searchGoogleAssistant}"></cr-icon-button>
         </div>
       </div>
 
-      <template is="dom-if" if="[[isAssistantAllowed_]]">
-        <template is="dom-if" route-path="/googleAssistant">
-          <settings-subpage
-              associated-control="[[$$('#assistantSubpageTrigger')]]"
-              page-title="$i18n{googleAssistantPageTitle}">
-            <settings-google-assistant-page prefs="{{prefs}}">
-            </settings-google-assistant-page>
-          </settings-subpage>
-        </template>
+      <template is="dom-if" route-path="/googleAssistant">
+        <settings-subpage
+            associated-control="[[$$('#assistantSubpageTrigger')]]"
+            page-title="$i18n{googleAssistantPageTitle}">
+          <settings-google-assistant-page prefs="{{prefs}}">
+          </settings-google-assistant-page>
+        </settings-subpage>
       </template>
     </settings-animated-pages>
   </template>

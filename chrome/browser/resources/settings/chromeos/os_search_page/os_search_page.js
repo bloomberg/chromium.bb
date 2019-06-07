@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview
- * 'os-settings-search-page' contains search and assistant settings.
+ * 'os-settings-search-page' contains assistant settings.
  */
 Polymer({
   is: 'os-settings-search-page',
@@ -16,18 +16,11 @@ Polymer({
 
     /** @type {?Map<string, string>} */
     focusConfig_: Object,
-
-    /** @private Can be disallowed due to flag, policy, locale, etc. */
-    isAssistantAllowed_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('isAssistantAllowed');
-      },
-    },
   },
 
   /** @override */
   ready: function() {
+    assert(loadTimeData.getBoolean('isAssistantAllowed'));
     this.focusConfig_ = new Map();
     if (settings.routes.GOOGLE_ASSISTANT) {
       this.focusConfig_.set(
@@ -38,7 +31,6 @@ Polymer({
 
   /** @private */
   onGoogleAssistantTap_: function() {
-    assert(this.isAssistantAllowed_);
     settings.navigateTo(settings.routes.GOOGLE_ASSISTANT);
   },
 
