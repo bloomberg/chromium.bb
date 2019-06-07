@@ -9,10 +9,13 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
-#include "base/test/clang_coverage.h"
 #include "base/threading/thread_restrictions.h"
 
 #include <windows.h>
+
+#if BUILDFLAG(CLANG_COVERAGE)
+#include "base/test/clang_coverage.h"
+#endif
 
 namespace {
 

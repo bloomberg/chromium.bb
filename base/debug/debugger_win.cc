@@ -8,7 +8,10 @@
 #include <windows.h>
 
 #include "base/clang_coverage_buildflags.h"
+
+#if BUILDFLAG(CLANG_COVERAGE)
 #include "base/test/clang_coverage.h"
+#endif
 
 namespace base {
 namespace debug {
