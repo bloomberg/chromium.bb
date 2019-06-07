@@ -1441,7 +1441,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscovery) {
   EXPECT_EQ(-60, *filter->rssi);
   EXPECT_EQ(nullptr, filter->pathloss.get());
   std::vector<std::string> uuids = *filter->uuids;
-  EXPECT_TRUE(base::ContainsValue(uuids, "1000"));
+  EXPECT_TRUE(base::Contains(uuids, "1000"));
 
   discovery_sessions_[0]->Stop(
       base::Bind(&BluetoothBlueZTest::Callback, base::Unretained(this)),
@@ -1569,8 +1569,8 @@ TEST_F(BluetoothBlueZTest, QueuedSetDiscoveryFilterBeforeStartDiscovery) {
   EXPECT_EQ(-65, *filter->rssi);
   EXPECT_EQ(nullptr, filter->pathloss.get());
   auto uuids = *filter->uuids;
-  EXPECT_TRUE(base::ContainsValue(uuids, "1000"));
-  EXPECT_TRUE(base::ContainsValue(uuids, "1002"));
+  EXPECT_TRUE(base::Contains(uuids, "1000"));
+  EXPECT_TRUE(base::Contains(uuids, "1002"));
 
   discovery_sessions_[0]->Stop(
       base::Bind(&BluetoothBlueZTest::Callback, base::Unretained(this)),
@@ -1674,7 +1674,7 @@ TEST_F(BluetoothBlueZTest, QueuedSetDiscoveryFilterBeforeStartDiscoveryFail) {
   EXPECT_EQ(-65, *filter->rssi);
   EXPECT_EQ(nullptr, filter->pathloss.get());
   auto uuids = *filter->uuids;
-  EXPECT_TRUE(base::ContainsValue(uuids, "1002"));
+  EXPECT_TRUE(base::Contains(uuids, "1002"));
 
   discovery_sessions_[0]->Stop(
       base::Bind(&BluetoothBlueZTest::Callback, base::Unretained(this)),
@@ -1752,7 +1752,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterAfterStartDiscovery) {
   EXPECT_EQ(-60, *filter->rssi);
   EXPECT_EQ(nullptr, filter->pathloss.get());
   std::vector<std::string> uuids = *filter->uuids;
-  EXPECT_TRUE(base::ContainsValue(uuids, "1000"));
+  EXPECT_TRUE(base::Contains(uuids, "1000"));
 
   discovery_sessions_[0]->Stop(
       base::Bind(&BluetoothBlueZTest::Callback, base::Unretained(this)),
@@ -1830,26 +1830,26 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
       EXPECT_EQ(-85, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
       std::vector<std::string> uuids = *filter->uuids;
-      EXPECT_TRUE(base::ContainsValue(uuids, "1000"));
+      EXPECT_TRUE(base::Contains(uuids, "1000"));
     } else if (i == 1) {
       auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
       EXPECT_EQ(-85, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
       std::vector<std::string> uuids = *filter->uuids;
-      EXPECT_TRUE(base::ContainsValue(uuids, "1000"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1001"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1020"));
+      EXPECT_TRUE(base::Contains(uuids, "1000"));
+      EXPECT_TRUE(base::Contains(uuids, "1001"));
+      EXPECT_TRUE(base::Contains(uuids, "1020"));
     } else if (i == 2) {
       auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
       EXPECT_EQ(-85, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
       std::vector<std::string> uuids = *filter->uuids;
-      EXPECT_TRUE(base::ContainsValue(uuids, "1000"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1001"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1003"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1020"));
+      EXPECT_TRUE(base::Contains(uuids, "1000"));
+      EXPECT_TRUE(base::Contains(uuids, "1001"));
+      EXPECT_TRUE(base::Contains(uuids, "1003"));
+      EXPECT_TRUE(base::Contains(uuids, "1020"));
     }
   }
 
@@ -1875,10 +1875,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
       EXPECT_EQ(nullptr, filter->pathloss.get());
       std::vector<std::string> uuids = *filter->uuids;
       EXPECT_EQ(3UL, uuids.size());
-      EXPECT_FALSE(base::ContainsValue(uuids, "1000"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1001"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1003"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1020"));
+      EXPECT_FALSE(base::Contains(uuids, "1000"));
+      EXPECT_TRUE(base::Contains(uuids, "1001"));
+      EXPECT_TRUE(base::Contains(uuids, "1003"));
+      EXPECT_TRUE(base::Contains(uuids, "1020"));
     } else if (i == 1) {
       auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
@@ -1886,10 +1886,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
       EXPECT_EQ(nullptr, filter->pathloss.get());
       std::vector<std::string> uuids = *filter->uuids;
       EXPECT_EQ(2UL, uuids.size());
-      EXPECT_FALSE(base::ContainsValue(uuids, "1000"));
-      EXPECT_FALSE(base::ContainsValue(uuids, "1001"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1003"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1020"));
+      EXPECT_FALSE(base::Contains(uuids, "1000"));
+      EXPECT_FALSE(base::Contains(uuids, "1001"));
+      EXPECT_TRUE(base::Contains(uuids, "1003"));
+      EXPECT_TRUE(base::Contains(uuids, "1020"));
     } else if (i == 2) {
       auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
@@ -1952,19 +1952,19 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
       EXPECT_EQ(-85, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
       std::vector<std::string> uuids = *filter->uuids;
-      EXPECT_TRUE(base::ContainsValue(uuids, "1000"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1003"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1020"));
+      EXPECT_TRUE(base::Contains(uuids, "1000"));
+      EXPECT_TRUE(base::Contains(uuids, "1003"));
+      EXPECT_TRUE(base::Contains(uuids, "1020"));
     } else if (i == 1 || i == 2) {
       auto* filter = fake_bluetooth_adapter_client_->GetDiscoveryFilter();
       EXPECT_EQ("le", *filter->transport);
       EXPECT_EQ(-85, *filter->rssi);
       EXPECT_EQ(nullptr, filter->pathloss.get());
       std::vector<std::string> uuids = *filter->uuids;
-      EXPECT_TRUE(base::ContainsValue(uuids, "1000"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1001"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1003"));
-      EXPECT_TRUE(base::ContainsValue(uuids, "1020"));
+      EXPECT_TRUE(base::Contains(uuids, "1000"));
+      EXPECT_TRUE(base::Contains(uuids, "1001"));
+      EXPECT_TRUE(base::Contains(uuids, "1003"));
+      EXPECT_TRUE(base::Contains(uuids, "1020"));
     }
   }
 
@@ -2032,7 +2032,7 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterMergingTest) {
   EXPECT_EQ(-15, *filter->rssi);
   EXPECT_EQ(nullptr, filter->pathloss.get());
   std::vector<std::string> uuids = *filter->uuids;
-  EXPECT_TRUE(base::ContainsValue(uuids, "1000"));
+  EXPECT_TRUE(base::Contains(uuids, "1000"));
 
   df = new BluetoothDiscoveryFilter(device::BLUETOOTH_TRANSPORT_LE);
   df->SetRSSI(-60);
@@ -2053,9 +2053,9 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterMergingTest) {
   EXPECT_EQ(-60, *filter->rssi);
   EXPECT_EQ(nullptr, filter->pathloss.get());
   uuids = *filter->uuids;
-  EXPECT_TRUE(base::ContainsValue(uuids, "1000"));
-  EXPECT_TRUE(base::ContainsValue(uuids, "1001"));
-  EXPECT_TRUE(base::ContainsValue(uuids, "1020"));
+  EXPECT_TRUE(base::Contains(uuids, "1000"));
+  EXPECT_TRUE(base::Contains(uuids, "1001"));
+  EXPECT_TRUE(base::Contains(uuids, "1020"));
 
   BluetoothDiscoveryFilter* df3 =
       new BluetoothDiscoveryFilter(device::BLUETOOTH_TRANSPORT_CLASSIC);
@@ -2077,10 +2077,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterMergingTest) {
   EXPECT_EQ(-65, *filter->rssi);
   EXPECT_EQ(nullptr, filter->pathloss.get());
   uuids = *filter->uuids;
-  EXPECT_TRUE(base::ContainsValue(uuids, "1000"));
-  EXPECT_TRUE(base::ContainsValue(uuids, "1001"));
-  EXPECT_TRUE(base::ContainsValue(uuids, "1003"));
-  EXPECT_TRUE(base::ContainsValue(uuids, "1020"));
+  EXPECT_TRUE(base::Contains(uuids, "1000"));
+  EXPECT_TRUE(base::Contains(uuids, "1001"));
+  EXPECT_TRUE(base::Contains(uuids, "1003"));
+  EXPECT_TRUE(base::Contains(uuids, "1020"));
 
   // start additionally classic scan
   adapter_->StartDiscoverySession(
@@ -2133,8 +2133,8 @@ TEST_F(BluetoothBlueZTest, DeviceProperties) {
 
   BluetoothDevice::UUIDSet uuids = devices[idx]->GetUUIDs();
   EXPECT_EQ(2U, uuids.size());
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1800")));
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1801")));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID("1800")));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID("1801")));
 
   EXPECT_EQ(BluetoothDevice::VENDOR_ID_USB, devices[idx]->GetVendorIDSource());
   EXPECT_EQ(0x05ac, devices[idx]->GetVendorID());
@@ -2504,8 +2504,8 @@ TEST_F(BluetoothBlueZTest, DeviceUuidsChanged) {
 
   BluetoothDevice::UUIDSet uuids = devices[idx]->GetUUIDs();
   ASSERT_EQ(2U, uuids.size());
-  ASSERT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1800")));
-  ASSERT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1801")));
+  ASSERT_TRUE(base::Contains(uuids, BluetoothUUID("1800")));
+  ASSERT_TRUE(base::Contains(uuids, BluetoothUUID("1801")));
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we change the class of the device.
@@ -2530,11 +2530,11 @@ TEST_F(BluetoothBlueZTest, DeviceUuidsChanged) {
   // Fetching the value should give the new one.
   uuids = devices[idx]->GetUUIDs();
   EXPECT_EQ(5U, uuids.size());
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1800")));
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1801")));
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("110c")));
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("110e")));
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("110a")));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID("1800")));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID("1801")));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID("110c")));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID("110e")));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID("110a")));
 }
 
 TEST_F(BluetoothBlueZTest, DeviceInquiryRSSIInvalidated) {
@@ -2771,7 +2771,7 @@ TEST_F(BluetoothBlueZTest, ConnectUnpairableDevice) {
   // Verify is a HID device and is not connectable.
   BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
   EXPECT_EQ(1U, uuids.size());
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1124")));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID("1124")));
   EXPECT_FALSE(device->IsConnectable());
 }
 
@@ -3074,7 +3074,7 @@ TEST_F(BluetoothBlueZTest, PairLegacyAutopair) {
   // Verify is a HID device and is connectable.
   BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
   EXPECT_EQ(1U, uuids.size());
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1124")));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID("1124")));
   EXPECT_TRUE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
@@ -3131,7 +3131,7 @@ TEST_F(BluetoothBlueZTest, PairDisplayPinCode) {
   // Verify is a HID device and is connectable.
   BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
   EXPECT_EQ(1U, uuids.size());
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1124")));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID("1124")));
   EXPECT_TRUE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
@@ -3208,7 +3208,7 @@ TEST_F(BluetoothBlueZTest, PairDisplayPasskey) {
   // Verify is a HID device.
   BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
   EXPECT_EQ(1U, uuids.size());
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1124")));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID("1124")));
 
   // And usually not connectable.
   EXPECT_FALSE(device->IsConnectable());
