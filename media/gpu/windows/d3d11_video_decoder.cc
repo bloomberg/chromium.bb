@@ -713,8 +713,15 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   double pixel_aspect_ratio = config_.GetPixelAspectRatio();
 
   base::TimeDelta timestamp = picture_buffer->timestamp_;
+
+  MailboxHolderArray mailbox_holders;
+  if (!picture_buffer->ProcessTexture(&mailbox_holders)) {
+    NotifyError("Unable to process texture");
+    return;
+  }
+
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
-      texture_selector_->pixel_format, picture_buffer->ProcessTexture(),
+      texture_selector_->pixel_format, mailbox_holders,
       VideoFrame::ReleaseMailboxCB(), picture_buffer->size(), visible_rect,
       GetNaturalSize(visible_rect, pixel_aspect_ratio), timestamp);
 

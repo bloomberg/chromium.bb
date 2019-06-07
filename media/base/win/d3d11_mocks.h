@@ -532,6 +532,56 @@ class D3D11VideoDevice1Mock : public MockCOMInterface<ID3D11VideoDevice1> {
                        HRESULT(const GUID&, const IUnknown*));
 };
 
+class D3D11VideoProcessorEnumeratorMock
+    : public MockCOMInterface<ID3D11VideoProcessorEnumerator> {
+ public:
+  D3D11VideoProcessorEnumeratorMock();
+  ~D3D11VideoProcessorEnumeratorMock() override;
+
+  MOCK_STDCALL_METHOD1(GetDevice, void(ID3D11Device**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(const GUID&, UINT*, void*));
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(const GUID&, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(const GUID&, const IUnknown*));
+
+  MOCK_STDCALL_METHOD2(GetVideoProcessorRateConversionCaps,
+                       HRESULT(UINT,
+                               D3D11_VIDEO_PROCESSOR_RATE_CONVERSION_CAPS*));
+
+  MOCK_STDCALL_METHOD2(GetVideoProcessorFilterRange,
+                       HRESULT(D3D11_VIDEO_PROCESSOR_FILTER,
+                               D3D11_VIDEO_PROCESSOR_FILTER_RANGE*));
+
+  MOCK_STDCALL_METHOD3(GetVideoProcessorCustomRate,
+                       HRESULT(UINT, UINT, D3D11_VIDEO_PROCESSOR_CUSTOM_RATE*));
+
+  MOCK_STDCALL_METHOD1(GetVideoProcessorContentDesc,
+                       HRESULT(D3D11_VIDEO_PROCESSOR_CONTENT_DESC*));
+
+  MOCK_STDCALL_METHOD1(GetVideoProcessorCaps,
+                       HRESULT(D3D11_VIDEO_PROCESSOR_CAPS*));
+
+  MOCK_STDCALL_METHOD2(CheckVideoProcessorFormat, HRESULT(DXGI_FORMAT, UINT*));
+};
+
+class D3D11VideoProcessorMock : public MockCOMInterface<ID3D11VideoProcessor> {
+ public:
+  D3D11VideoProcessorMock();
+  ~D3D11VideoProcessorMock() override;
+
+  MOCK_STDCALL_METHOD1(GetDevice, void(ID3D11Device**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(const GUID&, UINT*, void*));
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(const GUID&, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(const GUID&, const IUnknown*));
+
+  MOCK_STDCALL_METHOD1(GetContentDesc,
+                       void(D3D11_VIDEO_PROCESSOR_CONTENT_DESC*));
+
+  MOCK_STDCALL_METHOD1(GetRateConversionCaps,
+                       void(D3D11_VIDEO_PROCESSOR_RATE_CONVERSION_CAPS*));
+};
+
 class D3D11VideoContextMock : public MockCOMInterface<ID3D11VideoContext> {
  public:
   D3D11VideoContextMock();

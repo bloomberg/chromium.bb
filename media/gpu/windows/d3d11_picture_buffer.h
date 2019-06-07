@@ -61,8 +61,8 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
             int textures_per_picture,
             std::unique_ptr<MediaLog> media_log);
 
-  // Return the mailbox holders that can be used to create a VideoFrame for us.
-  const MailboxHolderArray& ProcessTexture() const;
+  // Set the contents of a mailbox holder array, return true if successful.
+  bool ProcessTexture(MailboxHolderArray* mailbox_dest);
   ComD3D11Texture2D Texture() const;
 
   const gfx::Size& size() const { return size_; }
