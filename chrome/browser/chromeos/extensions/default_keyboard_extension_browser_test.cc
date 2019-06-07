@@ -94,9 +94,8 @@ DefaultKeyboardExtensionBrowserTest::GetKeyboardWebContents(
     const std::string& id) {
   // Ensure the keyboard is shown.
   auto* client = ChromeKeyboardControllerClient::Get();
-  client->SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kExtensionEnabled);
+  client->SetEnableFlag(keyboard::KeyboardEnableFlag::kExtensionEnabled);
   client->ShowKeyboard();
-  client->FlushForTesting();
 
   GURL url = extensions::Extension::GetBaseURLFromExtensionId(id);
   std::unique_ptr<content::RenderWidgetHostIterator> widgets(

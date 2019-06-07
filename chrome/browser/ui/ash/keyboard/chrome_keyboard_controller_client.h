@@ -9,8 +9,8 @@
 #include <set>
 #include <vector>
 
-#include "ash/public/interfaces/keyboard_config.mojom.h"
-#include "ash/public/interfaces/keyboard_controller.mojom.h"
+#include "ash/public/cpp/keyboard/keyboard_config.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -18,7 +18,6 @@
 #include "base/observer_list_types.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "url/gurl.h"
 
 class ChromeKeyboardWebContents;
@@ -28,15 +27,11 @@ namespace aura {
 class Window;
 }
 
-namespace service_manager {
-class Connector;
-}
-
-// This class implements mojom::KeyboardControllerObserver and makes calls
-// into the mojom::KeyboardController service. It also observes keyboard prefs
+// This class implements KeyboardControllerObserver and makes calls
+// into the KeyboardController service. It also observes keyboard prefs
 // and enables or disables the keyboard accordingly.
 class ChromeKeyboardControllerClient
-    : public ash::mojom::KeyboardControllerObserver,
+    : public ash::KeyboardControllerObserver,
       public session_manager::SessionManagerObserver {
  public:
   // Convenience observer allowing UI classes to observe the global instance of
@@ -62,13 +57,13 @@ class ChromeKeyboardControllerClient
   };
 
   // Creates the singleton instance for chrome or browser tests.
-  static std::unique_ptr<ChromeKeyboardControllerClient> Create(
-      service_manager::Connector* connector);
+  // |Init| needs to be called after creation.
+  static std::unique_ptr<ChromeKeyboardControllerClient> Create();
 
   // Creates the singleton instance for unit tests where there is no
   // SessionManager. Prefs will not be observed or affect the enabled state.
-  static std::unique_ptr<ChromeKeyboardControllerClient> CreateForTest(
-      service_manager::Connector* connector);
+  // |Init| needs to be called after creation.
+  static std::unique_ptr<ChromeKeyboardControllerClient> CreateForTest();
 
   // Static getter. The single instance must be instantiated first.
   static ChromeKeyboardControllerClient* Get();
@@ -77,6 +72,9 @@ class ChromeKeyboardControllerClient
   static bool HasInstance();
 
   ~ChromeKeyboardControllerClient() override;
+
+  // Called after ash::Shell is created.
+  void Init(ash::KeyboardController* keyboard_controller);
 
   // Called before Shell or the primary profile is destroyed.
   void Shutdown();
@@ -89,28 +87,28 @@ class ChromeKeyboardControllerClient
   void NotifyKeyboardLoaded();
 
   // Returns the cached KeyboardConfig value.
-  keyboard::mojom::KeyboardConfig GetKeyboardConfig();
+  keyboard::KeyboardConfig GetKeyboardConfig();
 
   // Sets the new keyboard configuration and updates the cached config.
-  void SetKeyboardConfig(const keyboard::mojom::KeyboardConfig& config);
+  void SetKeyboardConfig(const keyboard::KeyboardConfig& config);
 
   // Invokes |callback| with the current enabled state. Call this after
   // Set/ClearEnableFlag to get the updated enabled state.
   void GetKeyboardEnabled(base::OnceCallback<void(bool)> callback);
 
   // Sets/clears the privided keyboard enable state.
-  void SetEnableFlag(const keyboard::mojom::KeyboardEnableFlag& flag);
-  void ClearEnableFlag(const keyboard::mojom::KeyboardEnableFlag& flag);
+  void SetEnableFlag(const keyboard::KeyboardEnableFlag& flag);
+  void ClearEnableFlag(const keyboard::KeyboardEnableFlag& flag);
 
   // Returns whether |flag| has been set.
-  bool IsEnableFlagSet(const keyboard::mojom::KeyboardEnableFlag& flag);
+  bool IsEnableFlagSet(const keyboard::KeyboardEnableFlag& flag);
 
-  // Calls forwarded to ash.mojom.KeyboardController.
+  // Calls forwarded to ash::KeyboardController.
   void ReloadKeyboardIfNeeded();
   void RebuildKeyboardIfEnabled();
   void ShowKeyboard();
-  void HideKeyboard(ash::mojom::HideReason reason);
-  void SetContainerType(keyboard::mojom::ContainerType container_type,
+  void HideKeyboard(ash::HideReason reason);
+  void SetContainerType(keyboard::ContainerType container_type,
                         const base::Optional<gfx::Rect>& target_bounds,
                         base::OnceCallback<void(bool)> callback);
   void SetKeyboardLocked(bool locked);
@@ -131,29 +129,23 @@ class ChromeKeyboardControllerClient
   bool is_keyboard_loaded() { return is_keyboard_loaded_; }
   bool is_keyboard_visible() { return is_keyboard_visible_; }
 
-  void FlushForTesting();
-
   void set_profile_for_test(Profile* profile) { profile_for_test_ = profile; }
   void set_virtual_keyboard_url_for_test(const GURL& url) {
     virtual_keyboard_url_for_test_ = url;
   }
 
  private:
-  // The constructor is private to ensure that SessionManager exists for non
-  // test usage. Use Create or CreateForTest instead.
-  explicit ChromeKeyboardControllerClient(
-      service_manager::Connector* connector);
+  ChromeKeyboardControllerClient();
 
   // Called from Create() to observer session_SessionManager and initialize
   // |pref_change_registrar_| once the session starts.
   void InitializePrefObserver();
 
-  // keyboard::mojom::KeyboardControllerObserver:
+  // ash::KeyboardControllerObserver:
   void OnKeyboardEnableFlagsChanged(
-      const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags) override;
+      const std::vector<keyboard::KeyboardEnableFlag>& flags) override;
   void OnKeyboardEnabledChanged(bool enabled) override;
-  void OnKeyboardConfigChanged(
-      keyboard::mojom::KeyboardConfigPtr config) override;
+  void OnKeyboardConfigChanged(const keyboard::KeyboardConfig& config) override;
   void OnKeyboardVisibilityChanged(bool visible) override;
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& screen_bounds) override;
   void OnKeyboardOccludedBoundsChanged(const gfx::Rect& screen_bounds) override;
@@ -175,19 +167,16 @@ class ChromeKeyboardControllerClient
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  ash::mojom::KeyboardControllerPtr keyboard_controller_ptr_;
-  mojo::AssociatedBinding<ash::mojom::KeyboardControllerObserver>
-      keyboard_controller_observer_binding_{this};
+  ash::KeyboardController* keyboard_controller_ = nullptr;
 
   // Set when the WS is used and OnLoadKeyboardContentsRequested is called.
   std::unique_ptr<ChromeKeyboardWebContents> keyboard_contents_;
 
-  // Cached copy of the latest config provided by mojom::KeyboardController.
-  keyboard::mojom::KeyboardConfigPtr cached_keyboard_config_;
+  // Cached copy of the latest config provided by KeyboardController.
+  base::Optional<keyboard::KeyboardConfig> cached_keyboard_config_;
 
-  // Cached copy of the active enabled flags provided by
-  // mojom::KeyboardController
-  std::set<keyboard::mojom::KeyboardEnableFlag> keyboard_enable_flags_;
+  // Cached copy of the active enabled flags provided by KeyboardController.
+  std::set<keyboard::KeyboardEnableFlag> keyboard_enable_flags_;
 
   // Tracks the enabled state of the keyboard.
   bool is_keyboard_enabled_ = false;

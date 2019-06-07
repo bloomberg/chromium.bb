@@ -27,8 +27,8 @@ ContainerFloatingBehavior::ContainerFloatingBehavior(Delegate* delegate)
 
 ContainerFloatingBehavior::~ContainerFloatingBehavior() = default;
 
-mojom::ContainerType ContainerFloatingBehavior::GetType() const {
-  return mojom::ContainerType::kFloating;
+ContainerType ContainerFloatingBehavior::GetType() const {
+  return ContainerType::kFloating;
 }
 
 void ContainerFloatingBehavior::DoHidingAnimation(

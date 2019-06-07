@@ -17,9 +17,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
-using keyboard::mojom::KeyboardConfig;
-using keyboard::mojom::KeyboardConfigPtr;
-using keyboard::mojom::KeyboardEnableFlag;
+using keyboard::KeyboardConfig;
+using keyboard::KeyboardEnableFlag;
 
 namespace ash {
 
@@ -36,11 +35,6 @@ AshKeyboardController::~AshKeyboardController() {
   keyboard_controller_->RemoveObserver(this);
   if (session_controller_)  // May be null in tests.
     session_controller_->RemoveObserver(this);
-}
-
-void AshKeyboardController::BindRequest(
-    mojom::KeyboardControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
 }
 
 void AshKeyboardController::CreateVirtualKeyboard(
@@ -65,26 +59,21 @@ void AshKeyboardController::DestroyVirtualKeyboard() {
 void AshKeyboardController::SendOnKeyboardVisibleBoundsChanged(
     const gfx::Rect& screen_bounds) {
   DVLOG(1) << "OnKeyboardVisibleBoundsChanged: " << screen_bounds.ToString();
-  // Pass the bounds in screen coordinates over mojo.
-  observers_.ForAllPtrs(
-      [&screen_bounds](mojom::KeyboardControllerObserver* observer) {
-        observer->OnKeyboardVisibleBoundsChanged(screen_bounds);
-      });
+  for (auto& observer : observers_)
+    observer.OnKeyboardVisibleBoundsChanged(screen_bounds);
 }
 
 void AshKeyboardController::SendOnLoadKeyboardContentsRequested() {
-  observers_.ForAllPtrs([](mojom::KeyboardControllerObserver* observer) {
-    observer->OnLoadKeyboardContentsRequested();
-  });
+  for (auto& observer : observers_)
+    observer.OnLoadKeyboardContentsRequested();
 }
 
 void AshKeyboardController::SendOnKeyboardUIDestroyed() {
-  observers_.ForAllPtrs([](mojom::KeyboardControllerObserver* observer) {
-    observer->OnKeyboardUIDestroyed();
-  });
+  for (auto& observer : observers_)
+    observer.OnKeyboardUIDestroyed();
 }
 
-// mojom::KeyboardController
+// ash::KeyboardController
 
 void AshKeyboardController::KeyboardContentsLoaded(
     const gfx::Size& size) {
@@ -93,13 +82,12 @@ void AshKeyboardController::KeyboardContentsLoaded(
 
 void AshKeyboardController::GetKeyboardConfig(
     GetKeyboardConfigCallback callback) {
-  std::move(callback).Run(
-      KeyboardConfig::New(keyboard_controller_->keyboard_config()));
+  std::move(callback).Run(keyboard_controller_->keyboard_config());
 }
 
 void AshKeyboardController::SetKeyboardConfig(
-    KeyboardConfigPtr keyboard_config) {
-  keyboard_controller_->UpdateKeyboardConfig(*keyboard_config);
+    const KeyboardConfig& keyboard_config) {
+  keyboard_controller_->UpdateKeyboardConfig(keyboard_config);
 }
 
 void AshKeyboardController::IsKeyboardEnabled(
@@ -116,10 +104,10 @@ void AshKeyboardController::ClearEnableFlag(KeyboardEnableFlag flag) {
 }
 
 void AshKeyboardController::GetEnableFlags(GetEnableFlagsCallback callback) {
-  const std::set<keyboard::mojom::KeyboardEnableFlag>& keyboard_enable_flags =
+  const std::set<keyboard::KeyboardEnableFlag>& keyboard_enable_flags =
       keyboard_controller_->keyboard_enable_flags();
-  std::vector<keyboard::mojom::KeyboardEnableFlag> flags(
-      keyboard_enable_flags.begin(), keyboard_enable_flags.end());
+  std::vector<keyboard::KeyboardEnableFlag> flags(keyboard_enable_flags.begin(),
+                                                  keyboard_enable_flags.end());
   std::move(callback).Run(std::move(flags));
 }
 
@@ -144,21 +132,21 @@ void AshKeyboardController::ShowKeyboard() {
     keyboard_controller_->ShowKeyboard(false /* lock */);
 }
 
-void AshKeyboardController::HideKeyboard(mojom::HideReason reason) {
+void AshKeyboardController::HideKeyboard(HideReason reason) {
   if (!keyboard_controller_->IsEnabled())
     return;
   switch (reason) {
-    case mojom::HideReason::kUser:
+    case HideReason::kUser:
       keyboard_controller_->HideKeyboardByUser();
       break;
-    case mojom::HideReason::kSystem:
+    case HideReason::kSystem:
       keyboard_controller_->HideKeyboardExplicitlyBySystem();
       break;
   }
 }
 
 void AshKeyboardController::SetContainerType(
-    keyboard::mojom::ContainerType container_type,
+    keyboard::ContainerType container_type,
     const base::Optional<gfx::Rect>& target_bounds,
     SetContainerTypeCallback callback) {
   keyboard_controller_->SetContainerType(container_type, target_bounds,
@@ -187,10 +175,8 @@ void AshKeyboardController::SetDraggableArea(const gfx::Rect& bounds) {
 }
 
 void AshKeyboardController::AddObserver(
-    mojom::KeyboardControllerObserverAssociatedPtrInfo observer) {
-  mojom::KeyboardControllerObserverAssociatedPtr observer_ptr;
-  observer_ptr.Bind(std::move(observer));
-  observers_.AddPtr(std::move(observer_ptr));
+    ash::KeyboardControllerObserver* observer) {
+  observers_.AddObserver(observer);
 }
 
 // SessionObserver
@@ -226,18 +212,14 @@ void AshKeyboardController::OnRootWindowClosing(aura::Window* root_window) {
 }
 
 void AshKeyboardController::OnKeyboardConfigChanged() {
-  KeyboardConfigPtr config =
-      KeyboardConfig::New(keyboard_controller_->keyboard_config());
-  observers_.ForAllPtrs([&config](mojom::KeyboardControllerObserver* observer) {
-    observer->OnKeyboardConfigChanged(config.Clone());
-  });
+  KeyboardConfig config = keyboard_controller_->keyboard_config();
+  for (auto& observer : observers_)
+    observer.OnKeyboardConfigChanged(config);
 }
 
 void AshKeyboardController::OnKeyboardVisibilityStateChanged(bool is_visible) {
-  observers_.ForAllPtrs(
-      [is_visible](mojom::KeyboardControllerObserver* observer) {
-        observer->OnKeyboardVisibilityChanged(is_visible);
-      });
+  for (auto& observer : observers_)
+    observer.OnKeyboardVisibilityChanged(is_visible);
 }
 
 void AshKeyboardController::OnKeyboardVisibleBoundsChanged(
@@ -248,27 +230,22 @@ void AshKeyboardController::OnKeyboardVisibleBoundsChanged(
 void AshKeyboardController::OnKeyboardWorkspaceOccludedBoundsChanged(
     const gfx::Rect& screen_bounds) {
   DVLOG(1) << "OnKeyboardOccludedBoundsChanged: " << screen_bounds.ToString();
-  // Pass the bounds in screen coordinates over mojo.
-  observers_.ForAllPtrs(
-      [&screen_bounds](mojom::KeyboardControllerObserver* observer) {
-        observer->OnKeyboardOccludedBoundsChanged(screen_bounds);
-      });
+  for (auto& observer : observers_)
+    observer.OnKeyboardOccludedBoundsChanged(screen_bounds);
 }
 
 void AshKeyboardController::OnKeyboardEnableFlagsChanged(
-    std::set<keyboard::mojom::KeyboardEnableFlag>& keyboard_enable_flags) {
-  std::vector<keyboard::mojom::KeyboardEnableFlag> flags(
-      keyboard_enable_flags.begin(), keyboard_enable_flags.end());
-  observers_.ForAllPtrs([&flags](mojom::KeyboardControllerObserver* observer) {
-    observer->OnKeyboardEnableFlagsChanged(flags);
-  });
+    const std::set<keyboard::KeyboardEnableFlag>& keyboard_enable_flags) {
+  std::vector<keyboard::KeyboardEnableFlag> flags(keyboard_enable_flags.begin(),
+                                                  keyboard_enable_flags.end());
+  for (auto& observer : observers_) {
+    observer.OnKeyboardEnableFlagsChanged(flags);
+  }
 }
 
 void AshKeyboardController::OnKeyboardEnabledChanged(bool is_enabled) {
-  observers_.ForAllPtrs(
-      [is_enabled](mojom::KeyboardControllerObserver* observer) {
-        observer->OnKeyboardEnabledChanged(is_enabled);
-      });
+  for (auto& observer : observers_)
+    observer.OnKeyboardEnabledChanged(is_enabled);
 }
 
 }  // namespace ash

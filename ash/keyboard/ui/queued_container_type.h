@@ -5,7 +5,7 @@
 #ifndef ASH_KEYBOARD_UI_QUEUED_CONTAINER_TYPE_H_
 #define ASH_KEYBOARD_UI_QUEUED_CONTAINER_TYPE_H_
 
-#include "ash/public/interfaces/keyboard_controller_types.mojom.h"
+#include "ash/public/cpp/keyboard/keyboard_types.h"
 #include "base/bind.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
@@ -23,16 +23,16 @@ class KeyboardController;
 class QueuedContainerType {
  public:
   QueuedContainerType(KeyboardController* controller,
-                      mojom::ContainerType container_type,
+                      ContainerType container_type,
                       base::Optional<gfx::Rect> bounds,
                       base::OnceCallback<void(bool success)> callback);
   ~QueuedContainerType();
-  mojom::ContainerType container_type() { return container_type_; }
+  ContainerType container_type() { return container_type_; }
   base::Optional<gfx::Rect> target_bounds() { return bounds_; }
 
  private:
   KeyboardController* controller_;
-  mojom::ContainerType container_type_;
+  ContainerType container_type_;
   base::Optional<gfx::Rect> bounds_;
   base::OnceCallback<void(bool success)> callback_;
 };

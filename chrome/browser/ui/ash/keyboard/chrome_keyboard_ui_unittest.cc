@@ -30,7 +30,7 @@ class ChromeKeyboardUITest : public ChromeRenderViewHostTestHarness {
     if (::features::IsUsingWindowService())
       return;
     chrome_keyboard_controller_client_ =
-        ChromeKeyboardControllerClient::CreateForTest(nullptr /* connector */);
+        ChromeKeyboardControllerClient::CreateForTest();
     chrome_keyboard_ui_ = std::make_unique<ChromeKeyboardUI>(profile());
   }
 

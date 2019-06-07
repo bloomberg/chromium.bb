@@ -37,9 +37,8 @@ class VirtualKeyboardTrayTest : public AshTestBase {
 
     // These tests only apply to the floating virtual keyboard, as it is the
     // only case where both the virtual keyboard and the shelf are visible.
-    keyboard_controller()->SetContainerType(
-        keyboard::mojom::ContainerType::kFloating, base::nullopt,
-        base::DoNothing());
+    keyboard_controller()->SetContainerType(keyboard::ContainerType::kFloating,
+                                            base::nullopt, base::DoNothing());
   }
 
   keyboard::KeyboardController* keyboard_controller() {

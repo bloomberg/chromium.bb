@@ -10,8 +10,8 @@
 #include "ash/keyboard/ui/container_behavior.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
-#include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -19,63 +19,55 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
 
-using keyboard::mojom::KeyboardConfig;
-using keyboard::mojom::KeyboardConfigPtr;
-using keyboard::mojom::KeyboardEnableFlag;
+using keyboard::KeyboardConfig;
+using keyboard::KeyboardEnableFlag;
 
 namespace ash {
 
 namespace {
 
+// TODO(shend): Remove this as AshKeyboardController no longer uses mojo.
 class TestClient {
  public:
-  explicit TestClient(service_manager::Connector* connector) {
-    connector->BindInterface("test", &keyboard_controller_ptr_);
-  }
+  explicit TestClient()
+      : keyboard_controller_(Shell::Get()->ash_keyboard_controller()) {}
 
   ~TestClient() = default;
 
   bool IsKeyboardEnabled() {
-    keyboard_controller_ptr_->IsKeyboardEnabled(base::BindOnce(
+    keyboard_controller_->IsKeyboardEnabled(base::BindOnce(
         &TestClient::OnIsKeyboardEnabled, base::Unretained(this)));
-    keyboard_controller_ptr_.FlushForTesting();
     return is_enabled_;
   }
 
   void GetKeyboardConfig() {
-    keyboard_controller_ptr_->GetKeyboardConfig(base::BindOnce(
+    keyboard_controller_->GetKeyboardConfig(base::BindOnce(
         &TestClient::OnGetKeyboardConfig, base::Unretained(this)));
-    keyboard_controller_ptr_.FlushForTesting();
   }
 
-  void SetKeyboardConfig(KeyboardConfigPtr config) {
-    keyboard_controller_ptr_->SetKeyboardConfig(std::move(config));
-    keyboard_controller_ptr_.FlushForTesting();
+  void SetKeyboardConfig(KeyboardConfig config) {
+    keyboard_controller_->SetKeyboardConfig(std::move(config));
   }
 
   void SetEnableFlag(KeyboardEnableFlag flag) {
-    keyboard_controller_ptr_->SetEnableFlag(flag);
-    keyboard_controller_ptr_.FlushForTesting();
+    keyboard_controller_->SetEnableFlag(flag);
   }
 
   void ClearEnableFlag(KeyboardEnableFlag flag) {
-    keyboard_controller_ptr_->ClearEnableFlag(flag);
-    keyboard_controller_ptr_.FlushForTesting();
+    keyboard_controller_->ClearEnableFlag(flag);
   }
 
-  std::vector<keyboard::mojom::KeyboardEnableFlag> GetEnableFlags() {
-    std::vector<keyboard::mojom::KeyboardEnableFlag> enable_flags;
+  std::vector<keyboard::KeyboardEnableFlag> GetEnableFlags() {
+    std::vector<keyboard::KeyboardEnableFlag> enable_flags;
     base::RunLoop run_loop;
-    keyboard_controller_ptr_->GetEnableFlags(base::BindOnce(
-        [](std::vector<keyboard::mojom::KeyboardEnableFlag>* enable_flags,
+    keyboard_controller_->GetEnableFlags(base::BindOnce(
+        [](std::vector<keyboard::KeyboardEnableFlag>* enable_flags,
            base::OnceClosure callback,
-           const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags) {
+           const std::vector<keyboard::KeyboardEnableFlag>& flags) {
           *enable_flags = flags;
           std::move(callback).Run();
         },
@@ -85,32 +77,24 @@ class TestClient {
   }
 
   void RebuildKeyboardIfEnabled() {
-    keyboard_controller_ptr_->RebuildKeyboardIfEnabled();
-    keyboard_controller_ptr_.FlushForTesting();
+    keyboard_controller_->RebuildKeyboardIfEnabled();
   }
 
   bool IsKeyboardVisible() {
-    keyboard_controller_ptr_->IsKeyboardVisible(base::BindOnce(
+    keyboard_controller_->IsKeyboardVisible(base::BindOnce(
         &TestClient::OnIsKeyboardVisible, base::Unretained(this)));
-    keyboard_controller_ptr_.FlushForTesting();
     return is_visible_;
   }
 
-  void ShowKeyboard() {
-    keyboard_controller_ptr_->ShowKeyboard();
-    keyboard_controller_ptr_.FlushForTesting();
-  }
+  void ShowKeyboard() { keyboard_controller_->ShowKeyboard(); }
 
-  void HideKeyboard() {
-    keyboard_controller_ptr_->HideKeyboard(mojom::HideReason::kUser);
-    keyboard_controller_ptr_.FlushForTesting();
-  }
+  void HideKeyboard() { keyboard_controller_->HideKeyboard(HideReason::kUser); }
 
-  bool SetContainerType(keyboard::mojom::ContainerType container_type,
+  bool SetContainerType(keyboard::ContainerType container_type,
                         const base::Optional<gfx::Rect>& target_bounds) {
     bool result;
     base::RunLoop run_loop;
-    keyboard_controller_ptr_->SetContainerType(
+    keyboard_controller_->SetContainerType(
         container_type, target_bounds,
         base::BindOnce(
             [](bool* result_ptr, base::OnceClosure callback, bool result) {
@@ -123,26 +107,20 @@ class TestClient {
   }
 
   void SetKeyboardLocked(bool locked) {
-    keyboard_controller_ptr_->SetKeyboardLocked(locked);
-    keyboard_controller_ptr_.FlushForTesting();
+    keyboard_controller_->SetKeyboardLocked(locked);
   }
 
   void SetOccludedBounds(const std::vector<gfx::Rect>& bounds) {
-    keyboard_controller_ptr_->SetOccludedBounds(bounds);
-    keyboard_controller_ptr_.FlushForTesting();
+    keyboard_controller_->SetOccludedBounds(bounds);
   }
 
   void SetHitTestBounds(const std::vector<gfx::Rect>& bounds) {
-    keyboard_controller_ptr_->SetHitTestBounds(bounds);
-    keyboard_controller_ptr_.FlushForTesting();
+    keyboard_controller_->SetHitTestBounds(bounds);
   }
 
   void SetDraggableArea(const gfx::Rect& bounds) {
-    keyboard_controller_ptr_->SetDraggableArea(bounds);
-    keyboard_controller_ptr_.FlushForTesting();
+    keyboard_controller_->SetDraggableArea(bounds);
   }
-
-  void FlushMojoForTesting() { keyboard_controller_ptr_.FlushForTesting(); }
 
   int got_keyboard_config_count() const { return got_keyboard_config_count_; }
   const KeyboardConfig& keyboard_config() const { return keyboard_config_; }
@@ -151,16 +129,16 @@ class TestClient {
   void OnIsKeyboardEnabled(bool enabled) { is_enabled_ = enabled; }
   void OnIsKeyboardVisible(bool visible) { is_visible_ = visible; }
 
-  void OnGetKeyboardConfig(KeyboardConfigPtr config) {
+  void OnGetKeyboardConfig(const KeyboardConfig& config) {
     ++got_keyboard_config_count_;
-    keyboard_config_ = *config;
+    keyboard_config_ = config;
   }
 
+  KeyboardController* keyboard_controller_ = nullptr;
   bool is_enabled_ = false;
   bool is_visible_ = false;
   int got_keyboard_config_count_ = 0;
   KeyboardConfig keyboard_config_;
-  mojom::KeyboardControllerPtr keyboard_controller_ptr_;
 };
 
 class TestContainerBehavior : public keyboard::ContainerBehavior {
@@ -198,7 +176,7 @@ class TestContainerBehavior : public keyboard::ContainerBehavior {
     return false;
   }
 
-  keyboard::mojom::ContainerType GetType() const override { return type_; }
+  keyboard::ContainerType GetType() const override { return type_; }
 
   bool TextBlurHidesKeyboard() const override { return false; }
 
@@ -221,8 +199,7 @@ class TestContainerBehavior : public keyboard::ContainerBehavior {
   const gfx::Rect& draggable_area() const { return draggable_area_; }
 
  private:
-  keyboard::mojom::ContainerType type_ =
-      keyboard::mojom::ContainerType::kFullWidth;
+  keyboard::ContainerType type_ = keyboard::ContainerType::kFullWidth;
   gfx::Rect occluded_bounds_;
   gfx::Rect draggable_area_;
 };
@@ -235,21 +212,7 @@ class AshKeyboardControllerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    // Create a local service manager connector to handle requests to
-    // mojom::KeyboardController.
-    service_manager::mojom::ConnectorRequest request;
-    connector_ = service_manager::Connector::Create(&request);
-
-    service_manager::Connector::TestApi test_api(connector_.get());
-    test_api.OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName("test"),
-        mojom::KeyboardController::Name_,
-        base::BindRepeating(
-            &AshKeyboardControllerTest::AddKeyboardControllerBinding,
-            base::Unretained(this)));
-    base::RunLoop().RunUntilIdle();
-
-    test_client_ = std::make_unique<TestClient>(connector_.get());
+    test_client_ = std::make_unique<TestClient>();
 
     // Set the initial observer config to the client (default) config.
     test_observer()->set_config(test_client()->keyboard_config());
@@ -258,11 +221,6 @@ class AshKeyboardControllerTest : public AshTestBase {
   void TearDown() override {
     test_client_.reset();
     AshTestBase::TearDown();
-  }
-
-  void AddKeyboardControllerBinding(mojo::ScopedMessagePipeHandle handle) {
-    Shell::Get()->ash_keyboard_controller()->BindRequest(
-        mojom::KeyboardControllerRequest(std::move(handle)));
   }
 
   keyboard::KeyboardController* keyboard_controller() {
@@ -274,7 +232,6 @@ class AshKeyboardControllerTest : public AshTestBase {
   }
 
  private:
-  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<TestClient> test_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AshKeyboardControllerTest);
@@ -293,14 +250,13 @@ TEST_F(AshKeyboardControllerTest, SetKeyboardConfig) {
 
   test_client()->GetKeyboardConfig();
   EXPECT_EQ(1, test_client()->got_keyboard_config_count());
-  KeyboardConfigPtr config =
-      KeyboardConfig::New(test_client()->keyboard_config());
+  KeyboardConfig config = test_client()->keyboard_config();
   // Set the observer config to the client (default) config.
-  test_observer()->set_config(*config);
+  test_observer()->set_config(config);
 
   // Change the keyboard config.
-  bool old_auto_complete = config->auto_complete;
-  config->auto_complete = !config->auto_complete;
+  bool old_auto_complete = config.auto_complete;
+  config.auto_complete = !config.auto_complete;
   test_client()->SetKeyboardConfig(std::move(config));
 
   // Test that the config changes.
@@ -315,7 +271,7 @@ TEST_F(AshKeyboardControllerTest, EnableFlags) {
   EXPECT_FALSE(test_client()->IsKeyboardEnabled());
   // Enable the keyboard.
   test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
-  std::vector<keyboard::mojom::KeyboardEnableFlag> enable_flags =
+  std::vector<keyboard::KeyboardEnableFlag> enable_flags =
       test_client()->GetEnableFlags();
   EXPECT_TRUE(
       base::Contains(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
@@ -366,8 +322,12 @@ TEST_F(AshKeyboardControllerTest, RebuildKeyboardIfEnabled) {
 TEST_F(AshKeyboardControllerTest, ShowAndHideKeyboard) {
   // Enable the keyboard. This will create the keyboard window but not show it.
   test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
   ASSERT_TRUE(keyboard_controller()->GetKeyboardWindow());
   EXPECT_FALSE(keyboard_controller()->GetKeyboardWindow()->IsVisible());
+
+  // The keyboard needs to be in a loaded state before being shown.
+  ASSERT_TRUE(keyboard::test::WaitUntilLoaded());
 
   test_client()->ShowKeyboard();
   EXPECT_TRUE(keyboard_controller()->GetKeyboardWindow()->IsVisible());
@@ -382,14 +342,14 @@ TEST_F(AshKeyboardControllerTest, ShowAndHideKeyboard) {
 TEST_F(AshKeyboardControllerTest, SetContainerType) {
   // Enable the keyboard.
   test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
-  const auto default_behavior = keyboard::mojom::ContainerType::kFullWidth;
+  const auto default_behavior = keyboard::ContainerType::kFullWidth;
   EXPECT_EQ(default_behavior, keyboard_controller()->GetActiveContainerType());
 
   gfx::Rect target_bounds(0, 0, 10, 10);
   // Set the container type to kFloating.
   EXPECT_TRUE(test_client()->SetContainerType(
-      keyboard::mojom::ContainerType::kFloating, target_bounds));
-  EXPECT_EQ(keyboard::mojom::ContainerType::kFloating,
+      keyboard::ContainerType::kFloating, target_bounds));
+  EXPECT_EQ(keyboard::ContainerType::kFloating,
             keyboard_controller()->GetActiveContainerType());
   // Ensure that the window size is correct (position is determined by Ash).
   EXPECT_EQ(
@@ -398,8 +358,8 @@ TEST_F(AshKeyboardControllerTest, SetContainerType) {
 
   // Setting the container type to the current type should fail.
   EXPECT_FALSE(test_client()->SetContainerType(
-      keyboard::mojom::ContainerType::kFloating, base::nullopt));
-  EXPECT_EQ(keyboard::mojom::ContainerType::kFloating,
+      keyboard::ContainerType::kFloating, base::nullopt));
+  EXPECT_EQ(keyboard::ContainerType::kFloating,
             keyboard_controller()->GetActiveContainerType());
 }
 
@@ -459,13 +419,11 @@ TEST_F(AshKeyboardControllerTest, ChangingSessionRebuildsKeyboard) {
   // user profile.
   Shell::Get()->ash_keyboard_controller()->OnSessionStateChanged(
       session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
-  test_client()->FlushMojoForTesting();
   EXPECT_EQ(1, test_observer()->destroyed_count());
 
   // ACTIVE session state also needs to rebuild keyboard for guest user profile.
   Shell::Get()->ash_keyboard_controller()->OnSessionStateChanged(
       session_manager::SessionState::ACTIVE);
-  test_client()->FlushMojoForTesting();
   EXPECT_EQ(2, test_observer()->destroyed_count());
 }
 

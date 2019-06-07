@@ -2006,15 +2006,13 @@ TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
   EXPECT_GE(test_state()->num_system_ui_area_changes(), 1);
   test_state()->reset_num_system_ui_area_changes();
 
-  keyboard_controller->SetContainerType(
-      keyboard::mojom::ContainerType::kFloating, base::nullopt,
-      base::DoNothing());
+  keyboard_controller->SetContainerType(keyboard::ContainerType::kFloating,
+                                        base::nullopt, base::DoNothing());
   EXPECT_GE(test_state()->num_system_ui_area_changes(), 1);
   test_state()->reset_num_system_ui_area_changes();
 
-  keyboard_controller->SetContainerType(
-      keyboard::mojom::ContainerType::kFullWidth, base::nullopt,
-      base::DoNothing());
+  keyboard_controller->SetContainerType(keyboard::ContainerType::kFullWidth,
+                                        base::nullopt, base::DoNothing());
   EXPECT_GE(test_state()->num_system_ui_area_changes(), 1);
 }
 

@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/interfaces/keyboard_config.mojom.h"
+#include "ash/public/cpp/keyboard/keyboard_config.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
@@ -91,7 +91,7 @@ void SetMenuItemToMenu(
   out->enabled = input.enabled ? *input.enabled : true;
 }
 
-keyboard::mojom::KeyboardConfig GetKeyboardConfig() {
+keyboard::KeyboardConfig GetKeyboardConfig() {
   return ChromeKeyboardControllerClient::Get()->GetKeyboardConfig();
 }
 

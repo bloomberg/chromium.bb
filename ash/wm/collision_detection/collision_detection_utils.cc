@@ -104,7 +104,7 @@ std::vector<gfx::Rect> CollectCollisionRects(
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   if (keyboard_controller->IsEnabled() &&
       keyboard_controller->GetActiveContainerType() ==
-          keyboard::mojom::ContainerType::kFloating &&
+          keyboard::ContainerType::kFloating &&
       keyboard_controller->GetRootWindow() == root_window &&
       !keyboard_controller->GetVisualBoundsInScreen().IsEmpty() &&
       !ShouldIgnoreWindowForCollision(keyboard_controller->GetKeyboardWindow(),

@@ -26,7 +26,7 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 
-using keyboard::mojom::KeyboardEnableFlag;
+using keyboard::KeyboardEnableFlag;
 
 namespace ash {
 

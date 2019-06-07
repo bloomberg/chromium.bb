@@ -12,6 +12,7 @@
 
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "base/bind.h"
@@ -722,8 +723,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // keyboard::KeyboardController initializes ChromeKeyboardUI which depends
   // on ChromeKeyboardControllerClient.
-  chrome_keyboard_controller_client_ = ChromeKeyboardControllerClient::Create(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+  chrome_keyboard_controller_client_ = ChromeKeyboardControllerClient::Create();
 
   // ProfileHelper has to be initialized after UserManager instance is created.
   ProfileHelper::Get()->Initialize();
@@ -788,6 +788,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // ChromeBrowserMainExtraPartsAsh::PreProfileInit() which initializes
   // ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
+
+  // Needs to be initialized after ash::Shell.
+  chrome_keyboard_controller_client_->Init(ash::KeyboardController::Get());
 
   // Initialize the keyboard before any session state changes (i.e. before
   // loading the default profile).

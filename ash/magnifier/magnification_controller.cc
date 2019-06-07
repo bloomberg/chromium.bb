@@ -179,8 +179,8 @@ void MagnificationController::SetEnabled(bool enabled) {
   // TODO(spqchan): Fix the keyboard overscroll issues.
   auto config = keyboard::KeyboardController::Get()->keyboard_config();
   config.overscroll_behavior =
-      is_enabled_ ? keyboard::mojom::KeyboardOverscrollBehavior::kDisabled
-                  : keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
+      is_enabled_ ? keyboard::KeyboardOverscrollBehavior::kDisabled
+                  : keyboard::KeyboardOverscrollBehavior::kDefault;
   keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
 }
 

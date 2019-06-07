@@ -95,7 +95,7 @@ class LockLayoutManagerTest : public AshTestBase {
   }
 
   void SetKeyboardOverscrollBehavior(
-      keyboard::mojom::KeyboardOverscrollBehavior overscroll_behavior) {
+      keyboard::KeyboardOverscrollBehavior overscroll_behavior) {
     auto config = keyboard::KeyboardController::Get()->keyboard_config();
     config.overscroll_behavior = overscroll_behavior;
     keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
@@ -230,8 +230,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   // When virtual keyboard overscroll is enabled keyboard bounds should not
   // affect window bounds.
   keyboard::KeyboardController* keyboard = keyboard::KeyboardController::Get();
-  SetKeyboardOverscrollBehavior(
-      keyboard::mojom::KeyboardOverscrollBehavior::kEnabled);
+  SetKeyboardOverscrollBehavior(keyboard::KeyboardOverscrollBehavior::kEnabled);
   ShowKeyboard(true);
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
   gfx::Rect keyboard_bounds = keyboard->GetVisualBoundsInScreen();
@@ -244,7 +243,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   // 1. Set up login screen defaults: VK overscroll disabled
   // 2. Show/hide keyboard, make sure that no stale keyboard bounds are cached.
   SetKeyboardOverscrollBehavior(
-      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled);
+      keyboard::KeyboardOverscrollBehavior::kDisabled);
   ShowKeyboard(true);
   ShowKeyboard(false);
   display_manager()->SetDisplayRotation(
@@ -260,7 +259,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   // When virtual keyboard overscroll is disabled keyboard bounds do
   // affect window bounds.
   SetKeyboardOverscrollBehavior(
-      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled);
+      keyboard::KeyboardOverscrollBehavior::kDisabled);
   ShowKeyboard(true);
 
   primary_display = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -271,10 +270,9 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   EXPECT_EQ(target_bounds.ToString(), window->GetBoundsInScreen().ToString());
   ShowKeyboard(false);
 
-  SetKeyboardOverscrollBehavior(
-      keyboard::mojom::KeyboardOverscrollBehavior::kDefault);
+  SetKeyboardOverscrollBehavior(keyboard::KeyboardOverscrollBehavior::kDefault);
 
-  keyboard->SetContainerType(keyboard::mojom::ContainerType::kFloating,
+  keyboard->SetContainerType(keyboard::ContainerType::kFloating,
                              base::nullopt /* target_bounds */,
                              base::BindOnce([](bool success) {}));
   ShowKeyboard(true);

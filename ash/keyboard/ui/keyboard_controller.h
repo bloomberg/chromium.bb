@@ -19,8 +19,8 @@
 #include "ash/keyboard/ui/notification_manager.h"
 #include "ash/keyboard/ui/queued_container_type.h"
 #include "ash/keyboard/ui/queued_display_change.h"
-#include "ash/public/interfaces/keyboard_config.mojom.h"
-#include "ash/public/interfaces/keyboard_controller_types.mojom.h"
+#include "ash/public/cpp/keyboard/keyboard_config.h"
+#include "ash/public/cpp/keyboard/keyboard_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
@@ -106,14 +106,14 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Updates |keyboard_config_| with |config|. Returns |false| if there is no
   // change, otherwise returns true and notifies observers if this is enabled.
-  bool UpdateKeyboardConfig(const mojom::KeyboardConfig& config);
-  const mojom::KeyboardConfig& keyboard_config() { return keyboard_config_; }
+  bool UpdateKeyboardConfig(const KeyboardConfig& config);
+  const KeyboardConfig& keyboard_config() { return keyboard_config_; }
 
   // Sets and clears |keyboard_enable_flags_| entries.
-  void SetEnableFlag(mojom::KeyboardEnableFlag flag);
-  void ClearEnableFlag(mojom::KeyboardEnableFlag flag);
-  bool IsEnableFlagSet(mojom::KeyboardEnableFlag flag) const;
-  const std::set<mojom::KeyboardEnableFlag>& keyboard_enable_flags() const {
+  void SetEnableFlag(KeyboardEnableFlag flag);
+  void ClearEnableFlag(KeyboardEnableFlag flag);
+  bool IsEnableFlagSet(KeyboardEnableFlag flag) const;
+  const std::set<KeyboardEnableFlag>& keyboard_enable_flags() const {
     return keyboard_enable_flags_;
   }
 
@@ -183,7 +183,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // the keyboard window.
   void SetHitTestBounds(const std::vector<gfx::Rect>& bounds_in_window);
 
-  mojom::ContainerType GetActiveContainerType() const {
+  ContainerType GetActiveContainerType() const {
     return container_behavior_->GetType();
   }
 
@@ -208,7 +208,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Sets the active container type. If the keyboard is currently shown, this
   // will trigger a hide animation and a subsequent show animation. Otherwise
   // the ContainerBehavior change is synchronous.
-  void SetContainerType(mojom::ContainerType type,
+  void SetContainerType(ContainerType type,
                         const base::Optional<gfx::Rect>& target_bounds_in_root,
                         base::OnceCallback<void(bool)> callback);
 
@@ -308,7 +308,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Enables or disables the keyboard based on |IsKeyboardEnableRequested|,
   // as requested by |flag|.
-  void UpdateKeyboardAsRequestedBy(mojom::KeyboardEnableFlag flag);
+  void UpdateKeyboardAsRequestedBy(KeyboardEnableFlag flag);
 
   // Attach the keyboard window as a child of the given parent window.
   // Can only be called when the keyboard is not activated. |parent| must not
@@ -366,7 +366,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // time ago.
   void ShowKeyboardIfWithinTransientBlurThreshold();
 
-  void SetContainerBehaviorInternal(mojom::ContainerType type);
+  void SetContainerBehaviorInternal(ContainerType type);
 
   // Records that keyboard was shown on the currently focused UKM source.
   void RecordUkmKeyboardShown();
@@ -428,11 +428,11 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   gfx::Rect visual_bounds_in_root_;
 
   // Keyboard configuration associated with the controller.
-  mojom::KeyboardConfig keyboard_config_;
+  KeyboardConfig keyboard_config_;
 
   // Set of active enabled request flags. Used to determine whether the keyboard
   // should be enabled.
-  std::set<mojom::KeyboardEnableFlag> keyboard_enable_flags_;
+  std::set<KeyboardEnableFlag> keyboard_enable_flags_;
 
   NotificationManager notification_manager_;
 

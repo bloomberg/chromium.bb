@@ -17,8 +17,6 @@
 #include "ash/autotest/shelf_integration_test_api.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/ime/ime_controller.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/media/media_controller_impl.h"
@@ -99,11 +97,6 @@ void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
   Shell::Get()->ime_controller()->BindRequest(std::move(request));
 }
 
-void BindKeyboardControllerRequestOnMainThread(
-    mojom::KeyboardControllerRequest request) {
-  Shell::Get()->ash_keyboard_controller()->BindRequest(std::move(request));
-}
-
 void BindKioskNextShellControllerRequestOnMainThread(
     mojom::KioskNextShellControllerRequest request) {
   Shell::Get()->kiosk_next_shell_controller()->BindRequest(std::move(request));
@@ -181,9 +174,6 @@ void RegisterInterfaces(
   }
   registry->AddInterface(
       base::BindRepeating(&BindImeControllerRequestOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindKeyboardControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindLockScreenRequestOnMainThread),

@@ -1010,16 +1010,14 @@ class PolicyTest : public InProcessBrowserTest {
   }
 
 #if defined(OS_CHROMEOS)
-  void SetEnableFlag(const keyboard::mojom::KeyboardEnableFlag& flag) {
+  void SetEnableFlag(const keyboard::KeyboardEnableFlag& flag) {
     auto* keyboard_client = ChromeKeyboardControllerClient::Get();
     keyboard_client->SetEnableFlag(flag);
-    keyboard_client->FlushForTesting();
   }
 
-  void ClearEnableFlag(const keyboard::mojom::KeyboardEnableFlag& flag) {
+  void ClearEnableFlag(const keyboard::KeyboardEnableFlag& flag) {
     auto* keyboard_client = ChromeKeyboardControllerClient::Get();
     keyboard_client->ClearEnableFlag(flag);
-    keyboard_client->FlushForTesting();
   }
 #endif
 
@@ -4049,9 +4047,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
   EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
 
   // Verify keyboard can be toggled by default.
-  SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  SetEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
   EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
-  ClearEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  ClearEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
   EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
 
   // Verify enabling the policy takes effect immediately and that that user
@@ -4061,9 +4059,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(true), nullptr);
   UpdateProviderPolicy(policies);
-  keyboard_client->FlushForTesting();
   EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
-  ClearEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  ClearEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
   EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
 
   // Verify that disabling the policy takes effect immediately and that the user
@@ -4072,9 +4069,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(false), nullptr);
   UpdateProviderPolicy(policies);
-  keyboard_client->FlushForTesting();
   EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
-  SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  SetEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
   EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
 }
 

@@ -143,7 +143,7 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
 // (https://crbug.com/942084).
 TEST_F(AppListControllerImplTest, HideRoundingCorners) {
   Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
+      keyboard::KeyboardEnableFlag::kShelfEnabled);
 
   // Show the app list view and click on the search box with mouse. So the
   // VirtualKeyboard is shown.
@@ -185,7 +185,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
 // https://crbug.com/944233).
 TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
   Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
+      keyboard::KeyboardEnableFlag::kShelfEnabled);
 
   // Show the AppListView and click on the search box with mouse. So the
   // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
@@ -218,7 +218,7 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
 // virtual keyboard is dismissed (see https://crbug.com/944133).
 TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
   Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
+      keyboard::KeyboardEnableFlag::kShelfEnabled);
 
   // Show the AppListView and click on the search box with mouse so the
   // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
@@ -233,8 +233,7 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
   EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
 
   // Close the virtual keyboard. Wait until it is hidden.
-  Shell::Get()->ash_keyboard_controller()->HideKeyboard(
-      mojom::HideReason::kUser);
+  Shell::Get()->ash_keyboard_controller()->HideKeyboard(HideReason::kUser);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
 

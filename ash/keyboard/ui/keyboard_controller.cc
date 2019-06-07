@@ -221,7 +221,7 @@ void KeyboardController::EnableKeyboard() {
   keyboard_locked_ = false;
   DCHECK_EQ(model_.state(), KeyboardUIState::kInitial);
   ui_->SetController(this);
-  SetContainerBehaviorInternal(mojom::ContainerType::kFullWidth);
+  SetContainerBehaviorInternal(ContainerType::kFullWidth);
   visual_bounds_in_root_ = gfx::Rect();
   time_of_last_blur_ = base::Time::UnixEpoch();
   UpdateInputMethodObserver();
@@ -405,9 +405,8 @@ void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-bool KeyboardController::UpdateKeyboardConfig(
-    const mojom::KeyboardConfig& config) {
-  if (config.Equals(keyboard_config_))
+bool KeyboardController::UpdateKeyboardConfig(const KeyboardConfig& config) {
+  if (config == keyboard_config_)
     return false;
   keyboard_config_ = config;
   if (IsEnabled())
@@ -415,12 +414,11 @@ bool KeyboardController::UpdateKeyboardConfig(
   return true;
 }
 
-void KeyboardController::SetEnableFlag(mojom::KeyboardEnableFlag flag) {
+void KeyboardController::SetEnableFlag(KeyboardEnableFlag flag) {
   if (!base::Contains(keyboard_enable_flags_, flag))
     keyboard_enable_flags_.insert(flag);
 
   // If there is a flag that is mutually exclusive with |flag|, clear it.
-  using mojom::KeyboardEnableFlag;
   switch (flag) {
     case KeyboardEnableFlag::kPolicyEnabled:
       keyboard_enable_flags_.erase(KeyboardEnableFlag::kPolicyDisabled);
@@ -443,7 +441,7 @@ void KeyboardController::SetEnableFlag(mojom::KeyboardEnableFlag flag) {
   UpdateKeyboardAsRequestedBy(flag);
 }
 
-void KeyboardController::ClearEnableFlag(mojom::KeyboardEnableFlag flag) {
+void KeyboardController::ClearEnableFlag(KeyboardEnableFlag flag) {
   if (!IsEnableFlagSet(flag))
     return;
 
@@ -454,12 +452,11 @@ void KeyboardController::ClearEnableFlag(mojom::KeyboardEnableFlag flag) {
   UpdateKeyboardAsRequestedBy(flag);
 }
 
-bool KeyboardController::IsEnableFlagSet(mojom::KeyboardEnableFlag flag) const {
+bool KeyboardController::IsEnableFlagSet(KeyboardEnableFlag flag) const {
   return base::Contains(keyboard_enable_flags_, flag);
 }
 
 bool KeyboardController::IsKeyboardEnableRequested() const {
-  using mojom::KeyboardEnableFlag;
   // Accessibility setting prioritized over policy/arc overrides.
   if (IsEnableFlagSet(KeyboardEnableFlag::kAccessibilityEnabled))
     return true;
@@ -486,8 +483,7 @@ bool KeyboardController::IsKeyboardEnableRequested() const {
          IsEnableFlagSet(KeyboardEnableFlag::kTouchEnabled);
 }
 
-void KeyboardController::UpdateKeyboardAsRequestedBy(
-    mojom::KeyboardEnableFlag flag) {
+void KeyboardController::UpdateKeyboardAsRequestedBy(KeyboardEnableFlag flag) {
   if (IsKeyboardEnableRequested()) {
     // Note that there are two versions of the on-screen keyboard. A full layout
     // is provided for accessibility, which includes sticky modifier keys to
@@ -496,7 +492,7 @@ void KeyboardController::UpdateKeyboardAsRequestedBy(
     // event that the a11y keyboard is being disabled, an on-screen keyboard
     // might still be enabled and a forced reset is required to pick up the
     // layout change.
-    if (IsEnabled() && flag == mojom::KeyboardEnableFlag::kAccessibilityEnabled)
+    if (IsEnabled() && flag == KeyboardEnableFlag::kAccessibilityEnabled)
       RebuildKeyboardIfEnabled();
     else
       EnableKeyboard();
@@ -517,9 +513,9 @@ bool KeyboardController::IsKeyboardOverscrollEnabled() const {
   // If overscroll enabled behavior is set, use it instead. Currently
   // login / out-of-box disable keyboard overscroll. http://crbug.com/363635
   if (keyboard_config_.overscroll_behavior !=
-      mojom::KeyboardOverscrollBehavior::kDefault) {
+      KeyboardOverscrollBehavior::kDefault) {
     return keyboard_config_.overscroll_behavior ==
-           mojom::KeyboardOverscrollBehavior::kEnabled;
+           KeyboardOverscrollBehavior::kEnabled;
   }
 
   return true;
@@ -664,18 +660,17 @@ void KeyboardController::ShowAnimationFinished() {
 }
 
 // private
-void KeyboardController::SetContainerBehaviorInternal(
-    mojom::ContainerType type) {
+void KeyboardController::SetContainerBehaviorInternal(ContainerType type) {
   // Reset the hit test event targeter because the hit test bounds will
   // be wrong when container type changes and may cause the UI to be unusable.
   if (GetKeyboardWindow())
     GetKeyboardWindow()->SetEventTargeter(nullptr);
 
   switch (type) {
-    case mojom::ContainerType::kFullWidth:
+    case ContainerType::kFullWidth:
       container_behavior_ = std::make_unique<ContainerFullWidthBehavior>(this);
       break;
-    case mojom::ContainerType::kFloating:
+    case ContainerType::kFloating:
       container_behavior_ = std::make_unique<ContainerFloatingBehavior>(this);
       break;
   }
@@ -973,7 +968,7 @@ gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
   // temporarily overridden by a static field in certain lock screen contexts.
   // Furthermore, floating keyboard should never affect layout.
   if (!IsKeyboardOverscrollEnabled() &&
-      container_behavior_->GetType() != mojom::ContainerType::kFloating) {
+      container_behavior_->GetType() != ContainerType::kFloating) {
     return visual_bounds_in_root_;
   }
   return gfx::Rect();
@@ -1014,7 +1009,7 @@ bool KeyboardController::HandlePointerEvent(const ui::LocatedEvent& event) {
 }
 
 void KeyboardController::SetContainerType(
-    mojom::ContainerType type,
+    ContainerType type,
     const base::Optional<gfx::Rect>& target_bounds_in_root,
     base::OnceCallback<void(bool)> callback) {
   if (container_behavior_->GetType() == type) {

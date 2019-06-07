@@ -19,8 +19,8 @@ ContainerFullWidthBehavior::ContainerFullWidthBehavior(Delegate* delegate)
 
 ContainerFullWidthBehavior::~ContainerFullWidthBehavior() {}
 
-mojom::ContainerType ContainerFullWidthBehavior::GetType() const {
-  return mojom::ContainerType::kFullWidth;
+ContainerType ContainerFullWidthBehavior::GetType() const {
+  return ContainerType::kFullWidth;
 }
 
 void ContainerFullWidthBehavior::DoHidingAnimation(

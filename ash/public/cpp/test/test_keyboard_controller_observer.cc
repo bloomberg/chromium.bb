@@ -9,17 +9,15 @@
 namespace ash {
 
 TestKeyboardControllerObserver::TestKeyboardControllerObserver(
-    mojom::KeyboardController* controller)
+    KeyboardController* controller)
     : controller_(controller) {
-  keyboard_controller_observer_binding_.Bind(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr_));
-  controller_->AddObserver(ptr_.PassInterface());
+  controller_->AddObserver(this);
 }
 
 TestKeyboardControllerObserver::~TestKeyboardControllerObserver() = default;
 
 void TestKeyboardControllerObserver::OnKeyboardEnableFlagsChanged(
-    const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags) {
+    const std::vector<keyboard::KeyboardEnableFlag>& flags) {
   enable_flags_ = flags;
 }
 
@@ -29,8 +27,8 @@ void TestKeyboardControllerObserver::OnKeyboardEnabledChanged(bool enabled) {
 }
 
 void TestKeyboardControllerObserver::OnKeyboardConfigChanged(
-    keyboard::mojom::KeyboardConfigPtr config) {
-  config_ = *config;
+    const keyboard::KeyboardConfig& config) {
+  config_ = config;
 }
 
 void TestKeyboardControllerObserver::OnKeyboardVisibilityChanged(bool visible) {

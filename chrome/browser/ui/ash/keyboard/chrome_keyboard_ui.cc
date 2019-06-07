@@ -130,5 +130,5 @@ void ChromeKeyboardUI::SetShadowAroundKeyboard() {
   // shadows drawn by IME.
   shadow_->layer()->SetVisible(
       keyboard_controller()->GetActiveContainerType() ==
-      keyboard::mojom::ContainerType::kFullWidth);
+      keyboard::ContainerType::kFullWidth);
 }

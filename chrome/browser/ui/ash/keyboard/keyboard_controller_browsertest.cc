@@ -34,6 +34,7 @@ namespace {
 
 const int kKeyboardHeightForTest = 100;
 
+// TODO(shend): Remove this since all calls are synchronous now.
 class KeyboardVisibleWaiter : public ChromeKeyboardControllerClient::Observer {
  public:
   explicit KeyboardVisibleWaiter(bool visible) : visible_(visible) {
@@ -43,7 +44,13 @@ class KeyboardVisibleWaiter : public ChromeKeyboardControllerClient::Observer {
     ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
   }
 
-  void Wait() { run_loop_.Run(); }
+  void Wait() {
+    if (ChromeKeyboardControllerClient::Get()->is_keyboard_visible() ==
+        visible_) {
+      return;
+    }
+    run_loop_.Run();
+  }
 
   // ChromeKeyboardControllerClient::Observer
   void OnKeyboardVisibilityChanged(bool visible) override {
@@ -188,8 +195,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
   KeyboardVisibleWaiter(true).Wait();
 
   // Simulate hide keyboard by pressing hide key on the virtual keyboard.
-  ChromeKeyboardControllerClient::Get()->HideKeyboard(
-      ash::mojom::HideReason::kUser);
+  ChromeKeyboardControllerClient::Get()->HideKeyboard(ash::HideReason::kUser);
   KeyboardVisibleWaiter(false).Wait();
 
   MockEnableIMEInDifferentExtension("chrome-extension://domain-2", test_bounds);
@@ -206,8 +212,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
     return;
 
   ChromeKeyboardControllerClient::Get()->SetContainerType(
-      keyboard::mojom::ContainerType::kFloating, base::nullopt,
-      base::DoNothing());
+      keyboard::ContainerType::kFloating, base::nullopt, base::DoNothing());
 
   auto* controller = keyboard::KeyboardController::Get();
   controller->ShowKeyboard(false);
@@ -362,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, OpenAndCloseAndOpen) {
   controller->ShowKeyboard();
   KeyboardVisibleWaiter(true).Wait();
 
-  controller->HideKeyboard(ash::mojom::HideReason::kSystem);
+  controller->HideKeyboard(ash::HideReason::kSystem);
   KeyboardVisibleWaiter(false).Wait();
 
   controller->ShowKeyboard();

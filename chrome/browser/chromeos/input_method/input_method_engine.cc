@@ -254,7 +254,7 @@ bool InputMethodEngine::UpdateMenuItems(
 void InputMethodEngine::HideInputView() {
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   if (keyboard_client->is_keyboard_enabled())
-    keyboard_client->HideKeyboard(ash::mojom::HideReason::kUser);
+    keyboard_client->HideKeyboard(ash::HideReason::kUser);
 }
 
 void InputMethodEngine::UpdateComposition(

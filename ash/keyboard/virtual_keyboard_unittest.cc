@@ -112,9 +112,8 @@ TEST_F(VirtualKeyboardTest, HitTestBoundsAreResetWhenContainerTypeChanges) {
   // Change the container behavior, which should reset the hit test bounds to
   // the whole keyboard window.
   keyboard_controller->HideKeyboardExplicitlyBySystem();
-  keyboard_controller->SetContainerType(
-      keyboard::mojom::ContainerType::kFloating, base::nullopt,
-      base::DoNothing());
+  keyboard_controller->SetContainerType(keyboard::ContainerType::kFloating,
+                                        base::nullopt, base::DoNothing());
   keyboard_controller->ShowKeyboard(false);
 
   // (0, 0) should no longer pass through the keyboard window.

@@ -459,7 +459,7 @@ void AshTestBase::UnblockUserSession() {
 }
 
 void AshTestBase::SetTouchKeyboardEnabled(bool enabled) {
-  auto flag = keyboard::mojom::KeyboardEnableFlag::kTouchEnabled;
+  auto flag = keyboard::KeyboardEnableFlag::kTouchEnabled;
   if (enabled)
     Shell::Get()->ash_keyboard_controller()->SetEnableFlag(flag);
   else

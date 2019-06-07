@@ -6,7 +6,7 @@
 #define ASH_KEYBOARD_UI_CONTAINER_BEHAVIOR_H_
 
 #include "ash/keyboard/ui/keyboard_export.h"
-#include "ash/public/interfaces/keyboard_controller_types.mojom.h"
+#include "ash/public/cpp/keyboard/keyboard_types.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -86,7 +86,7 @@ class KEYBOARD_EXPORT ContainerBehavior {
   virtual bool HandlePointerEvent(const ui::LocatedEvent& event,
                                   const display::Display& current_display) = 0;
 
-  virtual mojom::ContainerType GetType() const = 0;
+  virtual ContainerType GetType() const = 0;
 
   // Removing focus from a text field should cause the keyboard to be dismissed.
   virtual bool TextBlurHidesKeyboard() const = 0;

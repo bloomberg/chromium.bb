@@ -579,7 +579,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_FALSE(notified_is_visible());
 
   SetModeCallbackInvocationCounter invocation_counter;
-  controller().SetContainerType(mojom::ContainerType::kFloating, base::nullopt,
+  controller().SetContainerType(ContainerType::kFloating, base::nullopt,
                                 invocation_counter.GetInvocationCallback());
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
   EXPECT_EQ(0, invocation_counter.invocation_count_for_status(false));
@@ -595,7 +595,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   // callback should do nothing when container mode is set to the current active
   // container type. An unnecessary call gets registered synchronously as a
   // failure status to the callback.
-  controller().SetContainerType(mojom::ContainerType::kFloating, base::nullopt,
+  controller().SetContainerType(ContainerType::kFloating, base::nullopt,
                                 invocation_counter.GetInvocationCallback());
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(false));
@@ -607,13 +607,12 @@ TEST_F(KeyboardControllerAnimationTest, ChangeContainerModeWithBounds) {
   ui::Layer* layer = keyboard_window()->layer();
   ShowKeyboard();
   RunAnimationForLayer(layer);
-  EXPECT_EQ(mojom::ContainerType::kFullWidth,
-            controller().GetActiveContainerType());
+  EXPECT_EQ(ContainerType::kFullWidth, controller().GetActiveContainerType());
   EXPECT_TRUE(keyboard_window()->IsVisible());
 
   // Changing the mode to another mode invokes hiding + showing.
   const gfx::Rect target_bounds(0, 0, 1200, 600);
-  controller().SetContainerType(mojom::ContainerType::kFloating,
+  controller().SetContainerType(ContainerType::kFloating,
                                 base::make_optional(target_bounds),
                                 invocation_counter.GetInvocationCallback());
   // The container window shouldn't be resized until it's hidden even if the
@@ -710,10 +709,9 @@ TEST_F(KeyboardControllerAnimationTest, FloatingKeyboardEnsureCaretInWorkArea) {
   MockTextInputClient mock_input_client;
   EXPECT_CALL(mock_input_client, EnsureCaretNotInRect(gfx::Rect())).Times(1);
 
-  controller().SetContainerType(mojom::ContainerType::kFloating, base::nullopt,
+  controller().SetContainerType(ContainerType::kFloating, base::nullopt,
                                 base::DoNothing());
-  ASSERT_EQ(mojom::ContainerType::kFloating,
-            controller().GetActiveContainerType());
+  ASSERT_EQ(ContainerType::kFloating, controller().GetActiveContainerType());
 
   // Ensure keyboard ui is populated
   ui::Layer* layer = keyboard_window()->layer();

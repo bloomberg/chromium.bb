@@ -57,10 +57,9 @@ void LockLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 
   // Disable virtual keyboard overscroll because it interferes with scrolling
   // login/lock content. See crbug.com/363635.
-  keyboard::mojom::KeyboardConfig config =
+  keyboard::KeyboardConfig config =
       keyboard::KeyboardController::Get()->keyboard_config();
-  config.overscroll_behavior =
-      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled;
+  config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDisabled;
   keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
 }
 
@@ -69,10 +68,9 @@ void LockLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 }
 
 void LockLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
-  keyboard::mojom::KeyboardConfig config =
+  keyboard::KeyboardConfig config =
       keyboard::KeyboardController::Get()->keyboard_config();
-  config.overscroll_behavior =
-      keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
+  config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDefault;
   keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
 }
 

@@ -293,17 +293,15 @@ std::string GetManagedLoginScreenLocale() {
 // into view on JS side when virtual keyboard is shown.
 void DisableKeyboardOverscroll() {
   auto* client = ChromeKeyboardControllerClient::Get();
-  keyboard::mojom::KeyboardConfig config = client->GetKeyboardConfig();
-  config.overscroll_behavior =
-      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled;
+  keyboard::KeyboardConfig config = client->GetKeyboardConfig();
+  config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDisabled;
   client->SetKeyboardConfig(config);
 }
 
 void ResetKeyboardOverscrollBehavior() {
   auto* client = ChromeKeyboardControllerClient::Get();
-  keyboard::mojom::KeyboardConfig config = client->GetKeyboardConfig();
-  config.overscroll_behavior =
-      keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
+  keyboard::KeyboardConfig config = client->GetKeyboardConfig();
+  config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDefault;
   client->SetKeyboardConfig(config);
 }
 

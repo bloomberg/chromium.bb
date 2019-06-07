@@ -120,7 +120,7 @@ bool IsVirtualKeyboardEnabled() {
          keyboard::GetTouchKeyboardEnabled() ||
          (keyboard::KeyboardController::HasInstance() &&
           keyboard::KeyboardController::Get()->IsEnableFlagSet(
-              keyboard::mojom::KeyboardEnableFlag::kCommandLineEnabled));
+              keyboard::KeyboardEnableFlag::kCommandLineEnabled));
 }
 
 bool IsReservedAccelerator(const ui::KeyEvent* event) {

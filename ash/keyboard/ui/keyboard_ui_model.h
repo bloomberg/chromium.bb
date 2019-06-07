@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/keyboard/ui/keyboard_export.h"
-#include "ash/public/interfaces/keyboard_config.mojom.h"
+#include "ash/public/cpp/keyboard/keyboard_config.h"
 #include "base/macros.h"
 
 namespace keyboard {

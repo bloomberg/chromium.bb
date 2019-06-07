@@ -187,7 +187,7 @@ void ShellTestApi::EnableTabletModeWindowManager(bool enable) {
 
 void ShellTestApi::EnableVirtualKeyboard() {
   shell_->ash_keyboard_controller()->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kCommandLineEnabled);
+      keyboard::KeyboardEnableFlag::kCommandLineEnabled);
 }
 
 void ShellTestApi::ToggleFullscreen() {

@@ -216,7 +216,7 @@ void BrowserAppMenuButton::ShowMenu(int run_types) {
 #if defined(OS_CHROMEOS)
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   if (keyboard_client->is_keyboard_visible())
-    keyboard_client->HideKeyboard(ash::mojom::HideReason::kSystem);
+    keyboard_client->HideKeyboard(ash::HideReason::kSystem);
 #endif
 
   Browser* browser = toolbar_view_->browser();

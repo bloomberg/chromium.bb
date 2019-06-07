@@ -210,11 +210,14 @@ class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
   void TearDown() override {
     test_bridge_ = nullptr;
     service_->Shutdown();
-    chrome_keyboard_controller_client_test_helper_.reset();
     profile_.reset();
     chromeos::input_method::InputMethodManager::Shutdown();
     ui::IMEBridge::Shutdown();
     ChromeAshTestBase::TearDown();
+    // Needs to be after ash::Shell is destroyed, as
+    // |chrome_keyboard_controller_client_test_helper_| observes the keyboard
+    // destruction.
+    chrome_keyboard_controller_client_test_helper_.reset();
     // To match ChromeBrowserMainExtraPartsAsh, shut down the TabletModeClient
     // after Shell.
     tablet_mode_client_.reset();
@@ -755,27 +758,23 @@ TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
 
   // Enable Chrome OS virtual keyboard
   auto* client = ChromeKeyboardControllerClient::Get();
-  client->ClearEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled);
-  client->SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
-  client->FlushForTesting();
+  client->ClearEnableFlag(keyboard::KeyboardEnableFlag::kAndroidDisabled);
+  client->SetEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
   base::RunLoop().RunUntilIdle();  // Allow observers to fire and process.
-  ASSERT_FALSE(client->IsEnableFlagSet(
-      keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled));
+  ASSERT_FALSE(
+      client->IsEnableFlagSet(keyboard::KeyboardEnableFlag::kAndroidDisabled));
 
   // It's disabled when the ARC IME is activated.
   imm()->state()->SetActiveInputMethod(arc_ime_id);
   service()->InputMethodChanged(imm(), profile(), false);
-  client->FlushForTesting();
-  EXPECT_TRUE(client->IsEnableFlagSet(
-      keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled));
+  EXPECT_TRUE(
+      client->IsEnableFlagSet(keyboard::KeyboardEnableFlag::kAndroidDisabled));
 
   // It's re-enabled when the ARC IME is deactivated.
   imm()->state()->SetActiveInputMethod(component_extension_ime_id);
   service()->InputMethodChanged(imm(), profile(), false);
-  client->FlushForTesting();
-  EXPECT_FALSE(client->IsEnableFlagSet(
-      keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled));
+  EXPECT_FALSE(
+      client->IsEnableFlagSet(keyboard::KeyboardEnableFlag::kAndroidDisabled));
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, ShowVirtualKeyboard) {

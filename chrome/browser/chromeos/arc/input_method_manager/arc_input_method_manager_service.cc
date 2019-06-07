@@ -75,10 +75,10 @@ void SwitchImeToCallback(const std::string& ime_id,
 void SetKeyboardDisabled(bool disabled) {
   if (disabled) {
     ChromeKeyboardControllerClient::Get()->SetEnableFlag(
-        keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled);
+        keyboard::KeyboardEnableFlag::kAndroidDisabled);
   } else {
     ChromeKeyboardControllerClient::Get()->ClearEnableFlag(
-        keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled);
+        keyboard::KeyboardEnableFlag::kAndroidDisabled);
   }
 }
 

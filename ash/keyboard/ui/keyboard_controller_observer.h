@@ -69,7 +69,7 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
 
   // Called when an enable flag affecting the requested enabled state changes.
   virtual void OnKeyboardEnableFlagsChanged(
-      std::set<mojom::KeyboardEnableFlag>& keyboard_enable_flags) {}
+      const std::set<KeyboardEnableFlag>& keyboard_enable_flags) {}
 
   // Called when the keyboard is enabled or disabled. NOTE: This is called
   // when Enabled() or Disabled() is called, not when the requested enabled
