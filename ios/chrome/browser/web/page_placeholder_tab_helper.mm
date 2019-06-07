@@ -79,7 +79,11 @@ void PagePlaceholderTabHelper::WebStateDestroyed(web::WebState* web_state) {
 }
 
 void PagePlaceholderTabHelper::AddPlaceholder() {
-  if (displaying_placeholder_)
+  // WebState::WasShown() and WebState::IsVisible() are bookkeeping mechanisms
+  // that do not guarantee the WebState's view is in the view hierarchy.
+  // TODO(crbug.com/971364): Do not DCHECK([webState->GetView() window]) here
+  // since this is a known issue.
+  if (displaying_placeholder_ || ![web_state_->GetView() window])
     return;
 
   displaying_placeholder_ = true;
@@ -115,6 +119,8 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
 void PagePlaceholderTabHelper::DisplaySnapshotImage(UIImage* snapshot) {
   DCHECK(web_state_->IsVisible())
       << "The WebState must be visible to display a page placeholder.";
+  DCHECK([web_state_->GetView() window])
+      << "The WebState's view must be in the main window's view hierarchy.";
   UIView* web_state_view = web_state_->GetView();
   NamedGuide* guide = [NamedGuide guideWithName:kContentAreaGuide
                                            view:web_state_view];
