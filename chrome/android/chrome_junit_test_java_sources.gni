@@ -178,6 +178,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/suggestions/tile/TileGroupUnitTest.java",
   "junit/src/org/chromium/chrome/browser/survey/ChromeSurveyControllerTest.java",
   "junit/src/org/chromium/chrome/browser/tab/TabAttributesTest.java",
+  "junit/src/org/chromium/chrome/browser/tab/TabUnitTest.java",
   "junit/src/org/chromium/chrome/browser/tabmodel/TabPersistentStoreUnitTest.java",
   "junit/src/org/chromium/chrome/browser/tabstate/TabStateUnitTest.java",
   "junit/src/org/chromium/chrome/browser/tasks/EngagementTimeUtilTest.java",

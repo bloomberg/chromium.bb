@@ -643,7 +643,12 @@ public class Tab
      * @param rootId New relationship id to be set.
      */
     public void setRootId(int rootId) {
+        if (rootId == mRootId) return;
         mRootId = rootId;
+        mIsTabStateDirty = true;
+        for (TabObserver observer : mObservers) {
+            observer.onRootIdChanged(this, rootId);
+        }
     }
 
     /**

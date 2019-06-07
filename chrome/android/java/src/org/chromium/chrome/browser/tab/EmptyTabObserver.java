@@ -166,4 +166,7 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void onContentViewSystemUiVisibilityChanged(Tab tab, int visibility) {}
+
+    @Override
+    public void onRootIdChanged(Tab tab, int newRootId) {}
 }
