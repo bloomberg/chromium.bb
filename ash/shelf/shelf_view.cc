@@ -86,6 +86,7 @@ namespace {
 constexpr int kMarginBetweenAppsAndOverflow = 16;
 }  // namespace
 
+constexpr int kBackButtonIndex = 0;
 constexpr int kAppListButtonIndex = 1;
 
 // The distance of the cursor from the outer rim of the shelf before it
@@ -256,8 +257,8 @@ bool ShelfButtonIsInDrag(const ShelfItemType item_type,
       return static_cast<const ShelfAppButton*>(item_view)->state() &
              ShelfAppButton::STATE_DRAGGING;
     case TYPE_DIALOG:
-    case TYPE_BACK_BUTTON:
-    case TYPE_APP_LIST:
+    case TYPE_BACK_BUTTON_DEPRECATED:
+    case TYPE_APP_LIST_DEPRECATED:
     case TYPE_UNDEFINED:
       return false;
   }
@@ -353,8 +354,24 @@ void ShelfView::Init() {
   model()->AddObserver(this);
 
   const ShelfItems& items(model_->items());
+
+  std::unique_ptr<BackButton> back_button_ptr = CreateBackButton();
+  ConfigureChildView(back_button_ptr.get());
+  back_button_ = AddChildView(std::move(back_button_ptr));
+  view_model_->Add(back_button_, kBackButtonIndex);
+
+  std::unique_ptr<AppListButton> home_button_ptr = CreateHomeButton();
+  ConfigureChildView(home_button_ptr.get());
+  home_button_ = AddChildView(std::move(home_button_ptr));
+  view_model_->Add(home_button_, kAppListButtonIndex);
+  home_button_->set_context_menu_controller(this);
+
   for (ShelfItems::const_iterator i = items.begin(); i != items.end(); ++i) {
     views::View* child = CreateViewForItem(*i);
+    // TODO(manucornet): Remove this if statement once home and back are not
+    // allowed shelf item types in the model any longer.
+    if (!child)
+      continue;
     child->SetPaintToLayer();
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
@@ -406,29 +423,11 @@ bool ShelfView::IsShowingOverflowBubble() const {
 }
 
 AppListButton* ShelfView::GetAppListButton() const {
-  for (int i = 0; i < model_->item_count(); ++i) {
-    if (model_->items()[i].type == TYPE_APP_LIST) {
-      views::View* view = view_model_->view_at(i);
-      CHECK_EQ(AppListButton::kViewClassName, view->GetClassName());
-      return static_cast<AppListButton*>(view);
-    }
-  }
-
-  NOTREACHED() << "Applist button not found";
-  return nullptr;
+  return home_button_;
 }
 
 BackButton* ShelfView::GetBackButton() const {
-  for (int i = 0; i < model_->item_count(); ++i) {
-    if (model_->items()[i].type == TYPE_BACK_BUTTON) {
-      views::View* view = view_model_->view_at(i);
-      CHECK_EQ(BackButton::kViewClassName, view->GetClassName());
-      return static_cast<BackButton*>(view);
-    }
-  }
-
-  NOTREACHED() << "Back button not found";
-  return nullptr;
+  return back_button_;
 }
 
 OverflowButton* ShelfView::GetOverflowButton() const {
@@ -662,12 +661,12 @@ void ShelfView::ButtonPressed(views::Button* sender,
           UMA_LAUNCHER_CLICK_ON_APP);
       break;
 
-    case TYPE_APP_LIST:
+    case TYPE_APP_LIST_DEPRECATED:
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
       break;
 
-    case TYPE_BACK_BUTTON:
+    case TYPE_BACK_BUTTON_DEPRECATED:
     case TYPE_DIALOG:
       break;
 
@@ -874,6 +873,33 @@ void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
 void ShelfView::ConfigureChildView(views::View* view) {
   view->SetPaintToLayer();
   view->layer()->SetFillsBoundsOpaquely(false);
+}
+
+views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
+  views::View* view = nullptr;
+  switch (item.type) {
+    case TYPE_PINNED_APP:
+    case TYPE_BROWSER_SHORTCUT:
+    case TYPE_APP:
+    case TYPE_DIALOG: {
+      ShelfAppButton* button = new ShelfAppButton(this);
+      button->SetImage(item.image);
+      button->ReflectItemStatus(item);
+      view = button;
+      break;
+    }
+
+    // The home and back buttons are created separately.
+    case TYPE_APP_LIST_DEPRECATED:
+    case TYPE_BACK_BUTTON_DEPRECATED:
+    case TYPE_UNDEFINED:
+      return nullptr;
+  }
+
+  view->set_context_menu_controller(this);
+
+  ConfigureChildView(view);
+  return view;
 }
 
 void ShelfView::DestroyDragIconProxy() {
@@ -1535,7 +1561,8 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
 ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
   DCHECK(index >= 0 && index < model_->item_count());
   ShelfItemType type = model_->items()[index].type;
-  if (type == TYPE_APP_LIST || type == TYPE_DIALOG || type == TYPE_BACK_BUTTON)
+  if (type == TYPE_APP_LIST_DEPRECATED || type == TYPE_DIALOG ||
+      type == TYPE_BACK_BUTTON_DEPRECATED)
     return NOT_REMOVABLE;
 
   if (model_->items()[index].pinned_by_policy)
@@ -1552,9 +1579,9 @@ bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
       return (typeb == TYPE_PINNED_APP || typeb == TYPE_BROWSER_SHORTCUT);
-    case TYPE_APP_LIST:
+    case TYPE_APP_LIST_DEPRECATED:
     case TYPE_APP:
-    case TYPE_BACK_BUTTON:
+    case TYPE_BACK_BUTTON_DEPRECATED:
     case TYPE_DIALOG:
       return typeb == typea;
     case TYPE_UNDEFINED:
@@ -1576,11 +1603,12 @@ std::pair<int, int> ShelfView::GetDragRange(int index) {
       max_index = i;
     }
   }
-  DCHECK_EQ(1, model_->GetItemIndexForType(TYPE_APP_LIST));
+  DCHECK_EQ(1, model_->GetItemIndexForType(TYPE_APP_LIST_DEPRECATED));
   min_index =
-      std::max(min_index, is_overflow_mode()
-                              ? first_visible_index_
-                              : model_->GetItemIndexForType(TYPE_APP_LIST) + 1);
+      std::max(min_index,
+               is_overflow_mode()
+                   ? first_visible_index_
+                   : model_->GetItemIndexForType(TYPE_APP_LIST_DEPRECATED) + 1);
   max_index = std::min(max_index, last_visible_index_);
   return std::pair<int, int>(min_index, max_index);
 }
@@ -1835,6 +1863,11 @@ void ShelfView::ShelfItemAdded(int model_index) {
   }
   const ShelfItem& item(model_->items()[model_index]);
   views::View* view = CreateViewForItem(item);
+  // Some item types are ignored and yield a null view. Ignore those.
+  // TODO(manucornet): Remove this if statement once home and back are no
+  // longer acceptable shelf item types in the model.
+  if (!view)
+    return;
   AddChildView(view);
   // Hide the view, it'll be made visible when the animation is done. Using
   // opacity 0 here to avoid messing with CalculateIdealBounds which touches
@@ -2139,7 +2172,7 @@ void ShelfView::OnMenuClosed(views::View* source) {
   closing_event_time_ = shelf_menu_model_adapter_->GetClosingEventTime();
 
   const ShelfItem* item = ShelfItemForView(source);
-  if (item && (item->type != TYPE_APP_LIST))
+  if (item && (item->type != TYPE_APP_LIST_DEPRECATED))
     static_cast<ShelfAppButton*>(source)->OnMenuClosed();
 
   shelf_menu_model_adapter_.reset();

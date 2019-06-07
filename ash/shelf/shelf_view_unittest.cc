@@ -393,7 +393,7 @@ class ShelfViewTest : public AshTestBase {
   // since the app list button is not a ShelfAppButton.
   ShelfAppButton* SimulateButtonPressed(ShelfView::Pointer pointer,
                                         int button_index) {
-    EXPECT_NE(TYPE_APP_LIST, model_->items()[button_index].type);
+    EXPECT_NE(TYPE_APP_LIST_DEPRECATED, model_->items()[button_index].type);
     ShelfAppButton* button = test_api_->GetButton(button_index);
     EXPECT_EQ(button, SimulateViewPressed(pointer, button_index));
     return button;
@@ -745,17 +745,20 @@ TEST_F(ShelfViewTest, EnforceDragType) {
   EXPECT_TRUE(test_api_->SameDragType(TYPE_APP, TYPE_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_PINNED_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_APP_LIST));
+  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_APP_LIST_DEPRECATED));
 
   EXPECT_TRUE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_PINNED_APP));
   EXPECT_TRUE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_APP_LIST));
+  EXPECT_FALSE(
+      test_api_->SameDragType(TYPE_PINNED_APP, TYPE_APP_LIST_DEPRECATED));
 
   EXPECT_TRUE(
       test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_LIST));
+  EXPECT_FALSE(
+      test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_LIST_DEPRECATED));
 
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_LIST, TYPE_APP_LIST));
+  EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_LIST_DEPRECATED,
+                                      TYPE_APP_LIST_DEPRECATED));
 }
 
 // Adds platform app button until overflow and verifies that the last added

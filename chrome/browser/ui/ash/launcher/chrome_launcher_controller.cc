@@ -926,9 +926,9 @@ void ChromeLauncherController::UpdateAppLaunchersFromSync() {
 
   int index = 0;
   // Skip the app list and back button if they exist.
-  if (model_->items()[0].type == ash::TYPE_BACK_BUTTON)
+  if (model_->items()[0].type == ash::TYPE_BACK_BUTTON_DEPRECATED)
     ++index;
-  if (model_->items()[1].type == ash::TYPE_APP_LIST)
+  if (model_->items()[1].type == ash::TYPE_APP_LIST_DEPRECATED)
     ++index;
 
   // Apply pins in two steps. At the first step, go through the list of apps to
@@ -1237,8 +1237,8 @@ void ChromeLauncherController::ShelfItemMoved(int start_index,
                                               int target_index) {
   // Update the pin position preference as needed.
   const ash::ShelfItem& item = model_->items()[target_index];
-  DCHECK_NE(ash::TYPE_BACK_BUTTON, item.type);
-  DCHECK_NE(ash::TYPE_APP_LIST, item.type);
+  DCHECK_NE(ash::TYPE_BACK_BUTTON_DEPRECATED, item.type);
+  DCHECK_NE(ash::TYPE_APP_LIST_DEPRECATED, item.type);
   if (ItemTypeIsPinned(item) && should_sync_pin_changes_)
     SyncPinPosition(item.id);
 }
@@ -1267,7 +1267,8 @@ void ChromeLauncherController::OnAppSyncUIStatusChanged() {
           ? IDS_ASH_SHELF_APP_LIST_LAUNCHER_SYNCING_TITLE
           : IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
 
-  const int app_list_index = model_->GetItemIndexForType(ash::TYPE_APP_LIST);
+  const int app_list_index =
+      model_->GetItemIndexForType(ash::TYPE_APP_LIST_DEPRECATED);
   DCHECK_GE(app_list_index, 0);
   ash::ShelfItem item = model_->items()[app_list_index];
   if (item.title != title) {

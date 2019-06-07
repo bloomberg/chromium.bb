@@ -80,7 +80,8 @@ void Shelf::LaunchShelfItem(int item_index) {
   // Iterating until we have hit the index we are interested in which
   // is true once indexes_left becomes negative.
   for (int i = 0; i < item_count && indexes_left >= 0; i++) {
-    if (items[i].type != TYPE_APP_LIST && items[i].type != TYPE_BACK_BUTTON) {
+    if (items[i].type != TYPE_APP_LIST_DEPRECATED &&
+        items[i].type != TYPE_BACK_BUTTON_DEPRECATED) {
       found_index = i;
       indexes_left--;
     }

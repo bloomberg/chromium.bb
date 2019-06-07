@@ -152,24 +152,12 @@ void KioskNextShelfView::CalculateIdealBounds() {
   }
 }
 
-views::View* KioskNextShelfView::CreateViewForItem(const ShelfItem& item) {
-  DCHECK(item.type == TYPE_BACK_BUTTON || item.type == TYPE_APP_LIST);
+std::unique_ptr<BackButton> KioskNextShelfView::CreateBackButton() {
+  return std::make_unique<KioskNextBackButton>(this);
+}
 
-  if (item.type == TYPE_BACK_BUTTON) {
-    auto* view = new KioskNextBackButton(this);
-    ConfigureChildView(view);
-    return view;
-  }
-
-  if (item.type == TYPE_APP_LIST) {
-    auto* view = new KioskNextHomeButton(this, shelf());
-    view->set_context_menu_controller(this);
-    ConfigureChildView(view);
-    return view;
-  }
-
-  NOTREACHED();
-  return nullptr;
+std::unique_ptr<AppListButton> KioskNextShelfView::CreateHomeButton() {
+  return std::make_unique<KioskNextHomeButton>(this, shelf());
 }
 
 }  // namespace ash

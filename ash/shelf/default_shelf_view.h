@@ -5,6 +5,8 @@
 #ifndef ASH_SHELF_DEFAULT_SHELF_VIEW_H_
 #define ASH_SHELF_DEFAULT_SHELF_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_view.h"
 #include "base/macros.h"
@@ -17,7 +19,6 @@ class Separator;
 namespace ash {
 
 class Shelf;
-struct ShelfItem;
 class ShelfModel;
 class ShelfWidget;
 
@@ -33,8 +34,9 @@ class ASH_EXPORT DefaultShelfView : public ShelfView {
   // ShelfView:
   void Init() override;
   void CalculateIdealBounds() override;
-  views::View* CreateViewForItem(const ShelfItem& item) override;
   void LayoutAppListAndBackButtonHighlight() override;
+  std::unique_ptr<BackButton> CreateBackButton() override;
+  std::unique_ptr<AppListButton> CreateHomeButton() override;
 
  private:
   struct AppCenteringStrategy {

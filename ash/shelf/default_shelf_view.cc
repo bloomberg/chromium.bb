@@ -255,41 +255,6 @@ void DefaultShelfView::CalculateIdealBounds() {
   }
 }
 
-views::View* DefaultShelfView::CreateViewForItem(const ShelfItem& item) {
-  views::View* view = nullptr;
-  switch (item.type) {
-    case TYPE_PINNED_APP:
-    case TYPE_BROWSER_SHORTCUT:
-    case TYPE_APP:
-    case TYPE_DIALOG: {
-      ShelfAppButton* button = new ShelfAppButton(this);
-      button->SetImage(item.image);
-      button->ReflectItemStatus(item);
-      view = button;
-      break;
-    }
-
-    case TYPE_APP_LIST: {
-      view = new AppListButton(this, shelf());
-      break;
-    }
-
-    case TYPE_BACK_BUTTON: {
-      view = new BackButton(this);
-      break;
-    }
-
-    case TYPE_UNDEFINED:
-      return nullptr;
-  }
-
-  if (item.type != TYPE_BACK_BUTTON)
-    view->set_context_menu_controller(this);
-
-  ConfigureChildView(view);
-  return view;
-}
-
 void DefaultShelfView::LayoutAppListAndBackButtonHighlight() {
   // Don't show anything if this is the overflow menu.
   if (is_overflow_mode()) {
@@ -310,6 +275,14 @@ void DefaultShelfView::LayoutAppListAndBackButtonHighlight() {
                                 kShelfControlSize),
       shelf()->PrimaryAxisValue(kShelfControlSize,
                                 back_and_app_list_background_size));
+}
+
+std::unique_ptr<BackButton> DefaultShelfView::CreateBackButton() {
+  return std::make_unique<BackButton>(this);
+}
+
+std::unique_ptr<AppListButton> DefaultShelfView::CreateHomeButton() {
+  return std::make_unique<AppListButton>(this, shelf());
 }
 
 int DefaultShelfView::GetAvailableSpaceForAppIcons() const {

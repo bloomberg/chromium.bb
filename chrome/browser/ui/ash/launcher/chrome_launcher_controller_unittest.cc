@@ -750,10 +750,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         case ash::TYPE_BROWSER_SHORTCUT:
           result += "Chrome";
           break;
-        case ash::TYPE_APP_LIST:
+        case ash::TYPE_APP_LIST_DEPRECATED:
           result += "AppList";
           break;
-        case ash::TYPE_BACK_BUTTON:
+        case ash::TYPE_BACK_BUTTON_DEPRECATED:
           result += "Back";
           break;
         default:
@@ -3653,8 +3653,8 @@ TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   TestLauncherControllerHelper* helper = new TestLauncherControllerHelper;
   SetLauncherControllerHelper(helper);
 
-  EXPECT_EQ(ash::TYPE_BACK_BUTTON, model_->items()[0].type);
-  EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[1].type);
+  EXPECT_EQ(ash::TYPE_BACK_BUTTON_DEPRECATED, model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST_DEPRECATED, model_->items()[1].type);
   EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[2].type);
 
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
@@ -3670,16 +3670,16 @@ TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned("1"));
   launcher_controller_->PinAppWithID("2");
 
-  EXPECT_EQ(ash::TYPE_BACK_BUTTON, model_->items()[0].type);
-  EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[1].type);
+  EXPECT_EQ(ash::TYPE_BACK_BUTTON_DEPRECATED, model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST_DEPRECATED, model_->items()[1].type);
   EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[2].type);
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[3].type);
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[4].type);
 
   // Move browser shortcut item from index 1 to index 3.
   model_->Move(2, 4);
-  EXPECT_EQ(ash::TYPE_BACK_BUTTON, model_->items()[0].type);
-  EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[1].type);
+  EXPECT_EQ(ash::TYPE_BACK_BUTTON_DEPRECATED, model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST_DEPRECATED, model_->items()[1].type);
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[3].type);
   EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[4].type);
@@ -3692,8 +3692,8 @@ TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   launcher_controller_->Init();
 
   // Check ShelfItems are restored after resetting ChromeLauncherController.
-  EXPECT_EQ(ash::TYPE_BACK_BUTTON, model_->items()[0].type);
-  EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[1].type);
+  EXPECT_EQ(ash::TYPE_BACK_BUTTON_DEPRECATED, model_->items()[0].type);
+  EXPECT_EQ(ash::TYPE_APP_LIST_DEPRECATED, model_->items()[1].type);
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[3].type);
   EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[4].type);

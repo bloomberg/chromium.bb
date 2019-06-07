@@ -336,7 +336,10 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Creates the view used to represent given shelf |item|.
   // Returns unowned pointer (view is owned by the view hierarchy).
-  virtual views::View* CreateViewForItem(const ShelfItem& item) = 0;
+  virtual views::View* CreateViewForItem(const ShelfItem& item);
+
+  virtual std::unique_ptr<BackButton> CreateBackButton() = 0;
+  virtual std::unique_ptr<AppListButton> CreateHomeButton() = 0;
 
   // Lays out control buttons background.
   // Child classes should implement this method if control buttons background
@@ -560,6 +563,8 @@ class ASH_EXPORT ShelfView : public views::View,
 
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
 
+  BackButton* back_button_ = nullptr;
+  AppListButton* home_button_ = nullptr;
   OverflowButton* overflow_button_ = nullptr;
 
   std::unique_ptr<OverflowBubble> overflow_bubble_;

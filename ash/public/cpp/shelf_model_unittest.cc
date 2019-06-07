@@ -249,8 +249,8 @@ TEST_F(ShelfModelTest, AddIndices) {
   int platform_app_index4 = model_->AddAt(8, item);
   EXPECT_EQ(8, platform_app_index4);
 
-  EXPECT_EQ(TYPE_BACK_BUTTON, model_->items()[0].type);
-  EXPECT_EQ(TYPE_APP_LIST, model_->items()[1].type);
+  EXPECT_EQ(TYPE_BACK_BUTTON_DEPRECATED, model_->items()[0].type);
+  EXPECT_EQ(TYPE_APP_LIST_DEPRECATED, model_->items()[1].type);
   EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model_->items()[4].type);
 }
 
@@ -283,8 +283,8 @@ TEST_F(ShelfModelTest, FirstRunningAppIndex) {
 
 // Test item reordering on type/weight (eg. pinning) changes. crbug.com/248769.
 TEST_F(ShelfModelTest, ReorderOnTypeChanges) {
-  EXPECT_EQ(TYPE_BACK_BUTTON, model_->items()[0].type);
-  EXPECT_EQ(TYPE_APP_LIST, model_->items()[1].type);
+  EXPECT_EQ(TYPE_BACK_BUTTON_DEPRECATED, model_->items()[0].type);
+  EXPECT_EQ(TYPE_APP_LIST_DEPRECATED, model_->items()[1].type);
 
   // Add three pinned items.
   ShelfItem item1;

@@ -5,18 +5,15 @@
 #ifndef ASH_SHELF_KIOSK_NEXT_SHELF_VIEW_H_
 #define ASH_SHELF_KIOSK_NEXT_SHELF_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_view.h"
 #include "base/macros.h"
 
-namespace views {
-class View;
-}  // namespace views
-
 namespace ash {
 
 class Shelf;
-struct ShelfItem;
 class ShelfModel;
 class ShelfWidget;
 
@@ -37,7 +34,8 @@ class ASH_EXPORT KioskNextShelfView : public ShelfView {
   // ShelfView:
   void Init() override;
   void CalculateIdealBounds() override;
-  views::View* CreateViewForItem(const ShelfItem& item) override;
+  std::unique_ptr<BackButton> CreateBackButton() override;
+  std::unique_ptr<AppListButton> CreateHomeButton() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KioskNextShelfView);
