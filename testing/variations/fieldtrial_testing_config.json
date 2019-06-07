@@ -1027,6 +1027,25 @@
             ]
         }
     ],
+    "AutofillUseMobileLabelDisambiguation": [
+        {
+            "platforms": [
+                "android",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_ShowAll",
+                    "params": {
+                        "variant": "show-all"
+                    },
+                    "enable_features": [
+                        "AutofillUseMobileLabelDisambiguation"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutomaticTabDiscarding": [
         {
             "platforms": [
