@@ -45,11 +45,6 @@ namespace {
 // Default test image file.
 const base::FilePath::CharType* kDefaultJpegFilename =
     FILE_PATH_LITERAL("peach_pi-1280x720.jpg");
-// Images with at least one odd dimension.
-const base::FilePath::CharType* kOddJpegFilenames[] = {
-    FILE_PATH_LITERAL("peach_pi-40x23.jpg"),
-    FILE_PATH_LITERAL("peach_pi-41x22.jpg"),
-    FILE_PATH_LITERAL("peach_pi-41x23.jpg")};
 constexpr int kDefaultPerfDecodeTimes = 600;
 // Decide to save decode results to files or not. Output files will be saved
 // in the same directory with unittest. File name is like input file but
@@ -117,14 +112,10 @@ struct ParsedJpegImage {
 
   void InitializeSizes(int width, int height) {
     visible_size.SetSize(width, height);
-    // The parse result yields a coded size that rounds up to a whole MCU.
-    // However, we can use a smaller coded size for the decode result. Here, we
-    // simply round up to the next even dimension. That way, when we are
-    // building the video frame to hold the result of the decoding, the strides
-    // and pointers for the UV planes are computed correctly for JPEGs that
-    // require even-sized allocation (see
-    // media::VideoFrame::RequiresEvenSizeAllocation()) and whose visible size
-    // has at least one odd dimension.
+    // We don't expect odd dimensions for camera captures.
+    DCHECK_EQ(0, width % 2);
+    DCHECK_EQ(0, height % 2);
+
     coded_size.SetSize((visible_size.width() + 1) & ~1,
                        (visible_size.height() + 1) & ~1);
     // The JPEG decoder will always return the decoded frame in I420 format.
@@ -186,8 +177,6 @@ class MjpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
   std::unique_ptr<ParsedJpegImage> image_data_1280x720_default_;
   // Parsed data of failure image.
   std::unique_ptr<ParsedJpegImage> image_data_invalid_;
-  // Parsed data for images with at least one odd dimension.
-  std::vector<std::unique_ptr<ParsedJpegImage>> image_data_odd_;
   // Parsed data from command line.
   std::vector<std::unique_ptr<ParsedJpegImage>> image_data_user_;
   // Decode times for performance measurement.
@@ -212,13 +201,6 @@ void MjpegDecodeAcceleratorTestEnvironment::SetUp() {
       std::make_unique<ParsedJpegImage>(base::FilePath("failure.jpg"));
   image_data_invalid_->data_str.resize(100, 0);
   image_data_invalid_->InitializeSizes(1280, 720);
-
-  // Load test images with at least one odd dimension.
-  for (const auto* filename : kOddJpegFilenames) {
-    const base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
-    auto image_data = ParsedJpegImage::CreateFromFile(input_file);
-    image_data_odd_.push_back(std::move(image_data));
-  }
 
   // |user_jpeg_filenames_| may include many files and use ';' as delimiter.
   std::vector<base::FilePath::StringType> filenames = base::SplitString(
@@ -763,17 +745,6 @@ TEST_F(MjpegDecodeAcceleratorTest, MultipleDecoders) {
   const std::vector<ClientState> expected_status(images.size(), CS_DECODE_PASS);
   TestDecode(images, expected_status, 3 /* num_concurrent_decoders */);
 }
-
-#if !(BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY))
-// TODO(andrescj): re-enable for ARM devices when crbug.com/852236 is fixed.
-TEST_F(MjpegDecodeAcceleratorTest, OddDimensions) {
-  std::vector<ParsedJpegImage*> images;
-  for (auto& image : g_env->image_data_odd_)
-    images.push_back(image.get());
-  const std::vector<ClientState> expected_status(images.size(), CS_DECODE_PASS);
-  TestDecode(images, expected_status);
-}
-#endif
 
 TEST_F(MjpegDecodeAcceleratorTest, InputSizeChange) {
   // The size of |image_data_1280x720_black_| is smaller than

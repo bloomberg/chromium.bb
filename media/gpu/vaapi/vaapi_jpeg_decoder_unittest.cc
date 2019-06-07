@@ -45,6 +45,9 @@ namespace {
 constexpr const char* kYuv422Filename = "pixel-1280x720.jpg";
 constexpr const char* kYuv420Filename = "pixel-1280x720-yuv420.jpg";
 constexpr const char* kYuv444Filename = "pixel-1280x720-yuv444.jpg";
+constexpr const char* kOddHeightImageFilename = "peach_pi-40x23.jpg";
+constexpr const char* kOddWidthImageFilename = "peach_pi-41x22.jpg";
+constexpr const char* kOddDimensionsImageFilename = "peach_pi-41x23.jpg";
 
 struct TestParam {
   const char* test_name;
@@ -55,10 +58,12 @@ const TestParam kTestCases[] = {
     {"YUV422", kYuv422Filename},
     {"YUV420", kYuv420Filename},
     {"YUV444", kYuv444Filename},
+    {"OddHeightImage40x23", kOddHeightImageFilename},
+    {"OddWidthImage41x22", kOddWidthImageFilename},
+    {"OddDimensionsImage41x23", kOddDimensionsImageFilename},
 };
 
-// Any number above 99.5% should do, experimentally we like a wee higher.
-constexpr double kMinSsim = 0.997;
+constexpr double kMinSsim = 0.995;
 
 // This file is not supported by the VAAPI, so we don't define expectations on
 // the decode result.
@@ -96,41 +101,25 @@ bool CompareImages(base::span<const uint8_t> encoded_image,
 
   const uint16_t width = parse_result.frame_header.visible_width;
   const uint16_t height = parse_result.frame_header.visible_height;
-  const uint16_t even_width = (width + 1) / 2;
-  const uint16_t even_height = (height + 1) / 2;
+  const uint16_t half_width = (width + 1) / 2;
+  const uint16_t half_height = (height + 1) / 2;
 
-  auto ref_y = std::make_unique<uint8_t[]>(width * height);
-  auto ref_u = std::make_unique<uint8_t[]>(even_width * even_height);
-  auto ref_v = std::make_unique<uint8_t[]>(even_width * even_height);
+  auto libyuv_y_plane = std::make_unique<uint8_t[]>(width * height);
+  auto libyuv_u_plane = std::make_unique<uint8_t[]>(half_width * half_height);
+  auto libyuv_v_plane = std::make_unique<uint8_t[]>(half_width * half_height);
 
-  const int conversion_result = libyuv::ConvertToI420(
-      encoded_image.data(), encoded_image.size(), ref_y.get(), width,
-      ref_u.get(), even_width, ref_v.get(), even_width, 0, 0, width, height,
-      width, height, libyuv::kRotate0, libyuv::FOURCC_MJPG);
+  int conversion_result = libyuv::ConvertToI420(
+      encoded_image.data(), encoded_image.size(), libyuv_y_plane.get(), width,
+      libyuv_u_plane.get(), half_width, libyuv_v_plane.get(), half_width, 0, 0,
+      width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_MJPG);
   if (conversion_result != 0) {
     DLOG(ERROR) << "libyuv conversion error";
     return false;
   }
 
   const uint32_t va_fourcc = decoded_image->image()->format.fourcc;
-  uint32_t libyuv_fourcc = 0;
-  switch (va_fourcc) {
-    case VA_FOURCC_I420:
-      libyuv_fourcc = libyuv::FOURCC_I420;
-      break;
-    case VA_FOURCC_NV12:
-      libyuv_fourcc = libyuv::FOURCC_NV12;
-      break;
-    case VA_FOURCC_YUY2:
-    case VA_FOURCC('Y', 'U', 'Y', 'V'):
-      libyuv_fourcc = libyuv::FOURCC_YUY2;
-      break;
-    default:
-      DLOG(ERROR) << "Not supported FourCC: " << FourccToString(va_fourcc);
-      return false;
-  }
-
-  if (libyuv_fourcc == libyuv::FOURCC_I420) {
+  double ssim = 0;
+  if (va_fourcc == VA_FOURCC_I420) {
     const auto* decoded_data_y =
         static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
         decoded_image->image()->offsets[0];
@@ -141,88 +130,70 @@ bool CompareImages(base::span<const uint8_t> encoded_image,
         static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
         decoded_image->image()->offsets[2];
 
-    const double ssim = libyuv::I420Ssim(
-        ref_y.get(), width, ref_u.get(), even_width, ref_v.get(), even_width,
-        decoded_data_y,
+    ssim = libyuv::I420Ssim(
+        libyuv_y_plane.get(), width, libyuv_u_plane.get(), half_width,
+        libyuv_v_plane.get(), half_width, decoded_data_y,
         base::checked_cast<int>(decoded_image->image()->pitches[0]),
         decoded_data_u,
         base::checked_cast<int>(decoded_image->image()->pitches[1]),
         decoded_data_v,
         base::checked_cast<int>(decoded_image->image()->pitches[2]), width,
         height);
-    if (ssim < kMinSsim) {
-      DLOG(ERROR) << "Too low SSIM: " << ssim << " < " << kMinSsim;
-      return false;
-    }
-  } else if (libyuv_fourcc == libyuv::FOURCC_NV12) {
-    const auto* decoded_data_y =
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-        decoded_image->image()->offsets[0];
-    const auto* decoded_data_uv =
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-        decoded_image->image()->offsets[1];
-
+  } else if (va_fourcc == VA_FOURCC_NV12 || va_fourcc == VA_FOURCC_YUY2 ||
+             va_fourcc == VA_FOURCC('Y', 'U', 'Y', 'V')) {
+    // Temporary planes to hold intermediate conversions to I420 (i.e. NV12 to
+    // I420 or YUYV/2 to I420).
     auto temp_y = std::make_unique<uint8_t[]>(width * height);
-    auto temp_u = std::make_unique<uint8_t[]>(even_width * even_height);
-    auto temp_v = std::make_unique<uint8_t[]>(even_width * even_height);
+    auto temp_u = std::make_unique<uint8_t[]>(half_width * half_height);
+    auto temp_v = std::make_unique<uint8_t[]>(half_width * half_height);
 
-    const int conversion_result = libyuv::NV12ToI420(
-        decoded_data_y,
-        base::checked_cast<int>(decoded_image->image()->pitches[0]),
-        decoded_data_uv,
-        base::checked_cast<int>(decoded_image->image()->pitches[1]),
-        temp_y.get(), width, temp_u.get(), even_width, temp_v.get(), even_width,
-        width, height);
+    if (va_fourcc == VA_FOURCC_NV12) {
+      const auto* decoded_data_y =
+          static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
+          decoded_image->image()->offsets[0];
+      const auto* decoded_data_uv =
+          static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
+          decoded_image->image()->offsets[1];
+
+      conversion_result = libyuv::NV12ToI420(
+          decoded_data_y,
+          base::checked_cast<int>(decoded_image->image()->pitches[0]),
+          decoded_data_uv,
+          base::checked_cast<int>(decoded_image->image()->pitches[1]),
+          temp_y.get(), width, temp_u.get(), half_width, temp_v.get(),
+          half_width, width, height);
+    } else {
+      // |va_fourcc| is YUY2 or YUYV, which are handled the same.
+      const auto* decoded_data_yuyv =
+          static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
+          decoded_image->image()->offsets[0];
+
+      // TODO(crbug.com/868400): support other formats/planarities/pitches.
+      conversion_result = libyuv::YUY2ToI420(
+          decoded_data_yuyv,
+          base::checked_cast<int>(decoded_image->image()->pitches[0]),
+          temp_y.get(), width, temp_u.get(), half_width, temp_v.get(),
+          half_width, width, height);
+    }
     if (conversion_result != 0) {
       DLOG(ERROR) << "libyuv conversion error";
       return false;
     }
 
-    const double ssim = libyuv::I420Ssim(
-        ref_y.get(), width, ref_u.get(), even_width, ref_v.get(), even_width,
-        temp_y.get(), width, temp_u.get(), even_width, temp_v.get(), even_width,
-        width, height);
-    if (ssim < kMinSsim) {
-      DLOG(ERROR) << "Too low SSIM: " << ssim << " < " << kMinSsim;
-      return false;
-    }
+    ssim = libyuv::I420Ssim(libyuv_y_plane.get(), width, libyuv_u_plane.get(),
+                            half_width, libyuv_v_plane.get(), half_width,
+                            temp_y.get(), width, temp_u.get(), half_width,
+                            temp_v.get(), half_width, width, height);
   } else {
-    auto temp_y = std::make_unique<uint8_t[]>(width * height);
-    auto temp_u = std::make_unique<uint8_t[]>(even_width * even_height);
-    auto temp_v = std::make_unique<uint8_t[]>(even_width * even_height);
-
-    // TODO(crbug.com/868400): support other formats/planarities/pitches.
-    constexpr uint32_t kNumPlanesYuv422 = 1u;
-    constexpr uint32_t kBytesPerPixelYuv422 = 2u;
-    if (decoded_image->image()->num_planes != kNumPlanesYuv422 ||
-        decoded_image->image()->pitches[0] != (width * kBytesPerPixelYuv422)) {
-      DLOG(ERROR) << "Too many planes (got "
-                  << decoded_image->image()->num_planes << ", expected "
-                  << kNumPlanesYuv422 << ") or rows not tightly packed (got "
-                  << decoded_image->image()->pitches[0] << ", expected "
-                  << (width * kBytesPerPixelYuv422) << "), aborting test";
-      return false;
-    }
-
-    const int conversion_result = libyuv::ConvertToI420(
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()),
-        base::strict_cast<size_t>(decoded_image->image()->data_size),
-        temp_y.get(), width, temp_u.get(), even_width, temp_v.get(), even_width,
-        0, 0, width, height, width, height, libyuv::kRotate0, libyuv_fourcc);
-    if (conversion_result != 0) {
-      DLOG(ERROR) << "libyuv conversion error";
-      return false;
-    }
-
-    const double ssim = libyuv::I420Ssim(
-        ref_y.get(), width, ref_u.get(), even_width, ref_v.get(), even_width,
-        temp_y.get(), width, temp_u.get(), even_width, temp_v.get(), even_width,
-        width, height);
-    if (ssim < kMinSsim) {
-      DLOG(ERROR) << "Too low SSIM: " << ssim << " < " << kMinSsim;
-      return false;
-    }
+    DLOG(ERROR) << "FourCC not supported: " << FourccToString(va_fourcc);
+    return false;
   }
+
+  if (ssim < kMinSsim) {
+    DLOG(ERROR) << "SSIM too low: " << ssim << " < " << kMinSsim;
+    return false;
+  }
+
   return true;
 }
 
