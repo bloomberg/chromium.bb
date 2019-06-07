@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "base/strings/string16.h"
-#include "base/strings/string_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 
@@ -18,14 +18,6 @@ namespace device {
 namespace {
 
 const int kGCControllerPlayerIndexCount = 4;
-
-void CopyNSStringAsUTF16LittleEndian(NSString* src,
-                                     base::char16* dest,
-                                     size_t dest_len) {
-  NSData* as16 = [src dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
-  memset(dest, 0, dest_len);
-  [as16 getBytes:dest length:dest_len - sizeof(base::char16)];
-}
 
 }  // namespace
 
@@ -90,9 +82,9 @@ void GameControllerDataFetcherMac::GetGamepadData(bool) {
       NSString* ident =
           [NSString stringWithFormat:@"%@ (STANDARD GAMEPAD)",
                                      vendorName ? vendorName : @"Unknown"];
-      CopyNSStringAsUTF16LittleEndian(ident, pad.id, sizeof(pad.id));
 
       pad.mapping = GamepadMapping::kStandard;
+      pad.SetID(base::SysNSStringToUTF16(ident));
       pad.axes_length = AXIS_INDEX_COUNT;
       pad.buttons_length = BUTTON_INDEX_COUNT - 1;
       pad.connected = true;

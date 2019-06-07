@@ -25,8 +25,6 @@ if (enable_vr) {
       "orientation/orientation_device.h",
       "orientation/orientation_device_provider.cc",
       "orientation/orientation_device_provider.h",
-      "util/copy_to_ustring.cc",
-      "util/copy_to_ustring.h",
       "util/fps_meter.cc",
       "util/fps_meter.h",
       "util/gamepad_builder.cc",

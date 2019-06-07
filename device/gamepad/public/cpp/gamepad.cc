@@ -24,4 +24,9 @@ Gamepad::Gamepad()
 
 Gamepad::Gamepad(const Gamepad& other) = default;
 
+void Gamepad::SetID(const base::string16& src) {
+  memset(id, 0, sizeof(id));
+  src.copy(id, kIdLengthCap - 1);
+}
+
 }  // namespace device

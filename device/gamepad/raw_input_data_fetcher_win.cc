@@ -215,10 +215,10 @@ void RawInputDataFetcher::EnumerateDevices() {
         state->axis_mask = 0;
         state->button_mask = 0;
 
-        swprintf(base::as_writable_wcstr(pad.id), Gamepad::kIdLengthCap,
-                 L"%ls (%lsVendor: %04x Product: %04x)", product_string.c_str(),
-                 state->mapper ? L"STANDARD GAMEPAD " : L"", vendor_int,
-                 product_int);
+        pad.SetID(base::StringPrintf(L"%ls (%lsVendor: %04x Product: %04x)",
+                                     product_string.c_str(),
+                                     state->mapper ? L"STANDARD GAMEPAD " : L"",
+                                     vendor_int, product_int));
 
         // The mapping is standard if there is a standard mapping function.
         pad.mapping =

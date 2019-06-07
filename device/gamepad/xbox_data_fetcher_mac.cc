@@ -22,16 +22,6 @@
 
 namespace device {
 
-namespace {
-
-void CopyToUString(base::char16* dest, size_t dest_length, base::string16 src) {
-  const size_t str_to_copy = std::min(src.size(), dest_length - 1);
-  src.copy(dest, str_to_copy);
-  std::fill(dest + str_to_copy, dest + dest_length, 0);
-}
-
-}  // namespace
-
 XboxDataFetcher::PendingController::PendingController(
     XboxDataFetcher* fetcher,
     std::unique_ptr<XboxControllerMac> controller)
@@ -320,9 +310,7 @@ void XboxDataFetcher::AddController(XboxControllerMac* controller) {
   controller->SetLEDPattern((XboxControllerMac::LEDPattern)(
       XboxControllerMac::LED_FLASH_TOP_LEFT + controller->location_id()));
 
-  CopyToUString(state->data.id, base::size(state->data.id),
-                base::UTF8ToUTF16(controller->GetIdString()));
-
+  state->data.SetID(base::UTF8ToUTF16(controller->GetIdString()));
   state->data.mapping = GamepadMapping::kStandard;
   state->data.connected = true;
   state->data.axes_length = 4;

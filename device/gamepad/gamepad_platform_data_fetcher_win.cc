@@ -134,9 +134,9 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices() {
         pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
         pad.vibration_actuator.not_null = true;
 
-        swprintf(base::as_writable_wcstr(pad.id), Gamepad::kIdLengthCap,
-                 L"Xbox 360 Controller (XInput STANDARD %ls)",
-                 GamepadSubTypeName(caps.SubType));
+        pad.SetID(
+            base::StringPrintf(L"Xbox 360 Controller (XInput STANDARD %ls)",
+                               GamepadSubTypeName(caps.SubType)));
         pad.mapping = GamepadMapping::kStandard;
       }
     }

@@ -9,6 +9,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_uma.h"
@@ -26,14 +27,6 @@ const uint16_t kGenericDesktopUsagePage = 0x01;
 const uint16_t kJoystickUsageNumber = 0x04;
 const uint16_t kGameUsageNumber = 0x05;
 const uint16_t kMultiAxisUsageNumber = 0x08;
-
-void CopyNSStringAsUTF16LittleEndian(NSString* src,
-                                     base::char16* dest,
-                                     size_t dest_len) {
-  NSData* as16 = [src dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
-  memset(dest, 0, dest_len);
-  [as16 getBytes:dest length:dest_len - sizeof(base::char16)];
-}
 
 NSDictionary* DeviceMatching(uint32_t usage_page, uint32_t usage) {
   return [NSDictionary
@@ -227,8 +220,7 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
       [NSString stringWithFormat:@"%@ (%sVendor: %04x Product: %04x)", product,
                                  state->mapper ? "STANDARD GAMEPAD " : "",
                                  vendor_int, product_int];
-  CopyNSStringAsUTF16LittleEndian(ident, state->data.id,
-                                  sizeof(state->data.id));
+  state->data.SetID(base::SysNSStringToUTF16(ident));
 
   state->data.mapping =
       state->mapper ? GamepadMapping::kStandard : GamepadMapping::kNone;

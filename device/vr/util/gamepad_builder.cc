@@ -7,7 +7,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "device/vr/util/copy_to_ustring.h"
 
 namespace device {
 
@@ -36,8 +35,7 @@ GamepadBuilder::GamepadBuilder(const std::string& gamepad_id,
   gamepad_.timestamp = base::TimeTicks::Now().since_origin().InMicroseconds();
   gamepad_.mapping = mapping;
   gamepad_.hand = MojoToGamepadHandedness(handedness);
-  CopyToUString(base::UTF8ToUTF16(gamepad_id), gamepad_.id,
-                Gamepad::kIdLengthCap);
+  gamepad_.SetID(base::UTF8ToUTF16(gamepad_id));
 }
 
 GamepadBuilder::~GamepadBuilder() = default;

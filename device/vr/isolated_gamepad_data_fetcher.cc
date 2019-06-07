@@ -5,6 +5,7 @@
 #include "device/vr/isolated_gamepad_data_fetcher.h"
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/buildflag.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/vr_device.h"
@@ -217,18 +218,14 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     // a headset.  This doesn't change behavior, but the device/display naming
     // could be confusing here.
     if (this->source() == GAMEPAD_SOURCE_OPENVR) {
-      swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-               L"OpenVR Gamepad");
+      dest.SetID(base::UTF8ToUTF16("OpenVR Gamepad"));
     } else if (this->source() == GAMEPAD_SOURCE_OCULUS) {
       if (dest.hand == GamepadHand::kLeft) {
-        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 L"Oculus Touch (Left)");
+        dest.SetID(base::UTF8ToUTF16("Oculus Touch (Left)"));
       } else if (dest.hand == GamepadHand::kRight) {
-        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 L"Oculus Touch (Right)");
+        dest.SetID(base::UTF8ToUTF16("Oculus Touch (Right)"));
       } else {
-        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 L"Oculus Remote");
+        dest.SetID(base::UTF8ToUTF16("Oculus Remote"));
       }
     } else if (this->source() == GAMEPAD_SOURCE_WIN_MR) {
       // For compatibility with Edge and existing libraries, Win MR may plumb
@@ -241,11 +238,10 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
           source->pose->input_state.value()[0]->gamepad) {
         Gamepad id_gamepad =
             source->pose->input_state.value()[0]->gamepad.value();
-        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 id_gamepad.id);
+        dest.SetID(id_gamepad.id);
       } else {
-        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 L"Spatial Controller (Spatial Interaction Source) 0000-0000");
+        dest.SetID(base::UTF8ToUTF16(
+            "Spatial Controller (Spatial Interaction Source) 0000-0000"));
       }
     }
 

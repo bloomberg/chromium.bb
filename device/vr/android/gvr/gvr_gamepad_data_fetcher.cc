@@ -12,16 +12,6 @@
 
 namespace device {
 
-namespace {
-
-void CopyToUString(base::char16* dest, size_t dest_length, base::string16 src) {
-  const size_t str_to_copy = std::min(src.size(), dest_length - 1);
-  memcpy(dest, src.data(), str_to_copy * sizeof(base::string16::value_type));
-  dest[str_to_copy] = 0;
-}
-
-}  // namespace
-
 GvrGamepadDataFetcher::Factory::Factory(GvrGamepadDataProvider* data_provider,
                                         mojom::XRDeviceId display_id)
     : data_provider_(data_provider), display_id_(display_id) {
@@ -83,9 +73,8 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     state->is_initialized = true;
     // This is the first time we've seen this device, so do some one-time
     // initialization
-    CopyToUString(pad.id, Gamepad::kIdLengthCap,
-                  base::UTF8ToUTF16("Daydream Controller"));
     pad.mapping = GamepadMapping::kNone;
+    pad.SetID(base::UTF8ToUTF16("Daydream Controller"));
     pad.buttons_length = 1;
     pad.axes_length = 2;
 
