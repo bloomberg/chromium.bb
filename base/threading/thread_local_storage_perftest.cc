@@ -15,8 +15,16 @@
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#include "base/win/windows_types.h"
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#include <pthread.h>
+#endif
 
 namespace base {
 namespace internal {
@@ -134,9 +142,57 @@ TEST_F(ThreadLocalStoragePerfTest, ThreadLocalStorage) {
   auto read = [&]() { return reinterpret_cast<intptr_t>(tls.Get()); };
   auto write = [&](intptr_t value) { tls.Set(reinterpret_cast<void*>(value)); };
 
-  Benchmark("ThreadLocalStorage", read, write, 1000000, 1);
-  Benchmark("ThreadLocalStorage 4 threads", read, write, 1000000, 4);
+  Benchmark("ThreadLocalStorage", read, write, 10000000, 1);
+  Benchmark("ThreadLocalStorage 4 threads", read, write, 10000000, 4);
 }
+
+#if defined(OS_WIN)
+
+TEST_F(ThreadLocalStoragePerfTest, PlatformFls) {
+  DWORD key = FlsAlloc([](void*) {});
+  ASSERT_NE(PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES, key);
+
+  auto read = [&]() { return reinterpret_cast<intptr_t>(FlsGetValue(key)); };
+  auto write = [&](intptr_t value) {
+    FlsSetValue(key, reinterpret_cast<void*>(value));
+  };
+
+  Benchmark("PlatformFls", read, write, 10000000, 1);
+  Benchmark("PlatformFls 4 threads", read, write, 10000000, 4);
+}
+
+TEST_F(ThreadLocalStoragePerfTest, PlatformTls) {
+  DWORD key = TlsAlloc();
+  ASSERT_NE(PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES, key);
+
+  auto read = [&]() { return reinterpret_cast<intptr_t>(TlsGetValue(key)); };
+  auto write = [&](intptr_t value) {
+    TlsSetValue(key, reinterpret_cast<void*>(value));
+  };
+
+  Benchmark("PlatformTls", read, write, 10000000, 1);
+  Benchmark("PlatformTls 4 threads", read, write, 10000000, 4);
+}
+
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+
+TEST_F(ThreadLocalStoragePerfTest, PlatformTls) {
+  pthread_key_t key;
+  ASSERT_FALSE(pthread_key_create(&key, [](void*) {}));
+  ASSERT_NE(PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES, key);
+
+  auto read = [&]() {
+    return reinterpret_cast<intptr_t>(pthread_getspecific(key));
+  };
+  auto write = [&](intptr_t value) {
+    pthread_setspecific(key, reinterpret_cast<void*>(value));
+  };
+
+  Benchmark("PlatformTls", read, write, 10000000, 1);
+  Benchmark("PlatformTls 4 threads", read, write, 10000000, 4);
+}
+
+#endif
 
 }  // namespace internal
 }  // namespace base
