@@ -4533,7 +4533,7 @@ void LayoutBlockFlow::PositionDialog() {
 
 void LayoutBlockFlow::SimplifiedNormalFlowInlineLayout() {
   DCHECK(ChildrenInline());
-  ListHashSet<RootInlineBox*> line_boxes;
+  LinkedHashSet<RootInlineBox*> line_boxes;
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {
     LayoutObject* o = walker.Current().GetLayoutObject();
@@ -4553,7 +4553,7 @@ void LayoutBlockFlow::SimplifiedNormalFlowInlineLayout() {
   // FIXME: Glyph overflow will get lost in this case, but not really a big
   // deal.
   GlyphOverflowAndFallbackFontsMap text_box_data_map;
-  for (ListHashSet<RootInlineBox*>::const_iterator it = line_boxes.begin();
+  for (LinkedHashSet<RootInlineBox*>::const_iterator it = line_boxes.begin();
        it != line_boxes.end(); ++it) {
     RootInlineBox* box = *it;
     box->ComputeOverflow(box->LineTop(), box->LineBottom(), text_box_data_map);
@@ -4563,7 +4563,7 @@ void LayoutBlockFlow::SimplifiedNormalFlowInlineLayout() {
 bool LayoutBlockFlow::RecalcInlineChildrenLayoutOverflow() {
   DCHECK(ChildrenInline());
   bool children_layout_overflow_changed = false;
-  ListHashSet<RootInlineBox*> line_boxes;
+  LinkedHashSet<RootInlineBox*> line_boxes;
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {
     LayoutObject* layout_object = walker.Current().GetLayoutObject();
@@ -4583,7 +4583,7 @@ bool LayoutBlockFlow::RecalcInlineChildrenLayoutOverflow() {
   // FIXME: Glyph overflow will get lost in this case, but not really a big
   // deal.
   GlyphOverflowAndFallbackFontsMap text_box_data_map;
-  for (ListHashSet<RootInlineBox*>::const_iterator it = line_boxes.begin();
+  for (LinkedHashSet<RootInlineBox*>::const_iterator it = line_boxes.begin();
        it != line_boxes.end(); ++it) {
     RootInlineBox* box = *it;
     box->ClearKnownToHaveNoOverflow();
