@@ -7,10 +7,12 @@ table:
   locale: mn
   contraction: no
   __assert-match: mn-MN-g1.utb
+flags: {testmode: bothDirections}
 tests:
-  - # Hello world  
-    - Сайн байна уу дэлхий
+  - - Сайн байна уу дэлхий
     - ⠠⠎⠁⠯⠝ ⠃⠁⠯⠝⠁ ⠥⠥ ⠙⠪⠇⠓⠊⠯
+  - - Брайль бичиг бол хараагүй хүний ертөнцийг харах цонх мөн.
+    - ⠠⠃⠗⠁⠯⠇⠾ ⠃⠊⠟⠊⠛ ⠃⠕⠇ ⠓⠁⠗⠁⠁⠛⠹⠯ ⠓⠹⠝⠊⠯ ⠑⠗⠞⠧⠝⠉⠊⠯⠛ ⠓⠁⠗⠁⠓ ⠉⠕⠝⠓ ⠍⠧⠝⠲
 
 # spaces
 table: mn-MN-g1.utb
