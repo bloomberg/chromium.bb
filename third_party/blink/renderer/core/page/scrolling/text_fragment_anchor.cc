@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
@@ -55,8 +56,17 @@ bool ParseTargetTextIdentifier(
 
 }  // namespace
 
-TextFragmentAnchor* TextFragmentAnchor::TryCreate(const KURL& url,
-                                                  LocalFrame& frame) {
+TextFragmentAnchor* TextFragmentAnchor::TryCreate(
+    const KURL& url,
+    LocalFrame& frame,
+    bool same_document_navigation) {
+  // For security reasons, we only allow text fragments on the main frame of a
+  // main window. So no iframes, no window.open. Also only on a full
+  // navigation.
+  if (frame.Tree().Parent() || frame.DomWindow()->opener() ||
+      same_document_navigation)
+    return nullptr;
+
   std::vector<TextFragmentSelector> selectors;
 
   if (!ParseTargetTextIdentifier(url.FragmentIdentifier(), &selectors))

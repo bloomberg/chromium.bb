@@ -22,7 +22,9 @@ class KURL;
 class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
                                              public TextFragmentFinder::Client {
  public:
-  static TextFragmentAnchor* TryCreate(const KURL& url, LocalFrame& frame);
+  static TextFragmentAnchor* TryCreate(const KURL& url,
+                                       LocalFrame& frame,
+                                       bool same_document_navigation);
 
   TextFragmentAnchor(
       const std::vector<TextFragmentSelector>& text_fragment_selectors,

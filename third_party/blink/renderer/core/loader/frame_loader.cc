@@ -1315,7 +1315,9 @@ void FrameLoader::ProcessFragment(const KURL& url,
          GetDocumentLoader()->GetHistoryItem()->ScrollRestorationType() ==
              kScrollRestorationManual));
 
-  view->ProcessUrlFragment(url, should_scroll_to_fragment);
+  view->ProcessUrlFragment(url,
+                           load_start_type == kNavigationWithinSameDocument,
+                           should_scroll_to_fragment);
 
   if (auto* boundary_local_frame = DynamicTo<LocalFrame>(boundary_frame))
     boundary_local_frame->View()->SetSafeToPropagateScrollToParent(true);

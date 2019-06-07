@@ -5,15 +5,21 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/location.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -891,6 +897,117 @@ TEST_F(TextFragmentAnchorTest, ScrollCancelled) {
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(14u, markers.at(0)->EndOffset());
+}
+
+// Ensure that the text fragment anchor has no effect in an iframe. This is
+// disabled in iframes by design, for security reasons.
+TEST_F(TextFragmentAnchorTest, DisabledInIframes) {
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request("https://example.com/child.html#targetText=test",
+                           "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <iframe id="iframe" src="child.html#targetText=test"></iframe>
+  )HTML");
+
+  child_request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      p {
+        margin-top: 1000px;
+      }
+    </style>
+    <p>
+      test
+    </p>
+  )HTML");
+
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  Element* iframe = GetDocument().getElementById("iframe");
+  auto* child_frame =
+      To<LocalFrame>(To<HTMLFrameOwnerElement>(iframe)->ContentFrame());
+
+  EXPECT_EQ(ScrollOffset(),
+            child_frame->View()->GetScrollableArea()->GetScrollOffset());
+}
+
+// Similarly to the iframe case, we also want to prevent activating a text
+// fragment anchor inside a window.opened window.
+TEST_F(TextFragmentAnchorTest, DisabledInWindowOpen) {
+  String destination = "https://example.com/child.html#targetText=test";
+
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request(destination, "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+    <!DOCTYPE html>
+  )HTML");
+  Compositor().BeginFrame();
+
+  LocalDOMWindow* main_window = GetDocument().GetFrame()->DomWindow();
+
+  ScriptState* script_state =
+      ToScriptStateForMainWorld(main_window->GetFrame());
+  ScriptState::Scope entered_context_scope(script_state);
+  auto url = USVStringOrTrustedURL::FromTrustedURL(
+      MakeGarbageCollected<TrustedURL>(destination));
+  LocalDOMWindow* child_window = To<LocalDOMWindow>(main_window->open(
+      script_state->GetIsolate(), url, "frame1", "", ASSERT_NO_EXCEPTION));
+  ASSERT_TRUE(child_window);
+
+  RunPendingTasks();
+  child_request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      p {
+        margin-top: 1000px;
+      }
+    </style>
+    <p>
+      test
+    </p>
+  )HTML");
+
+  RunAsyncMatchingTasks();
+
+  LocalFrameView* child_view = child_window->GetFrame()->View();
+  EXPECT_EQ(ScrollOffset(), child_view->GetScrollableArea()->GetScrollOffset());
+}
+
+// Ensure that the text fragment anchor is only allowed in full (non-same-page)
+// navigations.
+TEST_F(TextFragmentAnchorTest, DisabledInSamePageNavigation) {
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      p {
+        margin-top: 1000px;
+      }
+    </style>
+    <p>
+      test
+    </p>
+  )HTML");
+
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  ASSERT_EQ(ScrollOffset(),
+            GetDocument().View()->GetScrollableArea()->GetScrollOffset());
+
+  ScriptState* script_state =
+      ToScriptStateForMainWorld(GetDocument().GetFrame());
+  ScriptState::Scope entered_context_scope(script_state);
+  GetDocument().GetFrame()->DomWindow()->location()->setHash(
+      script_state->GetIsolate(), "targetText=test", ASSERT_NO_EXCEPTION);
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
 }
 
 }  // namespace
