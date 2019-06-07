@@ -503,7 +503,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   if (const auto* input = ToHTMLInputElementOrNull(*GetNode())) {
     const AtomicString& type = input->type();
-    if (input->DataList())
+    if (input->DataList() && type != input_type_names::kColor)
       return ax::mojom::Role::kTextFieldWithComboBox;
     if (type == input_type_names::kButton) {
       if ((GetNode()->parentNode() &&
@@ -1842,6 +1842,24 @@ KURL AXNodeObject::Url() const {
     return ToHTMLInputElement(GetNode())->Src();
 
   return KURL();
+}
+
+AXObject* AXNodeObject::ChooserPopup() const {
+  // When color & date chooser popups are visible, they can be found in the tree
+  // as a WebArea child of the <input> control itself.
+  switch (native_role_) {
+    case ax::mojom::Role::kColorWell:
+    case ax::mojom::Role::kDate:
+    case ax::mojom::Role::kDateTime: {
+      for (const auto& child : children_) {
+        if (child->IsWebArea())
+          return child;
+      }
+      return nullptr;
+    }
+    default:
+      return nullptr;
+  }
 }
 
 String AXNodeObject::StringValue() const {

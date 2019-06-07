@@ -841,10 +841,17 @@ void AccessibilityTreeFormatterUia::WriteElementArray(
       if (element_list != L"") {
         element_list += L", ";
       }
-      element_list += GetNodeName(element.Get());
+      auto name = GetNodeName(element.Get());
+      if (name.empty()) {
+        base::win::ScopedBstr role;
+        element->get_CurrentAriaRole(role.Receive());
+        name = L"{" + base::string16(role) + L"}";
+      }
+      element_list += name;
     }
   }
-  dict->SetString(UiaIdentifierToCondensedString(propertyId), element_list);
+  if (!element_list.empty())
+    dict->SetString(UiaIdentifierToCondensedString(propertyId), element_list);
 }
 
 base::string16 AccessibilityTreeFormatterUia::GetNodeName(

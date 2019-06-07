@@ -544,6 +544,16 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   AXContentNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);
   src.GetSparseAXAttributes(sparse_attribute_adapter);
 
+  WebAXObject chooser_popup = src.ChooserPopup();
+  if (!chooser_popup.IsNull()) {
+    int32_t chooser_popup_id = chooser_popup.AxID();
+    auto controls_ids =
+        dst->GetIntListAttribute(ax::mojom::IntListAttribute::kControlsIds);
+    controls_ids.push_back(chooser_popup_id);
+    dst->AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
+                             controls_ids);
+  }
+
   ax::mojom::NameFrom name_from;
   blink::WebVector<WebAXObject> name_objects;
   blink::WebString web_name = src.GetName(name_from, name_objects);

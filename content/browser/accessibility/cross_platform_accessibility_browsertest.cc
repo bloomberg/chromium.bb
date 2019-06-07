@@ -162,6 +162,24 @@ bool CrossPlatformAccessibilityBrowserTest::GetBoolAttr(
   return false;
 }
 
+namespace {
+
+// Convenience method to find a node by its role value.
+BrowserAccessibility* FindNodeByRole(BrowserAccessibility* root,
+                                     ax::mojom::Role role) {
+  if (root->GetRole() == role)
+    return root;
+  for (uint32_t i = 0; i < root->InternalChildCount(); ++i) {
+    BrowserAccessibility* child = root->InternalGetChild(i);
+    DCHECK(child);
+    if (BrowserAccessibility* result = FindNodeByRole(child, role))
+      return result;
+  }
+  return nullptr;
+}
+
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                        WebpageAccessibility) {
   // Create a data url and load it.
@@ -788,5 +806,146 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                                 ui::AXClippingBehavior::kUnclipped)
                 .ToString());
 }
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       TestControlsIdsForDateTimePopup) {
+  // Create a data url and load it.
+  const char url_str[] =
+      R"HTML(data:text/html,<!DOCTYPE html>
+        <html>
+          <input type="datetime-local" aria-label="datetime"
+                 aria-controls="button1">
+          <button id="button1">button</button>
+        </html>)HTML";
+  GURL url(url_str);
+
+  // Load the document and wait for it
+  {
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           ui::kAXModeComplete,
+                                           ax::mojom::Event::kLoadComplete);
+    NavigateToURL(shell(), url);
+    waiter.WaitForNotification();
+  }
+
+  BrowserAccessibilityManager* manager = GetManager();
+  ASSERT_NE(nullptr, manager);
+  BrowserAccessibility* root = manager->GetRoot();
+  ASSERT_NE(nullptr, root);
+
+  // Find the input control, and the popup-button
+  BrowserAccessibility* input_control =
+      FindNodeByRole(root, ax::mojom::Role::kDateTime);
+  ASSERT_NE(nullptr, input_control);
+  BrowserAccessibility* popup_control =
+      FindNodeByRole(input_control, ax::mojom::Role::kPopUpButton);
+  ASSERT_NE(nullptr, popup_control);
+  const BrowserAccessibility* sibling_button_control =
+      FindNodeByRole(root, ax::mojom::Role::kButton);
+  ASSERT_NE(nullptr, sibling_button_control);
+
+  // Get the list of ControlsIds; should initially just point to the sibling
+  // button control.
+  {
+    const auto& controls_ids = input_control->GetIntListAttribute(
+        ax::mojom::IntListAttribute::kControlsIds);
+    ASSERT_EQ(1u, controls_ids.size());
+    EXPECT_EQ(controls_ids[0], sibling_button_control->GetId());
+  }
+
+  // Expand the popup, and wait for it to appear
+  {
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           ui::kAXModeComplete,
+                                           ax::mojom::Event::kClicked);
+
+    ui::AXActionData action_data;
+    action_data.action = ax::mojom::Action::kDoDefault;
+    popup_control->AccessibilityPerformAction(action_data);
+
+    waiter.WaitForNotification();
+  }
+
+  // Get the list of ControlsIds again; should now also include the popup
+  {
+    const auto& controls_ids = input_control->GetIntListAttribute(
+        ax::mojom::IntListAttribute::kControlsIds);
+    ASSERT_EQ(2u, controls_ids.size());
+    EXPECT_EQ(controls_ids[0], sibling_button_control->GetId());
+
+    const BrowserAccessibility* popup_area =
+        manager->GetFromID(controls_ids[1]);
+    ASSERT_NE(nullptr, popup_area);
+    EXPECT_EQ(ax::mojom::Role::kRootWebArea, popup_area->GetRole());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       TestControlsIdsForColorPopup) {
+  // Create a data url and load it.
+  const char url_str[] =
+      R"HTML(data:text/html,<!DOCTYPE html>
+        <html>
+          <input type="color" aria-label="color" list="colorlist">
+          <datalist id="colorlist">
+            <option value="#ff0000">
+            <option value="#00ff00">
+            <option value="#0000ff">
+          </datalist>
+        </html>)HTML";
+  GURL url(url_str);
+
+  // Load the document and wait for it
+  {
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           ui::kAXModeComplete,
+                                           ax::mojom::Event::kLoadComplete);
+    NavigateToURL(shell(), url);
+    waiter.WaitForNotification();
+  }
+
+  BrowserAccessibilityManager* manager = GetManager();
+  ASSERT_NE(nullptr, manager);
+  BrowserAccessibility* root = manager->GetRoot();
+  ASSERT_NE(nullptr, root);
+
+  // Find the input control
+  BrowserAccessibility* input_control =
+      FindNodeByRole(root, ax::mojom::Role::kColorWell);
+  ASSERT_NE(nullptr, input_control);
+
+  // Get the list of ControlsIds; should initially be empty.
+  {
+    const auto& controls_ids = input_control->GetIntListAttribute(
+        ax::mojom::IntListAttribute::kControlsIds);
+    ASSERT_EQ(0u, controls_ids.size());
+  }
+
+  // Expand the popup, and wait for it to appear
+  {
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           ui::kAXModeComplete,
+                                           ax::mojom::Event::kClicked);
+
+    ui::AXActionData action_data;
+    action_data.action = ax::mojom::Action::kDoDefault;
+    input_control->AccessibilityPerformAction(action_data);
+
+    waiter.WaitForNotification();
+  }
+
+  // Get the list of ControlsIds again; should now include the popup
+  {
+    const auto& controls_ids = input_control->GetIntListAttribute(
+        ax::mojom::IntListAttribute::kControlsIds);
+    ASSERT_EQ(1u, controls_ids.size());
+
+    const BrowserAccessibility* popup_area =
+        manager->GetFromID(controls_ids[0]);
+    ASSERT_NE(nullptr, popup_area);
+    EXPECT_EQ(ax::mojom::Role::kRootWebArea, popup_area->GetRole());
+  }
+}
+
 #endif
 }  // namespace content

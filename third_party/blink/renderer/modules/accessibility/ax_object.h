@@ -658,6 +658,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return AXObjectVector();
   }
   virtual KURL Url() const { return KURL(); }
+  virtual AXObject* ChooserPopup() const { return nullptr; }
 
   // Load inline text boxes for just this node, even if
   // settings->inlineTextBoxAccessibilityEnabled() is false.

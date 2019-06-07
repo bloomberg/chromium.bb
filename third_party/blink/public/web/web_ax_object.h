@@ -194,6 +194,7 @@ class WebAXObject {
       ax::mojom::TextDecorationStyle* text_strikethrough_style,
       ax::mojom::TextDecorationStyle* text_underline_style) const;
   BLINK_EXPORT WebURL Url() const;
+  BLINK_EXPORT WebAXObject ChooserPopup() const;
 
   // Retrieves the accessible name of the object, an enum indicating where the
   // name was derived from, and a list of related objects that were used to
