@@ -4,7 +4,7 @@
 
 #include "streaming/cast/ntp_time.h"
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 using openscreen::platform::Clock;
 using std::chrono::duration_cast;

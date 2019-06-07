@@ -7,11 +7,11 @@
 #include <cstdint>
 #include <memory>
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "osp/impl/service_listener_impl.h"
 #include "osp/impl/testing/fake_mdns_platform_service.h"
 #include "osp/impl/testing/fake_mdns_responder_adapter.h"
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace openscreen {
 namespace {

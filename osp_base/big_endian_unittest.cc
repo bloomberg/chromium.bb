@@ -4,8 +4,8 @@
 
 #include "osp_base/big_endian.h"
 
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace openscreen {
 namespace {

@@ -119,6 +119,7 @@ include_rules = [
     '+platform',
     '+third_party',
 
+
     # Don't include abseil from the root so the path can change via include_dirs
     # rules when in Chromium.
     '-third_party/abseil',
@@ -136,6 +137,15 @@ include_rules = [
     '+absl/strings/substitute.h',
     '+absl/types/optional.h',
     '+absl/types/span.h',
+
+    # Test framework includes.
+    "-third_party/googletest",
+    "+gtest",
+    "+gmock",
+
+    # BoringSSL includes
+    '-third_party/boringssl',
+    '+openssl',
 ]
 
 skip_child_includes = [

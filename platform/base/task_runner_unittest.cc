@@ -5,11 +5,11 @@
 #include <atomic>
 #include <thread>  // NOLINT
 
-#include "platform/test/fake_clock.h"
+#include "gtest/gtest.h"
 #include "platform/api/task_runner_factory.h"
 #include "platform/api/time.h"
 #include "platform/base/task_runner_impl.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "platform/test/fake_clock.h"
 
 namespace openscreen {
 namespace platform {

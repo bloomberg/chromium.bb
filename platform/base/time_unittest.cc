@@ -6,7 +6,7 @@
 
 #include <ctime>
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 using std::chrono::seconds;
 

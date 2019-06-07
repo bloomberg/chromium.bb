@@ -4,9 +4,9 @@
 
 #include "osp_base/ip_address.h"
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "osp_base/error.h"
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace openscreen {
 

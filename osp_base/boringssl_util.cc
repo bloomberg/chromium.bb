@@ -5,8 +5,8 @@
 #include "osp_base/boringssl_util.h"
 
 #include "absl/strings/string_view.h"
+#include "openssl/err.h"
 #include "platform/api/logging.h"
-#include "third_party/boringssl/src/include/openssl/err.h"
 
 namespace openscreen {
 

@@ -4,7 +4,7 @@
 
 #include "osp/impl/testing/fake_mdns_responder_adapter.h"
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 namespace openscreen {
 

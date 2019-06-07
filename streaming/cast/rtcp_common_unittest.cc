@@ -5,7 +5,7 @@
 #include "streaming/cast/rtcp_common.h"
 
 #include "absl/types/span.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 namespace openscreen {
 namespace cast_streaming {

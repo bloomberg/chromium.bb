@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace cast {
 namespace mdns {
@@ -353,8 +353,7 @@ TEST(MdnsWriterTest, WriteDomainName_NoCompressionForBigOffsets) {
   // Maximum supported value for label pointer offset is 0x3FFF.
   // Labels written into a buffer at greater offsets must not
   // produce compression label pointers.
-  std::vector<uint8_t> buffer(0x4000 +
-                              sizeof(kExpectedResultCompressed));
+  std::vector<uint8_t> buffer(0x4000 + sizeof(kExpectedResultCompressed));
   {
     MdnsWriter writer(buffer.data(), buffer.size());
     writer.Skip(0x4000);

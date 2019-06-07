@@ -7,14 +7,14 @@
 #include <string>
 #include <vector>
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "osp/impl/quic/testing/quic_test_support.h"
 #include "osp/impl/service_listener_impl.h"
-#include "platform/test/fake_clock.h"
 #include "osp/public/message_demuxer.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/testing/message_demuxer_test_support.h"
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "platform/test/fake_clock.h"
 
 namespace openscreen {
 namespace presentation {
