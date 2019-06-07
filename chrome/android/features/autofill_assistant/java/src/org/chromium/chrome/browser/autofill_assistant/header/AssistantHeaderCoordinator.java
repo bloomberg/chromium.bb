@@ -37,7 +37,9 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
                         R.dimen.autofill_assistant_poodle_size));
         addPoodle(bottomBarView, poodle.getView());
 
-        mProfileCache = new ProfileDataCache(context, R.dimen.autofill_assistant_profile_size);
+        int imageSize = context.getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_profile_size);
+        mProfileCache = new ProfileDataCache(context, imageSize);
         mProfileView = bottomBarView.findViewById(R.id.profile_image);
         mSignedInAccountName = ChromeSigninController.get().getSignedInAccountName();
         setupProfileImage(context, bottomBarView);
