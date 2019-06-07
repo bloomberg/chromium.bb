@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_text_boundary.h"
@@ -249,6 +250,31 @@ TEST(AXTextUtils, FindAccessibleTextBoundaryCharacter) {
   verify_boundaries_at_offset(16, 15L, 17UL);
   verify_boundaries_at_offset(17, 17L, 18UL);
   verify_boundaries_at_offset(18, 18L, 19UL);
+}
+
+TEST(AXTextUtils, GetWordOffsetsEmptyTest) {
+  const base::string16 text = base::UTF8ToUTF16("");
+  std::vector<int> word_starts = GetWordStartOffsets(text);
+  std::vector<int> word_ends = GetWordEndOffsets(text);
+  EXPECT_EQ(0UL, word_starts.size());
+  EXPECT_EQ(0UL, word_ends.size());
+}
+
+TEST(AXTextUtils, GetWordStartOffsetsBasicTest) {
+  const base::string16 text = base::UTF8ToUTF16("This is very simple input");
+  EXPECT_THAT(GetWordStartOffsets(text), testing::ElementsAre(0, 5, 8, 13, 20));
+}
+
+TEST(AXTextUtils, GetWordEndOffsetsBasicTest) {
+  const base::string16 text = base::UTF8ToUTF16("This is very simple input");
+  EXPECT_THAT(GetWordEndOffsets(text), testing::ElementsAre(4, 7, 12, 19, 25));
+}
+
+TEST(AXTextUtils, GetWordStartOffsetsMalformedInputTest) {
+  const base::string16 text =
+      base::UTF8ToUTF16("..we *## should parse $#@$ through bad ,,  input");
+  EXPECT_THAT(GetWordStartOffsets(text),
+              testing::ElementsAre(2, 9, 16, 27, 35, 43));
 }
 
 }  // namespace ui

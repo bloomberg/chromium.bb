@@ -6,6 +6,7 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -224,6 +225,35 @@ base::string16 ActionVerbToUnlocalizedString(
   }
   NOTREACHED();
   return base::string16();
+}
+
+std::vector<int> GetWordStartOffsets(const base::string16& text) {
+  std::vector<int> word_starts;
+  base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);
+  if (!iter.Init())
+    return word_starts;
+  // iter.Advance() returns false if we've run past end of the text.
+  while (iter.Advance()) {
+    if (!iter.IsWord())
+      continue;
+    word_starts.push_back(
+        base::checked_cast<int>(iter.prev()) /* start index */);
+  }
+  return word_starts;
+}
+
+std::vector<int> GetWordEndOffsets(const base::string16& text) {
+  std::vector<int> word_ends;
+  base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);
+  if (!iter.Init())
+    return word_ends;
+  // iter.Advance() returns false if we've run past end of the text.
+  while (iter.Advance()) {
+    if (!iter.IsWord())
+      continue;
+    word_ends.push_back(base::checked_cast<int>(iter.pos()) /* end index */);
+  }
+  return word_ends;
 }
 
 }  // namespace ui
