@@ -116,4 +116,18 @@ suite('cr_tabs_test', function() {
     await checkClickTab(1, 2);
     await checkClickTab(2, 2);
   });
+
+  test('selection underline does not freeze with two tabs', async () => {
+    const underline = tabs.$.selectionBar;
+    const fullyExpanded = 'translateX(0%) scaleX(1)';
+    tabs.tabNames = ['tab1', 'tab2'];
+    assertEquals(undefined, tabs.selected);
+    tabs.selected = 0;
+    await PolymerTest.flushTasks();
+    assertNotEquals(fullyExpanded, underline.style.transform);
+    underline.style.transform = fullyExpanded;
+    const wait = test_util.eventToPromise('transitionend', underline);
+    tabs.selected = 1;
+    await wait;
+  });
 });

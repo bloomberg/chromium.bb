@@ -82,6 +82,17 @@ Polymer({
     this.selected = newSelection;
   },
 
+  /** @private */
+  onSelectionBarTransitionEnd_: function() {
+    this.$.selectionBar.classList.replace('expand', 'contract');
+    const tab = this.$$(`.tab:nth-of-type(${this.selected + 1})`);
+    if (!tab) {
+      this.$.selectionBar.style.transform = 'scaleX(0)';
+      return;
+    }
+    this.updateSelectionBar_(tab.offsetLeft, tab.offsetWidth);
+  },
+
   /**
    * @param {!{model: !{index: number}}} _
    * @private
@@ -99,6 +110,20 @@ Polymer({
     const containerWidth = this.offsetWidth;
     const leftPercent = 100 * left / containerWidth;
     const widthRatio = width / containerWidth;
+
+    // When there are two tabs, the selection bar will expand to underline both
+    // tabs. If a user quickly changes tabs multiple times, the selection bar
+    // will no longer have any room to expand the transitionend event will be
+    // fired only after the unerline is fully expanded. The underline will
+    // freeze in an expanded state since no transitionend events will be fired
+    // for subsequent selection changes. Call transition end method to prevent
+    // this.
+    if (this.$.selectionBar.style.transform == 'translateX(0%) scaleX(1)' &&
+        leftPercent == 0 && widthRatio == 1) {
+      this.onSelectionBarTransitionEnd_();
+      return;
+    }
+
     this.$.selectionBar.style.transform =
         `translateX(${leftPercent}%) scaleX(${widthRatio})`;
   },
@@ -143,18 +168,16 @@ Polymer({
       return;
     }
 
-    const {offsetLeft: newLeft, offsetWidth: newWidth} = tabs[this.selected];
-    const {offsetLeft: oldLeft, offsetWidth: oldWidth} = tabs[oldValue];
-
     // Expand bar to underline the last selected tab, the newly selected tab and
     // everything in between. After expansion is complete, contract bar to
     // underline the selected tab.
     this.$.selectionBar.classList.add('expand');
-    this.$.selectionBar.addEventListener('transitionend', () => {
-      this.$.selectionBar.classList.replace('expand', 'contract');
-      this.updateSelectionBar_(newLeft, newWidth);
-    }, {once: true});
+    this.$.selectionBar.addEventListener(
+        'transitionend', () => this.onSelectionBarTransitionEnd_(),
+        {once: true});
 
+    const {offsetLeft: newLeft, offsetWidth: newWidth} = tabs[this.selected];
+    const {offsetLeft: oldLeft, offsetWidth: oldWidth} = tabs[oldValue];
     const left = Math.min(newLeft, oldLeft);
     const right = Math.max(newLeft + newWidth, oldLeft + oldWidth);
     this.updateSelectionBar_(left, right - left);
