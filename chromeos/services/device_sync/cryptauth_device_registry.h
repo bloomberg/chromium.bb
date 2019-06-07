@@ -30,13 +30,16 @@ class CryptAuthDeviceRegistry {
 
   // Adds |device| to the registry. If a device with the same Instance ID
   // already exists in the registry, the existing device will be overwritten.
-  void AddDevice(const CryptAuthDevice& device);
+  // Returns true if the registry changes.
+  bool AddDevice(const CryptAuthDevice& device);
 
-  // Removes the device with corresponding |instance_id|.
-  void DeleteDevice(const std::string& instance_id);
+  // Removes the device with corresponding |instance_id|.  Returns true if the
+  // registry changes.
+  bool DeleteDevice(const std::string& instance_id);
 
-  // Replaces the entire registry with |instance_id_to_device_map|.
-  void SetRegistry(const base::flat_map<std::string, CryptAuthDevice>&
+  // Replaces the entire registry with |instance_id_to_device_map|. Returns true
+  // if the registry changes.
+  bool SetRegistry(const base::flat_map<std::string, CryptAuthDevice>&
                        instance_id_to_device_map);
 
  protected:

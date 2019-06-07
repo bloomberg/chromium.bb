@@ -122,8 +122,9 @@ class DeviceSyncCryptAuthDeviceRegistryImplTest : public testing::Test {
 TEST_F(DeviceSyncCryptAuthDeviceRegistryImplTest, AddAndGetDevices) {
   CreateDeviceRegistry();
 
-  device_registry()->AddDevice(GetDeviceForTest(0));
-  device_registry()->AddDevice(GetDeviceForTest(1));
+  EXPECT_TRUE(device_registry()->AddDevice(GetDeviceForTest(0)));
+  EXPECT_FALSE(device_registry()->AddDevice(GetDeviceForTest(0)));
+  EXPECT_TRUE(device_registry()->AddDevice(GetDeviceForTest(1)));
 
   VerifyDeviceRegistry(
       {{kInstanceId0, GetDeviceForTest(0)},
@@ -135,13 +136,13 @@ TEST_F(DeviceSyncCryptAuthDeviceRegistryImplTest, AddAndGetDevices) {
 TEST_F(DeviceSyncCryptAuthDeviceRegistryImplTest, OverwriteDevice) {
   CreateDeviceRegistry();
 
-  device_registry()->AddDevice(GetDeviceForTest(0));
+  EXPECT_TRUE(device_registry()->AddDevice(GetDeviceForTest(0)));
   EXPECT_EQ(GetDeviceForTest(0), *device_registry()->GetDevice(kInstanceId0));
 
   CryptAuthDevice device_with_same_instance_id(
       kInstanceId0, "name", "key", base::Time::FromDoubleT(5000),
       cryptauthv2::BetterTogetherDeviceMetadata(), {});
-  device_registry()->AddDevice(device_with_same_instance_id);
+  EXPECT_TRUE(device_registry()->AddDevice(device_with_same_instance_id));
   EXPECT_EQ(device_with_same_instance_id,
             *device_registry()->GetDevice(kInstanceId0));
 }
@@ -151,25 +152,27 @@ TEST_F(DeviceSyncCryptAuthDeviceRegistryImplTest, OverwriteRegistry) {
 
   base::flat_map<std::string, CryptAuthDevice> old_devices = {
       {kInstanceId0, GetDeviceForTest(0)}};
-  device_registry()->SetRegistry(old_devices);
+  EXPECT_TRUE(device_registry()->SetRegistry(old_devices));
   VerifyDeviceRegistry(old_devices);
+  EXPECT_FALSE(device_registry()->SetRegistry(old_devices));
 
   base::flat_map<std::string, CryptAuthDevice> new_devices = {
       {kInstanceId1, GetDeviceForTest(1)}};
-  device_registry()->SetRegistry(new_devices);
+  EXPECT_TRUE(device_registry()->SetRegistry(new_devices));
   VerifyDeviceRegistry(new_devices);
 }
 
 TEST_F(DeviceSyncCryptAuthDeviceRegistryImplTest, DeleteDevice) {
   CreateDeviceRegistry();
 
-  device_registry()->AddDevice(GetDeviceForTest(0));
+  EXPECT_TRUE(device_registry()->AddDevice(GetDeviceForTest(0)));
   VerifyDeviceRegistry(
       {{kInstanceId0, GetDeviceForTest(0)}} /* expected_devices */);
 
-  device_registry()->DeleteDevice(kInstanceId0);
+  EXPECT_TRUE(device_registry()->DeleteDevice(kInstanceId0));
   EXPECT_FALSE(device_registry()->GetDevice(kInstanceId0));
   VerifyDeviceRegistry({} /* expected_devices */);
+  EXPECT_FALSE(device_registry()->DeleteDevice(kInstanceId0));
 }
 
 TEST_F(DeviceSyncCryptAuthDeviceRegistryImplTest, PopulateRegistryFromPref) {
