@@ -577,18 +577,24 @@ DawnOrigin3D AsDawnType(const GPUOrigin3D* webgpu_origin) {
   return dawn_origin;
 }
 
-std::tuple<DawnPipelineStageDescriptor, CString> AsDawnType(
+OwnedPipelineStageDescriptor AsDawnType(
     const GPUPipelineStageDescriptor* webgpu_stage) {
   DCHECK(webgpu_stage);
 
-  CString entry_point_string(webgpu_stage->entryPoint().Ascii().c_str());
+  std::string entry_point = webgpu_stage->entryPoint().Ascii();
+  // length() is in bytes (not utf-8 characters or something), so this is ok.
+  size_t byte_size = entry_point.length() + 1;
+
+  std::unique_ptr<char[]> entry_point_keepalive =
+      std::make_unique<char[]>(byte_size);
+  char* entry_point_ptr = entry_point_keepalive.get();
+  memcpy(entry_point_ptr, entry_point.c_str(), byte_size);
+
   DawnPipelineStageDescriptor dawn_stage;
   dawn_stage.module = webgpu_stage->module()->GetHandle();
-  dawn_stage.entryPoint = entry_point_string.data();
+  dawn_stage.entryPoint = entry_point_ptr;
 
-  // CString holds a scoped_refptr to the string data so it is valid to move
-  // it into the return value without invalidating the entryPoint.
-  return std::make_tuple(dawn_stage, std::move(entry_point_string));
+  return std::make_tuple(dawn_stage, std::move(entry_point_keepalive));
 }
 
 }  // namespace blink

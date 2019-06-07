@@ -209,13 +209,12 @@ GPURenderPipeline* GPURenderPipeline::Create(
   dawn_desc.nextInChain = nullptr;
   dawn_desc.layout = AsDawnType(webgpu_desc->layout());
 
-  using PipelineStageInfo = std::tuple<DawnPipelineStageDescriptor, CString>;
-
-  PipelineStageInfo vertex_stage_info = AsDawnType(webgpu_desc->vertexStage());
+  OwnedPipelineStageDescriptor vertex_stage_info =
+      AsDawnType(webgpu_desc->vertexStage());
   dawn_desc.vertexStage = &std::get<0>(vertex_stage_info);
 
   // TODO(crbug.com/dawn/136): Support vertex-only pipelines.
-  PipelineStageInfo fragment_stage_info =
+  OwnedPipelineStageDescriptor fragment_stage_info =
       AsDawnType(webgpu_desc->fragmentStage());
   dawn_desc.fragmentStage = &std::get<0>(fragment_stage_info);
 
