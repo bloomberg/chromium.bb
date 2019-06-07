@@ -8,7 +8,6 @@
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,8 +36,8 @@ const char kMultipleRequestsPage[] =
 
 // Tests that the page can create multiple PaymentRequest objects.
 - (void)testMultipleRequests {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kMultipleRequestsPage)]);
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kMultipleRequestsPage)];
 
   const payments::PaymentRequestCache::PaymentRequestSet& payment_requests =
       [self paymentRequestsForWebState:GetCurrentWebState()];

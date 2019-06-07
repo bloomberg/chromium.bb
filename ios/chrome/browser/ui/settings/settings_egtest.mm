@@ -31,7 +31,6 @@
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -454,24 +453,18 @@ id<GREYMatcher> BandwidthSettingsButton() {
   web::test::SetUpSimpleHttpServerWithSetCookies(response);
 
   // Load |kUrl| and check that cookie is not set.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse];
 
   NSDictionary* cookies = [ChromeEarlGrey cookies];
   GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");
 
   // Visit |kUrlWithSetCookie| to set a cookie and then load |kUrl| to check it
   // is still set.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kUrlWithSetCookie)]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponseWithSetCookie]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrlWithSetCookie)];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponseWithSetCookie];
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse];
 
   cookies = [ChromeEarlGrey cookies];
   GREYAssertEqualObjects(kCookieValue, cookies[kCookieName],
@@ -489,10 +482,8 @@ id<GREYMatcher> BandwidthSettingsButton() {
   [self clearCookiesAndSiteData];
 
   // Reload and test that there are no cookies left.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse];
 
   cookies = [ChromeEarlGrey cookies];
   GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");
@@ -539,7 +530,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 // Verifies that Settings opens when signed-out and in Incognito mode.
 // This tests that crbug.com/607335 has not regressed.
 - (void)testSettingsSignedOutIncognito {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
       assertWithMatcher:grey_notNil()];

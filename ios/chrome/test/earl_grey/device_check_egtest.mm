@@ -6,7 +6,6 @@
 #import <XCTest/XCTest.h>
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "url/gurl.h"
 
@@ -22,10 +21,8 @@
 
 // Verifies Internet connectivity by navigating to browsingtest.appspot.com.
 - (void)testNetworkConnection {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:GURL("http://browsingtest.appspot.com")]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Window1"]);
+  [ChromeEarlGrey loadURL:GURL("http://browsingtest.appspot.com")];
+  [ChromeEarlGrey waitForWebStateContainingText:"Window1"];
 }
 
 @end

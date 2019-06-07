@@ -17,7 +17,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -194,16 +193,15 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   [self setUpTestServer];
 
   // Load a test URL in the current tab.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]];
 
   // Enter and leave the switcher.
   ShowTabSwitcher();
   ShowTabViewController();
 
   // Verify that the original tab is visible again.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)]);
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)];
 }
 
 // Tests exiting the switcher by tapping the new tab button or selecting new tab
@@ -218,10 +216,9 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
 
   // Load a URL in this newly-created tab and verify that the tab is visible.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]];
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)];
 }
 
 // Tests exiting the switcher by tapping the new incognito tab button or
@@ -240,10 +237,9 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
 
   // Load a URL in this newly-created tab and verify that the tab is visible.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]];
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)];
 }
 
 // Tests exiting the switcher by opening a new tab in the other tab model.
@@ -260,10 +256,9 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
       performAction:grey_tap()];
 
   // Load a URL in this newly-created tab and verify that the tab is visible.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:incognito_title]]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(incognito_title)]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:incognito_title]];
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(incognito_title)];
 
   // Go from incognito mode to normal mode.
   ShowTabSwitcher();
@@ -273,10 +268,9 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
       performAction:grey_tap()];
 
   // Load a URL in this newly-created tab and verify that the tab is visible.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:normal_title]]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(normal_title)]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:normal_title]];
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(normal_title)];
 }
 
 // Tests exiting the tab switcher by selecting a normal tab.
@@ -287,24 +281,21 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   [self setUpTestServer];
 
   // Create a few tabs and give them all unique titles.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]];
   [ChromeEarlGreyUI openNewTab];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:tab2_title]]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab2_title]];
   [ChromeEarlGreyUI openNewTab];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:tab3_title]]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab3_title]];
 
   ShowTabSwitcher();
   SelectTab(tab1_title);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)]);
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)];
 
   ShowTabSwitcher();
   SelectTab(tab3_title);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(tab3_title)]);
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab3_title)];
 }
 
 // Tests exiting the tab switcher by selecting an incognito tab.
@@ -316,25 +307,22 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 
   // Create a few tabs and give them all unique titles.
   [ChromeEarlGreyUI openNewIncognitoTab];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]];
   [ChromeEarlGreyUI openNewIncognitoTab];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:tab2_title]]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab2_title]];
   [ChromeEarlGreyUI openNewIncognitoTab];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:tab3_title]]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab3_title]];
   [GetNormalTabModel() closeAllTabs];
 
   ShowTabSwitcher();
   SelectTab(tab1_title);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)]);
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab1_title)];
 
   ShowTabSwitcher();
   SelectTab(tab3_title);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(tab3_title)]);
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab3_title)];
 }
 
 // Tests exiting the tab switcher by selecting a tab in the other tab model.
@@ -344,19 +332,17 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   [self setUpTestServer];
 
   // Create a few tabs and give them all unique titles.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:normal_title]]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:normal_title]];
   [ChromeEarlGreyUI openNewIncognitoTab];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:incognito_title]]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:incognito_title]];
 
   ShowTabSwitcher();
   // Switch to the normal panel and select the one tab that is there.
   [[EarlGrey selectElementWithMatcher:TabGridOpenTabsPanelButton()]
       performAction:grey_tap()];
   SelectTab(normal_title);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(normal_title)]);
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(normal_title)];
 
   ShowTabSwitcher();
   // Switch to the incognito panel and select the one tab that is there.
@@ -364,8 +350,8 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
       performAction:grey_tap()];
 
   SelectTab(incognito_title);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(incognito_title)]);
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(incognito_title)];
 }
 
 // Tests switching back and forth between the normal and incognito BVCs.
@@ -390,32 +376,31 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 - (void)testRotationsWhileSwitcherIsNotActive {
   NSString* tab_title = @"NormalTabLongerStringForRotationTest";
   [self setUpTestServer];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:[self makeURLForTitle:tab_title]]);
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab_title]];
 
   // Show the tab switcher and return to the BVC, in portrait.
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                            errorOrNil:nil];
   ShowTabSwitcher();
   SelectTab(tab_title);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)]);
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)];
 
   // Show the tab switcher and return to the BVC, in landscape.
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
                            errorOrNil:nil];
   ShowTabSwitcher();
   SelectTab(tab_title);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)]);
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)];
 
   // Show the tab switcher and return to the BVC, in portrait.
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                            errorOrNil:nil];
   ShowTabSwitcher();
   SelectTab(tab_title);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)]);
+  [ChromeEarlGrey
+      waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)];
 }
 
 @end

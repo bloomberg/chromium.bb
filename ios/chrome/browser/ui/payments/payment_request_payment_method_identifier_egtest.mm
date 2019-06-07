@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,10 +42,10 @@ const char kPaymentMethodIdentifierPage[] =
 
 // One network is specified in 'basic-card' data, one in supportedMethods.
 - (void)testBasicCardNetworksSpecified {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)]);
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   const payments::PaymentRequestCache::PaymentRequestSet& requests =
       [self paymentRequestsForWebState:GetCurrentWebState()];
@@ -64,11 +63,10 @@ const char kPaymentMethodIdentifierPage[] =
 // Only specifying 'basic-card' with no supportedNetworks means all networks are
 // supported.
 - (void)testBasicCardNoNetworksSpecified {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)]);
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"buyBasicCard"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buyBasicCard"];
 
   const payments::PaymentRequestCache::PaymentRequestSet& requests =
       [self paymentRequestsForWebState:GetCurrentWebState()];
@@ -91,8 +89,8 @@ const char kPaymentMethodIdentifierPage[] =
 // Specifying 'basic-card' with some networks after having explicitely included
 // the same networks does not yield duplicates and has the expected order.
 - (void)testBasicCardNetworkThenBasicCardWithSameNetwork {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)]);
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)];
 
   web::test::ExecuteJavaScript(
       GetCurrentWebState(),
@@ -123,8 +121,8 @@ const char kPaymentMethodIdentifierPage[] =
 // A url-based payment method identifier is only supported if it has an https
 // scheme.
 - (void)testValidURLBasedPaymentMethodIdentifier {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)]);
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)];
 
   web::test::ExecuteJavaScript(GetCurrentWebState(),
                                "buyHelper([{"
@@ -146,8 +144,8 @@ const char kPaymentMethodIdentifierPage[] =
 
 // An invalid URL-based payment method identifier results in a RangeError.
 - (void)testURLBasedPaymentMethodIdentifierWithInvalidScheme {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)]);
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)];
 
   web::test::ExecuteJavaScript(GetCurrentWebState(),
                                "buyHelper([{"
@@ -168,8 +166,8 @@ const char kPaymentMethodIdentifierPage[] =
 
 // An invalid standard payment method identifier results in a RangeError.
 - (void)testStandardPaymentMethodIdentifierWithInvalidCharacters {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)]);
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)];
 
   web::test::ExecuteJavaScript(
       GetCurrentWebState(),

@@ -67,10 +67,9 @@ const char kRequestEmailPage[] =
   card.set_billing_address_id(billingAddress.guid());
   CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Tap the buy button.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -135,10 +134,9 @@ const char kRequestEmailPage[] =
   shippingAddress.set_use_count(2000);
   CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:shippingAddress]);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kFreeShippingPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kFreeShippingPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Tap the buy button.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -190,10 +188,9 @@ const char kRequestEmailPage[] =
   card.set_billing_address_id(billingAddress.guid());
   CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kContactDetailsPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kContactDetailsPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Tap the buy button.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -227,10 +224,9 @@ const char kRequestEmailPage[] =
   card.set_billing_address_id(billingAddress.guid());
   CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kRequestEmailPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kRequestEmailPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Tap the buy button.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(

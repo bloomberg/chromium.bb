@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -143,17 +142,14 @@ char kResponse3[] = "Test Page 3 content";
 }
 
 - (void)loadTestURLs {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse1]);
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL2]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse2]);
+  [ChromeEarlGrey loadURL:_URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse2];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL3]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse3]);
+  [ChromeEarlGrey loadURL:_URL3];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse3];
 }
 
 // Test that Clear Browsing Data can be successfully done from tab grid.

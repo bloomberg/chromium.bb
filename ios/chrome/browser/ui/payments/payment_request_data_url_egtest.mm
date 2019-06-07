@@ -7,7 +7,6 @@
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -25,7 +24,7 @@
 
 // Tests that PaymentRequest's constructor throws a SecurityError.
 - (void)testSecurityError {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+  [ChromeEarlGrey
       loadURL:GURL("data:text/html,<html><head><meta name=\"viewport\" "
                    "content=\"width=device-width, initial-scale=1, "
                    "maximum-scale=1\"></head><body><button id=\"buy\" "
@@ -35,9 +34,9 @@
                    "'1.00'}}})).show(); } "
                    "catch(e) { document.getElementById('result').innerHTML = "
                    "e; }\">Data URL Test</button><div "
-                   "id='result'></div></body></html>")]);
+                   "id='result'></div></body></html>")];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   [self waitForWebViewContainingTexts:{"SecurityError",
                                        "Failed to construct 'PaymentRequest': "

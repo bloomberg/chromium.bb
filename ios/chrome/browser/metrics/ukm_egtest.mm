@@ -133,9 +133,8 @@ void ClearBrowsingData() {
 
 void OpenNewIncognitoTab() {
   NSUInteger incognito_tab_count = [ChromeEarlGrey incognitoTabCount];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count + 1)]);
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count + 1)];
   GREYAssert([ChromeEarlGrey isIncognitoMode],
              @"Failed to switch to incognito mode.");
 }
@@ -143,13 +142,12 @@ void OpenNewIncognitoTab() {
 void CloseCurrentIncognitoTab() {
   NSUInteger incognito_tab_count = [ChromeEarlGrey incognitoTabCount];
   [ChromeEarlGrey closeCurrentTab];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count - 1)]);
+  [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count - 1)];
 }
 
 void CloseAllIncognitoTabs() {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey closeAllIncognitoTabs]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:0]);
+  [ChromeEarlGrey closeAllIncognitoTabs];
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
 
   // The user is dropped into the tab grid after closing the last incognito tab.
   // Therefore this test must manually switch back to showing the normal tabs.
@@ -164,9 +162,8 @@ void CloseAllIncognitoTabs() {
 
 void OpenNewRegularTab() {
   NSUInteger tab_count = [ChromeEarlGrey mainTabCount];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForMainTabCount:(tab_count + 1)]);
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey waitForMainTabCount:(tab_count + 1)];
 }
 
 // Grant/revoke metrics consent and update MetricsServicesManager.
@@ -217,16 +214,14 @@ void SignOut() {
 - (void)setUp {
   [super setUp];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForSyncInitialized:NO
-                 syncTimeout:kSyncUKMOperationsTimeout]);
+  [ChromeEarlGrey waitForSyncInitialized:NO
+                             syncTimeout:kSyncUKMOperationsTimeout];
   AssertUKMEnabled(false);
 
   // Enable sync.
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForSyncInitialized:YES
-                 syncTimeout:kSyncUKMOperationsTimeout]);
+  [ChromeEarlGrey waitForSyncInitialized:YES
+                             syncTimeout:kSyncUKMOperationsTimeout];
 
   // Grant metrics consent and update MetricsServicesManager.
   GREYAssert(!g_metrics_enabled, @"Unpaired set/reset of user consent.");
@@ -239,9 +234,8 @@ void SignOut() {
 }
 
 - (void)tearDown {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForSyncInitialized:YES
-                 syncTimeout:kSyncUKMOperationsTimeout]);
+  [ChromeEarlGrey waitForSyncInitialized:YES
+                             syncTimeout:kSyncUKMOperationsTimeout];
   AssertUKMEnabled(true);
 
   // Revoke metrics consent and update MetricsServicesManager.
@@ -255,9 +249,8 @@ void SignOut() {
 
   // Disable sync.
   SignOut();
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForSyncInitialized:NO
-                 syncTimeout:kSyncUKMOperationsTimeout]);
+  [ChromeEarlGrey waitForSyncInitialized:NO
+                             syncTimeout:kSyncUKMOperationsTimeout];
   [ChromeEarlGrey clearSyncServerData];
 
   [super tearDown];
@@ -295,7 +288,7 @@ void SignOut() {
 - (void)testIncognitoPlusRegular {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
   [ChromeEarlGrey closeAllTabs];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:(0)]);
+  [ChromeEarlGrey waitForMainTabCount:0];
 
   OpenNewIncognitoTab();
   AssertUKMEnabled(false);
@@ -304,8 +297,8 @@ void SignOut() {
   OpenNewRegularTab();
   AssertUKMEnabled(false);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey closeAllIncognitoTabs]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:0]);
+  [ChromeEarlGrey closeAllIncognitoTabs];
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
   AssertUKMEnabled(true);
 
   // Client ID should not have been reset.

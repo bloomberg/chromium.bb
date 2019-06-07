@@ -51,17 +51,15 @@ const char kNoShippingPage[] =
 
 // Tests that navigating to a URL closes the Payment Request UI.
 - (void)testOpenAndNavigateToURL {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
       assertWithMatcher:grey_notNil()];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)];
 
   // Confirm that the Payment Request UI is not showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -70,16 +68,15 @@ const char kNoShippingPage[] =
 
 // Tests that reloading the page closes the Payment Request UI.
 - (void)testOpenAndReload {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
       assertWithMatcher:grey_notNil()];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
+  [ChromeEarlGrey reload];
 
   // Confirm that the Payment Request UI is not showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -88,16 +85,15 @@ const char kNoShippingPage[] =
 
 // Tests that navigating to the previous page closes the Payment Request UI.
 - (void)testOpenAndNavigateBack {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
       assertWithMatcher:grey_notNil()];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
+  [ChromeEarlGrey goBack];
 
   // Confirm that the Payment Request UI is not showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -113,10 +109,9 @@ const char kNoShippingPage[] =
         @"available.");
   }
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -144,10 +139,9 @@ const char kNoShippingPage[] =
         @"available.");
   }
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -180,10 +174,9 @@ const char kNoShippingPage[] =
   card.set_billing_address_id(profile.guid());
   CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -217,16 +210,15 @@ const char kNoShippingPage[] =
 
 // Tests that calling request.abort() successfully aborts the Payment Request.
 - (void)testAbort {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kAbortPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
       assertWithMatcher:grey_notNil()];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"abort"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"abort"];
 
   // Confirm that the error confirmation UI is showing.
   [[EarlGrey

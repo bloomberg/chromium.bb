@@ -13,7 +13,6 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -45,9 +44,9 @@ id<GREYMatcher> TabTitleMatcher(web::WebState* web_state) {
   // case.
   const int kNumberOfTabs = 3;
   [ChromeEarlGreyUI openNewTab];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://about")]);
+  [ChromeEarlGrey loadURL:GURL("chrome://about")];
   [ChromeEarlGreyUI openNewTab];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
   // Note that the tab ordering wraps.  E.g. if A, B, and C are open,
   // and C is the current tab, the 'next' tab is 'A'.
