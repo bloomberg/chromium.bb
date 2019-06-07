@@ -183,6 +183,8 @@ void BrowserSwitcherServiceWin::LoadRulesFromPrefs() {
 }
 
 void BrowserSwitcherServiceWin::OnAllRulesetsParsed() {
+  BrowserSwitcherService::OnAllRulesetsParsed();
+
   if (!prefs().IsEnabled())
     return;
 

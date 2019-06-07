@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_BROWSER_SWITCH_BROWSER_SWITCH_UI_H_
 
 #include "base/macros.h"
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class BrowserSwitchUI : public content::WebUIController {

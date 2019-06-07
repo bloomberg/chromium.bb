@@ -90,10 +90,9 @@ RulesetSource::~RulesetSource() = default;
 
 XmlDownloader::XmlDownloader(Profile* profile,
                              BrowserSwitcherService* service,
-                             std::vector<RulesetSource> sources,
+                             base::TimeDelta first_fetch_delay,
                              base::RepeatingCallback<void()> all_done_callback)
     : service_(service),
-      sources_(std::move(sources)),
       all_done_callback_(std::move(all_done_callback)),
       weak_ptr_factory_(this) {
   file_url_factory_ =
@@ -102,14 +101,15 @@ XmlDownloader::XmlDownloader(Profile* profile,
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();
 
+  sources_ = service_->GetRulesetSources();
+
   for (auto& source : sources_) {
     if (!source.url.is_valid())
       DoneParsing(&source, ParsedXml({}));
   }
 
-  // Schedule a fetch in 1 minute, but avoid doing unnecessary work.
-  if (HasValidSources())
-    ScheduleRefresh(service_->fetch_delay());
+  // Fetch in 1 minute.
+  ScheduleRefresh(first_fetch_delay);
 }
 
 XmlDownloader::~XmlDownloader() = default;
@@ -118,6 +118,14 @@ bool XmlDownloader::HasValidSources() const {
   return std::any_of(
       sources_.begin(), sources_.end(),
       [](const RulesetSource& source) { return source.url.is_valid(); });
+}
+
+base::Time XmlDownloader::last_refresh_time() const {
+  return last_refresh_time_;
+}
+
+base::Time XmlDownloader::next_refresh_time() const {
+  return next_refresh_time_;
 }
 
 void XmlDownloader::FetchXml() {
@@ -181,16 +189,23 @@ void XmlDownloader::DoneParsing(RulesetSource* source, ParsedXml xml) {
   DCHECK(counter_ <= sources_.size());
   if (counter_ == sources_.size()) {
     all_done_callback_.Run();
+    if (HasValidSources())
+      last_refresh_time_ = base::Time::Now();
     ScheduleRefresh(service_->refresh_delay());
   }
 }
 
 void XmlDownloader::ScheduleRefresh(base::TimeDelta delay) {
+  // Avoid doing unnecessary work.
+  if (!HasValidSources())
+    return;
+
   // Refresh in 30 minutes, so the sitelists are never too stale.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&XmlDownloader::Refresh, weak_ptr_factory_.GetWeakPtr()),
       delay);
+  next_refresh_time_ = base::Time::Now() + delay;
 }
 
 void XmlDownloader::Refresh() {
@@ -218,18 +233,16 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
 BrowserSwitcherService::~BrowserSwitcherService() = default;
 
 void BrowserSwitcherService::Init() {
-  auto sources = GetRulesetSources();
-  StartDownload(std::move(sources));
+  StartDownload(fetch_delay());
 }
 
-void BrowserSwitcherService::StartDownload(
-    std::vector<RulesetSource>&& sources) {
+void BrowserSwitcherService::StartDownload(base::TimeDelta delay) {
   LoadRulesFromPrefs();
 
   // This destroys the previous XmlDownloader, which cancels any scheduled
   // refresh operations.
   sitelist_downloader_ = std::make_unique<XmlDownloader>(
-      profile_, this, std::move(sources),
+      profile_, this, delay,
       base::BindRepeating(&BrowserSwitcherService::OnAllRulesetsParsed,
                           base::Unretained(this)));
 }
@@ -248,6 +261,10 @@ BrowserSwitcherSitelist* BrowserSwitcherService::sitelist() {
 
 BrowserSwitcherPrefs& BrowserSwitcherService::prefs() {
   return prefs_;
+}
+
+XmlDownloader* BrowserSwitcherService::sitelist_downloader() {
+  return sitelist_downloader_.get();
 }
 
 base::TimeDelta BrowserSwitcherService::fetch_delay() {
@@ -295,7 +312,15 @@ void BrowserSwitcherService::LoadRulesFromPrefs() {
         ParsedXml(prefs().GetCachedExternalGreylist(), base::nullopt));
 }
 
-void BrowserSwitcherService::OnAllRulesetsParsed() {}
+void BrowserSwitcherService::OnAllRulesetsParsed() {
+  callback_list_.Notify(this);
+}
+
+std::unique_ptr<BrowserSwitcherService::CallbackSubscription>
+BrowserSwitcherService::RegisterAllRulesetsParsedCallback(
+    AllRulesetsParsedCallback callback) {
+  return callback_list_.Add(callback);
+}
 
 void BrowserSwitcherService::OnBrowserSwitcherPrefsChanged(
     BrowserSwitcherPrefs* prefs,
@@ -311,7 +336,7 @@ void BrowserSwitcherService::OnBrowserSwitcherPrefsChanged(
       });
 
   if (should_redownload)
-    StartDownload(std::move(sources));
+    StartDownload(fetch_delay());
 }
 
 void BrowserSwitcherService::OnExternalSitelistParsed(ParsedXml xml) {

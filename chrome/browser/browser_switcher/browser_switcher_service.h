@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -20,6 +21,7 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
+class BrowserSwitchHandler;
 class Profile;
 
 namespace browser_switcher {
@@ -55,18 +57,14 @@ class BrowserSwitcherService;
 
 class XmlDownloader {
  public:
-  // Posts a task to start downloading+parsing the rulesets after 1
-  // minute. Calls each source's callback once they're done (or failed). In
-  // addition, calls |all_done_callback| once all the rulesets have been
-  // processed.
-  //
-  // Schedules a refresh every 30 minutes, unless this object gets deleted
-  // in the meantime.
   XmlDownloader(Profile* profile,
                 BrowserSwitcherService* service,
-                std::vector<RulesetSource> sources,
+                base::TimeDelta first_fetch_delay,
                 base::RepeatingCallback<void()> all_done_callback);
   virtual ~XmlDownloader();
+
+  base::Time last_refresh_time() const;
+  base::Time next_refresh_time() const;
 
  private:
   // Returns true if any of the sources requires downloads. This is used to
@@ -107,16 +105,24 @@ class XmlDownloader {
   // trigger the callback once they've all been parsed.
   unsigned int counter_ = 0;
 
+  base::Time last_refresh_time_;
+  base::Time next_refresh_time_;
+
   base::WeakPtrFactory<XmlDownloader> weak_ptr_factory_;
 };
 
 // Manages per-profile resources for BrowserSwitcher.
 class BrowserSwitcherService : public KeyedService {
+ private:
+  using AllRulesetsParsedCallbackSignature = void(BrowserSwitcherService*);
+  using AllRulesetsParsedCallback =
+      base::RepeatingCallback<AllRulesetsParsedCallbackSignature>;
+  using CallbackSubscription =
+      base::CallbackList<AllRulesetsParsedCallbackSignature>::Subscription;
+
  public:
   explicit BrowserSwitcherService(Profile* profile);
   ~BrowserSwitcherService() override;
-
-  void Init();
 
   // KeyedService:
   void Shutdown() override;
@@ -152,9 +158,30 @@ class BrowserSwitcherService : public KeyedService {
   static base::TimeDelta refresh_delay_;
 
  private:
-  void StartDownload(std::vector<RulesetSource>&& sources);
+  // chrome://browser-switch/internals has access to some
+  // implementation-specific methods to query this object's state, listen for
+  // events and trigger a re-download immediately.
+  friend class ::BrowserSwitchHandler;
+
+  void Init();
+
   void OnExternalSitelistParsed(ParsedXml xml);
   void OnExternalGreylistParsed(ParsedXml xml);
+
+  // Load cached rules from the PrefStore, then re-download the sitelists after
+  // |delay|.
+  void StartDownload(base::TimeDelta delay);
+
+  XmlDownloader* sitelist_downloader();
+
+  // Triggers a sitelist refresh immediately. Used by
+  // chrome://browser-switch/internals.
+  void DownloadNow();
+
+  // Registers a callback that triggers after the sitelists are done downloading
+  // and all rules are applied.
+  std::unique_ptr<CallbackSubscription> RegisterAllRulesetsParsedCallback(
+      AllRulesetsParsedCallback callback);
 
   std::unique_ptr<XmlDownloader> sitelist_downloader_;
 
@@ -162,6 +189,9 @@ class BrowserSwitcherService : public KeyedService {
   BrowserSwitcherPrefs prefs_;
   std::unique_ptr<BrowserSwitcherPrefs::CallbackSubscription>
       prefs_subscription_;
+
+  // CallbackList for OnAllRulesetsParsed() listeners.
+  base::CallbackList<AllRulesetsParsedCallbackSignature> callback_list_;
 
   // Per-profile helpers.
   std::unique_ptr<AlternativeBrowserDriver> driver_;
