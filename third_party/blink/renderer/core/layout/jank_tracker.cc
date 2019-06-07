@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -71,7 +70,8 @@ static bool SmallerThanRegionGranularity(const FloatRect& rect,
          rect.Height() * granularity_scale < 0.5;
 }
 
-static const PropertyTreeState PropertyTreeStateFor(LayoutObject& object) {
+static const PropertyTreeState PropertyTreeStateFor(
+    const LayoutObject& object) {
   return object.FirstFragment().LocalBorderBoxProperties();
 }
 
@@ -119,7 +119,7 @@ JankTracker::JankTracker(LocalFrameView* frame_view)
       observed_input_or_scroll_(false) {}
 
 void JankTracker::AccumulateJank(const LayoutObject& source,
-                                 const PaintLayer& painting_layer,
+                                 const PropertyTreeState& property_tree_state,
                                  FloatRect old_rect,
                                  FloatRect new_rect) {
   if (old_rect.IsEmpty() || new_rect.IsEmpty())
@@ -149,21 +149,19 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
   if (source.IsSVG())
     return;
 
-  const auto local_state =
-      PropertyTreeStateFor(painting_layer.GetLayoutObject());
   const auto root_state = PropertyTreeStateFor(*source.View());
 
   FloatClipRect clip_rect =
-      GeometryMapper::LocalToAncestorClipRect(local_state, root_state);
+      GeometryMapper::LocalToAncestorClipRect(property_tree_state, root_state);
 
   // If the clip region is empty, then the resulting layout shift isn't visible
   // in the viewport so ignore it.
   if (!clip_rect.IsInfinite() && clip_rect.Rect().IsEmpty())
     return;
 
-  GeometryMapper::SourceToDestinationRect(local_state.Transform(),
+  GeometryMapper::SourceToDestinationRect(property_tree_state.Transform(),
                                           root_state.Transform(), old_rect);
-  GeometryMapper::SourceToDestinationRect(local_state.Transform(),
+  GeometryMapper::SourceToDestinationRect(property_tree_state.Transform(),
                                           root_state.Transform(), new_rect);
 
   FloatRect clipped_old_rect(old_rect), clipped_new_rect(new_rect);
@@ -209,24 +207,25 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
   }
 }
 
-void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
-                                       const IntRect& old_visual_rect,
-                                       const PaintLayer& painting_layer) {
+void JankTracker::NotifyObjectPrePaint(
+    const LayoutObject& object,
+    const PropertyTreeState& property_tree_state,
+    const IntRect& old_visual_rect,
+    const IntRect& new_visual_rect) {
   if (!IsActive())
     return;
 
-  AccumulateJank(object, painting_layer, FloatRect(old_visual_rect),
-                 FloatRect(object.FirstFragment().VisualRect()));
+  AccumulateJank(object, property_tree_state, FloatRect(old_visual_rect),
+                 FloatRect(new_visual_rect));
 }
 
-void JankTracker::NotifyCompositedLayerMoved(const PaintLayer& paint_layer,
+void JankTracker::NotifyCompositedLayerMoved(const LayoutObject& layout_object,
                                              FloatRect old_layer_rect,
                                              FloatRect new_layer_rect) {
   if (!IsActive())
     return;
 
   // Make sure we can access a transform node.
-  LayoutObject& layout_object = paint_layer.GetLayoutObject();
   if (!layout_object.FirstFragment().HasLocalBorderBoxProperties())
     return;
 
@@ -236,7 +235,8 @@ void JankTracker::NotifyCompositedLayerMoved(const PaintLayer& paint_layer,
   old_layer_rect.MoveBy(transform_parent_offset);
   new_layer_rect.MoveBy(transform_parent_offset);
 
-  AccumulateJank(layout_object, paint_layer, old_layer_rect, new_layer_rect);
+  AccumulateJank(layout_object, PropertyTreeStateFor(layout_object),
+                 old_layer_rect, new_layer_rect);
 }
 
 double JankTracker::SubframeWeightingFactor() const {
