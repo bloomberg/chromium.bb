@@ -410,7 +410,6 @@ void BrowserTestBase::SetUp() {
   // for the test harness to be able to delete temp dirs.
   base::ThreadRestrictions::SetIOAllowed(true);
 
-  BrowserTaskExecutor::ResetForTesting();
 #else
   GetContentMainParams()->ui_task = ui_task.release();
   GetContentMainParams()->created_main_parts_closure =
