@@ -68,7 +68,6 @@ class PrefetchBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, Simple) {
-  int target_fetch_count = 0;
   const char* prefetch_path = "/prefetch.html";
   const char* target_path = "/target.html";
   RegisterResponse(
@@ -80,21 +79,21 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, Simple) {
       ResponseEntry("<head><title>Prefetch Target</title></head>"));
 
   base::RunLoop prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), target_path,
-                         &target_fetch_count, &prefetch_waiter);
+  auto request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), target_path, &prefetch_waiter);
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, target_fetch_count);
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, request_counter->GetRequestCount());
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
 
   const GURL target_url = embedded_test_server()->GetURL(target_path);
 
   // Loading a page that prefetches the target URL would increment the
-  // |target_fetch_count|.
+  // |request_counter|.
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
   prefetch_waiter.Run();
-  EXPECT_EQ(1, target_fetch_count);
-  EXPECT_EQ(1, prefetch_url_loader_called_);
+  EXPECT_EQ(1, request_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
 
   // Shutdown the server.
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
@@ -105,7 +104,6 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, Simple) {
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOrigin) {
-  int target_fetch_count = 0;
   const char* prefetch_path = "/prefetch.html";
   const char* target_path = "/target.html";
   RegisterResponse(
@@ -113,8 +111,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOrigin) {
       ResponseEntry("<head><title>Prefetch Target</title></head>"));
 
   base::RunLoop prefetch_waiter;
-  RegisterRequestMonitor(cross_origin_server_.get(), target_path,
-                         &target_fetch_count, &prefetch_waiter);
+  auto request_counter = RequestCounter::CreateAndMonitor(
+      cross_origin_server_.get(), target_path, &prefetch_waiter);
   RegisterRequestHandler(cross_origin_server_.get());
   ASSERT_TRUE(cross_origin_server_->Start());
 
@@ -126,15 +124,15 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOrigin) {
                        cross_origin_target_url.spec().c_str())));
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, target_fetch_count);
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, request_counter->GetRequestCount());
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
 
   // Loading a page that prefetches the target URL would increment the
-  // |target_fetch_count|.
+  // |request_counter|.
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
   prefetch_waiter.Run();
-  EXPECT_EQ(1, target_fetch_count);
-  EXPECT_EQ(1, prefetch_url_loader_called_);
+  EXPECT_EQ(1, request_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
 
   // Shutdown the servers.
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
@@ -146,7 +144,6 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOrigin) {
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, DoublePrefetch) {
-  int target_fetch_count = 0;
   const char* prefetch_path = "/prefetch.html";
   const char* target_path = "/target.html";
   RegisterResponse(prefetch_path, ResponseEntry(base::StringPrintf(
@@ -158,21 +155,21 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, DoublePrefetch) {
       ResponseEntry("<head><title>Prefetch Target</title></head>"));
 
   base::RunLoop prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), target_path,
-                         &target_fetch_count, &prefetch_waiter);
+  auto request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), target_path, &prefetch_waiter);
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, target_fetch_count);
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, request_counter->GetRequestCount());
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
 
   const GURL target_url = embedded_test_server()->GetURL(target_path);
 
   // Loading a page that prefetches the target URL would increment the
-  // |target_fetch_count|, but it should hit only once.
+  // |request_counter|, but it should hit only once.
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
   prefetch_waiter.Run();
-  EXPECT_EQ(1, target_fetch_count);
-  EXPECT_EQ(1, prefetch_url_loader_called_);
+  EXPECT_EQ(1, request_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
 
   // Shutdown the server.
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
@@ -183,8 +180,6 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, DoublePrefetch) {
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, NoCacheAndNoStore) {
-  int nocache_fetch_count = 0;
-  int nostore_fetch_count = 0;
   const char* prefetch_path = "/prefetch.html";
   const char* nocache_path = "/target1.html";
   const char* nostore_path = "/target2.html";
@@ -203,41 +198,39 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, NoCacheAndNoStore) {
 
   base::RunLoop nocache_waiter;
   base::RunLoop nostore_waiter;
-  RegisterRequestMonitor(embedded_test_server(), nocache_path,
-                         &nocache_fetch_count, &nocache_waiter);
-  RegisterRequestMonitor(embedded_test_server(), nostore_path,
-                         &nostore_fetch_count, &nostore_waiter);
+  auto nocache_request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), nocache_path, &nocache_waiter);
+  auto nostore_request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), nostore_path, &nostore_waiter);
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
 
   // Loading a page that prefetches the target URL would increment the
   // fetch count for the both targets.
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
   nocache_waiter.Run();
   nostore_waiter.Run();
-  EXPECT_EQ(1, nocache_fetch_count);
-  EXPECT_EQ(1, nostore_fetch_count);
-  EXPECT_EQ(2, prefetch_url_loader_called_);
+  EXPECT_EQ(1, nocache_request_counter->GetRequestCount());
+  EXPECT_EQ(1, nostore_request_counter->GetRequestCount());
+  EXPECT_EQ(2, GetPrefetchURLLoaderCallCount());
 
   // Subsequent navigation to the no-cache URL wouldn't hit the network, because
   // no-cache resource is kept available up to kPrefetchReuseMins.
   NavigateToURLAndWaitTitle(embedded_test_server()->GetURL(nocache_path),
                             "NoCache Target");
-  EXPECT_EQ(1, nocache_fetch_count);
+  EXPECT_EQ(1, nocache_request_counter->GetRequestCount());
 
   // Subsequent navigation to the no-store URL hit the network again, because
   // no-store resource is not cached even for prefetch.
   NavigateToURLAndWaitTitle(embedded_test_server()->GetURL(nostore_path),
                             "NoStore Target");
-  EXPECT_EQ(2, nostore_fetch_count);
+  EXPECT_EQ(2, nostore_request_counter->GetRequestCount());
 
-  EXPECT_EQ(2, prefetch_url_loader_called_);
+  EXPECT_EQ(2, GetPrefetchURLLoaderCallCount());
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WithPreload) {
-  int target_fetch_count = 0;
-  int preload_fetch_count = 0;
   const char* prefetch_path = "/prefetch.html";
   const char* target_path = "/target.html";
   const char* preload_path = "/preload.js";
@@ -256,23 +249,23 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WithPreload) {
                                  {{"cache-control", "public, max-age=600"}}));
 
   base::RunLoop preload_waiter;
-  RegisterRequestMonitor(embedded_test_server(), target_path,
-                         &target_fetch_count, nullptr /* waiter */);
-  RegisterRequestMonitor(embedded_test_server(), preload_path,
-                         &preload_fetch_count, &preload_waiter);
+  auto target_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), target_path);
+  auto preload_request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), preload_path, &preload_waiter);
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
 
   const GURL target_url = embedded_test_server()->GetURL(target_path);
 
   // Loading a page that prefetches the target URL would increment both
-  // |target_fetch_count| and |preload_fetch_count|.
+  // |target_request_counter| and |preload_request_counter|.
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
   preload_waiter.Run();
-  EXPECT_EQ(1, target_fetch_count);
-  EXPECT_EQ(1, preload_fetch_count);
-  EXPECT_EQ(1, prefetch_url_loader_called_);
+  EXPECT_EQ(1, target_request_counter->GetRequestCount());
+  EXPECT_EQ(1, preload_request_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
 
   WaitUntilLoaded(embedded_test_server()->GetURL(preload_path));
 
@@ -283,8 +276,6 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WithPreload) {
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
-  int target_fetch_count = 0;
-  int preload_fetch_count = 0;
   const char* target_path = "/target.html";
   const char* preload_path = "/preload.js";
   RegisterResponse(
@@ -299,11 +290,10 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
                                  {{"cache-control", "public, max-age=600"}}));
 
   base::RunLoop preload_waiter;
-
-  RegisterRequestMonitor(cross_origin_server_.get(), target_path,
-                         &target_fetch_count, nullptr /* waiter */);
-  RegisterRequestMonitor(cross_origin_server_.get(), preload_path,
-                         &preload_fetch_count, &preload_waiter);
+  auto target_request_counter =
+      RequestCounter::CreateAndMonitor(cross_origin_server_.get(), target_path);
+  auto preload_request_counter = RequestCounter::CreateAndMonitor(
+      cross_origin_server_.get(), preload_path, &preload_waiter);
   RegisterRequestHandler(cross_origin_server_.get());
   ASSERT_TRUE(cross_origin_server_->Start());
 
@@ -316,15 +306,15 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
                                       cross_origin_target_url.spec().c_str())));
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
 
   // Loading a page that prefetches the target URL would increment both
-  // |target_fetch_count| and |preload_fetch_count|.
+  // |target_request_counter| and |preload_request_counter|.
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
   preload_waiter.Run();
-  EXPECT_EQ(1, target_fetch_count);
-  EXPECT_EQ(1, preload_fetch_count);
-  EXPECT_EQ(1, prefetch_url_loader_called_);
+  EXPECT_EQ(1, target_request_counter->GetRequestCount());
+  EXPECT_EQ(1, preload_request_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
 
   WaitUntilLoaded(cross_origin_server_->GetURL(preload_path));
 
@@ -337,9 +327,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
   NavigateToURLAndWaitTitle(cross_origin_target_url, "done");
 }
 
-IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
-  int target_fetch_count = 0;
-  int preload_fetch_count = 0;
+IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, SignedExchangeWithPreload) {
   const char* prefetch_path = "/prefetch.html";
   const char* target_sxg_path = "/target.sxg";
   const char* target_path = "/target.html";
@@ -363,13 +351,13 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
 
   base::RunLoop preload_waiter;
   base::RunLoop prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), target_sxg_path,
-                         &target_fetch_count, &prefetch_waiter);
-  RegisterRequestMonitor(embedded_test_server(), preload_path_in_sxg,
-                         &preload_fetch_count, &preload_waiter);
+  auto target_request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), target_sxg_path, &prefetch_waiter);
+  auto preload_request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), preload_path_in_sxg, &preload_waiter);
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
 
   const GURL preload_url_in_sxg =
       embedded_test_server()->GetURL(preload_path_in_sxg);
@@ -384,10 +372,10 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   // Loading a page that prefetches the target URL would increment both
-  // |target_fetch_count| and |preload_fetch_count|.
+  // |target_request_counter| and |preload_request_counter|.
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
   prefetch_waiter.Run();
-  EXPECT_EQ(1, target_fetch_count);
+  EXPECT_EQ(1, target_request_counter->GetRequestCount());
 
   // Test after this point requires SignedHTTPExchange support
   if (!GetParam().signed_exchange_enabled)
@@ -396,8 +384,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   // If the header in the .sxg file is correctly extracted, we should
   // be able to also see the preload.
   preload_waiter.Run();
-  EXPECT_EQ(1, preload_fetch_count);
-  EXPECT_EQ(1, prefetch_url_loader_called_);
+  EXPECT_EQ(1, preload_request_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
 
   // Shutdown the server.
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
@@ -407,9 +395,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   NavigateToURLAndWaitTitle(target_sxg_url, "done");
 }
 
-IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWebPackageWithPreload) {
-  int target_fetch_count = 0;
-  int preload_fetch_count = 0;
+IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
+                       CrossOriginSignedExchangeWithPreload) {
   const char* prefetch_path = "/prefetch.html";
   const char* target_sxg_path = "/target.sxg";
   const char* target_path = "/target.html";
@@ -429,10 +416,10 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWebPackageWithPreload) {
 
   base::RunLoop preload_waiter;
   base::RunLoop prefetch_waiter;
-  RegisterRequestMonitor(cross_origin_server_.get(), target_sxg_path,
-                         &target_fetch_count, &prefetch_waiter);
-  RegisterRequestMonitor(cross_origin_server_.get(), preload_path_in_sxg,
-                         &preload_fetch_count, &preload_waiter);
+  auto target_request_counter = RequestCounter::CreateAndMonitor(
+      cross_origin_server_.get(), target_sxg_path, &prefetch_waiter);
+  auto preload_request_counter = RequestCounter::CreateAndMonitor(
+      cross_origin_server_.get(), preload_path_in_sxg, &preload_waiter);
   RegisterRequestHandler(cross_origin_server_.get());
   ASSERT_TRUE(cross_origin_server_->Start());
 
@@ -446,7 +433,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWebPackageWithPreload) {
                        target_sxg_url.spec().c_str())));
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
 
   MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
       target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
@@ -457,10 +444,10 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWebPackageWithPreload) {
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   // Loading a page that prefetches the target URL would increment both
-  // |target_fetch_count| and |preload_fetch_count|.
+  // |target_request_counter| and |preload_request_counter|.
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
   prefetch_waiter.Run();
-  EXPECT_EQ(1, target_fetch_count);
+  EXPECT_EQ(1, target_request_counter->GetRequestCount());
 
   // Test after this point requires SignedHTTPExchange support
   if (!GetParam().signed_exchange_enabled)
@@ -468,9 +455,9 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWebPackageWithPreload) {
   // If the header in the .sxg file is correctly extracted, we should
   // be able to also see the preload.
   preload_waiter.Run();
-  EXPECT_EQ(1, preload_fetch_count);
+  EXPECT_EQ(1, preload_request_counter->GetRequestCount());
 
-  EXPECT_EQ(1, prefetch_url_loader_called_);
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
 
   WaitUntilLoaded(preload_url_in_sxg);
 

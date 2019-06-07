@@ -10,6 +10,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "content/public/test/content_browser_test.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -56,29 +59,53 @@ class PrefetchBrowserTestBase : public ContentBrowserTest {
   void SetUpOnMainThread() override;
 
  protected:
+  class RequestCounter : public base::RefCountedThreadSafe<RequestCounter> {
+   public:
+    // Create a counter that is to be incremented when |path| on the
+    // |test_server| is accessed. |waiter| can be optionally specified that will
+    // be run after the counter is incremented. The counter value can be
+    // obtained via GetRequestCount(). This class works across threads,
+    // GetRequestCount can be called on any threads.
+    static scoped_refptr<RequestCounter> CreateAndMonitor(
+        net::EmbeddedTestServer* test_server,
+        const std::string& path,
+        base::RunLoop* waiter = nullptr);
+    RequestCounter(const std::string& path, base::RunLoop* waiter);
+
+    int GetRequestCount();
+
+   private:
+    friend base::RefCountedThreadSafe<RequestCounter>;
+    ~RequestCounter();
+
+    void OnRequest(const net::test_server::HttpRequest& request);
+
+    base::OnceClosure waiter_closure_;
+    const std::string path_;
+    int request_count_ GUARDED_BY(lock_) = 0;
+    base::Lock lock_;
+
+    DISALLOW_COPY_AND_ASSIGN(RequestCounter);
+  };
+
   void RegisterResponse(const std::string& url, ResponseEntry&& entry);
 
   std::unique_ptr<net::test_server::HttpResponse> ServeResponses(
       const net::test_server::HttpRequest& request);
-  void WatchURLAndRunClosure(const std::string& relative_url,
-                             int* visit_count,
-                             base::OnceClosure closure,
-                             const net::test_server::HttpRequest& request);
   void OnPrefetchURLLoaderCalled();
-  void RegisterRequestMonitor(net::test_server::EmbeddedTestServer* test_server,
-                              const std::string& path,
-                              int* count,
-                              base::RunLoop* waiter);
 
   void RegisterRequestHandler(
       net::test_server::EmbeddedTestServer* test_server);
   void NavigateToURLAndWaitTitle(const GURL& url, const std::string& title);
   void WaitUntilLoaded(const GURL& url);
 
-  int prefetch_url_loader_called_ = 0;
+  int GetPrefetchURLLoaderCallCount();
 
  private:
   std::map<std::string, ResponseEntry> response_map_;
+
+  int prefetch_url_loader_called_ GUARDED_BY(lock_) = 0;
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTestBase);
 };

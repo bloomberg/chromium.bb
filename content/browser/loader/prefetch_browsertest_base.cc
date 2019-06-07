@@ -88,30 +88,16 @@ PrefetchBrowserTestBase::ServeResponses(
   return nullptr;
 }
 
-void PrefetchBrowserTestBase::WatchURLAndRunClosure(
-    const std::string& relative_url,
-    int* visit_count,
-    base::OnceClosure closure,
-    const net::test_server::HttpRequest& request) {
-  if (request.relative_url == relative_url) {
-    (*visit_count)++;
-    if (closure)
-      std::move(closure).Run();
-  }
-}
-
 void PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  base::AutoLock lock(lock_);
   prefetch_url_loader_called_++;
 }
 
-void PrefetchBrowserTestBase::RegisterRequestMonitor(
-    net::EmbeddedTestServer* test_server,
-    const std::string& path,
-    int* count,
-    base::RunLoop* waiter) {
-  test_server->RegisterRequestMonitor(base::BindRepeating(
-      &PrefetchBrowserTestBase::WatchURLAndRunClosure, base::Unretained(this),
-      path, count, waiter ? waiter->QuitClosure() : base::RepeatingClosure()));
+int PrefetchBrowserTestBase::GetPrefetchURLLoaderCallCount() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::AutoLock lock(lock_);
+  return prefetch_url_loader_called_;
 }
 
 void PrefetchBrowserTestBase::RegisterRequestHandler(
@@ -155,6 +141,42 @@ new Promise((resolve) => {
                                                      url.spec().c_str()),
                                   &result));
   ASSERT_TRUE(result);
+}
+
+// static
+scoped_refptr<PrefetchBrowserTestBase::RequestCounter>
+PrefetchBrowserTestBase::RequestCounter::CreateAndMonitor(
+    net::EmbeddedTestServer* test_server,
+    const std::string& path,
+    base::RunLoop* waiter) {
+  auto counter = base::MakeRefCounted<RequestCounter>(path, waiter);
+  test_server->RegisterRequestMonitor(
+      base::BindRepeating(&RequestCounter::OnRequest, counter));
+  return counter;
+}
+
+PrefetchBrowserTestBase::RequestCounter::RequestCounter(const std::string& path,
+                                                        base::RunLoop* waiter)
+    : waiter_closure_(waiter ? waiter->QuitClosure() : base::OnceClosure()),
+      path_(path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+PrefetchBrowserTestBase::RequestCounter::~RequestCounter() = default;
+
+int PrefetchBrowserTestBase::RequestCounter::GetRequestCount() {
+  base::AutoLock lock(lock_);
+  return request_count_;
+}
+
+void PrefetchBrowserTestBase::RequestCounter::OnRequest(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != path_)
+    return;
+  base::AutoLock lock(lock_);
+  ++request_count_;
+  if (waiter_closure_)
+    std::move(waiter_closure_).Run();
 }
 
 }  // namespace content

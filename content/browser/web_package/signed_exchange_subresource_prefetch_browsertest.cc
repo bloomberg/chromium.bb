@@ -217,10 +217,8 @@ class SignedExchangePrefetchBrowserTest
       const std::string& inner_url_path,
       const net::SHA256HashValue& header_integrity,
       const std::string& content) {
-    int sxg_fetch_count = 0;
-    base::RunLoop sxg_prefetch_waiter;
-    RegisterRequestMonitor(embedded_test_server(), sxg_path, &sxg_fetch_count,
-                           &sxg_prefetch_waiter);
+    auto sxg_request_counter =
+        RequestCounter::CreateAndMonitor(embedded_test_server(), sxg_path);
     RegisterRequestHandler(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -241,15 +239,13 @@ class SignedExchangePrefetchBrowserTest
         "text/html", {}, header_integrity)});
     ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
-    EXPECT_EQ(0, prefetch_url_loader_called_);
+    EXPECT_EQ(0, sxg_request_counter->GetRequestCount());
 
     NavigateToURL(shell(), prefetch_page_url);
-    sxg_prefetch_waiter.Run();
-    EXPECT_EQ(1, sxg_fetch_count);
 
     WaitUntilLoaded(sxg_url);
 
-    EXPECT_EQ(1, prefetch_url_loader_called_);
+    EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
   }
 
  private:
@@ -336,15 +332,10 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   const char* script_sxg_path = "/script_js.sxg";
   const char* script_inner_url_path = "/script.js";
 
-  int script_sxg_fetch_count = 0;
-  int script_fetch_count = 0;
-
-  base::RunLoop script_sxg_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script_sxg_path,
-                         &script_sxg_fetch_count, &script_sxg_prefetch_waiter);
-  base::RunLoop script_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script_inner_url_path,
-                         &script_fetch_count, &script_prefetch_waiter);
+  auto script_sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), script_sxg_path);
+  auto script_request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), script_inner_url_path);
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -396,20 +387,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
            script_header_integrity)});
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
   NavigateToURL(shell(), prefetch_page_url);
-  if (base::FeatureList::IsEnabled(
-          features::kSignedExchangeSubresourcePrefetch)) {
-    script_sxg_prefetch_waiter.Run();
-    EXPECT_EQ(1, script_sxg_fetch_count);
-    EXPECT_EQ(0, script_fetch_count);
-    EXPECT_EQ(2, prefetch_url_loader_called_);
-  } else {
-    script_prefetch_waiter.Run();
-    EXPECT_EQ(0, script_sxg_fetch_count);
-    EXPECT_EQ(1, script_fetch_count);
-    EXPECT_EQ(1, prefetch_url_loader_called_);
-  }
 
   WaitUntilLoaded(sxg_page_url);
   if (base::FeatureList::IsEnabled(
@@ -417,6 +396,17 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
     WaitUntilLoaded(sxg_script_url);
   } else {
     WaitUntilLoaded(inner_url_script_url);
+  }
+
+  if (base::FeatureList::IsEnabled(
+          features::kSignedExchangeSubresourcePrefetch)) {
+    EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+    EXPECT_EQ(0, script_request_counter->GetRequestCount());
+    EXPECT_EQ(2, GetPrefetchURLLoaderCallCount());
+  } else {
+    EXPECT_EQ(0, script_sxg_request_counter->GetRequestCount());
+    EXPECT_EQ(1, script_request_counter->GetRequestCount());
+    EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
   }
 
   const auto cached_exchanges = GetCachedExchanges(shell());
@@ -446,16 +436,16 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
     // The content is loaded from PrefetchedSignedExchangeCache. And the script
     // is also loaded from PrefetchedSignedExchangeCache.
     NavigateToURLAndWaitTitle(sxg_page_url, "done");
-    EXPECT_EQ(1, script_sxg_fetch_count);
-    EXPECT_EQ(0, script_fetch_count);
+    EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+    EXPECT_EQ(0, script_request_counter->GetRequestCount());
   } else {
     // Subsequent navigation to the target URL wouldn't hit the network for
     // the target URL. The target content should still be read correctly.
     // The content is loaded from PrefetchedSignedExchangeCache. But the script
     // is loaded from the server.
     NavigateToURLAndWaitTitle(sxg_page_url, "from server");
-    EXPECT_EQ(0, script_sxg_fetch_count);
-    EXPECT_EQ(1, script_fetch_count);
+    EXPECT_EQ(0, script_sxg_request_counter->GetRequestCount());
+    EXPECT_EQ(1, script_request_counter->GetRequestCount());
   }
 }
 
@@ -512,22 +502,14 @@ class SignedExchangeSubresourcePrefetchBrowserTest
       const std::string& script_inner_url_path,
       const std::string& expected_title,
       int expected_script_fetch_count) {
-    int script_sxg_fetch_count = 0;
-    int script_fetch_count = 0;
-
     // When |expected_script_fetch_count| is -1, we don't check the script fetch
     // count.
     const bool check_script_fetch_count = expected_script_fetch_count != -1;
 
-    base::RunLoop script_sxg_prefetch_waiter;
-    RegisterRequestMonitor(embedded_test_server(), script_sxg_path,
-                           &script_sxg_fetch_count,
-                           &script_sxg_prefetch_waiter);
-    base::RunLoop script_prefetch_waiter;
-    if (check_script_fetch_count) {
-      RegisterRequestMonitor(embedded_test_server(), script_inner_url_path,
-                             &script_fetch_count, &script_prefetch_waiter);
-    }
+    auto script_sxg_request_counter = RequestCounter::CreateAndMonitor(
+        embedded_test_server(), script_sxg_path);
+    auto script_request_counter = RequestCounter::CreateAndMonitor(
+        embedded_test_server(), script_inner_url_path);
     RegisterRequestHandler(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -581,17 +563,17 @@ class SignedExchangeSubresourcePrefetchBrowserTest
              script_header_integrity)});
     ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
-    EXPECT_EQ(0, prefetch_url_loader_called_);
+    EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
     NavigateToURL(shell(), prefetch_page_url);
-    script_sxg_prefetch_waiter.Run();
-    EXPECT_EQ(1, script_sxg_fetch_count);
-    if (check_script_fetch_count) {
-      EXPECT_EQ(0, script_fetch_count);
-    }
-    EXPECT_EQ(2, prefetch_url_loader_called_);
 
     WaitUntilLoaded(sxg_page_url);
     WaitUntilLoaded(sxg_script_url);
+
+    EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+    if (check_script_fetch_count) {
+      EXPECT_EQ(0, script_request_counter->GetRequestCount());
+    }
+    EXPECT_EQ(2, GetPrefetchURLLoaderCallCount());
 
     const auto cached_exchanges = GetCachedExchanges(shell());
     EXPECT_EQ(2u, cached_exchanges.size());
@@ -618,9 +600,10 @@ class SignedExchangeSubresourcePrefetchBrowserTest
     //   The script is loaded from the server.
     NavigateToURLAndWaitTitle(sxg_page_url, expected_title);
 
-    EXPECT_EQ(1, script_sxg_fetch_count);
+    EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
     if (check_script_fetch_count) {
-      EXPECT_EQ(expected_script_fetch_count, script_fetch_count);
+      EXPECT_EQ(expected_script_fetch_count,
+                script_request_counter->GetRequestCount());
     }
   }
 
@@ -646,21 +629,16 @@ class SignedExchangeSubresourcePrefetchBrowserTest
       bool has_nosniff,
       const std::string& expected_title,
       network::CrossOriginReadBlocking::Action expected_action) {
-    int script_sxg_fetch_count = 0;
-    int script_fetch_count = 0;
     const char* prefetch_path = "/prefetch.html";
     const char* target_sxg_path = "/target.sxg";
     const char* target_path = "/target.html";
     const char* script_sxg_path = "/script_js.sxg";
     const char* script_path = "/script.js";
 
-    base::RunLoop script_sxg_prefetch_waiter;
-    RegisterRequestMonitor(embedded_test_server(), script_sxg_path,
-                           &script_sxg_fetch_count,
-                           &script_sxg_prefetch_waiter);
-    base::RunLoop script_prefetch_waiter;
-    RegisterRequestMonitor(embedded_test_server(), script_path,
-                           &script_fetch_count, &script_prefetch_waiter);
+    auto script_sxg_request_counter = RequestCounter::CreateAndMonitor(
+        embedded_test_server(), script_sxg_path);
+    auto script_request_counter =
+        RequestCounter::CreateAndMonitor(embedded_test_server(), script_path);
     RegisterRequestHandler(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -716,12 +694,12 @@ class SignedExchangeSubresourcePrefetchBrowserTest
     ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
     NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
-    script_sxg_prefetch_waiter.Run();
-    EXPECT_EQ(1, script_sxg_fetch_count);
-    EXPECT_EQ(0, script_fetch_count);
 
     WaitUntilLoaded(target_sxg_url);
     WaitUntilLoaded(script_sxg_url);
+
+    EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+    EXPECT_EQ(0, script_request_counter->GetRequestCount());
 
     EXPECT_EQ(2u, GetCachedExchanges(shell()).size());
 
@@ -735,8 +713,8 @@ class SignedExchangeSubresourcePrefetchBrowserTest
                                    expected_action, 1);
     }
 
-    EXPECT_EQ(1, script_sxg_fetch_count);
-    EXPECT_EQ(0, script_fetch_count);
+    EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+    EXPECT_EQ(0, script_request_counter->GetRequestCount());
   }
 
  private:
@@ -814,10 +792,6 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
                        ImageSrcsetAndSizes) {
-  int image1_sxg_fetch_count = 0;
-  int image1_fetch_count = 0;
-  int image2_sxg_fetch_count = 0;
-  int image2_fetch_count = 0;
   const char* prefetch_path = "/prefetch.html";
   const char* target_sxg_path = "/target.sxg";
   const char* target_path = "/target.html";
@@ -826,18 +800,14 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   const char* image2_sxg_path = "/image2_png.sxg";
   const char* image2_path = "/image2.png";
 
-  base::RunLoop image1_sxg_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), image1_sxg_path,
-                         &image1_sxg_fetch_count, &image1_sxg_prefetch_waiter);
-  base::RunLoop image1_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), image1_path,
-                         &image1_fetch_count, &image1_prefetch_waiter);
-  base::RunLoop image2_sxg_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), image2_sxg_path,
-                         &image2_sxg_fetch_count, &image2_sxg_prefetch_waiter);
-  base::RunLoop image2_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), image2_path,
-                         &image2_fetch_count, &image2_prefetch_waiter);
+  auto image1_sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), image1_sxg_path);
+  auto image2_sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), image2_sxg_path);
+  auto image1_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), image1_path);
+  auto image2_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), image2_path);
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -913,14 +883,13 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
-  image1_sxg_prefetch_waiter.Run();
-  EXPECT_EQ(1, image1_sxg_fetch_count);
-  EXPECT_EQ(0, image1_fetch_count);
-  EXPECT_EQ(0, image2_sxg_fetch_count);
-  EXPECT_EQ(0, image2_fetch_count);
-
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(image1_sxg_url);
+
+  EXPECT_EQ(1, image1_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, image1_request_counter->GetRequestCount());
+  EXPECT_EQ(0, image2_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, image2_request_counter->GetRequestCount());
 
   const auto cached_exchanges = GetCachedExchanges(shell());
   EXPECT_EQ(2u, cached_exchanges.size());
@@ -939,18 +908,14 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
 
   NavigateToURLAndWaitTitle(target_sxg_url, "done");
 
-  EXPECT_EQ(1, image1_sxg_fetch_count);
-  EXPECT_EQ(0, image1_fetch_count);
-  EXPECT_EQ(0, image2_sxg_fetch_count);
-  EXPECT_EQ(0, image2_fetch_count);
+  EXPECT_EQ(1, image1_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, image1_request_counter->GetRequestCount());
+  EXPECT_EQ(0, image2_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, image2_request_counter->GetRequestCount());
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
                        MultipleResources) {
-  int script1_sxg_fetch_count = 0;
-  int script1_fetch_count = 0;
-  int script2_sxg_fetch_count = 0;
-  int script2_fetch_count = 0;
   const char* prefetch_path = "/prefetch.html";
   const char* target_sxg_path = "/target.sxg";
   const char* target_path = "/target.html";
@@ -959,23 +924,17 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   const char* script2_sxg_path = "/script2_js.sxg";
   const char* script2_path = "/script2.js";
 
-  base::RunLoop script1_sxg_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script1_sxg_path,
-                         &script1_sxg_fetch_count,
-                         &script1_sxg_prefetch_waiter);
-  base::RunLoop script1_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script1_path,
-                         &script1_fetch_count, &script1_prefetch_waiter);
-  base::RunLoop script2_sxg_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script2_sxg_path,
-                         &script2_sxg_fetch_count,
-                         &script2_sxg_prefetch_waiter);
-  base::RunLoop script2_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script2_path,
-                         &script2_fetch_count, &script2_prefetch_waiter);
+  auto script1_sxg_request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), script1_sxg_path);
+  auto script2_sxg_request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), script2_sxg_path);
+  auto script1_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), script1_path);
+  auto script2_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), script2_path);
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
 
   const GURL target_sxg_url = embedded_test_server()->GetURL(target_sxg_path);
   const GURL target_url = embedded_test_server()->GetURL(target_path);
@@ -1034,16 +993,15 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
-  script1_sxg_prefetch_waiter.Run();
-  script2_sxg_prefetch_waiter.Run();
-  EXPECT_EQ(1, script1_sxg_fetch_count);
-  EXPECT_EQ(0, script1_fetch_count);
-  EXPECT_EQ(1, script2_sxg_fetch_count);
-  EXPECT_EQ(0, script2_fetch_count);
 
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(script1_sxg_url);
   WaitUntilLoaded(script2_sxg_url);
+
+  EXPECT_EQ(1, script1_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, script1_request_counter->GetRequestCount());
+  EXPECT_EQ(1, script2_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, script2_request_counter->GetRequestCount());
 
   const auto cached_exchanges = GetCachedExchanges(shell());
   EXPECT_EQ(3u, cached_exchanges.size());
@@ -1072,31 +1030,27 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   // are also loaded from PrefetchedSignedExchangeCache.
   NavigateToURLAndWaitTitle(target_sxg_url, "done");
 
-  EXPECT_EQ(1, script1_sxg_fetch_count);
-  EXPECT_EQ(0, script1_fetch_count);
-  EXPECT_EQ(1, script2_sxg_fetch_count);
-  EXPECT_EQ(0, script2_fetch_count);
+  EXPECT_EQ(1, script1_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, script1_request_counter->GetRequestCount());
+  EXPECT_EQ(1, script2_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, script2_request_counter->GetRequestCount());
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
                        IntegrityMismatch) {
-  int script_sxg_fetch_count = 0;
-  int script_fetch_count = 0;
   const char* prefetch_path = "/prefetch.html";
   const char* target_sxg_path = "/target.sxg";
   const char* target_path = "/target.html";
   const char* script_path = "/script.js";
   const char* script_sxg_path = "/script_js.sxg";
 
-  base::RunLoop script_sxg_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script_sxg_path,
-                         &script_sxg_fetch_count, &script_sxg_prefetch_waiter);
-  base::RunLoop script_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script_path,
-                         &script_fetch_count, &script_prefetch_waiter);
+  auto script_sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), script_sxg_path);
+  auto script_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), script_path);
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
 
   const GURL target_sxg_url = embedded_test_server()->GetURL(target_sxg_path);
   const GURL target_url = embedded_test_server()->GetURL(target_path);
@@ -1142,27 +1096,24 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
-  script_sxg_prefetch_waiter.Run();
-  EXPECT_EQ(1, script_sxg_fetch_count);
-  EXPECT_EQ(0, script_fetch_count);
 
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(script_sxg_url);
+
+  EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, script_request_counter->GetRequestCount());
 
   // The value of "header-integrity" in "allowed-alt-sxg" link header of the
   // inner response doesn't match the actual header integrity of script_js.sxg.
   // So the script request must go to the server.
   NavigateToURLAndWaitTitle(target_sxg_url, "from server");
 
-  EXPECT_EQ(1, script_fetch_count);
+  EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(1, script_request_counter->GetRequestCount());
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
                        MultipleResources_IntegrityMismatch) {
-  int script1_sxg_fetch_count = 0;
-  int script1_fetch_count = 0;
-  int script2_sxg_fetch_count = 0;
-  int script2_fetch_count = 0;
   const char* prefetch_path = "/prefetch.html";
   const char* target_sxg_path = "/target.sxg";
   const char* target_path = "/target.html";
@@ -1171,23 +1122,17 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   const char* script2_sxg_path = "/script2_js.sxg";
   const char* script2_path = "/script2.js";
 
-  base::RunLoop script1_sxg_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script1_sxg_path,
-                         &script1_sxg_fetch_count,
-                         &script1_sxg_prefetch_waiter);
-  base::RunLoop script1_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script1_path,
-                         &script1_fetch_count, &script1_prefetch_waiter);
-  base::RunLoop script2_sxg_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script2_sxg_path,
-                         &script2_sxg_fetch_count,
-                         &script2_sxg_prefetch_waiter);
-  base::RunLoop script2_prefetch_waiter;
-  RegisterRequestMonitor(embedded_test_server(), script2_path,
-                         &script2_fetch_count, &script2_prefetch_waiter);
+  auto script1_sxg_request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), script1_sxg_path);
+  auto script2_sxg_request_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), script2_sxg_path);
+  auto script1_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), script1_path);
+  auto script2_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), script2_path);
   RegisterRequestHandler(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  EXPECT_EQ(0, prefetch_url_loader_called_);
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
 
   const GURL target_sxg_url = embedded_test_server()->GetURL(target_sxg_path);
   const GURL target_url = embedded_test_server()->GetURL(target_path);
@@ -1251,16 +1196,15 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
-  script1_sxg_prefetch_waiter.Run();
-  script2_sxg_prefetch_waiter.Run();
-  EXPECT_EQ(1, script1_sxg_fetch_count);
-  EXPECT_EQ(0, script1_fetch_count);
-  EXPECT_EQ(1, script2_sxg_fetch_count);
-  EXPECT_EQ(0, script2_fetch_count);
 
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(script1_sxg_url);
   WaitUntilLoaded(script2_sxg_url);
+
+  EXPECT_EQ(1, script1_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, script1_request_counter->GetRequestCount());
+  EXPECT_EQ(1, script2_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, script2_request_counter->GetRequestCount());
 
   const auto cached_exchanges = GetCachedExchanges(shell());
   EXPECT_EQ(3u, cached_exchanges.size());
@@ -1270,10 +1214,10 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   // So the all script requests must go to the server.
   NavigateToURLAndWaitTitle(target_sxg_url, "from server");
 
-  EXPECT_EQ(1, script1_sxg_fetch_count);
-  EXPECT_EQ(1, script1_fetch_count);
-  EXPECT_EQ(1, script2_sxg_fetch_count);
-  EXPECT_EQ(1, script2_fetch_count);
+  EXPECT_EQ(1, script1_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(1, script1_request_counter->GetRequestCount());
+  EXPECT_EQ(1, script2_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(1, script2_request_counter->GetRequestCount());
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest, CORS) {
