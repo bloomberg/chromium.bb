@@ -17,6 +17,8 @@
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/driver/configure_context.h"
+#include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
@@ -29,6 +31,7 @@
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/engine_impl/sync_encryption_handler_impl.h"
+#include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/nigori/nigori_model_type_processor.h"
 #include "components/sync/nigori/nigori_sync_bridge_impl.h"
 #include "components/sync/syncable/directory.h"
@@ -144,6 +147,34 @@ void SyncEngineBackend::OnInitializationComplete(
 
   ModelTypeSet new_control_types =
       registrar_->ConfigureDataTypes(ControlTypes(), ModelTypeSet());
+
+  ModelTypeConnector* model_type_connector =
+      sync_manager_->GetModelTypeConnector();
+  if (nigori_controller_) {
+    // Having non-null |nigori_controller_| means that USS implementation of
+    // Nigori is enabled.
+    // The controller for Nigori is not exposed to the UI thread or the
+    // DataTypeManager, so we need to start it here manually.
+    ConfigureContext configure_context;
+    configure_context.authenticated_account_id = authenticated_account_id_;
+    configure_context.cache_guid = sync_manager_->cache_guid();
+    // TODO(crbug.com/922900): investigate whether we want to use
+    // STORAGE_IN_MEMORY in Butter mode.
+    configure_context.storage_option = STORAGE_ON_DISK;
+    configure_context.configuration_start_time = base::Time::Now();
+    nigori_controller_->LoadModels(configure_context, base::DoNothing());
+    DCHECK_EQ(nigori_controller_->state(), DataTypeController::MODEL_LOADED);
+    // TODO(crbug.com/922900): Do we need to call RegisterNonBlockingType() for
+    // Nigori?
+    model_type_connector->ConnectNonBlockingType(
+        NIGORI, nigori_controller_->ActivateManuallyForNigori());
+  } else {
+    // Control types don't have DataTypeControllers, but they need to have
+    // update handlers registered in ModelTypeRegistry.
+    for (ModelType control_type : ControlTypes()) {
+      model_type_connector->RegisterDirectoryType(control_type, GROUP_PASSIVE);
+    }
+  }
 
   ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
@@ -309,13 +340,19 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   // Load the previously persisted set of invalidation versions into memory.
   last_invalidation_versions_ = params.invalidation_versions;
 
+  authenticated_account_id_ = params.authenticated_account_id;
+
   DCHECK(!registrar_);
   DCHECK(params.registrar);
   registrar_ = std::move(params.registrar);
 
   if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
+    auto nigori_processor = std::make_unique<NigoriModelTypeProcessor>();
+    nigori_controller_ = std::make_unique<ModelTypeController>(
+        NIGORI, std::make_unique<ForwardingModelTypeControllerDelegate>(
+                    nigori_processor->GetControllerDelegate().get()));
     sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
-        std::make_unique<NigoriModelTypeProcessor>(), &encryptor_);
+        std::move(nigori_processor), &encryptor_);
   } else {
     sync_encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
         &user_share_, &encryptor_, params.restored_key_for_bootstrapping,
@@ -471,8 +508,11 @@ void SyncEngineBackend::DoShutdown(ShutdownReason reason) {
 
   registrar_ = nullptr;
 
-  if (reason == DISABLE_SYNC)
+  if (reason == DISABLE_SYNC) {
+    // TODO(crbug.com/922900): We may want to remove Nigori data from the
+    // storage if USS Nigori implementation is enabled.
     syncable::Directory::DeleteDirectoryFiles(sync_data_folder_);
+  }
 
   host_.Reset();
   weak_ptr_factory_.InvalidateWeakPtrs();

@@ -32,6 +32,7 @@
 
 namespace syncer {
 
+class ModelTypeController;
 class SyncEngineImpl;
 
 class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
@@ -220,6 +221,13 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
 
   // The top-level syncapi entry point.  Lives on the sync thread.
   std::unique_ptr<SyncManager> sync_manager_;
+
+  // Required for |nigori_controller_| LoadModels().
+  std::string authenticated_account_id_;
+
+  // Initialized in OnInitializationComplete() iff USS implementation of Nigori
+  // is enabled.
+  std::unique_ptr<ModelTypeController> nigori_controller_;
 
   // Temporary holder of sync manager's initialization results. Set by
   // OnInitializeComplete, and consumed when we pass it via OnEngineInitialized

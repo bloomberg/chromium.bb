@@ -339,6 +339,11 @@ class SyncManager {
   // May be called from any thread.
   virtual UserShare* GetUserShare() = 0;
 
+  // Returns non-owning pointer to ModelTypeConnector. In contrast with
+  // ModelTypeConnectorProxy all calls are executed synchronously, thus the
+  // pointer should be used on sync thread.
+  virtual ModelTypeConnector* GetModelTypeConnector() = 0;
+
   // Returns an instance of the main interface for registering sync types with
   // sync engine.
   virtual std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() = 0;

@@ -198,6 +198,10 @@ UserShare* FakeSyncManager::GetUserShare() {
   return test_user_share_.user_share();
 }
 
+ModelTypeConnector* FakeSyncManager::GetModelTypeConnector() {
+  return &fake_model_type_connector_;
+}
+
 std::unique_ptr<ModelTypeConnector>
 FakeSyncManager::GetModelTypeConnectorProxy() {
   return std::make_unique<FakeModelTypeConnector>();

@@ -409,12 +409,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
     scheduler_->OnCredentialsUpdated();
   }
 
-  // Control types don't have DataTypeControllers, but they need to have
-  // update handlers registered in ModelTypeRegistry.
-  for (ModelType control_type : ControlTypes()) {
-    model_type_registry_->RegisterDirectoryType(control_type, GROUP_PASSIVE);
-  }
-
   NotifyInitializationSuccess();
 }
 
@@ -1002,6 +996,11 @@ UserShare* SyncManagerImpl::GetUserShare() {
   DCHECK(initialized_);
   DCHECK(share_);
   return share_;
+}
+
+ModelTypeConnector* SyncManagerImpl::GetModelTypeConnector() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return model_type_registry_.get();
 }
 
 std::unique_ptr<ModelTypeConnector>

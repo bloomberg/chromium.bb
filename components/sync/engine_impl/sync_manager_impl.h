@@ -91,6 +91,7 @@ class SyncManagerImpl
   void SaveChanges() override;
   void ShutdownOnSyncThread() override;
   UserShare* GetUserShare() override;
+  ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
   std::string cache_guid() override;
   std::string birthday() override;

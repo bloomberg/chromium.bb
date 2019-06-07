@@ -60,6 +60,17 @@ ModelTypeController::ModelTypeController(
 
 ModelTypeController::~ModelTypeController() {}
 
+std::unique_ptr<DataTypeActivationResponse>
+ModelTypeController::ActivateManuallyForNigori() {
+  // To avoid abuse of this temporary API, we restrict it to NIGORI.
+  DCHECK_EQ(NIGORI, type());
+  DCHECK_EQ(MODEL_LOADED, state_);
+  DCHECK(activation_response_);
+  state_ = RUNNING;
+  activated_ = true;  // Not relevant, but for consistency.
+  return std::move(activation_response_);
+}
+
 bool ModelTypeController::ShouldLoadModelBeforeConfigure() const {
   // USS datatypes require loading models because model controls storage where
   // data type context and progress marker are persisted.
