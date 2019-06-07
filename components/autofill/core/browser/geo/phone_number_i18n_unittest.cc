@@ -253,6 +253,14 @@ TEST(PhoneNumberI18NTest, PhoneNumbersMatch) {
   // Different numbers don't match.
   EXPECT_FALSE(PhoneNumbersMatch(ASCIIToUTF16("14158889999"),
                                  ASCIIToUTF16("1415888"), "US", "en-US"));
+
+  // Two empty numbers match.
+  EXPECT_TRUE(
+      PhoneNumbersMatch(base::string16(), base::string16(), "US", "en-US"));
+
+  // An empty and a non-empty number do not match.
+  EXPECT_FALSE(PhoneNumbersMatch(base::string16(), ASCIIToUTF16("5088585123"),
+                                 "US", "en-US"));
 }
 
 // Tests that the phone numbers are correctly formatted for the Payment
