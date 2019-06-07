@@ -24,8 +24,10 @@
  */
 
 // https://html.spec.whatwg.org/C/#the-source-element
-[HTMLConstructor]
-interface HTMLSourceElement : HTMLElement {
+[
+    Exposed=Window,
+    HTMLConstructor
+] interface HTMLSourceElement : HTMLElement {
     [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
     [CEReactions] attribute DOMString type;
 

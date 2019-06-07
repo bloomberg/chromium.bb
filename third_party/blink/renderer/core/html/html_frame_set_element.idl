@@ -22,6 +22,7 @@
 
 // FIXME: HTMLFrameSetElement should not have [OverrideBuiltins].
 [
+    Exposed=Window,
     HTMLConstructor,
     OverrideBuiltins
 ] interface HTMLFrameSetElement : HTMLElement {
