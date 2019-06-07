@@ -230,6 +230,29 @@ TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
   EXPECT_TRUE(CanOpenDateTimeChooser());
 }
 
+// A FileChooserClient which makes FileChooser::OpenFileChooser() success.
+class MockFileChooserClient
+    : public GarbageCollectedFinalized<MockFileChooserClient>,
+      public FileChooserClient {
+  USING_GARBAGE_COLLECTED_MIXIN(MockFileChooserClient);
+
+ public:
+  explicit MockFileChooserClient(LocalFrame* frame) : frame_(frame) {}
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(frame_);
+    FileChooserClient::Trace(visitor);
+  }
+
+ private:
+  // FilesChosen() and WillOpenPopup() are never called in the test.
+  void FilesChosen(FileChooserFileInfoList, const base::FilePath&) override {}
+  void WillOpenPopup() override {}
+
+  LocalFrame* FrameOrNull() const override { return frame_; }
+
+  Member<LocalFrame> frame_;
+};
+
 class FileChooserQueueTest : public testing::Test {
  protected:
   void SetUp() override {

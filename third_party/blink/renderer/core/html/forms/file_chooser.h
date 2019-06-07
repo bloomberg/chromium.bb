@@ -96,7 +96,7 @@ class FileChooser : public RefCounted<FileChooser> {
   // mojom::blink::FileChooser callback
   void DidChooseFiles(mojom::blink::FileChooserResultPtr result);
 
-  Persistent<FileChooserClient> client_;
+  WeakPersistent<FileChooserClient> client_;
   mojom::blink::FileChooserParamsPtr params_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
   mojom::blink::FileChooserPtr file_chooser_;
