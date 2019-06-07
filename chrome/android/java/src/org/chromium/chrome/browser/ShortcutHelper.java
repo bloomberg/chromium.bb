@@ -702,13 +702,12 @@ public class ShortcutHelper {
     }
 
     private static boolean shouldShowToastWhenAddingShortcut() {
-        return !isRequestPinShortcutSupported();
+        return !isRequestPinShortcutSupported() || FeatureUtilities.isNoTouchModeEnabled();
     }
 
     private static boolean isRequestPinShortcutSupported() {
         if (!sCheckedIfRequestPinShortcutSupported) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                    && !FeatureUtilities.isNoTouchModeEnabled()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 checkIfRequestPinShortcutSupported();
             }
             sCheckedIfRequestPinShortcutSupported = true;
