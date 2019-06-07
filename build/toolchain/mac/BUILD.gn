@@ -125,6 +125,10 @@ template("mac_toolchain") {
     cxx = compiler_prefix + _cxx
     ld = _cxx
 
+    # Set the explicit search path for clang++ so it uses the right linker
+    # binary.
+    ld += " -B " + mac_bin_path
+
     if (defined(toolchain_args.coverage_instrumentation_input_file)) {
       toolchain_coverage_instrumentation_input_file =
           toolchain_args.coverage_instrumentation_input_file
