@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
@@ -246,7 +246,7 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   MemoryTypeTracker memory_tracker_;
   std::vector<std::unique_ptr<SharedImageRepresentationFactoryRef>>
       shared_images_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   gles2::MockCopyTextureResourceManager* copy_texture_manager_;  // not owned
   GLuint next_fake_texture_client_id_ = 271828;
 };

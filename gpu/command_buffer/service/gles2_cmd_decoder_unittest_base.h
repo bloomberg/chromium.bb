@@ -11,7 +11,7 @@
 #include <array>
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -813,7 +813,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   SharedImageManager shared_image_manager_;
   scoped_refptr<ContextGroup> group_;
   MockGLStates gl_states_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   MockCopyTextureResourceManager* copy_texture_manager_;     // not owned
   MockCopyTexImageResourceManager* copy_tex_image_blitter_;  // not owned
