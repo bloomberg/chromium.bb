@@ -1488,7 +1488,7 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *xd = &x->e_mbd;
 
-  set_offsets(cpi, tile, x, mi_row, mi_col, bsize);
+  set_offsets_without_segment_id(cpi, tile, x, mi_row, mi_col, bsize);
   MB_MODE_INFO *mbmi = xd->mi[0];
   mbmi->partition = partition;
   update_state(cpi, tile_data, td, ctx, mi_row, mi_col, bsize, dry_run);
