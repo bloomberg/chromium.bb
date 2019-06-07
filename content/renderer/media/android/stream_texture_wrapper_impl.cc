@@ -168,6 +168,13 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;
 
+  // Normally, we have a factory.  However, if the gpu process is restarting,
+  // then we might not.
+  if (!factory_) {
+    init_cb.Run(false);
+    return;
+  }
+
   stream_texture_proxy_ =
       factory_->CreateProxy(&texture_id_, &texture_mailbox_);
   if (!stream_texture_proxy_) {

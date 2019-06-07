@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/android/stream_texture_wrapper_impl.h"
 
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -30,6 +31,18 @@ TEST_F(StreamTextureWrapperImplTest, ConstructionDestruction_ShouldSucceed) {
       StreamTextureWrapperImpl::Create(
           false, nullptr,
           blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+  // Since we provided a null factory, make sure that it also doesn't crash if
+  // we try to initialize it.
+  int result = 0;
+  stream_texture_wrapper->Initialize(
+      base::DoNothing(), gfx::Size(0, 0),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+      base::BindRepeating(
+          [](int* result_out, bool result) { *result_out = result ? 1 : 2; },
+          &result));
+  base::RunLoop().RunUntilIdle();
+  // Should be called with false.
+  EXPECT_EQ(result, 2);
 }
 
 }  // Content
