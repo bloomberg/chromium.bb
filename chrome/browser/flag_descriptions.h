@@ -981,9 +981,6 @@ extern const char kSkiaRendererDescription[];
 extern const char kHistoryManipulationIntervention[];
 extern const char kHistoryManipulationInterventionDescription[];
 
-extern const char kSupervisedUserCommittedInterstitialsName[];
-extern const char kSupervisedUserCommittedInterstitialsDescription[];
-
 extern const char kEnableDrawOcclusionName[];
 extern const char kEnableDrawOcclusionDescription[];
 

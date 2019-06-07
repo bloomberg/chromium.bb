@@ -1657,12 +1657,6 @@ const char kHistoryManipulationInterventionDescription[] =
     "If a page does a client side redirect or adds to the history without a "
     "user gesture, then skip it on back/forward UI.";
 
-const char kSupervisedUserCommittedInterstitialsName[] =
-    "Enable Supervised User Committed Interstitials";
-const char kSupervisedUserCommittedInterstitialsDescription[] =
-    "Use committed error pages instead of transient navigation entries for "
-    "supervised user interstitials";
-
 const char kSilentDebuggerExtensionApiName[] = "Silent Debugging";
 const char kSilentDebuggerExtensionApiDescription[] =
     "Do not show the infobar when an extension attaches to a page via "

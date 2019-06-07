@@ -82,10 +82,7 @@ class SupervisedUserNavigationObserver
       const base::Callback<
           void(SupervisedUserNavigationThrottle::CallbackActions)>& callback);
 
-  void OnInterstitialResult(
-      const base::Callback<
-          void(SupervisedUserNavigationThrottle::CallbackActions)>& callback,
-      bool result);
+  void OnInterstitialDone();
 
   // supervised_user::mojom::SupervisedUserCommands implementation. Should not
   // be called when an interstitial is no longer showing. This should be

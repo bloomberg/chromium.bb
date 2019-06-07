@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/common/chrome_features.h"
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -66,12 +64,10 @@ void SupervisedUserNavigationObserver::OnRequestBlocked(
 
 void SupervisedUserNavigationObserver::DidFinishNavigation(
       content::NavigationHandle* navigation_handle) {
-  // With committed interstitials on, if this is a different navigation than the
-  // one that triggered the interstitial, clear is_showing_interstitial_
+  // If this is a different navigation than the one that triggered the
+  // interstitial, clear is_showing_interstitial_
   if (is_showing_interstitial_ &&
-      navigation_handle->GetNavigationId() != interstitial_navigation_id_ &&
-      base::FeatureList::IsEnabled(
-          features::kSupervisedUserCommittedInterstitials)) {
+      navigation_handle->GetNavigationId() != interstitial_navigation_id_) {
     is_showing_interstitial_ = false;
   }
 
@@ -150,22 +146,8 @@ void SupervisedUserNavigationObserver::URLFilterCheckCallback(
 
   if (!is_showing_interstitial_ &&
       behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK) {
-    if (base::FeatureList::IsEnabled(
-            features::kSupervisedUserCommittedInterstitials)) {
-      web_contents()->GetController().Reload(content::ReloadType::NORMAL,
-                                             false);
-      return;
-    }
-    // TODO(carlosil): For now, we pass a 0 as the navigation id causing the
-    // interstitial for the non-committed interstitials case since we don't have
-    // the real id here, this doesn't cause issues since the navigation id is
-    // not used when committed interstitials are not enabled. This will be
-    // removed once committed interstitials are the only code path.
-    const bool initial_page_load = false;
-    MaybeShowInterstitial(
-        url, reason, initial_page_load, 0,
-        base::Callback<void(
-            SupervisedUserNavigationThrottle::CallbackActions)>());
+    web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
+    return;
   }
 }
 
@@ -178,54 +160,30 @@ void SupervisedUserNavigationObserver::MaybeShowInterstitial(
         void(SupervisedUserNavigationThrottle::CallbackActions)>& callback) {
   interstitial_navigation_id_ = navigation_id;
   is_showing_interstitial_ = true;
-  base::Callback<void(bool)> wrapped_callback =
-      base::Bind(&SupervisedUserNavigationObserver::OnInterstitialResult,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
-  if (base::FeatureList::IsEnabled(
-          features::kSupervisedUserCommittedInterstitials)) {
-    interstitial_ = SupervisedUserInterstitial::Create(
-        web_contents(), url, reason, initial_page_load, wrapped_callback);
-    callback.Run(SupervisedUserNavigationThrottle::CallbackActions::
-                     kCancelWithInterstitial);
-    return;
-  }
-  SupervisedUserInterstitial::Show(web_contents(), url, reason,
-                                   initial_page_load, wrapped_callback);
+  interstitial_ = SupervisedUserInterstitial::Create(
+      web_contents(), url, reason, initial_page_load,
+      base::BindOnce(&SupervisedUserNavigationObserver::OnInterstitialDone,
+                     weak_ptr_factory_.GetWeakPtr()));
+  callback.Run(SupervisedUserNavigationThrottle::CallbackActions::
+                   kCancelWithInterstitial);
 }
 
-void SupervisedUserNavigationObserver::OnInterstitialResult(
-    const base::Callback<
-        void(SupervisedUserNavigationThrottle::CallbackActions)>& callback,
-    bool result) {
+void SupervisedUserNavigationObserver::OnInterstitialDone() {
   is_showing_interstitial_ = false;
-  // If committed interstitials are enabled, there is no navigation to cancel or
-  // defer at this point, so just clear the is_showing_interstitial variable.
-  if (callback && !base::FeatureList::IsEnabled(
-                      features::kSupervisedUserCommittedInterstitials))
-    callback.Run(result ? SupervisedUserNavigationThrottle::CallbackActions::
-                              kContinueNavigation
-                        : SupervisedUserNavigationThrottle::CallbackActions::
-                              kCancelNavigation);
 }
 
 void SupervisedUserNavigationObserver::GoBack() {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kSupervisedUserCommittedInterstitials));
   if (interstitial_ && is_showing_interstitial_)
     interstitial_->CommandReceived("\"back\"");
 }
 
 void SupervisedUserNavigationObserver::RequestPermission(
     RequestPermissionCallback callback) {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kSupervisedUserCommittedInterstitials));
   if (interstitial_ && is_showing_interstitial_)
     interstitial_->RequestPermission(std::move(callback));
 }
 
 void SupervisedUserNavigationObserver::Feedback() {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kSupervisedUserCommittedInterstitials));
   if (interstitial_ && is_showing_interstitial_)
     interstitial_->CommandReceived("\"feedback\"");
 }

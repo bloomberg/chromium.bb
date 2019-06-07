@@ -18,7 +18,6 @@
 #include "url/gurl.h"
 
 namespace content {
-class InterstitialPage;
 class WebContents;
 }
 
@@ -36,18 +35,12 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   // Interstitial type, used for testing.
   static const content::InterstitialPageDelegate::TypeID kTypeForTesting;
 
-  static void Show(content::WebContents* web_contents,
-                   const GURL& url,
-                   supervised_user_error_page::FilteringBehaviorReason reason,
-                   bool initial_page_load,
-                   const base::Callback<void(bool)>& callback);
-
   static std::unique_ptr<SupervisedUserInterstitial> Create(
       content::WebContents* web_contents,
       const GURL& url,
       supervised_user_error_page::FilteringBehaviorReason reason,
       bool initial_page_load,
-      const base::Callback<void(bool)>& callback);
+      base::OnceClosure callback);
 
   static std::string GetHTMLContents(
       Profile* profile,
@@ -70,7 +63,7 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
       const GURL& url,
       supervised_user_error_page::FilteringBehaviorReason reason,
       bool initial_page_load,
-      const base::Callback<void(bool)>& callback);
+      base::OnceClosure callback);
 
   void Init();
 
@@ -84,8 +77,6 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   void OnURLFilterChanged() override;
   // TODO(treib): Also listen to OnCustodianInfoChanged and update as required.
 
-  void OnAccessRequestAdded(bool success);
-
   // Returns whether we should now proceed on a previously-blocked URL.
   // Called initially before the interstitial is shown (to catch race
   // conditions), or when the URL filtering prefs change. Note that this does
@@ -97,7 +88,7 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   // the request.
   void MoveAwayFromCurrentPage();
 
-  void DispatchContinueRequest(bool continue_request);
+  void OnInterstitialDone();
 
   void ProceedInternal();
 
@@ -108,20 +99,10 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
 
   Profile* profile_;
 
-  content::InterstitialPage* interstitial_page_;  // Owns us.
-
   GURL url_;
   supervised_user_error_page::FilteringBehaviorReason reason_;
 
-  // True if the interstitial was shown while loading a page (with a pending
-  // navigation), false if it was shown over an already loaded page.
-  // Interstitials behave very differently in those cases.
-  bool initial_page_load_;
-
-  // True if we have already called Proceed() on the interstitial page.
-  bool proceeded_;
-
-  base::Callback<void(bool)> callback_;
+  base::OnceClosure callback_;
 
   ScopedObserver<SupervisedUserService, SupervisedUserInterstitial>
       scoped_observer_;

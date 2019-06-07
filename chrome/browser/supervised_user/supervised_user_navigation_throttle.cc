@@ -5,7 +5,6 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
-#include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -239,24 +237,16 @@ void SupervisedUserNavigationThrottle::OnCheckDone(
 void SupervisedUserNavigationThrottle::OnInterstitialResult(
     CallbackActions action) {
   switch (action) {
-    case kContinueNavigation: {
-      Resume();
-      break;
-    }
     case kCancelNavigation: {
       CancelDeferredNavigation(CANCEL);
       break;
     }
     case kCancelWithInterstitial: {
-      DCHECK(base::FeatureList::IsEnabled(
-          features::kSupervisedUserCommittedInterstitials));
       std::string interstitial_html =
           SupervisedUserInterstitial::GetHTMLContents(
               Profile::FromBrowserContext(
                   navigation_handle()->GetWebContents()->GetBrowserContext()),
               reason_);
-      // If committed interstitials are enabled, include the HTML content in the
-      // ThrottleCheckResult.
       CancelDeferredNavigation(content::NavigationThrottle::ThrottleCheckResult(
           CANCEL, net::ERR_BLOCKED_BY_CLIENT, interstitial_html));
     }

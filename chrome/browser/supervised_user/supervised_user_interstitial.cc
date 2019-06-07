@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -120,36 +118,16 @@ const content::InterstitialPageDelegate::TypeID
     SupervisedUserInterstitial::kTypeForTesting =
         &SupervisedUserInterstitial::kTypeForTesting;
 
-// TODO(carlosil): Remove Show function and the rest of non-committed
-// interstitials code once committed interstitials are the only code path.
-// static
-void SupervisedUserInterstitial::Show(
-    WebContents* web_contents,
-    const GURL& url,
-    supervised_user_error_page::FilteringBehaviorReason reason,
-    bool initial_page_load,
-    const base::Callback<void(bool)>& callback) {
-  DCHECK(!base::FeatureList::IsEnabled(
-      features::kSupervisedUserCommittedInterstitials));
-  // |interstitial_page_| is responsible for deleting the interstitial.
-  SupervisedUserInterstitial* interstitial = new SupervisedUserInterstitial(
-      web_contents, url, reason, initial_page_load, callback);
-
-  interstitial->Init();
-}
-
 // static
 std::unique_ptr<SupervisedUserInterstitial> SupervisedUserInterstitial::Create(
     WebContents* web_contents,
     const GURL& url,
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool initial_page_load,
-    const base::Callback<void(bool)>& callback) {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kSupervisedUserCommittedInterstitials));
+    base::OnceClosure callback) {
   std::unique_ptr<SupervisedUserInterstitial> interstitial(
       new SupervisedUserInterstitial(web_contents, url, reason,
-                                     initial_page_load, callback));
+                                     initial_page_load, std::move(callback)));
 
   // Caller is responsible for deleting the interstitial.
   interstitial->Init();
@@ -162,15 +140,12 @@ SupervisedUserInterstitial::SupervisedUserInterstitial(
     const GURL& url,
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool initial_page_load,
-    const base::Callback<void(bool)>& callback)
+    base::OnceClosure callback)
     : web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      interstitial_page_(NULL),
       url_(url),
       reason_(reason),
-      initial_page_load_(initial_page_load),
-      proceeded_(false),
-      callback_(callback),
+      callback_(std::move(callback)),
       scoped_observer_(this),
       weak_ptr_factory_(this) {}
 
@@ -207,15 +182,6 @@ void SupervisedUserInterstitial::Init() {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
   scoped_observer_.Add(supervised_user_service);
-
-  if (!base::FeatureList::IsEnabled(
-          features::kSupervisedUserCommittedInterstitials)) {
-    // If committed interstitials are enabled we do not create an
-    // interstitial_page
-    interstitial_page_ = content::InterstitialPage::Create(
-        web_contents_, initial_page_load_, url_, this);
-    interstitial_page_->Show();
-  }
 }
 
 // static
@@ -259,12 +225,7 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
     UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand",
                               BACK,
                               HISTOGRAM_BOUNDING_VALUE);
-    if (base::FeatureList::IsEnabled(
-            features::kSupervisedUserCommittedInterstitials)) {
-      DontProceedInternal();
-    } else {
-      interstitial_page_->DontProceed();
-    }
+    DontProceedInternal();
     return;
   }
 
@@ -275,9 +236,7 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
 
     SupervisedUserService* supervised_user_service =
         SupervisedUserServiceFactory::GetForProfile(profile_);
-    supervised_user_service->AddURLAccessRequest(
-        url_, base::Bind(&SupervisedUserInterstitial::OnAccessRequestAdded,
-                         weak_ptr_factory_.GetWeakPtr()));
+    supervised_user_service->AddURLAccessRequest(url_, base::DoNothing());
     return;
   }
 
@@ -335,29 +294,7 @@ SupervisedUserInterstitial::GetTypeForTesting() const {
 
 void SupervisedUserInterstitial::OnURLFilterChanged() {
   if (ShouldProceed()) {
-    if (base::FeatureList::IsEnabled(
-            features::kSupervisedUserCommittedInterstitials)) {
-      ProceedInternal();
-    } else {
-      // Interstitial page deletes the interstitial when proceeding but not
-      // synchronously, so a check is required to avoid calling proceed twice.
-      if (!proceeded_)
-        interstitial_page_->Proceed();
-      proceeded_ = true;
-    }
-  }
-}
-
-void SupervisedUserInterstitial::OnAccessRequestAdded(bool success) {
-  DCHECK(!base::FeatureList::IsEnabled(
-      features::kSupervisedUserCommittedInterstitials));
-  VLOG(1) << "Sent access request for " << url_.spec()
-          << (success ? " successfully" : " unsuccessfully");
-  std::string jsFunc =
-      base::StringPrintf("setRequestStatus(%s);", success ? "true" : "false");
-  if (interstitial_page_->GetMainFrame()) {
-    interstitial_page_->GetMainFrame()->ExecuteJavaScript(
-        base::ASCIIToUTF16(jsFunc), base::NullCallback());
+    ProceedInternal();
   }
 }
 
@@ -382,20 +319,6 @@ void SupervisedUserInterstitial::MoveAwayFromCurrentPage() {
   if (web_contents_->IsBeingDestroyed())
     return;
 
-  // If the interstitial was shown during a page load and there is no history
-  // entry to go back to, attempt to close the tab.
-  // This check is skipped when committed interstitials are on, because all
-  // interstitials are treated as initial page loads in this case, the case
-  // where there is nothing to go back to will be handled by the default case at
-  // the end.
-  if (!base::FeatureList::IsEnabled(
-          features::kSupervisedUserCommittedInterstitials) &&
-      initial_page_load_) {
-    if (web_contents_->GetController().IsInitialBlankNavigation())
-      TabCloser::MaybeClose(web_contents_);
-    return;
-  }
-
   // If the interstitial was shown over an existing page, navigate back from
   // that page. If that is not possible, attempt to close the entire tab.
   if (web_contents_->GetController().CanGoBack()) {
@@ -406,9 +329,8 @@ void SupervisedUserInterstitial::MoveAwayFromCurrentPage() {
   TabCloser::MaybeClose(web_contents_);
 }
 
-void SupervisedUserInterstitial::DispatchContinueRequest(
-    bool continue_request) {
-  callback_.Run(continue_request);
+void SupervisedUserInterstitial::OnInterstitialDone() {
+  std::move(callback_).Run();
 
   // After this, the WebContents may be destroyed. Make sure we don't try to use
   // it again.
@@ -416,17 +338,15 @@ void SupervisedUserInterstitial::DispatchContinueRequest(
 }
 
 void SupervisedUserInterstitial::ProceedInternal() {
-  if (base::FeatureList::IsEnabled(
-          features::kSupervisedUserCommittedInterstitials) &&
-      web_contents_) {
+  if (web_contents_) {
     // In the committed interstitials case, there will be nothing to resume, so
     // refresh instead.
     web_contents_->GetController().Reload(content::ReloadType::NORMAL, true);
   }
-  DispatchContinueRequest(true);
+  OnInterstitialDone();
 }
 
 void SupervisedUserInterstitial::DontProceedInternal() {
   MoveAwayFromCurrentPage();
-  DispatchContinueRequest(false);
+  OnInterstitialDone();
 }

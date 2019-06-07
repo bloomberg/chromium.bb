@@ -2939,12 +2939,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kViewsCastDialog)},
 #endif  // defined(TOOLKIT_VIEWS)
 
-    {"SupervisedUserCommittedInterstitials",
-     flag_descriptions::kSupervisedUserCommittedInterstitialsName,
-     flag_descriptions::kSupervisedUserCommittedInterstitialsDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(features::kSupervisedUserCommittedInterstitials)},
-
 #if defined(OS_ANDROID)
     {"enable-horizontal-tab-switcher",
      flag_descriptions::kHorizontalTabSwitcherAndroidName,

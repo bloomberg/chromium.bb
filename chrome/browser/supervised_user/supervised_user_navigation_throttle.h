@@ -17,11 +17,7 @@
 
 class SupervisedUserNavigationThrottle : public content::NavigationThrottle {
  public:
-  enum CallbackActions {
-    kContinueNavigation = 0,
-    kCancelNavigation,
-    kCancelWithInterstitial
-  };
+  enum CallbackActions { kCancelNavigation = 0, kCancelWithInterstitial };
 
   // Returns a new throttle for the given navigation, or nullptr if no
   // throttling is required.

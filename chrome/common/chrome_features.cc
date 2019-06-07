@@ -618,11 +618,6 @@ const base::Feature kNativeSmb{"NativeSmb", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSoundContentSetting{"SoundContentSetting",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disabled committed interstitials for Supervised User
-// interstitials.
-const base::Feature kSupervisedUserCommittedInterstitials{
-    "SupervisedUserCommittedInterstitials", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Enables or disables chrome://sys-internals.
 const base::Feature kSysInternals{"SysInternals",
