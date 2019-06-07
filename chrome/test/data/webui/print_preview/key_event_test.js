@@ -30,7 +30,7 @@ cr.define('key_event_test', function() {
           print_preview_test_utils.getDefaultInitialSettings();
       nativeLayer = new print_preview.NativeLayerStub();
       nativeLayer.setInitialSettings(initialSettings);
-      // Use advanced settings so that we can test with the paper-button.
+      // Use advanced settings so that we can test with the cr-button.
       nativeLayer.setLocalDestinationCapabilities(
           print_preview_test_utils.getCddTemplateWithAdvancedSettings(
               1, initialSettings.printerName));
@@ -99,18 +99,18 @@ cr.define('key_event_test', function() {
 
     // Tests that the enter key does not trigger a call to print if the event
     // comes from a button.
-    test(assert(TestNames.EnterOnButtonDoesNotPrint), function() {
+    test(assert(TestNames.EnterOnButtonDoesNotPrint), async () => {
       const moreSettingsElement =
           page.$$('print-preview-sidebar').$$('print-preview-more-settings');
       moreSettingsElement.$.label.click();
-      const whenKeyEventFired = test_util.eventToPromise('keydown', page);
-      MockInteractions.keyEventOn(
-          page.$$('print-preview-sidebar')
-              .$$('print-preview-advanced-options-settings')
-              .$$('paper-button'),
-          'keydown', 'Enter', [], 'Enter');
-      return whenKeyEventFired.then(
-          () => assertEquals(0, nativeLayer.getCallCount('print')));
+      const button = page.$$('print-preview-sidebar')
+                         .$$('print-preview-advanced-options-settings')
+                         .$$('cr-button');
+      const whenKeyEventFired = test_util.eventToPromise('keydown', button);
+      MockInteractions.keyEventOn(button, 'keydown', 'Enter', [], 'Enter');
+      await whenKeyEventFired;
+      await PolymerTest.flushTasks();
+      assertEquals(0, nativeLayer.getCallCount('print'));
     });
 
     // Tests that the enter key does not trigger a call to print if the event

@@ -209,7 +209,7 @@ Polymer({
         this.state === print_preview.State.READY &&
         this.openDialogs_.length === 0) {
       const activeElementTag = e.path[0].tagName;
-      if (['PAPER-BUTTON', 'BUTTON', 'SELECT', 'A', 'CR-CHECKBOX'].includes(
+      if (['CR-BUTTON', 'BUTTON', 'SELECT', 'A', 'CR-CHECKBOX'].includes(
               activeElementTag)) {
         return;
       }

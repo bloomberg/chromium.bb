@@ -134,13 +134,12 @@ cr.define('header_test', function() {
     // See https://crbug.com/880562.
     test(assert(TestNames.ButtonOrder), function() {
       // Verify that there are only 2 buttons.
-      assertEquals(
-          2, header.shadowRoot.querySelectorAll('paper-button').length);
+      assertEquals(2, header.shadowRoot.querySelectorAll('cr-button').length);
 
-      const firstButton = header.$$('paper-button:first-child');
-      const lastButton = header.$$('paper-button:last-child');
-      const printButton = header.$$('paper-button.action-button');
-      const cancelButton = header.$$('paper-button.cancel-button');
+      const firstButton = header.$$('cr-button:first-child');
+      const lastButton = header.$$('cr-button:last-child');
+      const printButton = header.$$('cr-button.action-button');
+      const cancelButton = header.$$('cr-button.cancel-button');
 
       if (cr.isWindows) {
         // On Windows, the print button is on the left.

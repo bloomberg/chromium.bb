@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <!-- The imports below are needed as an action-link is added to the promo-text
   div to create the cloud print "Sign in" link when this element is
@@ -16,7 +16,6 @@
 <link rel="import" href="chrome://resources/html/list_property_update_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../metrics.html">
 <link rel="import" href="../native_layer.html">
@@ -36,7 +35,7 @@
 <dom-module id="print-preview-destination-dialog">
   <template>
     <style include="print-preview-shared action-link md-select cr-hidden-style
-        throbber paper-button-style">
+        throbber">
       #dialog {
         --cr-dialog-native: {
           height: calc(100vh - 2 * var(--print-preview-dialog-margin));
@@ -79,7 +78,7 @@
         justify-content: space-between;
       }
 
-      paper-button {
+      cr-button {
         font-size: calc(12 / 13 * 1em);
       }
 
@@ -131,11 +130,11 @@
         padding: 12px 0;
       }
 
-      #invitationPromo paper-button {
+      #invitationPromo cr-button {
         margin: 0 4px;
       }
 
-      :host-context(html:not([dark])) #invitationPromo paper-button {
+      :host-context(html:not([dark])) #invitationPromo cr-button {
         background-color: white;
       }
 
@@ -181,12 +180,12 @@
         </print-preview-provisional-destination-resolver>
       </div>
       <div slot="button-container">
-        <paper-button on-click="onOpenSettingsPrintPage_">
+        <cr-button on-click="onOpenSettingsPrintPage_">
           $i18n{manage}
-        </paper-button>
-        <paper-button class="cancel-button" on-click="onCancelButtonClick_">
+        </cr-button>
+        <cr-button class="cancel-button" on-click="onCancelButtonClick_">
           $i18n{cancel}
-        </paper-button>
+        </cr-button>
       </div>
       <div id="promos" slot="footer" hidden="[[!shouldShowFooter_(
           shouldShowCloudPrintPromo_, invitation_)]]">
@@ -200,12 +199,12 @@
         <div class="promo" id="invitationPromo" hidden="[[!invitation_]]">
           <div inner-h-t-m-l="[[getInvitationText_(invitation_)]]"></div>
           <div class="invitation-buttons">
-            <paper-button on-click="onInvitationAcceptClick_">
+            <cr-button on-click="onInvitationAcceptClick_">
               [[getAcceptButtonText_(invitation_)]]
-            </paper-button>
-            <paper-button on-click="onInvitationRejectClick_">
+            </cr-button>
+            <cr-button on-click="onInvitationRejectClick_">
               $i18n{reject}
-            </paper-button>
+            </cr-button>
             <div id="invitation-process-throbber" class="throbber" hidden></div>
           </div>
           <div class="invitation-details">

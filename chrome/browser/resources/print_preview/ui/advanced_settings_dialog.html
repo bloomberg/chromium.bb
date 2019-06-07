@@ -1,10 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../metrics.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="advanced_settings_item.html">
@@ -16,7 +15,7 @@
 
 <dom-module id="print-preview-advanced-settings-dialog">
   <template>
-    <style include="print-preview-shared paper-button-style cr-hidden-style">
+    <style include="print-preview-shared cr-hidden-style">
       #dialog {
         --cr-dialog-native: {
           height: -webkit-fit-content;
@@ -54,12 +53,12 @@
         </div>
       </div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-click="onCancelButtonClick_">
+        <cr-button class="cancel-button" on-click="onCancelButtonClick_">
           $i18n{cancel}
-        </paper-button>
-        <paper-button class="action-button" on-click="onApplyButtonClick_">
+        </cr-button>
+        <cr-button class="action-button" on-click="onApplyButtonClick_">
           $i18n{advancedSettingsDialogConfirm}
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
   </template>

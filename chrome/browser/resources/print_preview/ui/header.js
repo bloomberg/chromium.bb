@@ -147,7 +147,7 @@ Polymer({
         if (this.lastState_ != this.state &&
             (document.activeElement == null ||
              document.activeElement == document.body)) {
-          this.$$('paper-button.action-button').focus();
+          this.$$('cr-button.action-button').focus();
         }
         break;
       case (print_preview.State.FATAL_ERROR):

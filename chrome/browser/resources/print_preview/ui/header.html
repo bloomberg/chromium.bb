@@ -1,10 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/state.html">
 <link rel="import" href="../icons.html">
@@ -14,7 +13,7 @@
 
 <dom-module id="print-preview-header">
   <template>
-    <style include="paper-button-style">
+    <style>
       :host {
         border-bottom: var(--print-preview-settings-border);
         display: block;
@@ -56,11 +55,11 @@
         padding-top: 16px;
       }
 
-      #button-strip paper-button:first-child {
+      #button-strip cr-button:first-child {
         margin-inline-end: 8px;
       }
 
-      #button-strip paper-button:last-child {
+      #button-strip cr-button:last-child {
         margin-inline-end: 0;
       }
 
@@ -83,18 +82,18 @@
     </span>
     <div id="button-strip">
 <if expr="not is_win">
-      <paper-button class="cancel-button" on-click="onCancelClick_">
+      <cr-button class="cancel-button" on-click="onCancelClick_">
         $i18n{cancel}
-      </paper-button>
+      </cr-button>
 </if>
-      <paper-button class="action-button" on-click="onPrintClick_"
+      <cr-button class="action-button" on-click="onPrintClick_"
           disabled$="[[!printButtonEnabled_]]">
         [[printButtonLabel_]]
-      </paper-button>
+      </cr-button>
 <if expr="is_win">
-      <paper-button class="cancel-button" on-click="onCancelClick_">
+      <cr-button class="cancel-button" on-click="onCancelClick_">
         $i18n{cancel}
-      </paper-button>
+      </cr-button>
 </if>
     </div>
   </template>
