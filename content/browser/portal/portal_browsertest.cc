@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -245,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigatePortal) {
   EXPECT_NE(nullptr, portal_contents);
   EXPECT_NE(portal_contents->GetLastCommittedURL(), a_url);
 
-  // The portal should not have navigated yet, we can observe the Portal's
+  // The portal should not have navigated yet, so we can observe the Portal's
   // first navigation.
   TestNavigationObserver navigation_observer(portal_contents);
   navigation_observer.Wait();
@@ -534,6 +535,53 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigateToChrome) {
   ignore_result(ExecJs(main_frame, JsReplace("portal.src = $1;", a_url)));
 
   EXPECT_EQ(base::nullopt, kill_waiter.Wait());
+}
+
+// Regression test for crbug.com/969714. Tests that receiving a touch ack
+// from the predecessor after portal activation doesn't cause a crash.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivate) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  // Create portal and wait for navigation.
+  PortalCreatedObserver portal_created_observer(main_frame);
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(ExecJs(
+      main_frame, JsReplace("var portal = document.createElement('portal');"
+                            "portal.src = $1;"
+                            "document.body.appendChild(portal);"
+                            "document.body.addEventListener('touchstart', "
+                            "e => { portal.activate(); }, {passive: false});",
+                            a_url)));
+  Portal* portal = portal_created_observer.WaitUntilPortalCreated();
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+
+  // The portal should not have navigated yet, wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  PortalInterceptorForTesting* portal_interceptor =
+      PortalInterceptorForTesting::From(portal);
+  RenderWidgetHostImpl* render_widget_host = main_frame->GetRenderWidgetHost();
+  InputEventAckWaiter input_event_ack_waiter(
+      render_widget_host, blink::WebInputEvent::Type::kTouchStart);
+
+  SyntheticTapGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.position = gfx::PointF(20, 20);
+
+  std::unique_ptr<SyntheticTapGesture> gesture =
+      std::make_unique<SyntheticTapGesture>(params);
+  render_widget_host->QueueSyntheticGesture(
+      std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+  portal_interceptor->WaitForActivate();
+  EXPECT_EQ(portal_contents, shell()->web_contents());
+
+  // Wait for a touch ack to be sent from the predecessor.
+  input_event_ack_waiter.Wait();
 }
 
 class PortalOOPIFBrowserTest : public PortalBrowserTest {

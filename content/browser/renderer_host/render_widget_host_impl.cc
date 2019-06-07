@@ -2708,6 +2708,12 @@ void RenderWidgetHostImpl::OnTouchEventAck(
 
   auto* input_event_router =
       delegate() ? delegate()->GetInputEventRouter() : nullptr;
+  // With portals, if a touch event triggers an activation, it is possible to
+  // receive a touch ack after activation. The view is destroyed on activation
+  // and any pending events in the touch ack queue have already been cleared, so
+  // we just ignore this ack.
+  if (!view_)
+    return;
 
   // At present interstitial pages might not have an input event router, so we
   // just have the view process the ack directly in that case; the view is
@@ -2715,7 +2721,7 @@ void RenderWidgetHostImpl::OnTouchEventAck(
   // ProcessAckedTouchEvent().
   if (input_event_router)
     input_event_router->ProcessAckedTouchEvent(event, ack_result, view_.get());
-  else if (view_)
+  else
     view_->ProcessAckedTouchEvent(event, ack_result);
 }
 
