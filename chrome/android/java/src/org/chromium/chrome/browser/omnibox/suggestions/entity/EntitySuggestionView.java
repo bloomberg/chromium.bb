@@ -5,9 +5,8 @@
 package org.chromium.chrome.browser.omnibox.suggestions.entity;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.ColorDrawable;
-import android.support.annotation.ColorInt;
+import android.graphics.drawable.Drawable;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +15,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 
 /**
  * Container view for omnibox entity suggestions.
@@ -50,6 +51,8 @@ public class EntitySuggestionView extends RelativeLayout {
     private TextView mDescriptionText;
     private ImageView mEntityImageView;
     private ImageView mRefineView;
+    private boolean mUseDarkColors;
+    private boolean mUseSuggestionImage;
 
     /**
      * Container view for omnibox suggestions allowing soft focus from keyboard.
@@ -79,6 +82,8 @@ public class EntitySuggestionView extends RelativeLayout {
         mEntityImageView = findViewById(R.id.omnibox_entity_image);
         mEntityView = findViewById(R.id.omnibox_entity);
         mRefineView = findViewById(R.id.omnibox_entity_refine_icon);
+
+        showSearchIcon();
     }
 
     @Override
@@ -110,6 +115,20 @@ public class EntitySuggestionView extends RelativeLayout {
     }
 
     /**
+     * Toggles theme.
+     * @param useDarkColors specifies whether UI should use dark theme.
+     */
+    void setUseDarkColors(boolean useDarkColors) {
+        Drawable drawable = mRefineView.getDrawable();
+        DrawableCompat.setTint(
+                drawable, ColorUtils.getIconTint(getContext(), !useDarkColors).getDefaultColor());
+        mUseDarkColors = useDarkColors;
+        if (!mUseSuggestionImage) {
+            showSearchIcon();
+        }
+    }
+
+    /**
      * Specifies the text to be displayed as subject name.
      * @param text Text to be displayed.
      */
@@ -126,18 +145,28 @@ public class EntitySuggestionView extends RelativeLayout {
     }
 
     /**
-     * Specify image bitmap to be shown beside suggestion text.
-     * @param bitmap Bitmap to be rendered.
+     * Specify image to be shown beside suggestion text.
+     * @param drawable Image to be rendered.
      */
-    void setImageBitmap(Bitmap bitmap) {
-        mEntityImageView.setImageBitmap(bitmap);
+    void setSuggestionImage(Drawable drawable) {
+        mUseSuggestionImage = true;
+        mEntityImageView.setImageDrawable(drawable);
+        mEntityImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
     }
 
     /**
-     * Specify a solid color to be rendered in place of a suggestion icon.
-     * @param color Color to be used.
+     * Clear suggestion image and present (fallback) magnifying glass instead.
      */
-    void setImageColor(@ColorInt int color) {
-        mEntityImageView.setImageDrawable(new ColorDrawable(color));
+    void clearSuggestionImage() {
+        mUseSuggestionImage = false;
+        showSearchIcon();
+    }
+
+    private void showSearchIcon() {
+        mEntityImageView.setImageDrawable(TintedDrawable.constructTintedDrawable(getContext(),
+                R.drawable.ic_suggestion_magnifier,
+                mUseDarkColors ? R.color.default_icon_color_secondary_list
+                               : R.color.white_mode_tint));
+        mEntityImageView.setScaleType(ImageView.ScaleType.CENTER);
     }
 }
