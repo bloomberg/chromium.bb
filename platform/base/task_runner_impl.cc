@@ -144,13 +144,13 @@ std::unique_lock<std::mutex> TaskRunnerImpl::WaitForWorkAndAcquireLock() {
   // below wait predicate. However, this is more readable and a slight
   // optimization, as we don't need to take a lock if we aren't running.
   if (!is_running_) {
-    OSP_DVLOG << "TaskRunner not running. Returning empty lock.";
+    OSP_DVLOG << "TaskRunnerImpl not running. Returning empty lock.";
     return {};
   }
 
   std::unique_lock<std::mutex> lock(task_mutex_);
   if (!tasks_.empty()) {
-    OSP_DVLOG << "TaskRunner lock acquired.";
+    OSP_DVLOG << "TaskRunnerImpl lock acquired.";
     return lock;
   }
 
@@ -183,12 +183,12 @@ std::unique_lock<std::mutex> TaskRunnerImpl::WaitForWorkAndAcquireLock() {
       const auto wait_predicate = [this] {
         return !delayed_tasks_.empty() || ShouldWakeUpRunLoop();
       };
-      OSP_DVLOG << "TaskRunner waiting for lock...";
+      OSP_DVLOG << "TaskRunnerImpl waiting for lock...";
       run_loop_wakeup_.wait(lock, wait_predicate);
     }
   }
 
-  OSP_DVLOG << "TaskRunner lock acquired.";
+  OSP_DVLOG << "TaskRunnerImpl lock acquired.";
   return lock;
 }
 }  // namespace platform

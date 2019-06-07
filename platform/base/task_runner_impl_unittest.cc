@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "platform/base/task_runner_impl.h"
+
 #include <atomic>
 #include <thread>  // NOLINT
 
 #include "gtest/gtest.h"
-#include "platform/api/task_runner_factory.h"
 #include "platform/api/time.h"
 #include "platform/base/task_runner_impl.h"
 #include "platform/test/fake_clock.h"
@@ -65,7 +66,7 @@ class FakeTaskWaiter final : public TaskRunnerImpl::TaskWaiter {
 
 class TaskRunnerWithWaiterFactory {
  public:
-  static std::unique_ptr<TaskRunner> Create(
+  static std::unique_ptr<TaskRunnerImpl> Create(
       platform::ClockNowFunctionPtr now_function) {
     fake_waiter = std::make_unique<FakeTaskWaiter>(now_function);
     auto runner = std::make_unique<TaskRunnerImpl>(
@@ -82,13 +83,11 @@ std::unique_ptr<FakeTaskWaiter> TaskRunnerWithWaiterFactory::fake_waiter;
 
 }  // anonymous namespace
 
-TEST(TaskRunnerTest, TaskRunnerFromFactoryExecutesTask) {
+TEST(TaskRunnerImplTest, TaskRunnerExecutesTask) {
   FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
-  auto runner = TaskRunnerFactory::Create(fake_clock.now);
+  auto runner = std::make_unique<TaskRunnerImpl>(&fake_clock.now);
 
-  std::thread t([&runner] {
-    static_cast<TaskRunnerImpl*>(runner.get())->RunUntilStopped();
-  });
+  std::thread t([&runner] { runner.get()->RunUntilStopped(); });
 
   std::string ran_tasks = "";
   const auto task = [&ran_tasks] { ran_tasks += "1"; };
@@ -99,26 +98,24 @@ TEST(TaskRunnerTest, TaskRunnerFromFactoryExecutesTask) {
   WaitUntilCondition([&ran_tasks] { return ran_tasks == "1"; });
   EXPECT_EQ(ran_tasks, "1");
 
-  static_cast<TaskRunnerImpl*>(runner.get())->RequestStopSoon();
+  runner.get()->RequestStopSoon();
   t.join();
 }
 
-TEST(TaskRunnerTest, TaskRunnerRunsDelayedTasksInOrder) {
+TEST(TaskRunnerImplTest, TaskRunnerRunsDelayedTasksInOrder) {
   FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
-  auto runner = TaskRunnerFactory::Create(fake_clock.now);
+  TaskRunnerImpl runner(&fake_clock.now);
 
-  std::thread t([&runner] {
-    static_cast<TaskRunnerImpl*>(runner.get())->RunUntilStopped();
-  });
+  std::thread t([&runner] { runner.RunUntilStopped(); });
 
   std::string ran_tasks = "";
 
   const auto kDelayTime = milliseconds(5);
   const auto task_one = [&ran_tasks] { ran_tasks += "1"; };
-  runner->PostTaskWithDelay(task_one, kDelayTime);
+  runner.PostTaskWithDelay(task_one, kDelayTime);
 
   const auto task_two = [&ran_tasks] { ran_tasks += "2"; };
-  runner->PostTaskWithDelay(task_two, kDelayTime * 2);
+  runner.PostTaskWithDelay(task_two, kDelayTime * 2);
 
   EXPECT_EQ(ran_tasks, "");
   fake_clock.Advance(kDelayTime);
@@ -129,13 +126,13 @@ TEST(TaskRunnerTest, TaskRunnerRunsDelayedTasksInOrder) {
   WaitUntilCondition([&ran_tasks] { return ran_tasks == "12"; });
   EXPECT_EQ(ran_tasks, "12");
 
-  static_cast<TaskRunnerImpl*>(runner.get())->RequestStopSoon();
+  runner.RequestStopSoon();
   t.join();
 }
 
-TEST(TaskRunnerTest, SingleThreadedTaskRunnerRunsSequentially) {
+TEST(TaskRunnerImplTest, SingleThreadedTaskRunnerRunsSequentially) {
   FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
-  TaskRunnerImpl runner(fake_clock.now);
+  TaskRunnerImpl runner(&fake_clock.now);
 
   std::string ran_tasks;
   const auto task_one = [&ran_tasks] { ran_tasks += "1"; };
@@ -155,9 +152,9 @@ TEST(TaskRunnerTest, SingleThreadedTaskRunnerRunsSequentially) {
   EXPECT_EQ(ran_tasks, "12345");
 }
 
-TEST(TaskRunnerTest, TaskRunnerCanStopRunning) {
+TEST(TaskRunnerImplTest, TaskRunnerCanStopRunning) {
   FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
-  TaskRunnerImpl runner(fake_clock.now);
+  TaskRunnerImpl runner(&fake_clock.now);
 
   std::string ran_tasks;
   const auto task_one = [&ran_tasks] { ran_tasks += "1"; };
@@ -181,9 +178,9 @@ TEST(TaskRunnerTest, TaskRunnerCanStopRunning) {
   start_thread.join();
 }
 
-TEST(TaskRunnerTest, StoppingDoesNotDeleteTasks) {
+TEST(TaskRunnerImplTest, StoppingDoesNotDeleteTasks) {
   FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
-  TaskRunnerImpl runner(fake_clock.now);
+  TaskRunnerImpl runner(&fake_clock.now);
 
   std::string ran_tasks;
   const auto task_one = [&ran_tasks] { ran_tasks += "1"; };
@@ -197,9 +194,9 @@ TEST(TaskRunnerTest, StoppingDoesNotDeleteTasks) {
   EXPECT_EQ(ran_tasks, "1");
 }
 
-TEST(TaskRunnerTest, TaskRunnerIsStableWithLotsOfTasks) {
+TEST(TaskRunnerImplTest, TaskRunnerIsStableWithLotsOfTasks) {
   FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
-  TaskRunnerImpl runner(fake_clock.now);
+  TaskRunnerImpl runner(&fake_clock.now);
 
   const int kNumberOfTasks = 500;
   std::string expected_ran_tasks;
@@ -215,7 +212,7 @@ TEST(TaskRunnerTest, TaskRunnerIsStableWithLotsOfTasks) {
   EXPECT_EQ(ran_tasks, expected_ran_tasks);
 }
 
-TEST(TaskRunnerTest, TaskRunnerDelayedTasksDontBlockImmediateTasks) {
+TEST(TaskRunnerImplTest, TaskRunnerDelayedTasksDontBlockImmediateTasks) {
   TaskRunnerImpl runner(platform::Clock::now);
 
   std::string ran_tasks;
@@ -232,13 +229,13 @@ TEST(TaskRunnerTest, TaskRunnerDelayedTasksDontBlockImmediateTasks) {
   EXPECT_EQ(ran_tasks, "1");
 }
 
-TEST(TaskRunnerTest, TaskRunnerUsesEventWaiter) {
-  std::unique_ptr<TaskRunner> runner =
+TEST(TaskRunnerImplTest, TaskRunnerUsesEventWaiter) {
+  std::unique_ptr<TaskRunnerImpl> runner =
       TaskRunnerWithWaiterFactory::Create(Clock::now);
 
   int x = 0;
   std::thread t([&runner, &x] {
-    static_cast<TaskRunnerImpl*>(runner.get())->RunUntilStopped();
+    runner.get()->RunUntilStopped();
     x = 1;
   });
 
@@ -259,14 +256,12 @@ TEST(TaskRunnerTest, TaskRunnerUsesEventWaiter) {
   t.join();
 }
 
-TEST(TaskRunnerTest, WakesEventWaiterOnPostTask) {
-  std::unique_ptr<TaskRunner> runner =
+TEST(TaskRunnerImplTest, WakesEventWaiterOnPostTask) {
+  std::unique_ptr<TaskRunnerImpl> runner =
       TaskRunnerWithWaiterFactory::Create(Clock::now);
 
   int x = 0;
-  std::thread t([&runner] {
-    static_cast<TaskRunnerImpl*>(runner.get())->RunUntilStopped();
-  });
+  std::thread t([&runner] { runner.get()->RunUntilStopped(); });
 
   const Clock::time_point start1 = Clock::now();
   FakeTaskWaiter* fake_waiter = TaskRunnerWithWaiterFactory::fake_waiter.get();

@@ -12,16 +12,11 @@
 namespace openscreen {
 namespace platform {
 
-ReceivedData::ReceivedData() = default;
-ReceivedData::ReceivedData(ReceivedData&&) = default;
-ReceivedData::~ReceivedData() = default;
-
 Error ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
-                           ReceivedData* data) {
+                           UdpReadCallback::Packet* data) {
   OSP_DCHECK(data);
   ErrorOr<size_t> len = read_event.socket->ReceiveMessage(
-      &data->bytes[0], data->bytes.size(), &data->source,
-      &data->original_destination);
+      &data[0], data->size(), &data->source, &data->original_destination);
   if (!len) {
     OSP_LOG_ERROR << "ReceiveMessage() on socket failed: "
                   << len.error().message();
@@ -33,17 +28,19 @@ Error ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
   return Error::None();
 }
 
-std::vector<ReceivedData> HandleUdpSocketReadEvents(const Events& events) {
-  std::vector<ReceivedData> data;
+std::vector<UdpReadCallback::Packet> HandleUdpSocketReadEvents(
+    const Events& events) {
+  std::vector<UdpReadCallback::Packet> data;
   for (const auto& read_event : events.udp_readable_events) {
-    ReceivedData next_data;
+    UdpReadCallback::Packet next_data;
     if (ReceiveDataFromEvent(read_event, &next_data).ok())
       data.emplace_back(std::move(next_data));
   }
   return data;
 }
 
-std::vector<ReceivedData> OnePlatformLoopIteration(EventWaiterPtr waiter) {
+std::vector<UdpReadCallback::Packet> OnePlatformLoopIteration(
+    EventWaiterPtr waiter) {
   ErrorOr<Events> events = WaitForEvents(waiter);
   if (!events)
     return {};

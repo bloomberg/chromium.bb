@@ -313,8 +313,7 @@ void BrowseDemo(const std::string& service_name,
     auto data = platform::OnePlatformLoopIteration(waiter);
     for (auto& packet : data) {
       mdns_adapter->OnDataReceived(packet.source, packet.original_destination,
-                                   packet.bytes.data(), packet.length,
-                                   packet.socket);
+                                   packet.data(), packet.length, packet.socket);
     }
   }
   OSP_LOG << "num services: " << g_services->size();

@@ -17,14 +17,16 @@
 #include "absl/base/thread_annotations.h"
 #include "absl/types/optional.h"
 #include "osp_base/error.h"
-#include "platform/api/task_runner.h"
+#include "platform/api/network_runner.h"
 #include "platform/api/time.h"
 
 namespace openscreen {
 namespace platform {
 
-class TaskRunnerImpl : public TaskRunner {
+class TaskRunnerImpl final : public TaskRunner {
  public:
+  using Task = TaskRunner::Task;
+
   class TaskWaiter {
    public:
     virtual ~TaskWaiter() = default;
@@ -56,14 +58,14 @@ class TaskRunnerImpl : public TaskRunner {
   void PostPackagedTaskWithDelay(Task task, Clock::duration delay) final;
 
   // Tasks will only be executed if RunUntilStopped has been called, and
-  // RequestStopSoon has not. Important note: TaskRunnerImpl does NOT do any
+  // RequestStopSoon has not. Important note: TaskRunner does NOT do any
   // threading, so calling "RunUntilStopped()" will block whatever thread you
   // are calling it on.
   void RunUntilStopped();
 
-  // Thread-safe method for requesting the TaskRunnerImpl to stop running. This
-  // sets a flag that will get checked in the run loop, typically after
-  // completing the current task.
+  // Thread-safe method for requesting the TaskRunner to stop running. This sets
+  // a flag that will get checked in the run loop, typically after completing
+  // the current task.
   void RequestStopSoon();
 
   // Execute all tasks immediately, useful for testing only. Note: this method
