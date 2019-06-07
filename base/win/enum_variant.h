@@ -8,8 +8,10 @@
 #include <unknwn.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/win/iunknown_impl.h"
+#include "base/win/scoped_variant.h"
 
 namespace base {
 namespace win {
@@ -19,12 +21,12 @@ class BASE_EXPORT EnumVariant
   : public IEnumVARIANT,
     public IUnknownImpl {
  public:
-  // The constructor allocates an array of size |count|. Then use
-  // ItemAt to set the value of each item in the array to initialize it.
-  explicit EnumVariant(unsigned long count);
+  // The constructor allocates a vector of empty ScopedVariants of size |count|.
+  // Use ItemAt to set the value of each item in the array.
+  explicit EnumVariant(ULONG count);
 
   // Returns a mutable pointer to the item at position |index|.
-  VARIANT* ItemAt(unsigned long index);
+  VARIANT* ItemAt(ULONG index);
 
   // IUnknown.
   ULONG STDMETHODCALLTYPE AddRef() override;
@@ -42,9 +44,8 @@ class BASE_EXPORT EnumVariant
  private:
   ~EnumVariant() override;
 
-  std::unique_ptr<VARIANT[]> items_;
-  unsigned long count_;
-  unsigned long current_index_;
+  std::vector<ScopedVariant> items_;
+  ULONG current_index_;
 };
 
 }  // namespace win

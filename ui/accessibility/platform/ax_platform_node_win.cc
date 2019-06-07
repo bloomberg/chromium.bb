@@ -1080,8 +1080,11 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
     auto* node = static_cast<AXPlatformNodeWin*>(
         FromNativeViewAccessible(GetDelegate()->ChildAtIndex(i)));
     if (node &&
-        node->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
-      selected_nodes.emplace_back(node);
+        node->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+      Microsoft::WRL::ComPtr<IDispatch> node_idispatch;
+      if (SUCCEEDED(node->QueryInterface(IID_PPV_ARGS(&node_idispatch))))
+        selected_nodes.push_back(node_idispatch);
+    }
   }
 
   if (selected_nodes.empty()) {
