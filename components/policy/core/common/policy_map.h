@@ -88,6 +88,7 @@ class POLICY_EXPORT PolicyMap {
     // Marks the policy as ignored because it does not share the priority of
     // its policy atomic group.
     void SetIgnoredByPolicyAtomicGroup();
+    bool IsIgnoredByAtomicGroup() const;
 
     // Callback used to look up a localized string given its l10n message ID. It
     // should return a UTF-16 string.
@@ -145,6 +146,11 @@ class POLICY_EXPORT PolicyMap {
   // that should be shown to the user alongisde the value in the policy UI. This
   // should only be called for policies that are already stored in the map.
   void AddError(const std::string& policy, int message_id);
+
+  // Return True if the policy is set but its value is ignored because it does
+  // not share the highest priority from its atomic group. Returns False if the
+  // policy is active or not set.
+  bool IsPolicyIgnoredByAtomicGroup(const std::string& policy) const;
 
   // For all policies, overwrite the PolicySource with |source|.
   void SetSourceForAll(PolicySource source);

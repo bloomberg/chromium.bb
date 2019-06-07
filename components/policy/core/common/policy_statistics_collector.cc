@@ -62,6 +62,10 @@ void PolicyStatisticsCollector::RecordPolicyUse(int id) {
   base::UmaHistogramSparse("Enterprise.Policies", id);
 }
 
+void PolicyStatisticsCollector::RecordPolicyIgnoredByAtomicGroup(int id) {
+  base::UmaHistogramSparse("Enterprise.Policies.IgnoredByPolicyGroup", id);
+}
+
 void PolicyStatisticsCollector::CollectStatistics() {
   const PolicyMap& policies = policy_service_->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
@@ -73,6 +77,13 @@ void PolicyStatisticsCollector::CollectStatistics() {
       const PolicyDetails* details = get_details_.Run(it.key());
       if (details)
         RecordPolicyUse(details->id);
+      else
+        NOTREACHED();
+    }
+    if (policies.IsPolicyIgnoredByAtomicGroup(it.key())) {
+      const PolicyDetails* details = get_details_.Run(it.key());
+      if (details)
+        RecordPolicyIgnoredByAtomicGroup(details->id);
       else
         NOTREACHED();
     }
