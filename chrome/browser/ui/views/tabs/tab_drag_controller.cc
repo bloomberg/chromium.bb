@@ -12,9 +12,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
@@ -28,7 +26,6 @@
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -476,9 +473,9 @@ void TabDragController::Init(TabDragContext* source_context,
       source_context_->AsView()->GetWidget()->GetNativeWindow());
 
   if (source_tab->width() > 0) {
-    offset_to_width_ratio_ =
-        float{source_tab->GetMirroredXInView(source_tab_offset)} /
-        float{source_tab->width()};
+    offset_to_width_ratio_ = static_cast<float>(
+        source_tab->GetMirroredXInView(source_tab_offset)) /
+        static_cast<float>(source_tab->width());
   }
   InitWindowCreatePoint();
   initial_selection_model_ = std::move(initial_selection_model);
@@ -546,7 +543,7 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
     }
     current_state_ = DragState::kDraggingTabs;
     Attach(source_context_, gfx::Point());
-    if (int{drag_data_.size()} ==
+    if (static_cast<int>(drag_data_.size()) ==
         source_context_->GetTabStripModel()->count()) {
       views::Widget* widget = GetAttachedBrowserWidget();
       gfx::Rect new_bounds;
@@ -754,8 +751,8 @@ bool TabDragController::CanStartDrag(const gfx::Point& point_in_screen) const {
   static const int kMinimumDragDistance = 10;
   int x_offset = abs(point_in_screen.x() - start_point_in_screen_.x());
   int y_offset = abs(point_in_screen.y() - start_point_in_screen_.y());
-  return sqrt(pow(float{x_offset}, 2) + pow(float{y_offset}, 2)) >
-         kMinimumDragDistance;
+  return sqrt(pow(static_cast<float>(x_offset), 2) +
+              pow(static_cast<float>(y_offset), 2)) > kMinimumDragDistance;
 }
 
 TabDragController::Liveness TabDragController::ContinueDragging(
@@ -909,7 +906,8 @@ TabDragController::DragBrowserToNewTabStrip(TabDragContext* target_context,
 
 void TabDragController::DragActiveTabStacked(
     const gfx::Point& point_in_screen) {
-  if (attached_context_->GetTabCount() != int{initial_tab_positions_.size()})
+  if (attached_context_->GetTabCount() !=
+      static_cast<int>(initial_tab_positions_.size()))
     return;  // TODO: should cancel drag if this happens.
 
   int delta = point_in_screen.x() - start_point_in_screen_.x();
@@ -959,7 +957,7 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
     TabStripModel* attached_model = attached_context_->GetTabStripModel();
     int to_index = attached_context_->GetInsertionIndexForDraggedBounds(
         GetDraggedViewTabStripBounds(dragged_view_point), false,
-        int{drag_data_.size()}, mouse_has_ever_moved_left_,
+        static_cast<int>(drag_data_.size()), mouse_has_ever_moved_left_,
         mouse_has_ever_moved_right_);
     bool do_move = true;
     // While dragging within a tabstrip the expectation is the insertion index
@@ -1000,9 +998,6 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
             tabs, source_tab_drag_data()->attached_tab, dragged_view_point,
             initial_move_);
         did_layout = true;
-      }
-      if (base::FeatureList::IsEnabled(features::kDragToPinTabs)) {
-        UpdatePinnednessOfDraggedTab(to_index);
       }
       attached_model->MoveSelectedTabsTo(to_index);
 
@@ -1160,7 +1155,6 @@ void TabDragController::Attach(TabDragContext* attached_context,
 
   std::vector<Tab*> tabs = GetTabsMatchingDraggedContents(attached_context_);
 
-  TabStripModel* attached_model = attached_context_->GetTabStripModel();
   if (tabs.empty()) {
     // Transitioning from detached to attached to a new context. Add tabs to
     // the new model.
@@ -1184,7 +1178,7 @@ void TabDragController::Attach(TabDragContext* attached_context,
     tab_strip_point.Offset(0, -mouse_offset_.y());
     int index = attached_context_->GetInsertionIndexForDraggedBounds(
         GetDraggedViewTabStripBounds(tab_strip_point), true,
-        int{drag_data_.size()}, mouse_has_ever_moved_left_,
+        static_cast<int>(drag_data_.size()), mouse_has_ever_moved_left_,
         mouse_has_ever_moved_right_);
     attach_index_ = index;
     attach_x_ = tab_strip_point.x();
@@ -1197,26 +1191,10 @@ void TabDragController::Attach(TabDragContext* attached_context,
         DCHECK_EQ(1u, drag_data_.size());
         add_types |= TabStripModel::ADD_ACTIVE;
       }
-      const int target_index = index + i;
-
-      if (base::FeatureList::IsEnabled(features::kDragToPinTabs)) {
-        if (drag_data_[i].pinned) {
-          // Attaching a tab is effectively an insertion at the target index. A
-          // pinned tab will only need to unpin if the previous tab is unpinned.
-          drag_data_[i].pinned = !CheckValidPinnedness(
-              target_index - 1, TabAnimationState::TabPinnedness::kUnpinned);
-        } else {
-          // An unpinned tab will only need to be pinned if the tab to the right
-          // of it is is pinned.
-          drag_data_[i].pinned = CheckValidPinnedness(
-              target_index, TabAnimationState::TabPinnedness::kPinned);
-        }
-      }
       if (drag_data_[i].pinned)
         add_types |= TabStripModel::ADD_PINNED;
-
-      attached_model->InsertWebContentsAt(
-          target_index, std::move(drag_data_[i].owned_contents), add_types);
+      attached_context_->GetTabStripModel()->InsertWebContentsAt(
+          index + i, std::move(drag_data_[i].owned_contents), add_types);
 
       // If a sad tab is showing, the SadTabView needs to be updated.
       SadTabHelper* sad_tab_helper =
@@ -1224,13 +1202,14 @@ void TabDragController::Attach(TabDragContext* attached_context,
       if (sad_tab_helper)
         sad_tab_helper->ReinstallInWebView();
     }
+
     tabs = GetTabsMatchingDraggedContents(attached_context_);
   }
   DCHECK_EQ(tabs.size(), drag_data_.size());
   for (size_t i = 0; i < drag_data_.size(); ++i)
     drag_data_[i].attached_tab = tabs[i];
 
-  ResetSelection(attached_model);
+  ResetSelection(attached_context_->GetTabStripModel());
 
   // This should be called after ResetSelection() in order to generate
   // bounds correctly. http://crbug.com/836004
@@ -1255,7 +1234,8 @@ void TabDragController::Attach(TabDragContext* attached_context,
   attached_context_->OwnDragController(this);
   SetTabDraggingInfo();
   attached_context_tabs_closed_tracker_ =
-      std::make_unique<DraggedTabsClosedTracker>(attached_model, this);
+      std::make_unique<DraggedTabsClosedTracker>(
+          attached_context_->GetTabStripModel(), this);
 }
 
 void TabDragController::Detach(ReleaseCapture release_capture) {
@@ -1317,7 +1297,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
 void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
     const gfx::Point& point_in_screen) {
   if (attached_context_->GetTabStripModel()->count() ==
-      int{drag_data_.size()}) {
+      static_cast<int>(drag_data_.size())) {
     // All the tabs in a browser are being dragged but all the tabs weren't
     // initially being dragged. For this to happen the user would have to
     // start dragging a set of tabs, the other tabs close, then detach.
@@ -1940,12 +1920,12 @@ void TabDragController::AdjustBrowserAndTabBoundsForDrag(
   // If the new tabstrip is smaller than the old resize the tabs.
   if (dragged_context_width < tab_area_width) {
     const float leading_ratio =
-        drag_bounds->front().x() / float{tab_area_width};
+        drag_bounds->front().x() / static_cast<float>(tab_area_width);
     *drag_bounds = CalculateBoundsForDraggedTabs();
 
     if (drag_bounds->back().right() < dragged_context_width) {
       const int delta_x = std::min(
-          int{leading_ratio * dragged_context_width},
+          static_cast<int>(leading_ratio * dragged_context_width),
           dragged_context_width -
               (drag_bounds->back().right() - drag_bounds->front().x()));
       OffsetX(delta_x, drag_bounds);
@@ -2109,49 +2089,6 @@ bool TabDragController::ShouldDisallowDrag(gfx::NativeWindow window) {
   DCHECK(model);
   return model->IsTabBlocked(model->active_index());
 #endif
-}
-
-void TabDragController::UpdatePinnednessOfDraggedTab(int to_index) {
-  TabStripModel* attached_model = attached_context_->GetTabStripModel();
-  const int selected_count =
-      int{attached_model->selection_model().selected_indices().size()};
-  for (int i = 0; i < selected_count; i++) {
-    const int current_index =
-        attached_model->selection_model().selected_indices()[i];
-    const int target_index = to_index + i;
-    if (current_index != target_index) {
-      // When dragging a tab to the target index, the tab is effectively
-      // swapping places with the tab at its target index.This means that
-      // if the current tab is pinned but the tab it is swapping with is
-      // not, the current tab will need to be unpinned. The opposite is
-      // true when moving an unpinned tab.
-      if (attached_model->IsTabPinned(current_index) &&
-          CheckValidPinnedness(target_index,
-                               TabAnimationState::TabPinnedness::kUnpinned)) {
-        attached_model->SetTabPinned(current_index, false);
-      } else if (!attached_model->IsTabPinned(current_index) &&
-                 CheckValidPinnedness(
-                     target_index, TabAnimationState::TabPinnedness::kPinned)) {
-        attached_model->SetTabPinned(current_index, true);
-      }
-    }
-  }
-}
-
-bool TabDragController::CheckValidPinnedness(
-    int index,
-    TabAnimationState::TabPinnedness expected_pinnedness) {
-  TabStripModel* attached_model = attached_context_->GetTabStripModel();
-
-  if (!attached_model->ContainsIndex(index))
-    return false;
-
-  TabAnimationState::TabPinnedness pinnedness =
-      attached_model->IsTabPinned(index)
-          ? TabAnimationState::TabPinnedness::kPinned
-          : TabAnimationState::TabPinnedness::kUnpinned;
-
-  return expected_pinnedness == pinnedness;
 }
 
 void TabDragController::SetDeferredTargetTabstrip(
