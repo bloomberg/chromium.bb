@@ -54,24 +54,12 @@ def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
     '-*',
     # Memory categories.
     'disabled-by-default-memory-infra',
-    # UE categories required by runtimeStatsTotalMetric to bucket
-    # runtimeStats by UE.
-    'rail',
-    # EQT categories.
-    'blink.user_timing',
-    'loading',
-    'navigation',
     'toplevel',
     # V8 categories.
     'disabled-by-default-v8.gc',
-    'renderer.scheduler',
     'v8',
     'v8.console',
     'webkit.console',
-    # TODO(crbug.com/616441, primiano): Remove this temporary workaround,
-    # which enables memory-infra V8 code stats in V8 code size benchmarks
-    # only (to not slow down detailed memory dumps in other benchmarks).
-    'disabled-by-default-memory-infra.v8.code_stats',
     # Blink categories.
     'blink_gc',
   ]
