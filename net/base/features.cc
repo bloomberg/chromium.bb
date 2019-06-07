@@ -13,7 +13,7 @@ const base::Feature kAcceptLanguageHeader{"AcceptLanguageHeader",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCapRefererHeaderLength = {
-    "CapRefererHeaderLength", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CapRefererHeaderLength", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::FeatureParam<int> kMaxRefererHeaderLength = {
     &kCapRefererHeaderLength, "MaxRefererHeaderLength", 4096};
 

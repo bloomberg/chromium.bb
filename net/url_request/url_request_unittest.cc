@@ -8060,6 +8060,8 @@ TEST_F(URLRequestTestHTTP, CapRefererDisabled) {
 
   // If the feature isn't enabled, a long `referer` will remain long.
   TestDelegate d;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kCapRefererHeaderLength);
   std::unique_ptr<URLRequest> req(default_context().CreateRequest(
       http_test_server()->GetURL("/echoheader?Referer"), DEFAULT_PRIORITY, &d,
       TRAFFIC_ANNOTATION_FOR_TESTS));
