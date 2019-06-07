@@ -82,7 +82,10 @@ component("gpu") {
   ldflags = []
 
   if (is_linux) {
-    public_deps += [ "//media/gpu/linux" ]
+    public_deps += [
+      "//media/gpu/linux",
+      "//media/gpu/linux:common",
+    ]
   }
 
   if (is_mac) {

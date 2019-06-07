@@ -4,10 +4,32 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/ui.gni")
+import("//media/gpu/args.gni")
 
 assert(is_linux)
 
 source_set("linux") {
+  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+  sources = [
+    "linux_video_decoder_factory.cc",
+    "linux_video_decoder_factory.h",
+  ]
+
+  deps = [
+    ":common",
+    "//base",
+    "//media",
+    "//media/gpu:buildflags",
+    "//media/gpu:command_buffer_helper",
+    "//media/gpu:common",
+  ]
+
+  if (use_v4l2_codec) {
+    deps += [ "//media/gpu/v4l2" ]
+  }
+}
+
+source_set("common") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
     "dmabuf_video_frame_pool.cc",
@@ -57,7 +79,7 @@ source_set("unit_tests") {
     "platform_video_frame_pool_unittest.cc",
   ]
   deps = [
-    ":linux",
+    ":common",
     "//base",
     "//base/test:test_support",
     "//skia",
