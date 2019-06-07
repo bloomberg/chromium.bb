@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/input_device.h"
@@ -41,7 +41,9 @@ class DeviceStructTraitsTest : public testing::Test,
     std::move(callback).Run(in);
   }
 
-  base::MessageLoop loop_;  // A MessageLoop is needed for mojo IPC to work.
+  base::test::ScopedTaskEnvironment
+      scoped_task_environment_;  // A MessageLoop is needed for mojo IPC to
+                                 // work.
   mojo::BindingSet<mojom::DeviceStructTraitsTest> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStructTraitsTest);
