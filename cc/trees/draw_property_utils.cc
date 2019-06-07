@@ -838,8 +838,17 @@ void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
 }
 
 void ComputeTransforms(TransformTree* transform_tree) {
-  if (!transform_tree->needs_update())
+  if (!transform_tree->needs_update()) {
+#if DCHECK_IS_ON()
+    // If the transform tree does not need an update, no TransformNode should
+    // need a local transform update.
+    for (int i = TransformTree::kContentsRootNodeId;
+         i < static_cast<int>(transform_tree->size()); ++i) {
+      DCHECK(!transform_tree->Node(i)->needs_local_transform_update);
+    }
+#endif
     return;
+  }
   for (int i = TransformTree::kContentsRootNodeId;
        i < static_cast<int>(transform_tree->size()); ++i)
     transform_tree->UpdateTransforms(i);

@@ -450,10 +450,12 @@ TEST_P(LayerTreeHostLayerListPixelTestNonSkia, ScaledMaskWithEffect) {
 
   // Scale the mask with a non-integral transform. This will trigger the
   // AA path in the renderer.
-  TransformNode transform;
-  transform.local = gfx::Transform();
-  transform.local.Scale(1.5, 1.5);
-  property_trees.transform_tree.Insert(transform, 1);
+  TransformTree& transform_tree = property_trees.transform_tree;
+  auto& transform_node =
+      *transform_tree.Node(transform_tree.Insert(TransformNode(), 1));
+  transform_node.source_node_id = transform_node.parent_id;
+  transform_node.local = gfx::Transform();
+  transform_node.local.Scale(1.5, 1.5);
 
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);

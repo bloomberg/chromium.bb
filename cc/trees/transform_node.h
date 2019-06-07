@@ -67,7 +67,8 @@ struct CC_EXPORT TransformNode {
   // context.
   int sorting_context_id;
 
-  // TODO(vollick): will be moved when accelerated effects are implemented.
+  // True if |TransformTree::UpdateLocalTransform| needs to be called which
+  // will update |to_parent| and |source_to_parent| (if possible).
   bool needs_local_transform_update : 1;
 
   // Whether this node or any ancestor has a potentially running

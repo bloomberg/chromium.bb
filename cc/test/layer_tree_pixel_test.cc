@@ -284,8 +284,11 @@ void LayerTreePixelTest::InitializeForLayerListMode(
   ScrollNode scroll_node;
   property_trees->scroll_tree.Insert(scroll_node, 0);
 
-  TransformNode transform_node;
-  property_trees->transform_tree.Insert(transform_node, 0);
+  TransformTree& transform_tree = property_trees->transform_tree;
+  auto& transform_node =
+      *transform_tree.Node(transform_tree.Insert(TransformNode(), 0));
+  transform_node.source_node_id = transform_node.parent_id;
+  transform_tree.set_needs_update(true);
 
   *root_layer = Layer::Create();
   (*root_layer)->SetBounds(gfx::Size(100, 100));
