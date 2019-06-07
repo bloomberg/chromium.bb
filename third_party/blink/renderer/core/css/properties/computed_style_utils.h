@@ -20,6 +20,7 @@ namespace blink {
 using namespace cssvalue;
 
 class ComputedStyle;
+class CSSStyleValue;
 class CSSValue;
 class StyleColor;
 class StylePropertyShorthand;
@@ -203,6 +204,8 @@ class ComputedStyleUtils {
   static CSSValue* ScrollCustomizationFlagsToCSSValue(
       scroll_customization::ScrollDirection);
   static CSSValue* ValueForGapLength(const GapLength&, const ComputedStyle&);
+  static std::unique_ptr<CrossThreadStyleValue>
+  CrossThreadStyleValueFromCSSStyleValue(CSSStyleValue* style_value);
 };
 
 }  // namespace blink

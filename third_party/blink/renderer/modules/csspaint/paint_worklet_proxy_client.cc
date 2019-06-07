@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
@@ -171,8 +172,14 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
   PaintWorkletStylePropertyMap* style_map =
       MakeGarbageCollected<PaintWorkletStylePropertyMap>(input->StyleMapData());
 
-  sk_sp<PaintRecord> result = definition->Paint(
-      FloatSize(input->GetSize()), input->EffectiveZoom(), style_map, nullptr);
+  CSSStyleValueVector paint_arguments;
+  for (const auto& style_value : input->ParsedInputArguments()) {
+    paint_arguments.push_back(style_value->ToCSSStyleValue());
+  }
+
+  sk_sp<PaintRecord> result =
+      definition->Paint(FloatSize(input->GetSize()), input->EffectiveZoom(),
+                        style_map, &paint_arguments);
 
   // CSSPaintDefinition::Paint returns nullptr if it fails, but for
   // OffThread-PaintWorklet we prefer to insert empty PaintRecords into the

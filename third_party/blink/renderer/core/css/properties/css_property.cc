@@ -5,13 +5,9 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 
 #include "base/stl_util.h"
-#include "third_party/blink/renderer/core/css/cssom/cross_thread_keyword_value.h"
-#include "third_party/blink/renderer/core/css/cssom/cross_thread_style_value.h"
-#include "third_party/blink/renderer/core/css/cssom/cross_thread_unit_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_unsupported_value.h"
-#include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
-#include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/svg_computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
@@ -42,19 +38,8 @@ CSSProperty::CrossThreadStyleValueFromComputedStyle(
       StyleValueFactory::CssValueToStyleValue(GetCSSPropertyName(), *css_value);
   if (!style_value)
     return std::make_unique<CrossThreadUnsupportedValue>("");
-  switch (style_value->GetType()) {
-    case CSSStyleValue::StyleValueType::kKeywordType:
-      return std::make_unique<CrossThreadKeywordValue>(
-          To<CSSKeywordValue>(style_value)->value().IsolatedCopy());
-    case CSSStyleValue::StyleValueType::kUnitType:
-      return std::make_unique<CrossThreadUnitValue>(
-          To<CSSUnitValue>(style_value)->value(),
-          To<CSSUnitValue>(style_value)->GetInternalUnit());
-    default:
-      // Make an isolated copy to ensure that it is safe to pass cross thread.
-      return std::make_unique<CrossThreadUnsupportedValue>(
-          css_value->CssText().IsolatedCopy());
-  }
+  return ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
+      style_value);
 }
 
 const CSSValue* CSSProperty::CSSValueFromComputedStyle(

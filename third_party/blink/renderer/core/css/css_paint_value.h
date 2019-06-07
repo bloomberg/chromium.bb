@@ -16,6 +16,8 @@
 
 namespace blink {
 
+class CrossThreadStyleValue;
+
 class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
  public:
   explicit CSSPaintValue(CSSCustomIdentValue* name);
@@ -73,6 +75,9 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   void PaintImageGeneratorReady();
 
   bool ParseInputArguments(const Document&);
+
+  void BuildInputArgumentValues(
+      Vector<std::unique_ptr<CrossThreadStyleValue>>&);
 
   bool input_arguments_invalid_ = false;
 

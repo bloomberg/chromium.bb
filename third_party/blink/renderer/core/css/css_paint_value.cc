@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_deferred_image.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -79,14 +80,26 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
         PaintWorkletStylePropertyMap::BuildCrossThreadData(
             document, style, layout_object.GetNode(), native_properties,
             custom_properties);
+    Vector<std::unique_ptr<CrossThreadStyleValue>> cross_thread_input_arguments;
+    BuildInputArgumentValues(cross_thread_input_arguments);
     scoped_refptr<PaintWorkletInput> input =
-        base::MakeRefCounted<PaintWorkletInput>(GetName(), target_size, zoom,
-                                                generator_->WorkletId(),
-                                                std::move(style_data));
+        base::MakeRefCounted<PaintWorkletInput>(
+            GetName(), target_size, zoom, generator_->WorkletId(),
+            std::move(style_data), std::move(cross_thread_input_arguments));
     return PaintWorkletDeferredImage::Create(std::move(input), target_size);
   }
 
   return generator_->Paint(client, target_size, parsed_input_arguments_);
+}
+
+void CSSPaintValue::BuildInputArgumentValues(
+    Vector<std::unique_ptr<CrossThreadStyleValue>>&
+        cross_thread_input_arguments) {
+  for (const auto& style_value : *parsed_input_arguments_) {
+    std::unique_ptr<CrossThreadStyleValue> cross_thread_style =
+        ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(style_value);
+    cross_thread_input_arguments.push_back(std::move(cross_thread_style));
+  }
 }
 
 bool CSSPaintValue::ParseInputArguments(const Document& document) {

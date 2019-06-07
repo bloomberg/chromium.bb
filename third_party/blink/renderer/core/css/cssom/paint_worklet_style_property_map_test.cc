@@ -183,13 +183,15 @@ TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
   UpdateAllLifecyclePhasesForTest();
   Node* node = PageNode();
 
+  Vector<std::unique_ptr<CrossThreadStyleValue>> input_arguments;
   PaintWorkletStylePropertyMap::CrossThreadData data =
       PaintWorkletStylePropertyMap::BuildCrossThreadData(
           GetDocument(), node->ComputedStyleRef(), node, native_properties,
           custom_properties);
   scoped_refptr<PaintWorkletInput> input =
       base::MakeRefCounted<PaintWorkletInput>("test", FloatSize(100, 100), 1.0f,
-                                              1, std::move(data));
+                                              1, std::move(data),
+                                              std::move(input_arguments));
   DCHECK(input);
 
   thread_ = std::make_unique<WebThreadSupportingGC>(

@@ -4021,8 +4021,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/background-image-tiled.https.html [ Crash ]
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/geometry-background-image-tiled-001.https.html [ Crash ]
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/paint-arguments.https.html [ Failure ]
-crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/paint-function-arguments.https.html [ Failure ]
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/paint2d-image.https.html [ Failure Timeout ]
 crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Crash Failure ]
 crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/registered-property-interpolation-004.https.html [ Failure ]
