@@ -23,6 +23,12 @@ function setUp() {
   window.loadTimeData.getString = id => {
     return window.loadTimeData.data_[id] || id;
   };
+  window.loadTimeData.getBoolean = id => {
+    return id === 'ARC_USB_STORAGE_UI_ENABLED' ? true : false;
+  };
+  window.loadTimeData.valueExists = id => {
+    return id === 'ARC_USB_STORAGE_UI_ENABLED';
+  };
 
   setupChromeApis();
   volumeManager = new MockVolumeManager();

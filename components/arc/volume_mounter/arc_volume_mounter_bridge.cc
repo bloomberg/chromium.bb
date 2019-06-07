@@ -5,6 +5,7 @@
 #include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/task/post_task.h"
@@ -12,6 +13,7 @@
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
@@ -126,6 +128,9 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
 
 bool ArcVolumeMounterBridge::HasAccessToRemovableMedia() const {
   DCHECK(pref_service_);
+  // If the UI is not enabled, allow the access.
+  if (!base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature))
+    return true;
   return pref_service_->GetBoolean(prefs::kArcHasAccessToRemovableMedia);
 }
 
