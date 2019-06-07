@@ -42,6 +42,12 @@ const base::Feature kAutofillCreditCardAblationExperiment{
 const base::Feature kAutofillCreditCardAuthentication{
     "AutofillCreditCardAuthentication", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, if credit card upload succeeded, the avatar icon will show a
+// highlight otherwise, the credit card icon image will be updated and if user
+// clicks on the icon, a save card failure bubble will pop up.
+const base::Feature kAutofillCreditCardUploadFeedback{
+    "AutofillCreditCardUploadFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillDoNotMigrateUnsupportedLocalCards{
     "AutofillDoNotMigrateUnsupportedLocalCards",
     base::FEATURE_DISABLED_BY_DEFAULT};

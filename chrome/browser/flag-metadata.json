@@ -842,6 +842,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-autofill-credit-card-upload-feedback",
+    "owners": [ "siyua@chromium.org, payments-autofill-team@google.com" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "enable-autofill-do-not-migrate-unsupported-local-cards",
     "owners": [ "sujiezhu@google.com", "jsaul@google.com" ],
     "expiry_milestone": 80

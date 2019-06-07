@@ -3903,6 +3903,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEvDetailsInPageInfoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kEvDetailsInPageInfo)},
 
+    {"enable-autofill-credit-card-upload-feedback",
+     flag_descriptions::kEnableAutofillCreditCardUploadFeedbackName,
+     flag_descriptions::kEnableAutofillCreditCardUploadFeedbackDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardUploadFeedback)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
