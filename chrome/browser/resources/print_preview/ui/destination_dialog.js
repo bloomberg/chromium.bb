@@ -22,7 +22,7 @@ Polymer({
 
     activeUser: {
       type: String,
-      observer: 'updateDestinationsAndInvitations_',
+      observer: 'onActiveUserChange_',
     },
 
     currentDestinationAccount: String,
@@ -138,10 +138,6 @@ Polymer({
         this.updateDestinations_.bind(this));
     this.tracker_.add(
         destinationStore,
-        print_preview.DestinationStore.EventType.DESTINATIONS_RESET,
-        () => this.destinations_ = []);
-    this.tracker_.add(
-        destinationStore,
         print_preview.DestinationStore.EventType.DESTINATION_SEARCH_DONE,
         this.updateDestinationsAndInvitations_.bind(this));
     this.initialized_ = true;
@@ -158,6 +154,15 @@ Polymer({
         invitationStore,
         print_preview.InvitationStore.EventType.INVITATION_PROCESSED,
         this.updateInvitations_.bind(this));
+  },
+
+  /** @private */
+  onActiveUserChange_: function() {
+    if (this.activeUser) {
+      this.$$('select').value = this.activeUser;
+    }
+
+    this.updateDestinationsAndInvitations_();
   },
 
   /** @private */
@@ -286,17 +291,17 @@ Polymer({
         this.destinationStore.isPrintDestinationSearchInProgress;
     this.metrics_.record(
         print_preview.Metrics.DestinationSearchBucket.DESTINATION_SHOWN);
+    if (this.activeUser) {
+      Polymer.RenderStatus.beforeNextRender(assert(this.$$('select')), () => {
+        this.$$('select').value = this.activeUser;
+      });
+    }
     this.$.printList.forceIronResize();
   },
 
   /** @return {boolean} Whether the dialog is open. */
   isOpen: function() {
     return this.$.dialog.hasAttribute('open');
-  },
-
-  /** @private */
-  isSelected_: function(account) {
-    return account == this.activeUser;
   },
 
   /** @private */
@@ -387,19 +392,12 @@ Polymer({
     const account = select.value;
     if (account) {
       this.loadingDestinations_ = true;
-      this.destinations_ = [];
       this.fire('account-change', account);
       this.metrics_.record(
           print_preview.Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);
     } else {
+      select.value = this.activeUser;
       print_preview.NativeLayer.getInstance().signIn(true);
-      const options = select.querySelectorAll('option');
-      for (let i = 0; i < options.length; i++) {
-        if (options[i].value == this.activeUser) {
-          select.selectedIndex = i;
-          break;
-        }
-      }
       this.metrics_.record(
           print_preview.Metrics.DestinationSearchBucket.ADD_ACCOUNT_SELECTED);
     }

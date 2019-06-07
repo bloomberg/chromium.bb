@@ -746,10 +746,6 @@ TEST_F(
     });
 GEN('#endif');
 
-TEST_F('PrintPreviewDestinationDialogTest', 'ReloadPrinterList', function() {
-  this.runMochaTest(destination_dialog_test.TestNames.ReloadPrinterList);
-});
-
 TEST_F('PrintPreviewDestinationDialogTest', 'UserAccounts', function() {
   this.runMochaTest(destination_dialog_test.TestNames.UserAccounts);
 });
@@ -1380,6 +1376,13 @@ TEST_F(
     function() {
       this.runMochaTest(
           destination_settings_test.TestNames.UpdateRecentDestinations);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationSettingsTest', 'ResetDestinationOnSignOut',
+    function() {
+      this.runMochaTest(
+          destination_settings_test.TestNames.ResetDestinationOnSignOut);
     });
 
 // eslint-disable-next-line no-var

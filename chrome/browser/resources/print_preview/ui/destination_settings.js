@@ -126,6 +126,9 @@ Polymer({
     users_: Array,
   },
 
+  /** @private {string} */
+  lastUser_: '',
+
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
 
@@ -167,9 +170,59 @@ Polymer({
   /** @private */
   onCloudPrintInterfaceSet_: function() {
     const cloudPrintInterface = assert(this.cloudPrintInterface);
-    this.$.userManager.setCloudPrintInterface(cloudPrintInterface);
     this.destinationStore_.setCloudPrintInterface(cloudPrintInterface);
     this.invitationStore_.setCloudPrintInterface(cloudPrintInterface);
+  },
+
+  /** @private */
+  onActiveUserChanged_: function() {
+    // Re-filter the dropdown destinations for the new account.
+    if (!this.isDialogOpen_) {
+      // Don't update the destination settings UI while the dialog is open in
+      // front of it.
+      this.updateDropdownDestinations_();
+    }
+
+    if (!this.destination ||
+        this.destination.origin !== print_preview.DestinationOrigin.COOKIES) {
+      // Active user changing doesn't impact non-cookie based destinations.
+      return;
+    }
+
+    if (this.destination.account === this.activeUser_) {
+      // If the current destination belongs to the new account and the dialog
+      // was waiting for sign in, update the state.
+      if (this.destinationState === print_preview.DestinationState.SELECTED) {
+        this.destinationState = this.destination.capabilities ?
+            print_preview.DestinationState.UPDATED :
+            print_preview.DestinationState.SET;
+      }
+      return;
+    }
+
+    if (this.isDialogOpen_) {
+      // Do not update the selected destination if the dialog is open, as this
+      // will change the destination settings UI behind the dialog, and the user
+      // may be selecting a new destination in the dialog anyway. Wait for the
+      // user to select a destination or cancel.
+      return;
+    }
+
+    // Destination belongs to a different account. Reset the destination to the
+    // most recent destination associated with the new account, or the default.
+    const recent = this.displayedDestinations_.find(d => {
+      return d.origin !== print_preview.DestinationOrigin.COOKIES ||
+          d.account === this.activeUser_;
+    });
+    if (recent) {
+      const success = this.destinationStore_.selectRecentDestinationByKey(
+          print_preview.createRecentDestinationKey(recent),
+          this.displayedDestinations_);
+      if (success) {
+        return;
+      }
+    }
+    this.destinationStore_.selectDefaultDestination();
   },
 
   /**
@@ -192,27 +245,18 @@ Polymer({
   },
 
   /** @private */
-  onActiveUserChanged_: function() {
-    if (!this.activeUser_ || !this.destination) {
-      return;
-    }
-
-    if (this.destinationState === print_preview.DestinationState.SELECTED &&
-        this.destination.origin === print_preview.DestinationOrigin.COOKIES) {
-      // Adjust states if the destination is now ready to be printed to.
-      this.destinationState = this.destination.capabilities ?
-          print_preview.DestinationState.UPDATED :
-          print_preview.DestinationState.SET;
-    }
-    this.updateDropdownDestinations_();
-  },
-
-  /** @private */
   onDestinationSelect_: function() {
+    // If the user selected a destination in the dialog after changing the
+    // active user, do the UI updates that were previously deferred.
+    if (this.isDialogOpen_ && this.lastUser_ !== this.activeUser_) {
+      this.updateDropdownDestinations_();
+    }
+
     if (this.state === print_preview.State.FATAL_ERROR) {
       // Don't let anything reset if there is a fatal error.
       return;
     }
+
     const destination = this.destinationStore_.selectedDestination;
     if (!!this.activeUser_ ||
         destination.origin !== print_preview.DestinationOrigin.COOKIES) {
@@ -392,6 +436,7 @@ Polymer({
         this.invitationStore_.startLoadingInvitations(this.activeUser_);
       }
       this.$.destinationDialog.get().show();
+      this.lastUser_ = this.activeUser_;
       this.isDialogOpen_ = true;
     } else {
       const success = this.destinationStore_.selectRecentDestinationByKey(
@@ -415,6 +460,9 @@ Polymer({
   onDialogClose_: function() {
     // Reset the select value if the user dismissed the dialog without
     // selecting a new destination.
+    if (this.lastUser_ != this.activeUser_) {
+      this.updateDropdownDestinations_();
+    }
     this.updateDestinationSelect_();
     this.$.destinationSelect.focus();
     this.isDialogOpen_ = false;

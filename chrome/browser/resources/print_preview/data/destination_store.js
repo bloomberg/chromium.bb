@@ -280,8 +280,6 @@ cr.define('print_preview', function() {
           loadTimeData.getBoolean('useSystemDefaultPrinter');
 
       addListenerCallback('printers-added', this.onPrintersAdded_.bind(this));
-      addListenerCallback(
-          'user-accounts-updated', this.onDestinationsReload.bind(this));
     }
 
     /**
@@ -291,12 +289,10 @@ cr.define('print_preview', function() {
      *     accessible by the {@code account}.
      */
     destinations(opt_account) {
-      if (opt_account) {
-        return this.destinations_.filter(function(destination) {
-          return !destination.account || destination.account == opt_account;
-        });
-      }
-      return this.destinations_.slice(0);
+      return this.destinations_.filter(function(destination) {
+        return !destination.account ||
+            (!!opt_account && destination.account == opt_account);
+      });
     }
 
     /**
@@ -806,9 +802,8 @@ cr.define('print_preview', function() {
      * Attempts to select system default destination with a fallback to the
      * 'Save to PDF' destination and a final fallback to the first destination
      * in the store.
-     * @private
      */
-    selectDefaultDestination_() {
+    selectDefaultDestination() {
       // Try the system default, if it isn't the destination that was
       // supposed to be autoselected and failed.
       if (this.autoSelectMatchingDestination_ &&
@@ -1083,7 +1078,7 @@ cr.define('print_preview', function() {
           this.autoSelectMatchingDestination_.matchOrigin(
               print_preview.DestinationOrigin.EXTENSION) &&
           this.selectedDestination_ && this.selectedDestination_.isExtension) {
-        this.selectDefaultDestination_();
+        this.selectDefaultDestination();
       }
     }
 
@@ -1137,26 +1132,8 @@ cr.define('print_preview', function() {
     startAutoSelectTimeout_() {
       clearTimeout(this.autoSelectTimeout_);
       this.autoSelectTimeout_ = setTimeout(
-          this.selectDefaultDestination_.bind(this),
+          this.selectDefaultDestination.bind(this),
           DestinationStore.AUTO_SELECT_TIMEOUT_);
-    }
-
-    /**
-     * Resets the state of the destination store to its initial state.
-     * @private
-     */
-    reset_() {
-      this.destinations_ = [];
-      this.destinationMap_.clear();
-      this.inFlightCloudPrintRequests_.clear();
-      this.loadedCloudOrigins_.clear();
-      this.destinationSearchStatus_.forEach((status, type) => {
-        this.destinationSearchStatus_.set(
-            type, print_preview.DestinationStorePrinterSearchStatus.START);
-      });
-      this.startAutoSelectTimeout_();
-      this.dispatchEvent(
-          new CustomEvent(DestinationStore.EventType.DESTINATIONS_RESET));
     }
 
     /**
@@ -1240,7 +1217,7 @@ cr.define('print_preview', function() {
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchIdAndOrigin(
               destinationId, origin)) {
-        this.selectDefaultDestination_();
+        this.selectDefaultDestination();
       }
     }
 
@@ -1326,7 +1303,7 @@ cr.define('print_preview', function() {
         console.warn(
             'Failed to fetch last used printer caps: ' +
             event.detail.destinationId);
-        this.selectDefaultDestination_();
+        this.selectDefaultDestination();
       } else {
         // Log the failure
         console.warn(
@@ -1367,18 +1344,6 @@ cr.define('print_preview', function() {
         this.selectFirstDestination_ = false;
       }
     }
-
-    /**
-     * Called from print preview after the user was requested to sign in, and
-     * did so successfully.
-     */
-    onDestinationsReload() {
-      this.reset_();
-      this.autoSelectMatchingDestination_ =
-          this.convertPreselectedToDestinationMatch_();
-      this.createLocalPdfPrintDestination_();
-      this.startLoadAllDestinations();
-    }
   }
 
   /**
@@ -1391,7 +1356,6 @@ cr.define('print_preview', function() {
     DESTINATION_SELECT: 'print_preview.DestinationStore.DESTINATION_SELECT',
     DESTINATIONS_INSERTED:
         'print_preview.DestinationStore.DESTINATIONS_INSERTED',
-    DESTINATIONS_RESET: 'print_preview.DestinationStore.DESTINATIONS_RESET',
     ERROR: 'print_preview.DestinationStore.ERROR',
     SELECTED_DESTINATION_CAPABILITIES_READY: 'print_preview.DestinationStore' +
         '.SELECTED_DESTINATION_CAPABILITIES_READY',

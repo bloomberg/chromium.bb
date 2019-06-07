@@ -19,6 +19,9 @@ cr.define('cloudprint', function() {
     search(opt_account, opt_origin) {}
 
     /** @override */
+    setUsers(users) {}
+
+    /** @override */
     invites(account) {}
 
     /** @override */

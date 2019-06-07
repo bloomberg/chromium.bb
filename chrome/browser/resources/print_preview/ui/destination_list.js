@@ -69,8 +69,7 @@ Polymer({
 
     this.updateList(
         'matchingDestinations_',
-        destination => destination.origin + '/' + destination.id + '/' +
-            destination.connectionStatusText,
+        destination => destination.key + '/' + destination.connectionStatusText,
         this.searchQuery ?
             this.destinations.filter(
                 d => d.matches(/** @type {!RegExp} */ (this.searchQuery))) :

@@ -325,10 +325,15 @@ cr.define('cloudprint', function() {
     setUsers_(request) {
       if (request.origin == print_preview.DestinationOrigin.COOKIES) {
         const users = request.result['request']['users'] || [];
-        this.userSessionIndex_ = {};
-        for (let i = 0; i < users.length; i++) {
-          this.userSessionIndex_[users[i]] = i;
-        }
+        this.setUsers(users);
+      }
+    }
+
+    /** @param {!Array<string>} users */
+    setUsers(users) {
+      this.userSessionIndex_ = {};
+      for (let i = 0; i < users.length; i++) {
+        this.userSessionIndex_[users[i]] = i;
       }
     }
 
@@ -551,13 +556,13 @@ cr.define('cloudprint', function() {
       // this point, whether printer was found or not.
       if (request.origin == print_preview.DestinationOrigin.COOKIES &&
           request.result && request.result['request']['user'] &&
-          request.result['request']['users'] &&
-          request.account != request.result['request']['user']) {
+          request.result['request']['users']) {
         const users = request.result['request']['users'];
         this.setUsers_(request);
         // In case the user account is known, but not the primary one,
         // activate it.
-        if (this.userSessionIndex_[request.account] > 0 && request.account) {
+        if (request.account != request.result['request']['user'] &&
+            this.userSessionIndex_[request.account] > 0 && request.account) {
           this.dispatchUserUpdateEvent_(request.account, users);
           // Repeat the request for the newly activated account.
           this.printer(

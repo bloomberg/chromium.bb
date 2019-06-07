@@ -404,6 +404,7 @@ cr.define('destination_select_test', function() {
         recentDestinations: recentDestinations,
       });
       initialSettings.userAccounts = [account1, account2];
+      initialSettings.syncAvailable = true;
 
       return setInitialSettings()
           .then(() => {
@@ -415,15 +416,23 @@ cr.define('destination_select_test', function() {
             assertPrinterDisplay('Save to Google Drive', false);
 
             // Only the most recent printer + Save as PDF are in the store.
-            const loadedPrinters =
-                destinationSettings.destinationStore_.destinations();
-            assertEquals(2, loadedPrinters.length);
+            const loadedPrintersAccount1 =
+                destinationSettings.destinationStore_.destinations(account1);
+            assertEquals(2, loadedPrintersAccount1.length);
             cloudDestinations.forEach((destination) => {
               assertEquals(
                   destination === driveUser1,
-                  loadedPrinters.some(p => p.key == destination.key));
+                  loadedPrintersAccount1.some(p => p.key == destination.key));
             });
             assertEquals(1, numPrintersSelected);
+
+            // Only Save as PDF exists when filtering for account 2.
+            const loadedPrintersAccount2 =
+                destinationSettings.destinationStore_.destinations(account2);
+            assertEquals(1, loadedPrintersAccount2.length);
+            assertEquals(
+                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+                loadedPrintersAccount2[0].id);
           });
     });
 

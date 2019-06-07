@@ -89,6 +89,12 @@ cr.define('cloudprint', function() {
     search(opt_account, opt_origin) {}
 
     /**
+     * Sets the currently active users.
+     * @param {!Array<string>} users
+     */
+    setUsers(users) {}
+
+    /**
      * Sends Google Cloud Print printer sharing invitations API requests.
      * @param {string} account Account the request is sent for.
      */

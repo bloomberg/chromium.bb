@@ -16,6 +16,7 @@ cr.define('destination_settings_test', function() {
     OpenDialog: 'open dialog',
     TwoAccountsRecentDestinations: 'two accounts recent destinations',
     UpdateRecentDestinations: 'update recent destinations',
+    ResetDestinationOnSignOut: 'reset destination on sign out',
   };
 
   const suiteName = 'DestinationSettingsTest';
@@ -214,8 +215,9 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             // This will result in the destination store setting the Save as PDF
             // destination.
-            destinationSettings.destination =
-                print_preview_test_utils.getSaveAsPdfDestination();
+            assertEquals(
+                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+                destinationSettings.destination.id);
             assertFalse(destinationSettings.$.destinationSelect.disabled);
             assertDropdownItems(['Save as PDF/local/']);
 
@@ -244,11 +246,8 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             // This will result in the destination store setting the most recent
             // destination.
-            destinationSettings.destination = destinations[0];
+            assertEquals('ID1', destinationSettings.destination.id);
             assertFalse(destinationSettings.$.destinationSelect.disabled);
-            return test_util.waitForRender(destinationSettings);
-          })
-          .then(() => {
             assertDropdownItems([
               makeLocalDestinationKey('ID1'),
               makeLocalDestinationKey('ID2'),
@@ -283,11 +282,8 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             // This will result in the destination store setting the most recent
             // destination.
-            destinationSettings.destination = destinations[0];
+            assertEquals('ID1', destinationSettings.destination.id);
             assertFalse(destinationSettings.$.destinationSelect.disabled);
-            return test_util.waitForRender(destinationSettings);
-          })
-          .then(() => {
             assertDropdownItems([
               makeLocalDestinationKey('ID1'),
               makeLocalDestinationKey('ID3'),
@@ -320,11 +316,9 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             // This will result in the destination store setting the most recent
             // destination.
-            destinationSettings.destination = destinations[0];
+            assertEquals('ID1', destinationSettings.destination.id);
             assertFalse(destinationSettings.$.destinationSelect.disabled);
-            return test_util.waitForRender(destinationSettings);
-          })
-          .then(() => {
+
             // Google Drive does not show up even though it is recent, since the
             // user is not signed in and the destination is not available.
             assertDropdownItems([
@@ -362,11 +356,8 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             // This will result in the destination store setting the most recent
             // destination.
-            destinationSettings.destination = destinations[0];
+            assertEquals('ID1', destinationSettings.destination.id);
             assertFalse(dropdown.disabled);
-            return test_util.waitForRender(destinationSettings);
-          })
-          .then(() => {
             assertDropdownItems([
               makeLocalDestinationKey('ID1'),
               makeLocalDestinationKey('ID3'),
@@ -408,11 +399,9 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             // This will result in the destination store setting the most recent
             // destination.
-            destinationSettings.destination = destinations[0];
+            assertEquals('ID1', destinationSettings.destination.id);
             assertFalse(dropdown.disabled);
-            return test_util.waitForRender(destinationSettings);
-          })
-          .then(() => {
+
             // If the user is signed in, Save to Drive should be displayed.
             signIn();
             assertDropdownItems([
@@ -421,7 +410,8 @@ cr.define('destination_settings_test', function() {
               'Save as PDF/local/',
               '__google__docs/cookies/foo@chromium.org',
             ]);
-            // Most recent destination is selected by default.
+
+            // Most recent destination is still selected.
             assertEquals('ID1', destinationSettings.destination.id);
 
             // Simulate selection of Google Drive printer.
@@ -453,19 +443,14 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             // This will result in the destination store setting the most recent
             // destination.
-            destinationSettings.destination = destinations[0];
+            assertEquals('ID1', destinationSettings.destination.id);
             assertFalse(dropdown.disabled);
-            return test_util.waitForRender(destinationSettings);
-          })
-          .then(() => {
             assertDropdownItems([
               makeLocalDestinationKey('ID1'),
               makeLocalDestinationKey('ID2'),
               makeLocalDestinationKey('ID3'),
               'Save as PDF/local/',
             ]);
-            // Most recent destination is selected by default.
-            assertEquals('ID1', destinationSettings.destination.id);
 
             // Simulate selection of Save as PDF printer.
             const whenDestinationSelect = test_util.eventToPromise(
@@ -491,11 +476,8 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             // This will result in the destination store setting the most recent
             // destination.
-            destinationSettings.destination = destinations[0];
+            assertEquals('ID1', destinationSettings.destination.id);
             assertFalse(dropdown.disabled);
-            return test_util.waitForRender(destinationSettings);
-          })
-          .then(() => {
             assertDropdownItems([
               makeLocalDestinationKey('ID1'),
               makeLocalDestinationKey('ID2'),
@@ -549,12 +531,8 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             // This will result in the destination store setting the most recent
             // destination.
-            destinationSettings.destination = cloudPrinterUser1;
-            Polymer.dom.flush();
+            assertEquals('FooCloud', destinationSettings.destination.id);
             assertFalse(dropdown.disabled);
-            return test_util.waitForRender(destinationSettings);
-          })
-          .then(() => {
             assertDropdownItems([
               'FooCloud/cookies/foo@chromium.org',
               makeLocalDestinationKey('ID1'),
@@ -659,6 +637,59 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             assertRecentDestinations(['ID3', 'ID2', 'Save as PDF']);
             assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
+          });
+    });
+
+    // Tests that the dropdown resets the destination if the user signs out of
+    // the account associated with the curret one.
+    test(assert(TestNames.ResetDestinationOnSignOut), function() {
+      recentDestinations = destinations.slice(0, 3).map(
+          destination => print_preview.makeRecentDestination(destination));
+      const driveDestination =
+          print_preview_test_utils.getGoogleDriveDestination(defaultUser);
+      recentDestinations.splice(
+          0, 1, print_preview.makeRecentDestination(driveDestination));
+      cloudPrintInterface.setPrinter(
+          print_preview_test_utils.getGoogleDriveDestination(defaultUser));
+      initialAccounts = [defaultUser];
+      initialize();
+
+      return cloudPrintInterface.whenCalled('printer')
+          .then(() => {
+            assertEquals(
+                print_preview.Destination.GooglePromotedId.DOCS,
+                destinationSettings.destination.id);
+            assertFalse(destinationSettings.$.destinationSelect.disabled);
+            assertDropdownItems([
+              makeLocalDestinationKey('ID2'),
+              makeLocalDestinationKey('ID3'),
+              'Save as PDF/local/',
+              '__google__docs/cookies/foo@chromium.org',
+            ]);
+
+            // Sign out.
+            cr.webUIListenerCallback('user-accounts-updated', []);
+            Polymer.dom.flush();
+
+            return nativeLayer.whenCalled('getPrinterCapabilities');
+          })
+          .then(() => {
+            assertEquals('ID2', destinationSettings.destination.id);
+            assertFalse(destinationSettings.$.destinationSelect.disabled);
+            assertDropdownItems([
+              makeLocalDestinationKey('ID2'),
+              makeLocalDestinationKey('ID3'),
+              'Save as PDF/local/',
+            ]);
+
+            // Now that the selected destination is local, signing in and out
+            // shouldn't impact it.
+            signIn();
+            assertEquals('ID2', destinationSettings.destination.id);
+
+            cr.webUIListenerCallback('user-accounts-updated', []);
+            Polymer.dom.flush();
+            assertEquals('ID2', destinationSettings.destination.id);
           });
     });
   });

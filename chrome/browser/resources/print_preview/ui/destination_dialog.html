@@ -154,8 +154,7 @@
           <select class="md-select account-select"
               aria-labelledby="accountSelectLabel" on-change="onUserChange_">
             <template is="dom-repeat" items="[[users]]">
-              <option selected="[[isSelected_(item, activeUser)]]"
-                  value="[[item]]">
+              <option value="[[item]]">
                 [[item]]
               </option>
             </template>

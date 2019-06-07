@@ -22,6 +22,9 @@ cr.define('print_preview', function() {
 
       /** @private {boolean} */
       this.initialized_ = false;
+
+      /** @private {!Array<string>} */
+      this.users_ = [];
     }
 
     /** @override */
@@ -34,12 +37,20 @@ cr.define('print_preview', function() {
       return this.searchInProgress_;
     }
 
+    /** @override */
+    setUsers(users) {
+      this.users_ = users;
+    }
+
     /**
      * @param {!print_preview.Destination} printer The destination to return
      *     when the printer is requested.
      */
     setPrinter(printer) {
       this.cloudPrintersMap_.set(printer.key, printer);
+      if (!this.users_.includes(printer.account)) {
+        this.users_.push(printer.account);
+      }
     }
 
     /**
@@ -64,12 +75,12 @@ cr.define('print_preview', function() {
     search(account) {
       this.methodCalled('search', account);
       this.searchInProgress_ = true;
-      const users = this.getUsers_();
-      const activeUser = users.includes(account) ? account : (users[0] || '');
+      const activeUser =
+          this.users_.includes(account) ? account : (this.users_[0] || '');
       if (activeUser) {
         this.eventTarget_.dispatchEvent(new CustomEvent(
             cloudprint.CloudPrintInterfaceEventType.UPDATE_USERS,
-            {detail: {users: users, activeUser: activeUser}}));
+            {detail: {users: this.users_, activeUser: activeUser}}));
         this.initialized_ = true;
       }
 
@@ -109,12 +120,12 @@ cr.define('print_preview', function() {
           print_preview.createDestinationKey(printerId, origin, account));
 
       if (!this.initialized_) {
-        const users = this.getUsers_();
-        const activeUser = users.includes(account) ? account : (users[0] || '');
+        const activeUser =
+            this.users_.includes(account) ? account : (this.users_[0] || '');
         if (activeUser) {
           this.eventTarget_.dispatchEvent(new CustomEvent(
               cloudprint.CloudPrintInterfaceEventType.UPDATE_USERS,
-              {detail: {users: users, activeUser: activeUser}}));
+              {detail: {users: this.users_, activeUser: activeUser}}));
           this.initialized_ = true;
         }
       }
