@@ -66,6 +66,7 @@
  *   PARENTAL_CONTROLS: (undefined|!settings.Route),
  *   PAYMENTS: (undefined|!settings.Route),
  *   PEOPLE: (undefined|!settings.Route),
+ *   PERSONALIZATION: (undefined|!settings.Route),
  *   PLUGIN_VM: (undefined|!settings.Route),
  *   PLUGIN_VM_DETAILS: (undefined|!settings.Route),
  *   PLUGIN_VM_SHARED_PATHS: (undefined|!settings.Route),
@@ -259,6 +260,13 @@ cr.define('settings', function() {
         loadTimeData.getBoolean('showParentalControls')) {
       r.PARENTAL_CONTROLS =
           r.BASIC.createSection('/parentalControls', 'parentalControls');
+    }
+
+    // TODO(hsuregan): Remove once this file is forked.
+    if (loadTimeData.valueExists('showOSSettings') &&
+        loadTimeData.getBoolean('showOSSettings')) {
+      r.PERSONALIZATION =
+          r.BASIC.createSection('/personalization', 'personalization');
     }
     // </if>
 
