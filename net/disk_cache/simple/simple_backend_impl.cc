@@ -819,12 +819,19 @@ SimpleBackendImpl::DiskStatResult SimpleBackendImpl::InitCacheStructureOnDisk(
   } else {
     bool mtime_result =
         disk_cache::simple_util::GetMTime(path, &result.cache_dir_mtime);
-    DCHECK(mtime_result);
-    if (!result.max_size) {
+    if (!mtime_result) {
+      // Something deleted the directory between when we set it up and the
+      // mstat; this is not uncommon on some test fixtures which erase their
+      // tempdir while some worker threads may still be running.
+      LOG(ERROR) << "Simple Cache Backend: cache directory inaccessible right "
+                    "after creation; path: "
+                 << path.LossyDisplayName();
+      result.net_error = net::ERR_FAILED;
+    } else if (!result.max_size) {
       int64_t available = base::SysInfo::AmountOfFreeDiskSpace(path);
       result.max_size = disk_cache::PreferredCacheSize(available);
+      DCHECK(result.max_size);
     }
-    DCHECK(result.max_size);
   }
   return result;
 }
