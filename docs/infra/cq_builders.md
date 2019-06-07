@@ -178,6 +178,16 @@ builder.
     * [`//third_party/blink/web_tests/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/webgpu/)
     * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
 
+* [fuchsia-arm64-cast](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/fuchsia-arm64-cast) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/fuchsia-arm64-cast)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+fuchsia-arm64-cast))
+
+  Path regular expressions:
+    * [`//chromecast/.+`](https://cs.chromium.org/chromium/src/chromecast/)
+
+* [fuchsia-x64-cast](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/fuchsia-x64-cast) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/fuchsia-x64-cast)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+fuchsia-x64-cast))
+
+  Path regular expressions:
+    * [`//chromecast/.+`](https://cs.chromium.org/chromium/src/chromecast/)
+
 * [ios-simulator-cronet](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/ios-simulator-cronet) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/ios-simulator-cronet)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+ios-simulator-cronet))
 
   Path regular expressions:

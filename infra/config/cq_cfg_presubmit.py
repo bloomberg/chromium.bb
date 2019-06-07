@@ -283,7 +283,8 @@ def verify_location_regexps(regexps, verbose=True):
   invalid_regexp = False
   for regexp in regexps:
     regexp = regexp.replace('\\\\', '')
-    assert regexp.startswith(REGEX_PREFIX)
+    assert regexp.startswith(REGEX_PREFIX), (
+        'location_regexp "%s" must start with "%s"' % (regexp, REGEX_PREFIX))
     regexp = regexp[len(REGEX_PREFIX):]
     # Split by path name, so that we don't have to run os.walk on the entire
     # source tree. commit-queue.cfg always uses '/' as the path separator.
