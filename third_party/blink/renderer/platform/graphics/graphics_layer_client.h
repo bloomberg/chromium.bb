@@ -110,6 +110,7 @@ class PLATFORM_EXPORT GraphicsLayerClient {
   }
 
   virtual bool PaintBlockedByDisplayLock() const { return false; }
+  virtual void NotifyDisplayLockNeedsGraphicsLayerCollection() {}
 
 #if DCHECK_IS_ON()
   // CompositedLayerMapping overrides this to verify that it is not

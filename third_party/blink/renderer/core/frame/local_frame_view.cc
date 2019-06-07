@@ -2562,8 +2562,16 @@ static void CollectDrawableLayersForLayerListRecursively(
   DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
 
   if (!layer || layer->Client().ShouldThrottleRendering() ||
-      layer->Client().IsUnderSVGHiddenContainer() ||
-      layer->Client().PaintBlockedByDisplayLock()) {
+      layer->Client().IsUnderSVGHiddenContainer()) {
+    return;
+  }
+
+  // TODO(crbug.com/966493): We can't currently collect display-locked elements
+  // as foreign layers. However, if we skip collecting them, then we need to
+  // ensure to notify the display lock context, because when we unlock we need
+  // to force recollecting of graphics layers.
+  if (layer->Client().PaintBlockedByDisplayLock()) {
+    layer->Client().NotifyDisplayLockNeedsGraphicsLayerCollection();
     return;
   }
 

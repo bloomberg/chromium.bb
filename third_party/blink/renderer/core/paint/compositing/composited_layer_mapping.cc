@@ -3521,6 +3521,12 @@ bool CompositedLayerMapping::PaintBlockedByDisplayLock() const {
   return GetLayoutObject().PaintBlockedByDisplayLock();
 }
 
+void CompositedLayerMapping::NotifyDisplayLockNeedsGraphicsLayerCollection() {
+  auto* context = GetLayoutObject().GetDisplayLockContext();
+  DCHECK(context);
+  context->NotifyNeedsGraphicsLayerCollection();
+}
+
 #if DCHECK_IS_ON()
 void CompositedLayerMapping::VerifyNotPainting() {
   DCHECK(!GetLayoutObject().GetFrame()->GetPage() ||

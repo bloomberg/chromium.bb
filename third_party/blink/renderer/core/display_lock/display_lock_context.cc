@@ -630,8 +630,13 @@ bool DisplayLockContext::MarkAncestorsForPrePaintIfNeeded() {
 }
 
 bool DisplayLockContext::MarkPaintLayerNeedsRepaint() {
+  DCHECK(ConnectedToView());
   if (auto* layout_object = element_->GetLayoutObject()) {
     layout_object->PaintingLayer()->SetNeedsRepaint();
+    if (needs_graphics_layer_collection_) {
+      document_->View()->GraphicsLayersDidChange();
+      needs_graphics_layer_collection_ = false;
+    }
     return true;
   }
   return false;

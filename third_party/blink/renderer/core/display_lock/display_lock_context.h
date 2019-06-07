@@ -164,6 +164,12 @@ class CORE_EXPORT DisplayLockContext final
         std::max(blocked_style_traversal_type_, type);
   }
 
+  // Inform the display lock that it needs a graphics layer collection when it
+  // needs to paint.
+  void NotifyNeedsGraphicsLayerCollection() {
+    needs_graphics_layer_collection_ = true;
+  }
+
   // Notify this element will be disconnected.
   void NotifyWillDisconnect();
 
@@ -307,6 +313,7 @@ class CORE_EXPORT DisplayLockContext final
   bool needs_effective_allowed_touch_action_update_ = false;
   bool needs_prepaint_subtree_walk_ = false;
   bool is_horizontal_writing_mode_ = true;
+  bool needs_graphics_layer_collection_ = false;
 
   TaskHandle timeout_task_handle_;
 };
