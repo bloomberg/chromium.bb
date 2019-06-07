@@ -54,8 +54,7 @@ class TestGpuServiceHolder {
   // more than once.
   static void DestroyInstanceAfterEachTest();
 
-  TestGpuServiceHolder(const gpu::GpuPreferences& preferences,
-                       bool use_swiftshader_for_vulkan);
+  explicit TestGpuServiceHolder(const gpu::GpuPreferences& preferences);
   ~TestGpuServiceHolder();
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner() {
@@ -82,7 +81,6 @@ class TestGpuServiceHolder {
   friend struct base::DefaultSingletonTraits<TestGpuServiceHolder>;
 
   void InitializeOnGpuThread(const gpu::GpuPreferences& preferences,
-                             bool use_swiftshader_for_vulkan,
                              base::WaitableEvent* completion);
   void DeleteOnGpuThread();
 

@@ -14,6 +14,39 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<gpu::mojom::VulkanImplementationName,
+                  gpu::VulkanImplementationName> {
+  static gpu::mojom::VulkanImplementationName ToMojom(
+      gpu::VulkanImplementationName input) {
+    switch (input) {
+      case gpu::VulkanImplementationName::kNone:
+        return gpu::mojom::VulkanImplementationName::kNone;
+      case gpu::VulkanImplementationName::kNative:
+        return gpu::mojom::VulkanImplementationName::kNative;
+      case gpu::VulkanImplementationName::kSwiftshader:
+        return gpu::mojom::VulkanImplementationName::kSwiftshader;
+    }
+    NOTREACHED();
+    return gpu::mojom::VulkanImplementationName::kNone;
+  }
+  static bool FromMojom(gpu::mojom::VulkanImplementationName input,
+                        gpu::VulkanImplementationName* out) {
+    switch (input) {
+      case gpu::mojom::VulkanImplementationName::kNone:
+        *out = gpu::VulkanImplementationName::kNone;
+        return true;
+      case gpu::mojom::VulkanImplementationName::kNative:
+        *out = gpu::VulkanImplementationName::kNative;
+        return true;
+      case gpu::mojom::VulkanImplementationName::kSwiftshader:
+        *out = gpu::VulkanImplementationName::kSwiftshader;
+        return true;
+    }
+    return false;
+  }
+};
+
+template <>
 struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool Read(gpu::mojom::GpuPreferencesDataView prefs,
                    gpu::GpuPreferences* out) {
@@ -77,7 +110,8 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->disable_oop_rasterization = prefs.disable_oop_rasterization();
     out->enable_oop_rasterization_ddl = prefs.enable_oop_rasterization_ddl();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
-    out->enable_vulkan = prefs.enable_vulkan();
+    if (!prefs.ReadUseVulkan(&out->use_vulkan))
+      return false;
     out->disable_vulkan_surface = prefs.disable_vulkan_surface();
     out->disable_vulkan_fallback_to_gl_for_testing =
         prefs.disable_vulkan_fallback_to_gl_for_testing();
@@ -213,8 +247,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool watchdog_starts_backgrounded(const gpu::GpuPreferences& prefs) {
     return prefs.watchdog_starts_backgrounded;
   }
-  static bool enable_vulkan(const gpu::GpuPreferences& prefs) {
-    return prefs.enable_vulkan;
+  static gpu::VulkanImplementationName use_vulkan(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.use_vulkan;
   }
   static bool disable_vulkan_surface(const gpu::GpuPreferences& prefs) {
     return prefs.disable_vulkan_surface;

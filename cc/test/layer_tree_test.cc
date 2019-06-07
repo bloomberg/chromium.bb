@@ -45,6 +45,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gl/gl_switches.h"
 
 namespace cc {
 namespace {
@@ -1065,8 +1066,12 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
   InitializeSettings(&settings_);
 
   if (use_vulkan()) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableVulkan);
+    auto* command_line = base::CommandLine::ForCurrentProcess();
+    bool use_gpu = command_line->HasSwitch(::switches::kUseGpuInTests);
+    command_line->AppendSwitchASCII(
+        ::switches::kUseVulkan,
+        use_gpu ? ::switches::kVulkanImplementationNameNative
+                : ::switches::kVulkanImplementationNameSwiftshader);
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

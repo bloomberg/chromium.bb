@@ -167,8 +167,18 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
       command_line->HasSwitch(switches::kIgnoreGpuBlacklist);
   gpu_preferences.enable_webgpu =
       command_line->HasSwitch(switches::kEnableUnsafeWebGPU);
-  gpu_preferences.enable_vulkan =
-      command_line->HasSwitch(switches::kEnableVulkan);
+  if (command_line->HasSwitch(switches::kUseVulkan)) {
+    auto value = command_line->GetSwitchValueASCII(switches::kUseVulkan);
+    if (value.empty() || value == switches::kVulkanImplementationNameNative) {
+      gpu_preferences.use_vulkan = VulkanImplementationName::kNative;
+    } else if (value == switches::kVulkanImplementationNameSwiftshader) {
+      gpu_preferences.use_vulkan = VulkanImplementationName::kSwiftshader;
+    } else {
+      gpu_preferences.use_vulkan = VulkanImplementationName::kNone;
+    }
+  } else {
+    gpu_preferences.use_vulkan = VulkanImplementationName::kNone;
+  }
   gpu_preferences.disable_vulkan_surface =
       command_line->HasSwitch(switches::kDisableVulkanSurface);
   return gpu_preferences;

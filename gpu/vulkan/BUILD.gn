@@ -99,13 +99,6 @@ if (enable_vulkan) {
       "tests/native_window.h",
     ]
 
-    # Vulkan Swiftshader can only be built on Linux.
-    # TODO(samans): Support more platforms. https://crbug.com/963988
-    if (use_x11) {
-      data_deps = [
-        "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
-      ]
-    }
     deps = [
       "//ui/gfx",
       "//ui/gfx:native_widget_types",

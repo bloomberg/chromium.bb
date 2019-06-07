@@ -73,8 +73,11 @@ const char kEmulateShaderPrecision[] = "emulate-shader-precision";
 // tracking.
 const char kUseCmdDecoder[] = "use-cmd-decoder";
 
-// Enable Vulkan support, must also have ENABLE_VULKAN defined.
-const char kEnableVulkan[] = "enable-vulkan";
+// Enable Vulkan support and select Vulkan implementation, must also have
+// ENABLE_VULKAN defined.
+const char kUseVulkan[] = "use-vulkan";
+const char kVulkanImplementationNameNative[] = "native";
+const char kVulkanImplementationNameSwiftshader[] = "swiftshader";
 
 // Disables VK_KHR_surface extension. Instead of using swapchain, bitblt will be
 // used for present render result on screen.

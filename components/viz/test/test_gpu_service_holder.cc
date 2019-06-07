@@ -75,10 +75,8 @@ TestGpuServiceHolder* TestGpuServiceHolder::GetInstance() {
   }
 
   if (!g_holder) {
-    g_holder = new TestGpuServiceHolder(
-        gpu::gles2::ParseGpuPreferences(base::CommandLine::ForCurrentProcess()),
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kUseGpuInTests));
+    g_holder = new TestGpuServiceHolder(gpu::gles2::ParseGpuPreferences(
+        base::CommandLine::ForCurrentProcess()));
   }
   return g_holder;
 }
@@ -104,17 +102,16 @@ void TestGpuServiceHolder::DestroyInstanceAfterEachTest() {
 }
 
 TestGpuServiceHolder::TestGpuServiceHolder(
-    const gpu::GpuPreferences& gpu_preferences,
-    bool use_swiftshader_for_vulkan)
+    const gpu::GpuPreferences& gpu_preferences)
     : gpu_thread_("GPUMainThread"), io_thread_("GPUIOThread") {
   CHECK(gpu_thread_.Start());
   CHECK(io_thread_.Start());
 
   base::WaitableEvent completion;
   gpu_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&TestGpuServiceHolder::InitializeOnGpuThread,
-                                base::Unretained(this), gpu_preferences,
-                                use_swiftshader_for_vulkan, &completion));
+      FROM_HERE,
+      base::BindOnce(&TestGpuServiceHolder::InitializeOnGpuThread,
+                     base::Unretained(this), gpu_preferences, &completion));
   completion.Wait();
 }
 
@@ -129,22 +126,23 @@ TestGpuServiceHolder::~TestGpuServiceHolder() {
 
 void TestGpuServiceHolder::InitializeOnGpuThread(
     const gpu::GpuPreferences& gpu_preferences,
-    bool use_swiftshader_for_vulkan,
     base::WaitableEvent* completion) {
   DCHECK(gpu_thread_.task_runner()->BelongsToCurrentThread());
 
-  if (gpu_preferences.enable_vulkan) {
+  if (gpu_preferences.use_vulkan != gpu::VulkanImplementationName::kNone) {
 #if BUILDFLAG(ENABLE_VULKAN)
+    bool use_swiftshader = gpu_preferences.use_vulkan ==
+                           gpu::VulkanImplementationName::kSwiftshader;
+
 #ifndef USE_X11
     // TODO(samans): Support Swiftshader on more platforms.
     // https://crbug.com/963988
-    LOG_IF(ERROR, use_swiftshader_for_vulkan)
+    LOG_IF(ERROR, use_swiftshader)
         << "Unable to use Vulkan Swiftshader on this platform. Falling back to "
            "GPU.";
-    use_swiftshader_for_vulkan = false;
+    use_swiftshader = false;
 #endif
-    vulkan_implementation_ =
-        gpu::CreateVulkanImplementation(use_swiftshader_for_vulkan);
+    vulkan_implementation_ = gpu::CreateVulkanImplementation(use_swiftshader);
     if (!vulkan_implementation_ ||
         !vulkan_implementation_->InitializeVulkanInstance(
             !gpu_preferences.disable_vulkan_surface)) {

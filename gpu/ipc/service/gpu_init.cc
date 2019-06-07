@@ -251,19 +251,22 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
-  if (gpu_preferences_.enable_vulkan) {
-    vulkan_implementation_ = gpu::CreateVulkanImplementation();
+  if (gpu_preferences_.use_vulkan != gpu::VulkanImplementationName::kNone) {
+    bool use_swiftshader = gpu_preferences_.use_vulkan ==
+                           gpu::VulkanImplementationName::kSwiftshader;
+    vulkan_implementation_ = gpu::CreateVulkanImplementation(use_swiftshader);
     if (!vulkan_implementation_ ||
         !vulkan_implementation_->InitializeVulkanInstance(
             !gpu_preferences_.disable_vulkan_surface)) {
-      DLOG(WARNING) << "Failed to create and initialize Vulkan implementation.";
+      DLOG(ERROR) << "Failed to create and initialize Vulkan implementation.";
       vulkan_implementation_ = nullptr;
       CHECK(!gpu_preferences_.disable_vulkan_fallback_to_gl_for_testing);
     }
-    gpu_preferences_.enable_vulkan = !!vulkan_implementation_;
+    if (!vulkan_implementation_)
+      gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
   }
 #else
-  gpu_preferences_.enable_vulkan = false;
+  gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
 #endif
 
   if (!use_swiftshader) {

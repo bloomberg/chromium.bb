@@ -277,8 +277,12 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
 void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface,
                                   bool enable_vulkan) {
   if (enable_vulkan) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableVulkan);
+    auto* command_line = base::CommandLine::ForCurrentProcess();
+    bool use_gpu = command_line->HasSwitch(::switches::kUseGpuInTests);
+    command_line->AppendSwitchASCII(
+        ::switches::kUseVulkan,
+        use_gpu ? ::switches::kVulkanImplementationNameNative
+                : ::switches::kVulkanImplementationNameSwiftshader);
   }
   // Set up the GPU service.
   gpu_service_holder_ = viz::TestGpuServiceHolder::GetInstance();

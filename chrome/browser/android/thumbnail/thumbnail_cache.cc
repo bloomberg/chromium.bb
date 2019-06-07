@@ -191,8 +191,7 @@ void ThumbnailCache::Put(TabId tab_id,
   // Vulkan does not yet support compressed texture uploads. Disable compression
   // and approximation when in experimental Vulkan mode.
   // TODO(ericrk): Remove this restriction. https://crbug.com/906794
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVulkan)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseVulkan)) {
     return;
   }
 
