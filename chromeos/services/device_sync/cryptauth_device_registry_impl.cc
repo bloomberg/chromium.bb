@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
@@ -59,7 +58,7 @@ CryptAuthDeviceRegistryImpl::CryptAuthDeviceRegistryImpl(
     : pref_service_(pref_service) {
   const base::Value* dict = pref_service_->Get(prefs::kCryptAuthDeviceRegistry);
 
-  base::flat_map<std::string, CryptAuthDevice> instance_id_to_device_map;
+  CryptAuthDeviceRegistry::InstanceIdToDeviceMap instance_id_to_device_map;
   for (const std::pair<const std::string&, const base::Value&>& id_device_pair :
        dict->DictItems()) {
     base::Optional<std::string> instance_id =

@@ -14,7 +14,7 @@ CryptAuthDeviceRegistry::CryptAuthDeviceRegistry() = default;
 
 CryptAuthDeviceRegistry::~CryptAuthDeviceRegistry() = default;
 
-const base::flat_map<std::string, CryptAuthDevice>&
+const CryptAuthDeviceRegistry::InstanceIdToDeviceMap&
 CryptAuthDeviceRegistry::instance_id_to_device_map() const {
   return instance_id_to_device_map_;
 }
@@ -50,7 +50,7 @@ bool CryptAuthDeviceRegistry::DeleteDevice(const std::string& instance_id) {
 }
 
 bool CryptAuthDeviceRegistry::SetRegistry(
-    const base::flat_map<std::string, CryptAuthDevice>&
+    const CryptAuthDeviceRegistry::InstanceIdToDeviceMap&
         instance_id_to_device_map) {
   if (instance_id_to_device_map_ == instance_id_to_device_map)
     return false;

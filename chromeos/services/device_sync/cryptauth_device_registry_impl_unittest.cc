@@ -9,13 +9,13 @@
 #include <string>
 #include <utility>
 
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
+#include "chromeos/services/device_sync/cryptauth_device_registry.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "chromeos/services/device_sync/proto/cryptauth_better_together_device_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_v2_test_util.h"
@@ -87,7 +87,7 @@ class DeviceSyncCryptAuthDeviceRegistryImplTest : public testing::Test {
   }
 
   base::Value AsDictionary(
-      const base::flat_map<std::string, CryptAuthDevice>& devices) const {
+      const CryptAuthDeviceRegistry::InstanceIdToDeviceMap& devices) const {
     base::Value dict(base::Value::Type::DICTIONARY);
     for (const std::pair<std::string, CryptAuthDevice>& id_device_pair :
          devices) {
@@ -99,7 +99,7 @@ class DeviceSyncCryptAuthDeviceRegistryImplTest : public testing::Test {
   }
 
   void VerifyDeviceRegistry(
-      const base::flat_map<std::string, CryptAuthDevice>& expected_devices) {
+      const CryptAuthDeviceRegistry::InstanceIdToDeviceMap& expected_devices) {
     EXPECT_EQ(expected_devices, device_registry()->instance_id_to_device_map());
 
     // Verify pref.
@@ -150,13 +150,13 @@ TEST_F(DeviceSyncCryptAuthDeviceRegistryImplTest, OverwriteDevice) {
 TEST_F(DeviceSyncCryptAuthDeviceRegistryImplTest, OverwriteRegistry) {
   CreateDeviceRegistry();
 
-  base::flat_map<std::string, CryptAuthDevice> old_devices = {
+  CryptAuthDeviceRegistry::InstanceIdToDeviceMap old_devices = {
       {kInstanceId0, GetDeviceForTest(0)}};
   EXPECT_TRUE(device_registry()->SetRegistry(old_devices));
   VerifyDeviceRegistry(old_devices);
   EXPECT_FALSE(device_registry()->SetRegistry(old_devices));
 
-  base::flat_map<std::string, CryptAuthDevice> new_devices = {
+  CryptAuthDeviceRegistry::InstanceIdToDeviceMap new_devices = {
       {kInstanceId1, GetDeviceForTest(1)}};
   EXPECT_TRUE(device_registry()->SetRegistry(new_devices));
   VerifyDeviceRegistry(new_devices);
@@ -176,7 +176,7 @@ TEST_F(DeviceSyncCryptAuthDeviceRegistryImplTest, DeleteDevice) {
 }
 
 TEST_F(DeviceSyncCryptAuthDeviceRegistryImplTest, PopulateRegistryFromPref) {
-  base::flat_map<std::string, CryptAuthDevice> expected_devices = {
+  CryptAuthDeviceRegistry::InstanceIdToDeviceMap expected_devices = {
       {kInstanceId0, GetDeviceForTest(0)}, {kInstanceId1, GetDeviceForTest(1)}};
   pref_service()->Set(prefs::kCryptAuthDeviceRegistry,
                       AsDictionary(expected_devices));
