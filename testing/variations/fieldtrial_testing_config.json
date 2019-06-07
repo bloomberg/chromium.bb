@@ -2225,32 +2225,6 @@
             ]
         }
     ],
-    "FirstContentfulPaintPlusPlus": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "FirstContentfulPaintPlusPlus"
-                    ]
-                },
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "FirstContentfulPaintPlusPlus"
-                    ]
-                }
-            ]
-        }
-    ],
     "ForbidSyncXHRInPageDismissal": [
         {
             "platforms": [

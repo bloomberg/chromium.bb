@@ -207,7 +207,7 @@ void ImagePaintTimingDetector::ReportSwapTime(
 void ImageRecordsManager::AssignPaintTimeToRegisteredQueuedNodes(
     const base::TimeTicks& timestamp,
     unsigned last_queued_frame_index) {
-  DCHECK(!images_queued_for_paint_time_.empty());
+  // TODO(crbug.com/971419): should guarantee the queue not empty.
   while (!images_queued_for_paint_time_.empty()) {
     base::WeakPtr<ImageRecord>& record = images_queued_for_paint_time_.front();
     if (record->frame_index > last_queued_frame_index)
