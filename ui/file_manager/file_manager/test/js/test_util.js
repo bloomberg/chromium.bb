@@ -66,71 +66,85 @@ test.SharedOption = {
 
 /**
  * File system entry information for tests.
- *
- * @param {test.EntryType} type Entry type.
- * @param {string} sourceFileName Source file name that provides file contents.
- * @param {string} targetPath Path of entry on the test file system.
- * @param {string} mimeType Mime type.
- * @param {test.SharedOption} sharedOption Shared option.
- * @param {string} lastModifiedTime Last modified time as a text to be shown in
- *     the last modified column.
- * @param {string} nameText File name to be shown in the name column.
- * @param {string} sizeText Size text to be shown in the size column.
- * @param {string} typeText Type name to be shown in the type column.
- * @constructor
  */
-test.TestEntryInfo = function(
-    type, sourceFileName, targetPath, mimeType, sharedOption, lastModifiedTime,
-    nameText, sizeText, typeText) {
-  this.type = type;
-  this.sourceFileName = sourceFileName || '';
-  this.targetPath = targetPath;
-  this.mimeType = mimeType || '';
-  this.sharedOption = sharedOption;
-  this.lastModifiedTime = lastModifiedTime;
-  this.nameText = nameText;
-  this.sizeText = sizeText;
-  this.typeText = typeText;
-  Object.freeze(this);
-};
+test.TestEntryInfo = class {
+  /**
+   * @param {test.EntryType} type Entry type.
+   * @param {string} sourceFileName Source file name that provides file
+   *     contents.
+   * @param {string} targetPath Path of entry on the test file system.
+   * @param {string} mimeType Mime type.
+   * @param {test.SharedOption} sharedOption Shared option.
+   * @param {string} lastModifiedTime Last modified time as a text to be shown
+   *     in the last modified column.
+   * @param {string} nameText File name to be shown in the name column.
+   * @param {string} sizeText Size text to be shown in the size column.
+   * @param {string} typeText Type name to be shown in the type column.
+   */
+  constructor(
+      type, sourceFileName, targetPath, mimeType, sharedOption,
+      lastModifiedTime, nameText, sizeText, typeText) {
+    this.type = type;
+    this.sourceFileName = sourceFileName || '';
+    this.targetPath = targetPath;
+    this.mimeType = mimeType || '';
+    this.sharedOption = sharedOption;
+    this.lastModifiedTime = lastModifiedTime;
+    this.nameText = nameText;
+    this.sizeText = sizeText;
+    this.typeText = typeText;
+  }
 
-test.TestEntryInfo.getExpectedRows = function(entries) {
-  return entries.map(function(entry) {
-    return entry.getExpectedRow();
-  });
-};
+  /**
+   * @param {!Array<!test.TestEntryInfo>} entries
+   * @return {!Array<Object>}
+   */
+  static getExpectedRows(entries) {
+    return entries.map(function(entry) {
+      return entry.getExpectedRow();
+    });
+  }
 
-/**
- * Returns 4-typle name, size, type, date as shown in file list.
- */
-test.TestEntryInfo.prototype.getExpectedRow = function() {
-  return [this.nameText, this.sizeText, this.typeText, this.lastModifiedTime];
-};
+  /**
+   * Returns 4-typle name, size, type, date as shown in file list.
+   */
+  getExpectedRow() {
+    return [this.nameText, this.sizeText, this.typeText, this.lastModifiedTime];
+  }
 
-test.TestEntryInfo.getMockFileSystemPopulateRows = function(entries, prefix) {
-  return entries.map(function(entry) {
-    return entry.getMockFileSystemPopulateRow(prefix);
-  });
-};
 
-/**
- * Returns object {fullPath: ..., metadata: {...}, content: ...} as used in
- * MockFileSystem.populate.
- */
-test.TestEntryInfo.prototype.getMockFileSystemPopulateRow = function(prefix) {
-  var suffix = this.type == test.EntryType.DIRECTORY ? '/' : '';
-  var content = test.DATA[this.sourceFileName];
-  var size = content && content.size || 0;
-  return {
-    fullPath: prefix + this.targetPath + suffix,
-    metadata: {
-      size: size,
-      modificationTime: new Date(Date.parse(this.lastModifiedTime)),
-      contentMimeType: this.mimeType,
-      hosted: this.mimeType == 'application/vnd.google-apps.document',
-    },
-    content: content
-  };
+  /**
+   * @param {!Array<!test.TestEntryInfo>} entries
+   * @param {string} prefix
+   * @return {!Array}
+   */
+  static getMockFileSystemPopulateRows(entries, prefix) {
+    return entries.map(function(entry) {
+      return entry.getMockFileSystemPopulateRow(prefix);
+    });
+  }
+
+  /**
+   * Returns object {fullPath: ..., metadata: {...}, content: ...} as used in
+   * MockFileSystem.populate.
+   * @param {string} prefix
+   * @return {!Object}
+   */
+  getMockFileSystemPopulateRow(prefix) {
+    const suffix = this.type == test.EntryType.DIRECTORY ? '/' : '';
+    const content = test.DATA[this.sourceFileName];
+    const size = content && content.size || 0;
+    return {
+      fullPath: prefix + this.targetPath + suffix,
+      metadata: {
+        size: size,
+        modificationTime: new Date(Date.parse(this.lastModifiedTime)),
+        contentMimeType: this.mimeType,
+        hosted: this.mimeType == 'application/vnd.google-apps.document',
+      },
+      content: content
+    };
+  }
 };
 
 /**

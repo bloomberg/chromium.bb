@@ -12,25 +12,29 @@
 // All testing functions in namespace 'test'.
 var test = test || {};
 
-/** @constructor */
-test.Event = function() {
-  this.listeners_ = [];
-};
-/** @param {function()} callback */
-test.Event.prototype.addListener = function(callback) {
-  this.listeners_.push(callback);
-};
-/** @param {function()} callback */
-test.Event.prototype.removeListener = function(callback) {
-  this.listeners_ = this.listeners_.filter(l => l !== callback);
-};
-/** @param {...*} args */
-test.Event.prototype.dispatchEvent = function(...args) {
-  setTimeout(() => {
-    for (let listener of this.listeners_) {
-      listener(...args);
-    }
-  }, 0);
+test.Event = class {
+  constructor() {
+    this.listeners_ = [];
+  }
+
+  /** @param {function()} callback */
+  addListener(callback) {
+    this.listeners_.push(callback);
+  }
+
+  /** @param {function()} callback */
+  removeListener(callback) {
+    this.listeners_ = this.listeners_.filter(l => l !== callback);
+  }
+
+  /** @param {...*} args */
+  dispatchEvent(...args) {
+    setTimeout(() => {
+      for (let listener of this.listeners_) {
+        listener(...args);
+      }
+    }, 0);
+  }
 };
 
 /**
@@ -183,15 +187,11 @@ HTMLElement.prototype.stop = () => {};
 
 // domAutomationController is provided in tests, but is
 // useful for debugging tests in browser.
-
-/**
- * @constructor
- * @extends {DomAutomationController}
- */
-function ConsoleDomAutomationController() {}
-ConsoleDomAutomationController.prototype.send = (json) => {
-  console.debug('domAutomationController.send', json);
-};
+class ConsoleDomAutomationController extends DomAutomationController {
+  send(json) {
+    console.debug('domAutomationController.send', json);
+  }
+}
 
 window.domAutomationController =
     window.domAutomationController || new ConsoleDomAutomationController();
