@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/mojo/ime_struct_traits_test.mojom.h"
@@ -35,7 +35,9 @@ class IMEStructTraitsTest : public testing::Test,
     std::move(callback).Run(in);
   }
 
-  base::MessageLoop loop_;  // A MessageLoop is needed for Mojo IPC to work.
+  base::test::ScopedTaskEnvironment
+      scoped_task_environment_;  // A MessageLoop is needed for Mojo IPC to
+                                 // work.
   mojo::BindingSet<mojom::IMEStructTraitsTest> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEStructTraitsTest);
