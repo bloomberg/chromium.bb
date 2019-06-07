@@ -23,6 +23,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -164,6 +165,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   // A prerequisite for this is allowing objects to be bound to the lifetime
   // of a sequence directly.
   base::MessageLoopCurrent mojo_thread_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> mojo_thread_task_runner_;
 
   base::WeakPtrFactory<DiscardableSharedMemoryManager> weak_ptr_factory_;
 
