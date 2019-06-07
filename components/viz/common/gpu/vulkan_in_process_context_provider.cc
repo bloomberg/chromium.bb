@@ -80,10 +80,7 @@ bool VulkanInProcessContextProvider::Initialize() {
                      device_extensions.size(), device_extensions.data());
   backend_context.fVkExtensions = &gr_extensions;
 
-  // TODO(samans): Get rid of the const_cast once GrVkBackendTexture is updated
-  // to take a const value.
-  backend_context.fDeviceFeatures = const_cast<VkPhysicalDeviceFeatures*>(
-      &device_queue_->enabled_device_features());
+  backend_context.fDeviceFeatures = &device_queue_->enabled_device_features();
   backend_context.fGetProc = get_proc;
 
   gr_context_ = GrContext::MakeVulkan(backend_context);
