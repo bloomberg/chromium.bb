@@ -6,12 +6,16 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider.SYNTHETIC_TRIAL_POSTFIX;
 
+import android.content.Context;
 import android.view.ViewGroup;
 
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
+import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 
 /**
@@ -19,6 +23,12 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
  */
 @UsedByReflection("TabManagementModule")
 public class TabManagementDelegateImpl implements TabManagementDelegate {
+    @Override
+    public Layout createGTSLayout(Context context, LayoutUpdateHost updateHost,
+            LayoutRenderHost renderHost, GridTabSwitcher gridTabSwitcher) {
+        return new GridTabSwitcherLayout(context, updateHost, renderHost, gridTabSwitcher);
+    }
+
     @Override
     public GridTabSwitcher createGridTabSwitcher(ChromeActivity activity) {
         if (ChromeFeatureList.isInitialized()) {

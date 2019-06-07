@@ -31,10 +31,11 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
+import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.widget.GridTabSwitcherLayout;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
@@ -87,8 +88,12 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
         mToolbarSwipeLayout = new ToolbarSwipeLayout(context, this, renderHost);
         if (createOverviewLayout) {
             if (gridTabSwitcher != null) {
-                mOverviewLayout =
-                        new GridTabSwitcherLayout(context, this, renderHost, gridTabSwitcher);
+                assert FeatureUtilities.isGridTabSwitcherEnabled();
+                TabManagementDelegate tabManagementDelegate =
+                        TabManagementModuleProvider.getDelegate();
+                assert tabManagementDelegate != null;
+                mOverviewLayout = tabManagementDelegate.createGTSLayout(
+                        context, this, renderHost, gridTabSwitcher);
             } else {
                 mOverviewLayout = new StackLayout(context, this, renderHost);
             }
