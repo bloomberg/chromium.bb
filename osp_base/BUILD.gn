@@ -8,8 +8,14 @@ source_set("osp_base") {
   sources = [
     "big_endian.cc",
     "big_endian.h",
-    "boringssl_util.cc",
-    "boringssl_util.h",
+    "crypto/openssl_util.cc",
+    "crypto/openssl_util.h",
+    "crypto/rsa_private_key.cc",
+    "crypto/rsa_private_key.h",
+    "crypto/secure_hash.cc",
+    "crypto/secure_hash.h",
+    "crypto/sha2.cc",
+    "crypto/sha2.h",
     "error.cc",
     "error.h",
     "export.h",
@@ -43,6 +49,9 @@ source_set("osp_base_unittests") {
 
   sources = [
     "big_endian_unittest.cc",
+    "crypto/rsa_private_key_unittest.cc",
+    "crypto/secure_hash_unittest.cc",
+    "crypto/sha2_unittest.cc",
     "error_unittest.cc",
     "ip_address_unittest.cc",
     "json/json_reader_unittest.cc",
@@ -54,6 +63,7 @@ source_set("osp_base_unittests") {
   deps = [
     ":osp_base",
     "../third_party/abseil",
+    "../third_party/boringssl",
     "../third_party/googletest:gmock",
     "../third_party/googletest:gtest",
     "../third_party/jsoncpp",

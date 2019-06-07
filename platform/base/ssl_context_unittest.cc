@@ -12,7 +12,7 @@
 
 #include "absl/strings/string_view.h"
 #include "gtest/gtest.h"
-#include "osp_base/boringssl_util.h"
+#include "osp_base/crypto/openssl_util.h"
 #include "osp_base/error.h"
 
 namespace openscreen {
@@ -94,9 +94,9 @@ class TemporaryFile {
 
 class SSLContextTest : public ::testing::Test {
  protected:
-  void SetUp() override { InitOpenSSL(); }
+  void SetUp() override { EnsureOpenSSLInit(); }
 
-  void TearDown() override { CleanupOpenSSL(); }
+  void TearDown() override { EnsureOpenSSLCleanup(); }
 };
 }  // namespace
 

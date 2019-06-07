@@ -6,4 +6,5 @@ include_rules = [
     '-platform',
     '+platform/api/logging.h',
     '+json',
+    '+openssl',
 ]
