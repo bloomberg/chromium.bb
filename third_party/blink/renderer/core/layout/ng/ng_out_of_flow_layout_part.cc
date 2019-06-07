@@ -364,7 +364,8 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
     // Make sure we don't end up with a rectangle with "negative" size.
     end_offset.inline_offset =
         std::max(end_offset.inline_offset, start_offset.inline_offset);
-
+    end_offset.block_offset =
+        std::max(end_offset.block_offset, start_offset.block_offset);
     // Step 3 - determine the logical rectangle.
 
     // Determine the logical size of the containing block.
