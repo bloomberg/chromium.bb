@@ -205,7 +205,7 @@
       'Android Builder (dbg) Goma Canary': 'android_debug_static_bot_vrdata',
       'Android Builder (dbg) Goma Latest Client': 'android_debug_static_bot_vrdata',
 
-      'android-code-coverage': 'android_release_bot_minimal_symbols_coverage',
+      'android-code-coverage': 'android_debug_static_bot_minimal_symbols_coverage',
       'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk',
       'chromeos-amd64-generic-rel-goma-latest': 'cros_chrome_sdk',
       'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
@@ -992,6 +992,11 @@
       'android', 'debug_static_bot',
     ],
 
+    'android_debug_static_bot_minimal_symbols_coverage': [
+      'android', 'debug_static_bot', 'minimal_symbols', 'java_coverage',
+      'strip_debug_info',
+    ],
+
     'android_debug_static_bot_vrdata': [
       'android', 'debug_static_bot', 'include_vr_data',
     ],
@@ -1067,11 +1072,6 @@
 
     'android_release_bot_minimal_symbols_arm64': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'strip_debug_info',
-    ],
-
-    'android_release_bot_minimal_symbols_coverage': [
-      'android', 'release_bot', 'minimal_symbols', 'java_coverage',
       'strip_debug_info',
     ],
 
