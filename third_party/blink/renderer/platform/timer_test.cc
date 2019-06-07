@@ -6,8 +6,8 @@
 
 #include <memory>
 #include <queue>
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -83,7 +83,7 @@ class TimerTest : public testing::Test {
       platform_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 class OnHeapTimerOwner final
