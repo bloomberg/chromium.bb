@@ -42,24 +42,10 @@ cr.define('sync.confirmation', function() {
     chrome.send('undo');
   }
 
-  function onGoToSettings(e) {
-    chrome.send(
-        'goToSettings',
-        [getConsentDescription(), getConsentConfirmation(e.path)]);
-  }
-
   function initialize() {
     document.addEventListener('keydown', onKeyDown);
     $('confirmButton').addEventListener('click', onConfirm);
     $('undoButton').addEventListener('click', onUndo);
-    if (loadTimeData.getBoolean('isSyncAllowed')) {
-      $('settingsLink').addEventListener('click', onGoToSettings);
-      $('profile-picture').addEventListener('load', onPictureLoaded);
-      $('syncDisabledDetails').hidden = true;
-    } else {
-      $('syncConfirmationDetails').hidden = true;
-    }
-
     // Prefer using |document.body.offsetHeight| instead of
     // |document.body.scrollHeight| as it returns the correct height of the
     // even when the page zoom in Chrome is different than 100%.
@@ -68,18 +54,6 @@ cr.define('sync.confirmation', function() {
 
   function clearFocus() {
     document.activeElement.blur();
-  }
-
-  function setUserImageURL(url) {
-    if (loadTimeData.getBoolean('isSyncAllowed')) {
-      $('profile-picture').src = url;
-    }
-  }
-
-  function onPictureLoaded(e) {
-    if (loadTimeData.getBoolean('isSyncAllowed')) {
-      $('picture-container').classList.add('loaded');
-    }
   }
 
   function onKeyDown(e) {
@@ -93,15 +67,11 @@ cr.define('sync.confirmation', function() {
     }
   }
 
-  // TODO(tangltom): clearFocus and setUserImageURL are called directly by the
-  // C++ handler. C++ handlers should not be calling JS functions by name
-  // anymore. They should be firing events with FireWebuiListener and have the
-  // page itself decide whether to listen or not listen to the event.
-  return {
-    clearFocus: clearFocus,
-    initialize: initialize,
-    setUserImageURL: setUserImageURL
-  };
+  // TODO(tangltom): clearFocus is called directly by the C++ handler.
+  // C++ handlers should not be calling JS functions by name anymore. They
+  // should be firing events with FireWebuiListener and have the page itself
+  // decide whether to listen or not listen to the event.
+  return {clearFocus: clearFocus, initialize: initialize};
 });
 
 document.addEventListener('DOMContentLoaded', sync.confirmation.initialize);

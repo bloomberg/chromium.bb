@@ -29,10 +29,9 @@
 SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     : SigninWebDialogUI(web_ui),
       consent_feature_(consent_auditor::Feature::CHROME_SYNC) {
+  DCHECK(unified_consent::IsUnifiedConsentFeatureEnabled());
   Profile* profile = Profile::FromWebUI(web_ui);
   bool is_sync_allowed = profile->IsSyncAllowed();
-  bool is_unified_consent_enabled =
-      unified_consent::IsUnifiedConsentFeatureEnabled();
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncConfirmationHost);
@@ -42,7 +41,7 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   int title_ids = -1;
   int confirm_button_ids = -1;
   int undo_button_ids = -1;
-  if (is_unified_consent_enabled && is_sync_allowed) {
+  if (is_sync_allowed) {
     source->SetDefaultResource(IDR_DICE_SYNC_CONFIRMATION_HTML);
     source->AddResourcePath("sync_confirmation_browser_proxy.html",
                             IDR_DICE_SYNC_CONFIRMATION_BROWSER_PROXY_HTML);
@@ -90,33 +89,13 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   } else {
     source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);
     source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
-
-    source->AddBoolean("isSyncAllowed", is_sync_allowed);
-
-    AddStringResource(source, "syncConfirmationChromeSyncTitle",
-                      IDS_SYNC_CONFIRMATION_CHROME_SYNC_TITLE);
-    AddStringResource(source, "syncConfirmationChromeSyncBody",
-                      IDS_SYNC_CONFIRMATION_CHROME_SYNC_MESSAGE);
-    AddStringResource(source, "syncConfirmationPersonalizeServicesTitle",
-                      IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_TITLE);
-    AddStringResource(source, "syncConfirmationPersonalizeServicesBody",
-                      IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_BODY);
-    AddStringResource(source, "syncConfirmationSyncSettingsLinkBody",
-                      IDS_SYNC_CONFIRMATION_SYNC_SETTINGS_LINK_BODY);
     AddStringResource(source, "syncDisabledConfirmationDetails",
                       IDS_SYNC_DISABLED_CONFIRMATION_DETAILS);
 
-    title_ids = AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)
-                    ? IDS_SYNC_CONFIRMATION_DICE_TITLE
-                    : IDS_SYNC_CONFIRMATION_TITLE;
-    confirm_button_ids = IDS_SETTINGS_TURN_ON;
-    undo_button_ids = IDS_CANCEL;
+    title_ids = IDS_SYNC_DISABLED_CONFIRMATION_CHROME_SYNC_TITLE;
+    confirm_button_ids = IDS_SYNC_DISABLED_CONFIRMATION_CONFIRM_BUTTON_LABEL;
+    undo_button_ids = IDS_SYNC_DISABLED_CONFIRMATION_UNDO_BUTTON_LABEL;
     consent_feature_ = consent_auditor::Feature::CHROME_SYNC;
-    if (!is_sync_allowed) {
-      title_ids = IDS_SYNC_DISABLED_CONFIRMATION_CHROME_SYNC_TITLE;
-      confirm_button_ids = IDS_SYNC_DISABLED_CONFIRMATION_CONFIRM_BUTTON_LABEL;
-      undo_button_ids = IDS_SYNC_DISABLED_CONFIRMATION_UNDO_BUTTON_LABEL;
-    }
   }
 
   DCHECK_GE(title_ids, 0);

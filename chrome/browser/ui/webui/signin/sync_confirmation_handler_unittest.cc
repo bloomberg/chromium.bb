@@ -210,61 +210,11 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandlerTest);
 };
 
-class SyncConfirmationHandlerTest_UnifiedConsentDisabled
-    : public SyncConfirmationHandlerTest {
- public:
-  SyncConfirmationHandlerTest_UnifiedConsentDisabled()
-      : scoped_unified_consent_(
-            unified_consent::UnifiedConsentFeatureState::kDisabled) {}
-
- private:
-  unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandlerTest_UnifiedConsentDisabled);
-};
-
 const char SyncConfirmationHandlerTest::kConsentText1[] = "consentText1";
 const char SyncConfirmationHandlerTest::kConsentText2[] = "consentText2";
 const char SyncConfirmationHandlerTest::kConsentText3[] = "consentText3";
 const char SyncConfirmationHandlerTest::kConsentText4[] = "consentText4";
 const char SyncConfirmationHandlerTest::kConsentText5[] = "consentText5";
-
-TEST_F(SyncConfirmationHandlerTest_UnifiedConsentDisabled,
-       TestSetImageIfPrimaryAccountReady) {
-  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
-      account_info_.account_id, account_info_.email, account_info_.gaia, "",
-      "full_name", "given_name", "locale",
-      "http://picture.example.com/picture.jpg");
-
-  base::ListValue args;
-  args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
-  handler()->HandleInitializedWithSize(&args);
-  EXPECT_EQ(2U, web_ui()->call_data().size());
-
-  // When the primary account is ready, setUserImageURL happens before
-  // clearFocus since the image URL is known before showing the dialog.
-  EXPECT_EQ("sync.confirmation.setUserImageURL",
-            web_ui()->call_data()[0]->function_name());
-  EXPECT_TRUE(web_ui()->call_data()[0]->arg1()->is_string());
-  std::string passed_picture_url;
-  EXPECT_TRUE(
-      web_ui()->call_data()[0]->arg1()->GetAsString(&passed_picture_url));
-
-  EXPECT_EQ("sync.confirmation.clearFocus",
-            web_ui()->call_data()[1]->function_name());
-
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile());
-  base::Optional<AccountInfo> primary_account_info =
-      identity_manager->FindExtendedAccountInfoForAccount(
-          identity_manager->GetPrimaryAccountInfo());
-  std::string original_picture_url =
-      primary_account_info ? primary_account_info->picture_url : std::string();
-  GURL picture_url_with_size = signin::GetAvatarImageURLWithOptions(
-      GURL(original_picture_url), kExpectedProfileImageSize,
-      false /* no_silhouette */);
-  EXPECT_EQ(picture_url_with_size.spec(), passed_picture_url);
-}
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
@@ -279,55 +229,6 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   ExpectAccountImageChanged(*web_ui()->call_data()[0]);
   EXPECT_EQ("sync.confirmation.clearFocus",
             web_ui()->call_data()[1]->function_name());
-}
-
-TEST_F(SyncConfirmationHandlerTest_UnifiedConsentDisabled,
-       TestSetImageIfPrimaryAccountReadyLater) {
-  base::ListValue args;
-  args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
-  handler()->HandleInitializedWithSize(&args);
-  EXPECT_EQ(2U, web_ui()->call_data().size());
-
-  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
-      account_info_.account_id, account_info_.email, account_info_.gaia, "",
-      "full_name", "given_name", "locale",
-      "http://picture.example.com/picture.jpg");
-
-  EXPECT_EQ(3U, web_ui()->call_data().size());
-
-  // When the primary account isn't yet ready when the dialog is shown,
-  // setUserImageURL is called with the default placeholder image.
-  EXPECT_EQ("sync.confirmation.setUserImageURL",
-            web_ui()->call_data()[0]->function_name());
-  EXPECT_TRUE(web_ui()->call_data()[0]->arg1()->is_string());
-  std::string passed_picture_url;
-  EXPECT_TRUE(
-      web_ui()->call_data()[0]->arg1()->GetAsString(&passed_picture_url));
-  EXPECT_EQ(profiles::GetPlaceholderAvatarIconUrl(), passed_picture_url);
-
-  // When the primary account isn't yet ready when the dialog is shown,
-  // clearFocus is called before the second call to setUserImageURL.
-  EXPECT_EQ("sync.confirmation.clearFocus",
-            web_ui()->call_data()[1]->function_name());
-
-  EXPECT_EQ("sync.confirmation.setUserImageURL",
-            web_ui()->call_data()[2]->function_name());
-  EXPECT_TRUE(web_ui()->call_data()[2]->arg1()->is_string());
-  EXPECT_TRUE(
-      web_ui()->call_data()[2]->arg1()->GetAsString(&passed_picture_url));
-
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile());
-  base::Optional<AccountInfo> primary_account_info =
-      identity_manager->FindExtendedAccountInfoForAccount(
-          identity_manager->GetPrimaryAccountInfo());
-
-  std::string original_picture_url =
-      primary_account_info ? primary_account_info->picture_url : std::string();
-  GURL picture_url_with_size = signin::GetAvatarImageURLWithOptions(
-      GURL(original_picture_url), kExpectedProfileImageSize,
-      false /* no_silhouette */);
-  EXPECT_EQ(picture_url_with_size.spec(), passed_picture_url);
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
@@ -347,36 +248,6 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
 
   EXPECT_EQ(3U, web_ui()->call_data().size());
   ExpectAccountImageChanged(*web_ui()->call_data()[2]);
-}
-
-TEST_F(SyncConfirmationHandlerTest_UnifiedConsentDisabled,
-       TestSetImageIgnoredIfSecondaryAccountUpdated) {
-  base::ListValue args;
-  args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
-  handler()->HandleInitializedWithSize(&args);
-  EXPECT_EQ(2U, web_ui()->call_data().size());
-
-  AccountInfo account_info =
-      identity_test_env()->MakeAccountAvailable("bar@example.com");
-  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
-      account_info.account_id, account_info.email, account_info.gaia, "",
-      "bar_full_name", "bar_given_name", "bar_locale",
-      "http://picture.example.com/bar_picture.jpg");
-
-  // Updating the account info of a secondary account should not update the
-  // image of the sync confirmation dialog.
-  EXPECT_EQ(2U, web_ui()->call_data().size());
-
-  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
-      account_info_.account_id, account_info_.email, account_info_.gaia, "",
-      "full_name", "given_name", "locale",
-      "http://picture.example.com/picture.jpg");
-
-  // Updating the account info of the primary account should update the
-  // image of the sync confirmation dialog.
-  EXPECT_EQ(3U, web_ui()->call_data().size());
-  EXPECT_EQ("sync.confirmation.setUserImageURL",
-            web_ui()->call_data()[2]->function_name());
 }
 
 TEST_F(SyncConfirmationHandlerTest,

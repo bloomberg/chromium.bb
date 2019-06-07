@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -90,6 +91,7 @@ void SyncConfirmationHandler::HandleConfirm(const base::ListValue* args) {
 }
 
 void SyncConfirmationHandler::HandleGoToSettings(const base::ListValue* args) {
+  DCHECK(profile_->IsSyncAllowed());
   did_user_explicitly_interact = true;
   RecordConsent(args);
   CloseModalSigninWindow(LoginUIService::CONFIGURE_SYNC_FIRST);
@@ -102,6 +104,7 @@ void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
 
 void SyncConfirmationHandler::HandleAccountImageRequest(
     const base::ListValue* args) {
+  DCHECK(profile_->IsSyncAllowed());
   base::Optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccount(
           identity_manager_->GetPrimaryAccountInfo());
@@ -165,6 +168,12 @@ void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
 }
 
 void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
+  if (!profile_->IsSyncAllowed()) {
+    // The sync disabled confirmation handler does not present the user image.
+    // Avoid updating the image URL in this case.
+    return;
+  }
+
   std::string picture_url_to_load;
   GURL picture_gurl(picture_url);
   if (picture_gurl.is_valid()) {
@@ -179,12 +188,7 @@ void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
   base::Value picture_url_value(picture_url_to_load);
 
   AllowJavascript();
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    FireWebUIListener("account-image-changed", picture_url_value);
-  } else {
-    CallJavascriptFunction("sync.confirmation.setUserImageURL",
-                           picture_url_value);
-  }
+  FireWebUIListener("account-image-changed", picture_url_value);
 }
 
 void SyncConfirmationHandler::OnExtendedAccountInfoUpdated(
