@@ -206,8 +206,14 @@ void TransferHttpAuthCaches() {
       &TransferHttpAuthCacheToSystemNetworkContext, completion_callback));
 }
 
-// Record UMA for password login of regular user when Easy sign-in is enabled.
+// Record UMA for password login of regular user when Signin with Smart Lock is
+// enabled. Excludes signins in the multi-signin context; only records for the
+// signin screen context.
 void RecordPasswordLoginEvent(const UserContext& user_context) {
+  // If a user is already logged in, this is a multi-signin attempt. Disregard.
+  if (session_manager::SessionManager::Get()->IsInSecondaryLoginScreen())
+    return;
+
   EasyUnlockService* easy_unlock_service =
       EasyUnlockService::Get(ProfileHelper::GetSigninProfile());
   if (user_context.GetUserType() == user_manager::USER_TYPE_REGULAR &&
