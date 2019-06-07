@@ -26,9 +26,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesCategory;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.tab.Tab;
@@ -47,6 +48,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -129,6 +131,7 @@ public class TileGroupTest {
     @Feature({"NewTabPage"})
     public void testDismissExploreTileWithContextMenuFails() throws Exception {
         SiteSuggestion exploreTile = recreateSuggestionsWithExploreTile();
+
         initializeTab();
 
         Assert.assertEquals(4, getTileGridLayout().getChildCount());
@@ -171,10 +174,6 @@ public class TileGroupTest {
                 () -> { mMostVisitedSites.setTileSuggestions(mSiteSuggestionUrls); });
         waitForTileAdded(siteToDismiss);
         Assert.assertEquals(3, tileContainer.getChildCount());
-    }
-
-    private NewTabPageRecyclerView getRecyclerView() {
-        return mNtp.getNewTabPageView().getRecyclerView();
     }
 
     private TileGridLayout getTileGridLayout() {
@@ -273,6 +272,11 @@ public class TileGroupTest {
         currentSuggestions.add(exploreTile);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mMostVisitedSites.setTileSuggestions(currentSuggestions));
+
+        // Set up ExploreSitesBridge for testing.
+        List<ExploreSitesCategory> category = new ArrayList<>();
+        category.add(new ExploreSitesCategory(0, 1, "foo", 0, 0));
+        ExploreSitesBridge.setCatalogForTesting(category);
 
         return exploreTile;
     }
