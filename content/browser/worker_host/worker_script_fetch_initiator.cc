@@ -231,8 +231,22 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
     if (base::FeatureList::IsEnabled(
             network::features::kFetchMetadataDestination) ||
         experimental_features_enabled) {
+      ResourceType resource_type =
+          static_cast<ResourceType>(resource_request->resource_type);
+      std::string destination;
+      switch (resource_type) {
+        case ResourceType::kWorker:
+          destination = "worker";
+          break;
+        case ResourceType::kSharedWorker:
+          destination = "sharedworker";
+          break;
+        default:
+          NOTREACHED() << resource_request->resource_type;
+          break;
+      }
       resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Dest",
-                                                   "sharedworker");
+                                                   destination);
     }
 
     // Note that the `Sec-Fetch-User` header is always false (and therefore
