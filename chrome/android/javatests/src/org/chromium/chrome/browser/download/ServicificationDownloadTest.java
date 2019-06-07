@@ -8,8 +8,6 @@ import android.graphics.Bitmap;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
-import com.google.android.gms.gcm.TaskParams;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,9 +19,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
-import org.chromium.chrome.browser.ServicificationBackgroundService;
-import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ReducedModeNativeTestRule;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -38,10 +35,11 @@ import org.chromium.net.test.EmbeddedTestServerRule;
 public final class ServicificationDownloadTest {
     @Rule
     public EmbeddedTestServerRule mEmbeddedTestServerRule = new EmbeddedTestServerRule();
+    @Rule
+    public ReducedModeNativeTestRule mNativeTestRule = new ReducedModeNativeTestRule();
 
     private static final String TEST_DOWNLOAD_FILE = "/chrome/test/data/android/download/test.gzip";
     private static final String DOWNLOAD_GUID = "F7FB1F59-7DE1-4845-AFDB-8A688F70F583";
-    private ServicificationBackgroundService mServicificationBackgroundService;
     private MockDownloadNotificationService mNotificationService;
 
     static class MockDownloadNotificationService extends DownloadNotificationService {
@@ -70,8 +68,6 @@ public final class ServicificationDownloadTest {
     @Before
     public void setUp() throws InterruptedException {
         RecordHistogram.setDisabledForTests(true);
-        mServicificationBackgroundService =
-                new ServicificationBackgroundService(true /*supportsServiceManagerOnly*/);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mNotificationService = new MockDownloadNotificationService(); });
     }
@@ -86,10 +82,7 @@ public final class ServicificationDownloadTest {
     @Feature({"Download"})
     @CommandLineFlags.Add({"enable-features=NetworkService,AllowStartingServiceManagerOnly"})
     public void testResumeInterruptedDownload() {
-        mServicificationBackgroundService.onRunTask(
-                new TaskParams(ServiceManagerStartupUtils.TASK_TAG));
-        mServicificationBackgroundService.waitForNativeLoaded();
-        ServicificationBackgroundService.assertOnlyServiceManagerStarted();
+        mNativeTestRule.assertOnlyServiceManagerStarted();
 
         String tempFile = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()

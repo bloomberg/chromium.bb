@@ -13,6 +13,7 @@ import android.support.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,9 +22,9 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ServicificationBackgroundService;
 import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ReducedModeNativeTestRule;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -44,6 +45,9 @@ import java.util.concurrent.TimeUnit;
         "enable-features=OfflinePagesPrefetching,NetworkService,AllowStartingServiceManagerOnly,"
                 + "InterestFeedContentSuggestions"})
 public class PrefetchBackgroundTaskTest {
+    @Rule
+    public ReducedModeNativeTestRule mNativeTestRule = new ReducedModeNativeTestRule();
+
     private static final double BACKOFF_JITTER_FACTOR = 0.33;
     private static final int SEMAPHORE_TIMEOUT_MS = 5000;
     private static final String GCM_TOKEN = "dummy_gcm_token";
@@ -183,9 +187,6 @@ public class PrefetchBackgroundTaskTest {
 
     @Before
     public void setUp() throws Exception {
-        ServicificationBackgroundService.launchChromeInBackground(true /*serviceManagerOnlyMode*/);
-        ServicificationBackgroundService.assertOnlyServiceManagerStarted();
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mScheduler = new TestBackgroundTaskScheduler();
             BackgroundTaskSchedulerFactory.setSchedulerForTesting(mScheduler);
@@ -197,7 +198,7 @@ public class PrefetchBackgroundTaskTest {
 
     @After
     public void tearDown() {
-        ServicificationBackgroundService.assertOnlyServiceManagerStarted();
+        mNativeTestRule.assertOnlyServiceManagerStarted();
     }
 
     private void scheduleTask(int additionalDelaySeconds) {
