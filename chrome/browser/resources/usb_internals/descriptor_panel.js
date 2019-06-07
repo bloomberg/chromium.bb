@@ -132,101 +132,15 @@ cr.define('descriptor_panel', function() {
     }
 
     /**
-     * Adds a display area which contains a tree view and a byte view.
-     * @param {string=} descriptorPanelTitle
-     * @return {{rawDataTreeRoot:!cr.ui.Tree,rawDataByteElement:!HTMLElement}}
-     * @private
-     */
-    addNewDescriptorDisplayElement_(descriptorPanelTitle = undefined) {
-      const descriptorPanelTemplate =
-          document.querySelector('#descriptor-panel-template');
-      const descriptorPanelClone =
-          document.importNode(descriptorPanelTemplate.content, true);
-
-      /** @private {!HTMLElement} */
-      const rawDataTreeRoot =
-          descriptorPanelClone.querySelector('.raw-data-tree-view');
-      /** @private {!HTMLElement} */
-      const rawDataByteElement =
-          descriptorPanelClone.querySelector('.raw-data-byte-view');
-
-      cr.ui.decorate(rawDataTreeRoot, cr.ui.Tree);
-      rawDataTreeRoot.detail = {payload: {}, children: {}};
-
-      if (descriptorPanelTitle) {
-        const descriptorPanelTitleTemplate =
-            document.querySelector('#descriptor-panel-title');
-        const clone =
-            document.importNode(descriptorPanelTitleTemplate.content, true)
-                .querySelector('descriptorpaneltitle');
-        clone.textContent = descriptorPanelTitle;
-        this.rootElement_.appendChild(clone);
-      }
-      this.rootElement_.appendChild(descriptorPanelClone);
-      return {rawDataTreeRoot, rawDataByteElement};
-    }
-
-    /**
      * Clears the data first before populating it with the new content.
      */
     clearView() {
       this.rootElement_.querySelectorAll('descriptorpanel')
           .forEach(el => el.remove());
       this.rootElement_.querySelectorAll('error').forEach(el => el.remove());
+      this.rootElement_.querySelectorAll('warn').forEach(el => el.remove());
       this.rootElement_.querySelectorAll('descriptorpaneltitle')
           .forEach(el => el.remove());
-    }
-
-    /**
-     * Renders a tree view to display the raw data in readable text.
-     * @param {!cr.ui.Tree|!cr.ui.TreeItem} root
-     * @param {!HTMLElement} rawDataByteElement
-     * @param {!Array<Object>} fields
-     * @param {!Uint8Array} rawData
-     * @param {number} offset The start offset of the descriptor structure that
-     *     want to be rendered.
-     * @param {...string} parentClassNames
-     * @return {number} The end offset of descriptor structure that want to be
-     *     rendered.
-     * @private
-     */
-    renderRawDataTree_(
-        root, rawDataByteElement, fields, rawData, offset,
-        ...parentClassNames) {
-      const rawDataByteElements = rawDataByteElement.querySelectorAll('span');
-
-      for (const field of fields) {
-        const className = `field-offset-${offset}`;
-        let item;
-        try {
-          item = customTreeItem(
-              `${field.label}${field.formatter(rawData, offset)}`, className);
-
-          for (let i = 0; i < field.size; i++) {
-            rawDataByteElements[offset + i].classList.add(className);
-            for (const parentClassName of parentClassNames) {
-              rawDataByteElements[offset + i].classList.add(parentClassName);
-            }
-          }
-        } catch (e) {
-          this.showError_(`Field at offset ${offset} is invalid.`);
-          break;
-        }
-
-        try {
-          if (field.extraTreeItemFormatter) {
-            field.extraTreeItemFormatter(rawData, offset, item, field.label);
-          }
-        } catch (e) {
-          this.showError_(
-              `Error at rendering field at index ${offset}: ${e.message}`);
-        }
-
-        root.add(item);
-        offset += field.size;
-      }
-
-      return offset;
     }
 
     /**
@@ -243,7 +157,7 @@ cr.define('descriptor_panel', function() {
       const index = rawData[offset];
       if (index > 0) {
         if (!this.stringDescriptorPanel_.stringDescriptorIndexes.has(index)) {
-          const optionElement = cr.doc.createElement('option');
+          const optionElement = document.createElement('option');
           optionElement.label = index;
           optionElement.value = index;
           this.stringDescriptorPanel_.indexesListElement.appendChild(
@@ -255,7 +169,7 @@ cr.define('descriptor_panel', function() {
         const buttonTemplate = document.querySelector('#raw-data-tree-button');
         const button = document.importNode(buttonTemplate.content, true)
                            .querySelector('button');
-        item.querySelector('.tree-row').appendChild(button);
+        item.labelElement.appendChild(button);
         button.addEventListener('click', (event) => {
           event.stopPropagation();
           // Clear the previous string descriptors.
@@ -267,8 +181,10 @@ cr.define('descriptor_panel', function() {
       } else if (index < 0) {
         // Delete the ': ' in fieldLabel.
         const fieldName = fieldLabel.slice(0, -2);
-        this.showError_(`Invalid String Descriptor occurs in field ${
-            fieldName} of this descriptor.`);
+        showError(
+            `Invalid String Descriptor occurs in field ${
+                fieldName} of this descriptor.`,
+            this.rootElement_);
       }
     }
 
@@ -324,7 +240,7 @@ cr.define('descriptor_panel', function() {
       const buttonTemplate = document.querySelector('#raw-data-tree-button');
       const button = document.importNode(buttonTemplate.content, true)
                          .querySelector('button');
-      item.querySelector('.tree-row').appendChild(button);
+      item.labelElement.appendChild(button);
       button.addEventListener('click', async (event) => {
         event.stopPropagation();
         // Clear all the descriptor display elements except the first one, which
@@ -363,7 +279,7 @@ cr.define('descriptor_panel', function() {
         const buttonTemplate = document.querySelector('#raw-data-tree-button');
         const button = document.importNode(buttonTemplate.content, true)
                            .querySelector('button');
-        item.querySelector('.tree-row').appendChild(button);
+        item.labelElement.appendChild(button);
         button.addEventListener('click', async (event) => {
           event.stopPropagation();
           await this.sendMsOs20DescriptorSetAltEnumCommand_(
@@ -415,79 +331,6 @@ cr.define('descriptor_panel', function() {
     }
 
     /**
-     * Checks if the status of a control transfer indicates success.
-     * @param {number} status
-     * @param {string} defaultMessage
-     * @private
-     */
-    checkTransferSuccess_(status, defaultMessage) {
-      let failReason = '';
-      switch (status) {
-        case device.mojom.UsbTransferStatus.COMPLETED:
-          return;
-        case device.mojom.UsbTransferStatus.SHORT_PACKET:
-          this.showError_('Descriptor is too short.');
-          return;
-        case device.mojom.UsbTransferStatus.BABBLE:
-          this.showError_('Descriptor is too long.');
-          return;
-        case device.mojom.UsbTransferStatus.TRANSFER_ERROR:
-          failReason = 'Transfer Error';
-          break;
-        case device.mojom.UsbTransferStatus.TIMEOUT:
-          failReason = 'Timeout';
-          break;
-        case device.mojom.UsbTransferStatus.CANCELLED:
-          failReason = 'Transfer was cancelled';
-          break;
-        case device.mojom.UsbTransferStatus.STALLED:
-          failReason = 'Transfer Error';
-          break;
-        case device.mojom.UsbTransferStatus.DISCONNECT:
-          failReason = 'Transfer stalled';
-          break;
-        case device.mojom.UsbTransferStatus.PERMISSION_DENIED:
-          failReason = 'Permission denied';
-          break;
-      }
-      // Throws an error to stop rendering descriptor.
-      throw new Error(`${defaultMessage} (Reason: ${failReason})`);
-    }
-
-    /**
-     * Shows an error message if error occurs in getting or rendering
-     * descriptors.
-     * @param {string} message
-     * @private
-     */
-    showError_(message) {
-      const errorTemplate = document.querySelector('#error');
-
-      const clone = document.importNode(errorTemplate.content, true);
-
-      const errorText = clone.querySelector('error');
-      errorText.textContent = message;
-
-      this.rootElement_.prepend(clone);
-    }
-
-    /**
-     * Shows an warning message.
-     * @param {string} message
-     * @private
-     */
-    showWarn_(message) {
-      const warnTemplate = document.querySelector('#warn');
-
-      const clone = document.importNode(warnTemplate.content, true);
-
-      const warnText = clone.querySelector('warn');
-      warnText.textContent = message;
-
-      this.rootElement_.prepend(clone);
-    }
-
-    /**
      * Gets device descriptor of current device.
      * @return {!Uint8Array}
      * @private
@@ -507,8 +350,9 @@ cr.define('descriptor_panel', function() {
           usbControlTransferParams, DEVICE_DESCRIPTOR_LENGTH,
           CONTROL_TRANSFER_TIMEOUT_MS);
 
-      this.checkTransferSuccess_(
-          response.status, 'Failed to read the device descriptor.');
+      checkTransferSuccess(
+          response.status, 'Failed to read the device descriptor.',
+          this.rootElement_);
 
       return new Uint8Array(response.data);
     }
@@ -523,7 +367,7 @@ cr.define('descriptor_panel', function() {
         await this.usbDeviceProxy_.open();
         rawData = await this.getDeviceDescriptor_();
       } catch (e) {
-        this.showError_(e.message);
+        showError(e.message, this.rootElement_);
         // Stop rendering if failed to read the device descriptor.
         return;
       } finally {
@@ -606,7 +450,7 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const displayElement = this.addNewDescriptorDisplayElement_();
+      const displayElement = addNewDescriptorDisplayElement(this.rootElement_);
       /** @type {!cr.ui.Tree} */
       const rawDataTreeRoot = displayElement.rawDataTreeRoot;
       /** @type {!HTMLElement} */
@@ -614,8 +458,9 @@ cr.define('descriptor_panel', function() {
 
       renderRawDataBytes(rawDataByteElement, rawData);
 
-      this.renderRawDataTree_(
-          rawDataTreeRoot, rawDataByteElement, fields, rawData, 0);
+      renderRawDataTree(
+          rawDataTreeRoot, rawDataByteElement, fields, rawData, 0,
+          this.rootElement_);
 
       addMappingAction(rawDataTreeRoot, rawDataByteElement);
 
@@ -644,10 +489,11 @@ cr.define('descriptor_panel', function() {
           usbControlTransferParams, CONFIGURATION_DESCRIPTOR_LENGTH,
           CONTROL_TRANSFER_TIMEOUT_MS);
 
-      this.checkTransferSuccess_(
+      checkTransferSuccess(
           response.status,
           'Failed to read the device configuration descriptor to determine ' +
-              'the total descriptor length.');
+              'the total descriptor length.',
+          this.rootElement_);
 
       const data = new DataView(new Uint8Array(response.data).buffer);
       const length =
@@ -656,9 +502,10 @@ cr.define('descriptor_panel', function() {
       response = await this.usbDeviceProxy_.controlTransferIn(
           usbControlTransferParams, length, CONTROL_TRANSFER_TIMEOUT_MS);
 
-      this.checkTransferSuccess_(
+      checkTransferSuccess(
           response.status,
-          'Failed to read the complete configuration descriptor.');
+          'Failed to read the complete configuration descriptor.',
+          this.rootElement_);
 
       return new Uint8Array(response.data);
     }
@@ -673,7 +520,7 @@ cr.define('descriptor_panel', function() {
         await this.usbDeviceProxy_.open();
         rawData = await this.getConfigurationDescriptor_();
       } catch (e) {
-        this.showError_(e.message);
+        showError(e.message, this.rootElement_);
         // Stop rendering if failed to read the configuration descriptor.
         return;
       } finally {
@@ -724,7 +571,7 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const displayElement = this.addNewDescriptorDisplayElement_();
+      const displayElement = addNewDescriptorDisplayElement(this.rootElement_);
       /** @type {!cr.ui.Tree} */
       const rawDataTreeRoot = displayElement.rawDataTreeRoot;
       /** @type {!HTMLElement} */
@@ -735,12 +582,14 @@ cr.define('descriptor_panel', function() {
       const expectNumInterfaces =
           rawData[CONFIGURATION_DESCRIPTOR_NUM_INTERFACES_OFFSET];
 
-      let offset = this.renderRawDataTree_(
-          rawDataTreeRoot, rawDataByteElement, fields, rawData, 0);
+      let offset = renderRawDataTree(
+          rawDataTreeRoot, rawDataByteElement, fields, rawData, 0,
+          this.rootElement_);
 
       if (offset !== CONFIGURATION_DESCRIPTOR_LENGTH) {
-        this.showError_(
-            'An error occurred while rendering configuration descriptor.');
+        showError(
+            'An error occurred while rendering configuration descriptor.',
+            this.rootElement_);
       }
 
       let indexInterface = 0;
@@ -775,15 +624,17 @@ cr.define('descriptor_panel', function() {
       }
 
       if (expectNumInterfaces !== indexInterface) {
-        this.showError_(`Expected to find ${
-            expectNumInterfaces} interface descriptors but only encountered ${
-            indexInterface}.`);
+        showError(
+            `Expected to find ${expectNumInterfaces} interface descriptors ` +
+                `but only encountered ${indexInterface}.`,
+            this.rootElement_);
       }
 
       if (expectNumEndpoints !== indexEndpoint) {
-        this.showError_(`Expected to find ${
-            expectNumEndpoints} interface descriptors but only encountered ${
-            indexEndpoint}.`);
+        showError(
+            `Expected to find ${expectNumEndpoints} endpoint descriptors but` +
+                ` only encountered ${indexEndpoint}.`,
+            this.rootElement_);
       }
 
       addMappingAction(rawDataTreeRoot, rawDataByteElement);
@@ -806,8 +657,10 @@ cr.define('descriptor_panel', function() {
         rawDataTreeRoot, rawDataByteElement, rawData, originalOffset,
         indexInterface, expectNumEndpoints) {
       if (originalOffset + INTERFACE_DESCRIPTOR_LENGTH > rawData.length) {
-        this.showError_(`Failed to read the interface descriptor at index ${
-            indexInterface}.`);
+        showError(
+            `Failed to read the interface descriptor at index ${
+                indexInterface}.`,
+            this.rootElement_);
       }
 
       const parentClassName = `descriptor-interface-${indexInterface}`;
@@ -867,14 +720,15 @@ cr.define('descriptor_panel', function() {
       expectNumEndpoints +=
           rawData[originalOffset + INTERFACE_DESCRIPTOR_NUM_ENDPOINTS_OFFSET];
 
-      const offset = this.renderRawDataTree_(
+      const offset = renderRawDataTree(
           interfaceItem, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       if (offset !== originalOffset + INTERFACE_DESCRIPTOR_LENGTH) {
-        this.showError_(
+        showError(
             `An error occurred while rendering interface descriptor at index ${
-                indexInterface}.`);
+                indexInterface}.`,
+            this.rootElement_);
       }
 
       return [offset, expectNumEndpoints];
@@ -896,8 +750,9 @@ cr.define('descriptor_panel', function() {
         rawDataTreeRoot, rawDataByteElement, rawData, originalOffset,
         indexEndpoint) {
       if (originalOffset + ENDPOINT_DESCRIPTOR_LENGTH > rawData.length) {
-        this.showError_(`Failed to read the endpoint descriptor at index ${
-            indexEndpoint}.`);
+        showError(
+            `Failed to read the endpoint descriptor at index ${indexEndpoint}.`,
+            this.rootElement_);
       }
 
       const parentClassName = `descriptor-endpoint-${indexEndpoint}`;
@@ -938,14 +793,15 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const offset = this.renderRawDataTree_(
+      const offset = renderRawDataTree(
           endpointItem, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       if (offset !== originalOffset + ENDPOINT_DESCRIPTOR_LENGTH) {
-        this.showError_(
+        showError(
             `An error occurred while rendering endpoint descriptor at index ${
-                indexEndpoint}.`);
+                indexEndpoint}.`,
+            this.rootElement_);
       }
 
       return offset;
@@ -969,8 +825,9 @@ cr.define('descriptor_panel', function() {
           rawData[originalOffset + STANDARD_DESCRIPTOR_LENGTH_OFFSET];
 
       if (originalOffset + length > rawData.length) {
-        this.showError_(
-            `Failed to read the unknown descriptor at index ${indexUnknown}.`);
+        showError(
+            `Failed to read the unknown descriptor at index ${indexUnknown}.`,
+            this.rootElement_);
         return;
       }
 
@@ -992,7 +849,7 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      let offset = this.renderRawDataTree_(
+      let offset = renderRawDataTree(
           unknownItem, rawDataByteElement, fields, rawData, originalOffset,
           parentClassName);
 
@@ -1031,12 +888,13 @@ cr.define('descriptor_panel', function() {
             usbControlTransferParams, MAX_STRING_DESCRIPTOR_LENGTH,
             CONTROL_TRANSFER_TIMEOUT_MS);
 
-        this.checkTransferSuccess_(
+        checkTransferSuccess(
             response.status,
             'Failed to read the device string descriptor to determine ' +
-                'all supported languages.');
+                'all supported languages.',
+            this.rootElement_);
       } catch (e) {
-        this.showError_(e.message);
+        showError(e.message, this.rootElement_);
         // Stop rendering autocomplete datalist if failed to read the string
         // descriptor.
         return new Uint8Array();
@@ -1047,7 +905,7 @@ cr.define('descriptor_panel', function() {
       const responseData = new Uint8Array(response.data);
       this.languageCodesListElement_.innerText = '';
 
-      const optionAllElement = cr.doc.createElement('option');
+      const optionAllElement = document.createElement('option');
       optionAllElement.value = 'All';
       this.languageCodesListElement_.appendChild(optionAllElement);
 
@@ -1056,7 +914,7 @@ cr.define('descriptor_panel', function() {
       for (let i = 2; i < responseData.length; i += 2) {
         const languageCode = parseShort(responseData, i);
 
-        const optionElement = cr.doc.createElement('option');
+        const optionElement = document.createElement('option');
         optionElement.label = parseLanguageCode(languageCode);
         optionElement.value = `0x${toHex(languageCode, 4)}`;
 
@@ -1094,10 +952,11 @@ cr.define('descriptor_panel', function() {
           CONTROL_TRANSFER_TIMEOUT_MS);
 
       const languageCodeStr = parseLanguageCode(languageCode);
-      this.checkTransferSuccess_(
+      checkTransferSuccess(
           response.status,
           `Failed to read the device string descriptor of index: ${
-              index}, language: ${languageCodeStr}.`);
+              index}, language: ${languageCodeStr}.`,
+          this.rootElement_);
 
       const rawData = new Uint8Array(response.data);
       return {languageCodeStr, rawData};
@@ -1122,7 +981,7 @@ cr.define('descriptor_panel', function() {
         rawDataMap =
             await this.getStringDescriptorForLanguageCode_(index, languageCode);
       } catch (e) {
-        this.showError_(e.message);
+        showError(e.message, this.rootElement_);
         // Stop rendering if failed to read the string descriptor.
         return;
       } finally {
@@ -1134,8 +993,10 @@ cr.define('descriptor_panel', function() {
 
       const length = rawData[STANDARD_DESCRIPTOR_LENGTH_OFFSET];
       if (length > rawData.length) {
-        this.showError_(`Failed to read the string descriptor at index ${
-            index} in ${languageStr}.`);
+        showError(
+            `Failed to read the string descriptor at index ${index} in ${
+                languageStr}.`,
+            this.rootElement_);
         return;
       }
 
@@ -1162,7 +1023,7 @@ cr.define('descriptor_panel', function() {
         fields.push(field);
       }
 
-      const displayElement = this.addNewDescriptorDisplayElement_();
+      const displayElement = addNewDescriptorDisplayElement(this.rootElement_);
       /** @type {!cr.ui.Tree} */
       const rawDataTreeRoot = displayElement.rawDataTreeRoot;
       /** @type {!HTMLElement} */
@@ -1182,9 +1043,9 @@ cr.define('descriptor_panel', function() {
 
       renderRawDataBytes(rawDataByteElement, rawData);
 
-      this.renderRawDataTree_(
+      renderRawDataTree(
           stringDescriptorItem, rawDataByteElement, fields, rawData, 0,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       addMappingAction(rawDataTreeRoot, rawDataByteElement);
     }
@@ -1276,10 +1137,11 @@ cr.define('descriptor_panel', function() {
           usbControlTransferParams, BOS_DESCRIPTOR_HEADER_LENGTH,
           CONTROL_TRANSFER_TIMEOUT_MS);
 
-      this.checkTransferSuccess_(
+      checkTransferSuccess(
           response.status,
           'Failed to read the device BOS descriptor to determine ' +
-              'the total descriptor length.');
+              'the total descriptor length.',
+          this.rootElement_);
 
       const data = new DataView(new Uint8Array(response.data).buffer);
       const length = data.getUint16(BOS_DESCRIPTOR_TOTAL_LENGTH_OFFSET, true);
@@ -1288,8 +1150,9 @@ cr.define('descriptor_panel', function() {
       response = await this.usbDeviceProxy_.controlTransferIn(
           usbControlTransferParams, length, CONTROL_TRANSFER_TIMEOUT_MS);
 
-      this.checkTransferSuccess_(
-          response.status, 'Failed to read the complete BOS descriptor.');
+      checkTransferSuccess(
+          response.status, 'Failed to read the complete BOS descriptor.',
+          this.rootElement_);
 
       return new Uint8Array(response.data);
     }
@@ -1304,7 +1167,7 @@ cr.define('descriptor_panel', function() {
         await this.usbDeviceProxy_.open();
         rawData = await this.getBosDescriptor_();
       } catch (e) {
-        this.showError_(e.message);
+        showError(e.message, this.rootElement_);
         // Stop rendering if failed to read the BOS descriptor.
         return;
       } finally {
@@ -1334,7 +1197,7 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const displayElement = this.addNewDescriptorDisplayElement_();
+      const displayElement = addNewDescriptorDisplayElement(this.rootElement_);
       /** @type {!cr.ui.Tree} */
       const rawDataTreeRoot = displayElement.rawDataTreeRoot;
       /** @type {!HTMLElement} */
@@ -1342,17 +1205,18 @@ cr.define('descriptor_panel', function() {
 
       renderRawDataBytes(rawDataByteElement, rawData);
 
-      let offset = this.renderRawDataTree_(
+      let offset = renderRawDataTree(
           rawDataTreeRoot, rawDataByteElement, fields, rawData, 0);
 
       if (offset !== BOS_DESCRIPTOR_HEADER_LENGTH) {
-        this.showError_(
-            'An error occurred while rendering BOS descriptor header.');
+        showError(
+            'An error occurred while rendering BOS descriptor header.',
+            this.rootElement_);
       }
 
       let indexWebUsb = 0;
       let indexMsOs20 = 0;
-      let indexUnknownBos = 0;
+      let indexUnknownDevCapability = 0;
       // Continue parsing while there are still unparsed device capability
       // descriptors. Stop if accessing the device capability type would cause
       // us to read past the end of the buffer.
@@ -1379,20 +1243,21 @@ cr.define('descriptor_panel', function() {
           default:
             offset = this.renderUnknownBosDescriptor_(
                 rawDataTreeRoot, rawDataByteElement, rawData, offset,
-                indexUnknownBos);
-            indexUnknownBos++;
+                indexUnknownDevCapability);
+            indexUnknownDevCapability++;
         }
       }
 
-      const expectNumBosDescriptors =
+      const expectNumDevCapabilityDescriptors =
           rawData[BOS_DESCRIPTOR_NUM_DEVICE_CAPABILITIES_OFFSET];
       const encounteredNumBosDescriptors =
-          indexWebUsb + indexMsOs20 + indexUnknownBos;
-      if (encounteredNumBosDescriptors !== expectNumBosDescriptors) {
-        this.showError_(
-            `Expected to find ${expectNumBosDescriptors} ` +
-            `interface descriptors but only encountered ` +
-            `${encounteredNumBosDescriptors}.`);
+          indexWebUsb + indexMsOs20 + indexUnknownDevCapability;
+      if (encounteredNumBosDescriptors !== expectNumDevCapabilityDescriptors) {
+        showError(
+            `Expected to find ${expectNumDevCapabilityDescriptors} ` +
+                `device capability Descriptors but only encountered ` +
+                `${encounteredNumBosDescriptors}.`,
+            this.rootElement_);
       }
 
       addMappingAction(rawDataTreeRoot, rawDataByteElement);
@@ -1414,8 +1279,9 @@ cr.define('descriptor_panel', function() {
         rawDataTreeRoot, rawDataByteElement, rawData, originalOffset,
         indexWebUsb) {
       if (originalOffset + WEB_USB_DESCRIPTOR_LENGTH > rawData.length) {
-        this.showError_(
-            `Failed to read the WebUSB descriptor at index ${indexWebUsb}.`);
+        showError(
+            `Failed to read the WebUSB descriptor at index ${indexWebUsb}.`,
+            this.rootElement_);
       }
 
       const parentClassName = `descriptor-webusb-${indexWebUsb}`;
@@ -1469,14 +1335,15 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const offset = this.renderRawDataTree_(
+      const offset = renderRawDataTree(
           webUsbItem, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       if (offset !== originalOffset + WEB_USB_DESCRIPTOR_LENGTH) {
-        this.showError_(
+        showError(
             `An error occurred while rendering WebUSB descriptor at index ${
-                indexWebUsb}.`);
+                indexWebUsb}.`,
+            this.rootElement_);
       }
 
       return offset;
@@ -1498,9 +1365,10 @@ cr.define('descriptor_panel', function() {
         rawDataTreeRoot, rawDataByteElement, rawData, originalOffset,
         indexMsOs20) {
       if (originalOffset + PLATFORM_DESCRIPTOR_HEADER_LENGTH > rawData.length) {
-        this.showError_(
+        showError(
             `Failed to read the Microsoft OS 2.0 descriptor at index ${
-                indexMsOs20}.`);
+                indexMsOs20}.`,
+            this.rootElement_);
       }
 
       const parentClassName = `descriptor-ms-os-20-${indexMsOs20}`;
@@ -1538,14 +1406,15 @@ cr.define('descriptor_panel', function() {
       const msOs20DescriptorLength =
           rawData[originalOffset + STANDARD_DESCRIPTOR_LENGTH_OFFSET];
 
-      let offset = this.renderRawDataTree_(
+      let offset = renderRawDataTree(
           msOs20Item, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       if (offset !== originalOffset + PLATFORM_DESCRIPTOR_HEADER_LENGTH) {
-        this.showError_(
+        showError(
             `An error occurred while rendering Microsoft OS 2.0 descriptor at` +
-            ` index ${indexMsOs20}.`);
+                ` index ${indexMsOs20}.`,
+            this.rootElement_);
       }
 
       let indexMsOs20DescriptorSetInfo = 0;
@@ -1562,9 +1431,10 @@ cr.define('descriptor_panel', function() {
       }
 
       if (offset !== originalOffset + msOs20DescriptorLength) {
-        this.showError_(
+        showError(
             `An error occurred while rendering Microsoft OS 2.0 descriptor at` +
-            ` index ${indexMsOs20}.`);
+                ` index ${indexMsOs20}.`,
+            this.rootElement_);
       }
 
       return offset;
@@ -1588,9 +1458,10 @@ cr.define('descriptor_panel', function() {
         indexMsOs20DescriptorSetInfo, indexMsOs20) {
       if (originalOffset + MS_OS_20_DESCRIPTOR_SET_INFORMATION_LENGTH >
           rawData.length) {
-        this.showError_(
+        showError(
             `Failed to read the Microsoft OS 2.0 descriptor set information ` +
-            `at index ${indexMsOs20DescriptorSetInfo}.`);
+                `at index ${indexMsOs20DescriptorSetInfo}.`,
+            this.rootElement_);
       }
 
       const parentClassName =
@@ -1630,39 +1501,42 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const offset = this.renderRawDataTree_(
+      const offset = renderRawDataTree(
           msOs20SetInfoItem, rawDataByteElement, fields, rawData,
-          originalOffset, parentClassName,
+          originalOffset, this.rootElement_, parentClassName,
           `descriptor-ms-os-20-${indexMsOs20}`);
 
       if (offset !==
           originalOffset + MS_OS_20_DESCRIPTOR_SET_INFORMATION_LENGTH) {
-        this.showError_(
+        showError(
             `An error occurred while rendering Microsoft OS 2.0 descriptor ` +
-            `set information at index ${indexMsOs20DescriptorSetInfo}.`);
+                `set information at index ${indexMsOs20DescriptorSetInfo}.`,
+            this.rootElement_);
       }
 
       return offset;
     }
 
     /**
-     * Renders a tree item to display unknown BOS descriptor at indexUnknownBos
+     * Renders a tree item to display unknown device capability descriptor at
+     * indexUnknownDevCapability
      * @param {!cr.ui.Tree} rawDataTreeRoot
      * @param {!HTMLElement} rawDataByteElement
      * @param {!Uint8Array} rawData
      * @param {number} originalOffset The start offset of the unknown BOS
      *     descriptor.
-     * @param {number} indexUnknownBos
+     * @param {number} indexUnknownDevCapability
      * @return {number}
      * @private
      */
     renderUnknownBosDescriptor_(
         rawDataTreeRoot, rawDataByteElement, rawData, originalOffset,
-        indexUnknownBos) {
+        indexUnknownDevCapability) {
       const length =
           rawData[originalOffset + STANDARD_DESCRIPTOR_LENGTH_OFFSET];
 
-      const parentClassName = `descriptor-unknownbos-${indexUnknownBos}`;
+      const parentClassName =
+          `descriptor-unknownbos-${indexUnknownDevCapability}`;
       const unknownBosItem =
           customTreeItem(`Unknown BOS Descriptor`, parentClassName);
       rawDataTreeRoot.add(unknownBosItem);
@@ -1685,9 +1559,9 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      let offset = this.renderRawDataTree_(
+      let offset = renderRawDataTree(
           unknownBosItem, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       const rawDataByteElements = rawDataByteElement.querySelectorAll('span');
 
@@ -1727,10 +1601,11 @@ cr.define('descriptor_panel', function() {
             usbControlTransferParams, MAX_URL_DESCRIPTOR_LENGTH,
             CONTROL_TRANSFER_TIMEOUT_MS);
 
-        this.checkTransferSuccess_(
-            urlResponse.status, 'Failed to read the device URL descriptor.');
+        checkTransferSuccess(
+            urlResponse.status, 'Failed to read the device URL descriptor.',
+            this.rootElement_);
       } catch (e) {
-        this.showError_(e.message);
+        showError(e.message, this.rootElement_);
         // Stops parsing to string format URL if failed to read the URL
         // descriptor.
         return '';
@@ -1786,11 +1661,12 @@ cr.define('descriptor_panel', function() {
             usbControlTransferParams, msOs20DescriptorSetLength,
             CONTROL_TRANSFER_TIMEOUT_MS);
 
-        this.checkTransferSuccess_(
+        checkTransferSuccess(
             response.status,
-            'Failed to read the Microsoft OS 2.0 descriptor set.');
+            'Failed to read the Microsoft OS 2.0 descriptor set.',
+            this.rootElement_);
       } catch (e) {
-        this.showError_(e.message);
+        showError(e.message, this.rootElement_);
         // Returns an empty array if failed to read the Microsoft OS 2.0
         // descriptor set.
         return new Uint8Array();
@@ -1828,12 +1704,13 @@ cr.define('descriptor_panel', function() {
         const response = await this.usbDeviceProxy_.controlTransferOut(
             usbControlTransferParams, [], CONTROL_TRANSFER_TIMEOUT_MS);
 
-        this.checkTransferSuccess_(
+        checkTransferSuccess(
             response.status,
-            'Failed to read the Microsoft OS 2.0 ' +
-                'descriptor alternate enumeration set.');
+            'Failed to read the Microsoft OS 2.0 descriptor ' +
+                'alternate enumeration set.',
+            this.rootElement_);
       } catch (e) {
-        this.showError_(e.message);
+        showError(e.message, this.rootElement_);
       } finally {
         await this.usbDeviceProxy_.close();
       }
@@ -1846,8 +1723,8 @@ cr.define('descriptor_panel', function() {
      * @private
      */
     renderMsOs20DescriptorSet_(msOs20RawData) {
-      const displayElement = this.addNewDescriptorDisplayElement_(
-          'Microsoft OS 2.0 Descriptor Set');
+      const displayElement = addNewDescriptorDisplayElement(
+          this.rootElement_, 'Microsoft OS 2.0 Descriptor Set');
       /** @type {!cr.ui.Tree} */
       const rawDataTreeRoot = displayElement.rawDataTreeRoot;
       /** @type {!HTMLElement} */
@@ -1969,13 +1846,15 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const offset = this.renderRawDataTree_(
-          rawDataTreeRoot, rawDataByteElement, fields, rawData, originalOffset);
+      const offset = renderRawDataTree(
+          rawDataTreeRoot, rawDataByteElement, fields, rawData, originalOffset,
+          this.rootElement_);
 
       if (offset !== originalOffset + length) {
-        this.showError_(
+        showError(
             'An error occurred while rendering Microsoft OS 2.0 Descriptor ' +
-            'Set header.');
+                'Set header.',
+            this.rootElement_);
       }
 
       return offset;
@@ -2034,14 +1913,15 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const offset = this.renderRawDataTree_(
+      const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
           parentClassName);
 
       if (offset !== originalOffset + length) {
-        this.showError_(
+        showError(
             'An error occurred while rendering Microsoft OS 2.0 ' +
-            'Configuration Subset Header.');
+                'Configuration Subset Header.',
+            this.rootElement_);
       }
 
       return offset;
@@ -2098,14 +1978,15 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const offset = this.renderRawDataTree_(
+      const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
           parentClassName);
 
       if (offset !== originalOffset + length) {
-        this.showError_(
+        showError(
             'An error occurred while rendering Microsoft OS 2.0 ' +
-            'Function Subset Header.');
+                'Function Subset Header.',
+            this.rootElement_);
       }
 
       return offset;
@@ -2157,14 +2038,15 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const offset = this.renderRawDataTree_(
+      const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
           parentClassName);
 
       if (offset !== originalOffset + length) {
-        this.showError_(
+        showError(
             'An error occurred while rendering Microsoft OS 2.0 ' +
-            'Compatible ID Descriptor.');
+                'Compatible ID Descriptor.',
+            this.rootElement_);
       }
 
       return offset;
@@ -2233,9 +2115,9 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      let offset = this.renderRawDataTree_(
+      let offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
-          parentClassName);
+          this.rootElement_, parentClassName);
 
       while (offset < originalOffset + length) {
         const propertyDataLength = data.getUint16(offset, true);
@@ -2255,15 +2137,16 @@ cr.define('descriptor_panel', function() {
                     featureRegistryPropertyDataType, propertyDataLength),
           },
         ];
-        offset = this.renderRawDataTree_(
+        offset = renderRawDataTree(
             item, rawDataByteElement, propertyDataFields, rawData, offset,
-            parentClassName);
+            this.rootElement_, parentClassName);
       }
 
       if (offset !== originalOffset + length) {
-        this.showError_(
+        showError(
             'An error occurred while rendering Microsoft OS 2.0 ' +
-            'Registry Property Descriptor.');
+                'Registry Property Descriptor.',
+            this.rootElement_);
       }
 
       return offset;
@@ -2317,14 +2200,15 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const offset = this.renderRawDataTree_(
+      const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
           parentClassName);
 
       if (offset !== originalOffset + length) {
-        this.showError_(
+        showError(
             'An error occurred while rendering Microsoft OS 2.0 ' +
-            'Minimum USB Resume Time Descriptor.');
+                'Minimum USB Resume Time Descriptor.',
+            this.rootElement_);
       }
 
       return offset;
@@ -2371,14 +2255,15 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const offset = this.renderRawDataTree_(
+      const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
           parentClassName);
 
       if (offset !== originalOffset + length) {
-        this.showError_(
+        showError(
             'An error occurred while rendering Microsoft OS 2.0 ' +
-            'Model ID Descriptor.');
+                'Model ID Descriptor.',
+            this.rootElement_);
       }
 
       return offset;
@@ -2423,14 +2308,15 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const offset = this.renderRawDataTree_(
+      const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
           parentClassName);
 
       if (offset !== originalOffset + length) {
-        this.showError_(
+        showError(
             'An error occurred while rendering Microsoft OS 2.0 ' +
-            'CCGP Device Descriptor.');
+                'CCGP Device Descriptor.',
+            this.rootElement_);
       }
 
       return offset;
@@ -2478,14 +2364,15 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      const offset = this.renderRawDataTree_(
+      const offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
           parentClassName);
 
       if (offset !== originalOffset + length) {
-        this.showError_(
+        showError(
             'An error occurred while rendering Microsoft OS 2.0 ' +
-            'Vendor Revision Descriptor.');
+                'Vendor Revision Descriptor.',
+            this.rootElement_);
       }
 
       return offset;
@@ -2527,7 +2414,7 @@ cr.define('descriptor_panel', function() {
         },
       ];
 
-      let offset = this.renderRawDataTree_(
+      let offset = renderRawDataTree(
           item, rawDataByteElement, fields, rawData, originalOffset,
           parentClassName);
 
@@ -2539,9 +2426,10 @@ cr.define('descriptor_panel', function() {
       }
 
       if (offset !== originalOffset + length) {
-        this.showError_(
+        showError(
             'An error occurred while rendering Microsoft OS 2.0 ' +
-            'Unknown Descriptor.');
+                'Unknown Descriptor.',
+            this.rootElement_);
       }
 
       return offset;
@@ -2561,8 +2449,8 @@ cr.define('descriptor_panel', function() {
         if (direction === 'Device-to-Host') {
           const response = await this.usbDeviceProxy_.controlTransferIn(
               usbControlTransferParams, length, CONTROL_TRANSFER_TIMEOUT_MS);
-          this.checkTransferSuccess_(
-              response.status, 'Failed to send request.');
+          checkTransferSuccess(
+              response.status, 'Failed to send request.', this.rootElement_);
           this.renderTestingData_(new Uint8Array(response.data));
         } else if (direction === 'Host-to-Device') {
           const dataString = this.rootElement_.querySelector('textarea').value;
@@ -2575,8 +2463,8 @@ cr.define('descriptor_panel', function() {
           const response = await this.usbDeviceProxy_.controlTransferOut(
               usbControlTransferParams, new Uint8Array(data),
               CONTROL_TRANSFER_TIMEOUT_MS);
-          this.checkTransferSuccess_(
-              response.status, 'Failed to send request.');
+          checkTransferSuccess(
+              response.status, 'Failed to send request.', this.rootElement_);
         }
       } catch (e) {
         this.showError_(e.message);
@@ -2592,7 +2480,7 @@ cr.define('descriptor_panel', function() {
      * @private
      */
     async renderTestingData_(rawData) {
-      const displayElement = this.addNewDescriptorDisplayElement_();
+      const displayElement = addNewDescriptorDisplayElement(this.rootElement_);
       /** @type {!cr.ui.Tree} */
       const rawDataTreeRoot = displayElement.rawDataTreeRoot;
       rawDataTreeRoot.style.display = 'none';
@@ -2605,9 +2493,10 @@ cr.define('descriptor_panel', function() {
      * Initializes the testing tool panel for input and query functionality.
      */
     initialTestingToolPanel() {
-      this.showWarn_(
+      showWarn(
           'Warning: This tool can send arbitrary commands to the device. ' +
-          'Invalid commands may cause unexpected results.');
+              'Invalid commands may cause unexpected results.',
+          this.rootElement_);
       const inputTableRows =
           this.rootElement_.querySelector('tbody').querySelectorAll('tr');
       const buttons =
@@ -2708,7 +2597,7 @@ cr.define('descriptor_panel', function() {
      */
     checkParamValid_(paramValue, paramName, min, max) {
       if (Number.isNaN(paramValue) || paramValue < min || paramValue > max) {
-        this.showError_(`Invalid ${paramName}.`);
+        showError(`Invalid ${paramName}.`, this.rootElement_);
         return false;
       }
       return true;
@@ -2726,7 +2615,7 @@ cr.define('descriptor_panel', function() {
       if (enumObject[enumString] !== undefined) {
         return true;
       }
-      this.showError_(`Invalid ${paramName}`);
+      showError(`Invalid ${paramName}`, this.rootElement_);
       return false;
     }
   }
@@ -2883,6 +2772,64 @@ cr.define('descriptor_panel', function() {
   }
 
   /**
+   * Adds a display area which contains a tree view and a byte view.
+   * @param {!HTMLElement} rootElement
+   * @param {string=} descriptorPanelTitle
+   * @return {{rawDataTreeRoot:!cr.ui.Tree,rawDataByteElement:!HTMLElement}}
+   */
+  function addNewDescriptorDisplayElement(
+      rootElement, descriptorPanelTitle = undefined) {
+    const descriptorPanelTemplate =
+        document.querySelector('#descriptor-panel-template');
+    const descriptorPanelClone =
+        document.importNode(descriptorPanelTemplate.content, true);
+
+    /** @type {!HTMLElement} */
+    const rawDataTreeRoot =
+        descriptorPanelClone.querySelector('.raw-data-tree-view');
+    /** @type {!HTMLElement} */
+    const rawDataByteElement =
+        descriptorPanelClone.querySelector('.raw-data-byte-view');
+
+    cr.ui.decorate(rawDataTreeRoot, cr.ui.Tree);
+    rawDataTreeRoot.detail = {payload: {}, children: {}};
+
+    if (descriptorPanelTitle) {
+      const descriptorPanelTitleTemplate =
+          document.querySelector('#descriptor-panel-title');
+      const clone =
+          document.importNode(descriptorPanelTitleTemplate.content, true)
+              .querySelector('descriptorpaneltitle');
+      clone.textContent = descriptorPanelTitle;
+      rootElement.appendChild(clone);
+    }
+    rootElement.appendChild(descriptorPanelClone);
+    return {rawDataTreeRoot, rawDataByteElement};
+  }
+
+  /**
+   * Shows an error message.
+   * @param {string} message
+   * @param {!HTMLElement} rootElement
+   */
+  function showError(message, rootElement) {
+    const errorElement = document.createElement('error');
+    errorElement.textContent = message;
+    rootElement.prepend(errorElement);
+  }
+
+  /**
+   * Shows a warning message.
+   * @param {string} message
+   * @param {!HTMLElement} rootElement
+   */
+  function showWarn(message, rootElement) {
+    const warnElement = document.createElement('warn');
+    warnElement.textContent = message;
+    rootElement.prepend(warnElement);
+  }
+
+  /**
    * Renders a customized TreeItem with the given content and class name.
    * @param {string} itemLabel
    * @param {string=} className
@@ -2894,7 +2841,7 @@ cr.define('descriptor_panel', function() {
       icon: '',
     });
     if (className) {
-      item.querySelector('.tree-row').classList.add(className);
+      item.rowElement.classList.add(className);
     }
     return item;
   }
@@ -2980,6 +2927,58 @@ cr.define('descriptor_panel', function() {
   }
 
   /**
+   * Renders a tree view to display the raw data in readable text.
+   * @param {!cr.ui.Tree|!cr.ui.TreeItem} root
+   * @param {!HTMLElement} rawDataByteElement
+   * @param {!Array<Object>} fields
+   * @param {!Uint8Array} rawData
+   * @param {number} offset The start offset of the descriptor structure that
+   *     want to be rendered.
+   * @param {!HTMLElement} rootElement
+   * @param {...string} parentClassNames
+   * @return {number} The end offset of descriptor structure that want to be
+   *     rendered.
+   */
+  function renderRawDataTree(
+      root, rawDataByteElement, fields, rawData, offset, rootElement,
+      ...parentClassNames) {
+    const rawDataByteElements = rawDataByteElement.querySelectorAll('span');
+
+    for (const field of fields) {
+      const className = `field-offset-${offset}`;
+      let item;
+      try {
+        item = customTreeItem(
+            `${field.label}${field.formatter(rawData, offset)}`, className);
+
+        for (let i = 0; i < field.size; i++) {
+          rawDataByteElements[offset + i].classList.add(className);
+          for (const parentClassName of parentClassNames) {
+            rawDataByteElements[offset + i].classList.add(parentClassName);
+          }
+        }
+      } catch (e) {
+        showError(`Field at offset ${offset} is invalid.`, rootElement);
+        break;
+      }
+
+      try {
+        if (field.extraTreeItemFormatter) {
+          field.extraTreeItemFormatter(rawData, offset, item, field.label);
+        }
+      } catch (e) {
+        showError(
+            `Error at rendering field at index ${offset}: ${e.message}`,
+            rootElement);
+      }
+
+      root.add(item);
+      offset += field.size;
+    }
+    return offset;
+  }
+
+  /**
    * Renders an element to display the raw data in hex, byte by byte.
    * @param {!HTMLElement} rawDataByteElement
    * @param {!Uint8Array} rawData
@@ -3003,6 +3002,47 @@ cr.define('descriptor_panel', function() {
       rawDataByteContainerElement.appendChild(rawDataByteElement);
     }
     rawDataByteElement.appendChild(rawDataByteContainerElement);
+  }
+
+  /**
+   * Checks if the status of a control transfer indicates success.
+   * @param {number} status
+   * @param {string} defaultMessage
+   * @param {!HTMLElement} rootElement
+   */
+  function checkTransferSuccess(status, defaultMessage, rootElement) {
+    let failReason = '';
+    switch (status) {
+      case device.mojom.UsbTransferStatus.COMPLETED:
+        return;
+      case device.mojom.UsbTransferStatus.SHORT_PACKET:
+        showError('Descriptor is too short.', rootElement);
+        return;
+      case device.mojom.UsbTransferStatus.BABBLE:
+        showError('Descriptor is too long.', rootElement);
+        return;
+      case device.mojom.UsbTransferStatus.TRANSFER_ERROR:
+        failReason = 'Transfer Error';
+        break;
+      case device.mojom.UsbTransferStatus.TIMEOUT:
+        failReason = 'Timeout';
+        break;
+      case device.mojom.UsbTransferStatus.CANCELLED:
+        failReason = 'Transfer was cancelled';
+        break;
+      case device.mojom.UsbTransferStatus.STALLED:
+        failReason = 'Transfer Error';
+        break;
+      case device.mojom.UsbTransferStatus.DISCONNECT:
+        failReason = 'Transfer stalled';
+        break;
+      case device.mojom.UsbTransferStatus.PERMISSION_DENIED:
+        failReason = 'Permission denied';
+        break;
+    }
+    // Response data will be null if |status| is neither COMPLETED, BABBLE, or
+    // SHORT_PACKET. Throws an error to stop rendering response data.
+    throw new Error(`${defaultMessage} (Reason: ${failReason})`);
   }
 
   /**
