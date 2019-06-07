@@ -179,6 +179,17 @@ bool TextPaintTimingDetector::ShouldWalkObject(
   Node* node = object.GetNode();
   if (!node)
     return false;
+  // If we have finished recording Largest Text Paint and the element is a
+  // shadow element or has no elementtiming attribute, then we should not record
+  // its text.
+  if (!is_recording_ltp_) {
+    if (node->IsInShadowTree() || !node->IsElementNode() ||
+        ToElement(node)
+            ->FastGetAttribute(html_names::kElementtimingAttr)
+            .IsEmpty()) {
+      return false;
+    }
+  }
   DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(node);
   if (node_id == kInvalidDOMNodeId)
     return true;
