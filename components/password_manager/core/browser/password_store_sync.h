@@ -69,18 +69,24 @@ enum class AddLoginError {
 };
 
 // Error values for updating a login in the store.
+// Used in metrics: "PasswordManager.MergeSyncData.UpdateLoginSyncError" and
+// "PasswordManager.ApplySyncChanges.UpdateLoginSyncError". These values are
+// persisted to logs. Entries should not be renumbered and numeric values should
+// never be reused.
 enum class UpdateLoginError {
   // Success.
-  kNone,
+  kNone = 0,
   // Database not available.
-  kDbNotAvailable,
+  kDbNotAvailable = 1,
   // No records were updated.
-  kNoUpdatedRecords,
+  kNoUpdatedRecords = 2,
   // A service-level failure (e.g., on a platform using a keyring, the keyring
   // is temporarily unavailable).
-  kEncrytionServiceFailure,
+  kEncrytionServiceFailure = 3,
   // Database error.
-  kDbError
+  kDbError = 4,
+
+  kMaxValue = kDbError,
 };
 
 // PasswordStore interface for PasswordSyncableService. It provides access to

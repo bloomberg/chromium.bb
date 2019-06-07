@@ -180,8 +180,8 @@ class PasswordSyncableServiceWrapper {
         new PasswordSyncableService(password_store_->GetSyncInterface()));
 
     ON_CALL(*password_store_, AddLoginImpl(HasDateSynced(), _))
-        .WillByDefault([&](const autofill::PasswordForm& form,
-                           password_manager::AddLoginError* error) {
+        .WillByDefault([](const autofill::PasswordForm& form,
+                          password_manager::AddLoginError* error) {
           if (error) {
             *error = AddLoginError::kNone;
           }
@@ -190,7 +190,13 @@ class PasswordSyncableServiceWrapper {
     ON_CALL(*password_store_, RemoveLoginImpl(_))
         .WillByDefault(Return(PasswordStoreChangeList()));
     ON_CALL(*password_store_, UpdateLoginImpl(HasDateSynced(), _))
-        .WillByDefault(Return(PasswordStoreChangeList()));
+        .WillByDefault([](const autofill::PasswordForm& form,
+                          password_manager::UpdateLoginError* error) {
+          if (error) {
+            *error = UpdateLoginError::kNone;
+          }
+          return PasswordStoreChangeList();
+        });
     EXPECT_CALL(*password_store(), NotifyLoginsChanged(_)).Times(AnyNumber());
   }
 

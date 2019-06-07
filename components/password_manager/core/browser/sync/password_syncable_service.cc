@@ -385,8 +385,18 @@ void PasswordSyncableService::WriteToPasswordStore(const SyncEntries& entries,
 
   for (const std::unique_ptr<autofill::PasswordForm>& form :
        entries.updated_entries) {
+    UpdateLoginError update_login_error;
     PasswordStoreChangeList new_changes =
-        password_store_->UpdateLoginSync(*form);
+        password_store_->UpdateLoginSync(*form, &update_login_error);
+    if (is_merge) {
+      base::UmaHistogramEnumeration(
+          "PasswordManager.MergeSyncData.UpdateLoginSyncError",
+          update_login_error);
+    } else {
+      base::UmaHistogramEnumeration(
+          "PasswordManager.ApplySyncChanges.UpdateLoginSyncError",
+          update_login_error);
+    }
     changes.insert(changes.end(), new_changes.begin(), new_changes.end());
   }
 

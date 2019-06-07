@@ -45415,6 +45415,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="Metadata persistence failed"/>
 </enum>
 
+<enum name="PasswordUpdateLoginSyncError">
+  <int value="0" label="None"/>
+  <int value="1" label="DB Not Available"/>
+  <int value="2" label="No Records were Updated"/>
+  <int value="3" label="Encryption Service Failure"/>
+  <int value="4" label="DB Error"/>
+</enum>
+
 <enum name="PaymentRequestAbortReason">
   <int value="0" label="DismissedByUser"/>
   <int value="1" label="AbortedByMerchant"/>

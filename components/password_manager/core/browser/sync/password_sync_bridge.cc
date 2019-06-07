@@ -392,10 +392,15 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
             std::move(local_form_entity_data), metadata_change_list.get());
       } else {
         // The remote password is more recent, update the local model.
-        PasswordStoreChangeList changes =
-            password_store_sync_->UpdateLoginSync(PasswordFromEntityChange(
-                remote_entity_change, /*sync_time=*/time_now));
+        UpdateLoginError update_login_error;
+        PasswordStoreChangeList changes = password_store_sync_->UpdateLoginSync(
+            PasswordFromEntityChange(remote_entity_change,
+                                     /*sync_time=*/time_now),
+            &update_login_error);
         DCHECK_LE(changes.size(), 1U);
+        base::UmaHistogramEnumeration(
+            "PasswordManager.MergeSyncData.UpdateLoginSyncError",
+            update_login_error);
         if (changes.empty()) {
           metrics_util::LogPasswordSyncState(
               metrics_util::NOT_SYNCING_FAILED_UPDATE);
@@ -578,8 +583,13 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           if (entity_change->storage_key().empty()) {
             continue;
           }
+          UpdateLoginError update_login_error;
           changes = password_store_sync_->UpdateLoginSync(
-              PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now));
+              PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now),
+              &update_login_error);
+          base::UmaHistogramEnumeration(
+              "PasswordManager.ApplySyncChanges.UpdateLoginSyncError",
+              update_login_error);
           if (changes.empty()) {
             metrics_util::LogApplySyncChangesState(
                 metrics_util::ApplySyncChangesState::kApplyUpdateFailed);
