@@ -609,8 +609,7 @@ bool EGLStreamDelayedCopyPictureBuffer::Initialize(
   RETURN_ON_FAILURE(result, "Could not create stream producer", false);
   scoped_refptr<gl::CopyingGLImageDXGI> copying_image_ =
       base::MakeRefCounted<gl::CopyingGLImageDXGI>(
-          Microsoft::WRL::ComPtr<ID3D11Device>(decoder.D3D11Device()), size(),
-          stream_);
+          ComD3D11Device(decoder.D3D11Device()), size(), stream_);
   gl_image_ = copying_image_;
   return copying_image_->Initialize();
 }

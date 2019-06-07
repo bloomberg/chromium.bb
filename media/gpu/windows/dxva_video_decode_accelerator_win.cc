@@ -1427,13 +1427,12 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
     // To detect if a driver supports the desired resolutions, we try and create
     // a DXVA decoder instance for that resolution and profile. If that succeeds
     // we assume that the driver supports decoding for that resolution.
-    Microsoft::WRL::ComPtr<ID3D11Device> device =
-        gl::QueryD3D11DeviceObjectFromANGLE();
+    ComD3D11Device device = gl::QueryD3D11DeviceObjectFromANGLE();
 
     // Legacy AMD drivers with UVD3 or earlier and some Intel GPU's crash while
     // creating surfaces larger than 1920 x 1088.
     if (device && !IsLegacyGPU(device.Get())) {
-      Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device;
+      ComD3D11VideoDevice video_device;
       if (SUCCEEDED(device.As(&video_device))) {
         max_h264_resolutions = GetMaxResolutionsForGUIDs(
             max_h264_resolutions.first, video_device.Get(),
@@ -2035,7 +2034,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
           hr, "Failed to get buffer from output sample", PLATFORM_FAILURE, );
 
       Microsoft::WRL::ComPtr<IDirect3DSurface9> surface;
-      Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
+      ComD3D11Texture2D d3d11_texture;
 
       if (use_dx11_) {
         Microsoft::WRL::ComPtr<IMFDXGIBuffer> dxgi_buffer;
@@ -2790,7 +2789,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to get resource index",
                                   PLATFORM_FAILURE, );
 
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> dx11_decoding_texture;
+  ComD3D11Texture2D dx11_decoding_texture;
   hr = dxgi_buffer->GetResource(IID_PPV_ARGS(&dx11_decoding_texture));
   RETURN_AND_NOTIFY_ON_HR_FAILURE(
       hr, "Failed to get resource from output sample", PLATFORM_FAILURE, );
@@ -2798,7 +2797,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
   D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC output_view_desc = {
       D3D11_VPOV_DIMENSION_TEXTURE2D};
   output_view_desc.Texture2D.MipSlice = 0;
-  Microsoft::WRL::ComPtr<ID3D11VideoProcessorOutputView> output_view;
+  ComD3D11VideoProcessorOutputView output_view;
   hr = video_device_->CreateVideoProcessorOutputView(
       dest_texture, enumerator_.Get(), &output_view_desc, &output_view);
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to get output view",
@@ -2808,7 +2807,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
   input_view_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
   input_view_desc.Texture2D.ArraySlice = index;
   input_view_desc.Texture2D.MipSlice = 0;
-  Microsoft::WRL::ComPtr<ID3D11VideoProcessorInputView> input_view;
+  ComD3D11VideoProcessorInputView input_view;
   hr = video_device_->CreateVideoProcessorInputView(
       dx11_decoding_texture.Get(), enumerator_.Get(), &input_view_desc,
       &input_view);
@@ -2960,7 +2959,7 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
   DCHECK_EQ(GetPictureBufferMechanism(), PictureBufferMechanism::COPY_TO_RGB);
 
   // On platforms prior to Windows 10 we won't have a ID3D11VideoContext1.
-  Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context1;
+  ComD3D11VideoContext1 video_context1;
   if (FAILED(video_context_.As(&video_context1))) {
     auto d3d11_color_space =
         gfx::ColorSpaceWin::GetD3D11ColorSpace(color_space);
@@ -3027,7 +3026,7 @@ bool DXVAVideoDecodeAccelerator::GetVideoFrameDimensions(IMFSample* sample,
 
   if (use_dx11_) {
     Microsoft::WRL::ComPtr<IMFDXGIBuffer> dxgi_buffer;
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
+    ComD3D11Texture2D d3d11_texture;
     hr = output_buffer.As(&dxgi_buffer);
     RETURN_ON_HR_FAILURE(hr, "Failed to get DXGIBuffer from output sample",
                          false);

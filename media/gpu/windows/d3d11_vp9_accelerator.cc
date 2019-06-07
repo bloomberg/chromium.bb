@@ -38,8 +38,8 @@ D3D11VP9Accelerator::D3D11VP9Accelerator(
     D3D11VideoDecoderClient* client,
     MediaLog* media_log,
     CdmProxyContext* cdm_proxy_context,
-    Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
-    Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
+    ComD3D11VideoDecoder video_decoder,
+    ComD3D11VideoDevice video_device,
     std::unique_ptr<VideoContextWrapper> video_context)
     : client_(client),
       media_log_(media_log),

@@ -9,8 +9,8 @@ namespace media {
 VideoProcessorProxy::~VideoProcessorProxy() {}
 
 VideoProcessorProxy::VideoProcessorProxy(
-    Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
-    Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3d11_device_context)
+    ComD3D11VideoDevice video_device,
+    ComD3D11DeviceContext d3d11_device_context)
     : video_device_(video_device), device_context_(d3d11_device_context) {}
 
 bool VideoProcessorProxy::Init(uint32_t width, uint32_t height) {

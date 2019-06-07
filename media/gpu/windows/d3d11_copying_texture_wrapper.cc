@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "media/gpu/windows/d3d11_com_defs.h"
 
 namespace media {
 
@@ -33,7 +34,7 @@ bool CopyingTexture2DWrapper::ProcessTexture(const D3D11PictureBuffer* owner_pb,
   D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC output_view_desc = {
       D3D11_VPOV_DIMENSION_TEXTURE2D};
   output_view_desc.Texture2D.MipSlice = 0;
-  Microsoft::WRL::ComPtr<ID3D11VideoProcessorOutputView> output_view;
+  ComD3D11VideoProcessorOutputView output_view;
   RETURN_ON_FAILURE(video_processor_->CreateVideoProcessorOutputView(
       output_texture_wrapper_->Texture().Get(), &output_view_desc,
       &output_view));
@@ -42,7 +43,7 @@ bool CopyingTexture2DWrapper::ProcessTexture(const D3D11PictureBuffer* owner_pb,
   input_view_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
   input_view_desc.Texture2D.ArraySlice = owner_pb->level();
   input_view_desc.Texture2D.MipSlice = 0;
-  Microsoft::WRL::ComPtr<ID3D11VideoProcessorInputView> input_view;
+  ComD3D11VideoProcessorInputView input_view;
   RETURN_ON_FAILURE(video_processor_->CreateVideoProcessorInputView(
       Texture().Get(), &input_view_desc, &input_view));
 

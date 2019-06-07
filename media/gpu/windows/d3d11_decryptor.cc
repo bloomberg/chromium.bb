@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "media/base/decoder_buffer.h"
+#include "media/gpu/windows/d3d11_com_defs.h"
 
 namespace media {
 
@@ -107,8 +108,7 @@ bool IsWholeSampleEncrypted(const DecryptConfig& decrypt_config,
 // Checks whether |device1| is the same component as |device2|.
 // Note that comparing COM pointers require using their IUnknowns.
 // https://docs.microsoft.com/en-us/windows/desktop/api/unknwn/nf-unknwn-iunknown-queryinterface(q_)
-bool SameDevices(Microsoft::WRL::ComPtr<ID3D11Device> device1,
-                 Microsoft::WRL::ComPtr<ID3D11Device> device2) {
+bool SameDevices(ComD3D11Device device1, ComD3D11Device device2) {
   // For the case where both are nullptrs, they aren't devices, so returning
   // false here.
   if (!device1 || !device2)

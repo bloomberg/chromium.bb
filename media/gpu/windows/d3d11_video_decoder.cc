@@ -111,8 +111,7 @@ D3D11_TEXTURE2D_DESC TextureSelector::TextureDescriptor(gfx::Size size) {
   return texture_desc;
 }
 
-bool TextureSelector::SupportsDevice(
-    Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device) {
+bool TextureSelector::SupportsDevice(ComD3D11VideoDevice video_device) {
   for (UINT i = video_device->GetVideoDecoderProfileCount(); i--;) {
     GUID profile = {};
     if (SUCCEEDED(video_device->GetVideoDecoderProfile(i, &profile))) {
@@ -227,7 +226,7 @@ std::string D3D11VideoDecoder::GetDisplayName() const {
 HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
     const VideoDecoderConfig& config,
     CdmProxyContext* proxy_context,
-    Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder) {
+    ComD3D11VideoDecoder video_decoder) {
   // If we got an 11.1 D3D11 Device, we can use a |ID3D11VideoContext1|,
   // otherwise we have to make sure we only use a |ID3D11VideoContext|.
   HRESULT hr;
@@ -342,7 +341,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   // TODO(liberato): dxva does this.  don't know if we need to.
-  Microsoft::WRL::ComPtr<ID3D11Multithread> multi_threaded;
+  ComD3D11Multithread multi_threaded;
   hr = device_->QueryInterface(IID_PPV_ARGS(&multi_threaded));
   if (!SUCCEEDED(hr)) {
     NotifyError("Failed to query ID3D11Multithread");
@@ -394,7 +393,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
+  ComD3D11VideoDecoder video_decoder;
   hr = video_device_->CreateVideoDecoder(
       &desc, &dec_config, video_decoder.ReleaseAndGetAddressOf());
   if (!video_decoder.Get()) {
@@ -655,7 +654,7 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   D3D11_TEXTURE2D_DESC texture_desc =
       texture_selector_->TextureDescriptor(size);
 
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> out_texture;
+  ComD3D11Texture2D out_texture;
   HRESULT hr = device_->CreateTexture2D(&texture_desc, nullptr,
                                         out_texture.ReleaseAndGetAddressOf());
   if (!SUCCEEDED(hr)) {

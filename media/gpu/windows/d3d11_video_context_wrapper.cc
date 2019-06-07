@@ -19,7 +19,7 @@ struct BufferSubmitter;
 template <>
 struct BufferSubmitter<ID3D11VideoContext1> {
   static HRESULT SubmitDecoderBuffers(
-      Microsoft::WRL::ComPtr<ID3D11VideoContext1> context,
+      ComD3D11VideoContext1 context,
       ID3D11VideoDecoder* decoder,
       const UINT num_buffers,
       const VideoContextWrapper::VideoBufferWrapper* src) {
@@ -42,7 +42,7 @@ struct BufferSubmitter<ID3D11VideoContext1> {
 template <>
 struct BufferSubmitter<ID3D11VideoContext> {
   static HRESULT SubmitDecoderBuffers(
-      Microsoft::WRL::ComPtr<ID3D11VideoContext> context,
+      ComD3D11VideoContext context,
       ID3D11VideoDecoder* decoder,
       const UINT num_buffers,
       const VideoContextWrapper::VideoBufferWrapper* src) {
@@ -110,17 +110,17 @@ class VideoContextWrapperImpl : public VideoContextWrapper {
 
 std::unique_ptr<VideoContextWrapper> VideoContextWrapper::CreateWrapper(
     D3D_FEATURE_LEVEL supported_d3d11_version,
-    Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context,
+    ComD3D11DeviceContext device_context,
     HRESULT* status) {
   if (supported_d3d11_version == D3D_FEATURE_LEVEL_11_0) {
-    Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context;
+    ComD3D11VideoContext video_context;
     *status = device_context.CopyTo(video_context.ReleaseAndGetAddressOf());
     return std::make_unique<VideoContextWrapperImpl<ID3D11VideoContext>>(
         video_context);
   }
 
   if (supported_d3d11_version == D3D_FEATURE_LEVEL_11_1) {
-    Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context;
+    ComD3D11VideoContext1 video_context;
     *status = device_context.CopyTo(video_context.ReleaseAndGetAddressOf());
     return std::make_unique<VideoContextWrapperImpl<ID3D11VideoContext1>>(
         video_context);
