@@ -38,6 +38,7 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -230,6 +231,7 @@ public class WebXrVrTransitionTest {
     @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_SETTINGS_SERVICE})
     @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    @DisabledTest(message = "crbug.com/972153")
     public void testPresentationPromiseUnresolvedDuringDon() throws InterruptedException {
         presentationPromiseUnresolvedDuringDonImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile(
@@ -272,6 +274,7 @@ public class WebXrVrTransitionTest {
     @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_SETTINGS_SERVICE})
     @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    @DisabledTest(message = "crbug.com/972153")
     public void testPresentationPromiseRejectedIfDonCanceled() throws InterruptedException {
         presentationPromiseRejectedIfDonCanceledImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile(
