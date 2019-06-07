@@ -18,6 +18,7 @@
 #include "base/trace_event/trace_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
+#include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
 
 namespace perfetto {
 class StartupTraceWriter;
@@ -49,12 +50,17 @@ class AutoThreadLocalBoolean {
 class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
     : public PerfettoTracedProcess::DataSourceBase {
  public:
-  TraceEventMetadataSource();
-  ~TraceEventMetadataSource() override;
+  static TraceEventMetadataSource* GetInstance();
 
-  using MetadataGeneratorFunction =
+  using JsonMetadataGeneratorFunction =
       base::RepeatingCallback<std::unique_ptr<base::DictionaryValue>()>;
+
+  using MetadataGeneratorFunction = base::RepeatingCallback<void(
+      perfetto::protos::pbzero::ChromeMetadataPacket*)>;
+
   // Any callbacks passed here will be called when tracing starts.
+  void AddGeneratorFunction(JsonMetadataGeneratorFunction generator);
+  // Same as above, but for filling in proto format.
   void AddGeneratorFunction(MetadataGeneratorFunction generator);
 
   // PerfettoTracedProcess::DataSourceBase implementation, called by
@@ -65,10 +71,18 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
   void StopTracing(base::OnceClosure stop_complete_callback) override;
   void Flush(base::RepeatingClosure flush_complete_callback) override;
 
+  void ResetForTesting();
+
  private:
+  friend class base::NoDestructor<TraceEventMetadataSource>;
+
+  TraceEventMetadataSource();
+  ~TraceEventMetadataSource() override;
+
   void GenerateMetadata(std::unique_ptr<perfetto::TraceWriter> trace_writer);
   std::unique_ptr<base::DictionaryValue> GenerateTraceConfigMetadataDict();
 
+  std::vector<JsonMetadataGeneratorFunction> json_generator_functions_;
   std::vector<MetadataGeneratorFunction> generator_functions_;
   scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
   std::unique_ptr<perfetto::TraceWriter> trace_writer_;

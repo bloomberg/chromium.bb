@@ -21,6 +21,7 @@
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/thread_local_event_sink.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
@@ -30,6 +31,7 @@
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer_registry.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
+#include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
@@ -38,19 +40,36 @@ using TraceEvent = base::trace_event::TraceEvent;
 using TraceConfig = base::trace_event::TraceConfig;
 
 namespace tracing {
+namespace {
+TraceEventMetadataSource* g_trace_event_metadata_source_for_testing = nullptr;
+}  // namespace
 
 using ChromeEventBundleHandle =
     protozero::MessageHandle<perfetto::protos::pbzero::ChromeEventBundle>;
 
+// static
+TraceEventMetadataSource* TraceEventMetadataSource::GetInstance() {
+  static base::NoDestructor<TraceEventMetadataSource> instance;
+  return instance.get();
+}
+
 TraceEventMetadataSource::TraceEventMetadataSource()
     : DataSourceBase(mojom::kMetaDataSourceName),
       origin_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+  g_trace_event_metadata_source_for_testing = this;
+  PerfettoTracedProcess::Get()->AddDataSource(this);
   AddGeneratorFunction(base::BindRepeating(
       &TraceEventMetadataSource::GenerateTraceConfigMetadataDict,
       base::Unretained(this)));
 }
 
 TraceEventMetadataSource::~TraceEventMetadataSource() = default;
+
+void TraceEventMetadataSource::AddGeneratorFunction(
+    JsonMetadataGeneratorFunction generator) {
+  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
+  json_generator_functions_.push_back(generator);
+}
 
 void TraceEventMetadataSource::AddGeneratorFunction(
     MetadataGeneratorFunction generator) {
@@ -84,15 +103,23 @@ TraceEventMetadataSource::GenerateTraceConfigMetadataDict() {
 
 void TraceEventMetadataSource::GenerateMetadata(
     std::unique_ptr<perfetto::TraceWriter> trace_writer) {
+  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
+  auto trace_packet = trace_writer->NewTracePacket();
+  auto* chrome_metadata = trace_packet->set_chrome_metadata();
+  for (auto& generator : generator_functions_) {
+    generator.Run(chrome_metadata);
+  }
+  trace_packet = perfetto::TraceWriter::TracePacketHandle();
+
   if (privacy_filtering_enabled_) {
     return;
   }
-  DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
 
-  auto trace_packet = trace_writer->NewTracePacket();
-  ChromeEventBundleHandle event_bundle(trace_packet->set_chrome_events());
+  auto legacy_trace_packet = trace_writer->NewTracePacket();
+  ChromeEventBundleHandle event_bundle(
+      legacy_trace_packet->set_chrome_events());
 
-  for (auto& generator : generator_functions_) {
+  for (auto& generator : json_generator_functions_) {
     std::unique_ptr<base::DictionaryValue> metadata_dict = generator.Run();
     if (!metadata_dict) {
       continue;
@@ -131,7 +158,7 @@ void TraceEventMetadataSource::StartTracing(
 
 void TraceEventMetadataSource::StopTracing(
     base::OnceClosure stop_complete_callback) {
-  if (trace_writer_ && !privacy_filtering_enabled_) {
+  if (trace_writer_) {
     // Write metadata at the end of tracing to make it less likely that it is
     // overridden by other trace data in perfetto's ring buffer.
     origin_task_runner_->PostTaskAndReply(
@@ -150,6 +177,13 @@ void TraceEventMetadataSource::Flush(
     base::RepeatingClosure flush_complete_callback) {
   origin_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
                                         std::move(flush_complete_callback));
+}
+
+void TraceEventMetadataSource::ResetForTesting() {
+  if (!g_trace_event_metadata_source_for_testing)
+    return;
+  g_trace_event_metadata_source_for_testing->~TraceEventMetadataSource();
+  new (g_trace_event_metadata_source_for_testing) TraceEventMetadataSource;
 }
 
 namespace {

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/public/browser/background_tracing_manager.h"
+#include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 
 namespace base {
 template <typename T>
@@ -142,6 +143,8 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   void ValidateStartupScenario();
   bool IsSupportedConfig(BackgroundTracingConfigImpl* config);
   std::unique_ptr<base::DictionaryValue> GenerateMetadataDict();
+  void GenerateMetadataProto(
+      perfetto::protos::pbzero::ChromeMetadataPacket* metadata);
   bool IsTriggerHandleValid(TriggerHandle handle) const;
   void OnScenarioAborted();
 

@@ -13,6 +13,7 @@
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/background_tracing_manager.h"
+#include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
 namespace base {
@@ -40,6 +41,8 @@ class BackgroundTracingActiveScenario {
 
   const BackgroundTracingConfigImpl* GetConfig() const;
   void GenerateMetadataDict(base::DictionaryValue* metadata_dict);
+  void GenerateMetadataProto(
+      perfetto::protos::pbzero::ChromeMetadataPacket* metadata);
   State state() const { return scenario_state_; }
   bool requires_anonymized_data() const { return requires_anonymized_data_; }
   base::WeakPtr<BackgroundTracingActiveScenario> GetWeakPtr();
@@ -79,12 +82,13 @@ class BackgroundTracingActiveScenario {
 
   std::unique_ptr<TracingSession> tracing_session_;
   std::unique_ptr<BackgroundTracingConfigImpl> config_;
-  bool requires_anonymized_data_;
-  State scenario_state_;
-  std::unique_ptr<base::DictionaryValue> last_triggered_rule_;
+  // Owned by |config_|.
+  const BackgroundTracingRule* last_triggered_rule_ = nullptr;
+  const bool requires_anonymized_data_ = false;
+  State scenario_state_ = State::kIdle;
   base::RepeatingClosure rule_triggered_callback_for_testing_;
   BackgroundTracingManager::ReceiveCallback receive_callback_;
-  BackgroundTracingManager::TriggerHandle triggered_named_event_handle_;
+  BackgroundTracingManager::TriggerHandle triggered_named_event_handle_ = -1;
   base::OnceClosure on_aborted_callback_;
   base::OnceClosure started_finalizing_closure_;
 

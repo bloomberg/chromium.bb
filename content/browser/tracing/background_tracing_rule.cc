@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/rand_util.h"
 #include "base/strings/safe_sprintf.h"
@@ -105,6 +106,9 @@ void BackgroundTracingRule::IntoDict(base::DictionaryValue* dict) const {
   }
 }
 
+void BackgroundTracingRule::GenerateMetadataProto(
+    BackgroundTracingRule::MetadataProto* out) const {}
+
 void BackgroundTracingRule::Setup(const base::DictionaryValue* dict) {
   dict->GetDouble(kConfigRuleTriggerChance, &trigger_chance_);
   dict->GetInteger(kConfigRuleTriggerDelay, &trigger_delay_);
@@ -135,6 +139,23 @@ class NamedTriggerRule : public BackgroundTracingRule {
     BackgroundTracingRule::IntoDict(dict);
     dict->SetString(kConfigRuleKey, kConfigRuleTypeMonitorNamed);
     dict->SetString(kConfigRuleTriggerNameKey, named_event_.c_str());
+  }
+
+  void GenerateMetadataProto(
+      BackgroundTracingRule::MetadataProto* out) const override {
+    DCHECK(out);
+    BackgroundTracingRule::GenerateMetadataProto(out);
+    out->set_trigger_type(MetadataProto::MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED);
+    auto* named_rule = out->set_named_rule();
+    if (named_event_ == "startup-config") {
+      named_rule->set_event_type(MetadataProto::NamedRule::STARTUP);
+    } else if (named_event_ == "navigation-config") {
+      named_rule->set_event_type(MetadataProto::NamedRule::NAVIGATION);
+    } else if (named_event_ == "session-restore-config") {
+      named_rule->set_event_type(MetadataProto::NamedRule::SESSION_RESTORE);
+    } else if (named_event_ == "preemptive_test") {
+      named_rule->set_event_type(MetadataProto::NamedRule::TEST_RULE);
+    }
   }
 
   bool ShouldTriggerNamedEvent(const std::string& named_event) const override {
@@ -221,6 +242,18 @@ class HistogramRule : public BackgroundTracingRule,
     dict->SetInteger(kConfigRuleHistogramValue1Key, histogram_lower_value_);
     dict->SetInteger(kConfigRuleHistogramValue2Key, histogram_upper_value_);
     dict->SetBoolean(kConfigRuleHistogramRepeatKey, repeat_);
+  }
+
+  void GenerateMetadataProto(
+      BackgroundTracingRule::MetadataProto* out) const override {
+    DCHECK(out);
+    BackgroundTracingRule::GenerateMetadataProto(out);
+    out->set_trigger_type(
+        MetadataProto::MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE);
+    auto* rule = out->set_histogram_rule();
+    rule->set_histogram_name_hash(base::HashMetricName(histogram_name_));
+    rule->set_histogram_min_trigger(histogram_lower_value_);
+    rule->set_histogram_max_trigger(histogram_upper_value_);
   }
 
   void OnHistogramTrigger(const std::string& histogram_name) const override {
@@ -312,6 +345,14 @@ class TraceForNSOrTriggerOrFullRule : public BackgroundTracingRule {
     dict->SetString(kConfigRuleTriggerNameKey, named_event_.c_str());
   }
 
+  void GenerateMetadataProto(
+      BackgroundTracingRule::MetadataProto* out) const override {
+    DCHECK(out);
+    BackgroundTracingRule::GenerateMetadataProto(out);
+    out->set_trigger_type(MetadataProto::MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED);
+    out->set_named_rule()->set_event_type(MetadataProto::NamedRule::NAVIGATION);
+  }
+
   bool ShouldTriggerNamedEvent(const std::string& named_event) const override {
     return named_event == named_event_;
   }
@@ -352,6 +393,12 @@ class TraceAtRandomIntervalsRule : public BackgroundTracingRule {
     dict->SetString(kConfigRuleKey, kConfigRuleTypeTraceAtRandomIntervals);
     dict->SetInteger(kConfigRuleRandomIntervalTimeoutMin, timeout_min_);
     dict->SetInteger(kConfigRuleRandomIntervalTimeoutMax, timeout_max_);
+  }
+
+  void GenerateMetadataProto(
+      BackgroundTracingRule::MetadataProto* out) const override {
+    // TODO(ssid): Add config if we enabled this  type of trigger.
+    NOTREACHED();
   }
 
   void Install() override {

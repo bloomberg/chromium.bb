@@ -103,6 +103,9 @@ void BackgroundTracingManagerImpl::AddMetadataGeneratorFunction() {
   tracing::TraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
       base::BindRepeating(&BackgroundTracingManagerImpl::GenerateMetadataDict,
                           base::Unretained(this)));
+  tracing::TraceEventMetadataSource::GetInstance()->AddGeneratorFunction(
+      base::BindRepeating(&BackgroundTracingManagerImpl::GenerateMetadataProto,
+                          base::Unretained(this)));
 }
 
 bool BackgroundTracingManagerImpl::SetActiveScenario(
@@ -403,6 +406,14 @@ BackgroundTracingManagerImpl::GenerateMetadataDict() {
   }
 
   return metadata_dict;
+}
+
+void BackgroundTracingManagerImpl::GenerateMetadataProto(
+    perfetto::protos::pbzero::ChromeMetadataPacket* metadata) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (active_scenario_) {
+    active_scenario_->GenerateMetadataProto(metadata);
+  }
 }
 
 void BackgroundTracingManagerImpl::AbortScenarioForTesting() {

@@ -269,9 +269,7 @@ BackgroundTracingActiveScenario::BackgroundTracingActiveScenario(
     base::OnceClosure on_aborted_callback)
     : config_(std::move(config)),
       requires_anonymized_data_(requires_anonymized_data),
-      scenario_state_(State::kIdle),
       receive_callback_(std::move(receive_callback)),
-      triggered_named_event_handle_(-1),
       on_aborted_callback_(std::move(on_aborted_callback)),
       weak_ptr_factory_(this) {
   DCHECK(config_ && !config_->rules().empty());
@@ -527,8 +525,7 @@ void BackgroundTracingActiveScenario::OnRuleTriggered(
     return;
   }
 
-  last_triggered_rule_.reset(new base::DictionaryValue);
-  triggered_rule->IntoDict(last_triggered_rule_.get());
+  last_triggered_rule_ = triggered_rule;
 
   int trace_delay = triggered_rule->GetTraceDelay();
 
@@ -606,8 +603,20 @@ void BackgroundTracingActiveScenario::GenerateMetadataDict(
   metadata_dict->SetString("scenario_name", config_->scenario_name());
 
   if (last_triggered_rule_) {
-    metadata_dict->Set("last_triggered_rule", std::move(last_triggered_rule_));
+    auto rule = std::make_unique<base::DictionaryValue>();
+    last_triggered_rule_->IntoDict(rule.get());
+    metadata_dict->Set("last_triggered_rule", std::move(rule));
   }
+}
+
+void BackgroundTracingActiveScenario::GenerateMetadataProto(
+    perfetto::protos::pbzero::ChromeMetadataPacket* metadata) {
+  if (!last_triggered_rule_) {
+    return;
+  }
+  auto* triggered_rule =
+      metadata->set_background_tracing_metadata()->set_triggered_rule();
+  last_triggered_rule_->GenerateMetadataProto(triggered_rule);
 }
 
 }  // namespace content

@@ -66,7 +66,9 @@ class MockProducerClient : public ProducerClient {
       EXPECT_TRUE(proto->ParseFromArray(buffer.begin, message_size));
       if (proto->has_chrome_events() &&
                  proto->chrome_events().metadata().size() > 0) {
-        metadata_packets_.push_back(std::move(proto));
+        legacy_metadata_packets_.push_back(std::move(proto));
+      } else if (proto->has_chrome_metadata()) {
+        proto_metadata_packets_.push_back(std::move(proto));
       } else {
         finalized_packets_.push_back(std::move(proto));
       }
@@ -97,20 +99,30 @@ class MockProducerClient : public ProducerClient {
   const google::protobuf::RepeatedPtrField<perfetto::protos::ChromeMetadata>
   GetChromeMetadata(size_t packet_index = 0) {
     FlushPacketIfPossible();
-    if (metadata_packets_.empty()) {
+    if (legacy_metadata_packets_.empty()) {
       return google::protobuf::RepeatedPtrField<
           perfetto::protos::ChromeMetadata>();
     }
-    EXPECT_GT(metadata_packets_.size(), packet_index);
+    EXPECT_GT(legacy_metadata_packets_.size(), packet_index);
 
-    auto event_bundle = metadata_packets_[packet_index]->chrome_events();
+    auto event_bundle = legacy_metadata_packets_[packet_index]->chrome_events();
     return event_bundle.metadata();
+  }
+
+  const perfetto::protos::ChromeMetadataPacket* GetProtoChromeMetadata(
+      size_t packet_index = 0) {
+    FlushPacketIfPossible();
+    EXPECT_GT(proto_metadata_packets_.size(), packet_index);
+    return &proto_metadata_packets_[packet_index]->chrome_metadata();
   }
 
  private:
   std::vector<std::unique_ptr<perfetto::protos::TracePacket>>
       finalized_packets_;
-  std::vector<std::unique_ptr<perfetto::protos::TracePacket>> metadata_packets_;
+  std::vector<std::unique_ptr<perfetto::protos::TracePacket>>
+      legacy_metadata_packets_;
+  std::vector<std::unique_ptr<perfetto::protos::TracePacket>>
+      proto_metadata_packets_;
   perfetto::protos::pbzero::TracePacket trace_packet_;
   protozero::ScatteredStreamWriterNullDelegate delegate_;
   protozero::ScatteredStreamWriter stream_;
@@ -192,6 +204,7 @@ class TraceEventDataSourceTest : public testing::Test {
     producer_client_ =
         std::make_unique<MockProducerClient>(std::move(perfetto_wrapper));
     base::ThreadIdNameManager::GetInstance()->SetName(kTestThread);
+    TraceEventMetadataSource::GetInstance()->ResetForTesting();
   }
 
   void TearDown() override {
@@ -407,9 +420,10 @@ class TraceEventDataSourceTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<MockProducerClient> producer_client_;
+  // Should be the first member.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
+  std::unique_ptr<MockProducerClient> producer_client_;
   int64_t last_timestamp_ = 0;
   int64_t last_thread_time_ = 0;
 };
@@ -458,7 +472,7 @@ void MetadataHasNamedValue(const google::protobuf::RepeatedPtrField<
 }
 
 TEST_F(TraceEventDataSourceTest, MetadataSourceBasicTypes) {
-  auto metadata_source = std::make_unique<TraceEventMetadataSource>();
+  auto* metadata_source = TraceEventMetadataSource::GetInstance();
   metadata_source->AddGeneratorFunction(base::BindRepeating([]() {
     auto metadata = std::make_unique<base::DictionaryValue>();
     metadata->SetInteger("foo_int", 42);
@@ -989,7 +1003,7 @@ TEST_F(TraceEventDataSourceTest, FilteringEventWithFlagCopy) {
 }
 
 TEST_F(TraceEventDataSourceTest, FilteringMetadataSource) {
-  auto metadata_source = std::make_unique<TraceEventMetadataSource>();
+  auto* metadata_source = TraceEventMetadataSource::GetInstance();
   metadata_source->AddGeneratorFunction(base::BindRepeating([]() {
     auto metadata = std::make_unique<base::DictionaryValue>();
     metadata->SetInteger("foo_int", 42);
@@ -1012,6 +1026,37 @@ TEST_F(TraceEventDataSourceTest, FilteringMetadataSource) {
 
   auto metadata = producer_client()->GetChromeMetadata();
   EXPECT_EQ(0, metadata.size());
+}
+
+TEST_F(TraceEventDataSourceTest, ProtoMetadataSource) {
+  auto* metadata_source = TraceEventMetadataSource::GetInstance();
+  metadata_source->AddGeneratorFunction(base::BindRepeating(
+      [](perfetto::protos::pbzero::ChromeMetadataPacket* metadata) {
+        auto* field1 = metadata->set_background_tracing_metadata();
+        auto* rule = field1->set_triggered_rule();
+        rule->set_trigger_type(
+            perfetto::protos::pbzero::BackgroundTracingMetadata::TriggerRule::
+                MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE);
+        rule->set_histogram_rule()->set_histogram_min_trigger(123);
+      }));
+
+  CreateTraceEventDataSource();
+
+  perfetto::DataSourceConfig config;
+  config.mutable_chrome_config()->set_privacy_filtering_enabled(true);
+  metadata_source->StartTracing(producer_client(), config);
+
+  base::RunLoop wait_for_stop;
+  metadata_source->StopTracing(wait_for_stop.QuitClosure());
+  wait_for_stop.Run();
+
+  const auto* metadata = producer_client()->GetProtoChromeMetadata();
+  EXPECT_TRUE(metadata->has_background_tracing_metadata());
+  const auto& rule = metadata->background_tracing_metadata().triggered_rule();
+  EXPECT_EQ(perfetto::protos::BackgroundTracingMetadata::TriggerRule::
+                MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE,
+            rule.trigger_type());
+  EXPECT_EQ(123, rule.histogram_rule().histogram_min_trigger());
 }
 
 class TraceEventDataSourceNoInterningTest : public TraceEventDataSourceTest {

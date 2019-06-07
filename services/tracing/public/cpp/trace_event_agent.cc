@@ -74,15 +74,7 @@ void TraceEventAgent::AddMetadataGeneratorFunction(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   metadata_generator_functions_.push_back(generator);
 
-  // Instantiate and register the metadata data source on the first
-  // call.
-  static TraceEventMetadataSource* metadata_source = []() {
-    static base::NoDestructor<TraceEventMetadataSource> instance;
-    PerfettoTracedProcess::Get()->AddDataSource(instance.get());
-    return instance.get();
-  }();
-
-  metadata_source->AddGeneratorFunction(generator);
+  TraceEventMetadataSource::GetInstance()->AddGeneratorFunction(generator);
 }
 
 void TraceEventAgent::StartTracing(const std::string& config,
