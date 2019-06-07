@@ -21,9 +21,12 @@
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/mime_util.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
@@ -184,6 +187,9 @@ class FileSystemURLLoaderFactoryTest
         base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
     special_storage_policy_ = new MockSpecialStoragePolicy;
+
+    // Support multiple sites on the test server.
+    host_resolver()->AddRule("*", "127.0.0.1");
 
     ContentBrowserTest::SetUpOnMainThread();
 
@@ -702,6 +708,30 @@ IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileTest) {
   EXPECT_TRUE(client->response_head().headers->GetNormalizedHeader(
       "cache-control", &cache_control));
   EXPECT_EQ("no-cache", cache_control);
+}
+
+// Verify that when site isolation is enabled, a renderer process for one
+// origin can't request filesystem: URLs belonging to another origin.  See
+// https://crbug.com/964245.
+IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, CrossOriginFileBlocked) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  WriteFile("file1.dat", kTestFileData, base::size(kTestFileData) - 1);
+
+  // Navigate main frame to foo.com.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_TRUE(
+      NavigateToURL(shell()->web_contents(),
+                    embedded_test_server()->GetURL("foo.com", "/title1.html")));
+
+  // Try requesting filesystem:http://remote/temporary/file1.dat from that
+  // frame.  This should be blocked, as foo.com isn't allowed to request a
+  // filesystem URL for the http://remote origin.
+  auto client = TestLoad(CreateFileSystemURL("file1.dat"));
+  EXPECT_FALSE(client->has_received_response());
+  ASSERT_TRUE(client->has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_URL, client->completion_status().error_code);
 }
 
 IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest,

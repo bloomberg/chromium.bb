@@ -915,10 +915,10 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   }
 }
 
-// Check that browser-side restrictions on extension blob/filesystem URLs allow
+// Check that browser-side restrictions on extension blob URLs allow
 // navigations that will result in downloads.  See https://crbug.com/714373.
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
-                       NestedURLDownloadsToExtensionAllowed) {
+                       BlobURLDownloadsToExtensionAllowed) {
   // Disabling web security is necessary to test the browser enforcement;
   // without it, the loads in this test would be blocked by
   // SecurityOrigin::CanDisplay() as invalid local resource loads.
@@ -949,46 +949,42 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   content::RenderFrameHost* main_frame = tab->GetMainFrame();
   content::RenderFrameHost* extension_frame = ChildFrameAt(main_frame, 0);
 
-  // Create valid blob and filesystem URLs in the extension's origin.
+  // Create a valid blob URL in the extension's origin.
   url::Origin extension_origin(extension_frame->GetLastCommittedOrigin());
   GURL blob_url(CreateBlobURL(extension_frame, "foo"));
   EXPECT_EQ(extension_origin, url::Origin::Create(blob_url));
-  GURL filesystem_url(CreateFileSystemURL(extension_frame, "foo"));
-  EXPECT_EQ(extension_origin, url::Origin::Create(filesystem_url));
-  GURL nested_urls[] = {blob_url, filesystem_url};
 
-  // Check that extension blob/filesystem URLs still can be downloaded via an
-  // HTML anchor tag with the download attribute (i.e., <a download>) (which
-  // starts out as a top-level navigation).
+  // Check that extension blob URLs still can be downloaded via an HTML anchor
+  // tag with the download attribute (i.e., <a download>) (which starts out as
+  // a top-level navigation).
   PermissionRequestManager* permission_request_manager =
       PermissionRequestManager::FromWebContents(tab);
   permission_request_manager->set_auto_response_for_test(
       PermissionRequestManager::ACCEPT_ALL);
-  for (const GURL& nested_url : nested_urls) {
-    content::DownloadTestObserverTerminal observer(
-        content::BrowserContext::GetDownloadManager(profile()), 1,
-        content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
-    std::string script = base::StringPrintf(
-        R"(var anchor = document.createElement('a');
-           anchor.href = '%s';
-           anchor.download = '';
-           anchor.click();)",
-        nested_url.spec().c_str());
-    EXPECT_TRUE(ExecuteScript(tab, script));
-    observer.WaitForFinished();
-    EXPECT_EQ(
-        1u, observer.NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
 
-    // This is a top-level navigation that should have resulted in a download.
-    // Ensure that the tab stayed at its original location.
-    EXPECT_NE(nested_url, tab->GetLastCommittedURL());
-    EXPECT_FALSE(extension_origin.IsSameOriginWith(
-        main_frame->GetLastCommittedOrigin()));
-    EXPECT_NE("foo", GetTextContent(main_frame));
+  content::DownloadTestObserverTerminal observer(
+      content::BrowserContext::GetDownloadManager(profile()), 1,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+  std::string script = base::StringPrintf(
+      R"(var anchor = document.createElement('a');
+         anchor.href = '%s';
+         anchor.download = '';
+         anchor.click();)",
+      blob_url.spec().c_str());
+  EXPECT_TRUE(ExecuteScript(tab, script));
+  observer.WaitForFinished();
+  EXPECT_EQ(1u,
+            observer.NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
 
-    EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
-    EXPECT_EQ(1u, pm->GetAllFrames().size());
-  }
+  // This is a top-level navigation that should have resulted in a download.
+  // Ensure that the tab stayed at its original location.
+  EXPECT_NE(blob_url, tab->GetLastCommittedURL());
+  EXPECT_FALSE(
+      extension_origin.IsSameOriginWith(main_frame->GetLastCommittedOrigin()));
+  EXPECT_NE("foo", GetTextContent(main_frame));
+
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
 }
 
 // Test that navigations to blob: and filesystem: URLs with extension origins

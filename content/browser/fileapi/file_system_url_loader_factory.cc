@@ -161,8 +161,11 @@ class FileSystemEntryURLLoader
       return;
     }
 
+    // If the requested URL is not commitable in the current process, block the
+    // request.  This prevents one origin from fetching filesystem: resources
+    // belonging to another origin, see https://crbug.com/964245.
     if (params_.render_process_host_id != ChildProcessHost::kInvalidUniqueID &&
-        !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+        !ChildProcessSecurityPolicyImpl::GetInstance()->CanCommitURL(
             params_.render_process_host_id, request.url)) {
       DVLOG(1) << "Denied unauthorized request for "
                << request.url.possibly_invalid_spec();
