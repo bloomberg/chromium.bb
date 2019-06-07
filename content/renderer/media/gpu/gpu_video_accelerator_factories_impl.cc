@@ -21,16 +21,14 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
-#include "media/filters/gpu_video_decoder.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
-#include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
 #include "media/gpu/ipc/common/media_messages.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/clients/mojo_video_decoder.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
-#include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
@@ -223,10 +221,11 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoDecoder(
   DCHECK(video_accelerator_enabled_);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(interface_factory_.is_bound());
+
+#if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   if (CheckContextLost())
     return nullptr;
 
-#if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   media::mojom::VideoDecoderPtr video_decoder;
   interface_factory_->CreateVideoDecoder(mojo::MakeRequest(&video_decoder));
   return std::make_unique<media::MojoVideoDecoder>(
@@ -235,18 +234,6 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoDecoder(
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-}
-
-std::unique_ptr<media::VideoDecodeAccelerator>
-GpuVideoAcceleratorFactoriesImpl::CreateVideoDecodeAccelerator() {
-  DCHECK(video_accelerator_enabled_);
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  if (CheckContextLost())
-    return nullptr;
-
-  return std::unique_ptr<media::VideoDecodeAccelerator>(
-      new media::GpuVideoDecodeAcceleratorHost(
-          context_provider_->GetCommandBufferProxy()));
 }
 
 std::unique_ptr<media::VideoEncodeAccelerator>
@@ -471,12 +458,6 @@ GpuVideoAcceleratorFactoriesImpl::CreateSharedMemory(size_t size) {
 scoped_refptr<base::SingleThreadTaskRunner>
 GpuVideoAcceleratorFactoriesImpl::GetTaskRunner() {
   return task_runner_;
-}
-
-media::VideoDecodeAccelerator::Capabilities
-GpuVideoAcceleratorFactoriesImpl::GetVideoDecodeAcceleratorCapabilities() {
-  return media::GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
-      gpu_channel_host_->gpu_info().video_decode_accelerator_capabilities);
 }
 
 media::VideoEncodeAccelerator::SupportedProfiles

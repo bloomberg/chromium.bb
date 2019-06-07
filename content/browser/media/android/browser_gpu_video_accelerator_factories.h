@@ -31,8 +31,6 @@ class BrowserGpuVideoAcceleratorFactories
       media::MediaLog* media_log,
       media::VideoDecoderImplementation implementation,
       const media::RequestOverlayInfoCB& request_overlay_info_cb) override;
-  std::unique_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
-      override;
   std::unique_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       override;
   bool CreateTextures(int32_t count,
@@ -60,8 +58,6 @@ class BrowserGpuVideoAcceleratorFactories
   gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() override;
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
-  media::VideoDecodeAccelerator::Capabilities
-  GetVideoDecodeAcceleratorCapabilities() override;
   media::VideoEncodeAccelerator::SupportedProfiles
   GetVideoEncodeAcceleratorSupportedProfiles() override;
   scoped_refptr<ws::ContextProviderCommandBuffer> GetMediaContextProvider()

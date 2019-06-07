@@ -44,8 +44,6 @@ jumbo_source_set("filters") {
     "frame_buffer_pool.h",
     "frame_processor.cc",
     "frame_processor.h",
-    "gpu_video_decoder.cc",
-    "gpu_video_decoder.h",
     "memory_data_source.cc",
     "memory_data_source.h",
     "offloading_video_decoder.cc",
@@ -87,7 +85,6 @@ jumbo_source_set("filters") {
 
   deps = [
     "//cc/base",  # For MathUtil.
-    "//gpu/command_buffer/common",
     "//media:media_buildflags",
     "//media/base",
     "//media/cdm",

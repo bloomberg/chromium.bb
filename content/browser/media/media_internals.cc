@@ -38,7 +38,6 @@
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_log_event.h"
-#include "media/filters/gpu_video_decoder.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/sandbox/features.h"

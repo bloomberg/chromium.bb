@@ -30,6 +30,7 @@
 #include "media/base/overlay_info.h"
 #include "media/base/video_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "media/video/video_decode_accelerator.h"
 #include "third_party/webrtc/api/video/video_frame.h"
 #include "third_party/webrtc/media/base/vp9_profile.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"

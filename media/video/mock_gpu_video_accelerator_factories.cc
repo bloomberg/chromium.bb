@@ -123,11 +123,6 @@ MockGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
   return nullptr;
 }
 
-std::unique_ptr<VideoDecodeAccelerator>
-MockGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
-  return base::WrapUnique(DoCreateVideoDecodeAccelerator());
-}
-
 std::unique_ptr<VideoEncodeAccelerator>
 MockGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   return base::WrapUnique(DoCreateVideoEncodeAccelerator());

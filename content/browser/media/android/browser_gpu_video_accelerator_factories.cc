@@ -112,11 +112,6 @@ BrowserGpuVideoAcceleratorFactories::CreateVideoDecoder(
   return nullptr;
 }
 
-std::unique_ptr<media::VideoDecodeAccelerator>
-BrowserGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
-  return nullptr;
-}
-
 std::unique_ptr<media::VideoEncodeAccelerator>
 BrowserGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   return nullptr;
@@ -194,17 +189,6 @@ BrowserGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
 scoped_refptr<base::SingleThreadTaskRunner>
 BrowserGpuVideoAcceleratorFactories::GetTaskRunner() {
   return nullptr;
-}
-
-media::VideoDecodeAccelerator::Capabilities
-BrowserGpuVideoAcceleratorFactories::GetVideoDecodeAcceleratorCapabilities() {
-  DCHECK(context_provider_);
-  auto* proxy = context_provider_->GetCommandBufferProxy();
-  DCHECK(proxy);
-  DCHECK(proxy->channel());
-
-  return media::GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
-      proxy->channel()->gpu_info().video_decode_accelerator_capabilities);
 }
 
 media::VideoEncodeAccelerator::SupportedProfiles

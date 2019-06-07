@@ -21,7 +21,6 @@
 #include "media/base/video_decoder.h"
 #include "media/base/video_types.h"
 #include "media/video/supported_video_decoder_config.h"
-#include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -49,7 +48,6 @@ class ContextProviderCommandBuffer;
 namespace media {
 
 class MediaLog;
-class VideoDecodeAccelerator;
 
 // Helper interface for specifying factories needed to instantiate a hardware
 // video accelerator.
@@ -94,12 +92,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
       MediaLog* media_log,
       VideoDecoderImplementation implementation,
       const RequestOverlayInfoCB& request_overlay_info_cb) = 0;
-
-  // Caller owns returned pointer, but should call Destroy() on it (instead of
-  // directly deleting) for proper destruction, as per the
-  // VideoDecodeAccelerator interface.
-  virtual std::unique_ptr<VideoDecodeAccelerator>
-  CreateVideoDecodeAccelerator() = 0;
 
   // Caller owns returned pointer, but should call Destroy() on it (instead of
   // directly deleting) for proper destruction, as per the
@@ -161,11 +153,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   // Returns the task runner the video accelerator runs on.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
-
-  // Return the capabilities of video decode accelerator, which includes the
-  // supported codec profiles.
-  virtual VideoDecodeAccelerator::Capabilities
-  GetVideoDecodeAcceleratorCapabilities() = 0;
 
   // Returns the supported codec profiles of video encode accelerator.
   virtual VideoEncodeAccelerator::SupportedProfiles

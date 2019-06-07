@@ -77,8 +77,6 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   bool IsDecoderConfigSupported(
       media::VideoDecoderImplementation implementation,
       const media::VideoDecoderConfig& config) override;
-  std::unique_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
-      override;
   std::unique_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       override;
   // Creates textures and produces them into mailboxes. Returns true on success
@@ -125,8 +123,6 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
-  media::VideoDecodeAccelerator::Capabilities
-  GetVideoDecodeAcceleratorCapabilities() override;
   std::vector<media::VideoEncodeAccelerator::SupportedProfile>
   GetVideoEncodeAcceleratorSupportedProfiles() override;
 
