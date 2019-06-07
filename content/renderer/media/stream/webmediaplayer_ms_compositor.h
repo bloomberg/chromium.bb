@@ -20,7 +20,7 @@
 #include "cc/layers/video_frame_provider.h"
 #include "content/common/content_export.h"
 #include "media/base/media_util.h"
-#include "media/blink/webmediaplayer_params.h"
+#include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 
 namespace base {
