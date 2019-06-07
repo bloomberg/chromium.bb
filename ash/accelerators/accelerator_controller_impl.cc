@@ -25,7 +25,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/media/media_controller_impl.h"

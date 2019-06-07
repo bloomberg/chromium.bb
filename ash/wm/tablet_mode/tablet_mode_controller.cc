@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/kiosk_next/kiosk_next_shell_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/tablet_mode.h"

@@ -55,7 +55,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login_status.h"
@@ -893,7 +893,8 @@ void Shell::Init(
         std::make_unique<MultiDeviceNotificationPresenter>(
             message_center::MessageCenter::Get(), connector_);
   }
-  kiosk_next_shell_controller_ = std::make_unique<KioskNextShellController>();
+  kiosk_next_shell_controller_ =
+      std::make_unique<KioskNextShellControllerImpl>();
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
   accessibility_focus_ring_controller_ =

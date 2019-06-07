@@ -285,7 +285,12 @@ class KioskNextHomeButtonTest : public AppListButtonTest {
   void SetUp() override {
     set_start_session(false);
     AppListButtonTest::SetUp();
-    client_ = BindMockKioskNextShellClient();
+    client_ = std::make_unique<MockKioskNextShellClient>();
+  }
+
+  void TearDown() override {
+    client_.reset();
+    AppListButtonTest::TearDown();
   }
 
  private:

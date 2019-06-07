@@ -4,7 +4,7 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
-#include "ash/kiosk_next/kiosk_next_shell_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"

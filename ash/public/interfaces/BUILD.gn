@@ -26,7 +26,6 @@ mojom("interfaces_internal") {
     "cros_display_config.mojom",
     "ime_controller.mojom",
     "ime_info.mojom",
-    "kiosk_next_shell.mojom",
     "night_light_controller.mojom",
     "shelf_integration_test_api.mojom",
     "tray_action.mojom",

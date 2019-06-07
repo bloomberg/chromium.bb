@@ -12,7 +12,6 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "ash/public/interfaces/ime_controller.mojom.h"
-#include "ash/public/interfaces/kiosk_next_shell.mojom.h"
 #include "ash/public/interfaces/night_light_controller.mojom.h"
 #include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
@@ -57,7 +56,6 @@ const service_manager::Manifest& GetManifest() {
                   mojom::AssistantNotificationController,
                   mojom::AssistantScreenContextController,
                   mojom::AssistantVolumeControl,
-                  mojom::KioskNextShellController,
                   mojom::CrosDisplayConfigController, mojom::ImeController,
                   mojom::NightLightController, mojom::TrayAction,
                   mojom::VoiceInteractionController, mojom::VpnList>())
