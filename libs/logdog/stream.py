@@ -528,14 +528,14 @@ class _NamedPipeStreamClient(StreamClient):
       name (str): The name of the Windows named pipe to use (e.g., "\\.\name")
     """
     super(_NamedPipeStreamClient, self).__init__(**kwargs)
-    self._name = '\\\\.\\pipe\\' + name
+    self._name = name
 
   @classmethod
   def _create(cls, value, **kwargs):
     return cls(value, **kwargs)
 
   def _connect_raw(self):
-    return open(self._name, 'wb+', buffering=0)
+    return open(self._name, 'wb')
 
 _default_registry.register_protocol('net.pipe', _NamedPipeStreamClient)
 
