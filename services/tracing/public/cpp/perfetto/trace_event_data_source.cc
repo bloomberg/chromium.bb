@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_samples.h"
@@ -512,22 +513,22 @@ void TraceEventDataSource::ReturnTraceWriter(
   // ThreadLocalEventSink gets deleted on thread shutdown and we can't safely
   // call TaskRunnerHandle::Get() at that point (which can happen as the
   // TraceWriter destructor might make a Mojo call and trigger it).
+  auto* trace_writer_raw = trace_writer.release();
+  ANNOTATE_LEAKING_OBJECT_PTR(trace_writer_raw);
   PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           // Pass writer as raw pointer so that we leak it if task posting fails
           // (during shutdown).
-          [](perfetto::StartupTraceWriter* raw_trace_writer) {
-            std::unique_ptr<perfetto::StartupTraceWriter> trace_writer(
-                raw_trace_writer);
+          [](perfetto::StartupTraceWriter* trace_writer) {
             // May destroy |trace_writer|. If the writer is still unbound, the
             // registry will keep it alive until it was bound and its buffered
             // data was copied. This ensures that we don't lose data from
             // threads that are shut down during startup.
             perfetto::StartupTraceWriter::ReturnToRegistry(
-                std::move(trace_writer));
+                base::WrapUnique<perfetto::StartupTraceWriter>(trace_writer));
           },
-          trace_writer.release()));
+          trace_writer_raw));
 }
 
 }  // namespace tracing
