@@ -65,6 +65,7 @@
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
@@ -101,9 +102,6 @@ class Range;
 
 namespace ui {
 struct DidOverscrollParams;
-namespace input_types {
-enum class ScrollGranularity;
-}
 }
 
 namespace content {

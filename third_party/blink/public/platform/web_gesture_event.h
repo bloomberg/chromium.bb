@@ -21,7 +21,7 @@ namespace blink {
 
 class WebGestureEvent : public WebInputEvent {
  public:
-  enum class InertialPhaseState {
+  enum class InertialPhaseState : uint8_t {
     kUnknownMomentum = 0,  // No phase information.
     kNonMomentum,          // Regular scrolling phase.
     kMomentum,             // Momentum phase.
@@ -83,29 +83,29 @@ class WebGestureEvent : public WebInputEvent {
     } two_finger_tap;
 
     struct {
-      // Initial motion that triggered the scroll.
-      float delta_x_hint;
-      float delta_y_hint;
-      // Default initialized to kScrollByPrecisePixel.
-      ui::input_types::ScrollGranularity delta_hint_units;
-      // If true, this event will skip hit testing to find a scroll
-      // target and instead just scroll the viewport.
-      bool target_viewport;
-      // The state of inertial phase scrolling. OSX has unique phases for normal
-      // and momentum scroll events. Should always be kUnknownMomentumPhase for
-      // touch based input as it generates GestureFlingStart instead.
-      InertialPhaseState inertial_phase;
-      // True if this event is generated from a wheel event with synthetic
-      // phase.
-      bool synthetic;
-      // number of pointers down.
-      int pointer_count;
       // If set, used to target a scrollable area directly instead of performing
       // a hit-test. Should be used for gestures queued up internally within
       // the renderer process. This is an ElementIdType instead of ElementId
       // due to the fact that ElementId has a non-trivial constructor that
       // can't easily participate in this union of structs.
       cc::ElementIdType scrollable_area_element_id;
+      // Initial motion that triggered the scroll.
+      float delta_x_hint;
+      float delta_y_hint;
+      // number of pointers down.
+      int pointer_count;
+      // Default initialized to kScrollByPrecisePixel.
+      ui::input_types::ScrollGranularity delta_hint_units;
+      // The state of inertial phase scrolling. OSX has unique phases for normal
+      // and momentum scroll events. Should always be kUnknownMomentumPhase for
+      // touch based input as it generates GestureFlingStart instead.
+      InertialPhaseState inertial_phase;
+      // If true, this event will skip hit testing to find a scroll
+      // target and instead just scroll the viewport.
+      bool target_viewport;
+      // True if this event is generated from a wheel event with synthetic
+      // phase.
+      bool synthetic;
     } scroll_begin;
 
     struct {

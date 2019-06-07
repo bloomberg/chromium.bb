@@ -13,6 +13,7 @@
 #include "third_party/blink/public/platform/web_touch_event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/motion_event.h"
+#include "ui/events/types/scroll_types.h"
 
 namespace gfx {
 class PointF;
@@ -25,9 +26,6 @@ class GestureEventAndroid;
 struct GestureEventData;
 struct GestureEventDetails;
 class MotionEvent;
-namespace input_types {
-enum class ScrollGranularity;
-}
 
 bool CanCoalesce(const blink::WebInputEvent& event_to_coalesce,
                  const blink::WebInputEvent& event);
