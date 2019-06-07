@@ -558,7 +558,7 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
 void WaylandBufferManagerHost::CreateShmBasedBuffer(
     gfx::AcceleratedWidget widget,
     mojo::ScopedHandle shm_fd,
-    size_t length,
+    uint64_t length,
     const gfx::Size& size,
     uint32_t buffer_id) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
