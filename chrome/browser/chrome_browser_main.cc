@@ -262,6 +262,7 @@
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
+#include "chrome/browser/profiles/profile_activity_metrics_recorder.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1116,6 +1117,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   metrics::DesktopSessionDurationTracker::Initialize();
+  ProfileActivityMetricsRecorder::Initialize();
 #endif
   metrics::RendererUptimeTracker::Initialize();
 

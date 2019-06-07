@@ -21,11 +21,14 @@ namespace gfx {
 class Image;
 }
 
+class PrefRegistrySimple;
 class PrefService;
 class ProfileInfoCache;
 
 class ProfileAttributesEntry {
  public:
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
   ProfileAttributesEntry();
   virtual ~ProfileAttributesEntry() {}
 
@@ -93,6 +96,10 @@ class ProfileAttributesEntry {
   bool IsAuthError() const;
   // Returns the index of the default icon used by the profile.
   size_t GetAvatarIconIndex() const;
+  // Returns the metrics bucket this profile should be recorded in.
+  // Note: The bucket index is assigned once and remains the same all time. 0 is
+  // reserved for the guest profile.
+  size_t GetMetricsBucketIndex();
 
   void SetName(const base::string16& name);
   void SetShortcutName(const base::string16& name);
@@ -148,13 +155,14 @@ class ProfileAttributesEntry {
   const base::Value* GetValue(const char* key) const;
 
   // Internal getters that return basic data types. If the key is not present,
-  // or if the data is in a wrong data type, return empty string, 0.0, or false
-  // depending on the target data type. We do not assume that the data type is
-  // correct because the local state file can be modified by a third party.
+  // or if the data is in a wrong data type, return empty string, 0.0, false or
+  // -1 depending on the target data type. We do not assume that the data type
+  // is correct because the local state file can be modified by a third party.
   std::string GetString(const char* key) const;
   base::string16 GetString16(const char* key) const;
   double GetDouble(const char* key) const;
   bool GetBool(const char* key) const;
+  int GetInteger(const char* key) const;
 
   // Type checking. Only IsDouble is implemented because others do not have
   // callsites.
@@ -166,6 +174,7 @@ class ProfileAttributesEntry {
   bool SetString16(const char* key, base::string16 value);
   bool SetDouble(const char* key, double value);
   bool SetBool(const char* key, bool value);
+  bool SetInteger(const char* key, int value);
 
   // These members are an implementation detail meant to smooth the migration
   // of the ProfileInfoCache to the ProfileAttributesStorage interface. They can

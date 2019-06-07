@@ -4726,6 +4726,7 @@ test("unit_tests") {
       "../browser/media/webrtc/native_desktop_media_list_unittest.cc",
       "../browser/metrics/upgrade_metrics_provider_unittest.cc",
       "../browser/policy/machine_level_user_cloud_policy_register_watcher_unittest.cc",
+      "../browser/profiles/profile_activity_metrics_recorder_unittest.cc",
       "../browser/signin/force_signin_verifier_unittest.cc",
       "../browser/signin/signin_global_error_unittest.cc",
       "../browser/signin/signin_ui_util_unittest.cc",
