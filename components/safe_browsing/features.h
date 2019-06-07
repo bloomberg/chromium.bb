@@ -31,6 +31,10 @@ extern const base::Feature kCheckByURLLoaderThrottle;
 // navigations instead of overlays.
 extern const base::Feature kCommittedSBInterstitials;
 
+// Controls whether the user has forcible enabled AP download protection. See
+// also |kUseAPDownloadProtection|.
+extern const base::Feature kForceUseAPDownloadProtection;
+
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
 
@@ -55,14 +59,12 @@ extern const base::Feature kThreatDomDetailsTagAndAttributeFeature;
 // trials simultaneously.
 extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
 
-// Controls whether Chrome on Android uses locally cached blacklists.
-extern const base::Feature kUseLocalBlacklistsV2;
-
-// Controls whether we use AP download protection.
+// Controls whether we use AP download protection. See also
+// |kForceUseAPDownloadProtection|.
 extern const base::Feature kUseAPDownloadProtection;
 
-// Controls whether the user has forcible enabled AP download protection.
-extern const base::Feature kForceUseAPDownloadProtection;
+// Controls whether Chrome on Android uses locally cached blacklists.
+extern const base::Feature kUseLocalBlacklistsV2;
 
 base::ListValue GetFeatureStatusList();
 
