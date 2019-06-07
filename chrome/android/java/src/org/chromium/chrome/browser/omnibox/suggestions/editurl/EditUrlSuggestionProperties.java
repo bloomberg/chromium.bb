@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
+import android.graphics.Bitmap;
 import android.view.View;
 
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
@@ -29,8 +30,11 @@ class EditUrlSuggestionProperties {
     public static final WritableObjectPropertyKey<View.OnClickListener> TEXT_CLICK_LISTENER =
             new WritableObjectPropertyKey<>();
 
-    private static final PropertyKey[] ALL_UNIQUE_KEYS =
-            new PropertyKey[] {TITLE_TEXT, URL_TEXT, BUTTON_CLICK_LISTENER, TEXT_CLICK_LISTENER};
+    public static final WritableObjectPropertyKey<Bitmap> SITE_FAVICON =
+            new WritableObjectPropertyKey<>();
+
+    private static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {
+            TITLE_TEXT, URL_TEXT, BUTTON_CLICK_LISTENER, TEXT_CLICK_LISTENER, SITE_FAVICON};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);

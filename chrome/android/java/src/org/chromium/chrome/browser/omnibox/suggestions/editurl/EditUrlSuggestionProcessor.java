@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -16,12 +17,16 @@ import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlBar.OmniboxAction;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareMenuActionHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.Clipboard;
@@ -115,14 +120,32 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     /** Whether this processor should ignore all subsequent suggestion. */
     private boolean mIgnoreSuggestions;
 
+    /** Whether suggestion site favicons are enabled. */
+    private boolean mEnableSuggestionFavicons;
+
+    /** Edge size (in pixels) of the favicon. Used to request best matching favicon from cache. */
+    private final int mDesiredFaviconWidthPx;
+
+    /** Supplies Profile information. */
+    private Profile mCurrentUserProfile;
+
+    /** Supplies site favicons. */
+    private LargeIconBridge mLargeIconBridge;
+
+    /** Supplies additional control over suggestion model. */
+    private final SuggestionHost mSuggestionHost;
+
     /**
      * @param locationBarDelegate A means of modifying the location bar.
      * @param selectionHandler A mechanism for handling selection of the edit URL suggestion item.
      */
-    public EditUrlSuggestionProcessor(
+    public EditUrlSuggestionProcessor(Context context, SuggestionHost suggestionHost,
             LocationBarDelegate locationBarDelegate, SuggestionSelectionHandler selectionHandler) {
         mLocationBarDelegate = locationBarDelegate;
         mSelectionHandler = selectionHandler;
+        mDesiredFaviconWidthPx = context.getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_favicon_size);
+        mSuggestionHost = suggestionHost;
     }
 
     /**
@@ -185,13 +208,42 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         model.set(EditUrlSuggestionProperties.TEXT_CLICK_LISTENER, this);
         model.set(EditUrlSuggestionProperties.BUTTON_CLICK_LISTENER, this);
 
+        // Lazily create LargeIconBridge in case Profile is reported ahead on Native initialized.
+        if (mEnableSuggestionFavicons && mLargeIconBridge == null && mCurrentUserProfile != null) {
+            mLargeIconBridge = new LargeIconBridge(mCurrentUserProfile);
+        }
+
+        if (mLargeIconBridge != null) {
+            mLargeIconBridge.getLargeIconForUrl(mLastProcessedSuggestion.getUrl(),
+                    mDesiredFaviconWidthPx,
+                    (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
+                            int iconType) -> {
+                        if (!mSuggestionHost.isActiveModel(model)) return;
+                        model.set(EditUrlSuggestionProperties.SITE_FAVICON, icon);
+                        mSuggestionHost.notifyPropertyModelsChanged();
+                    });
+        }
+
         if (mOriginalTitle == null) mOriginalTitle = mTabProvider.get().getTitle();
         model.set(EditUrlSuggestionProperties.TITLE_TEXT, mOriginalTitle);
         model.set(EditUrlSuggestionProperties.URL_TEXT, mLastProcessedSuggestion.getUrl());
     }
 
     @Override
-    public void onNativeInitialized() {}
+    public void onNativeInitialized() {
+        mEnableSuggestionFavicons =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS);
+    }
+
+    /**
+     * Updates the profile used for extracting website favicons.
+     * @param profile The profile to be used.
+     */
+    public void setProfile(Profile profile) {
+        if (mCurrentUserProfile == profile) return;
+        mCurrentUserProfile = profile;
+        mLargeIconBridge = null;
+    }
 
     /**
      * @param provider A means of accessing the activity's tab.

@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 
@@ -39,6 +41,12 @@ public final class EditUrlSuggestionTest {
     private PropertyModel mModel;
 
     @Mock
+    Context mContext;
+
+    @Mock
+    Resources mResources;
+
+    @Mock
     private ActivityTabProvider mTabProvider;
 
     @Mock
@@ -66,6 +74,7 @@ public final class EditUrlSuggestionTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
+        when(mContext.getResources()).thenReturn(mResources);
         when(mTab.getUrl()).thenReturn(TEST_URL);
         when(mTab.getTitle()).thenReturn(TEST_TITLE);
         when(mTab.isNativePage()).thenReturn(false);
@@ -81,7 +90,8 @@ public final class EditUrlSuggestionTest {
 
         mModel = new PropertyModel.Builder(EditUrlSuggestionProperties.ALL_KEYS).build();
 
-        mProcessor = new EditUrlSuggestionProcessor(mLocationBarDelegate, mSelectionHandler);
+        mProcessor = new EditUrlSuggestionProcessor(
+                mContext, null, mLocationBarDelegate, mSelectionHandler);
         mProcessor.setActivityTabProvider(mTabProvider);
 
         when(mEditButton.getId()).thenReturn(R.id.url_edit_icon);
