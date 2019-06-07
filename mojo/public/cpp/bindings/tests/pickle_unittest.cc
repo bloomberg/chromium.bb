@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -191,7 +191,7 @@ class PickleTest : public testing::Test {
   };
 
  private:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChromiumPicklePasserImpl chromium_service_;
   ReceiverSet<PicklePasser> chromium_receivers_;
   BlinkPicklePasserImpl blink_service_;

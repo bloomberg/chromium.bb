@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
@@ -498,7 +497,7 @@ class StrongMathCalculatorImpl : public math::Calculator {
 };
 
 TEST(StrongConnectorTest, Math) {
-  base::MessageLoop loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
 
   bool disconnected = false;
   bool destroyed = false;
@@ -574,7 +573,7 @@ class WeakMathCalculatorImpl : public math::Calculator {
 };
 
 TEST(WeakConnectorTest, Math) {
-  base::MessageLoop loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
 
   bool disconnected = false;
   bool destroyed = false;

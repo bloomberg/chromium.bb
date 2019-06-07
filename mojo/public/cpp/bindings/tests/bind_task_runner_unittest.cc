@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/queue.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -197,7 +197,7 @@ class BindTaskRunnerTest : public testing::Test {
     impl_.reset(new ImplType(std::move(receiver), receiver_task_runner_));
   }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<TestTaskRunner> receiver_task_runner_;
   scoped_refptr<TestTaskRunner> remote_task_runner_;
 
@@ -235,7 +235,7 @@ class AssociatedBindTaskRunnerTest : public testing::Test {
 
   void QuitTaskRunner() { connection_receiver_task_runner_->Quit(); }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<TestTaskRunner> connection_receiver_task_runner_;
   scoped_refptr<TestTaskRunner> connection_remote_task_runner_;
   scoped_refptr<TestTaskRunner> sender_receiver_task_runner_;

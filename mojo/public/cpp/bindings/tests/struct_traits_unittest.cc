@@ -6,8 +6,8 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -188,7 +188,7 @@ class StructTraitsTest : public testing::Test,
     std::move(callback).Run(std::move(u));
   }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   ChromiumRectServiceImpl chromium_service_;
   ReceiverSet<RectService> chromium_receivers_;

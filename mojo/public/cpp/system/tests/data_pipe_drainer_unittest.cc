@@ -5,8 +5,8 @@
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,7 +37,7 @@ class DataPipeDrainerTest : public testing::Test,
 
   void OnDataComplete() override { completion_callback_.Run(); }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string data_;
   std::unique_ptr<DataPipeDrainer> drainer_;
 

@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_math.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/connector.h"
@@ -220,7 +220,7 @@ class ValidationTest : public testing::Test {
   ValidationTest() {}
 
  protected:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 class ValidationIntegrationTest : public ValidationTest {
