@@ -25,6 +25,8 @@ static_library("device_sync") {
     "cryptauth_device_registry_impl.h",
     "cryptauth_device_sync_result.cc",
     "cryptauth_device_sync_result.h",
+    "cryptauth_device_syncer.cc",
+    "cryptauth_device_syncer.h",
     "cryptauth_enroller.h",
     "cryptauth_enroller_factory_impl.cc",
     "cryptauth_enroller_factory_impl.h",
