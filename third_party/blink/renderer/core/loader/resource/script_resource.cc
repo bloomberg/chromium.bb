@@ -415,7 +415,7 @@ void ScriptResource::StartStreaming(
     return;
   }
 
-  static bool script_streaming_enabled =
+  static const bool script_streaming_enabled =
       base::FeatureList::IsEnabled(features::kScriptStreaming);
   if (!script_streaming_enabled) {
     return;
