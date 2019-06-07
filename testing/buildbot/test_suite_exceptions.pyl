@@ -1036,29 +1036,37 @@
     },
   },
   'network_service_out_of_process_chrome_public_test_apk': {
-    # Don't run on trybots; waterfall is enough.
     'remove_from': [
+      # chromium.android
+      'android-asan',
+      # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel'
     ],
   },
   'network_service_out_of_process_components_browsertests': {
-    # Don't run on trybots; waterfall is enough.
     'remove_from': [
+      # chromium.android
+      'android-asan',
+      # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel'
     ],
   },
   'network_service_out_of_process_content_browsertests': {
-    # Don't run on trybots; waterfall is enough.
     'remove_from': [
+      # chromium.android
+      'android-asan',
+      # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel'
     ],
   },
   'network_service_out_of_process_content_shell_test_apk': {
-    # Don't run on trybots; waterfall is enough.
     'remove_from': [
+      # chromium.android
+      'android-asan',
+      # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel'
     ],
@@ -1082,15 +1090,19 @@
     ],
   },
   'non_network_service_content_browsertests': {
-    # Don't run on trybots; waterfall is enough.
     'remove_from': [
+      # chromium.android
+      'android-asan',
+      # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel'
     ],
   },
   'non_network_service_content_shell_test_apk': {
-    # Don't run on trybots; waterfall is enough.
     'remove_from': [
+      # chromium.android
+      'android-asan',
+      # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel'
     ],
@@ -1121,6 +1133,11 @@
         },
       },
     },
+  },
+  'nonperfetto_content_browsertests': {
+    'remove_from': [
+      'android-asan',
+    ],
   },
   'not_site_per_process_webkit_layout_tests': {
     'remove_from': [
