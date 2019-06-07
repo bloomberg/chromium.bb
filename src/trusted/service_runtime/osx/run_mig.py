@@ -23,7 +23,8 @@ def MkDirs(path):
     pass
 
 
-def Generate(src_defs, dst_header, dst_server, sdk):
+def Generate(src_defs, dst_header, dst_server, sdk, mig_path, clang_path,
+             migcom_path):
   """Generate interface headers and server from a .defs file using MIG.
 
   Args:
@@ -63,7 +64,7 @@ def Generate(src_defs, dst_header, dst_server, sdk):
     os.close(nacl_exc_defs)
 
     # Run the 'Mach Interface Generator'.
-    args = ['mig',
+    args = [mig_path,
             '-server', dst_server,
             '-user', '/dev/null',
             '-header', dst_header]
@@ -80,6 +81,11 @@ def Generate(src_defs, dst_header, dst_server, sdk):
       args.append('-isysroot')
       args.append(sdk)
 
+    if clang_path:
+      os.environ['MIGCC'] = clang_path
+    if migcom_path:
+      os.environ['MIGCOM'] = migcom_path
+
     args.append(nacl_exc_defs_path)
     subprocess.check_call(args)
   finally:
@@ -90,14 +96,15 @@ def Generate(src_defs, dst_header, dst_server, sdk):
 def Main(args):
   parser = argparse.ArgumentParser()
   parser.add_argument('--sdk', help='Path to SDK')
+  parser.add_argument('--mig-path', help='Path to mig', default='mig')
+  parser.add_argument('--clang-path', help='Path to clang')
+  parser.add_argument('--migcom-path', help='Path to migcom')
   parser.add_argument('src_defs')
   parser.add_argument('dst_header')
   parser.add_argument('dst_server')
-  parser.add_argument('developer_dir', nargs='?')
   parsed = parser.parse_args(args)
-  if parsed.developer_dir is not None:
-    os.environ['DEVELOPER_DIR'] = parsed.developer_dir
-  Generate(args[0], args[1], args[2], parsed.sdk)
+  Generate(args[0], args[1], args[2], parsed.sdk, parsed.mig_path,
+           parsed.clang_path, parsed.migcom_path)
 
 
 if __name__ == '__main__':
