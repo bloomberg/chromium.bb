@@ -19,12 +19,14 @@
         outline: none;
       }
 
-      :host-context([dark]) {
-        --cr-input-background-color: rgba(0, 0, 0, .3);
-        --cr-input-color: var(--google-grey-refresh-500);
-        --cr-input-error-color: var(--google-red-refresh-300);
-        --cr-input-focus-color: var(--google-blue-refresh-300);
-        --cr-input-placeholder-color: var(--google-grey-refresh-500);
+      @media (prefers-color-scheme: dark) {
+        :host {
+          --cr-input-background-color: rgba(0, 0, 0, .3);
+          --cr-input-color: var(--google-grey-refresh-500);
+          --cr-input-error-color: var(--google-red-refresh-300);
+          --cr-input-focus-color: var(--google-blue-refresh-300);
+          --cr-input-placeholder-color: var(--google-grey-refresh-500);
+        }
       }
 
       /* Label styling below. */

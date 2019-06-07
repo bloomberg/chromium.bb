@@ -78,32 +78,34 @@
     --cr-toggle-color: var(--google-blue-500);
   }
 
-  html[dark] {
-    --cr-primary-text-color: var(--google-grey-200);
-    --cr-secondary-text-color: var(--google-grey-refresh-500);
+  @media (prefers-color-scheme: dark) {
+    html {
+      --cr-primary-text-color: var(--google-grey-200);
+      --cr-secondary-text-color: var(--google-grey-refresh-500);
 
-    --cr-card-background-color: var(--google-grey-900);
-    --cr-card-shadow-color-rgb: 0, 0, 0;
+      --cr-card-background-color: var(--google-grey-900);
+      --cr-card-shadow-color-rgb: 0, 0, 0;
 
-    --cr-card-elevation: {
-      /* This gradient intentionally uses the same from/to colors to add 4%
-       * white on top of an opaque background-color. */
-      background-image: linear-gradient(rgba(255, 255, 255, .04),
-                                        rgba(255, 255, 255, .04));
-      box-shadow: var(--cr-card-shadow);  /* Uses --cr-card-shadow-color-rgb. */
+      --cr-card-elevation: {
+        /* This gradient intentionally uses the same from/to colors to add 4%
+         * white on top of an opaque background-color. */
+        background-image: linear-gradient(rgba(255, 255, 255, .04),
+                                          rgba(255, 255, 255, .04));
+        box-shadow: var(--cr-card-shadow);  /* Uses --cr-card-shadow-color-rgb. */
+      }
+
+      --cr-checked-color: var(--google-blue-refresh-300);
+      --cr-form-field-label-color: var(--dark-secondary-color);
+      --cr-link-color: var(--google-blue-refresh-300);
+      --cr-menu-background-color: var(--google-grey-900);
+      --cr-menu-background-focus-color: rgba(var(--google-grey-800-rgb), .6);
+      --cr-menu-background-sheen: rgba(255, 255, 255, .06);  /* Only dark mode. */
+      --cr-menu-shadow: rgba(0, 0, 0, .3) 0 1px 2px 0,
+                        rgba(0, 0, 0, .15) 0 3px 6px 2px;
+      --cr-separator-color: rgba(255, 255, 255, .1);
+      /* TODO(dbeam): --cr-toggle-color (CrOS only). */
+      --cr-title-text-color: var(--cr-primary-text-color);
     }
-
-    --cr-checked-color: var(--google-blue-refresh-300);
-    --cr-form-field-label-color: var(--dark-secondary-color);
-    --cr-link-color: var(--google-blue-refresh-300);
-    --cr-menu-background-color: var(--google-grey-900);
-    --cr-menu-background-focus-color: rgba(var(--google-grey-800-rgb), .6);
-    --cr-menu-background-sheen: rgba(255, 255, 255, .06);  /* Only dark mode. */
-    --cr-menu-shadow: rgba(0, 0, 0, .3) 0 1px 2px 0,
-                      rgba(0, 0, 0, .15) 0 3px 6px 2px;
-    --cr-separator-color: rgba(255, 255, 255, .1);
-    /* TODO(dbeam): --cr-toggle-color (CrOS only). */
-    --cr-title-text-color: var(--cr-primary-text-color);
   }
 
   /* Don't use color values past this point. Instead, create a variable that's

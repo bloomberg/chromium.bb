@@ -41,10 +41,12 @@
         @apply --avatar-selector-avatar;
       }
 
-      :host-context([dark]) #avatar-grid .avatar {
-        --avatar-focus-color: var(--google-grey-refresh-500);
-        --avatar-gap-color: var(--google-grey-800);
-        --avatar-selected-color: var(--google-blue-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        #avatar-grid .avatar {
+          --avatar-focus-color: var(--google-grey-refresh-500);
+          --avatar-gap-color: var(--google-grey-800);
+          --avatar-selected-color: var(--google-blue-refresh-300);
+        }
       }
 
       #avatar-grid .avatar.iron-selected {

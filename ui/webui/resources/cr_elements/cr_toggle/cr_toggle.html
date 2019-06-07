@@ -22,14 +22,16 @@
         width: 34px;
       }
 
-      :host-context([dark]) {
-        --cr-toggle-checked-bar-color: var(--google-blue-refresh-300);
-        --cr-toggle-checked-button-color: var(--google-blue-refresh-300);
-        --cr-toggle-checked-ink-color: var(--google-blue-refresh-300);
-        --cr-toggle-ripple-opacity: .4;
-        --cr-toggle-unchecked-bar-color: var(--google-grey-refresh-500);
-        --cr-toggle-unchecked-button-color: var(--google-grey-refresh-300);
-        --cr-toggle-unchecked-ink-color: var(--google-grey-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        :host {
+          --cr-toggle-checked-bar-color: var(--google-blue-refresh-300);
+          --cr-toggle-checked-button-color: var(--google-blue-refresh-300);
+          --cr-toggle-checked-ink-color: var(--google-blue-refresh-300);
+          --cr-toggle-ripple-opacity: .4;
+          --cr-toggle-unchecked-bar-color: var(--google-grey-refresh-500);
+          --cr-toggle-unchecked-button-color: var(--google-grey-refresh-300);
+          --cr-toggle-unchecked-ink-color: var(--google-grey-refresh-300);
+        }
       }
 
       :host([disabled]) {
@@ -96,8 +98,10 @@
         color: var(--cr-toggle-checked-ink-color);
       }
 
-      :host-context(html:not([dark])):host([checked]) paper-ripple {
-        --paper-ripple-opacity: 0.2;
+      @media (prefers-color-scheme: light) {
+        :host([checked]) paper-ripple {
+          --paper-ripple-opacity: 0.2;
+        }
       }
     </style>
     <span id="bar"></span>

@@ -51,13 +51,15 @@
         width: 160px;  /* Special width for search input. */
       }
 
-      :host-context([dark]) cr-input {
-        /* TODO(dbeam): needing to use inherit here seems silly. In light mode,
-         * the background color is just matched (i.e. the parent's background is
-         * white, but this element also explicitly sets its background and the
-         * background of the container cr-input to white). Can we just not set
-         * these rules? */
-        --cr-input-background-color: inherit;
+      @media (prefers-color-scheme: dark) {
+        cr-input {
+          /* TODO(dbeam): needing to use inherit here seems silly. In light mode,
+           * the background color is just matched (i.e. the parent's background is
+           * white, but this element also explicitly sets its background and the
+           * background of the container cr-input to white). Can we just not set
+           * these rules? */
+          --cr-input-background-color: inherit;
+        }
       }
 
       :host([has-search-text]) cr-input {

@@ -26,13 +26,15 @@
         @apply --cr-dialog-native;
       }
 
-      :host-context([dark]) dialog {
-        --scroll-border-color: var(--google-grey-refresh-700);
-        background-color: var(--google-grey-900);
-        /* Note: the colors in linear-gradient() are intentionally the same to
-         * add a 4% white layer on top of the fully opaque background-color. */
-        background-image: linear-gradient(rgba(255, 255, 255, .04),
-                                          rgba(255, 255, 255, .04));
+      @media (prefers-color-scheme: dark) {
+        dialog {
+          --scroll-border-color: var(--google-grey-refresh-700);
+          background-color: var(--google-grey-900);
+          /* Note: the colors in linear-gradient() are intentionally the same to
+           * add a 4% white layer on top of the fully opaque background-color. */
+          background-image: linear-gradient(rgba(255, 255, 255, .04),
+                                            rgba(255, 255, 255, .04));
+        }
       }
 
       dialog[open] #content-wrapper {
@@ -123,8 +125,10 @@
         padding: 16px 20px;
       }
 
-      :host-context([dark]) ::slotted([slot=footer]) {
-        border-top-color: var(--cr-separator-color);
+      @media (prefers-color-scheme: dark) {
+        :host ::slotted([slot=footer]) {
+          border-top-color: var(--cr-separator-color);
+        }
       }
 
       .body-container {

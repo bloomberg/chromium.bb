@@ -50,13 +50,15 @@ List of customizable styles:
         --cr-checkbox-unchecked-ripple-opacity: .15;
       }
 
-      :host-context([dark]) {
-        /* Dark mode colors. */
-        --cr-checkbox-checked-ripple-opacity: .4;
-        --cr-checkbox-mark-color: var(--google-grey-900);
-        --cr-checkbox-ripple-unchecked-color: var(--google-grey-refresh-700);
-        --cr-checkbox-unchecked-box-color: var(--google-grey-refresh-500);
-        --cr-checkbox-unchecked-ripple-opacity: .4;
+      @media (prefers-color-scheme: dark) {
+        :host {
+          /* Dark mode colors. */
+          --cr-checkbox-checked-ripple-opacity: .4;
+          --cr-checkbox-mark-color: var(--google-grey-900);
+          --cr-checkbox-ripple-unchecked-color: var(--google-grey-refresh-700);
+          --cr-checkbox-unchecked-box-color: var(--google-grey-refresh-500);
+          --cr-checkbox-unchecked-ripple-opacity: .4;
+        }
       }
 
       :host([disabled]) {

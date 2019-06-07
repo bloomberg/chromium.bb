@@ -27,11 +27,13 @@
         visibility: hidden;
       }
 
-      :host-context([dark]) {
-        background-color: var(--google-grey-900);
-        background-image: linear-gradient(rgba(255, 255, 255, .04),
-                                          rgba(255, 255, 255, .04));
-        border-bottom-color: var(--cr-separator-color);
+      @media (prefers-color-scheme: dark) {
+        :host {
+          background-color: var(--google-grey-900);
+          background-image: linear-gradient(rgba(255, 255, 255, .04),
+                                            rgba(255, 255, 255, .04));
+          border-bottom-color: var(--cr-separator-color);
+        }
       }
 
       :host([show]) {

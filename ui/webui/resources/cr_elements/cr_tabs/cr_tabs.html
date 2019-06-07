@@ -35,12 +35,14 @@
         opacity: 1;
       }
 
-      .selected:focus {
-        font-weight: 700;
+      @media (prefers-color-scheme: dark) {
+        .selected {
+          color: var(--google-blue-refresh-300);
+        }
       }
 
-      :host-context([dark]) .selected {
-        color: var(--google-blue-refresh-300);
+      .selected:focus {
+        font-weight: 700;
       }
 
       #selectionBar {
@@ -58,8 +60,10 @@
         transition: transform;
       }
 
-      :host-context([dark]) #selectionBar {
-        border-bottom-color: var(--google-blue-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        #selectionBar {
+          border-bottom-color: var(--google-blue-refresh-300);
+        }
       }
 
       #selectionBar.expand {
