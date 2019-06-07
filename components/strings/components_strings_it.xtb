@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
-<translation id="1001338328714563407">In qualità di gestore del tuo dispositivo e del tuo account, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Non adesso</translation>
 <translation id="1010200102790553230">Carica la pagina più tardi</translation>
 <translation id="1015730422737071372">Fornisci ulteriori dettagli</translation>
@@ -373,7 +372,6 @@
 <translation id="2948083400971632585">Puoi disattivare tutti i proxy configurati per una connessione dalla pagina delle impostazioni.</translation>
 <translation id="2955913368246107853">Chiudi la barra di ricerca</translation>
 <translation id="2969319727213777354">Per poter stabilire una connessione protetta, l'orologio deve essere impostato correttamente perché i certificati utilizzati dai siti web per identificarsi sono validi soltanto per determinati periodi di tempo. L'orologio del dispositivo non è impostato sull'orario corretto, pertanto Chrome non può verificare i certificati.</translation>
-<translation id="2970515157925768593">Può modificare da remoto la configurazione del tuo dispositivo e del tuo account.</translation>
 <translation id="2972581237482394796">&amp;Ripeti</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, attualmente selezionata. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Cancella dati</translation>
@@ -385,7 +383,6 @@
 <translation id="3005723025932146533">Mostra copia salvata</translation>
 <translation id="3008447029300691911">Inserisci il codice CVC della carta <ph name="CREDIT_CARD" />. Dopo essere stati confermati, i dettagli della carta saranno condivisi con questo sito.</translation>
 <translation id="3010559122411665027">Voce "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">In qualità di gestore di questo dispositivo, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Bloccata automaticamente</translation>
 <translation id="3023071826883856138">You4 (Envelope)</translation>
 <translation id="3024663005179499861">Tipo di criterio errato</translation>
@@ -428,7 +425,6 @@
 <translation id="3287510313208355388">Scarica quando è online</translation>
 <translation id="3293642807462928945">Scopri di più sulla norma <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Nessun risultato di ricerca trovato</translation>
-<translation id="3311730110465560799">Può modificare da remoto la configurazione del tuo dispositivo.</translation>
 <translation id="3320021301628644560">Aggiungi l'indirizzo di fatturazione</translation>
 <translation id="3324983252691184275">Cremisi</translation>
 <translation id="3338095232262050444">Sicuro</translation>
@@ -523,7 +519,6 @@
 <translation id="3761718714832595332">Nascondi stato</translation>
 <translation id="3765032636089507299">La pagina Navigazione sicura è in fase di realizzazione.</translation>
 <translation id="3778403066972421603">Vuoi salvare questa carta nel tuo Account Google e su questo dispositivo?</translation>
-<translation id="3779973883630527594">La società, scuola o organizzazione che gestisce questo account:</translation>
 <translation id="3781428340399460090">Fucsia</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Data di scadenza: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -723,7 +718,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> dice</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Nessun risultato</translation>
-<translation id="4945672369594656571">Controlla in che modo vengono gestiti i dati del tuo dispositivo e del tuo account. Google elabora i dati del tuo dispositivo e del tuo account esclusivamente sotto la direzione del gestore dei tuoi dispositivi e account e unicamente per le finalità specificate dal gestore dei tuoi dispositivi e account.</translation>
 <translation id="4950898438188848926">Pulsante per cambiare scheda, premi INVIO per passare alla scheda aperta, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Azioni</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -737,7 +731,6 @@
 <translation id="5017554619425969104">Testo copiato</translation>
 <translation id="5018422839182700155">Impossibile aprire questa pagina</translation>
 <translation id="5019198164206649151">Archivio di backup in stato non valido</translation>
-<translation id="5020154601324912079">Controlla in che modo vengono gestiti i dati del tuo dispositivo. Google elabora i dati del tuo dispositivo esclusivamente sotto la direzione del gestore dei tuoi dispositivi e unicamente per le finalità specificate dal gestore dei tuoi dispositivi.</translation>
 <translation id="5023310440958281426">Consulta le norme dell'amministratore</translation>
 <translation id="5029568752722684782">Cancella copia</translation>
 <translation id="503069730517007720">Per "<ph name="SOFTWARE_NAME" />" è richiesto un certificato radice che non è installato. L'amministratore IT deve consultare le istruzioni di configurazione relative a "<ph name="SOFTWARE_NAME" />" per risolvere il problema. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -895,7 +888,6 @@
 <translation id="5838278095973806738">Non dovresti inserire dati sensibili in questo sito (ad esempio password o carte di credito) perché potrebbero essere intercettati da utenti malintenzionati.</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5863847714970149516">La pagina che segue potrebbe tentare di addebitarti dei costi</translation>
-<translation id="5865951947699094510">Può modificare da remoto la configurazione del tuo account.</translation>
 <translation id="5866257070973731571">Aggiungi numero di telefono</translation>
 <translation id="5869405914158311789">Impossibile raggiungere il sito</translation>
 <translation id="5869522115854928033">Password salvate</translation>
@@ -1165,7 +1157,6 @@ Ulteriori dettagli:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Gestisci password…</translation>
 <translation id="7419106976560586862">Percorso profilo</translation>
-<translation id="7424427397225027541">Controlla in che modo vengono gestiti i dati del tuo account. Google elabora i dati del tuo account esclusivamente sotto la direzione del gestore del tuo account e unicamente per le finalità specificate dal gestore del tuo account.</translation>
 <translation id="7437289804838430631">Aggiungi informazioni di contatto</translation>
 <translation id="7440140511386898319">Esplora offline</translation>
 <translation id="7441627299479586546">Oggetto del criterio errato</translation>
@@ -1251,7 +1242,6 @@ Ulteriori dettagli:
 <translation id="780301667611848630">No grazie</translation>
 <translation id="7805768142964895445">Stato</translation>
 <translation id="7806344367022510803">Cambia le impostazioni del motore di ricerca in Chrome</translation>
-<translation id="7810209002420871817">In qualità di gestore del tuo account, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Rimuovere il suggerimento per i moduli da Chrome?</translation>
 <translation id="7815407501681723534"><ph name="SEARCH_RESULTS" /> per "<ph name="SEARCH_STRING" />": <ph name="NUMBER_OF_RESULTS" /></translation>

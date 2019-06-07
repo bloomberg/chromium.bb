@@ -301,7 +301,7 @@
 <translation id="574392208103952083">Mitjà</translation>
 <translation id="5744083938413354016">Tocar i arrossegar</translation>
 <translation id="5750765938512549687">El Bluetooth està desactivat</translation>
-<translation id="5777841717266010279">Voleu deixar de compartir la pantalla?</translation>
+<translation id="5777841717266010279">Vols aturar la compartició de pantalla?</translation>
 <translation id="57838592816432529">Silencia</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Atura <ph name="ROUTE_TITLE" /> a <ph name="RECEIVER_NAME" /></translation>
@@ -322,7 +322,7 @@
 <translation id="6018164090099858612">S'està sortint del mode de rèplica</translation>
 <translation id="6043212731627905357">Aquest monitor i el teu <ph name="DEVICE_TYPE" /> no s'entenen (el monitor no és compatible).</translation>
 <translation id="6043994281159824495">Tanca la sessió ara</translation>
-<translation id="6047696787498798094">La pantalla es deixarà de compartir quan canvieu d'usuari. Voleu continuar?</translation>
+<translation id="6047696787498798094">La compartició de pantalla s'aturarà quan canviïs d'usuari. Vols continuar?</translation>
 <translation id="6062360702481658777">Es tancarà la sessió automàticament d'aquí a <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">No s'ha pogut verificar la contrasenya. Torna-ho a provar.</translation>
 <translation id="607652042414456612">El vostre ordinador està visible als dispositius Bluetooth propers i apareixerà com a "<ph name="NAME" />" amb l'adreça <ph name="ADDRESS" />.</translation>

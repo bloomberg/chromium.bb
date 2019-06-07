@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
-<translation id="1001338328714563407">તમારા ડિવાઇસ અને એકાઉન્ટના મેનેજર તરીકે, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">હમણાં નહીં</translation>
 <translation id="1010200102790553230">પેજ પછીથી લોડ કરો</translation>
 <translation id="1015730422737071372">અતિરિક્ત વિગતો પ્રદાન કરો</translation>
@@ -373,7 +372,6 @@
 <translation id="2948083400971632585">તમે સેટિંગ પેજમાંથી કનેક્શન માટે ગોઠવવામાં આવેલ કોઈપણ પ્રોક્સીઓ બંધ કરી શકો છો.</translation>
 <translation id="2955913368246107853">શોધ બાર બંધ કરો</translation>
 <translation id="2969319727213777354">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારી ઘડિયાળ યોગ્ય રીતે સેટ હોવી જરૂરી છે. આનું કારણ એ કે વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Google Chrome આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
-<translation id="2970515157925768593">તમારા ડિવાઇસનું અને એકાઉન્ટનું સેટઅપ રિમોટલી બદલી શકે છે.</translation>
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, વર્તમાનમાં પસંદ કરેલ. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">ડેટા સાફ કરો</translation>
@@ -385,7 +383,6 @@
 <translation id="3005723025932146533">સાચવેલી કૉપિ બતાવો</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> માટે CVC દાખલ કરો. એકવાર તમે ખાતરી કરી લો, તે પછી આ સાઇટ સાથે તમારા કાર્ડની વિગતો શેર કરવામાં આવશે.</translation>
 <translation id="3010559122411665027">"<ph name="ENTRY_INDEX" />" એન્ટ્રીને સૂચિબદ્ધ કરો: <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">આ ડિવાઇસના મેનેજર તરીકે, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">આપમેળે અવરોધિત</translation>
 <translation id="3023071826883856138">You4 (એન્વલપ)</translation>
 <translation id="3024663005179499861">ખોટો નીતિ પ્રકાર</translation>
@@ -431,7 +428,6 @@
 <translation id="3287510313208355388">ઑનલાઇન હોય ત્યારે ડાઉનલોડ કરો</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> નીતિ વિશે વધુ જાણો</translation>
 <translation id="3303855915957856445">કોઈ શોધ પરિણામો મળ્યાં નથી</translation>
-<translation id="3311730110465560799">તમારા ડિવાઇસનું સેટઅપ રિમોટલી બદલી શકે છે.</translation>
 <translation id="3320021301628644560">બિલિંગ સરનામું ઉમેરો</translation>
 <translation id="3324983252691184275">કિરમજી</translation>
 <translation id="3338095232262050444">સુરક્ષિત</translation>
@@ -525,7 +521,6 @@
 <translation id="3761718714832595332">સ્ટેટસ છુપાવો</translation>
 <translation id="3765032636089507299">Safe Browsing પેજ રચના હેઠળ છે.</translation>
 <translation id="3778403066972421603">શું તમે આ કાર્ડને તમારા Google એકાઉન્ટ અને આ ડિવાઇસ પર સાચવવા માગો છો?</translation>
-<translation id="3779973883630527594">આ એકાઉન્ટને મેનેજ કરનાર કંપની, શાળા અથવા સંસ્થા:</translation>
 <translation id="3781428340399460090">ચળકતો ગુલાબી</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> માં સમાપ્ત થાય છે</translation>
@@ -725,7 +720,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> કહે છે કે</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">પરિણામો નથી</translation>
-<translation id="4945672369594656571">તમારા ડિવાઇસના અને એકાઉન્ટના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા ડિવાઇસના અને એકાઉન્ટના ડેટાની પ્રક્રિયા એકમાત્ર તમારા ડિવાઇસના અને એકાઉન્ટ મેનેજરના નિર્દેશ અનુસાર અને સંપૂર્ણપણે તમારા ડિવાઇસ અને એકાઉન્ટ મેનેજર દ્વારા ઉલ્લેખિત હેતુઓ માટે કરે છે.</translation>
 <translation id="4950898438188848926">ટૅબ, સ્વિચ બટન, ખુલ્લા ટૅબ, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /> પર સ્વિચ કરવા માટે Enter દબાવો</translation>
 <translation id="495170559598752135">ક્રિયાઓ</translation>
 <translation id="4955242332710481440">A5-અતિરિક્ત</translation>
@@ -739,7 +733,6 @@
 <translation id="5017554619425969104">તમે કૉપિ કરેલી ટેક્સ્ટ</translation>
 <translation id="5018422839182700155">આ પૃષ્ઠ ખોલી શકતાં નથી</translation>
 <translation id="5019198164206649151">બેકઅપ સ્ટોર કરવું ખરાબ સ્થિતિમાં છે</translation>
-<translation id="5020154601324912079">તમારા ડિવાઇસના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા ડિવાઇસના ડેટાની પ્રક્રિયા એકમાત્ર તમારા ડિવાઇસ મેનેજરના નિર્દેશ અનુસાર અને સંપૂર્ણપણે તમારા ડિવાઇસ મેનેજર દ્વારા ઉલ્લેખિત હેતુઓ માટે કરે છે.</translation>
 <translation id="5023310440958281426">તમારા વ્યવસ્થાપકની નીતિઓ તપાસો</translation>
 <translation id="5029568752722684782">કૉપિ સાફ કરો</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" માટેનું રૂટ પ્રમાણપત્ર આવશ્યક છે પરંતુ તે ઇન્સ્ટૉલ કરેલું નથી. આ સમસ્યાના નિવારણ માટે તમારા IT વ્યવસ્થાપકે "<ph name="SOFTWARE_NAME" />" ની ગોઠવણી માટેની સૂચના જોવી જરૂરી છે. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -897,7 +890,6 @@
 <translation id="5838278095973806738">તમારે આ સાઇટ પર કોઈપણ સંવેદનશીલ માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ અથવા ક્રેડિટ કાર્ડ્સ) દાખલ કરવી જોઈએ નહીં, કારણ કે તે હુમલાખોર દ્વારા ચોરવામાં આવી શકે છે.</translation>
 <translation id="5860033963881614850">બંધ</translation>
 <translation id="5863847714970149516">આગળનું પેજ તમને શુલ્ક લાગુ કરી શકે છે</translation>
-<translation id="5865951947699094510">તમારા એકાઉન્ટનું સેટઅપ રિમોટલી બદલી શકે છે.</translation>
 <translation id="5866257070973731571">ફોન નંબર ઉમેરો</translation>
 <translation id="5869405914158311789">આ સાઇટ પર પહોંચી શકાતું નથી</translation>
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
@@ -1168,7 +1160,6 @@
 <translation id="741007362987735528">પહોળાઈ-ફૉર્મેટ</translation>
 <translation id="7416351320495623771">પાસવર્ડ મેનેજ કરો…</translation>
 <translation id="7419106976560586862">પ્રોફાઇલ પાથ</translation>
-<translation id="7424427397225027541">તમારા એકાઉન્ટના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા એકાઉન્ટના ડેટાની પ્રક્રિયા એકમાત્ર તમારા એકાઉન્ટ મેનેજરના નિર્દેશ અનુસાર અને સંપૂર્ણપણે તમારા એકાઉન્ટ મેનેજર દ્વારા ઉલ્લેખિત હેતુઓ માટે કરે છે.</translation>
 <translation id="7437289804838430631">સંપર્ક માહિતી ઉમેરો</translation>
 <translation id="7440140511386898319">ઑફલાઇન હો તે સમયે જાણકારી મેળવો</translation>
 <translation id="7441627299479586546">ખોટો નીતિ વિષય</translation>
@@ -1254,7 +1245,6 @@
 <translation id="780301667611848630">નહીં, આભાર</translation>
 <translation id="7805768142964895445">સ્થિતિ</translation>
 <translation id="7806344367022510803">Chromeમાં સર્ચ એંજિનની સેટિંગ બદલો</translation>
-<translation id="7810209002420871817">તમારા <ph name="ACCOUNT_DOMAIN" /> એકાઉન્ટના મેનેજર તરીકે:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome માંથી ફોર્મ સૂચનો દૂર કરીએ?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' માટે <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> મળ્યાં</translation>

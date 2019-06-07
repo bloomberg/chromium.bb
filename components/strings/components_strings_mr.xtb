@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="1001338328714563407">तुमच्या डिव्हाइस आणि खात्याचे, <ph name="ENROLLMENT_DOMAIN" /> व्यवस्थापक म्हणून:</translation>
 <translation id="1008557486741366299">सध्या नाही</translation>
 <translation id="1010200102790553230">पेज नंतर लोड करा</translation>
 <translation id="1015730422737071372">अतिरिक्त तपशील प्रदान करा</translation>
@@ -373,7 +372,6 @@
 <translation id="2948083400971632585">तुम्हे सेटिंग्ज पेजवरून एका कनेक्शनसाठी कॉन्फिगर केलेले कोणत्याही प्रॉक्सी अक्षम करू शकता.</translation>
 <translation id="2955913368246107853">शोध बार बंद करा</translation>
 <translation id="2969319727213777354">एक सुरक्षित कनेक्‍शन स्‍थापित करण्‍यापूर्वी, तुमचे घड्‍याळ योग्यरित्या सेट केले असणे आवश्यक आहे. वेबसाइट त्यांना स्‍वत:ला ओळखण्‍यासाठी वापरलेली ती सर्टिफिकेटे केवळ नमूद केलेल्‍या कालावधीसाठी वैध असल्याने हे असू शकते. तुमच्या डिव्‍हाइसचे घड्‍याळ चुकीचे असल्‍यामुळे, Google Chrome ला सर्टिफिकेट पडताळणी करता आली नाही.</translation>
-<translation id="2970515157925768593">तुमच्या डिव्हाइसचे आणि खात्याचे सेटअप रिमोट पद्धतीने बदलू शकता.</translation>
 <translation id="2972581237482394796">&amp;पुन्हा करा</translation>
 <translation id="2977665033722899841">सध्या निवडलेली <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">डेटा साफ करा</translation>
@@ -385,7 +383,6 @@
 <translation id="3005723025932146533">सेव्ह केलेली प्रत दर्शवा</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> साठी CVC प्रविष्‍ट करा. तुम्ही पुष्टी केल्यावर, तुमचे कार्ड तपशील या साइटसह शेअर केले जातील.</translation>
 <translation id="3010559122411665027">सूची प्रविष्टी "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">डिव्हाइसचे व्यवस्थापक म्हणून <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">आपोआप ब्लॉक केलेले</translation>
 <translation id="3023071826883856138">You4 (Envelope)</translation>
 <translation id="3024663005179499861">चुकीचा धोरण प्रकार</translation>
@@ -431,7 +428,6 @@
 <translation id="3287510313208355388">ऑनलाइन असताना डाउनलोड करा</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> धोरणांबद्दल अधिक जाणून घ्या</translation>
 <translation id="3303855915957856445">कोणतेही शोध परिणाम आढळले नाहीत</translation>
-<translation id="3311730110465560799">तुमच्या डिव्हाइसचे सेटअप रिमोट पद्धतीने बदलू शकता.</translation>
 <translation id="3320021301628644560">बिलिंग पत्ता जोडा</translation>
 <translation id="3324983252691184275">किरमिजी</translation>
 <translation id="3338095232262050444">सुरक्षित</translation>
@@ -525,7 +521,6 @@
 <translation id="3761718714832595332">स्थिती लपवा</translation>
 <translation id="3765032636089507299">सुरक्षित ब्राउझिंग पेज तयार होत आहे.</translation>
 <translation id="3778403066972421603">तुम्हाला हे कार्ड तुमच्या Google खात्यामध्ये आणि या डिव्हाइसवर सेव्ह करायचे आहे का?</translation>
-<translation id="3779973883630527594">या खात्याचे व्यवस्थापन करणारी कंपनी, शाळा किंवा संस्था:</translation>
 <translation id="3781428340399460090">गडद गुलाबी</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">समाप्त होते: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -725,7 +720,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> चे म्हणणे हे आहे की</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">परिणाम नाहीत</translation>
-<translation id="4945672369594656571">तुमचे डिव्हाइस आणि खाते डेटा कसा हाताळला जातो यावर नियंत्रण ठेवा. Google विशेषत: तुमच्या डिव्हाइस आणि खाते व्यवस्थापकाच्या निर्देशानुसार आणि तुमच्या डिव्हाइस आणि खाते व्यवस्थापकाने नमूद केलेल्या उद्देशांतर्गत तुमच्या डिव्हाइस आणि खाते डेटाची प्रक्रिया करते.</translation>
 <translation id="4950898438188848926">टॅब स्विच बटण, उघड्या टॅबवर स्विच करण्यासाठी एंटर दाबा, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">क्रिया</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -739,7 +733,6 @@
 <translation id="5017554619425969104">तुम्ही कॉपी केलेला मजकूर</translation>
 <translation id="5018422839182700155">हे पृष्‍ठ उघडू शकत नाही</translation>
 <translation id="5019198164206649151">समर्थन संचयन खराब स्थितीत</translation>
-<translation id="5020154601324912079">तुमच्या डिव्हाइसचा डेटा कसा हाताळला जातो ते नियंत्रित करा. Google विशेषत: तुमच्या डिव्हाइस व्यवस्थापकाच्या निर्देशानुसार आणि तुमच्या डिव्हाइस व्यवस्थापकाने नमूद केलेल्या उद्देशांतर्गत तुमच्या डिव्हाइस डेटाची प्रक्रिया करते.</translation>
 <translation id="5023310440958281426">तुमच्या अॅडमिनिस्ट्रेटरची धोरणे तपासा</translation>
 <translation id="5029568752722684782">कॉपी साफ करा</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" साठी मूळ सर्टिफिकेट आवश्यक आहे परंतु ते इंस्टॉल केलेले नाही. तुमच्या IT अ‍ॅडमिनिस्ट्रेटरने ही समस्या सोडण्यासाठी "<ph name="SOFTWARE_NAME" />" साठीच्या कॉन्फिगरेशन सूचना पहाव्यात. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -897,7 +890,6 @@
 <translation id="5838278095973806738">या साइटवर कोणतीही संवेदनशील माहिती (उदाहरणार्थ, पासवर्ड किंवा क्रेडिट कार्ड) एंटर करू नका, कारण आक्रमणकर्ते ती चोरू शकतात.</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5863847714970149516">पुढील पेजवर तुमच्याकडून शुल्क आकारले जाऊ शकते</translation>
-<translation id="5865951947699094510">तुमच्या खात्याचे सेटअप रिमोट पद्धतीने बदलू शकता.</translation>
 <translation id="5866257070973731571">फोन नंबर जोडा</translation>
 <translation id="5869405914158311789">या साइटवर पोहचणे शक्य नाही</translation>
 <translation id="5869522115854928033">सेव्ह केलेले पासवर्ड</translation>
@@ -1169,7 +1161,6 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">पासवर्ड व्यवस्थापित करा…</translation>
 <translation id="7419106976560586862">प्रोफाइल पथ</translation>
-<translation id="7424427397225027541">तुमच्या खात्याचा डेटा कसा हाताळला जातो ते नियंत्रित करा. Google विशेषत: तुमच्या खाते व्यवस्थापकाच्या निर्देशानुसार आणि तुमच्या खाते व्यवस्थापकाने नमूद केलेल्या उद्देशांतर्गत तुमच्या खाते डेटाची प्रक्रिया करते.</translation>
 <translation id="7437289804838430631">संपर्क माहिती जोडा</translation>
 <translation id="7440140511386898319">ऑफलाइन असताना एक्सप्लोर करा</translation>
 <translation id="7441627299479586546">चुकीचे धोरण विषय</translation>
@@ -1255,7 +1246,6 @@
 <translation id="780301667611848630">नाही, नको</translation>
 <translation id="7805768142964895445">स्थिती</translation>
 <translation id="7806344367022510803">Chrome मध्ये शोध इंजिन सेटिंग्ज बदला</translation>
-<translation id="7810209002420871817">तुमचा <ph name="ACCOUNT_DOMAIN" />खाते व्यवस्थापक म्हणून:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome मधून सूचना फॉर्म काढून टाकायचा?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' साठी <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> सापडले</translation>

@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1001338328714563407">Với tư cách là người quản lý thiết bị và tài khoản của bạn, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Không phải Bây giờ</translation>
 <translation id="1010200102790553230">Tải trang vào lúc khác</translation>
 <translation id="1015730422737071372">Cung cấp chi tiết bổ sung</translation>
@@ -373,7 +372,6 @@
 <translation id="2948083400971632585">Bạn có thể tắt mọi proxy được định cấu hình cho kết nối từ trang cài đặt.</translation>
 <translation id="2955913368246107853">Đóng thanh tìm</translation>
 <translation id="2969319727213777354">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chrome không thể xác minh các chứng chỉ này.</translation>
-<translation id="2970515157925768593">Có thể thay đổi từ xa quá trình thiết lập tài khoản và thiết bị của bạn.</translation>
 <translation id="2972581237482394796">&amp;Làm lại</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, hiện đã chọn. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Xóa dữ liệu</translation>
@@ -385,7 +383,6 @@
 <translation id="3005723025932146533">Hiển thị bản sao đã lưu</translation>
 <translation id="3008447029300691911">Nhập CVC cho <ph name="CREDIT_CARD" />. Sau khi bạn xác nhận, chi tiết thẻ của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="3010559122411665027">Mục nhập danh sách "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Với tư cách là người quản lý thiết bị này, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Tự động bị chặn</translation>
 <translation id="3023071826883856138">You4 (Phong bì)</translation>
 <translation id="3024663005179499861">Loại chính sách sai</translation>
@@ -431,7 +428,6 @@
 <translation id="3287510313208355388">Tải xuống khi trực tuyến</translation>
 <translation id="3293642807462928945">Hãy tìm hiểu thêm về chính sách <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Không tìm thấy kết quả tìm kiếm nào</translation>
-<translation id="3311730110465560799">Có thể thay đổi từ xa quá trình thiết lập thiết bị.</translation>
 <translation id="3320021301628644560">Thêm địa chỉ thanh toán</translation>
 <translation id="3324983252691184275">Đỏ thẫm</translation>
 <translation id="3338095232262050444">Bảo mật</translation>
@@ -526,7 +522,6 @@
 <translation id="3761718714832595332">Ẩn trạng thái</translation>
 <translation id="3765032636089507299">Trang Duyệt web an toàn đang được xây dựng.</translation>
 <translation id="3778403066972421603">Bạn có muốn lưu thẻ này vào Tài khoản Google của bạn và trên thiết bị này không?</translation>
-<translation id="3779973883630527594">Công ty, trường học hoặc tổ chức quản lý tài khoản này:</translation>
 <translation id="3781428340399460090">Hồng đậm</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Ngày hết hạn <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -726,7 +721,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> cho biết</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Không tìm thấy kết quả nào</translation>
-<translation id="4945672369594656571">Kiểm soát cách Google xử lý dữ liệu tài khoản và thiết bị của bạn. Google xử lý dữ liệu tài khoản và thiết bị của bạn hoàn toàn theo chỉ dẫn của người quản lý tài khoản và thiết bị của bạn, và chỉ cho các mục đích mà người quản lý tài khoản và thiết bị của bạn chỉ định.</translation>
 <translation id="4950898438188848926">Nút chuyển đổi tab, nhấn phím Enter để chuyển sang tab đang mở, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Tác vụ</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -740,7 +734,6 @@
 <translation id="5017554619425969104">Văn bản bạn đã sao chép</translation>
 <translation id="5018422839182700155">Không thể mở trang này</translation>
 <translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
-<translation id="5020154601324912079">Kiểm soát cách Google xử lý dữ liệu thiết bị của bạn. Google xử lý dữ liệu thiết bị của bạn hoàn toàn theo chỉ dẫn của người quản lý thiết bị và chỉ cho các mục đích mà người quản lý thiết bị chỉ định.</translation>
 <translation id="5023310440958281426">Kiểm tra chính sách của quản trị viên của bạn</translation>
 <translation id="5029568752722684782">Xóa bản sao</translation>
 <translation id="503069730517007720">Cần có chứng chỉ gốc cho "<ph name="SOFTWARE_NAME" />" nhưng chứng chỉ này chưa được cài đặt. Hãy yêu cầu quản trị viên CNTT của bạn xem hướng dẫn cấu hình cho "<ph name="SOFTWARE_NAME" />" để khắc phục sự cố này. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -898,7 +891,6 @@
 <translation id="5838278095973806738">Bạn không nên nhập bất kỳ thông tin nhạy cảm nào trên trang web này (ví dụ: mật khẩu hoặc thẻ tín dụng), vì những kẻ tấn công có thể đánh cắp thông tin đó.</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5863847714970149516">Trang phía trước có thể tìm cách tính phí bạn</translation>
-<translation id="5865951947699094510">Có thể thay đổi từ xa quá trình thiết lập tài khoản của bạn.</translation>
 <translation id="5866257070973731571">Thêm số điện thoại</translation>
 <translation id="5869405914158311789">Không thể truy cập trang web này</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
@@ -1169,7 +1161,6 @@ Thông tin chi tiết bổ sung:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Quản lý mật khẩu…</translation>
 <translation id="7419106976560586862">Đường dẫn cấu hình</translation>
-<translation id="7424427397225027541">Kiểm soát cách Google xử lý dữ liệu tài khoản của bạn. Google xử lý dữ liệu tài khoản của bạn hoàn toàn theo chỉ dẫn của người quản lý tài khoản của bạn và chỉ cho các mục đích mà người quản lý tài khoản của bạn chỉ định.</translation>
 <translation id="7437289804838430631">Thêm thông tin liên hệ</translation>
 <translation id="7440140511386898319">Khám phá khi không có mạng</translation>
 <translation id="7441627299479586546">Chủ đề chính sách sai</translation>
@@ -1255,7 +1246,6 @@ Thông tin chi tiết bổ sung:
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7805768142964895445">Trạng thái</translation>
 <translation id="7806344367022510803">Thay đổi tùy chọn cài đặt công cụ tìm kiếm trong Chrome</translation>
-<translation id="7810209002420871817">Với tư cách là người quản lý tài khoản của bạn, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Xóa đề xuất biểu mẫu khỏi Chrome?</translation>
 <translation id="7815407501681723534">Đã tìm thấy <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> cho '<ph name="SEARCH_STRING" />'</translation>

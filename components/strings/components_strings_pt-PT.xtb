@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
-<translation id="1001338328714563407">Enquanto gestor do seu dispositivo e da sua conta, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Agora não</translation>
 <translation id="1010200102790553230">Carregar a página mais tarde</translation>
 <translation id="1015730422737071372">Forneça mais detalhes</translation>
@@ -373,7 +372,6 @@
 <translation id="2948083400971632585">Pode desativar qualquer proxy configurado para uma ligação a partir da página de definições.</translation>
 <translation id="2955913368246107853">Fechar barra de localização</translation>
 <translation id="2969319727213777354">Para estabelecer uma ligação segura, o relógio tem de ser definido corretamente. Isto deve-se ao facto de os certificados que os Sites utilizam para se identificarem serem apenas válidos para períodos de tempo específicos. Uma vez que o relógio do seu dispositivo está incorreto, o Google Chrome não consegue validar estes certificados.</translation>
-<translation id="2970515157925768593">Pode alterar remotamente a configuração do seu dispositivo e da sua conta.</translation>
 <translation id="2972581237482394796">&amp;Repetir</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" /> selecionado atualmente. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Limpar dados</translation>
@@ -385,7 +383,6 @@
 <translation id="3005723025932146533">Mostrar cópia guardada</translation>
 <translation id="3008447029300691911">Introduza o Código de Segurança/CVC de <ph name="CREDIT_CARD" />. Ao confirmar, os detalhes do cartão são partilhados com este site.</translation>
 <translation id="3010559122411665027">Entrada da lista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Enquanto gestor deste dispositivo, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Bloqueada automaticamente</translation>
 <translation id="3023071826883856138">You4 (Envelope)</translation>
 <translation id="3024663005179499861">Tipo de política incorreto</translation>
@@ -431,7 +428,6 @@
 <translation id="3287510313208355388">Transferir quando estiver online</translation>
 <translation id="3293642807462928945">Saiba mais acerca da política <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Não foram encontrados resultados da pesquisa</translation>
-<translation id="3311730110465560799">Pode alterar remotamente a configuração do seu dispositivo.</translation>
 <translation id="3320021301628644560">Adicionar endereço de faturação</translation>
 <translation id="3324983252691184275">Carmesim</translation>
 <translation id="3338095232262050444">Seguro</translation>
@@ -526,7 +522,6 @@
 <translation id="3761718714832595332">Ocultar estado</translation>
 <translation id="3765032636089507299">A página de Navegação segura está em construção.</translation>
 <translation id="3778403066972421603">Pretende guardar este cartão na sua Conta Google e neste dispositivo?</translation>
-<translation id="3779973883630527594">A empresa, escola ou organização que gere esta conta:</translation>
 <translation id="3781428340399460090">Rosa choque</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Expira a <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -726,7 +721,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> diz</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
-<translation id="4945672369594656571">Controla de que forma são processados os dados do seu dispositivo e da sua conta. A Google processa os dados do seu dispositivo e da sua conta exclusivamente de acordo com as orientações do gestor do dispositivo e da conta e apenas para os fins especificados pelo mesmo.</translation>
 <translation id="4950898438188848926">Botão de mudança de separador: prima Enter para mudar para o separador aberto, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Ações</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -740,7 +734,6 @@
 <translation id="5017554619425969104">Texto que copiou</translation>
 <translation id="5018422839182700155">Não é possível abrir esta página</translation>
 <translation id="5019198164206649151">Armazenamento de segurança em mau estado</translation>
-<translation id="5020154601324912079">Controla de que forma são processados os dados do seu dispositivo. A Google processa os dados do seu dispositivo exclusivamente de acordo com as orientações do gestor do dispositivo e apenas para os fins especificados pelo mesmo.</translation>
 <translation id="5023310440958281426">Verificar as políticas do gestor</translation>
 <translation id="5029568752722684782">Limpar cópia</translation>
 <translation id="503069730517007720">É necessário um certificado de raiz para o "<ph name="SOFTWARE_NAME" />", que não está instalado. O gestor de TI deve consultar as instruções de configuração do "<ph name="SOFTWARE_NAME" />" para corrigir este problema. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -898,7 +891,6 @@
 <translation id="5838278095973806738">Não deve introduzir informações confidenciais neste site (por exemplo, palavras-passe ou números de cartões de crédito), porque podem ser roubadas por atacantes.</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="5863847714970149516">A próxima página pode tentar cobrar-lhe dinheiro</translation>
-<translation id="5865951947699094510">Pode alterar remotamente a configuração da sua conta.</translation>
 <translation id="5866257070973731571">Adicionar número de telefone</translation>
 <translation id="5869405914158311789">Não é possível aceder a este site</translation>
 <translation id="5869522115854928033">Palavras-passe guardadas</translation>
@@ -1168,7 +1160,6 @@ Detalhes adicionais:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Gerir palavras-passe…</translation>
 <translation id="7419106976560586862">Caminho do Perfil</translation>
-<translation id="7424427397225027541">Controla de que forma são processados os dados da sua conta. A Google processa os dados da sua conta exclusivamente de acordo com as orientações do gestor da conta e apenas para os fins especificados pelo mesmo.</translation>
 <translation id="7437289804838430631">Adicionar informações de contacto</translation>
 <translation id="7440140511386898319">Explorar offline</translation>
 <translation id="7441627299479586546">Assunto da política incorreto</translation>
@@ -1254,7 +1245,6 @@ Detalhes adicionais:
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7805768142964895445">Estado</translation>
 <translation id="7806344367022510803">Alterar definições do motor de pesquisa no Chrome</translation>
-<translation id="7810209002420871817">Enquanto gestor da sua conta, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Pretende remover a sugestão do formulário do Chrome?</translation>
 <translation id="7815407501681723534">Encontrados <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> para "<ph name="SEARCH_STRING" />"</translation>

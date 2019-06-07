@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
-<translation id="1001338328714563407">आपके डिवाइस और खाते का प्रबंधक होने के नाते, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">अभी नहीं</translation>
 <translation id="1010200102790553230">पेज को बाद में लोड करें</translation>
 <translation id="1015730422737071372">अतिरिक्त विवरण प्रदान करें</translation>
@@ -372,7 +371,6 @@
 <translation id="2948083400971632585">आप किसी कनेक्शन के लिए कॉन्फ़िगर की गई किसी भी प्रॉक्सी को सेटिंग पेज से बंद कर सकते हैं.</translation>
 <translation id="2955913368246107853">खोज बार बंद करें</translation>
 <translation id="2969319727213777354">सुरक्षित कनेक्‍शन स्‍थापित करने के लिए, आपकी घड़ी को सही तरीके से सेट किए जाने की आवश्‍यकता है. ऐसा इसलिए क्‍योंकि वेबसाइटों द्वारा स्‍वयं की पहचान करने के लिए उपयोग किए जाने वाले प्रमाणपत्र केवल विशिष्‍ट समयावधियों के लिए ही मान्‍य होते हैं. चूंकि आपके डिवाइस की घड़ी गलत है, इसलिए Google Chrome इन प्रमाणपत्रों का सत्‍यापन नहीं कर सकता.</translation>
-<translation id="2970515157925768593">आपके डिवाइस और खाता सेटअप में दूर से बदलाव कर सकती है.</translation>
 <translation id="2972581237482394796">&amp;फिर से करें</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, इस समय चुना गया है. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">डेटा हटाएं</translation>
@@ -384,7 +382,6 @@
 <translation id="3005723025932146533">सहेजी गई कॉपी दिखाएं</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> का CVC डालें. आपकी तरफ से पुष्टि हो जाने पर, आपके कार्ड के विवरण इस साइट के साथ शेयर किए जाएंगे.</translation>
 <translation id="3010559122411665027">सूची प्रविष्ट‍ि "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">इस डिवाइस का प्रबंधक होने के नाते, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">ऑटोमैटिक रूप से ब्लॉक है</translation>
 <translation id="3023071826883856138">यू4 (एन्वेलप)</translation>
 <translation id="3024663005179499861">गलत नीति प्रकार</translation>
@@ -429,7 +426,6 @@
 <translation id="3287510313208355388">ऑनलाइन होने पर डाउनलोड करें</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> नीति के बारे में ज़्यादा जानें</translation>
 <translation id="3303855915957856445">कोई खोज नतीजे नहीं मिले</translation>
-<translation id="3311730110465560799">आपके डिवाइस का सेटअप दूर से बदल सकती है.</translation>
 <translation id="3320021301628644560">बिलिंग पता जोड़ें</translation>
 <translation id="3324983252691184275">गहरा लाल</translation>
 <translation id="3338095232262050444">सुरक्षित</translation>
@@ -524,7 +520,6 @@
 <translation id="3761718714832595332">स्थिति छिपाएं</translation>
 <translation id="3765032636089507299">सुरक्षित ब्राउज़िंग पेज अभी बन रहा है.</translation>
 <translation id="3778403066972421603">क्या आप इस कार्ड को अपने Google खाते में और इस डिवाइस में सेव करना चाहते हैं?</translation>
-<translation id="3779973883630527594">वह कंपनी, स्कूल या संगठन जो इस खाते का प्रबंधन करता है:</translation>
 <translation id="3781428340399460090">चमकीला गुलाबी</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> में खत्म होगा</translation>
@@ -724,7 +719,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> का कहना है कि</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">कोई परिणाम नहीं</translation>
-<translation id="4945672369594656571">यह नीति नियंत्रित करती है कि आपके डिवाइस और खाते का डेटा किस तरह प्रबंधित किया जाता है. आपके डिवाइस और खाता प्रबंधक के निर्देश के मुताबिक और सिर्फ़ इन दोनों के बताए हुए मकसदों के लिए, Google खास तौर से आपके डिवाइस और खाते का डेटा प्रोसेस करता है.</translation>
 <translation id="4950898438188848926">'टैब' बदलने का बटन, नए टैब पर जाने के लिए Enter दबाएं, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">क्रियाएं</translation>
 <translation id="4955242332710481440">ए5-एक्स्ट्रा</translation>
@@ -738,7 +732,6 @@
 <translation id="5017554619425969104">आपका कॉपी किया हुआ टेक्स्ट</translation>
 <translation id="5018422839182700155">यह पेज खुल नहीं पा रहा है</translation>
 <translation id="5019198164206649151">बैकिंग संग्रह खराब स्थिति में है</translation>
-<translation id="5020154601324912079">यह नीति नियंत्रित करती है कि आपका डिवाइस डेटा किस तरह प्रबंधित किया जाता है. Google खास तौर पर आपके डिवाइस प्रबंधक के निर्देश के मुताबिक और सिर्फ़ उनके बताए हुए मकसदों के लिए, आपका डिवाइस डेटा प्रोसेस करता है.</translation>
 <translation id="5023310440958281426">अपने एडमिन की नीतियां देखें</translation>
 <translation id="5029568752722684782">स्‍पष्‍ट कॉपी</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" के रूट प्रमाणपत्र की ज़रूरत है लेकिन वह इंस्टॉल नहीं है. यह समस्या ठीक करने के लिए आपके आईटी व्यवस्थापक को "<ph name="SOFTWARE_NAME" />" के कॉन्फ़िगरेशन से जुड़े निर्देशों पर नज़र डालनी चाहिए. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -896,7 +889,6 @@
 <translation id="5838278095973806738">आपको इस साइट पर कोई भी संवेदनशील जानकारी (उदाहरण के लिए, पासवर्ड या क्रेडिट कार्ड) नहीं डालनी चाहिए, क्योंकि उसे हमलावर चुरा सकते हैं.</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5863847714970149516">आगे आने वाला पेज आपसे शुल्क लेने की कोशिश कर सकता है</translation>
-<translation id="5865951947699094510">आपके खाता सेटअप में दूर से बदलाव कर सकती है.</translation>
 <translation id="5866257070973731571">फ़ोन नंबर जोड़ें</translation>
 <translation id="5869405914158311789">इस साइट तक नहीं पहुंचा जा सकता</translation>
 <translation id="5869522115854928033">सेव किए गए पासवर्ड</translation>
@@ -1167,7 +1159,6 @@
 <translation id="741007362987735528">चौड़े पेज वाला फ़ॉर्मैट</translation>
 <translation id="7416351320495623771">पासवर्ड प्रबंधित करें…</translation>
 <translation id="7419106976560586862">प्रोफ़ाइल पाथ</translation>
-<translation id="7424427397225027541">यह नीति नियंत्रित करती है कि आपके खाते का डेटा किस तरह प्रबंधित किया जाता है. आपके खाता प्रबंधक के निर्देश के मुताबिक और सिर्फ़ उनके हुए मकसदों के लिए, Google खास तौर से आपके खाते का डेटा प्रोसेस करता है.</translation>
 <translation id="7437289804838430631">संपर्क जानकारी जोड़ें</translation>
 <translation id="7440140511386898319">ऑफ़लाइन होने पर खोजें</translation>
 <translation id="7441627299479586546">गलत नीति विषय</translation>
@@ -1253,7 +1244,6 @@
 <translation id="780301667611848630">नहीं, रहने दें</translation>
 <translation id="7805768142964895445">स्थिति</translation>
 <translation id="7806344367022510803">Chrome में जाकर 'सर्च इंजन' सेटिंग बदलें</translation>
-<translation id="7810209002420871817">अपने खाते <ph name="ACCOUNT_DOMAIN" /> का प्रबंधक होने के नाते:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome से फ़ॉर्म सुझाव को निकालें?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' के लिए <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> मिले</translation>

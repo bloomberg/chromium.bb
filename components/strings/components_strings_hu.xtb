@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
-<translation id="1001338328714563407">Eszköze és fiókja kezelőjeként a(z) <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Ne most</translation>
 <translation id="1010200102790553230">Oldal betöltése később</translation>
 <translation id="1015730422737071372">További részletek megadása</translation>
@@ -373,7 +372,6 @@
 <translation id="2948083400971632585">Bármelyik kapcsolatlétesítésre használt proxyt letilthatja a beállítások oldalon.</translation>
 <translation id="2955913368246107853">Keresősáv bezárása</translation>
 <translation id="2969319727213777354">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Google Chrome nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
-<translation id="2970515157925768593">Módosíthatja távolról az eszköz és a fiók beállítását.</translation>
 <translation id="2972581237482394796">&amp;Újra</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" /> van jelenleg kiválasztva. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Adatok törlése</translation>
@@ -385,7 +383,6 @@
 <translation id="3005723025932146533">Mentett másolat megjelenítése</translation>
 <translation id="3008447029300691911">Adja meg a(z) <ph name="CREDIT_CARD" /> kártya CVC-kódját. Az ellenőrzést követően a böngésző megosztja kártyaadatait ezzel a webhellyel.</translation>
 <translation id="3010559122411665027">"<ph name="ENTRY_INDEX" />." listabejegyzés: <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Eszköze kezelőjeként a(z) <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Automatikusan letiltva</translation>
 <translation id="3023071826883856138">You4 (boríték)</translation>
 <translation id="3024663005179499861">Nem megfelelő irányelvtípus</translation>
@@ -429,7 +426,6 @@
 <translation id="3287510313208355388">Letöltés online állapotban</translation>
 <translation id="3293642807462928945">További információ a(z) <ph name="POLICY_NAME" /> házirendről</translation>
 <translation id="3303855915957856445">Nincs találat</translation>
-<translation id="3311730110465560799">Módosíthatja távolról az eszköz beállítását.</translation>
 <translation id="3320021301628644560">Számlázási cím hozzáadása</translation>
 <translation id="3324983252691184275">Karmazsinvörös</translation>
 <translation id="3338095232262050444">Biztonságos</translation>
@@ -524,7 +520,6 @@
 <translation id="3761718714832595332">Állapot elrejtése</translation>
 <translation id="3765032636089507299">A Biztonságos Böngészés oldal fejlesztés alatt áll</translation>
 <translation id="3778403066972421603">Szeretné menteni a kártyát Google-fiókjába és az eszközre?</translation>
-<translation id="3779973883630527594">Az ezt a fiókot kezelő cég, iskola vagy szervezet:</translation>
 <translation id="3781428340399460090">Élénk rózsaszín</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Lejárat dátuma: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -724,7 +719,6 @@
 <translation id="4926159001844873046">A(z) <ph name="SITE" /> közlendője</translation>
 <translation id="4926340098269537727"><ph name="TOTAL_MATCHCOUNT" />/<ph name="ACTIVE_MATCH" /></translation>
 <translation id="4943872375798546930">Nincs találat</translation>
-<translation id="4945672369594656571">Az eszköz- és fiókadatok kezelésének módját szabályozza. A Google az eszköz és a fiók adatait kizárólag az eszköz- és a fiókkezelő útmutatásával és kizárólag az eszköz- és a fiókkezelő által megadott célokra használja fel.</translation>
 <translation id="4950898438188848926">Lapváltó gomb. Nyomja meg az Entert a következő megnyitott lapra való váltáshoz: <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Műveletek</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -738,7 +732,6 @@
 <translation id="5017554619425969104">Vágólapra másolt szöveg</translation>
 <translation id="5018422839182700155">Nem lehet megnyitni az oldalt</translation>
 <translation id="5019198164206649151">A háttértároló állapota nem megfelelő</translation>
-<translation id="5020154601324912079">Az eszközadatok kezelését szabályozza. A Google az eszköz adatait kizárólag az eszközkezelő útmutatásával és kizárólag az eszközkezelő által megadott célokra használja fel.</translation>
 <translation id="5023310440958281426">Ellenőrizze rendszergazdai házirendjeit</translation>
 <translation id="5029568752722684782">Példány törlése</translation>
 <translation id="503069730517007720">A(z) „<ph name="SOFTWARE_NAME" />” szoftverhez főtanúsítványra van szükség, amely azonban nincs telepítve. A rendszergazda a(z) „<ph name="SOFTWARE_NAME" />” beállítási útmutatójában találhat segítséget a probléma megoldásához. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -896,7 +889,6 @@
 <translation id="5838278095973806738">Ne írjon be semmilyen bizalmas adatot (például jelszót vagy hitelkártyaadatot) a webhelyen, mivel a támadók ellophatják.</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
 <translation id="5863847714970149516">Előfordulhat, hogy a következő oldal megpróbál pénzt felszámolni Önnek</translation>
-<translation id="5865951947699094510">Módosíthatja távolról a fiók beállítását.</translation>
 <translation id="5866257070973731571">Telefonszám hozzáadása</translation>
 <translation id="5869405914158311789">A webhely nem érhető el</translation>
 <translation id="5869522115854928033">Mentett jelszavak</translation>
@@ -1167,7 +1159,6 @@ További részletek:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Jelszavak kezelése…</translation>
 <translation id="7419106976560586862">Profil elérési útja</translation>
-<translation id="7424427397225027541">A fiókadatok kezelését szabályozza. A Google a fiók adatait kizárólag a fiókkezelő útmutatásával és kizárólag a fiókkezelő által megadott célokra használja fel.</translation>
 <translation id="7437289804838430631">Kapcsolatfelvételi adatok hozzáadása</translation>
 <translation id="7440140511386898319">Felfedezés offline állapotban</translation>
 <translation id="7441627299479586546">Az irányelv tárgya nem megfelelő</translation>
@@ -1253,7 +1244,6 @@ További részletek:
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7805768142964895445">Állapot</translation>
 <translation id="7806344367022510803">A keresőmotor beállításainak módosítása a Chrome-ban</translation>
-<translation id="7810209002420871817">Fiókja kezelőjeként a(z) <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Eltávolítja a javaslatot a Chrome-ból?</translation>
 <translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> található a(z) „<ph name="SEARCH_STRING" />” kifejezésre</translation>

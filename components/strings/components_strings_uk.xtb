@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
-<translation id="1001338328714563407">Як адміністратор пристрою й облікового запису, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Не зараз</translation>
 <translation id="1010200102790553230">Завантажити сторінку пізніше</translation>
 <translation id="1015730422737071372">Надати додаткову інформацію</translation>
@@ -373,7 +372,6 @@
 <translation id="2948083400971632585">Усі проксі-сервери, налаштовані для з’єднання, можна вимкнути на сторінці налаштувань.</translation>
 <translation id="2955913368246107853">Закрити панель пошуку</translation>
 <translation id="2969319727213777354">Щоб установити безпечне з’єднання, потрібно правильно налаштувати час, оскільки сертифікати, які підтверджують справжність веб-сайтів, дійсні лише протягом певного періоду. На вашому пристрої неправильно налаштовано час, тому Chrome не може перевірити сертифікати.</translation>
-<translation id="2970515157925768593">може віддалено змінювати налаштування пристрою й облікового запису</translation>
 <translation id="2972581237482394796">&amp;Повторити</translation>
 <translation id="2977665033722899841">Зараз вибрано: <ph name="ROW_NAME" /> (<ph name="ROW_CONTENT" />)</translation>
 <translation id="2982481275546140226">Очистити дані</translation>
@@ -385,7 +383,6 @@
 <translation id="3005723025932146533">Показати збережену копію</translation>
 <translation id="3008447029300691911">Введіть код CVC картки <ph name="CREDIT_CARD" />. Щойно ви підтвердите дані картки, цей сайт отримає доступ до них.</translation>
 <translation id="3010559122411665027">Елемент списку "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Як адміністратор цього пристрою, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Блокується автоматично</translation>
 <translation id="3023071826883856138">You4 (конверт)</translation>
 <translation id="3024663005179499861">Неправильний тип правила</translation>
@@ -431,7 +428,6 @@
 <translation id="3287510313208355388">Завантажити після відновлення інтернет-з’єднання</translation>
 <translation id="3293642807462928945">Докладніше про правило <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Немає результатів</translation>
-<translation id="3311730110465560799">може віддалено змінювати налаштування пристрою.</translation>
 <translation id="3320021301628644560">Додати платіжну адресу</translation>
 <translation id="3324983252691184275">Малиновий</translation>
 <translation id="3338095232262050444">Надійне</translation>
@@ -526,7 +522,6 @@
 <translation id="3761718714832595332">Сховати статус</translation>
 <translation id="3765032636089507299">Сторінка "Безпечний перегляд" розробляється.</translation>
 <translation id="3778403066972421603">Зберегти дані картки у вашому обліковому записі Google і на цьому пристрої?</translation>
-<translation id="3779973883630527594">Компанія, навчальний заклад або організація, що керує цим обліковим записом:</translation>
 <translation id="3781428340399460090">Яскраво-рожевий</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Діє до <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -726,7 +721,6 @@
 <translation id="4926159001844873046">Повідомлення із сайту <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" /> з <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Не знайдено жодного результату</translation>
-<translation id="4945672369594656571">Керує обробкою даних пристрою й облікового запису. Google обробляє дані пристрою й облікового запису виключно під керівництвом їх адміністратора та лише для вказаних ним цілей.</translation>
 <translation id="4950898438188848926">Кнопка перемикання вкладки: натисніть Enter, щоб перейти на відкриту вкладку, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Дії</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -740,7 +734,6 @@
 <translation id="5017554619425969104">Скопійований текст</translation>
 <translation id="5018422839182700155">Не вдається відкрити цю сторінку</translation>
 <translation id="5019198164206649151">Резервний носій пошкоджено</translation>
-<translation id="5020154601324912079">Керує обробкою даних пристрою. Google обробляє дані пристрою виключно під керівництвом його адміністратора та лише для вказаних ним цілей.</translation>
 <translation id="5023310440958281426">Перегляньте правила свого адміністратора</translation>
 <translation id="5029568752722684782">Видалити копію</translation>
 <translation id="503069730517007720">Для програмного забезпечення <ph name="SOFTWARE_NAME" /> потрібен кореневий сертифікат, однак його не встановлено. Вашому IT-адміністратору потрібно переглянути вказівки з налаштування <ph name="SOFTWARE_NAME" />, щоб вирішити цю проблему. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -898,7 +891,6 @@
 <translation id="5838278095973806738">Не вводьте конфіденційну інформацію на цьому сайті (як-от паролі й дані кредитних карток). Зловмисники можуть викрасти її.</translation>
 <translation id="5860033963881614850">Вимк.</translation>
 <translation id="5863847714970149516">Наступна сторінка може спробувати стягнути плату</translation>
-<translation id="5865951947699094510">може віддалено змінювати налаштування облікового запису</translation>
 <translation id="5866257070973731571">Додайте номер телефону</translation>
 <translation id="5869405914158311789">Немає зв’язку із сайтом</translation>
 <translation id="5869522115854928033">Збережені паролі</translation>
@@ -1169,7 +1161,6 @@
 <translation id="741007362987735528">Широкий формат</translation>
 <translation id="7416351320495623771">Керувати паролями…</translation>
 <translation id="7419106976560586862">Шлях до профілю</translation>
-<translation id="7424427397225027541">Керує обробкою даних облікового запису. Google обробляє дані облікового запису виключно під керівництвом його адміністратора та лише для вказаних ним цілей.</translation>
 <translation id="7437289804838430631">Додати контактну інформацію</translation>
 <translation id="7440140511386898319">Перегляд у режимі офлайн</translation>
 <translation id="7441627299479586546">Неправильна тема правила</translation>
@@ -1255,7 +1246,6 @@
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7805768142964895445">Статус</translation>
 <translation id="7806344367022510803">Змініть налаштування пошукової системи в Chrome</translation>
-<translation id="7810209002420871817">Як адміністратор облікового запису, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Видалити дані для автозаповнення форм із Chrome?</translation>
 <translation id="7815407501681723534">Знайдено результатів за запитом "<ph name="SEARCH_STRING" />": <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /></translation>

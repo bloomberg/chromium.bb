@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
-<translation id="1001338328714563407">Organizace <ph name="ENROLLMENT_DOMAIN" /> jako správce vašeho zařízení a účtu:</translation>
 <translation id="1008557486741366299">Teď ne</translation>
 <translation id="1010200102790553230">Načíst stránku později</translation>
 <translation id="1015730422737071372">Zadejte další podrobnosti</translation>
@@ -365,7 +364,6 @@
 <translation id="2948083400971632585">Libovolné servery proxy nakonfigurované pro připojení můžete zakázat na stránce Nastavení.</translation>
 <translation id="2955913368246107853">Zavřít vyhledávací lištu</translation>
 <translation id="2969319727213777354">Aby bylo možné navázat zabezpečené spojení, musejí být správně nastaveny hodiny. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro konkrétní období. Jelikož hodiny v zařízení nejsou nastaveny správně, Google Chrome tyto certifikáty nemůže ověřit.</translation>
-<translation id="2970515157925768593">Může vzdáleně měnit nastavení vašeho zařízení a účtu.</translation>
 <translation id="2972581237482394796">&amp;Opakovat</translation>
 <translation id="2977665033722899841">Aktuálně je vybrán řádek <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Vymazat data</translation>
@@ -377,7 +375,6 @@
 <translation id="3005723025932146533">Zobrazit uloženou kopii</translation>
 <translation id="3008447029300691911">Zadejte kód CVC karty <ph name="CREDIT_CARD" />. Po ověření budou údaje o kartě sdíleny s tímto webem.</translation>
 <translation id="3010559122411665027">Položka seznamu „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Organizace <ph name="ENROLLMENT_DOMAIN" /> jako správce tohoto zařízení:</translation>
 <translation id="301521992641321250">Automaticky blokováno</translation>
 <translation id="3023071826883856138">You4 (obálka)</translation>
 <translation id="3024663005179499861">Chybný typ zásady</translation>
@@ -420,7 +417,6 @@
 <translation id="3287510313208355388">Stáhnout, až bude zařízení online</translation>
 <translation id="3293642807462928945">Další informace o zásadě <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Nebyly nalezeny žádné výsledky</translation>
-<translation id="3311730110465560799">Může vzdáleně změnit nastavení zařízení.</translation>
 <translation id="3320021301628644560">Přidání fakturační adresy</translation>
 <translation id="3324983252691184275">Karmínová</translation>
 <translation id="3338095232262050444">Zabezpečeno</translation>
@@ -514,7 +510,6 @@
 <translation id="3761718714832595332">Skrýt stav</translation>
 <translation id="3765032636089507299">Stránka Bezpečného procházení je ve výstavbě.</translation>
 <translation id="3778403066972421603">Chcete tuto kartu uložit do svého účtu Google a do tohoto zařízení?</translation>
-<translation id="3779973883630527594">Společnost, škola nebo organizace, která spravuje tento účet:</translation>
 <translation id="3781428340399460090">Jasně růžová</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Platnost do: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -714,7 +709,6 @@
 <translation id="4926159001844873046">Web <ph name="SITE" /> říká</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Žádné výsledky</translation>
-<translation id="4945672369594656571">Určuje způsob zpracování dat z vašeho zařízení a účtu. Společnost Google data ze zařízení a účtu zpracovává výhradně podle pokynů správce zařízení a účtu a výhradně pro účely určené správcem zařízení a účtu.</translation>
 <translation id="4950898438188848926">Tlačítko přepínání karet. Stisknutím klávesy Enter přejdete na otevřenou kartu (<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />)</translation>
 <translation id="495170559598752135">Akce</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -728,7 +722,6 @@
 <translation id="5017554619425969104">Zkopírovaný text</translation>
 <translation id="5018422839182700155">Tuto stránku nelze otevřít</translation>
 <translation id="5019198164206649151">Záložní úložiště je ve špatném stavu</translation>
-<translation id="5020154601324912079">Určuje způsob zpracování dat z vašeho zařízení. Společnost Google data ze zařízení zpracovává výhradně podle pokynů správce zařízení a výhradně pro účely určené správcem zařízení.</translation>
 <translation id="5023310440958281426">Zkontrolujte zásady svého správce</translation>
 <translation id="5029568752722684782">Vymazat kopii</translation>
 <translation id="503069730517007720">Je vyžadován kořenový certifikát pro software <ph name="SOFTWARE_NAME" />, ale není nainstalován. Při řešení tohoto problému by si měl administrátor IT prostudovat pokyny ke konfiguraci softwaru <ph name="SOFTWARE_NAME" />. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -886,7 +879,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5838278095973806738">Na tento web byste neměli zadávat citlivé údaje (například hesla nebo čísla platebních karet), protože by je mohli odcizit útočníci.</translation>
 <translation id="5860033963881614850">Vypnuto</translation>
 <translation id="5863847714970149516">Následující stránka se vám může pokusit naúčtovat poplatky</translation>
-<translation id="5865951947699094510">Může vzdáleně změnit nastavení vašeho účtu.</translation>
 <translation id="5866257070973731571">Přidání telefonního čísla</translation>
 <translation id="5869405914158311789">Tento web není dostupný</translation>
 <translation id="5869522115854928033">Uložená hesla</translation>
@@ -1152,7 +1144,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Spravovat hesla…</translation>
 <translation id="7419106976560586862">Cesta k profilu</translation>
-<translation id="7424427397225027541">Určuje způsob zpracování dat z vašeho účtu. Společnost Google data z účtu zpracovává výhradně podle pokynů správce účtu a výhradně pro účely určené správcem účtu.</translation>
 <translation id="7437289804838430631">Přidat kontaktní údaje</translation>
 <translation id="7440140511386898319">Prozkoumávejte i offline</translation>
 <translation id="7441627299479586546">Chybný předmět zásady</translation>
@@ -1238,7 +1229,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7805768142964895445">Stav</translation>
 <translation id="7806344367022510803">Změnit nastavení vyhledávače v Chromu</translation>
-<translation id="7810209002420871817">Doména <ph name="ACCOUNT_DOMAIN" /> jako správce vašeho účtu:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Odstranit návrh položky formuláře z Chromu?</translation>
 <translation id="7815407501681723534">Nalezené <ph name="SEARCH_RESULTS" /> pro dotaz „<ph name="SEARCH_STRING" />“: <ph name="NUMBER_OF_RESULTS" /></translation>
