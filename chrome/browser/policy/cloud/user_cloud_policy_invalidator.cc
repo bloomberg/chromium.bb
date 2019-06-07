@@ -12,21 +12,41 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "content/public/browser/notification_source.h"
+
+namespace {
+
+invalidation::ProfileInvalidationProvider* GetInvalidationProvider(
+    Profile* profile,
+    bool is_fcm_enabled) {
+  if (is_fcm_enabled) {
+    return invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+        profile);
+  }
+  return invalidation::DeprecatedProfileInvalidationProviderFactory::
+      GetForProfile(profile);
+}
+
+}  // namespace
 
 namespace policy {
 
 UserCloudPolicyInvalidator::UserCloudPolicyInvalidator(
     Profile* profile,
-    CloudPolicyManager* policy_manager)
+    CloudPolicyManager* policy_manager,
+    bool is_fcm_enabled,
+    std::string fcm_sender_id)
     : CloudPolicyInvalidator(GetPolicyType(),
                              policy_manager->core(),
                              base::ThreadTaskRunnerHandle::Get(),
                              base::DefaultClock::GetInstance(),
-                             0 /* highest_handled_invalidation_version */),
-      profile_(profile) {
+                             0 /* highest_handled_invalidation_version */,
+                             is_fcm_enabled),
+      profile_(profile),
+      fcm_sender_id_(std::move(fcm_sender_id)) {
   DCHECK(profile);
 
   // Register for notification that profile creation is complete. The
@@ -65,10 +85,15 @@ void UserCloudPolicyInvalidator::Observe(
   // service can safely be initialized.
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_ADDED, type);
   invalidation::ProfileInvalidationProvider* invalidation_provider =
-      invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
-          profile_);
-  if (invalidation_provider)
+      GetInvalidationProvider(profile_, is_fcm_enabled());
+  if (!invalidation_provider)
+    return;
+  if (is_fcm_enabled()) {
+    Initialize(invalidation_provider->GetInvalidationServiceForCustomSender(
+        fcm_sender_id_));
+  } else {
     Initialize(invalidation_provider->GetInvalidationService());
+  }
 }
 
 }  // namespace policy

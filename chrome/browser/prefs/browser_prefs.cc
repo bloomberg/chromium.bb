@@ -301,6 +301,7 @@
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/arc/arc_prefs.h"
+#include "components/invalidation/impl/fcm_invalidation_service.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/quirks/quirks_manager.h"
@@ -618,6 +619,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   extensions::ExtensionAssetsManagerChromeOS::RegisterPrefs(registry);
   extensions::lock_screen_data::LockScreenItemStorage::RegisterLocalState(
       registry);
+  invalidation::FCMInvalidationService::RegisterPrefs(registry);
   invalidation::InvalidatorStorage::RegisterPrefs(registry);
   ::onc::RegisterPrefs(registry);
   policy::AutoEnrollmentClientImpl::RegisterPrefs(registry);
@@ -631,6 +633,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::WebUsbAllowDevicesForUrlsPolicyHandler::RegisterPrefs(registry);
   quirks::QuirksManager::RegisterPrefs(registry);
   UpgradeDetectorChromeos::RegisterPrefs(registry);
+  syncer::PerUserTopicRegistrationManager::RegisterPrefs(registry);
+  syncer::InvalidatorRegistrarWithMemory::RegisterPrefs(registry);
 #endif
 
 #if defined(OS_MACOSX)

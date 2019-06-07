@@ -49,6 +49,13 @@ void InvalidatorRegistrarWithMemory::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(kTopicsToHandler);
 }
 
+// static
+void InvalidatorRegistrarWithMemory::RegisterPrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kTopicsToHandlerDeprecated);
+  registry->RegisterDictionaryPref(kTopicsToHandler);
+}
+
 InvalidatorRegistrarWithMemory::InvalidatorRegistrarWithMemory(
     PrefService* local_state,
     const std::string& sender_id,

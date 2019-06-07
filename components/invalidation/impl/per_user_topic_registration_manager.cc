@@ -139,6 +139,17 @@ void PerUserTopicRegistrationManager::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(kActiveRegistrationTokens);
 }
 
+// static
+void PerUserTopicRegistrationManager::RegisterPrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kTypeRegisteredForInvalidationsDeprecated);
+  registry->RegisterStringPref(kActiveRegistrationTokenDeprecated,
+                               std::string());
+
+  registry->RegisterDictionaryPref(kTypeRegisteredForInvalidations);
+  registry->RegisterDictionaryPref(kActiveRegistrationTokens);
+}
+
 struct PerUserTopicRegistrationManager::RegistrationEntry {
   RegistrationEntry(const Topic& id,
                     SubscriptionFinishedCallback completion_callback,

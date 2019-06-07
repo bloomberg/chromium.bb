@@ -22,6 +22,7 @@ class GCMDriver;
 }
 
 class PrefService;
+class PrefRegistrySimple;
 
 namespace syncer {
 class Invalidator;
@@ -49,6 +50,8 @@ class FCMInvalidationService : public InvalidationService,
   ~FCMInvalidationService() override;
 
   void Init();
+
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // InvalidationService implementation.
   // It is an error to have registered handlers when the service is destroyed.

@@ -122,4 +122,6 @@ std::string GetPolicyVerificationKey() {
                      sizeof(kPolicyVerificationKey));
 }
 
+const char kPolicyFCMInvalidationSenderID[] = "1013309121859";
+
 }  // namespace policy

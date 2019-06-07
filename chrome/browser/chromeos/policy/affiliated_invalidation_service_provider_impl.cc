@@ -19,9 +19,12 @@
 #include "chrome/browser/chromeos/settings/device_identity_provider.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/invalidation/impl/fcm_invalidation_service.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -37,12 +40,24 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace policy {
 
 namespace {
+
+invalidation::ProfileInvalidationProvider* GetInvalidationProvider(
+    Profile* profile,
+    bool is_fcm_enabled) {
+  if (is_fcm_enabled) {
+    return invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+        profile);
+  }
+  return invalidation::DeprecatedProfileInvalidationProviderFactory::
+      GetForProfile(profile);
+}
 
 // Runs on UI thread.
 void RequestProxyResolvingSocketFactoryOnUIThread(
@@ -154,13 +169,17 @@ AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver::
 }
 
 AffiliatedInvalidationServiceProviderImpl::
-AffiliatedInvalidationServiceProviderImpl()
+    AffiliatedInvalidationServiceProviderImpl(bool is_fcm_enabled,
+                                              std::string fcm_sender_id)
     : invalidation_service_(nullptr),
       consumer_count_(0),
-      is_shut_down_(false) {
+      is_shut_down_(false),
+      is_fcm_enabled_(is_fcm_enabled),
+      fcm_sender_id_(std::move(fcm_sender_id)) {
   // The AffiliatedInvalidationServiceProviderImpl should be created before any
   // user Profiles.
   DCHECK(g_browser_process->profile_manager()->GetLoadedProfiles().empty());
+  DCHECK_EQ(is_fcm_enabled_, !fcm_sender_id_.empty());
 
   // Subscribe to notification about new user profiles becoming available.
   registrar_.Add(this,
@@ -182,8 +201,7 @@ void AffiliatedInvalidationServiceProviderImpl::Observe(
   DCHECK(!is_shut_down_);
   Profile* profile = content::Details<Profile>(details).ptr();
   invalidation::ProfileInvalidationProvider* invalidation_provider =
-      invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
-          profile);
+      GetInvalidationProvider(profile, is_fcm_enabled_);
   if (!invalidation_provider) {
     // If the Profile does not support invalidation (e.g. guest, incognito),
     // ignore it.
@@ -198,8 +216,14 @@ void AffiliatedInvalidationServiceProviderImpl::Observe(
   }
 
   // Create a state observer for the user's invalidation service.
-  invalidation::InvalidationService* invalidation_service =
-      invalidation_provider->GetInvalidationService();
+  invalidation::InvalidationService* invalidation_service;
+  if (is_fcm_enabled_) {
+    invalidation_service =
+        invalidation_provider->GetInvalidationServiceForCustomSender(
+            fcm_sender_id_);
+  } else {
+    invalidation_service = invalidation_provider->GetInvalidationService();
+  }
   profile_invalidation_service_observers_.push_back(
       std::make_unique<InvalidationServiceObserver>(this,
                                                     invalidation_service));
@@ -255,9 +279,9 @@ void AffiliatedInvalidationServiceProviderImpl::Shutdown() {
   DestroyDeviceInvalidationService();
 }
 
-invalidation::TiclInvalidationService*
-AffiliatedInvalidationServiceProviderImpl::
-    GetDeviceInvalidationServiceForTest() const {
+invalidation::InvalidationService*
+AffiliatedInvalidationServiceProviderImpl::GetDeviceInvalidationServiceForTest()
+    const {
   return device_invalidation_service_.get();
 }
 
@@ -334,32 +358,9 @@ AffiliatedInvalidationServiceProviderImpl::FindConnectedInvalidationService() {
   }
 
   if (!device_invalidation_service_) {
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
-    if (g_browser_process->system_network_context_manager()) {
-      // system_network_context_manager() can be null during unit tests.
-      url_loader_factory = g_browser_process->system_network_context_manager()
-                               ->GetSharedURLLoaderFactory();
-    }
-
-    identity_provider_ = std::make_unique<chromeos::DeviceIdentityProvider>(
-        chromeos::DeviceOAuth2TokenServiceFactory::Get());
-
-    DCHECK(identity_provider_);
     // If no other connected invalidation service was found and no device-global
     // invalidation service exists, create one.
-    device_invalidation_service_ =
-        std::make_unique<invalidation::TiclInvalidationService>(
-            GetUserAgent(), identity_provider_.get(),
-            g_browser_process->gcm_driver(),
-            base::BindRepeating(&RequestProxyResolvingSocketFactory),
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {content::BrowserThread::IO}),
-            std::move(url_loader_factory),
-            content::GetNetworkConnectionTracker());
-    device_invalidation_service_->Init(
-        std::unique_ptr<syncer::InvalidationStateTracker>(
-            new invalidation::InvalidatorStorage(
-                g_browser_process->local_state())));
+    device_invalidation_service_ = InitializeDeviceInvalidationService();
     device_invalidation_service_observer_.reset(
         new InvalidationServiceObserver(
                 this,
@@ -386,7 +387,56 @@ void
 AffiliatedInvalidationServiceProviderImpl::DestroyDeviceInvalidationService() {
   device_invalidation_service_observer_.reset();
   device_invalidation_service_.reset();
-  identity_provider_.reset();
+  device_identity_provider_.reset();
+  device_instance_id_driver_.reset();
+}
+
+std::unique_ptr<invalidation::InvalidationService>
+AffiliatedInvalidationServiceProviderImpl::
+    InitializeDeviceInvalidationService() {
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+  if (g_browser_process->system_network_context_manager()) {
+    // system_network_context_manager() can be null during unit tests.
+    url_loader_factory = g_browser_process->system_network_context_manager()
+                             ->GetSharedURLLoaderFactory();
+    DCHECK(url_loader_factory);
+  }
+
+  device_identity_provider_ =
+      std::make_unique<chromeos::DeviceIdentityProvider>(
+          chromeos::DeviceOAuth2TokenServiceFactory::Get());
+
+  if (is_fcm_enabled_) {
+    device_instance_id_driver_ =
+        std::make_unique<instance_id::InstanceIDDriver>(
+            g_browser_process->gcm_driver());
+    DCHECK(device_instance_id_driver_);
+    auto device_invalidation_service =
+        std::make_unique<invalidation::FCMInvalidationService>(
+            device_identity_provider_.get(), g_browser_process->gcm_driver(),
+            device_instance_id_driver_.get(), g_browser_process->local_state(),
+            base::BindRepeating(
+                data_decoder::SafeJsonParser::Parse,
+                content::ServiceManagerConnection::GetForProcess()
+                    ->GetConnector()),
+            url_loader_factory.get(), fcm_sender_id_);
+    device_invalidation_service->Init();
+    return device_invalidation_service;
+  }
+  auto device_invalidation_service =
+      std::make_unique<invalidation::TiclInvalidationService>(
+          GetUserAgent(), device_identity_provider_.get(),
+          g_browser_process->gcm_driver(),
+          base::BindRepeating(&RequestProxyResolvingSocketFactory),
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {content::BrowserThread::IO}),
+          std::move(url_loader_factory),
+          content::GetNetworkConnectionTracker());
+
+  device_invalidation_service->Init(
+      std::make_unique<invalidation::InvalidatorStorage>(
+          g_browser_process->local_state()));
+  return device_invalidation_service;
 }
 
 }  // namespace policy

@@ -260,6 +260,11 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
 const base::Feature kDriveFcmInvalidations{"DriveFCMInvalidations",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// If enabled, policies will use FCM (Firebase Cloud Messaging) for its
+// invalidations.
+const base::Feature kPolicyFcmInvalidations{"PolicyFCMInvalidations",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Show the number of open incognito windows besides incognito icon on the
 // toolbar.
 const base::Feature kEnableIncognitoWindowCounter{

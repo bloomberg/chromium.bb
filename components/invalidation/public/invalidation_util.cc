@@ -22,11 +22,11 @@ namespace {
 const char kSourceKey[] = "source";
 const char kNameKey[] = "name";
 
-const int kDeprecatedSource = 2000;
-
 }  // namespace
 
 namespace syncer {
+
+const int kDeprecatedSourceForFCM = 2000;
 
 bool ObjectIdLessThan::operator()(const invalidation::ObjectId& lhs,
                                   const invalidation::ObjectId& rhs) const {
@@ -153,19 +153,19 @@ Topics ConvertIdsToTopics(ObjectIdSet ids, InvalidationHandler* handler) {
 ObjectIdSet ConvertTopicsToIds(TopicSet topics) {
   ObjectIdSet ids;
   for (const auto& topic : topics)
-    ids.insert(invalidation::ObjectId(kDeprecatedSource, topic));
+    ids.insert(invalidation::ObjectId(kDeprecatedSourceForFCM, topic));
   return ids;
 }
 
 ObjectIdSet ConvertTopicsToIds(Topics topics) {
   ObjectIdSet ids;
   for (const auto& topic : topics)
-    ids.insert(invalidation::ObjectId(kDeprecatedSource, topic.first));
+    ids.insert(invalidation::ObjectId(kDeprecatedSourceForFCM, topic.first));
   return ids;
 }
 
 invalidation::ObjectId ConvertTopicToId(const Topic& topic) {
-  return invalidation::ObjectId(kDeprecatedSource, topic);
+  return invalidation::ObjectId(kDeprecatedSourceForFCM, topic);
 }
 
 HandlerOwnerType OwnerNameToHandlerType(const std::string& owner_name) {

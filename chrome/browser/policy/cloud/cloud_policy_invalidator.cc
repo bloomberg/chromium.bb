@@ -25,6 +25,11 @@
 
 namespace policy {
 
+namespace {
+
+constexpr char kFcmPolicyPublicTopicPrefix[] = "cs-";
+}  // namespace
+
 const int CloudPolicyInvalidator::kMissingPayloadDelay = 5;
 const int CloudPolicyInvalidator::kMaxFetchDelayDefault = 10000;
 const int CloudPolicyInvalidator::kMaxFetchDelayMin = 1000;
@@ -38,7 +43,8 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
     CloudPolicyCore* core,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     base::Clock* clock,
-    int64_t highest_handled_invalidation_version)
+    int64_t highest_handled_invalidation_version,
+    bool is_fcm_enabled)
     : state_(UNINITIALIZED),
       type_(type),
       core_(core),
@@ -55,6 +61,7 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
           highest_handled_invalidation_version),
       max_fetch_delay_(kMaxFetchDelayDefault),
       policy_hash_value_(0),
+      is_fcm_enabled_(is_fcm_enabled),
       weak_factory_(this) {
   DCHECK(core);
   DCHECK(task_runner.get());
@@ -131,6 +138,10 @@ void CloudPolicyInvalidator::OnIncomingInvalidation(
 }
 
 std::string CloudPolicyInvalidator::GetOwnerName() const { return "Cloud"; }
+
+bool CloudPolicyInvalidator::IsPublicTopic(const syncer::Topic& topic) const {
+  return base::StringPiece(topic).starts_with(kFcmPolicyPublicTopicPrefix);
+}
 
 void CloudPolicyInvalidator::OnCoreConnected(CloudPolicyCore* core) {}
 
@@ -275,16 +286,31 @@ void CloudPolicyInvalidator::HandleInvalidation(
 void CloudPolicyInvalidator::UpdateRegistration(
     const enterprise_management::PolicyData* policy) {
   // Create the ObjectId based on the policy data.
-  // If the policy does not specify an the ObjectId, then unregister.
-  if (!policy ||
-      !policy->has_invalidation_source() ||
-      !policy->has_invalidation_name()) {
+  if (!policy) {
     Unregister();
     return;
   }
-  invalidation::ObjectId object_id(
-      policy->invalidation_source(),
-      policy->invalidation_name());
+
+  // If the policy does not specify an ObjectId, then unregister.
+  invalidation::ObjectId object_id;
+  if (is_fcm_enabled_) {
+    if (!policy->has_policy_invalidation_topic() ||
+        policy->policy_invalidation_topic().empty()) {
+      Unregister();
+      return;
+    }
+    object_id = invalidation::ObjectId(syncer::kDeprecatedSourceForFCM,
+                                       policy->policy_invalidation_topic());
+  } else {
+    if (!policy->has_invalidation_source() ||
+        !policy->has_invalidation_name() ||
+        policy->invalidation_name().empty()) {
+      Unregister();
+      return;
+    }
+    object_id = invalidation::ObjectId(policy->invalidation_source(),
+                                       policy->invalidation_name());
+  }
 
   // If the policy object id in the policy data is different from the currently
   // registered object id, update the object registration.

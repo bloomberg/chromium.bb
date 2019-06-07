@@ -173,6 +173,10 @@ enum class MarketSegment {
   ENTERPRISE,
 };
 
+// Sender ID of FCM (Firebase Cloud Messaging)
+// Policy Invalidation sender coming from the Firebase console.
+extern const char kPolicyFCMInvalidationSenderID[];
+
 }  // namespace policy
 
 #endif  // COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_CONSTANTS_H_

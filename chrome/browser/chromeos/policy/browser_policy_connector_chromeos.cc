@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/constants/chromeos_paths.h"
@@ -64,6 +65,7 @@
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/proxy_policy_provider.h"
@@ -165,8 +167,12 @@ void BrowserPolicyConnectorChromeOS::Init(
   local_state_ = local_state;
   ChromeBrowserPolicyConnector::Init(local_state, url_loader_factory);
 
+  const bool is_fcm_enabled =
+      base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations);
   affiliated_invalidation_service_provider_ =
-      std::make_unique<AffiliatedInvalidationServiceProviderImpl>();
+      std::make_unique<AffiliatedInvalidationServiceProviderImpl>(
+          is_fcm_enabled,
+          is_fcm_enabled ? policy::kPolicyFCMInvalidationSenderID : "");
 
   if (device_cloud_policy_manager_) {
     // Note: for now the |device_cloud_policy_manager_| is using the global
@@ -196,7 +202,7 @@ void BrowserPolicyConnectorChromeOS::Init(
         std::make_unique<AffiliatedCloudPolicyInvalidator>(
             em::DeviceRegisterRequest::DEVICE,
             device_cloud_policy_manager_->core(),
-            affiliated_invalidation_service_provider_.get());
+            affiliated_invalidation_service_provider_.get(), is_fcm_enabled);
     device_remote_commands_invalidator_ =
         std::make_unique<AffiliatedRemoteCommandsInvalidator>(
             device_cloud_policy_manager_->core(),

@@ -94,6 +94,15 @@ void FCMInvalidationService::Init() {
   identity_provider_->AddObserver(this);
 }
 
+// static
+void FCMInvalidationService::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(
+      invalidation::prefs::kFCMInvalidationClientIDCacheDeprecated,
+      /*default_value=*/std::string());
+  registry->RegisterDictionaryPref(
+      invalidation::prefs::kInvalidationClientIDCache);
+}
+
 void FCMInvalidationService::InitForTest(syncer::Invalidator* invalidator) {
   // Here we perform the equivalent of Init() and StartInvalidator(), but with
   // some minor changes to account for the fact that we're injecting the

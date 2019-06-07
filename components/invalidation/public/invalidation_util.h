@@ -28,6 +28,14 @@ class InvalidationObjectId;
 
 namespace syncer {
 
+// FCMInvalidationService and deprecated TiclInvalidationService uses ObjectId
+// to keep track of objects to invalidate. There are 2 fields in ObjectId:
+// source and name. TiclInvalidationService expects both of them, while
+// FCMInvalidationService only works with the name. So InvalidationService
+// assigns the value of source to kDeprecatedSourceForFCM when FCM (Firebase
+// Cloud Messaging) is enabled.
+extern const int kDeprecatedSourceForFCM;
+
 // Used by UMA histogram, so entries shouldn't be reordered or removed.
 enum class HandlerOwnerType {
   kCloud = 0,
