@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +32,7 @@ class ProxyHelpersTest : public testing::Test {
   void QuitFunction(int a) {
     EXPECT_TRUE(drm_checker_.CalledOnValidThread());
 
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&ProxyHelpersTest::QuitFunctionCallback,
                                   base::Unretained(this), 8));
   }
@@ -42,7 +42,8 @@ class ProxyHelpersTest : public testing::Test {
     EXPECT_TRUE(main_checker_.CalledOnValidThread());
 
     auto quitter = run_loop_.QuitWhenIdleClosure();
-    message_loop_.task_runner()->PostTask(FROM_HERE, quitter);
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                                 quitter);
   }
 
   void SetDrmChecker() { drm_checker_.DetachFromThread(); }
@@ -90,7 +91,7 @@ class ProxyHelpersTest : public testing::Test {
 
  protected:
   // Main thread message loop.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::RunLoop run_loop_;
 
   // Thread to simulate the drm thread in ozone viz process.
