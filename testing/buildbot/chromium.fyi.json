@@ -4742,6 +4742,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "web_engine_integration_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "web_engine_unittests"
       },
       {
@@ -5188,6 +5198,22 @@
           ]
         },
         "test": "web_engine_browsertests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "web_engine_integration_tests"
       },
       {
         "merge": {
@@ -5674,6 +5700,22 @@
           ]
         },
         "test": "web_engine_browsertests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "web_engine_integration_tests"
       },
       {
         "merge": {
