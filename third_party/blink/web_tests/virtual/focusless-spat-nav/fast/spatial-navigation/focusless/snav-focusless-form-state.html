@@ -10,6 +10,7 @@
 <input type="text" id="first" autofocus></input>
 <input type="text" id="second"></input>
 <input type="checkbox" id="third"></input>
+<input type="submit" id="submit">Submit</input>
 </form>
 
 <script>
@@ -38,6 +39,8 @@
                 "Should be able to exit focus.");
     assert_true(mockSnavService.canSelectElement,
                 "Should be able to select element.");
+    assert_true(mockSnavService.isFormFocused,
+                "Form should be focused.");
     assert_true(mockSnavService.hasNextFormElement,
                 "Should be able to move to next form element.");
 
@@ -59,6 +62,8 @@
                 "Should be able to exit focus.");
     assert_true(mockSnavService.canSelectElement,
                 "Should be able to select element.");
+    assert_true(mockSnavService.isFormFocused,
+                "Form should be focused.");
     assert_false(mockSnavService.hasNextFormElement,
                  "Should be able to move to next form element.");
 
@@ -69,6 +74,8 @@
                  "Should be able to exit focus.");
     assert_true(mockSnavService.canSelectElement,
                 "Should be able to select element.");
+    assert_false(mockSnavService.isFormFocused,
+                 "Form should not be focused.");
     assert_false(mockSnavService.hasNextFormElement,
                  "Should be able to move to next form element.");
 

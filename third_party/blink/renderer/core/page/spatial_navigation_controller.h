@@ -30,6 +30,7 @@ class CORE_EXPORT SpatialNavigationController
   bool HandleArrowKeyboardEvent(KeyboardEvent* event);
   bool HandleEnterKeyboardEvent(KeyboardEvent* event);
   bool HandleEscapeKeyboardEvent(KeyboardEvent* event);
+  bool HandleImeSubmitKeyboardEvent(KeyboardEvent* event);
 
   // Returns the element that's currently interested. i.e. the Element that's
   // currently indicated to the user.
@@ -95,6 +96,7 @@ class CORE_EXPORT SpatialNavigationController
   bool UpdateCanExitFocus(Element* element);
   bool UpdateCanSelectInterestedElement(Element* element);
   bool UpdateHasNextFormElement(Element* element);
+  bool UpdateIsFormFocused(Element* element);
   bool UpdateHasDefaultVideoControls(Element* element);
 
   const mojom::blink::SpatialNavigationHostPtr& GetSpatialNavigationHost();
