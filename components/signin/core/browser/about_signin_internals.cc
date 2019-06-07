@@ -11,10 +11,9 @@
 
 #include "base/command_line.h"
 #include "base/hash/hash.h"
-#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/time/time_to_iso8601.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -60,11 +59,6 @@ std::string GetGaiaCookiesStateAsString(const GaiaCookiesState state) {
     case GaiaCookiesState::kAllowed:
       return "Allowed";
   }
-}
-
-std::string GetTimeStr(base::Time time) {
-  return base::UTF16ToUTF8(
-      base::TimeFormatWithPattern(time, "yyyy-MM-dd HH:mm:ss X"));
 }
 
 base::ListValue* AddSection(base::ListValue* parent_list,
@@ -274,7 +268,7 @@ void AboutSigninInternals::NotifyTimedSigninFieldValueChanged(
          field_index < signin_status_.timed_signin_fields.size());
 
   base::Time now = base::Time::NowFromSystemTime();
-  std::string time_as_str = GetTimeStr(now);
+  std::string time_as_str = base::TimeToISO8601(now);
   TimedSigninStatusValue timed_value(value, time_as_str);
 
   signin_status_.timed_signin_fields[field_index] = timed_value;
@@ -526,14 +520,14 @@ AboutSigninInternals::TokenInfo::ToValue() const {
     scopes_str += *it + "<br/>";
   }
   token_info->SetString("scopes", scopes_str);
-  token_info->SetString("request_time", GetTimeStr(request_time));
+  token_info->SetString("request_time", base::TimeToISO8601(request_time));
 
   if (removed_) {
     token_info->SetString("status", "Token was revoked.");
   } else if (!receive_time.is_null()) {
     if (error == GoogleServiceAuthError::AuthErrorNone()) {
       bool token_expired = expiration_time < base::Time::Now();
-      std::string expiration_time_string = GetTimeStr(expiration_time);
+      std::string expiration_time_string = base::TimeToISO8601(expiration_time);
       if (expiration_time.is_null()) {
         token_expired = false;
         expiration_time_string = "Expiration time not available";
@@ -542,7 +536,7 @@ AboutSigninInternals::TokenInfo::ToValue() const {
       if (token_expired)
         status_str = "<p style=\"color: #ffffff; background-color: #ff0000\">";
       base::StringAppendF(&status_str, "Received token at %s. Expire at %s",
-                          GetTimeStr(receive_time).c_str(),
+                          base::TimeToISO8601(receive_time).c_str(),
                           expiration_time_string.c_str());
       if (token_expired)
         base::StringAppendF(&status_str, "</p>");
@@ -687,7 +681,7 @@ AboutSigninInternals::SigninStatus::ToValue(
     base::Time next_retry_time =
         base::Time::NowFromSystemTime() + cookie_requests_delay;
     AddSectionEntry(detailed_info, "Cookie Manager Next Retry",
-                    GetTimeStr(next_retry_time), "");
+                    base::TimeToISO8601(next_retry_time), "");
   }
 
   base::TimeDelta token_requests_delay =
@@ -698,7 +692,7 @@ AboutSigninInternals::SigninStatus::ToValue(
     base::Time next_retry_time =
         base::Time::NowFromSystemTime() + token_requests_delay;
     AddSectionEntry(detailed_info, "Token Service Next Retry",
-                    GetTimeStr(next_retry_time), "");
+                    base::TimeToISO8601(next_retry_time), "");
   }
 
 #endif  // !defined(OS_CHROMEOS)
@@ -744,7 +738,7 @@ AboutSigninInternals::SigninStatus::ToValue(
   for (const auto& event : refresh_token_events) {
     auto entry = std::make_unique<base::DictionaryValue>();
     entry->SetString("accountId", event.account_id);
-    entry->SetString("timestamp", GetTimeStr(event.timestamp));
+    entry->SetString("timestamp", base::TimeToISO8601(event.timestamp));
     entry->SetString("type", event.GetTypeAsString());
     entry->SetString("source", event.source);
     refresh_token_events_value->Append(std::move(entry));
