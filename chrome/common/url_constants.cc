@@ -12,6 +12,9 @@ const char kAccessibilityLabelsLearnMoreURL[] =
 const char kAutomaticSettingsResetLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_automatic_settings_reset";
 
+const char kAdvancedProtectionDownloadLearnMoreURL[] =
+    "https://support.google.com/accounts/?p=ap_faq";
+
 const char kBluetoothAdapterOffHelpURL[] =
 #if defined(OS_CHROMEOS)
     "chrome://settings/?search=bluetooth";
