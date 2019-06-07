@@ -7,7 +7,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_native.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
+#include "third_party/blink/renderer/core/streams/transferable_streams.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -213,6 +215,41 @@ WritableStreamNative* WritableStreamNative::Create(
 
   //  8. Return stream.
   return stream;
+}
+
+void WritableStreamNative::Serialize(ScriptState* script_state,
+                                     MessagePort* port,
+                                     ExceptionState& exception_state) {
+  if (IsLocked(this)) {
+    exception_state.ThrowTypeError("Cannot transfer a locked stream");
+    return;
+  }
+
+  auto* readable =
+      CreateCrossRealmTransformReadable(script_state, port, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  auto promise = ReadableStreamNative::PipeTo(
+      script_state, readable, this, ReadableStreamNative::PipeOptions());
+  promise.MarkAsHandled();
+}
+
+WritableStreamNative* WritableStreamNative::Deserialize(
+    ScriptState* script_state,
+    MessagePort* port,
+    ExceptionState& exception_state) {
+  // We need to execute JavaScript to call "Then" on v8::Promises. We will not
+  // run author code.
+  v8::Isolate::AllowJavascriptExecutionScope allow_js(
+      script_state->GetIsolate());
+  auto* writable =
+      CreateCrossRealmTransformWritable(script_state, port, exception_state);
+  if (exception_state.HadException()) {
+    return nullptr;
+  }
+  return writable;
 }
 
 WritableStreamDefaultWriter* WritableStreamNative::AcquireDefaultWriter(

@@ -57,7 +57,10 @@ WritableStream* WritableStream::Create(ScriptState* script_state,
 WritableStream* WritableStream::Deserialize(ScriptState* script_state,
                                             MessagePort* port,
                                             ExceptionState& exception_state) {
-  // TODO(ricea): Switch on Blink feature.
+  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
+    return WritableStreamNative::Deserialize(script_state, port,
+                                             exception_state);
+  }
   return WritableStreamWrapper::Deserialize(script_state, port,
                                             exception_state);
 }

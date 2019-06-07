@@ -60,12 +60,6 @@ TEST_P(WritableStreamTest, GetWriter) {
 }
 
 TEST_P(WritableStreamTest, Serialize) {
-  // Disable the test when StreamsNative is enabled as WritableStreamNative
-  // doesn't support serialization yet.
-  // TODO(ricea): Re-enable this test when serialization is supported.
-  if (GetParam())
-    return;
-
   ScopedTransferableStreamsForTest enable_transferable_streams(true);
 
   V8TestingScope scope;
