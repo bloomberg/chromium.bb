@@ -77,11 +77,13 @@ void WindowMirrorView::Layout() {
 
   gfx::Transform transform;
   gfx::Rect client_area_bounds = GetClientAreaBounds();
-  // Scale down if necessary.
+  // Scale if necessary.
   if (size() != source_->bounds().size()) {
-    const float scale =
+    const float scale_x =
         width() / static_cast<float>(client_area_bounds.width());
-    transform.Scale(scale, scale);
+    const float scale_y =
+        height() / static_cast<float>(client_area_bounds.height());
+    transform.Scale(scale_x, scale_y);
   }
   // Reposition such that the client area is the only part visible.
   transform.Translate(-client_area_bounds.x(), -client_area_bounds.y());
