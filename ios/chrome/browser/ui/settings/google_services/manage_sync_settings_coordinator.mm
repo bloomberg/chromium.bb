@@ -49,11 +49,11 @@
     ManageSyncSettingsTableViewController* viewController;
 // Mediator.
 @property(nonatomic, strong) ManageSyncSettingsMediator* mediator;
-// Web and app activity view controller.
-@property(nonatomic, weak)
-    UINavigationController* webAndAppSettingDetailsController;
 // Sync service.
 @property(nonatomic, assign, readonly) syncer::SyncService* syncService;
+// Dismiss callback for Web and app setting details view.
+@property(nonatomic, copy) ios::DismissWebAndAppSettingDetailsControllerBlock
+    dismissWebAndAppSettingDetailsControllerBlock;
 
 @end
 
@@ -88,20 +88,12 @@
 
 #pragma mark - Private
 
-// Called by the close button of the Web and app activity view controller.
-- (void)closeGoogleActivitySettings:(id)sender {
-  DCHECK(self.webAndAppSettingDetailsController);
-  [self.navigationController dismissViewControllerAnimated:YES completion:nil];
-  self.webAndAppSettingDetailsController = nil;
-}
-
 // Closes the Manage sync settings view controller.
 - (void)closeManageSyncSettings {
   if (self.viewController.navigationController) {
-    if (self.webAndAppSettingDetailsController) {
-      [self.navigationController dismissViewControllerAnimated:NO
-                                                    completion:nil];
-      self.webAndAppSettingDetailsController = nil;
+    if (self.dismissWebAndAppSettingDetailsControllerBlock) {
+      self.dismissWebAndAppSettingDetailsControllerBlock(NO);
+      self.dismissWebAndAppSettingDetailsControllerBlock = nil;
     }
     [self.navigationController popToViewController:self.viewController
                                           animated:NO];
@@ -150,22 +142,12 @@
       AuthenticationServiceFactory::GetForBrowserState(self.browserState);
   base::RecordAction(base::UserMetricsAction(
       "Signin_AccountSettings_GoogleActivityControlsClicked"));
-  DCHECK(!self.webAndAppSettingDetailsController);
-  self.webAndAppSettingDetailsController =
+  self.dismissWebAndAppSettingDetailsControllerBlock =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
-          ->CreateWebAndAppSettingDetailsController(
-              authService->GetAuthenticatedIdentity(), self);
-  UIImage* closeIcon = [ChromeIcon closeIcon];
-  SEL action = @selector(closeGoogleActivitySettings:);
-  [self.webAndAppSettingDetailsController.topViewController navigationItem]
-      .leftBarButtonItem = [ChromeIcon templateBarButtonItemWithImage:closeIcon
-                                                               target:self
-                                                               action:action];
-  [self.navigationController
-      presentViewController:self.webAndAppSettingDetailsController
-                   animated:YES
-                 completion:nil];
+          ->PresentWebAndAppSettingDetailsController(
+              authService->GetAuthenticatedIdentity(), self.viewController,
+              YES);
 }
 
 - (void)openDataFromChromeSyncWebPage {

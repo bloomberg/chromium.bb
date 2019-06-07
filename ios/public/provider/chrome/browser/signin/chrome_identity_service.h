@@ -112,12 +112,18 @@ class ChromeIdentityService {
       id<ChromeIdentityBrowserOpener> browser_opener);
 
   // Returns a new Web and App Setting Details controller to present.
+  // Deprecated, crbug.com/905680.
+  // Please use PresentWebAndAppSettingDetailsController().
   virtual UINavigationController* CreateWebAndAppSettingDetailsController(
       ChromeIdentity* identity,
       id<ChromeIdentityBrowserOpener> browser_opener);
 
-  // Not implemented yet. Please use CreateWebAndAppSettingDetailsController().
-  // See: crbug.com/905680.
+  // Presents a new Web and App Setting Details view.
+  // |identity| the identity used to present the view.
+  // |viewController| the view to present the setting details.
+  // |animated| the view is presented with animation if YES.
+  // Returns a block to dismiss the presented view. This block can be ignored if
+  // not needed.
   virtual DismissWebAndAppSettingDetailsControllerBlock
   PresentWebAndAppSettingDetailsController(ChromeIdentity* identity,
                                            UIViewController* viewController,

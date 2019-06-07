@@ -463,27 +463,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   base::RecordAction(base::UserMetricsAction(
       "Signin_AccountSettings_GoogleActivityControlsClicked"));
-  UINavigationController* settingsDetails =
-      ios::GetChromeBrowserProvider()
-          ->GetChromeIdentityService()
-          ->CreateWebAndAppSettingDetailsController(
-              [self authService] -> GetAuthenticatedIdentity(), self);
-  UIImage* closeIcon = [ChromeIcon closeIcon];
-  SEL action = @selector(closeGoogleActivitySettings:);
-  [settingsDetails.topViewController navigationItem].leftBarButtonItem =
-      [ChromeIcon templateBarButtonItemWithImage:closeIcon
-                                          target:self
-                                          action:action];
-  [self presentViewController:settingsDetails animated:YES completion:nil];
-
-  // Keep a weak reference on the settings details, to be able to dismiss it
-  // when the primary account is removed.
-  _settingsDetails = settingsDetails;
-}
-
-- (void)closeGoogleActivitySettings:(id)sender {
-  DCHECK(_settingsDetails);
-  [self dismissViewControllerAnimated:YES completion:nil];
+  ios::GetChromeBrowserProvider()
+      ->GetChromeIdentityService()
+      ->PresentWebAndAppSettingDetailsController(
+          [self authService] -> GetAuthenticatedIdentity(), self, YES);
 }
 
 #pragma mark - Authentication operations
