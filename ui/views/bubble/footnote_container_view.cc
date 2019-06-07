@@ -76,4 +76,8 @@ void FootnoteContainerView::ChildVisibilityChanged(View* child) {
   SetVisible(child->GetVisible());
 }
 
+BEGIN_METADATA(FootnoteContainerView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
+
 }  // namespace views

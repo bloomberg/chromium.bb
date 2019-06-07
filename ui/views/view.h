@@ -44,6 +44,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
@@ -278,7 +279,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
  public:
   using Views = std::vector<View*>;
 
-  METADATA_HEADER(View);
+  METADATA_HEADER_BASE(View);
 
   enum class FocusBehavior {
     // Use when the View is never focusable. Default.
@@ -722,15 +723,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void SetLayoutManager(std::nullptr_t);
 
   // Attributes ----------------------------------------------------------------
-
-  // The view class name.
-  static const char kViewClassName[];
-
-  // Return the receiving view's class name. A view class is a string which
-  // uniquely identifies the view class. It is intended to be used as a way to
-  // find out during run time if a view can be safely cast to a specific view
-  // subclass. The default implementation returns kViewClassName.
-  virtual const char* GetClassName() const;
 
   // Returns the first ancestor, starting at this, whose class name is |name|.
   // Returns null if no ancestor has the class name |name|.

@@ -17,6 +17,7 @@ namespace views {
 
 class VIEWS_EXPORT Throbber : public View {
  public:
+  METADATA_HEADER(Throbber);
   Throbber();
   ~Throbber() override;
 
@@ -51,6 +52,7 @@ class VIEWS_EXPORT Throbber : public View {
 // a small amount of work time has passed.
 class VIEWS_EXPORT SmoothedThrobber : public Throbber {
  public:
+  METADATA_HEADER(SmoothedThrobber);
   SmoothedThrobber();
   ~SmoothedThrobber() override;
 

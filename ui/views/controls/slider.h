@@ -44,8 +44,7 @@ class VIEWS_EXPORT SliderListener {
 
 class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(Slider);
 
   explicit Slider(SliderListener* listener);
   ~Slider() override;
@@ -92,7 +91,6 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   void OnSliderDragEnded();
 
   // views::View:
-  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;

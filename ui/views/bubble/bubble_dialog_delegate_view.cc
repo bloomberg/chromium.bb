@@ -116,10 +116,6 @@ Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
 
 }  // namespace
 
-// static
-const char BubbleDialogDelegateView::kViewClassName[] =
-    "BubbleDialogDelegateView";
-
 BubbleDialogDelegateView::~BubbleDialogDelegateView() {
   if (GetWidget())
     GetWidget()->RemoveObserver(this);
@@ -179,10 +175,6 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
 
   frame->SetBubbleBorder(std::move(border));
   return frame;
-}
-
-const char* BubbleDialogDelegateView::GetClassName() const {
-  return kViewClassName;
 }
 
 bool BubbleDialogDelegateView::AcceleratorPressed(
@@ -516,5 +508,9 @@ void BubbleDialogDelegateView::UpdateHighlightedButton(bool highlighted) {
   if (button && highlight_button_when_shown_)
     button->SetHighlighted(highlighted);
 }
+
+BEGIN_METADATA(BubbleDialogDelegateView)
+METADATA_PARENT_CLASS(DialogDelegateView)
+END_METADATA()
 
 }  // namespace views

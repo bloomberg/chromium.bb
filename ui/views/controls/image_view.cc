@@ -23,9 +23,6 @@ void* GetBitmapPixels(const gfx::ImageSkia& img, float image_scale) {
 
 }  // namespace
 
-// static
-const char ImageView::kViewClassName[] = "ImageView";
-
 ImageView::ImageView() = default;
 
 ImageView::~ImageView() = default;
@@ -74,10 +71,6 @@ gfx::Size ImageView::GetImageSize() const {
 void ImageView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
   OnPaintImage(canvas);
-}
-
-const char* ImageView::GetClassName() const {
-  return kViewClassName;
 }
 
 void ImageView::OnPaintImage(gfx::Canvas* canvas) {
@@ -129,5 +122,9 @@ gfx::ImageSkia ImageView::GetPaintImage(float scale) {
       scale));
   return scaled_image_;
 }
+
+BEGIN_METADATA(ImageView)
+METADATA_PARENT_CLASS(ImageViewBase)
+END_METADATA()
 
 }  // namespace views

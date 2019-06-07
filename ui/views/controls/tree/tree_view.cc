@@ -56,9 +56,6 @@ static constexpr int kTextHorizontalPadding = 2;
 // How much children are indented from their parent.
 static constexpr int kIndent = 20;
 
-// static
-const char TreeView::kViewClassName[] = "TreeView";
-
 namespace {
 
 bool EventIsDoubleTapOrClick(const ui::LocatedEvent& event) {
@@ -438,10 +435,6 @@ void TreeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Get selected item info.
   node_data->role = ax::mojom::Role::kTreeItem;
   node_data->SetName(selected_node_->model_node()->GetTitle());
-}
-
-const char* TreeView::GetClassName() const {
-  return kViewClassName;
 }
 
 void TreeView::TreeNodesAdded(TreeModel* model,
@@ -1163,5 +1156,9 @@ int TreeView::InternalNode::GetMaxWidth(TreeView* tree, int indent, int depth) {
   }
   return max_width;
 }
+
+BEGIN_METADATA(TreeView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

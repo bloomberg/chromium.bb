@@ -47,6 +47,8 @@ class VIEWS_EXPORT ButtonListener {
 class VIEWS_EXPORT Button : public InkDropHostView,
                             public gfx::AnimationDelegate {
  public:
+  METADATA_HEADER(Button);
+
   ~Button() override;
 
   // Button states for various button sub-types.
@@ -71,9 +73,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     CLICK_ON_KEY_RELEASE,
     CLICK_NONE,
   };
-
-  // The menu button's class name.
-  static const char kViewClassName[];
 
   static const Button* AsButton(const View* view);
   static Button* AsButton(View* view);
@@ -165,7 +164,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void RemoveButtonObserver(ButtonObserver* observer);
 
   // Overridden from View:
-  const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;

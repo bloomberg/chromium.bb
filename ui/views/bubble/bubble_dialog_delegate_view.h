@@ -39,8 +39,7 @@ class Button;
 class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
                                               public WidgetObserver {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(BubbleDialogDelegateView);
 
   enum class CloseReason {
     DEACTIVATION,
@@ -58,7 +57,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   bool ShouldShowCloseButton() const override;
   ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
-  const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // WidgetObserver:

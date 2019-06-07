@@ -69,9 +69,6 @@ constexpr int kBorderThickness = 2;
 
 }  // namespace
 
-// static
-const char TabbedPane::kViewClassName[] = "TabbedPane";
-
 // A subclass of Tab that implements the Harmony visual styling.
 class MdTab : public Tab {
  public:
@@ -823,12 +820,12 @@ bool TabbedPane::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return MoveSelectionBy(accelerator.IsShiftDown() ? -1 : 1);
 }
 
-const char* TabbedPane::GetClassName() const {
-  return kViewClassName;
-}
-
 void TabbedPane::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTabList;
 }
+
+BEGIN_METADATA(TabbedPane)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

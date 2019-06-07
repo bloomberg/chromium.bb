@@ -16,19 +16,12 @@
 
 namespace views {
 
-// static
-const char RadioButton::kViewClassName[] = "RadioButton";
-
 RadioButton::RadioButton(const base::string16& label, int group_id)
     : Checkbox(label, nullptr) {
   SetGroup(group_id);
 }
 
 RadioButton::~RadioButton() = default;
-
-const char* RadioButton::GetClassName() const {
-  return kViewClassName;
-}
 
 void RadioButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Checkbox::GetAccessibleNodeData(node_data);
@@ -113,5 +106,9 @@ void RadioButton::GetViewsInGroupFromParent(int group, Views* views) {
   if (parent())
     parent()->GetViewsInGroup(group, views);
 }
+
+BEGIN_METADATA(RadioButton)
+METADATA_PARENT_CLASS(Checkbox)
+END_METADATA()
 
 }  // namespace views

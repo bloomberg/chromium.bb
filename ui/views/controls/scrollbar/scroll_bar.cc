@@ -455,4 +455,9 @@ base::Optional<int> ScrollBar::GetDesiredScrollOffset(ScrollAmount amount) {
       return base::nullopt;
   }
 }
+
+BEGIN_METADATA(ScrollBar)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
+
 }  // namespace views

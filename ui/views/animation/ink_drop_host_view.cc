@@ -195,4 +195,8 @@ gfx::Size InkDropHostView::CalculateLargeInkDropSize(
   return gfx::ScaleToCeiledSize(gfx::Size(small_size), kLargeInkDropScale);
 }
 
+BEGIN_METADATA(InkDropHostView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
+
 }  // namespace views

@@ -11,6 +11,7 @@
 
 // Generate the implementation of the metadata accessors and internal class with
 // additional macros for defining the class' properties.
+
 #define BEGIN_METADATA(class_name)                                          \
   views::metadata::ClassMetaData* class_name::METADATA_CLASS_NAME_INTERNAL( \
       class_name)::meta_data_ = nullptr;                                    \
@@ -26,6 +27,11 @@
   views::metadata::ClassMetaData* class_name::GetClassMetaData() {          \
     return MetaData();                                                      \
   }                                                                         \
+                                                                            \
+  const char* class_name::GetClassName() const {                            \
+    return class_name::kViewClassName;                                      \
+  }                                                                         \
+  const char class_name::kViewClassName[] = #class_name;                    \
                                                                             \
   void METADATA_FUNCTION_PREFIX_INTERNAL(class_name)::BuildMetaData() {     \
     SetTypeName(std::string(#class_name));

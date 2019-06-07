@@ -25,6 +25,8 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
                                         public FocusChangeListener,
                                         public FocusTraversable {
  public:
+  METADATA_HEADER(AccessiblePaneView);
+
   AccessiblePaneView();
   ~AccessiblePaneView() override;
 

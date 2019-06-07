@@ -31,9 +31,6 @@
 
 namespace views {
 
-// static
-const char Checkbox::kViewClassName[] = "Checkbox";
-
 Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
     : LabelButton(listener, label), checked_(false), label_ax_id_(0) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -90,10 +87,6 @@ void Checkbox::SetAssociatedLabel(View* labelling_view) {
   // associated label changes.
   SetAccessibleName(
       node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
-}
-
-const char* Checkbox::GetClassName() const {
-  return kViewClassName;
 }
 
 void Checkbox::GetAccessibleNodeData(ui::AXNodeData* node_data) {

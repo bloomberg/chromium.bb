@@ -74,10 +74,9 @@ class SubmenuView;
 
 class VIEWS_EXPORT MenuItemView : public View {
  public:
-  friend class MenuController;
+  METADATA_HEADER(MenuItemView);
 
-  // The menu item view's class name.
-  static const char kViewClassName[];
+  friend class MenuController;
 
   // ID used to identify menu items.
   static const int kMenuItemViewID;
@@ -384,7 +383,6 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // View:
   void ChildPreferredSizeChanged(View* child) override;
-  const char* GetClassName() const override;
 
   // Returns the preferred size (and padding) of any children.
   virtual gfx::Size GetChildPreferredSize() const;

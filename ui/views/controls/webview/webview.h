@@ -39,7 +39,7 @@ class WEBVIEW_EXPORT WebView : public View,
                                public content::WebContentsDelegate,
                                public content::WebContentsObserver {
  public:
-  static const char kViewClassName[];
+  METADATA_HEADER(WebView);
 
   explicit WebView(content::BrowserContext* browser_context);
   ~WebView() override;
@@ -91,9 +91,6 @@ class WEBVIEW_EXPORT WebView : public View,
   void set_allow_accelerators(bool allow_accelerators) {
     allow_accelerators_ = allow_accelerators;
   }
-
-  // Overridden from View:
-  const char* GetClassName() const override;
 
   // Overridden from content::WebContentsDelegate:
   void ResizeDueToAutoResize(content::WebContents* source,

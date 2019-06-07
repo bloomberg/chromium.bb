@@ -42,9 +42,6 @@ void AddPossiblyRoundRectToPath(const gfx::Rect& rectangle,
 
 }  // namespace
 
-// static
-const char ProgressBar::kViewClassName[] = "ProgressBar";
-
 ProgressBar::ProgressBar(int preferred_height, bool allow_round_corner)
     : preferred_height_(preferred_height),
       allow_round_corner_(allow_round_corner) {
@@ -63,10 +60,6 @@ gfx::Size ProgressBar::CalculatePreferredSize() const {
   gfx::Insets insets = GetInsets();
   pref_size.Enlarge(insets.width(), insets.height());
   return pref_size;
-}
-
-const char* ProgressBar::GetClassName() const {
-  return kViewClassName;
 }
 
 void ProgressBar::OnPaint(gfx::Canvas* canvas) {
@@ -211,5 +204,9 @@ void ProgressBar::OnPaintIndeterminate(gfx::Canvas* canvas) {
   slice_flags.setColor(GetForegroundColor());
   canvas->DrawPath(slice_path, slice_flags);
 }
+
+BEGIN_METADATA(ProgressBar)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

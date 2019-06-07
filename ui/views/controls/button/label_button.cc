@@ -29,9 +29,6 @@
 
 namespace views {
 
-// static
-const char LabelButton::kViewClassName[] = "LabelButton";
-
 LabelButton::LabelButton(ButtonListener* listener,
                          const base::string16& text,
                          int button_context)
@@ -293,10 +290,6 @@ void LabelButton::Layout() {
 
   label_->SetBoundsRect(label_bounds);
   Button::Layout();
-}
-
-const char* LabelButton::GetClassName() const {
-  return kViewClassName;
 }
 
 void LabelButton::EnableCanvasFlippingForRTLUI(bool flip) {

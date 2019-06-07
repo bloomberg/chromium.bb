@@ -24,8 +24,6 @@
 
 namespace views {
 
-const char ScrollView::kViewClassName[] = "ScrollView";
-
 namespace {
 
 class ScrollCornerView : public View {
@@ -113,8 +111,6 @@ class ScrollView::Viewport : public View {
  public:
   explicit Viewport(ScrollView* scroll_view) : scroll_view_(scroll_view) {}
   ~Viewport() override = default;
-
-  const char* GetClassName() const override { return "ScrollView::Viewport"; }
 
   void ScrollRectToVisible(const gfx::Rect& rect) override {
     if (children().empty() || !parent())
@@ -623,10 +619,6 @@ void ScrollView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-const char* ScrollView::GetClassName() const {
-  return kViewClassName;
-}
-
 void ScrollView::OnThemeChanged() {
   UpdateBorder();
   if (use_color_id_)
@@ -952,6 +944,10 @@ void ScrollView::UpdateOverflowIndicatorVisibility(
       !draw_border_ && horiz_sb_->GetVisible() && !vert_sb_->GetVisible() &&
           offset.x() < horiz_sb_->GetMaxPosition() && draw_overflow_indicator_);
 }
+
+BEGIN_METADATA(ScrollView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 // VariableRowHeightScrollHelper ----------------------------------------------
 

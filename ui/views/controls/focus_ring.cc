@@ -25,8 +25,6 @@ double GetCornerRadius() {
 
 }  // namespace
 
-const char FocusRing::kViewClassName[] = "FocusRing";
-
 // static
 std::unique_ptr<FocusRing> FocusRing::Install(View* parent) {
   auto ring = base::WrapUnique<FocusRing>(new FocusRing());
@@ -61,10 +59,6 @@ void FocusRing::SetHasFocusPredicate(const ViewPredicate& predicate) {
 void FocusRing::SetColor(base::Optional<SkColor> color) {
   color_ = color;
   SchedulePaint();
-}
-
-const char* FocusRing::GetClassName() const {
-  return kViewClassName;
 }
 
 void FocusRing::Layout() {
@@ -178,5 +172,9 @@ SkPath GetHighlightPath(const View* view) {
                                     corner_radius, corner_radius));
   return path;
 }
+
+BEGIN_METADATA(FocusRing)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

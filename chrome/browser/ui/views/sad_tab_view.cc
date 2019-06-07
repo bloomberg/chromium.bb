@@ -52,9 +52,6 @@ views::Label* CreateFormattedLabel(const base::string16& message) {
 
 }  // namespace
 
-// static
-const char SadTabView::kViewClassName[] = "SadTabView";
-
 SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
     : SadTab(web_contents, kind) {
   // This view gets inserted as a child of a WebView, but we don't want the
@@ -208,10 +205,6 @@ void SadTabView::Layout() {
   View::Layout();
 }
 
-const char* SadTabView::GetClassName() const {
-  return kViewClassName;
-}
-
 void SadTabView::OnPaint(gfx::Canvas* canvas) {
   if (!painted_) {
     RecordFirstPaint();
@@ -228,3 +221,7 @@ SadTab* SadTab::Create(content::WebContents* web_contents,
                        SadTabKind kind) {
   return new SadTabView(web_contents, kind);
 }
+
+BEGIN_METADATA(SadTabView)
+METADATA_PARENT_CLASS(views::View)
+END_METADATA()

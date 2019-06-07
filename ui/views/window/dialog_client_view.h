@@ -33,6 +33,8 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
                                       public ButtonListener,
                                       public DialogObserver {
  public:
+  METADATA_HEADER(DialogClientView);
+
   DialogClientView(Widget* widget, View* contents_view);
   ~DialogClientView() override;
 

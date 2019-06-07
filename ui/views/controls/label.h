@@ -14,6 +14,7 @@
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/context_menu_controller.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/selection_controller_delegate.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
@@ -31,8 +32,7 @@ class VIEWS_EXPORT Label : public View,
                            public SelectionControllerDelegate,
                            public ui::SimpleMenuModel::Delegate {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(Label);
 
   // Helper to construct a Label that doesn't use the views typography spec.
   // Using this causes Label to obtain colors from ui::NativeTheme and line
@@ -230,7 +230,6 @@ class VIEWS_EXPORT Label : public View,
   gfx::Size GetMinimumSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
-  const char* GetClassName() const override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   bool CanProcessEventsWithinSubtree() const override;
   WordLookupClient* GetWordLookupClient() override;

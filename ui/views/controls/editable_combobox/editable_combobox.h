@@ -40,13 +40,13 @@ class VIEWS_EXPORT EditableCombobox : public View,
                                       public ViewObserver,
                                       public ButtonListener {
  public:
+  METADATA_HEADER(EditableCombobox);
+
   enum class Type {
     kRegular,
     kPassword,
   };
 
-  // The class name.
-  static const char kViewClassName[];
   static constexpr int kDefaultTextContext = style::CONTEXT_BUTTON;
   static constexpr int kDefaultTextStyle = style::STYLE_PRIMARY;
 
@@ -117,7 +117,6 @@ class VIEWS_EXPORT EditableCombobox : public View,
   void ShowDropDownMenu(ui::MenuSourceType source_type = ui::MENU_SOURCE_NONE);
 
   // Overridden from View:
-  const char* GetClassName() const override;
   void Layout() override;
   void OnThemeChanged() override;
 

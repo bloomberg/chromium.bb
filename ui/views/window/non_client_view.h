@@ -23,8 +23,7 @@ class ClientView;
 class VIEWS_EXPORT NonClientFrameView : public View,
                                         public ViewTargeterDelegate {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(NonClientFrameView);
 
   enum {
     // Various edges of the frame border have a 1 px shadow along their edges;
@@ -89,7 +88,6 @@ class VIEWS_EXPORT NonClientFrameView : public View,
 
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  const char* GetClassName() const override;
   void OnThemeChanged() override;
 
  protected:
@@ -141,8 +139,7 @@ class VIEWS_EXPORT NonClientFrameView : public View,
 //
 class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(NonClientView);
 
   NonClientView();
   ~NonClientView() override;
@@ -217,7 +214,6 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   gfx::Size GetMaximumSize() const override;
   void Layout() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  const char* GetClassName() const override;
 
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 

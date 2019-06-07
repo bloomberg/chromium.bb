@@ -17,13 +17,6 @@
 
 namespace views {
 
-// static
-const char NonClientFrameView::kViewClassName[] =
-    "ui/views/window/NonClientFrameView";
-
-const char NonClientView::kViewClassName[] =
-    "ui/views/window/NonClientView";
-
 // The frame view and the client view are always at these specific indices,
 // because the RootView message dispatch sends messages to items higher in the
 // z-order first and we always want the client view to have first crack at
@@ -195,10 +188,6 @@ void NonClientView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
 }
 
-const char* NonClientView::GetClassName() const {
-  return kViewClassName;
-}
-
 View* NonClientView::GetTooltipHandlerForPoint(const gfx::Point& point) {
   // The same logic as for |TargetForRect()| applies here.
   if (frame_view_->parent() == this) {
@@ -243,6 +232,10 @@ View* NonClientView::TargetForRect(View* root, const gfx::Rect& rect) {
 
   return ViewTargeterDelegate::TargetForRect(root, rect);
 }
+
+BEGIN_METADATA(NonClientView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, public:
@@ -308,10 +301,6 @@ void NonClientFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kClient;
 }
 
-const char* NonClientFrameView::GetClassName() const {
-  return kViewClassName;
-}
-
 void NonClientFrameView::OnThemeChanged() {
   SchedulePaint();
 }
@@ -332,5 +321,9 @@ bool NonClientFrameView::DoesIntersectRect(const View* target,
   // the client view.
   return !GetWidget()->client_view()->bounds().Intersects(rect);
 }
+
+BEGIN_METADATA(NonClientFrameView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

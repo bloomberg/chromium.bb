@@ -41,8 +41,6 @@ class VIEWS_EXPORT Combobox : public View,
  public:
   METADATA_HEADER(Combobox);
 
-  // The combobox's class name.
-  static const char kViewClassName[];
   static constexpr int kDefaultComboboxTextContext = style::CONTEXT_BUTTON;
   static constexpr int kDefaultComboboxTextStyle = style::STYLE_PRIMARY;
 
@@ -86,7 +84,6 @@ class VIEWS_EXPORT Combobox : public View,
 
   // Overridden from View:
   gfx::Size CalculatePreferredSize() const override;
-  const char* GetClassName() const override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) override;
   bool OnKeyPressed(const ui::KeyEvent& e) override;
   void OnPaint(gfx::Canvas* canvas) override;

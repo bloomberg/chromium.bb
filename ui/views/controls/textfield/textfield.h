@@ -71,8 +71,7 @@ class VIEWS_EXPORT Textfield : public View,
                                public ui::TouchEditable,
                                public ui::TextInputClient {
  public:
-  // The textfield's class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(Textfield);
 
   // Returns the text cursor blink time, or 0 for no blinking.
   static base::TimeDelta GetCaretBlinkInterval();
@@ -260,7 +259,6 @@ class VIEWS_EXPORT Textfield : public View,
   int GetBaseline() const override;
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
-  const char* GetClassName() const override;
   void SetBorder(std::unique_ptr<Border> b) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

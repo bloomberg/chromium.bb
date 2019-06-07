@@ -115,9 +115,6 @@ class ScopedChildrenLock {
 
 }  // namespace internal
 
-// static
-const char View::kViewClassName[] = "View";
-
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
 
@@ -683,10 +680,6 @@ void View::SetLayoutManager(std::nullptr_t) {
 }
 
 // Attributes ------------------------------------------------------------------
-
-const char* View::GetClassName() const {
-  return kViewClassName;
-}
 
 const View* View::GetAncestorWithClassName(const std::string& name) const {
   for (const View* view = this; view; view = view->parent_) {

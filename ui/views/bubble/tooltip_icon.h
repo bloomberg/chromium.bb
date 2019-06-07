@@ -25,12 +25,13 @@ class VIEWS_EXPORT TooltipIcon : public ImageView,
                                  public MouseWatcherListener,
                                  public WidgetObserver {
  public:
+  METADATA_HEADER(TooltipIcon);
+
   explicit TooltipIcon(const base::string16& tooltip,
                        int tooltip_icon_size = 16);
   ~TooltipIcon() override;
 
   // ImageView:
-  const char* GetClassName() const override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

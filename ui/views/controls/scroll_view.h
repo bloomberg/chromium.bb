@@ -43,7 +43,7 @@ class Separator;
 
 class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
  public:
-  static const char kViewClassName[];
+  METADATA_HEADER(ScrollView);
 
   ScrollView();
 
@@ -130,7 +130,6 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   bool OnMouseWheel(const ui::MouseWheelEvent& e) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  const char* GetClassName() const override;
   void OnThemeChanged() override;
 
   // ScrollBarController overrides:

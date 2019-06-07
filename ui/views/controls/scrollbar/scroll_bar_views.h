@@ -22,7 +22,7 @@ namespace views {
 // Views implementation for the scrollbar.
 class VIEWS_EXPORT ScrollBarViews : public ScrollBar, public ButtonListener {
  public:
-  static const char kViewClassName[];
+  METADATA_HEADER(ScrollBarViews);
 
   // Creates new scrollbar, either horizontal or vertical.
   explicit ScrollBarViews(bool horizontal);
@@ -35,7 +35,6 @@ class VIEWS_EXPORT ScrollBarViews : public ScrollBar, public ButtonListener {
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
   gfx::Size CalculatePreferredSize() const override;
-  const char* GetClassName() const override;
 
   // ScrollBar overrides:
   int GetThickness() const override;

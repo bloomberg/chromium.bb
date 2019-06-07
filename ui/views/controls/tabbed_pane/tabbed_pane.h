@@ -28,6 +28,8 @@ class TabbedPaneTest;
 // may require additional polish.
 class VIEWS_EXPORT TabbedPane : public View {
  public:
+  METADATA_HEADER(TabbedPane);
+
   // The orientation of the tab alignment.
   enum class Orientation {
     kHorizontal,
@@ -39,9 +41,6 @@ class VIEWS_EXPORT TabbedPane : public View {
     kBorder,     // Draw border around the selected tab.
     kHighlight,  // Highlight background and text of the selected tab.
   };
-
-  // Internal class name.
-  static const char kViewClassName[];
 
   explicit TabbedPane(Orientation orientation = Orientation::kHorizontal,
                       TabStripStyle style = TabStripStyle::kBorder);
@@ -75,7 +74,6 @@ class VIEWS_EXPORT TabbedPane : public View {
 
   // Overridden from View:
   gfx::Size CalculatePreferredSize() const override;
-  const char* GetClassName() const override;
 
   // Gets the orientation of the tab alignment.
   Orientation GetOrientation() const;

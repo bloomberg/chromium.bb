@@ -101,8 +101,7 @@ BrowserRootView::DropInfo::~DropInfo() {
 }
 
 // static
-const char BrowserRootView::kViewClassName[] =
-    "browser/ui/views/frame/BrowserRootView";
+const char BrowserRootView::kViewClassName[] = "BrowserRootView";
 
 BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)

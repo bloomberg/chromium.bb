@@ -34,8 +34,7 @@ class StyledLabelListener;
 // In this case, leading whitespace is ignored.
 class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(StyledLabel);
 
   // TestApi is used for tests to get internal implementation details.
   class VIEWS_EXPORT TestApi {
@@ -139,7 +138,6 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   void SizeToFit(int max_width);
 
   // View:
-  const char* GetClassName() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int w) const override;

@@ -23,7 +23,6 @@
 
 namespace views {
 
-const char Link::kViewClassName[] = "Link";
 constexpr int Link::kFocusBorderPadding;
 
 Link::Link(const base::string16& title, int text_context, int text_style)
@@ -65,10 +64,6 @@ gfx::Insets Link::GetInsets() const {
     insets += gfx::Insets(kFocusBorderPadding);
   }
   return insets;
-}
-
-const char* Link::GetClassName() const {
-  return kViewClassName;
 }
 
 gfx::NativeCursor Link::GetCursor(const ui::MouseEvent& event) {
@@ -278,5 +273,9 @@ SkColor Link::GetColor() {
       pressed_ ? ui::NativeTheme::kColorId_LinkPressed
                : ui::NativeTheme::kColorId_LinkEnabled);
 }
+
+BEGIN_METADATA(Link)
+METADATA_PARENT_CLASS(Label)
+END_METADATA()
 
 }  // namespace views

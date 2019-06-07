@@ -11,9 +11,6 @@
 namespace views {
 
 // static
-const char Separator::kViewClassName[] = "Separator";
-
-// static
 const int Separator::kThickness = 1;
 
 Separator::Separator() = default;
@@ -63,8 +60,8 @@ void Separator::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 }
 
-const char* Separator::GetClassName() const {
-  return kViewClassName;
-}
+BEGIN_METADATA(Separator)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

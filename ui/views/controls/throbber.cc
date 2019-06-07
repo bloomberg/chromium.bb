@@ -86,6 +86,10 @@ bool Throbber::IsRunning() const {
   return timer_.IsRunning();
 }
 
+BEGIN_METADATA(Throbber)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
+
 // Smoothed throbber ---------------------------------------------------------
 
 // Delay after work starts before starting throbber, in milliseconds.
@@ -127,5 +131,9 @@ void SmoothedThrobber::Stop() {
 void SmoothedThrobber::StopDelayOver() {
   Throbber::Stop();
 }
+
+BEGIN_METADATA(SmoothedThrobber)
+METADATA_PARENT_CLASS(Throbber)
+END_METADATA()
 
 }  // namespace views

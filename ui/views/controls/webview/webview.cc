@@ -46,9 +46,6 @@ WebView::ScopedWebContentsCreatorForTesting::
   *GetCreatorForTesting() = WebView::WebContentsCreator();
 }
 
-// static
-const char WebView::kViewClassName[] = "WebView";
-
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, public:
 
@@ -144,10 +141,6 @@ void WebView::SetCrashedOverlayView(View* crashed_overlay_view) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, View overrides:
-
-const char* WebView::GetClassName() const {
-  return kViewClassName;
-}
 
 void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (crashed_overlay_view_)
@@ -457,5 +450,9 @@ void WebView::MaybeEnableAutoResize() {
       web_contents()->GetRenderWidgetHostView();
   render_widget_host_view->EnableAutoResize(min_size_, max_size_);
 }
+
+BEGIN_METADATA(WebView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

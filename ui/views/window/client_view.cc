@@ -12,10 +12,6 @@
 
 namespace views {
 
-// static
-const char ClientView::kViewClassName[] =
-    "ui/views/window/ClientView";
-
 ///////////////////////////////////////////////////////////////////////////////
 // ClientView, public:
 
@@ -70,9 +66,6 @@ void ClientView::Layout() {
     contents_view_->SetBounds(0, 0, width(), height());
 }
 
-const char* ClientView::GetClassName() const {
-  return kViewClassName;
-}
 
 void ClientView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kClient;
@@ -96,5 +89,9 @@ void ClientView::ViewHierarchyChanged(
     contents_view_ = nullptr;
   }
 }
+
+BEGIN_METADATA(ClientView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

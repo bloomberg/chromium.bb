@@ -34,9 +34,6 @@ constexpr SkColor kDropIndicatorColor = SK_ColorBLACK;
 
 namespace views {
 
-// static
-const char SubmenuView::kViewClassName[] = "SubmenuView";
-
 SubmenuView::SubmenuView(MenuItemView* parent)
     : parent_menu_item_(parent),
       host_(nullptr),
@@ -482,10 +479,6 @@ void SubmenuView::MenuHostDestroyed() {
     controller->Cancel(MenuController::ExitType::kDestroyed);
 }
 
-const char* SubmenuView::GetClassName() const {
-  return kViewClassName;
-}
-
 void SubmenuView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   SchedulePaint();
 }
@@ -542,5 +535,9 @@ bool SubmenuView::OnScroll(float dx, float dy) {
   }
   return false;
 }
+
+BEGIN_METADATA(SubmenuView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

@@ -24,6 +24,8 @@ class VIEWS_EXPORT CocoaScrollBar : public ScrollBar,
                                     public ui::ImplicitAnimationObserver,
                                     public gfx::AnimationDelegate {
  public:
+  METADATA_HEADER(CocoaScrollBar);
+
   explicit CocoaScrollBar(bool horizontal);
   ~CocoaScrollBar() override;
 

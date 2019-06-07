@@ -116,9 +116,6 @@ bool StyledLabel::StyleRange::operator<(
 
 // StyledLabel ----------------------------------------------------------------
 
-// static
-const char StyledLabel::kViewClassName[] = "StyledLabel";
-
 StyledLabel::StyledLabel(const base::string16& text,
                          StyledLabelListener* listener)
     : specified_line_height_(0),
@@ -204,10 +201,6 @@ void StyledLabel::SizeToFit(int max_width) {
     max_width = std::numeric_limits<int>::max();
 
   SetSize(CalculateAndDoLayout(max_width, true));
-}
-
-const char* StyledLabel::GetClassName() const {
-  return kViewClassName;
 }
 
 void StyledLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -527,5 +520,9 @@ void StyledLabel::AdvanceOneLine(int* line_number,
   }
   offset->set_x(0);
 }
+
+BEGIN_METADATA(StyledLabel)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

@@ -44,8 +44,6 @@ bool IsOpaque(SkColor color) {
 
 namespace views {
 
-const char Label::kViewClassName[] = "Label";
-
 Label::Label() : Label(base::string16()) {
 }
 
@@ -377,10 +375,6 @@ int Label::GetHeightForWidth(int w) const {
 
 void Label::Layout() {
   ClearDisplayText();
-}
-
-const char* Label::GetClassName() const {
-  return kViewClassName;
 }
 
 View* Label::GetTooltipHandlerForPoint(const gfx::Point& point) {
@@ -969,5 +963,9 @@ void Label::BuildContextMenuContents() {
   context_menu_contents_.AddItemWithStringId(IDS_APP_SELECT_ALL,
                                              IDS_APP_SELECT_ALL);
 }
+
+BEGIN_METADATA(Label)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

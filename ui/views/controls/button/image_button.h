@@ -23,8 +23,6 @@ class VIEWS_EXPORT ImageButton : public Button {
  public:
   METADATA_HEADER(ImageButton);
 
-  static const char kViewClassName[];
-
   // An enum describing the horizontal alignment of images on Buttons.
   enum HorizontalAlignment {
     ALIGN_LEFT = 0,
@@ -77,7 +75,6 @@ class VIEWS_EXPORT ImageButton : public Button {
   }
 
   // Overridden from View:
-  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
 

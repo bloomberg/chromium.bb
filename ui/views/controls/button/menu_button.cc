@@ -11,8 +11,6 @@
 #include "ui/views/controls/button/menu_button_controller.h"
 
 namespace views {
-// static
-const char MenuButton::kViewClassName[] = "MenuButton";
 
 MenuButton::MenuButton(const base::string16& text,
                        MenuButtonListener* menu_button_listener,
@@ -35,14 +33,14 @@ bool MenuButton::IsTriggerableEventType(const ui::Event& event) {
   return button_controller()->IsTriggerableEventType(event);
 }
 
-const char* MenuButton::GetClassName() const {
-  return kViewClassName;
-}
-
 void MenuButton::NotifyClick(const ui::Event& event) {
   // Notify MenuButtonListener via MenuButtonController, instead of
   // ButtonListener::ButtonPressed.
   button_controller()->Activate(&event);
 }
+
+BEGIN_METADATA(MenuButton)
+METADATA_PARENT_CLASS(LabelButton)
+END_METADATA()
 
 }  // namespace views

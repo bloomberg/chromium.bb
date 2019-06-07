@@ -29,8 +29,7 @@ class Textfield;
 // and Cancel buttons.
 class VIEWS_EXPORT MessageBoxView : public View {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(MessageBoxView);
 
   enum Options {
     NO_OPTIONS = 0,
@@ -94,7 +93,6 @@ class VIEWS_EXPORT MessageBoxView : public View {
       const ViewHierarchyChangedDetails& details) override;
   // Handles Ctrl-C and writes the message in the system clipboard.
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  const char* GetClassName() const override;
 
  private:
   // Sets up the layout manager and initializes the message labels and prompt

@@ -17,6 +17,8 @@ class InfoBubbleFrame;
 // Class to create and manage an information bubble for errors or tooltips.
 class InfoBubble : public BubbleDialogDelegateView {
  public:
+  METADATA_HEADER(InfoBubble);
+
   InfoBubble(View* anchor, const base::string16& message);
   ~InfoBubble() override;
 

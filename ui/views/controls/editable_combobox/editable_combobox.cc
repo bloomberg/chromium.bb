@@ -110,9 +110,6 @@ class Arrow : public Button {
 
 }  // namespace
 
-// static
-const char EditableCombobox::kViewClassName[] = "EditableCombobox";
-
 // Adapts a ui::ComboboxModel to a ui::MenuModel to be used by EditableCombobox.
 // Also provides a filtering capability.
 class EditableCombobox::EditableComboboxMenuModel
@@ -346,10 +343,6 @@ base::string16 EditableCombobox::GetItemForTest(int index) {
 ////////////////////////////////////////////////////////////////////////////////
 // EditableCombobox, View overrides:
 
-const char* EditableCombobox::GetClassName() const {
-  return kViewClassName;
-}
-
 void EditableCombobox::Layout() {
   View::Layout();
   if (arrow_) {
@@ -491,5 +484,9 @@ void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   menu_runner_->RunMenuAt(GetWidget(), nullptr, bounds,
                           MenuAnchorPosition::kTopLeft, source_type);
 }
+
+BEGIN_METADATA(EditableCombobox)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

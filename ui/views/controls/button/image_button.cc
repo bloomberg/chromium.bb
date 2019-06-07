@@ -24,8 +24,6 @@ namespace views {
 static constexpr int kDefaultWidth = 16;
 static constexpr int kDefaultHeight = 14;
 
-const char ImageButton::kViewClassName[] = "ImageButton";
-
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, public:
 
@@ -108,10 +106,6 @@ void ImageButton::SetMinimumImageSize(const gfx::Size& size) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, View overrides:
-
-const char* ImageButton::GetClassName() const {
-  return kViewClassName;
-}
 
 gfx::Size ImageButton::CalculatePreferredSize() const {
   gfx::Size size(kDefaultWidth, kDefaultHeight);

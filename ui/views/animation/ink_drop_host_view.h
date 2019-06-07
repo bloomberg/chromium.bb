@@ -38,6 +38,8 @@ class InkDropHostViewTestApi;
 // A view that provides InkDropHost functionality.
 class VIEWS_EXPORT InkDropHostView : public View {
  public:
+  METADATA_HEADER(InkDropHostView);
+
   // Used in SetInkDropMode() to specify whether the ink drop effect is enabled
   // or not for the view. In case of having an ink drop, it also specifies
   // whether the default event handler for the ink drop should be installed or

@@ -59,9 +59,6 @@ constexpr int kSlideHighlightChangeDurationMs = 150;
 
 }  // namespace
 
-// static
-const char Slider::kViewClassName[] = "Slider";
-
 Slider::Slider(SliderListener* listener)
     : listener_(listener),
       highlight_animation_(this),
@@ -194,10 +191,6 @@ void Slider::OnSliderDragEnded() {
   SetHighlighted(false);
   if (listener_)
     listener_->SliderDragEnded(this);
-}
-
-const char* Slider::GetClassName() const {
-  return kViewClassName;
 }
 
 gfx::Size Slider::CalculatePreferredSize() const {
@@ -359,5 +352,9 @@ void Slider::OnGestureEvent(ui::GestureEvent* event) {
       break;
   }
 }
+
+BEGIN_METADATA(Slider)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

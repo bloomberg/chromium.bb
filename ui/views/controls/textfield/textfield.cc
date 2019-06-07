@@ -249,9 +249,6 @@ bool IsControlKeyModifier(int flags) {
 }  // namespace
 
 // static
-const char Textfield::kViewClassName[] = "Textfield";
-
-// static
 base::TimeDelta Textfield::GetCaretBlinkInterval() {
 #if defined(OS_WIN)
   static const size_t system_value = ::GetCaretBlinkTime();
@@ -634,10 +631,6 @@ gfx::Size Textfield::GetMinimumSize() const {
         GetFontList().GetExpectedTextWidth(minimum_width_in_chars_) +
         GetInsets().width());
   return minimum_size;
-}
-
-const char* Textfield::GetClassName() const {
-  return kViewClassName;
 }
 
 void Textfield::SetBorder(std::unique_ptr<Border> b) {
@@ -2388,5 +2381,9 @@ void Textfield::OnEnabledChanged() {
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
 }
+
+BEGIN_METADATA(Textfield)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

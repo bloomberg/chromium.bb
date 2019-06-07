@@ -17,8 +17,7 @@ namespace views {
 // other views.
 class VIEWS_EXPORT Separator : public View {
  public:
-  // The separator's class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(Separator);
 
   // The separator's thickness in dip.
   static const int kThickness;
@@ -34,7 +33,6 @@ class VIEWS_EXPORT Separator : public View {
   gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaint(gfx::Canvas* canvas) override;
-  const char* GetClassName() const override;
 
  private:
   int preferred_height_ = kThickness;

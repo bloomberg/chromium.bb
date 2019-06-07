@@ -141,9 +141,6 @@ class PostEventDispatchHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(PostEventDispatchHandler);
 };
 
-// static
-const char RootView::kViewClassName[] = "RootView";
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, public:
 
@@ -317,10 +314,6 @@ Widget* RootView::GetWidget() {
 
 bool RootView::IsDrawn() const {
   return GetVisible();
-}
-
-const char* RootView::GetClassName() const {
-  return kViewClassName;
 }
 
 void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -755,5 +748,8 @@ ui::EventDispatchDetails RootView::PostDispatchEvent(ui::EventTarget* target,
   return details;
 }
 
+BEGIN_METADATA(RootView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 }  // namespace internal
 }  // namespace views

@@ -72,9 +72,6 @@ namespace views {
 ///////////////////////////////////////////////////////////////////////////////
 // MessageBoxView, public:
 
-// static
-const char MessageBoxView::kViewClassName[] = "MessageBoxView";
-
 MessageBoxView::InitParams::InitParams(const base::string16& message)
     : options(NO_OPTIONS),
       message(message),
@@ -176,10 +173,6 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
       message_labels_.cbegin(), message_labels_.cend(), base::string16(),
       [](base::string16& left, Label* right) { return left + right->text(); }));
   return true;
-}
-
-const char* MessageBoxView::GetClassName() const {
-  return kViewClassName;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -302,5 +295,9 @@ gfx::Insets MessageBoxView::GetHorizontalInsets(
                         horizontal_insets.right());
   return horizontal_insets;
 }
+
+BEGIN_METADATA(MessageBoxView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

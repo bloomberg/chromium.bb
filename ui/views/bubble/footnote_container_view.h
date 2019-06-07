@@ -13,6 +13,8 @@ namespace views {
 // background with rounded corners at the bottom.
 class FootnoteContainerView : public View {
  public:
+  METADATA_HEADER(FootnoteContainerView);
+
   FootnoteContainerView(const gfx::Insets& margins,
                         View* child_view,
                         float corner_radius);

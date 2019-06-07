@@ -31,8 +31,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
  public:
   METADATA_HEADER(LabelButton);
 
-  static const char kViewClassName[];
-
   // Creates a LabelButton with ButtonPressed() events sent to |listener| and
   // label |text|. |button_context| is a value from views::style::TextContext
   // and determines the appearance of |text|.
@@ -93,7 +91,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
-  const char* GetClassName() const override;
   void EnableCanvasFlippingForRTLUI(bool flip) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void AddLayerBeneathView(ui::Layer* new_layer) override;

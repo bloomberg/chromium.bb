@@ -67,9 +67,6 @@ class ToggleButton::ThumbView : public InkDropHostView {
   static constexpr int kShadowBlur = 2;
 
   // views::View:
-  const char* GetClassName() const override {
-    return "ToggleButton::ThumbView";
-  }
 
   void OnPaint(gfx::Canvas* canvas) override {
     const float dsf = canvas->UndoDeviceScaleFactor();
@@ -110,9 +107,6 @@ class ToggleButton::ThumbView : public InkDropHostView {
 
   DISALLOW_COPY_AND_ASSIGN(ThumbView);
 };
-
-// static
-const char ToggleButton::kViewClassName[] = "ToggleButton";
 
 ToggleButton::ToggleButton(ButtonListener* listener) : Button(listener) {
   slide_animation_.SetSlideDuration(80 /* ms */);
@@ -198,10 +192,6 @@ SkColor ToggleButton::GetTrackColor(bool is_on) const {
       is_on ? ui::NativeTheme::kColorId_ProminentButtonColor
             : ui::NativeTheme::kColorId_LabelEnabledColor;
   return SkColorSetA(GetNativeTheme()->GetSystemColor(color_id), kTrackAlpha);
-}
-
-const char* ToggleButton::GetClassName() const {
-  return kViewClassName;
 }
 
 bool ToggleButton::CanAcceptEvent(const ui::Event& event) {

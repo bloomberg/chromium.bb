@@ -109,7 +109,6 @@ TEST_F(MetadataTest, TestFloatMetadataPropertyAccess) {
       GetMemberMetaData(&test_obj, "FloatProperty");
 
   ASSERT_TRUE(member_data);
-
   base::string16 member_value = member_data->GetValueAsString(&test_obj);
   CHECK_EQ(member_value, base::NumberToString16(start_value));
 }
@@ -182,26 +181,4 @@ TEST_F(MetadataTest, TestTypeCacheContainsTestClass) {
   const auto& cache_meta = cache->GetCachedTypes();
   CHECK(std::find(cache_meta.begin(), cache_meta.end(), test_class_meta) !=
         cache_meta.end());
-}
-
-// View subclass with no properties to test MetaData Iterator
-// when members vector is empty.
-class MetadataTestViewNoProperties : public views::View {
- public:
-  METADATA_HEADER(MetadataTestViewNoProperties);
-
-  MetadataTestViewNoProperties() = default;
-  ~MetadataTestViewNoProperties() override = default;
-};
-
-BEGIN_METADATA(MetadataTestViewNoProperties)
-METADATA_PARENT_CLASS(views::View)
-END_METADATA()
-
-TEST_F(MetadataTest, NoPropertyClassIterator) {
-  views::View test_view;
-  MetadataTestViewNoProperties test_no_prop_view;
-
-  CHECK(test_view.GetClassMetaData()->begin() ==
-        test_no_prop_view.GetClassMetaData()->begin());
 }

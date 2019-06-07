@@ -90,9 +90,6 @@ void AnimatedImageView::OnPaint(gfx::Canvas* canvas) {
   canvas->Restore();
 }
 
-const char* AnimatedImageView::GetClassName() const {
-  return "AnimatedImageView";
-}
 
 void AnimatedImageView::NativeViewHierarchyChanged() {
   ui::Compositor* compositor = GetWidget()->GetCompositor();
@@ -141,5 +138,9 @@ void AnimatedImageView::ClearCurrentCompositor() {
     compositor_ = nullptr;
   }
 }
+
+BEGIN_METADATA(AnimatedImageView)
+METADATA_PARENT_CLASS(ImageViewBase)
+END_METADATA()
 
 }  // namespace views

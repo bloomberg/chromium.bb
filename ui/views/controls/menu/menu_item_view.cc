@@ -98,9 +98,6 @@ int MenuItemView::item_right_margin_;
 // static
 int MenuItemView::pref_menu_height_;
 
-// static
-const char MenuItemView::kViewClassName[] = "MenuItemView";
-
 MenuItemView::MenuItemView(MenuDelegate* delegate)
     : delegate_(delegate),
       controller_(nullptr),
@@ -765,10 +762,6 @@ MenuItemView::~MenuItemView() {
     delete item;
 }
 
-const char* MenuItemView::GetClassName() const {
-  return kViewClassName;
-}
-
 // Calculates all sizes that we can from the OS.
 //
 // This is invoked prior to Running a menu.
@@ -1404,5 +1397,9 @@ bool MenuItemView::HasChecksOrRadioButtons() const {
       menu_items.cbegin(), menu_items.cend(),
       [](const auto* item) { return item->HasChecksOrRadioButtons(); });
 }
+
+BEGIN_METADATA(MenuItemView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views
