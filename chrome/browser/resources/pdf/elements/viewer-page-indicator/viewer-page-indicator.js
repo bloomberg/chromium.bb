@@ -18,18 +18,14 @@ Polymer({
 
   /** @override */
   ready: function() {
-    const callback = this.fadeIn.bind(this, 2000);
+    const callback = this.fadeIn_.bind(this);
     window.addEventListener('scroll', function() {
       requestAnimationFrame(callback);
     });
   },
 
-  initialFadeIn: function() {
-    this.fadeIn(6000);
-  },
-
-  /** @param {number} displayTime */
-  fadeIn: function(displayTime) {
+  /** @private */
+  fadeIn_: function() {
     const percent = window.scrollY /
         (document.scrollingElement.scrollHeight -
          document.documentElement.clientHeight);
@@ -55,7 +51,7 @@ Polymer({
     this.timerId = setTimeout(() => {
       this.style.opacity = 0;
       this.timerId = undefined;
-    }, displayTime);
+    }, 2000);
   },
 
   pageLabelsChanged: function() {

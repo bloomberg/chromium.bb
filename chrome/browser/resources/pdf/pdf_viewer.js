@@ -1091,10 +1091,6 @@ PDFViewer.prototype = {
       this.passwordScreen_.close();
     }
 
-    if (this.pageIndicator_) {
-      this.pageIndicator_.initialFadeIn();
-    }
-
     if (this.toolbar_) {
       this.toolbar_.docLength = this.documentDimensions_.pageDimensions.length;
     }
