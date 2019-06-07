@@ -135,6 +135,7 @@
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_coordinator.h"
+#import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_coordinator.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
@@ -640,6 +641,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // for |self.currentWebState|.
 @property(nonatomic, assign, readonly, getter=isNTPActiveForCurrentWebState)
     BOOL NTPActiveForCurrentWebState;
+
+// The coordinator that shows the Send Tab To Self UI.
+@property(nonatomic, strong) SendTabToSelfCoordinator* sendTabToSelfCoordinator;
 
 // BVC initialization
 // ------------------
@@ -4313,7 +4317,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)showSendTabToSelfUI {
-  NOTIMPLEMENTED();
+  // TODO(crbug.com/972114) Move or reroute to browserCoordinator.
+  self.sendTabToSelfCoordinator = [[SendTabToSelfCoordinator alloc]
+      initWithBaseViewController:self
+                    browserState:self.browserState];
+  [self.sendTabToSelfCoordinator start];
 }
 
 - (void)requestDesktopSite {
