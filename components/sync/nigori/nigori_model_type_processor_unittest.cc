@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
@@ -146,10 +145,6 @@ class NigoriModelTypeProcessorTest : public testing::Test {
   NigoriModelTypeProcessor* processor() { return &processor_; }
 
  private:
-  // This sets SequencedTaskRunnerHandle on the current thread, which the type
-  // processor will pick up as the sync task runner.
-  base::test::ScopedTaskEnvironment task_environment_;
-
   testing::NiceMock<MockNigoriSyncBridge> mock_nigori_sync_bridge_;
   std::unique_ptr<testing::NiceMock<MockCommitQueue>> mock_commit_queue_;
   MockCommitQueue* mock_commit_queue_ptr_;
@@ -407,9 +402,6 @@ TEST_F(NigoriModelTypeProcessorTest, ShouldInvokeSyncStartCallback) {
   ASSERT_FALSE(processor()->IsConnectedForTest());
   captured_response->type_processor->ConnectSync(
       std::make_unique<testing::NiceMock<MockCommitQueue>>());
-  // RunUntilIdle() is needed because ModelTypeProcessorProxy() is used and it
-  // internally does posting of tasks.
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(processor()->IsConnectedForTest());
 }
 

@@ -312,6 +312,8 @@ jumbo_static_library("rest_of_sync") {
     "model_impl/syncable_service_based_bridge.h",
     "nigori/cryptographer.cc",
     "nigori/cryptographer.h",
+    "nigori/forwarding_model_type_processor.cc",
+    "nigori/forwarding_model_type_processor.h",
     "nigori/keystore_keys_handler.h",
     "nigori/nigori.cc",
     "nigori/nigori.h",

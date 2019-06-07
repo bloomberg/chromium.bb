@@ -8,8 +8,8 @@
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
-#include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model_impl/processor_entity.h"
+#include "components/sync/nigori/forwarding_model_type_processor.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 #include "components/sync/protocol/proto_value_conversions.h"
@@ -26,9 +26,7 @@ const char kNigoriClientTagHash[] = "NigoriClientTagHash";
 }  // namespace
 
 NigoriModelTypeProcessor::NigoriModelTypeProcessor()
-    : bridge_(nullptr),
-      weak_ptr_factory_for_controller_(this),
-      weak_ptr_factory_for_worker_(this) {}
+    : bridge_(nullptr), weak_ptr_factory_for_controller_(this) {}
 
 NigoriModelTypeProcessor::~NigoriModelTypeProcessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -48,7 +46,6 @@ void NigoriModelTypeProcessor::DisconnectSync() {
   DCHECK(IsConnected());
 
   DVLOG(1) << "Disconnecting sync for Encryption Keys";
-  weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
   worker_.reset();
   if (entity_) {
     entity_->ClearTransientSyncState();
@@ -226,9 +223,6 @@ void NigoriModelTypeProcessor::OnSyncStopping(
       break;
     }
   }
-
-  // Do not let any delayed callbacks to be called.
-  weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
 }
 
 void NigoriModelTypeProcessor::GetAllNodesForDebugging(
@@ -421,9 +415,7 @@ void NigoriModelTypeProcessor::ConnectIfReady() {
   auto activation_response = std::make_unique<DataTypeActivationResponse>();
   activation_response->model_type_state = model_type_state_;
   activation_response->type_processor =
-      std::make_unique<ModelTypeProcessorProxy>(
-          weak_ptr_factory_for_worker_.GetWeakPtr(),
-          base::SequencedTaskRunnerHandle::Get());
+      std::make_unique<ForwardingModelTypeProcessor>(this);
   std::move(start_callback_).Run(std::move(activation_response));
 }
 

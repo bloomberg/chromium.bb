@@ -104,9 +104,6 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
   base::WeakPtrFactory<ModelTypeControllerDelegate>
       weak_ptr_factory_for_controller_;
 
-  // WeakPtrFactory for this processor which will be sent to sync thread.
-  base::WeakPtrFactory<NigoriModelTypeProcessor> weak_ptr_factory_for_worker_;
-
   DISALLOW_COPY_AND_ASSIGN(NigoriModelTypeProcessor);
 };
 
