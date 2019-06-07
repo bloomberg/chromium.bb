@@ -42,8 +42,9 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
       << owner_->status();
   if (!context_)
     return;  // Our storage has been wiped via DeleteAndStartOver.
-  resource_map_[url] =
-      ServiceWorkerDatabase::ResourceRecord(resource_id, url, -1);
+  resource_map_[url] = ServiceWorkerDatabase::ResourceRecord(
+      resource_id, url,
+      ServiceWorkerDatabase::ResourceRecord::ErrorState::kStartedCaching);
   context_->storage()->StoreUncommittedResourceId(resource_id);
 }
 
@@ -66,8 +67,12 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
       main_script_status_ = net::URLRequestStatus::FromError(net_error);
       main_script_status_message_ = status_message;
     }
-  } else {
+  } else if (size_bytes >= 0) {
     resource_map_[url].size_bytes = size_bytes;
+  } else {
+    resource_map_[url].size_bytes =
+        static_cast<int64_t>(ServiceWorkerDatabase::ResourceRecord::ErrorState::
+                                 kFinishedCachingNoBytesWritten);
   }
 }
 

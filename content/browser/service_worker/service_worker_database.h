@@ -94,15 +94,31 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   };
 
   struct ResourceRecord {
+    // Represents an error state. Each enum instance should be a negative
+    // value.  This is just temporary for debugging.
+    // TODO(hayato): Remove this once we fix crbug.com/946719.
+    enum class ErrorState : int64_t {
+      // We don't use -1 here to catch an untracked usage of -1 as an error
+      // code.
+      kStartedCaching = -2,
+      kFinishedCachingNoBytesWritten = -3,
+    };
+
     int64_t resource_id;
     GURL url;
-    // Signed so we can store -1 to specify an unknown or error state.  When
-    // stored to the database, this value should always be >= 0.
+    // Signed so we can store ErrorState. When stored to the database, this
+    // value should always be >= 0.
     int64_t size_bytes;
 
     ResourceRecord() : resource_id(-1), size_bytes(0) {}
     ResourceRecord(int64_t id, GURL url, int64_t size_bytes)
-        : resource_id(id), url(url), size_bytes(size_bytes) {}
+        : resource_id(id), url(url), size_bytes(size_bytes) {
+      DCHECK_GE(size_bytes, 0);
+    }
+    ResourceRecord(int64_t id, GURL url, ErrorState error_state)
+        : resource_id(id),
+          url(url),
+          size_bytes(static_cast<int64_t>(error_state)) {}
   };
 
   // Reads next available ids from the database. Returns OK if they are
