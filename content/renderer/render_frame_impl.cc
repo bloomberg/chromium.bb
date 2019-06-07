@@ -4785,7 +4785,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
 
   // Reset warning state that prevents log spam.
-  certificate_warning_origins_.clear();
   tls_version_warning_origins_.clear();
 }
 

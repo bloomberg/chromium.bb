@@ -1730,10 +1730,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::mojom::ClipboardHostPtr clipboard_host_;
 #endif
 
-  // The origins for which a legacy certificate warning has been printed. The
-  // size of this set is capped, after which no more warnings are printed.
-  std::set<url::Origin> certificate_warning_origins_;
-
   // The origins for which a legacy TLS version warning has been printed. The
   // size of this set is capped, after which no more warnings are printed.
   std::set<url::Origin> tls_version_warning_origins_;
