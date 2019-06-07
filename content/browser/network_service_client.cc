@@ -354,9 +354,12 @@ void OnAuthRequiredContinuationForWindowId(
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
     FrameTreeNodeIdRegistry::IsMainFrameGetter is_main_frame_getter) {
-  // |is_main_frame_getter| should not be a null callback because the
-  // FrameTreeNodeIdRegistry should have a corresponding FrameTreeNode id.
-  CHECK(is_main_frame_getter);
+  if (!is_main_frame_getter) {
+    // FrameTreeNode id may already be removed from FrameTreeNodeIdRegistry
+    // due to thread hopping.
+    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+    return;
+  }
   base::Optional<bool> is_main_frame_opt = is_main_frame_getter.Run();
   // The frame may already be gone due to thread hopping.
   if (!is_main_frame_opt) {
