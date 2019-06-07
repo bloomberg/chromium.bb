@@ -629,6 +629,9 @@
       status: "test",
     },
     {
+      name: "ForcedColors",
+    },
+    {
       name: "ForceOverlayFullscreenVideo",
     },
     {

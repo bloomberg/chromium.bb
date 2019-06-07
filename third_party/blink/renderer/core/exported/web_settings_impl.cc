@@ -755,6 +755,10 @@ void WebSettingsImpl::SetPreferredColorScheme(
   settings_->SetPreferredColorScheme(color_scheme);
 }
 
+void WebSettingsImpl::SetForcedColors(ForcedColors forced_colors) {
+  settings_->SetForcedColors(forced_colors);
+}
+
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAllowed,
                    kImageAnimationPolicyAllowed);
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAnimateOnce,

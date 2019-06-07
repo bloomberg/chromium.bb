@@ -1030,5 +1030,13 @@
       name: "DontSendKeyEventsToJavascript",
       initial: false,
     },
+    // Forced colors from the OS/application passed to the renderer for
+    // evaluating the forced-colors media query.
+    {
+      name: "forcedColors",
+      initial: "ForcedColors::kNone",
+      invalidate: "MediaQuery",
+      type: "ForcedColors",
+    },
   ],
 }

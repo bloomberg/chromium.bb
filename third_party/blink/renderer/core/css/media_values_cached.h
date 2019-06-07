@@ -38,6 +38,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     ColorSpaceGamut color_gamut;
     PreferredColorScheme preferred_color_scheme;
     bool prefers_reduced_motion;
+    ForcedColors forced_colors;
 
     MediaValuesCachedData();
     explicit MediaValuesCachedData(Document&);
@@ -65,6 +66,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
       data.color_gamut = color_gamut;
       data.preferred_color_scheme = preferred_color_scheme;
       data.prefers_reduced_motion = prefers_reduced_motion;
+      data.forced_colors = forced_colors;
       return data;
     }
   };
@@ -103,6 +105,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   ColorSpaceGamut ColorGamut() const override;
   PreferredColorScheme GetPreferredColorScheme() const override;
   bool PrefersReducedMotion() const override;
+  ForcedColors GetForcedColors() const override;
 
   void OverrideViewportDimensions(double width, double height) override;
 

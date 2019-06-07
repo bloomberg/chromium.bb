@@ -1188,5 +1188,9 @@
 
     // (prefers-reduced-motion:) media feature
     "reduce",
+
+    // (forced-colors:) media feature
+    // none
+    "active",
   ],
 }

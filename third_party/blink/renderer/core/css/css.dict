@@ -910,6 +910,7 @@
 "no-preference"
 "light"
 "dark"
+"active"
 
 # at-rules
 "@charset"

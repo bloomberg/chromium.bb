@@ -85,6 +85,12 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
   if (media_feature == kPrefersReducedMotionMediaFeature)
     return ident == CSSValueID::kNoPreference || ident == CSSValueID::kReduce;
 
+  if (RuntimeEnabledFeatures::ForcedColorsEnabled()) {
+    if (media_feature == kForcedColorsMediaFeature) {
+      return ident == CSSValueID::kNone || ident == CSSValueID::kActive;
+    }
+  }
+
   return false;
 }
 
@@ -201,7 +207,8 @@ static inline bool FeatureWithoutValue(const String& media_feature) {
          media_feature == kColorGamutMediaFeature ||
          media_feature == kImmersiveMediaFeature ||
          media_feature == kPrefersColorSchemeMediaFeature ||
-         media_feature == kPrefersReducedMotionMediaFeature;
+         media_feature == kPrefersReducedMotionMediaFeature ||
+         media_feature == kForcedColorsMediaFeature;
 }
 
 bool MediaQueryExp::IsViewportDependent() const {
