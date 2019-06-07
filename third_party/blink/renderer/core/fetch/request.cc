@@ -55,6 +55,7 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   DOMWrapperWorld& world = script_state->World();
   if (world.IsIsolatedWorld()) {
     request->SetOrigin(world.IsolatedWorldSecurityOrigin());
+    request->SetShouldAlsoUseFactoryBoundOriginForCors(true);
   } else {
     request->SetOrigin(
         ExecutionContext::From(script_state)->GetSecurityOrigin());

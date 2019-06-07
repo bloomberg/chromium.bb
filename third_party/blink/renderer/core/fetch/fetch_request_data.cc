@@ -151,6 +151,8 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   request->keepalive_ = keepalive_;
   request->is_history_navigation_ = is_history_navigation_;
   request->window_id_ = window_id_;
+  request->should_also_use_factory_bound_origin_for_cors_ =
+      should_also_use_factory_bound_origin_for_cors_;
   return request;
 }
 

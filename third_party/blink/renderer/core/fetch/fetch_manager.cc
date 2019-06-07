@@ -686,6 +686,8 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   request.SetRequestContext(fetch_request_data_->Context());
   request.SetHttpMethod(fetch_request_data_->Method());
   request.SetFetchWindowId(fetch_request_data_->WindowId());
+  request.SetShouldAlsoUseFactoryBoundOriginForCors(
+      fetch_request_data_->ShouldAlsoUseFactoryBoundOriginForCors());
 
   switch (fetch_request_data_->Mode()) {
     case FetchRequestMode::kSameOrigin:

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -173,6 +174,38 @@ IN_PROC_BROWSER_TEST_P(ExtensionActiveTabTest, ActiveTab) {
             "example.com", "/extensions/api_test/active_tab/final_page.html"));
     EXPECT_TRUE(catcher.GetNextResult()) << message_;
     EXPECT_TRUE(navigation_count_listener.WaitUntilSatisfied());
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionActiveTabTest, ActiveTabCors) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  ExtensionTestMessageListener background_page_ready("ready",
+                                                     false /*will_reply*/);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("active_tab_cors"));
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(background_page_ready.WaitUntilSatisfied());
+
+  {
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL(
+            "google.com", "/extensions/api_test/active_tab_cors/page.html"));
+    base::string16 title = base::ASCIIToUTF16("page");
+    content::TitleWatcher watcher(
+        browser()->tab_strip_model()->GetActiveWebContents(), title);
+    ASSERT_EQ(title, watcher.WaitAndGetTitle());
+  }
+
+  {
+    // The injected content script has an access to page's origin without
+    // explicit permissions other than "activeTab".
+    ResultCatcher catcher;
+    ExtensionActionRunner::GetForWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents())
+        ->RunAction(extension, true);
+    EXPECT_TRUE(catcher.GetNextResult()) << message_;
   }
 }
 
