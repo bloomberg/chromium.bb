@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/test/scoped_feature_list.h"
 #include "mojo/core/channel.h"
 #include "mojo/core/entrypoints.h"
