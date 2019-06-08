@@ -102,6 +102,10 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   // call |OnExtensionLoaded|.
   void ResetIODataForTesting(const Extension* extension);
 
+  // Test helper to normalize relative path of file.
+  static base::FilePath NormalizeRelativePathForTesting(
+      const base::FilePath& path);
+
  private:
   friend class ContentVerifierTest;
   friend class base::RefCountedThreadSafe<ContentVerifier>;

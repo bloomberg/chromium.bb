@@ -61,8 +61,12 @@ base::FilePath NormalizeRelativePath(const base::FilePath& path) {
 
   // Note that elsewhere we always normalize path separators to '/' so this
   // should work for all platforms.
-  return base::FilePath(
-      base::JoinString(parts, base::FilePath::StringType(1, '/')));
+  base::FilePath::StringType normalized_relative_path =
+      base::JoinString(parts, base::FilePath::StringType(1, '/'));
+  // Preserve trailing separator, if present.
+  if (path.EndsWithSeparator())
+    normalized_relative_path.append(1, '/');
+  return base::FilePath(normalized_relative_path);
 }
 
 bool HasScriptFileExt(const base::FilePath& requested_path) {
@@ -751,6 +755,11 @@ ContentVerifier::HashHelper* ContentVerifier::GetOrCreateHashHelper() {
 
 void ContentVerifier::ResetIODataForTesting(const Extension* extension) {
   io_data_->AddData(extension->id(), CreateIOData(extension, delegate_.get()));
+}
+
+base::FilePath ContentVerifier::NormalizeRelativePathForTesting(
+    const base::FilePath& path) {
+  return NormalizeRelativePath(path);
 }
 
 }  // namespace extensions
