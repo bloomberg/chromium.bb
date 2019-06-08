@@ -120,8 +120,8 @@ static void CountFilterUse(FilterOperation::OperationType operation_type,
   document.CountUse(feature);
 }
 
-static double ResolveFirstArgumentForFunction(const CSSFunctionValue& filter,
-                                              const CSSPrimitiveValue* value) {
+double FilterOperationResolver::ResolveNumericArgumentForFunction(
+    const CSSFunctionValue& filter) {
   switch (filter.FunctionType()) {
     case CSSValueID::kGrayscale:
     case CSSValueID::kSepia:
@@ -130,21 +130,21 @@ static double ResolveFirstArgumentForFunction(const CSSFunctionValue& filter,
     case CSSValueID::kBrightness:
     case CSSValueID::kContrast:
     case CSSValueID::kOpacity: {
-      double amount = (filter.FunctionType() == CSSValueID::kBrightness ||
-                       filter.FunctionType() == CSSValueID::kInvert)
-                          ? 0
-                          : 1;
+      double amount = 1;
       if (filter.length() == 1) {
-        amount = value->GetDoubleValue();
-        if (value->IsPercentage())
+        const CSSPrimitiveValue& value = To<CSSPrimitiveValue>(filter.Item(0));
+        amount = value.GetDoubleValue();
+        if (value.IsPercentage())
           amount /= 100;
       }
       return amount;
     }
     case CSSValueID::kHueRotate: {
       double angle = 0;
-      if (filter.length() == 1)
-        angle = value->ComputeDegrees();
+      if (filter.length() == 1) {
+        const CSSPrimitiveValue& value = To<CSSPrimitiveValue>(filter.Item(0));
+        angle = value.ComputeDegrees();
+      }
       return angle;
     }
     default:
@@ -185,14 +185,6 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
         FilterOperationForType(filter_value->FunctionType());
     CountFilterUse(operation_type, state.GetDocument());
     DCHECK_LE(filter_value->length(), 1u);
-
-    const CSSPrimitiveValue* first_value = nullptr;
-    if (filter_value->length())
-      first_value = DynamicTo<CSSPrimitiveValue>(filter_value->Item(0));
-
-    double first_number =
-        ResolveFirstArgumentForFunction(*filter_value, first_value);
-
     switch (filter_value->FunctionType()) {
       case CSSValueID::kGrayscale:
       case CSSValueID::kSepia:
@@ -200,7 +192,8 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
       case CSSValueID::kHueRotate: {
         operations.Operations().push_back(
             MakeGarbageCollected<BasicColorMatrixFilterOperation>(
-                first_number, operation_type));
+                ResolveNumericArgumentForFunction(*filter_value),
+                operation_type));
         break;
       }
       case CSSValueID::kInvert:
@@ -209,12 +202,15 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
       case CSSValueID::kOpacity: {
         operations.Operations().push_back(
             MakeGarbageCollected<BasicComponentTransferFilterOperation>(
-                first_number, operation_type));
+                ResolveNumericArgumentForFunction(*filter_value),
+                operation_type));
         break;
       }
       case CSSValueID::kBlur: {
         Length std_deviation = Length::Fixed(0);
         if (filter_value->length() >= 1) {
+          const CSSPrimitiveValue* first_value =
+              DynamicTo<CSSPrimitiveValue>(filter_value->Item(0));
           std_deviation = first_value->ConvertToLength(conversion_data);
         }
         operations.Operations().push_back(
@@ -269,14 +265,6 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
     // so we can have workers using UseCounter as well.
     // countFilterUse(operationType, state.document());
     DCHECK_LE(filter_value->length(), 1u);
-
-    const CSSPrimitiveValue* first_value = nullptr;
-    if (filter_value->length())
-      first_value = DynamicTo<CSSPrimitiveValue>(filter_value->Item(0));
-
-    double first_number =
-        ResolveFirstArgumentForFunction(*filter_value, first_value);
-
     switch (filter_value->FunctionType()) {
       case CSSValueID::kGrayscale:
       case CSSValueID::kSepia:
@@ -284,7 +272,8 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
       case CSSValueID::kHueRotate: {
         operations.Operations().push_back(
             MakeGarbageCollected<BasicColorMatrixFilterOperation>(
-                first_number, operation_type));
+                ResolveNumericArgumentForFunction(*filter_value),
+                operation_type));
         break;
       }
       case CSSValueID::kInvert:
@@ -293,12 +282,15 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
       case CSSValueID::kOpacity: {
         operations.Operations().push_back(
             MakeGarbageCollected<BasicComponentTransferFilterOperation>(
-                first_number, operation_type));
+                ResolveNumericArgumentForFunction(*filter_value),
+                operation_type));
         break;
       }
       case CSSValueID::kBlur: {
         Length std_deviation = Length::Fixed(0);
         if (filter_value->length() >= 1) {
+          const CSSPrimitiveValue* first_value =
+              DynamicTo<CSSPrimitiveValue>(filter_value->Item(0));
           std_deviation = first_value->ConvertToLength(conversion_data);
         }
         operations.Operations().push_back(

@@ -3152,7 +3152,6 @@ crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-line-br
 crbug.com/626703 external/wpt/css/css-text/writing-system/writing-system-text-transform-001.html [ Failure ]
 crbug.com/903383 external/wpt/css/filter-effects/css-filters-animation-combined-001.html [ Failure ]
 crbug.com/903383 external/wpt/css/filter-effects/css-filters-animation-blur.html [ Failure ]
-crbug.com/903383 external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-width.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-screenx.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-innerwidth.html [ Timeout ]
