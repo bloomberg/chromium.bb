@@ -229,8 +229,8 @@ void CrostiniPackageService::QueueUninstallApplication(
 
 bool CrostiniPackageService::ContainerHasRunningOperation(
     const ContainerId& container_id) const {
-  return base::ContainsKey(running_notifications_, container_id) ||
-         base::ContainsKey(containers_with_pending_installs_, container_id);
+  return base::Contains(running_notifications_, container_id) ||
+         base::Contains(containers_with_pending_installs_, container_id);
 }
 
 void CrostiniPackageService::CreateRunningNotification(

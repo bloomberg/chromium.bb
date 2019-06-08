@@ -392,13 +392,13 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
   // TODO(crbug.com/845079): We should keep the order of the IMEs as same as in
   // chrome://settings
   for (const auto& input_method_id : enabled_input_method_ids) {
-    if (!base::ContainsValue(active_ime_list, input_method_id))
+    if (!base::Contains(active_ime_list, input_method_id))
       active_ime_list.push_back(input_method_id);
   }
   // Disable IMEs that are already disable in the container.
   base::EraseIf(active_ime_list, [&enabled_input_method_ids](const auto& id) {
     return chromeos::extension_ime_util::IsArcIME(id) &&
-           !base::ContainsValue(enabled_input_method_ids, id);
+           !base::Contains(enabled_input_method_ids, id);
   });
   profile_->GetPrefs()->SetString(prefs::kLanguageEnabledImes,
                                   base::JoinString(active_ime_list, ","));

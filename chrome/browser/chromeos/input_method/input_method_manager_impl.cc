@@ -276,7 +276,7 @@ void InputMethodManagerImpl::StateImpl::EnableLoginLayouts(
     const std::string& candidate = candidates[i];
     // Not efficient, but should be fine, as the two vectors are very
     // short (2-5 items).
-    if (!base::ContainsValue(layouts, candidate) &&
+    if (!base::Contains(layouts, candidate) &&
         manager_->IsLoginKeyboard(candidate) &&
         IsInputMethodAllowed(candidate)) {
       layouts.push_back(candidate);
@@ -354,7 +354,7 @@ bool InputMethodManagerImpl::StateImpl::EnableInputMethodImpl(
     return false;
   }
 
-  if (!base::ContainsValue(*new_active_input_method_ids, input_method_id))
+  if (!base::Contains(*new_active_input_method_ids, input_method_id))
     new_active_input_method_ids->push_back(input_method_id);
 
   return true;
@@ -471,11 +471,10 @@ bool InputMethodManagerImpl::StateImpl::IsInputMethodAllowed(
     return true;
   }
 
-  return base::ContainsValue(allowed_keyboard_layout_input_method_ids,
-                             input_method_id) ||
-         base::ContainsValue(
-             allowed_keyboard_layout_input_method_ids,
-             manager_->util_.MigrateInputMethod(input_method_id));
+  return base::Contains(allowed_keyboard_layout_input_method_ids,
+                        input_method_id) ||
+         base::Contains(allowed_keyboard_layout_input_method_ids,
+                        manager_->util_.MigrateInputMethod(input_method_id));
 }
 
 std::string
@@ -580,8 +579,8 @@ void InputMethodManagerImpl::StateImpl::AddInputMethodExtension(
     const InputMethodDescriptor& descriptor = descriptors[i];
     const std::string& id = descriptor.id();
     extra_input_methods[id] = descriptor;
-    if (base::ContainsValue(enabled_extension_imes, id)) {
-      if (!base::ContainsValue(active_input_method_ids, id)) {
+    if (base::Contains(enabled_extension_imes, id)) {
+      if (!base::Contains(active_input_method_ids, id)) {
         active_input_method_ids.push_back(id);
       } else {
         DVLOG(1) << "AddInputMethodExtension: already added: " << id << ", "
@@ -674,7 +673,7 @@ void InputMethodManagerImpl::StateImpl::SetEnabledExtensionImes(
                   active_input_method_ids.end(), entry.first);
 
     bool active = active_iter != active_input_method_ids.end();
-    bool enabled = base::ContainsValue(enabled_extension_imes, entry.first);
+    bool enabled = base::Contains(enabled_extension_imes, entry.first);
 
     if (active && !enabled)
       active_input_method_ids.erase(active_iter);
@@ -840,7 +839,7 @@ InputMethodDescriptor InputMethodManagerImpl::StateImpl::GetCurrentInputMethod()
 
 bool InputMethodManagerImpl::StateImpl::InputMethodIsActivated(
     const std::string& input_method_id) const {
-  return base::ContainsValue(active_input_method_ids, input_method_id);
+  return base::Contains(active_input_method_ids, input_method_id);
 }
 
 void InputMethodManagerImpl::StateImpl::EnableInputView() {

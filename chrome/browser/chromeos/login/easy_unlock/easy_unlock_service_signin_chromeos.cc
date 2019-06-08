@@ -583,8 +583,8 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   std::string local_device_id;
 
   for (const auto& remote_device : remote_devices) {
-    if (base::ContainsKey(remote_device.software_features,
-                          multidevice::SoftwareFeature::kSmartLockHost) &&
+    if (base::Contains(remote_device.software_features,
+                       multidevice::SoftwareFeature::kSmartLockHost) &&
         remote_device.software_features.at(
             multidevice::SoftwareFeature::kSmartLockHost) ==
             multidevice::SoftwareFeatureState::kEnabled) {

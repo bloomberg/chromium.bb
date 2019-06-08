@@ -247,8 +247,7 @@ void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
 }
 
 void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
-  CHECK(!base::ContainsKey(users_with_disabled_auth_,
-                           user_context.GetAccountId()))
+  CHECK(!base::Contains(users_with_disabled_auth_, user_context.GetAccountId()))
       << "Authentication is disabled for this user.";
 
   incorrect_passwords_count_ = 0;
@@ -338,8 +337,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
       << "Invalid user trying to unlock.";
 
   // Do not attempt authentication if it is disabled for the user.
-  if (base::ContainsKey(users_with_disabled_auth_,
-                        user_context.GetAccountId())) {
+  if (base::Contains(users_with_disabled_auth_, user_context.GetAccountId())) {
     VLOG(1) << "Authentication disabled for user.";
     if (auth_status_consumer_)
       auth_status_consumer_->OnAuthFailure(
@@ -603,7 +601,7 @@ void ScreenLocker::SaveSyncPasswordHash(const UserContext& user_context) {
 }
 
 bool ScreenLocker::IsAuthEnabledForUser(const AccountId& account_id) {
-  return !base::ContainsKey(users_with_disabled_auth_, account_id);
+  return !base::Contains(users_with_disabled_auth_, account_id);
 }
 
 void ScreenLocker::SetAuthenticatorsForTesting(
@@ -708,8 +706,7 @@ void ScreenLocker::OnAuthScanDone(
       quick_unlock::QuickUnlockFactory::GetForUser(active_user);
   if (!quick_unlock_storage ||
       !quick_unlock_storage->IsFingerprintAuthenticationAvailable() ||
-      base::ContainsKey(users_with_disabled_auth_,
-                        active_user->GetAccountId())) {
+      base::Contains(users_with_disabled_auth_, active_user->GetAccountId())) {
     return;
   }
 
@@ -724,7 +721,7 @@ void ScreenLocker::OnAuthScanDone(
   }
 
   UserContext user_context(*active_user);
-  if (!base::ContainsKey(matches, active_user->username_hash())) {
+  if (!base::Contains(matches, active_user->username_hash())) {
     LOG(ERROR) << "Fingerprint unlock failed because it does not match active"
                << " user's record";
     OnFingerprintAuthFailure(*active_user);

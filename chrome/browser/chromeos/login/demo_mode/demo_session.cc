@@ -392,8 +392,7 @@ bool DemoSession::ShouldIgnorePinPolicy(const std::string& app_id_or_package) {
   if (!content::GetNetworkConnectionTracker()->IsOffline())
     return false;
 
-  return base::ContainsValue(ignore_pin_policy_offline_apps_,
-                             app_id_or_package);
+  return base::Contains(ignore_pin_policy_offline_apps_, app_id_or_package);
 }
 
 void DemoSession::SetExtensionsExternalLoader(

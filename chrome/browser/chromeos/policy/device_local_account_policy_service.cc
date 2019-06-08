@@ -111,7 +111,7 @@ void DeleteOrphanedCaches(
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     const std::string subdirectory(path.BaseName().MaybeAsASCII());
-    if (!base::ContainsKey(subdirectories_to_keep, subdirectory))
+    if (!base::Contains(subdirectories_to_keep, subdirectory))
       base::DeleteFile(path, true);
   }
 }

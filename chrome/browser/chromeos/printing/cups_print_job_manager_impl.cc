@@ -119,7 +119,7 @@ chromeos::CupsPrintJob::State ConvertState(printing::CupsJob::JobState state) {
 // Returns true if |job|.state_reasons contains |reason|
 bool JobContainsReason(const ::printing::CupsJob& job,
                        base::StringPiece reason) {
-  return base::ContainsValue(job.state_reasons, reason);
+  return base::Contains(job.state_reasons, reason);
 }
 
 // Extracts an ErrorCode from PrinterStatus#reasons.  Returns NO_ERROR if there

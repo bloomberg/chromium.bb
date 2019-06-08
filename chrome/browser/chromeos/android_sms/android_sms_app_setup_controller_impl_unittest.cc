@@ -137,7 +137,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
 
     void SetHasPwa(const GURL& url) {
       // If a PWA already exists for this URL, there is nothing to do.
-      if (base::ContainsKey(url_to_pwa_map_, url))
+      if (base::Contains(url_to_pwa_map_, url))
         return;
 
       // Create a test Extension and add it to |url_to_pwa_map_|.
@@ -151,7 +151,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     // AndroidSmsAppSetupControllerImpl::PwaDelegate:
     const extensions::Extension* GetPwaForUrl(const GURL& install_url,
                                               Profile* profile) override {
-      if (!base::ContainsKey(url_to_pwa_map_, install_url))
+      if (!base::Contains(url_to_pwa_map_, install_url))
         return nullptr;
 
       return url_to_pwa_map_[install_url].get();

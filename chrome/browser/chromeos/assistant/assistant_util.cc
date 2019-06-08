@@ -77,8 +77,8 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   // in these test environments.
   if (!chromeos::switches::IsGaiaServicesDisabled() && !pref_locale.empty()) {
     base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
-    bool disallowed = !base::ContainsValue(kAllowedLocales, pref_locale) &&
-                      !base::ContainsValue(kAllowedLocales, kRuntimeLocale);
+    bool disallowed = !base::Contains(kAllowedLocales, pref_locale) &&
+                      !base::Contains(kAllowedLocales, kRuntimeLocale);
 
     if (disallowed)
       return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;

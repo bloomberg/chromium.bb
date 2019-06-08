@@ -665,7 +665,7 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
     FullTaskDescriptor* task = &tasks->at(i);
     DCHECK(!task->is_default());
     const std::string task_id = TaskDescriptorToId(task->task_descriptor());
-    if (base::ContainsKey(default_task_ids, task_id)) {
+    if (base::Contains(default_task_ids, task_id)) {
       task->set_is_default(true);
       return;
     }

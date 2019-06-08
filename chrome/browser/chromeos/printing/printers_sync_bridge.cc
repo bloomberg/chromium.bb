@@ -188,7 +188,7 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
     // appropriate metadata.
     for (const auto& entry : all_data_) {
       const std::string& local_entity_id = entry.first;
-      if (!base::ContainsKey(sync_entity_ids, local_entity_id)) {
+      if (!base::Contains(sync_entity_ids, local_entity_id)) {
         // Only local objects which were not updated are uploaded.  Objects for
         // which there was a remote copy are overwritten.
         change_processor()->Put(local_entity_id,

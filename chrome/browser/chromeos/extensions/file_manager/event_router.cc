@@ -430,7 +430,7 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
         DriveIntegrationServiceFactory::FindForProfile(profile_)
             ->GetMountPointPath();
     return base::FilePath("/").AppendRelativePath(path, &absolute_path) &&
-           base::ContainsKey(*file_watchers_, absolute_path);
+           base::Contains(*file_watchers_, absolute_path);
   }
 
   void DispatchEventToExtension(

@@ -859,7 +859,7 @@ DeviceSettingsProvider::~DeviceSettingsProvider() {
 
 // static
 bool DeviceSettingsProvider::IsDeviceSetting(const std::string& name) {
-  return base::ContainsValue(kKnownSettings, name);
+  return base::Contains(kKnownSettings, name);
 }
 
 // static

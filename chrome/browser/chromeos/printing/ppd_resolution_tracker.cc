@@ -87,7 +87,7 @@ const Printer::PpdReference& PpdResolutionTracker::GetPpdReference(
 
 bool PpdResolutionTracker::PrinterStateExists(
     const std::string& printer_id) const {
-  return base::ContainsKey(printer_state_, printer_id);
+  return base::Contains(printer_state_, printer_id);
 }
 
 }  // namespace chromeos

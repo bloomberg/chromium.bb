@@ -98,7 +98,7 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
  protected:
   bool IsAccountPresentInAccountManager(
       const AccountManager::AccountKey& account) const {
-    return base::ContainsValue(account_manager_accounts_, account);
+    return base::Contains(account_manager_accounts_, account);
   }
 
   bool IsAccountManagerEmpty() const {
@@ -107,7 +107,7 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
 
   void MigrateSecondaryAccount(const std::string& gaia_id,
                                const std::string& email) {
-    if (base::ContainsValue(
+    if (base::Contains(
             account_manager_accounts_,
             AccountManager::AccountKey{
                 gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA})) {

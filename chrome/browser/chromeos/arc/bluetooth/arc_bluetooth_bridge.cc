@@ -1698,7 +1698,7 @@ void ArcBluetoothBridge::RegisterForGattNotification(
   }
 
   std::string char_id_str = characteristic->GetIdentifier();
-  if (base::ContainsKey(notification_session_, char_id_str)) {
+  if (base::Contains(notification_session_, char_id_str)) {
     // There can be only one notification session per characteristic.
     std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
     return;

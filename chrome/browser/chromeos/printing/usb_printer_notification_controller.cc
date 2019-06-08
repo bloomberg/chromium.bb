@@ -23,7 +23,7 @@ class UsbPrinterNotificationControllerImpl
   }
 
   void RemoveNotification(const std::string& printer_id) override {
-    if (!base::ContainsKey(notifications_, printer_id)) {
+    if (!base::Contains(notifications_, printer_id)) {
       return;
     }
     notifications_[printer_id]->CloseNotification();
@@ -31,7 +31,7 @@ class UsbPrinterNotificationControllerImpl
   }
 
   bool IsNotificationDisplayed(const std::string& printer_id) const override {
-    return base::ContainsKey(notifications_, printer_id);
+    return base::Contains(notifications_, printer_id);
   }
 
   void ShowSavedNotification(const Printer& printer) override {
@@ -50,7 +50,7 @@ class UsbPrinterNotificationControllerImpl
       return;
     }
 
-    if (base::ContainsKey(notifications_, printer.id())) {
+    if (base::Contains(notifications_, printer.id())) {
       return;
     }
 

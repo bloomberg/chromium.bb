@@ -103,7 +103,7 @@ bool IntentConfigHelper::IsIntentAllowed(const GURL& intent_uri) const {
 
   if (intent_uri.IsStandard()) {
     if (intent_uri.SchemeIs(url::kHttpsScheme))
-      return base::ContainsKey(allowed_hosts_, intent_uri.host());
+      return base::Contains(allowed_hosts_, intent_uri.host());
     // Other standard schemes besides https are not allowed.
     return false;
   }

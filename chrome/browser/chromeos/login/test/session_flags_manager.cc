@@ -212,10 +212,10 @@ void SessionFlagsManager::StoreStateToBackingFile() {
   if (has_restart_job) {
     const std::vector<std::string>& argv =
         FakeSessionManagerClient::Get()->restart_job_argv().value();
-    DCHECK(base::ContainsValue(
-        argv, base::StringPrintf("--%s=%s", switches::kLoginUser,
-                                 user_manager::kGuestUserName)));
-    DCHECK(base::ContainsValue(
+    DCHECK(
+        base::Contains(argv, base::StringPrintf("--%s=%s", switches::kLoginUser,
+                                                user_manager::kGuestUserName)));
+    DCHECK(base::Contains(
         argv, base::StringPrintf("--%s=%s", switches::kLoginProfile, "user")));
 
     cached_state.SetKey(kRestartJobKey, GetSwitchesValueFromArgv(argv));

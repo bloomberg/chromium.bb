@@ -148,8 +148,7 @@ bool PolicyAllowsCorporateKeyUsageForExtension(
 
 bool IsKeyOnUserSlot(
     const std::vector<KeyPermissions::KeyLocation>& key_locations) {
-  return base::ContainsValue(key_locations,
-                             KeyPermissions::KeyLocation::kUserSlot);
+  return base::Contains(key_locations, KeyPermissions::KeyLocation::kUserSlot);
 }
 
 }  // namespace
