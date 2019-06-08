@@ -89,7 +89,7 @@ bool AudioDecoderSoftwareWrapper::SetConfig(const AudioConfig& config) {
     return true;
   }
 
-  if (base::ContainsValue(kPassthroughCodecs, config.codec)) {
+  if (base::Contains(kPassthroughCodecs, config.codec)) {
     LOG(INFO) << "Cannot use software decoder for " << config.codec;
     return false;
   }

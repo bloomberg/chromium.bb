@@ -278,7 +278,7 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
 }
 
 bool IsFeatureEnabled(const base::Feature& feature) {
-  DCHECK(base::ContainsValue(GetFeatures(), &feature)) << feature.name;
+  DCHECK(base::Contains(GetFeatures(), &feature)) << feature.name;
   return base::FeatureList::IsEnabled(feature);
 }
 
