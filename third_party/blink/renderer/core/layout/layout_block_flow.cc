@@ -3804,6 +3804,26 @@ void LayoutBlockFlow::RemoveFloatingObjectsBelow(FloatingObject* last_float,
   }
 }
 
+FloatingObject* LayoutBlockFlow::LastPlacedFloat(
+    FloatingObjectSetIterator* iterator) const {
+  const FloatingObjectSet& floating_object_set = floating_objects_->Set();
+  FloatingObjectSetIterator it = floating_object_set.end();
+  --it;  // Go to last item.
+  FloatingObjectSetIterator begin = floating_object_set.begin();
+  FloatingObject* last_placed_floating_object = nullptr;
+  while (it != begin) {
+    --it;
+    if ((*it)->IsPlaced()) {
+      last_placed_floating_object = it->get();
+      ++it;
+      break;
+    }
+  }
+  if (iterator)
+    *iterator = it;
+  return last_placed_floating_object;
+}
+
 bool LayoutBlockFlow::PlaceNewFloats(LayoutUnit logical_top_margin_edge,
                                      LineWidth* width) {
   if (!floating_objects_)
@@ -3820,18 +3840,8 @@ bool LayoutBlockFlow::PlaceNewFloats(LayoutUnit logical_top_margin_edge,
   // Move backwards through our floating object list until we find a float that
   // has already been positioned. Then we'll be able to move forward,
   // positioning all of the new floats that need it.
-  FloatingObjectSetIterator it = floating_object_set.end();
-  --it;  // Go to last item.
-  FloatingObjectSetIterator begin = floating_object_set.begin();
-  FloatingObject* last_placed_floating_object = nullptr;
-  while (it != begin) {
-    --it;
-    if ((*it)->IsPlaced()) {
-      last_placed_floating_object = it->get();
-      ++it;
-      break;
-    }
-  }
+  FloatingObjectSetIterator it;
+  FloatingObject* last_placed_floating_object = LastPlacedFloat(&it);
 
   // The float cannot start above the top position of the last positioned float.
   if (last_placed_floating_object) {

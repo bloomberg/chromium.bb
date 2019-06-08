@@ -392,6 +392,11 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   FloatingObject* InsertFloatingObject(LayoutBox&);
 
+  // Return the last placed float. If |iterator| is non-null, it will be set to
+  // the float right after said float.
+  FloatingObject* LastPlacedFloat(
+      FloatingObjectSetIterator* iterator = nullptr) const;
+
   // Position and lay out all floats that have not yet been positioned.
   //
   // This will mark them as "placed", which means that they have found their
