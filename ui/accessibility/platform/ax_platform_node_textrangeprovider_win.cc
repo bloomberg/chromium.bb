@@ -183,8 +183,9 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
   // Some text positions are equal when compared, but they could be located at
   // different anchors, affecting how `GetEnclosingElement` works. Normalize the
   // endpoints to correctly enclose characters of the text representation.
-  AXPositionInstance normalized_start = start_->AsPositionBeforeCharacter();
-  AXPositionInstance normalized_end = end_->AsPositionBeforeCharacter();
+  AXPositionInstance normalized_start =
+      start_->AsLeafTextPositionBeforeCharacter();
+  AXPositionInstance normalized_end = end_->AsLeafTextPositionBeforeCharacter();
 
   if (!normalized_start->IsNullPosition()) {
     DCHECK_EQ(*start_, *normalized_start);

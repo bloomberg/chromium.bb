@@ -802,27 +802,66 @@ class AXPosition {
   }
 
   // Returns a text position located right before the next character (from this
-  // position) on the tree's text representation, following these conditions:
+  // position) in the tree's text representation, following these conditions:
   //   - If this position is at the end of its anchor, normalize it to the start
-  //   of the next text anchor. Both positions are equal when compared, but we
-  //   consider the start of an anchor to be a position BEFORE its first
-  //   character and the end to be AFTER its last character.
+  //   of the next text anchor, regardless of the position's affinity. Both
+  //   positions are equal when compared, but we consider the start of an anchor
+  //   to be a position BEFORE its first character and the end to be AFTER its
+  //   last character.
   //   - Skip any empty text anchors; they're "invisible" to the text
   //   representation and the next character could be ahead.
   //   - Return a null position if there is no next character forward.
+  // Don't return a leaf equivalent position, but try and return a position that
+  // has the same anchor as the current position if the resulting position is
+  // enclosed by the same anchor.
   AXPositionInstance AsPositionBeforeCharacter() const {
-    AXPositionInstance text_position = AsLeafTextPosition();
+    AXPositionInstance text_position = AsLeafTextPositionBeforeCharacter();
 
+    // If possible, return a position anchored at the current position. This is
+    // necessary because we don't want to return any position that might be in
+    // the shadow DOM or a position anchored at a node that is not visible to
+    // platform APIs, if the original position didn't meet any of these
+    // criteria.
+    AXPositionInstance common_ancestor =
+        text_position->LowestCommonAncestor(*this);
+    if (GetAnchor() == common_ancestor->GetAnchor())
+      text_position = std::move(common_ancestor);
+
+    return text_position;
+  }
+
+  // Returns a text position located right after the previous character (from
+  // this position) in the tree's text representation.
+  // See `AsPositionBeforeCharacter`, as this is its "reversed" version.
+  AXPositionInstance AsPositionAfterCharacter() const {
+    AXPositionInstance text_position = AsLeafTextPositionAfterCharacter();
+
+    // If possible, return a position anchored at the current position. This is
+    // necessary because we don't want to return any position that might be in
+    // the shadow DOM or a position anchored at a node that is not visible to
+    // platform APIs, if the original position didn't meet any of these
+    // criteria.
+    AXPositionInstance common_ancestor =
+        text_position->LowestCommonAncestor(*this);
+    if (GetAnchor() == common_ancestor->GetAnchor())
+      text_position = std::move(common_ancestor);
+
+    return text_position;
+  }
+
+  // Same as `AsPositionBeforeCharacter`, but returns the leaf equivalent text
+  // position.
+  AXPositionInstance AsLeafTextPositionBeforeCharacter() const {
+    AXPositionInstance text_position = AsLeafTextPosition();
     // This loop satisfies all the conditions described above.
     while (text_position->AtEndOfAnchor())
       text_position = text_position->CreateNextTextAnchorPosition();
     return text_position;
   }
 
-  // Returns a text position located right after the previous character (from
-  // this position) on the tree's text representation.
-  // See `AsPositionBeforeCharacter`, as this is its "reversed" version.
-  AXPositionInstance AsPositionAfterCharacter() const {
+  // Same as `AsPositionAfterCharacter`, but returns the leaf equivalent text
+  // position.
+  AXPositionInstance AsLeafTextPositionAfterCharacter() const {
     AXPositionInstance text_position = AsLeafTextPosition();
     while (text_position->AtStartOfAnchor()) {
       text_position = text_position->CreatePreviousTextAnchorPosition();
