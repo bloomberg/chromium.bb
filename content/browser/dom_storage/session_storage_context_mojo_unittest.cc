@@ -223,12 +223,12 @@ TEST_F(SessionStorageContextMojoTest, MigrationV0ToV1) {
   EXPECT_EQ(2ul, data.size());
   std::vector<uint8_t> key_as_vector =
       StdStringToUint8Vector(base::UTF16ToUTF8(key));
-  EXPECT_TRUE(base::ContainsValue(
-      data, blink::mojom::KeyValue::New(key_as_vector,
-                                        String16ToUint8Vector(value))));
-  EXPECT_TRUE(base::ContainsValue(
-      data, blink::mojom::KeyValue::New(key_as_vector,
-                                        String16ToUint8Vector(value))));
+  EXPECT_TRUE(
+      base::Contains(data, blink::mojom::KeyValue::New(
+                               key_as_vector, String16ToUint8Vector(value))));
+  EXPECT_TRUE(
+      base::Contains(data, blink::mojom::KeyValue::New(
+                               key_as_vector, String16ToUint8Vector(value))));
 }
 
 TEST_F(SessionStorageContextMojoTest, StartupShutdownSave) {

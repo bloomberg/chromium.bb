@@ -269,7 +269,7 @@ TEST_F(SessionStorageMetadataTest, DeleteNamespace) {
   EXPECT_EQ(DatabaseError::OK, error);
 
   EXPECT_FALSE(
-      base::ContainsKey(metadata.namespace_origin_map(), test_namespace1_id_));
+      base::Contains(metadata.namespace_origin_map(), test_namespace1_id_));
 
   // Verify in-memory metadata is correct.
   auto ns2_entry = metadata.GetOrCreateNamespaceEntry(test_namespace2_id_);
@@ -277,18 +277,17 @@ TEST_F(SessionStorageMetadataTest, DeleteNamespace) {
   EXPECT_EQ(1, ns2_entry->second[test_origin2_]->ReferenceCount());
 
   // Verify metadata and data was deleted from disk.
-  EXPECT_FALSE(base::ContainsKey(
+  EXPECT_FALSE(base::Contains(
       mock_data_,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace1_id_ +
                              "-" + test_origin1_.GetURL().spec())));
-  EXPECT_FALSE(base::ContainsKey(
+  EXPECT_FALSE(base::Contains(
       mock_data_,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace1_id_ +
                              "-" + test_origin2_.GetURL().spec())));
   EXPECT_FALSE(
-      base::ContainsKey(mock_data_, StdStringToUint8Vector("map-3-key1")));
-  EXPECT_TRUE(
-      base::ContainsKey(mock_data_, StdStringToUint8Vector("map-1-key1")));
+      base::Contains(mock_data_, StdStringToUint8Vector("map-3-key1")));
+  EXPECT_TRUE(base::Contains(mock_data_, StdStringToUint8Vector("map-1-key1")));
 }
 
 TEST_F(SessionStorageMetadataTest, DeleteArea) {
@@ -307,24 +306,22 @@ TEST_F(SessionStorageMetadataTest, DeleteArea) {
   // Verify in-memory metadata is correct.
   auto ns1_entry = metadata.GetOrCreateNamespaceEntry(test_namespace1_id_);
   auto ns2_entry = metadata.GetOrCreateNamespaceEntry(test_namespace2_id_);
-  EXPECT_FALSE(base::ContainsKey(ns1_entry->second, test_origin1_));
+  EXPECT_FALSE(base::Contains(ns1_entry->second, test_origin1_));
   EXPECT_EQ(1, ns1_entry->second[test_origin2_]->ReferenceCount());
   EXPECT_EQ(1, ns2_entry->second[test_origin1_]->ReferenceCount());
   EXPECT_EQ(1, ns2_entry->second[test_origin2_]->ReferenceCount());
 
   // Verify only the applicable data was deleted.
-  EXPECT_FALSE(base::ContainsKey(
+  EXPECT_FALSE(base::Contains(
       mock_data_,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace1_id_ +
                              "-" + test_origin1_.GetURL().spec())));
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       mock_data_,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace1_id_ +
                              "-" + test_origin2_.GetURL().spec())));
-  EXPECT_TRUE(
-      base::ContainsKey(mock_data_, StdStringToUint8Vector("map-1-key1")));
-  EXPECT_TRUE(
-      base::ContainsKey(mock_data_, StdStringToUint8Vector("map-4-key1")));
+  EXPECT_TRUE(base::Contains(mock_data_, StdStringToUint8Vector("map-1-key1")));
+  EXPECT_TRUE(base::Contains(mock_data_, StdStringToUint8Vector("map-4-key1")));
 
   // Now delete an area with a unique map.
   operations.clear();
@@ -334,26 +331,24 @@ TEST_F(SessionStorageMetadataTest, DeleteArea) {
   EXPECT_EQ(DatabaseError::OK, error);
 
   // Verify in-memory metadata is correct.
-  EXPECT_FALSE(base::ContainsKey(ns1_entry->second, test_origin1_));
+  EXPECT_FALSE(base::Contains(ns1_entry->second, test_origin1_));
   EXPECT_EQ(1, ns1_entry->second[test_origin2_]->ReferenceCount());
   EXPECT_EQ(1, ns2_entry->second[test_origin1_]->ReferenceCount());
-  EXPECT_FALSE(base::ContainsKey(ns2_entry->second, test_origin2_));
+  EXPECT_FALSE(base::Contains(ns2_entry->second, test_origin2_));
 
   // Verify only the applicable data was deleted.
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       mock_data_,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace2_id_ +
                              "-" + test_origin1_.GetURL().spec())));
-  EXPECT_FALSE(base::ContainsKey(
+  EXPECT_FALSE(base::Contains(
       mock_data_,
       StdStringToUint8Vector(std::string("namespace-") + test_namespace2_id_ +
                              "-" + test_origin2_.GetURL().spec())));
-  EXPECT_TRUE(
-      base::ContainsKey(mock_data_, StdStringToUint8Vector("map-1-key1")));
-  EXPECT_TRUE(
-      base::ContainsKey(mock_data_, StdStringToUint8Vector("map-3-key1")));
+  EXPECT_TRUE(base::Contains(mock_data_, StdStringToUint8Vector("map-1-key1")));
+  EXPECT_TRUE(base::Contains(mock_data_, StdStringToUint8Vector("map-3-key1")));
   EXPECT_FALSE(
-      base::ContainsKey(mock_data_, StdStringToUint8Vector("map-4-key1")));
+      base::Contains(mock_data_, StdStringToUint8Vector("map-4-key1")));
 }
 
 class SessionStorageMetadataMigrationTest : public testing::Test {
@@ -458,21 +453,21 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
   EXPECT_FALSE(migration_operations.empty());
   EXPECT_EQ(3ul, migration_operations.size());
 
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       migration_operations,
       leveldb::mojom::BatchedOperation::New(
           leveldb::mojom::BatchOperationType::PUT_KEY,
           StdStringToUint8Vector("version"), StdStringToUint8Vector("1"))));
-  EXPECT_TRUE(base::ContainsValue(
-      migration_operations,
-      leveldb::mojom::BatchedOperation::New(
-          leveldb::mojom::BatchOperationType::DELETE_KEY,
-          StdStringToUint8Vector("map-0-"), base::nullopt)));
-  EXPECT_TRUE(base::ContainsValue(
-      migration_operations,
-      leveldb::mojom::BatchedOperation::New(
-          leveldb::mojom::BatchOperationType::DELETE_KEY,
-          StdStringToUint8Vector("namespace-"), base::nullopt)));
+  EXPECT_TRUE(
+      base::Contains(migration_operations,
+                     leveldb::mojom::BatchedOperation::New(
+                         leveldb::mojom::BatchOperationType::DELETE_KEY,
+                         StdStringToUint8Vector("map-0-"), base::nullopt)));
+  EXPECT_TRUE(
+      base::Contains(migration_operations,
+                     leveldb::mojom::BatchedOperation::New(
+                         leveldb::mojom::BatchOperationType::DELETE_KEY,
+                         StdStringToUint8Vector("namespace-"), base::nullopt)));
 }
 
 }  // namespace

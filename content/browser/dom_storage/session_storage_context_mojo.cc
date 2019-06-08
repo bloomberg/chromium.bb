@@ -202,8 +202,8 @@ void SessionStorageContextMojo::CloneSessionNamespace(
         // call on that mojo binding.
         namespace_impl->SetWaitingForClonePopulation();
         clone_from_ns->second->AddNamespacesWaitingForClone(clone_namespace_id);
-      } else if (base::ContainsKey(metadata_.namespace_origin_map(),
-                                   namespace_id_to_clone)) {
+      } else if (base::Contains(metadata_.namespace_origin_map(),
+                                namespace_id_to_clone)) {
         // The namespace exists on disk but is not in-use, so do the appropriate
         // metadata operations to clone the namespace and set up the new object.
         std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;

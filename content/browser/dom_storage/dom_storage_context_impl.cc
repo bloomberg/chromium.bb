@@ -244,7 +244,7 @@ void DOMStorageContextImpl::NotifyAreaCleared(
 base::Optional<bad_message::BadMessageReason>
 DOMStorageContextImpl::DiagnoseSessionNamespaceId(
     const std::string& namespace_id) {
-  if (base::ContainsValue(recently_deleted_session_ids_, namespace_id))
+  if (base::Contains(recently_deleted_session_ids_, namespace_id))
     return bad_message::DSH_DELETED_SESSION_ID;
   return bad_message::DSH_NOT_ALLOCATED_SESSION_ID;
 }

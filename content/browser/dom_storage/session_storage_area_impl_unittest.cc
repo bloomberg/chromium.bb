@@ -142,7 +142,7 @@ TEST_F(SessionStorageAreaImplTest, BasicUsage) {
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(ss_leveldb.get(), &data));
   ASSERT_EQ(1ul, data.size());
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
                                         StdStringToUint8Vector("data1"))));
 
@@ -261,7 +261,7 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(ss_leveldb1.get(), &data));
   ASSERT_EQ(1ul, data.size());
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
                                         StdStringToUint8Vector("data1"))));
 
@@ -269,10 +269,10 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
   data.clear();
   EXPECT_TRUE(test::GetAllSync(ss_leveldb2.get(), &data));
   ASSERT_EQ(2ul, data.size());
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
                                         StdStringToUint8Vector("data1"))));
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key2"),
                                         StdStringToUint8Vector("data2"))));
 
