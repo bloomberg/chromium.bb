@@ -185,9 +185,9 @@ class SecureChannelActiveConnectionManagerImplTest : public testing::Test {
       const std::string& device_id) {
     ConnectionDetails connection_details(device_id,
                                          ConnectionMedium::kBluetoothLowEnergy);
-    if (!base::ContainsKey(fake_multiplexed_channel_factory_
-                               ->connection_details_to_active_channel_map(),
-                           connection_details)) {
+    if (!base::Contains(fake_multiplexed_channel_factory_
+                            ->connection_details_to_active_channel_map(),
+                        connection_details)) {
       return nullptr;
     }
 

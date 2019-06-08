@@ -124,7 +124,7 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
   }
 
   bool WasMessageSent(int message_counter) {
-    return base::ContainsKey(sent_message_counters_, message_counter);
+    return base::Contains(sent_message_counters_, message_counter);
   }
 
   void DisconnectFromClientSide() {

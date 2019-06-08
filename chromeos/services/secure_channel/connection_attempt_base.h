@@ -79,7 +79,7 @@ class ConnectionAttemptBase : public ConnectionAttempt<FailureDetailType> {
     ConnectionPriority priority_before_add =
         GetHighestRemainingConnectionPriority();
 
-    if (base::ContainsKey(id_to_request_map_, request->GetRequestId())) {
+    if (base::Contains(id_to_request_map_, request->GetRequestId())) {
       PA_LOG(ERROR) << "ConnectionAttemptBase::"
                     << "ProcessAddingNewConnectionRequest(): Processing "
                     << "request whose ID has already been processed.";

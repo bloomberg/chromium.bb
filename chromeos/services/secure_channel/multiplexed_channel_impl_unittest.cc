@@ -184,7 +184,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
   }
 
   bool HasMessageBeenSent(int message_counter) {
-    return base::ContainsKey(sent_message_counters_, message_counter);
+    return base::Contains(sent_message_counters_, message_counter);
   }
 
   void DisconnectClientAndVerifyState(
@@ -198,7 +198,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
     base::UnguessableToken proxy_id = sending_proxy->GetProxyId();
 
     // All relevant parties should still indicate that the connection is valid.
-    EXPECT_TRUE(base::ContainsKey(id_to_active_proxy_map(), proxy_id));
+    EXPECT_TRUE(base::Contains(id_to_active_proxy_map(), proxy_id));
     EXPECT_FALSE(
         fake_authenticated_channel_->has_disconnection_been_requested());
     EXPECT_FALSE(multiplexed_channel_->IsDisconnecting());
@@ -207,7 +207,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
 
     // Disconnecting the client should result in the proxy being deleted.
     sending_proxy->NotifyClientDisconnected();
-    EXPECT_FALSE(base::ContainsKey(id_to_active_proxy_map(), proxy_id));
+    EXPECT_FALSE(base::Contains(id_to_active_proxy_map(), proxy_id));
 
     if (!is_last_client)
       return;
