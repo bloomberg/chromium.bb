@@ -5,9 +5,9 @@
 #include "media/base/fake_audio_worker.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/audio_parameters.h"
@@ -20,11 +20,9 @@ static const int kTestCallbacks = 5;
 class FakeAudioWorkerTest : public testing::Test {
  public:
   FakeAudioWorkerTest()
-      : params_(AudioParameters::AUDIO_FAKE,
-                CHANNEL_LAYOUT_STEREO,
-                44100,
-                128),
-        fake_worker_(message_loop_.task_runner(), params_),
+      : params_(AudioParameters::AUDIO_FAKE, CHANNEL_LAYOUT_STEREO, 44100, 128),
+        fake_worker_(scoped_task_environment_.GetMainThreadTaskRunner(),
+                     params_),
         seen_callbacks_(0) {
     time_between_callbacks_ = base::TimeDelta::FromMicroseconds(
         params_.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
@@ -38,29 +36,33 @@ class FakeAudioWorkerTest : public testing::Test {
   }
 
   void RunOnAudioThread() {
-    ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
+    ASSERT_TRUE(scoped_task_environment_.GetMainThreadTaskRunner()
+                    ->BelongsToCurrentThread());
     fake_worker_.Start(base::BindRepeating(
         &FakeAudioWorkerTest::CalledByFakeWorker, base::Unretained(this)));
   }
 
   void RunOnceOnAudioThread() {
-    ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
+    ASSERT_TRUE(scoped_task_environment_.GetMainThreadTaskRunner()
+                    ->BelongsToCurrentThread());
     RunOnAudioThread();
     // Start() should immediately post a task to run the callback, so we
     // should end up with only a single callback being run.
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&FakeAudioWorkerTest::EndTest,
                                   base::Unretained(this), 1));
   }
 
   void StopStartOnAudioThread() {
-    ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
+    ASSERT_TRUE(scoped_task_environment_.GetMainThreadTaskRunner()
+                    ->BelongsToCurrentThread());
     fake_worker_.Stop();
     RunOnAudioThread();
   }
 
   void TimeCallbacksOnAudioThread(int callbacks) {
-    ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
+    ASSERT_TRUE(scoped_task_environment_.GetMainThreadTaskRunner()
+                    ->BelongsToCurrentThread());
 
     if (seen_callbacks_ == 0) {
       RunOnAudioThread();
@@ -69,7 +71,7 @@ class FakeAudioWorkerTest : public testing::Test {
 
     // Keep going until we've seen the requested number of callbacks.
     if (seen_callbacks_ < callbacks) {
-      message_loop_.task_runner()->PostDelayedTask(
+      scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,
                          base::Unretained(this), callbacks),
@@ -81,14 +83,15 @@ class FakeAudioWorkerTest : public testing::Test {
   }
 
   void EndTest(int callbacks) {
-    ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
+    ASSERT_TRUE(scoped_task_environment_.GetMainThreadTaskRunner()
+                    ->BelongsToCurrentThread());
     fake_worker_.Stop();
     EXPECT_LE(callbacks, seen_callbacks_);
     run_loop_.QuitWhenIdle();
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::RunLoop run_loop_;
   AudioParameters params_;
   FakeAudioWorker fake_worker_;
@@ -109,7 +112,7 @@ class FakeAudioWorkerTest : public testing::Test {
 #define MAYBE_FakeBasicCallback FakeBasicCallback
 #endif
 TEST_F(FakeAudioWorkerTest, MAYBE_FakeBasicCallback) {
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&FakeAudioWorkerTest::RunOnceOnAudioThread,
                                 base::Unretained(this)));
   run_loop_.Run();
@@ -120,7 +123,7 @@ TEST_F(FakeAudioWorkerTest, MAYBE_FakeBasicCallback) {
 // TODO(https://crbug.com/960729): Test is flaky because its behavior depends on
 // real wallclock time. Need to mock time to fix this.
 TEST_F(FakeAudioWorkerTest, DISABLED_TimeBetweenCallbacks) {
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,
                      base::Unretained(this), kTestCallbacks));
@@ -143,14 +146,14 @@ TEST_F(FakeAudioWorkerTest, DISABLED_TimeBetweenCallbacks) {
 // Ensure Start()/Stop() on the worker doesn't generate too many callbacks. See
 // http://crbug.com/159049.
 TEST_F(FakeAudioWorkerTest, StartStopClearsCallbacks) {
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,
                      base::Unretained(this), kTestCallbacks));
 
   // Issue a Stop() / Start() in between expected callbacks to maximize the
   // chance of catching the worker doing the wrong thing.
-  message_loop_.task_runner()->PostDelayedTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeAudioWorkerTest::StopStartOnAudioThread,
                      base::Unretained(this)),
