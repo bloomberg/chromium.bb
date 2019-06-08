@@ -118,7 +118,7 @@ void StorageObserverList::MaybeDispatchEvent(
 }
 
 void StorageObserverList::ScheduleUpdateForObserver(StorageObserver* observer) {
-  DCHECK(base::ContainsKey(observer_state_map_, observer));
+  DCHECK(base::Contains(observer_state_map_, observer));
   observer_state_map_[observer].requires_update = true;
 }
 

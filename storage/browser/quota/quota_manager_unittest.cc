@@ -2022,7 +2022,7 @@ TEST_F(QuotaManagerTest, GetCachedOrigins) {
 
   for (size_t i = 0; i < base::size(kData); ++i) {
     if (kData[i].type == kTemp)
-      EXPECT_TRUE(base::ContainsKey(origins, ToOrigin(kData[i].origin)));
+      EXPECT_TRUE(base::Contains(origins, ToOrigin(kData[i].origin)));
   }
 }
 

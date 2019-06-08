@@ -144,7 +144,7 @@ class StorageMonitorTestBase : public testing::Test {
 
   void SetLastNotificationTime(StorageObserverList& observer_list,
                                StorageObserver* observer) {
-    ASSERT_TRUE(base::ContainsKey(observer_list.observer_state_map_, observer));
+    ASSERT_TRUE(base::Contains(observer_list.observer_state_map_, observer));
     StorageObserverList::ObserverState& state =
         observer_list.observer_state_map_[observer];
     state.last_notification_time = base::TimeTicks::Now() - state.rate;

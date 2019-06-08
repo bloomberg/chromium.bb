@@ -181,7 +181,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   void NotifyOriginNoLongerInUse(const url::Origin& origin);
   bool IsOriginInUse(const url::Origin& origin) const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return base::ContainsKey(origins_in_use_, origin);
+    return base::Contains(origins_in_use_, origin);
   }
 
   void SetUsageCacheEnabled(QuotaClient::ID client_id,

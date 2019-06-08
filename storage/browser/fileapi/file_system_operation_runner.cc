@@ -329,8 +329,8 @@ OperationID FileSystemOperationRunner::Truncate(const FileSystemURL& url,
 
 void FileSystemOperationRunner::Cancel(OperationID id,
                                        StatusCallback callback) {
-  if (base::ContainsKey(finished_operations_, id)) {
-    DCHECK(!base::ContainsKey(stray_cancel_callbacks_, id));
+  if (base::Contains(finished_operations_, id)) {
+    DCHECK(!base::Contains(stray_cancel_callbacks_, id));
     stray_cancel_callbacks_[id] = std::move(callback);
     return;
   }

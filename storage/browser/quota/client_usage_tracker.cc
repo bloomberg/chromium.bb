@@ -45,7 +45,7 @@ bool OriginSetContainsOrigin(const OriginSetByHost& origins,
                              const std::string& host,
                              const url::Origin& origin) {
   auto itr = origins.find(host);
-  return itr != origins.end() && base::ContainsKey(itr->second, origin);
+  return itr != origins.end() && base::Contains(itr->second, origin);
 }
 
 void DidGetGlobalClientUsageForLimitedGlobalClientUsage(
@@ -127,9 +127,9 @@ void ClientUsageTracker::GetGlobalUsage(GlobalUsageCallback callback) {
 void ClientUsageTracker::GetHostUsage(const std::string& host,
                                       UsageCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (base::ContainsKey(cached_hosts_, host) &&
-      !base::ContainsKey(non_cached_limited_origins_by_host_, host) &&
-      !base::ContainsKey(non_cached_unlimited_origins_by_host_, host)) {
+  if (base::Contains(cached_hosts_, host) &&
+      !base::Contains(non_cached_limited_origins_by_host_, host) &&
+      !base::Contains(non_cached_unlimited_origins_by_host_, host)) {
     // TODO(kinuko): Drop host_usage_map_ cache periodically.
     std::move(callback).Run(GetCachedHostUsage(host));
     return;
@@ -148,7 +148,7 @@ void ClientUsageTracker::UpdateUsageCache(const url::Origin& origin,
                                           int64_t delta) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
-  if (base::ContainsKey(cached_hosts_, host)) {
+  if (base::Contains(cached_hosts_, host)) {
     if (!IsUsageCacheEnabledForOrigin(origin))
       return;
 

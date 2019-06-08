@@ -1572,8 +1572,8 @@ void QuotaManager::DidGetEvictionOrigin(
   // and has not been accessed since we posted the task.
   DCHECK(!origin.has_value() || !origin->GetURL().is_empty());
   if (origin.has_value() &&
-      (base::ContainsKey(origins_in_use_, *origin) ||
-       base::ContainsKey(access_notified_origins_, *origin))) {
+      (base::Contains(origins_in_use_, *origin) ||
+       base::Contains(access_notified_origins_, *origin))) {
     std::move(callback).Run(base::nullopt);
   } else {
     std::move(callback).Run(origin);

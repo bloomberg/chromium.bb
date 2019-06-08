@@ -464,7 +464,7 @@ bool QuotaDatabase::GetLRUOrigin(StorageType type,
   while (statement.Step()) {
     url::Origin read_origin =
         url::Origin::Create(GURL(statement.ColumnString(0)));
-    if (base::ContainsKey(exceptions, read_origin))
+    if (base::Contains(exceptions, read_origin))
       continue;
 
     if (special_storage_policy &&

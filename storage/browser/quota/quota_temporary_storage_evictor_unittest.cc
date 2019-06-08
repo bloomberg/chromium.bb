@@ -127,7 +127,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
  private:
   int64_t EnsureOriginRemoved(const url::Origin& origin) {
     int64_t origin_usage;
-    if (!base::ContainsKey(origins_, origin))
+    if (!base::Contains(origins_, origin))
       return -1;
     else
       origin_usage = origins_[origin];

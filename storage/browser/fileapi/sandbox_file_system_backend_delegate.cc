@@ -417,8 +417,7 @@ int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
 
   // Don't use usage cache and return recalculated usage for sticky invalidated
   // origins.
-  if (base::ContainsKey(sticky_dirty_origins_,
-                        std::make_pair(origin_url, type)))
+  if (base::Contains(sticky_dirty_origins_, std::make_pair(origin_url, type)))
     return RecalculateUsage(file_system_context, origin_url, type);
 
   base::FilePath base_path =

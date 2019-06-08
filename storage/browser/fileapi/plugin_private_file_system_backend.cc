@@ -51,7 +51,7 @@ class PluginPrivateFileSystemBackend::FileSystemIDToPluginMap {
                           const std::string& plugin_id) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     DCHECK(!filesystem_id.empty());
-    DCHECK(!base::ContainsKey(map_, filesystem_id)) << filesystem_id;
+    DCHECK(!base::Contains(map_, filesystem_id)) << filesystem_id;
     map_[filesystem_id] = plugin_id;
   }
 

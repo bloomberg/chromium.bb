@@ -69,7 +69,7 @@ void QuotaTaskObserver::RegisterTask(QuotaTask* task) {
 }
 
 void QuotaTaskObserver::UnregisterTask(QuotaTask* task) {
-  DCHECK(base::ContainsKey(running_quota_tasks_, task));
+  DCHECK(base::Contains(running_quota_tasks_, task));
   running_quota_tasks_.erase(task);
 }
 
