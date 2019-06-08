@@ -2409,7 +2409,7 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
              FPDFBookmark_GetFirstChild(doc(), bookmark);
          child_bookmark;
          child_bookmark = FPDFBookmark_GetNextSibling(doc(), child_bookmark)) {
-      if (base::ContainsKey(seen_bookmarks, child_bookmark))
+      if (base::Contains(seen_bookmarks, child_bookmark))
         break;
 
       seen_bookmarks.insert(child_bookmark);
@@ -2913,7 +2913,7 @@ void PDFiumEngine::CalculateVisiblePages() {
 }
 
 bool PDFiumEngine::IsPageVisible(int index) const {
-  return base::ContainsValue(visible_pages_, index);
+  return base::Contains(visible_pages_, index);
 }
 
 void PDFiumEngine::ScrollToPage(int page) {
@@ -2934,7 +2934,7 @@ bool PDFiumEngine::CheckPageAvailable(int index, std::vector<int>* pending) {
 
   FX_DOWNLOADHINTS& download_hints = document_->download_hints();
   if (!FPDFAvail_IsPageAvail(fpdf_availability(), index, &download_hints)) {
-    if (!base::ContainsValue(*pending, index))
+    if (!base::Contains(*pending, index))
       pending->push_back(index);
     return false;
   }
