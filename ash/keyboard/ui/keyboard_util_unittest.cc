@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard/ui/keyboard_util.h"
+#include <memory>
 
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
@@ -21,8 +21,8 @@ namespace {
 
 class KeyboardUtilTest : public aura::test::AuraTestBase {
  public:
-  KeyboardUtilTest() {}
-  ~KeyboardUtilTest() override {}
+  KeyboardUtilTest() = default;
+  ~KeyboardUtilTest() override = default;
 
   // Sets all flags controlling whether the keyboard should be shown to
   // their disabled state.

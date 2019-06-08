@@ -17,7 +17,7 @@ constexpr int kFullWidthKeyboardAnimationDurationMs = 100;
 ContainerFullWidthBehavior::ContainerFullWidthBehavior(Delegate* delegate)
     : ContainerBehavior(delegate) {}
 
-ContainerFullWidthBehavior::~ContainerFullWidthBehavior() {}
+ContainerFullWidthBehavior::~ContainerFullWidthBehavior() = default;
 
 ContainerType ContainerFullWidthBehavior::GetType() const {
   return ContainerType::kFullWidth;

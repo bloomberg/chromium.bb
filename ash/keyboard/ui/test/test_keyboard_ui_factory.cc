@@ -4,12 +4,12 @@
 
 #include "ash/keyboard/ui/test/test_keyboard_ui_factory.h"
 
+#include <utility>
+
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-
-#include <utility>
 
 namespace keyboard {
 

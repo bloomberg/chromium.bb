@@ -78,7 +78,7 @@ class TestFocusController : public ui::EventHandler {
  private:
   // Overridden from ui::EventHandler:
   void OnEvent(ui::Event* event) override {
-    aura::Window* target = static_cast<aura::Window*>(event->target());
+    auto* target = static_cast<aura::Window*>(event->target());
     if (event->type() == ui::ET_MOUSE_PRESSED ||
         event->type() == ui::ET_TOUCH_PRESSED) {
       aura::client::GetFocusClient(target)->FocusWindow(target);
@@ -141,13 +141,8 @@ class SetModeCallbackInvocationCounter {
 class KeyboardControllerTest : public aura::test::AuraTestBase,
                                public KeyboardControllerObserver {
  public:
-  KeyboardControllerTest()
-      : visible_bounds_number_of_calls_(0),
-        occluding_bounds_number_of_calls_(0),
-        is_visible_number_of_calls_(0),
-        is_visible_(false),
-        keyboard_disabled_(false) {}
-  ~KeyboardControllerTest() override {}
+  KeyboardControllerTest() = default;
+  ~KeyboardControllerTest() override = default;
 
   void SetUp() override {
     ui::SetUpInputMethodFactoryForTesting();
@@ -179,8 +174,8 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
   KeyboardLayoutDelegate* layout_delegate() { return layout_delegate_.get(); }
 
   void ShowKeyboard() {
-    test_text_input_client_.reset(
-        new ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT));
+    test_text_input_client_ =
+        std::make_unique<ui::DummyTextInputClient>(ui::TEXT_INPUT_TYPE_TEXT);
     SetFocus(test_text_input_client_.get());
   }
 
@@ -230,7 +225,7 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
 
   void AddTimeToTransientBlurCounter(double seconds) {
     controller_.time_of_last_blur_ -=
-        base::TimeDelta::FromMilliseconds((int)(1000 * seconds));
+        base::TimeDelta::FromMilliseconds(int{1000 * seconds});
   }
 
   void SetFocus(ui::TextInputClient* client) {
@@ -264,18 +259,18 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
   std::unique_ptr<TestFocusController> focus_controller_;
 
  private:
-  int visible_bounds_number_of_calls_;
+  int visible_bounds_number_of_calls_ = 0;
   gfx::Rect visible_bounds_;
-  int occluding_bounds_number_of_calls_;
+  int occluding_bounds_number_of_calls_ = 0;
   gfx::Rect occluding_bounds_;
-  int is_visible_number_of_calls_;
-  bool is_visible_;
+  int is_visible_number_of_calls_ = 0;
+  bool is_visible_ = false;
 
   KeyboardController controller_;
 
   std::unique_ptr<KeyboardLayoutDelegate> layout_delegate_;
   std::unique_ptr<ui::TextInputClient> test_text_input_client_;
-  bool keyboard_disabled_;
+  bool keyboard_disabled_ = false;
   wm::DefaultScreenPositionClient screen_position_client_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerTest);
 };
@@ -505,8 +500,8 @@ TEST_F(KeyboardControllerTest, DisableKeyboard) {
 
 class KeyboardControllerAnimationTest : public KeyboardControllerTest {
  public:
-  KeyboardControllerAnimationTest() {}
-  ~KeyboardControllerAnimationTest() override {}
+  KeyboardControllerAnimationTest() = default;
+  ~KeyboardControllerAnimationTest() override = default;
 
   void SetUp() override {
     // We cannot short-circuit animations for this test.

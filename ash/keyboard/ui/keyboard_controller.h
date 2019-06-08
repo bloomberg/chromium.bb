@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "ash/keyboard/ui/container_behavior.h"
@@ -234,7 +235,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   }
   KeyboardUIState GetStateForTest() const { return model_.state(); }
   ui::InputMethod* GetInputMethodForTest();
-  void EnsureCaretInWorkAreaForTest(const gfx::Rect& occluded_bounds_in_root);
+  void EnsureCaretInWorkAreaForTest(const gfx::Rect& occluded_bounds_in_screen);
 
  private:
   // For access to Observer methods for simulation.

@@ -24,7 +24,7 @@ bool ValueNotificationConsolidator<T>::ShouldSendNotification(
   return value_changed;
 }
 
-NotificationManager::NotificationManager() {}
+NotificationManager::NotificationManager() = default;
 
 void NotificationManager::SendNotifications(
     bool does_occluded_bounds_affect_layout,

@@ -160,8 +160,8 @@ gfx::Point ContainerFloatingBehavior::GetPositionForShowingKeyboard(
                   position->left_padding_allotment_ratio;
     double top = (display_bounds.height() - keyboard_size.height()) *
                  position->top_padding_allotment_ratio;
-    top_left_offset.set_x((int)left);
-    top_left_offset.set_y((int)top);
+    top_left_offset.set_x(int{left});
+    top_left_offset.set_y(int{top});
   }
 
   // Make sure that this location is valid according to the current size of the
@@ -180,7 +180,7 @@ gfx::Point ContainerFloatingBehavior::GetPositionForShowingKeyboard(
 bool ContainerFloatingBehavior::HandlePointerEvent(
     const ui::LocatedEvent& event,
     const display::Display& current_display) {
-  const gfx::Vector2d kb_offset(event.x(), event.y());
+  const gfx::Vector2d kb_offset(int{event.x()}, int{event.y()});
 
   const gfx::Rect& keyboard_bounds_in_screen = delegate_->GetBoundsInScreen();
 
@@ -201,7 +201,8 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
       if (!draggable_area_.Contains(kb_offset.x(), kb_offset.y())) {
         drag_descriptor_.reset();
       } else if (type == ui::ET_MOUSE_PRESSED &&
-                 !((const ui::MouseEvent&)event).IsOnlyLeftMouseButton()) {
+                 !static_cast<const ui::MouseEvent&>(event)
+                      .IsOnlyLeftMouseButton()) {
         // Mouse events are limited to just the left mouse button.
         drag_descriptor_.reset();
       } else if (!drag_descriptor_) {
@@ -212,11 +213,7 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
 
     case ui::ET_MOUSE_DRAGGED:
     case ui::ET_TOUCH_MOVED:
-      if (!drag_descriptor_) {
-        // do nothing
-      } else if (drag_descriptor_->pointer_id != pointer_id) {
-        // do nothing.
-      } else {
+      if (drag_descriptor_ && drag_descriptor_->pointer_id == pointer_id) {
         // Drag continues.
         // If there is an active drag, use it to determine the new location
         // of the keyboard.

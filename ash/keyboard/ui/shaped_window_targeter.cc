@@ -4,15 +4,15 @@
 
 #include "ash/keyboard/ui/shaped_window_targeter.h"
 
-#include <memory>
+#include <utility>
 
 #include "ui/gfx/geometry/rect.h"
 
 namespace keyboard {
 
 ShapedWindowTargeter::ShapedWindowTargeter(
-    const std::vector<gfx::Rect>& hit_test_rects)
-    : hit_test_rects_(hit_test_rects) {}
+    std::vector<gfx::Rect> hit_test_rects)
+    : hit_test_rects_(std::move(hit_test_rects)) {}
 
 ShapedWindowTargeter::~ShapedWindowTargeter() = default;
 

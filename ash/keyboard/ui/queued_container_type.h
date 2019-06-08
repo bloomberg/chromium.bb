@@ -6,7 +6,7 @@
 #define ASH_KEYBOARD_UI_QUEUED_CONTAINER_TYPE_H_
 
 #include "ash/public/cpp/keyboard/keyboard_types.h"
-#include "base/bind.h"
+#include "base/callback.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
 

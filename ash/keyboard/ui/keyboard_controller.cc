@@ -117,12 +117,12 @@ class InputMethodKeyboardController : public ui::InputMethodKeyboardController {
 
   void AddObserver(
       ui::InputMethodKeyboardControllerObserver* observer) override {
-    // TODO: Implement.
+    // TODO(shend): Implement.
   }
 
   void RemoveObserver(
       ui::InputMethodKeyboardControllerObserver* observer) override {
-    // TODO: Implement.
+    // TODO(shend): Implement.
   }
 
   bool IsKeyboardVisible() override {
@@ -139,7 +139,7 @@ class InputMethodKeyboardController : public ui::InputMethodKeyboardController {
 // KeyboardController.
 class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
  public:
-  CallbackAnimationObserver(base::OnceClosure callback)
+  explicit CallbackAnimationObserver(base::OnceClosure callback)
       : callback_(std::move(callback)) {}
 
  private:

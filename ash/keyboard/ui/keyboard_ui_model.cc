@@ -4,6 +4,9 @@
 
 #include "ash/keyboard/ui/keyboard_ui_model.h"
 
+#include <set>
+#include <utility>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"

@@ -21,10 +21,10 @@ class KEYBOARD_EXPORT ContainerFullWidthBehavior : public ContainerBehavior {
 
   // ContainerBehavior overrides
   void DoHidingAnimation(
-      aura::Window* window,
+      aura::Window* container,
       ::wm::ScopedHidingAnimationSettings* animation_settings) override;
   void DoShowingAnimation(
-      aura::Window* window,
+      aura::Window* container,
       ui::ScopedLayerAnimationSettings* animation_settings) override;
   void InitializeShowAnimationStartingState(aura::Window* container) override;
   gfx::Rect AdjustSetBoundsRequest(
@@ -41,7 +41,7 @@ class KEYBOARD_EXPORT ContainerFullWidthBehavior : public ContainerBehavior {
   bool TextBlurHidesKeyboard() const override;
   void SetOccludedBounds(const gfx::Rect& occluded_bounds_in_window) override;
   gfx::Rect GetOccludedBounds(
-      const gfx::Rect& visual_bounds_in_screen) const override;
+      const gfx::Rect& visual_bounds_in_window) const override;
   bool OccludedBoundsAffectWorkspaceLayout() const override;
   void SetDraggableArea(const gfx::Rect& rect) override;
 

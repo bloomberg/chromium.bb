@@ -36,4 +36,4 @@ class KEYBOARD_EXPORT KeyboardLayoutDelegate {
 
 }  // namespace keyboard
 
-#endif
+#endif  // ASH_KEYBOARD_UI_KEYBOARD_LAYOUT_DELEGATE_H_

@@ -5,6 +5,8 @@
 #ifndef ASH_KEYBOARD_UI_KEYBOARD_CONTROLLER_OBSERVER_H_
 #define ASH_KEYBOARD_UI_KEYBOARD_CONTROLLER_OBSERVER_H_
 
+#include <set>
+
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_export.h"
 

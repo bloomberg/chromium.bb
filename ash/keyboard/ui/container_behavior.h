@@ -46,13 +46,13 @@ class KEYBOARD_EXPORT ContainerBehavior {
   // Apply changes to the animation settings to animate the keyboard container
   // showing.
   virtual void DoShowingAnimation(
-      aura::Window* window,
+      aura::Window* container,
       ui::ScopedLayerAnimationSettings* animation_settings) = 0;
 
   // Apply changes to the animation settings to animate the keyboard container
   // hiding.
   virtual void DoHidingAnimation(
-      aura::Window* window,
+      aura::Window* container,
       wm::ScopedHidingAnimationSettings* animation_settings) = 0;
 
   // Initialize the starting state of the keyboard container for the showing
