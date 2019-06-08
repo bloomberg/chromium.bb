@@ -2474,6 +2474,7 @@ test("base_unittests") {
     "debug/alias_unittest.cc",
     "debug/crash_logging_unittest.cc",
     "debug/debugger_unittest.cc",
+    "debug/gdi_debug_util_win_unittest.cc",
     "debug/leak_tracker_unittest.cc",
     "debug/proc_maps_linux_unittest.cc",
     "debug/stack_trace_unittest.cc",
