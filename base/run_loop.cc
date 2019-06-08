@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
@@ -19,8 +18,10 @@ namespace base {
 
 namespace {
 
-LazyInstance<ThreadLocalPointer<RunLoop::Delegate>>::Leaky tls_delegate =
-    LAZY_INSTANCE_INITIALIZER;
+ThreadLocalPointer<RunLoop::Delegate>& GetTlsDelegate() {
+  static base::NoDestructor<ThreadLocalPointer<RunLoop::Delegate>> instance;
+  return *instance;
+}
 
 // Runs |closure| immediately if this is called on |task_runner|, otherwise
 // forwards |closure| to it.
@@ -33,10 +34,10 @@ void ProxyToTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner,
   task_runner->PostTask(FROM_HERE, std::move(closure));
 }
 
-ThreadLocalPointer<RunLoop::ScopedRunTimeoutForTest>*
+ThreadLocalPointer<RunLoop::ScopedRunTimeoutForTest>&
 ScopedRunTimeoutForTestTLS() {
   static NoDestructor<ThreadLocalPointer<RunLoop::ScopedRunTimeoutForTest>> tls;
-  return tls.get();
+  return *tls;
 }
 
 void OnRunTimeout(RunLoop* run_loop, OnceClosure on_timeout) {
@@ -51,29 +52,29 @@ RunLoop::ScopedRunTimeoutForTest::ScopedRunTimeoutForTest(
     RepeatingClosure on_timeout)
     : timeout_(timeout),
       on_timeout_(std::move(on_timeout)),
-      nested_timeout_(ScopedRunTimeoutForTestTLS()->Get()) {
+      nested_timeout_(ScopedRunTimeoutForTestTLS().Get()) {
   DCHECK_GT(timeout_, TimeDelta());
   DCHECK(on_timeout_);
-  ScopedRunTimeoutForTestTLS()->Set(this);
+  ScopedRunTimeoutForTestTLS().Set(this);
 }
 
 RunLoop::ScopedRunTimeoutForTest::~ScopedRunTimeoutForTest() {
-  ScopedRunTimeoutForTestTLS()->Set(nested_timeout_);
+  ScopedRunTimeoutForTestTLS().Set(nested_timeout_);
 }
 
 // static
 const RunLoop::ScopedRunTimeoutForTest*
 RunLoop::ScopedRunTimeoutForTest::Current() {
-  return ScopedRunTimeoutForTestTLS()->Get();
+  return ScopedRunTimeoutForTestTLS().Get();
 }
 
 RunLoop::ScopedDisableRunTimeoutForTest::ScopedDisableRunTimeoutForTest()
-    : nested_timeout_(ScopedRunTimeoutForTestTLS()->Get()) {
-  ScopedRunTimeoutForTestTLS()->Set(nullptr);
+    : nested_timeout_(ScopedRunTimeoutForTestTLS().Get()) {
+  ScopedRunTimeoutForTestTLS().Set(nullptr);
 }
 
 RunLoop::ScopedDisableRunTimeoutForTest::~ScopedDisableRunTimeoutForTest() {
-  ScopedRunTimeoutForTestTLS()->Set(nested_timeout_);
+  ScopedRunTimeoutForTestTLS().Set(nested_timeout_);
 }
 
 RunLoop::Delegate::Delegate() {
@@ -87,8 +88,9 @@ RunLoop::Delegate::~Delegate() {
   // A RunLoop::Delegate may be destroyed before it is bound, if so it may still
   // be on its creation thread (e.g. a Thread that fails to start) and
   // shouldn't disrupt that thread's state.
-  if (bound_)
-    tls_delegate.Get().Set(nullptr);
+  if (bound_) {
+    GetTlsDelegate().Set(nullptr);
+  }
 }
 
 bool RunLoop::Delegate::ShouldQuitWhenIdle() {
@@ -102,16 +104,16 @@ void RunLoop::RegisterDelegateForCurrentThread(Delegate* delegate) {
   DCHECK_CALLED_ON_VALID_THREAD(delegate->bound_thread_checker_);
 
   // There can only be one RunLoop::Delegate per thread.
-  DCHECK(!tls_delegate.Get().Get())
+  DCHECK(!GetTlsDelegate().Get())
       << "Error: Multiple RunLoop::Delegates registered on the same thread.\n\n"
          "Hint: You perhaps instantiated a second "
          "MessageLoop/ScopedTaskEnvironment on a thread that already had one?";
-  tls_delegate.Get().Set(delegate);
+  GetTlsDelegate().Set(delegate);
   delegate->bound_ = true;
 }
 
 RunLoop::RunLoop(Type type)
-    : delegate_(tls_delegate.Get().Get()),
+    : delegate_(GetTlsDelegate().Get()),
       type_(type),
       origin_task_runner_(ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
@@ -139,7 +141,7 @@ void RunLoop::RunWithTimeout(TimeDelta timeout) {
   // TODO(crbug.com/905412): Use real-time for Run() timeouts so that they
   // can be applied even in tests which mock TimeTicks::Now().
   CancelableOnceClosure cancelable_timeout;
-  ScopedRunTimeoutForTest* run_timeout = ScopedRunTimeoutForTestTLS()->Get();
+  ScopedRunTimeoutForTest* run_timeout = ScopedRunTimeoutForTestTLS().Get();
   if (run_timeout) {
     cancelable_timeout.Reset(
         BindOnce(&OnRunTimeout, Unretained(this), run_timeout->on_timeout()));
@@ -234,26 +236,26 @@ Closure RunLoop::QuitWhenIdleClosure() {
 
 // static
 bool RunLoop::IsRunningOnCurrentThread() {
-  Delegate* delegate = tls_delegate.Get().Get();
+  Delegate* delegate = GetTlsDelegate().Get();
   return delegate && !delegate->active_run_loops_.empty();
 }
 
 // static
 bool RunLoop::IsNestedOnCurrentThread() {
-  Delegate* delegate = tls_delegate.Get().Get();
+  Delegate* delegate = GetTlsDelegate().Get();
   return delegate && delegate->active_run_loops_.size() > 1;
 }
 
 // static
 void RunLoop::AddNestingObserverOnCurrentThread(NestingObserver* observer) {
-  Delegate* delegate = tls_delegate.Get().Get();
+  Delegate* delegate = GetTlsDelegate().Get();
   DCHECK(delegate);
   delegate->nesting_observers_.AddObserver(observer);
 }
 
 // static
 void RunLoop::RemoveNestingObserverOnCurrentThread(NestingObserver* observer) {
-  Delegate* delegate = tls_delegate.Get().Get();
+  Delegate* delegate = GetTlsDelegate().Get();
   DCHECK(delegate);
   delegate->nesting_observers_.RemoveObserver(observer);
 }
@@ -261,7 +263,7 @@ void RunLoop::RemoveNestingObserverOnCurrentThread(NestingObserver* observer) {
 // static
 void RunLoop::QuitCurrentDeprecated() {
   DCHECK(IsRunningOnCurrentThread());
-  Delegate* delegate = tls_delegate.Get().Get();
+  Delegate* delegate = GetTlsDelegate().Get();
   DCHECK(delegate->active_run_loops_.top()->allow_quit_current_deprecated_)
       << "Please migrate off QuitCurrentDeprecated(), e.g. to QuitClosure().";
   delegate->active_run_loops_.top()->Quit();
@@ -270,7 +272,7 @@ void RunLoop::QuitCurrentDeprecated() {
 // static
 void RunLoop::QuitCurrentWhenIdleDeprecated() {
   DCHECK(IsRunningOnCurrentThread());
-  Delegate* delegate = tls_delegate.Get().Get();
+  Delegate* delegate = GetTlsDelegate().Get();
   DCHECK(delegate->active_run_loops_.top()->allow_quit_current_deprecated_)
       << "Please migrate off QuitCurrentWhenIdleDeprecated(), e.g. to "
          "QuitWhenIdleClosure().";
@@ -280,7 +282,7 @@ void RunLoop::QuitCurrentWhenIdleDeprecated() {
 // static
 Closure RunLoop::QuitCurrentWhenIdleClosureDeprecated() {
   // TODO(844016): Fix callsites and enable this check, or remove the API.
-  // Delegate* delegate = tls_delegate.Get().Get();
+  // Delegate* delegate = GetTlsDelegate().Get();
   // DCHECK(delegate->active_run_loops_.top()->allow_quit_current_deprecated_)
   //     << "Please migrate off QuitCurrentWhenIdleClosureDeprecated(), e.g to "
   //        "QuitWhenIdleClosure().";
@@ -289,7 +291,7 @@ Closure RunLoop::QuitCurrentWhenIdleClosureDeprecated() {
 
 #if DCHECK_IS_ON()
 RunLoop::ScopedDisallowRunningForTesting::ScopedDisallowRunningForTesting()
-    : current_delegate_(tls_delegate.Get().Get()),
+    : current_delegate_(GetTlsDelegate().Get()),
       previous_run_allowance_(
           current_delegate_ ? current_delegate_->allow_running_for_testing_
                             : false) {
@@ -298,7 +300,7 @@ RunLoop::ScopedDisallowRunningForTesting::ScopedDisallowRunningForTesting()
 }
 
 RunLoop::ScopedDisallowRunningForTesting::~ScopedDisallowRunningForTesting() {
-  DCHECK_EQ(current_delegate_, tls_delegate.Get().Get());
+  DCHECK_EQ(current_delegate_, GetTlsDelegate().Get());
   if (current_delegate_)
     current_delegate_->allow_running_for_testing_ = previous_run_allowance_;
 }

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/lazy_instance.h"
+#include "base/lazy_instance_helpers.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 
