@@ -120,3 +120,7 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessSearchSuggestionSelected() {
 bool SearchIPCRouterPolicyImpl::ShouldProcessOptOutOfSearchSuggestions() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessThemeChangeMessages() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
