@@ -74,6 +74,7 @@ TEST_F(VaapiUtilsTest, ScopedVAImage) {
     EXPECT_TRUE(scoped_image->va_buffer()->IsValid());
     EXPECT_TRUE(scoped_image->va_buffer()->data());
   }
+  vaapi_wrapper_->DestroyContextAndSurfaces(va_surfaces);
 }
 
 // This test exercises creation of a ScopedVAImage with a bad VASurfaceID.

@@ -1213,37 +1213,27 @@ bool VaapiWrapper::CreateContextAndSurfaces(
     const gfx::Size& size,
     size_t num_surfaces,
     std::vector<VASurfaceID>* va_surfaces) {
-  {
-    base::AutoLock auto_lock(*va_lock_);
-    DVLOG(2) << "Creating " << num_surfaces << " surfaces";
-    DCHECK(va_surfaces->empty());
+  DVLOG(2) << "Creating " << num_surfaces << " surfaces";
+  DCHECK(va_surfaces->empty());
 
-    if (!va_surface_ids_.empty() || va_surface_format_ != 0u) {
-      LOG(ERROR) << "Surfaces should be destroyed before creating new surfaces";
-      return false;
-    }
-
-    // Allocate surfaces in driver.
-    va_surface_ids_.resize(num_surfaces);
-    VAStatus va_res =
-        vaCreateSurfaces(va_display_, va_format, size.width(), size.height(),
-                         &va_surface_ids_[0], va_surface_ids_.size(), NULL, 0);
-
-    VA_LOG_ON_ERROR(va_res, "vaCreateSurfaces failed");
-    if (va_res != VA_STATUS_SUCCESS) {
-      va_surface_ids_.clear();
-      return false;
-    }
+  if (va_surface_format_ != 0u) {
+    LOG(ERROR) << "Surfaces should be destroyed before creating new surfaces";
+    return false;
   }
 
-  // And create a context associated with them.
-  const bool success = CreateContext(va_format, size);
-  if (success)
-    *va_surfaces = va_surface_ids_;
-  else
-    DestroyContextAndSurfaces();
+  if (!CreateSurfaces(va_format, size, num_surfaces, va_surfaces))
+    return false;
 
+  const bool success = CreateContext(va_format, size);
+  if (!success)
+    DestroyContextAndSurfaces(*va_surfaces);
   return success;
+}
+
+void VaapiWrapper::DestroyContextAndSurfaces(
+    std::vector<VASurfaceID> va_surfaces) {
+  DestroyContext();
+  DestroySurfaces(va_surfaces);
 }
 
 bool VaapiWrapper::CreateContext(unsigned int va_format,
@@ -1265,26 +1255,6 @@ bool VaapiWrapper::CreateContext(unsigned int va_format,
   if (va_res == VA_STATUS_SUCCESS)
     va_surface_format_ = va_format;
   return va_res == VA_STATUS_SUCCESS;
-}
-
-void VaapiWrapper::DestroyContextAndSurfaces() {
-  base::AutoLock auto_lock(*va_lock_);
-  DVLOG(2) << "Destroying " << va_surface_ids_.size() << " surfaces";
-
-  if (va_context_id_ != VA_INVALID_ID) {
-    VAStatus va_res = vaDestroyContext(va_display_, va_context_id_);
-    VA_LOG_ON_ERROR(va_res, "vaDestroyContext failed");
-  }
-
-  if (!va_surface_ids_.empty()) {
-    VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_ids_[0],
-                                        va_surface_ids_.size());
-    VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces failed");
-  }
-
-  va_surface_ids_.clear();
-  va_context_id_ = VA_INVALID_ID;
-  va_surface_format_ = 0;
 }
 
 scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
@@ -1749,7 +1719,7 @@ VaapiWrapper::VaapiWrapper()
 VaapiWrapper::~VaapiWrapper() {
   DestroyPendingBuffers();
   DestroyVABuffers();
-  DestroyContextAndSurfaces();
+  DestroyContext();
   Deinitialize();
 }
 
@@ -1828,10 +1798,59 @@ bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
   return true;
 }
 
-void VaapiWrapper::DestroySurface(VASurfaceID va_surface_id) {
+void VaapiWrapper::DestroyContext() {
   base::AutoLock auto_lock(*va_lock_);
+  DVLOG(2) << "Destroying context";
 
-  VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_id, 1);
+  if (va_context_id_ != VA_INVALID_ID) {
+    const VAStatus va_res = vaDestroyContext(va_display_, va_context_id_);
+    VA_LOG_ON_ERROR(va_res, "vaDestroyContext failed");
+  }
+
+  va_context_id_ = VA_INVALID_ID;
+  va_surface_format_ = 0;
+}
+
+bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
+                                  const gfx::Size& size,
+                                  size_t num_surfaces,
+                                  std::vector<VASurfaceID>* va_surfaces) {
+  DVLOG(2) << "Creating " << num_surfaces << " " << size.ToString()
+           << " surfaces ";
+  DCHECK_NE(va_format, 0u);
+  DCHECK(va_surfaces->empty());
+
+  va_surfaces->resize(num_surfaces);
+  VAStatus va_res;
+  {
+    base::AutoLock auto_lock(*va_lock_);
+    va_res =
+        vaCreateSurfaces(va_display_, va_format, size.width(), size.height(),
+                         va_surfaces->data(), num_surfaces, NULL, 0);
+  }
+  VA_LOG_ON_ERROR(va_res, "vaCreateSurfaces failed");
+  return va_res == VA_STATUS_SUCCESS;
+}
+
+void VaapiWrapper::DestroySurfaces(std::vector<VASurfaceID> va_surfaces) {
+  DVLOG(2) << "Destroying " << va_surfaces.size() << " surfaces";
+
+  if (va_surfaces.empty())
+    return;
+  // vaDestroySurfaces() makes no guarantees about VA_INVALID_SURFACE.
+  base::Erase(va_surfaces, VA_INVALID_SURFACE);
+
+  base::AutoLock auto_lock(*va_lock_);
+  const VAStatus va_res =
+      vaDestroySurfaces(va_display_, va_surfaces.data(), va_surfaces.size());
+  VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces failed");
+}
+
+void VaapiWrapper::DestroySurface(VASurfaceID va_surface_id) {
+  if (va_surface_id == VA_INVALID_SURFACE)
+    return;
+  base::AutoLock auto_lock(*va_lock_);
+  const VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_id, 1);
   VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces on surface failed");
 }
 

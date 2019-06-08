@@ -27,7 +27,7 @@ unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header);
 class VaapiJpegDecoder : public VaapiImageDecoder {
  public:
   VaapiJpegDecoder() = default;
-  ~VaapiJpegDecoder() override = default;
+  ~VaapiJpegDecoder() override;
 
   // VaapiImageDecoder implementation.
   bool Initialize(const base::RepeatingClosure& error_uma_cb) override;

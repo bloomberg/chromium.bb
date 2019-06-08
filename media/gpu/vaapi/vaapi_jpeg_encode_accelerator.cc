@@ -160,8 +160,8 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
     return;
   }
   va_surface_id_ = va_surface->id();
+  vaapi_wrapper_->DestroyContext();
 
-  vaapi_wrapper_->DestroyContextAndSurfaces();
   const bool success = vaapi_wrapper_->CreateContext(
       VaapiWrapper::BufferFormatToVARTFormat(buffer_format), input_size);
   if (!success) {
@@ -275,7 +275,8 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
 
   // Recreate VASurface if the video frame's size changed.
   if (input_size != surface_size_ || va_surface_id_ == VA_INVALID_SURFACE) {
-    vaapi_wrapper_->DestroyContextAndSurfaces();
+    vaapi_wrapper_->DestroyContextAndSurfaces(
+        std::vector<VASurfaceID>({va_surface_id_}));
     va_surface_id_ = VA_INVALID_SURFACE;
     surface_size_ = gfx::Size();
 

@@ -142,30 +142,28 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   static uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt);
 
-  // Creates |num_surfaces| backing surfaces in driver for VASurfaces of
-  // |va_format|, each of size |size| and initializes |va_context_id_| with
-  // |format| and |size|. Returns true when successful, with the created IDs in
-  // |va_surfaces| to be managed and later wrapped in VASurfaces. The client
-  // must DestroyContextAndSurfaces() each time before calling this method again
-  // to free the allocated surfaces first, but is not required to do so at
-  // destruction time, as this will be done automatically from the destructor.
+  // Creates |num_surfaces| VASurfaceIDs of |va_format| and |size| and, if
+  // successful, creates a |va_context_id_| of the same format and size. Returns
+  // true if successful, with the created IDs in |va_surfaces|. The client is
+  // responsible for destroying |va_surfaces| via DestroyContextAndSurfaces() to
+  // free the allocated surfaces.
   virtual bool CreateContextAndSurfaces(unsigned int va_format,
                                         const gfx::Size& size,
                                         size_t num_surfaces,
                                         std::vector<VASurfaceID>* va_surfaces);
-  // Creates a VA Context associated with |format| and |size|, and sets
-  // |va_context_id_|. The |va_context_id_| will be destroyed by
-  // DestroyContextAndSurfaces().
+  // Releases the |va_surfaces| and destroys |va_context_id_|.
+  virtual void DestroyContextAndSurfaces(std::vector<VASurfaceID> va_surfaces);
+
+  // Creates a VA Context of |va_format| and |size|, and sets |va_context_id_|.
+  // The client is responsible for releasing it via DestroyContext() or
+  // DestroyContextAndSurfaces(), or it will be released on dtor.
   virtual bool CreateContext(unsigned int va_format, const gfx::Size& size);
+  // Destroys the context identified by |va_context_id_| and clears the local
+  // associated |va_surface_format_|.
+  void DestroyContext();
 
-  // Frees all memory allocated in CreateContextAndSurfaces() and destroys
-  // |va_context_id_|.
-  virtual void DestroyContextAndSurfaces();
-
-  // Create a VASurface for |pixmap|. The ownership of the surface is
-  // transferred to the caller. It differs from surfaces created using
-  // CreateContextAndSurfaces(), where VaapiWrapper is the owner of the
-  // surfaces.
+  // Creates a self-releasing VASurface from |pixmap|. The ownership of the
+  // surface is transferred to the caller.
   scoped_refptr<VASurface> CreateVASurfaceForPixmap(
       const scoped_refptr<gfx::NativePixmap>& pixmap);
 
@@ -268,7 +266,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Initialize static data before sandbox is enabled.
   static void PreSandboxInitialization();
 
-  // Get the created surfaces format.
+  // Get the created surfaces format. TODO(crbug.com/971891): remove.
   unsigned int va_surface_format() const { return va_surface_format_; }
 
  protected:
@@ -286,7 +284,14 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   void Deinitialize();
   bool VaInitialize(const base::Closure& report_error_to_uma_cb);
 
-  // Destroys a |va_surface_id|.
+  // Tries to allocate |num_surfaces| VASurfaceIDs of |size| and |va_format|.
+  // Fills |va_surfaces| and returns true if successful, or returns false.
+  bool CreateSurfaces(unsigned int va_format,
+                      const gfx::Size& size,
+                      size_t num_surfaces,
+                      std::vector<VASurfaceID>* va_surfaces);
+  // vaDestroySurfaces() a vector or a single VASurfaceID.
+  void DestroySurfaces(std::vector<VASurfaceID> va_surfaces);
   void DestroySurface(VASurfaceID va_surface_id);
 
   // Execute pending job in hardware and destroy pending buffers. Return false
@@ -304,10 +309,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // the lifetime of VaapiWrapper.
   base::Lock* va_lock_;
 
-  // Allocated ids for VASurfaces.
-  std::vector<VASurfaceID> va_surface_ids_;
-
-  // VA format of surfaces with va_surface_ids_.
+  // VA format of allocated surfaces. TODO(crbug.com/971891): remove.
   unsigned int va_surface_format_;
 
   // VA handles.
@@ -315,7 +317,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   VADisplay va_display_ GUARDED_BY(va_lock_);
   VAConfigID va_config_id_;
   // Created in CreateContext() or CreateContextAndSurfaces() and valid until
-  // DestroyContextAndSurfaces().
+  // DestroyContext() or DestroyContextAndSurfaces().
   VAContextID va_context_id_;
 
   // Data queued up for HW codec, to be committed on next execution.

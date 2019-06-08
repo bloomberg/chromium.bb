@@ -210,6 +210,13 @@ unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header) {
   return kInvalidVaRtFormat;
 }
 
+VaapiJpegDecoder::~VaapiJpegDecoder() {
+  if (vaapi_wrapper_) {
+    vaapi_wrapper_->DestroyContextAndSurfaces(
+        std::vector<VASurfaceID>({va_surface_id_}));
+  }
+}
+
 bool VaapiJpegDecoder::Initialize(const base::RepeatingClosure& error_uma_cb) {
   vaapi_wrapper_ = VaapiWrapper::Create(VaapiWrapper::kDecode,
                                         VAProfileJPEGBaseline, error_uma_cb);
@@ -260,7 +267,8 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
       base::strict_cast<int>(parse_result.frame_header.coded_height));
   if (new_coded_size != coded_size_ || va_surface_id_ == VA_INVALID_SURFACE ||
       picture_va_rt_format != va_rt_format_) {
-    vaapi_wrapper_->DestroyContextAndSurfaces();
+    vaapi_wrapper_->DestroyContextAndSurfaces(
+        std::vector<VASurfaceID>({va_surface_id_}));
     va_surface_id_ = VA_INVALID_SURFACE;
     va_rt_format_ = picture_va_rt_format;
 

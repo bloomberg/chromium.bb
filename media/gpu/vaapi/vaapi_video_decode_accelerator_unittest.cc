@@ -72,7 +72,7 @@ class MockVaapiWrapper : public VaapiWrapper {
       CreateContextAndSurfaces,
       bool(unsigned int, const gfx::Size&, size_t, std::vector<VASurfaceID>*));
   MOCK_METHOD2(CreateContext, bool(unsigned int, const gfx::Size&));
-  MOCK_METHOD0(DestroyContextAndSurfaces, void());
+  MOCK_METHOD1(DestroyContextAndSurfaces, void(std::vector<VASurfaceID>));
 
  private:
   ~MockVaapiWrapper() override = default;
@@ -229,7 +229,12 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
     const size_t kNumReferenceFrames = num_pictures / 2;
     EXPECT_CALL(*mock_decoder_, GetNumReferenceFrames())
         .WillOnce(Return(kNumReferenceFrames));
-    EXPECT_CALL(*mock_vaapi_wrapper_, DestroyContextAndSurfaces());
+    if (vda_.buffer_allocation_mode_ !=
+        VaapiVideoDecodeAccelerator::BufferAllocationMode::kNone) {
+      EXPECT_CALL(*mock_vaapi_wrapper_, DestroyContextAndSurfaces(_));
+    } else {
+      // TODO(crbug.com/971891): Make virtual and expect DestroyContext().
+    }
 
     if (expect_dismiss_picture_buffers) {
       EXPECT_CALL(*this, DismissPictureBuffer(_))

@@ -564,8 +564,13 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
 
   // All surfaces released, destroy them and dismiss all PictureBuffers.
   awaiting_va_surfaces_recycle_ = false;
+  if (buffer_allocation_mode_ != BufferAllocationMode::kNone) {
+    vaapi_wrapper_->DestroyContextAndSurfaces(std::vector<VASurfaceID>(
+        available_va_surfaces_.begin(), available_va_surfaces_.end()));
+  } else {
+    vaapi_wrapper_->DestroyContext();
+  }
   available_va_surfaces_.clear();
-  vaapi_wrapper_->DestroyContextAndSurfaces();
 
   for (auto iter = pictures_.begin(); iter != pictures_.end(); ++iter) {
     VLOGF(2) << "Dismissing picture id: " << iter->first;
@@ -948,7 +953,14 @@ void VaapiVideoDecodeAccelerator::Cleanup() {
     base::AutoUnlock auto_unlock(lock_);
     decoder_thread_.Stop();
   }
-
+  if (vaapi_wrapper_) {
+    if (buffer_allocation_mode_ != BufferAllocationMode::kNone) {
+      vaapi_wrapper_->DestroyContextAndSurfaces(std::vector<VASurfaceID>(
+          available_va_surfaces_.begin(), available_va_surfaces_.end()));
+    } else {
+      vaapi_wrapper_->DestroyContext();
+    }
+  }
   state_ = kUninitialized;
 }
 

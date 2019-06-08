@@ -765,7 +765,8 @@ void VaapiVideoEncodeAccelerator::DestroyTask() {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   // Clean up members that are to be accessed on the encoder thread only.
-  available_va_surface_ids_.clear();
+  if (vaapi_wrapper_)
+    vaapi_wrapper_->DestroyContextAndSurfaces(available_va_surface_ids_);
   available_va_buffer_ids_.clear();
 
   while (!available_bitstream_buffers_.empty())
