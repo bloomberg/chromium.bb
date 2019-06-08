@@ -111,7 +111,7 @@ bool IsDeviceBlacklistedForQueryingDetailedFrameRates(
 
 bool IsDeviceBlacklistedForMediaFoundationByModelId(
     const std::string& model_id) {
-  return base::ContainsValue(kModelIdsBlacklistedForMediaFoundation, model_id);
+  return base::Contains(kModelIdsBlacklistedForMediaFoundation, model_id);
 }
 
 bool LoadMediaFoundationDlls() {

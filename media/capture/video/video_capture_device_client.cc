@@ -479,7 +479,7 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
 
   DCHECK_NE(VideoCaptureBufferPool::kInvalidId, buffer_id);
 
-  if (!base::ContainsValue(buffer_ids_known_by_receiver_, buffer_id)) {
+  if (!base::Contains(buffer_ids_known_by_receiver_, buffer_id)) {
     media::mojom::VideoBufferHandlePtr buffer_handle =
         media::mojom::VideoBufferHandle::New();
     switch (target_buffer_type_) {

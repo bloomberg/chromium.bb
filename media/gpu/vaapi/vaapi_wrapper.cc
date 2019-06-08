@@ -164,7 +164,7 @@ bool IsBlackListedDriver(const std::string& va_vendor_string,
         base::StartsWith(va_vendor_string, info.va_driver,
                          base::CompareCase::SENSITIVE) &&
         va_vendor_string.find(info.cpu_family) != std::string::npos &&
-        base::ContainsValue(info.va_profiles, va_profile)) {
+        base::Contains(info.va_profiles, va_profile)) {
       return true;
     }
   }
@@ -644,7 +644,7 @@ bool VASupportedProfiles::IsEntrypointSupported_Locked(
     return false;
   }
 
-  return base::ContainsValue(supported_entrypoints, entrypoint);
+  return base::Contains(supported_entrypoints, entrypoint);
 }
 
 bool VASupportedProfiles::AreAttribsSupported_Locked(

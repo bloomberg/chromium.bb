@@ -236,8 +236,7 @@ bool FrameRendererThumbnail::ValidateThumbnail() {
   // Calculate the thumbnail's checksum and compare it to golden values.
   std::string md5_string = base::MD5String(
       base::StringPiece(reinterpret_cast<char*>(&rgb[0]), rgb.size()));
-  bool is_valid_thumbnail =
-      base::ContainsValue(thumbnail_checksums_, md5_string);
+  bool is_valid_thumbnail = base::Contains(thumbnail_checksums_, md5_string);
 
   return is_valid_thumbnail;
 }

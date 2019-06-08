@@ -249,7 +249,7 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
       }
     }
     picture = pictures_[picture_buffer_id].get();
-    DCHECK(base::ContainsValue(available_picture_buffers_, picture_buffer_id));
+    DCHECK(base::Contains(available_picture_buffers_, picture_buffer_id));
     base::Erase(available_picture_buffers_, picture_buffer_id);
   }
 
@@ -673,7 +673,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
         va_surface_ids.push_back(va_surface_id);
     }
 
-    DCHECK(!base::ContainsKey(pictures_, buffers[i].id()));
+    DCHECK(!base::Contains(pictures_, buffers[i].id()));
     pictures_[buffers[i].id()] = std::move(picture);
 
     surfaces_available_.Signal();
@@ -1034,8 +1034,7 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
   for (const VASurfaceID va_surface_id : available_va_surfaces_) {
     for (const auto& id_and_picture : pictures_) {
       if (id_and_picture.second->va_surface_id() == va_surface_id &&
-          base::ContainsValue(available_picture_buffers_,
-                              id_and_picture.first)) {
+          base::Contains(available_picture_buffers_, id_and_picture.first)) {
         // Remove |va_surface_id| from the list of availables, and use the id
         // to return a new VASurface.
         base::Erase(available_va_surfaces_, va_surface_id);

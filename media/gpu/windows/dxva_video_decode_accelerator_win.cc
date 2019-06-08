@@ -736,8 +736,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
   main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   if (!config.supported_output_formats.empty() &&
-      !base::ContainsValue(config.supported_output_formats,
-                           PIXEL_FORMAT_NV12)) {
+      !base::Contains(config.supported_output_formats, PIXEL_FORMAT_NV12)) {
     DisableSharedTextureSupport();
     support_copy_nv12_textures_ = false;
   }

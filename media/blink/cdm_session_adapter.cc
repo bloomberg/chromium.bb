@@ -87,7 +87,7 @@ bool CdmSessionAdapter::RegisterSession(
     const std::string& session_id,
     base::WeakPtr<WebContentDecryptionModuleSessionImpl> session) {
   // If this session ID is already registered, don't register it again.
-  if (base::ContainsKey(sessions_, session_id))
+  if (base::Contains(sessions_, session_id))
     return false;
 
   sessions_[session_id] = session;
@@ -95,7 +95,7 @@ bool CdmSessionAdapter::RegisterSession(
 }
 
 void CdmSessionAdapter::UnregisterSession(const std::string& session_id) {
-  DCHECK(base::ContainsKey(sessions_, session_id));
+  DCHECK(base::Contains(sessions_, session_id));
   sessions_.erase(session_id);
 }
 

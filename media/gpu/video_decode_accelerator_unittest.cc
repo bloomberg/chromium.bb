@@ -1399,7 +1399,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
     base::FilePath filepath(test_video_files_[0]->file_name);
     auto golden_md5s = media::test::ReadGoldenThumbnailMD5s(
         filepath.AddExtension(FILE_PATH_LITERAL(".md5")));
-    bool is_valid_thumbnail = base::ContainsValue(golden_md5s, md5_string);
+    bool is_valid_thumbnail = base::Contains(golden_md5s, md5_string);
 
     // Convert raw RGBA into PNG for export.
     std::vector<unsigned char> png;

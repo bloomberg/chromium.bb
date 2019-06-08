@@ -939,8 +939,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           return false;
 
         return resource->resource_format() != output_resource_format ||
-               !base::ContainsValue(outplane_plane_sizes,
-                                    resource->resource_size());
+               !base::Contains(outplane_plane_sizes, resource->resource_size());
       };
   base::EraseIf(all_resources_, can_delete_resource_fn);
 

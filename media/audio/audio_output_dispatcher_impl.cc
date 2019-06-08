@@ -88,7 +88,7 @@ bool AudioOutputDispatcherImpl::StartStream(
   double volume = 0;
   stream_proxy->GetVolume(&volume);
   physical_stream->SetVolume(volume);
-  DCHECK(base::ContainsKey(audio_logs_, physical_stream));
+  DCHECK(base::Contains(audio_logs_, physical_stream));
   AudioLog* const audio_log = audio_logs_[physical_stream].get();
   audio_log->OnSetVolume(volume);
   physical_stream->Start(callback);
@@ -115,7 +115,7 @@ void AudioOutputDispatcherImpl::StreamVolumeSet(AudioOutputProxy* stream_proxy,
   if (it != proxy_to_physical_map_.end()) {
     AudioOutputStream* physical_stream = it->second;
     physical_stream->SetVolume(volume);
-    DCHECK(base::ContainsKey(audio_logs_, physical_stream));
+    DCHECK(base::Contains(audio_logs_, physical_stream));
     audio_logs_[physical_stream]->OnSetVolume(volume);
   }
 }
@@ -188,7 +188,7 @@ void AudioOutputDispatcherImpl::CloseIdleStreams(size_t keep_alive) {
 void AudioOutputDispatcherImpl::StopPhysicalStream(AudioOutputStream* stream) {
   DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
   stream->Stop();
-  DCHECK(base::ContainsKey(audio_logs_, stream));
+  DCHECK(base::Contains(audio_logs_, stream));
   audio_logs_[stream]->OnStopped();
   idle_streams_.push_back(stream);
   close_timer_.Reset();
