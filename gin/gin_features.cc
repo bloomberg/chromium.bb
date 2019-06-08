@@ -26,4 +26,12 @@ const base::Feature kV8MemoryReducerForSmallHeaps{
 const base::Feature kV8HugeMaxOldGenerationSize{
     "V8HugeMaxOldGenerationSize", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables new background GC scheduling heuristics.
+const base::Feature kV8GCBackgroundSchedule{"V8GCBackgroundSchedule",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Perform less compaction in non-memory reducing mode.
+const base::Feature kV8GCLessCompaction{"V8GCLessCompaction",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
