@@ -49,9 +49,9 @@ struct SwitchLanguageData {
   Profile* profile;
 };
 
-// Runs on SequencedWorkerPool thread under PostTaskAndReply().
-// So data is owned by "Reply" part of PostTaskAndReply() process.
-void SwitchLanguageDoReloadLocale(SwitchLanguageData* data) {
+// Runs on ThreadPool thread under PostTaskAndReply().
+std::unique_ptr<SwitchLanguageData> SwitchLanguageDoReloadLocale(
+    std::unique_ptr<SwitchLanguageData> data) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   data->result.loaded_locale =
@@ -59,6 +59,8 @@ void SwitchLanguageDoReloadLocale(SwitchLanguageData* data) {
           data->result.requested_locale);
 
   data->result.success = !data->result.loaded_locale.empty();
+
+  return data;
 }
 
 // Callback after SwitchLanguageDoReloadLocale() back in UI thread.
@@ -142,14 +144,14 @@ void SwitchLanguage(const std::string& locale,
                     const SwitchLanguageCallback& callback,
                     Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::unique_ptr<SwitchLanguageData> data(
-      new SwitchLanguageData(locale, enable_locale_keyboard_layouts,
-                             login_layouts_only, callback, profile));
-  base::Closure reloader(
-      base::Bind(&SwitchLanguageDoReloadLocale, base::Unretained(data.get())));
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT}, reloader,
-      base::Bind(&FinishSwitchLanguage, base::Passed(std::move(data))));
+  auto data = std::make_unique<SwitchLanguageData>(
+      locale, enable_locale_keyboard_layouts, login_layouts_only, callback,
+      profile);
+  // USER_BLOCKING because it blocks startup on ChromeOS. crbug.com/968554
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&SwitchLanguageDoReloadLocale, std::move(data)),
+      base::BindOnce(&FinishSwitchLanguage));
 }
 
 bool IsAllowedLanguage(const std::string& language, const PrefService* prefs) {
