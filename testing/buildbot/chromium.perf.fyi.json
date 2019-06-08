@@ -90,7 +90,7 @@
       }
     ]
   },
-  "win_laptop_low_end-perf_HP-Candidate": {
+  "win-10_laptop_low_end-perf_HP-Candidate": {
     "isolated_scripts": [
       {
         "args": [
@@ -98,7 +98,7 @@
           "--browser=release_x64",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=win_laptop_low_end-perf_HP-Candidate_map.json"
+          "--test-shard-map-filename=win-10_laptop_low_end-perf_HP-Candidate_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -112,6 +112,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "gpu": null,
               "id": "build370-a7",
               "pool": "chrome.tests.perf-fyi"
             }

@@ -105,10 +105,10 @@ _LINUX_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_HIGH_END_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_LOW_END_BENCHMARK_NAMES = OFFICIAL_BENCHMARK_NAMES
 _WIN_10_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_NAMES = frozenset([
+    'rendering.desktop'])
 _WIN_7_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _WIN_7_GPU_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
-_WIN_LOW_END_HP_CANDIDATE_BENCHMARK_NAMES = frozenset([
-    'rendering.desktop'])
 _ANDROID_GO_BENCHMARK_NAMES = frozenset([
     'memory.top_10_mobile',
     'system_health.memory_mobile',
@@ -187,9 +187,9 @@ ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
     _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_NAMES, num_shards=28)
 
 # FYI bots
-WIN_LOW_END_HP_CANDIDATE = PerfPlatform(
-    'win_laptop_low_end-perf_HP-Candidate', 'HP 15-BS121NR Laptop Candidate',
-    _WIN_LOW_END_HP_CANDIDATE_BENCHMARK_NAMES,
+WIN_10_LOW_END_HP_CANDIDATE = PerfPlatform(
+    'win-10_laptop_low_end-perf_HP-Candidate', 'HP 15-BS121NR Laptop Candidate',
+    _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_NAMES,
     num_shards=1, platform_os='win', is_fyi=True)
 ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
     'android-nexus5x-perf-fyi', 'Android MMB29Q',

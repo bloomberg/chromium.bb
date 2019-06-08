@@ -129,7 +129,7 @@ FYI_BUILDERS = {
       'pool': 'chrome.tests.perf-fyi',
     },
   },
-  'win_laptop_low_end-perf_HP-Candidate': {
+  'win-10_laptop_low_end-perf_HP-Candidate': {
     'tests': [
       {
         'isolate': 'performance_test_suite',
@@ -137,7 +137,7 @@ FYI_BUILDERS = {
         'extra_args': [
             '--run-ref-build',
             '--test-shard-map-filename='
-            'win_laptop_low_end-perf_HP-Candidate_map.json',
+            'win-10_laptop_low_end-perf_HP-Candidate_map.json',
         ],
       },
     ],
@@ -146,6 +146,9 @@ FYI_BUILDERS = {
     'dimension': {
       'pool': 'chrome.tests.perf-fyi',
       'id': 'build370-a7',
+      # (TODO crbug.com/971204) Explicitly set the gpu to None to make
+      # chromium_swarming recipe_module ignore this dimension.
+      'gpu': None,
     },
   },
 }
