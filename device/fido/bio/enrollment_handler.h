@@ -22,10 +22,10 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
     : public FidoRequestHandlerBase {
  public:
-  using ReadyCallback = base::OnceCallback<void(CtapDeviceResponseCode)>;
-  using GetPINCallback = base::RepeatingCallback<void(
-      int64_t retries,
-      base::OnceCallback<void(std::string)> pin_callback)>;
+  using ErrorCallback = base::OnceCallback<void(FidoReturnCode)>;
+  using GetPINCallback =
+      base::RepeatingCallback<void(int64_t retries,
+                                   base::OnceCallback<void(std::string)>)>;
   using ResponseCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<BioEnrollmentResponse>)>;
@@ -33,7 +33,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   BioEnrollmentHandler(
       service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
-      ReadyCallback ready_callback,
+      base::OnceClosure ready_callback,
+      ErrorCallback error_callback,
       GetPINCallback get_pin_callback,
       FidoDiscoveryFactory* factory =
           std::make_unique<FidoDiscoveryFactory>().get());
@@ -64,7 +65,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   SEQUENCE_CHECKER(sequence_checker);
 
   FidoAuthenticator* authenticator_ = nullptr;
-  ReadyCallback ready_callback_;
+  base::OnceClosure ready_callback_;
+  ErrorCallback error_callback_;
   GetPINCallback get_pin_callback_;
   ResponseCallback response_callback_;
   base::OnceClosure status_callback_;

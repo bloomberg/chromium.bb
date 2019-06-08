@@ -41,6 +41,7 @@ enum class FidoReturnCode : uint8_t {
   // kStorageFull indicates that a resident credential could not be created
   // because the authenticator has insufficient storage.
   kStorageFull,
+  kAuthenticatorMissingBioEnrollment,
 };
 
 enum class ProtocolVersion {

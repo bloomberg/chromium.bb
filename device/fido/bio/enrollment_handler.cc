@@ -14,11 +14,13 @@ namespace device {
 BioEnrollmentHandler::BioEnrollmentHandler(
     service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
-    ReadyCallback ready_callback,
+    base::OnceClosure ready_callback,
+    ErrorCallback error_callback,
     GetPINCallback get_pin_callback,
     FidoDiscoveryFactory* factory)
     : FidoRequestHandlerBase(connector, factory, supported_transports),
       ready_callback_(std::move(ready_callback)),
+      error_callback_(std::move(error_callback)),
       get_pin_callback_(std::move(get_pin_callback)),
       weak_factory_(this) {
   Start();
@@ -83,10 +85,18 @@ void BioEnrollmentHandler::DispatchRequest(FidoAuthenticator* authenticator) {
 void BioEnrollmentHandler::AuthenticatorRemoved(
     FidoDiscoveryBase* discovery,
     FidoAuthenticator* authenticator) {
-  if (authenticator_ == authenticator) {
-    authenticator_ = nullptr;
-  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
   FidoRequestHandlerBase::AuthenticatorRemoved(discovery, authenticator);
+  if (authenticator_ != authenticator) {
+    return;
+  }
+
+  authenticator_ = nullptr;
+
+  std::move(error_callback_)
+      .Run(pin_token_response_
+               ? FidoReturnCode::kAuthenticatorRemovedDuringPINEntry
+               : FidoReturnCode::kSuccess);
 }
 
 void BioEnrollmentHandler::OnTouch(FidoAuthenticator* authenticator) {
@@ -96,7 +106,8 @@ void BioEnrollmentHandler::OnTouch(FidoAuthenticator* authenticator) {
       authenticator->Options()->bio_enrollment_availability_preview ==
           AuthenticatorSupportedOptions::BioEnrollmentAvailability::
               kNotSupported) {
-    std::move(ready_callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther);
+    std::move(error_callback_)
+        .Run(FidoReturnCode::kAuthenticatorMissingBioEnrollment);
     return;
   }
 
@@ -109,9 +120,15 @@ void BioEnrollmentHandler::OnRetriesResponse(
     CtapDeviceResponseCode code,
     base::Optional<pin::RetriesResponse> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-  if (code != CtapDeviceResponseCode::kSuccess) {
+  if (!response || code != CtapDeviceResponseCode::kSuccess) {
     FIDO_LOG(DEBUG) << "OnRetriesResponse failed: " << static_cast<int>(code);
-    std::move(ready_callback_).Run(code);
+    std::move(error_callback_)
+        .Run(FidoReturnCode::kAuthenticatorResponseInvalid);
+    return;
+  }
+
+  if (response->retries == 0) {
+    std::move(error_callback_).Run(FidoReturnCode::kHardPINBlock);
     return;
   }
 
@@ -121,6 +138,8 @@ void BioEnrollmentHandler::OnRetriesResponse(
 }
 
 void BioEnrollmentHandler::OnHavePIN(std::string pin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+
   authenticator_->GetEphemeralKey(
       base::BindOnce(&BioEnrollmentHandler::OnHaveEphemeralKey,
                      weak_factory_.GetWeakPtr(), std::move(pin)));
@@ -132,9 +151,11 @@ void BioEnrollmentHandler::OnHaveEphemeralKey(
     base::Optional<pin::KeyAgreementResponse> response) {
   if (code != CtapDeviceResponseCode::kSuccess) {
     FIDO_LOG(DEBUG) << "OnHaveEphemeralKey failed: " << static_cast<int>(code);
-    std::move(ready_callback_).Run(code);
+    std::move(error_callback_)
+        .Run(FidoReturnCode::kAuthenticatorResponseInvalid);
     return;
   }
+
   authenticator_->GetPINToken(
       std::move(pin), *response,
       base::BindOnce(&BioEnrollmentHandler::OnHavePINToken,
@@ -150,15 +171,24 @@ void BioEnrollmentHandler::OnHavePINToken(
     return;
   }
 
-  if (!response || code != CtapDeviceResponseCode::kSuccess) {
-    FIDO_LOG(DEBUG) << "OnHavePINToken failed: " << static_cast<int>(code);
-    std::move(ready_callback_).Run(code);
-    return;
+  switch (code) {
+    case CtapDeviceResponseCode::kCtap2ErrPinAuthBlocked:
+      std::move(error_callback_).Run(FidoReturnCode::kSoftPINBlock);
+      return;
+    case CtapDeviceResponseCode::kCtap2ErrPinBlocked:
+      std::move(error_callback_).Run(FidoReturnCode::kHardPINBlock);
+      return;
+    default:
+      std::move(error_callback_)
+          .Run(FidoReturnCode::kAuthenticatorResponseInvalid);
+      return;
+    case CtapDeviceResponseCode::kSuccess:
+      // fall through on success
+      break;
   }
 
   pin_token_response_ = *response;
-
-  std::move(ready_callback_).Run(CtapDeviceResponseCode::kSuccess);
+  std::move(ready_callback_).Run();
 }
 
 void BioEnrollmentHandler::OnEnroll(

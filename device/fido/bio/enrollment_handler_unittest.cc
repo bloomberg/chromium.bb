@@ -32,7 +32,7 @@ class BioEnrollmentHandlerTest : public ::testing::Test {
         /*connector=*/nullptr,
         base::flat_set<FidoTransportProtocol>{
             FidoTransportProtocol::kUsbHumanInterfaceDevice},
-        ready_callback_.callback(),
+        ready_callback_.callback(), error_callback_.callback(),
         base::BindRepeating(&BioEnrollmentHandlerTest::GetPIN,
                             base::Unretained(this)),
         &virtual_device_factory_);
@@ -44,7 +44,8 @@ class BioEnrollmentHandlerTest : public ::testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  test::TestCallbackReceiver<CtapDeviceResponseCode> ready_callback_;
+  test::TestCallbackReceiver<> ready_callback_;
+  test::ValueCallbackReceiver<FidoReturnCode> error_callback_;
   test::VirtualFidoDeviceFactory virtual_device_factory_;
 };
 
@@ -58,8 +59,6 @@ TEST_F(BioEnrollmentHandlerTest, Modality) {
 
   auto handler = MakeHandler();
   ready_callback_.WaitForCallback();
-  EXPECT_EQ(std::get<0>(ready_callback_.TakeResult()),
-            CtapDeviceResponseCode::kSuccess);
 
   test::StatusAndValueCallbackReceiver<CtapDeviceResponseCode,
                                        base::Optional<BioEnrollmentResponse>>
@@ -90,8 +89,6 @@ TEST_F(BioEnrollmentHandlerTest, FingerprintSensorInfo) {
 
   auto handler = MakeHandler();
   ready_callback_.WaitForCallback();
-  EXPECT_EQ(std::get<0>(ready_callback_.TakeResult()),
-            CtapDeviceResponseCode::kSuccess);
 
   test::StatusAndValueCallbackReceiver<CtapDeviceResponseCode,
                                        base::Optional<BioEnrollmentResponse>>
@@ -120,9 +117,9 @@ TEST_F(BioEnrollmentHandlerTest, NoBioEnrollmentSupport) {
   virtual_device_factory_.SetCtap2Config(config);
 
   auto handler = MakeHandler();
-  ready_callback_.WaitForCallback();
-  EXPECT_EQ(std::get<0>(ready_callback_.TakeResult()),
-            CtapDeviceResponseCode::kCtap2ErrOther);
+  error_callback_.WaitForCallback();
+  EXPECT_EQ(error_callback_.value(),
+            FidoReturnCode::kAuthenticatorMissingBioEnrollment);
 
   // Test unsupported bio-enrollment command.
   test::StatusAndValueCallbackReceiver<CtapDeviceResponseCode,
@@ -155,8 +152,6 @@ TEST_F(BioEnrollmentHandlerTest, Enroll) {
 
   auto handler = MakeHandler();
   ready_callback_.WaitForCallback();
-  EXPECT_EQ(std::get<0>(ready_callback_.TakeResult()),
-            CtapDeviceResponseCode::kSuccess);
 
   test::StatusAndValueCallbackReceiver<CtapDeviceResponseCode,
                                        base::Optional<BioEnrollmentResponse>>
