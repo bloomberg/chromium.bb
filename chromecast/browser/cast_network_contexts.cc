@@ -205,6 +205,8 @@ network::mojom::NetworkContextPtr CastNetworkContexts::CreateNetworkContext(
   network::mojom::NetworkContextParamsPtr context_params =
       CreateDefaultNetworkContextParams();
 
+  content::UpdateCorsExemptHeader(context_params.get());
+
   // Copy of what's in ContentBrowserClient::CreateNetworkContext for now.
   context_params->accept_language = "en-us,en";
 
@@ -279,6 +281,7 @@ network::mojom::NetworkContextParamsPtr
 CastNetworkContexts::CreateSystemNetworkContextParams() {
   network::mojom::NetworkContextParamsPtr network_context_params =
       CreateDefaultNetworkContextParams();
+  content::UpdateCorsExemptHeader(network_context_params.get());
 
   network_context_params->context_name = std::string("system");
 
