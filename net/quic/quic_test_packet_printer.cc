@@ -78,21 +78,21 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
   }
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta /*ack_delay_time*/) override {
-    *output_ << "OnAckFrameStart, largest_acked: " << largest_acked;
+    *output_ << "OnAckFrameStart, largest_acked: " << largest_acked << "\n";
     return true;
   }
   bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override {
-    *output_ << "OnAckRange: [" << start << ", " << end << ")";
+    *output_ << "OnAckRange: [" << start << ", " << end << ")\n";
     return true;
   }
   bool OnAckTimestamp(QuicPacketNumber packet_number,
                       QuicTime timestamp) override {
     *output_ << "OnAckTimestamp: [" << packet_number << ", "
-             << timestamp.ToDebuggingValue() << ")";
+             << timestamp.ToDebuggingValue() << ")\n";
     return true;
   }
   bool OnAckFrameEnd(QuicPacketNumber start) override {
-    *output_ << "OnAckFrameEnd, start: " << start;
+    *output_ << "OnAckFrameEnd, start: " << start << "\n";
     return true;
   }
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {

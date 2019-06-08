@@ -808,10 +808,9 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      quic::QuicStreamOffset offset,
       quic::QuicStringPiece data) {
-    return server_maker_.MakeDataPacket(
-        packet_number, stream_id, should_include_version, fin, offset, data);
+    return server_maker_.MakeDataPacket(packet_number, stream_id,
+                                        should_include_version, fin, data);
   }
 
   quic::QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(int n) {
@@ -7233,8 +7232,7 @@ TEST_P(QuicStreamFactoryTest, DefaultRetransmittableOnWireTimeoutForMigration) {
         server_maker_.MakeDataPacket(
             packet_number++,
             quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, offset,
-            base::StringPiece(spdy_frame.data() + offset, len)));
+            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
   }
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
@@ -7247,7 +7245,7 @@ TEST_P(QuicStreamFactoryTest, DefaultRetransmittableOnWireTimeoutForMigration) {
   socket_data1.AddRead(
       ASYNC, ConstructServerDataPacket(
                  3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
-                 0, header + "hello!"));
+                 header + "hello!"));
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
   socket_data1.AddWrite(
       SYNCHRONOUS, client_maker_.MakeRstPacket(
@@ -7391,8 +7389,7 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
         server_maker_.MakeDataPacket(
             packet_number++,
             quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, offset,
-            base::StringPiece(spdy_frame.data() + offset, len)));
+            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
   }
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
@@ -7405,7 +7402,7 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
   socket_data1.AddRead(
       ASYNC, ConstructServerDataPacket(
                  3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
-                 0, header + "hello!"));
+                 header + "hello!"));
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
   socket_data1.AddWrite(
       SYNCHRONOUS, client_maker_.MakeRstPacket(
@@ -7538,8 +7535,7 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeout) {
         server_maker_.MakeDataPacket(
             packet_number++,
             quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, offset,
-            base::StringPiece(spdy_frame.data() + offset, len)));
+            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
   }
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
@@ -7552,7 +7548,7 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeout) {
   socket_data1.AddRead(
       ASYNC, ConstructServerDataPacket(
                  3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
-                 0, header + "hello!"));
+                 header + "hello!"));
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
   socket_data1.AddWrite(
       SYNCHRONOUS, client_maker_.MakeRstPacket(
@@ -7674,8 +7670,7 @@ TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
         server_maker_.MakeDataPacket(
             packet_number++,
             quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, offset,
-            base::StringPiece(spdy_frame.data() + offset, len)));
+            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
   }
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
@@ -7685,7 +7680,7 @@ TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
   socket_data1.AddRead(
       ASYNC, ConstructServerDataPacket(
                  3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
-                 0, header + "hello!"));
+                 header + "hello!"));
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
   socket_data1.AddWrite(
       SYNCHRONOUS, client_maker_.MakeRstPacket(
@@ -7810,8 +7805,7 @@ TEST_P(QuicStreamFactoryTest,
         server_maker_.MakeDataPacket(
             packet_number++,
             quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, offset,
-            base::StringPiece(spdy_frame.data() + offset, len)));
+            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
   }
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
@@ -7824,7 +7818,7 @@ TEST_P(QuicStreamFactoryTest,
   socket_data1.AddRead(
       ASYNC, ConstructServerDataPacket(
                  3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
-                 0, header + "hello!"));
+                 header + "hello!"));
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
   socket_data1.AddWrite(
       SYNCHRONOUS, client_maker_.MakeRstPacket(
@@ -7948,8 +7942,7 @@ TEST_P(QuicStreamFactoryTest,
         server_maker_.MakeDataPacket(
             packet_number++,
             quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-            false, false, offset,
-            base::StringPiece(spdy_frame.data() + offset, len)));
+            false, false, base::StringPiece(spdy_frame.data() + offset, len)));
   }
   // Read an ACK from server which acks all client data.
   socket_data1.AddRead(SYNCHRONOUS,
@@ -7959,7 +7952,7 @@ TEST_P(QuicStreamFactoryTest,
   socket_data1.AddRead(
       ASYNC, ConstructServerDataPacket(
                  3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
-                 0, header + "hello!"));
+                 header + "hello!"));
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read.
   socket_data1.AddWrite(
       SYNCHRONOUS, client_maker_.MakeRstPacket(

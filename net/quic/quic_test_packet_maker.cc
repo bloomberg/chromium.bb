@@ -40,13 +40,14 @@ QuicTestPacketMaker::QuicTestPacketMaker(
       host_(host),
       spdy_request_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
       spdy_response_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
-      header_stream_offset_(0),
       perspective_(perspective),
       encryption_level_(quic::ENCRYPTION_FORWARD_SECURE),
       long_header_type_(quic::INVALID_PACKET_TYPE),
       client_headers_include_h2_stream_dependency_(
           client_headers_include_h2_stream_dependency &&
           version.transport_version >= quic::QUIC_VERSION_43) {
+  stream_offsets_[quic::QuicUtils::GetHeadersStreamId(
+      version_.transport_version)] = 0;
   DCHECK(!(perspective_ == quic::Perspective::IS_SERVER &&
            client_headers_include_h2_stream_dependency_));
 }
@@ -348,11 +349,9 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
   }
-  quic::QuicStreamFrame headers_frame(
+  quic::QuicStreamFrame headers_frame = GenerateNextStreamFrame(
       quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      header_stream_offset_,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  header_stream_offset_ += spdy_frame.size();
 
   quic::QuicFrames frames;
   frames.push_back(quic::QuicFrame(&rst_frame));
@@ -752,18 +751,17 @@ QuicTestPacketMaker::MakeHeadersDataPacket(uint64_t packet_number,
   return MakeDataPacket(
       packet_number,
       quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-      should_include_version, fin, header_stream_offset_, data);
+      should_include_version, fin, data);
 }
-// Returns a newly created packet to send kData on stream 1.
+
 std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeDataPacket(
     uint64_t packet_number,
     quic::QuicStreamId stream_id,
     bool should_include_version,
     bool fin,
-    quic::QuicStreamOffset offset,
     quic::QuicStringPiece data) {
   InitializeHeader(packet_number, should_include_version);
-  quic::QuicStreamFrame frame(stream_id, fin, offset, data);
+  quic::QuicStreamFrame frame = GenerateNextStreamFrame(stream_id, fin, data);
   DVLOG(1) << "Adding frame: " << frame;
   return MakePacket(header_, quic::QuicFrame(frame));
 }
@@ -774,17 +772,15 @@ QuicTestPacketMaker::MakeMultipleDataFramesPacket(
     quic::QuicStreamId stream_id,
     bool should_include_version,
     bool fin,
-    quic::QuicStreamOffset offset,
     const std::vector<std::string>& data_writes) {
   InitializeHeader(packet_number, should_include_version);
   quic::QuicFrames data_frames;
   for (size_t i = 0; i < data_writes.size(); ++i) {
     bool is_fin = fin && (i == data_writes.size() - 1);
-    quic::QuicFrame quic_frame(quic::QuicStreamFrame(
-        stream_id, is_fin, offset, quic::QuicStringPiece(data_writes[i])));
+    quic::QuicFrame quic_frame(
+        GenerateNextStreamFrame(stream_id, is_fin, data_writes[i]));
     DVLOG(1) << "Adding frame: " << quic_frame;
     data_frames.push_back(quic_frame);
-    offset += data_writes[i].length();
   }
   return MakeMultipleFramesPacket(header_, data_frames, nullptr);
 }
@@ -797,7 +793,6 @@ QuicTestPacketMaker::MakeAckAndDataPacket(uint64_t packet_number,
                                           uint64_t smallest_received,
                                           uint64_t least_unacked,
                                           bool fin,
-                                          quic::QuicStreamOffset offset,
                                           quic::QuicStringPiece data) {
   InitializeHeader(packet_number, include_version);
 
@@ -816,7 +811,7 @@ QuicTestPacketMaker::MakeAckAndDataPacket(uint64_t packet_number,
   DVLOG(1) << "Adding frame: " << frames.back();
 
   frames.push_back(
-      quic::QuicFrame(quic::QuicStreamFrame(stream_id, fin, offset, data)));
+      quic::QuicFrame(GenerateNextStreamFrame(stream_id, fin, data)));
   DVLOG(1) << "Adding frame: " << frames.back();
 
   return MakeMultipleFramesPacket(header_, frames, nullptr);
@@ -831,7 +826,6 @@ QuicTestPacketMaker::MakeAckAndMultipleDataFramesPacket(
     uint64_t smallest_received,
     uint64_t least_unacked,
     bool fin,
-    quic::QuicStreamOffset offset,
     const std::vector<std::string>& data_writes) {
   InitializeHeader(packet_number, include_version);
 
@@ -851,11 +845,10 @@ QuicTestPacketMaker::MakeAckAndMultipleDataFramesPacket(
 
   for (size_t i = 0; i < data_writes.size(); ++i) {
     bool is_fin = fin && (i == data_writes.size() - 1);
-    quic::QuicFrame quic_frame(quic::QuicStreamFrame(
-        stream_id, is_fin, offset, quic::QuicStringPiece(data_writes[i])));
+    quic::QuicFrame quic_frame(GenerateNextStreamFrame(
+        stream_id, is_fin, quic::QuicStringPiece(data_writes[i])));
     DVLOG(1) << "Adding frame: " << quic_frame;
     frames.push_back(quic_frame);
-    offset += data_writes[i].length();
   }
   return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
@@ -879,26 +872,22 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
   }
-  quic::QuicFrames frames;
-  quic::QuicStreamFrame frame(
+  quic::QuicStreamFrame frame = GenerateNextStreamFrame(
       quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      header_stream_offset_,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+  quic::QuicFrames frames;
   frames.push_back(quic::QuicFrame(frame));
   DVLOG(1) << "Adding frame: " << frames.back();
-  header_stream_offset_ += spdy_frame.size();
 
-  quic::QuicStreamOffset offset = 0;
   // quic::QuicFrame takes a raw pointer. Use a std::vector here so we keep
   // StreamFrames alive until MakeMultipleFramesPacket is done.
   std::vector<std::unique_ptr<quic::QuicStreamFrame>> stream_frames;
   for (size_t i = 0; i < data_writes.size(); ++i) {
     bool is_fin = fin && (i == data_writes.size() - 1);
-    quic::QuicFrame quic_frame(quic::QuicStreamFrame(
-        stream_id, is_fin, offset, quic::QuicStringPiece(data_writes[i])));
+    quic::QuicFrame quic_frame(GenerateNextStreamFrame(
+        stream_id, is_fin, quic::QuicStringPiece(data_writes[i])));
     DVLOG(1) << "Adding frame: " << quic_frame;
     frames.push_back(quic_frame);
-    offset += data_writes[i].length();
   }
   return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
@@ -939,11 +928,9 @@ QuicTestPacketMaker::MakeRequestHeadersPacketAndSaveData(
   if (spdy_headers_frame_length)
     *spdy_headers_frame_length = spdy_frame.size();
 
-  quic::QuicStreamFrame frame(
+  quic::QuicStreamFrame frame = GenerateNextStreamFrame(
       quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      header_stream_offset_,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  header_stream_offset_ += spdy_frame.size();
   return MakePacket(header_, quic::QuicFrame(frame));
 }
 
@@ -964,11 +951,9 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
   }
-  quic::QuicStreamFrame headers_frame(
+  quic::QuicStreamFrame headers_frame = GenerateNextStreamFrame(
       quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      header_stream_offset_,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  header_stream_offset_ += spdy_frame.size();
 
   quic::QuicRstStreamFrame rst_frame(1, stream_id, error_code, bytes_written);
 
@@ -1030,11 +1015,9 @@ QuicTestPacketMaker::MakePushPromisePacket(
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
   }
-  quic::QuicStreamFrame frame(
+  quic::QuicStreamFrame frame = GenerateNextStreamFrame(
       quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      header_stream_offset_,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  header_stream_offset_ += spdy_frame.size();
   return MakePacket(header_, quic::QuicFrame(frame));
 }
 
@@ -1076,11 +1059,9 @@ QuicTestPacketMaker::MakeResponseHeadersPacket(
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
   }
-  quic::QuicStreamFrame frame(
+  quic::QuicStreamFrame frame = GenerateNextStreamFrame(
       quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      header_stream_offset_,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  header_stream_offset_ += spdy_frame.size();
   return MakePacket(header_, quic::QuicFrame(frame));
 }
 
@@ -1213,11 +1194,9 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
   spdy::SpdySerializedFrame spdy_frame(
       spdy_request_framer_.SerializeFrame(settings_frame));
   InitializeHeader(packet_number, should_include_version);
-  quic::QuicStreamFrame quic_frame(
+  quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
       quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      header_stream_offset_,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  header_stream_offset_ += spdy_frame.size();
   return MakePacket(header_, quic::QuicFrame(quic_frame));
 }
 
@@ -1232,11 +1211,9 @@ QuicTestPacketMaker::MakeInitialSettingsPacketAndSaveData(
       spdy_request_framer_.SerializeFrame(settings_frame));
   InitializeHeader(packet_number, /*should_include_version*/ true);
   *stream_data = std::string(spdy_frame.data(), spdy_frame.size());
-  quic::QuicStreamFrame quic_frame(
+  quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
       quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      header_stream_offset_,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  header_stream_offset_ += spdy_frame.size();
   return MakePacket(header_, quic::QuicFrame(quic_frame));
 }
 
@@ -1255,11 +1232,9 @@ QuicTestPacketMaker::MakePriorityPacket(uint64_t packet_number,
   spdy::SpdySerializedFrame spdy_frame(
       spdy_request_framer_.SerializeFrame(priority_frame));
 
-  quic::QuicStreamFrame quic_frame(
+  quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
       quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      header_stream_offset_,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  header_stream_offset_ += spdy_frame.size();
   DVLOG(1) << "Adding frame: " << quic::QuicFrame(quic_frame);
   InitializeHeader(packet_number, should_include_version);
   return MakePacket(header_, quic::QuicFrame(quic_frame));
@@ -1299,11 +1274,9 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
         spdy_request_framer_.SerializeFrame(priority_frame)));
 
     spdy::SpdySerializedFrame* spdy_frame = spdy_frames.back().get();
-    quic::QuicStreamFrame stream_frame(
+    quic::QuicStreamFrame stream_frame = GenerateNextStreamFrame(
         quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-        header_stream_offset_,
         quic::QuicStringPiece(spdy_frame->data(), spdy_frame->size()));
-    header_stream_offset_ += spdy_frame->size();
 
     frames.push_back(quic::QuicFrame(stream_frame));
     DVLOG(1) << "Adding frame: " << frames.back();
@@ -1338,6 +1311,15 @@ bool QuicTestPacketMaker::ShouldIncludeVersion(bool include_version) const {
   return include_version;
 }
 
+quic::QuicStreamFrame QuicTestPacketMaker::GenerateNextStreamFrame(
+    quic::QuicStreamId stream_id,
+    bool fin,
+    quic::QuicStringPiece data) {
+  quic::QuicStreamFrame frame(stream_id, fin, stream_offsets_[stream_id], data);
+  stream_offsets_[stream_id] += data.length();
+  return frame;
+}
+
 quic::QuicPacketNumberLength QuicTestPacketMaker::GetPacketNumberLength()
     const {
   if (version_.transport_version > quic::QUIC_VERSION_43 &&
@@ -1368,7 +1350,9 @@ quic::QuicConnectionIdIncluded QuicTestPacketMaker::HasSourceConnectionId()
 }
 
 void QuicTestPacketMaker::Reset() {
-  header_stream_offset_ = 0;
+  for (const auto& kv : stream_offsets_) {
+    stream_offsets_[kv.first] = 0;
+  }
 }
 
 }  // namespace test

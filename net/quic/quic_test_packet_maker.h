@@ -17,6 +17,7 @@
 #include "net/base/request_priority.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream_frame_data_producer.h"
+#include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
@@ -184,7 +185,6 @@ class QuicTestPacketMaker {
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      quic::QuicStreamOffset offset,
       quic::QuicStringPiece data);
   std::unique_ptr<quic::QuicReceivedPacket> MakeHeadersDataPacket(
       uint64_t packet_number,
@@ -203,7 +203,6 @@ class QuicTestPacketMaker {
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      quic::QuicStreamOffset offset,
       const std::vector<std::string>& data_writes);
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndDataPacket(
       uint64_t packet_number,
@@ -213,7 +212,6 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked,
       bool fin,
-      quic::QuicStreamOffset offset,
       quic::QuicStringPiece data);
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndMultipleDataFramesPacket(
       uint64_t packet_number,
@@ -223,7 +221,6 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked,
       bool fin,
-      quic::QuicStreamOffset offset,
       const std::vector<std::string>& data);
 
   std::unique_ptr<quic::QuicReceivedPacket>
@@ -344,12 +341,14 @@ class QuicTestPacketMaker {
 
   void Reset();
 
-  quic::QuicStreamOffset header_stream_offset() const {
-    return header_stream_offset_;
+  quic::QuicStreamOffset header_stream_offset() {
+    return stream_offsets_[quic::QuicUtils::GetHeadersStreamId(
+        version_.transport_version)];
   }
 
   void set_header_stream_offset(quic::QuicStreamOffset offset) {
-    header_stream_offset_ = offset;
+    stream_offsets_[quic::QuicUtils::GetHeadersStreamId(
+        version_.transport_version)] = offset;
   }
 
  private:
@@ -372,6 +371,10 @@ class QuicTestPacketMaker {
 
   bool ShouldIncludeVersion(bool include_version) const;
 
+  quic::QuicStreamFrame GenerateNextStreamFrame(quic::QuicStreamId stream_id,
+                                                bool fin,
+                                                quic::QuicStringPiece data);
+
   quic::QuicPacketNumberLength GetPacketNumberLength() const;
 
   quic::QuicConnectionIdIncluded HasDestinationConnectionId() const;
@@ -384,7 +387,7 @@ class QuicTestPacketMaker {
   spdy::SpdyFramer spdy_request_framer_;
   spdy::SpdyFramer spdy_response_framer_;
   quic::test::MockRandom random_generator_;
-  quic::QuicStreamOffset header_stream_offset_;
+  std::map<quic::QuicStreamId, quic::QuicStreamOffset> stream_offsets_;
   quic::QuicPacketHeader header_;
   quic::Perspective perspective_;
   quic::EncryptionLevel encryption_level_;
