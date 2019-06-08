@@ -74,7 +74,7 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
                               ui::EF_MIDDLE_MOUSE_BUTTON);
 #endif
 
-  ink_drop_container =
+  ink_drop_container_ =
       AddChildView(std::make_unique<views::InkDropContainerView>());
 
   SetInkDropMode(InkDropMode::ON);
@@ -133,15 +133,16 @@ const char* NewTabButton::GetClassName() const {
 }
 
 void NewTabButton::Layout() {
-  ink_drop_container->SetBoundsRect(GetLocalBounds());
+  views::ImageButton::Layout();
+  ink_drop_container_->SetBoundsRect(GetLocalBounds());
 }
 
 void NewTabButton::AddLayerBeneathView(ui::Layer* new_layer) {
-  ink_drop_container->AddLayerBeneathView(new_layer);
+  ink_drop_container_->AddLayerBeneathView(new_layer);
 }
 
 void NewTabButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
-  ink_drop_container->RemoveLayerBeneathView(old_layer);
+  ink_drop_container_->RemoveLayerBeneathView(old_layer);
 }
 
 #if defined(OS_WIN)

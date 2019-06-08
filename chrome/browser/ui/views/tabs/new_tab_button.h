@@ -111,7 +111,7 @@ class NewTabButton : public views::ImageButton,
   TabStrip* tab_strip_;
 
   // Contains our ink drop layer so it can paint above our background.
-  views::InkDropContainerView* ink_drop_container;
+  views::InkDropContainerView* ink_drop_container_;
 
   // Promotional UI that appears next to the NewTabButton and encourages its
   // use. Owned by its NativeWidget.
