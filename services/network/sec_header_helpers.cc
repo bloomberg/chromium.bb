@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/sec_fetch_site.h"
+#include "services/network/sec_header_helpers.h"
 
 #include <algorithm>
 #include <string>
 
 #include "base/feature_list.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "services/network/initiator_lock_compatibility.h"
 #include "services/network/public/cpp/features.h"
@@ -113,6 +114,34 @@ void SetSecFetchSiteHeader(
       CalculateHeaderValue(*request, pending_redirect_url, factory_params);
   request->SetExtraRequestHeaderByName(
       kHeaderName, GetHeaderString(header_value), /* overwrite = */ true);
+}
+
+void MaybeRemoveSecHeaders(net::URLRequest* request,
+                           const GURL& pending_redirect_url) {
+  DCHECK(request);
+
+  if (!base::FeatureList::IsEnabled(features::kFetchMetadata))
+    return;
+
+  // If our redirect destination is not trusted it would not have had sec-ch- or
+  // sec-fetch- prefixed headers added to it. Our previous hops may have added
+  // these headers if the current url is trustworthy though so we should try to
+  // remove these now.
+  if (IsUrlPotentiallyTrustworthy(request->url()) &&
+      !IsUrlPotentiallyTrustworthy(pending_redirect_url)) {
+    // Check each of our request headers and if it is a "sec-ch-" or
+    // "sec-fetch-" prefixed header we'll remove it.
+    const net::HttpRequestHeaders::HeaderVector request_headers =
+        request->extra_request_headers().GetHeaderVector();
+    for (const auto& header : request_headers) {
+      if (StartsWith(header.key, "sec-ch-",
+                     base::CompareCase::INSENSITIVE_ASCII) ||
+          StartsWith(header.key, "sec-fetch-",
+                     base::CompareCase::INSENSITIVE_ASCII)) {
+        request->RemoveRequestHeaderByName(header.key);
+      }
+    }
+  }
 }
 
 }  // namespace network

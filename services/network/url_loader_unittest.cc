@@ -38,6 +38,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_info.h"
 #include "net/ssl/client_cert_identity_test_util.h"
 #include "net/test/cert_test_util.h"
@@ -99,6 +100,8 @@ constexpr char kBodyReadFromNetBeforePausedHistogram[] =
     "Network.URLLoader.BodyReadFromNetBeforePaused";
 
 constexpr char kTestAuthURL[] = "/auth-basic?password=PASS&realm=REALM";
+
+constexpr char kInsecureHost[] = "othersite.test";
 
 static ResourceRequest CreateResourceRequest(const char* method,
                                              const GURL& url) {
@@ -399,6 +402,14 @@ class URLLoaderTest : public testing::Test {
     test_server_.RegisterRequestMonitor(
         base::Bind(&URLLoaderTest::Monitor, base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
+
+    // Set up a scoped host resolver so that |kInsecureHost| will resolve to
+    // the loopback address and will let us access |test_server_|.
+    scoped_refptr<net::RuleBasedHostResolverProc> mock_resolver_proc =
+        base::MakeRefCounted<net::RuleBasedHostResolverProc>(nullptr);
+    mock_resolver_proc->AddRule(kInsecureHost, "127.0.0.1");
+    mock_host_resolver_ = std::make_unique<net::ScopedDefaultHostResolverProc>(
+        mock_resolver_proc.get());
   }
 
   // Attempts to load |url| and returns the resulting error code. If |body| is
@@ -700,6 +711,7 @@ class URLLoaderTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::EmbeddedTestServer test_server_;
+  std::unique_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_;
   std::unique_ptr<net::URLRequestContext> context_;
   ResourceScheduler resource_scheduler_;
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
@@ -1923,6 +1935,170 @@ TEST_F(URLLoaderTest, RedirectRemoveHeaderAndAddItBack) {
   const auto& request_headers2 = sent_request().headers;
   EXPECT_EQ("NewValue1", request_headers2.find("Header1")->second);
   EXPECT_EQ("Value2", request_headers2.find("Header2")->second);
+}
+
+// Validate Sec- prefixed headers are handled properly when redirecting from
+// insecure => secure urls. The Sec-Fetch-Site header should be re-added on the
+// secure url.
+TEST_F(URLLoaderTest, UpgradeAddsSecHeaders) {
+  // Set up a redirect to signal we will go from insecure => secure.
+  GURL url = test_server()->GetURL(
+      kInsecureHost,
+      "/server-redirect?" + test_server()->GetURL("/echo").spec());
+  ResourceRequest request = CreateResourceRequest("GET", url);
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  client()->RunUntilRedirectReceived();
+
+  // The initial request is received when the redirect before it has been
+  // followed. It should have no added Sec- headers as it is not trustworthy.
+  const auto& request_headers1 = sent_request().headers;
+  EXPECT_EQ(request_headers1.end(), request_headers1.find("Sec-Fetch-Site"));
+
+  // Now follow the redirect to the final destination and validate again.
+  loader->FollowRedirect({}, {}, base::nullopt);
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  // The Sec-Fetch-Site header should have been added again since we are now on
+  // a trustworthy url again.
+  const auto& request_headers2 = sent_request().headers;
+  EXPECT_EQ("cross-site", request_headers2.find("Sec-Fetch-Site")->second);
+}
+
+// Validate Sec- prefixed headers are properly handled when redirecting from
+// secure => insecure urls. All Sec-CH- and Sec-Fetch- prefixed
+// headers should be removed.
+TEST_F(URLLoaderTest, DowngradeRemovesSecHeaders) {
+  // Set up a redirect to signal we will go from secure => insecure.
+  GURL url = test_server()->GetURL(
+      "/server-redirect?" +
+      test_server()->GetURL(kInsecureHost, "/echo").spec());
+
+  // Add some initial headers to ensure the right ones are removed and
+  // everything else is left alone.
+  ResourceRequest request = CreateResourceRequest("GET", url);
+  request.headers.SetHeader("Sec-CH-UA", "Value1");
+  request.headers.SetHeader("Sec-Other-Type", "Value2");
+  request.headers.SetHeader("Other-Header", "Value3");
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  client()->RunUntilRedirectReceived();
+
+  // The initial request is received when the redirect before it has been
+  // followed. It should have all the Sec- headers as it is trustworthy. It
+  // should also have added a Sec-Fetch-Site header
+  const auto& request_headers1 = sent_request().headers;
+  EXPECT_EQ("Value1", request_headers1.find("Sec-CH-UA")->second);
+  EXPECT_EQ("Value2", request_headers1.find("Sec-Other-Type")->second);
+  EXPECT_EQ("Value3", request_headers1.find("Other-Header")->second);
+  EXPECT_EQ("same-origin", request_headers1.find("Sec-Fetch-Site")->second);
+
+  // Now follow the redirect to the final destination and validate again.
+  loader->FollowRedirect({}, {}, base::nullopt);
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  // We should have removed our special Sec-CH- and Sec-Fetch- prefixed headers
+  // and left the others. We are now operating on an un-trustworthy context.
+  const auto& request_headers2 = sent_request().headers;
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-CH-UA"));
+  EXPECT_EQ("Value2", request_headers2.find("Sec-Other-Type")->second);
+  EXPECT_EQ("Value3", request_headers2.find("Other-Header")->second);
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-Fetch-Site"));
+}
+
+// Validate Sec- prefixed headers are properly handled when redirecting from
+// secure => insecure => secure urls.The headers on insecure
+// urls should be removed and Sec-Fetch-Site should be re-added on secure ones.
+TEST_F(URLLoaderTest, RedirectChainRemovesAndAddsSecHeaders) {
+  // Set up a redirect to signal we will go from secure => insecure => secure.
+  GURL insecure_upgrade_url = test_server()->GetURL(
+      kInsecureHost,
+      "/server-redirect?" + test_server()->GetURL("/echo").spec());
+  GURL url =
+      test_server()->GetURL("/server-redirect?" + insecure_upgrade_url.spec());
+
+  // Add some initial headers to ensure the right ones are removed and
+  // everything else is left alone.
+  ResourceRequest request = CreateResourceRequest("GET", url);
+  request.headers.SetHeader("Sec-CH-UA", "Value1");
+  request.headers.SetHeader("Sec-Other-Type", "Value2");
+  request.headers.SetHeader("Other-Header", "Value3");
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  client()->RunUntilRedirectReceived();
+
+  // The initial request is received when the redirect before it has been
+  // followed. It should have all the Sec- headers as it is trustworthy. It
+  // should also have added a Sec-Fetch-Site header
+  const auto& request_headers1 = sent_request().headers;
+  EXPECT_EQ("Value1", request_headers1.find("Sec-CH-UA")->second);
+  EXPECT_EQ("Value2", request_headers1.find("Sec-Other-Type")->second);
+  EXPECT_EQ("Value3", request_headers1.find("Other-Header")->second);
+  EXPECT_EQ("same-origin", request_headers1.find("Sec-Fetch-Site")->second);
+
+  // Follow our redirect and then verify again.
+  loader->FollowRedirect({}, {}, base::nullopt);
+  client()->ClearHasReceivedRedirect();
+  client()->RunUntilRedirectReceived();
+
+  // Special Sec-CH- and Sec-Fetch- prefixed headers should have been removed
+  // and the others left alone. We are now operating on an un-trustworthy
+  // context.
+  const auto& request_headers2 = sent_request().headers;
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-CH-UA"));
+  EXPECT_EQ("Value2", request_headers2.find("Sec-Other-Type")->second);
+  EXPECT_EQ("Value3", request_headers2.find("Other-Header")->second);
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-Fetch-Site"));
+
+  // Now follow the final redirect back to a trustworthy destination and
+  // re-validate.
+  loader->FollowRedirect({}, {}, base::nullopt);
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  const auto& request_headers3 = sent_request().headers;
+  EXPECT_EQ(request_headers3.end(), request_headers3.find("Sec-CH-UA"));
+  EXPECT_EQ("Value2", request_headers3.find("Sec-Other-Type")->second);
+  EXPECT_EQ("Value3", request_headers3.find("Other-Header")->second);
+  EXPECT_EQ("cross-site", request_headers3.find("Sec-Fetch-Site")->second);
 }
 
 // A mock URLRequestJob which simulates an HTTPS request with a certificate

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_SEC_FETCH_SITE_H_
-#define SERVICES_NETWORK_SEC_FETCH_SITE_H_
+#ifndef SERVICES_NETWORK_SEC_HEADER_HELPERS_H_
+#define SERVICES_NETWORK_SEC_HEADER_HELPERS_H_
 
 #include "base/component_export.h"
 #include "url/gurl.h"
@@ -33,6 +33,12 @@ void SetSecFetchSiteHeader(net::URLRequest* request,
                            const GURL* pending_redirect_url,
                            const mojom::URLLoaderFactoryParams& factory_params);
 
+// Removes any sec-ch- or sec-fetch- prefixed request headers on the |request|
+// if the |pending_redirect_url| is not trustworthy and the current url is.
+COMPONENT_EXPORT(NETWORK_SERVICE)
+void MaybeRemoveSecHeaders(net::URLRequest* request,
+                           const GURL& pending_redirect_url);
+
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_SEC_FETCH_SITE_H_
+#endif  // SERVICES_NETWORK_SEC_HEADER_HELPERS_H_

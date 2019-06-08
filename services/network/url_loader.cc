@@ -50,7 +50,7 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/resource_scheduler_client.h"
-#include "services/network/sec_fetch_site.h"
+#include "services/network/sec_header_helpers.h"
 #include "services/network/throttling/scoped_throttling_token.h"
 
 namespace network {
@@ -739,6 +739,9 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
     return;
   }
 
+  // We may need to clear out old Sec- prefixed request headers. We'll attempt
+  // to do this before we re-add any.
+  MaybeRemoveSecHeaders(url_request_.get(), redirect_info.new_url);
   SetSecFetchSiteHeader(url_request_.get(), &redirect_info.new_url,
                         *factory_params_);
 

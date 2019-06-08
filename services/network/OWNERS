@@ -16,9 +16,9 @@ per-file cross_origin_read_blocking*=creis@chromium.org
 per-file cross_origin_read_blocking*=lukasza@chromium.org
 per-file cross_origin_resource_policy*=creis@chromium.org
 per-file cross_origin_resource_policy*=lukasza@chromium.org
-per-file sec_fetch_site*=creis@chromium.org
-per-file sec_fetch_site*=lukasza@chromium.org
-per-file sec_fetch_site*=mkwst@chromium.org
+per-file sec_header_helpers*=creis@chromium.org
+per-file sec_header_helpers*=lukasza@chromium.org
+per-file sec_header_helpers*=mkwst@chromium.org
 
 per-file expect_ct_reporter*=estark@chromium.org
 
