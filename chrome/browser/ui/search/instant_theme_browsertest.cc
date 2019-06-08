@@ -62,8 +62,7 @@ class TestThemeInfoObserver : public InstantServiceObserver {
     }
   }
 
-  void MostVisitedItemsChanged(const std::vector<InstantMostVisitedItem>&,
-                               bool is_custom_links) override {}
+  void MostVisitedItemsChanged(const InstantMostVisitedInfo&) override {}
 
   InstantService* const service_;
 

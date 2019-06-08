@@ -203,8 +203,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
                            OmniboxFocusChangeReason reason);
 
   // Tells the renderer about the most visited items.
-  void SendMostVisitedItems(const std::vector<InstantMostVisitedItem>& items,
-                            bool is_custom_links);
+  void SendMostVisitedItems(const InstantMostVisitedInfo& most_visited_info);
 
   // Tells the renderer about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);

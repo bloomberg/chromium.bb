@@ -301,7 +301,11 @@ void SearchBox::UndoMostVisitedDeletion(
 }
 
 bool SearchBox::IsCustomLinks() const {
-  return is_custom_links_;
+  return items_are_custom_links_;
+}
+
+bool SearchBox::IsUsingMostVisited() const {
+  return use_most_visited_;
 }
 
 void SearchBox::ToggleMostVisitedOrCustomLinks() {
@@ -456,19 +460,21 @@ void SearchBox::DeleteCustomLinkResult(bool success) {
 }
 
 void SearchBox::MostVisitedChanged(
-    const std::vector<InstantMostVisitedItem>& items,
-    bool is_custom_links) {
+    const InstantMostVisitedInfo& most_visited_info) {
   has_received_most_visited_ = true;
-  is_custom_links_ = is_custom_links;
+  items_are_custom_links_ = most_visited_info.items_are_custom_links;
 
   std::vector<InstantMostVisitedItemIDPair> last_known_items;
   GetMostVisitedItems(&last_known_items);
 
-  if (AreMostVisitedItemsEqual(last_known_items, items)) {
+  if (AreMostVisitedItemsEqual(last_known_items, most_visited_info.items) &&
+      use_most_visited_ == most_visited_info.use_most_visited) {
     return;  // Do not send duplicate onmostvisitedchange events.
   }
 
-  most_visited_items_cache_.AddItems(items);
+  use_most_visited_ = most_visited_info.use_most_visited;
+
+  most_visited_items_cache_.AddItems(most_visited_info.items);
   if (can_run_js_in_renderframe_) {
     SearchBoxExtension::DispatchMostVisitedChanged(
         render_frame()->GetWebFrame());

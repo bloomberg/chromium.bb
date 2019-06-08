@@ -126,8 +126,8 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   // Overridden from InstantServiceObserver:
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
-  void MostVisitedItemsChanged(const std::vector<InstantMostVisitedItem>& items,
-                               bool is_custom_links) override;
+  void MostVisitedItemsChanged(
+      const InstantMostVisitedInfo& most_visited_info) override;
 
   // Overridden from SelectFileDialog::Listener:
   void FileSelected(const base::FilePath& path,

@@ -611,6 +611,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static bool GetMostVisitedAvailable(v8::Isolate* isolate);
   static v8::Local<v8::Value> GetThemeBackgroundInfo(v8::Isolate* isolate);
   static bool GetIsCustomLinks();
+  static bool GetIsUsingMostVisited();
 
   // Handlers for JS functions visible to all NTPs.
   static void DeleteMostVisitedItem(v8::Isolate* isolate,
@@ -680,6 +681,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetProperty("themeBackgroundInfo",
                    &NewTabPageBindings::GetThemeBackgroundInfo)
       .SetProperty("isCustomLinks", &NewTabPageBindings::GetIsCustomLinks)
+      .SetProperty("isUsingMostVisited",
+                   &NewTabPageBindings::GetIsUsingMostVisited)
       .SetMethod("deleteMostVisitedItem",
                  &NewTabPageBindings::DeleteMostVisitedItem)
       .SetMethod("undoAllMostVisitedDeletions",
@@ -796,6 +799,15 @@ bool NewTabPageBindings::GetIsCustomLinks() {
     return false;
 
   return search_box->IsCustomLinks();
+}
+
+// static
+bool NewTabPageBindings::GetIsUsingMostVisited() {
+  const SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+    return false;
+
+  return search_box->IsUsingMostVisited();
 }
 
 // static

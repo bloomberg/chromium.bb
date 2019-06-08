@@ -131,7 +131,7 @@ interface EmbeddedSearch {
 enum OmniboxFocusChangeReason;
 
 [Native]
-struct InstantMostVisitedItem;
+struct InstantMostVisitedInfo;
 
 [Native]
 struct ThemeBackgroundInfo;
@@ -144,7 +144,7 @@ interface EmbeddedSearchClient {
   FocusChanged(OmniboxFocusState new_focus_state,
                OmniboxFocusChangeReason reason);
 
-  MostVisitedChanged(array<InstantMostVisitedItem> items, bool is_custom_links);
+  MostVisitedChanged(InstantMostVisitedInfo most_visited_info);
 
   SetInputInProgress(bool input_in_progress);
 

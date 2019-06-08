@@ -32,8 +32,7 @@ namespace {
 class MockInstantServiceObserver : public InstantServiceObserver {
  public:
   MOCK_METHOD1(ThemeInfoChanged, void(const ThemeBackgroundInfo&));
-  MOCK_METHOD2(MostVisitedItemsChanged,
-               void(const std::vector<InstantMostVisitedItem>&, bool));
+  MOCK_METHOD1(MostVisitedItemsChanged, void(const InstantMostVisitedInfo&));
 };
 
 base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {
@@ -82,7 +81,7 @@ TEST_F(InstantServiceTest, GetNTPTileSuggestion) {
 
   instant_service_->OnURLsAvailable(suggestions_map);
 
-  auto items = instant_service_->most_visited_items_;
+  auto items = instant_service_->most_visited_info_->items;
   ASSERT_EQ(1, (int)items.size());
   EXPECT_EQ(ntp_tiles::TileSource::TOP_SITES, items[0].source);
   EXPECT_EQ(ntp_tiles::TileTitleSource::TITLE_TAG, items[0].title_source);
@@ -123,19 +122,23 @@ TEST_F(InstantServiceTest, DoesToggleMostVisitedOrCustomLinks) {
       profile()->GetTestingPrefService();
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   ASSERT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+  ASSERT_FALSE(instant_service_->most_visited_info_->use_most_visited);
 
   // Enable most visited tiles.
   EXPECT_TRUE(instant_service_->ToggleMostVisitedOrCustomLinks());
   EXPECT_TRUE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+  EXPECT_TRUE(instant_service_->most_visited_info_->use_most_visited);
 
   // Disable most visited tiles.
   EXPECT_TRUE(instant_service_->ToggleMostVisitedOrCustomLinks());
   EXPECT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+  EXPECT_FALSE(instant_service_->most_visited_info_->use_most_visited);
 
   // Should do nothing if this is a non-Google NTP.
   SetUserSelectedDefaultSearchProvider("https://www.search.com");
   EXPECT_FALSE(instant_service_->ToggleMostVisitedOrCustomLinks());
   EXPECT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
+  EXPECT_FALSE(instant_service_->most_visited_info_->use_most_visited);
 }
 
 TEST_F(InstantServiceTest,

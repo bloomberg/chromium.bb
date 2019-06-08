@@ -15,8 +15,7 @@ class MockEmbeddedSearchClient : public chrome::mojom::EmbeddedSearchClient {
 
   MOCK_METHOD1(SetPageSequenceNumber, void(int));
   MOCK_METHOD2(FocusChanged, void(OmniboxFocusState, OmniboxFocusChangeReason));
-  MOCK_METHOD2(MostVisitedChanged,
-               void(const std::vector<InstantMostVisitedItem>&, bool));
+  MOCK_METHOD1(MostVisitedChanged, void(const InstantMostVisitedInfo&));
   MOCK_METHOD1(SetInputInProgress, void(bool));
   MOCK_METHOD1(ThemeChanged, void(const ThemeBackgroundInfo&));
   MOCK_METHOD0(SelectLocalImageSuccess, void());

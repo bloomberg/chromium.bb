@@ -9,6 +9,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -123,6 +124,23 @@ struct InstantMostVisitedItem {
   // The timestamp representing when the tile data (e.g. URL) was generated
   // originally, regardless of the impression timestamp.
   base::Time data_generation_time;
+};
+
+struct InstantMostVisitedInfo {
+  InstantMostVisitedInfo();
+  InstantMostVisitedInfo(const InstantMostVisitedInfo& other);
+  ~InstantMostVisitedInfo();
+
+  std::vector<InstantMostVisitedItem> items;
+
+  // True if the source of the |items| is custom links (i.e.
+  // ntp_tiles::TileSource::CUSTOM_LINKS). Required since the source cannot be
+  // checked if |items| is empty.
+  bool items_are_custom_links;
+
+  // True if Most Visited functionality is enabled instead of customizable
+  // shortcuts.
+  bool use_most_visited;
 };
 
 // An InstantMostVisitedItem along with its assigned restricted ID.

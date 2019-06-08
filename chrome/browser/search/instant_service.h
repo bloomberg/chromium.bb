@@ -37,7 +37,7 @@ class InstantIOContext;
 class InstantServiceObserver;
 class NtpBackgroundService;
 class Profile;
-struct InstantMostVisitedItem;
+struct InstantMostVisitedInfo;
 struct ThemeBackgroundInfo;
 
 namespace content {
@@ -177,6 +177,8 @@ class InstantService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, DeleteThumbnailDataIfExists);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, GetNTPTileSuggestion);
+  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest,
+                           DoesToggleMostVisitedOrCustomLinks);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, IsCustomLinksEnabled);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, TestNoThemeInfo);
 
@@ -254,8 +256,9 @@ class InstantService : public KeyedService,
   // The process ids associated with Instant processes.
   std::set<int> process_ids_;
 
-  // InstantMostVisitedItems for NTP tiles, received from |most_visited_sites_|.
-  std::vector<InstantMostVisitedItem> most_visited_items_;
+  // Contains InstantMostVisitedItems received from |most_visited_sites_| and
+  // information required to display NTP tiles.
+  std::unique_ptr<InstantMostVisitedInfo> most_visited_info_;
 
   // Theme-related data for NTP overlay to adopt themes.
   std::unique_ptr<ThemeBackgroundInfo> theme_info_;

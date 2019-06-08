@@ -55,6 +55,12 @@ IPC_STRUCT_TRAITS_BEGIN(InstantMostVisitedItem)
   IPC_STRUCT_TRAITS_MEMBER(data_generation_time)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(InstantMostVisitedInfo)
+  IPC_STRUCT_TRAITS_MEMBER(items)
+  IPC_STRUCT_TRAITS_MEMBER(items_are_custom_links)
+  IPC_STRUCT_TRAITS_MEMBER(use_most_visited)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(ThemeBackgroundInfo)
   IPC_STRUCT_TRAITS_MEMBER(using_default_theme)
   IPC_STRUCT_TRAITS_MEMBER(using_dark_mode)

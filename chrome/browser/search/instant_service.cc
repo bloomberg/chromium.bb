@@ -196,6 +196,7 @@ class InstantService::SearchProviderObserver
 
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
+      most_visited_info_(std::make_unique<InstantMostVisitedInfo>()),
       pref_service_(profile_->GetPrefs()),
       weak_ptr_factory_(this) {
   // The initialization below depends on a typical set of browser threads. Skip
@@ -233,6 +234,8 @@ InstantService::InstantService(Profile* profile)
         this, ntp_tiles::kMaxNumMostVisited);
     most_visited_sites_->EnableCustomLinks(IsCustomLinksEnabled());
   }
+
+  most_visited_info_->use_most_visited = !IsCustomLinksEnabled();
 
   if (profile_) {
     DeleteThumbnailDataIfExists(profile_->GetPath(), base::nullopt);
@@ -335,9 +338,11 @@ bool InstantService::ToggleMostVisitedOrCustomLinks() {
     return false;
   }
   bool use_most_visited =
-      pref_service_->GetBoolean(prefs::kNtpUseMostVisitedTiles);
-  pref_service_->SetBoolean(prefs::kNtpUseMostVisitedTiles, !use_most_visited);
-  most_visited_sites_->EnableCustomLinks(IsCustomLinksEnabled());
+      !pref_service_->GetBoolean(prefs::kNtpUseMostVisitedTiles);
+  pref_service_->SetBoolean(prefs::kNtpUseMostVisitedTiles, use_most_visited);
+  most_visited_info_->use_most_visited = use_most_visited;
+
+  most_visited_sites_->EnableCustomLinks(use_most_visited);
   return true;
 }
 
@@ -547,7 +552,7 @@ void InstantService::OnURLsAvailable(
     const std::map<ntp_tiles::SectionType, ntp_tiles::NTPTilesVector>&
         sections) {
   DCHECK(most_visited_sites_);
-  most_visited_items_.clear();
+  most_visited_info_->items.clear();
   // Use only personalized tiles for instant service.
   const ntp_tiles::NTPTilesVector& tiles =
       sections.at(ntp_tiles::SectionType::PERSONALIZED);
@@ -559,8 +564,10 @@ void InstantService::OnURLsAvailable(
     item.source = tile.source;
     item.title_source = tile.title_source;
     item.data_generation_time = tile.data_generation_time;
-    most_visited_items_.push_back(item);
+    most_visited_info_->items.push_back(item);
   }
+  most_visited_info_->items_are_custom_links =
+      (most_visited_sites_ && most_visited_sites_->IsCustomLinksInitialized());
 
   NotifyAboutMostVisitedItems();
 }
@@ -568,10 +575,8 @@ void InstantService::OnURLsAvailable(
 void InstantService::OnIconMadeAvailable(const GURL& site_url) {}
 
 void InstantService::NotifyAboutMostVisitedItems() {
-  bool is_custom_links =
-      (most_visited_sites_ && most_visited_sites_->IsCustomLinksInitialized());
   for (InstantServiceObserver& observer : observers_)
-    observer.MostVisitedItemsChanged(most_visited_items_, is_custom_links);
+    observer.MostVisitedItemsChanged(*most_visited_info_);
 }
 
 void InstantService::NotifyAboutThemeInfo() {

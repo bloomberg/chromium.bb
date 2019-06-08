@@ -125,9 +125,8 @@ void TestInstantServiceObserver::ThemeInfoChanged(
 }
 
 void TestInstantServiceObserver::MostVisitedItemsChanged(
-    const std::vector<InstantMostVisitedItem>& items,
-    bool is_custom_links) {
-  items_ = items;
+    const InstantMostVisitedInfo& most_visited_info) {
+  items_ = most_visited_info.items;
 
   if (quit_closure_most_visited_ && items_.size() == expected_count_) {
     std::move(quit_closure_most_visited_).Run();

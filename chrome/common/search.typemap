@@ -20,6 +20,6 @@ type_mappings = [
   "chrome.mojom.NTPTileImpression=::ntp_tiles::NTPTileImpression",
   "chrome.mojom.OmniboxFocusState=::OmniboxFocusState",
   "chrome.mojom.OmniboxFocusChangeReason=::OmniboxFocusChangeReason",
-  "chrome.mojom.InstantMostVisitedItem=::InstantMostVisitedItem",
+  "chrome.mojom.InstantMostVisitedInfo=::InstantMostVisitedInfo",
   "chrome.mojom.ThemeBackgroundInfo=::ThemeBackgroundInfo",
 ]

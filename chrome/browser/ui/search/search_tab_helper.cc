@@ -234,9 +234,8 @@ void SearchTabHelper::ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) {
 }
 
 void SearchTabHelper::MostVisitedItemsChanged(
-    const std::vector<InstantMostVisitedItem>& items,
-    bool is_custom_links) {
-  ipc_router_.SendMostVisitedItems(items, is_custom_links);
+    const InstantMostVisitedInfo& most_visited_info) {
+  ipc_router_.SendMostVisitedItems(most_visited_info);
 }
 
 void SearchTabHelper::FocusOmnibox(bool focus) {
