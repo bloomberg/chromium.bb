@@ -103,6 +103,13 @@ class Arrow : public Button {
     PaintComboboxArrow(color_, arrow_bounds, canvas);
   }
 
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ax::mojom::Role::kPopUpButton;
+    node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
+    if (GetEnabled())
+      node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
+  }
+
   const SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(Arrow);
