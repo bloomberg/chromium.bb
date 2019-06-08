@@ -2690,4 +2690,65 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, Initiator_SplitIncognito) {
                 profile()->GetOffTheRecordProfile(), extension->id(), kScript));
 }
 
+// A request handler that sets the Access-Control-Allow-Origin header.
+std::unique_ptr<net::test_server::HttpResponse> HandleXHRRequest(
+    const net::test_server::HttpRequest& request) {
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
+  http_response->AddCustomHeader("Access-Control-Allow-Origin", "*");
+  return http_response;
+}
+
+// Regression test for http://crbug.com/971206. The responseHeaders should still
+// be present in onBeforeRedirect even for HSTS upgrade.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       ExtraHeadersWithHSTSUpgrade) {
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.RegisterRequestHandler(
+      base::BindRepeating(&HandleXHRRequest));
+  ASSERT_TRUE(https_test_server.Start());
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(R"({
+        "name": "Web Request HSTS Test",
+        "manifest_version": 2,
+        "version": "0.1",
+        "background": { "scripts": ["background.js"] },
+        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
+      })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
+        chrome.webRequest.onBeforeRedirect.addListener(function(details) {
+          window.headerCount = details.responseHeaders.length;
+        }, {urls: ['<all_urls>']},
+        ['responseHeaders', 'extraHeaders']);
+
+        chrome.test.sendMessage('ready');
+      )");
+
+  ExtensionTestMessageListener listener("ready", false);
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  ui_test_utils::NavigateToURL(browser(), https_test_server.GetURL("/echo"));
+
+  content::StoragePartition* partition =
+      content::BrowserContext::GetDefaultStoragePartition(profile());
+  base::RunLoop run_loop;
+  partition->GetNetworkContext()->AddHSTS(
+      https_test_server.host_port_pair().host(),
+      base::Time::Now() + base::TimeDelta::FromDays(100), true,
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  PerformXhrInFrame(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      https_test_server.host_port_pair().host(), https_test_server.port(),
+      "echo");
+  EXPECT_GT(
+      GetCountFromBackgroundPage(extension, profile(), "window.headerCount"),
+      0);
+}
+
 }  // namespace extensions
