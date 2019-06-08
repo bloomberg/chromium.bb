@@ -125,6 +125,25 @@ TEST_F(LoginMetricsRecorderTest, RecordNumLoginAttempts) {
                                        1);
 }
 
+// Verifies that the number of auth attempts at sign in is record successfully.
+TEST_F(LoginMetricsRecorderTest, RecordNumSignInAttempts) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+
+  metrics_recorder()->RecordNumLoginAttempts(5, true /*success*/);
+  histogram_tester_->ExpectTotalCount(kNumAttemptTilSuccessHistogramName, 1);
+  histogram_tester_->ExpectBucketCount(kNumAttemptTilSuccessHistogramName, 5,
+                                       1);
+
+  metrics_recorder()->RecordNumLoginAttempts(7, false /*success*/);
+  histogram_tester_->ExpectTotalCount(kNumAttemptTilSuccessHistogramName, 1);
+  histogram_tester_->ExpectBucketCount(kNumAttemptTilSuccessHistogramName, 5,
+                                       1);
+  histogram_tester_->ExpectTotalCount(kNumAttemptTilFailureHistogramName, 1);
+  histogram_tester_->ExpectBucketCount(kNumAttemptTilFailureHistogramName, 7,
+                                       1);
+}
+
 // Verifies that user click events on the lock screen is recorded correctly.
 TEST_F(LoginMetricsRecorderTest, RecordUserClickEventOnLockScreen) {
   GetSessionControllerClient()->SetSessionState(
