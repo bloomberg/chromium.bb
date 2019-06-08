@@ -80,7 +80,7 @@ bool RenderersAreBeingProfiled(
         base::kNullProcessHandle)
       continue;
     base::ProcessId pid = iter.GetCurrentValue()->GetProcess().Pid();
-    if (base::ContainsValue(profiled_pids, pid)) {
+    if (base::Contains(profiled_pids, pid)) {
       return true;
     }
   }

@@ -256,8 +256,7 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
     for (ui::AXNode* static_text : para->children()) {
       // Look up the page-relative character index for this node from a map
       // we built while the document was initially built.
-      DCHECK(
-          base::ContainsKey(node_id_to_char_index_in_page_, static_text->id()));
+      DCHECK(base::Contains(node_id_to_char_index_in_page_, static_text->id()));
       uint32_t char_index = node_id_to_char_index_in_page_[static_text->id()];
       uint32_t len = static_text->data()
                          .GetStringAttribute(ax::mojom::StringAttribute::kName)

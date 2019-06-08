@@ -1469,7 +1469,7 @@ void TemplateURL::EncodeSearchTerms(
     base::string16* encoded_original_query) const {
 
   std::vector<std::string> encodings(input_encodings());
-  if (!base::ContainsValue(encodings, "UTF-8"))
+  if (!base::Contains(encodings, "UTF-8"))
     encodings.push_back("UTF-8");
   for (auto i = encodings.begin(); i != encodings.end(); ++i) {
     if (TryEncoding(search_terms_args.search_terms,

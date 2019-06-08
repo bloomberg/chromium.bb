@@ -332,7 +332,7 @@ void ArcUsbHostBridge::OnDeviceAdded(
   DCHECK(device_info);
 
   // Update the device list.
-  DCHECK(!base::ContainsKey(devices_, device_info->guid));
+  DCHECK(!base::Contains(devices_, device_info->guid));
   std::string guid = device_info->guid;
   devices_.insert(std::make_pair(guid, std::move(device_info)));
 

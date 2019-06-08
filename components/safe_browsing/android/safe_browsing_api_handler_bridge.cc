@@ -123,7 +123,7 @@ void OnUrlCheckDoneOnIOThread(jlong callback_id,
            << " status: " << result_status << " metadata: [" << metadata << "]";
 
   PendingCallbacksMap* pending_callbacks = GetPendingCallbacksMapOnIOThread();
-  bool found = base::ContainsKey(*pending_callbacks, callback_id);
+  bool found = base::Contains(*pending_callbacks, callback_id);
   DCHECK(found) << "Not found in pending_callbacks: " << callback_id;
   if (!found)
     return;

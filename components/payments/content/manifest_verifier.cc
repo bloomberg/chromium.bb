@@ -42,8 +42,8 @@ void EnableMethodManifestUrlForSupportedApps(
     for (auto& app : *apps) {
       if (app_origin.IsSameOriginWith(
               url::Origin::Create(app.second->scope.GetOrigin()))) {
-        app.second->has_explicitly_verified_methods = base::ContainsValue(
-            supported_origin_strings, app_origin.Serialize());
+        app.second->has_explicitly_verified_methods =
+            base::Contains(supported_origin_strings, app_origin.Serialize());
         if (all_origins_supported ||
             app.second->has_explicitly_verified_methods) {
           app.second->enabled_methods.emplace_back(method_manifest_url.spec());

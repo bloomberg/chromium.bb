@@ -136,9 +136,8 @@ base::Value GetSettingsOnBlockingPool(
                       base::Value(basic_info.printer_description));
   printer_info.SetKey(
       kCUPSEnterprisePrinter,
-      base::Value(
-          base::ContainsKey(basic_info.options, kCUPSEnterprisePrinter) &&
-          basic_info.options.at(kCUPSEnterprisePrinter) == kValueTrue));
+      base::Value(base::Contains(basic_info.options, kCUPSEnterprisePrinter) &&
+                  basic_info.options.at(kCUPSEnterprisePrinter) == kValueTrue));
 
   base::Value printer_info_capabilities(base::Value::Type::DICTIONARY);
   printer_info_capabilities.SetKey(kPrinter, std::move(printer_info));

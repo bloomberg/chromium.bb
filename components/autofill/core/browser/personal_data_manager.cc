@@ -1552,7 +1552,7 @@ bool PersonalDataManager::IsCountryOfInterest(
         AutofillCountry::CountryCodeForLocale(app_locale())));
   }
 
-  return base::ContainsValue(country_codes, base::ToLowerASCII(country_code));
+  return base::Contains(country_codes, base::ToLowerASCII(country_code));
 }
 
 const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
@@ -1867,7 +1867,7 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
     std::string country_code = base::ToUpperASCII(
         base::UTF16ToASCII(profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY)));
 
-    if (base::ContainsValue(country_codes, country_code)) {
+    if (base::Contains(country_codes, country_code)) {
       // Verified profiles count 100x more than unverified ones.
       votes[country_code] += profiles[i]->IsVerified() ? 100 : 1;
     }

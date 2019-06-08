@@ -600,7 +600,7 @@ bool ContentSuggestionsService::TryRegisterProviderForCategory(
 void ContentSuggestionsService::RegisterCategory(
     Category category,
     ContentSuggestionsProvider* provider) {
-  DCHECK(!base::ContainsKey(providers_by_category_, category));
+  DCHECK(!base::Contains(providers_by_category_, category));
   DCHECK(!IsCategoryDismissed(category));
 
   providers_by_category_[category] = provider;
@@ -664,12 +664,12 @@ void ContentSuggestionsService::OnSignInStateChanged(bool has_signed_in) {
 }
 
 bool ContentSuggestionsService::IsCategoryDismissed(Category category) const {
-  return base::ContainsKey(dismissed_providers_by_category_, category);
+  return base::Contains(dismissed_providers_by_category_, category);
 }
 
 void ContentSuggestionsService::RestoreDismissedCategory(Category category) {
   auto dismissed_it = dismissed_providers_by_category_.find(category);
-  DCHECK(base::ContainsKey(dismissed_providers_by_category_, category));
+  DCHECK(base::Contains(dismissed_providers_by_category_, category));
 
   // Keep the reference to the provider and remove it from the dismissed ones,
   // because the category registration enforces that it's not dismissed.

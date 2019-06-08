@@ -510,7 +510,7 @@ void ContentSettingsRegistry::Register(
   if (!website_settings_info)
     return;
 
-  DCHECK(!base::ContainsKey(content_settings_info_, type));
+  DCHECK(!base::Contains(content_settings_info_, type));
   content_settings_info_[type] = std::make_unique<ContentSettingsInfo>(
       website_settings_info, whitelisted_schemes, valid_settings,
       incognito_behavior, storage_behavior, origin_restriction);

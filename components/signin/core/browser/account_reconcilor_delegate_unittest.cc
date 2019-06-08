@@ -120,7 +120,7 @@ TEST_P(AccountReconcilorDelegateTest, ReorderChromeAccountsForReconcile) {
   std::vector<std::string> chrome_accounts;
   for (int i = 0; GetParam().chrome_accounts[i] != '\0'; ++i)
     chrome_accounts.push_back(std::string(1, GetParam().chrome_accounts[i]));
-  ASSERT_TRUE(base::ContainsValue(chrome_accounts, first_account))
+  ASSERT_TRUE(base::Contains(chrome_accounts, first_account))
       << "Invalid test parameter.";
   std::vector<gaia::ListedAccount> gaia_accounts =
       GaiaAccountsFromString(GetParam().gaia_accounts);

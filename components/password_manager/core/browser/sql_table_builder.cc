@@ -99,7 +99,7 @@ void SQLTableBuilder::RenameColumn(const std::string& old_name,
   DCHECK(std::none_of(indices_.begin(), indices_.end(),
                       [&old_name](const Index& index) {
                         return index.max_version == kInvalidVersion &&
-                               base::ContainsValue(index.columns, old_name);
+                               base::Contains(index.columns, old_name);
                       }));
 
   if (sealed_version_ != kInvalidVersion &&
@@ -132,7 +132,7 @@ void SQLTableBuilder::DropColumn(const std::string& name) {
   DCHECK(std::none_of(indices_.begin(), indices_.end(),
                       [&name](const Index& index) {
                         return index.max_version == kInvalidVersion &&
-                               base::ContainsValue(index.columns, name);
+                               base::Contains(index.columns, name);
                       }));
   if (sealed_version_ != kInvalidVersion &&
       column->min_version <= sealed_version_) {

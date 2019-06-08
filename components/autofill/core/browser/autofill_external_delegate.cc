@@ -405,7 +405,7 @@ void AutofillExternalDelegate::InsertDataListValues(
                                          data_list_values_.end());
   base::EraseIf(*suggestions, [&data_list_set](const Suggestion& suggestion) {
     return suggestion.frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY &&
-           base::ContainsKey(data_list_set, suggestion.value);
+           base::Contains(data_list_set, suggestion.value);
   });
 
 #if !defined(OS_ANDROID)

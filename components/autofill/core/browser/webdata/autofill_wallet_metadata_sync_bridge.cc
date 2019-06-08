@@ -587,8 +587,7 @@ void AutofillWalletMetadataSyncBridge::GetDataImpl(
     const AutofillMetadata& metadata = pair.second;
     TypeAndMetadataId parsed_storage_key =
         ParseWalletMetadataStorageKey(storage_key);
-    if (!storage_keys_set ||
-        base::ContainsKey(*storage_keys_set, storage_key)) {
+    if (!storage_keys_set || base::Contains(*storage_keys_set, storage_key)) {
       batch->Put(storage_key, CreateEntityDataFromAutofillMetadata(
                                   parsed_storage_key.type, metadata));
     }

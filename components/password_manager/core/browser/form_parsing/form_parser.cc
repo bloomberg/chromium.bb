@@ -692,7 +692,7 @@ void ParseUsingBaseHeuristics(
     for (auto it = processed_fields.begin(); it != processed_fields.end();
          ++it) {
       if (it->is_password &&
-          base::ContainsValue(password_ids, it->field->unique_renderer_id)) {
+          base::Contains(password_ids, it->field->unique_renderer_id)) {
         first_relevant_password = it;
         break;
       }

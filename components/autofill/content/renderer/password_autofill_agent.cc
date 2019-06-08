@@ -962,8 +962,8 @@ bool PasswordAutofillAgent::IsUsernameOrPasswordField(
 bool PasswordAutofillAgent::HasFillData(
     const WebFormControlElement& control_element) const {
   const WebInputElement* element = ToWebInputElement(&control_element);
-  return element && (base::ContainsKey(web_input_to_password_info_, *element) ||
-                     base::ContainsKey(password_to_username_, *element));
+  return element && (base::Contains(web_input_to_password_info_, *element) ||
+                     base::Contains(password_to_username_, *element));
 }
 
 bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
@@ -1554,7 +1554,7 @@ void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
 
     if (input_element->IsPasswordFieldForAutofill())
       focused_field_type = FocusedFieldType::kFillablePasswordField;
-    else if (base::ContainsKey(web_input_to_password_info_, *input_element))
+    else if (base::Contains(web_input_to_password_info_, *input_element))
       focused_field_type = FocusedFieldType::kFillableUsernameField;
     else
       focused_field_type = FocusedFieldType::kFillableTextField;

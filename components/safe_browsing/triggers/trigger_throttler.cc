@@ -133,7 +133,7 @@ bool TriggerThrottler::TriggerCanFire(const TriggerType trigger_type) const {
 
   // Other triggers are capped, see how many times this trigger has already
   // fired.
-  if (!base::ContainsKey(trigger_events_, trigger_type))
+  if (!base::Contains(trigger_events_, trigger_type))
     return true;
 
   const std::vector<base::Time>& timestamps = trigger_events_.at(trigger_type);

@@ -229,8 +229,8 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
     std::string storage_key = change->storage_key();
     EXPECT_NE(SupportsGetStorageKey(), storage_key.empty());
     if (storage_key.empty()) {
-      if (base::ContainsKey(values_to_ignore_,
-                            change->data().specifics.preference().value())) {
+      if (base::Contains(values_to_ignore_,
+                         change->data().specifics.preference().value())) {
         change_processor()->UntrackEntityForClientTagHash(
             change->data().client_tag_hash);
         continue;

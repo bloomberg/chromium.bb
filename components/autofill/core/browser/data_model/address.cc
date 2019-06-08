@@ -245,7 +245,7 @@ bool Address::SetInfoImpl(const AutofillType& type,
   // There's a good chance that this formatting is not intentional, but it's
   // also not obviously safe to just strip the newlines.
   if (storable_type == ADDRESS_HOME_STREET_ADDRESS &&
-      base::ContainsValue(street_address_, base::string16())) {
+      base::Contains(street_address_, base::string16())) {
     street_address_.clear();
     return false;
   }

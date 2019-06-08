@@ -72,7 +72,7 @@ GURL ParseResponseHeader(const GURL& url,
     std::vector<std::string> rel_parts =
         base::SplitString(rel->second.value_or(""), HTTP_LWS,
                           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (base::ContainsValue(rel_parts, "payment-method-manifest"))
+    if (base::Contains(rel_parts, "payment-method-manifest"))
       return url.Resolve(payment_method_manifest_url);
   }
 

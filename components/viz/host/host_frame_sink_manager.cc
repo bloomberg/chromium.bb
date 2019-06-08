@@ -223,11 +223,11 @@ bool HostFrameSinkManager::RegisterFrameSinkHierarchy(
                                                   child_frame_sink_id);
 
   FrameSinkData& child_data = frame_sink_data_map_[child_frame_sink_id];
-  DCHECK(!base::ContainsValue(child_data.parents, parent_frame_sink_id));
+  DCHECK(!base::Contains(child_data.parents, parent_frame_sink_id));
   child_data.parents.push_back(parent_frame_sink_id);
 
   FrameSinkData& parent_data = iter->second;
-  DCHECK(!base::ContainsValue(parent_data.children, child_frame_sink_id));
+  DCHECK(!base::Contains(parent_data.children, child_frame_sink_id));
   parent_data.children.push_back(child_frame_sink_id);
 
   return true;
@@ -238,11 +238,11 @@ void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
     const FrameSinkId& child_frame_sink_id) {
   // Unregister and clear the stored parent.
   FrameSinkData& child_data = frame_sink_data_map_[child_frame_sink_id];
-  DCHECK(base::ContainsValue(child_data.parents, parent_frame_sink_id));
+  DCHECK(base::Contains(child_data.parents, parent_frame_sink_id));
   base::Erase(child_data.parents, parent_frame_sink_id);
 
   FrameSinkData& parent_data = frame_sink_data_map_[parent_frame_sink_id];
-  DCHECK(base::ContainsValue(parent_data.children, child_frame_sink_id));
+  DCHECK(base::Contains(parent_data.children, child_frame_sink_id));
   base::Erase(parent_data.children, child_frame_sink_id);
 
   frame_sink_manager_->UnregisterFrameSinkHierarchy(parent_frame_sink_id,
@@ -263,7 +263,7 @@ bool HostFrameSinkManager::IsFrameSinkHierarchyRegistered(
     const FrameSinkId& child_frame_sink_id) const {
   auto iter = frame_sink_data_map_.find(parent_frame_sink_id);
   return iter != frame_sink_data_map_.end() &&
-         base::ContainsValue(iter->second.children, child_frame_sink_id);
+         base::Contains(iter->second.children, child_frame_sink_id);
 }
 
 base::Optional<FrameSinkId> HostFrameSinkManager::FindRootFrameSinkId(

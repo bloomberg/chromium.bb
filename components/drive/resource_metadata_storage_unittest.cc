@@ -194,7 +194,7 @@ TEST_F(ResourceMetadataStorageTest, Iterator) {
 
   EXPECT_EQ(keys.size(), found_entries.size());
   for (const std::string& key : keys)
-    EXPECT_TRUE(base::ContainsKey(found_entries, key));
+    EXPECT_TRUE(base::Contains(found_entries, key));
 }
 
 TEST_F(ResourceMetadataStorageTest, GetIdByResourceId) {

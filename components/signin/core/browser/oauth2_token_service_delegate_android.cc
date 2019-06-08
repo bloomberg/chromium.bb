@@ -351,7 +351,7 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
   std::vector<AccountInfo> accounts_info =
       account_tracker_service_->GetAccounts();
   for (const AccountInfo& info : accounts_info) {
-    if (!base::ContainsValue(curr_ids, info.account_id))
+    if (!base::Contains(curr_ids, info.account_id))
       account_tracker_service_->RemoveAccount(info.account_id);
   }
 
@@ -376,13 +376,13 @@ bool OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
     std::vector<CoreAccountId>* refreshed_ids,
     std::vector<CoreAccountId>* revoked_ids) {
   bool keep_accounts = base::FeatureList::IsEnabled(signin::kMiceFeature) ||
-                       base::ContainsValue(curr_ids, signed_in_id);
+                       base::Contains(curr_ids, signed_in_id);
   if (keep_accounts) {
     // Revoke token for ids that have been removed from the device.
     for (const CoreAccountId& prev_id : prev_ids) {
       if (prev_id == signed_in_id)
         continue;
-      if (!base::ContainsValue(curr_ids, prev_id)) {
+      if (!base::Contains(curr_ids, prev_id)) {
         DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
                  << "revoked=" << prev_id;
         revoked_ids->push_back(prev_id);
@@ -404,7 +404,7 @@ bool OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
     }
   } else {
     // Revoke all ids.
-    if (base::ContainsValue(prev_ids, signed_in_id)) {
+    if (base::Contains(prev_ids, signed_in_id)) {
       DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAccountList:"
                << "revoked=" << signed_in_id;
       revoked_ids->push_back(signed_in_id);

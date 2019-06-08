@@ -222,7 +222,7 @@ void AccountTrackerService::NotifyAccountRemoved(
 
 void AccountTrackerService::StartTrackingAccount(
     const CoreAccountId& account_id) {
-  if (!base::ContainsKey(accounts_, account_id)) {
+  if (!base::Contains(accounts_, account_id)) {
     DVLOG(1) << "StartTracking " << account_id;
     AccountInfo account_info;
     account_info.account_id = account_id;
@@ -234,7 +234,7 @@ void AccountTrackerService::StartTrackingAccount(
 void AccountTrackerService::StopTrackingAccount(
     const CoreAccountId& account_id) {
   DVLOG(1) << "StopTracking " << account_id;
-  if (base::ContainsKey(accounts_, account_id)) {
+  if (base::Contains(accounts_, account_id)) {
     AccountInfo account_info = std::move(accounts_[account_id]);
     RemoveFromPrefs(account_info);
     RemoveAccountImageFromDisk(account_id);
@@ -248,7 +248,7 @@ void AccountTrackerService::StopTrackingAccount(
 void AccountTrackerService::SetAccountInfoFromUserInfo(
     const CoreAccountId& account_id,
     const base::DictionaryValue* user_info) {
-  DCHECK(base::ContainsKey(accounts_, account_id));
+  DCHECK(base::Contains(accounts_, account_id));
   AccountInfo& account_info = accounts_[account_id];
 
   base::Optional<AccountInfo> maybe_account_info =
@@ -271,7 +271,7 @@ void AccountTrackerService::SetAccountInfoFromUserInfo(
 
 void AccountTrackerService::SetAccountImage(const CoreAccountId& account_id,
                                             const gfx::Image& image) {
-  if (!base::ContainsKey(accounts_, account_id))
+  if (!base::Contains(accounts_, account_id))
     return;
   AccountInfo& account_info = accounts_[account_id];
   account_info.account_image = image;
@@ -281,7 +281,7 @@ void AccountTrackerService::SetAccountImage(const CoreAccountId& account_id,
 
 void AccountTrackerService::SetIsChildAccount(const CoreAccountId& account_id,
                                               bool is_child_account) {
-  DCHECK(base::ContainsKey(accounts_, account_id));
+  DCHECK(base::Contains(accounts_, account_id));
   AccountInfo& account_info = accounts_[account_id];
   if (account_info.is_child_account == is_child_account)
     return;
@@ -294,7 +294,7 @@ void AccountTrackerService::SetIsChildAccount(const CoreAccountId& account_id,
 void AccountTrackerService::SetIsAdvancedProtectionAccount(
     const CoreAccountId& account_id,
     bool is_under_advanced_protection) {
-  DCHECK(base::ContainsKey(accounts_, account_id));
+  DCHECK(base::Contains(accounts_, account_id));
   AccountInfo& account_info = accounts_[account_id];
   if (account_info.is_under_advanced_protection == is_under_advanced_protection)
     return;
@@ -319,7 +319,7 @@ void AccountTrackerService::MigrateToGaiaId() {
     // If there is already an account keyed to the current account's gaia id,
     // assume this is the result of a partial migration and skip the account
     // that is currently inspected.
-    if (base::ContainsKey(accounts_, new_account_id))
+    if (base::Contains(accounts_, new_account_id))
       continue;
 
     AccountInfo new_account_info = pair.second;
@@ -340,7 +340,7 @@ void AccountTrackerService::MigrateToGaiaId() {
 
   // Remove any obsolete account.
   for (const auto& account_id : to_remove) {
-    DCHECK(base::ContainsKey(accounts_, account_id));
+    DCHECK(base::Contains(accounts_, account_id));
     AccountInfo& account_info = accounts_[account_id];
     RemoveAccountImageFromDisk(account_id);
     RemoveFromPrefs(account_info);
@@ -402,7 +402,7 @@ base::FilePath AccountTrackerService::GetImagePathFor(
 void AccountTrackerService::OnAccountImageLoaded(
     const CoreAccountId& account_id,
     gfx::Image image) {
-  if (base::ContainsKey(accounts_, account_id) &&
+  if (base::Contains(accounts_, account_id) &&
       accounts_[account_id].account_image.IsEmpty()) {
     AccountInfo& account_info = accounts_[account_id];
     account_info.account_image = image;
@@ -626,7 +626,7 @@ CoreAccountId AccountTrackerService::SeedAccountInfo(const std::string& gaia,
 CoreAccountId AccountTrackerService::SeedAccountInfo(AccountInfo info) {
   info.account_id = PickAccountIdForAccount(info.gaia, info.email);
 
-  const bool already_exists = base::ContainsKey(accounts_, info.account_id);
+  const bool already_exists = base::Contains(accounts_, info.account_id);
   StartTrackingAccount(info.account_id);
   AccountInfo& account_info = accounts_[info.account_id];
   DCHECK(!already_exists || account_info.gaia.empty() ||

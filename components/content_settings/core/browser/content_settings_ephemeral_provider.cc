@@ -54,7 +54,7 @@ bool EphemeralProvider::SetWebsiteSetting(
     std::unique_ptr<base::Value>&& in_value) {
   DCHECK(CalledOnValidThread());
 
-  if (!base::ContainsKey(supported_types_, content_type))
+  if (!base::Contains(supported_types_, content_type))
     return false;
 
   // Default settings are set using a wildcard pattern for both

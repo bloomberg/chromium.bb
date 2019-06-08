@@ -523,7 +523,7 @@ FeedSchedulerHost::ShouldRefreshResult FeedSchedulerHost::ShouldRefresh(
     return kDontRefreshOutstandingRequest;
   }
 
-  if (base::ContainsKey(disabled_triggers_, trigger)) {
+  if (base::Contains(disabled_triggers_, trigger)) {
     DVLOG(2) << "Disabled trigger stopped refresh from trigger "
              << static_cast<int>(trigger);
     return kDontRefreshTriggerDisabled;

@@ -248,13 +248,13 @@ TEST_F(CrOSOAuthDelegateTest,
 
   EXPECT_FALSE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
   EXPECT_FALSE(
-      base::ContainsValue(delegate_->GetAccounts(), account_info_.account_id));
+      base::Contains(delegate_->GetAccounts(), account_info_.account_id));
 
   account_manager_.UpsertAccount(gaia_account_key_, kUserEmail, kGaiaToken);
 
   EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
   EXPECT_TRUE(
-      base::ContainsValue(delegate_->GetAccounts(), account_info_.account_id));
+      base::Contains(delegate_->GetAccounts(), account_info_.account_id));
 }
 
 TEST_F(CrOSOAuthDelegateTest,
@@ -265,14 +265,14 @@ TEST_F(CrOSOAuthDelegateTest,
 
   EXPECT_FALSE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
   EXPECT_FALSE(
-      base::ContainsValue(delegate_->GetAccounts(), account_info_.account_id));
+      base::Contains(delegate_->GetAccounts(), account_info_.account_id));
 
   account_manager_.UpsertAccount(gaia_account_key_, kUserEmail,
                                  chromeos::AccountManager::kInvalidToken);
 
   EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
   EXPECT_TRUE(
-      base::ContainsValue(delegate_->GetAccounts(), account_info_.account_id));
+      base::Contains(delegate_->GetAccounts(), account_info_.account_id));
 }
 
 TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnAuthErrorChange) {
@@ -411,8 +411,8 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   const std::vector<std::string>& first_batch =
       observer.batch_change_records_[0];
   EXPECT_EQ(2UL, first_batch.size());
-  EXPECT_TRUE(base::ContainsValue(first_batch, account1.account_id));
-  EXPECT_TRUE(base::ContainsValue(first_batch, account2.account_id));
+  EXPECT_TRUE(base::Contains(first_batch, account1.account_id));
+  EXPECT_TRUE(base::Contains(first_batch, account2.account_id));
 }
 
 TEST_F(CrOSOAuthDelegateTest, GetAccountsShouldNotReturnAdAccounts) {

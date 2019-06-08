@@ -139,9 +139,9 @@ bool ProfileOAuth2TokenServiceDelegateChromeOS::RefreshTokenIsAvailable(
 
   // We intentionally do NOT check if the refresh token associated with
   // |account_id| is valid or not. See crbug.com/919793 for details.
-  return base::ContainsValue(GetOAuthAccountIdsFromAccountKeys(
-                                 account_keys_, account_tracker_service_),
-                             account_id);
+  return base::Contains(GetOAuthAccountIdsFromAccountKeys(
+                            account_keys_, account_tracker_service_),
+                        account_id);
 }
 
 void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError(

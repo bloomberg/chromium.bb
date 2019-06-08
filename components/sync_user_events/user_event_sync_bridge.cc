@@ -110,8 +110,8 @@ base::Optional<ModelError> UserEventSyncBridge::ApplySyncChanges(
   base::EraseIf(in_flight_nav_linked_events_,
                 [&deleted_event_times](
                     const std::pair<int64_t, sync_pb::UserEventSpecifics> kv) {
-                  return base::ContainsKey(deleted_event_times,
-                                           kv.second.event_time_usec());
+                  return base::Contains(deleted_event_times,
+                                        kv.second.event_time_usec());
                 });
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));

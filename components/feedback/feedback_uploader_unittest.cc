@@ -80,8 +80,7 @@ class MockFeedbackUploader : public FeedbackUploader {
 
   // FeedbackUploaderChrome:
   void StartDispatchingReport() override {
-    if (base::ContainsKey(dispatched_reports_,
-                          report_being_dispatched()->data()))
+    if (base::Contains(dispatched_reports_, report_being_dispatched()->data()))
       dispatched_reports_[report_being_dispatched()->data()]++;
     else
       dispatched_reports_[report_being_dispatched()->data()] = 1;

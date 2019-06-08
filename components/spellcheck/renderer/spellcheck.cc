@@ -190,7 +190,7 @@ void SpellCheck::FillSuggestions(
 
     const base::string16& suggestion = suggestions_list[language][index];
     // Only add the suggestion if it's unique.
-    if (!base::ContainsValue(*optional_suggestions, suggestion)) {
+    if (!base::Contains(*optional_suggestions, suggestion)) {
       optional_suggestions->push_back(suggestion);
     }
     if (optional_suggestions->size() >= spellcheck::kMaxSuggestions) {

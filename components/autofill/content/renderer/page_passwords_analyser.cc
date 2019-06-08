@@ -197,8 +197,8 @@ std::vector<FormInputCollection> ExtractFormsForAnalysis(
       // to be username or password fields.
       if (input.TagName() == "INPUT" &&
           (!input.HasAttribute("type") ||
-           base::ContainsValue(kTypeAttributes,
-                               input.GetAttribute("type").Utf8()))) {
+           base::Contains(kTypeAttributes,
+                          input.GetAttribute("type").Utf8()))) {
         form_input_collections.back().AddInput(input);
         inputs_with_forms.insert(input);
       }

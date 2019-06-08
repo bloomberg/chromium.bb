@@ -242,7 +242,7 @@ void TrimElements(const std::set<int> target_ids,
     // Otherwise, insert the parent ID into the list of ids to keep. This will
     // capture the parent and siblings of the target element, as well as each of
     // their children.
-    if (!base::ContainsValue(element_ids_to_keep, parent_id)) {
+    if (!base::Contains(element_ids_to_keep, parent_id)) {
       element_ids_to_keep.push_back(parent_id);
 
       // Check if this element has a resource. If so, remember to also keep the
@@ -285,12 +285,12 @@ void TrimElements(const std::set<int> target_ids,
     const HTMLElement& element = *element_iter->second;
 
     // Delete any elements that we do not want to keep.
-    if (!base::ContainsValue(element_ids_to_keep, element.id())) {
+    if (!base::Contains(element_ids_to_keep, element.id())) {
       // If this element has a resource then maybe delete the resouce too. Some
       // resources may be shared between kept and trimmed elements, and those
       // ones should not be deleted.
       if (element.has_resource_id() &&
-          !base::ContainsValue(kept_resource_ids, element.resource_id())) {
+          !base::Contains(kept_resource_ids, element.resource_id())) {
         const std::string& resource_url =
             resource_id_to_url[element.resource_id()];
         resources->erase(resource_url);
@@ -531,7 +531,7 @@ void ThreatDetails::AddDomElement(
     // of our current frame. We can easily lookup our parent.
     const std::string& parent_key =
         GetElementKey(frame_tree_node_id, parent_element_node_id);
-    if (base::ContainsKey(elements_, parent_key)) {
+    if (base::Contains(elements_, parent_key)) {
       parent_element = elements_[parent_key].get();
     }
   }
@@ -739,7 +739,7 @@ void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
   for (auto& element_pair : elements_) {
     const std::string& element_key = element_pair.first;
     HTMLElement* element = element_pair.second.get();
-    if (base::ContainsKey(iframe_key_to_frame_tree_id_map_, element_key)) {
+    if (base::Contains(iframe_key_to_frame_tree_id_map_, element_key)) {
       int frame_tree_id_of_iframe_renderer =
           iframe_key_to_frame_tree_id_map_[element_key];
       const std::unordered_set<int>& child_ids =

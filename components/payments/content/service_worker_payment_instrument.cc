@@ -176,14 +176,14 @@ ServiceWorkerPaymentInstrument::CreateCanMakePaymentEventData() {
 
   DCHECK(spec_->details().modifiers);
   for (const auto& modifier : *spec_->details().modifiers) {
-    if (base::ContainsKey(supported_url_methods,
-                          modifier->method_data->supported_method)) {
+    if (base::Contains(supported_url_methods,
+                       modifier->method_data->supported_method)) {
       event_data->modifiers.emplace_back(modifier.Clone());
     }
   }
 
   for (const auto& data : spec_->method_data()) {
-    if (base::ContainsKey(supported_url_methods, data->supported_method)) {
+    if (base::Contains(supported_url_methods, data->supported_method)) {
       event_data->method_data.push_back(data.Clone());
     }
   }
@@ -272,14 +272,14 @@ ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
   }
   DCHECK(spec_->details().modifiers);
   for (const auto& modifier : *spec_->details().modifiers) {
-    if (base::ContainsKey(supported_methods,
-                          modifier->method_data->supported_method)) {
+    if (base::Contains(supported_methods,
+                       modifier->method_data->supported_method)) {
       event_data->modifiers.emplace_back(modifier.Clone());
     }
   }
 
   for (const auto& data : spec_->method_data()) {
-    if (base::ContainsKey(supported_methods, data->supported_method)) {
+    if (base::Contains(supported_methods, data->supported_method)) {
       event_data->method_data.push_back(data.Clone());
     }
   }
@@ -414,8 +414,8 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
 bool ServiceWorkerPaymentInstrument::IsValidForPaymentMethodIdentifier(
     const std::string& payment_method_identifier) const {
   DCHECK(!needs_installation_);
-  return base::ContainsValue(stored_payment_app_info_->enabled_methods,
-                             payment_method_identifier);
+  return base::Contains(stored_payment_app_info_->enabled_methods,
+                        payment_method_identifier);
 }
 
 gfx::ImageSkia ServiceWorkerPaymentInstrument::icon_image_skia() const {

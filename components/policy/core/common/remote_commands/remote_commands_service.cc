@@ -95,7 +95,7 @@ void RemoteCommandsService::EnqueueCommand(
   }
 
   // If the command is already fetched, ignore it.
-  if (base::ContainsValue(fetched_command_ids_, command.command_id()))
+  if (base::Contains(fetched_command_ids_, command.command_id()))
     return;
 
   fetched_command_ids_.push_back(command.command_id());

@@ -595,7 +595,7 @@ TEST_F(TranslateManagerTest, LanguageAddedToAcceptLanguagesAfterTranslation) {
   // Accept languages shouldn't contain "hi" before translating to that language
   std::vector<std::string> languages;
   mock_translate_client_.GetTranslatePrefs()->GetLanguageList(&languages);
-  EXPECT_FALSE(base::ContainsValue(languages, "hi"));
+  EXPECT_FALSE(base::Contains(languages, "hi"));
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
@@ -612,7 +612,7 @@ TEST_F(TranslateManagerTest, LanguageAddedToAcceptLanguagesAfterTranslation) {
   // Accept languages should now contain "hi" because the user chose to
   // translate to it once.
   mock_translate_client_.GetTranslatePrefs()->GetLanguageList(&languages);
-  EXPECT_TRUE(base::ContainsValue(languages, "hi"));
+  EXPECT_TRUE(base::Contains(languages, "hi"));
 }
 
 TEST_F(TranslateManagerTest,
@@ -639,7 +639,7 @@ TEST_F(TranslateManagerTest,
   // Accept languages shouldn't contain "en" before translating to that language
   std::vector<std::string> languages;
   mock_translate_client_.GetTranslatePrefs()->GetLanguageList(&languages);
-  EXPECT_FALSE(base::ContainsValue(languages, "en"));
+  EXPECT_FALSE(base::Contains(languages, "en"));
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
@@ -651,14 +651,14 @@ TEST_F(TranslateManagerTest,
               ElementsAre(Bucket(INITIATION_STATUS_SHOW_INFOBAR, 1),
                           Bucket(INITIATION_STATUS_SHOW_ICON, 1)));
 
-  EXPECT_FALSE(base::ContainsValue(languages, "en"));
+  EXPECT_FALSE(base::Contains(languages, "en"));
   translate_manager_->TranslatePage("fr", "en", false);
 
   // Accept languages should not contain "en" because it is redundant
   // with "en-US" already being present.
   languages.clear();
   mock_translate_client_.GetTranslatePrefs()->GetLanguageList(&languages);
-  EXPECT_FALSE(base::ContainsValue(languages, "en"));
+  EXPECT_FALSE(base::Contains(languages, "en"));
 }
 
 TEST_F(TranslateManagerTest, DontTranslateOffline) {

@@ -1356,7 +1356,7 @@ class BookmarkModelFaviconTest : public testing::Test,
   }
 
   bool WasNodeUpdated(const BookmarkNode* node) {
-    return base::ContainsValue(updated_nodes_, node);
+    return base::Contains(updated_nodes_, node);
   }
 
   void ClearUpdatedNodes() {

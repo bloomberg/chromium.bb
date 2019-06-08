@@ -167,7 +167,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
     CheckField("areacode1", PHONE_HOME_CITY_CODE);
     CheckField("prefix2", PHONE_HOME_NUMBER);
     CheckField("suffix3", PHONE_HOME_NUMBER);
-    EXPECT_TRUE(base::ContainsKey(field_candidates_map_, ASCIIToUTF16("ext4")));
+    EXPECT_TRUE(base::Contains(field_candidates_map_, ASCIIToUTF16("ext4")));
   }
 }
 

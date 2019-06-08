@@ -58,7 +58,7 @@ void OutputDeviceBacking::RegisterClient(Client* client) {
 }
 
 void OutputDeviceBacking::UnregisterClient(Client* client) {
-  DCHECK(base::ContainsValue(clients_, client));
+  DCHECK(base::Contains(clients_, client));
   base::Erase(clients_, client);
   ClientResized();
 }

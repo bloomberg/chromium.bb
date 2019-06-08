@@ -936,7 +936,7 @@ DisplayResourceProvider::LockSetForExternalUse::~LockSetForExternalUse() {
 
 ResourceMetadata DisplayResourceProvider::LockSetForExternalUse::LockResource(
     ResourceId id) {
-  DCHECK(!base::ContainsValue(resources_, id));
+  DCHECK(!base::Contains(resources_, id));
   resources_.push_back(id);
   return resource_provider_->LockForExternalUse(id);
 }

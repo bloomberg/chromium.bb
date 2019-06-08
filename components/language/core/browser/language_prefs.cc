@@ -54,7 +54,7 @@ bool LanguagePrefs::IsFluent(const std::string& language) const {
   language::ToTranslateLanguageSynonym(&canonical_lang);
   const base::Value* fluents =
       prefs_->GetList(language::prefs::kFluentLanguages);
-  return base::ContainsValue(fluents->GetList(), base::Value(canonical_lang));
+  return base::Contains(fluents->GetList(), base::Value(canonical_lang));
 }
 
 void LanguagePrefs::SetFluent(const std::string& language) {

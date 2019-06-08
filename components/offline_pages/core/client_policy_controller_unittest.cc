@@ -76,8 +76,8 @@ void ClientPolicyControllerTest::ExpectUserRequestedDownloadSupport(
     bool expectation) {
   EXPECT_EQ(
       expectation,
-      base::ContainsValue(controller()->GetNamespacesForUserRequestedDownload(),
-                          name_space))
+      base::Contains(controller()->GetNamespacesForUserRequestedDownload(),
+                     name_space))
       << "Namespace " << name_space
       << " had incorrect user generated download support when getting"
          " namespaces supported by user generaged download.";

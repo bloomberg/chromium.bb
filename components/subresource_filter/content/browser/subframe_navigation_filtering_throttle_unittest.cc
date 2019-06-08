@@ -185,7 +185,7 @@ TEST_F(SubframeNavigationFilteringThrottleTest, FilterOnStart) {
   SimulateStartAndExpectResult(
       content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
   EXPECT_TRUE(
-      base::ContainsValue(GetConsoleMessages(), GetFilterConsoleMessage(url)));
+      base::Contains(GetConsoleMessages(), GetFilterConsoleMessage(url)));
 }
 
 TEST_F(SubframeNavigationFilteringThrottleTest, FilterOnRedirect) {
@@ -208,7 +208,7 @@ TEST_F(SubframeNavigationFilteringThrottleTest, DryRunOnStart) {
 
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
   EXPECT_FALSE(
-      base::ContainsValue(GetConsoleMessages(), GetFilterConsoleMessage(url)));
+      base::Contains(GetConsoleMessages(), GetFilterConsoleMessage(url)));
 }
 
 TEST_F(SubframeNavigationFilteringThrottleTest, DryRunOnRedirect) {

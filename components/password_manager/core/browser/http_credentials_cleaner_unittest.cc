@@ -229,7 +229,7 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
 
     // For no matching case https credentials were added and for an equivalent
     // case they already existed.
-    EXPECT_TRUE(base::ContainsKey(current_store, "https://example.org/"));
+    EXPECT_TRUE(base::Contains(current_store, "https://example.org/"));
   } else {
     // Hsts not enabled or credentials are have different passwords, so
     // nothing should change in the password store.

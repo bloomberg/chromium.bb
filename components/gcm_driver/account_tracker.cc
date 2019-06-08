@@ -131,7 +131,7 @@ void AccountTracker::UpdateSignInState(const std::string& account_key,
 }
 
 void AccountTracker::StartTrackingAccount(const std::string& account_key) {
-  if (!base::ContainsKey(accounts_, account_key)) {
+  if (!base::Contains(accounts_, account_key)) {
     DVLOG(1) << "StartTracking " << account_key;
     AccountState account_state;
     account_state.ids.account_key = account_key;
@@ -143,7 +143,7 @@ void AccountTracker::StartTrackingAccount(const std::string& account_key) {
 
 void AccountTracker::StopTrackingAccount(const std::string account_key) {
   DVLOG(1) << "StopTracking " << account_key;
-  if (base::ContainsKey(accounts_, account_key)) {
+  if (base::Contains(accounts_, account_key)) {
     AccountState& account = accounts_[account_key];
     if (!account.ids.gaia.empty()) {
       UpdateSignInState(account_key, /*is_signed_in=*/false);
@@ -151,7 +151,7 @@ void AccountTracker::StopTrackingAccount(const std::string account_key) {
     accounts_.erase(account_key);
   }
 
-  if (base::ContainsKey(user_info_requests_, account_key))
+  if (base::Contains(user_info_requests_, account_key))
     DeleteFetcher(user_info_requests_[account_key].get());
 }
 
@@ -161,7 +161,7 @@ void AccountTracker::StopTrackingAllAccounts() {
 }
 
 void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
-  if (base::ContainsKey(user_info_requests_, account_key)) {
+  if (base::Contains(user_info_requests_, account_key)) {
     DeleteFetcher(user_info_requests_[account_key].get());
   }
 
@@ -175,7 +175,7 @@ void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
 void AccountTracker::OnUserInfoFetchSuccess(AccountIdFetcher* fetcher,
                                             const std::string& gaia_id) {
   const std::string& account_key = fetcher->account_key();
-  DCHECK(base::ContainsKey(accounts_, account_key));
+  DCHECK(base::Contains(accounts_, account_key));
   AccountState& account = accounts_[account_key];
 
   account.ids.gaia = gaia_id;
@@ -196,7 +196,7 @@ void AccountTracker::OnUserInfoFetchFailure(AccountIdFetcher* fetcher) {
 void AccountTracker::DeleteFetcher(AccountIdFetcher* fetcher) {
   DVLOG(1) << "DeleteFetcher " << fetcher->account_key();
   const std::string& account_key = fetcher->account_key();
-  DCHECK(base::ContainsKey(user_info_requests_, account_key));
+  DCHECK(base::Contains(user_info_requests_, account_key));
   DCHECK_EQ(fetcher, user_info_requests_[account_key].get());
   user_info_requests_.erase(account_key);
 }

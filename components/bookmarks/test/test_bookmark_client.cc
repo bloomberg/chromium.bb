@@ -52,7 +52,7 @@ void TestBookmarkClient::SetExtraNodesToLoad(
 }
 
 bool TestBookmarkClient::IsExtraNodeRoot(const BookmarkNode* node) {
-  return base::ContainsValue(unowned_extra_nodes_, node);
+  return base::Contains(unowned_extra_nodes_, node);
 }
 
 bool TestBookmarkClient::IsAnExtraNode(const BookmarkNode* node) {

@@ -913,7 +913,7 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
       if (policy_data.has_settings_entity_id())
         entity_id = policy_data.settings_entity_id();
       std::pair<std::string, std::string> key(type, entity_id);
-      if (base::ContainsKey(responses_, key)) {
+      if (base::Contains(responses_, key)) {
         LOG(WARNING) << "Duplicate PolicyFetchResponse for type: "
             << type << ", entity: " << entity_id << ", ignoring";
         continue;

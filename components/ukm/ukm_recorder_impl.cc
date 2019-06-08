@@ -294,7 +294,7 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
         unmatched_sources++;
         continue;
       }
-      if (!base::ContainsKey(ids_seen, kv.first)) {
+      if (!base::Contains(ids_seen, kv.first)) {
         unsent_sources.push_back(std::move(kv.second));
         continue;
       }
@@ -422,7 +422,7 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
                                       const GURL& unsanitized_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (base::ContainsKey(recordings_.sources, source_id))
+  if (base::Contains(recordings_.sources, source_id))
     return;
 
   const GURL sanitized_url = SanitizeURL(unsanitized_url);
@@ -444,7 +444,7 @@ void UkmRecorderImpl::RecordNavigation(
     SourceId source_id,
     const UkmSource::NavigationData& unsanitized_navigation_data) {
   DCHECK(GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID);
-  DCHECK(!base::ContainsKey(recordings_.sources, source_id));
+  DCHECK(!base::Contains(recordings_.sources, source_id));
   // TODO(csharrison): Consider changing this behavior so the Source isn't event
   // recorded at all if the final URL in |unsanitized_navigation_data| should
   // not be recorded.
@@ -542,7 +542,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
   }
 
   if (ShouldRestrictToWhitelistedEntries() &&
-      !base::ContainsKey(whitelisted_entry_hashes_, entry->event_hash)) {
+      !base::Contains(whitelisted_entry_hashes_, entry->event_hash)) {
     RecordDroppedEntry(DroppedDataReason::NOT_WHITELISTED);
     event_aggregate.dropped_due_to_whitelist++;
     for (auto& metric : entry->metrics)

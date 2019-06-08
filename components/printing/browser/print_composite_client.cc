@@ -146,14 +146,14 @@ void PrintCompositeClient::PrintCrossProcessSubframe(
 
   auto subframe_iter = printed_subframes_.find(document_cookie);
   if (subframe_iter != printed_subframes_.end() &&
-      base::ContainsKey(subframe_iter->second, frame_guid)) {
+      base::Contains(subframe_iter->second, frame_guid)) {
     // If this frame is already printed, no need to print again.
     return;
   }
 
   auto cookie_iter = pending_subframe_cookies_.find(frame_guid);
   if (cookie_iter != pending_subframe_cookies_.end() &&
-      base::ContainsKey(cookie_iter->second, document_cookie)) {
+      base::Contains(cookie_iter->second, document_cookie)) {
     // If this frame is being printed, no need to print again.
     return;
   }

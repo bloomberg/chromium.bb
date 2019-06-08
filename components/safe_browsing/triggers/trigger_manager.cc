@@ -178,7 +178,7 @@ bool TriggerManager::FinishCollectingThreatDetails(
     const SBErrorOptions& error_display_options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Make sure there's a ThreatDetails collector running on this tab.
-  if (!base::ContainsKey(data_collectors_map_, web_contents))
+  if (!base::Contains(data_collectors_map_, web_contents))
     return false;
   DataCollectorsContainer* collectors = &data_collectors_map_[web_contents];
   if (collectors->threat_details == nullptr)
@@ -212,7 +212,7 @@ bool TriggerManager::FinishCollectingThreatDetails(
 void TriggerManager::ThreatDetailsDone(content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Clean up the ThreatDetailsdata collector on the specified tab.
-  if (!base::ContainsKey(data_collectors_map_, web_contents))
+  if (!base::Contains(data_collectors_map_, web_contents))
     return;
 
   DataCollectorsContainer* collectors = &data_collectors_map_[web_contents];
@@ -221,7 +221,7 @@ void TriggerManager::ThreatDetailsDone(content::WebContents* web_contents) {
 
 void TriggerManager::WebContentsDestroyed(content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!base::ContainsKey(data_collectors_map_, web_contents))
+  if (!base::Contains(data_collectors_map_, web_contents))
     return;
   data_collectors_map_.erase(web_contents);
 }

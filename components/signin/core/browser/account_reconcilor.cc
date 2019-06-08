@@ -607,7 +607,7 @@ void AccountReconcilor::OnAccountsInCookieUpdated(
       LoadValidAccountsFromTokenService();
 
   if (delegate_->ShouldAbortReconcileIfPrimaryHasError() &&
-      !base::ContainsValue(chrome_accounts, primary_account)) {
+      !base::Contains(chrome_accounts, primary_account)) {
     VLOG(1) << "Primary account has error, abort.";
     DCHECK(is_reconcile_started_);
     AbortReconcile();
@@ -699,7 +699,7 @@ void AccountReconcilor::FinishReconcile(
   int removed_from_cookie = 0;
   for (size_t i = 0; i < number_gaia_accounts; ++i) {
     if (gaia_accounts[i].valid &&
-        !base::ContainsValue(chrome_accounts, gaia_accounts[i].id)) {
+        !base::Contains(chrome_accounts, gaia_accounts[i].id)) {
       ++removed_from_cookie;
     }
   }
@@ -731,7 +731,7 @@ void AccountReconcilor::FinishReconcile(
             kAccountReconcilor_Reconcile);
   } else {
     // Create a list of accounts that need to be added to the Gaia cookie.
-    if (base::ContainsValue(chrome_accounts, first_account)) {
+    if (base::Contains(chrome_accounts, first_account)) {
       add_to_cookie_.push_back(first_account);
     } else {
       // If the first account is not empty and not in chrome_accounts, it is

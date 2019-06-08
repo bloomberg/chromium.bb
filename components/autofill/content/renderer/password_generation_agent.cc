@@ -108,7 +108,7 @@ uint32_t FindConfirmationPasswordFieldId(
 }
 
 bool ContainsURL(const std::vector<GURL>& urls, const GURL& url) {
-  return base::ContainsValue(urls, url);
+  return base::Contains(urls, url);
 }
 
 // Calculates the signature of |form| and searches it in |forms|.
@@ -642,7 +642,7 @@ bool PasswordGenerationAgent::SetUpUserTriggeredGeneration() {
   uint32_t last_focused_password_element_id =
       last_focused_password_element_.UniqueRendererFormControlId();
 
-  bool is_automatic_generation_available = base::ContainsKey(
+  bool is_automatic_generation_available = base::Contains(
       generation_enabled_fields_, last_focused_password_element_id);
 
   if (!is_automatic_generation_available) {

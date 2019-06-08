@@ -371,7 +371,7 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedUserFolders(
     for (int i = 0; i < root_node->child_count(); ++i) {
       const BookmarkNode* node = root_node->GetChild(i);
       if (node->IsVisible() && model->client()->CanBeEditedByUser(node) &&
-          !base::ContainsValue(nodes, node)) {
+          !base::Contains(nodes, node)) {
         nodes.push_back(node);
 
         if (nodes.size() == max_count)

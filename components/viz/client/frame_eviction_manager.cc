@@ -47,7 +47,7 @@ void FrameEvictionManager::RemoveFrame(FrameEvictionManagerClient* frame) {
 }
 
 void FrameEvictionManager::LockFrame(FrameEvictionManagerClient* frame) {
-  if (base::ContainsValue(unlocked_frames_, frame)) {
+  if (base::Contains(unlocked_frames_, frame)) {
     DCHECK(locked_frames_.find(frame) == locked_frames_.end());
     unlocked_frames_.remove(frame);
     locked_frames_[frame] = 1;

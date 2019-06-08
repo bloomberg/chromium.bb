@@ -802,10 +802,8 @@ TEST(URLRequestContextConfigTest, SetQuicHostWhitelist) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
-  EXPECT_TRUE(
-      base::ContainsKey(params->quic_host_whitelist, "www.example.com"));
-  EXPECT_TRUE(
-      base::ContainsKey(params->quic_host_whitelist, "www.example.org"));
+  EXPECT_TRUE(base::Contains(params->quic_host_whitelist, "www.example.com"));
+  EXPECT_TRUE(base::Contains(params->quic_host_whitelist, "www.example.org"));
 }
 
 TEST(URLRequestContextConfigTest, SetQuicMaxTimeBeforeCryptoHandshake) {

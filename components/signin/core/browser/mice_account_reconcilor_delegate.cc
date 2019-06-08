@@ -52,9 +52,8 @@ MiceAccountReconcilorDelegate::GetChromeAccountsForReconcile(
   // Warning: As a result, the reconciliation may change the default Gaia
   // account. It should be ensured that this is not surprising for the user.
   std::string new_first_account =
-      base::ContainsValue(chrome_accounts, primary_account)
-          ? primary_account
-          : chrome_accounts[0];
+      base::Contains(chrome_accounts, primary_account) ? primary_account
+                                                       : chrome_accounts[0];
 
   // Minimize account shuffling and ensure that the number of accounts does not
   // exceed the limit.

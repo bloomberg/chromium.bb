@@ -35,12 +35,12 @@ bool MeetsCriteria(const ClientPolicyController& policy_controller,
       return false;
   }
   if (criteria.client_ids &&
-      !base::ContainsValue(criteria.client_ids.value(), client_id)) {
+      !base::Contains(criteria.client_ids.value(), client_id)) {
     return false;
   }
   if (criteria.client_namespaces &&
-      !base::ContainsValue(criteria.client_namespaces.value(),
-                           client_id.name_space)) {
+      !base::Contains(criteria.client_namespaces.value(),
+                      client_id.name_space)) {
     return false;
   }
   if (criteria.supported_by_downloads &&
@@ -84,7 +84,7 @@ bool MeetsCriteria(const ClientPolicyController& policy_controller,
   }
 
   if (criteria.offline_ids &&
-      !base::ContainsValue(criteria.offline_ids.value(), item.offline_id)) {
+      !base::Contains(criteria.offline_ids.value(), item.offline_id)) {
     return false;
   }
 

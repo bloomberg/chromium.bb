@@ -68,7 +68,7 @@ AccountReconcilorDelegate::ReorderChromeAccountsForReconcile(
   // which go above this count will fail.
   const int kMaxGaiaAccounts = 10;
   DCHECK(!first_account.empty());
-  DCHECK(base::ContainsValue(chrome_accounts, first_account));
+  DCHECK(base::Contains(chrome_accounts, first_account));
 
   // Ordered list of accounts, this is the result of this function.
   std::vector<std::string> ordered_accounts;

@@ -411,7 +411,7 @@ void FlagsState::SetOriginListFlag(const std::string& internal_name,
 
   std::set<std::string> enabled_entries;
   GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
-  const bool enabled = base::ContainsKey(enabled_entries, entry->internal_name);
+  const bool enabled = base::Contains(enabled_entries, entry->internal_name);
   switch_values_[entry->command_line_switch] = value;
   DidModifyOriginListFlag(*entry, enabled);
 }
@@ -441,7 +441,7 @@ void FlagsState::RemoveFlagsSwitches(
     // For any featrue name in |features| that is not in |switch_added_values| -
     // i.e. it wasn't added by about_flags code, add it to |remaining_features|.
     for (const auto& feature : features) {
-      if (!base::ContainsKey(switch_added_values, feature.as_string()))
+      if (!base::Contains(switch_added_values, feature.as_string()))
         remaining_features.push_back(feature);
     }
 
@@ -663,7 +663,7 @@ void FlagsState::AddSwitchMapping(
     const std::string& switch_name,
     const std::string& switch_value,
     std::map<std::string, SwitchEntry>* name_to_switch_map) const {
-  DCHECK(!base::ContainsKey(*name_to_switch_map, key));
+  DCHECK(!base::Contains(*name_to_switch_map, key));
 
   SwitchEntry* entry = &(*name_to_switch_map)[key];
   entry->switch_name = switch_name;
@@ -675,7 +675,7 @@ void FlagsState::AddFeatureMapping(
     const std::string& feature_name,
     bool feature_state,
     std::map<std::string, SwitchEntry>* name_to_switch_map) const {
-  DCHECK(!base::ContainsKey(*name_to_switch_map, key));
+  DCHECK(!base::Contains(*name_to_switch_map, key));
 
   SwitchEntry* entry = &(*name_to_switch_map)[key];
   entry->feature_name = feature_name;
@@ -744,11 +744,11 @@ void FlagsState::MergeFeatureCommandLineSwitch(
   std::vector<base::StringPiece> features =
       base::FeatureList::SplitFeatureListString(original_switch_value);
   // Only add features that don't already exist in the lists.
-  // Note: The base::ContainsValue() call results in O(n^2) performance, but in
+  // Note: The base::Contains() call results in O(n^2) performance, but in
   // practice n should be very small.
   for (const auto& entry : feature_switches) {
     if (entry.second == feature_state &&
-        !base::ContainsValue(features, entry.first)) {
+        !base::Contains(features, entry.first)) {
       features.push_back(entry.first);
       appended_switches_[switch_name].insert(entry.first);
     }

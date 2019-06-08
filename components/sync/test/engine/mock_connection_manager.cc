@@ -593,7 +593,7 @@ bool MockConnectionManager::ShouldConflictThisCommit() {
 }
 
 bool MockConnectionManager::ShouldTransientErrorThisId(syncable::Id id) {
-  return base::ContainsValue(transient_error_ids_, id);
+  return base::Contains(transient_error_ids_, id);
 }
 
 bool MockConnectionManager::ProcessCommit(

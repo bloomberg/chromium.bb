@@ -156,7 +156,7 @@ void ChildExitObserver::BrowserChildProcessKilled(
     const content::ChildProcessData& data,
     const content::ChildProcessTerminationInfo& content_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!base::ContainsKey(browser_child_process_info_, data.id));
+  DCHECK(!base::Contains(browser_child_process_info_, data.id));
   TerminationInfo info;
   info.process_host_id = data.id;
   info.pid = data.GetProcess().Pid();

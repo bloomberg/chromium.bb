@@ -103,12 +103,12 @@ TEST(TranslateLanguageListTest, GetSupportedLanguages) {
   // Check there are a lot of default languages.
   EXPECT_GE(languages.size(), 100ul);
   // Check that some very common languages are there.
-  EXPECT_TRUE(base::ContainsValue(languages, "en"));
-  EXPECT_TRUE(base::ContainsValue(languages, "es"));
-  EXPECT_TRUE(base::ContainsValue(languages, "fr"));
-  EXPECT_TRUE(base::ContainsValue(languages, "ru"));
-  EXPECT_TRUE(base::ContainsValue(languages, "zh-CN"));
-  EXPECT_TRUE(base::ContainsValue(languages, "zh-TW"));
+  EXPECT_TRUE(base::Contains(languages, "en"));
+  EXPECT_TRUE(base::Contains(languages, "es"));
+  EXPECT_TRUE(base::Contains(languages, "fr"));
+  EXPECT_TRUE(base::Contains(languages, "ru"));
+  EXPECT_TRUE(base::Contains(languages, "zh-CN"));
+  EXPECT_TRUE(base::Contains(languages, "zh-TW"));
 }
 
 // Check that we contact the translate server to update the supported language

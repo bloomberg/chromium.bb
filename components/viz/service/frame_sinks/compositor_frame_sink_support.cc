@@ -682,7 +682,7 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
 
 void CompositorFrameSinkSupport::AttachCaptureClient(
     CapturableFrameSink::Client* client) {
-  DCHECK(!base::ContainsValue(capture_clients_, client));
+  DCHECK(!base::Contains(capture_clients_, client));
   capture_clients_.push_back(client);
 }
 

@@ -139,7 +139,7 @@ bool IsElementInControlElementSet(
     return false;
   const WebFormControlElement form_control_element =
       element.ToConst<WebFormControlElement>();
-  return base::ContainsValue(control_elements, form_control_element);
+  return base::Contains(control_elements, form_control_element);
 }
 
 bool IsElementInsideFormOrFieldSet(const WebElement& element,
@@ -248,7 +248,7 @@ base::string16 FindChildTextInner(const WebNode& node,
       return base::string16();
     }
 
-    if (element.HasHTMLTagName("div") && base::ContainsKey(divs_to_skip, node))
+    if (element.HasHTMLTagName("div") && base::Contains(divs_to_skip, node))
       return base::string16();
   }
 
@@ -292,11 +292,9 @@ base::string16 FindChildTextWithIgnoreList(
 bool IsLabelValid(base::StringPiece16 inferred_label,
                   const std::vector<base::char16>& stop_words) {
   // If |inferred_label| has any character other than those in |stop_words|.
-  auto* first_non_stop_word =
-      std::find_if(inferred_label.begin(), inferred_label.end(),
-                   [&stop_words](base::char16 c) {
-                     return !base::ContainsValue(stop_words, c);
-                   });
+  auto* first_non_stop_word = std::find_if(
+      inferred_label.begin(), inferred_label.end(),
+      [&stop_words](base::char16 c) { return !base::Contains(stop_words, c); });
   return first_non_stop_word != inferred_label.end();
 }
 
@@ -825,7 +823,7 @@ bool InferLabelForElement(const WebFormControlElement& element,
   FormFieldData::LabelSource ancestor_label_source =
       FormFieldData::LabelSource::kUnknown;
   for (const std::string& tag_name : tag_names) {
-    if (base::ContainsKey(seen_tag_names, tag_name))
+    if (base::Contains(seen_tag_names, tag_name))
       continue;
 
     seen_tag_names.insert(tag_name);

@@ -45,7 +45,7 @@ std::string MirrorAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
     bool will_logout) const {
   // Mirror only uses the primary account, and it is never empty.
   DCHECK(!primary_account.empty());
-  DCHECK(base::ContainsValue(chrome_accounts, primary_account));
+  DCHECK(base::Contains(chrome_accounts, primary_account));
   return primary_account;
 }
 

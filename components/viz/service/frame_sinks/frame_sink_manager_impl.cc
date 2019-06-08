@@ -120,7 +120,7 @@ void FrameSinkManagerImpl::ForceShutdown() {
 void FrameSinkManagerImpl::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
                                                bool report_activation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!base::ContainsKey(frame_sink_data_, frame_sink_id));
+  DCHECK(!base::Contains(frame_sink_data_, frame_sink_id));
 
   frame_sink_data_.emplace(std::make_pair(frame_sink_id, report_activation));
 
@@ -169,7 +169,7 @@ void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
 void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
     mojom::RootCompositorFrameSinkParamsPtr params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!base::ContainsKey(root_sink_map_, params->frame_sink_id));
+  DCHECK(!base::Contains(root_sink_map_, params->frame_sink_id));
   DCHECK(output_surface_provider_);
 
   // We are transfering ownership of |params| so remember FrameSinkId here.
@@ -188,7 +188,7 @@ void FrameSinkManagerImpl::CreateCompositorFrameSink(
     mojom::CompositorFrameSinkRequest request,
     mojom::CompositorFrameSinkClientPtr client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!base::ContainsKey(sink_map_, frame_sink_id));
+  DCHECK(!base::Contains(sink_map_, frame_sink_id));
 
   sink_map_[frame_sink_id] = std::make_unique<CompositorFrameSinkImpl>(
       this, frame_sink_id, std::move(request), std::move(client));
@@ -210,7 +210,7 @@ void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
   CHECK(!ChildContains(child_frame_sink_id, parent_frame_sink_id));
 
   auto& children = frame_sink_source_map_[parent_frame_sink_id].children;
-  DCHECK(!base::ContainsKey(children, child_frame_sink_id));
+  DCHECK(!base::Contains(children, child_frame_sink_id));
   children.insert(child_frame_sink_id);
 
   for (auto& observer : observer_list_) {
@@ -248,7 +248,7 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
 
   // Remove |child_frame_sink_id| from parents list of children.
   auto& mapping = iter->second;
-  DCHECK(base::ContainsKey(mapping.children, child_frame_sink_id));
+  DCHECK(base::Contains(mapping.children, child_frame_sink_id));
   mapping.children.erase(child_frame_sink_id);
 
   // Delete the FrameSinkSourceMapping for |parent_frame_sink_id| if empty.
@@ -313,7 +313,7 @@ void FrameSinkManagerImpl::SetHitTestAsyncQueriedDebugRegions(
     const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue) {
   hit_test_manager_.SetHitTestAsyncQueriedDebugRegions(
       root_frame_sink_id, hit_test_async_queried_debug_queue);
-  DCHECK(base::ContainsKey(root_sink_map_, root_frame_sink_id));
+  DCHECK(base::Contains(root_sink_map_, root_frame_sink_id));
   root_sink_map_[root_frame_sink_id]->ForceImmediateDrawAndSwapIfPossible();
 }
 
@@ -390,7 +390,7 @@ void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
     const FrameSinkId& frame_sink_id,
     CompositorFrameSinkSupport* support) {
   DCHECK(support);
-  DCHECK(!base::ContainsKey(support_map_, frame_sink_id));
+  DCHECK(!base::Contains(support_map_, frame_sink_id));
 
   support_map_[frame_sink_id] = support;
 
@@ -409,7 +409,7 @@ void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
 
 void FrameSinkManagerImpl::UnregisterCompositorFrameSinkSupport(
     const FrameSinkId& frame_sink_id) {
-  DCHECK(base::ContainsKey(support_map_, frame_sink_id));
+  DCHECK(base::Contains(support_map_, frame_sink_id));
 
   for (auto& observer : observer_list_)
     observer.OnDestroyedCompositorFrameSink(frame_sink_id);

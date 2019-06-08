@@ -114,7 +114,7 @@ bool ServerSharedBitmapManager::ChildAllocatedSharedBitmap(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Duplicate ids are not allowed.
-  if (base::ContainsKey(handle_map_, id))
+  if (base::Contains(handle_map_, id))
     return false;
 
   // This function handles public API requests, so verify we unwrapped a shared

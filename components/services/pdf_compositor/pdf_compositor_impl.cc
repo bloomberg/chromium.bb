@@ -30,7 +30,7 @@ PdfCompositorImpl::~PdfCompositorImpl() = default;
 
 void PdfCompositorImpl::NotifyUnavailableSubframe(uint64_t frame_guid) {
   // Add this frame into the map.
-  DCHECK(!base::ContainsKey(frame_info_map_, frame_guid));
+  DCHECK(!base::Contains(frame_info_map_, frame_guid));
   auto& frame_info =
       frame_info_map_.emplace(frame_guid, std::make_unique<FrameInfo>())
           .first->second;
@@ -54,7 +54,7 @@ void PdfCompositorImpl::AddSubframeContent(
   }
 
   // Add this frame and its serialized content.
-  DCHECK(!base::ContainsKey(frame_info_map_, frame_guid));
+  DCHECK(!base::Contains(frame_info_map_, frame_guid));
   auto& frame_info =
       frame_info_map_.emplace(frame_guid, std::make_unique<FrameInfo>())
           .first->second;
@@ -74,7 +74,7 @@ void PdfCompositorImpl::AddSubframeContent(
   std::vector<uint64_t> pending_subframes;
   for (auto& subframe_content : subframe_content_map) {
     auto subframe_guid = subframe_content.second;
-    if (!base::ContainsKey(frame_info_map_, subframe_guid))
+    if (!base::Contains(frame_info_map_, subframe_guid))
       pending_subframes.push_back(subframe_guid);
   }
 

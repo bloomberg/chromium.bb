@@ -238,7 +238,7 @@ void FindWordsFromCategoryInForm(
   }
 
   if (fields_found > 0 && fields_found <= 2)
-    if (!base::ContainsValue(*username_predictions, chosen_field))
+    if (!base::Contains(*username_predictions, chosen_field))
       username_predictions->push_back(chosen_field);
 }
 

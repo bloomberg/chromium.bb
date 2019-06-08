@@ -88,7 +88,7 @@ void MtpManagerClientChromeOS::StorageAttached(
   if (device_id.empty() || storage_label.empty())
     return;
 
-  DCHECK(!base::ContainsKey(storage_map_, location));
+  DCHECK(!base::Contains(storage_map_, location));
 
   StorageInfo storage_info(device_id, location, storage_label, vendor_name,
                            product_name, 0);

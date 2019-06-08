@@ -1418,8 +1418,8 @@ void AutofillManager::FillOrPreviewDataModelForm(
     // On a refill, only fill fields from type groups that were present during
     // the initial fill.
     if (is_refill &&
-        !base::ContainsKey(filling_context->type_groups_originally_filled,
-                           field_group_type)) {
+        !base::Contains(filling_context->type_groups_originally_filled,
+                        field_group_type)) {
       continue;
     }
 

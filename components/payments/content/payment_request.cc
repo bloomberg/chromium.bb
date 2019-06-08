@@ -161,10 +161,9 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
   journey_logger_.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/!spec_->supported_card_networks().empty(),
       /*requested_method_google=*/
-      base::ContainsValue(spec_->url_payment_method_identifiers(),
-                          google_pay_url) ||
-          base::ContainsValue(spec_->url_payment_method_identifiers(),
-                              android_pay_url),
+      base::Contains(spec_->url_payment_method_identifiers(), google_pay_url) ||
+          base::Contains(spec_->url_payment_method_identifiers(),
+                         android_pay_url),
       /*requested_method_other=*/non_google_it !=
           spec_->url_payment_method_identifiers().end());
 }

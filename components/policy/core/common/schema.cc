@@ -888,7 +888,7 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
   std::string id_string;
   if (schema.GetString(schema::kId, &id_string)) {
     auto& id_map = references_and_ids->id_map;
-    if (base::ContainsKey(id_map, id_string)) {
+    if (base::Contains(id_map, id_string)) {
       *error = "Duplicated id: " + id_string;
       return false;
     }
@@ -1287,7 +1287,7 @@ bool Schema::Validate(const base::Value& value,
     }
 
     for (const auto& required_property : GetRequiredProperties()) {
-      if (base::ContainsKey(present_properties, required_property))
+      if (base::Contains(present_properties, required_property))
         continue;
 
       SchemaErrorFound(
@@ -1387,7 +1387,7 @@ bool Schema::Normalize(base::Value* value,
     }
 
     for (const auto& required_property : GetRequiredProperties()) {
-      if (base::ContainsKey(present_properties, required_property))
+      if (base::Contains(present_properties, required_property))
         continue;
 
       SchemaErrorFound(

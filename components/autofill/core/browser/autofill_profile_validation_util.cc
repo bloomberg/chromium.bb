@@ -248,7 +248,7 @@ AddressValidator::Status ValidateAddress(const AutofillProfile* profile,
 
   SetAllAddressValidityStates(profile, AutofillDataModel::UNVALIDATED);
 
-  if (!base::ContainsValue(
+  if (!base::Contains(
           CountryDataMap::GetInstance()->country_codes(),
           base::UTF16ToUTF8(profile->GetRawInfo(ADDRESS_HOME_COUNTRY)))) {
     // If the country code is not in the database, the country code and the
@@ -348,8 +348,8 @@ void ValidatePhoneNumber(const AutofillProfile* profile) {
 
   const std::string& country_code =
       base::UTF16ToUTF8(profile->GetRawInfo(ADDRESS_HOME_COUNTRY));
-  if (!base::ContainsValue(CountryDataMap::GetInstance()->country_codes(),
-                           country_code)) {
+  if (!base::Contains(CountryDataMap::GetInstance()->country_codes(),
+                      country_code)) {
     // If the country code is not in the database, the phone number cannot be
     // validated.
     profile->SetValidityState(PHONE_HOME_WHOLE_NUMBER,

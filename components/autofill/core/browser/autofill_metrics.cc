@@ -1154,12 +1154,12 @@ void AutofillMetrics::LogUserHappinessMetric(
   DCHECK_LT(metric, NUM_USER_HAPPINESS_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness", metric,
                             NUM_USER_HAPPINESS_METRICS);
-  if (base::ContainsKey(form_types, CREDIT_CARD_FORM)) {
+  if (base::Contains(form_types, CREDIT_CARD_FORM)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.CreditCard", metric,
                               NUM_USER_HAPPINESS_METRICS);
     LogUserHappinessBySecurityLevel(metric, CREDIT_CARD_FORM, security_level);
   }
-  if (base::ContainsKey(form_types, ADDRESS_FORM)) {
+  if (base::Contains(form_types, ADDRESS_FORM)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.Address", metric,
                               NUM_USER_HAPPINESS_METRICS);
     if (metric != AutofillMetrics::FORMS_LOADED) {
@@ -1167,12 +1167,12 @@ void AutofillMetrics::LogUserHappinessMetric(
     }
     LogUserHappinessBySecurityLevel(metric, ADDRESS_FORM, security_level);
   }
-  if (base::ContainsKey(form_types, PASSWORD_FORM)) {
+  if (base::Contains(form_types, PASSWORD_FORM)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.Password", metric,
                               NUM_USER_HAPPINESS_METRICS);
     LogUserHappinessBySecurityLevel(metric, PASSWORD_FORM, security_level);
   }
-  if (base::ContainsKey(form_types, UNKNOWN_FORM_TYPE)) {
+  if (base::Contains(form_types, UNKNOWN_FORM_TYPE)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.Unknown", metric,
                               NUM_USER_HAPPINESS_METRICS);
     LogUserHappinessBySecurityLevel(metric, UNKNOWN_FORM_TYPE, security_level);
@@ -1259,16 +1259,16 @@ void AutofillMetrics::LogFormFillDurationFromInteraction(
     parent_metric = "Autofill.FillDuration.FromInteraction.WithoutAutofill";
   }
   LogFormFillDuration(parent_metric, duration);
-  if (base::ContainsKey(form_types, CREDIT_CARD_FORM)) {
+  if (base::Contains(form_types, CREDIT_CARD_FORM)) {
     LogFormFillDuration(parent_metric + ".CreditCard", duration);
   }
-  if (base::ContainsKey(form_types, ADDRESS_FORM)) {
+  if (base::Contains(form_types, ADDRESS_FORM)) {
     LogFormFillDuration(parent_metric + ".Address", duration);
   }
-  if (base::ContainsKey(form_types, PASSWORD_FORM)) {
+  if (base::Contains(form_types, PASSWORD_FORM)) {
     LogFormFillDuration(parent_metric + ".Password", duration);
   }
-  if (base::ContainsKey(form_types, UNKNOWN_FORM_TYPE)) {
+  if (base::Contains(form_types, UNKNOWN_FORM_TYPE)) {
     LogFormFillDuration(parent_metric + ".Unknown", duration);
   }
 }

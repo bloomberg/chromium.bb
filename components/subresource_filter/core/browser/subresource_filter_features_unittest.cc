@@ -658,7 +658,7 @@ TEST_F(SubresourceFilterFeaturesTest, AdTagging_EnablesDryRun) {
       Configuration::MakePresetForPerformanceTestingDryRunOnAllSites();
   base::test::ScopedFeatureList scoped_feature;
   scoped_feature.InitAndEnableFeature(kAdTagging);
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       GetEnabledConfigurations()->configs_by_decreasing_priority(), dryrun));
 }
 
@@ -667,7 +667,7 @@ TEST_F(SubresourceFilterFeaturesTest, AdTaggingDisabled_DisablesDryRun) {
       Configuration::MakePresetForPerformanceTestingDryRunOnAllSites();
   base::test::ScopedFeatureList scoped_feature;
   scoped_feature.InitAndDisableFeature(kAdTagging);
-  EXPECT_FALSE(base::ContainsValue(
+  EXPECT_FALSE(base::Contains(
       GetEnabledConfigurations()->configs_by_decreasing_priority(), dryrun));
 }
 

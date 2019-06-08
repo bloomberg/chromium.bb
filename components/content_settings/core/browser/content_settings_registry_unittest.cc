@@ -152,7 +152,7 @@ TEST_F(ContentSettingsRegistryTest, Inheritance) {
     }
     if (info->incognito_behavior() ==
             ContentSettingsInfo::INHERIT_IN_INCOGNITO &&
-        !base::ContainsValue(whitelist, info->website_settings_info()->type()))
+        !base::Contains(whitelist, info->website_settings_info()->type()))
       FAIL() << "Content setting not whitelisted.";
   }
 }

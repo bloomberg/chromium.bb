@@ -215,7 +215,7 @@ void SyncDisableObserver::OnUrlKeyedDataCollectionConsentStateChanged(
 void SyncDisableObserver::UpdateSyncState(
     syncer::SyncService* sync,
     UrlKeyedDataCollectionConsentHelper* consent_helper) {
-  DCHECK(base::ContainsKey(previous_states_, sync));
+  DCHECK(base::Contains(previous_states_, sync));
   const SyncDisableObserver::SyncState& previous_state = previous_states_[sync];
   DCHECK(previous_state.anonymized_data_collection_state ==
              DataCollectionState::kIgnored ||
@@ -250,7 +250,7 @@ void SyncDisableObserver::UpdateSyncState(
 }
 
 void SyncDisableObserver::OnSyncShutdown(syncer::SyncService* sync) {
-  DCHECK(base::ContainsKey(previous_states_, sync));
+  DCHECK(base::Contains(previous_states_, sync));
   auto found = consent_helpers_.find(sync);
   if (found != consent_helpers_.end()) {
     found->second->RemoveObserver(this);

@@ -455,7 +455,7 @@ RemoteSuggestionsProviderImpl::suggestions_fetcher_for_debugging() const {
 
 GURL RemoteSuggestionsProviderImpl::GetUrlWithFavicon(
     const ContentSuggestion::ID& suggestion_id) const {
-  DCHECK(base::ContainsKey(category_contents_, suggestion_id.category()));
+  DCHECK(base::Contains(category_contents_, suggestion_id.category()));
 
   const CategoryContent& content =
       category_contents_.at(suggestion_id.category());
@@ -758,7 +758,7 @@ int RemoteSuggestionsProviderImpl::
 
 GURL RemoteSuggestionsProviderImpl::FindSuggestionImageUrl(
     const ContentSuggestion::ID& suggestion_id) const {
-  DCHECK(base::ContainsKey(category_contents_, suggestion_id.category()));
+  DCHECK(base::Contains(category_contents_, suggestion_id.category()));
 
   const CategoryContent& content =
       category_contents_.at(suggestion_id.category());
@@ -776,7 +776,7 @@ void RemoteSuggestionsProviderImpl::OnDatabaseLoaded(
     return;
   }
   DCHECK(state_ == State::NOT_INITED);
-  DCHECK(base::ContainsKey(category_contents_, articles_category_));
+  DCHECK(base::Contains(category_contents_, articles_category_));
 
   base::TimeDelta database_load_time =
       base::TimeTicks::Now() - database_load_start_;
@@ -1180,7 +1180,7 @@ void RemoteSuggestionsProviderImpl::PrependArticleSuggestion(
       [&content](const std::unique_ptr<RemoteSuggestion>& suggestion) {
         const std::vector<std::string>& ids = suggestion->GetAllIDs();
         for (const auto& archived_suggestion : content->archived) {
-          if (base::ContainsValue(ids, archived_suggestion->id())) {
+          if (base::Contains(ids, archived_suggestion->id())) {
             return true;
           }
         }
@@ -1365,7 +1365,7 @@ void RemoteSuggestionsProviderImpl::NukeAllSuggestions() {
 
 GURL RemoteSuggestionsProviderImpl::GetImageURLToFetch(
     const ContentSuggestion::ID& suggestion_id) const {
-  if (!base::ContainsKey(category_contents_, suggestion_id.category())) {
+  if (!base::Contains(category_contents_, suggestion_id.category())) {
     return GURL();
   }
   return FindSuggestionImageUrl(suggestion_id);

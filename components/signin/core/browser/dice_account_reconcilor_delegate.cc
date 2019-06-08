@@ -54,7 +54,7 @@ std::string DiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
     bool will_logout) const {
   bool primary_account_has_token =
       !primary_account.empty() &&
-      base::ContainsValue(chrome_accounts, primary_account);
+      base::Contains(chrome_accounts, primary_account);
 
   if (gaia_accounts.empty()) {
     if (primary_account_has_token)
@@ -62,7 +62,7 @@ std::string DiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
 
     // Try the last known account. This happens when the cookies are cleared
     // while Sync is disabled.
-    if (base::ContainsValue(chrome_accounts, last_known_first_account_))
+    if (base::Contains(chrome_accounts, last_known_first_account_))
       return last_known_first_account_;
 
     // As a last resort, use the first Chrome account.
@@ -71,7 +71,7 @@ std::string DiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
 
   const std::string& first_gaia_account = gaia_accounts[0].id;
   bool first_gaia_account_has_token =
-      base::ContainsValue(chrome_accounts, first_gaia_account);
+      base::Contains(chrome_accounts, first_gaia_account);
 
   if (!first_gaia_account_has_token &&
       (primary_account == first_gaia_account) && gaia_accounts[0].valid) {
@@ -136,7 +136,7 @@ DiceAccountReconcilorDelegate::GetChromeAccountsForReconcile(
                                              gaia_accounts);
   }
   if (gaia_accounts.empty() &&
-      base::ContainsValue(chrome_accounts, last_known_first_account_)) {
+      base::Contains(chrome_accounts, last_known_first_account_)) {
     // In PRESERVE mode in case accounts in cookies are accidentally lost we
     // should put cached first account first since Gaia has no information about
     // it.

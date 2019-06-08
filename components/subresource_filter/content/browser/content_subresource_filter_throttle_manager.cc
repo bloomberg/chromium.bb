@@ -121,10 +121,10 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
       navigation_handle->GetRenderFrameHost();
 
   bool is_ad_subframe =
-      transferred_ad_frame || base::ContainsKey(ad_frames_, frame_host);
+      transferred_ad_frame || base::Contains(ad_frames_, frame_host);
   DCHECK(!is_ad_subframe || !navigation_handle->IsInMainFrame());
 
-  bool parent_is_ad = base::ContainsKey(ad_frames_, frame_host->GetParent());
+  bool parent_is_ad = base::Contains(ad_frames_, frame_host->GetParent());
 
   blink::mojom::AdFrameType ad_frame_type = blink::mojom::AdFrameType::kNonAd;
   if (is_ad_subframe)
@@ -255,7 +255,7 @@ void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
     throttles->push_back(std::move(filtering_throttle));
   }
 
-  DCHECK(!base::ContainsKey(ongoing_activation_throttles_, navigation_handle));
+  DCHECK(!base::Contains(ongoing_activation_throttles_, navigation_handle));
   if (auto activation_throttle =
           MaybeCreateActivationStateComputingThrottle(navigation_handle)) {
     ongoing_activation_throttles_[navigation_handle] =
@@ -272,13 +272,13 @@ bool ContentSubresourceFilterThrottleManager::CalculateIsAdSubframe(
   DCHECK(parent_frame);
 
   return load_policy != LoadPolicy::ALLOW ||
-         base::ContainsKey(ad_frames_, frame_host) ||
-         base::ContainsKey(ad_frames_, parent_frame);
+         base::Contains(ad_frames_, frame_host) ||
+         base::Contains(ad_frames_, parent_frame);
 }
 
 bool ContentSubresourceFilterThrottleManager::IsFrameTaggedAsAd(
     const content::RenderFrameHost* frame_host) const {
-  return base::ContainsKey(ad_frames_, frame_host);
+  return base::Contains(ad_frames_, frame_host);
 }
 
 std::unique_ptr<SubframeNavigationFilteringThrottle>
@@ -419,7 +419,7 @@ void ContentSubresourceFilterThrottleManager::MaybeActivateSubframeSpecialUrls(
 
   content::RenderFrameHost* parent = navigation_handle->GetParentFrame();
   DCHECK(parent);
-  if (base::ContainsKey(activated_frame_hosts_, parent))
+  if (base::Contains(activated_frame_hosts_, parent))
     activated_frame_hosts_[frame_host] = nullptr;
 }
 

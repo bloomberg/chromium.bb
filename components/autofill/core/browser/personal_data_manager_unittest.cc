@@ -923,8 +923,7 @@ TEST_F(PersonalDataManagerTest, AddProfile_CrazyCharacters) {
 
   ASSERT_EQ(profiles.size(), personal_data_->GetProfiles().size());
   for (size_t i = 0; i < profiles.size(); ++i) {
-    EXPECT_TRUE(
-        base::ContainsValue(profiles, *personal_data_->GetProfiles()[i]));
+    EXPECT_TRUE(base::Contains(profiles, *personal_data_->GetProfiles()[i]));
   }
 }
 
@@ -1179,8 +1178,7 @@ TEST_F(PersonalDataManagerTest, AddCreditCard_CrazyCharacters) {
 
   ASSERT_EQ(cards.size(), personal_data_->GetCreditCards().size());
   for (size_t i = 0; i < cards.size(); ++i) {
-    EXPECT_TRUE(
-        base::ContainsValue(cards, *personal_data_->GetCreditCards()[i]));
+    EXPECT_TRUE(base::Contains(cards, *personal_data_->GetCreditCards()[i]));
   }
 }
 

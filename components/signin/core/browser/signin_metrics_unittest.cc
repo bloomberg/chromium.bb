@@ -129,8 +129,8 @@ class SigninMetricsTest : public ::testing::Test {
   }
 
   static bool AccessPointSupportsPersonalizedPromo(AccessPoint access_point) {
-    return base::ContainsValue(kAccessPointsThatSupportPersonalizedPromos,
-                               access_point);
+    return base::Contains(kAccessPointsThatSupportPersonalizedPromos,
+                          access_point);
   }
 };
 

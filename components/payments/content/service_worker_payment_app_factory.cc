@@ -40,7 +40,7 @@ bool CapabilityMatches(const std::vector<T>& requested,
   if (requested.empty())
     return true;
   for (const auto& request : requested) {
-    if (base::ContainsValue(capabilities, static_cast<int32_t>(request)))
+    if (base::Contains(capabilities, static_cast<int32_t>(request)))
       return true;
   }
   return false;

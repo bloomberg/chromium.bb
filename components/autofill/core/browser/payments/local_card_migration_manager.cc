@@ -190,7 +190,7 @@ void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
   // will remove any card from |migratable_credit_cards_| of which the GUID is
   // not in |selected_card_guids|.
   auto card_is_selected = [&selected_card_guids](MigratableCreditCard& card) {
-    return !base::ContainsValue(selected_card_guids, card.credit_card().guid());
+    return !base::Contains(selected_card_guids, card.credit_card().guid());
   };
   base::EraseIf(migratable_credit_cards_, card_is_selected);
   // Populating risk data and offering migration two-round pop-ups occur
