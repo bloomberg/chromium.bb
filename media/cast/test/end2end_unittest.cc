@@ -23,9 +23,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "media/base/audio_bus.h"
@@ -879,7 +879,7 @@ class End2EndTest : public ::testing::Test {
   std::vector<std::pair<base::TimeTicks, base::TimeTicks> > video_ticks_;
 
   // |transport_sender_| has a RepeatingTimer which needs a MessageLoop.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 namespace {

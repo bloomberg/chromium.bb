@@ -9,11 +9,11 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/run_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/power_monitor_test_base.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_suite.h"
 #include "media/base/cdm_context.h"
@@ -217,8 +217,9 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
         std::unique_ptr<TestPowerSource>(power_source_)));
 
     cast_environment_ = new CastEnvironment(
-        &clock_, message_loop_.task_runner(), message_loop_.task_runner(),
-        message_loop_.task_runner());
+        &clock_, scoped_task_environment_.GetMainThreadTaskRunner(),
+        scoped_task_environment_.GetMainThreadTaskRunner(),
+        scoped_task_environment_.GetMainThreadTaskRunner());
     encoder_.reset(new H264VideoToolboxEncoder(
         cast_environment_, video_sender_config_,
         base::Bind(&SaveOperationalStatus, &operational_status_)));
@@ -254,7 +255,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   static FrameSenderConfig video_sender_config_;
 
   base::SimpleTestTickClock clock_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<CastEnvironment> cast_environment_;
   std::unique_ptr<VideoEncoder> encoder_;
   OperationalStatus operational_status_;
