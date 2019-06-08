@@ -165,7 +165,7 @@ class DiscreteSet {
   ~DiscreteSet() = default;
 
   bool Contains(const T& value) const {
-    return is_universal_ || base::ContainsValue(elements_, value);
+    return is_universal_ || base::Contains(elements_, value);
   }
 
   bool IsEmpty() const { return !is_universal_ && elements_.empty(); }
@@ -183,7 +183,7 @@ class DiscreteSet {
     // Both sets have explicit elements.
     std::vector<T> intersection;
     for (const auto& entry : elements_) {
-      if (base::ContainsValue(other.elements_, entry))
+      if (base::Contains(other.elements_, entry))
         intersection.push_back(entry);
     }
     return DiscreteSet(std::move(intersection));

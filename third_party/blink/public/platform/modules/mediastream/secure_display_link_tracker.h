@@ -34,7 +34,7 @@ class SecureDisplayLinkTracker {
 
 template <typename T>
 void SecureDisplayLinkTracker<T>::Add(T* link, bool is_link_secure) {
-  DCHECK(!base::ContainsValue(insecure_links_, link));
+  DCHECK(!base::Contains(insecure_links_, link));
 
   if (!is_link_secure)
     insecure_links_.push_back(link);

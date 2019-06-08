@@ -170,8 +170,8 @@ bool FeaturePolicy::IsFeatureEnabledForOrigin(
 PolicyValue FeaturePolicy::GetFeatureValueForOrigin(
     mojom::FeaturePolicyFeature feature,
     const url::Origin& origin) const {
-  DCHECK(base::ContainsKey(feature_list_, feature));
-  DCHECK(base::ContainsKey(inherited_policies_, feature));
+  DCHECK(base::Contains(feature_list_, feature));
+  DCHECK(base::Contains(inherited_policies_, feature));
 
   auto inherited_value = inherited_policies_.at(feature);
   auto allowlist = allowlists_.find(feature);
@@ -194,8 +194,8 @@ PolicyValue FeaturePolicy::GetFeatureValueForOrigin(
 
 const FeaturePolicy::Allowlist FeaturePolicy::GetAllowlistForFeature(
     mojom::FeaturePolicyFeature feature) const {
-  DCHECK(base::ContainsKey(feature_list_, feature));
-  DCHECK(base::ContainsKey(inherited_policies_, feature));
+  DCHECK(base::Contains(feature_list_, feature));
+  DCHECK(base::Contains(inherited_policies_, feature));
   mojom::PolicyValueType type = feature_list_.at(feature).second;
   // Return an empty allowlist when disabled through inheritance.
   if (inherited_policies_.at(feature) <=

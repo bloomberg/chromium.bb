@@ -49,7 +49,7 @@ BLINK_COMMON_EXPORT GURL ManifestIconSelector::FindBestMatchingIcon(
     }
 
     // Check for icon purpose.
-    if (!base::ContainsValue(icon.purpose, purpose))
+    if (!base::Contains(icon.purpose, purpose))
       continue;
 
     // Check for size constraints.

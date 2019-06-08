@@ -181,7 +181,7 @@ class ChromeMemEnv : public leveldb::EnvWrapper {
     leveldb::Status s = leveldb::EnvWrapper::DeleteFile(fname);
     if (s.ok()) {
       base::AutoLock lock(files_lock_);
-      DCHECK(base::ContainsKey(file_names_, fname));
+      DCHECK(base::Contains(file_names_, fname));
       file_names_.erase(fname);
     }
     return s;

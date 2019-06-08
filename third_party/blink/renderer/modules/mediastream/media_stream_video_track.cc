@@ -370,7 +370,7 @@ void MediaStreamVideoTrack::AddSink(WebMediaStreamSink* sink,
                                     const VideoCaptureDeliverFrameCB& callback,
                                     bool is_sink_secure) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  DCHECK(!base::ContainsValue(sinks_, sink));
+  DCHECK(!base::Contains(sinks_, sink));
   sinks_.push_back(sink);
   frame_deliverer_->AddCallback(sink, callback);
   secure_tracker_.Add(sink, is_sink_secure);

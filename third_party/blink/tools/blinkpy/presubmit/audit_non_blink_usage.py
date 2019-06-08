@@ -32,6 +32,7 @@ _CONFIG = [
             # //base constructs that are allowed everywhere
             'base::AdoptRef',
             'base::AutoReset',
+            'base::Contains',
             'base::CreateSequencedTaskRunnerWithTraits',
             'base::DefaultTickClock',
             'base::ElapsedTimer',

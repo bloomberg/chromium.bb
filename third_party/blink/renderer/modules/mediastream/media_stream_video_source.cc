@@ -54,7 +54,7 @@ void MediaStreamVideoSource::AddTrack(
     const VideoTrackFormatCallback& format_callback,
     const ConstraintsCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!base::ContainsValue(tracks_, track));
+  DCHECK(!base::Contains(tracks_, track));
   tracks_.push_back(track);
   secure_tracker_.Add(track, true);
 

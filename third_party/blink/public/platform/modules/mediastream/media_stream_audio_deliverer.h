@@ -46,8 +46,8 @@ class MediaStreamAudioDeliverer {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(consumer);
     base::AutoLock auto_lock(consumers_lock_);
-    DCHECK(!base::ContainsValue(consumers_, consumer));
-    DCHECK(!base::ContainsValue(pending_consumers_, consumer));
+    DCHECK(!base::Contains(consumers_, consumer));
+    DCHECK(!base::Contains(pending_consumers_, consumer));
     pending_consumers_.push_back(consumer);
   }
 
