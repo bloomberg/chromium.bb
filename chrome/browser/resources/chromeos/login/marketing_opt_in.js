@@ -13,7 +13,7 @@ Polymer({
   behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   /**
-   * This is 'on-tap' event handler for 'AcceptAndContinue/Next' buttons.
+   * This is 'on-click' event handler for 'AcceptAndContinue/Next' buttons.
    * @private
    */
   onAllSet_: function() {

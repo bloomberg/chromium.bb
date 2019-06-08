@@ -985,7 +985,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
   AppLaunchController::SetBlockAppLaunchForTesting(false);
 
   // Click on [Continue] button.
-  test::OobeJS().TapOn("error-message-md-continue-button");
+  test::OobeJS().ClickOn("error-message-md-continue-button");
 
   WaitForAppLaunchSuccess();
 }

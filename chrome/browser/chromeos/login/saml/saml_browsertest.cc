@@ -496,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   content::ExecuteScriptAsync(
       GetLoginUI()->GetWebContents(),
       test::GetOobeElementPath({"gaia-signin", "signin-back-button"}) +
-          ".fire('tap');");
+          ".fire('click');");
 
   // Auth flow should change back to Gaia.
   std::string message;
@@ -523,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
   SigninFrameJS().TypeIntoPath("not_the_password", {"Dummy"});
   SigninFrameJS().TypeIntoPath("actual_password", {"Password"});
 
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
 
   // Login should finish login and a session should start.
   session_start_waiter.Wait();
@@ -561,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
   std::string message;
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
@@ -592,7 +592,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
   session_start_waiter.Wait();
 }
 
@@ -605,7 +605,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
   SigninFrameJS().TypeIntoPath("password1", {"Password1"});
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
   // Lands on confirm password screen.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
   test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
@@ -628,7 +628,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
 
   // Lands on confirm password screen with manual input state.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
@@ -664,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
   session_start_waiter.Wait();
 
   const user_manager::User* user =
@@ -683,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, FailToRetrieveAutenticatedUserEmailAddress) {
                                                     kTestAuthLSIDCookie1);
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
 
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_NO_ACCOUNT_DETAILS),
             WaitForAndGetFatalErrorMessage());
@@ -699,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
   SigninFrameJS().TypeIntoPath("password1", {"Password1"});
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
 
   // Lands on confirm password screen with no error message.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
@@ -861,7 +861,7 @@ void SAMLEnrollmentTest::StartSamlAndWaitForIdpPageLoad(
   // Wait for Gaia is ready.
   OobeBaseTest::WaitForGaiaPageEvent("backButton");
   SigninFrameJS().TypeIntoPath(gaia_email, {"identifier"});
-  SigninFrameJS().TapOn("nextButton");
+  SigninFrameJS().ClickOn("nextButton");
   OobeBaseTest::WaitForGaiaPageEvent("authFlowChange");
 }
 
@@ -887,7 +887,7 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithoutCredentialsPassingAPI) {
   // Fill-in the SAML IdP form and submit.
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
 }
@@ -900,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
   // Fill-in the SAML IdP form and submit.
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
 }
@@ -1192,7 +1192,7 @@ void SAMLPolicyTest::LogInWithSAML(const std::string& user_id,
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
   session_start_waiter.Wait();
 }
 
@@ -1409,7 +1409,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialNext) {
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
   session_start_waiter.Wait();
 }
 
@@ -1502,7 +1502,7 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginSucceeded) {
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
   session_start_waiter.Wait();
 
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(
@@ -1536,7 +1536,7 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginFailed) {
 
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
-  SigninFrameJS().TapOn("Submit");
+  SigninFrameJS().ClickOn("Submit");
 
   // SAML login fails:
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_NO_ACCOUNT_DETAILS),

@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, SkipWithNoPolicySet) {
   VerifyUiElementVisible("upgrade-button");
 
   // Click skip - this should start the user session.
-  test::OobeJS().TapOnPath({"encryption-migration-element", "skip-button"});
+  test::OobeJS().ClickOnPath({"encryption-migration-element", "skip-button"});
 
   WaitForActiveSession();
 
@@ -249,7 +249,8 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MigrateWithNoUserPolicySet) {
                    ->get_id_for_disk_migrated_to_dircrypto()
                    .has_account_id());
 
-  test::OobeJS().TapOnPath({"encryption-migration-element", "upgrade-button"});
+  test::OobeJS().ClickOnPath(
+      {"encryption-migration-element", "upgrade-button"});
 
   RunFullMigrationFlowTest();
 }
@@ -470,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest,
 
   VerifyUiElementNotVisible("insufficient-space-restart-button");
   VerifyUiElementVisible("insufficient-space-skip-button");
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"encryption-migration-element", "insufficient-space-skip-button"});
 
   WaitForActiveSession();
@@ -498,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MigrateWithInsuficientSpace) {
   VerifyUiElementVisible("insufficient-space-restart-button");
   VerifyUiElementNotVisible("insufficient-space-skip-button");
 
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"encryption-migration-element", "insufficient-space-restart-button"});
 
   EXPECT_EQ(1, FakePowerManagerClient::Get()->num_request_restart_calls());
@@ -526,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, InsuficientSpaceOnResume) {
   VerifyUiElementVisible("insufficient-space-restart-button");
   VerifyUiElementNotVisible("insufficient-space-skip-button");
 
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"encryption-migration-element", "insufficient-space-restart-button"});
 
   EXPECT_EQ(1, FakePowerManagerClient::Get()->num_request_restart_calls());
@@ -562,7 +563,8 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MigrationFailure) {
 
   VerifyUiElementVisible("restart-button");
 
-  test::OobeJS().TapOnPath({"encryption-migration-element", "restart-button"});
+  test::OobeJS().ClickOnPath(
+      {"encryption-migration-element", "restart-button"});
 
   EXPECT_EQ(1, FakePowerManagerClient::Get()->num_request_restart_calls());
 }
@@ -591,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, LowBattery) {
   test::OobeJS().ExpectDisabledPath(
       {"encryption-migration-element", "upgrade-button"});
 
-  test::OobeJS().TapOnPath({"encryption-migration-element", "skip-button"});
+  test::OobeJS().ClickOnPath({"encryption-migration-element", "skip-button"});
 
   WaitForActiveSession();
   EXPECT_FALSE(FakeCryptohomeClient::Get()

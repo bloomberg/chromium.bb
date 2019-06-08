@@ -95,7 +95,8 @@ void ActiveDirectoryLoginMixin::TriggerPasswordChangeScreen() {
 }
 
 void ActiveDirectoryLoginMixin::ClosePasswordChangeScreen() {
-  test::OobeJS().TapOnPath({kPasswordChangeId, kNavigationId, kCloseButtonId});
+  test::OobeJS().ClickOnPath(
+      {kPasswordChangeId, kNavigationId, kCloseButtonId});
 }
 
 // Checks if Active Directory login is visible.
@@ -228,7 +229,7 @@ void ActiveDirectoryLoginMixin::SubmitActiveDirectoryCredentials(
                               {kGaiaSigninId, kAdOfflineAuthId, kAdUserInput});
   test::OobeJS().TypeIntoPath(
       password, {kGaiaSigninId, kAdOfflineAuthId, kAdPasswordInput});
-  test::OobeJS().TapOnPath({kGaiaSigninId, kAdOfflineAuthId, kAdCredsButton});
+  test::OobeJS().ClickOnPath({kGaiaSigninId, kAdOfflineAuthId, kAdCredsButton});
 }
 
 // Sets username and password for the Active Directory login and submits it.
@@ -242,7 +243,7 @@ void ActiveDirectoryLoginMixin::SubmitActiveDirectoryPasswordChangeCredentials(
                               {kPasswordChangeId, kAdNewPassword1Input});
   test::OobeJS().TypeIntoPath(new_password2,
                               {kPasswordChangeId, kAdNewPassword2Input});
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {kPasswordChangeId, kPasswordChangeFormId, kFormButtonId});
 }
 

@@ -43,16 +43,16 @@
   <template>
     <div class="fit layout horizontal center">
       <gaia-icon-button id="backButton" icon="navigation-bar:arrow-back"
-          hidden="[[!backVisible]]" disabled="[[disabled]]" on-tap="onBack_"
+          hidden="[[!backVisible]]" disabled="[[disabled]]" on-click="onBack_"
           i18n-values="aria-label:backButton">
       </gaia-icon-button>
       <div class="flex"></div>
       <gaia-icon-button id="refreshButton" icon="navigation-bar:refresh"
           hidden="[[!refreshVisible]]" disabled="[[disabled]]"
-          on-tap="onRefresh_" i18n-values="aria-label:closeButton">
+          on-click="onRefresh_" i18n-values="aria-label:closeButton">
       </gaia-icon-button>
       <gaia-icon-button id="closeButton" icon="cr:close"
-          hidden="[[!closeVisible]]" disabled="[[disabled]]" on-tap="onClose_"
+          hidden="[[!closeVisible]]" disabled="[[disabled]]" on-click="onClose_"
           i18n-values="aria-label:closeButton">
       </gaia-icon-button>
     </div>

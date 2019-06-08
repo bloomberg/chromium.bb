@@ -76,7 +76,7 @@ Polymer({
   },
 
   /**
-   * This is 'on-tap' event handler for 'AcceptAndContinue' button.
+   * This is 'on-click' event handler for 'AcceptAndContinue' button.
    * @private
    */
   onSettingsSaveAndContinue_: function(e) {

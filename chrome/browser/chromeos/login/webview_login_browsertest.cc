@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   ExpectIdentifierPage();
 
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail, {"identifier"});
-  SigninFrameJS().TapOn("nextButton");
+  SigninFrameJS().ClickOn("nextButton");
   WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
 
   SigninFrameJS().TypeIntoPath("[]", {"services"});
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword, {"password"});
-  SigninFrameJS().TapOn("nextButton");
+  SigninFrameJS().ClickOn("nextButton");
 
   session_start_waiter.Wait();
 }
@@ -272,16 +272,16 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
 
   // Move to password page.
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail, {"identifier"});
-  SigninFrameJS().TapOn("nextButton");
+  SigninFrameJS().ClickOn("nextButton");
   WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
   // Click back to identifier page.
-  test::OobeJS().TapOnPath({"gaia-signin", "signin-back-button"});
+  test::OobeJS().ClickOnPath({"gaia-signin", "signin-back-button"});
   WaitForGaiaPageBackButtonUpdate();
   ExpectIdentifierPage();
   // Click next to password page, user id is remembered.
-  SigninFrameJS().TapOn("nextButton");
+  SigninFrameJS().ClickOn("nextButton");
   WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
@@ -292,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
   // Finish sign-up.
   SigninFrameJS().TypeIntoPath("[]", {"services"});
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword, {"password"});
-  SigninFrameJS().TapOn("nextButton");
+  SigninFrameJS().ClickOn("nextButton");
 
   session_start_waiter.Wait();
 }
@@ -351,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
 
   // Press the back button at a sign-in screen without pre-existing users to
   // start a new sign-in attempt.
-  test::OobeJS().TapOnPath({"gaia-signin", "signin-back-button"});
+  test::OobeJS().ClickOnPath({"gaia-signin", "signin-back-button"});
   WaitForGaiaPageBackButtonUpdate();
   // Expect that we got back to the identifier page, as there are no known users
   // so the sign-in screen will not display user pods.
@@ -1022,7 +1022,7 @@ IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, DISABLED_ProxyAuthTransfer) {
   // start a new sign-in attempt.
   // This will re-load gaia, rotating the StoragePartition. The new
   // StoragePartition must also have the proxy auth details.
-  test::OobeJS().TapOnPath({"gaia-signin", "signin-back-button"});
+  test::OobeJS().ClickOnPath({"gaia-signin", "signin-back-button"});
   WaitForGaiaPageBackButtonUpdate();
   // Expect that we got back to the identifier page, as there are no known users
   // so the sign-in screen will not display user pods.

@@ -244,22 +244,6 @@ void JSChecker::ClickOn(const std::string& element_id) {
   ClickOnPath({element_id});
 }
 
-void JSChecker::TapOnPath(
-    std::initializer_list<base::StringPiece> element_ids) {
-  ExpectVisiblePath(element_ids);
-  // TODO(crbug.com/949377): Switch to always firing 'click' events when
-  // missing OOBE UI components are migrated to handle 'click' events.
-  if (polymer_ui_) {
-    Evaluate(GetOobeElementPath(element_ids) + ".fire('tap')");
-  } else {
-    Evaluate(GetOobeElementPath(element_ids) + ".click()");
-  }
-}
-
-void JSChecker::TapOn(const std::string& element_id) {
-  TapOnPath({element_id});
-}
-
 void JSChecker::SelectRadioPath(
     std::initializer_list<base::StringPiece> element_ids) {
   ExpectVisiblePath(element_ids);

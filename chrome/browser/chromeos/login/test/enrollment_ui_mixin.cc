@@ -92,7 +92,7 @@ void EnrollmentUIMixin::SelectEnrollmentLicense(
 }
 
 void EnrollmentUIMixin::UseSelectedLicense() {
-  OobeJS().TapOnPath(
+  OobeJS().ClickOnPath(
       {"enterprise-enrollment", "oauth-enroll-license-ui", "next"});
 }
 
@@ -111,12 +111,12 @@ void EnrollmentUIMixin::ExpectErrorMessage(int error_message_id,
 }
 
 void EnrollmentUIMixin::RetryAfterError() {
-  OobeJS().TapOnPath(kEnrollmentErrorRetryButtonPath);
+  OobeJS().ClickOnPath(kEnrollmentErrorRetryButtonPath);
   WaitForStep(ui::kEnrollmentStepSignin);
 }
 
 void EnrollmentUIMixin::LeaveDeviceAttributeErrorScreen() {
-  OobeJS().TapOnPath(kEnrollmentDeviceAttributesErrorButtonPath);
+  OobeJS().ClickOnPath(kEnrollmentDeviceAttributesErrorButtonPath);
 }
 
 void EnrollmentUIMixin::SubmitDeviceAttributes(const std::string& asset_id,
@@ -125,7 +125,7 @@ void EnrollmentUIMixin::SubmitDeviceAttributes(const std::string& asset_id,
                         {"enterprise-enrollment", "oauth-enroll-asset-id"});
   OobeJS().TypeIntoPath(location,
                         {"enterprise-enrollment", "oauth-enroll-location"});
-  OobeJS().TapOnPath(
+  OobeJS().ClickOnPath(
       {"enterprise-enrollment", "enroll-attributes-submit-button"});
 }
 

@@ -126,11 +126,11 @@ Polymer({
   sanitizer_: new HtmlSanitizer(),
 
   /**
-   * On-tap event handler for skip button.
+   * On-click event handler for skip button.
    *
    * @private
    */
-  onSkipTap_: function() {
+  onSkipClick_: function() {
     if (this.buttonsDisabled) {
       return;
     }
@@ -141,11 +141,11 @@ Polymer({
   },
 
   /**
-   * On-tap event handler for next button.
+   * On-click event handler for next button.
    *
    * @private
    */
-  onNextTap_: function() {
+  onNextClick_: function() {
     if (this.buttonsDisabled) {
       return;
     }

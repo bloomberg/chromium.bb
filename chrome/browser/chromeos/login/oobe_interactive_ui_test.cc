@@ -139,7 +139,7 @@ void RunFingerprintScreenChecks() {
   test::OobeJS().ExpectVisible("fingerprint-setup-impl");
   test::OobeJS().ExpectVisiblePath(
       {"fingerprint-setup-impl", "setupFingerprint"});
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"fingerprint-setup-impl", "showSensorLocationButton"});
   test::OobeJS().ExpectHiddenPath(
       {"fingerprint-setup-impl", "setupFingerprint"});
@@ -244,7 +244,7 @@ void HandleRecommendAppsScreen() {
   const std::initializer_list<base::StringPiece> install_button = {
       "recommend-apps-screen", "recommend-apps-install-button"};
   test::OobeJS().CreateEnabledWaiter(true, install_button)->Wait();
-  test::OobeJS().TapOnPath(install_button);
+  test::OobeJS().ClickOnPath(install_button);
 
   OobeScreenExitWaiter(RecommendAppsScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: 'recommend-apps' screen done.";
@@ -259,7 +259,7 @@ void HandleAppDownloadingScreen() {
 
   const std::initializer_list<base::StringPiece> continue_button = {
       "app-downloading-screen", "app-downloading-continue-setup-button"};
-  test::OobeJS().TapOnPath(continue_button);
+  test::OobeJS().ClickOnPath(continue_button);
 
   OobeScreenExitWaiter(AppDownloadingScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: 'app-downloading' screen done.";
@@ -283,7 +283,7 @@ void HandleAssistantOptInScreen() {
   std::initializer_list<base::StringPiece> skip_button_path = {
       "assistant-optin-flow-card", "loading", "skip-button"};
   test::OobeJS().CreateEnabledWaiter(true, skip_button_path)->Wait();
-  test::OobeJS().TapOnPath(skip_button_path);
+  test::OobeJS().ClickOnPath(skip_button_path);
 
   OobeScreenExitWaiter(AssistantOptInFlowScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: 'assistant-optin' screen done.";

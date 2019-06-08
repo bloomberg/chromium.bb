@@ -62,25 +62,26 @@
         </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
-        <oobe-back-button id="arc-tos-back-button" on-tap="onBack_"></oobe-back-button>
+        <oobe-back-button id="arc-tos-back-button" on-click="onBack_">
+        </oobe-back-button>
         <div class="flex">
         </div>
-        <oobe-text-button id="arc-tos-skip-button" border on-tap="onSkip_"
+        <oobe-text-button id="arc-tos-skip-button" border on-click="onSkip_"
             disabled="[[arcTosButtonsDisabled]]">
           <div i18n-content="arcTermsOfServiceSkipButton"></div>
         </oobe-text-button>
         <oobe-text-button id="arc-tos-retry-button"
-            inverse on-tap="onRetry_"
+            inverse on-click="onRetry_"
             disabled="[[arcTosButtonsDisabled]]">
           <div i18n-content="arcTermsOfServiceRetryButton"></div>
         </oobe-text-button>
         <oobe-text-button id="arc-tos-next-button"
-            inverse on-tap="onNext_"
+            inverse on-click="onNext_"
             disabled="[[arcTosButtonsDisabled]]">
           <div i18n-content="arcTermsOfServiceNextButton"></div>
         </oobe-text-button>
         <oobe-text-button id="arc-tos-accept-button"
-            inverse on-tap="onAccept_"
+            inverse on-click="onAccept_"
             disabled="[[arcTosButtonsDisabled]]">
           <div id="arc-tos-accept-button-content"
               i18n-content="arcTermsOfServiceAcceptButton"></div>

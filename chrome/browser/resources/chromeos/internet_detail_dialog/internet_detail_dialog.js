@@ -317,7 +317,7 @@ Polymer({
   },
 
   /** @private */
-  onConnectTap_: function() {
+  onConnectClick_: function() {
     var properties = this.networkProperties;
     this.networkingPrivate.startConnect(properties.GUID, function() {
       if (chrome.runtime.lastError) {
@@ -334,7 +334,7 @@ Polymer({
   },
 
   /** @private */
-  onDisconnectTap_: function() {
+  onDisconnectClick_: function() {
     this.networkingPrivate.startDisconnect(this.guid);
   },
 

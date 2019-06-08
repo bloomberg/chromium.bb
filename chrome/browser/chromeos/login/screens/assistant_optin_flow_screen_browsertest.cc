@@ -418,7 +418,7 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   // and then taps it.
   void TapWhenEnabled(std::initializer_list<base::StringPiece> button_path) {
     test::OobeJS().CreateEnabledWaiter(true, button_path)->Wait();
-    test::OobeJS().TapOnPath(button_path);
+    test::OobeJS().ClickOnPath(button_path);
   }
 
   void WaitForAssistantScreen(const std::string& screen) {
@@ -1065,7 +1065,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
       {"assistant-optin-flow-card", "voice-match", "voice-entry-0"},
       "completed");
 
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"assistant-optin-flow-card", "voice-match", "later-button"});
   assistant_settings_->Flush();
   EXPECT_FALSE(assistant_settings_->IsSpeakerIdEnrollmentActive());

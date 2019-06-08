@@ -29,13 +29,6 @@ Polymer({
   },
 
   /** @private */
-  focusedChanged_: function() {
-    if (this.type == GaiaButtonType.LINK || this.type == GaiaButtonType.DIALOG)
-      return;
-    this.$.button.raised = this.$.button.focused;
-  },
-
-  /** @private */
   typeChanged_: function() {
     if (this.type == GaiaButtonType.LINK)
       this.$.button.setAttribute('noink', '');

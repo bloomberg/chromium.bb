@@ -223,7 +223,7 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
     std::initializer_list<base::StringPiece> button_path = {
         "supervision-onboarding", button_id};
     test::OobeJS().CreateVisibilityWaiter(true, button_path)->Wait();
-    test::OobeJS().TapOnPath(button_path);
+    test::OobeJS().ClickOnPath(button_path);
   }
 
   void WaitForScreenExit() {

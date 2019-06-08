@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, NoAppsSelected) {
       l10n_util::GetStringFUTF8(IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE_PLURAL,
                                 base::ASCIIToUTF16("0")));
 
-  test::OobeJS().TapOnPath(continue_button);
+  test::OobeJS().ClickOnPath(continue_button);
 
   WaitForScreenExit();
 }
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, SingleAppSelected) {
       l10n_util::GetStringUTF8(
           IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE_SINGULAR));
 
-  test::OobeJS().TapOnPath(continue_button);
+  test::OobeJS().ClickOnPath(continue_button);
 
   WaitForScreenExit();
 }
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, MultipleAppsSelected) {
       l10n_util::GetStringFUTF8(IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE_PLURAL,
                                 base::ASCIIToUTF16("2")));
 
-  test::OobeJS().TapOnPath(continue_button);
+  test::OobeJS().ClickOnPath(continue_button);
 
   WaitForScreenExit();
 }

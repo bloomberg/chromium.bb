@@ -29,12 +29,12 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button id="skip-button" on-tap="onSkipTap_"
+        <oobe-text-button id="skip-button" on-click="onSkipClick_"
             disabled="[[buttonsDisabled]]">
           <div i18n-content="assistantOptinSkipButton"></div>
         </oobe-text-button>
         <oobe-text-button id="retry-button" inverse android
-            on-tap="onRetryTap_" disabled="[[buttonsDisabled]]">
+            on-click="onRetryClick_" disabled="[[buttonsDisabled]]">
           <div i18n-content="assistantOptinRetryButton"></div>
         </oobe-text-button>
       </div>

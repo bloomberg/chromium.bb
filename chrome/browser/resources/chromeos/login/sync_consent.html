@@ -61,7 +61,7 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="settingsSaveAndContinueButton"
-            on-tap="onSettingsSaveAndContinue_" class="focus-on-show" inverse>
+            on-click="onSettingsSaveAndContinue_" class="focus-on-show" inverse>
           <div consent-description consent-confirmation>
             [[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]
           </div>
@@ -126,7 +126,7 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-welcome-secondary-button id="moreOptionsButton"
-            on-tap="onMoreOptionsButton_"
+            on-click="onMoreOptionsButton_"
             label-for-aria$="[[i18nDynamic(locale,
                 'syncConsentNewMoreOptions')]]">
           <div consent-description>
@@ -134,7 +134,7 @@
           </div>
         </oobe-welcome-secondary-button>
         <oobe-text-button id="yesIAmInButton"
-          on-tap="onYesIAmInButton_" class="focus-on-show" inverse>
+          on-click="onYesIAmInButton_" class="focus-on-show" inverse>
           <div consent-description consent-confirmation>
             [[i18nDynamic(locale, 'syncConsentNewYesIAmIn')]]
           </div>
@@ -208,7 +208,7 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button
-            on-tap="onOptionsAcceptAndContinue_" inverse>
+            on-click="onOptionsAcceptAndContinue_" inverse>
           <div consent-description consent-confirmation>
             [[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]
           </div>

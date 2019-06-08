@@ -149,7 +149,7 @@ Polymer({
   },
 
   /**
-   * This is 'on-tap' event handler for 'Skip' and 'Do it later' button.
+   * This is 'on-click' event handler for 'Skip' and 'Do it later' button.
    * @private
    */
   onFingerprintSetupSkipped_: function(e) {
@@ -158,7 +158,7 @@ Polymer({
   },
 
   /**
-   * This is 'on-tap' event handler for 'showSensorLocationButton' button.
+   * This is 'on-click' event handler for 'showSensorLocationButton' button.
    * @private
    */
   onContinueToSensorLocationScreen_: function(e) {
@@ -166,7 +166,7 @@ Polymer({
   },
 
   /**
-   * This is 'on-tap' event handler for 'Done' button.
+   * This is 'on-click' event handler for 'Done' button.
    * @private
    */
   onFingerprintSetupDone_: function(e) {
@@ -175,7 +175,7 @@ Polymer({
   },
 
   /**
-   * This is 'on-tap' event handler for 'Add another' button.
+   * This is 'on-click' event handler for 'Add another' button.
    * @private
    */
   onFingerprintAddAnother_: function(e) {

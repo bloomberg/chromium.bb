@@ -39,22 +39,22 @@ Polymer({
   },
 
   /**
-   * On-tap event handler for skip button.
+   * On-click event handler for skip button.
    *
    * @private
    */
-  onSkipTap_: function() {
+  onSkipClick_: function() {
     chrome.send(
         'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
         ['skip-pressed']);
   },
 
   /**
-   * On-tap event handler for agree button.
+   * On-click event handler for agree button.
    *
    * @private
    */
-  onAgreeTap_: function() {
+  onAgreeClick_: function() {
     this.removeClass_('intro');
     this.addClass_('recording');
     this.fire('loading');

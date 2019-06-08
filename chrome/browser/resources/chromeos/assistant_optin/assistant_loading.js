@@ -46,20 +46,20 @@ Polymer({
   loadingTimeout_: null,
 
   /**
-   * On-tap event handler for retry button.
+   * On-click event handler for retry button.
    *
    * @private
    */
-  onRetryTap_: function() {
+  onRetryClick_: function() {
     this.fire('reload');
   },
 
   /**
-   * On-tap event handler for skip button.
+   * On-click event handler for skip button.
    *
    * @private
    */
-  onSkipTap_: function() {
+  onSkipClick_: function() {
     if (this.buttonsDisabled) {
       return;
     }

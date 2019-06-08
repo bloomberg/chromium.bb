@@ -62,7 +62,7 @@
             i18n-content="resetRestartMessage"></div>
         <a id="powerwash-help-link-md" href="#"
             hidden="[[isHelpLinkHidden_(uiState_, isOfficial_)]]"
-            on-tap="onLearnMoreTap_" i18n-content="learnMore"></a>
+            on-click="onLearnMoreClick_" i18n-content="learnMore"></a>
         <div hidden="[[!isState_(uiState_, 'revert-promise-view')]]">
           <div i18n-content="resetRevertPromise"></div>
           <div class="flex horizontal layout">
@@ -85,27 +85,30 @@
           <div id="tpmFirmwareUpdateContainer">
             <span i18n-content="resetTPMFirmwareUpdate"></span>
             <a href="#" hidden="[[isHelpLinkHidden_(uiState_, isOfficial_)]]"
-                on-tap="onTPMFirmwareUpdateLearnMore_"
+                on-click="onTPMFirmwareUpdateLearnMore_"
                 i18n-content="learnMore"></a>
           </div>
         </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button border on-tap="onCancelTap_"
+        <oobe-text-button border on-click="onCancelClick_"
             hidden="[[isCancelHidden_(uiState_)]]">
           <div i18n-content="cancelButton"></div>
         </oobe-text-button>
-        <oobe-text-button inverse on-tap="onRestartTap_" class="focus-on-show"
+        <oobe-text-button inverse on-click="onRestartClick_"
+            class="focus-on-show"
             hidden="[[!isState_(uiState_, 'restart-required-view')]]">
           <div i18n-content="resetButtonRestart"></div>
         </oobe-text-button>
-        <oobe-text-button inverse on-tap="onPowerwashTap_" class="focus-on-show"
+        <oobe-text-button inverse on-click="onPowerwashClick_"
+            class="focus-on-show"
             hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]"
             disabled="[[tpmFirmwareUpdateChecked_]]">
           <div i18n-content="resetButtonPowerwashAndRollback"></div>
         </oobe-text-button>
-        <oobe-text-button inverse on-tap="onPowerwashTap_" class="focus-on-show"
+        <oobe-text-button inverse on-click="onPowerwashClick_"
+            class="focus-on-show"
             hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]">
           <div i18n-content="resetButtonPowerwash"></div>
         </oobe-text-button>

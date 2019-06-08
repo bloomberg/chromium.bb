@@ -279,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, BasicSelection) {
   test::OobeJS().ExpectEnabledPath(skip_button);
   test::OobeJS().ExpectPathDisplayed(false, retry_button);
 
-  test::OobeJS().TapOnPath(install_button);
+  test::OobeJS().ClickOnPath(install_button);
 
   WaitForScreenExit();
   EXPECT_EQ(RecommendAppsScreen::Result::SELECTED, screen_result_.value());
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SelectionChange) {
 
   ASSERT_TRUE(ToggleAppsSelection(webview_path, "['test.app.foo.app1']"));
 
-  test::OobeJS().TapOnPath(install_button);
+  test::OobeJS().ClickOnPath(install_button);
 
   WaitForScreenExit();
   EXPECT_EQ(RecommendAppsScreen::Result::SELECTED, screen_result_.value());
@@ -413,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithSelectedApps) {
   test::OobeJS().ExpectEnabledPath(skip_button);
   test::OobeJS().ExpectPathDisplayed(false, retry_button);
 
-  test::OobeJS().TapOnPath(skip_button);
+  test::OobeJS().ClickOnPath(skip_button);
 
   WaitForScreenExit();
   EXPECT_EQ(RecommendAppsScreen::Result::SKIPPED, screen_result_.value());
@@ -481,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithNoAppsSelected) {
   test::OobeJS().ExpectEnabledPath(skip_button);
   test::OobeJS().ExpectPathDisplayed(false, retry_button);
 
-  test::OobeJS().TapOnPath(skip_button);
+  test::OobeJS().ClickOnPath(skip_button);
 
   WaitForScreenExit();
   EXPECT_EQ(RecommendAppsScreen::Result::SKIPPED, screen_result_.value());
@@ -566,7 +566,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {
   test::OobeJS().ExpectPathDisplayed(false, retry_button);
   test::OobeJS().ExpectPathDisplayed(false, retry_button);
 
-  test::OobeJS().TapOnPath(skip_button);
+  test::OobeJS().ClickOnPath(skip_button);
 
   WaitForScreenExit();
   EXPECT_EQ(RecommendAppsScreen::Result::SKIPPED, screen_result_.value());
@@ -627,7 +627,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipOnLoadError) {
   test::OobeJS().ExpectEnabledPath(retry_button);
   test::OobeJS().ExpectPathDisplayed(false, install_button);
 
-  test::OobeJS().TapOnPath(skip_button);
+  test::OobeJS().ClickOnPath(skip_button);
 
   WaitForScreenExit();
   EXPECT_EQ(RecommendAppsScreen::Result::SKIPPED, screen_result_.value());
@@ -669,7 +669,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, RetryOnLoadError) {
   test::OobeJS().ExpectEnabledPath(retry_button);
   test::OobeJS().ExpectPathDisplayed(false, install_button);
 
-  test::OobeJS().TapOnPath(retry_button);
+  test::OobeJS().ClickOnPath(retry_button);
 
   EXPECT_EQ(1, recommend_apps_fetcher_->retries());
 

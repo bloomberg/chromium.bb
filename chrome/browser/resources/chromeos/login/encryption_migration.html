@@ -53,11 +53,11 @@
         <template is="dom-if" if="[[!isResuming]]">
           <div slot="bottom-buttons" class="flex layout horizontal">
             <div class="flex"></div>
-            <oobe-text-button border id="skip-button" on-tap="onSkip_"
+            <oobe-text-button border id="skip-button" on-click="onSkip_"
                 hidden="[[isSkipHidden_()]]">
               <div>$i18n{migrationButtonSkip}</div>
             </oobe-text-button>
-            <oobe-text-button inverse id="upgrade-button" on-tap="onUpgrade_"
+            <oobe-text-button inverse id="upgrade-button" on-click="onUpgrade_"
                 disabled="[[isUpdateDisabled_(isEnoughBattery, isSkipped)]]">
               <div>$i18n{migrationButtonUpdate}</div>
             </oobe-text-button>
@@ -91,12 +91,12 @@
         <div slot="bottom-buttons" class="flex layout horizontal">
           <div class="flex"></div>
 <if expr="_google_chrome">
-          <oobe-text-button border on-tap="onReportAnIssue_">
+          <oobe-text-button border on-click="onReportAnIssue_">
             <div>$i18n{migrationButtonReportAnIssue}</div>
           </oobe-text-button>
 </if>
           <oobe-text-button inverse id="restart-button"
-              on-tap="onRestartOnFailure_">
+              on-click="onRestartOnFailure_">
             <div>$i18n{migrationButtonRestart}</div>
           </oobe-text-button>
         </div>
@@ -117,13 +117,13 @@
           <div class="flex"></div>
           <template is="dom-if" if="[[!isResuming]]">
             <oobe-text-button inverse id="insufficient-space-skip-button"
-                on-tap="onSkip_">
+                on-click="onSkip_">
               <div>$i18n{migrationButtonContinue}</div>
             </oobe-text-button>
           </template>
           <template is="dom-if" if="[[isResuming]]">
             <oobe-text-button inverse id="insufficient-space-restart-button"
-                on-tap="onRestartOnLowStorage_">
+                on-click="onRestartOnLowStorage_">
               <div>$i18n{migrationButtonRestart}</div>
             </oobe-text-button>
           </template>

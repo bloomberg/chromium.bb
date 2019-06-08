@@ -54,11 +54,11 @@ Polymer({
   voiceMatchEnabled_: false,
 
   /**
-   * On-tap event handler for next button.
+   * On-click event handler for next button.
    *
    * @private
    */
-  onNextTap_: function() {
+  onNextClick_: function() {
     if (this.buttonsDisabled) {
       return;
     }
