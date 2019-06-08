@@ -374,7 +374,7 @@ struct FileGroupDescriptorData<FILEGROUPDESCRIPTORA> {
 };
 
 // Retrieves display names of virtual files, making sure they are unique.
-// Use template parameter of FILEGROUPDESCRIPTORW for retrieving unicode data
+// Use template parameter of FILEGROUPDESCRIPTORW for retrieving Unicode data
 // and FILEGROUPDESCRIPTORA for ascii.
 template <typename FileGroupDescriptorType>
 bool GetVirtualFilenames(IDataObject* data_object,
@@ -502,7 +502,7 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
   if (GetData(data_object, ClipboardFormatType::GetMozUrlType(), &store) ||
       GetData(data_object, ClipboardFormatType::GetUrlWType(), &store)) {
     {
-      // Mozilla URL format or unicode URL
+      // Mozilla URL format or Unicode URL
       base::win::ScopedHGlobal<wchar_t*> data(store.hGlobal);
       SplitUrlAndTitle(data.get(), url, title);
     }
@@ -512,7 +512,7 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
 
   if (GetData(data_object, ClipboardFormatType::GetUrlType(), &store)) {
     {
-      // URL using ascii
+      // URL using ASCII
       base::win::ScopedHGlobal<char*> data(store.hGlobal);
       SplitUrlAndTitle(base::UTF8ToWide(data.get()), url, title);
     }
@@ -560,7 +560,7 @@ bool ClipboardUtil::GetFilenames(IDataObject* data_object,
 
   if (GetData(data_object, ClipboardFormatType::GetFilenameWType(), &medium)) {
     {
-      // filename using unicode
+      // filename using Unicode
       base::win::ScopedHGlobal<wchar_t*> data(medium.hGlobal);
       if (data.get() && data.get()[0])
         filenames->push_back(data.get());
@@ -571,7 +571,7 @@ bool ClipboardUtil::GetFilenames(IDataObject* data_object,
 
   if (GetData(data_object, ClipboardFormatType::GetFilenameType(), &medium)) {
     {
-      // filename using ascii
+      // filename using ASCII
       base::win::ScopedHGlobal<char*> data(medium.hGlobal);
       if (data.get() && data.get()[0])
         filenames->push_back(base::SysNativeMBToWide(data.get()));
@@ -591,10 +591,10 @@ bool ClipboardUtil::GetVirtualFilenames(
     return false;
 
   // Nothing prevents the drag source app from using the CFSTR_FILEDESCRIPTORA
-  // ANSI format (e.g., it could be that it doesn't support UNICODE). So need to
-  // check for both the ANSI and UNICODE file group descriptors.
+  // ANSI format (e.g., it could be that it doesn't support Unicode). So need to
+  // check for both the ANSI and Unicode file group descriptors.
   if (ui::GetVirtualFilenames<FILEGROUPDESCRIPTORW>(data_object, filenames)) {
-    // file group descriptor using unicode.
+    // file group descriptor using Unicode.
     return true;
   }
 
@@ -653,7 +653,7 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
 
   if (GetData(data_object, ClipboardFormatType::GetPlainTextType(), &store)) {
     {
-      // ascii text
+      // ASCII text
       base::win::ScopedHGlobal<char*> data(store.hGlobal);
       plain_text->assign(base::UTF8ToWide(data.get()));
     }
@@ -726,11 +726,11 @@ bool ClipboardUtil::GetFileContents(IDataObject* data_object,
   }
 
   // Nothing prevents the drag source app from using the CFSTR_FILEDESCRIPTORA
-  // ANSI format (e.g., it could be that it doesn't support UNICODE). So need to
-  // check for both the ANSI and UNICODE file group descriptors.
+  // ANSI format (e.g., it could be that it doesn't support Unicode). So need to
+  // check for both the ANSI and Unicode file group descriptors.
   if (GetFileNameFromFirstDescriptor<FILEGROUPDESCRIPTORW>(data_object,
                                                            filename)) {
-    // file group descriptor using unicode.
+    // file group descriptor using Unicode.
     return true;
   }
 

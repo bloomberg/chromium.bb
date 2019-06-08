@@ -202,7 +202,7 @@ class AuraClipboard {
     *result = base::UTF8ToUTF16(utf8_result);
   }
 
-  // Reads ascii text from the data at the top of clipboard stack.
+  // Reads ASCII text from the data at the top of clipboard stack.
   void ReadAsciiText(std::string* result) const {
     result->clear();
     const ClipboardData* data = GetData();

@@ -101,7 +101,7 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
                                   std::vector<base::string16>* types,
                                   bool* contains_filenames) const = 0;
 
-  // Reads UNICODE text from the clipboard, if available.
+  // Reads Unicode text from the clipboard, if available.
   virtual void ReadText(ClipboardType type, base::string16* result) const = 0;
 
   // Reads ASCII text from the clipboard, if available.

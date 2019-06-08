@@ -164,8 +164,8 @@ const ClipboardFormatType& ClipboardFormatType::GetCFHDropType() {
 }
 
 // Nothing prevents the drag source app from using the CFSTR_FILEDESCRIPTORA
-// ANSI format (e.g., it could be that it doesn't support UNICODE). So need to
-// register both the ANSI and UNICODE file group descriptors.
+// ANSI format (e.g., it could be that it doesn't support Unicode). So need to
+// register both the ANSI and Unicode file group descriptors.
 // static
 const ClipboardFormatType& ClipboardFormatType::GetFileDescriptorType() {
   CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
