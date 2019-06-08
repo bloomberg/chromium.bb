@@ -317,15 +317,6 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
   FakeAutofillAgent fake_agent_;
 };
 
-TEST_F(ContentAutofillDriverTest, GetURLRequestContext) {
-  net::URLRequestContextGetter* request_context =
-      driver_->GetURLRequestContext();
-  net::URLRequestContextGetter* expected_request_context =
-      content::BrowserContext::GetDefaultStoragePartition(
-          web_contents()->GetBrowserContext())->GetURLRequestContext();
-  EXPECT_EQ(request_context, expected_request_context);
-}
-
 TEST_F(ContentAutofillDriverTest, NavigatedMainFrameDifferentDocument) {
   EXPECT_CALL(*driver_->mock_autofill_manager(), Reset());
   Navigate(/*same_document=*/false);
