@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
+#include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 
 namespace notifications {
 
@@ -56,6 +57,15 @@ void NotificationsShownToday(
       }
     }
   }
+}
+
+std::unique_ptr<ClientState> CreateNewClientState(
+    SchedulerClientType type,
+    const SchedulerConfig& config) {
+  auto client_state = std::make_unique<ClientState>();
+  client_state->type = type;
+  client_state->current_max_daily_show = config.initial_daily_shown_per_type;
+  return client_state;
 }
 
 }  // namespace notifications

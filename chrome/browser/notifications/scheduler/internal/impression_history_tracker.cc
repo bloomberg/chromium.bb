@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/numerics/ranges.h"
+#include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 
 namespace notifications {
+namespace {
 
 // Comparator used to sort notification entries based on creation time.
 bool CreateTimeCompare(const Impression& lhs, const Impression& rhs) {
@@ -32,11 +34,15 @@ std::string ToDatabaseKey(SchedulerClientType type) {
   }
 }
 
+}  // namespace
+
 ImpressionHistoryTrackerImpl::ImpressionHistoryTrackerImpl(
     const SchedulerConfig& config,
+    std::vector<SchedulerClientType> registered_clients,
     std::unique_ptr<CollectionStore<ClientState>> store)
     : store_(std::move(store)),
       config_(config),
+      registered_clients_(std::move(registered_clients)),
       initialized_(false),
       delegate_(nullptr),
       weak_ptr_factory_(this) {}
@@ -95,8 +101,6 @@ void ImpressionHistoryTrackerImpl::OnStoreInitialized(
   initialized_ = true;
 
   // Load the data to memory, and sort the impression list.
-  // TODO(xingliu): Persist ClientState for new registered client and remove
-  // deprecated client. https://crbug.com/968606.
   for (auto it = entries.begin(); it != entries.end(); ++it) {
     auto& entry = (*it);
     auto type = entry->type;
@@ -108,7 +112,37 @@ void ImpressionHistoryTrackerImpl::OnStoreInitialized(
     client_states_.emplace(type, std::move(*it));
   }
 
+  SyncRegisteredClients();
   std::move(callback).Run(true);
+}
+
+void ImpressionHistoryTrackerImpl::SyncRegisteredClients() {
+  // Remove deprecated clients.
+  for (auto it = client_states_.begin(); it != client_states_.end();) {
+    auto client_type = it->first;
+    bool deprecated =
+        std::find(registered_clients_.begin(), registered_clients_.end(),
+                  client_type) == registered_clients_.end();
+    if (deprecated) {
+      store_->Delete(ToDatabaseKey(client_type), base::DoNothing());
+      client_states_.erase(it++);
+      continue;
+    } else {
+      it++;
+    }
+  }
+
+  // Add new data for new registered client.
+  for (const auto type : registered_clients_) {
+    if (client_states_.find(type) == client_states_.end()) {
+      auto new_client_data = CreateNewClientState(type, config_);
+
+      DCHECK(new_client_data);
+      store_->Add(ToDatabaseKey(type), *new_client_data.get(),
+                  base::DoNothing());
+      client_states_.emplace(type, std::move(new_client_data));
+    }
+  }
 }
 
 void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(

@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/scheduler/schedule_service_factory_helper.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
@@ -49,17 +50,20 @@ KeyedService* CreateNotificationScheduleService(
       icon_store_dir, task_runner);
   auto icon_store = std::make_unique<IconProtoDbStore>(std::move(icon_db));
 
-  // Build impression store.
+  // Build impression tracker.
   base::FilePath impression_store_dir = storage_dir.Append(kImpressionDBName);
   auto impression_db = db_provider->GetDB<proto::ClientState, ClientState>(
       leveldb_proto::ProtoDbType::NOTIFICATION_SCHEDULER_IMPRESSION_STORE,
       impression_store_dir, task_runner);
   auto impression_store =
       std::make_unique<ImpressionStore>(std::move(impression_db));
+  std::vector<SchedulerClientType> registered_clients;
+  client_registrar->GetRegisteredClients(&registered_clients);
   auto impression_tracker = std::make_unique<ImpressionHistoryTrackerImpl>(
-      *config.get(), std::move(impression_store));
+      *config.get(), std::move(registered_clients),
+      std::move(impression_store));
 
-  // Build notification store.
+  // Build scheduled notification manager.
   base::FilePath notification_store_dir =
       storage_dir.Append(kNotificationDBName);
   auto notification_db = db_provider->GetDB<proto::NotificationEntry,

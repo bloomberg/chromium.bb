@@ -26,6 +26,10 @@ struct SchedulerConfig {
   // Maximum number of notifications shown to the user per day for each type.
   int max_daily_shown_per_type;
 
+  // The initial number of notifications shown to the user per day for each
+  // type.
+  int initial_daily_shown_per_type;
+
   // The time for a notification impression history data to expire. The
   // impression history will be deleted then.
   base::TimeDelta impression_expiration;

@@ -36,6 +36,7 @@ std::unique_ptr<SchedulerConfig> SchedulerConfig::Create() {
 SchedulerConfig::SchedulerConfig()
     : max_daily_shown_all_type(3),
       max_daily_shown_per_type(10),
+      initial_daily_shown_per_type(2),
       impression_expiration(kDefaultImpressionExpiration),
       suppression_duration(kDefaultSuppressionDuration),
       dismiss_count(3),

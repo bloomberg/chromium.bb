@@ -27,6 +27,9 @@ struct TestCase {
   // Input data that will be pushed to the target class.
   std::vector<test::ImpressionTestData> input;
 
+  // List of registered clients.
+  std::vector<SchedulerClientType> registered_clients;
+
   // Expected output data.
   std::vector<test::ImpressionTestData> expected;
 };
@@ -48,6 +51,7 @@ TestCase CreateDefaultTestCase() {
                       2 /* current_max_daily_show */,
                       {},
                       base::nullopt /* suppression_info */}};
+  test_case.registered_clients = {SchedulerClientType::kTest1};
   test_case.expected = test_case.input;
   return test_case;
 }
@@ -91,21 +95,25 @@ class ImpressionHistoryTrackerTest : public ::testing::Test {
   void SetUp() override {
     config_.impression_expiration = base::TimeDelta::FromDays(28);
     config_.suppression_duration = base::TimeDelta::FromDays(56);
+    config_.initial_daily_shown_per_type = 2;
   }
 
  protected:
-  // Creates the tracker and push in data.
-  void InitTrackerWithData(const TestCase& test_case) {
-    StoreEntries entries;
-    test::AddImpressionTestData(test_case.input, &entries);
-
+  // Creates the impression tracker.
+  void CreateTracker(const TestCase& test_case) {
     auto store = std::make_unique<MockImpressionStore>();
     store_ = store.get();
     delegate_ = std::make_unique<MockDelegate>();
-    impression_trakcer_ = std::make_unique<ImpressionHistoryTrackerImpl>(
-        config_, std::move(store));
 
-    // Initialize the store and call the callback.
+    impression_trakcer_ = std::make_unique<ImpressionHistoryTrackerImpl>(
+        config_, test_case.registered_clients, std::move(store));
+  }
+
+  // Initializes the tracker with data defined in the |test_case|.
+  void InitTrackerWithData(const TestCase& test_case) {
+    // Initialize the store and call the callback.A
+    StoreEntries entries;
+    test::AddImpressionTestData(test_case.input, &entries);
     EXPECT_CALL(*store_, InitAndLoad(_))
         .WillOnce(
             Invoke([&entries](base::OnceCallback<void(bool, StoreEntries)> cb) {
@@ -158,9 +166,37 @@ class ImpressionHistoryTrackerTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ImpressionHistoryTrackerTest);
 };
 
+// New client data should be added to impression tracker.
+TEST_F(ImpressionHistoryTrackerTest, NewReigstedClient) {
+  TestCase test_case = CreateDefaultTestCase();
+  test_case.registered_clients.emplace_back(SchedulerClientType::kTest2);
+  test_case.expected.emplace_back(test::ImpressionTestData(
+      SchedulerClientType::kTest2, config().initial_daily_shown_per_type, {},
+      base::nullopt));
+
+  CreateTracker(test_case);
+  EXPECT_CALL(*store(), Add(_, _, _));
+  EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
+  InitTrackerWithData(test_case);
+  VerifyClientStates(test_case);
+}
+
+// Data for deprecated client should be deleted.
+TEST_F(ImpressionHistoryTrackerTest, DeprecateClient) {
+  TestCase test_case = CreateDefaultTestCase();
+  test_case.registered_clients.clear();
+  test_case.expected.clear();
+
+  CreateTracker(test_case);
+  EXPECT_CALL(*store(), Delete(_, _));
+  EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
+  InitTrackerWithData(test_case);
+  VerifyClientStates(test_case);
+}
+
 // Verifies expired impression will be deleted.
 TEST_F(ImpressionHistoryTrackerTest, DeleteExpiredImpression) {
-  TestCase test_case;
+  TestCase test_case = CreateDefaultTestCase();
   auto expired_create_time = base::Time::Now() - base::TimeDelta::FromDays(1) -
                              config().impression_expiration;
   auto not_expired_time = base::Time::Now() + base::TimeDelta::FromDays(1) -
@@ -179,19 +215,14 @@ TEST_F(ImpressionHistoryTrackerTest, DeleteExpiredImpression) {
 
   // The impressions in the input should be sorted by creation time when gets
   // loaded to memory.
-  test_case.input = {{SchedulerClientType::kTest1,
-                      2 /* current_max_daily_show */,
-                      {expired, not_expired, expired},
-                      base::nullopt /* suppression_info */}};
+  test_case.input.back().impressions = {expired, not_expired, expired};
 
   // Expired impression created in |expired_create_time| should be deleted.
   // No change expected on the next impression, which is not expired and no user
   // feedback .
-  test_case.expected = {{SchedulerClientType::kTest1,
-                         2 /* current_max_daily_show */,
-                         {not_expired},
-                         base::nullopt /* suppression_info */}};
+  test_case.expected.back().impressions = {not_expired};
 
+  CreateTracker(test_case);
   InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _));
   EXPECT_CALL(*delegate(), OnImpressionUpdated());
@@ -202,6 +233,7 @@ TEST_F(ImpressionHistoryTrackerTest, DeleteExpiredImpression) {
 // If impression has been deleted, click should have no result.
 TEST_F(ImpressionHistoryTrackerTest, ClickNoImpression) {
   TestCase test_case = CreateDefaultTestCase();
+  CreateTracker(test_case);
   InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _)).Times(0);
   EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
@@ -252,6 +284,7 @@ TEST_P(ImpressionHistoryTrackerUserActionTest, UserAction) {
   test_case.expected.front().impressions.emplace_back(impression);
   test_case.expected.front().suppression_info = GetParam().suppression_info;
 
+  CreateTracker(test_case);
   InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _));
   EXPECT_CALL(*delegate(), OnImpressionUpdated());

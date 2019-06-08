@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -67,6 +68,7 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
  public:
   explicit ImpressionHistoryTrackerImpl(
       const SchedulerConfig& config,
+      std::vector<SchedulerClientType> registered_clients,
       std::unique_ptr<CollectionStore<ClientState>> store);
   ~ImpressionHistoryTrackerImpl() override;
 
@@ -85,6 +87,10 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   void OnStoreInitialized(InitCallback callback,
                           bool success,
                           CollectionStore<ClientState>::Entries entries);
+
+  // Sync with registered clients. Adds new data for new client and deletes data
+  // for deprecated client.
+  void SyncRegisteredClients();
 
   // Helper method to prune impressions created before |start_time|. Assumes
   // |impressions| are sorted by creation time.
@@ -145,6 +151,8 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
 
   // System configuration.
   const SchedulerConfig& config_;
+
+  const std::vector<SchedulerClientType> registered_clients_;
 
   // Whether the impression tracker is successfully initialized.
   bool initialized_;

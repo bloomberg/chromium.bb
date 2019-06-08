@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_SCHEDULER_UTILS_H_
 
 #include <map>
+#include <memory>
 
 #include "base/time/time.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
@@ -13,6 +14,7 @@
 namespace notifications {
 
 struct ClientState;
+struct SchedulerConfig;
 
 // Retrieves the time stamp of a certain hour at a certain day from today.
 // |hour| must be in the range of [0, 23].
@@ -31,6 +33,11 @@ void NotificationsShownToday(
     std::map<SchedulerClientType, int>* shown_per_type,
     int* shown_total,
     SchedulerClientType* last_shown_type);
+
+// Creates client state data for new registered client.
+std::unique_ptr<ClientState> CreateNewClientState(
+    SchedulerClientType type,
+    const SchedulerConfig& config);
 
 }  // namespace notifications
 
