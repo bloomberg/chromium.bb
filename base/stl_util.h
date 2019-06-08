@@ -79,6 +79,17 @@ struct HasContains<Container,
                    void_t<decltype(std::declval<const Container&>().contains(
                        std::declval<const Element&>()))>> : std::true_type {};
 
+// Utility type trait to detect whether a given container type has a nested
+// mapped_type typedef. Used below to disable ContainsValue() for map like
+// types.
+// TOOD(crbug.com/970209): Remove once ContainsValue() is no longer used.
+template <typename Container, typename = void>
+struct HasMappedType : std::false_type {};
+
+template <typename Container>
+struct HasMappedType<Container, void_t<typename Container::mapped_type>>
+    : std::true_type {};
+
 }  // namespace internal
 
 // C++14 implementation of C++17's std::size():
@@ -230,9 +241,17 @@ bool ContainsKey(const Collection& collection, const Key& key) {
 
 // Test to see if a collection like a vector contains a particular value.
 // Returns true if the value is in the collection.
+//
+// Note: This method is disabled for std::map-like types to avoid confusion.
+// Since ContainsValue() would invoke std::map::find() through Contains(),
+// usages of keys would be reported, not values.
+//
 // TODO(crbug.com/970209): Replace usages of ContainsValue() with Contains() and
 // remove this method.
-template <typename Collection, typename Value>
+template <
+    typename Collection,
+    typename Value,
+    std::enable_if_t<!internal::HasMappedType<Collection>::value>* = nullptr>
 bool ContainsValue(const Collection& collection, const Value& value) {
   return Contains(collection, value);
 }
