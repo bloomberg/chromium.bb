@@ -403,7 +403,7 @@ void NetworkConfigurationHandler::RemoveConfigurationFromProfile(
     const network_handler::ErrorCallback& error_callback) {
   // Service.Remove is not reliable. Instead, request the profile entries
   // for the service and remove each entry.
-  if (base::ContainsKey(profile_entry_deleters_, service_path)) {
+  if (base::Contains(profile_entry_deleters_, service_path)) {
     InvokeErrorCallback(service_path, error_callback,
                         "RemoveConfigurationInProgress");
     return;

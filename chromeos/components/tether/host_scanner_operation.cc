@@ -177,9 +177,9 @@ void HostScannerOperation::NotifyObserversOfScannedDeviceList(
 
 void HostScannerOperation::OnDeviceAuthenticated(
     multidevice::RemoteDeviceRef remote_device) {
-  DCHECK(!base::ContainsKey(
-      device_id_to_tether_availability_request_start_time_map_,
-      remote_device.GetDeviceId()));
+  DCHECK(
+      !base::Contains(device_id_to_tether_availability_request_start_time_map_,
+                      remote_device.GetDeviceId()));
   device_id_to_tether_availability_request_start_time_map_[remote_device
                                                                .GetDeviceId()] =
       clock_->Now();
@@ -274,9 +274,8 @@ void HostScannerOperation::SetTestDoubles(
 
 void HostScannerOperation::RecordTetherAvailabilityResponseDuration(
     const std::string device_id) {
-  if (!base::ContainsKey(
-          device_id_to_tether_availability_request_start_time_map_,
-          device_id) ||
+  if (!base::Contains(device_id_to_tether_availability_request_start_time_map_,
+                      device_id) ||
       device_id_to_tether_availability_request_start_time_map_[device_id]
           .is_null()) {
     LOG(ERROR) << "Failed to record TetherAvailabilityResponse duration: "

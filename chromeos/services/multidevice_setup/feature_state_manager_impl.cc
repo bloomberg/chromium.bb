@@ -310,7 +310,7 @@ mojom::FeatureState FeatureStateManagerImpl::ComputeFeatureState(
 bool FeatureStateManagerImpl::IsAllowedByPolicy(mojom::Feature feature) {
   // If no policy preference exists for this feature, the feature is implicitly
   // allowed.
-  if (!base::ContainsKey(feature_to_allowed_pref_name_map_, feature))
+  if (!base::Contains(feature_to_allowed_pref_name_map_, feature))
     return true;
 
   return pref_service_->GetBoolean(feature_to_allowed_pref_name_map_[feature]);
@@ -390,7 +390,7 @@ bool FeatureStateManagerImpl::RequiresFurtherSetup(mojom::Feature feature) {
 
 mojom::FeatureState FeatureStateManagerImpl::GetEnabledOrDisabledState(
     mojom::Feature feature) {
-  if (!base::ContainsKey(feature_to_enabled_pref_name_map_, feature)) {
+  if (!base::Contains(feature_to_enabled_pref_name_map_, feature)) {
     PA_LOG(ERROR) << "FeatureStateManagerImpl::GetEnabledOrDisabledState(): "
                   << "Feature not present in \"enabled pref\" map: " << feature;
     NOTREACHED();

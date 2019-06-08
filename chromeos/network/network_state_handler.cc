@@ -961,7 +961,7 @@ bool NetworkStateHandler::UpdateBlockedByPolicy(NetworkState* network) const {
   bool blocked_by_policy =
       !network->IsManagedByPolicy() &&
       (OnlyManagedWifiNetworksAllowed() ||
-       base::ContainsValue(blacklisted_hex_ssids_, network->GetHexSsid()));
+       base::Contains(blacklisted_hex_ssids_, network->GetHexSsid()));
   network->set_blocked_by_policy(blocked_by_policy);
   return prev_blocked_by_policy != blocked_by_policy;
 }
@@ -1195,7 +1195,7 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   std::map<std::string, std::unique_ptr<ManagedState>> managed_map;
   for (auto& item : *managed_list) {
     std::string path = item->path();
-    DCHECK(!base::ContainsKey(managed_map, path));
+    DCHECK(!base::Contains(managed_map, path));
     managed_map[path] = std::move(item);
   }
   // Clear the list (objects are temporarily owned by managed_map).

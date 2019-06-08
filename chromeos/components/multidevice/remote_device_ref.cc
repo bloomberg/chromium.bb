@@ -31,7 +31,7 @@ RemoteDeviceRef::~RemoteDeviceRef() = default;
 
 SoftwareFeatureState RemoteDeviceRef::GetSoftwareFeatureState(
     const SoftwareFeature& software_feature) const {
-  if (!base::ContainsKey(remote_device_->software_features, software_feature))
+  if (!base::Contains(remote_device_->software_features, software_feature))
     return SoftwareFeatureState::kNotSupported;
 
   return remote_device_->software_features.at(software_feature);

@@ -403,11 +403,11 @@ void FakeCryptohomeClient::TpmAttestationDoesKeyExist(
   bool result = false;
   switch (key_type) {
     case attestation::KEY_DEVICE:
-      result = base::ContainsKey(device_certificate_map_, key_name);
+      result = base::Contains(device_certificate_map_, key_name);
       break;
     case attestation::KEY_USER:
-      result = base::ContainsKey(user_certificate_map_,
-                                 std::make_pair(cryptohome_id, key_name));
+      result = base::Contains(user_certificate_map_,
+                              std::make_pair(cryptohome_id, key_name));
       break;
   }
 

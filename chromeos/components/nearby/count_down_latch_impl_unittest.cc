@@ -59,7 +59,7 @@ class CountDownLatchImplTest : public testing::Test {
       const base::UnguessableToken& id,
       const location::nearby::Exception::Value& expected_exception) {
     base::AutoLock al(map_lock_);
-    EXPECT_TRUE(base::ContainsKey(id_to_result_map_, id));
+    EXPECT_TRUE(base::Contains(id_to_result_map_, id));
     EXPECT_TRUE(id_to_result_map_[id]);
     EXPECT_EQ(expected_exception, id_to_result_map_[id]->exception());
   }
@@ -67,7 +67,7 @@ class CountDownLatchImplTest : public testing::Test {
   void VerifyBoolResultForAttemptId(const base::UnguessableToken& id,
                                     bool expected_result) {
     base::AutoLock al(map_lock_);
-    EXPECT_TRUE(base::ContainsKey(id_to_result_map_, id));
+    EXPECT_TRUE(base::Contains(id_to_result_map_, id));
     EXPECT_TRUE(id_to_result_map_[id]);
     EXPECT_TRUE(id_to_result_map_[id]->ok());
     EXPECT_EQ(expected_result, id_to_result_map_[id]->result());

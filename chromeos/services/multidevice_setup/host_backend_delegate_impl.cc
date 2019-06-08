@@ -200,7 +200,7 @@ HostBackendDelegateImpl::GetMultiDeviceHostFromBackend() const {
 
 bool HostBackendDelegateImpl::IsHostEligible(
     const multidevice::RemoteDeviceRef& provided_host) {
-  return base::ContainsValue(
+  return base::Contains(
       eligible_host_devices_provider_->GetEligibleHostDevices(), provided_host);
 }
 

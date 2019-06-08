@@ -222,7 +222,7 @@ void FakeDebugDaemonClient::CupsRemovePrinter(
     const std::string& name,
     DebugDaemonClient::CupsRemovePrinterCallback callback,
     const base::Closure& error_callback) {
-  const bool has_printer = base::ContainsKey(printers_, name);
+  const bool has_printer = base::Contains(printers_, name);
   if (has_printer)
     printers_.erase(name);
 

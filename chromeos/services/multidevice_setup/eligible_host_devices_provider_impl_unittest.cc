@@ -113,11 +113,11 @@ TEST_F(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
 
   base::flat_set<multidevice::RemoteDeviceRef> eligible_devices =
       provider()->GetEligibleHostDevices();
-  EXPECT_TRUE(base::ContainsKey(eligible_devices, test_devices()[0]));
-  EXPECT_TRUE(base::ContainsKey(eligible_devices, test_devices()[1]));
-  EXPECT_TRUE(base::ContainsKey(eligible_devices, test_devices()[2]));
-  EXPECT_TRUE(base::ContainsKey(eligible_devices, test_devices()[3]));
-  EXPECT_FALSE(base::ContainsKey(eligible_devices, test_devices()[4]));
+  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[0]));
+  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[1]));
+  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[2]));
+  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[3]));
+  EXPECT_FALSE(base::Contains(eligible_devices, test_devices()[4]));
 }
 
 }  // namespace multidevice_setup

@@ -711,7 +711,7 @@ void FakeShillServiceClient::ContinueConnect(const std::string& service_path) {
     return;
   }
 
-  if (base::ContainsKey(connect_behavior_, service_path)) {
+  if (base::Contains(connect_behavior_, service_path)) {
     const base::Closure& custom_connect_behavior =
         connect_behavior_[service_path];
     VLOG(1) << "Running custom connect behavior for " << service_path;

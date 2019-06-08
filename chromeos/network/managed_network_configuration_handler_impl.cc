@@ -551,7 +551,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
   DCHECK(onc_source != ::onc::ONC_SOURCE_DEVICE_POLICY ||
          userhash.empty());
   Policies* policies = NULL;
-  if (base::ContainsKey(policies_by_user_, userhash)) {
+  if (base::Contains(policies_by_user_, userhash)) {
     policies = policies_by_user_[userhash].get();
   } else {
     policies = new Policies;
@@ -626,7 +626,7 @@ bool ManagedNetworkConfigurationHandlerImpl::ApplyOrQueuePolicies(
     return false;
   }
 
-  if (base::ContainsKey(policy_applicators_, userhash)) {
+  if (base::Contains(policy_applicators_, userhash)) {
     // A previous policy application is still running. Queue the modified
     // policies.
     // Note, even if |modified_policies| is empty, this means that a policy
@@ -743,7 +743,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
       FROM_HERE, policy_applicators_[userhash].release());
   policy_applicators_.erase(userhash);
 
-  if (base::ContainsKey(queued_modified_policies_, userhash)) {
+  if (base::Contains(queued_modified_policies_, userhash)) {
     std::set<std::string> modified_policies;
     queued_modified_policies_[userhash].swap(modified_policies);
     // Remove |userhash| from the queue.

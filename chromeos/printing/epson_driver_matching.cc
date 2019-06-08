@@ -30,18 +30,18 @@ bool CanUseEpsonGenericPPD(const PrinterSearchData& sd) {
     case PrinterSearchData::PrinterDiscoveryType::kManual:
       // For manually discovered printers, supported_document_formats is
       // retrieved via an ippGetAttributes query to the printer.
-      return base::ContainsValue(sd.supported_document_formats,
-                                 "application/octet-stream");
+      return base::Contains(sd.supported_document_formats,
+                            "application/octet-stream");
 
     case PrinterSearchData::PrinterDiscoveryType::kUsb:
-      return base::ContainsValue(sd.usb_command_set, "ESC/P-R");
+      return base::Contains(sd.usb_command_set, "ESC/P-R");
 
     case PrinterSearchData::PrinterDiscoveryType::kZeroconf:
       // For printers found through mDNS/DNS-SD discovery,
       // supported_document_formats is retrieved via the Printer Description TXT
       // Record(from the key 'pdl').
-      return base::ContainsValue(sd.supported_document_formats,
-                                 "application/vnd.epson.escpr");
+      return base::Contains(sd.supported_document_formats,
+                            "application/vnd.epson.escpr");
 
     default:
       return false;
