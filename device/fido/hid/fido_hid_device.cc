@@ -469,6 +469,7 @@ void FidoHidDevice::ArmTimeout() {
 }
 
 void FidoHidDevice::OnTimeout() {
+  FIDO_LOG(ERROR) << "FIDO HID device timeout for " << GetId();
   Transition(State::kDeviceError);
 }
 

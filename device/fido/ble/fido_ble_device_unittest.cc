@@ -258,7 +258,7 @@ TEST_F(FidoBleDeviceTest, CancelAfterTransmission) {
 
 TEST_F(FidoBleDeviceTest, StaticGetIdTest) {
   std::string address = BluetoothTestBase::kTestDeviceAddress1;
-  EXPECT_EQ("ble:" + address, FidoBleDevice::GetId(address));
+  EXPECT_EQ("ble:" + address, FidoBleDevice::GetIdForAddress(address));
 }
 
 TEST_F(FidoBleDeviceTest, GetIdTest) {

@@ -174,7 +174,7 @@ void FidoCableDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
   if (IsCableDevice(device) && GetCableDiscoveryData(device)) {
     const auto& device_address = device->GetAddress();
     FIDO_LOG(DEBUG) << "caBLE device removed: " << device_address;
-    RemoveDevice(FidoBleDevice::GetId(device_address));
+    RemoveDevice(FidoBleDevice::GetIdForAddress(device_address));
   }
 }
 

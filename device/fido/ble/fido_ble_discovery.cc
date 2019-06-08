@@ -44,7 +44,7 @@ void FidoBleDiscovery::OnSetPowered() {
       VLOG(2) << "FIDO BLE device: " << device_address;
       AddDevice(std::make_unique<FidoBleDevice>(adapter(), device_address));
       CheckAndRecordDevicePairingModeOnDiscovery(
-          FidoBleDevice::GetId(device_address));
+          FidoBleDevice::GetIdForAddress(device_address));
     }
   }
 
@@ -70,7 +70,7 @@ void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
     VLOG(2) << "Discovered FIDO BLE device: " << device_address;
     AddDevice(std::make_unique<FidoBleDevice>(adapter, device_address));
     CheckAndRecordDevicePairingModeOnDiscovery(
-        FidoBleDevice::GetId(device_address));
+        FidoBleDevice::GetIdForAddress(device_address));
   }
 }
 
@@ -81,7 +81,7 @@ void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
     return;
   }
 
-  auto authenticator_id = FidoBleDevice::GetId(device->GetAddress());
+  auto authenticator_id = FidoBleDevice::GetIdForAddress(device->GetAddress());
   auto* authenticator = GetAuthenticator(authenticator_id);
   if (!authenticator) {
     VLOG(2) << "Discovered FIDO service on existing BLE device: "
@@ -101,7 +101,7 @@ void FidoBleDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
   if (base::Contains(device->GetUUIDs(), FidoServiceUUID())) {
     VLOG(2) << "FIDO BLE device removed: " << device->GetAddress();
-    auto device_id = FidoBleDevice::GetId(device->GetAddress());
+    auto device_id = FidoBleDevice::GetIdForAddress(device->GetAddress());
     RemoveDevice(device_id);
     RemoveDeviceFromPairingTracker(device_id);
   }
@@ -119,8 +119,8 @@ void FidoBleDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
 void FidoBleDiscovery::DeviceAddressChanged(BluetoothAdapter* adapter,
                                             BluetoothDevice* device,
                                             const std::string& old_address) {
-  auto previous_device_id = FidoBleDevice::GetId(old_address);
-  auto new_device_id = FidoBleDevice::GetId(device->GetAddress());
+  auto previous_device_id = FidoBleDevice::GetIdForAddress(old_address);
+  auto new_device_id = FidoBleDevice::GetIdForAddress(device->GetAddress());
   auto it = authenticators_.find(previous_device_id);
   if (it == authenticators_.end())
     return;

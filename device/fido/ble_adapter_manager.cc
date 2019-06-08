@@ -46,7 +46,7 @@ void BleAdapterManager::InitiatePairing(std::string authenticator_id,
   auto device_it = std::find_if(
       device_list.begin(), device_list.end(),
       [&authenticator_id](const auto& bluetooth_device) {
-        return FidoBleDevice::GetId(bluetooth_device->GetAddress()) ==
+        return FidoBleDevice::GetIdForAddress(bluetooth_device->GetAddress()) ==
                authenticator_id;
       });
 
@@ -81,8 +81,8 @@ void BleAdapterManager::DeviceAddressChanged(BluetoothAdapter* adapter,
                                              BluetoothDevice* device,
                                              const std::string& old_address) {
   pairing_delegate_.ChangeStoredDeviceAddress(
-      FidoBleDevice::GetId(old_address),
-      FidoBleDevice::GetId(device->GetAddress()));
+      FidoBleDevice::GetIdForAddress(old_address),
+      FidoBleDevice::GetIdForAddress(device->GetAddress()));
 }
 
 void BleAdapterManager::Start(scoped_refptr<BluetoothAdapter> adapter) {

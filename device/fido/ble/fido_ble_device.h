@@ -32,27 +32,25 @@ class FidoBleFrame;
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
  public:
   using FrameCallback = FidoBleTransaction::FrameCallback;
+
   FidoBleDevice(BluetoothAdapter* adapter, std::string address);
   explicit FidoBleDevice(std::unique_ptr<FidoBleConnection> connection);
   ~FidoBleDevice() override;
 
+  // Returns FidoDevice::GetId() for a given FidoBleConnection address.
+  static std::string GetIdForAddress(const std::string& ble_address);
+
   void Connect();
   void SendPing(std::vector<uint8_t> data, DeviceCallback callback);
-  static std::string GetId(base::StringPiece address);
+  FidoBleConnection::ReadCallback GetReadCallbackForTesting();
 
   // FidoDevice:
   void Cancel(CancelToken token) override;
   std::string GetId() const override;
   base::string16 GetDisplayName() const override;
   FidoTransportProtocol DeviceTransport() const override;
-
-  // Returns whether or not the underlying BLE device is currently in pairing
-  // mode by investigating the advertisement payload.
   bool IsInPairingMode() const override;
-
   bool IsPaired() const override;
-
-  FidoBleConnection::ReadCallback GetReadCallbackForTesting();
 
  protected:
   // FidoDevice:

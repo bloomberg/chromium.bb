@@ -49,8 +49,8 @@ void FidoBleDevice::SendPing(std::vector<uint8_t> data,
 }
 
 // static
-std::string FidoBleDevice::GetId(base::StringPiece address) {
-  return std::string("ble:").append(address.begin(), address.end());
+std::string FidoBleDevice::GetIdForAddress(const std::string& address) {
+  return "ble:" + address;
 }
 
 void FidoBleDevice::Cancel(CancelToken token) {
@@ -75,7 +75,7 @@ void FidoBleDevice::Cancel(CancelToken token) {
 }
 
 std::string FidoBleDevice::GetId() const {
-  return GetId(connection_->address());
+  return GetIdForAddress(connection_->address());
 }
 
 base::string16 FidoBleDevice::GetDisplayName() const {
@@ -280,6 +280,7 @@ void FidoBleDevice::StopTimeout() {
 }
 
 void FidoBleDevice::OnTimeout() {
+  FIDO_LOG(ERROR) << "FIDO BLE device timeout for " << GetId();
   state_ = State::kDeviceError;
   Transition();
 }

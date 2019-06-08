@@ -277,8 +277,9 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
 
     const auto authenticators = discovery.GetAuthenticatorsForTesting();
     ASSERT_THAT(authenticators, ::testing::SizeIs(1u));
-    EXPECT_EQ(FidoBleDevice::GetId(BluetoothTestBase::kTestDeviceAddress1),
-              authenticators[0]->GetId());
+    EXPECT_EQ(
+        FidoBleDevice::GetIdForAddress(BluetoothTestBase::kTestDeviceAddress1),
+        authenticators[0]->GetId());
   }
 }
 
@@ -347,7 +348,7 @@ TEST_F(FidoBleDiscoveryTest, DiscoveryNotifiesObserverWhenDeviceInPairingMode) {
   EXPECT_CALL(*adapter(), IsPresent()).WillOnce(Return(true));
   auto mock_device = CreateMockFidoDevice();
 
-  const auto device_id = FidoBleDevice::GetId(kDeviceAddress);
+  const auto device_id = FidoBleDevice::GetIdForAddress(kDeviceAddress);
   discovery()->Start();
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
 
@@ -370,7 +371,7 @@ TEST_F(FidoBleDiscoveryTest,
   EXPECT_CALL(*adapter(), IsPresent()).WillOnce(Return(true));
   auto mock_device = CreateMockFidoDevice();
 
-  const auto device_id = FidoBleDevice::GetId(kDeviceAddress);
+  const auto device_id = FidoBleDevice::GetIdForAddress(kDeviceAddress);
   discovery()->Start();
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
 
@@ -455,10 +456,10 @@ TEST_F(FidoBleDiscoveryTest, DiscoveryDoesNotDeleteDeviceOnAddressCollision) {
   adapter()->NotifyDeviceChanged(mock_device.get());
 
   EXPECT_EQ(authenticator->GetId(),
-            FidoBleDevice::GetId(kDeviceChangedAddress));
+            FidoBleDevice::GetIdForAddress(kDeviceChangedAddress));
   EXPECT_EQ(2u, discovery()->GetAuthenticatorsForTesting().size());
   EXPECT_TRUE(discovery()->GetAuthenticatorForTesting(
-      FidoBleDevice::GetId(kDeviceChangedAddress)));
+      FidoBleDevice::GetIdForAddress(kDeviceChangedAddress)));
 }
 
 }  // namespace device

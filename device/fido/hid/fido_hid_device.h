@@ -31,21 +31,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
                 device::mojom::HidManager* hid_manager);
   ~FidoHidDevice() final;
 
-  // Send a command to this device.
-  CancelToken DeviceTransact(std::vector<uint8_t> command,
-                             DeviceCallback callback) final;
+  // Returns FidoDevice::GetId() for a given HidDeviceInfo.
+  static std::string GetIdForDevice(
+      const device::mojom::HidDeviceInfo& device_info);
 
   // FidoDevice:
-  // Send command to cancel an outstanding request.
+  CancelToken DeviceTransact(std::vector<uint8_t> command,
+                             DeviceCallback callback) final;
   void Cancel(CancelToken token) final;
-  // Get a string identifier to compare to other devices.
   std::string GetId() const final;
   FidoTransportProtocol DeviceTransport() const final;
   void DiscoverSupportedProtocolAndDeviceInfo(base::OnceClosure done) override;
-
-  // Get a string identifier for a given device info.
-  static std::string GetIdForDevice(
-      const device::mojom::HidDeviceInfo& device_info);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FidoHidDeviceTest, TestConnectionFailure);
