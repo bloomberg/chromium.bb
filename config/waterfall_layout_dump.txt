@@ -85,6 +85,7 @@
     hatch-paladin
     incremental-paladin
     kalista-paladin
+    kefka-kernelnext-paladin
     kevin-arcnext-paladin
     kevin-paladin
     kevin64-paladin
@@ -2286,6 +2287,7 @@
   kefka-compile-only-pre-cq
   kefka-factory-strago-7458.B-factorybranch-tryjob
   kefka-full-tryjob
+  kefka-kernelnext-chrome-pfq-tryjob
   kefka-kernelnext-chromium-pfq-tryjob
   kefka-kernelnext-compile-only-pre-cq
   kefka-kernelnext-full-tryjob
@@ -2293,9 +2295,14 @@
   kefka-kernelnext-llvm-toolchain-tryjob
   kefka-kernelnext-no-vmtest-pre-cq
   kefka-kernelnext-paladin-tryjob
+  kefka-kernelnext-payloads-tryjob
   kefka-kernelnext-postsubmit-tryjob
   kefka-kernelnext-pre-cq
+  kefka-kernelnext-release-afdo-generate-tryjob
+  kefka-kernelnext-release-afdo-tryjob
+  kefka-kernelnext-release-afdo-use-tryjob
   kefka-kernelnext-release-tryjob
+  kefka-kernelnext-tot-chrome-pfq-informational-tryjob
   kefka-kernelnext-tot-chromium-pfq-informational-tryjob
   kefka-kernelnext-unittest-stress
   kefka-llvm-next-toolchain-tryjob
@@ -2677,6 +2684,7 @@
     hatch-paladin-tryjob
     incremental-paladin-tryjob
     kalista-paladin-tryjob
+    kefka-kernelnext-paladin-tryjob
     kevin-arcnext-paladin-tryjob
     kevin-paladin-tryjob
     kevin64-paladin-tryjob

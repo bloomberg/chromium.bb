@@ -122,6 +122,7 @@ x86_internal_release_boards = frozenset([
     'jecht',
     'kalista',
     'kefka',
+    'kefka-kernelnext',
     'kip',
     'kumo',
     'lakitu',
