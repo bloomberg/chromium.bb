@@ -91,9 +91,7 @@ LayoutInline::LayoutInline(Element* element)
 
 LayoutInline::~LayoutInline() {
 #if DCHECK_IS_ON()
-  if (IsInLayoutNGInlineFormattingContext())
-    DCHECK(!first_paint_fragment_);
-  else
+  if (!IsInLayoutNGInlineFormattingContext())
     line_boxes_.AssertIsEmpty();
 #endif
 }
@@ -132,8 +130,11 @@ void LayoutInline::WillBeDestroyed() {
         for (InlineFlowBox* box : *LineBoxes())
           box->Remove();
       }
-    } else if (Parent()) {
-      Parent()->DirtyLinesFromChangedChild(this);
+    } else {
+      if (NGPaintFragment* first_inline_fragment = FirstInlineFragment())
+        first_inline_fragment->LayoutObjectWillBeDestroyed();
+      if (Parent())
+        Parent()->DirtyLinesFromChangedChild(this);
     }
   }
 
@@ -143,9 +144,7 @@ void LayoutInline::WillBeDestroyed() {
 }
 
 void LayoutInline::DeleteLineBoxes() {
-  if (IsInLayoutNGInlineFormattingContext())
-    SetFirstInlineFragment(nullptr);
-  else
+  if (!IsInLayoutNGInlineFormattingContext())
     MutableLineBoxes()->DeleteLineBoxes();
 }
 

@@ -696,6 +696,44 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveBr) {
   EXPECT_FALSE(ToList(container.Children())[2]->IsDirty());
 }
 
+static const char* inline_child_data[] = {
+    "<span id='child'>XXX</span>",
+    "<span id='child' style='background: yellow'>XXX</span>",
+    "<span id='child' style='display: inline-block'>XXX</span>",
+};
+
+class InlineChildTest : public NGPaintFragmentTest,
+                        public testing::WithParamInterface<const char*> {};
+
+INSTANTIATE_TEST_SUITE_P(NGPaintFragmentTest,
+                         InlineChildTest,
+                         testing::ValuesIn(inline_child_data));
+
+TEST_P(InlineChildTest, RemoveInlineChild) {
+  SetBodyInnerHTML(String(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    </style>
+    <body>
+      <div id="container">
+        12345
+        )HTML") + GetParam() +
+                   R"HTML(
+        67890
+      </div>
+    </body>
+  )HTML");
+  const NGPaintFragment* container = GetPaintFragmentByElementId("container");
+  const NGPaintFragment& linebox = container->Children().front();
+  EXPECT_EQ(linebox.Children().size(), 3u);
+
+  Element* child = GetElementById("child");
+  child->remove();
+
+  // Destroyed children should be eliminated immediately.
+  EXPECT_EQ(linebox.Children().size(), 2u);
+}
+
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveChild) {
   if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
     return;

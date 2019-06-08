@@ -263,6 +263,9 @@ void LayoutNGMixin<Base>::SetPaintFragment(
     // |NGPaintFragment::Create()| calls |SlowSetPaintingLayerNeedsRepaint()|.
   } else if (*current) {
     DCHECK_EQ(this, (*current)->GetLayoutObject());
+    // TODO(kojii): Pass break_token for LayoutObject that spans across block
+    // fragmentation boundaries.
+    (*current)->ClearAssociationWithLayoutObject();
     *current = nullptr;
     ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
   }

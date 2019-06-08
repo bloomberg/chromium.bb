@@ -130,12 +130,7 @@ LayoutBox::LayoutBox(ContainerNode* node)
     SetIsHTMLLegendElement();
 }
 
-LayoutBox::~LayoutBox() {
-#if DCHECK_IS_ON()
-  if (IsInLayoutNGInlineFormattingContext())
-    DCHECK(!first_paint_fragment_);
-#endif
-}
+LayoutBox::~LayoutBox() = default;
 
 PaintLayerType LayoutBox::LayerTypeRequired() const {
   // hasAutoZIndex only returns true if the element is positioned or a flex-item
@@ -166,6 +161,11 @@ void LayoutBox::WillBeDestroyed() {
     UnmarkOrthogonalWritingModeRoot();
 
   ShapeOutsideInfo::RemoveInfo(*this);
+
+  if (!DocumentBeingDestroyed()) {
+    if (NGPaintFragment* first_inline_fragment = FirstInlineFragment())
+      first_inline_fragment->LayoutObjectWillBeDestroyed();
+  }
 
   LayoutBoxModelObject::WillBeDestroyed();
 }
@@ -2274,9 +2274,7 @@ InlineBox* LayoutBox::CreateInlineBox() {
 }
 
 void LayoutBox::DirtyLineBoxes(bool full_layout) {
-  if (IsInLayoutNGInlineFormattingContext()) {
-    SetFirstInlineFragment(nullptr);
-  } else if (inline_box_wrapper_) {
+  if (!IsInLayoutNGInlineFormattingContext() && inline_box_wrapper_) {
     if (full_layout) {
       inline_box_wrapper_->Destroy();
       inline_box_wrapper_ = nullptr;
@@ -2539,9 +2537,7 @@ void LayoutBox::MoveWithEdgeOfInlineContainerIfNecessary(bool is_horizontal) {
 }
 
 void LayoutBox::DeleteLineBoxWrapper() {
-  if (IsInLayoutNGInlineFormattingContext()) {
-    SetFirstInlineFragment(nullptr);
-  } else if (inline_box_wrapper_) {
+  if (!IsInLayoutNGInlineFormattingContext() && inline_box_wrapper_) {
     if (!DocumentBeingDestroyed())
       inline_box_wrapper_->Remove();
     inline_box_wrapper_->Destroy();
