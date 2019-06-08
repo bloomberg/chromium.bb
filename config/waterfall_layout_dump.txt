@@ -608,6 +608,7 @@
     hatch-release
     heli-release
     kalista-release
+    kefka-kernelnext-release
     kefka-release
     kevin-arcnext-release
     kevin-release
@@ -2285,6 +2286,18 @@
   kefka-compile-only-pre-cq
   kefka-factory-strago-7458.B-factorybranch-tryjob
   kefka-full-tryjob
+  kefka-kernelnext-chromium-pfq-tryjob
+  kefka-kernelnext-compile-only-pre-cq
+  kefka-kernelnext-full-tryjob
+  kefka-kernelnext-llvm-next-toolchain-tryjob
+  kefka-kernelnext-llvm-toolchain-tryjob
+  kefka-kernelnext-no-vmtest-pre-cq
+  kefka-kernelnext-paladin-tryjob
+  kefka-kernelnext-postsubmit-tryjob
+  kefka-kernelnext-pre-cq
+  kefka-kernelnext-release-tryjob
+  kefka-kernelnext-tot-chromium-pfq-informational-tryjob
+  kefka-kernelnext-unittest-stress
   kefka-llvm-next-toolchain-tryjob
   kefka-llvm-toolchain-tryjob
   kefka-no-vmtest-pre-cq
@@ -2929,6 +2942,7 @@
     hatch-release-tryjob
     heli-release-tryjob
     kalista-release-tryjob
+    kefka-kernelnext-release-tryjob
     kefka-release-tryjob
     kevin-arcnext-release-tryjob
     kevin-release-tryjob
