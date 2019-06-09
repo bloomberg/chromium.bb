@@ -19,6 +19,8 @@ const CGFloat kButtonEdgeInset = 6;
 const CGFloat kActiveTintColor = 0x1A73E8;
 // To achieve a circular corner radius, divide length of a side by 2.
 const CGFloat kCircularCornerRadiusDivisor = 2.0;
+// Alpha value of button in an inactive state.
+const CGFloat kButtonInactiveAlpha = 0.38;
 }  // namespace
 
 @interface InfobarBadgeButton ()
@@ -50,8 +52,9 @@ const CGFloat kCircularCornerRadiusDivisor = 2.0;
 
 - (void)setActive:(BOOL)active animated:(BOOL)animated {
   void (^changeTintColor)() = ^{
-    self.tintColor =
-        active ? UIColorFromRGB(kActiveTintColor) : [UIColor lightGrayColor];
+    self.tintColor = active ? UIColorFromRGB(kActiveTintColor)
+                            : [UIColor colorWithWhite:0
+                                                alpha:kButtonInactiveAlpha];
   };
   if (animated) {
     [UIView animateWithDuration:kButtonAnimationDuration
