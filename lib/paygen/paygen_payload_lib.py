@@ -71,7 +71,8 @@ class PaygenPayload(object):
   _KERNEL = 'kernel'
   _ROOTFS = 'root'
 
-  def __init__(self, payload, work_dir, sign, verify, private_key=None):
+  def __init__(self, payload, work_dir, sign=False, verify=False,
+               private_key=None):
     """Init for PaygenPayload.
 
     Args:
@@ -881,7 +882,7 @@ def CreateAndUploadPayload(payload, sign=True, verify=True):
   # We need to create a temp directory inside the chroot so be able to access
   # from both inside and outside the chroot.
   with chroot_util.TempDirInChroot() as work_dir:
-    PaygenPayload(payload, work_dir, sign, verify).Run()
+    PaygenPayload(payload, work_dir, sign=sign, verify=verify).Run()
 
 
 def GenerateUpdatePayload(tgt_image, payload, src_image=None, work_dir=None,
@@ -905,9 +906,9 @@ def GenerateUpdatePayload(tgt_image, payload, src_image=None, work_dir=None,
   payload = gspaths.Payload(tgt_image=tgt_image, src_image=src_image,
                             uri=payload)
   with chroot_util.TempDirInChroot() as temp_dir:
-    work_dir = work_dir or temp_dir
-    paygen = PaygenPayload(payload, work_dir, private_key is not None, check,
-                           private_key=private_key)
+    work_dir = work_dir if work_dir is not None else temp_dir
+    paygen = PaygenPayload(payload, work_dir, sign=private_key is not None,
+                           verify=check, private_key=private_key)
     paygen.Run()
 
     # TODO(ahassani): These are basically a hack because devserver is still need
