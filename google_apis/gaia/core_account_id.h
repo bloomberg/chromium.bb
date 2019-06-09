@@ -14,7 +14,12 @@
 // for design and tracking).
 struct CoreAccountId {
   CoreAccountId();
+  CoreAccountId(const CoreAccountId&);
+  CoreAccountId(CoreAccountId&&) noexcept;
   ~CoreAccountId();
+
+  CoreAccountId& operator=(const CoreAccountId&);
+  CoreAccountId& operator=(CoreAccountId&&) noexcept;
 
   // Those implicit constructor and conversion operator allow to
   // progressively migrate the code to use this struct. Removing
