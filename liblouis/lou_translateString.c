@@ -2234,7 +2234,8 @@ putCharacter(widechar character, const TranslationTableHeader *table, int pos,
 	TranslationTableOffset offset;
 	widechar d;
 	chardef = findCharOrDots(character, 0, table);
-	if ((chardef->attributes & CTC_Letter) && (chardef->attributes & CTC_UpperCase))
+	if ((chardef->attributes & CTC_UpperCase) &&
+			(table->emphRules[capsRule][letterOffset]))
 		chardef = findCharOrDots(chardef->lowercase, 0, table);
 	offset = chardef->definitionRule;
 	if (offset) {
