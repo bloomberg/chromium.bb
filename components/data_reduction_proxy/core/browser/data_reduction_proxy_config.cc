@@ -217,7 +217,7 @@ void DataReductionProxyConfig::InitializeOnIOThread(
 
   secure_proxy_checker_.reset(new SecureProxyChecker(url_loader_factory));
   warmup_url_fetcher_.reset(new WarmupURLFetcher(
-      create_custom_proxy_config_callback,
+      url_loader_factory, create_custom_proxy_config_callback,
       base::BindRepeating(
           &DataReductionProxyConfig::HandleWarmupFetcherResponse,
           base::Unretained(this)),

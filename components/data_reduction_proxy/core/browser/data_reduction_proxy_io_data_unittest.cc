@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
@@ -30,7 +31,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -77,7 +77,7 @@ class DataReductionProxyIODataTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   TestingPrefServiceSimple prefs_;
