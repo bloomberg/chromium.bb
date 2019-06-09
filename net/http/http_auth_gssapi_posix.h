@@ -167,16 +167,6 @@ class NET_EXPORT_PRIVATE GSSAPISharedLibrary : public GSSAPILibrary {
   const std::string& GetLibraryNameForTesting() override;
 
  private:
-  typedef decltype(&gss_import_name) gss_import_name_type;
-  typedef decltype(&gss_release_name) gss_release_name_type;
-  typedef decltype(&gss_release_buffer) gss_release_buffer_type;
-  typedef decltype(&gss_display_name) gss_display_name_type;
-  typedef decltype(&gss_display_status) gss_display_status_type;
-  typedef decltype(&gss_init_sec_context) gss_init_sec_context_type;
-  typedef decltype(&gss_wrap_size_limit) gss_wrap_size_limit_type;
-  typedef decltype(&gss_delete_sec_context) gss_delete_sec_context_type;
-  typedef decltype(&gss_inquire_context) gss_inquire_context_type;
-
   FRIEND_TEST_ALL_PREFIXES(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup);
 
   bool InitImpl();
@@ -186,22 +176,22 @@ class NET_EXPORT_PRIVATE GSSAPISharedLibrary : public GSSAPILibrary {
   base::NativeLibrary LoadSharedLibrary();
   bool BindMethods(base::NativeLibrary lib);
 
-  bool initialized_;
+  bool initialized_ = false;
 
   std::string gssapi_library_name_;
   // Need some way to invalidate the library.
-  base::NativeLibrary gssapi_library_;
+  base::NativeLibrary gssapi_library_ = nullptr;
 
   // Function pointers
-  gss_import_name_type import_name_;
-  gss_release_name_type release_name_;
-  gss_release_buffer_type release_buffer_;
-  gss_display_name_type display_name_;
-  gss_display_status_type display_status_;
-  gss_init_sec_context_type init_sec_context_;
-  gss_wrap_size_limit_type wrap_size_limit_;
-  gss_delete_sec_context_type delete_sec_context_;
-  gss_inquire_context_type inquire_context_;
+  decltype(&gss_import_name) import_name_ = nullptr;
+  decltype(&gss_release_name) release_name_ = nullptr;
+  decltype(&gss_release_buffer) release_buffer_ = nullptr;
+  decltype(&gss_display_name) display_name_ = nullptr;
+  decltype(&gss_display_status) display_status_ = nullptr;
+  decltype(&gss_init_sec_context) init_sec_context_ = nullptr;
+  decltype(&gss_wrap_size_limit) wrap_size_limit_ = nullptr;
+  decltype(&gss_delete_sec_context) delete_sec_context_ = nullptr;
+  decltype(&gss_inquire_context) inquire_context_ = nullptr;
 };
 
 // ScopedSecurityContext releases a gss_ctx_id_t when it goes out of

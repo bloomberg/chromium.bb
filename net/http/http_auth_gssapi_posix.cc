@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -20,12 +21,9 @@
 #include "net/http/http_auth_multi_round_parse.h"
 #include "net/net_buildflags.h"
 
-// These are defined for the GSSAPI library:
-// Paraphrasing the comments from gssapi.h:
-// "The implementation must reserve static storage for a
-// gss_OID_desc object for each constant.  That constant
-// should be initialized to point to that gss_OID_desc."
-// These are encoded using ASN.1 BER encoding.
+// Based on RFC 2744 Appendix A (https://tools.ietf.org/html/rfc2744#appendix-A)
+// These constants are defined here for use in diagnostics without adding a
+// dependency on an external library.
 namespace {
 
 static gss_OID_desc GSS_C_NT_USER_NAME_VAL = {
@@ -396,18 +394,7 @@ OM_uint32 DelegationTypeToFlag(DelegationType delegation_type) {
 }  // namespace
 
 GSSAPISharedLibrary::GSSAPISharedLibrary(const std::string& gssapi_library_name)
-    : initialized_(false),
-      gssapi_library_name_(gssapi_library_name),
-      gssapi_library_(nullptr),
-      import_name_(nullptr),
-      release_name_(nullptr),
-      release_buffer_(nullptr),
-      display_name_(nullptr),
-      display_status_(nullptr),
-      init_sec_context_(nullptr),
-      wrap_size_limit_(nullptr),
-      delete_sec_context_(nullptr),
-      inquire_context_(nullptr) {}
+    : gssapi_library_name_(gssapi_library_name) {}
 
 GSSAPISharedLibrary::~GSSAPISharedLibrary() {
   if (gssapi_library_) {
@@ -474,52 +461,79 @@ base::NativeLibrary GSSAPISharedLibrary::LoadSharedLibrary() {
       base::UnloadNativeLibrary(lib);
     } else {
       // If this is the only library available, log the reason for failure.
-      LOG_IF(WARNING, num_lib_names == 1) << load_error.ToString();
+      DLOG_IF(WARNING, num_lib_names == 1) << load_error.ToString();
     }
   }
-  LOG(WARNING) << "Unable to find a compatible GSSAPI library";
+  DLOG(WARNING) << "Unable to find a compatible GSSAPI library";
   return nullptr;
 }
 
 #if BUILDFLAG(DLOPEN_KERBEROS)
-#define BIND(lib, x)                                              \
-  DCHECK(lib);                                                    \
-  gss_##x##_type x = reinterpret_cast<gss_##x##_type>(            \
-      base::GetFunctionPointerFromNativeLibrary(lib, "gss_" #x)); \
-  if (x == nullptr) {                                             \
-    LOG(WARNING) << "Unable to bind function \""                  \
-                 << "gss_" #x << "\"";                            \
-    return false;                                                 \
+
+namespace {
+
+template <typename T>
+bool BindGssMethod(base::NativeLibrary lib, const char* method, T* receiver) {
+  *receiver = reinterpret_cast<T>(
+      base::GetFunctionPointerFromNativeLibrary(lib, method));
+  if (*receiver == nullptr) {
+    DLOG(WARNING) << "Unable to bind function \"" << method << "\"";
+    return false;
   }
-#else
-#define BIND(lib, x) gss_##x##_type x = gss_##x
-#endif
-
-bool GSSAPISharedLibrary::BindMethods(base::NativeLibrary lib) {
-  BIND(lib, import_name);
-  BIND(lib, release_name);
-  BIND(lib, release_buffer);
-  BIND(lib, display_name);
-  BIND(lib, display_status);
-  BIND(lib, init_sec_context);
-  BIND(lib, wrap_size_limit);
-  BIND(lib, delete_sec_context);
-  BIND(lib, inquire_context);
-
-  import_name_ = import_name;
-  release_name_ = release_name;
-  release_buffer_ = release_buffer;
-  display_name_ = display_name;
-  display_status_ = display_status;
-  init_sec_context_ = init_sec_context;
-  wrap_size_limit_ = wrap_size_limit;
-  delete_sec_context_ = delete_sec_context;
-  inquire_context_ = inquire_context;
-
   return true;
 }
 
-#undef BIND
+}  // namespace
+
+bool GSSAPISharedLibrary::BindMethods(base::NativeLibrary lib) {
+  bool rv = true;
+  // It's unlikely for BindMethods() to fail if LoadNativeLibrary() succeeded.
+  // A failure in this function indicates an interoperability issue whose
+  // diagnosis requires knowing all the methods that are missing. Hence |rv| is
+  // updated in a manner that prevents short-circuiting the BindGssMethod()
+  // invocations.
+  rv = BindGssMethod(lib, "gss_delete_sec_context", &delete_sec_context_) && rv;
+  rv = BindGssMethod(lib, "gss_display_name", &display_name_) && rv;
+  rv = BindGssMethod(lib, "gss_display_status", &display_status_) && rv;
+  rv = BindGssMethod(lib, "gss_import_name", &import_name_) && rv;
+  rv = BindGssMethod(lib, "gss_init_sec_context", &init_sec_context_) && rv;
+  rv = BindGssMethod(lib, "gss_inquire_context", &inquire_context_) && rv;
+  rv = BindGssMethod(lib, "gss_release_buffer", &release_buffer_) && rv;
+  rv = BindGssMethod(lib, "gss_release_name", &release_name_) && rv;
+  rv = BindGssMethod(lib, "gss_wrap_size_limit", &wrap_size_limit_) && rv;
+
+  if (LIKELY(rv))
+    return true;
+
+  delete_sec_context_ = nullptr;
+  display_name_ = nullptr;
+  display_status_ = nullptr;
+  import_name_ = nullptr;
+  init_sec_context_ = nullptr;
+  inquire_context_ = nullptr;
+  release_buffer_ = nullptr;
+  release_name_ = nullptr;
+  wrap_size_limit_ = nullptr;
+  return false;
+}
+
+#else  // DLOPEN_KERBEROS
+
+bool GSSAPISharedLibrary::BindMethods(base::NativeLibrary lib) {
+  // When not using dlopen(), statically bind to libgssapi methods.
+  import_name_ = gss_import_name;
+  release_name_ = gss_release_name;
+  release_buffer_ = gss_release_buffer;
+  display_name_ = gss_display_name;
+  display_status_ = gss_display_status;
+  init_sec_context_ = gss_init_sec_context;
+  wrap_size_limit_ = gss_wrap_size_limit;
+  delete_sec_context_ = gss_delete_sec_context;
+  inquire_context_ = gss_inquire_context;
+  return true;
+}
+
+#endif  // DLOPEN_KERBEROS
 
 OM_uint32 GSSAPISharedLibrary::import_name(
     OM_uint32* minor_status,
