@@ -109,7 +109,7 @@ Polymer({
   },
 
   /**
-   * On-click event handler for Accept button.
+   * On-tap event handler for Accept button.
    *
    * @private
    */
@@ -118,7 +118,7 @@ Polymer({
   },
 
   /**
-   * On-click event handler for Next button.
+   * On-tap event handler for Next button.
    *
    * @private
    */
@@ -127,7 +127,7 @@ Polymer({
   },
 
   /**
-   * On-click event handler for Retry button.
+   * On-tap event handler for Retry button.
    *
    * @private
    */
@@ -136,7 +136,7 @@ Polymer({
   },
 
   /**
-   * On-click event handler for Skip button.
+   * On-tap event handler for Skip button.
    *
    * @private
    */
@@ -145,7 +145,7 @@ Polymer({
   },
 
   /**
-   * On-click event handler for Back button.
+   * On-tap event handler for Back button.
    *
    * @private
    */

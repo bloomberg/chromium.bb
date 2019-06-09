@@ -308,14 +308,14 @@ Polymer({
   },
 
   /** @private */
-  onMoreOptionsConfirmClick_: function() {
+  onMoreOptionsConfirmTap_: function() {
     this.storedOrgUnit_ = null;
     this.storedEncryption_ = null;
     this.$.moreOptionsDlg.close();
   },
 
   /** @private */
-  onMoreOptionsCancelClick_: function() {
+  onMoreOptionsCancelTap_: function() {
     this.$.moreOptionsDlg.close();
   },
 

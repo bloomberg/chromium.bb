@@ -62,7 +62,7 @@
             on-contentload="onFrameLoad_">
         </webview>
         <a id="installationSettings" href="#"
-            on-click="onInstallationSettingsClicked_"
+            on-tap="onInstallationSettingsClicked_"
             i18n-content="eulaSystemInstallationSettings">
         </a>
         <div id="logging" class="layout horizontal">
@@ -72,17 +72,16 @@
           <div id="usageStatsLabelContainer">
             <span id="usageStatsLabel" i18n-content="checkboxLogging"></span>
             <a id="learn-more" href="#" i18n-content="learnMore"
-                on-click="onUsageStatsHelpLinkClicked_">
+                on-tap="onUsageStatsHelpLinkClicked_">
             </a>
           </div>
         </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
-        <oobe-back-button on-click="onEulaBackButtonPressed_">
-        </oobe-back-button>
+        <oobe-back-button on-tap="onEulaBackButtonPressed_"></oobe-back-button>
         <div class="flex">
         </div>
-        <oobe-text-button id="acceptButton" inverse on-click="eulaAccepted_"
+        <oobe-text-button id="acceptButton" inverse on-tap="eulaAccepted_"
             disabled="[[acceptButtonDisabled]]">
           <div i18n-content="oobeEulaAcceptAndContinueButtonText"
               id="accept-button-text">
@@ -118,7 +117,7 @@
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
         <oobe-text-button id="settings-close-button" inverse
-            on-click="onInstallationSettingsCloseClicked_">
+            on-tap="onInstallationSettingsCloseClicked_">
           <div i18n-content="eulaSystemInstallationSettingsOkButton"></div>
         </oobe-text-button>
       </div>

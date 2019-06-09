@@ -10,7 +10,7 @@
   /**
    * Custom data that is stored with network element to trigger action.
    *
-   * @typedef {{onClick: !function()}}
+   * @typedef {{onTap: !function()}}
    */
   let networkCustomItemCustomData;
 
@@ -153,7 +153,7 @@
           polymerIcon: 'oobe-network-20:offline-demo-setup',
           showBeforeNetworksList: true,
           customData: {
-            onClick: this.onOfflineDemoSetupClicked_.bind(this),
+            onTap: this.onOfflineDemoSetupClicked_.bind(this),
           },
         });
       }
@@ -163,7 +163,7 @@
           polymerIcon: 'oobe-network-20:add-proxy',
           showBeforeNetworksList: false,
           customData: {
-            onClick: this.openInternetDetailDialog_.bind(this),
+            onTap: this.openInternetDetailDialog_.bind(this),
           },
         });
       }
@@ -172,7 +172,7 @@
         polymerIcon: 'oobe-network-20:add-wifi',
         showBeforeNetworksList: false,
         customData: {
-          onClick: this.openAddWiFiNetworkDialog_.bind(this),
+          onTap: this.openAddWiFiNetworkDialog_.bind(this),
         },
       });
       return items;
@@ -366,7 +366,7 @@
      */
     onNetworkListCustomItemSelected_: function(event) {
       var itemState = event.detail;
-      itemState.customData.onClick();
+      itemState.customData.onTap();
     },
 
     /**

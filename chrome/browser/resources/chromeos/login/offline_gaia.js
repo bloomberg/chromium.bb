@@ -60,7 +60,7 @@
       this.$$('#forgotPasswordDlg').showModal();
     },
 
-    onForgotPasswordCloseClick_: function() {
+    onForgotPasswordCloseTap_: function() {
       this.$$('#forgotPasswordDlg').close();
     },
 

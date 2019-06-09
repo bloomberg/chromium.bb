@@ -28,7 +28,7 @@ class MultiTapDetector {
     this.callback_ = callback;
     this.tapsCount_ = tapsCount;
 
-    element.addEventListener('click', this.onClick_.bind(this));
+    element.addEventListener('click', this.onTap_.bind(this));
   }
 
   /**
@@ -43,10 +43,10 @@ class MultiTapDetector {
   }
 
   /**
-   * Handles click event.
+   * Handles tap event.
    * @private
    */
-  onClick_() {
+  onTap_() {
     let timestamp = this.getCurrentTime_();
     if (!this.lastTapTime_ ||
         timestamp - this.lastTapTime_ <

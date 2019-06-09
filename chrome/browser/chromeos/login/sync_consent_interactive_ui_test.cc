@@ -158,7 +158,7 @@ class SyncConsentTest : public OobeBaseTest {
 
     test::OobeJS().ExpectVisiblePath(
         {"sync-consent-impl", "syncConsentOverviewDialog"});
-    test::OobeJS().ClickOnPath(
+    test::OobeJS().TapOnPath(
         {"sync-consent-impl", "settingsSaveAndContinueButton"});
     consent_recorded_waiter.Wait();
     screen->SetDelegateForTesting(nullptr);  // cleanup

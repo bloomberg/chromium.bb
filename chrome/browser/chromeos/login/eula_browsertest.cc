@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LoadOffline) {
 IN_PROC_BROWSER_TEST_F(EulaTest, DisplaysTpmPassword) {
   ShowEulaScreen();
 
-  NonPolymerOobeJS().ClickOnPath({"oobe-eula-md", "installationSettings"});
+  NonPolymerOobeJS().TapOnPath({"oobe-eula-md", "installationSettings"});
   test::OobeJS().ExpectVisiblePath(
       {"oobe-eula-md", "installationSettingsDialog"});
 
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, EnableUsageStats) {
       StatsReportingController::Get()->AddObserver(runloop.QuitClosure());
 
   // Advance to the next screen for changes to take effect.
-  test::OobeJS().ClickOnPath({"oobe-eula-md", "acceptButton"});
+  test::OobeJS().TapOnPath({"oobe-eula-md", "acceptButton"});
 
   // Wait for StartReporting update.
   runloop.Run();
@@ -339,8 +339,8 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DisableUsageStats) {
 
   // Click on the toggle to disable stats collection and advance to the next
   // screen for changes to take effect.
-  NonPolymerOobeJS().ClickOnPath({"oobe-eula-md", "usageStats"});
-  test::OobeJS().ClickOnPath({"oobe-eula-md", "acceptButton"});
+  NonPolymerOobeJS().TapOnPath({"oobe-eula-md", "usageStats"});
+  test::OobeJS().TapOnPath({"oobe-eula-md", "acceptButton"});
 
   // Wait for StartReportingController update.
   runloop.Run();
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LearnMore) {
   DialogWindowWaiter waiter(
       l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE));
 
-  NonPolymerOobeJS().ClickOnPath({"oobe-eula-md", "learn-more"});
+  NonPolymerOobeJS().TapOnPath({"oobe-eula-md", "learn-more"});
 
   // Wait until help dialog is displayed.
   waiter.Wait();

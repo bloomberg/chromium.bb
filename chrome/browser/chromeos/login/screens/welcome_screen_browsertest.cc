@@ -39,7 +39,7 @@ void ToggleAccessibilityFeature(const std::string& feature_name,
 
   js.ExpectVisiblePath({"connect", feature_name, "button"});
   EXPECT_FALSE(js.GetBool(feature_toggle));
-  js.ClickOnPath({"connect", feature_name, "button"});
+  js.TapOnPath({"connect", feature_name, "button"});
   js.CreateWaiter(feature_toggle);
 }
 
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenElements) {
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenNext) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
+  test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
   WaitForScreenExit();
 }
 
@@ -147,11 +147,11 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenNext) {
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenLanguageFlow) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
 
-  test::OobeJS().ClickOnPath({"connect", "ok-button-language"});
-  test::OobeJS().ClickOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
+  test::OobeJS().TapOnPath({"connect", "ok-button-language"});
+  test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
   WaitForScreenExit();
 }
 
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenLanguageElements) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
 
   test::OobeJS().ExpectVisiblePath({"connect", "languageDropdownContainer"});
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
   ASSERT_TRUE(g_browser_process->GetApplicationLocale() == "en-US");
   test::OobeJS().GetBool(
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenKeyboardSelection) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
 
   test::OobeJS().SelectElementInPath(
@@ -226,11 +226,11 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilityFlow) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
-  test::OobeJS().ClickOnPath({"connect", "ok-button-accessibility"});
-  test::OobeJS().ClickOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
+  test::OobeJS().TapOnPath({"connect", "ok-button-accessibility"});
+  test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
   WaitForScreenExit();
 }
 
@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilitySpokenFeedback) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilityLargeCursor) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
   ASSERT_FALSE(AccessibilityManager::Get()->IsLargeCursorEnabled());
@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilityHighContrast) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
   ASSERT_FALSE(AccessibilityManager::Get()->IsHighContrastEnabled());
@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilitySelectToSpeak) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
   ASSERT_FALSE(AccessibilityManager::Get()->IsSelectToSpeakEnabled());
@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
                        WelcomeScreenAccessibilityScreenMagnifier) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
   ASSERT_FALSE(MagnificationManager::Get()->IsMagnifierEnabled());
@@ -319,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenWithExperimentalAccessibilityFeaturesTest,
                        A11yDockedMagnifierEnabled) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
   ASSERT_FALSE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenWithExperimentalAccessibilityFeaturesTest,
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, A11yVirtualKeyboard) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath(
+  test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
 
   ASSERT_FALSE(AccessibilityManager::Get()->IsVirtualKeyboardEnabled());

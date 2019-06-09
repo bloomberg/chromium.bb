@@ -116,7 +116,7 @@ Polymer({
   },
 
   /**
-   * This is 'on-click' event handler for 'Accept' button.
+   * This is 'on-tap' event handler for 'Accept' button.
    *
    * @private
    */
@@ -134,7 +134,7 @@ Polymer({
   },
 
   /**
-   * On-click event handler for installationSettings.
+   * On-tap event handler for installationSettings.
    *
    * @private
    */
@@ -146,7 +146,7 @@ Polymer({
   },
 
   /**
-   * On-click event handler for the close button on installation settings page.
+   * On-tap event handler for the close button on installation settings page.
    *
    * @private
    */
@@ -156,7 +156,7 @@ Polymer({
   },
 
   /**
-   * On-click event handler for stats-help-link.
+   * On-tap event handler for stats-help-link.
    *
    * @private
    */
@@ -166,7 +166,7 @@ Polymer({
   },
 
   /**
-   * On-click event handler for back button.
+   * On-tap event handler for back button.
    *
    * @private
    */

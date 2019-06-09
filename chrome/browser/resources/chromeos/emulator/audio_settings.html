@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
@@ -9,6 +8,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="icons.html">
 <link rel="import" href="shared_styles.html">
 
@@ -54,9 +54,9 @@
         </form>
       </div>
       <div slot="button-container">
-        <cr-button class="action-button" on-click="insertEditedAudioNode">
+        <paper-button class="action-button" on-click="insertEditedAudioNode">
           Done
-        </cr-button>
+        </paper-button>
       </div>
     </cr-dialog>
 
@@ -99,7 +99,9 @@
         </tbody>
       </table>
       <div class="add-device-container">
-        <cr-button on-click="appendNewNode">Add Node</cr-button>
+        <paper-button on-click="appendNewNode">
+          Add Node
+        </paper-button>
       </div>
     </div>
   </template>

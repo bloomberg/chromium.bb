@@ -220,13 +220,13 @@ Polymer({
         .addEventListener(
             'buttonclick', this.onEnrollmentFinished_.bind(this));
 
-    this.$['enroll-success-done-button'].addEventListener(
-        'click', this.onEnrollmentFinished_.bind(this));
+    this.$['enroll-success-done-button']
+        .addEventListener('tap', this.onEnrollmentFinished_.bind(this));
 
-    this.$['enroll-attributes-skip-button'].addEventListener(
-        'click', this.onSkipButtonClicked.bind(this));
-    this.$['enroll-attributes-submit-button'].addEventListener(
-        'click', this.onAttributesSubmitted.bind(this));
+    this.$['enroll-attributes-skip-button']
+        .addEventListener('tap', this.onSkipButtonClicked.bind(this));
+    this.$['enroll-attributes-submit-button']
+        .addEventListener('tap', this.onAttributesSubmitted.bind(this));
 
 
     this.$['oauth-enroll-active-directory-join-error-card']
@@ -237,8 +237,8 @@ Polymer({
     this.navigation_.addEventListener('close', this.cancel.bind(this));
     this.navigation_.addEventListener('refresh', this.cancel.bind(this));
 
-    this.$['oobe-signin-back-button'].addEventListener(
-        'click', this.onBackButtonClicked_.bind(this));
+    this.$['oobe-signin-back-button']
+        .addEventListener('tap', this.onBackButtonClicked_.bind(this));
 
 
     this.$['oauth-enroll-learn-more-link']

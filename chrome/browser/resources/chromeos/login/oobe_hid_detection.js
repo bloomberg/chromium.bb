@@ -161,9 +161,9 @@ Polymer({
   },
 
   /**
-   * This is 'on-click' event handler for 'Continue' button.
+   * This is 'on-tap' event handler for 'Continue' button.
    */
-  onHIDContinueClick_: function(event) {
+  onHIDContinueTap_: function(event) {
     chrome.send('HIDDetectionOnContinue');
     event.stopPropagation();
   },

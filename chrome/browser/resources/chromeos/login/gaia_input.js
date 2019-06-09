@@ -39,7 +39,7 @@
           (this.value && this.value.indexOf('@') !== -1);
     },
 
-    onClick: function() {
+    onTap: function() {
       this.isInvalid = false;
     },
 

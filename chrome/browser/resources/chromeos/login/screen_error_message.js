@@ -105,35 +105,34 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
 
       var self = this;
       $('error-message-back-button')
-          .addEventListener('click', this.cancel.bind(this));
+          .addEventListener('tap', this.cancel.bind(this));
 
-      $('error-message-md-reboot-button')
-          .addEventListener('click', function(e) {
-            self.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_REBOOT);
-            e.stopPropagation();
-          });
+      $('error-message-md-reboot-button').addEventListener('tap', function(e) {
+        self.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_REBOOT);
+        e.stopPropagation();
+      });
       $('error-message-md-diagnose-button')
-          .addEventListener('click', function(e) {
+          .addEventListener('tap', function(e) {
             self.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_DIAGNOSE);
             e.stopPropagation();
           });
       $('error-message-md-configure-certs-button')
-          .addEventListener('click', function(e) {
+          .addEventListener('tap', function(e) {
             self.send(
                 login.Screen.CALLBACK_USER_ACTED, USER_ACTION_CONFIGURE_CERTS);
             e.stopPropagation();
           });
       $('error-message-md-continue-button')
-          .addEventListener('click', function(e) {
+          .addEventListener('tap', function(e) {
             chrome.send('continueAppLaunch');
             e.stopPropagation();
           });
-      $('error-message-md-ok-button').addEventListener('click', function(e) {
+      $('error-message-md-ok-button').addEventListener('tap', function(e) {
         chrome.send('login.ResetScreen.userActed', ['cancel-reset']);
         e.stopPropagation();
       });
       $('error-message-md-powerwash-button')
-          .addEventListener('click', function(e) {
+          .addEventListener('tap', function(e) {
             self.send(
                 login.Screen.CALLBACK_USER_ACTED,
                 USER_ACTION_LOCAL_STATE_POWERWASH);

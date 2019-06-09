@@ -119,6 +119,12 @@ class JSChecker {
   void ClickOnPath(std::initializer_list<base::StringPiece> element_ids);
   void ClickOn(const std::string& element_id);
 
+  // Fires a synthetic 'tap' event on the indicated UI element. Provided as
+  // backwards compatibility with some OOBE UI elements that only listen to
+  // tap events.
+  void TapOnPath(std::initializer_list<base::StringPiece> element_ids);
+  void TapOn(const std::string& element_id);
+
   // Select particular radio button.
   void SelectRadioPath(std::initializer_list<base::StringPiece> element_ids);
 

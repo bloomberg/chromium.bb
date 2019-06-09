@@ -75,38 +75,38 @@ Polymer({
   },
 
   /**
-   * On-click event handler for cancel button.
+   * On-tap event handler for cancel button.
    *
    * @private
    */
-  onCancelClick_: function() {
+  onCancelTap_: function() {
     chrome.send('login.ResetScreen.userActed', ['cancel-reset']);
   },
 
   /**
-   * On-click event handler for restart button.
+   * On-tap event handler for restart button.
    *
    * @private
    */
-  onRestartClick_: function() {
+  onRestartTap_: function() {
     chrome.send('login.ResetScreen.userActed', ['restart-pressed']);
   },
 
   /**
-   * On-click event handler for powerwash button.
+   * On-tap event handler for powerwash button.
    *
    * @private
    */
-  onPowerwashClick_: function() {
+  onPowerwashTap_: function() {
     chrome.send('login.ResetScreen.userActed', ['show-confirmation']);
   },
 
   /**
-   * On-click event handler for learn more link.
+   * On-tap event handler for learn more link.
    *
    * @private
    */
-  onLearnMoreClick_: function() {
+  onLearnMoreTap_: function() {
     chrome.send('login.ResetScreen.userActed', ['learn-more-link']);
   },
 
@@ -121,7 +121,7 @@ Polymer({
   },
 
   /**
-   * On-click event handler for the TPM firmware update learn more link.
+   * On-tap event handler for the TPM firmware update learn more link.
    *
    * @param {!Event} event
    * @private

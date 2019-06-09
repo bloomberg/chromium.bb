@@ -344,8 +344,7 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
                                 {kEnrollmentUI, kAdDialog, kAdUsernameInput});
     test::OobeJS().TypeIntoPath(password,
                                 {kEnrollmentUI, kAdDialog, kAdPasswordInput});
-    test::OobeJS().ClickOnPath(
-        {kEnrollmentUI, kAdDialog, kAdMoreOptionsButton});
+    test::OobeJS().TapOnPath({kEnrollmentUI, kAdDialog, kAdMoreOptionsButton});
     test::OobeJS().TypeIntoPath(
         machine_dn, {kEnrollmentUI, kAdDialog, kAdMachineOrgUnitInput});
 
@@ -354,13 +353,13 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
           encryption_types,
           {kEnrollmentUI, kAdDialog, kAdEncryptionTypesSelect});
     }
-    test::OobeJS().ClickOnPath(
+    test::OobeJS().TapOnPath(
         {kEnrollmentUI, kAdDialog, kAdMoreOptionsSaveButton});
     test::OobeJS()
         .CreateEnabledWaiter(true /* enabled */,
                              {kEnrollmentUI, kAdDialog, kNextButton})
         ->Wait();
-    test::OobeJS().ClickOnPath({kEnrollmentUI, kAdDialog, kNextButton});
+    test::OobeJS().TapOnPath({kEnrollmentUI, kAdDialog, kNextButton});
   }
 
   void SetExpectedJoinRequest(
@@ -679,7 +678,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "legacy", kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowADJoinError\"");
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepADJoinError);
-  test::OobeJS().ClickOnPath({kEnrollmentUI, kAdErrorCard, kSubmitButton});
+  test::OobeJS().TapOnPath({kEnrollmentUI, kAdErrorCard, kSubmitButton});
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepADJoin);
 }
 
@@ -705,23 +704,23 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   ExpectElementValid(kAdUnlockPasswordInput, true);
 
   // Test skipping the password step and getting back.
-  test::OobeJS().ClickOnPath({kEnrollmentUI, kAdDialog, kSkipButton});
+  test::OobeJS().TapOnPath({kEnrollmentUI, kAdDialog, kSkipButton});
   CheckActiveDirectoryCredentialsShown();
   CheckConfigurationSelectionVisible(false);
-  test::OobeJS().ClickOnPath({kEnrollmentUI, kAdDialog, kAdBackToUnlockButton});
+  test::OobeJS().TapOnPath({kEnrollmentUI, kAdDialog, kAdBackToUnlockButton});
   CheckActiveDirectoryUnlockConfigurationShown();
 
   // Enter wrong unlock password.
   test::OobeJS().TypeIntoPath(
       "wrong_password", {kEnrollmentUI, kAdDialog, kAdUnlockPasswordInput});
-  test::OobeJS().ClickOnPath({kEnrollmentUI, kAdDialog, kAdUnlockButton});
+  test::OobeJS().TapOnPath({kEnrollmentUI, kAdDialog, kAdUnlockButton});
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
   ExpectElementValid(kAdUnlockPasswordInput, false);
 
   // Enter right unlock password.
   test::OobeJS().TypeIntoPath(
       "test765!", {kEnrollmentUI, kAdDialog, kAdUnlockPasswordInput});
-  test::OobeJS().ClickOnPath({kEnrollmentUI, kAdDialog, kAdUnlockButton});
+  test::OobeJS().TapOnPath({kEnrollmentUI, kAdDialog, kAdUnlockButton});
   WaitForMessage(&message_queue, "\"SetAdJoinConfiguration\"");
   CheckActiveDirectoryCredentialsShown();
   // Configuration selector should be visible.

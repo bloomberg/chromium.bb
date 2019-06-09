@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, TransitionTimeout) {
   EXPECT_FALSE(test::LoginScreenTester().IsGuestButtonShown());
   EXPECT_FALSE(test::LoginScreenTester().IsAddUserButtonShown());
 
-  test::OobeJS().ClickOnPath({"supervision-transition-md", "accept-button"});
+  test::OobeJS().TapOnPath({"supervision-transition-md", "accept-button"});
 
   login_manager_.WaitForActiveSession();
 }

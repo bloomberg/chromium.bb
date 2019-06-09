@@ -136,7 +136,7 @@ var BatterySettings = Polymer({
       chrome.send('updateBatteryPercent', [this.percent]);
   },
 
-  onSetAsSourceClick: function(e) {
+  onSetAsSourceTap: function(e) {
     chrome.send('updatePowerSourceId', [e.model.item.id]);
   },
 
@@ -189,13 +189,8 @@ var BatterySettings = Polymer({
     return source.type == 'DualRoleUSB';
   },
 
-  /**
-   * @param {!{id: string}} source
-   * @return {string}
-   * @private
-   */
-  cssClassForSetAsSource_: function(source) {
-    return source.id == this.selectedPowerSourceId ? '' : 'action-button';
+  isSelectedSource: function(source) {
+    return source.id == this.selectedPowerSourceId;
   },
 
   canAmpsChange: function(type) {

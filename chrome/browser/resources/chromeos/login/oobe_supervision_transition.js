@@ -46,7 +46,7 @@ Polymer({
   },
 
   /**
-   * On-click event handler for OK button.
+   * On-tap event handler for OK button.
    *
    * @private
    */

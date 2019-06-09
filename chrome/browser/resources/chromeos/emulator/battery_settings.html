@@ -66,14 +66,13 @@
                 <cr-checkbox checked="{{item.connected}}"></cr-checkbox>
               </td>
               <td class="control-cell">
-                <cr-button on-click="onSetAsSourceClick"
-                    class$="[[cssClassForSetAsSource_(item,
-                        selectedPowerSourceId)]]"
+                <paper-button on-tap="onSetAsSourceTap"
                     hidden$="[[!isDualRole(item)]]"
+                    raised="[[!isSelectedSource(item, selectedPowerSourceId)]]"
                     disabled="[[!canBecomeSource(
                         item, selectedPowerSourceId, powerSourceOptions.*)]]">
                   Set as source
-                </cr-button>
+                </paper-button>
                 <div hidden$="[[isDualRole(item)]]">Source</div>
               </td>
               <td class="control-cell">

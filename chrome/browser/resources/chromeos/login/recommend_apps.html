@@ -29,16 +29,15 @@
         <p>[[i18nDynamic(locale, 'recommendAppsError')]]</p>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="recommend-apps-skip-button" border
-            on-click="onSkip_">
+        <oobe-text-button id="recommend-apps-skip-button" border on-tap="onSkip_">
           <div>[[i18nDynamic(locale, 'recommendAppsSkip')]]</div>
         </oobe-text-button>
         <oobe-next-button id="recommend-apps-install-button"
-            on-click="onInstall_" inverse>
+            on-tap="onInstall_" inverse>
           <div>[[i18nDynamic(locale, 'recommendAppsInstall')]]</div>
         </oobe-next-button>
         <oobe-text-button id="recommend-apps-retry-button" border
-            on-click="onRetry_">
+            on-tap="onRetry_">
           <div>[[i18nDynamic(locale, 'recommendAppsRetry')]]</div>
         </oobe-text-button>
       </div>

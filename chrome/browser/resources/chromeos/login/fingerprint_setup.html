@@ -51,13 +51,13 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="skipFingerprintSetup"
-            on-click="onFingerprintSetupSkipped_">
+            on-tap="onFingerprintSetupSkipped_">
           <div>
             [[i18nDynamic(locale, 'skipFingerprintSetup')]]
           </div>
         </oobe-text-button>
         <oobe-next-button id="showSensorLocationButton"
-            on-click="onContinueToSensorLocationScreen_" class="focus-on-show"
+            on-tap="onContinueToSensorLocationScreen_" class="focus-on-show"
             inverse>
           <div>
             [[i18nDynamic(locale, 'fingerprintSetupNext')]]
@@ -83,7 +83,7 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="setupFingerprintLater"
-            on-click="onFingerprintSetupSkipped_" class="focus-on-show">
+            on-tap="onFingerprintSetupSkipped_" class="focus-on-show">
           <div >
             [[i18nDynamic(locale, 'fingerprintSetupLater')]]
           </div>
@@ -118,7 +118,7 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="skipFingerprintEnroll"
-            on-click="onFingerprintSetupSkipped_" class="focus-on-show"
+            on-tap="onFingerprintSetupSkipped_" class="focus-on-show"
             hidden="[[!enrollInProgress_(percentComplete_)]]">
           <div>
             [[i18nDynamic(locale, 'skipFingerprintSetup')]]
@@ -127,14 +127,14 @@
         <oobe-text-button id="fingerprintAddAnother"
             hidden="[[!isAnotherButtonVisible_(percentComplete_,
                 canAddFinger)]]"
-            on-click="onFingerprintAddAnother_">
+            on-tap="onFingerprintAddAnother_">
           <div>
             [[i18nDynamic(locale, 'fingerprintSetupAddAnother')]]
           </div>
         </oobe-text-button>
         <oobe-text-button id="fingerprintEnrollDone"
             hidden="[[enrollInProgress_(percentComplete_)]]"
-            on-click="onFingerprintSetupDone_" class="focus-on-show" inverse>
+            on-tap="onFingerprintSetupDone_" class="focus-on-show" inverse>
           <div>
             [[i18nDynamic(locale, 'fingerprintSetupDone')]]
           </div>

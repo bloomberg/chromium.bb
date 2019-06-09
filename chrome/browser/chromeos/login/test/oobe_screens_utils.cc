@@ -49,7 +49,7 @@ void WaitForWelcomeScreen() {
 }
 
 void TapWelcomeNext() {
-  test::OobeJS().ClickOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
+  test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
 }
 
 void WaitForNetworkSelectionScreen() {
@@ -57,7 +57,7 @@ void WaitForNetworkSelectionScreen() {
 }
 
 void TapNetworkSelectionNext() {
-  test::OobeJS().ClickOnPath({"oobe-network-md", "nextButton"});
+  test::OobeJS().TapOnPath({"oobe-network-md", "nextButton"});
 }
 
 void WaitForUpdateScreen() {
@@ -143,7 +143,7 @@ void WaitForEulaScreen() {
 }
 
 void TapEulaAccept() {
-  test::OobeJS().ClickOnPath({"oobe-eula-md", "acceptButton"});
+  test::OobeJS().TapOnPath({"oobe-eula-md", "acceptButton"});
 }
 
 void WaitForSyncConsentScreen() {

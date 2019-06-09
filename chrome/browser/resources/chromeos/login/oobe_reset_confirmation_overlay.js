@@ -25,17 +25,17 @@ Polymer({
   },
 
   /**
-   * On-click event handler for continue button.
+   * On-tap event handler for continue button.
    */
-  onContinueClick_: function() {
+  onContinueTap_: function() {
     this.close();
     chrome.send('login.ResetScreen.userActed', ['powerwash-pressed']);
   },
 
   /**
-   * On-click event handler for cancel button.
+   * On-tap event handler for cancel button.
    */
-  onCancelClick_: function() {
+  onCancelTap_: function() {
     this.close();
     chrome.send('login.ResetScreen.userActed', ['reset-confirm-dismissed']);
   },

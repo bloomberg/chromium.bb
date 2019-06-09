@@ -201,28 +201,28 @@ class EnableDebuggingTest : public LoginManagerTest {
     // TODO(crbug.com/944573): inline this method once UI is polymer-based.
     test::JSChecker js = test::OobeJS();
     js.set_polymer_ui(false);
-    js.ClickOn("debugging-cancel-button");
+    js.TapOn("debugging-cancel-button");
   }
 
   void ClickRemoveProtectionButton() {
     // TODO(crbug.com/944573): inline this method once UI is polymer-based.
     test::JSChecker js = test::OobeJS();
     js.set_polymer_ui(false);
-    js.ClickOn("debugging-remove-protection-button");
+    js.TapOn("debugging-remove-protection-button");
   }
 
   void ClickEnableButton() {
     // TODO(crbug.com/944573): inline this method once UI is polymer-based.
     test::JSChecker js = test::OobeJS();
     js.set_polymer_ui(false);
-    js.ClickOn("debugging-enable-button");
+    js.TapOn("debugging-enable-button");
   }
 
   void ClickOKButton() {
     // TODO(crbug.com/944573): inline this method once UI is polymer-based.
     test::JSChecker js = test::OobeJS();
     js.set_polymer_ui(false);
-    js.ClickOn("debugging-ok-button");
+    js.TapOn("debugging-ok-button");
   }
 
   void ShowRemoveProtectionScreen() {

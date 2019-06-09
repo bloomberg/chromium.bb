@@ -112,8 +112,7 @@
           </if>
         </div>
         <div hidden="[[!debuggingLinkVisible]]">
-          <a href="#" on-click="onDebuggingLinkClicked_"
-              id="enableDebuggingLink">
+          <a href="#" on-tap="onDebuggingLinkClicked_" id="enableDebuggingLink">
             [[i18nDynamic(locale, 'debuggingFeaturesLink')]]
           </a>
         </div>
@@ -122,7 +121,7 @@
           <oobe-welcome-secondary-button id="languageSelectionButton"
               icon1x="oobe-welcome-dialog-20:language"
               icon2x="oobe-welcome-dialog-40:language"
-              on-click="onLanguageClicked_"
+              on-tap="onLanguageClicked_"
               label-for-aria$="[[formatMessage_('languageButtonLabel',
                   currentLanguage)]]">
             <div>[[currentLanguage]]</div>
@@ -130,19 +129,19 @@
           <oobe-welcome-secondary-button id="accessibilitySettingsButton"
               icon1x="oobe-welcome-dialog-20:accessibility"
               icon2x="oobe-welcome-dialog-40:accessibility"
-              on-click="onAccessibilityClicked_">
+              on-tap="onAccessibilityClicked_">
             <div>[[i18nDynamic(locale, 'accessibilityLink')]]</div>
           </oobe-welcome-secondary-button>
           <oobe-welcome-secondary-button id="timezoneSettingsButton"
               icon1x="oobe-welcome-32:timezone"
               icon2x="oobe-welcome-64:timezone"
-              on-click="onTimezoneClicked_"
+              on-tap="onTimezoneClicked_"
               hidden="[[!timezoneButtonVisible]]">
             <div>[[i18nDynamic(locale, 'timezoneButtonText')]]</div>
           </oobe-welcome-secondary-button>
           <div class="flex"></div>
           <oobe-next-button id="welcomeNextButton"
-              inverse on-click="onNextClicked_">
+              inverse on-tap="onNextClicked_">
             <div>[[i18nDynamic(locale, 'welcomeNextButtonText')]]</div>
           </oobe-text-button>
         </div>
