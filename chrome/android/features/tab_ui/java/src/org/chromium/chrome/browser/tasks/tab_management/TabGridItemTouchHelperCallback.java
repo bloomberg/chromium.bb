@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.List;
 
@@ -62,16 +63,20 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     /**
      * This method sets up parameters that are used by the {@link ItemTouchHelper} to make decisions
      * about user actions.
-     * @param swipeToDismissThreshold   Defines the threshold that user needs to swipe in order to
-     *         be considered as a remove operation.
-     * @param mergeThreshold            Defines the threshold of how much two items need to be
-     *         overlapped in order to be considered as a merge operation.
-     * @param isDragEnabled             Whether drag related behavior should handled in this
-     *         callback.
+     * @param swipeToDismissThreshold          Defines the threshold that user needs to swipe in
+     *         order to be considered as a remove operation.
+     * @param mergeThreshold                   Defines the threshold of how much two items need to
+     *         be overlapped in order to be considered as a merge operation.
      */
-    void setupCallback(float swipeToDismissThreshold, float mergeThreshold, boolean isDragEnabled) {
+    void setupCallback(float swipeToDismissThreshold, float mergeThreshold) {
         mSwipeToDismissThreshold = swipeToDismissThreshold;
         mMergeThreshold = mergeThreshold;
+        boolean isTabGroupEnabled = FeatureUtilities.isTabGroupsAndroidEnabled();
+        boolean isTabGroupUiImprovementEnabled =
+                FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();
+        // Only enable drag for users with group disabled, or with group and group ui improvement
+        // enabled at the same time.
+        boolean isDragEnabled = !isTabGroupEnabled || isTabGroupUiImprovementEnabled;
         mDragFlags = isDragEnabled ? ItemTouchHelper.START | ItemTouchHelper.END
                         | ItemTouchHelper.UP | ItemTouchHelper.DOWN
                                    : 0;
@@ -93,9 +98,9 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
 
         RecordUserAction.record("TabGrid.DragToReorder." + mComponentName);
         mSelectedTabIndex = toViewHolder.getAdapterPosition();
-        if (mHoveredTabIndex != -1) {
+        if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX) {
             mModel.updateHoveredTabForMergeToGroup(mHoveredTabIndex, false);
-            mHoveredTabIndex = -1;
+            mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
         }
 
         int currentTabId = ((TabGridViewHolder) fromViewHolder).getTabId();
@@ -134,16 +139,19 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             mSelectedTabIndex = viewHolder.getAdapterPosition();
             mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, true);
         } else if (actionState == ItemTouchHelper.ACTION_STATE_IDLE) {
-            if (mHoveredTabIndex != -1 && mActionsOnAllRelatedTabs) {
+            if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+                mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
+            }
+            if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX && mActionsOnAllRelatedTabs) {
                 RecordUserAction.record("GridTabSwitcher.DropTabToMerge");
                 onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
                 mRecyclerView.getAdapter().notifyDataSetChanged();
             }
-            if (mHoveredTabIndex == -1) {
+            if (mHoveredTabIndex == TabModel.INVALID_TAB_INDEX) {
                 mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
             }
-            mHoveredTabIndex = -1;
-            mSelectedTabIndex = -1;
+            mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
+            mSelectedTabIndex = TabModel.INVALID_TAB_INDEX;
         }
     }
 
@@ -154,10 +162,11 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
             float alpha = Math.max(0.2f, 1f - 0.8f * Math.abs(dX) / mSwipeToDismissThreshold);
             int index = mModel.indexFromId(((TabGridViewHolder) viewHolder).getTabId());
-            if (index == -1) return;
+            if (index == TabModel.INVALID_TAB_INDEX) return;
 
             mModel.get(index).set(TabProperties.ALPHA, alpha);
         } else if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && mActionsOnAllRelatedTabs) {
+            if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) return;
             int prev_hovered = mHoveredTabIndex;
             mHoveredTabIndex = TabListRecyclerView.getHoveredTabIndex(
                     recyclerView, viewHolder.itemView, dX, dY, mMergeThreshold);

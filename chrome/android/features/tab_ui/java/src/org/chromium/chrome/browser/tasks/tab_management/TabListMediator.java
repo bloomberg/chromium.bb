@@ -632,10 +632,9 @@ class TabListMediator {
     /**
      * @return The callback that hosts the logic for swipe and drag related actions.
      */
-    ItemTouchHelper.SimpleCallback getItemTouchHelperCallback(final float swipeToDismissThreshold,
-            final float mergeThreshold, final boolean isDragEnabled) {
-        mTabGridItemTouchHelperCallback.setupCallback(
-                swipeToDismissThreshold, mergeThreshold, isDragEnabled);
+    ItemTouchHelper.SimpleCallback getItemTouchHelperCallback(
+            final float swipeToDismissThreshold, final float mergeThreshold) {
+        mTabGridItemTouchHelperCallback.setupCallback(swipeToDismissThreshold, mergeThreshold);
         return mTabGridItemTouchHelperCallback;
     }
 
