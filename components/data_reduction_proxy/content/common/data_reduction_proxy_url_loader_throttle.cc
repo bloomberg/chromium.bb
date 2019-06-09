@@ -11,7 +11,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "components/data_reduction_proxy/core/common/uma_util.h"
 #include "net/base/load_flags.h"
 
@@ -49,14 +48,17 @@ DataReductionProxyURLLoaderThrottle::DataReductionProxyURLLoaderThrottle(
 DataReductionProxyURLLoaderThrottle::~DataReductionProxyURLLoaderThrottle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!private_data_reduction_proxy_info_ && !private_data_reduction_proxy_)
+  if (manager_)
     manager_->RemoveSameSequenceObserver(this);
 }
 
 void DataReductionProxyURLLoaderThrottle::DetachFromCurrentSequence() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 
-  manager_->RemoveSameSequenceObserver(this);
+  if (manager_) {
+    manager_->RemoveSameSequenceObserver(this);
+    manager_ = nullptr;
+  }
 
   data_reduction_proxy_->Clone(
       mojo::MakeRequest(&private_data_reduction_proxy_info_));
@@ -259,6 +261,14 @@ void DataReductionProxyURLLoaderThrottle::OnThrottleConfigChanged(
   for (const auto& entry : config->proxies_for_http) {
     proxies_for_http_.push_back(DataReductionProxyServer(entry->proxy_server));
   }
+}
+
+void DataReductionProxyURLLoaderThrottle::OnThrottleManagerDestroyed(
+    DataReductionProxyThrottleManager* manager) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(manager, manager_);
+  manager_->RemoveSameSequenceObserver(this);
+  manager_ = nullptr;
 }
 
 base::Optional<DataReductionProxyTypeInfo>

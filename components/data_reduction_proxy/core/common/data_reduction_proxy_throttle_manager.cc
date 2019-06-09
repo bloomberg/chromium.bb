@@ -30,6 +30,11 @@ DataReductionProxyThrottleManager::DataReductionProxyThrottleManager(
 
 DataReductionProxyThrottleManager::~DataReductionProxyThrottleManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (DataReductionProxyThrottleConfigCheckedObserver& observer :
+       same_sequence_observers_) {
+    observer.OnThrottleManagerDestroyed(this);
+  }
 }
 
 void DataReductionProxyThrottleManager::OnThrottleConfigChanged(
@@ -37,20 +42,20 @@ void DataReductionProxyThrottleManager::OnThrottleConfigChanged(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   last_proxy_config_ = config.Clone();
 
-  for (mojom::DataReductionProxyThrottleConfigObserver& observer :
+  for (DataReductionProxyThrottleConfigCheckedObserver& observer :
        same_sequence_observers_) {
     observer.OnThrottleConfigChanged(config.Clone());
   }
 }
 
 void DataReductionProxyThrottleManager::AddSameSequenceObserver(
-    mojom::DataReductionProxyThrottleConfigObserver* observer) {
+    DataReductionProxyThrottleConfigCheckedObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   same_sequence_observers_.AddObserver(observer);
 }
 
 void DataReductionProxyThrottleManager::RemoveSameSequenceObserver(
-    mojom::DataReductionProxyThrottleConfigObserver* observer) {
+    DataReductionProxyThrottleConfigCheckedObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   same_sequence_observers_.RemoveObserver(observer);
 }
