@@ -1010,6 +1010,11 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (context_ && !Is2d())
     return false;
 
+  // The command line flag --disable-accelerated-2d-canvas toggles this option
+  if (!RuntimeEnabledFeatures::Accelerated2dCanvasEnabled()) {
+    return false;
+  }
+
   // The following is necessary for handling the special case of canvases in
   // the dev tools overlay, which run in a process that supports accelerated
   // 2d canvas but in a special compositing context that does not.
