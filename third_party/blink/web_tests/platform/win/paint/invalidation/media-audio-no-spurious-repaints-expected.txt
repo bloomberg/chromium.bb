@@ -1,0 +1,113 @@
+CONSOLE MESSAGE: line 34: FAIL! An unexpected number of repaints occurred for the current time display; expected 5 to 20; actual 0. Actual layer tree: {
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [139, 129, 110, 4],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [139, 129, 110, 4],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [139, 129, 110, 4],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [139, 129, 105, 4],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [139, 129, 93, 4],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [139, 129, 75, 4],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [139, 129, 57, 4],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment '0:00'",
+          "rect": [41, 111, 56, 40],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment '0:00'",
+          "rect": [41, 111, 56, 40],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment '0:00'",
+          "rect": [41, 111, 56, 40],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment '0:00'",
+          "rect": [41, 111, 56, 40],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment '0:00'",
+          "rect": [41, 111, 56, 40],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment '0:01'",
+          "rect": [41, 111, 56, 40],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment '0:01'",
+          "rect": [41, 111, 54, 40],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [139, 129, 39, 4],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutButton (relative positioned) INPUT",
+          "rect": [18, 107, 32, 48],
+          "reason": "background"
+        },
+        {
+          "object": "LayoutButton (relative positioned) INPUT class='pause'",
+          "rect": [18, 107, 32, 48],
+          "reason": "background"
+        }
+      ]
+    }
+  ]
+}
+
+This is a testharness.js-based test.
+FAIL Verifies there are no spurious repaints for audio in a video tag. assert_between_inclusive: expected a number greater than or equal to 5 and less than or equal to 20 but got 0
+Harness: the test ran to completion.
+

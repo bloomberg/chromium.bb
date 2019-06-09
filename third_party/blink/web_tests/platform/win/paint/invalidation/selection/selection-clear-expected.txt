@@ -18,23 +18,18 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='firstLine'",
-          "rect": [8, 8, 100, 200],
-          "reason": "full"
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='firstLine'",
+          "rect": [8, 108, 100, 100],
+          "reason": "incremental"
         },
         {
-          "object": "InlineTextBox 'FAIL: Test did'",
-          "rect": [8, 48, 92, 119],
+          "object": "NGPhysicalTextFragment 'not run'",
+          "rect": [8, 8, 92, 200],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'not run'",
-          "rect": [8, 48, 92, 119],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox '\u00A0'",
-          "rect": [8, 48, 8, 19],
+          "object": "NGPhysicalTextFragment '\u00A0'",
+          "rect": [8, 8, 92, 200],
           "reason": "appeared"
         }
       ]
