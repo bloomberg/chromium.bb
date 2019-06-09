@@ -6,9 +6,11 @@
 
 #include <memory>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/native_library.h"
+#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
@@ -92,10 +94,41 @@ TEST(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup) {
 }
 
 #if BUILDFLAG(DLOPEN_KERBEROS)
-TEST(HttpAuthGSSAPIPOSIXTest, GSSAPILoadCustomLibrary) {
+TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMissing) {
   std::unique_ptr<GSSAPILibrary> gssapi(
       new GSSAPISharedLibrary("/this/library/does/not/exist"));
   EXPECT_FALSE(gssapi.get()->Init());
+}
+
+TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryExists) {
+  base::FilePath module;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &module));
+  auto basename = base::GetNativeLibraryName("test_gssapi");
+  module = module.AppendASCII(basename);
+  auto gssapi = std::make_unique<GSSAPISharedLibrary>(module.value());
+  EXPECT_TRUE(gssapi.get()->Init());
+}
+
+TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMethodsMissing) {
+  base::FilePath module;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &module));
+  auto basename = base::GetNativeLibraryName("test_badgssapi");
+  module = module.AppendASCII(basename);
+  auto gssapi = std::make_unique<GSSAPISharedLibrary>(module.value());
+
+  // Are you here because this test mysteriously passed even though the library
+  // doesn't actually have all the methods we need? This could be because the
+  // test library (//net:test_badgssapi) inadvertently depends on a valid GSSAPI
+  // library. On macOS this can happen because it's pretty easy to end up
+  // depending on GSS.framework.
+  //
+  // To resolve this issue, make sure that //net:test_badgssapi target in
+  // //net/BUILD.gn should have an empty `deps` and an empty `libs`.
+  EXPECT_FALSE(gssapi.get()->Init());
+
+  // Logs something like "gss_import_name" during loading process.
+  // TODO(asanka): Once GSSAPI library loading starts emitting NetLogs verify
+  // that the missing method is correctly identified.
 }
 #endif  // DLOPEN_KERBEROS
 

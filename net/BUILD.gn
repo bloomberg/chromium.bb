@@ -3080,6 +3080,31 @@ if (!is_ios && !is_android) {
   }
 }
 
+if (use_external_gssapi) {
+  # In order for the tests to be reliable, these two targets cannot depend on a
+  # valid GSSAPI library. This is easy to achieve on most platforms. But on
+  # macOS care must be taken to not depend directly or indirectly on
+  # GSS.framework. This is suprisingly easy to get wrong since
+  # Security.framework is such a common dependency and it indirectly depends on
+  # GSS.
+  shared_library("test_gssapi") {
+    testonly = true
+    sources = [
+      "tools/gssapi/gss_import_name.cc",
+      "tools/gssapi/gss_methods.cc",
+      "tools/gssapi/gss_types.h",
+    ]
+  }
+
+  shared_library("test_badgssapi") {
+    testonly = true
+    sources = [
+      "tools/gssapi/gss_methods.cc",
+      "tools/gssapi/gss_types.h",
+    ]
+  }
+}
+
 if (is_linux || is_mac) {
   executable("cachetool") {
     testonly = true
@@ -5771,6 +5796,10 @@ test("net_unittests") {
       "http/http_auth_gssapi_posix_unittest.cc",
       "http/mock_gssapi_library_posix.cc",
       "http/mock_gssapi_library_posix.h",
+    ]
+    data_deps += [
+      ":test_gssapi",
+      ":test_badgssapi",
     ]
   }
 
