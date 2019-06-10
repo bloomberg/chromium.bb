@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Spausdinti</translation>
 <translation id="1445680696957526815">„Chrome“ komponentai nesuderinami tarpusavyje. „Chrome“ tikriausiai naujovinama, netrukus bandykite dar kartą. Jei problema išlieka, pabandykite pašalinti ir vėl įdiegti „Chrome“.</translation>
 <translation id="1446450296470737166">Leisti visiškai valdyti MIDI įr.</translation>
-<translation id="1449080968331948513">Duomenų taupymo priemonė dabar veikia supaprastintu režimu</translation>
 <translation id="145097072038377568">Išjungta „Android“ nustatymuose</translation>
 <translation id="1477626028522505441">Nepavyko atsisiųsti „<ph name="FILE_NAME" />“ dėl serverio problemų.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (ir dar 1)}one{ (ir dar #)}few{ (ir dar #)}many{ (ir dar #)}other{ (ir dar #)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Ištrinti slaptažodį</translation>
 <translation id="1516229014686355813">Naudojant Paiešką palietus siunčiamas žodis ir jo kontekstas „Google“ paieškai. Šią funkciją galite išjungti skiltyje <ph name="BEGIN_LINK" />„Nustatymai“<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Aktyvus šiandien</translation>
-<translation id="1539064842193522527">Nuor. atidar. narš. „Chrome“</translation>
 <translation id="1549000191223877751">Perkelti į kitą langą</translation>
 <translation id="1553358976309200471">Atnaujinkite „Chrome“</translation>
 <translation id="1569387923882100876">Prijungtas įrenginys</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">Galite bet kada įjungti sinchronizavimą „Nustatymų“ skiltyje</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> žymė}one{<ph name="BOOKMARKS_COUNT_MANY" /> žymė}few{<ph name="BOOKMARKS_COUNT_MANY" /> žymės}many{<ph name="BOOKMARKS_COUNT_MANY" /> žymės}other{<ph name="BOOKMARKS_COUNT_MANY" /> žymių}}</translation>
 <translation id="3089395242580810162">Atidaryti inkognito skirtuko lape</translation>
-<translation id="311456632243022227">Kel. nuor. at. narš. „Chrome“</translation>
 <translation id="3115898365077584848">Rodyti informaciją</translation>
 <translation id="3123473560110926937">Užblokuota kai kuriose svetainėse</translation>
 <translation id="3137521801621304719">Išjungti inkognito režimą</translation>
@@ -857,7 +854,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7177466738963138057">Tai vėliau galėsite pakeisti „Nustatymų“ skiltyje</translation>
 <translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="7189372733857464326">Laukiama, kol bus baigtas „Google Play“ paslaugų atnaujinimas</translation>
-<translation id="7189598951263744875">Bendrinti...</translation>
 <translation id="7191430249889272776">Skirtuko lapas atidarytas fone.</translation>
 <translation id="723171743924126238">Pasirinkti vaizdus</translation>
 <translation id="7233236755231902816">Jei norite matyti žiniatinklį savo kalba, gaukite naujausią „Chrome“ versiją</translation>
@@ -894,7 +890,6 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="7445411102860286510">Leisti svetainėms automatiškai leisti nutildytus vaizdo įrašus (rekomenduojama)</translation>
 <translation id="7453467225369441013">Būsite atjungti nuo daugelio svetainių. Nebūsite atjungti nuo „Google“ paskyros.</translation>
 <translation id="7454641608352164238">Nepakanka vietos</translation>
-<translation id="7455923816558154057">Palieskite ir peržiūrėkite</translation>
 <translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="7475192538862203634">Jei tai rodoma dažnai, peržiūrėkite šiuos <ph name="BEGIN_LINK" />pasiūlymus<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD kortelė nerasta. Gali trūkti kai kurių failų.</translation>

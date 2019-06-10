@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">연결된 기기가 더욱 원활하게 작동합니다</translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
+<translation id="1175572348579024023">스크롤</translation>
 <translation id="1178581264944972037">일시중지</translation>
 <translation id="1195412055398077112">오버스캔</translation>
 <translation id="119944043368869598">모두 삭제</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">데모 세션에서는 Google 어시스턴트를 사용할 수 없습니다.</translation>
 <translation id="479989351350248267">검색</translation>
 <translation id="4804818685124855865">연결 해제</translation>
+<translation id="4831034276697007977">자동 클릭을 사용 중지하시겠습니까?</translation>
 <translation id="4849058404725798627">키보드 포커스로 개체 강조표시</translation>
 <translation id="485592688953820832">작업 없음(일시중지)</translation>
 <translation id="4872237917498892622">Alt+검색 또는 Shift 키</translation>
@@ -413,6 +415,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="7562368315689366235">그림 이모티콘 팔레트</translation>
 <translation id="7564874036684306347">창을 다른 데스크톱으로 이동하면 예기치 못한 동작이 나타날 수 있습니다. 이후의 알림, 창, 대화상자가 데스크톱 간에 분할될 수 있습니다.</translation>
+<translation id="7568294522609223312">자동 클릭 사용 중지</translation>
 <translation id="7569509451529460200">점자와 ChromeVox가 사용 설정되었습니다.</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />(소유자)</translation>

@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Predvolený biely avatar</translation>
 <translation id="1581962803218266616">Zobraziť v aplikácii Finder</translation>
 <translation id="1584990664401018068">Využívaná sieť Wi‑Fi (<ph name="NETWORK_ID" />) môže vyžadovať overenie totožnosti.</translation>
-<translation id="1585238069289523942">Inštalujte aplikácie vo svojom Chromebooku</translation>
 <translation id="1585717515139318619">Iný program v počítači pridal motív, ktorý môže zmeniť spôsob fungovania prehliadača Chrome.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">Pri konfigurovaní súborov systému Linux sa vyskytla chyba. Skúste to znova.</translation>
 <translation id="2315587498123194634">Odoslať odkaz do zariadenia <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Nie, ďakujem</translation>
-<translation id="2316739859433277603">Vyhľadávania zo spúšťača aplikácií používajú <ph name="BEGIN_LINK" />nastavenie vyhľadávača<ph name="END_LINK" /> vo vašom prehliadači.</translation>
 <translation id="2317842250900878657">Dokončené: <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Veľkosť papiera</translation>
 <translation id="2318817390901984578">Ak chcete používať aplikácie pre Android, nabite a aktualizujte zariadenie <ph name="DEVICE_TYPE" />.</translation>
@@ -5315,6 +5313,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="9094033019050270033">Aktualizovať heslo</translation>
 <translation id="9094982973264386462">Odstrániť</translation>
 <translation id="9095253524804455615">Odstrániť</translation>
+<translation id="9095388113577226029">Ďalšie jazyky…</translation>
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="9100765901046053179">Rozšírené nastavenia</translation>
 <translation id="9101691533782776290">Spustiť aplikáciu</translation>

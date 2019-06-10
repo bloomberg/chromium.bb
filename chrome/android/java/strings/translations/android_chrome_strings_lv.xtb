@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Drukāt</translation>
 <translation id="1445680696957526815">Chrome komponenti nav savstarpēji saderīgi. Iespējams, notiek pārlūka Chrome jaunināšana. Lūdzu, pēc dažām minūtēm mēģiniet vēlreiz. Ja problēma joprojām pastāv, atinstalējiet un atkārtoti instalējiet pārlūku Chrome.</translation>
 <translation id="1446450296470737166">Pilnīga MIDI ierīču pārvaldība</translation>
-<translation id="1449080968331948513">Datu lietojuma samazinātājs tagad tiek saukts par vienkāršoto režīmu</translation>
 <translation id="145097072038377568">Izslēgts Android iestatījumos</translation>
 <translation id="1477626028522505441">Neizdevās lejupielādēt failu <ph name="FILE_NAME" />, jo radās servera problēmas.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (un vēl 1)}zero{ (un vēl #)}one{ (un vēl #)}other{ (un vēl #)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Dzēst paroli</translation>
 <translation id="1516229014686355813">Izmantojot funkciju “Pieskarties, lai meklētu”, atlasītais vārds tiek nosūtīts pakalpojumam Google meklēšana, pievienojot pašreiz skatīto lapu kā kontekstu. Varat to izslēgt lapā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Aktīvs šodien</translation>
-<translation id="1539064842193522527">Saite atvērta pārlūkā Chrome</translation>
 <translation id="1549000191223877751">Pārvietot uz citu logu</translation>
 <translation id="1553358976309200471">Atjaunināt Chrome</translation>
 <translation id="1569387923882100876">Pievienota ierīce</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">Jebkurā brīdī varat ieslēgt sinhronizāciju iestatījumos.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> grāmatzīme}zero{<ph name="BOOKMARKS_COUNT_MANY" /> grāmatzīmju}one{<ph name="BOOKMARKS_COUNT_MANY" /> grāmatzīme}other{<ph name="BOOKMARKS_COUNT_MANY" /> grāmatzīmes}}</translation>
 <translation id="3089395242580810162">Atvērt inkognito režīma cilnē</translation>
-<translation id="311456632243022227">Vairākas saites atvērtas pārlūkā Chrome</translation>
 <translation id="3115898365077584848">Rādīt informāciju</translation>
 <translation id="3123473560110926937">Bloķētas dažās vietnēs</translation>
 <translation id="3137521801621304719">Iziet no inkognito režīma</translation>
@@ -857,7 +854,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7177466738963138057">Vēlāk varēsiet to mainīt iestatījumos</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
 <translation id="7189372733857464326">Gaida, kad tiks pabeigta Google Play pakalpojumu atjaunināšana</translation>
-<translation id="7189598951263744875">Kopīgot...</translation>
 <translation id="7191430249889272776">Cilne tika atvērta fonā.</translation>
 <translation id="723171743924126238">Atlasīt attēlus</translation>
 <translation id="7233236755231902816">Lai skatītu tīmekli savā valodā, iegūstiet jaunāko Chrome versiju</translation>
@@ -894,7 +890,6 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="7445411102860286510">Atļaut vietnēm automātiski atskaņot videoklipus ar izslēgtu skaņu (ieteicams)</translation>
 <translation id="7453467225369441013">Jūs tiksiet izrakstīts no lielākās daļas vietņu. Jūs netiksiet izrakstīts no Google konta.</translation>
 <translation id="7454641608352164238">Nepietiek vietas</translation>
-<translation id="7455923816558154057">Pieskarieties, lai skatītu</translation>
 <translation id="7473891865547856676">Nē, paldies!</translation>
 <translation id="7475192538862203634">Ja šis ziņojums tiek rādīts bieži, izmēģiniet šos <ph name="BEGIN_LINK" />ieteikumus<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD karte nav atrasta. Iespējams, trūkst kādi jūsu faili.</translation>

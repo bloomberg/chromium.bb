@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">ನಿಮ್ಮ ಸಾಧನಗಳು ಜೊತೆಯಲ್ಲಿ ಇನ್ನೂ ಚೆನ್ನಾಗಿ ಕೆಲಸ ಮಾಡುತ್ತವೆ</translation>
 <translation id="112308213915226829">ಶೆಲ್ಫ್ ಅನ್ನು ಸ್ವಯಂಮರೆಮಾಡು</translation>
 <translation id="1153356358378277386">ಜೋಡಿ ಮಾಡಲಾದ ಸಾಧನಗಳು</translation>
+<translation id="1175572348579024023">ಸ್ಕ್ರಾಲ್</translation>
 <translation id="1178581264944972037">ವಿರಾಮ</translation>
 <translation id="1195412055398077112">ಓವರ್‌ಸ್ಕ್ಯಾನ್</translation>
 <translation id="119944043368869598">ಎಲ್ಲವನ್ನೂ ತೆಗೆದುಹಾಕಿ</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">Google ಅಸಿಸ್ಟೆಂಟ್‌ ಡೆಮೊ ಸೆಶನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">ಡಿಸ್‌ಕನೆಕ್ಟ್</translation>
+<translation id="4831034276697007977">ಸ್ವಯಂಚಾಲಿತ ಕ್ಲಿಕ್‌ಗಳನ್ನು ಖಚಿತವಾಗಿಯೂ ಆಫ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4849058404725798627">ಕೀಬೋರ್ಡ್‌ ಫೋಕಸ್‌ ಮೂಲಕ ವಿಷಯವನ್ನು ಎದ್ದುಗಾಣಿಸಿ</translation>
 <translation id="485592688953820832">ಯಾವುದೇ ಕ್ರಮ ಕೈಗೊಳ್ಳಬೇಡಿ (ವಿರಾಮಗೊಳಿಸಿ)</translation>
 <translation id="4872237917498892622">Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
@@ -414,6 +416,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION" /> ಅನ್ನು <ph name="DISPLAY_NAME" /> ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ರೆಸಲ್ಯೂಶನ್‌ ಅನ್ನು <ph name="FALLBACK_RESOLUTION" /> ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="7562368315689366235">ಎಮೋಜಿ ಪ್ಯಾಲೆಟ್</translation>
 <translation id="7564874036684306347">ವಿಂಡೋಗಳನ್ನು ಬೇರೊಂದು ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಸರಿಸಿದರೆ, ಅದು ಅನಿರೀಕ್ಷಿತ ವರ್ತನೆಗೆ ಕಾರಣವಾಗಬಹುದು. ಆನಂತರ ಬರುವ ಅಧಿಸೂಚನೆಗಳು, ವಿಂಡೋಗಳು ಮತ್ತು ಡೈಲಾಗ್‌ಗಳು ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗಳ ನಡುವೆ ವಿಭಜನೆಯಾಗಬಹುದು.</translation>
+<translation id="7568294522609223312">ಸ್ವಯಂಚಾಲಿತ ಕ್ಲಿಕ್‌ಗಳನ್ನು ಆಫ್ ಮಾಡಿ</translation>
 <translation id="7569509451529460200">ಬ್ರೈಲ್ ಹಾಗೂ ChromeVox ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="7593891976182323525">ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ಮಾಲೀಕರು)</translation>

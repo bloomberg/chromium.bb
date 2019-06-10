@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">አትም</translation>
 <translation id="1445680696957526815">የChrome አባላት እርስ ከራሳቸው ጋር ተኳሃኝ አይደሉም። Chrome እያላቀ ሊሆን ይችላል፣ እባክዎ በጥቂት ደቂቃዎች ውስጥ እንደገና ይሞክሩ። ችግሩ ከቀጠለ Chromeን አራግፈውት እንደገና ጭነው ይሞክሩ።</translation>
 <translation id="1446450296470737166">ሙሉ የMIDI መሣሪያዎች መቆጣጠርን ያስችላል</translation>
-<translation id="1449080968331948513">ውሂብ ቆጣቢ አሁን በቀላል ሁነታ ላይ ነው ያለው</translation>
 <translation id="145097072038377568">በAndroid ቅንብሮች ውስጥ ጠፍቷል።</translation>
 <translation id="1477626028522505441">በአገልጋይ ችግሮች ምክንያት <ph name="FILE_NAME" />ን ማውረድ አልተሳካም።</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 ተጨማሪ)}one{ (+ # ተጨማሪ)}other{ (+ # ተጨማሪ)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">የይለፍ ቃል ሰርዝ</translation>
 <translation id="1516229014686355813">ለመፈለግ መታ ያድርጉ የተመረጠውን ቃልን እና አሁን ያለውን ገጽ እንደ አውድ አድርጎ ወደ Google ፍለጋ ይልካቸዋል። በ<ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" /> ውስጥ ሊያጠፉት ይችላሉ።</translation>
 <translation id="1521774566618522728">ገባሪ ዛሬ</translation>
-<translation id="1539064842193522527">አገናኝ በChrome ውስጥ ተከፍቷል</translation>
 <translation id="1549000191223877751">ወደ ሌላ መስኮት ውሰድ</translation>
 <translation id="1553358976309200471">Chromeን አዘምን</translation>
 <translation id="1569387923882100876">የተገናኘ መሣሪያ</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">ስምረትን በማንኛውም ጊዜ በቅንብሮች ውስጥ ማብራት ይችላሉ።</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ዕልባት}one{<ph name="BOOKMARKS_COUNT_MANY" /> ዕልባቶች}other{<ph name="BOOKMARKS_COUNT_MANY" /> ዕልባቶች}}</translation>
 <translation id="3089395242580810162">ማንነትን በማያሳውቅ ትር ክፈት</translation>
-<translation id="311456632243022227">በርካታ አገናኞች በChrome ውስጥ ተከፍተዋል</translation>
 <translation id="3115898365077584848">መረጃ አሳይ</translation>
 <translation id="3123473560110926937">በአንዳንድ ጣቢያዎች ላይ ታግዷል</translation>
 <translation id="3137521801621304719">ከማንነት የማያሳውቅ ሁነታ ይውጡ</translation>
@@ -857,7 +854,6 @@
 <translation id="7177466738963138057">ይሄንን በኋላ ቅንብሮች ውስጥ ሊለውጡት ይችላሉ</translation>
 <translation id="7180611975245234373">አድስ</translation>
 <translation id="7189372733857464326">የGoogle Play አገልግሎቶች አዘምኖ እስኪጨርስ በመጠበቅ ላይ</translation>
-<translation id="7189598951263744875">አጋራ...</translation>
 <translation id="7191430249889272776">ትር ጀርባ ላይ ተከፍቷል።</translation>
 <translation id="723171743924126238">ምስሎችን ይምረጡ</translation>
 <translation id="7233236755231902816">ድሩን በቋንቋዎ ለማየት የቅርብ ጊዜውን የChrome ስሪት ያግኙ</translation>
@@ -894,7 +890,6 @@
 <translation id="7445411102860286510">ጣቢያዎች ድምፀ-ከል የተደረገባቸው ቪዲዮዎችን በራስ-ሰር እንዲያጫውቱ ይፍቀዱላቸው (የሚመከር)</translation>
 <translation id="7453467225369441013">ከአብዛኛዎቹ ጣቢያዎች ዘግተው ያስወጣዎታል። ከእርስዎ የGoogle መለያ ዘግተው እንዲወጡ አይደረጉም።</translation>
 <translation id="7454641608352164238">በቂ ቦታ የለም</translation>
-<translation id="7455923816558154057">ለመመልከት መታ ያድርጉ</translation>
 <translation id="7473891865547856676">አይ፣ አመሰግናለሁ</translation>
 <translation id="7475192538862203634">ይህን በተደጋጋሚነት እያዩት ከሆኑ እነዚህን <ph name="BEGIN_LINK" />የአስተያየት ጥቆማዎች<ph name="END_LINK" /> ይሞክሩ።</translation>
 <translation id="7475688122056506577">ኤስዲ ካርድ አልተገኘም። አንዳንዶቹ ፋይሎችዎ ሊጎድሉ ይችላሉ።</translation>

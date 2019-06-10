@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Nyomtatás</translation>
 <translation id="1445680696957526815">A Chrome egyes összetevői nem kompatibilisek egymással. Lehet, hogy éppen a Chrome verziófrissítése zajlik, ezért próbálja újra pár perc múlva. Ha a probléma továbbra is fennáll, próbálja meg eltávolítani, majd újratelepíteni a Chrome-ot.</translation>
 <translation id="1446450296470737166">MIDI-eszközök teljes vezérlése</translation>
-<translation id="1449080968331948513">Az Adatforgalom-csökkentő neve mostantól Egyszerűsített mód</translation>
 <translation id="145097072038377568">Kikapcsolva az Android beállításaiban</translation>
 <translation id="1477626028522505441">A következő fájl letöltése szerverproblémák miatt nem sikerült: <ph name="FILE_NAME" />.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 további)}other{ (+ # további)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Jelszó törlése</translation>
 <translation id="1516229014686355813">A Keresés koppintással funkció elküldi a kiválasztott szót és az aktuális oldalt kontextusként a Google Keresés számára. A funkciót a <ph name="BEGIN_LINK" />Beállításokban<ph name="END_LINK" /> lehet kikapcsolni.</translation>
 <translation id="1521774566618522728">Ma volt aktív</translation>
-<translation id="1539064842193522527">Link Chrome-ban megnyitva</translation>
 <translation id="1549000191223877751">Áthelyezés másik ablakba</translation>
 <translation id="1553358976309200471">A Chrome böngésző frissítése</translation>
 <translation id="1569387923882100876">Csatlakoztatott eszköz</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">A szinkronizálás bármikor bekapcsolható a beállításokban</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> könyvjelző}other{<ph name="BOOKMARKS_COUNT_MANY" /> könyvjelző}}</translation>
 <translation id="3089395242580810162">Megnyitás inkognitólapon</translation>
-<translation id="311456632243022227">Több link Chrome-ban megnyitva</translation>
 <translation id="3115898365077584848">Információk megjelenítése</translation>
 <translation id="3123473560110926937">Letiltva egyes webhelyeken</translation>
 <translation id="3137521801621304719">Kilépés inkognitómódból</translation>
@@ -857,7 +854,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7177466738963138057">Ezt később módosíthatja a beállítások között.</translation>
 <translation id="7180611975245234373">Frissítés</translation>
 <translation id="7189372733857464326">Várakozás a Google Play-szolgáltatások frissítésének befejezésére</translation>
-<translation id="7189598951263744875">Megosztás...</translation>
 <translation id="7191430249889272776">A lap megnyílt a háttérben.</translation>
 <translation id="723171743924126238">Képek kiválasztása</translation>
 <translation id="7233236755231902816">Ha saját nyelvén szeretné böngészni az internetet, szerezze be a Chrome legújabb verzióját</translation>
@@ -894,7 +890,6 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="7445411102860286510">Lehetővé teszi a webhelyek számára a némított videók automatikus lejátszását (ajánlott)</translation>
 <translation id="7453467225369441013">A rendszer a legtöbb webhelyről kijelentkezteti Önt, de Google-fiókjából nem.</translation>
 <translation id="7454641608352164238">Nincs elég tárhely</translation>
-<translation id="7455923816558154057">Koppintson a megtekintéshez</translation>
 <translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="7475192538862203634">Ha gyakran látja ezt, próbálja ki ezeket a <ph name="BEGIN_LINK" />javaslatokat<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Az SD-kártya nem található. Előfordulhat, hogy egyes fájlok hiányoznak.</translation>

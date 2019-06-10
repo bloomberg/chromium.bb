@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">พิมพ์</translation>
 <translation id="1445680696957526815">คอมโพเนนต์ของ Chrome ไม่สามารถทำงานร่วมกันได้ Chrome อาจกำลังอัปเกรด โปรดรอสักครู่แล้วลองอีกครั้ง หากยังมีปัญหาอยู่ ให้ลองถอนการติดตั้งและติดตั้ง Chrome ใหม่อีกครั้ง</translation>
 <translation id="1446450296470737166">ควบคุมอุปกรณ์ MIDI ได้สมบูรณ์</translation>
-<translation id="1449080968331948513">โปรแกรมประหยัดอินเทอร์เน็ตเปลี่ยนชื่อเป็นโหมด Lite แล้ว</translation>
 <translation id="145097072038377568">ปิดในการตั้งค่า Android</translation>
 <translation id="1477626028522505441">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะเซิร์ฟเวอร์มีปัญหา</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (และอีก 1 รายการ)}other{ (และอีก # รายการ)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">ลบรหัสผ่าน</translation>
 <translation id="1516229014686355813">แตะเพื่อค้นหาจะส่งคำที่เลือกและหน้าปัจจุบันเป็นบริบทไปยัง Google Search คุณปิดฟีเจอร์นี้ในได้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="1521774566618522728">ใช้งานวันนี้</translation>
-<translation id="1539064842193522527">เปิดลิงก์ใน Chrome แล้ว</translation>
 <translation id="1549000191223877751">ย้ายไปยังหน้าต่างอื่น</translation>
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
 <translation id="1569387923882100876">อุปกรณ์ที่เชื่อมต่อ</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">คุณเปิดการซิงค์ได้ทุกเมื่อในการตั้งค่า</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{บุ๊กมาร์ก <ph name="BOOKMARKS_COUNT_ONE" /> รายการ}other{บุ๊กมาร์ก <ph name="BOOKMARKS_COUNT_MANY" /> รายการ}}</translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
-<translation id="311456632243022227">เปิดหลายลิงก์ใน Chrome แล้ว</translation>
 <translation id="3115898365077584848">แสดงข้อมูล</translation>
 <translation id="3123473560110926937">บล็อกในบางเว็บไซต์</translation>
 <translation id="3137521801621304719">ออกจากโหมดไม่ระบุตัวตน</translation>
@@ -611,7 +608,7 @@
 <translation id="545042621069398927">กำลังเพิ่มความเร็วในการดาวน์โหลด</translation>
 <translation id="5456381639095306749">ดาวน์โหลดหน้า</translation>
 <translation id="5475862044948910901">เริ่มเซสชัน Augmented Reality ไหม</translation>
-<translation id="5481942164684849270">เพิ่ม <ph name="APP_NAME" /> ไปยังแอปของฉันแล้ว</translation>
+<translation id="5481942164684849270">เพิ่ม <ph name="APP_NAME" /> ลงในแอปของฉันแล้ว</translation>
 <translation id="548278423535722844">เปิดในแอปแผนที่</translation>
 <translation id="5487521232677179737">ล้างข้อมูล</translation>
 <translation id="5494752089476963479">บล็อกโฆษณาในเว็บไซต์ที่แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
@@ -857,7 +854,6 @@
 <translation id="7177466738963138057">คุณสามารถเปลี่ยนค่านี้ภายหลังใน "การตั้งค่า"</translation>
 <translation id="7180611975245234373">รีเฟรช</translation>
 <translation id="7189372733857464326">กำลังรอให้บริการ Google Play อัปเดตเสร็จสิ้น</translation>
-<translation id="7189598951263744875">แชร์...</translation>
 <translation id="7191430249889272776">แท็บเปิดในพื้นหลัง</translation>
 <translation id="723171743924126238">เลือกภาพ</translation>
 <translation id="7233236755231902816">โปรดอัปเดต Chrome เป็นเวอร์ชันล่าสุดเพื่อดูเว็บเป็นภาษาของคุณ</translation>
@@ -894,7 +890,6 @@
 <translation id="7445411102860286510">อนุญาตให้เว็บไซต์เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติ (แนะนำ)</translation>
 <translation id="7453467225369441013">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ แต่คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="7454641608352164238">พื้นที่ว่างไม่พอ</translation>
-<translation id="7455923816558154057">แตะเพื่อดู</translation>
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="7475192538862203634">หากคุณเห็นข้อความนี้บ่อยๆ โปรดลองทำตาม<ph name="BEGIN_LINK" />คำแนะนำ<ph name="END_LINK" />เหล่านี้</translation>
 <translation id="7475688122056506577">ไม่พบการ์ด SD ไฟล์บางไฟล์อาจหายไป</translation>

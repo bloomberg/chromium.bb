@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">ఫోల్డర్‌ను ఎంచుకోండి</translation>
 <translation id="1265739287306757398">ఎలాగో తెలుసుకోండి</translation>
 <translation id="1272079795634619415">ఆపు</translation>
+<translation id="1283524564873030414">గత 24 గంటలు</translation>
 <translation id="1323735185997015385">తొలగించు</translation>
 <translation id="132683371494960526">మూలాధారిత ఫోల్డర్‌ను మార్చడానికి రెండుసార్లు నొక్కండి.</translation>
 <translation id="1340643665687018190">మెనూను మూసివేయి</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">ఆధునిక</translation>
 <translation id="1989112275319619282">బ్రౌజ్ చేయి</translation>
 <translation id="2015722694326466240">పాస్‌వర్డ్‌లను చూడటానికి, మీరు ముందుగా తప్పక మీ పరికరంలో పాస్‌కోడ్‌ను సెట్ చేయాలి.</translation>
+<translation id="2073572773299281212"><ph name="DAYS" /> రోజుల క్రితం యాక్టివ్‌గా ఉంది</translation>
 <translation id="2074131957428911366">మీరు ఎప్పుడైనా <ph name="BEGIN_LINK" />సెట్టింగ్‌ల<ph name="END_LINK" /> ద్వారా వేటిని సింక్ చేయాలో ఎంచుకోవచ్చు.</translation>
 <translation id="2079545284768500474">చర్య రద్దు</translation>
 <translation id="209018056901015185">డెస్క్‌టాప్ సైట్‌ను అభ్యర్థించు</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">అన్నీ తెరువు</translation>
 <translation id="2570206273416014374">చిరునామా బార్ మరియు శోధన బాక్స్‌లోని కొన్ని కుక్కీలు, శోధనలను మీ డిఫాల్ట్ శోధన ఇంజిన్‌కు పంపుతుంది.</translation>
 <translation id="2572712655377361602">ఒక పరికర విధానం మీ ఫోటోలకు యాక్సెస్‌ను బ్లాక్ చేసింది</translation>
+<translation id="2578571896248130439">వెబ్‌పేజీని పంపండి</translation>
 <translation id="2584132361465095047">ఖాతాను జోడించు…</translation>
 <translation id="2625189173221582860">పాస్‌వర్డ్ కాపీ చేయబడింది</translation>
 <translation id="2648803196158606475">చదివిన వాటిని తొలగించు</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">గుర్తు పెట్టు…</translation>
 <translation id="3157684681743766797">అన్నీ గుర్తు పెట్టు…</translation>
 <translation id="3175081911749765310">వెబ్ సేవలు</translation>
+<translation id="3178650076442119961">ఈ రోజు యాక్టివ్‌గా ఉంది</translation>
 <translation id="3207960819495026254">బుక్‌మార్క్ చేయబడింది</translation>
 <translation id="3224641773458703735">పాస్‌వర్డ్‌లను ఎగుమతి చేయడానికి, మీరు ముందుగా మీ పరికరంలో పాస్‌కోడ్‌ను సెట్ చేయాలి.</translation>
 <translation id="3240426699337459095">లింక్ కాపీ చేయబడింది</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">QR కోడ్‌ను స్కాన్ చేయడానికి, సెట్టింగ్‌ల్లో కెమెరాను ప్రారంభించండి</translation>
 <translation id="4281844954008187215">సేవా నిబంధనలు</translation>
 <translation id="430793432425771671">ప్రతి ఒక్కటీ సమకాలీకరించండి</translation>
+<translation id="430967081421617822">మొత్తం సమయం</translation>
 <translation id="4338650699862464074">మీరు సందర్శించే పేజీల URLలను Googleకు పంపుతుంది.</translation>
 <translation id="4359125752503270327">ఈ పేజీ మరొక అప్లికేషన్‌లో తెరవబడుతుంది.</translation>
 <translation id="4370827530403103842">సమకాలీకరణ పని చేయడం లేదు. పరిష్కరించడానికి నొక్కండి.</translation>
@@ -281,6 +286,7 @@
 <translation id="5127805178023152808">సమకాలీకరణ ఆఫ్‌లో ఉంది</translation>
 <translation id="5132942445612118989">అన్ని పరికరాల్లో మీ పాస్‌వర్డ్‌లు, చరిత్ర, మరిన్నింటిని సింక్ చేయండి</translation>
 <translation id="5140288047769711648">Chrome మీకు సంబంధించి ఈ పాస్‌వర్డ్‌ను గుర్తుంచుకుంటుంది. మీరు గుర్తుంచుకోనవసరం లేదు.</translation>
+<translation id="5150492518600715772">మీ పరికరానికి పంపండి</translation>
 <translation id="5181140330217080051">డౌన్‌లోడ్ చేస్తోంది</translation>
 <translation id="5186185447130319458">ప్రైవేట్</translation>
 <translation id="5190835502935405962">బుక్‌మార్క్‌ల బార్</translation>
@@ -295,6 +301,7 @@
 <translation id="5327248766486351172">పేరు</translation>
 <translation id="5388358297987318779">చిత్రాన్ని తెరువు</translation>
 <translation id="5409365236829784218">ఈ ఫైల్‌ను తెరవగలిగే అనువర్తనాలు ఇన్‌స్టాల్ చేయబడలేదు.</translation>
+<translation id="5416022985862681400">గత 7 రోజులు</translation>
 <translation id="5433691172869980887">వినియోగదారు పేరు కాపీ చేయబడింది</translation>
 <translation id="54401264925851789">పేజీ భద్రతా సమాచారం</translation>
 <translation id="5443952882982198570">క్రెడిట్ కార్డ్‌లు</translation>
@@ -309,6 +316,7 @@
 <translation id="5659593005791499971">ఇమెయిల్</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783"><ph name="PRODUCT_VERSION" /> వెర్షన్</translation>
+<translation id="5706552126692816153">1 రోజు క్రితం యాక్టివ్‌గా ఉంది</translation>
 <translation id="5711039611392265845">గోప్యత, భద్రత, డేటా సేకరణకు సంబంధించిన మరిన్ని సెట్టింగ్‌ల కోసం, <ph name="BEGIN_LINK" />సింక్ మరియు Google సేవలు<ph name="END_LINK" /> చూడండి.</translation>
 <translation id="5728700505257787410">క్షమించండి, మీ ఖాతాకు సైన్ ఇన్ చేయడంలో సమస్య ఉంది.</translation>
 <translation id="5737974891429562743">ఖాతా సైన్-ఇన్ వివరాలు పాతవి. సింక్‌ను ప్రారంభించడానికి అప్‌డేట్ చేయండి.</translation>

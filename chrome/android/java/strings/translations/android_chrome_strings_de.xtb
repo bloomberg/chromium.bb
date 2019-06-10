@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1006017844123154345">Online öffnen</translation>
+<translation id="1028699632127661925">Wird an <ph name="DEVICE_NAME" /> gesendet…</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> wird hinzugefügt...</translation>
 <translation id="1041308826830691739">Von Websites</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Suchen und entdecken</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stopp</translation>
+<translation id="1272444412400969138">Geräteauswahl zum Teilen eines Tabs.</translation>
 <translation id="1283039547216852943">Zum Maximieren tippen</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="1291207594882862231">Verlauf, Cookies, Websitedaten, Cache leeren…</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Hallo <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1384959399684842514">Download angehalten</translation>
+<translation id="1386674309198842382">Vor <ph name="LAST_UPDATED" /> Tagen aktiv</translation>
 <translation id="1389974829397082527">Keine Lesezeichen vorhanden</translation>
 <translation id="1397811292916898096">Mit <ph name="PRODUCT_NAME" /> suchen</translation>
 <translation id="1404122904123200417">Eingebettet in <ph name="WEBSITE_URL" /></translation>
@@ -71,7 +74,6 @@
 <translation id="1430915738399379752">Drucken</translation>
 <translation id="1445680696957526815">Die Chrome-Komponenten sind nicht miteinander kompatibel. Möglicherweise wird Chrome gerade aktualisiert. Bitte versuchen Sie es in einigen Minuten erneut. Sollte das Problem weiterhin bestehen, versuchen Sie, Chrome zu deinstallieren und erneut zu installieren.</translation>
 <translation id="1446450296470737166">Volle Kontr. über MIDI-Ger. erl.</translation>
-<translation id="1449080968331948513">Der Datensparmodus ist jetzt im Lite-Modus</translation>
 <translation id="145097072038377568">In den Android-Einstellungen deaktiviert</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> konnte aufgrund von Serverproblemen nicht heruntergeladen werden.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 weitere)}other{ (+ # weitere)}}</translation>
@@ -81,7 +83,6 @@
 <translation id="1513858653616922153">Passwort löschen</translation>
 <translation id="1516229014686355813">Mit "Zum Suchen tippen" werden das ausgewählte Wort und die aktuelle Seite als Kontext an die Google-Suche gesendet. Sie können die Funktion in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> deaktivieren.</translation>
 <translation id="1521774566618522728">Heute aktiv</translation>
-<translation id="1539064842193522527">Link in Chrome geöffnet</translation>
 <translation id="1549000191223877751">Zu anderem Fenster wechseln</translation>
 <translation id="1553358976309200471">Chrome aktualisieren</translation>
 <translation id="1569387923882100876">Verbundenes Gerät</translation>
@@ -288,7 +289,6 @@
 <translation id="3058498974290601450">Sie können die Synchronisierung jederzeit in den Einstellungen aktivieren</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> Lesezeichen}other{<ph name="BOOKMARKS_COUNT_MANY" /> Lesezeichen}}</translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
-<translation id="311456632243022227">Mehrere Links in Chrome geöffnet</translation>
 <translation id="3115898365077584848">Informationen anzeigen</translation>
 <translation id="3123473560110926937">Auf einigen Websites blockiert</translation>
 <translation id="3137521801621304719">Inkognitomodus deaktivieren</translation>
@@ -402,6 +402,7 @@
 <translation id="4008040567710660924">Cookies für eine bestimmte Website werden zugelassen.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Vorschläge einblenden, wenn eine Webadresse nicht gefunden oder keine Verbindung hergestellt werden kann</translation>
+<translation id="4044912625106523635">Geräteauswahl zum Teilen eines Tabs, der ganz geöffnet ist.</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="4048707525896921369">Erfahren Sie mehr zu Themen auf einer Website, ohne die Seite verlassen zu müssen. Mit der Option "Zum Suchen tippen" wird ein Wort sowie dessen Kontext an die Google-Suche gesendet. Daraufhin erhalten Sie Definitionen, Bilder, Suchergebnisse und andere Details.
 
@@ -579,6 +580,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5271967389191913893">Das Gerät kann den Inhalt, der heruntergeladen werden soll, nicht öffnen.</translation>
 <translation id="528192093759286357">Ziehen Sie zum Beenden des Vollbildmodus von oben und tippen Sie auf die Zurück-Taste.</translation>
 <translation id="5284584623296338184">Änderungen an Ihren Lesezeichen, Ihrem Verlauf, Ihren Passwörtern und anderen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Ihre vorhandenen Daten bleiben aber in Ihrem Google-Konto gespeichert.</translation>
+<translation id="5292796745632149097">Senden an</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5301954838959518834">Ok</translation>
 <translation id="5304593522240415983">Dieses Feld darf nicht leer sein.</translation>
@@ -740,6 +742,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6406506848690869874">Synchronisierung</translation>
 <translation id="641643625718530986">Drucken...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB heruntergeladen</translation>
+<translation id="6418750371676080905">Geräteauswahl zum Teilen eines Tabs, der geschlossen ist.</translation>
 <translation id="6427112570124116297">Das Web übersetzen</translation>
 <translation id="6433501201775827830">Suchmaschine auswählen</translation>
 <translation id="6437478888915024427">Seiteninfo</translation>
@@ -779,6 +782,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="666268767214822976">Während der Eingabe in die Adressleiste mithilfe einer Vervollständigungsfunktion ähnliche Suchanfragen und beliebte Websites einblenden</translation>
 <translation id="666731172850799929">In <ph name="APP_NAME" /> öffnen</translation>
 <translation id="666981079809192359">Chrome-Datenschutzhinweise</translation>
+<translation id="6672986458216094438">Geräteauswahl zum Teilen eines Tabs, der halb geöffnet ist.</translation>
 <translation id="6697492270171225480">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
 <translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
@@ -850,7 +854,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7177466738963138057">Dies kann später in den Einstellungen geändert werden</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7189372733857464326">Warten auf Abschluss der Google Play-Dienste-Aktualisierung</translation>
-<translation id="7189598951263744875">Teilen...</translation>
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
 <translation id="723171743924126238">Bilder auswählen</translation>
 <translation id="7233236755231902816">Das Web in Ihrer Sprache – mit der aktuellen Version von Chrome</translation>
@@ -887,7 +890,6 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="7445411102860286510">Automatische Wiedergabe stummgeschalteter Videos auf Websites zulassen (empfohlen)</translation>
 <translation id="7453467225369441013">Sie werden von den meisten Websites, aber nicht aus Ihrem Google-Konto abgemeldet.</translation>
 <translation id="7454641608352164238">Zu wenig Speicherplatz</translation>
-<translation id="7455923816558154057">Zum Ansehen tippen</translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="7475192538862203634">Sollten Sie diese Meldung häufiger erhalten, sehen Sie sich unsere <ph name="BEGIN_LINK" />Empfehlungen<ph name="END_LINK" /> an.</translation>
 <translation id="7475688122056506577">SD-Karte nicht gefunden. Einige Ihrer Dateien fehlen möglicherweise.</translation>
@@ -956,6 +958,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ist veraltet.</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="7963646190083259054">Anbieter:</translation>
+<translation id="7971136598759319605">Vor 1 Tag aktiv</translation>
 <translation id="7975379999046275268">Seitenvorschau <ph name="BEGIN_NEW" />Neu<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Seiten vorab laden, um das Surfen und die Suche zu beschleunigen</translation>
 <translation id="79859296434321399">ARCore installieren, um Augmented-Reality-Inhalte zu sehen</translation>

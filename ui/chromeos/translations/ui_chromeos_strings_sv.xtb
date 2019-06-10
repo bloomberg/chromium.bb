@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Mer...</translation>
 <translation id="4582497162516204941">Installera med Linux (beta)</translation>
+<translation id="4594543368593301662">Visar resultat för <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4656293982926141856">Den här datorn</translation>
 <translation id="4669606053856530811">De som använder <ph name="SOURCE_NAME" /> förlorar åtkomsten till objekten såvida de inte delas med dem.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Bulgariskt tangentbord</translation>
 <translation id="5418923334382419584">Burmesiskt tangentbord</translation>
 <translation id="5428105026674456456">spanska</translation>
+<translation id="5438282218546237410">Det finns inga resultat för <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Polskt tangentbord</translation>
 <translation id="5465122519792752163">Nepalesiskt tangentbord (InScript)</translation>
 <translation id="5469868506864199649">italienska</translation>
 <translation id="5494920125229734069">Markera alla</translation>
 <translation id="5500122897333236901">isländska</translation>
 <translation id="5508696409934741614">Punkter</translation>
+<translation id="5522908512596376669">Fillistan har ändrats till listvy.</translation>
 <translation id="5524517123096967210">Det gick inte att läsa filen.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" />-bild</translation>
 <translation id="5533555070048896610">Translitterering (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="6054173164583630569">Franskt tangentbord</translation>
 <translation id="6074825444536523002">Formulär från Google</translation>
+<translation id="6096979789310008754">Söktexten har tagits bort och alla filer och mappar visas.</translation>
 <translation id="6111770213269631447">Translitterering (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Blanksteg</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> flyttas ...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Elefant</translation>
 <translation id="8569764466147087991">Välj fil att öppna</translation>
 <translation id="8579285237314169903">Synkroniserar <ph name="NUMBER_OF_FILES" /> objekt ...</translation>
+<translation id="8600173386174225982">Fillistan har ändrats till miniatyrvy.</translation>
 <translation id="8669949407341943408">Flyttar …</translation>
 <translation id="8671210955687109937">Kan kommentera</translation>
 <translation id="8686213429977032554">Den här filen i Drive delas inte ännu</translation>

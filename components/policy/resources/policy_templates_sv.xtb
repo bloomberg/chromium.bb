@@ -1138,6 +1138,15 @@
           När den här principen inte har angetts påverkas inte de mer specifika principerna.</translation>
 <translation id="2987155890997901449">Aktivera ARC</translation>
 <translation id="2987227569419001736">Kontrollera användningen av Web Bluetooth API</translation>
+<translation id="2990018289267778247">Om principen är inställd på sant visas alltid tillgänglighetsalternativ på systemfältsmenyn.
+
+          Om principen är inställd på falskt visas aldrig tillgänglighetsalternativ på systemfältsmenyn.
+
+          Om du anger principen kan användarna inte ändra eller åsidosätta den.
+
+          Om du inte ställer in principen visas inte tillgänglighetsalternativ på systemfältsmenyn, men användaren kan välja att tillgänglighetsalternativen ska visas via sidan för inställningar.
+
+          När tillgänglighetsfunktioner har aktiverats (på andra sätt, t.ex. med en tangentkombination) visas tillgänglighetsalternativ alltid på systemfältsmenyn.</translation>
 <translation id="3011301228198307065">Konfigurerar webbadressen som används som standardstartsida i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar den.
 
           Startsidan är den sida som öppnas med hemknappen. Vilka sidor som öppnas vid start avgörs av principerna i RestoreOnStartup.
@@ -1461,6 +1470,7 @@
         Principen används på stationära datorer för registrering av datorn för molnhantering och kan ställas in via registret eller gruppolicyobjekt på Windows, plist på Mac och en JSON-principfil på Linux.</translation>
 <translation id="3660562134618097814">Överför SAML-cookies från identitetsleverantörer vid inloggning</translation>
 <translation id="3701121231485832347">Styr inställningar för <ph name="PRODUCT_OS_NAME" />-enheter som hanteras med <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Fjärrattestering</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Enradsfältet har fasats ut och tas snart bort. Börja använda flerradsfältet i stället.)</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
 <translation id="3711895659073496551">Stäng av</translation>
@@ -1848,6 +1858,15 @@
 
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="4285674129118156176">Tillåt oanknutna användare att använda ARC</translation>
+<translation id="4289903996435140853">Gör att du kan ange en lista med webbadresser som styr vilka webbplatser som automatiskt ska ges åtkomstbehörighet till en USB-enhet med angivet leverantörs- och produkt-id. Varje post i listan måste innehålla både enheter och webbadresser för att principen ska gälla. Varje enhetspost kan ha ett fält för leverantörs-id och ett för produkt-id. Om ett id utelämnas fungerar det som om ett jokertecken hade angetts, med ett undantag: det går inte att ange ett produkt-id om inget leverantörs-id har angetts. I så fall blir principen ogiltig och ignoreras.
+
+        Med behörighetsmodellen för USB används webbadressen till den webbplats som begäran kommer från (den ”begärande” webbadressen) och webbadressen till ramen på toppnivå (den ”inbäddande” webbplatsen) när den begärande webbadressen ska ges åtkomstbehörighet till USB-enheten. Den begärande webbadressen behöver inte vara samma som den inbäddande webbadressen, om webbadressen som begäran kommer från har lästs in i en iframe. Därför kan webbadressfältet innehålla upp till två kommaavgränsade strängar som anger den begärande respektive inbäddande webbadressen. Om bara en webbadress har angetts kommer åtkomstbehörighet till USB-enheten att beviljas om den begärande webbadressen matchar denna, oavsett om den har bäddats in eller inte. Webbadresserna i webbadressfältet måste vara giltiga. I annat fall ignoreras principen.
+
+        Om administratören har lämnat principen utan inställning används det globala standardvärdet för alla webbplatser, som hämtas antingen från principen DefaultWebUsbGuardSetting om den har ställts in eller från användarens konfiguration om den inte har det.
+
+        Webbadressmönstren i den här principen får inte överlappa dem som konfigurerats via WebUsbBlockedForUrls. I händelse av konflikt har den här principen företräde framför WebUsbBlockedForUrls och WebUsbAskForUrls.
+
+        Värdena för den här principen och principen DeviceWebUsbAllowDevicesForUrls är sammanslagna.</translation>
 <translation id="4298509794364745131">Anger en lista med anteckningsappar som går att aktivera på låsskärmen i <ph name="PRODUCT_OS_NAME" />.
 
       När den föredragna anteckningsappen har aktiverats på låsskärmen ges möjlighet att starta den appen i gränssnittet på låsskärmen.
@@ -1999,6 +2018,7 @@
 <translation id="4639407427807680016">Namn på de värdar för Native Messaging som ska undantas från svarta listan</translation>
 <translation id="4650759511838826572">Inaktivera protokollscheman för webbadresser</translation>
 <translation id="465099050592230505">Webbadress till företagets webbutik (föråldrad)</translation>
+<translation id="4661889655253181651">Med innehållsinställningarna kan du ange hur innehåll av en viss typ (till exempel cookies, bilder eller JavaScript) ska hanteras.</translation>
 <translation id="4665897631924472251">Inställningar för hantering av tillägg</translation>
 <translation id="4668325077104657568">Standardinställning för bilder</translation>
 <translation id="4670865688564083639">Minst:</translation>
@@ -2043,6 +2063,11 @@
       Förslagen fjärrhämtas från Googles servrar.
 
       Om principen är inställd på falskt kommer inte förslag att hämtas eller visas.</translation>
+<translation id="4759650396863318477">Gör att du kan ställa in i millisekunder under hur lång tid in som användare aviseras om att <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" />-enheten måste startas om när en uppdatering väntar.
+
+      Under den tiden visas upprepade uppmaningar att starta om för användaren. På <ph name="PRODUCT_OS_NAME" />-enheter visas en avisering om att starta om i systemfältet i enlighet med principen <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. I <ph name="PRODUCT_NAME" />-webbläsare ändras appmenyn för att visa att en omstart behövs när en tredjedel av tidsperioden har gått. Aviseringen byter färg när två tredjedelar av tidsperioden har gått och igen när tidsperioden har löpt ut. För ytterligare aviseringar som aktiveras med principen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> används samma schema.
+
+      Om principen inte ställs in används som standard tidsperioden 345 600 000 millisekunder (fyra dagar) för <ph name="PRODUCT_OS_NAME" />-enheter och 604 800 000 millisekunder (en vecka) för <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Aktiverar funktionen Autofyll i <ph name="PRODUCT_NAME" /> så att användarna kan fylla i webbformulär automatiskt med kreditkortsuppgifter som har sparats sedan tidigare.
 
       Om inställningen inaktiveras visas inga förslag med Autofyll och inga kreditkortsuppgifter fylls i. Ytterligare kreditkortsuppgifter som användaren kan ange på webben sparas inte heller.
@@ -2255,6 +2280,15 @@
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
 <translation id="5213038356678567351">Webbplatser som aldrig ska aktivera ett webbläsarbyte.</translation>
 <translation id="5219844027738217407">För Android-appar påverkar den här principen endast mikrofonen. När principen är inställd på sant är mikrofonen avstängd i alla Android-appar utan undantag.</translation>
+<translation id="5221394278852982313">Gör att du kan ange en lista över webbadresser som styr vilka webbplatser som automatiskt ska ges åtkomstbehörighet till en USB-enhet med angivet leverantörs- och produkt-id. Varje post i listan måste innehålla både enheter och webbadresser för att principen ska gälla. Varje enhetspost kan ha ett fält för leverantörs-id och ett för produkt-id. Om ett id utelämnas fungerar det som om ett jokertecken hade angetts, med ett undantag: det går inte att ange ett produkt-id om inget leverantörs-id har angetts. I så fall blir principen ogiltig och ignoreras.
+
+        Med behörighetsmodellen för USB används webbadressen till den webbplats som begäran kommer från (den ”begärande” webbadressen) och webbadressen till ramen på toppnivå (den ”inbäddande” webbplatsen) när den begärande webbadressen ska ges åtkomstbehörighet till USB-enheten. Den begärande webbadressen behöver inte vara samma som den inbäddande webbadressen, om webbadressen som begäran kommer från har lästs in i en iframe. Därför kan webbadressfältet innehålla upp till två kommaavgränsade strängar som anger den begärande respektive inbäddande webbadressen. Om bara en webbadress har angetts kommer åtkomstbehörighet till USB-enheten att beviljas om den begärande webbadressen matchar denna, oavsett om den har bäddats in eller inte. Webbadresserna i webbadressfältet måste vara giltiga. I annat fall ignoreras principen.
+
+        Om administratören har lämnat principen utan inställning används det globala standardvärdet för alla webbplatser, som hämtas antingen från principen DefaultWebUsbGuardSetting om den har ställts in eller från användarens konfiguration om den inte har det.
+
+        Webbadressmönstren i den här principen får inte överlappa dem som konfigurerats via WebUsbBlockedForUrls. Vid konflikt har den här principen företräde framför WebUsbBlockedForUrls och WebUsbAskForUrls.
+
+        Värdena för den här principen och principen DeviceWebUsbAllowDevicesForUrls är sammanslagna.</translation>
 <translation id="5228316810085661003">Fördröjning för automatisk inloggning av det lokala kontot på enheten.
 
       Om principen |DeviceLocalAccountAutoLoginId| har lämnats utan inställning har den här principen ingen funktion. I annat fall gäller följande:
@@ -2998,6 +3032,21 @@
 
       Om principen är inställd på Tillåt inte användarna att hantera certifikat kan användarna inte hantera certifikat, bara visa dem.</translation>
 <translation id="6573305661369899995">Ange en extern källa för webbadressbegränsningar</translation>
+<translation id="6583851521569686409">Konfigurerar en lista över skrivare.
+
+      Med hjälp av den här principen kan administratören tillhandahålla
+      skrivarkonfigurationer åt användarna.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> och <ph name="PRINTER_DESCRIPTION" /> är strängar i fritt format som kan anpassas så att det blir enkelt att välja skrivare. <ph name="PRINTER_MANUFACTURER" /> och <ph name="PRINTER_MODEL" /> gör det enklare för användarna att identifiera skrivaren och står för tillverkare och märke. <ph name="PRINTER_URI" />ska vara en adress som går att nå från en klientdator, inklusive <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> och <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> är valfritt. Om det anges används det för att deduplicera <ph name="ZEROCONF_DISCOVERY" />-skrivare.
+
+      Antingen ska <ph name="PRINTER_EFFECTIVE_MODEL" /> innehålla skrivarens namn eller så ska <ph name="PRINTER_AUTOCONF" /> vara inställt på sant. Om en skrivare har båda värdena eller saknar egenskaper ignoreras den.
+
+      Skrivarkonfigureringen slutförs första gången en skrivare används.  Inga PPD-filer laddas ned förrän skrivaren används.  Därefter cachelagras PPD-filer som används ofta.
+
+      Principen påverkar inte om användarna kan konfigurera skrivare på enskilda enheter eller inte.  Den är tänkt att vara ett supplement till de enskilda användarnas skrivarkonfiguration.
+
+      På enheter som hanteras via Active Directory har principen stöd för att utöka <ph name="MACHINE_NAME_VARIABLE" /> till datornamnet i Active Directory eller en delsträng av det. Med datornamnet <ph name="MACHINE_NAME_EXAMPLE" /> skulle till exempel <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> ersättas av de fyra tecknen från och med position nummer sex, d.v.s. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Observera att positionerna räknas från och med noll.
+      </translation>
 <translation id="6598235178374410284">Användarens avatarbild</translation>
 <translation id="6603004149426829878">Skicka alla tillgängliga platssignaler till servern när tidszon fastställs</translation>
 <translation id="6628120204569232711">Rapportera status för lagringsenheter</translation>
@@ -4363,6 +4412,8 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="915194831143859291">Om policyn är inställd på falskt eller inte har konfigurerats tillåter <ph name="PRODUCT_OS_NAME" /> att användaren stänger av enheten.
       Om policyn är inställd på sant utlöser <ph name="PRODUCT_OS_NAME" /> en omstart när användaren stänger av enheten. <ph name="PRODUCT_OS_NAME" /> ersätter alla förekomster av avstängningsknappar i gränssnittet med omstartsknappar. Om användaren stänger av enheten med strömbrytaren startas den inte om automatiskt även om policyn är aktiverad.</translation>
 <translation id="9152473318295429890">Aktivera innehållsbaserade förslag för relaterade webbsidor</translation>
+<translation id="9153446010242995516">Återställ till målversionen om operativsystemet är nyare än målversionen. Försök att föra över konfigurationen på enhetsnivå (inklusive användaruppgifter i nätverket) vid återställningen om det går, men gör återställningen med fullständig powerwash även om det inte går att återställa data (därför att målversionen inte har stöd för att återställa data eller på grund av en ändring som inte är bakåtkompatibel).
+          Stöds i version 75 eller senare av <ph name="PRODUCT_OS_NAME" />. I äldre klienter än så innebär det här värdet att återställning inaktiveras.</translation>
 <translation id="9158929520101169054">Aktivera multiinloggning i webbläsaren</translation>
 <translation id="9159126470527871268">Meddela användarna att <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> måste startas om eftersom en uppdatering väntar.
 

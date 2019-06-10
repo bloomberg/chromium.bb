@@ -71,7 +71,6 @@
 <translation id="1430915738399379752">प्रिंट करें</translation>
 <translation id="1445680696957526815">Chrome के घटक एक-दूसरे से असंगत हैं. संभवत: Chrome अपग्रेड हो रहा है, कृपया कुछ ही देर में फिर से प्रयास करें. अगर समस्या बनी रहती है, तो Chrome को अनइंस्टॉल करके और फिर से इंस्टॉल करके देखें.</translation>
 <translation id="1446450296470737166">MIDI डिवाइस के पूरे नियंत्रण की अनुमति दें</translation>
-<translation id="1449080968331948513">डेटा बचाने का टूल अब लाइट मोड है</translation>
 <translation id="145097072038377568">Android सेटिंग में बंद कर दिया गया है</translation>
 <translation id="1477626028522505441">सर्वर संबधी समस्‍याओं के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 और)}one{ (+ # और)}other{ (+ # और)}}</translation>
@@ -81,7 +80,6 @@
 <translation id="1513858653616922153">पासवर्ड मिटाएं</translation>
 <translation id="1516229014686355813">'खोजने के लिए टैप करें' सुविधा चुने हुए शब्‍द और मौजूदा पेज को संदर्भ के रूप में 'Google सर्च' पर भेजती है. आप इसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में जाकर बंद कर सकते हैं.</translation>
 <translation id="1521774566618522728">आज सक्रिय है</translation>
-<translation id="1539064842193522527">लिंक को Chrome में खोला गया</translation>
 <translation id="1549000191223877751">अन्य विंडो में ले जाएं</translation>
 <translation id="1553358976309200471">Chrome अपडेट करें</translation>
 <translation id="1569387923882100876">कनेक्ट किया गया डिवाइस</translation>
@@ -288,7 +286,6 @@
 <translation id="3058498974290601450">आप सेटिंग में किसी भी समय सिंक चालू कर सकते हैं</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> बुकमार्क}one{<ph name="BOOKMARKS_COUNT_MANY" /> बुकमार्क}other{<ph name="BOOKMARKS_COUNT_MANY" /> बुकमार्क}}</translation>
 <translation id="3089395242580810162">गुप्त टैब में खोलें</translation>
-<translation id="311456632243022227">एकाधिक लिंक Chrome में खोले गए</translation>
 <translation id="3115898365077584848">जानकारी दिखाएं</translation>
 <translation id="3123473560110926937">कुछ साइटों पर ब्लॉक किए गए हैं</translation>
 <translation id="3137521801621304719">गुप्त मोड छोड़ें</translation>
@@ -850,7 +847,6 @@
 <translation id="7177466738963138057">आप इसे बाद में सेटिंग में जाकर बदल सकते हैं</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
 <translation id="7189372733857464326">Google Play सेवाएं द्वारा अपडेट खत्म किए जाने की प्रतीक्षा की जा रही है</translation>
-<translation id="7189598951263744875">शेयर करें...</translation>
 <translation id="7191430249889272776">पृष्ठभूमि में टैब खोला गया.</translation>
 <translation id="723171743924126238">फ़ोटो चुनें</translation>
 <translation id="7233236755231902816">वेब को अपनी भाषा में देखने के लिए, Chrome का नया वर्शन पाएं</translation>
@@ -887,7 +883,6 @@
 <translation id="7445411102860286510">साइटों को म्यूट किए गए वीडियो अपने आप चलाने की अनुमति दें (हम इस सेटिंग को चालू रखने का सुझाव देते हैं)</translation>
 <translation id="7453467225369441013">आपको ज़्यादातर साइटों से साइन आउट कर देता है. आप अपने Google खाते से साइन आउट नहीं होंगे.</translation>
 <translation id="7454641608352164238">जगह काफ़ी नहीं है</translation>
-<translation id="7455923816558154057">देखने के लिए टैप करें</translation>
 <translation id="7473891865547856676">नहीं, रहने दें</translation>
 <translation id="7475192538862203634">अगर आपको यह बार-बार दिखाई दे रहा हो, तो इन <ph name="BEGIN_LINK" />सुझावों<ph name="END_LINK" /> को आज़माएं.</translation>
 <translation id="7475688122056506577">SD कार्ड नहीं मिला. हो सकता है कि आपकी कुछ फ़ाइलें उपलब्ध न हों.</translation>

@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">ነባሪ ነጭ አምሳያ</translation>
 <translation id="1581962803218266616">በፈላጊ ውስጥ አሳይ</translation>
 <translation id="1584990664401018068">እየተጠቀሙ ያሉት Wi-Fi አውታረ መረብ (<ph name="NETWORK_ID" />) ማረጋገጫን ሊጠይቅ ይችላል።</translation>
-<translation id="1585238069289523942">በእርስዎ Chromebook ላይ መተግበሪያዎችን ይጫኑ</translation>
 <translation id="1585717515139318619">በኮምፒውተርዎ ላይ ያለ ሌላ ፕሮግራም Chrome የሚሰራበት መንገድ ሊቀይር የሚችል አንድ ገጽታ አክሏል።
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">የLinux ፋይሎችን ማዋቀር ላይ ስህተት። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="2315587498123194634">አገናኝ ወደ <ph name="DEVICE_NAME" /> ይላኩ</translation>
 <translation id="2316129865977710310">አይ፣ አመሰግናለሁ</translation>
-<translation id="2316739859433277603">ከመተግበሪያው አስጀመሪ የሚመጡ ፍለጋዎች የእርስዎን አሳሽ <ph name="BEGIN_LINK" />የፍለጋ ሞተር ቅንብር<ph name="END_LINK" /> ይጠቀማሉ።</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% ተከናውኗል</translation>
 <translation id="2318143611928805047">የወረቀት መጠን</translation>
 <translation id="2318817390901984578">የAndroid መተግበሪያዎችን ለመጠቀም የእርስዎን <ph name="DEVICE_TYPE" /> ኃይል ይሙሉ እና ያዘምኑ።</translation>
@@ -5319,6 +5317,7 @@ nil</translation>
 <translation id="9094033019050270033">የይለፍ ቃል ያዘምኑ</translation>
 <translation id="9094982973264386462">አስወግድ</translation>
 <translation id="9095253524804455615">አስወግድ</translation>
+<translation id="9095388113577226029">ተጨማሪ ቋንቋዎች...</translation>
 <translation id="9100610230175265781">የይለፍ ሐረግ ያስፈልጋል</translation>
 <translation id="9100765901046053179">የላቁ ቅንብሮች</translation>
 <translation id="9101691533782776290">መተግበሪያ አስጀምር</translation>

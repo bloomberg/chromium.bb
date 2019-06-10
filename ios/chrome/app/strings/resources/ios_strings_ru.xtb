@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Выбор папки</translation>
 <translation id="1265739287306757398">Подробнее</translation>
 <translation id="1272079795634619415">Остановить</translation>
+<translation id="1283524564873030414">Последние 24 часа</translation>
 <translation id="1323735185997015385">Удалить</translation>
 <translation id="132683371494960526">Чтобы изменить родительскую папку, нажмите дважды.</translation>
 <translation id="1340643665687018190">Закрыть меню</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1989112275319619282">Выбрать</translation>
 <translation id="2015722694326466240">Чтобы просматривать пароли, настройте на устройстве код доступа.</translation>
+<translation id="2073572773299281212">Последние действия: <ph name="DAYS" /> дн. назад</translation>
 <translation id="2074131957428911366">Вы всегда можете выбрать, что синхронизировать, в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="209018056901015185">Версия для ПК</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Открыть все</translation>
 <translation id="2570206273416014374">Отправлять некоторые файлы cookie и поисковые запросы из адресной строки и окна поиска в поисковую систему по умолчанию.</translation>
 <translation id="2572712655377361602">Политика устройства блокирует доступ к фотографиям</translation>
+<translation id="2578571896248130439">Отправка веб-страницы</translation>
 <translation id="2584132361465095047">Добавить аккаунт</translation>
 <translation id="2625189173221582860">Пароль скопирован</translation>
 <translation id="2648803196158606475">Удалить прочитанное</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Отметить…</translation>
 <translation id="3157684681743766797">Отметить все…</translation>
 <translation id="3175081911749765310">Веб-сервисы</translation>
+<translation id="3178650076442119961">Последние действия: сегодня</translation>
 <translation id="3207960819495026254">Добавлено в закладки.</translation>
 <translation id="3224641773458703735">Чтобы экспортировать пароли, настройте на устройстве код доступа.</translation>
 <translation id="3240426699337459095">Готово</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">Чтобы отсканировать QR-код, разрешите доступ к камере в настройках.</translation>
 <translation id="4281844954008187215">Условия использования</translation>
 <translation id="430793432425771671">Синхронизировать все</translation>
+<translation id="430967081421617822">Все время</translation>
 <translation id="4338650699862464074">Отправлять URL страниц, которые вы посещаете, в Google.</translation>
 <translation id="4359125752503270327">Страница откроется в другом приложении.</translation>
 <translation id="4370827530403103842">Синхронизация не работает. Нажмите, чтобы исправить.</translation>
@@ -281,6 +286,7 @@
 <translation id="5127805178023152808">Синхронизация выключена</translation>
 <translation id="5132942445612118989">Синхронизируйте пароли, историю и другие данные на всех ваших устройствах</translation>
 <translation id="5140288047769711648">Вам не нужно запоминать этот пароль, так как он будет сохранен в Chrome.</translation>
+<translation id="5150492518600715772">Отправить на свое устройство</translation>
 <translation id="5181140330217080051">Скачивается</translation>
 <translation id="5186185447130319458">Конфиденциально</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
@@ -295,6 +301,7 @@
 <translation id="5327248766486351172">Название</translation>
 <translation id="5388358297987318779">Открыть изображение</translation>
 <translation id="5409365236829784218">Нет приложений, поддерживающих файлы этого типа.</translation>
+<translation id="5416022985862681400">Последние 7 дней</translation>
 <translation id="5433691172869980887">Имя пользователя скопировано</translation>
 <translation id="54401264925851789">Сведения о надежности страницы</translation>
 <translation id="5443952882982198570">Кредитные карты</translation>
@@ -309,6 +316,7 @@
 <translation id="5659593005791499971">Электронная почта</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Версия <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">Последние действия: 1 день назад</translation>
 <translation id="5711039611392265845">Остальные настройки конфиденциальности, безопасности и сбора данных вы можете найти в разделе <ph name="BEGIN_LINK" />Синхронизация сервисов Google<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Не удалось войти в аккаунт.</translation>
 <translation id="5737974891429562743">Данные для входа в аккаунт устарели. Чтобы начать синхронизацию, обновите их.</translation>

@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Zadani bijeli avatar</translation>
 <translation id="1581962803218266616">Prikaži u programu Finder</translation>
 <translation id="1584990664401018068">Wi-Fi mreža koju upotrebljavate (<ph name="NETWORK_ID" />) možda zahtijeva autentifikaciju.</translation>
-<translation id="1585238069289523942">Instalirajte aplikacije na svoj Chromebook</translation>
 <translation id="1585717515139318619">Drugi program na vašem računalu dodao je temu koja može promijeniti Chromeov način rada.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">Pogreška tijekom konfiguracije Linux datoteka. Pokušajte ponovo.</translation>
 <translation id="2315587498123194634">Pošalji vezu na <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
-<translation id="2316739859433277603">Pretraživanja iz pokretača aplikacija upotrebljavaju <ph name="BEGIN_LINK" />postavku tražilice<ph name="END_LINK" /> vašeg preglednika.</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% dovršeno</translation>
 <translation id="2318143611928805047">Veličina papira</translation>
 <translation id="2318817390901984578">Da biste upotrebljavali Android aplikacije, napunite i ažurirajte svoj <ph name="DEVICE_TYPE" />.</translation>
@@ -4753,7 +4751,7 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8225265270453771718">Podijelite prozor aplikacije</translation>
 <translation id="8225753906568652947">Iskoristite svoje ponude</translation>
 <translation id="8226222018808695353">Zabranjeno</translation>
-<translation id="8226619461731305576">Red čekanja</translation>
+<translation id="8226619461731305576">Redoslijed</translation>
 <translation id="8226742006292257240">Dolje je nasumice generirana zaporka modula pouzdane platforme dodijeljena vašem računalu:</translation>
 <translation id="8227119283605456246">Priloži datoteku</translation>
 <translation id="8230134520748321204">Želite li spremiti zaporku za <ph name="ORIGIN" />?</translation>
@@ -5319,6 +5317,7 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="9094033019050270033">Ažuriraj zaporku</translation>
 <translation id="9094982973264386462">Ukloni</translation>
 <translation id="9095253524804455615">Ukloni</translation>
+<translation id="9095388113577226029">Više jezika...</translation>
 <translation id="9100610230175265781">Potrebna je zaporka</translation>
 <translation id="9100765901046053179">Napredne postavke</translation>
 <translation id="9101691533782776290">Pokreni aplikaciju</translation>

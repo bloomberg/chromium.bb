@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">選擇資料夾</translation>
 <translation id="1265739287306757398">操作說明</translation>
 <translation id="1272079795634619415">停止</translation>
+<translation id="1283524564873030414">過去 24 小時</translation>
 <translation id="1323735185997015385">刪除</translation>
 <translation id="132683371494960526">輕觸兩下即可變更上層資料夾。</translation>
 <translation id="1340643665687018190">關閉選單</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">進階</translation>
 <translation id="1989112275319619282">瀏覽</translation>
 <translation id="2015722694326466240">你必須先在裝置上設定通行碼，才能查看密碼。</translation>
+<translation id="2073572773299281212">上次使用時間：<ph name="DAYS" /> 天前</translation>
 <translation id="2074131957428911366">你隨時可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中選擇要同步處理的資料。</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="209018056901015185">切換為電腦版網站</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">全部開啟</translation>
 <translation id="2570206273416014374">將網址列和搜尋框中的部分 Cookie 和搜尋字詞傳送至預設搜尋引擎。</translation>
 <translation id="2572712655377361602">裝置政策禁止您存取相片</translation>
+<translation id="2578571896248130439">傳送網頁</translation>
 <translation id="2584132361465095047">新增帳戶…</translation>
 <translation id="2625189173221582860">已複製密碼</translation>
 <translation id="2648803196158606475">刪除已讀取的項目</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">標示…</translation>
 <translation id="3157684681743766797">全部標示…</translation>
 <translation id="3175081911749765310">網路服務</translation>
+<translation id="3178650076442119961">上次使用時間：今天</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
 <translation id="3224641773458703735">你必須先在裝置上設定通行碼，才能匯出密碼。</translation>
 <translation id="3240426699337459095">連結已複製</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">如要掃描 QR 圖碼，請在設定中啟用相機</translation>
 <translation id="4281844954008187215">服務條款</translation>
 <translation id="430793432425771671">同步處理所有資料</translation>
+<translation id="430967081421617822">不限時間</translation>
 <translation id="4338650699862464074">將你造訪的網頁網址傳送給 Google。</translation>
 <translation id="4359125752503270327">這個網頁會在其他應用程式中開啟。</translation>
 <translation id="4370827530403103842">同步處理功能無法正常運作。請輕觸這裡以修正同步問題。</translation>
@@ -281,6 +286,7 @@
 <translation id="5127805178023152808">同步功能已停用</translation>
 <translation id="5132942445612118989">同步處理你所有裝置上的密碼、歷史記錄和其他設定</translation>
 <translation id="5140288047769711648">Chrome 會為你儲存這組密碼，因此你不必記住密碼。</translation>
+<translation id="5150492518600715772">傳送到你的裝置</translation>
 <translation id="5181140330217080051">下載中</translation>
 <translation id="5186185447130319458">私人</translation>
 <translation id="5190835502935405962">書籤列</translation>
@@ -295,6 +301,7 @@
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5388358297987318779">開啟圖片</translation>
 <translation id="5409365236829784218">未安裝可開啟這個檔案的應用程式。</translation>
+<translation id="5416022985862681400">過去 7 天</translation>
 <translation id="5433691172869980887">已複製使用者名稱</translation>
 <translation id="54401264925851789">網頁安全性資訊</translation>
 <translation id="5443952882982198570">信用卡</translation>
@@ -309,6 +316,7 @@
 <translation id="5659593005791499971">電子郵件</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">版本 <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">上次使用時間：1 天前</translation>
 <translation id="5711039611392265845">如需更多隱私權、安全性和資料收集的相關設定，請參閱<ph name="BEGIN_LINK" />同步處理和 Google 服務<ph name="END_LINK" />。</translation>
 <translation id="5728700505257787410">很抱歉，登入您的帳戶時發生問題。</translation>
 <translation id="5737974891429562743">帳戶登入詳細資訊過舊。請先更新，再開始進行同步處理。</translation>

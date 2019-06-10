@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 파일</translation>
 <translation id="457386861538956877">더보기...</translation>
 <translation id="4582497162516204941">Linux(베타)로 설치</translation>
+<translation id="4594543368593301662"><ph name="SEARCH_TERM" />에 관한 검색결과를 표시합니다.</translation>
 <translation id="4631887759990505102">아티스트</translation>
 <translation id="4656293982926141856">이 컴퓨터</translation>
 <translation id="4669606053856530811">이 항목을 '<ph name="SOURCE_NAME" />'의 멤버와 공유하지 않으면 이 팀의 멤버가 항목에 더 이상 액세스할 수 없게 됩니다.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">불가리아어 키보드</translation>
 <translation id="5418923334382419584">미얀마어 키보드</translation>
 <translation id="5428105026674456456">스페인어</translation>
+<translation id="5438282218546237410"><ph name="SEARCH_TERM" />에 관한 검색결과가 없습니다.</translation>
 <translation id="5464696796438641524">폴란드어 키보드</translation>
 <translation id="5465122519792752163">네팔어 키보드(InScript)</translation>
 <translation id="5469868506864199649">이탈리아어</translation>
 <translation id="5494920125229734069">모두 선택</translation>
 <translation id="5500122897333236901">아이슬란드어</translation>
 <translation id="5508696409934741614">점</translation>
+<translation id="5522908512596376669">파일 목록을 목록 보기로 변경했습니다.</translation>
 <translation id="5524517123096967210">파일을 읽지 못했습니다.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> 이미지</translation>
 <translation id="5533555070048896610">음역(namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6054173164583630569">프랑스어 키보드</translation>
 <translation id="6074825444536523002">Google 양식</translation>
+<translation id="6096979789310008754">검색어가 삭제되었으며, 모든 파일과 폴더가 표시됩니다.</translation>
 <translation id="6111770213269631447">음역(namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">공백</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> 이동 중...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">코끼리</translation>
 <translation id="8569764466147087991">열려는 파일 선택</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" />개 항목 동기화 중...</translation>
+<translation id="8600173386174225982">파일 목록을 미리보기 이미지 뷰로 변경했습니다.</translation>
 <translation id="8669949407341943408">이동 중...</translation>
 <translation id="8671210955687109937">댓글 가능</translation>
 <translation id="8686213429977032554">드라이브 파일이 아직 공유되지 않음</translation>

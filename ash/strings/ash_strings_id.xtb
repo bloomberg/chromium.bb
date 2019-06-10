@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Perangkat berfungsi lebih baik jika digunakan bersama</translation>
 <translation id="112308213915226829">Sembunyikan otomatis rak</translation>
 <translation id="1153356358378277386">Perangkat dihubungkan</translation>
+<translation id="1175572348579024023">Scroll</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1195412055398077112">pemindaian berlebih</translation>
 <translation id="119944043368869598">Hapus semua</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">Asisten Google tidak tersedia dalam sesi demo.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Putuskan</translation>
+<translation id="4831034276697007977">Yakin ingin menonaktifkan klik otomatis?</translation>
 <translation id="4849058404725798627">Sorot objek dengan fokus keyboard</translation>
 <translation id="485592688953820832">Tidak ada tindakan (jeda)</translation>
 <translation id="4872237917498892622">Alt+Telusuri atau Shift</translation>
@@ -413,6 +415,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> tidak mendukung <ph name="SPECIFIED_RESOLUTION" />. Resolusi diubah menjadi <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Palet emoji</translation>
 <translation id="7564874036684306347">Memindahkan jendela ke desktop lain dapat mengakibatkan perilaku tak terduga. Notifikasi, jendela, dan dialog berikutnya dapat terpisah antardesktop.</translation>
+<translation id="7568294522609223312">Nonaktifkan klik otomatis</translation>
 <translation id="7569509451529460200">Braille dan ChromeVox diaktifkan</translation>
 <translation id="7593891976182323525">Telusuri atau Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (pemilik)</translation>

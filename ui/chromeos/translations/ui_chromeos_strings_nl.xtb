@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-bestand</translation>
 <translation id="457386861538956877">Meer...</translation>
 <translation id="4582497162516204941">Installeren met Linux (bèta)</translation>
+<translation id="4594543368593301662">Resultaten voor <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artiest</translation>
 <translation id="4656293982926141856">Deze computer</translation>
 <translation id="4669606053856530811">Leden van '<ph name="SOURCE_NAME" />' hebben geen toegang meer, tenzij deze items met ze zijn gedeeld.</translation>
@@ -384,12 +385,14 @@
 <translation id="5412637665001827670">Bulgaars toetsenbord</translation>
 <translation id="5418923334382419584">Birmaans toetsenbord</translation>
 <translation id="5428105026674456456">Spaans</translation>
+<translation id="5438282218546237410">Geen resultaten voor <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Pools toetsenbord</translation>
 <translation id="5465122519792752163">Nepalees toetsenbord (InScript)</translation>
 <translation id="5469868506864199649">Italiaans</translation>
 <translation id="5494920125229734069">Alles selecteren</translation>
 <translation id="5500122897333236901">IJslands</translation>
 <translation id="5508696409934741614">Stippen</translation>
+<translation id="5522908512596376669">Bestandslijst is gewijzigd naar lijstweergave.</translation>
 <translation id="5524517123096967210">Het bestand kan niet worden gelezen.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" />-afbeelding</translation>
 <translation id="5533555070048896610">Transliteratie (namaste → नमस्ते)</translation>
@@ -436,6 +439,7 @@
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="6054173164583630569">Frans toetsenbord</translation>
 <translation id="6074825444536523002">Google-formulier</translation>
+<translation id="6096979789310008754">Zoektekst is gewist, alle bestanden en mappen worden weergegeven.</translation>
 <translation id="6111770213269631447">Transliteratie (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Spatie</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> verplaatsen...</translation>
@@ -651,6 +655,7 @@
 <translation id="8561206103590473338">Olifant</translation>
 <translation id="8569764466147087991">Selecteer een bestand om te openen</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> items synchroniseren...</translation>
+<translation id="8600173386174225982">Bestandslijst is gewijzigd naar miniatuurweergave.</translation>
 <translation id="8669949407341943408">Verplaatsen…</translation>
 <translation id="8671210955687109937">Mag reageren</translation>
 <translation id="8686213429977032554">Dit Drive-bestand is nog niet gedeeld</translation>

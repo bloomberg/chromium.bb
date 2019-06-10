@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-Datei</translation>
 <translation id="457386861538956877">Mehr...</translation>
 <translation id="4582497162516204941">Installation mit Linux (Beta)</translation>
+<translation id="4594543368593301662">Ergebnisse für <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Musiker</translation>
 <translation id="4656293982926141856">Auf diesem Computer</translation>
 <translation id="4669606053856530811">Mitglieder von "<ph name="SOURCE_NAME" />" verlieren den Zugriff, sofern Sie diese Dateien nicht mit ihnen teilen.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Bulgarische Tastatur</translation>
 <translation id="5418923334382419584">Birmanische Tastatur</translation>
 <translation id="5428105026674456456">Spanisch</translation>
+<translation id="5438282218546237410">Für "<ph name="SEARCH_TERM" />" gibt es keine Ergebnisse.</translation>
 <translation id="5464696796438641524">Polnische Tastatur</translation>
 <translation id="5465122519792752163">Nepali-Tastatur (InScript)</translation>
 <translation id="5469868506864199649">Italienisch</translation>
 <translation id="5494920125229734069">Alle auswählen</translation>
 <translation id="5500122897333236901">Isländisch</translation>
 <translation id="5508696409934741614">Punkte</translation>
+<translation id="5522908512596376669">Die Dateiliste wird jetzt in der Listenansicht angezeigt.</translation>
 <translation id="5524517123096967210">Die Datei konnte nicht gelesen werden.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" />-Bild</translation>
 <translation id="5533555070048896610">Transliteration (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6054173164583630569">Französische Tastatur</translation>
 <translation id="6074825444536523002">Google-Formular</translation>
+<translation id="6096979789310008754">Die Sucheingabe wurde gelöscht. Alle Dateien und Ordner werden angezeigt.</translation>
 <translation id="6111770213269631447">Transliteration (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Leerzeichen</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> wird verschoben...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Elefant</translation>
 <translation id="8569764466147087991">Zu öffnende Datei auswählen</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> Elemente werden synchronisiert...</translation>
+<translation id="8600173386174225982">Die Dateiliste wird jetzt in der Miniaturbildansicht angezeigt.</translation>
 <translation id="8669949407341943408">Verschieben...</translation>
 <translation id="8671210955687109937">Darf kommentieren</translation>
 <translation id="8686213429977032554">Die Drive-Datei wurde noch nicht geteilt.</translation>

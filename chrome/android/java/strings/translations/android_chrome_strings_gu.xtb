@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
 <translation id="1006017844123154345">ઑનલાઇન ખોલો</translation>
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" /> પર મોકલી રહ્યાં છીએ...</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> ઉમેરી રહ્યાં છીએ…</translation>
 <translation id="1041308826830691739">વેબસાઇટ પરથી</translation>
 <translation id="1049743911850919806">છૂપી</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">શોધો તેમજ શોધખોળ કરો</translation>
 <translation id="1264974993859112054">રમત-ગમત</translation>
 <translation id="1272079795634619415">રોકો</translation>
+<translation id="1272444412400969138">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર.</translation>
 <translation id="1283039547216852943">વિસ્તૃત કરવા માટે ટૅપ કરો</translation>
 <translation id="1285320974508926690">આ સાઇટનું ક્યારેય ભાષાંતર કરશો નહીં</translation>
 <translation id="1291207594882862231">ઇતિહાસ, કુકી, સાઇટ ડેટા, કૅશ સાફ કરો…</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">હાય, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1384959399684842514">ડાઉનલોડ થોભાવ્યું</translation>
+<translation id="1386674309198842382"><ph name="LAST_UPDATED" /> દિવસ પહેલાં સક્રિય હતું</translation>
 <translation id="1389974829397082527">અહીં કોઈ બુકમાર્ક્સ નથી</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> વડે શોધો</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> માં એમ્બેડ કર્યું</translation>
@@ -71,7 +74,6 @@
 <translation id="1430915738399379752">પ્રિન્ટ</translation>
 <translation id="1445680696957526815">Chrome ના ઘટકો એકબીજાની સાથે અસંગત છે. Chrome અપગ્રેડ થઈ રહ્યું હોઈ શકે છે, કૃપા કરીને થોડીવારમાં ફરી પ્રયાસ કરો. જો સમસ્યા ચાલુ રહે છે, તો Chrome ને અનઇન્સ્ટોલ કરીને ફરીથી ઇન્સ્ટોલ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="1446450296470737166">MIDI ઉપકરણોના પૂર્ણ નિયંત્રણની મંજૂરી આપો</translation>
-<translation id="1449080968331948513">ડેટા સેવર હવે લાઇટ મોડ છે</translation>
 <translation id="145097072038377568">Android સેટિંગ્સમાં બંધ કરી</translation>
 <translation id="1477626028522505441">સર્વર સમસ્યાઓને કારણે <ph name="FILE_NAME" /> ડાઉનલોડ નિષ્ફળ થયું.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 વધુ)}one{ (+ # વધુ)}other{ (+ # વધુ)}}</translation>
@@ -81,7 +83,6 @@
 <translation id="1513858653616922153">પાસવર્ડ ડિલીટ કરો</translation>
 <translation id="1516229014686355813">શોધવા માટે ટૅપ કરો પસંદ કરાયેલ શબ્દ અને હાલના પેજને સંદર્ભ તરીકે Google શોધને મોકલે છે. તમે તેને <ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" />માં બંધ કરી શકો છો.</translation>
 <translation id="1521774566618522728">આજે સક્રિય છે</translation>
-<translation id="1539064842193522527">લિંક Chromeમાં ખોલી</translation>
 <translation id="1549000191223877751">અન્ય વિંડો પર ખસેડો</translation>
 <translation id="1553358976309200471">Chrome અપડેટ કરો</translation>
 <translation id="1569387923882100876">કનેક્ટ કરેલ ઉપકરણ</translation>
@@ -288,7 +289,6 @@
 <translation id="3058498974290601450">તમે કોઈ પણ સમયે સેટિંગમાં 'સિંક કરો' ચાલુ કરી શકો છો</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> બુકમાર્ક}one{<ph name="BOOKMARKS_COUNT_MANY" /> બુકમાર્ક}other{<ph name="BOOKMARKS_COUNT_MANY" /> બુકમાર્ક}}</translation>
 <translation id="3089395242580810162">છુપા ટેબમાં ખોલો</translation>
-<translation id="311456632243022227">Chromeમાં બહુવિધ લિંક ખોલી</translation>
 <translation id="3115898365077584848">માહિતી બતાવો</translation>
 <translation id="3123473560110926937">કેટલીક સાઇટ પર બ્લૉક કરેલ</translation>
 <translation id="3137521801621304719">છુપા મોડને છોડો</translation>
@@ -402,6 +402,7 @@
 <translation id="4008040567710660924">કોઈ ચોક્કસ સાઇટ માટે કુકીને મંજૂરી આપો.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# કલાક}one{# કલાક}other{# કલાક}}</translation>
 <translation id="4042870126885713738">જ્યારે વેબ ઍડ્રેસ ન ઉકેલાય અથવા કનેક્શન કરી શકાતું ન હોય ત્યારે સૂચનો દર્શાવો</translation>
+<translation id="4044912625106523635">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર સંપૂર્ણ ઊંચાઈએ ખુલે છે.</translation>
 <translation id="4046123991198612571">આગલો ટ્રૅક</translation>
 <translation id="4048707525896921369">પેજ છોડ્યાં વગર વેબસાઇટ પરના મુદ્દાઓ વિશે જાણો. શોધને ટૅપ કરવાથી એક શબ્દ અને તેની આસપાસનો સંદર્ભ Google શોધને મોકલે છે, જે વ્યાખ્યાઓ, ફોટોો, શોધ પરિણામો અને અન્ય વિગતો પરત કરે છે.
 
@@ -579,6 +580,7 @@
 <translation id="5271967389191913893">ડિવાઇસ, ડાઉનલોડ કરવાની કન્ટેન્ટ ખોલી શકતું નથી.</translation>
 <translation id="528192093759286357">પૂર્ણસ્ક્રીનથી બહાર નીકળવા માટે ઉપરથી ખેંચો અને પાછળ બટનને ટચ કરો.</translation>
 <translation id="5284584623296338184">તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને બીજા સેટિંગમાં ફેરફારને હવે તમારા Google એકાઉન્ટ પર સિંક કરવામાં આવશે નહિ. જોકે, તમારો અસ્તિત્વમાંનો ડેટા તમારા Google એકાઉન્ટમાં સ્ટોર રહેશે.</translation>
+<translation id="5292796745632149097">આના પર મોકલો</translation>
 <translation id="5300589172476337783">બતાવો</translation>
 <translation id="5301954838959518834">બરાબર, સમજાઇ ગયું</translation>
 <translation id="5304593522240415983">આ ફીલ્ડ ખાલી હોઈ શકતું નથી</translation>
@@ -740,6 +742,7 @@
 <translation id="6406506848690869874">સમન્વયન</translation>
 <translation id="641643625718530986">પ્રિન્ટ…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ડાઉનલોડ કર્યા</translation>
+<translation id="6418750371676080905">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર બંધ છે.</translation>
 <translation id="6427112570124116297">વેબનો અનુવાદ કરો</translation>
 <translation id="6433501201775827830">તમારું શોધ એંજિન પસંદ કરો</translation>
 <translation id="6437478888915024427">પેજ વિશે માહિતી</translation>
@@ -779,6 +782,7 @@
 <translation id="666268767214822976">સરનામાં બારમાં લખતાંની સાથે સંબંધિત ક્વેરીઝ અને લોકપ્રિય વેબસાઇટ્સ દર્શાવવા માટે પૂર્વાનુમાન સેવાનો ઉપયોગ કરો.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> માં ખોલો</translation>
 <translation id="666981079809192359">Chrome ગોપનીયતા સૂચના</translation>
+<translation id="6672986458216094438">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર અડધી ઊંચાઈએ ખુલે છે.</translation>
 <translation id="6697492270171225480">જ્યારે કોઈ પેજ ન મળે ત્યારે તેના જેવા પેજ માટે સૂચનો બતાવો</translation>
 <translation id="6697947395630195233">Chromeને આ સાઇટ સાથે તમારું સ્થાન શેર કરવા માટે તમારા સ્થાનના ઍક્સેસની જરૂર પડે છે.</translation>
 <translation id="6698801883190606802">સમન્વયિત ડેટા સંચાલિત કરો</translation>
@@ -850,7 +854,6 @@
 <translation id="7177466738963138057">તમે આને થોડા સમય પછી સેટિંગ્સમાં જઈને બદલી શકો છો</translation>
 <translation id="7180611975245234373">રિફ્રેશ કરો</translation>
 <translation id="7189372733857464326">Google Play સેવાઓ દ્વારા અપડેટ થવાનું સમાપ્ત કરવાની રાહ જોવામાં આવી રહી છે</translation>
-<translation id="7189598951263744875">શેર કરો...</translation>
 <translation id="7191430249889272776">ટેબ પૃષ્ઠભૂમિમાં ખોલવામાં આવ્યું છે.</translation>
 <translation id="723171743924126238">છબીઓ પસંદ કરો</translation>
 <translation id="7233236755231902816">વેબ તમારી ભાષામાં જોવા માટે Chromeનું એકદમ નવું વર્ઝન મેળવો</translation>
@@ -887,7 +890,6 @@
 <translation id="7445411102860286510">સાઇટ્સને આપમેળે મ્યૂટ કરેલ વિડિઓઝને ચલાવવાની મંજૂરી આપો (ભલામણ કરેલ)</translation>
 <translation id="7453467225369441013">તમને મોટાભાગની સાઇટોમાંથી સાઇન આઉટ કરે છે. તમે તમારા Google એકાઉન્ટમાંથી સાઇન આઉટ નહિ થાઓ.</translation>
 <translation id="7454641608352164238">પર્યાપ્ત જગ્યા નથી</translation>
-<translation id="7455923816558154057">જોવા માટે ટૅપ કરો</translation>
 <translation id="7473891865547856676">નહીં આભાર</translation>
 <translation id="7475192538862203634">જો તમે આ વારંવાર જોઈ રહ્યાં છો, તો આ <ph name="BEGIN_LINK" />સૂચનો<ph name="END_LINK" />ને અજમાવી જુઓ.</translation>
 <translation id="7475688122056506577">SD કાર્ડ મળ્યું નથી. તમારી અમુક ફાઇલો ખૂટતી હોઈ શકે છે.</translation>
@@ -956,6 +958,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> જૂનું થઈ ગયું છે.</translation>
 <translation id="7947953824732555851">સ્વીકારો અને સાઇન ઇન કરો</translation>
 <translation id="7963646190083259054">વિક્રેતા:</translation>
+<translation id="7971136598759319605">1 દિવસ પહેલાં સક્રિય હતું</translation>
 <translation id="7975379999046275268">પેજને પ્રીવ્યૂ કરો <ph name="BEGIN_NEW" />નવું<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">ઝડપી બ્રાઉઝિંગ અને શોધ માટે પેજને પહેલેથી લોડ કરો</translation>
 <translation id="79859296434321399">ઑગ્મેન્ટેડ રિયાલિટી કન્ટેન્ટ જોવા માટે, ARCore ઇન્સ્ટૉલ કરો</translation>

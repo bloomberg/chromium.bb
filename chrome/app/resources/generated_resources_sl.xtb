@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Privzeti beli avatar</translation>
 <translation id="1581962803218266616">Pokaži v Finderju</translation>
 <translation id="1584990664401018068">Omrežje Wi-Fi, ki ga uporabljate (<ph name="NETWORK_ID" />), bo morda zahtevalo preverjanje pristnosti.</translation>
-<translation id="1585238069289523942">Namestitev aplikacij v Chromebooku</translation>
 <translation id="1585717515139318619">Drug program v računalniku je dodal temo, ki lahko spremeni način delovanja Chroma. 
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">Napaka pri konfiguriranju datotek za Linux. Poskusite znova.</translation>
 <translation id="2315587498123194634">Pošiljanje povezave v napravo <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
-<translation id="2316739859433277603">Iskanja v zaganjalniku aplikacije uporabljajo <ph name="BEGIN_LINK" />nastavitev iskalnika<ph name="END_LINK" /> v brskalniku.</translation>
 <translation id="2317842250900878657">Dokončano: <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Velikost papirja</translation>
 <translation id="2318817390901984578">Če želite uporabljati aplikacije za Android, napolnite in uporabite napravo <ph name="DEVICE_TYPE" />.</translation>
@@ -5320,6 +5318,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9094033019050270033">Posodobi geslo</translation>
 <translation id="9094982973264386462">Odstrani</translation>
 <translation id="9095253524804455615">Odstrani</translation>
+<translation id="9095388113577226029">Več jezikov …</translation>
 <translation id="9100610230175265781">Zahtevano je geslo</translation>
 <translation id="9100765901046053179">Dodatne nastavitve</translation>
 <translation id="9101691533782776290">Zažene aplikacijo</translation>

@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Default white avatar</translation>
 <translation id="1581962803218266616">Show in Finder</translation>
 <translation id="1584990664401018068">The Wi-Fi network that you are using (<ph name="NETWORK_ID" />) may require authentication.</translation>
-<translation id="1585238069289523942">Install apps on your Chromebook</translation>
 <translation id="1585717515139318619">Another program on your computer added a theme that may change the way Chrome works.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">Error configuring Linux files. Please try again.</translation>
 <translation id="2315587498123194634">Send link to <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">No, thanks</translation>
-<translation id="2316739859433277603">Searches from the app launcher use your browser <ph name="BEGIN_LINK" />search engine setting<ph name="END_LINK" />.</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% done</translation>
 <translation id="2318143611928805047">Paper size</translation>
 <translation id="2318817390901984578">To use Android apps, charge &amp; update your <ph name="DEVICE_TYPE" />.</translation>
@@ -5317,6 +5315,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9094033019050270033">Update password</translation>
 <translation id="9094982973264386462">Remove</translation>
 <translation id="9095253524804455615">Remove</translation>
+<translation id="9095388113577226029">More languages...</translation>
 <translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9100765901046053179">Advanced settings</translation>
 <translation id="9101691533782776290">Launch app</translation>

@@ -383,7 +383,6 @@
 <translation id="1576594961618857597">Подразумевани бели аватар</translation>
 <translation id="1581962803218266616">Прикажи у Finder-у</translation>
 <translation id="1584990664401018068">Wi-Fi мрежа коју користите (<ph name="NETWORK_ID" />) ће можда захтевати потврду аутентичности.</translation>
-<translation id="1585238069289523942">Инсталирајте апликације на Chromebook-у</translation>
 <translation id="1585717515139318619">Други програм на рачунару је додао тему која може да промени начин на који Chrome функционише.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -872,7 +871,6 @@
 <translation id="2315414688463285945">Грешка при конфигурисању Linux датотека. Пробајте поново.</translation>
 <translation id="2315587498123194634">Пошаљи везу на уређај <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Не, хвала</translation>
-<translation id="2316739859433277603">Претраге помоћу покретача апликација користе <ph name="BEGIN_LINK" />подешавање претраживача<ph name="END_LINK" /> вашег прегледача.</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% је готово</translation>
 <translation id="2318143611928805047">Величина папира</translation>
 <translation id="2318817390901984578">Да бисте користили Android апликације, напуните и ажурирајте <ph name="DEVICE_TYPE" />.</translation>
@@ -5316,6 +5314,7 @@
 <translation id="9094033019050270033">Ажурирај лозинку</translation>
 <translation id="9094982973264386462">Уклони</translation>
 <translation id="9095253524804455615">Уклони</translation>
+<translation id="9095388113577226029">Још језика...</translation>
 <translation id="9100610230175265781">Потребна је приступна фраза</translation>
 <translation id="9100765901046053179">Напредна подешавања</translation>
 <translation id="9101691533782776290">Покрените апликацију</translation>

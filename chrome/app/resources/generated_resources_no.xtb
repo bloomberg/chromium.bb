@@ -383,7 +383,6 @@
 <translation id="1576594961618857597">Hvitt standardbrukerbilde</translation>
 <translation id="1581962803218266616">Vis i Finder</translation>
 <translation id="1584990664401018068">Det kan hende at Wi-Fi-nettverket du bruker (<ph name="NETWORK_ID" />), krever autentisering.</translation>
-<translation id="1585238069289523942">Installer apper på Chromebooken din</translation>
 <translation id="1585717515139318619">Et annet program på datamaskinen la til et tema som kan endre måten Chrome fungerer på. 
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -872,7 +871,6 @@
 <translation id="2315414688463285945">Feil ved konfigurering av Linux-filer. Prøv på nytt.</translation>
 <translation id="2315587498123194634">Send link til <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Nei takk</translation>
-<translation id="2316739859433277603">Når du søker i appvelgeren, brukes <ph name="BEGIN_LINK" />søkemotorinnstillingen<ph name="END_LINK" /> i nettleseren.</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" /> % ferdig</translation>
 <translation id="2318143611928805047">Papirstørrelse</translation>
 <translation id="2318817390901984578">For å bruke Android-apper, lad og oppdater <ph name="DEVICE_TYPE" />-enheten din.</translation>
@@ -5309,6 +5307,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9094033019050270033">Oppdater passordet</translation>
 <translation id="9094982973264386462">Fjern</translation>
 <translation id="9095253524804455615">Fjern</translation>
+<translation id="9095388113577226029">Flere språk</translation>
 <translation id="9100610230175265781">Det kreves en passordfrase</translation>
 <translation id="9100765901046053179">Avanserte innstillinger</translation>
 <translation id="9101691533782776290">Start appen</translation>

@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Printimine</translation>
 <translation id="1445680696957526815">Chrome'i komponendid on omavahel vastuolus. Chrome'i võidakse täiendada, proovige uuesti mõne minuti pärast. Kui probleem ei lahene, proovige Chrome desinstallida ja seejärel uuesti installida.</translation>
 <translation id="1446450296470737166">MIDI-seadm. täieliku juht. lub.</translation>
-<translation id="1449080968331948513">Andmemahu säästja uus nimetus on lihtsustatud režiim</translation>
 <translation id="145097072038377568">Android-seadetes välja lülitatud</translation>
 <translation id="1477626028522505441">Faili <ph name="FILE_NAME" /> allalaadimine ebaõnnestus serveriprobleemide tõttu.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{(ja veel 1)}other{(ja veel #)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Kustuta parool</translation>
 <translation id="1516229014686355813">Puudutamine otsimiseks saadab valitud sõna ja praeguse lehe kontekstina Google'i otsingusse. Selle saab välja lülitada jaotises <ph name="BEGIN_LINK" />Seaded<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Aktiivne täna</translation>
-<translation id="1539064842193522527">Link on Chrome'is avatud</translation>
 <translation id="1549000191223877751">Teisalda teise aknasse</translation>
 <translation id="1553358976309200471">Värskenda Chrome'i</translation>
 <translation id="1569387923882100876">Ühendatud seade</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">Saate sünkroonimise seadetes alati sisse lülitada</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> järjehoidja}other{<ph name="BOOKMARKS_COUNT_MANY" /> järjehoidjat}}</translation>
 <translation id="3089395242580810162">Ava inkognito vahelehel</translation>
-<translation id="311456632243022227">Mitu linki on Chrome'is avatud</translation>
 <translation id="3115898365077584848">Kuva teave</translation>
 <translation id="3123473560110926937">Blokeeritud teatud saitidel</translation>
 <translation id="3137521801621304719">Inkognito režiimist väljumine</translation>
@@ -857,7 +854,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7177466738963138057">Seda saate hiljem muuta jaotises Seaded</translation>
 <translation id="7180611975245234373">Värskenda</translation>
 <translation id="7189372733857464326">Google Play teenuste värskendamise lõpetamise ootamine</translation>
-<translation id="7189598951263744875">Jaga ...</translation>
 <translation id="7191430249889272776">Taustal on avatud vaheleht.</translation>
 <translation id="723171743924126238">Kujutiste valimine</translation>
 <translation id="7233236755231902816">Hankige Chrome'i uusim versioon, et saaksite oma keeles veebi sirvida</translation>
@@ -894,7 +890,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="7445411102860286510">Luba saitidel vaigistatud videoid automaatselt esitada (soovitatav)</translation>
 <translation id="7453467225369441013">Logib teid enamikult saitidelt välja. Google'i kontolt teid välja ei logita.</translation>
 <translation id="7454641608352164238">Pole piisavalt ruumi</translation>
-<translation id="7455923816558154057">Puudutage kuvamiseks</translation>
 <translation id="7473891865547856676">Tänan, ei</translation>
 <translation id="7475192538862203634">Kui näete seda sageli, proovige neid <ph name="BEGIN_LINK" />soovitusi<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD-kaarti ei leitud. Mõned failid võivad puududa.</translation>

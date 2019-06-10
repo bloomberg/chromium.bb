@@ -1095,6 +1095,15 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
           Jika kebijakan ini tidak ditetapkan, perilaku kebijakan yang lebih spesifik tetap tidak terpengaruh.</translation>
 <translation id="2987155890997901449">Aktifkan ARC</translation>
 <translation id="2987227569419001736">Mengontrol penggunaan API Bluetooth Web</translation>
+<translation id="2990018289267778247">Jika kebijakan ini ditetapkan ke True, opsi Aksesibilitas akan selalu muncul di menu baki sistem.
+
+          Jika kebijakan ini ditetapkan ke False, opsi Aksesibilitas tidak akan muncul di menu baki sistem.
+
+          Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
+
+          Jika kebijakan ini tidak ditetapkan, opsi Aksesibilitas tidak akan muncul di menu baki sistem, tetapi pengguna dapat menyebabkan munculnya opsi Aksesibilitas melalui halaman Setelan.
+
+          Jika fitur aksesibilitas diaktifkan (dengan cara lain, misalnya dengan kombinasi kunci), opsi Aksesibilitas akan selalu muncul di menu baki sistem.</translation>
 <translation id="3011301228198307065">Mengonfigurasi URL halaman beranda default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
 
           Halaman beranda adalah halaman yang dibuka oleh tombol Beranda. Halaman yang terbuka saat browser diluncurkan dikontrol oleh kebijakan RestoreOnStartup.
@@ -1410,6 +1419,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
         Kebijakan ini digunakan oleh pendaftaran kebijakan machine scope cloud di desktop dan dapat disetel oleh Registry atau GPO di Windows, plist di Mac, dan file kebijakan JSON di Linux.</translation>
 <translation id="3660562134618097814">Transfer cookie SAML IdP saat proses masuk.</translation>
 <translation id="3701121231485832347">Mengontrol setelan khusus perangkat <ph name="PRODUCT_OS_NAME" />.yang dikelola <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Pengesahan jarak jauh</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Kolom 1 baris sudah tidak digunakan lagi dan akan dihapus di masa mendatang. Mulai gunakan kotak teks multibaris di bawah.)</translation>
 <translation id="3709266154059827597">Konfigurasikan daftar penginstalan ekstensi yang tidak diizinkan</translation>
 <translation id="3711895659073496551">Tangguhkan</translation>
@@ -1803,6 +1813,15 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
           Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="4285674129118156176">Mengizinkan pengguna yang tak terafiliasi menggunakan ARC</translation>
+<translation id="4289903996435140853">Memungkinkan Anda menyetel daftar URL yang menentukan situs mana yang akan diberi izin secara otomatis untuk mengakses perangkat USB dengan ID produk dan vendor tertentu. Setiap item di daftar harus berisi URL dan perangkat agar kebijakan menjadi valid. Setiap item di perangkat dapat berisi kolom ID produk dan ID vendor. ID yang dihapus diperlakukan sebagai karakter pengganti dengan satu pengecualian, dan pengecualian tersebut adalah ID produk tidak dapat ditentukan jika ID vendor juga tidak ditentukan. Jika ditentukan, kebijakan akan menjadi tidak valid dan akan diabaikan.
+
+        Model izin USB menggunakan URL situs yang meminta ("URL yang meminta") dan URL situs bingkai level teratas ("URL sematan") untuk memberikan izin kepada URL yang meminta untuk mengakses perangkat USB. URL yang meminta mungkin berbeda dengan URL sematan saat situs yang meminta dimuat dalam iframe. Oleh karena itu, kolom "URL" dapat berisi hingga dua string URL yang dipisahkan dengan koma, untuk menentukan masing-masing URL yang meminta dan URL sematan. Jika hanya ada satu URL yang ditentukan, maka akses ke perangkat USB yang sesuai akan diberikan saat URL situs yang meminta cocok dengan URL ini, terlepas dari status sematannya. URL dalam "URL" harus berupa URL yang valid. Jika tidak, kebijakan akan diabaikan.
+
+        Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk seluruh situs, yaitu dari kebijakan 'DefaultWebUsbGuardSetting' jika disetel, atau dari konfigurasi pribadi pengguna.
+
+        Pola URL di kebijakan ini tidak boleh bertentangan dengan pola URL yang dikonfigurasi melalui WebUsbBlockedForUrls. Jika bertentangan, kebijakan ini akan lebih diutamakan daripada WebUsbBlockedForUrls dan WebUsbAskForUrls.
+
+        Nilai untuk kebijakan ini dan kebijakan WebUsbAllowDevicesForUrls digabungkan menjadi satu.</translation>
 <translation id="4298509794364745131">Menentukan daftar aplikasi yang dapat diaktifkan sebagai aplikasi pencatat di layar kunci <ph name="PRODUCT_OS_NAME" />.
 
       Jika aplikasi pencatat yang dipilih diaktifkan di layar kunci, layar kunci akan menampilkan elemen UI untuk peluncuran aplikasi pencatat yang dipilih.
@@ -1946,6 +1965,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4639407427807680016">Nama hosting perpesanan asli untuk dikeluarkan dari daftar hitam</translation>
 <translation id="4650759511838826572">Nonaktifkan skema protokol URL</translation>
 <translation id="465099050592230505">URL toko web perusahaan (tidak digunakan)</translation>
+<translation id="4661889655253181651">Setelan konten memungkinkan Anda menentukan bagaimana konten jenis tertentu (misalnya, Cookie, Gambar, atau JavaScript) ditangani.</translation>
 <translation id="4665897631924472251">Setelan pengelolaan ekstensi</translation>
 <translation id="4668325077104657568">Setelan gambar default</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -1990,6 +2010,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Saran ini diambil dari jarak jauh dari server Google.
 
       Jika setelan ini disetel ke false, saran tidak akan diambil atau ditampilkan.</translation>
+<translation id="4759650396863318477">Memungkinkan Anda menyetel jangka waktu, dalam milidetik, untuk memberi tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang atau bahwa perangkat <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update yang tertunda.
+
+      Selama jangka waktu ini, pengguna akan berulang kali diberi tahu tentang perlunya update. Untuk perangkat <ph name="PRODUCT_OS_NAME" />, notifikasi mulai ulang akan muncul di baki sistem sesuai dengan kebijakan <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Untuk browser <ph name="PRODUCT_NAME" />, menu aplikasi berubah untuk menunjukkan bahwa peluncuran ulang diperlukan setelah sepertiga periode notifikasi berlalu. Warna notifikasi akan berubah setelah dua pertiga periode notifikasi berlalu, dan berubah lagi setelah seluruh periode notifikasi berlalu. Notifikasi tambahan yang diaktifkan oleh kebijakan <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> mengikuti jadwal yang sama seperti ini.
+
+      Jika tidak disetel, periode default 345600000 milidetik (empat hari) digunakan untuk perangkat <ph name="PRODUCT_OS_NAME" /> dan 604800000 milidetik (satu minggu) untuk <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Mengaktifkan fitur IsiOtomatis <ph name="PRODUCT_NAME" /> dan memungkinkan pengguna mengisi otomatis informasi kartu kredit di formulir web menggunakan informasi yang disimpan sebelumnya.
 
       Jika setelan ini dinonaktifkan, IsiOtomatis tidak akan menyarankan atau mengisi informasi kartu kredit, serta tidak akan menyimpan informasi kartu kredit tambahan yang mungkin dikirim oleh pengguna saat browsing web.
@@ -2181,6 +2206,15 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5208240613060747912">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="5213038356678567351">Situs yang seharusnya tidak pernah memicu pengalihan browser.</translation>
 <translation id="5219844027738217407">Untuk aplikasi Android, kebijakan ini hanya memengaruhi mikrofon. Jika kebijakan disetel ke true, mikrofon akan dibisukan untuk semua aplikasi Android, tanpa pengecualian.</translation>
+<translation id="5221394278852982313">Memungkinkan Anda menyetel daftar URL yang menentukan situs mana yang akan diberi izin secara otomatis untuk mengakses perangkat USB dengan ID produk dan vendor tertentu. Setiap item di daftar harus berisi URL dan perangkat agar kebijakan menjadi valid. Setiap item di perangkat dapat berisi kolom ID produk dan ID vendor. ID yang dihapus diperlakukan sebagai karakter pengganti dengan satu pengecualian, dan pengecualian tersebut adalah ID produk tidak dapat ditentukan jika ID vendor juga tidak ditentukan. Jika ditentukan, kebijakan akan menjadi tidak valid dan akan diabaikan.
+
+        Model izin USB menggunakan URL situs yang meminta ("URL yang meminta") dan URL situs bingkai level teratas ("URL sematan") untuk memberikan izin kepada URL yang meminta untuk mengakses perangkat USB. URL yang meminta mungkin berbeda dengan URL sematan saat situs yang meminta dimuat dalam iframe. Oleh karena itu, kolom "URL" dapat berisi hingga dua string URL yang dipisahkan dengan koma, untuk menentukan masing-masing URL yang meminta dan URL sematan. Jika hanya ada satu URL yang ditentukan, maka akses ke perangkat USB yang sesuai akan diberikan saat URL situs yang meminta cocok dengan URL ini, terlepas dari status sematannya. URL dalam "URL" harus berupa URL yang valid. Jika tidak, kebijakan akan diabaikan.
+
+        Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk seluruh situs, yaitu dari kebijakan 'DefaultWebUsbGuardSetting' jika disetel, atau dari konfigurasi pribadi pengguna.
+
+        Pola URL di kebijakan ini tidak boleh bertentangan dengan pola URL yang dikonfigurasi melalui WebUsbBlockedForUrls. Jika bertentangan, kebijakan ini akan lebih diutamakan daripada WebUsbBlockedForUrls dan WebUsbAskForUrls.
+
+        Nilai untuk kebijakan ini dan kebijakan DeviceWebUsbAllowDevicesForUrls digabungkan menjadi satu.</translation>
 <translation id="5228316810085661003">Penundaan login otomatis akun lokal perangkat.
 
       Jika kebijakan |DeviceLocalAccountAutoLoginId| tidak ditetapkan, kebijakan ini tidak akan berpengaruh. Sebaliknya:
@@ -2881,6 +2915,21 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini disetel ke ''Jangan izinkan pengguna mengelola sertifikat'', pengguna tidak dapat mengelola sertifikat, mereka hanya dapat melihat sertifikat.</translation>
 <translation id="6573305661369899995">Setel sumber eksternal batasan URL</translation>
+<translation id="6583851521569686409">Mengonfigurasi daftar printer.
+
+      Kebijakan ini memungkinkan administrator memberikan konfigurasi printer
+      untuk pengguna.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> adalah string format bebas yang dapat disesuaikan untuk memudahkan pemilihan printer. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> diberikan agar pengguna akhir mudah mengidentifikasi printer. Keduanya mewakili produsen dan model printer. <ph name="PRINTER_URI" /> harus berupa alamat yang dapat dijangkau dari komputer klien termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> bersifat opsional. Jika tersedia, akan digunakan untuk membantu menghapus duplikat printer <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> harus mengandung nama printer atau <ph name="PRINTER_AUTOCONF" /> harus ditetapkan ke true. Printer dengan kedua atau tanpa properti apa pun akan diabaikan.
+
+      Penyiapan printer diselesaikan pada saat penggunaan printer yang pertama.  PPD tidak didownload sebelum printer digunakan.  Setelah waktu tersebut, PPD yang sering digunakan akan disimpan dalam cache.
+
+      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat.  Kebijakan ini ditujukan sebagai tambahan untuk konfigurasi printer yang diberikan oleh tiap pengguna.
+
+      Untuk perangkat yang dikelola Active Directory, kebijakan ini mendukung perluasan <ph name="MACHINE_NAME_VARIABLE" /> ke nama mesin Active Directory atau substring-nya. Misalnya, jika nama mesinnya adalah <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> akan diganti dengan 4 karakter yang dimulai setelah posisi ke-6, yaitu <ph name="MACHINE_NAME_PART_EXAMPLE" />. Perlu diketahui bahwa posisi mulai dari nol.
+      </translation>
 <translation id="6598235178374410284">Gambar avatar pengguna</translation>
 <translation id="6603004149426829878">Selalu kirim sinyal lokasi yang tersedia ke server sembari menentukan zona waktu</translation>
 <translation id="6628120204569232711">Laporkan status penyimpanan</translation>
@@ -4172,6 +4221,8 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="915194831143859291">Jika kebijakan ini disetel ke False atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan memungkinkan pengguna menonaktifkan perangkat.
       Jika kebijakan ini disetel ke True, <ph name="PRODUCT_OS_NAME" /> akan memicu boot ulang ketika pengguna mematikan perangkat. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kemunculan tombol matikan di antarmuka pengguna dengan tombol boot ulang. Jika pengguna mematikan perangkat menggunakan tombol daya, perangkat tidak otomatis melakukan boot ulang, meskipun kebijakan ini diaktifkan.</translation>
 <translation id="9152473318295429890">Aktifkan saran kontekstual halaman terkait</translation>
+<translation id="9153446010242995516">Roll back dan tetap menggunakan versi target jika versi OS lebih baru dari. Mencoba untuk menerapkan konfigurasi tingkat perangkat (termasuk kredensial jaringan) melalui proses rollback, jika memungkinkan, tetapi melakukan rollback dengan powerwash penuh meskipun pemulihan data tidak memungkinkan (karena versi target tidak mendukung pemulihan data atau karena perubahan tidak kompatibel untuk dikembalikan).
+          Didukung pada <ph name="PRODUCT_OS_NAME" /> versi 75 dan yang lebih baru. Untuk klien yang lebih lama, nilai ini berarti rollback dinonaktifkan.</translation>
 <translation id="9158929520101169054">Izinkan Login Multipel Dalam Browser</translation>
 <translation id="9159126470527871268">Beri tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang atau <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update yang tertunda.
 

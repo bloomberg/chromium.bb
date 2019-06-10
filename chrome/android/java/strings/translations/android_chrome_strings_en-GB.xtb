@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Print</translation>
 <translation id="1445680696957526815">Chrome’s components are incompatible with one another. Chrome may be upgrading, please try again in a few minutes. If the problem continues, try uninstalling and re-installing Chrome.</translation>
 <translation id="1446450296470737166">Allow full control of MIDI devices</translation>
-<translation id="1449080968331948513">Data Saver is now Lite mode</translation>
 <translation id="145097072038377568">Turned off in Android Settings</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> download failed due to server issues.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 more)}other{ (+ # more)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Delete password</translation>
 <translation id="1516229014686355813">Tap to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Active today</translation>
-<translation id="1539064842193522527">Link opened in Chrome</translation>
 <translation id="1549000191223877751">Move to other window</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1569387923882100876">Connected device</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">You can turn on sync at any time in settings</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> bookmarks}}</translation>
 <translation id="3089395242580810162">Open in incognito tab</translation>
-<translation id="311456632243022227">Multiple links opened in Chrome</translation>
 <translation id="3115898365077584848">Show info</translation>
 <translation id="3123473560110926937">Blocked on some sites</translation>
 <translation id="3137521801621304719">Leave incognito mode</translation>
@@ -857,7 +854,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7177466738963138057">You can change this later in Settings</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7189372733857464326">Waiting for Google Play Services to finish updating</translation>
-<translation id="7189598951263744875">Share...</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
 <translation id="723171743924126238">Select images</translation>
 <translation id="7233236755231902816">To see the web in your language, get the latest version of Chrome</translation>
@@ -894,7 +890,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7445411102860286510">Allow sites to automatically play muted videos (recommended)</translation>
 <translation id="7453467225369441013">Signs you out of most sites. You won't be signed out of your Google Account.</translation>
 <translation id="7454641608352164238">Not enough space</translation>
-<translation id="7455923816558154057">Tap to view</translation>
 <translation id="7473891865547856676">No, thanks</translation>
 <translation id="7475192538862203634">If you’re seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD card not found. Some of your files may be missing.</translation>

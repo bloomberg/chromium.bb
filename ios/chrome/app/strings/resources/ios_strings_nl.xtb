@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Map kiezen</translation>
 <translation id="1265739287306757398">Meer informatie</translation>
 <translation id="1272079795634619415">Stop</translation>
+<translation id="1283524564873030414">Afgelopen 24 uur</translation>
 <translation id="1323735185997015385">Verwijderen</translation>
 <translation id="132683371494960526">Dubbeltik om de hoofdmap te wijzigen.</translation>
 <translation id="1340643665687018190">Menu sluiten</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Geavanceerd</translation>
 <translation id="1989112275319619282">Browsen</translation>
 <translation id="2015722694326466240">Als je wachtwoorden wilt weergeven, moet je eerst een toegangscode instellen op je apparaat.</translation>
+<translation id="2073572773299281212"><ph name="DAYS" /> dagen geleden actief</translation>
 <translation id="2074131957428911366">Je kunt altijd in de <ph name="BEGIN_LINK" />instellingen<ph name="END_LINK" /> bepalen wat je wilt synchroniseren.</translation>
 <translation id="2079545284768500474">Ongedaan maken</translation>
 <translation id="209018056901015185">Desktopsite opvragen</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Alles openen</translation>
 <translation id="2570206273416014374">Verzendt bepaalde cookies en zoekopdrachten vanuit de adresbalk en het zoekvak naar je standaardzoekmachine.</translation>
 <translation id="2572712655377361602">Een apparaatbeleid blokkeert toegang tot je foto's</translation>
+<translation id="2578571896248130439">Webpagina verzenden</translation>
 <translation id="2584132361465095047">Account toevoegen…</translation>
 <translation id="2625189173221582860">Wachtwoord gekopieerd</translation>
 <translation id="2648803196158606475">Gelezen items verwijderen</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Markeren…</translation>
 <translation id="3157684681743766797">Alles markeren…</translation>
 <translation id="3175081911749765310">Webservices</translation>
+<translation id="3178650076442119961">Vandaag actief</translation>
 <translation id="3207960819495026254">Toegevoegd aan 'Bladwijzers'</translation>
 <translation id="3224641773458703735">Als je wachtwoorden wilt exporteren, moet je eerst een toegangscode instellen op je apparaat.</translation>
 <translation id="3240426699337459095">Link gekopieerd</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">Als je een QR-code wilt scannen, schakel je de camera in via Instellingen</translation>
 <translation id="4281844954008187215">Servicevoorwaarden</translation>
 <translation id="430793432425771671">Alles synchroniseren</translation>
+<translation id="430967081421617822">Altijd</translation>
 <translation id="4338650699862464074">Verzendt de URL's van pagina's die je bezoekt naar Google.</translation>
 <translation id="4359125752503270327">Deze pagina wordt geopend in een andere app.</translation>
 <translation id="4370827530403103842">Synchronisatie werkt niet. Tik om te herstellen.</translation>
@@ -281,6 +286,7 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5127805178023152808">Synchronisatie is uitgeschakeld</translation>
 <translation id="5132942445612118989">Je wachtwoorden, geschiedenis en meer synchroniseren op al je apparaten</translation>
 <translation id="5140288047769711648">Chrome onthoudt dit wachtwoord voor je. Je hoeft het niet zelf te onthouden.</translation>
+<translation id="5150492518600715772">Verzenden naar je apparaat</translation>
 <translation id="5181140330217080051">Downloaden</translation>
 <translation id="5186185447130319458">Privé</translation>
 <translation id="5190835502935405962">Bladwijzerbalk</translation>
@@ -295,6 +301,7 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5388358297987318779">Afbeelding openen</translation>
 <translation id="5409365236829784218">Er zijn geen applicaties geïnstalleerd waarmee dit bestand kan worden geopend.</translation>
+<translation id="5416022985862681400">Afgelopen 7 dagen</translation>
 <translation id="5433691172869980887">Gebruikersnaam gekopieerd</translation>
 <translation id="54401264925851789">Paginabeveiligingsinfo</translation>
 <translation id="5443952882982198570">Creditcards</translation>
@@ -309,6 +316,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="5659593005791499971">E-mailadres</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versie <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">1 dag geleden actief</translation>
 <translation id="5711039611392265845">Bekijk <ph name="BEGIN_LINK" />Synchronisatie en Google-services<ph name="END_LINK" /> voor meer instellingen die verband houden met privacy, beveiliging en gegevensverzameling.</translation>
 <translation id="5728700505257787410">Er is een probleem opgetreden met het inloggen op je account.</translation>
 <translation id="5737974891429562743">De inloggegevens voor het account zijn verouderd. Voer een update uit om te synchroniseren.</translation>

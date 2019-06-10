@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">รูปโปรไฟล์เริ่มต้นสีขาว</translation>
 <translation id="1581962803218266616">แสดงใน Finder</translation>
 <translation id="1584990664401018068">เครือข่าย Wi-Fi ที่คุณใช้ (<ph name="NETWORK_ID" />) อาจต้องการการตรวจสอบสิทธิ์</translation>
-<translation id="1585238069289523942">ติดตั้งแอปใน Chromebook</translation>
 <translation id="1585717515139318619">โปรแกรมอื่นบนคอมพิวเตอร์ได้เพิ่มธีมซึ่งอาจเปลี่ยนลักษณะการทำงานของ Chrome
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">เกิดข้อผิดพลาดขณะกำหนดค่าไฟล์ Linux โปรดลองอีกครั้ง</translation>
 <translation id="2315587498123194634">ส่งลิงก์ไปที่ <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">ไม่ ขอบคุณ</translation>
-<translation id="2316739859433277603">การค้นหาจากตัวเปิดแอปจะใช้<ph name="BEGIN_LINK" />การตั้งค่าเครื่องมือค้นหา<ph name="END_LINK" />ของเบราว์เซอร์</translation>
 <translation id="2317842250900878657">เสร็จแล้ว <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">ขนาดกระดาษ</translation>
 <translation id="2318817390901984578">หากต้องการใช้แอป Android ให้ชาร์จและอัปเดต <ph name="DEVICE_TYPE" /></translation>
@@ -4540,7 +4538,7 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">มีการเปลี่ยนรหัสผ่านของคุณในเซิร์ฟเวอร์ โปรดออกจากระบบแล้วลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="7915471803647590281">โปรดแจ้งให้เราทราบถึงสิ่งที่เกิดขึ้นก่อนส่งความคิดเห็น</translation>
-<translation id="7919210519031517829"><ph name="DURATION" /> วินาที</translation>
+<translation id="7919210519031517829"><ph name="DURATION" /> วิ</translation>
 <translation id="792514962475806987">ระดับการซูมหน้าจอบางส่วน:</translation>
 <translation id="7925247922861151263">การตรวจสอบ AAA ล้มเหลว</translation>
 <translation id="7925285046818567682">กำลังรอ <ph name="HOST_NAME" />...</translation>
@@ -5318,6 +5316,7 @@
 <translation id="9094033019050270033">อัปเดตรหัสผ่าน</translation>
 <translation id="9094982973264386462">นำออก</translation>
 <translation id="9095253524804455615">นำออก</translation>
+<translation id="9095388113577226029">ภาษาเพิ่มเติม...</translation>
 <translation id="9100610230175265781">ต้องระบุรหัสผ่าน</translation>
 <translation id="9100765901046053179">การตั้งค่าขั้นสูง</translation>
 <translation id="9101691533782776290">เปิดแอป</translation>

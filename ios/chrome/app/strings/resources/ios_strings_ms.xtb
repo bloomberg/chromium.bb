@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1265739287306757398">Ketahui Caranya</translation>
 <translation id="1272079795634619415">Berhenti</translation>
+<translation id="1283524564873030414">24 Jam Yang Lalu</translation>
 <translation id="1323735185997015385">Padam</translation>
 <translation id="132683371494960526">Ketik dua kali untuk menukar folder induk.</translation>
 <translation id="1340643665687018190">Tutup Menu</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Lanjutan</translation>
 <translation id="1989112275319619282">Semak Imbas</translation>
 <translation id="2015722694326466240">Untuk melihat kata laluan, mula-mula anda mesti menetapkan kod laluan pada peranti anda.</translation>
+<translation id="2073572773299281212">Aktif <ph name="DAYS" /> Hari Yang Lalu</translation>
 <translation id="2074131957428911366">Anda boleh memilih item yang hendak disegerakkan dalam <ph name="BEGIN_LINK" />tetapan<ph name="END_LINK" /> pada bila-bila masa.</translation>
 <translation id="2079545284768500474">Buat asal</translation>
 <translation id="209018056901015185">Minta Tapak Desktop</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Buka Semua</translation>
 <translation id="2570206273416014374">Menghantar beberapa kuki dan carian daripada bar alamat dan kotak carian ke enjin carian lalai anda.</translation>
 <translation id="2572712655377361602">Dasar peranti menyekat akses ke foto anda</translation>
+<translation id="2578571896248130439">Hantar Halaman Web</translation>
 <translation id="2584132361465095047">Tambahkan Akaun...</translation>
 <translation id="2625189173221582860">Kata laluan disalin</translation>
 <translation id="2648803196158606475">Padamkan Dibaca</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Tandakan...</translation>
 <translation id="3157684681743766797">Tandakan Semua...</translation>
 <translation id="3175081911749765310">Prkhdmtn Web</translation>
+<translation id="3178650076442119961">Aktif Hari Ini</translation>
 <translation id="3207960819495026254">Ditandai halaman</translation>
 <translation id="3224641773458703735">Untuk mengeksport kata laluan, mula-mula anda mesti menetapkan kod laluan pada peranti anda.</translation>
 <translation id="3240426699337459095">Pautan disalin</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">Untuk mengimbas kod QR, dayakan kamera daripada tetapan</translation>
 <translation id="4281844954008187215">Syarat Perkhidmatan</translation>
 <translation id="430793432425771671">Segerakkan Semua</translation>
+<translation id="430967081421617822">Sepanjang Masa</translation>
 <translation id="4338650699862464074">Menghantar URL halaman yang anda lawati kepada Google.</translation>
 <translation id="4359125752503270327">Halaman ini akan dibuka dalam aplikasi lain.</translation>
 <translation id="4370827530403103842">Penyegerakan tidak berfungsi. Ketik untuk membetulkannya.</translation>
@@ -281,6 +286,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5127805178023152808">Penyegerakan dimatikan</translation>
 <translation id="5132942445612118989">Segerakkan kata laluan, sejarah &amp; pelbagai lagi pada semua peranti</translation>
 <translation id="5140288047769711648">Chrome akan mengingati kata laluan ini untuk anda. Anda tidak perlu mengingatnya.</translation>
+<translation id="5150492518600715772">Hantar Ke Peranti Anda</translation>
 <translation id="5181140330217080051">Memuat turun</translation>
 <translation id="5186185447130319458">Peribadi</translation>
 <translation id="5190835502935405962">Bar Penanda Halaman</translation>
@@ -295,6 +301,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5327248766486351172">Nama</translation>
 <translation id="5388358297987318779">Buka Imej</translation>
 <translation id="5409365236829784218">Tiada aplikasi dipasang yang boleh membuka fail ini.</translation>
+<translation id="5416022985862681400">7 Hari Terakhir</translation>
 <translation id="5433691172869980887">Nama pengguna disalin</translation>
 <translation id="54401264925851789">Maklumat Halaman Keselamatan</translation>
 <translation id="5443952882982198570">Kad Kredit</translation>
@@ -309,6 +316,7 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="5659593005791499971">E-mel</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versi <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">Aktif 1 Hari Yang Lalu</translation>
 <translation id="5711039611392265845">Untuk mendapatkan pelbagai lagi tetapan yang berkaitan dengan privasi, keselamatan dan pengumpulan data, lihat <ph name="BEGIN_LINK" />Penyegerakan dan Perkhidmatan Google<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Maaf, terdapat masalah untuk log masuk ke akaun anda.</translation>
 <translation id="5737974891429562743">Butiran log masuk akaun sudah lapuk. Sila kemas kini untuk memulakan penyegerakan.</translation>

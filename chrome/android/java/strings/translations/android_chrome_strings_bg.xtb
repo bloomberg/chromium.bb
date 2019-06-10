@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Печат</translation>
 <translation id="1445680696957526815">Компонентите на Chrome не са съвместими един с друг. Възможно е браузърът да се надстройва. Моля, опитайте отново след няколко минути. Ако проблемът не се отстрани, пробвайте да деинсталирате и да инсталирате отново Chrome.</translation>
 <translation id="1446450296470737166">Разр. на пълния контрол над MIDI</translation>
-<translation id="1449080968331948513">„Икономия на данни“ вече е „олекотен режим“</translation>
 <translation id="145097072038377568">Изключено от настройките на Android</translation>
 <translation id="1477626028522505441">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради проблеми в сървъра.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ още 1)}other{ (+ още #)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Изтриване на паролата</translation>
 <translation id="1516229014686355813">При търсене с докосване избраната дума и текущата страница се изпращат като контекст до Google Търсене. Можете да изключите функцията от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Активно днес</translation>
-<translation id="1539064842193522527">Връзката е отворена в Chrome</translation>
 <translation id="1549000191223877751">Преместв. в другия прозорец</translation>
 <translation id="1553358976309200471">Актуализиране на Chrome</translation>
 <translation id="1569387923882100876">Свързано устройство</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">Можете по всяко време да включите синхронизирането в настройките</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> отметка}other{<ph name="BOOKMARKS_COUNT_MANY" /> отметки}}</translation>
 <translation id="3089395242580810162">Отваряне в раздел „инкогнито“</translation>
-<translation id="311456632243022227">Няколко връзки са отв. в Chrome</translation>
 <translation id="3115898365077584848">Показване на информацията</translation>
 <translation id="3123473560110926937">Блокиране на някои сайтове</translation>
 <translation id="3137521801621304719">Напускане на режима „инкогнито“</translation>
@@ -857,7 +854,6 @@
 <translation id="7177466738963138057">Можете да промените това по-късно от настройките</translation>
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="7189372733857464326">Изчаква се актуализирането на услугите за Google Play да приключи</translation>
-<translation id="7189598951263744875">Споделяне...</translation>
 <translation id="7191430249889272776">Разделът е отворен на заден план.</translation>
 <translation id="723171743924126238">Избиране на изображения</translation>
 <translation id="7233236755231902816">За да виждате съдържанието в мрежата на своя език, изтеглете най-новата версия на Chrome</translation>
@@ -894,7 +890,6 @@
 <translation id="7445411102860286510">Разрешаване на сайтовете автоматично да възпроизвеждат видеоклипове със заглушен звук (препоръчително)</translation>
 <translation id="7453467225369441013">Ще излезете от повечето сайтове, но не и от профила си в Google.</translation>
 <translation id="7454641608352164238">Няма достатъчно място</translation>
-<translation id="7455923816558154057">Докоснете за преглед</translation>
 <translation id="7473891865547856676">Не, благодаря</translation>
 <translation id="7475192538862203634">Ако виждате това често, изпробвайте тези <ph name="BEGIN_LINK" />предложения<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD картата не е намерена. Някои файлове може да липсват.</translation>

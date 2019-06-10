@@ -71,7 +71,6 @@
 <translation id="1430915738399379752">I-print</translation>
 <translation id="1445680696957526815">Hindi tugma ang mga bahagi ng Chrome sa isa't isa. Maaaring nag-a-upgrade ang Chrome, subukang muli pagkatapos ng ilang sandali. Kung magpapatuloy ang problema, subukang i-uninstall at muling i-install ang Chrome.</translation>
 <translation id="1446450296470737166">Payagan ganap na kontrol sa MIDI device</translation>
-<translation id="1449080968331948513">Ang Data Saver ay tinatawag na ngayong Lite mode</translation>
 <translation id="145097072038377568">Naka-off sa Mga Setting ng Android</translation>
 <translation id="1477626028522505441">Hindi na-download ang <ph name="FILE_NAME" /> dahil sa mga isyu sa server.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 pa)}one{ (+ # pa)}other{ (+ # pa)}}</translation>
@@ -81,7 +80,6 @@
 <translation id="1513858653616922153">I-delete ang password</translation>
 <translation id="1516229014686355813">Ipinapadala sa Google Search ng I-tap para Maghanap ang napiling salita at ang kasalukuyang page bilang konteksto. Maaari mo itong i-off sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Aktibo ngayong araw</translation>
-<translation id="1539064842193522527">Binuksan ang link sa Chrome</translation>
 <translation id="1549000191223877751">Lumipat sa ibang window</translation>
 <translation id="1553358976309200471">I-update ang Chrome</translation>
 <translation id="1569387923882100876">Nakakonektang Device</translation>
@@ -288,7 +286,6 @@
 <translation id="3058498974290601450">Maaari mong i-on ang pag-sync anumang oras sa mga setting.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}one{<ph name="BOOKMARKS_COUNT_MANY" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> na bookmark}}</translation>
 <translation id="3089395242580810162">Buksan sa tab na incognito</translation>
-<translation id="311456632243022227">Nagbukas ng marami sa Chrome</translation>
 <translation id="3115898365077584848">Ipakita ang Impormasyon</translation>
 <translation id="3123473560110926937">Naka-block sa ilang site</translation>
 <translation id="3137521801621304719">Umalis sa mode na incognito</translation>
@@ -850,7 +847,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7177466738963138057">Maaari mo itong baguhin sa ibang pagkakataon sa Mga Setting</translation>
 <translation id="7180611975245234373">I-refresh</translation>
 <translation id="7189372733857464326">Hinihintay ang Mga Serbisyo ng Google Play na matapos sa pag-update</translation>
-<translation id="7189598951263744875">Ibahagi...</translation>
 <translation id="7191430249889272776">Binuksan ang tab sa background.</translation>
 <translation id="723171743924126238">Pumili ng mga larawan</translation>
 <translation id="7233236755231902816">Para makita ang web sa iyong wika, kunin ang pinakabagong bersyon ng Chrome</translation>
@@ -887,7 +883,6 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="7445411102860286510">Payagan ang mga site na awtomatikong mag-play ng mga naka-mute na video (inirerekomenda)</translation>
 <translation id="7453467225369441013">Isa-sign out ka sa karamihan ng mga site. Hindi ka masa-sign out sa iyong Google Account.</translation>
 <translation id="7454641608352164238">Walang sapat na espasyo</translation>
-<translation id="7455923816558154057">I-tap upang tingnan</translation>
 <translation id="7473891865547856676">Hindi, Salamat</translation>
 <translation id="7475192538862203634">Kung madalas mo itong makita, subukan ang <ph name="BEGIN_LINK" />mga suhestyon<ph name="END_LINK" /> na ito.</translation>
 <translation id="7475688122056506577">Hindi nakita ang SD card. Maaaring nawawala ang ilan sa iyong mga file.</translation>

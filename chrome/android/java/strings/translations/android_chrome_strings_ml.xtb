@@ -71,7 +71,6 @@
 <translation id="1430915738399379752">അച്ചടിക്കുക</translation>
 <translation id="1445680696957526815">Chrome-ന്റെ ഘടകങ്ങൾ മറ്റൊന്നുമായി പൊരുത്തപ്പെടുന്നില്ല. Chrome അപ്‌ഗ്രേഡുചെയ്യുകയാവാം, അൽപ്പസമയത്തിനുശേഷം വീണ്ടും ശ്രമിക്കുക. പ്രശ്‌നം തുടരുന്നുവെങ്കിൽ, Chrome അൺഇൻസ്റ്റാളുചെയ്‌തതിനുശേഷം വീണ്ടും ഇൻസ്റ്റാളുചെയ്യുന്നത് പരീക്ഷിക്കുക.</translation>
 <translation id="1446450296470737166">MIDI ഉപകരണങ്ങളുടെ പൂർണ്ണ നിയന്ത്രണം അനുവദിക്കുക</translation>
-<translation id="1449080968331948513">ഡാറ്റ സേവർ ഇപ്പോൾ ലൈറ്റ് മോഡ് ആണ്</translation>
 <translation id="145097072038377568">Android ക്രമീകരണത്തിൽ ഓഫാക്കിയിരിക്കുന്നു</translation>
 <translation id="1477626028522505441">സെർവർ പ്രശ്‌നങ്ങൾ കാരണം <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ ഒരെണ്ണം കൂടി)}other{ (+ # എണ്ണം കൂടി)}}</translation>
@@ -81,7 +80,6 @@
 <translation id="1513858653616922153">പാസ്‌വേഡ് ഇല്ലാതാക്കുക</translation>
 <translation id="1516229014686355813">Google തിരയലിന് സന്ദർഭം വ്യക്തമാക്കാൻ തിരഞ്ഞെടുത്ത വാക്കും നിലവിലെ പേജും, 'തിരയാൻ സ്‌പർശിക്കുക' അയയ്‌ക്കും. <ph name="BEGIN_LINK" />ക്രമീകരണത്തിൽ<ph name="END_LINK" /> നിന്ന് നിങ്ങൾക്കിത് ഓഫാക്കാം.</translation>
 <translation id="1521774566618522728">ഇന്ന് സജീവമായിരുന്നു</translation>
-<translation id="1539064842193522527">Chrome-ൽ ലിങ്ക് തുറന്നു</translation>
 <translation id="1549000191223877751">മറ്റൊരു വിൻഡോയിലേക്ക് നീക്കുക</translation>
 <translation id="1553358976309200471">Chrome അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
 <translation id="1569387923882100876">കണക്റ്റ് ചെയ്‌തിരിക്കുന്ന ഉപകരണം</translation>
@@ -288,7 +286,6 @@
 <translation id="3058498974290601450">നിങ്ങൾക്ക് ഏത് സമയത്തും ക്രമീകരണത്തിൽ സമന്വയം ഓണാക്കാവുന്നതാണ്</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ബുക്ക്‌മാർക്ക്}other{<ph name="BOOKMARKS_COUNT_MANY" /> ബുക്ക്‌മാർക്കുകൾ}}</translation>
 <translation id="3089395242580810162">അദൃശ്യ ടാബിൽ തുറക്കുക</translation>
-<translation id="311456632243022227">Chrome-ൽ ഒന്നിലധികം ലിങ്കുകൾ തുറന്നു</translation>
 <translation id="3115898365077584848">വിവരങ്ങൾ കാണിക്കുക</translation>
 <translation id="3123473560110926937">ചില സൈറ്റുകളിൽ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="3137521801621304719">അദൃശ്യ മോഡ് വിടുക</translation>
@@ -850,7 +847,6 @@
 <translation id="7177466738963138057">നിങ്ങൾക്കിത് പിന്നീട് ക്രമീകരണങ്ങളിൽ മാറ്റാനാവും</translation>
 <translation id="7180611975245234373">പുതുക്കുക</translation>
 <translation id="7189372733857464326">Google Play സേവനങ്ങൾ അപ്‌ഡേറ്റുചെയ്യുന്നത് പൂർത്തിയാക്കാൻ കാത്തിരിക്കുന്നു</translation>
-<translation id="7189598951263744875">പങ്കിടുക...</translation>
 <translation id="7191430249889272776">ടാബ് പശ്ചാത്തലത്തിൽ തുറന്നു.</translation>
 <translation id="723171743924126238">ചിത്രങ്ങൾ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7233236755231902816">നിങ്ങളുടെ ഭാഷയിൽ വെബ് കാണാൻ Chrome-ൻ്റെ ഏറ്റവും പുതിയ പതിപ്പ് നേടൂ</translation>
@@ -887,7 +883,6 @@
 <translation id="7445411102860286510">മ്യൂട്ടുചെയ്‌ത വീഡിയോകൾ സ്വയം പ്ലേ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="7453467225369441013">നിങ്ങൾ മിക്ക സൈറ്റുകളിൽ നിന്നും സൈൻ ഔട്ടാകും. നിങ്ങൾ Google അക്കൗണ്ടിൽ നിന്ന് സൈൻ ഔട്ട് ആകില്ല.</translation>
 <translation id="7454641608352164238">വേണ്ടത്ര ഇടമില്ല</translation>
-<translation id="7455923816558154057">കാണാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="7473891865547856676">വേണ്ട, നന്ദി</translation>
 <translation id="7475192538862203634">നിങ്ങൾ ഇത് പതിവായി കാണുന്നുണ്ടെങ്കിൽ, ഈ <ph name="BEGIN_LINK" />നിർദ്ദേശങ്ങൾ<ph name="END_LINK" /> പരീക്ഷിക്കൂ.</translation>
 <translation id="7475688122056506577">SD കാർഡ് കണ്ടെത്തിയില്ല. നിങ്ങളുടെ ചില ഫയലുകൾ നഷ്‌ടപ്പെട്ടേക്കാം.</translation>

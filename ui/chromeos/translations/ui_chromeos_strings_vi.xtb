@@ -286,6 +286,7 @@
 <translation id="4572815280350369984">Tệp <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Thêm...</translation>
 <translation id="4582497162516204941">Cài đặt bằng Linux (Beta)</translation>
+<translation id="4594543368593301662">Đang hiển thị kết quả cho <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Nghệ sĩ</translation>
 <translation id="4656293982926141856">Máy tính này</translation>
 <translation id="4669606053856530811">Thành viên của '<ph name="SOURCE_NAME" />' sẽ mất quyền truy cập trừ khi bạn chia sẻ các mục này với họ.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Bàn phím tiếng Bungari</translation>
 <translation id="5418923334382419584">Bàn phím tiếng Myanmar</translation>
 <translation id="5428105026674456456">Tiếng Tây Ban Nha</translation>
+<translation id="5438282218546237410">Không có kết quả nào cho <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Bàn phím tiếng Ba Lan</translation>
 <translation id="5465122519792752163">Bàn phím tiếng Nepal (InScript)</translation>
 <translation id="5469868506864199649">Tiếng Ý</translation>
 <translation id="5494920125229734069">Chọn tất cả</translation>
 <translation id="5500122897333236901">Tiếng Ai-xơ-len</translation>
 <translation id="5508696409934741614">Dấu chấm</translation>
+<translation id="5522908512596376669">Danh sách tệp đã thay đổi thành chế độ xem danh sách.</translation>
 <translation id="5524517123096967210">Không thể đọc tệp.</translation>
 <translation id="5533102081734025921">Hình ảnh <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Chuyển ngữ (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6054173164583630569">Bàn phím tiếng Pháp</translation>
 <translation id="6074825444536523002">Biểu mẫu Google</translation>
+<translation id="6096979789310008754">Đã xóa nội dung tìm kiếm, đang hiển thị tất cả các tệp và thư mục.</translation>
 <translation id="6111770213269631447">Chuyển ngữ (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Dấu cách</translation>
 <translation id="6133173853026656527">Đang di chuyển <ph name="FILE_NAME" />...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Voi</translation>
 <translation id="8569764466147087991">Chọn tệp để mở</translation>
 <translation id="8579285237314169903">Đang đồng bộ hóa <ph name="NUMBER_OF_FILES" /> mục...</translation>
+<translation id="8600173386174225982">Danh sách tệp đã thay đổi thành chế độ xem hình thu nhỏ.</translation>
 <translation id="8669949407341943408">Đang di chuyển...</translation>
 <translation id="8671210955687109937">Có thể nhận xét</translation>
 <translation id="8686213429977032554">Tệp Drive này chưa được chia sẻ</translation>

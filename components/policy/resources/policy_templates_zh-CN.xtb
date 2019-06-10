@@ -1065,6 +1065,15 @@
           如果未设置此政策，更具体政策的行为不会受到影响。</translation>
 <translation id="2987155890997901449">启用 ARC</translation>
 <translation id="2987227569419001736">控制对 Web Bluetooth API 的使用</translation>
+<translation id="2990018289267778247">如果此政策设为 true，系统任务栏菜单中将始终显示无障碍选项。
+
+          如果此政策设为 false，系统任务栏菜单中绝不会显示无障碍选项。
+
+          如果您设置了此政策，用户将无法更改或覆盖它。
+
+          如果未设置此政策，系统任务栏菜单中将不会显示无障碍选项，但用户可以通过“设置”页面使无障碍选项显示在系统任务栏菜单中。
+
+          启用无障碍功能（通过诸如组合键等其他方式）后，系统任务栏菜单中将始终显示无障碍选项。</translation>
 <translation id="3011301228198307065">配置 <ph name="PRODUCT_NAME" /> 中的默认主页网址，并禁止用户更改此配置。
 
           主页是由“主页”按钮打开的网页。启动时打开的网页是由 RestoreOnStartup 政策控制的。
@@ -1374,6 +1383,7 @@
         此政策由在桌面设备上进行的机器范围云政策注册使用，并可由 Windows 上的注册表/GPO、Mac 上的 plist 以及 Linux 上的 JSON 政策文件设置。</translation>
 <translation id="3660562134618097814">在用户登录期间转移 SAML IdP Cookie</translation>
 <translation id="3701121231485832347">控制由 <ph name="MS_AD_NAME" /> 管理的 <ph name="PRODUCT_OS_NAME" />设备的专用设置。</translation>
+<translation id="3702518095257671450">远程证明</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" />（我们已弃用并将于日后移除单行字段。请开始使用下面的多行文本框。）</translation>
 <translation id="3709266154059827597">配置扩展程序安装黑名单</translation>
 <translation id="3711895659073496551">暂停</translation>
@@ -1754,6 +1764,15 @@
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="4285674129118156176">允许独立用户使用 ARC</translation>
+<translation id="4289903996435140853">让您能够以列表的形式设置一系列网址，从而指定将会自动授权哪些网站通过给定的供应商 ID 和产品 ID 访问 USB 设备。列表中的每项内容都必须包含设备和网址这两个部分，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，此政策将会无效并会被忽略。
+
+        USB 权限模型会使用发出相应请求的网站的网址（“请求网址”）和顶级框架网站的网址（“嵌入网址”）来授权请求网址访问 USB 设备。如果发出请求的网站是在 iframe 中加载的，则请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的网址字符串以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时向该网站授予对相应 USB 设备的访问权限。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
+
+        如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
+
+        此政策中的网址格式不应与通过 WebUsbBlockedForUrls 配置的网址格式冲突。如果存在冲突，则此政策的优先级高于 WebUsbBlockedForUrls 和 WebUsbAskForUrls。
+
+        此政策和 WebUsbAllowDevicesForUrls 政策的值会合并在一起。</translation>
 <translation id="4298509794364745131">指定可以在 <ph name="PRODUCT_OS_NAME" />锁定屏幕上作为备注应用启用的应用列表。
 
       如果在锁定屏幕上启用首选备注应用，则锁定屏幕将包含用于启动该首选备注应用的界面元素。
@@ -1897,6 +1916,7 @@
 <translation id="4639407427807680016">免于列入黑名单的本地消息传递主机名</translation>
 <translation id="4650759511838826572">停用网址协议架构</translation>
 <translation id="465099050592230505">企业网上应用店网址（已弃用）</translation>
+<translation id="4661889655253181651">“内容设置”让您能够指定对特定类型内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
 <translation id="4665897631924472251">扩展程序管理设置</translation>
 <translation id="4668325077104657568">默认图片设置</translation>
 <translation id="4670865688564083639">下限：</translation>
@@ -1941,6 +1961,11 @@
       这些建议是从 Google 服务器远程提取的。
 
       如果此政策设为 false，将不会提取或显示此类建议。</translation>
+<translation id="4759650396863318477">让您能够设置一个时间段（以毫秒为单位），在该时间段内，如果必须重新启动 <ph name="PRODUCT_NAME" /> 或必须重启 <ph name="PRODUCT_OS_NAME" />设备以应用待应用的更新，用户将会收到通知。
+
+      在该时间段内，如果需要更新，系统会反复通知用户。对于 <ph name="PRODUCT_OS_NAME" />设备，系统会根据 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策在系统任务栏中显示重启通知。对于 <ph name="PRODUCT_NAME" /> 浏览器，应用菜单会在通知时间段过去三分之一后立即发生变化，以指示需要重新启动浏览器。此通知会在通知时间段过去三分之二后立即改变颜色，并会在整个通知时间段过后再次立即改变颜色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策启用的其他通知也会遵循这一时间表。
+
+      如果此政策未设置，对于 <ph name="PRODUCT_OS_NAME" />设备，系统会使用 345600000 毫秒（4 天）的默认通知时间段，对于 <ph name="PRODUCT_NAME" />，则会使用 604800000 毫秒（1 周）的默认通知时间段。</translation>
 <translation id="4788252609789586009">启用 <ph name="PRODUCT_NAME" /> 的“自动填充”功能，并允许用户使用以前存储的信用卡信息在网络表单中自动填写相关信息。
 
       如果停用了此设置，“自动填充”功能将不会提供建议或填充信用卡信息，也不会保存用户可能会在浏览网页时提交的其他信用卡信息。
@@ -2130,6 +2155,15 @@
 <translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="5213038356678567351">始终不应触发浏览器切换的网站。</translation>
 <translation id="5219844027738217407">对于 Android 应用，此政策仅会影响麦克风。当此政策设为 true 时，系统会针对所有 Android 应用（无一例外）将麦克风设为静音。</translation>
+<translation id="5221394278852982313">让您能够以列表的形式设置一系列网址，从而指定将会自动授权哪些网站通过给定的供应商 ID 和产品 ID 访问 USB 设备。列表中的每项内容都必须包含设备和网址这两个部分，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，此政策将会无效并会被忽略。
+
+        USB 权限模型会使用发出相应请求的网站的网址（“请求网址”）和顶级框架网站的网址（“嵌入网址”）来授权请求网址访问 USB 设备。如果发出请求的网站是在 iframe 中加载的，则请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的网址字符串以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时向该网站授予对相应 USB 设备的访问权限。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
+
+        如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
+
+        此政策中的网址格式不应与通过 WebUsbBlockedForUrls 配置的网址格式冲突。如果存在冲突，则此政策的优先级高于 WebUsbBlockedForUrls 和 WebUsbAskForUrls。
+
+        此政策和 DeviceWebUsbAllowDevicesForUrls 政策的值会合并在一起。</translation>
 <translation id="5228316810085661003">设备本地帐号自动登录延迟。
 
       如果未设置 |DeviceLocalAccountAutoLoginId| 政策，则此政策不会生效。在设置了 |DeviceLocalAccountAutoLoginId| 政策的情况下：
@@ -2829,6 +2863,20 @@
 
       如果此政策设为“禁止用户管理证书”，用户将无法管理证书，只能查看证书。</translation>
 <translation id="6573305661369899995">设置网址限制条件的外部来源</translation>
+<translation id="6583851521569686409">配置打印机列表。
+
+      通过此政策，管理员可为用户提供打印机配置。
+
+      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”均为自由格式的字符串，且均可被自定义以便于选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”则可以帮助最终用户轻松识别打印机。它们分别代表打印机的制造商和型号。“<ph name="PRINTER_URI" />”应是可通过客户端计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果提供的话，该项可用于帮助删除重复的“<ph name="ZEROCONF_DISCOVERY" />”打印机。
+
+      要么 <ph name="PRINTER_EFFECTIVE_MODEL" /> 应该包含打印机的名称，要么 <ph name="PRINTER_AUTOCONF" /> 应该设为 true。具有这两种属性或者不具有任一属性的打印机将会被忽略。
+
+      打印机设置会在用户首次使用打印机时完成。在用户开始使用打印机之前，系统不会下载 PPD。在用户开始使用打印机之后，系统会缓存经常使用的 PPD。
+
+      此政策对用户能否在某设备上配置打印机没有影响。它旨在对各个用户的打印机配置起到补充作用。
+
+      对于由 Active Directory 托管的设备，此政策支持将“<ph name="MACHINE_NAME_VARIABLE" />”扩展为 Active Directory 机器名称或其子字符串。例如，如果机器名称是“<ph name="MACHINE_NAME_EXAMPLE" />”，则“<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />”将被替换为第 6 个字符后面的 4 个字符（即 <ph name="MACHINE_NAME_PART_EXAMPLE" />）。请注意，位置序数从 0 起算。
+      </translation>
 <translation id="6598235178374410284">用户头像图片</translation>
 <translation id="6603004149426829878">解析时区时一律将任何可用的位置信号发送给服务器</translation>
 <translation id="6628120204569232711">报告存储状态</translation>
@@ -4102,6 +4150,8 @@
 <translation id="915194831143859291">如果此政策设为 false 或未配置，<ph name="PRODUCT_OS_NAME" />将允许用户关闭设备。
       如果此政策设为 true，<ph name="PRODUCT_OS_NAME" />会在用户关闭设备时触发重新启动操作。<ph name="PRODUCT_OS_NAME" />会将界面中的所有关机按钮替换为重新启动按钮。如果用户通过电源按钮关闭设备，设备将不会自动重新启动，即使启用了此政策也是如此。</translation>
 <translation id="9152473318295429890">允许根据上下文建议相关的网页</translation>
+<translation id="9153446010242995516">如果操作系统版本比目标版本新，则回滚到并持续使用目标版本。会尽量尝试通过回滚过程继承设备级配置（包括网络凭据），但即使无法恢复数据（因为目标版本不支持恢复数据，或因为发生了无法向后兼容的更改），也会通过执行完整的 Powerwash 操作进行回滚。
+          在 <ph name="PRODUCT_OS_NAME" />版本 75 及更高版本上均受支持。对于旧版客户端，此值意味着已停用回滚。</translation>
 <translation id="9158929520101169054">允许在同一浏览器中登录多个帐号</translation>
 <translation id="9159126470527871268">必须重新启动 <ph name="PRODUCT_NAME" /> 或必须重启 <ph name="PRODUCT_OS_NAME" />以应用待应用的更新时，通知用户。
 

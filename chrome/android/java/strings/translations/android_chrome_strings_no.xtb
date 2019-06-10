@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1445680696957526815">Komponentene i Chrome er ikke kompatible med hverandre. Det kan hende at Chrome er i ferd med å oppdateres. Prøv igjen om noen minutter. Hvis problemet vedvarer, kan du prøve å avinstallere Chrome og så installere den på nytt.</translation>
 <translation id="1446450296470737166">Full kontroll over MIDI-enheter</translation>
-<translation id="1449080968331948513">Datasparing heter nå «forenklet modus»</translation>
 <translation id="145097072038377568">Slått av i Android-innstillingene</translation>
 <translation id="1477626028522505441">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av tjenerproblemer.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 til)}other{ (+ # til)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Slett passordet</translation>
 <translation id="1516229014686355813">«Trykk for å søke» sender det valgte ordet og den aktive siden som kontekst til Google Søk. Du kan slå av dette i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Aktiv i dag</translation>
-<translation id="1539064842193522527">Linken er åpnet i Chrome</translation>
 <translation id="1549000191223877751">Flytt til det andre vinduet</translation>
 <translation id="1553358976309200471">Oppdater Chrome</translation>
 <translation id="1569387923882100876">Tilkoblet enhet</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">Du kan når som helst slå på synkronisering i innstillingene</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bokmerke}other{<ph name="BOOKMARKS_COUNT_MANY" /> bokmerker}}</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
-<translation id="311456632243022227">Flere linker er åpnet i Chrome</translation>
 <translation id="3115898365077584848">Vis informasjon</translation>
 <translation id="3123473560110926937">Blokkert på enkelte nettsteder</translation>
 <translation id="3137521801621304719">Avslutt inkognitomodus</translation>
@@ -857,7 +854,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7177466738963138057">Du kan endre dette senere i Innstillinger</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7189372733857464326">Venter på at Google Play Tjenester fullfører oppdateringen</translation>
-<translation id="7189598951263744875">Del</translation>
 <translation id="7191430249889272776">En fane ble åpnet i bakgrunnen.</translation>
 <translation id="723171743924126238">Velg bilder</translation>
 <translation id="7233236755231902816">For å se nettet på ditt eget språk, skaff den nyeste versjonen av Chrome</translation>
@@ -894,7 +890,6 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="7445411102860286510">Gi nettsteder tillatelse til automatisk avspilling av videoer med kuttet lyd (anbefales)</translation>
 <translation id="7453467225369441013">Logger deg av de fleste nettsteder. Du blir ikke logget av Google-kontoen din.</translation>
 <translation id="7454641608352164238">Det er ikke nok plass</translation>
-<translation id="7455923816558154057">Trykk for å se</translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="7475192538862203634">Hvis du ser dette ofte, kan du prøve disse <ph name="BEGIN_LINK" />forslagene<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Finner ikke SD-kort. Noen av filene dine kan mangle.</translation>

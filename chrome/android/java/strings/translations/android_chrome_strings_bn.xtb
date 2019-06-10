@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">প্রিন্ট</translation>
 <translation id="1445680696957526815">Chrome এর উপাদানগুলি একে অপরের সাথে বেমানান৷ Chrome আপগ্রেড করা হতে পারে, অনুগ্রহ করে কয়েক মিনিটের মধ্যে আবার চেষ্টা করুন৷ সমস্যাটি থেকে গেলে, Chrome আনইনস্টল করে পুনরায় ইনস্টল করুন৷</translation>
 <translation id="1446450296470737166">MIDI ডিভাইসগুলির পূর্ণ নিয়ন্ত্রণের অনুমতি দিন</translation>
-<translation id="1449080968331948513">ডেটা সেভার এখন লাইট মোড হয়ে গেছে</translation>
 <translation id="145097072038377568">Android সেটিংসে বন্ধ করা অাছে</translation>
 <translation id="1477626028522505441">সার্ভার সমস্যার কারণে <ph name="FILE_NAME" /> ডাউনলোড করা যায়নি।</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ আরও ১টি)}one{ (+ আরও #টি)}other{ (+ আরও #টি)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">পাসওয়ার্ড মুছুন</translation>
 <translation id="1516229014686355813">'সার্চ করতে ট্যাপ করুন' বৈশিষ্ট্যটি Google সার্চের রেফারেন্স হিসেবে বেছে নেওয়া শব্দ এবং বর্তমান পৃষ্ঠাটি পাঠায়। আপনি <ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> থেকে এটি বন্ধ করতে পারেন।</translation>
 <translation id="1521774566618522728">আজ ব্যবহার করা হয়েছে</translation>
-<translation id="1539064842193522527">Chrome-এ লিঙ্কটি খোলা হয়েছে</translation>
 <translation id="1549000191223877751">অন্য উইন্ডোতে সরান</translation>
 <translation id="1553358976309200471">Chrome আপডেট করুন</translation>
 <translation id="1569387923882100876">সংযুক্ত ডিভাইস</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">যেকোনও সময় সেটিংস থেকে আপনি সিঙ্ক চালু করতে পারেন</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" />টি বুকমার্ক}one{<ph name="BOOKMARKS_COUNT_MANY" />টি বুকমার্ক}other{<ph name="BOOKMARKS_COUNT_MANY" />টি বুকমার্ক}}</translation>
 <translation id="3089395242580810162">ছদ্মবেশী ট্যাবে খুলুন</translation>
-<translation id="311456632243022227">Chrome এ একাধিক লিঙ্ক খোলা আছে</translation>
 <translation id="3115898365077584848">তথ্য দেখুন</translation>
 <translation id="3123473560110926937">কিছু সাইটে ব্লক করা হয়েছে</translation>
 <translation id="3137521801621304719">ছদ্মবেশী মোড ছেড়ে যান</translation>
@@ -859,7 +856,6 @@
 <translation id="7177466738963138057">আপনি পরে সেটিংসে এই পরিবর্তন করতে পারবেন</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="7189372733857464326">Google Play পরিষেবাগুলির আপডেট শেষ হওয়ার জন্য অপেক্ষা করছে</translation>
-<translation id="7189598951263744875">শেয়ার করুন...</translation>
 <translation id="7191430249889272776">পটভূমিতে ট্যাব খোলা হয়েছে।</translation>
 <translation id="723171743924126238">ছবি বেছে নিন</translation>
 <translation id="7233236755231902816">ওয়েবের কন্টেন্ট নিজের ভাষায় পড়তে, Chrome-এর লেটেস্ট ভার্সন ইনস্টল করুন</translation>
@@ -896,7 +892,6 @@
 <translation id="7445411102860286510">সাইটগুলিকে মিউট করে রাখা ভিডিও স্বতঃবাজানোর মঞ্জুরি দেয় (প্রস্তাবিত)</translation>
 <translation id="7453467225369441013">বেশিরভাগ সাইট থেকে আপনাকে সাইন-আউট করিয়ে দেয়। তবে আপনার Google অ্যাকাউন্ট থেকে আপনাকে সাইন-আউট করানো হবে না।</translation>
 <translation id="7454641608352164238">পর্যাপ্ত জায়গা নেই</translation>
-<translation id="7455923816558154057">দেখতে ট্যাপ করুন</translation>
 <translation id="7473891865547856676">না থাক</translation>
 <translation id="7475192538862203634">আপনি যদি এটি প্রায়ই দেখতে পান, তাহলে <ph name="BEGIN_LINK" />প্রস্তাবনাগুলি<ph name="END_LINK" /> চেষ্টা করে দেখুন৷</translation>
 <translation id="7475688122056506577">এসডি কার্ড পাওয়া যায়নি। আপনার কিছু ফাইল নাও থাকতে পারে।</translation>

@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Avatar blanc par défaut</translation>
 <translation id="1581962803218266616">Afficher dans le Finder</translation>
 <translation id="1584990664401018068">Pour utiliser ce réseau Wi-Fi (<ph name="NETWORK_ID" />), vous devrez peut-être vous identifier.</translation>
-<translation id="1585238069289523942">Installer des applications sur votre Chromebook</translation>
 <translation id="1585717515139318619">Un thème qui risque de modifier le fonctionnement de Chrome a été ajouté via un autre programme sur votre ordinateur.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">Erreur lors de la configuration des fichiers Linux. Veuillez réessayer.</translation>
 <translation id="2315587498123194634">Envoyer le lien sur <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Non merci</translation>
-<translation id="2316739859433277603">Les recherches lancées depuis le lanceur d'applications utilisent les <ph name="BEGIN_LINK" />paramètres du moteur de recherche<ph name="END_LINK" /> de votre navigateur.</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" /> % terminés</translation>
 <translation id="2318143611928805047">Taille du papier</translation>
 <translation id="2318817390901984578">Pour utiliser des applications Android, rechargez et mettez à jour votre <ph name="DEVICE_TYPE" />.</translation>
@@ -5319,6 +5317,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9094033019050270033">Modifier le mot de passe</translation>
 <translation id="9094982973264386462">Supprimer</translation>
 <translation id="9095253524804455615">Supprimer</translation>
+<translation id="9095388113577226029">Plus de langues…</translation>
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
 <translation id="9100765901046053179">Paramètres avancés</translation>
 <translation id="9101691533782776290">Lancer l'application</translation>

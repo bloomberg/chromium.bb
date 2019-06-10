@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1006017844123154345">باز کردن نسخه آنلاین</translation>
+<translation id="1028699632127661925">درحال ارسال به <ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">درحال افزودن <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">از وب‌سایت‌ها</translation>
 <translation id="1049743911850919806">ناشناس</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">جستجو و کاوش</translation>
 <translation id="1264974993859112054">ورزش</translation>
 <translation id="1272079795634619415">توقف</translation>
+<translation id="1272444412400969138">انتخاب‌گر دستگاه برای هم‌رسانی برگه‌ای با آن.</translation>
 <translation id="1283039547216852943">برای بزرگ کردن ضربه بزنید</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="1291207594882862231">پاک کردن سابقه، کوکی‌ها، داده‌های سایت، حافظه پنهان…</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">سلام، <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1384959399684842514">بارگیری موقتاً متوقف شد</translation>
+<translation id="1386674309198842382">آخرین فعالیت: <ph name="LAST_UPDATED" /> روز قبل</translation>
 <translation id="1389974829397082527">نشانکی در اینجا وجود ندارد</translation>
 <translation id="1397811292916898096">جستجو با <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">جاسازی‌شده در <ph name="WEBSITE_URL" /></translation>
@@ -71,7 +74,6 @@
 <translation id="1430915738399379752">چاپ</translation>
 <translation id="1445680696957526815">‏مؤلفه‌های Chrome با هم سازگار نیستند. ممکن است Chrome در حال ارتقا دادن باشد، لطفاً پس از چند دقیقه دوباره امتحان کنید. اگر همچنان مشکل وجود داشت، نصب Chrome را لغو کنید و دوباره آن را نصب کنید.</translation>
 <translation id="1446450296470737166">‏اجازه کنترل کامل دستگاه‌های MIDI</translation>
-<translation id="1449080968331948513">اکنون نام «صرفه‌جویی داده» به «حالت ساده» تغییر کرده است</translation>
 <translation id="145097072038377568">‏در تنظیمات Android مسدود شد</translation>
 <translation id="1477626028522505441">به‌دلیل مشکلاتی در سرور، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ ۱ مورد دیگر)}one{ (+ # مورد دیگر)}other{ (+ # مورد دیگر)}}</translation>
@@ -81,7 +83,6 @@
 <translation id="1513858653616922153">حذف گذرواژه</translation>
 <translation id="1516229014686355813">‏«ضربه برای جستجو» کلمه انتخاب‌شده و صفحه کنونی را به‌عنوان متن جستجو به «جستجوی Google» ارسال می‌کند. می‌توانید این ویژگی را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> خاموش کنید.</translation>
 <translation id="1521774566618522728">امروز فعال بود</translation>
-<translation id="1539064842193522527">‏پیوند در Chrome باز شد</translation>
 <translation id="1549000191223877751">انتقال به پنجره دیگر</translation>
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
 <translation id="1569387923882100876">دستگاه متصل</translation>
@@ -288,7 +289,6 @@
 <translation id="3058498974290601450">هرزمان خواستید می‌توانید همگام‌سازی را در تنظیمات روشن کنید</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> نشانک}one{<ph name="BOOKMARKS_COUNT_MANY" /> نشانک}other{<ph name="BOOKMARKS_COUNT_MANY" /> نشانک}}</translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
-<translation id="311456632243022227">‏چند پیوند در Chrome باز شد</translation>
 <translation id="3115898365077584848">نمایش دادن اطلاعات</translation>
 <translation id="3123473560110926937">در برخی سایت‌ها مسدود می‌شود</translation>
 <translation id="3137521801621304719">خروج از حالت ناشناس</translation>
@@ -402,6 +402,7 @@
 <translation id="4008040567710660924">کوکی‌ها را برای سایت خاصی مجاز کنید.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ساعت}one{# ساعت}other{# ساعت}}</translation>
 <translation id="4042870126885713738">وقتی آدرس وب شناسایی نمی‌شود یا اتصال برقرار نمی‌شود، پیشنهاداتی نشان داده می‌شود</translation>
+<translation id="4044912625106523635">انتخابگر دستگاه برای هم‌رسانی برگه با آن به‌صورت کامل باز شده است.</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
 <translation id="4048707525896921369">‏بدون ترک کردن صفحه با موضوعات وب‌سایت‌ها آشنا شوید. «ضربه برای جستجو»، کلمه و متن اطراف آن را به «جستجوی Google» ارسال می‌کند و معانی، تصاویر، نتایج جستجو و سایر جزئیات را بازمی‌گرداند.
 
@@ -579,6 +580,7 @@
 <translation id="5271967389191913893">دستگاه نمی‌تواند محتوا را برای بارگیری باز کند.</translation>
 <translation id="528192093759286357">برای خروج از حالت تمام صفحه، از بالا صفحه را بکشید و دکمه برگشت را لمس کنید.</translation>
 <translation id="5284584623296338184">‏تغییرات در نشانک‌ها، سابقه، گذرواژه و سایر تنظیمات دیگر با حساب Google شما همگام‌سازی نخواهد شد. با این حال، داده‌های موجودتان در حساب Google شما باقی خواهند ماند.</translation>
+<translation id="5292796745632149097">ارسال به</translation>
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5301954838959518834">بله، متوجه شدم</translation>
 <translation id="5304593522240415983">این قسمت باید پر شود</translation>
@@ -740,6 +742,7 @@
 <translation id="6406506848690869874">همگام‌سازی</translation>
 <translation id="641643625718530986">چاپ...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> مگابایت بارگیری شد</translation>
+<translation id="6418750371676080905">انتخابگر دستگاه برای هم‌رسانی برگه‌ای با آن بسته شده است.</translation>
 <translation id="6427112570124116297">وب را ترجمه کنید</translation>
 <translation id="6433501201775827830">انتخاب موتور جستجو</translation>
 <translation id="6437478888915024427">اطلاعات صفحه</translation>
@@ -779,6 +782,7 @@
 <translation id="666268767214822976">از یک سرویس پیش‌بینی استفاده می‌شود تا هم‌زمان با تایپ کردن شما در نوار آدرس، عبارت‌های جستجوی مرتبط و وب‌سایت‌های محبوب نشان داده شوند</translation>
 <translation id="666731172850799929">باز کردن در <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏اخطار حریم خصوصی Chrome</translation>
+<translation id="6672986458216094438">انتخابگر دستگاه برای هم‌رسانی برگه‌ای با آن به‌صورت نیمه باز است.</translation>
 <translation id="6697492270171225480">نمایش پیشنهادهای صفحه‌های مشابه وقتی صفحه‌ای پیدا نمی‌شود</translation>
 <translation id="6697947395630195233">‏Chrome برای اشتراک‌گذاری مکانتان با این سایت باید به مکانتان دسترسی داشته باشد.</translation>
 <translation id="6698801883190606802">مدیریت داده‌های همگام‌سازی شده</translation>
@@ -850,7 +854,6 @@
 <translation id="7177466738963138057">می‌توانید بعداً این مورد را در تنظیمات تغییر دهید</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
 <translation id="7189372733857464326">‏در انتظار «سرویس‌های Google Play» برای اتمام به‌روزرسانی است</translation>
-<translation id="7189598951263744875">در حال اشتراک‌گذاری...</translation>
 <translation id="7191430249889272776">برگه در پس‌زمینه باز شد.</translation>
 <translation id="723171743924126238">انتخاب تصاویر</translation>
 <translation id="7233236755231902816">‏برای اینکه وب را به زبان خود ببینید، آخرین نسخه Chrome را دریافت کنید</translation>
@@ -887,7 +890,6 @@
 <translation id="7445411102860286510">اجازه به سایت‌ها برای پخش خودکار ویدیوهای صامت‌شده (توصیه می‌شود)</translation>
 <translation id="7453467225369441013">‏شما را از سیستم اکثر سایت‌ها خارج می‌‌کند. از سیستم حساب Google خارج نمی‌شوید.</translation>
 <translation id="7454641608352164238">فضای کافی وجود ندارد</translation>
-<translation id="7455923816558154057">برای مشاهده ضربه بزنید</translation>
 <translation id="7473891865547856676">نه متشکرم</translation>
 <translation id="7475192538862203634">اگر این مورد را مکرراً مشاهده می‌کنید، این <ph name="BEGIN_LINK" />پیشنهادات<ph name="END_LINK" /> را امتحان کنید.</translation>
 <translation id="7475688122056506577">‏کارت SD پیدا نشد. ممکن است بعضی از فایل‌هایتان جا بیافتد.</translation>
@@ -956,6 +958,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قدیمی است.</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
 <translation id="7963646190083259054">ارائه‌دهنده:</translation>
+<translation id="7971136598759319605">آخرین فعالیت: ۱ روز قبل</translation>
 <translation id="7975379999046275268">پیش‌نمایش صفحه <ph name="BEGIN_NEW" />جدید<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">پیش‌بارگیری صفحه‌ها برای مرور و جستجوی سریع‌تر</translation>
 <translation id="79859296434321399">‏برای مشاهده محتوای واقعیت افزوده، ARCore را نصب کنید</translation>

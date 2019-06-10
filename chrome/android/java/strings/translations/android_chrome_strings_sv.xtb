@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="1006017844123154345">Öppna onlineversionen</translation>
+<translation id="1028699632127661925">Skickar till <ph name="DEVICE_NAME" /> …</translation>
 <translation id="1036727731225946849">Lägger till <ph name="WEBAPK_NAME" /> …</translation>
 <translation id="1041308826830691739">Från webbplatser</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Sök och utforska</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stopp</translation>
+<translation id="1272444412400969138">Väljare för den enhet fliken ska delas med.</translation>
 <translation id="1283039547216852943">Tryck och utöka</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
 <translation id="1291207594882862231">Rensa historiken, cookies, webbplatsdata, cacheminnet …</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Hej <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1384959399684842514">Nedladdningen har pausats</translation>
+<translation id="1386674309198842382">Aktiv för <ph name="LAST_UPDATED" /> dagar sedan</translation>
 <translation id="1389974829397082527">Det finns inga bokmärken i den här mappen</translation>
 <translation id="1397811292916898096">Sök med <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Inbäddad i <ph name="WEBSITE_URL" /></translation>
@@ -71,7 +74,6 @@
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1445680696957526815">Chromes komponenter är inte inbördes kompatibla. Kanske håller Chrome på att uppgraderas. Försök igen om några minuter. Om problemet kvarstår testar du att avinstallera och sedan installera om Chrome.</translation>
 <translation id="1446450296470737166">Tillåt fullst. kontroll av MIDI</translation>
-<translation id="1449080968331948513">Databesparing heter nu Begränsat läge</translation>
 <translation id="145097072038377568">Inaktiverad i Android-inställningarna</translation>
 <translation id="1477626028522505441">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av serverfel.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 till)}other{ (+ # till)}}</translation>
@@ -81,7 +83,6 @@
 <translation id="1513858653616922153">Radera lösenord</translation>
 <translation id="1516229014686355813">Med funktionen Tryck för att söka skickas det markerade ordet till Google Sök med den aktuella sidan som kontext. Du kan stänga av funktionen i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Aktiv idag</translation>
-<translation id="1539064842193522527">Länken öppnades i Chrome</translation>
 <translation id="1549000191223877751">Flytta till annat fönster</translation>
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
 <translation id="1569387923882100876">Ansluten enhet</translation>
@@ -288,7 +289,6 @@
 <translation id="3058498974290601450">Du kan när som helst inaktivera synkroniseringen i inställningarna</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bokmärke}other{<ph name="BOOKMARKS_COUNT_MANY" /> bokmärken}}</translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
-<translation id="311456632243022227">Flera länkar öppnades i Chrome</translation>
 <translation id="3115898365077584848">Visa info</translation>
 <translation id="3123473560110926937">Blockeras på vissa webbplatser</translation>
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
@@ -402,6 +402,7 @@
 <translation id="4008040567710660924">Tillåt cookies för en enskild webbplats.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# tim}other{# tim}}</translation>
 <translation id="4042870126885713738">Visa förslag när det inte går att öppna en webbadress eller upprätta en anslutning</translation>
+<translation id="4044912625106523635">Väljaren för den enhet fliken ska delas med är öppen och tar upp hela skärmen.</translation>
 <translation id="4046123991198612571">Nästa spår</translation>
 <translation id="4048707525896921369">Läs om olika ämnen på webbplatser utan att lämna sidan. Med funktionen Tryck för att söka skickas ett ord och dess kontext till Google Sök. Sedan visas definitioner, bilder, sökresultat och annan information.
 
@@ -579,6 +580,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5271967389191913893">Innehållet som skulle laddas ned gick inte att öppna på enheten.</translation>
 <translation id="528192093759286357">Dra uppifrån och tryck på bakåtknappen för att lämna helskärmsläget.</translation>
 <translation id="5284584623296338184">Ändringar i bokmärken, historik, lösenord och andra inställningar synkroniseras inte längre med ditt Google-konto. Befintlig data fortsätter dock att lagras i Google-kontot.</translation>
+<translation id="5292796745632149097">Skicka till</translation>
 <translation id="5300589172476337783">Visa</translation>
 <translation id="5301954838959518834">Ok, jag förstår</translation>
 <translation id="5304593522240415983">Fältet får inte vara tomt</translation>
@@ -740,6 +742,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6406506848690869874">Synkronisera</translation>
 <translation id="641643625718530986">Skriv ut …</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB har laddats ned</translation>
+<translation id="6418750371676080905">Väljaren för den enhet fliken ska delas med har stängts.</translation>
 <translation id="6427112570124116297">Översätt webbsidor</translation>
 <translation id="6433501201775827830">Välj sökmotor</translation>
 <translation id="6437478888915024427">Sidinformation</translation>
@@ -779,6 +782,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="666268767214822976">Använd en tjänst som ger förslag på relaterade sökfrågor och populära webbplatser när du skriver i adressfältet</translation>
 <translation id="666731172850799929">Öppna i <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chromes sekretessmeddelande</translation>
+<translation id="6672986458216094438">Väljaren för den enhet fliken ska delas med är öppen och tar upp halva skärmen.</translation>
 <translation id="6697492270171225480">Visa förslag på liknande sidor om en sida inte hittas</translation>
 <translation id="6697947395630195233">Du behöver ge Chrome åtkomstbehörighet till din plats om den ska kunna delas med webbplatsen.</translation>
 <translation id="6698801883190606802">Hantera synkroniserad data</translation>
@@ -850,7 +854,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7177466738963138057">Du kan ändra detta senare i inställningarna</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
 <translation id="7189372733857464326">Väntar på Google Play-tjänster ska avsluta uppdateringen</translation>
-<translation id="7189598951263744875">Dela ...</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
 <translation id="723171743924126238">Välj bilder</translation>
 <translation id="7233236755231902816">Skaffa den senaste versionen av Chrome och få webben översatt till ditt språk</translation>
@@ -887,7 +890,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7445411102860286510">Tillåt att webbplatser automatiskt spelar upp videor utan ljud (rekommenderas)</translation>
 <translation id="7453467225369441013">Du loggas ut från de flesta webbplatser. Du loggas inte ut från Google-kontot.</translation>
 <translation id="7454641608352164238">Utrymmet räcker inte</translation>
-<translation id="7455923816558154057">Visa genom att trycka här</translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="7475192538862203634">Om du ser detta ofta provar du de här <ph name="BEGIN_LINK" />förslagen<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Det gick inte att hitta SD-kortet. Det kan saknas filer.</translation>
@@ -956,6 +958,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> är inaktuell.</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="7963646190083259054">Leverantör:</translation>
+<translation id="7971136598759319605">Aktiv för 1 dag sedan</translation>
 <translation id="7975379999046275268">Förhandsgranska sida <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Läs in sidor i förväg så att det går snabbare att surfa och söka</translation>
 <translation id="79859296434321399">Installera ARCore om du vill visa innehåll med förstärkt verklighet</translation>

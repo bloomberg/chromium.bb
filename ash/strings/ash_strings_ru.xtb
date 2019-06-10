@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Вместе ваши устройства будут работать ещё лучше</translation>
 <translation id="112308213915226829">Автоматически скрывать панель запуска</translation>
 <translation id="1153356358378277386">Сопряженные устройства</translation>
+<translation id="1175572348579024023">Прокрутка</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1195412055398077112">Каемка экрана</translation>
 <translation id="119944043368869598">Удалить все</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">Google Ассистент в демонстрационном сеансе недоступен</translation>
 <translation id="479989351350248267">поиск</translation>
 <translation id="4804818685124855865">Отключиться</translation>
+<translation id="4831034276697007977">Вы уверены, что хотите отключить функцию автоматического нажатия?</translation>
 <translation id="4849058404725798627">Выделять элементы, выбранные с помощью клавиатуры</translation>
 <translation id="485592688953820832">Отсутствие действий (пауза)</translation>
 <translation id="4872237917498892622">Alt + Search или Shift</translation>
@@ -413,6 +415,7 @@
 <translation id="7561014039265304140">Дисплей <ph name="DISPLAY_NAME" /> не поддерживает разрешение <ph name="SPECIFIED_RESOLUTION" />. Будет использовано разрешение <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Меню смайликов</translation>
 <translation id="7564874036684306347">При переносе окон на другой рабочий стол иногда возникают ошибки. Уведомления и диалоговые окна могут появляться на разных рабочих столах.</translation>
+<translation id="7568294522609223312">Выключение автоматического нажатия</translation>
 <translation id="7569509451529460200">Шрифт Брайля и функция ChromeVox включены</translation>
 <translation id="7593891976182323525">Search или Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (владелец)</translation>

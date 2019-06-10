@@ -1126,6 +1126,15 @@
           Bu politika ayarlanmadığında, daha özel politikaların çalışma biçimi aynı kalır.</translation>
 <translation id="2987155890997901449">ARC'yi etkinleştir</translation>
 <translation id="2987227569419001736">Web Bluetooth API'sının kullanımını kontrol et</translation>
+<translation id="2990018289267778247">Bu politika true (doğru) değerine ayarlanırsa, Erişilebilirlik seçenekleri her zaman sistem tepsisi menüsünde görüntülenir.
+
+          Bu politika false (yanlış) değerine ayarlanırsa, Erişilebilirlik seçenekleri hiçbir zaman sistem tepsisi menüsünde görüntülenmez.
+
+          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+
+          Bu politika ayarlanmadan bırakılırsa, Erişilebilirlik seçenekleri sistem tepsisi menüsünde görüntülenmez, ancak kullanıcı, Ayarlar sayfasını kullanarak Erişilebilirlik seçeneklerinin görüntülenmesini sağlayabilir.
+
+          Erişilebilirlik özellikleri etkinleştirildiğinde (başka araçlarla, örneğin bir tuş kombinasyonu ile), Erişilebilirlik seçenekleri her zaman sistem tepsisi menüsünde görünür.</translation>
 <translation id="3011301228198307065"><ph name="PRODUCT_NAME" /> ürününde varsayılan ana sayfa URL'sini yapılandırır ve kullanıcıların bu ayarı değiştirmesini önler.
 
           Ana sayfa, Ana Sayfa düğmesine basıldığında açılan sayfadır. Başlangıçta açılan sayfalar RestoreOnStartup politikalarıyla kontrol edilir.
@@ -1446,6 +1455,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
         Bu politika, masaüstünde makine kapsamı bulut politika kaydı tarafından kullanılır ve Windows'da Registry ya da GPO, Mac'te plist, Linux'ta ise JSON politika dosyası tarafından ayarlanabilir.</translation>
 <translation id="3660562134618097814">Giriş sırasında SAML IdP çerezlerini aktar</translation>
 <translation id="3701121231485832347"><ph name="MS_AD_NAME" /> tarafından yönetilen <ph name="PRODUCT_OS_NAME" /> cihazlara özgü ayarları kontrol eder.</translation>
+<translation id="3702518095257671450">Uzaktan onay</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Tek satırlı alanlar artık kullanılmamaktadır ve yakında kaldırılacaktır. Lütfen aşağıdaki çok satırlı metin kutusunu kullanın.)</translation>
 <translation id="3709266154059827597">Uzantı kurulum kara listesini yapılandır</translation>
 <translation id="3711895659073496551">Askıya al</translation>
@@ -1840,6 +1850,15 @@ politikayı geçersiz kılamaz.
 
           Bu politika sadece "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="4285674129118156176">Bağlı olmayan kullanıcıların ARC'yi kullanmasına izin ver</translation>
+<translation id="4289903996435140853">Sağlanan tedarikçi ve ürün kimliklerine sahip USB cihazlarına erişmesine otomatik olarak izin verilecek siteleri belirten URL listesi ayarlamanıza olanak tanır. Politikanın geçerli olabilmesi için listedeki her öğenin hem cihazları hem de URL'leri içermesi gerekir. Cihazlardaki her öğe tedarikçi kimliği ve ürün kimliği alanı içerebilir. Dahil edilmeyen her kimlik bir istisnayla joker olarak değerlendirilir. Bu istisnaya göre tedarikçi kimliği belirtilmeden ürün kimliği de belirtilemez. Aksi halde politika geçerli olmaz ve yoksayılır.
+
+        USB izin modeli, istekte bulunan sitenin URL'sini ("istekte bulunan URL") ve üst düzey çerçeve sitesinin URL'sini ("yerleştirme URL'si") kullanarak istekte bulunan URL'ye USB cihazına erişmesi için izin verir. İstekte bulunan site bir iFrame içinde yüklendiğinde, istekte bulunan URL yerleştirme URL'sinden farklı olabilir. Bu nedenle, "URL'ler" alanı, sırasıyla istekte bulunan URL'yi ve yerleştirme URL'sini belirtmek için virgülle sınırlandırılmış en fazla iki URL dizesi içerebilir. Yalnızca bir URL belirtilirse yerleştirme durumundan bağımsız olarak bu URL ile eşleşen istekte bulunan sitenin URL'sine karşılık gelen USB cihazlarına erişim izni verilir. "URL'ler" alanındaki URL'lerin geçerli URL'ler olmaları gerekir; aksi halde, politika yoksayılır.
+
+        Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultWebUsbGuardSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
+
+        Bu politikadaki URL kalıpları, WebUsbBlockedForUrls politikasıyla yapılandırılan kalıplarla çakışmamalıdır. Çakışma olması halinde bu politikanın WebUsbBlockedForUrls ve WebUsbAskForUrls politikaları üzerinde önceliği olur.
+
+        Bu politikanın ve DeviceWebUsbAllowDevicesForUrls politikasının değerleri birleştirilmiştir.</translation>
 <translation id="4298509794364745131"><ph name="PRODUCT_OS_NAME" /> kilit ekranında not alma uygulaması olarak etkinleştirilebilen uygulamaların listesini belirtir.
 
       Tercih edilen not alma uygulaması kilit ekranında etkinleştirilmişse, kilit ekranı bu uygulamayı başlatacak bir kullanıcı arayüzü öğesi barındırır.
@@ -1991,6 +2010,7 @@ politikayı geçersiz kılamaz.
 <translation id="4639407427807680016">Kara listeden muaf tutulacak yerel mesajlaşma ana makinelerinin adları</translation>
 <translation id="4650759511838826572">URL protokol şemalarını devre dışı bırak</translation>
 <translation id="465099050592230505">Kurumsal web mağazası URL'si (kullanımdan kaldırıldı)</translation>
+<translation id="4661889655253181651">İçerik ayarları belirli türdeki içeriklerin (ör. Çerezler, Resimler veya JavaScript) nasıl işleneceğini belirlemenize izin verir.</translation>
 <translation id="4665897631924472251">Uzantı yönetim ayarları</translation>
 <translation id="4668325077104657568">Varsayılan resimler ayarı</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2035,6 +2055,11 @@ politikayı geçersiz kılamaz.
       Bu öneriler uzaktaki Google sunucularından getirilir.
 
       Bu ayar yanlış (false) değerine ayarlanırsa öneri getirilmez veya görüntülenmez.</translation>
+<translation id="4759650396863318477">Beklemedeki bir güncellemenin uygulanması için <ph name="PRODUCT_NAME" /> ürününün veya bir <ph name="PRODUCT_OS_NAME" /> cihazının yeniden başlatılması gerektiği konusunda kullanıcıların bilgilendirileceği dönemi milisaniye cinsinden ayarlamanıza olanak tanır.
+
+      Bu zaman diliminde kullanıcı, güncelleme yapılması gerektiğine dair tekrar tekrar bilgilendirilir. <ph name="PRODUCT_OS_NAME" /> cihazları için yeniden başlatma bildirimi, <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> politikası gereği sistem tepsisinde görünür. <ph name="PRODUCT_NAME" /> tarayıcıları için uygulama menüsü, bildirim süresinin üçte biri geçtikten sonra yeniden başlatmanın gerekli olduğunu gösterecek şekilde değişir. Bu bildirim, bildirim süresinin üçte ikisi geçtikten sonra renk değiştirir ve bildirim süresinin tamamı geçtikten sonra tekrar renk değiştirir. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikası tarafından etkinleştirilen ek bildirimler, aynı programı takip eder.
+
+      Bu değer ayarlanmazsa <ph name="PRODUCT_OS_NAME" /> cihazlarda varsayılan süre olan 345600000 milisaniye (dört gün) ve <ph name="PRODUCT_NAME" /> cihazlarda 604800000 milisaniye (bir hafta) kullanılır.</translation>
 <translation id="4788252609789586009"><ph name="PRODUCT_NAME" /> Otomatik Doldurma özelliğini etkinleştirir ve kullanıcıların web formlarındaki kredi kartı bilgilerini önceden kaydedilmiş bilgilerle otomatik olarak doldurmasına olanak tanır.
 
       Bu ayar devre dışı bırakılırsa Otomatik Doldurma hiçbir zaman öneride bulunmaz, kredi kartı bilgilerini doldurmaz veya kullanıcının internette gezerken gönderebileceği ek kredi kartı bilgilerini kaydetmez.
@@ -2243,6 +2268,15 @@ politikayı geçersiz kılamaz.
           Bu politika ayarlanmadan bırakılırsa, 'DefaultNotificationsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
 <translation id="5213038356678567351">Hiçbir zaman başka bir tarayıcıya geçişi tetiklememesi gereken web siteleri.</translation>
 <translation id="5219844027738217407">Bu politika Android uygulamalarında sadece mikrofonu etkiler. Bu politika doğru olarak ayarlandığında, istisnasız tüm Android uygulamaları için mikrofon kapatılır.</translation>
+<translation id="5221394278852982313">Sağlanan tedarikçi ve ürün kimliklerine sahip USB cihazlarına erişmesine otomatik olarak izin verilecek siteleri belirten URL listesi ayarlamanıza olanak tanır. Politikanın geçerli olabilmesi için listedeki her öğenin hem cihazları hem de URL'leri içermesi gerekir. Cihazlardaki her öğe tedarikçi kimliği ve ürün kimliği alanı içerebilir. Dahil edilmeyen her kimlik bir istisnayla joker olarak değerlendirilir. Bu istisnaya göre tedarikçi kimliği belirtilmeden ürün kimliği de belirtilemez. Aksi halde politika geçerli olmaz ve yoksayılır.
+
+        USB izin modeli, istekte bulunan sitenin URL'sini ("istekte bulunan URL") ve üst düzey çerçeve sitesinin URL'sini ("yerleştirme URL'si") kullanarak istekte bulunan URL'ye USB cihazına erişmesi için izin verir. İstekte bulunan site bir iFrame içinde yüklendiğinde, istekte bulunan URL yerleştirme URL'sinden farklı olabilir. Bu nedenle, "URL'ler" alanı, sırasıyla istekte bulunan URL'yi ve yerleştirme URL'sini belirtmek için virgülle sınırlandırılmış en fazla iki URL dizesi içerebilir. Yalnızca bir URL belirtilirse yerleştirme durumundan bağımsız olarak bu URL ile eşleşen istekte bulunan sitenin URL'sine karşılık gelen USB cihazlarına erişim izni verilir. "URL'ler" alanındaki URL'lerin geçerli URL'ler olmaları gerekir; aksi halde, politika yoksayılır.
+
+        Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultWebUsbGuardSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
+
+        Bu politikadaki URL kalıpları, WebUsbBlockedForUrls politikasıyla yapılandırılan kalıplarla çakışmamalıdır. Çakışma olması halinde bu politikanın WebUsbBlockedForUrls ve WebUsbAskForUrls politikaları üzerinde önceliği olur.
+
+        Bu politikanın ve DeviceWebUsbAllowDevicesForUrls politikasının değerleri birleştirilmiştir.</translation>
 <translation id="5228316810085661003">Cihaz yerel hesabına otomatik girişin gecikmesi.
 
       |DeviceLocalAccountAutoLoginId| politikası ayarlanmazsa bu politika geçerli olmaz. Aksi halde:
@@ -2971,6 +3005,21 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Bu politika ''Kullanıcıların sertifikaları yönetmelerine izin verme" değerine ayarlanırsa kullanıcılar sertifikaları yönetemez, yalnızca görüntüleyebilirler.</translation>
 <translation id="6573305661369899995">URL kısıtlamaları için harici kaynak ayarla</translation>
+<translation id="6583851521569686409">Yazıcılar listesini yapılandırır.
+
+      Bu politika, yöneticilerin kendi kullanıcıları için yazıcı yapılandırmaları
+      sunmalarına izin verir.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> ve <ph name="PRINTER_DESCRIPTION" />, yazıcı seçimini kolaylaştıracak şekilde özelleştirilebilen serbest biçimli dizelerdir. <ph name="PRINTER_MANUFACTURER" /> ve <ph name="PRINTER_MODEL" />, son kullanıcıların yazıcıyı tanımasını kolaylaştırmayı amaçlar. Bu ibareler yazıcının üreticisini ve modelini temsil eder. <ph name="PRINTER_URI" />, istemci bilgisayardan ulaşabilen ve <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, <ph name="URI_QUEUE" /> bilgilerini içeren bir adres olmalıdır. <ph name="PRINTER_UUID" /> isteğe bağlıdır. Sağlandığı takdirde, <ph name="ZEROCONF_DISCOVERY" /> yazıcıların tekilleştirilmesine yardımcı olmak için kullanılır.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> yazıcının adını içermelidir veya <ph name="PRINTER_AUTOCONF" /> politikası true (doğru) değerine ayarlanmalıdır. Her iki özelliği de taşıyan veya hiçbir özellik taşımayan yazıcılar yok sayılır.
+
+      Yazıcı ilk kez kullanıldığında kurulum tamamlanmış olur.  Yazıcı kullanılana kadar PPD'ler indirilmez.  Bundan sonra sık kullanılan PPD'ler ön belleğe alınır.
+
+      Bu politika, kullanıcıların yazıcıları ayrı ayrı cihazlarda yapılandırıp yapılandıramayacağı konusunu etkilemez.  Ayrı ayrı kullanıcılar tarafından yazıcıların yapılandırılması konusunda tamamlayıcı olacak şekilde tasarlanmıştır.
+
+      Active Directory tarafından yönetilen cihazlarda bu politika, <ph name="MACHINE_NAME_VARIABLE" /> değişkeninin Active Directory makine adına veya bunun bir alt dizesine genişletilmesini destekler. Örneğin, makine adı <ph name="MACHINE_NAME_EXAMPLE" /> ise <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />, 6. konumdan sonra başlayan 4 karakterle değiştirilir (<ph name="MACHINE_NAME_PART_EXAMPLE" /> gibi). Konumun sıfır tabanlı olduğuna dikkat edin.
+      </translation>
 <translation id="6598235178374410284">Kullanıcı avatarı resmi</translation>
 <translation id="6603004149426829878">Saat dilimini çözümlerken kullanılabilir konum sinyallerini her zaman sunucuya gönder</translation>
 <translation id="6628120204569232711">Depolama durumunu bildir</translation>
@@ -4304,6 +4353,8 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="915194831143859291">Bu politika yanlış seçeneğine ayarlanırsa veya hiç yapılandırılmazsa <ph name="PRODUCT_OS_NAME" />, kullanıcının cihazı kapatmasına izin verir.
       Bu politika doğru seçeneğine ayarlanırsa, kullanıcı cihazı kapattığında <ph name="PRODUCT_OS_NAME" />, yeniden başlatma işlemi tetikler. <ph name="PRODUCT_OS_NAME" />, kullanıcı arayüzündeki tüm kapatma düğmelerini yeniden başlatma düğmeleriyle değiştirir. Kullanıcı güç düğmesini kullanarak cihazı kapatırsa, politika etkinleştirilmiş olsa dahi cihaz otomatik olarak yeniden başlatılmaz.</translation>
 <translation id="9152473318295429890">İlişkili web sayfalarının bağlam önerilerini etkinleştir</translation>
+<translation id="9153446010242995516">OS sürümü hedeften daha yeniyse geri alın ve hedefin sürümünde kalın. Mümkünse geri alma işlemiyle cihaz düzeyinde yapılandırmayı (ağ kimlik bilgileri dahil) aktarmayı deneyin, ancak (hedef sürümün verilerin geri yüklenmesini desteklememesi veya geriye dönük uyumluluğu olmayan bir değişiklik nedeniyle) verilerin geri yüklenmesi mümkün olmazsa bile geri yükleme işlemini tam powerwash yöntemiyle gerçekleştirin.
+          <ph name="PRODUCT_OS_NAME" /> sürüm 75'te ve sonraki sürümlerde desteklenir. Daha eski istemciler için bu değer, geri yüklemenin devre dışı bırakıldığı anlamına gelir.</translation>
 <translation id="9158929520101169054">Tarayıcıda Çoklu Oturum Açmaya İzin Ver</translation>
 <translation id="9159126470527871268">Kullanıcılara, bekleyen bir güncellemeyi uygulamak için <ph name="PRODUCT_NAME" /> uygulamasının veya <ph name="PRODUCT_OS_NAME" /> cihazının yeniden başlatılması gerektiğini bildirin.
 

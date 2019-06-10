@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Avatar bianco predefinito</translation>
 <translation id="1581962803218266616">Mostra nel Finder</translation>
 <translation id="1584990664401018068">La rete Wi-Fi in uso (<ph name="NETWORK_ID" />) potrebbe richiedere l'autenticazione.</translation>
-<translation id="1585238069289523942">Installare app sul Chromebook</translation>
 <translation id="1585717515139318619">Un altro programma sul computer ha aggiunto un tema che potrebbe modificare il funzionamento di Chrome.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">Errore durante la configurazione dei file Linux. Riprova.</translation>
 <translation id="2315587498123194634">Invia link a <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">No, grazie</translation>
-<translation id="2316739859433277603">Le ricerche dell'Avvio applicazioni utilizzano l'<ph name="BEGIN_LINK" />impostazione del motore di ricerca<ph name="END_LINK" /> del tuo browser.</translation>
 <translation id="2317842250900878657">Percentuale di completamento: <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Formato carta</translation>
 <translation id="2318817390901984578">Per utilizzare le app Android, metti sotto carica il tuo dispositivo <ph name="DEVICE_TYPE" /> e aggiornalo.</translation>
@@ -5311,6 +5309,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9094033019050270033">Aggiorna password</translation>
 <translation id="9094982973264386462">Rimuovi</translation>
 <translation id="9095253524804455615">Rimuovi</translation>
+<translation id="9095388113577226029">Altre lingue</translation>
 <translation id="9100610230175265781">Passphrase obbligatoria</translation>
 <translation id="9100765901046053179">Impostazioni avanzate</translation>
 <translation id="9101691533782776290">Avvia app</translation>

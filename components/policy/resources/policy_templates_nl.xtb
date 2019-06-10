@@ -1132,6 +1132,15 @@
           Als dit beleid niet is ingesteld, heeft dit geen invloed op het gedrag van de specifiekere beleidsregels.</translation>
 <translation id="2987155890997901449">ARC inschakelen</translation>
 <translation id="2987227569419001736">Gebruik van de Web Bluetooth API beheren</translation>
+<translation id="2990018289267778247">Als dit beleid is ingesteld op 'true', worden toegankelijkheidsopties altijd weergegeven in het systeemvakmenu.
+
+          Als dit beleid is ingesteld op 'false', worden toegankelijkheidsopties nooit weergegeven in het systeemvakmenu.
+
+          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
+
+          Als dit beleid niet is ingesteld, worden toegankelijkheidsopties niet weergegeven in het systeemvakmenu, maar kan de gebruiker er via de pagina Instellingen voor zorgen dat de toegankelijkheidsopties worden weergegeven.
+
+          Als de toegankelijkheidsfuncties zijn ingeschakeld (via een andere manier, zoals een sleutelcombinatie), worden de toegankelijkheidsopties altijd weergegeven in het systeemvakmenu.</translation>
 <translation id="3011301228198307065">Hiermee stel je de standaard-URL voor de homepage in <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze kunnen wijzigen.
 
           De homepage is de pagina die wordt geopend met de startknop. Het beleid RestoreOnStartup bepaalt welke pagina's worden geopend wanneer de browser wordt opgestart.
@@ -1454,6 +1463,7 @@
         Dit beleid wordt gebruikt door cloud-beleidsinschrijving voor machinebereik op desktop en kan worden ingesteld via register of GPO op Windows, plist op Mac en JSON-beleidsbestand op Linux.</translation>
 <translation id="3660562134618097814">SAML IdP-cookies overdragen tijdens het inloggen</translation>
 <translation id="3701121231485832347">Beheert instellingen die specifiek zijn voor <ph name="PRODUCT_OS_NAME" />-apparaten die via <ph name="MS_AD_NAME" /> worden beheerd.</translation>
+<translation id="3702518095257671450">Externe bevestiging</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Het veld met één regel is beëindigd en wordt in de toekomst verwijderd. Gebruik het tekstvak met meerdere regels hieronder.)</translation>
 <translation id="3709266154059827597">Zwarte lijst voor het installeren van extensies configureren</translation>
 <translation id="3711895659073496551">Onderbreken</translation>
@@ -1842,6 +1852,15 @@
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="4285674129118156176">Toestaan dat niet-gelieerde gebruikers ARC gebruiken</translation>
+<translation id="4289903996435140853">Hiermee kun je een lijst met URL's instellen die aangeven welke sites automatisch toegang krijgen tot een USB-apparaat met de opgegeven leverancier- en product-ID. Het beleid is alleen geldig als elk item in de lijst zowel apparaten als URL's bevat. Elk item in apparaten kan een veld voor leverancier-ID en een veld voor product-ID bevatten. Een ID die is weggelaten, wordt als wildcard behandeld, met één uitzondering: er mag geen product-ID worden opgegeven zonder dat er ook een leverancier-ID is opgegeven. Anders is het beleid niet geldig. Ongeldige beleidswaarden worden genegeerd.
+
+        Het USB-toestemmingsmodel gebruikt de URL van de site die de aanvraag indient ('aanvragende URL') en de URL van de framesite op hoofdniveau ('insluitings-URL') om de aanvragende URL toegang te geven tot het USB-apparaat. Wanneer de aanvragende site in een iframe wordt geladen, is het mogelijk dat de aanvragende URL en de insluitings-URL niet hetzelfde zijn. Daarom kan het veld voor URL's maximaal twee, door een komma gescheiden URL-tekenreeksen bevatten om respectievelijk de aanvragende URL en insluitings-URL op te geven. Als er slechts één URL wordt opgegeven, wordt toegang tot de bijbehorende USB-apparaten gegeven wanneer de URL van de aanvragende site overeenkomt met deze URL, ongeacht de insluitingsstatus. De URL's in het veld voor URL's moeten geldige URL's zijn. Als dit niet het geval is, wordt het beleid genegeerd.
+
+        Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Deze vind je in het beleid DefaultWebUsbGuardSetting (als dit is ingesteld) of in de persoonlijke configuratie van de gebruiker.
+
+        De URL-patronen in dit beleid mogen geen conflict vormen met de patronen die zijn ingesteld via WebUsbBlockedForUrls. Als er een conflict is, krijgt dit beleid voorrang op WebUsbBlockedForUrls en WebUsbAskForUrls.
+
+        Waarden voor dit beleid en het beleid WebUsbAllowDevicesForUrls worden samengevoegd.</translation>
 <translation id="4298509794364745131">Specificeert de lijst met apps die kunnen worden ingeschakeld als notitie-app op het <ph name="PRODUCT_OS_NAME" />-vergrendelingsscherm.
 
       Als de gewenste notitie-app is ingeschakeld op het vergrendelingsscherm, bevat het vergrendelingsscherm een UI-element om de gewenste notitie-app te starten.
@@ -1993,6 +2012,7 @@
 <translation id="4639407427807680016">Namen van de hosts voor systeemeigen berichten die moeten worden vrijgesteld van de zwarte lijst</translation>
 <translation id="4650759511838826572">URL-protocolschema's uitschakelen</translation>
 <translation id="465099050592230505">URL van zakelijke webwinkel (verouderd)</translation>
+<translation id="4661889655253181651">Met instellingen voor content kun je opgeven hoe content van een bepaald type (zoals cookies, afbeeldingen of JavaScript) wordt verwerkt.</translation>
 <translation id="4665897631924472251">Instellingen voor extensiebeheer</translation>
 <translation id="4668325077104657568">Standaardinstelling voor afbeeldingen</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2037,6 +2057,11 @@
       Deze suggesties worden extern via Google-servers opgehaald.
 
       Als dit is ingesteld op 'False', kunnen er geen suggesties worden opgehaald of weergegeven.</translation>
+<translation id="4759650396863318477">Hiermee kun je de periode in milliseconden instellen waarin gebruikers een melding ontvangen dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart of dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een in behandeling zijnde update toe te passen.
+
+      Gedurende deze periode krijgt de gebruiker regelmatig de melding dat er een update moet worden uitgevoerd. In het geval van <ph name="PRODUCT_OS_NAME" />-apparaten wordt een melding over opnieuw opstarten weergegeven in het systeemvak, in overeenstemming met het <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />-beleid. In het geval van <ph name="PRODUCT_NAME" />-browsers wordt het app-menu gewijzigd om aan te geven dat er opnieuw moet worden opgestart zodra een derde van de meldingsperiode is verstreken. Deze melding krijgt een andere kleur zodra twee derde van de meldingsperiode is verstreken en dit gebeurt nogmaals als de volledige periode is verstreken. Hetzelfde schema wordt gehanteerd voor aanvullende meldingen die door het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid zijn ingeschakeld.
+
+      Als dit beleid niet is ingesteld, wordt de standaardperiode van 345.600.000 milliseconden (vier dagen) voor <ph name="PRODUCT_OS_NAME" />-apparaten en een periode van 604.800.000 milliseconden (één week) voor <ph name="PRODUCT_NAME" /> gebruikt.</translation>
 <translation id="4788252609789586009">Hiermee wordt de functie 'Automatisch aanvullen' van <ph name="PRODUCT_NAME" /> ingeschakeld zodat gebruikers creditcardgegevens automatisch kunnen invullen op webformulieren aan de hand van eerder opgeslagen gegevens.
 
       Als deze instelling is uitgeschakeld, worden er nooit creditcardgegevens voorgesteld of ingevuld door 'Automatisch aanvullen'. Er worden ook geen aanvullende creditcardgegevens opgeslagen die de gebruiker mogelijk verzendt terwijl deze browset op internet.
@@ -2246,6 +2271,15 @@
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultNotificationsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="5213038356678567351">Websites die nooit een schakeling tussen browsers veroorzaken.</translation>
 <translation id="5219844027738217407">Voor Android-apps is dit beleid alleen van invloed op de microfoon. Wanneer dit beleid is ingesteld op 'True', wordt voor alle Android-apps, zonder uitzondering, de microfoon gedempt.</translation>
+<translation id="5221394278852982313">Hiermee kun je een lijst met URL's instellen die aangeven welke sites automatisch toegang krijgen tot een USB-apparaat met de opgegeven leverancier- en product-ID. Het beleid is alleen geldig als elk item in de lijst zowel apparaten als URL's bevat. Elk item in apparaten kan een veld voor leverancier-ID en een veld voor product-ID bevatten. Een ID die is weggelaten, wordt als wildcard behandeld, met één uitzondering: er mag geen product-ID worden opgegeven zonder dat er ook een leverancier-ID is opgegeven. Anders is het beleid niet geldig. Ongeldige beleidswaarden worden genegeerd.
+
+        Het USB-toestemmingsmodel gebruikt de URL van de site die de aanvraag indient ('aanvragende URL') en de URL van de framesite op hoofdniveau ('insluitings-URL') om de aanvragende URL toegang te geven tot het USB-apparaat. Wanneer de aanvragende site in een iframe wordt geladen, is het mogelijk dat de aanvragende URL en de insluitings-URL niet hetzelfde zijn. Daarom kan het veld voor URL's maximaal twee, door een komma gescheiden URL-tekenreeksen bevatten om respectievelijk de aanvragende URL en insluitings-URL op te geven. Als er slechts één URL wordt opgegeven, wordt toegang tot de bijbehorende USB-apparaten gegeven wanneer de URL van de aanvragende site overeenkomt met deze URL, ongeacht de insluitingsstatus. De URL's in het veld voor URL's moeten geldige URL's zijn. Als dit niet het geval is, wordt het beleid genegeerd.
+
+        Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Deze vind je in het beleid DefaultWebUsbGuardSetting (als dit is ingesteld) of in de persoonlijke configuratie van de gebruiker.
+
+        De URL-patronen in dit beleid mogen geen conflict vormen met de patronen die zijn ingesteld via WebUsbBlockedForUrls. Als er een conflict is, krijgt dit beleid voorrang op WebUsbBlockedForUrls en WebUsbAskForUrls.
+
+        Waarden voor dit beleid en het beleid DeviceWebUsbAllowDevicesForUrls worden samengevoegd.</translation>
 <translation id="5228316810085661003">De vertraging voor automatisch inloggen op het lokale account op het apparaat.
 
       Als het beleid |DeviceLocalAccountAutoLoginId| niet is ingesteld, heeft dit beleid geen effect. Anders:
@@ -2977,6 +3011,20 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 
       Als dit beleid is ingesteld op 'Gebruikers niet toestaan certificaten te beheren', kunnen gebruikers geen certificaten beheren. Ze kunnen certificaten alleen bekijken.</translation>
 <translation id="6573305661369899995">Een externe bron voor URL-beperkingen instellen</translation>
+<translation id="6583851521569686409">Hiermee wordt een lijst met printers geconfigureerd.
+
+      Met dit beleid kunnen beheerders hun gebruikers voorzien van printerconfiguraties.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> en <ph name="PRINTER_DESCRIPTION" /> zijn vrije tekenreeksen die kunnen worden aangepast om de printerselectie te vereenvoudigen. <ph name="PRINTER_MANUFACTURER" /> en <ph name="PRINTER_MODEL" /> zijn bedoeld om de printeridentificatie door eindgebruikers te vereenvoudigen. Ze staan voor de fabrikant en het model van de printer. <ph name="PRINTER_URI" /> moet een adres zijn dat bereikbaar is vanaf een clientcomputer, inclusief <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> en <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optioneel. Als de waarde is opgegeven, wordt deze gebruikt om <ph name="ZEROCONF_DISCOVERY" />-printers te dedupliceren.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> moet de naam van de printer bevatten of <ph name="PRINTER_AUTOCONF" /> moet zijn ingesteld op 'true'. Printers met beide of geen van de eigenschappen worden genegeerd.
+
+      De instellingen van de printer worden voltooid wanneer de printer voor het eerst wordt gebruikt.  PPD's worden pas gedownload wanneer de printer wordt gebruikt.  Daarna worden veelgebruikte PPD's opgeslagen in het cachegeheugen.
+
+      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten in te stellen.  Het is bedoeld als aanvulling op de printerinstellingen van afzonderlijke gebruikers.
+
+      Voor apparaten die via Active Directory worden beheerd, ondersteunt dit beleid de uitbreiding van <ph name="MACHINE_NAME_VARIABLE" /> naar de naam van de Active Directory-machine of naar een subtekenreeks daarvan. Als de machinenaam bijvoorbeeld <ph name="MACHINE_NAME_EXAMPLE" /> is, wordt <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> vervangen door de vier tekens vanaf de zesde positie, oftewel <ph name="MACHINE_NAME_PART_EXAMPLE" />. Houd er rekening mee dat de positie op nul is gebaseerd.
+      </translation>
 <translation id="6598235178374410284">Avatarafbeelding van gebruiker</translation>
 <translation id="6603004149426829878">Beschikbare locatiesignalen altijd verzenden naar de server wanneer de tijdzone wordt bepaald</translation>
 <translation id="6628120204569232711">Opslagstatus rapporteren</translation>
@@ -4318,6 +4366,8 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="915194831143859291">Als dit beleid wordt ingesteld op 'False' of niet wordt geconfigureerd, staat <ph name="PRODUCT_OS_NAME" /> de gebruiker toe het apparaat af te sluiten.
       Als dit beleid wordt ingesteld op 'True', activeert <ph name="PRODUCT_OS_NAME" /> een herstart wanneer de gebruiker het apparaat afsluit. <ph name="PRODUCT_OS_NAME" /> vervangt alle instanties van afsluitknoppen in de gebruikersinterface door herstartknoppen. Als de gebruiker het apparaat afsluit met de aan/uit-knop, wordt het apparaat niet automatisch opnieuw opgestart, ook niet wanneer het beleid is ingeschakeld.</translation>
 <translation id="9152473318295429890">Contextuele suggesties van gerelateerde webpagina's inschakelen</translation>
+<translation id="9153446010242995516">Herstel en blijf op de doelversie als de OS-versie nieuwer is dan de doelversie. Probeer indien mogelijk de instellingen op apparaatniveau (inclusief de inloggegevens voor het netwerk) over te dragen via het rollbackproces, maar voer de rollback uit met een volledige powerwash, zelfs wanneer de gegevens niet kunnen worden hersteld (omdat de doelversie geen ondersteuning biedt om gegevens te herstellen of omdat de wijziging niet werkt met eerdere versies).
+          Wordt ondersteund door <ph name="PRODUCT_OS_NAME" /> versie 75 en hoger. Voor oudere clients betekent deze waarde dat rollback is uitgeschakeld.</translation>
 <translation id="9158929520101169054">Toegang tot meerdere accounts toestaan in de browser</translation>
 <translation id="9159126470527871268">Hiermee laat je gebruikers weten dat <ph name="PRODUCT_NAME" /> of <ph name="PRODUCT_OS_NAME" /> opnieuw moet worden opgestart om een beschikbare update toe te passen.
 

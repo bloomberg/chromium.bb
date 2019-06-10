@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1006017844123154345">在线打开</translation>
+<translation id="1028699632127661925">正在发送到<ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">正在添加<ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">来自网站</translation>
 <translation id="1049743911850919806">无痕</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">搜索内容与浏览相关建议</translation>
 <translation id="1264974993859112054">体育</translation>
 <translation id="1272079795634619415">停止</translation>
+<translation id="1272444412400969138">要与之分享标签页的设备选择器。</translation>
 <translation id="1283039547216852943">点按即可展开</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="1291207594882862231">清除历史记录、Cookie、网站数据、缓存内容…</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好！</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1384959399684842514">已暂停下载</translation>
+<translation id="1386674309198842382"><ph name="LAST_UPDATED" /> 天前曾有活动</translation>
 <translation id="1389974829397082527">该文件夹中没有书签</translation>
 <translation id="1397811292916898096">使用 <ph name="PRODUCT_NAME" /> 进行搜索</translation>
 <translation id="1404122904123200417">嵌入位置：<ph name="WEBSITE_URL" /></translation>
@@ -71,7 +74,6 @@
 <translation id="1430915738399379752">打印</translation>
 <translation id="1445680696957526815">Chrome 的组件互不兼容。Chrome 可能正在升级，请过几分钟后重试。如果问题仍然存在，请尝试卸载并重新安装 Chrome。</translation>
 <translation id="1446450296470737166">允许全面控制 MIDI 设备</translation>
-<translation id="1449080968331948513">流量节省程序现处于精简模式</translation>
 <translation id="145097072038377568">已在 Android 设置中停用</translation>
 <translation id="1477626028522505441">未能成功下载 <ph name="FILE_NAME" />，因为服务器出现了问题。</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{（以及另外 1 项）}other{（以及另外 # 项）}}</translation>
@@ -81,7 +83,6 @@
 <translation id="1513858653616922153">删除密码</translation>
 <translation id="1516229014686355813">“点按搜索”功能会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中关闭该功能。</translation>
 <translation id="1521774566618522728">今天曾有活动</translation>
-<translation id="1539064842193522527">已在 Chrome 中打开此链接</translation>
 <translation id="1549000191223877751">移至其他窗口</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1569387923882100876">连接的设备</translation>
@@ -288,7 +289,6 @@
 <translation id="3058498974290601450">您随时可在“设置”中开启同步功能</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 个书签}other{<ph name="BOOKMARKS_COUNT_MANY" /> 个书签}}</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
-<translation id="311456632243022227">已在 Chrome 中打开多个链接</translation>
 <translation id="3115898365077584848">显示信息</translation>
 <translation id="3123473560110926937">已禁止部分网站显示广告</translation>
 <translation id="3137521801621304719">退出隐身模式</translation>
@@ -402,6 +402,7 @@
 <translation id="4008040567710660924">允许特定网站使用 Cookie。</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 小时}other{# 小时}}</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
+<translation id="4044912625106523635">要与之分享标签页的设备选择器已全屏打开。</translation>
 <translation id="4046123991198612571">下一曲</translation>
 <translation id="4048707525896921369">无需离开所在页面，便可了解网站上的主题。“点按搜索”功能会将所选字词及上下文一起发送给 Google 搜索，后者即会据此返回相应的定义、图片、搜索结果及其他详情。
 
@@ -579,6 +580,7 @@
 <translation id="5271967389191913893">设备无法打开要下载的内容。</translation>
 <translation id="528192093759286357">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
 <translation id="5284584623296338184">对您的书签、历史记录、密码和其他设置所做的更改将不再同步到您的 Google 帐号。但是，您的现有数据将继续存储在您的 Google 帐号中。</translation>
+<translation id="5292796745632149097">发送到</translation>
 <translation id="5300589172476337783">显示</translation>
 <translation id="5301954838959518834">知道了</translation>
 <translation id="5304593522240415983">此字段不能为空</translation>
@@ -740,6 +742,7 @@
 <translation id="6406506848690869874">同步</translation>
 <translation id="641643625718530986">打印…</translation>
 <translation id="6416782512398055893">已下载 <ph name="MBS" /> MB</translation>
+<translation id="6418750371676080905">要与之分享标签页的设备选择器已关闭。</translation>
 <translation id="6427112570124116297">翻译网页</translation>
 <translation id="6433501201775827830">选择您的搜索引擎</translation>
 <translation id="6437478888915024427">网页信息</translation>
@@ -779,6 +782,7 @@
 <translation id="666268767214822976">当您在地址栏中输入查询内容时，使用联想查询服务显示相关查询和热门网站</translation>
 <translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
+<translation id="6672986458216094438">要与之分享标签页的设备选择器已半屏打开。</translation>
 <translation id="6697492270171225480">找不到相应网页时，显示有关类似网页的建议</translation>
 <translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
@@ -850,7 +854,6 @@
 <translation id="7177466738963138057">以后，您可以在“设置”中更改此设置。</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7189372733857464326">正在等待 Google Play 服务完成更新</translation>
-<translation id="7189598951263744875">分享...</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
 <translation id="723171743924126238">选择图片</translation>
 <translation id="7233236755231902816">若要使用您的语言查看网页，请获取最新版本的 Chrome</translation>
@@ -887,7 +890,6 @@
 <translation id="7445411102860286510">允许网站自动播放静音的视频（推荐）</translation>
 <translation id="7453467225369441013">您会从大多数网站退出，但不会退出自己的 Google 帐号。</translation>
 <translation id="7454641608352164238">空间不足</translation>
-<translation id="7455923816558154057">点按即可查看</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7475192538862203634">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK" />建议<ph name="END_LINK" />操作。</translation>
 <translation id="7475688122056506577">找不到 SD 卡。您的某些文件可能会丢失。</translation>
@@ -956,6 +958,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 不是最新版本。</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7963646190083259054">供应商：</translation>
+<translation id="7971136598759319605">1 天前曾有活动</translation>
 <translation id="7975379999046275268">预览网页<ph name="BEGIN_NEW" />新<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">预加载网页，以便实现更快速的浏览和搜索</translation>
 <translation id="79859296434321399">要查看增强现实内容，请安装 ARCore</translation>

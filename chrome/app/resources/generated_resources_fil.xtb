@@ -384,7 +384,6 @@
 <translation id="1576594961618857597">Default na puting avatar</translation>
 <translation id="1581962803218266616">Show in Finder</translation>
 <translation id="1584990664401018068">Maaaring mangailangan ng pagpapatotoo ang Wi-Fi network na ginagamit mo (<ph name="NETWORK_ID" />).</translation>
-<translation id="1585238069289523942">Mag-install ng mga app sa iyong Chromebook</translation>
 <translation id="1585717515139318619">Isa pang program sa iyong computer ang nagdagdag tema na maaaring magpabago sa paraan ng paggana ng Chrome.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -5292,6 +5291,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="9094033019050270033">I-update ang password</translation>
 <translation id="9094982973264386462">Alisin</translation>
 <translation id="9095253524804455615">Alisin</translation>
+<translation id="9095388113577226029">Higit pang wika...</translation>
 <translation id="9100610230175265781">Kinakailangan ang passphrase</translation>
 <translation id="9100765901046053179">Mga advanced na setting</translation>
 <translation id="9101691533782776290">Ilunsad ang app</translation>

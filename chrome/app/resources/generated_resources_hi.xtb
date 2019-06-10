@@ -384,7 +384,6 @@
 <translation id="1576594961618857597">डिफ़ॉल्ट सफ़ेद अवतार</translation>
 <translation id="1581962803218266616">खोजकर्ता में दिखाएं</translation>
 <translation id="1584990664401018068">आप जिस वाई-फ़ाई नेटवर्क (<ph name="NETWORK_ID" />) का उपयोग कर रहे हैं उसे प्रमाणीकरण की आवश्‍यकता है.</translation>
-<translation id="1585238069289523942">आपके Chromebook पर ऐप्लिकेशन इंस्टॉल कर सकती है</translation>
 <translation id="1585717515139318619">आपके कंप्‍यूटर पर किसी अन्‍य प्रोग्राम ने ऐसी थीम जोड़ी है जो Chrome के काम करने के तरीके को बदल सकती है.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -5288,6 +5287,7 @@
 <translation id="9094033019050270033">पासवर्ड अपडेट करें</translation>
 <translation id="9094982973264386462">निकालें</translation>
 <translation id="9095253524804455615">निकालें</translation>
+<translation id="9095388113577226029">और भाषाएं...</translation>
 <translation id="9100610230175265781">पासफ़्रेज़ ज़रूरी है</translation>
 <translation id="9100765901046053179">अतिरिक्त सेटिंग</translation>
 <translation id="9101691533782776290">ऐप्लिकेशन लॉन्च करें</translation>

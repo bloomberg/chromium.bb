@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">完成連結可進一步提升裝置效能</translation>
 <translation id="112308213915226829">自動隱藏檔案櫃</translation>
 <translation id="1153356358378277386">配對裝置</translation>
+<translation id="1175572348579024023">捲動</translation>
 <translation id="1178581264944972037">暫停</translation>
 <translation id="1195412055398077112">遮視區域</translation>
 <translation id="119944043368869598">全部清除</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">Google 助理不適用於示範工作階段。</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">中斷連線</translation>
+<translation id="4831034276697007977">確定要關閉自動點擊功能嗎？</translation>
 <translation id="4849058404725798627">醒目顯示鍵盤焦點所在物件</translation>
 <translation id="485592688953820832">不執行任何動作 (暫停)</translation>
 <translation id="4872237917498892622">Alt + 搜尋鍵或 Shift 鍵</translation>
@@ -413,6 +415,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> 不支援 <ph name="SPECIFIED_RESOLUTION" />，解析度已變更為 <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">表情符號面板</translation>
 <translation id="7564874036684306347">將視窗移至其他桌面可能會導致未預期的行為。後續的通知、視窗和對話方塊可能會分開顯示在不同桌面上。</translation>
+<translation id="7568294522609223312">關閉自動點擊功能</translation>
 <translation id="7569509451529460200">點字模式和 ChromeVox 已啟用</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (擁有者)</translation>

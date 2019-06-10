@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 檔案</translation>
 <translation id="457386861538956877">更多…</translation>
 <translation id="4582497162516204941">透過 Linux (測試版) 執行安裝程序</translation>
+<translation id="4594543368593301662">目前顯示的是「<ph name="SEARCH_TERM" />」的搜尋結果。</translation>
 <translation id="4631887759990505102">演出者</translation>
 <translation id="4656293982926141856">這台電腦</translation>
 <translation id="4669606053856530811">「<ph name="SOURCE_NAME" />」的成員將失去存取權，除非有人與他們共用這些項目。</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">保加利亞文鍵盤</translation>
 <translation id="5418923334382419584">緬甸文鍵盤</translation>
 <translation id="5428105026674456456">西班牙文</translation>
+<translation id="5438282218546237410">找不到與「<ph name="SEARCH_TERM" />」相符的結果。</translation>
 <translation id="5464696796438641524">波蘭文鍵盤</translation>
 <translation id="5465122519792752163">尼泊爾文鍵盤 (InScript)</translation>
 <translation id="5469868506864199649">義大利文</translation>
 <translation id="5494920125229734069">全選</translation>
 <translation id="5500122897333236901">冰島文</translation>
 <translation id="5508696409934741614">圓點</translation>
+<translation id="5522908512596376669">檔案清單已變更為清單檢視模式。</translation>
 <translation id="5524517123096967210">無法讀取檔案。</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> 圖片</translation>
 <translation id="5533555070048896610">音譯 (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6054173164583630569">法文鍵盤</translation>
 <translation id="6074825444536523002">Google 表單</translation>
+<translation id="6096979789310008754">已清除搜尋文字，正在顯示所有檔案和資料夾。</translation>
 <translation id="6111770213269631447">音譯 (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">空格</translation>
 <translation id="6133173853026656527">正在移動 <ph name="FILE_NAME" />...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">大象</translation>
 <translation id="8569764466147087991">選取要開啟的檔案</translation>
 <translation id="8579285237314169903">正在同步處理 <ph name="NUMBER_OF_FILES" /> 個項目...</translation>
+<translation id="8600173386174225982">檔案清單已變更為縮圖檢視模式。</translation>
 <translation id="8669949407341943408">移動中...</translation>
 <translation id="8671210955687109937">可以註解</translation>
 <translation id="8686213429977032554">這個雲端硬碟檔案尚未與你共用</translation>

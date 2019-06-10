@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Domyślny biały awatar</translation>
 <translation id="1581962803218266616">Pokaż w Finderze</translation>
 <translation id="1584990664401018068">Sieć Wi-Fi (<ph name="NETWORK_ID" />), której używasz, może wymagać uwierzytelniania.</translation>
-<translation id="1585238069289523942">Instaluj aplikacje na swoim Chromebooku</translation>
 <translation id="1585717515139318619">Inny program na Twoim komputerze dodał motyw, który może zmieniać sposób działania Chrome.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">Błąd podczas konfigurowania plików Linuksa. Spróbuj ponownie.</translation>
 <translation id="2315587498123194634">Wyślij link na: <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Nie, dziękuję</translation>
-<translation id="2316739859433277603">Podczas wyszukiwania z poziomu menu z aplikacjami używana jest <ph name="BEGIN_LINK" />wyszukiwarka ustawiona w przeglądarce<ph name="END_LINK" />.</translation>
 <translation id="2317842250900878657">Gotowe: <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Rozmiar papieru</translation>
 <translation id="2318817390901984578">Aby korzystać z aplikacji na Androida, naładuj i zaktualizuj urządzenie <ph name="DEVICE_TYPE" />.</translation>
@@ -5319,6 +5317,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="9094033019050270033">Aktualizuj hasło</translation>
 <translation id="9094982973264386462">Usuń</translation>
 <translation id="9095253524804455615">Usuń</translation>
+<translation id="9095388113577226029">Więcej języków…</translation>
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
 <translation id="9100765901046053179">Ustawienia zaawansowane</translation>
 <translation id="9101691533782776290">Uruchom aplikację</translation>

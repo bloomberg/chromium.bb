@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Vælg mappe</translation>
 <translation id="1265739287306757398">Se, hvordan du gør</translation>
 <translation id="1272079795634619415">Stop</translation>
+<translation id="1283524564873030414">De seneste 24 timer</translation>
 <translation id="1323735185997015385">Slet</translation>
 <translation id="132683371494960526">Tryk to gange for at ændre den overordnede mappe.</translation>
 <translation id="1340643665687018190">Luk menu</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Avanceret</translation>
 <translation id="1989112275319619282">Gennemse</translation>
 <translation id="2015722694326466240">Angiv en adgangskode på din enhed, før du kan se adgangskoder.</translation>
+<translation id="2073572773299281212">Aktiv for <ph name="DAYS" /> dage siden</translation>
 <translation id="2074131957428911366">Du kan altid vælge, hvad der skal synkroniseres, i <ph name="BEGIN_LINK" />indstillingerne<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="209018056901015185">Vis computerversion</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Åbn alle</translation>
 <translation id="2570206273416014374">Sender visse cookies og søgninger fra adresselinjen og søgefeltet til din standardsøgemaskine.</translation>
 <translation id="2572712655377361602">En enhedspolitik har blokeret adgangen til dine billeder</translation>
+<translation id="2578571896248130439">Send webside</translation>
 <translation id="2584132361465095047">Tilføj konto...</translation>
 <translation id="2625189173221582860">Adgangskoden er kopieret</translation>
 <translation id="2648803196158606475">Slet læste</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Markér…</translation>
 <translation id="3157684681743766797">Markér alle…</translation>
 <translation id="3175081911749765310">Webtjenester</translation>
+<translation id="3178650076442119961">Aktiv i dag</translation>
 <translation id="3207960819495026254">Gemt som bogmærke</translation>
 <translation id="3224641773458703735">Angiv en adgangskode på din enhed, før du kan eksportere adgangskoder.</translation>
 <translation id="3240426699337459095">Linket er kopieret</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">Aktivér kameraet i Indstillinger for at scanne en QR-kode</translation>
 <translation id="4281844954008187215">Servicevilkår</translation>
 <translation id="430793432425771671">Synkroniser alt</translation>
+<translation id="430967081421617822">Altid</translation>
 <translation id="4338650699862464074">Sender webadresser for de sider, du besøger, til Google.</translation>
 <translation id="4359125752503270327">Denne side åbner i en anden app.</translation>
 <translation id="4370827530403103842">Synkronisering fungerer ikke. Tryk for at rette problemet.</translation>
@@ -281,6 +286,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5127805178023152808">Synkronisering er slået fra</translation>
 <translation id="5132942445612118989">Synkroniser dine adgangskoder, din historik og meget mere på alle enheder</translation>
 <translation id="5140288047769711648">Chrome husker adgangskoden for dig. Du behøver ikke at huske den.</translation>
+<translation id="5150492518600715772">Send til din enhed</translation>
 <translation id="5181140330217080051">Downloader</translation>
 <translation id="5186185447130319458">Privat</translation>
 <translation id="5190835502935405962">Bogmærkelinje</translation>
@@ -295,6 +301,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5388358297987318779">Åbn billede</translation>
 <translation id="5409365236829784218">Der er ingen installerede apps, der kan åbne denne fil.</translation>
+<translation id="5416022985862681400">De seneste syv dage</translation>
 <translation id="5433691172869980887">Brugernavnet er kopieret</translation>
 <translation id="54401264925851789">Oplysninger om sidesikkerhed</translation>
 <translation id="5443952882982198570">Kreditkort</translation>
@@ -309,6 +316,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="5659593005791499971">Mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">Aktiv for 1 dag siden</translation>
 <translation id="5711039611392265845">Du kan finde flere indstillinger vedrørende privatliv, sikkerhed og dataindsamling under <ph name="BEGIN_LINK" />Synkronisering og Google-tjenester<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Der var et problem med at logge ind på din konto.</translation>
 <translation id="5737974891429562743">Loginoplysningerne for kontoen er forældede. Opdater dem for at påbegynde synkroniseringen.</translation>

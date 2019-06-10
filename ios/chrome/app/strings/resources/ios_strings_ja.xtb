@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">フォルダの選択</translation>
 <translation id="1265739287306757398">詳細</translation>
 <translation id="1272079795634619415">中止</translation>
+<translation id="1283524564873030414">過去 24 時間</translation>
 <translation id="1323735185997015385">削除</translation>
 <translation id="132683371494960526">ダブルタップして親フォルダを変更。</translation>
 <translation id="1340643665687018190">メニューを閉じる</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="1989112275319619282">閲覧</translation>
 <translation id="2015722694326466240">パスワードを表示するには、まずデバイスにパスワードを設定する必要があります。</translation>
+<translation id="2073572773299281212">最終同期: <ph name="DAYS" /> 日前</translation>
 <translation id="2074131957428911366">同期する項目はいつでも [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で選択できます。</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="209018056901015185">PC版サイトをリクエスト</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">すべて開く</translation>
 <translation id="2570206273416014374">Cookie と、アドレスバーや検索ボックスに入力した検索語句を既定の検索エンジンに送信します。</translation>
 <translation id="2572712655377361602">デバイスポリシーにより写真へのアクセスがブロックされました</translation>
+<translation id="2578571896248130439">ウェブページの送信</translation>
 <translation id="2584132361465095047">アカウントを追加...</translation>
 <translation id="2625189173221582860">パスワードがコピーされました</translation>
 <translation id="2648803196158606475">既読を削除</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">マーク...</translation>
 <translation id="3157684681743766797">すべてマーク...</translation>
 <translation id="3175081911749765310">ウェブサービス</translation>
+<translation id="3178650076442119961">最終同期: 今日</translation>
 <translation id="3207960819495026254">ブックマークしました</translation>
 <translation id="3224641773458703735">パスワードをエクスポートするには、まずデバイスでパスコードを設定する必要があります。</translation>
 <translation id="3240426699337459095">リンクをコピーしました</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">QR コードをスキャンするには、設定でカメラを有効にしてください</translation>
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="430793432425771671">すべて同期</translation>
+<translation id="430967081421617822">全期間</translation>
 <translation id="4338650699862464074">アクセスしたページの URL を Google に送信します。</translation>
 <translation id="4359125752503270327">このページは別のアプリケーションで開かれます。</translation>
 <translation id="4370827530403103842">同期が機能していません。修正するにはタップしてください。</translation>
@@ -281,6 +286,7 @@
 <translation id="5127805178023152808">同期は無効です</translation>
 <translation id="5132942445612118989">すべてのデバイスでパスワード、履歴、その他の設定を同期する</translation>
 <translation id="5140288047769711648">このパスワードは Chrome で保存され、次回から自動入力されます。</translation>
+<translation id="5150492518600715772">お使いのデバイスに送信</translation>
 <translation id="5181140330217080051">ダウンロードしています</translation>
 <translation id="5186185447130319458">プライベート接続</translation>
 <translation id="5190835502935405962">ブックマーク バー</translation>
@@ -295,6 +301,7 @@
 <translation id="5327248766486351172">名前</translation>
 <translation id="5388358297987318779">画像を開く</translation>
 <translation id="5409365236829784218">このファイルを開くアプリがインストールされていません。</translation>
+<translation id="5416022985862681400">過去 7 日間</translation>
 <translation id="5433691172869980887">ユーザー名がコピーされました</translation>
 <translation id="54401264925851789">ページのセキュリティ情報</translation>
 <translation id="5443952882982198570">クレジット カード</translation>
@@ -309,6 +316,7 @@
 <translation id="5659593005791499971">メール</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">バージョン <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">最終同期: 1 日前</translation>
 <translation id="5711039611392265845">プライバシー、セキュリティ、データ収集に関連するその他の設定については、<ph name="BEGIN_LINK" />同期と Google サービス<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="5728700505257787410">アカウントへのログイン中に問題が発生しました。</translation>
 <translation id="5737974891429562743">アカウントのログイン情報が古くなっています。同期を開始するには更新してください。</translation>

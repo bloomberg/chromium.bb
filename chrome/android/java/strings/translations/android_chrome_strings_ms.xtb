@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="1006017844123154345">Buka Dalam Talian</translation>
+<translation id="1028699632127661925">Menghantar ke <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Menambahkan <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Daripada tapak web</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Cari &amp; teroka</translation>
 <translation id="1264974993859112054">Sukan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
+<translation id="1272444412400969138">Pemilih peranti untuk berkongsi tab.</translation>
 <translation id="1283039547216852943">Ketik untuk kembangkan</translation>
 <translation id="1285320974508926690">Jangan sekali-kali menterjemahkan tapak ini</translation>
 <translation id="1291207594882862231">Hapuskan sejarah, kuki, data tapak, cache...</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Hai, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Carian</translation>
 <translation id="1384959399684842514">Muat turun dijeda</translation>
+<translation id="1386674309198842382">Aktif <ph name="LAST_UPDATED" /> hari lalu</translation>
 <translation id="1389974829397082527">Tiada penanda halaman di sini</translation>
 <translation id="1397811292916898096">Cari dengan <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Dibenamkan dalam <ph name="WEBSITE_URL" /></translation>
@@ -71,7 +74,6 @@
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1445680696957526815">Komponen Chrome tidak serasi antara satu sama lain. Chrome mungkin menaik taraf, sila cuba lagi dalam beberapa minit. Jika masalah ini berterusan, cuba menyahpasang dan memasang semula Chrome.</translation>
 <translation id="1446450296470737166">Benarkan kawalan penuh peranti MIDI</translation>
-<translation id="1449080968331948513">Penjimat Data kini tersedia dalam Mod Ringkas</translation>
 <translation id="145097072038377568">Dimatikan dalam Tetapan Android</translation>
 <translation id="1477626028522505441">Muat turun <ph name="FILE_NAME" /> gagal disebabkan oleh masalah pelayan.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{(+1 lagi)}other{(+ # lagi)}}</translation>
@@ -81,7 +83,6 @@
 <translation id="1513858653616922153">Padam kata laluan</translation>
 <translation id="1516229014686355813">Ketik untuk Mencari menghantar perkataan yang dipilih dan halaman semasa sebagai konteks kepada Carian Google. Anda boleh mematikannya dalam <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Aktif hari ini</translation>
-<translation id="1539064842193522527">Pautan dibuka dalam Chrome</translation>
 <translation id="1549000191223877751">Alihkan ke tetingkap lain</translation>
 <translation id="1553358976309200471">Kemas Kini Chrome</translation>
 <translation id="1569387923882100876">Peranti Bersambung</translation>
@@ -288,7 +289,6 @@
 <translation id="3058498974290601450">Anda boleh mematikan penyegerakan pada bila-bila masa dalam tetapan</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> penanda halaman}other{<ph name="BOOKMARKS_COUNT_MANY" /> penanda halaman}}</translation>
 <translation id="3089395242580810162">Buka dalam tab inkognito</translation>
-<translation id="311456632243022227">Bbrp pautan dibuka dlm Chrome</translation>
 <translation id="3115898365077584848">Tunjukkan Maklumat</translation>
 <translation id="3123473560110926937">Disekat di sesetengah tapak</translation>
 <translation id="3137521801621304719">Tinggalkan mod inkognito</translation>
@@ -402,6 +402,7 @@
 <translation id="4008040567710660924">Benarkan kuki untuk tapak tertentu.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# jam}other{# jam}}</translation>
 <translation id="4042870126885713738">Tunjukkan cadangan apabila alamat web tidak selesai atau sambungan tidak boleh dibuat</translation>
+<translation id="4044912625106523635">Pemilih peranti untuk berkongsi tab dibuka pada ketinggian penuh.</translation>
 <translation id="4046123991198612571">Lagu seterusnya</translation>
 <translation id="4048707525896921369">Ketahui tentang topik berkenaan tapak web tanpa meninggalkan halaman. Ketik untuk Mencari akan menghantar perkataan dan konteks sekitarnya kepada Carian Google, mengembalikan takrif, gambar, hasil carian dan butiran lain.
 
@@ -579,6 +580,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5271967389191913893">Peranti tidak dapat membuka kandungan yang hendak dimuat turun.</translation>
 <translation id="528192093759286357">Seret dari atas dan sentuh butang kembali untuk keluar daripada skrin penuh.</translation>
 <translation id="5284584623296338184">Perubahan kepada penanda halaman, sejarah, kata laluan dan tetapan anda yang lain tidak akan disegerakkan ke Akaun Google anda lagi. Walau bagaimanapun, data sedia ada akan kekal disimpan dalam akaun Google anda.</translation>
+<translation id="5292796745632149097">Hantar ke</translation>
 <translation id="5300589172476337783">Paparkan</translation>
 <translation id="5301954838959518834">OK, faham</translation>
 <translation id="5304593522240415983">Medan ini tidak boleh kosong</translation>
@@ -740,6 +742,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6406506848690869874">Segerak</translation>
 <translation id="641643625718530986">Cetak…</translation>
 <translation id="6416782512398055893">Dimuat turun <ph name="MBS" /> MB</translation>
+<translation id="6418750371676080905">Pemilih peranti untuk berkongsi tab ditutup.</translation>
 <translation id="6427112570124116297">Terjemah Web</translation>
 <translation id="6433501201775827830">Pilih enjin carian anda</translation>
 <translation id="6437478888915024427">Maklumat halaman</translation>
@@ -779,6 +782,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="666268767214822976">Gunakan khidmat ramalan untuk menunjukkan pertanyaan berkaitan dan tapak web popular semasa anda menaip dalam bar alamat</translation>
 <translation id="666731172850799929">Buka dalam <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Notis Privasi Chrome</translation>
+<translation id="6672986458216094438">Pemilih peranti untuk berkongsi tab dibuka pada ketinggian separuh.</translation>
 <translation id="6697492270171225480">Tunjukkan cadangan untuk halaman yang serupa apabila halaman tidak ditemui</translation>
 <translation id="6697947395630195233">Chrome memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini.</translation>
 <translation id="6698801883190606802">Urus data yang disegerakkan</translation>
@@ -850,7 +854,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7177466738963138057">Anda boleh menukar perkara ini selepas ini dalam Tetapan</translation>
 <translation id="7180611975245234373">Muat semula</translation>
 <translation id="7189372733857464326">Menunggu Perkhidmatan Google Play selesai mengemas kini</translation>
-<translation id="7189598951263744875">Kongsi...</translation>
 <translation id="7191430249889272776">Tab dibuka di latar belakang.</translation>
 <translation id="723171743924126238">Pilih imej</translation>
 <translation id="7233236755231902816">Untuk melihat web dalam bahasa anda, dapatkan versi terkini Chrome</translation>
@@ -887,7 +890,6 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="7445411102860286510">Benarkan tapak untuk memainkan video yang diredam secara automatik (disyorkan)</translation>
 <translation id="7453467225369441013">Mengelog anda keluar daripada kebanyakan tapak. Anda tidak akan dilog keluar daripada Akaun Google anda.</translation>
 <translation id="7454641608352164238">Tidak cukup ruang</translation>
-<translation id="7455923816558154057">Ketik untuk lihat</translation>
 <translation id="7473891865547856676">Tidak, Terima Kasih</translation>
 <translation id="7475192538862203634">Jika anda kerap melihatnya, cuba <ph name="BEGIN_LINK" />cadangan<ph name="END_LINK" /> ini.</translation>
 <translation id="7475688122056506577">Kad SD tidak ditemui. Sesetengah fail anda mungkin tiada.</translation>
@@ -956,6 +958,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> telah lapuk.</translation>
 <translation id="7947953824732555851">Terima dan log masuk</translation>
 <translation id="7963646190083259054">Vendor:</translation>
+<translation id="7971136598759319605">Aktif 1 hari yang lalu</translation>
 <translation id="7975379999046275268">Pratonton halaman <ph name="BEGIN_NEW" />Baharu<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Pramuat halaman untuk penyemakan imbas dan pencarian yang lebih cepat</translation>
 <translation id="79859296434321399">Untuk melihat kandungan realiti tambahan, pasang ARCore</translation>

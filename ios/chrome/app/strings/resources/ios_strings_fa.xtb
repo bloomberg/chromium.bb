@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">انتخاب پوشه</translation>
 <translation id="1265739287306757398">با نحوه انجام کار آشنا شوید</translation>
 <translation id="1272079795634619415">توقف</translation>
+<translation id="1283524564873030414">۲۴ ساعت گذشته</translation>
 <translation id="1323735185997015385">حذف</translation>
 <translation id="132683371494960526">برای تغییر پوشه والد دو ضربه سریع بزنید.</translation>
 <translation id="1340643665687018190">بستن منو</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">پیشرفته</translation>
 <translation id="1989112275319619282">مشاهده محتوای موجود در فروشگاه ما</translation>
 <translation id="2015722694326466240">برای دیدن گذرنویسه‌ها، اول باید گذرنویسه‌ای برای دستگاه تنظیم کنید.</translation>
+<translation id="2073572773299281212">آخرین فعالیت: <ph name="DAYS" /> روز قبل</translation>
 <translation id="2074131957428911366">هرزمان خواستید می‌توانید مواردی را که می‌خواهید همگام‌سازی شود در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> انتخاب کنید.</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="209018056901015185">درخواست سایت دسک‌تاپ</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">باز کردن همه</translation>
 <translation id="2570206273416014374">برخی کوکی‌ها و جستجوها را از نوار نشانی و جعبه جستجو به موتور جستجوی پیش‌فرض ارسال می‌کند.</translation>
 <translation id="2572712655377361602">خط‌مشی دستگاه دسترسی به عکس‌هایتان را مسدود کرد</translation>
+<translation id="2578571896248130439">ارسال صفحه وب</translation>
 <translation id="2584132361465095047">افزودن حساب…</translation>
 <translation id="2625189173221582860">گذرواژه کپی شد</translation>
 <translation id="2648803196158606475">حذف خوانده‌شده‌ها</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">علامت‌گذاری...</translation>
 <translation id="3157684681743766797">علامت‌گذاری همه...</translation>
 <translation id="3175081911749765310">خدمات وب</translation>
+<translation id="3178650076442119961">آخرین فعالیت: امروز</translation>
 <translation id="3207960819495026254">نشانک‌گذاری شده</translation>
 <translation id="3224641773458703735">برای صادر کردن گذرواژه‌ها، ابتدا باید گذرنویسه‌ای برای دستگاه تنظیم کنید.</translation>
 <translation id="3240426699337459095">پیوند کپی شد</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">‏برای اسکن کردن کد QR، دوربین را در تنظیمات فعال کنید</translation>
 <translation id="4281844954008187215">شرایط استفاده از سرویس</translation>
 <translation id="430793432425771671">همگام‌سازی همه چیز</translation>
+<translation id="430967081421617822">همه زمان‌ها</translation>
 <translation id="4338650699862464074">‏نشانی وب صفحه‌هایی را که بازدید می‌کنید برای Google ارسال می‌کند.</translation>
 <translation id="4359125752503270327">این صفحه در برنامه دیگری باز می‌شود.</translation>
 <translation id="4370827530403103842">همگام‌سازی کار نمی‌کند. برای رفع اشکال ضربه بزنید.</translation>
@@ -281,6 +286,7 @@
 <translation id="5127805178023152808">همگام‌سازی خاموش است</translation>
 <translation id="5132942445612118989">همگام‌سازی گذرواژه‌ها، سابقه و موارد دیگر در همه دستگاه‌ها</translation>
 <translation id="5140288047769711648">‏Chrome به جای شما گذرواژه‌تان را به‌خاطر می‌سپارد. لازم نیست آن را به‌خاطر بسپارید.</translation>
+<translation id="5150492518600715772">ارسال به دستگاه شما</translation>
 <translation id="5181140330217080051">در حال بارگیری</translation>
 <translation id="5186185447130319458">خصوصی</translation>
 <translation id="5190835502935405962">نوار نشانک‌ها</translation>
@@ -295,6 +301,7 @@
 <translation id="5327248766486351172">نام</translation>
 <translation id="5388358297987318779">بازکردن تصویر</translation>
 <translation id="5409365236829784218">برنامه‌ای که بتواند این فایل را باز کند در سیستم نصب نشده است.</translation>
+<translation id="5416022985862681400">۷ روز گذشته</translation>
 <translation id="5433691172869980887">نام کاربری کپی شد</translation>
 <translation id="54401264925851789">اطلاعات امنیتی صفحه</translation>
 <translation id="5443952882982198570">کارت‌های اعتباری</translation>
@@ -309,6 +316,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5659593005791499971">ایمیل</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">نسخه <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">آخرین فعالیت: ۱ روز قبل</translation>
 <translation id="5711039611392265845">‏برای تنظیمات بیشتری که با حریم‌خصوصی، امنیت و جمع‌آوری داده مرتبط هستند، <ph name="BEGIN_LINK" />همگام‌سازی و سرویس‌های Google<ph name="END_LINK" /> را ببینید.</translation>
 <translation id="5728700505257787410">متأسفیم، مشکلی در ورود به حساب شما وجود داشت.</translation>
 <translation id="5737974891429562743">جزئیات ورود به سیستم قدیمی است. برای شروع همگام‌سازی، به‌روزرسانی کنید.</translation>

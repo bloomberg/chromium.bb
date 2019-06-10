@@ -1132,6 +1132,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Khi bạn không đặt chính sách này, hoạt động của các chính sách cụ thể hơn sẽ không bị ảnh hưởng.</translation>
 <translation id="2987155890997901449">Bật ARC</translation>
 <translation id="2987227569419001736">Kiểm soát việc sử dụng API Web Bluetooth</translation>
+<translation id="2990018289267778247">Nếu bạn đặt chính sách này thành true, thì các tùy chọn Hỗ trợ tiếp cận sẽ luôn xuất hiện trong menu khay hệ thống.
+
+          Nếu bạn đặt chính sách này thành false, thì các tùy chọn Hỗ trợ tiếp cận sẽ không bao giờ xuất hiện trong menu khay hệ thống.
+
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì các tùy chọn Hỗ trợ tiếp cận sẽ không xuất hiện trong menu khay hệ thống. Tuy nhiên, người dùng có thể đặt để các tùy chọn Hỗ trợ tiếp cận hiển thị qua trang Cài đặt.
+
+          Khi bạn bật các tính năng hỗ trợ truy cập (bằng các phương tiện khác, chẳng hạn như một tổ hợp phím), thì các tùy chọn này sẽ luôn xuất hiện trong menu khay hệ thống.</translation>
 <translation id="3011301228198307065">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi URL đó.
 
           Trang chủ là trang mở ra khi người dùng nhấn nút Trang chủ. Các trang mở ra khi khởi động chịu sự kiểm soát của chính sách RestoreOnStartup.
@@ -1453,6 +1462,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
         Tính năng đăng ký chính sách đám mây trong phạm vi máy sử dụng chính sách này trên máy tính để bàn. Sổ đăng ký hoặc GPO trên Windows, plist trên máy Mac và tệp chính sách JSON trên Linux có thể đặt chính sách này.</translation>
 <translation id="3660562134618097814">Chuyển cookie SAML IdP trong khi đăng nhập</translation>
 <translation id="3701121231485832347">Kiểm soát các tùy chọn cài đặt dành riêng cho các thiết bị <ph name="PRODUCT_OS_NAME" /> do <ph name="MS_AD_NAME" /> quản lý.</translation>
+<translation id="3702518095257671450">Chứng thực từ xa</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Trường một dòng không dùng nữa và sẽ bị xóa trong tương lai. Hãy bắt đầu sử dụng hộp văn bản nhiều dòng bên dưới.)</translation>
 <translation id="3709266154059827597">Định cấu hình danh sách đen cài đặt tiện ích</translation>
 <translation id="3711895659073496551">Tạm ngừng</translation>
@@ -1849,6 +1859,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
 <translation id="4285674129118156176">Cho phép người dùng không được liên kết sử dụng ARC</translation>
+<translation id="4289903996435140853">Cho phép bạn đặt danh sách các url chỉ định những trang web sẽ tự động được cấp quyền truy cập vào thiết bị USB bằng mã sản phẩm và mã nhà cung cấp cụ thể. Mỗi mục trong danh sách phải chứa cả thiết bị và url để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường mã sản phẩm và mã nhà cung cấp. Bất kỳ mã nào bị bỏ qua đều được coi là ký tự đại diện có một ngoại lệ và ngoại lệ đó chính là không thể chỉ định mã sản phẩm nếu không chỉ định được mã nhà cung cấp. Nếu không, chính sách sẽ không có hiệu lực và bị bỏ qua.
+
+        Mô hình quyền của USB sử dụng URL của trang web yêu cầu ("URL yêu cầu") và URL của trang web khung cấp cao nhất ("URL nhúng") để cấp quyền cho URL yêu cầu truy cập vào thiết bị USB. URL yêu cầu có thể khác với URL nhúng khi bạn tải trang web yêu cầu trong khung nội tuyến. Do đó, trường "url" có thể chứa tối đa hai chuỗi URL phân tách bằng dấu phẩy để chỉ định URL yêu cầu và URL nhúng tương ứng. Nếu chỉ có một URL được chỉ định, thì quyền truy cập vào các thiết bị USB tương ứng sẽ được cấp khi URL của trang web yêu cầu khớp với URL này bất kể trạng thái nhúng. Các URL trong trường "url" phải là các URL hợp lệ. Nếu không, chính sách này sẽ bị bỏ qua.
+
+        Nếu bạn không đặt chính sách này, thì giá trị mặc định chung sẽ dùng cho tất cả các trang web của chính sách 'DefaultWebUsbGuardSetting' nếu chính sách này được đặt, hoặc nếu không sẽ dùng cho cấu hình cá nhân của người dùng.
+
+        Các mẫu URL trong chính sách này không được xung đột với các URL đã định cấu hình thông qua WebUsbBlockedForUrls. Nếu có xung đột, thì chính sách này sẽ được ưu tiên so với WebUsbBlockedForUrls và WebUsbAskForUrls.
+
+        Các giá trị của chính sách này và chính sách WebUsbAllowDevicesForUrls được hợp nhất.</translation>
 <translation id="4298509794364745131">Chỉ định danh sách các ứng dụng có thể bật làm ứng dụng ghi chú trên màn hình khóa của <ph name="PRODUCT_OS_NAME" />.
 
       Nếu bạn bật ứng dụng ghi chú ưa thích trên màn hình khóa, màn hình khóa sẽ chứa phần tử giao diện người dùng để khởi chạy ứng dụng ghi chú ưa thích.
@@ -2000,6 +2019,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4639407427807680016">Tên của các máy chủ nhắn tin gốc cần xóa khỏi danh sách cấm</translation>
 <translation id="4650759511838826572">Tắt lược đồ giao thức URL</translation>
 <translation id="465099050592230505">URL cửa hàng trực tuyến dành cho doanh nghiệp (không dùng nữa)</translation>
+<translation id="4661889655253181651">Tùy chọn cài đặt nội dung cho phép bạn chỉ định cách xử lý nội dung thuộc một loại cụ thể (chẳng hạn như Cookie, Hình ảnh hoặc JavaScript).</translation>
 <translation id="4665897631924472251">Cài đặt quản lý tiện ích</translation>
 <translation id="4668325077104657568">Cài đặt hình ảnh mặc định</translation>
 <translation id="4670865688564083639">Tối thiểu:</translation>
@@ -2044,6 +2064,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Những nội dung đề xuất này sẽ được tìm nạp từ xa từ máy chủ của Google.
 
       Nếu bạn đặt mục cài đặt này thành false, thì nội dung đề xuất sẽ không được tìm nạp hoặc hiển thị.</translation>
+<translation id="4759650396863318477">Cho phép đặt khoảng thời gian tính bằng mili giây mà trong khoảng thời gian đó, người dùng nhận được thông báo phải chạy lại <ph name="PRODUCT_NAME" /> hoặc khởi động lại thiết bị chạy <ph name="PRODUCT_OS_NAME" /> để áp dụng một bản cập nhật đang chờ xử lý.
+
+      Trong khoảng thời gian này, người dùng sẽ được nhắc lại nhiều lần về việc cần phải cập nhật. Đối với các thiết bị chạy <ph name="PRODUCT_OS_NAME" />, thông báo khởi động lại sẽ xuất hiện trong khay hệ thống theo chính sách <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Đối với các trình duyệt <ph name="PRODUCT_NAME" />, menu ứng dụng sẽ thay đổi để cho thấy cần khởi động lại sau khi hết 1/3 thời gian thông báo. Thông báo này sẽ đổi màu khi hết 2/3 thời gian thông báo và đổi màu một lần nữa khi hết toàn bộ thời gian thông báo. Các thông báo bổ sung được bật theo chính sách <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> cũng tuân theo trình tự này.
+
+      Nếu bạn không đặt chính sách này thì khoảng thời gian mặc định là 345600000 mili giây (4 ngày) đối với thiết bị chạy <ph name="PRODUCT_OS_NAME" /> và 604800000 mili giây (1 một tuần) đối với <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> và cho phép người dùng tự động hoàn thành thông tin thẻ tín dụng trong biểu mẫu web bằng cách sử dụng thông tin đã lưu trữ trước đây.
 
       Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Tự động điền sẽ không bao giờ gợi ý hoặc điền thông tin thẻ tín dụng, đồng thời sẽ không lưu thông tin thẻ tín dụng bổ sung mà người dùng có thể gửi trong khi duyệt web.
@@ -2251,6 +2276,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="5213038356678567351">Các trang web sẽ không bao giờ kích hoạt quá trình chuyển trình duyệt.</translation>
 <translation id="5219844027738217407">Đối với các ứng dụng Android, chính sách này chỉ ảnh hưởng đến micrô. Khi chính sách này được đặt thành true, micrô sẽ bị tắt tiếng cho tất cả ứng dụng Android mà không có ngoại lệ nào.</translation>
+<translation id="5221394278852982313">Cho phép bạn đặt danh sách các url chỉ định những trang web sẽ tự động được cấp quyền truy cập vào thiết bị USB bằng mã sản phẩm và mã nhà cung cấp cụ thể. Mỗi mục trong danh sách phải chứa cả thiết bị và url để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường mã sản phẩm và mã nhà cung cấp. Bất kỳ mã nào bị bỏ qua đều được coi là ký tự đại diện có một ngoại lệ và ngoại lệ đó chính là không thể chỉ định mã sản phẩm nếu không chỉ định được mã nhà cung cấp. Nếu không, chính sách sẽ không có hiệu lực và bị bỏ qua.
+
+        Mô hình quyền của USB sử dụng URL của trang web yêu cầu ("URL yêu cầu") và URL của trang web khung cấp cao nhất ("URL nhúng") để cấp quyền cho URL yêu cầu truy cập vào thiết bị USB. URL yêu cầu có thể khác với URL nhúng khi bạn tải trang web yêu cầu trong khung nội tuyến. Do đó, trường "url" có thể chứa tối đa hai chuỗi URL phân tách bằng dấu phẩy để chỉ định URL yêu cầu và URL nhúng tương ứng. Nếu chỉ có một URL được chỉ định, thì quyền truy cập vào các thiết bị USB tương ứng sẽ được cấp khi URL của trang web yêu cầu khớp với URL này bất kể trạng thái nhúng. Các URL trong trường "url" phải là các URL hợp lệ. Nếu không, chính sách này sẽ bị bỏ qua.
+
+        Nếu bạn không đặt chính sách này, thì giá trị mặc định chung sẽ dùng cho tất cả các trang web của chính sách 'DefaultWebUsbGuardSetting' nếu chính sách này được đặt, hoặc nếu không sẽ dùng cho cấu hình cá nhân của người dùng.
+
+        Các mẫu URL trong chính sách này không được xung đột với các URL đã định cấu hình thông qua WebUsbBlockedForUrls. Nếu có xung đột, thì chính sách này sẽ được ưu tiên so với WebUsbBlockedForUrls và WebUsbAskForUrls.
+
+        Các giá trị của chính sách này và chính sách DeviceWebUsbAllowDevicesForUrls policy được hợp nhất.</translation>
 <translation id="5228316810085661003">Độ trễ của tính năng tự động đăng nhập vào tài khoản trên thiết bị.
 
       Nếu chưa đặt chính sách |DeviceLocalAccountAutoLoginId|, thì chính sách này sẽ không có hiệu lực. Ngược lại:
@@ -2993,6 +3027,21 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Nếu bạn đặt chính sách này thành ''Không cho phép người dùng quản lý chứng chỉ'', thì người dùng sẽ không thể quản lý các chứng chỉ, họ chỉ có thể xem chứng chỉ.</translation>
 <translation id="6573305661369899995">Đặt nguồn bên ngoài cho hạn chế URL</translation>
+<translation id="6583851521569686409">Định cấu hình danh sách máy in.
+
+      Chính sách này cho phép quản trị viên cung cấp cấu hình máy in cho
+      người dùng của mình.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> và <ph name="PRINTER_DESCRIPTION" /> là các chuỗi dạng tự do có thể tùy chỉnh để dễ dàng chọn máy in. <ph name="PRINTER_MANUFACTURER" /> và <ph name="PRINTER_MODEL" /> giúp người dùng cuối dễ dàng nhận diện máy in. Các thông tin này cho biết nhà sản xuất và kiểu máy in. <ph name="PRINTER_URI" /> phải là một địa chỉ có thể truy cập được từ máy khách, bao gồm cả <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> và <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> là không bắt buộc. Nếu được cung cấp, tùy chọn này sẽ dùng để giúp loại bỏ tình trạng trùng lặp máy in <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> phải chứa tên của máy in, hoặc bạn phải đặt <ph name="PRINTER_AUTOCONF" /> thành true. Các máy in có cả hai hoặc không có thuộc tính nào đều bị bỏ qua.
+
+      Quá trình thiết lập máy in sẽ hoàn tất trong lần đầu tiên sử dụng máy in.  Các tệp PPD sẽ không được tải xuống cho đến khi máy in được dùng.  Sau lần đó, các tệp PPD dùng thường xuyên sẽ được lưu vào bộ nhớ đệm.
+
+      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên từng thiết bị hay không.  Chính sách này nhằm bổ sung cho quá trình định cấu hình máy in theo từng người dùng.
+
+      Đối với các thiết bị được quản lý bằng Active Directory, chính sách này hỗ trợ mở rộng <ph name="MACHINE_NAME_VARIABLE" /> thành tên máy Active Directory hoặc chuỗi con của tên máy đó. Chẳng hạn, nếu tên máy là <ph name="MACHINE_NAME_EXAMPLE" />, thì <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> sẽ được thay thế bằng 4 ký tự bắt đầu sau vị trí thứ 6, tức là <ph name="MACHINE_NAME_PART_EXAMPLE" />. Xin lưu ý rằng vị trí này được tính từ đầu.
+      </translation>
 <translation id="6598235178374410284">Hình đại diện của người dùng</translation>
 <translation id="6603004149426829878">Luôn gửi mọi tín hiệu vị trí có sẵn cho máy chủ trong khi phân giải múi giờ</translation>
 <translation id="6628120204569232711">Báo cáo trạng thái bộ nhớ</translation>
@@ -4347,6 +4396,8 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="915194831143859291">Nếu chính sách này được đặt thành false hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ cho phép người dùng tắt thiết bị.
       Nếu chính sách này được đặt thành true, <ph name="PRODUCT_OS_NAME" /> sẽ kích hoạt khởi động lại khi người dùng tắt thiết bị. <ph name="PRODUCT_OS_NAME" /> sẽ thay thế tất cả số lần xuất hiện nút tắt trong Giao diện người dùng bằng nút khởi động lại. Nếu người dùng tắt thiết bị bằng nút nguồn thì thiết bị đó sẽ không tự động khởi động lại ngay cả khi đã bật chính sách.</translation>
 <translation id="9152473318295429890">Bật nội dung đề xuất theo ngữ cảnh của các trang web liên quan</translation>
+<translation id="9153446010242995516">Hạ cấp và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Hãy tìm cách chuyển sang cấu hình cấp thiết bị (bao gồm cả thông tin truy cập mạng) thông qua quá trình hạ cấp nếu có thể, nhưng hãy thực hiện quá trình hạ cấp bằng chức năng powerwash đầy đủ ngay cả khi không thể khôi phục dữ liệu (vì phiên bản đích không hỗ trợ khôi phục dữ liệu hoặc do một sự thay đổi không tương thích ngược).
+          Hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 75 trở lên. Với các ứng dụng cũ, giá trị này nghĩa là khả năng hạ cấp đã bị vô hiệu hóa.</translation>
 <translation id="9158929520101169054">Cho phép đăng nhập nhiều tài khoản trong trình duyệt</translation>
 <translation id="9159126470527871268">Thông báo cho người dùng biết phải chạy lại <ph name="PRODUCT_NAME" /> hoặc khởi động lại <ph name="PRODUCT_OS_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.
 

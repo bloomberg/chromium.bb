@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Valkoinen oletusavatar</translation>
 <translation id="1581962803218266616">Näytä Finderissä</translation>
 <translation id="1584990664401018068">Käyttämäsi Wi-Fi-verkko (<ph name="NETWORK_ID" />) saattaa edellyttää todennusta.</translation>
-<translation id="1585238069289523942">Asentaa sovelluksia Chromebookille</translation>
 <translation id="1585717515139318619">Toinen tietokoneellasi oleva ohjelma on lisännyt teeman, joka voi muuttaa Chromen toimintaa.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">Virhe Linux-tiedostojen määrittämisessä. Yritä uudelleen.</translation>
 <translation id="2315587498123194634">Lähetä linkki: <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Ei kiitos</translation>
-<translation id="2316739859433277603">Sovelluksien käynnistysohjelmasta tehdyt haut käyttävät selaimen <ph name="BEGIN_LINK" />hakukoneasetusta<ph name="END_LINK" />.</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" /> % valmis</translation>
 <translation id="2318143611928805047">Paperin koko</translation>
 <translation id="2318817390901984578">Jos haluat käyttää Android-sovelluksia, lataa ja päivitä <ph name="DEVICE_TYPE" />.</translation>
@@ -5317,6 +5315,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9094033019050270033">Päivitä salasana</translation>
 <translation id="9094982973264386462">Poista</translation>
 <translation id="9095253524804455615">Poista</translation>
+<translation id="9095388113577226029">Lisää kieliä…</translation>
 <translation id="9100610230175265781">Tunnuslause tarvitaan</translation>
 <translation id="9100765901046053179">Lisäasetukset</translation>
 <translation id="9101691533782776290">Käynnistä sovellus</translation>

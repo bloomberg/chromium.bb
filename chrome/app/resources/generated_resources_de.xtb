@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1002469766576243227">Dieser Authentifizierungsdienst wird von <ph name="EXTENSION_NAME" /> gehostet</translation>
 <translation id="1003088604756913841">Link in neuem <ph name="APP" />-Fenster öffnen</translation>
 <translation id="1004218526896219317">Zugriff auf Website</translation>
 <translation id="1005274289863221750">Ihr Mikrofon und Ihre Kamera verwenden</translation>
@@ -289,6 +290,7 @@
 <translation id="1429300045468813835">Alle gelöscht</translation>
 <translation id="143027896309062157">Alle Ihre Daten auf Ihrem Computer und den von Ihnen besuchten Websites lesen und ändern</translation>
 <translation id="1430915738399379752">Drucken</translation>
+<translation id="1431188203598586230">Letztes Softwareupdate</translation>
 <translation id="1432581352905426595">Suchmaschinen verwalten</translation>
 <translation id="1433811987160647649">Vor dem Zugriff nachfragen</translation>
 <translation id="1434696352799406980">Mit dieser Funktion werden Ihre "Beim Start"-Seite, Ihre Suchmaschine, die "Neuer Tab"-Seite und angepinnte Tabs zurückgesetzt. Außerdem werden alle Erweiterungen deaktiviert und temporäre Daten wie Cookies gelöscht. Ihre Lesezeichen, der Verlauf und gespeicherte Passwörter werden nicht gelöscht.</translation>
@@ -381,7 +383,6 @@
 <translation id="1576594961618857597">Weißer Standardavatar</translation>
 <translation id="1581962803218266616">Im Finder anzeigen</translation>
 <translation id="1584990664401018068">Eventuell müssen Sie sich bei dem verwendeten WLAN (<ph name="NETWORK_ID" />) authentifizieren.</translation>
-<translation id="1585238069289523942">Apps auf Ihrem Chromebook installieren</translation>
 <translation id="1585717515139318619">Ein anderes Programm auf Ihrem Computer hat ein Design hinzugefügt, das sich möglicherweise auf die Funktionsweise von Chrome auswirkt.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -525,6 +526,7 @@
 <translation id="1781771911845953849">Konten und Synchronisierung</translation>
 <translation id="1782196717298160133">Mein Telefon finden</translation>
 <translation id="1784849162047402014">Gerät verfügt über wenig Speicherplatz</translation>
+<translation id="1790194216133135334">Link an <ph name="DEVICE_NAME" /> senden</translation>
 <translation id="1792619191750875668">Erweiterter Bildschirm</translation>
 <translation id="1794791083288629568">Helfen Sie uns, dieses Problem zu beheben, indem Sie uns Feedback senden.</translation>
 <translation id="1795214765651529549">Klassisches Design verwenden</translation>
@@ -587,6 +589,7 @@
 <translation id="1875312262568496299">Starten</translation>
 <translation id="1875387611427697908">Dieser Artikel kann nur über den <ph name="CHROME_WEB_STORE" /> hinzugefügt werden</translation>
 <translation id="1877520246462554164">Authentifizierungs-Token konnte nicht abgerufen werden. Bitte melden Sie sich ab und dann wieder an, um es noch einmal zu versuchen.</translation>
+<translation id="1877860345998737529">Schalter Aktionen zuweisen</translation>
 <translation id="1879000426787380528">Anmelden als</translation>
 <translation id="1880905663253319515">Zertifikat "<ph name="CERTIFICATE_NAME" />" löschen?</translation>
 <translation id="1886996562706621347">Registrierung von Websites als Standard-Handler für Protokolle zulassen (empfohlen)</translation>
@@ -866,6 +869,7 @@
 <translation id="230927227160767054">Diese Seite möchte einen Service-Handler installieren.</translation>
 <translation id="2309620859903500144">Diese Website darf nicht auf meine Bewegungs- oder Lichtsensoren zugreifen.</translation>
 <translation id="2315414688463285945">Fehler beim Konfigurieren von Linux-Dateien. Bitte versuchen Sie es noch einmal.</translation>
+<translation id="2315587498123194634">Link an <ph name="DEVICE_NAME" /> senden</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" /> % abgeschlossen</translation>
 <translation id="2318143611928805047">Papierformat</translation>
@@ -906,6 +910,7 @@
 <translation id="2365507699358342471">Diese Website kann Texte und Bilder aus der Zwischenablage abrufen.</translation>
 <translation id="2367199180085172140">Netzwerkfreigabe hinzufügen</translation>
 <translation id="2367972762794486313">Apps anzeigen</translation>
+<translation id="2369105924912929484">Zusammengefasste Seiteninhalte ein- oder ausblenden</translation>
 <translation id="2371076942591664043">Nach &amp;Download öffnen</translation>
 <translation id="2375406435414127095">Mit dem Smartphone verbinden</translation>
 <translation id="2377667304966270281">Harte Fehler</translation>
@@ -1154,6 +1159,7 @@
 <translation id="2739191690716947896">Fehlerbehebung</translation>
 <translation id="2739240477418971307">Einstellungen für Zugänglichkeit ändern</translation>
 <translation id="2740393541869613458">von dem betreuten Nutzer besuchte Websites überprüfen und</translation>
+<translation id="2741912629735277980">UI auf dem Anmeldebildschirm anzeigen</translation>
 <translation id="274290345632688601">Linux-Apps und -Dateien werden wiederhergestellt</translation>
 <translation id="2743387203779672305">In Zwischenablage kopieren</translation>
 <translation id="2745080116229976798">Microsoft - Qualifizierte Unterordnung</translation>
@@ -1270,6 +1276,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="2910318910161511225">Stellen Sie eine Verbindung zu einem Netzwerk her und versuchen Sie es noch einmal</translation>
 <translation id="2913331724188855103">Websites dürfen Cookiedaten speichern und lesen (empfohlen)</translation>
 <translation id="2915102088417824677">Aktivitätsprotokoll ansehen</translation>
+<translation id="2915873080513663243">Automatischer Scan</translation>
 <translation id="2916073183900451334">Durch Drücken der Tab-Taste auf einer Webseite werden Links sowie Formularfelder markiert.</translation>
 <translation id="2916745397441987255">In Erweiterungen suchen</translation>
 <translation id="2921081876747860777">Erstellen Sie ein Passwort, um Ihre lokalen Daten zu schützen.</translation>
@@ -1478,6 +1485,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="327147043223061465">Alle Cookies und Websitedaten anzeigen</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> möchte eine Verbindung herstellen</translation>
 <translation id="3274763671541996799">Sie befinden sich im Vollbildmodus.</translation>
+<translation id="3275778809241512831">Ihr interner Sicherheitsschlüssel ist momentan nicht sicher. Bitte entfernen Sie den Schlüssel aus allen Diensten, für die Sie ihn verwendet haben, und setzen Sie ihn zurück, um das Problem zu beheben.</translation>
 <translation id="3275778913554317645">In neuem Fenster öffnen</translation>
 <translation id="3278001907972365362">Ihre Google-Konten erfordern Aufmerksamkeit</translation>
 <translation id="3279230909244266691">Der Vorgang kann einige Minuten dauern. Virtuelle Maschine wird gestartet.</translation>
@@ -1570,6 +1578,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3412265149091626468">Auswahl anzeigen</translation>
 <translation id="3413122095806433232">Aussteller von Zertifizierungsstellen: <ph name="LOCATION" /></translation>
 <translation id="3414952576877147120">Größe:</translation>
+<translation id="3420501302812554910">Interner Sicherheitsschlüssel muss zurückgesetzt werden</translation>
 <translation id="3421387094817716717">Öffentlicher Schlüssel für elliptische Kurven</translation>
 <translation id="3423463006624419153">Auf Ihrem <ph name="PHONE_NAME_1" /> und Ihrem <ph name="PHONE_NAME_2" />:</translation>
 <translation id="3423858849633684918"><ph name="PRODUCT_NAME" /> neu starten</translation>
@@ -1598,6 +1607,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3450157232394774192">Inaktiver Zustand – Auslastung in Prozent</translation>
 <translation id="3453612417627951340">Autorisierung erforderlich</translation>
 <translation id="3454157711543303649">Aktivierung abgeschlossen</translation>
+<translation id="3454213325559396544">Das ist das letzte automatische Software- und Sicherheitsupdate für dieses <ph name="DEVICE_TYPE" />. Wenn Sie weiter Updates erhalten möchten, ist ein neueres Modell erforderlich.</translation>
 <translation id="345693547134384690">Bil&amp;d in neuem Tab öffnen</translation>
 <translation id="3457500881955698515">Ihr Unternehmen bzw. Ihre Organisation verlangt, dass dieses Gerät umgehend aktualisiert wird</translation>
 <translation id="3459509316159669723">Drucken</translation>
@@ -1755,6 +1765,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3672681487849735243">Ein werkseitiger Fehler wurde festgestellt.</translation>
 <translation id="367645871420407123">Leer lassen, wenn Sie für das Root-Passwort den Standardtestwert festlegen möchten</translation>
 <translation id="3677657024345889897">Am leisesten</translation>
+<translation id="3677911431265050325">Mobile Version anfordern</translation>
 <translation id="3678156199662914018">Erweiterung: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3681311097828166361">Vielen Dank für Ihr Feedback. Sie sind jetzt offline und Ihr Bericht wird später versendet.</translation>
 <translation id="3682824389861648626">Grenzwert für Mausbewegungen</translation>
@@ -2207,6 +2218,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4350019051035968019">Dieses Gerät kann nicht in der Domain registriert werden, zu der Ihr Konto gehört, weil das Gerät für die Verwaltung in einer anderen Domain gekennzeichnet wurde.</translation>
 <translation id="4354344420232759511">Hier finden Sie die von Ihnen besuchten Websites</translation>
 <translation id="435527878592612277">Foto auswählen</translation>
+<translation id="4358313196493694334">Klickposition stabilisieren</translation>
 <translation id="4359408040881008151">Wurde aufgrund der abhängigen Erweiterungen installiert</translation>
 <translation id="4359717112757026264">Stadtlandschaft</translation>
 <translation id="4361142739114356624">Der private Schlüssel für dieses Clientzertifikat fehlt oder ist ungültig</translation>
@@ -2331,6 +2343,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4558426062282641716">Berechtigung zum automatischen Start angefordert</translation>
 <translation id="4558491878126948419">Sie erhalten Tipps zu <ph name="DEVICE_TYPE" /> sowie Updates zu Google-Produkten und können uns Feedback geben. Die Abbestellung ist jederzeit möglich.</translation>
 <translation id="4559617833001311418">Diese Website greift auf meine Bewegungs- oder Lichtsensoren zu.</translation>
+<translation id="4561098487691395071">Oder PPD für den Drucker angeben</translation>
 <translation id="4562155214028662640">Fingerabdruck hinzufügen</translation>
 <translation id="4563880231729913339">Finger 3</translation>
 <translation id="4565377596337484307">Passwort ausblenden</translation>
@@ -2575,6 +2588,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="494286511941020793">Proxy-Konfigurationshilfe</translation>
 <translation id="4943368462779413526">Fußball</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" möchte eine Verbindung mit einem seriellen Port herstellen</translation>
+<translation id="4944310289250773232">Dieser Authentifizierungsdienst wird von <ph name="SAML_DOMAIN" /> gehostet</translation>
 <translation id="495170559598752135">Aktionen</translation>
 <translation id="4953689047182316270">Auf Bedienungshilfen reagieren</translation>
 <translation id="4953808748584563296">Orangefarbener Standardavatar</translation>
@@ -2667,6 +2681,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5094721898978802975">Mit zusammenarbeitenden systemeigenen Anwendungen kommunizieren</translation>
 <translation id="5097002363526479830">Fehler beim Herstellen einer Verbindung mit dem Netzwerk "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5101042277149003567">Alle Lesezeichen öffnen</translation>
+<translation id="5101839224773798795">Automatisch klicken, wenn der Cursor anhält</translation>
 <translation id="5108967062857032718">Einstellungen – Android-Apps entfernen</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111646998522066203">Inkognitomodus beenden</translation>
@@ -3150,6 +3165,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5852112051279473187">Hoppla! Bei der Anmeldung dieses Geräts ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder wenden Sie sich an einen Support-Mitarbeiter.</translation>
 <translation id="5852137567692933493">Neu starten und Powerwash durchführen</translation>
 <translation id="5854912040170951372">Pizza</translation>
+<translation id="5855643921295613558">0,6 Sekunden</translation>
 <translation id="5855773610748894548">Hoppla! Fehler mit dem Sicherheitsmodul.</translation>
 <translation id="5856721540245522153">Debugging-Funktionen aktivieren</translation>
 <translation id="5857090052475505287">Neuer Ordner</translation>
@@ -3439,6 +3455,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6279183038361895380">Zum Einblenden des Cursors |<ph name="ACCELERATOR" />| drücken</translation>
 <translation id="6280215091796946657">Mit einem anderen Konto anmelden</translation>
 <translation id="6280912520669706465">ARC</translation>
+<translation id="628352644014831790">4 Sekunden</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> ist ein ungewöhnlicher Download und könnte schädlich sein.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Neuer Drucker in Ihrem Netzwerk gefunden}other{Neue Drucker in Ihrem Netzwerk gefunden}}</translation>
 <translation id="6286708577777130801">Gespeicherte Passwortdetails</translation>
@@ -3645,6 +3662,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
 <translation id="6613452264606394692">Speichern Sie diese Seite als Lesezeichen, um schnell wieder hierher zurückzukehren</translation>
 <translation id="6615455863669487791">Zeigen</translation>
+<translation id="6617100836880592260">Scangeschwindigkeit: <ph name="SPEED_WITH_UNITS" /></translation>
 <translation id="6618097958368085618">Trotzdem beibehalten</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="661907246513853610">Die Website kann Ihren Standort verfolgen</translation>
@@ -4459,6 +4477,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7831491651892296503">Fehler bei der Netzwerkkonfiguration</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">Ende</translation>
+<translation id="783214144752121388">Ausführen von Flash für Websites blockieren (empfohlen)</translation>
 <translation id="7833720883933317473">Hier werden gespeicherte benutzerdefinierte Wörter angezeigt</translation>
 <translation id="7835178595033117206">Lesezeichen entfernt</translation>
 <translation id="7837776265184002579">Ihre Startseite wurde in <ph name="URL" /> geändert.</translation>
@@ -4514,6 +4533,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Ihr Passwort wurde auf dem Server geändert. Bitte melden Sie sich ab und dann wieder an.</translation>
 <translation id="7915471803647590281">Bitte beschreiben Sie das Problem, bevor Sie das Feedback abschicken.</translation>
+<translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
 <translation id="792514962475806987">Zoomstufe für angedockte Lupe:</translation>
 <translation id="7925247922861151263">AAA-Prüfung fehlgeschlagen</translation>
 <translation id="7925285046818567682">Warten auf <ph name="HOST_NAME" />...</translation>
@@ -4571,6 +4591,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7987814697832569482">Immer über dieses VPN verbinden</translation>
 <translation id="798835209536175951">Sie können SMS auf Ihrem Chromebook senden und empfangen. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="7988355189918024273">Bedienungshilfen aktivieren</translation>
+<translation id="7991296728590311172">Einstellungen für Schalterzugriff</translation>
 <translation id="7994702968232966508">EAP-Methode</translation>
 <translation id="7997826902155442747">Prozesspriorität</translation>
 <translation id="7999229196265990314">Folgende Dateien wurden erstellt:
@@ -4783,6 +4804,8 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8308179586020895837">Nachfragen, wenn <ph name="HOST" /> auf Ihre Kamera zugreifen möchte</translation>
 <translation id="830868413617744215">Beta</translation>
 <translation id="8309458809024885768">Das Zertifikat ist bereits vorhanden</translation>
+<translation id="8314381333424235892">Erweiterung fehlt oder wurde deinstalliert</translation>
+<translation id="8316618172731049784">An <ph name="DEVICE_NAME" /> senden</translation>
 <translation id="8317671367883557781">Netzwerkverbindung hinzufügen</translation>
 <translation id="8319414634934645341">Erweiterte Schlüsselverwendung</translation>
 <translation id="8320459152843401447">Gesamten Bildschirm</translation>
@@ -4940,6 +4963,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8588866096426746242">Profilstatistiken anzeigen</translation>
 <translation id="8588868914509452556"><ph name="WINDOW_TITLE" /> – VR wird auf Headset abgespielt</translation>
 <translation id="8590375307970699841">Automatische Updates einrichten</translation>
+<translation id="8591783563402255548">1 Sekunde</translation>
 <translation id="8592141010104017453">Keine Benachrichtigungen anzeigen</translation>
 <translation id="8593121833493516339">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Sie können uns helfen, Android für Ihr Kind zu verbessern, indem Sie zulassen, dass Diagnose- sowie Geräte- und App-Nutzungsdaten automatisch an Google gesendet werden. Ihr Kind wird mithilfe dieser Daten nicht identifiziert, sie helfen jedoch beispielsweise dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" für Ihr Kind aktiviert ist, werden diese Daten in seinem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="8594908476761052472">Video aufnehmen</translation>
@@ -4969,6 +4993,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8637688295594795546">Systemupdate verfügbar. Download wird vorbereitet...</translation>
 <translation id="8639047128869322042">Nach schädlicher Software wird gesucht...</translation>
 <translation id="8642171459927087831">Zugriffs-Token</translation>
+<translation id="8642900771896232685">2 Sekunden</translation>
 <translation id="8642947597466641025">Schriftgrad vergrößern</translation>
 <translation id="8643418457919840804">Wählen Sie eine Option aus, um fortzufahren:</translation>
 <translation id="8644655801811752511">Dieser Sicherheitsschlüssel kann nicht zurückgesetzt werden. Versuchen Sie, den Schlüssel direkt nach dem Einstecken zurückzusetzen.</translation>
@@ -5170,6 +5195,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8910222113987937043">Änderungen an Ihrem Verlauf sowie an Ihren Lesezeichen, Passwörtern und sonstigen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Bereits in Ihrem Google-Konto gespeicherte Daten bleiben dort erhalten und können über das <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" /> verwaltet werden.</translation>
 <translation id="8912362522468806198">Google-Konto</translation>
 <translation id="8912793549644936705">Strecken</translation>
+<translation id="8912810933860534797">Automatischen Scan aktivieren</translation>
 <translation id="891365694296252935">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Dieses Gerät sendet momentan automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Ihr Kind wird mithilfe dieser Daten nicht identifiziert, sie helfen jedoch beispielsweise dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Diese Einstellung wird vom Inhaber erzwungen. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" für Ihr Kind aktiviert ist, werden diese Daten in seinem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Vorschläge werden geladen</translation>
 <translation id="8916476537757519021">Inkognito-Subframe: <ph name="SUBFRAME_SITE" /></translation>
@@ -5286,6 +5312,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9094033019050270033">Passwort aktualisieren</translation>
 <translation id="9094982973264386462">Entfernen</translation>
 <translation id="9095253524804455615">Entfernen</translation>
+<translation id="9095388113577226029">Weitere Sprachen...</translation>
 <translation id="9100610230175265781">Passphrase erforderlich</translation>
 <translation id="9100765901046053179">Erweiterte Einstellungen</translation>
 <translation id="9101691533782776290">App starten</translation>
@@ -5323,6 +5350,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9153934054460603056">Identität und Passwort speichern</translation>
 <translation id="9154194610265714752">Aktualisiert</translation>
 <translation id="91568222606626347">Verknüpfung erstellen...</translation>
+<translation id="9157096865782046368">0,8 Sekunden</translation>
 <translation id="9157697743260533322">Automatische Updates für alle Nutzer konnten nicht eingerichtet werden (Preflight-Startfehler: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Hoppla! Während der Authentifizierung ist ein Kommunikationsproblem mit dem Netzwerk aufgetreten. Überprüfen Sie bitte Ihre Netzwerkverbindung und versuchen Sie es erneut.</translation>
 <translation id="916607977885256133">Bild-in-Bild</translation>

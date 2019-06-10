@@ -1097,6 +1097,15 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Når denne politik ikke er konfigureret, forbliver de mere specifikke politikkers adfærd uændret.</translation>
 <translation id="2987155890997901449">Aktivér ARC</translation>
 <translation id="2987227569419001736">Kontrollér brugen af Web Bluetooth API</translation>
+<translation id="2990018289267778247">Hvis denne politik angives som Sand, vises indstillingerne for hjælpefunktioner altid i systembakkemenuen.
+
+          Hvis denne politik angives som Falsk, vises indstillingerne for hjælpefunktioner aldrig i systembakkemenuen.
+
+          Hvis politikken konfigureres, kan brugerne ikke ændre eller tilsidesætte den.
+
+          Hvis denne politik ikke angives, vises indstillingerne for hjælpefunktioner ikke i systembakkemenuen, men brugeren kan få vist indstillingerne for hjælpefunktioner via siden Indstillinger.
+
+          Når hjælpefunktioner aktiveres (på andre måder, f.eks. via tastekombinationer),vises indstillingerne for hjælpefunktioner altid i systembakkemenuen.</translation>
 <translation id="3011301228198307065">Konfigurerer webadressen for standardstartsiden i <ph name="PRODUCT_NAME" /> og forhindrer, at brugerne ændrer den.
 
           Startsiden åbnes ved hjælp af knappen Startside. De sider, der åbnes ved opstart, styres af RestoreOnStartup-politikkerne.
@@ -1411,6 +1420,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
         Denne politik bruges til maskinel massetilmelding til Cloud-politikken på computere og kan angives af registreringsdatabasen eller GPO i Windows, plist på Mac og JSON-politikfilen i Linux.</translation>
 <translation id="3660562134618097814">Overfør SAML-IdP-cookies ved login</translation>
 <translation id="3701121231485832347">Styrer indstillinger, der gælder specifikt for <ph name="PRODUCT_OS_NAME" />-enheder, der administreres af <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Fjernattestering</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (feltet med en enkelt linje er udfaset og fjernes inden for den nærmeste fremtid. Begynd at bruge tekstfeltet med flere linjer nedenfor).</translation>
 <translation id="3709266154059827597">Konfigurer sortliste for installation af udvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
@@ -1804,6 +1814,15 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
           Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="4285674129118156176">Tillad, at brugere uden tilknytning benytter ARC</translation>
+<translation id="4289903996435140853">Tillader, at du opretter en liste med webadresser, som angiver, hvilke websites der automatisk skal gives adgangstilladelse til en USB-enhed med det givne leverandør- og produkt-id. Politikken er kun gyldig, hvis hvert element på listen indeholder både enheder og webadresser. Hvert element på enheder kan indeholde felter til leverandør-id og produkt-id. Alle id'er, der udelades, behandles som et jokertegn – et produkt-id kan dog ikke angives, uden at der også angives et leverandør-id. Hvis ikke disse regler overholdes, anses politikken som ugyldig og ignoreres.
+
+        USB-tilladelsesmodellen anvender webadressen til det anmodende website ("anmodende webadresse") og webadressen til indramningswebsitet på øverste niveau ("integrerende webadresse") til at give den anmodende webadresse adgang til USB-enheden. Den anmodende webadresse kan adskille sig fra den integrerende webadresse, når det anmodende website indlæses i en iframe. Feltet "webadresser" kan derfor indeholde op til to webadressestrenge, adskilt af et komma, for at angive henholdsvis den anmodende og den integrerende webadresse. Hvis der kun angives én webadresse, gives der adgang til de tilsvarende USB-enheder, når webadressen til det anmodende website stemmer overens med denne webadresse, uanset hvilken integreringsstatus den har. Webadresserne i feltet "webadresser" skal være gyldige webadresser, ellers ignoreres politikken.
+
+        Hvis politikken ikke konfigureres, anvendes den globale standardværdi fra politikken "DefaultWebUsbGuardSetting" til alle websites, og hvis denne ikke er konfigureret, anvendes brugerens personlige konfiguration.
+
+        Webadressemønstre i denne politik må ikke være i strid med dem, der er konfigureret via WebUsbBlockedForUrls. Hvis de er i strid med hinanden, har denne politik forrang frem for WebUsbBlockedForUrls og WebUsbAskForUrls.
+
+        Værdierne for denne politik og politikken WebUsbAllowDevicesForUrls sammenflettes.</translation>
 <translation id="4298509794364745131">Specificerer en liste over apps, der kan aktiveres som apps til notatskrivning på <ph name="PRODUCT_OS_NAME" />-låseskærmen.
 
       Hvis den foretrukne app til notatskrivning er aktiveret på låseskærmen, vil låseskærmen indeholde et brugerfladeelement til at åbne den foretrukne app til notatskrivning.
@@ -1947,6 +1966,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4639407427807680016">Navne på de indbyggede beskedhosts, som fritages fra sortlisten</translation>
 <translation id="4650759511838826572">Deaktiver protokolskemaer for webadresser</translation>
 <translation id="465099050592230505">Webadresse for virksomhedens webshop (udfaset)</translation>
+<translation id="4661889655253181651">Indstillinger for indhold giver dig mulighed for at angive, hvordan en bestemt type indhold (f.eks. cookies, billeder eller JavaScript) skal behandles.</translation>
 <translation id="4665897631924472251">Indstillinger for administration af udvidelser</translation>
 <translation id="4668325077104657568">Standardindstilling for billeder</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -1991,6 +2011,11 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       Disse forslag hentes fra Googles servere.
 
       Hvis denne indstilling er angivet som Falsk, hentes eller vises forslag ikke.</translation>
+<translation id="4759650396863318477">Giver dig mulighed for at angive et tidsrum i millisekunder, hvor brugerne får besked om, at <ph name="PRODUCT_NAME" /> skal genstartes, eller at en <ph name="PRODUCT_OS_NAME" />-enhed skal genstartes for anvende en afventende opdatering.
+
+      I dette tidsrum vil brugeren gentagne gange få besked om, at der skal opdateres. På <ph name="PRODUCT_OS_NAME" />-enheder vises der i systembakken en notifikation om, at der skal genstartes, i henhold politikken <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. I <ph name="PRODUCT_NAME" />-browsere ændres appmenuen for at indikere, at der skal foretages en opdatering, når en tredjedel af notifikationsperioden er gået. Notifikationen skifter farve, når to tredjedele af notifikationsperioden er gået, og igen når hele notifikationsperioden er udløbet. De yderligere notifikationer, der aktiveres af politikken <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, følger samme tidsplan.
+
+      Hvis den ikke er angivet, anvendes standardtidsrummet på 345600000 millisekunder (fire dage) for <ph name="PRODUCT_OS_NAME" />-enheder og 604800000 millisekunder (en uge) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Aktiverer funktionen AutoFyld for <ph name="PRODUCT_NAME" /> og giver brugerne mulighed for automatisk at udfylde webformularer med betalingskortoplysninger, der er gemt tidligere.
 
       Hvis denne indstilling er deaktiveret, foreslår eller udfylder AutoFyld aldrig betalingskortoplysninger, og der gemmes heller ikke yderligere betalingskortoplysninger, som brugeren muligvis indsender, når vedkommende er på nettet.
@@ -2180,6 +2205,15 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5208240613060747912">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor det ikke er tilladt at vise notifikationer. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultNotificationsSetting", hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
 <translation id="5213038356678567351">Websites, der aldrig skal aktivere et browserskift.</translation>
 <translation id="5219844027738217407">I Android-apps påvirker denne politik kun mikrofonen. Når denne politik angives som Sand, slås lyden på mikrofonen fra i alle Android-apps uden undtagelser.</translation>
+<translation id="5221394278852982313">Tillader, at du opretter en liste med webadresser, som angiver, hvilke websites der automatisk skal gives adgangstilladelse til en USB-enhed med det givne leverandør- og produkt-id. Politikken er kun gyldig, hvis hvert element på listen indeholder både enheder og webadresser. Hvert element på enheder kan indeholde felter til leverandør-id og produkt-id. Alle id'er, der udelades, behandles som et jokertegn – et produkt-id kan dog ikke angives, uden at der også angives et leverandør-id. Hvis ikke disse regler overholdes, anses politikken som ugyldig og ignoreres.
+
+        USB-tilladelsesmodellen anvender webadressen til det anmodende website ("anmodende webadresse") og webadressen til indramningswebsitet på øverste niveau ("integrerende webadresse") til at give den anmodende webadresse adgang til USB-enheden. Den anmodende webadresse kan adskille sig fra den integrerende webadresse, når det anmodende website indlæses i en iframe. Feltet "webadresser" kan derfor indeholde op til to webadressestrenge, adskilt af et komma, for at angive henholdsvis den anmodende og den integrerende webadresse. Hvis der kun angives én webadresse, gives der adgang til de tilsvarende USB-enheder, når webadressen til det anmodende website stemmer overens med denne webadresse, uanset hvilken integreringsstatus den har. Webadresserne i feltet "webadresser" skal være gyldige webadresser, ellers ignoreres politikken.
+
+        Hvis politikken ikke konfigureres, anvendes den globale standardværdi fra politikken "DefaultWebUsbGuardSetting" til alle websites, og hvis denne ikke er konfigureret, anvendes brugerens personlige konfiguration.
+
+        Webadressemønstre i denne politik må ikke være i strid med dem, der er konfigureret via WebUsbBlockedForUrls. Hvis de er i strid med hinanden, har denne politik forrang frem for WebUsbBlockedForUrls og WebUsbAskForUrls.
+
+        Værdierne for denne politik og politikken DeviceWebUsbAllowDevicesForUrls sammenflettes.</translation>
 <translation id="5228316810085661003">Forsinkelse af automatisk login på den lokale konto på enheden.
 
       Hvis politikken |DeviceLocalAccountAutoLoginId| ikke er angivet, har politikken ingen effekt. Ellers:
@@ -2902,6 +2936,21 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne politik er angivet som "Tillad ikke, at brugerne administrerer certifikater", kan brugerne ikke administrere certifikater. De kan kun se certifikaterne.</translation>
 <translation id="6573305661369899995">Angiv en ekstern kilde til webadressebegrænsninger</translation>
+<translation id="6583851521569686409">Konfigurerer en liste over printere.
+
+      Med denne politik kan administratorer angive printerkonfigurationer for
+      deres brugere.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenge i frit format, der kan tilpasses, så det bliver nemmere at vælge printer. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> gør det nemmere for slutbrugerne at identificere printere. De repræsenterer printerproducenten og -modellen. <ph name="PRINTER_URI" /> skal være en adresse, der er tilgængelig fra en klientcomputer, bl.a. <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfri. Hvis den angives, bruges den som en hjælp til at deduplikere <ph name="ZEROCONF_DISCOVERY" />-printere.
+
+      Enten skal <ph name="PRINTER_EFFECTIVE_MODEL" /> indeholde navnet på printeren, eller også skal <ph name="PRINTER_AUTOCONF" /> angives som Sand. Printere med begge eller ingen af egenskaberne ignoreres.
+
+      Printerkonfigurationen fuldføres, første gang printeren tages i brug.  PPD-filer downloades ikke, før printeren benyttes.  Derefter gemmes ofte anvendte PPD-filer i cachen.
+
+      Politikken påvirker ikke, om brugerne kan konfigurere printere på individuelle enheder.  Den er beregnet til at fungere som supplement til den enkelte brugers konfiguration af printere.
+
+      Politikken understøtter udvidelse af <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-enhedsnavnet eller en af dets understrenge på enheder, der administreres med Active Directory. Hvis enhedsnavnet f.eks. er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> af de fire tegn, der kommer efter den sjette position, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Bemærk, at positionen er nulbaseret.
+      </translation>
 <translation id="6598235178374410284">Brugerens avatarbillede</translation>
 <translation id="6603004149426829878">Send altid eventuelle tilgængelige placeringssignaler til serveren under opdatering af tidszone.</translation>
 <translation id="6628120204569232711">Rapportér lagerstatus</translation>
@@ -4210,6 +4259,8 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="915194831143859291">Hvis denne politik er angivet til Falsk eller ikke er konfigureret, tillader <ph name="PRODUCT_OS_NAME" />, at brugeren lukker enheden ned.
       Hvis denne politik er angivet til Sand, aktiverer <ph name="PRODUCT_OS_NAME" /> en genstart, når brugeren lukker enheden ned. <ph name="PRODUCT_OS_NAME" /> erstatter alle forekomster af Luk-knapper i grænsefladen med genstartsknapper. Hvis brugeren lukker enheden ved hjælp af afbryderknappen, genstartes den ikke automatisk, selvom politikken er aktiveret.</translation>
 <translation id="9152473318295429890">Aktivér indholdsbestemte forslag for relaterede websider</translation>
+<translation id="9153446010242995516">Træk udgivelsen tilbage, og behold målversionen, hvis versionen af operativsystemet er nyere end målversionen. Forsøg at overføre konfigurationen på enhedsniveau (herunder loginoplysninger til netværket) via tilbagetrækningsprocessen, hvis det er muligt, men udfør tilbagetrækningen med en fuldstændig Powerwash, selvom det ikke er muligt at gendanne dataene (eftersom målversionen ikke understøtter gendannelse af data eller på grund af en ikke-kompatibel ændring tilbage).
+          Understøttes i <ph name="PRODUCT_OS_NAME" /> version 75 og nyere. Ved ældre klienter betyder denne værdi, at tilbagetrækning er deaktiveret.</translation>
 <translation id="9158929520101169054">Tillad samlet login fra flere konti i browseren</translation>
 <translation id="9159126470527871268">Underretter brugeren om, at <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> skal genstartes for at anvende en afventende opdatering.
 

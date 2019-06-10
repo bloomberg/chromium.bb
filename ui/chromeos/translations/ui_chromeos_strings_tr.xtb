@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> dosyası</translation>
 <translation id="457386861538956877">Diğer...</translation>
 <translation id="4582497162516204941">Linux (Beta) ile yükle</translation>
+<translation id="4594543368593301662"><ph name="SEARCH_TERM" /> için sonuçlar gösteriliyor.</translation>
 <translation id="4631887759990505102">Sanatçı</translation>
 <translation id="4656293982926141856">Bu bilgisayar</translation>
 <translation id="4669606053856530811">"<ph name="SOURCE_NAME" />" kaynağının üyeleri, bu öğeler kendileriyle paylaşılmadığı sürece erişimi kaybedecektir.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Bulgarca klavye</translation>
 <translation id="5418923334382419584">Myanmar klavye</translation>
 <translation id="5428105026674456456">İspanyolca</translation>
+<translation id="5438282218546237410"><ph name="SEARCH_TERM" /> için sonuç yok.</translation>
 <translation id="5464696796438641524">Lehçe klavye</translation>
 <translation id="5465122519792752163">Nepalce klavye (InScript)</translation>
 <translation id="5469868506864199649">İtalyanca</translation>
 <translation id="5494920125229734069">Tümünü seç</translation>
 <translation id="5500122897333236901">İzlanda dili</translation>
 <translation id="5508696409934741614">Noktalar</translation>
+<translation id="5522908512596376669">Dosya listesi, liste görünümü olarak değiştirildi.</translation>
 <translation id="5524517123096967210">Dosya okunamadı.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> resmi</translation>
 <translation id="5533555070048896610">Harf çevirisi (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="6054173164583630569">Fransızca klavye</translation>
 <translation id="6074825444536523002">Google formu</translation>
+<translation id="6096979789310008754">Arama metni temizlendi, tüm dosya ve klasörler gösteriliyor.</translation>
 <translation id="6111770213269631447">Harf çevirisi (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Boşluk</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> taşınıyor...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Fil</translation>
 <translation id="8569764466147087991">Açılacak dosyayı seçin</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> öğe senkronize ediliyor...</translation>
+<translation id="8600173386174225982">Dosya listesi, küçük resim görünümü olarak değiştirildi.</translation>
 <translation id="8669949407341943408">Taşınıyor...</translation>
 <translation id="8671210955687109937">Yorum yapabilir</translation>
 <translation id="8686213429977032554">Bu Drive dosyası henüz paylaşılmamış</translation>

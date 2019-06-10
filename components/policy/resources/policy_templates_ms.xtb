@@ -1134,6 +1134,15 @@
           Apabila dasar ini tidak ditetapkan, gelagat dasar yang lebih khusus tidak akan terjejas.</translation>
 <translation id="2987155890997901449">Dayakan ARC</translation>
 <translation id="2987227569419001736">Kawal penggunaan API Bluetooth Web</translation>
+<translation id="2990018289267778247">Jika dasar ini ditetapkan kepada benar, pilihan Kebolehcapaian sentiasa dipaparkan dalam menu dulang sistem.
+
+          Jika dasar ini ditetapkan kepada palsu, pilihan Kebolehcapaian tidak akan dipaparkan dalam menu dulang sistem.
+
+          Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, pilihan Kebolehcapaian tidak akan dipaparkan dalam menu dulang sistem, tetapi pengguna boleh menyebabkan pilihan Kebolehcapaian dipaparkan melalui halaman Tetapan.
+
+          Apabila ciri kebolehaksesan didayakan (melalui cara lain, misalnya melalui gabungan kunci), pilihan Kebolehcapaian sentiasa dipaparkan dalam menu dulang sistem.</translation>
 <translation id="3011301228198307065">Mengkonfigurasi URL halaman utama lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah konfigurasi tersebut.
 
           Halaman utama ialah halaman yang dibuka melalui butang Skrin Utama. Halaman yang dibuka semasa permulaan dikawal oleh dasar RestoreOnStartup.
@@ -1457,6 +1466,7 @@
         Dasar ini digunakan oleh pendaftaran dasar awan skop mesin pada desktop dan boleh ditetapkan oleh Daftaran atau GPO pada Windows, plist pada Mac dan fail dasar JSON pada Linux.</translation>
 <translation id="3660562134618097814">Pindahkan kuki IdP SAML semasa log masuk</translation>
 <translation id="3701121231485832347">Mengawal tetapan yang khusus untuk peranti <ph name="PRODUCT_OS_NAME" /> yang diurus <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Pembuktian jauh</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Medan satu baris tidak akan digunakan lagi dan akan dialih keluar pada masa akan datang. Sila gunakan kotak teks berbilang baris di bawah.)</translation>
 <translation id="3709266154059827597">Konfigurasi senarai hitam pemasangan sambungan</translation>
 <translation id="3711895659073496551">Gantung</translation>
@@ -1853,6 +1863,15 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="4285674129118156176">Benarkan pengguna yang bukan ahli gabungan menggunakan ARC</translation>
+<translation id="4289903996435140853">Membolehkan anda menetapkan senarai url yang menentukan tapak yang akan diberikan kebenaran secara automatik untuk mengakses peranti USB dengan ID vendor dan produk yang dinyatakan. Setiap item dalam senarai mesti mengandungi peranti dan juga url untuk menjadikan dasar ini sah. Setiap item dalam peranti boleh mengandungi medan ID vendor dan ID produk. Mana-mana ID yang tidak dimasukkan akan dikendalikan sebagai kad bebas dengan satu pengecualian dan pengecualian itu ialah ID produk tidak boleh dinyatakan jika ID vendor juga tidak dinyatakan. Jika tidak, dasar ini tidak akan sah dan akan diabaikan.
+
+        Model kebenaran USB menggunakan URL tapak yang meminta ("URL yang meminta") dan URL tapak bingkai tahap tinggi ("URL yang membenamkan") untuk memberikan kebenaran kepada URL yang meminta untuk mengakses peranti USB. URL yang meminta mungkin berbeza daripada URL yang membenamkan apabila tapak yang meminta dimuatkan dalam iframe. Oleh itu, medan "url" boleh mengandungi hingga dua rentetan URL yang dihadkan oleh koma untuk menyatakan URL yang meminta dan yang membenamkan. Jika hanya satu URL dinyatakan, maka akses kepada peranti USB yang sepadan akan diberikan apabila URL tapak yang meminta sepadan dengan URL ini tanpa mengira status pembenaman. URL dalam "url" mestilah URL yang sah, jika tidak dasar ini akan diabaikan.
+
+        Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultWebUsbGuardSetting' jika dasar ini ditetapkan, atau konfigurasi peribadi pengguna jika sebaliknya.
+
+        Pola URL dalam dasar ini tidak boleh bercanggah dengan pola yang dikonfigurasikan melalui WebUsbBlockedForUrls. Jika terdapat percanggahan, dasar ini akan diutamakan berbanding WebUsbBlockedForUrls dan WebUsbAskForUrls.
+
+        Nilai untuk dasar ini dan dasar WebUsbAllowDevicesForUrls digabungkan.</translation>
 <translation id="4298509794364745131">Menentukan senarai apl yang boleh didayakan sebagai apl pencatatan nota pada skrin kunci <ph name="PRODUCT_OS_NAME" />.
 
       Jika apl pencatatan nota pilihan didayakan pada skrin kunci, skrin kunci akan mengandungi unsur UI untuk melancarkan apl pencatatan nota pilihan.
@@ -2004,6 +2023,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 <translation id="4639407427807680016">Nama hos pemesejan natif untuk dikecualikan daripada senarai hitam</translation>
 <translation id="4650759511838826572">Lumpuhkan skim protokol URL</translation>
 <translation id="465099050592230505">URL kedai web perusahaan (tidak akan digunakan lagi)</translation>
+<translation id="4661889655253181651">Tetapan kandungan membenarkan anda untuk menentukan cara kandungan bagi jenis tertentu (contohnya Kuki, Imej atau JavaScript) dikendalikan.</translation>
 <translation id="4665897631924472251">Tetapan pengurusan sambungan</translation>
 <translation id="4668325077104657568">Tetapan imej lalai</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2048,6 +2068,11 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
       Cadangan ini diambil secara jauh daripada pelayan Google.
 
       Sekiranya tetapan ini ditetapkan kepada palsu, cadangan tidak akan diambil atau dipaparkan.</translation>
+<translation id="4759650396863318477">Membenarkan anda menetapkan tempoh masa dalam milisaat. Sepanjang tempoh ini, pengguna akan dimaklumi bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula atau bahawa peranti <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula untuk menerapkan kemas kini yang belum selesai.
+
+      Sepanjang tempoh masa ini, pengguna akan dimaklumi berulang kali tentang keperluan mengemas kini. Untuk peranti <ph name="PRODUCT_OS_NAME" />, pemberitahuan mula semula akan dipaparkan dalam dulang sistem menurut dasar <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Untuk penyemak imbas <ph name="PRODUCT_NAME" />, menu apl akan berubah untuk menunjukkan pelancaran semula diperlukan apabila satu pertiga daripada tempoh pemberitahuan telah berlalu. Pemberitahuan ini berubah warna apabila dua pertiga daripada tempoh pemberitahuan telah berlalu dan sekali lagi apabila tempoh penuh pemberitahuan telah tamat. Pemberitahuan tambahan yang didayakan oleh dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> akan mengikut jadual yang sama ini.
+
+      Jika tidak ditetapkan, tempoh lalai selama 345,600,000 milisaat (empat hari) digunakan untuk peranti <ph name="PRODUCT_OS_NAME" /> dan 604,800,000 milisaat (satu minggu) untuk <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Mendayakan ciri Autolengkap <ph name="PRODUCT_NAME" /> dan membolehkan pengguna mengisikan maklumat kad kredit dalam borang web secara automatik dengan menggunakan maklumat yang disimpan sebelum itu.
 
       Jika tetapan ini dilumpuhkan, Autolengkap tidak akan mencadangkan atau mengisikan maklumat kad kredit atau menyimpan maklumat kad kredit tambahan yang mungkin diserahkan oleh pengguna semasa menyemak imbas web.
@@ -2255,6 +2280,15 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultNotificationsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
 <translation id="5213038356678567351">Tapak web yang tidak akan mencetuskan penukaran penyemak imbas.</translation>
 <translation id="5219844027738217407">Untuk apl Android, dasar ini memberi kesan kepada mikrofon sahaja. Apabila dasar ini ditetapkan kepada benar, mikrofon akan diredam untuk semua apl Android, tanpa pengecualian.</translation>
+<translation id="5221394278852982313">Membolehkan anda menetapkan senarai url yang menentukan tapak yang akan diberikan kebenaran secara automatik untuk mengakses peranti USB dengan ID vendor dan produk yang dinyatakan. Setiap item dalam senarai mesti mengandungi peranti dan juga url untuk menjadikan dasar ini sah. Setiap item dalam peranti boleh mengandungi medan ID vendor dan ID produk. Mana-mana ID yang tidak dimasukkan akan dikendalikan sebagai kad bebas dengan satu pengecualian dan pengecualian itu ialah ID produk tidak boleh dinyatakan jika ID vendor juga tidak dinyatakan. Jika tidak, dasar ini tidak akan sah dan akan diabaikan.
+
+        Model kebenaran USB menggunakan URL tapak yang meminta ("URL yang meminta") dan URL tapak bingkai tahap tinggi ("URL yang membenamkan") untuk memberikan kebenaran kepada URL yang meminta untuk mengakses peranti USB. URL yang meminta mungkin berbeza daripada URL yang membenamkan apabila tapak yang meminta dimuatkan dalam iframe. Oleh itu, medan "url" boleh mengandungi hingga dua rentetan URL yang dihadkan oleh koma untuk menyatakan URL yang meminta dan yang membenamkan. Jika hanya satu URL dinyatakan, maka akses kepada peranti USB yang sepadan akan diberikan apabila URL tapak yang meminta sepadan dengan URL ini tanpa mengira status pembenaman. URL dalam "url" mestilah URL yang sah, jika tidak dasar ini akan diabaikan.
+
+        Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultWebUsbGuardSetting' jika dasar ini ditetapkan, atau konfigurasi peribadi pengguna jika sebaliknya.
+
+        Pola URL dalam dasar ini tidak boleh bercanggah dengan pola yang dikonfigurasikan melalui WebUsbBlockedForUrls. Jika terdapat percanggahan, dasar ini akan diutamakan berbanding WebUsbBlockedForUrls dan WebUsbAskForUrls.
+
+        Nilai untuk dasar ini dan dasar DeviceWebUsbAllowDevicesForUrls digabungkan.</translation>
 <translation id="5228316810085661003">Penangguhan log masuk automatik akaun setempat peranti.
 
       Jika dasar |DeviceLocalAccountAutoLoginId| tidak ditetapkan, dasar ini tidak mempunyai sebarang kesan. Jika tidak:
@@ -3000,6 +3034,21 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini ditetapkan kepada ''Jangan benarkan pengguna mengurus sijil", pengguna tidak akan dapat mengurus sijil, mereka hanya boleh melihat sijil.</translation>
 <translation id="6573305661369899995">Tetapkan sumber luaran sekatan URL</translation>
+<translation id="6583851521569686409">Mengkonfigurasi senarai pencetak.
+
+      Dasar ini membolehkan pentadbir menyediakan konfigurasi pencetak untuk
+      pengguna mereka.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> ialah rentetan berbentuk bebas yang boleh disesuaikan untuk memudahkan pemilihan pencetak. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> berfungsi untuk memudahkan pengenalpastian pencetak oleh pengguna akhir. Maklumat ini mewakili pengeluar dan model pencetak. <ph name="PRINTER_URI" /> haruslah alamat yang boleh dihubungi daripada komputer pelanggan termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" />dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> tidak diwajibkan. Jika disediakan, maklumat ini digunakan untuk membantu pentadbir menyahpendua pencetak <ph name="ZEROCONF_DISCOVERY" />.
+
+      Sama ada <ph name="PRINTER_EFFECTIVE_MODEL" /> harus mengandungi nama pencetak atau <ph name="PRINTER_AUTOCONF" /> harus ditetapkan kepada benar. Pencetak yang mempunyai kedua-dua sifat atau tiada mana-mana sifat akan diabaikan.
+
+      Penyediaan pencetak selesai apabila pencetak digunakan buat kali pertama.  PPD tidak dimuat turun sehingga pencetak digunakan.  Selepas itu, PPD yang kerap digunakan akan dicache.
+
+      Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi pencetak pada peranti individu.  Dasar ini bertujuan untuk dijadikan tambahan kepada konfigurasi pencetak oleh pengguna individu.
+
+      Untuk peranti yang diurus oleh Active Directory, dasar ini menyokong perluasan <ph name="MACHINE_NAME_VARIABLE" /> kepada nama mesin Active Directory atau subrentetan nama tersebut. Contohnya, jika nama mesin ialah <ph name="MACHINE_NAME_EXAMPLE" />, maka <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> akan digantikan oleh 4 aksara yang bermula selepas kedudukan ke-6, iaitu <ph name="MACHINE_NAME_PART_EXAMPLE" />. Harap maklum bahawa kedudukan tersebut adalah berasaskan sifar.
+      </translation>
 <translation id="6598235178374410284">Imej avatar pengguna</translation>
 <translation id="6603004149426829878">Sentiasa hantar sebarang isyarat lokasi yang tersedia kepada pelayan semasa menyelesaikan zon waktu</translation>
 <translation id="6628120204569232711">Laporkan status storan</translation>
@@ -4368,6 +4417,8 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="915194831143859291">Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, <ph name="PRODUCT_OS_NAME" /> akan membenarkan pengguna mematikan peranti.
       Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan mencetus but semula apabila pengguna mematikan peranti. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kejadian bagi butang matikan dalam UI oleh butang but semula. Jika pengguna mematikan peranti menggunakan butang kuasa, peranti tidak akan but semula secara automatik, walaupun dasar didayakan.</translation>
 <translation id="9152473318295429890">Dayakan cadangan kontekstual halaman web yang berkaitan</translation>
+<translation id="9153446010242995516">Undur dan kekal pada versi sasaran jika versi OS lebih baharu daripada versi sasaran. Cuba bawa ke depan konfigurasi tahap peranti (termasuk bukti kelayakan rangkaian) melalui proses pengunduran, jika boleh, tetapi lakukan pengunduran dengan powerwash penuh walaupun pemulihan data tidak boleh dilakukan (kerana versi sasaran tidak meyokong pemulihan data atau kerana perubahan undur yang tidak serasi).
+          Disokong pada <ph name="PRODUCT_OS_NAME" /> versi 75 ke atas. Untuk klien lama, nilai ini bermakna pengunduran telah dilumpuhkan.</translation>
 <translation id="9158929520101169054">Benarkan Berbilang Log Masuk Dalam Penyemak Imbas</translation>
 <translation id="9159126470527871268">Maklumi pengguna bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula atau <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula untuk menerapkan kemas kini yang belum selesai.
 

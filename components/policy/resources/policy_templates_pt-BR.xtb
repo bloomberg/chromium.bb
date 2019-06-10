@@ -1101,6 +1101,15 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Se esta política não for definida, o comportamento das políticas mais específicas não será afetado.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2987227569419001736">Controla o uso da API Web Bluetooth</translation>
+<translation id="2990018289267778247">Se esta política for definida como verdadeira, as opções de acessibilidade sempre aparecerão no menu da bandeja do sistema.
+
+          Se esta política for definida como falsa, as opções de acessibilidade nunca aparecerão no menu da bandeja do sistema.
+
+          Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
+
+          Se esta política não for definida, as opções de acessibilidade não aparecerão no menu da bandeja do sistema, mas o usuário poderá fazer com que elas apareçam usando a página "Configurações".
+
+          Quando os recursos de acessibilidade são ativados por outros meios (por exemplo, por uma combinação de teclas), as opções de acessibilidade sempre são exibidas no menu da bandeja do sistema.</translation>
 <translation id="3011301228198307065">Configura o URL padrão da página inicial no <ph name="PRODUCT_NAME" /> e impede os usuários de alterá-lo.
 
           A página inicial é aquela aberta pelo botão "Página inicial". As páginas que são abertas na inicialização são controladas pelas políticas RestoreOnStartup.
@@ -1413,6 +1422,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
         Esta política é usada na inscrição no gerenciamento em nuvem do escopo da máquina no computador desktop e pode ser definida por registro ou GPO no Windows, por plist no Mac e por arquivo de política JSON no Linux.</translation>
 <translation id="3660562134618097814">Transferir cookies do IDP de SAML durante o login</translation>
 <translation id="3701121231485832347">Controla configurações específicas de dispositivos <ph name="PRODUCT_OS_NAME" /> gerenciados pelo <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Atestado remoto</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" />: o campo de linha única é obsoleto e será removido no futuro. Comece a usar a caixa de texto de várias linhas abaixo.</translation>
 <translation id="3709266154059827597">Configurar a lista de proibições de instalação da extensão</translation>
 <translation id="3711895659073496551">Suspender</translation>
@@ -1798,6 +1808,15 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 
           Esta política só é seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="4285674129118156176">Permitir que usuários sem afiliação utilizem o ARC</translation>
+<translation id="4289903996435140853">Permite que você defina uma lista de URLs que especifica quais sites receberão automaticamente permissão para acessar um dispositivo USB com os IDs de fornecedor e produto informados. Cada item da lista precisa conter os dispositivos e URLs para que a política seja válida. Cada item dos dispositivos pode conter um campo de ID de fornecedor e ID de produto. Os IDs omitidos são tratados como um caractere curinga com uma exceção, e isso impede a especificação de um ID de produto sem também especificar um ID de fornecedor. Caso contrário, a política não será válida e será ignorada.
+
+        O modelo de permissão USB usa o URL do site solicitante ("URL solicitante") e o URL do site de frame de nível superior ("URL de incorporação") para conceder permissão ao URL solicitante para acessar o dispositivo USB. O URL solicitante pode ser diferente do URL de incorporação quando o site solicitante está carregado em um iframe. Portanto, o campo "URLs" pode conter até duas strings de URL delimitadas por uma vírgula para especificar os URLs solicitante e de incorporação, respectivamente. Se apenas um URL for especificado, o acesso aos dispositivos USB correspondentes será concedido quando o URL do site solicitante coincidir com esse URL independentemente do status de incorporação. Os URLs contidos em "URLs" precisam ser válidos. Caso contrário, a política será ignorada.
+
+        Se essa política não for definida, o valor padrão global será usado para todos os sites na política "DefaultWebUsbGuardSetting", caso ela esteja definida, ou na configuração pessoal do usuário.
+
+        Os padrões de URL dessa política não devem entrar em conflito com os configurados por meio de WebUsbBlockedForUrls. Se houver um conflito, essa política terá precedência sobre WebUsbBlockedForUrls e WebUsbAskForUrls.
+
+        Os valores dessa política e da política WebUsbAllowDevicesForUrls são mesclados.</translation>
 <translation id="4298509794364745131">Especifica uma lista de apps que podem ser ativados como apps de anotação na tela de bloqueio do <ph name="PRODUCT_OS_NAME" />.
 
       Se o app de anotação preferencial for permitido na tela de bloqueio, essa tela mostrará o elemento de IU para abrir o app de anotação preferencial.
@@ -1941,6 +1960,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4639407427807680016">Nomes dos hosts de mensagens nativas a serem mantidos fora da lista de proibições</translation>
 <translation id="4650759511838826572">Desativar esquemas do protocolo de URL</translation>
 <translation id="465099050592230505">URL da loja on-line da empresa (uso suspenso)</translation>
+<translation id="4661889655253181651">As configurações de conteúdo permitem que você especifique como o conteúdo de um tipo específico (por exemplo, cookies, imagens ou JavaScript) é tratado.</translation>
 <translation id="4665897631924472251">Configurações de gerenciamento de extensão</translation>
 <translation id="4668325077104657568">Configuração de imagens padrão</translation>
 <translation id="4670865688564083639">Mínimo:</translation>
@@ -1985,6 +2005,11 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
       Essas sugestões são buscadas remotamente nos servidores do Google.
 
       Se esta configuração for definida como falsa, as sugestões não serão buscadas nem exibidas.</translation>
+<translation id="4759650396863318477">Permite definir o período, em milésimos de segundo, em que os usuários são notificados de que o <ph name="PRODUCT_NAME" /> ou um dispositivo <ph name="PRODUCT_OS_NAME" /> precisa ser reiniciado para aplicar uma atualização pendente.
+
+      Nesse período, o usuário será informado várias vezes sobre a necessidade de atualização. Para dispositivos <ph name="PRODUCT_OS_NAME" />, uma notificação de reinicialização é exibida na bandeja do sistema de acordo com a política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Para navegadores <ph name="PRODUCT_NAME" />, o menu de apps muda para indicar que uma reinicialização é necessária após o decorrer de um terço do período de notificação. Essa notificação muda de cor após dois terços do período de notificação e mais uma vez quando todo o período de notificação é concluído. As outras notificações ativadas pela política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguem essa mesma programação.
+
+      Se a política não for definida, o período padrão de 345.600.000 milésimos de segundo (quatro dias) será usado para dispositivos <ph name="PRODUCT_OS_NAME" />, e o de 604.800.000 milésimos de segundo (uma semana) será usado para o <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Ativa o recurso de preenchimento automático do <ph name="PRODUCT_NAME" /> e permite que os usuários preencham automaticamente informações sobre cartão de crédito em formulários da Web usando informações previamente armazenadas.
 
       Se esta configuração estiver desativada, o preenchimento automático nunca sugerirá ou preencherá informações sobre cartão de crédito, nem salvará outras informações de cartão de crédito que o usuário possa enviar ao navegar na Web.
@@ -2174,6 +2199,15 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5208240613060747912">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="5213038356678567351">Sites que nunca acionarão uma troca de navegador.</translation>
 <translation id="5219844027738217407">Em apps Android, esta política afeta somente o microfone. Quando esta política é definida como true, o microfone é silenciado para todos os apps Android, sem exceções.</translation>
+<translation id="5221394278852982313">Permite que você defina uma lista de URLs que especifica quais sites receberão automaticamente permissão para acessar um dispositivo USB com os IDs de fornecedor e produto informados. Cada item da lista precisa conter os dispositivos e URLs para que a política seja válida. Cada item dos dispositivos pode conter um campo de ID de fornecedor e ID de produto. Os IDs omitidos são tratados como um caractere curinga com uma exceção, e isso impede a especificação de um ID de produto sem também especificar um ID de fornecedor. Caso contrário, a política não será válida e será ignorada.
+
+        O modelo de permissão USB usa o URL do site solicitante ("URL solicitante") e o URL do site de frame de nível superior ("URL de incorporação") para conceder permissão ao URL solicitante para acessar o dispositivo USB. O URL solicitante pode ser diferente do URL de incorporação quando o site solicitante está carregado em um iframe. Portanto, o campo "URLs" pode conter até duas strings de URL delimitadas por uma vírgula para especificar os URLs solicitante e de incorporação, respectivamente. Se apenas um URL for especificado, o acesso aos dispositivos USB correspondentes será concedido quando o URL do site solicitante coincidir com esse URL independentemente do status de incorporação. Os URLs contidos em "URLs" precisam ser válidos. Caso contrário, a política será ignorada.
+
+        Se essa política não for definida, o valor padrão global será usado para todos os sites na política "DefaultWebUsbGuardSetting", caso ela esteja definida, ou na configuração pessoal do usuário.
+
+        Os padrões de URL dessa política não devem entrar em conflito com os configurados por meio de WebUsbBlockedForUrls. Se houver um conflito, essa política terá precedência sobre WebUsbBlockedForUrls e WebUsbAskForUrls.
+
+        Os valores dessa política e da DeviceWebUsbAllowDevicesForUrls são mesclados.</translation>
 <translation id="5228316810085661003">O período de espera para login automático na conta local do dispositivo.
 
       Se a política |DeviceLocalAccountAutoLoginId| não for definida, ela não terá nenhum efeito. Caso contrário:
@@ -2889,6 +2923,20 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 
       Se esta política estiver definida para "Não permitir que os usuários gerenciem certificados'', os usuários não poderão gerenciar certificados, mas apenas visualizá-los.</translation>
 <translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
+<translation id="6583851521569686409">Configura uma lista de impressoras.
+
+      Esta política permite aos administradores fornecer configurações de impressora para os usuários.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de formato livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora pelos usuários finais. Esses dados representam o fabricante e o modelo da impressora. <ph name="PRINTER_URI" /> deve ser um endereço acessível em um computador cliente, incluindo <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, será usado para ajudar a eliminar a duplicação de impressoras <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> precisa conter o nome da impressora, ou <ph name="PRINTER_AUTOCONF" /> deve ser definido como verdadeiro. As impressoras com as duas propriedades ou sem nenhuma serão ignoradas.
+
+      A configuração da impressora é concluída depois que ela é utilizada pela primeira vez.  O download de PPDs só é realizado quando a impressora é utilizada.  Depois disso, os PPDs usados com frequência são armazenados em cache.
+
+      Esta política não afeta a possibilidade de os usuários configurarem impressoras em dispositivos individuais.  Ela tem o objetivo de complementar a configuração de impressoras por usuários individuais.
+
+      Para dispositivos gerenciados pelo Active Directory, esta política permite a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador com o Active Directory ou uma substring correspondente. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos quatro caracteres que começam depois da sexta posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. A posição se baseia em zero.
+      </translation>
 <translation id="6598235178374410284">Imagem do avatar do usuário</translation>
 <translation id="6603004149426829878">Sempre enviar qualquer sinal de localização disponível para o servidor ao determinar o fuso horário</translation>
 <translation id="6628120204569232711">Informa o status de armazenamento</translation>
@@ -4205,6 +4253,8 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
 <translation id="915194831143859291">Se esta política é definida como "false" ou se não é configurada, o <ph name="PRODUCT_OS_NAME" /> permite que o usuário desligue o dispositivo.
       Se esta política é definida como "true", o <ph name="PRODUCT_OS_NAME" /> aciona uma reinicialização quando o usuário desliga o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de desligamento da interface de usuário por botões de reinicialização. Se o usuário desliga o dispositivo no botão liga/desliga, ele não é reinicializado automaticamente, mesmo que a política esteja ativa.</translation>
 <translation id="9152473318295429890">Ativa sugestões contextuais de páginas da Web relacionadas</translation>
+<translation id="9153446010242995516">Faça a reversão e permaneça na versão de destino se a versão do SO for mais recente que a de destino. Se possível, tente transferir a configuração do dispositivo (incluindo as credenciais de rede) por meio do processo de reversão. Porém, faça a reversão com o Powerwash completo mesmo se não for possível restaurar os dados, seja porque a versão de destino não é compatível com a restauração de dados ou devido a uma alteração incompatível com versões anteriores.
+          Compatível com o <ph name="PRODUCT_OS_NAME" /> 75 ou versões posteriores. Para clientes com versões anteriores, esse valor significa que a reversão está desativada.</translation>
 <translation id="9158929520101169054">Permitir login múltiplo no navegador</translation>
 <translation id="9159126470527871268">Notifica os usuários de que é preciso reiniciar o <ph name="PRODUCT_NAME" /> ou o <ph name="PRODUCT_OS_NAME" /> para aplicar uma atualização pendente.
 

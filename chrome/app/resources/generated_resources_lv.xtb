@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Noklusējuma iemiesojums baltā krāsā</translation>
 <translation id="1581962803218266616">Rādīt lietojumprogrammā Finder</translation>
 <translation id="1584990664401018068">Iespējams, izmantotajā Wi-Fi tīklā (<ph name="NETWORK_ID" />) tiks prasīta autentifikācija.</translation>
-<translation id="1585238069289523942">Lietotņu instalēšana Chromebook datorā</translation>
 <translation id="1585717515139318619">Citā datorā instalētā programmā ir pievienots tāds motīvs, kura dēļ var tikt izmainīta pārlūkprogrammas Chrome darbība.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">Konfigurējot Linux failus, radās kļūda. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="2315587498123194634">Nosūtīt saiti uz: <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Nē, paldies</translation>
-<translation id="2316739859433277603">Meklēšanas vaicājumiem no lietotņu palaidēja tiek izmantots jūsu pārlūkprogrammas <ph name="BEGIN_LINK" />meklētājprogrammas iestatījums<ph name="END_LINK" />.</translation>
 <translation id="2317842250900878657">Pabeigti: <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Papīra izmēri</translation>
 <translation id="2318817390901984578">Lai izmantotu Android lietotnes, uzlādējiet un atjauniniet savu ierīci (<ph name="DEVICE_TYPE" />).</translation>
@@ -5318,6 +5316,7 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="9094033019050270033">Atjaunināt paroli</translation>
 <translation id="9094982973264386462">Noņemt</translation>
 <translation id="9095253524804455615">Noņemt</translation>
+<translation id="9095388113577226029">Citas valodas…</translation>
 <translation id="9100610230175265781">Jāievada ieejas frāze.</translation>
 <translation id="9100765901046053179">Papildu iestatījumi</translation>
 <translation id="9101691533782776290">Palaist lietotni</translation>

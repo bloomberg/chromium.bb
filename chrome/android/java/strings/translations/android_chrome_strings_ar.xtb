@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1006017844123154345">فتح على الإنترنت</translation>
+<translation id="1028699632127661925">جارٍ الإرسال إلى <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">جارٍ إضافة <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">من المواقع الإلكترونية</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">البحث والاستكشاف</translation>
 <translation id="1264974993859112054">رياضة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
+<translation id="1272444412400969138">منتقي جهاز لمشاركة علامة تبويب معه.</translation>
 <translation id="1283039547216852943">النقر للتوسيع</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">مرحبًا، <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1384959399684842514">تم إيقاف التنزيل مؤقتًا</translation>
+<translation id="1386674309198842382">نشط قبل <ph name="LAST_UPDATED" /> من الأيام</translation>
 <translation id="1389974829397082527">ما مِن إشارات مرجعية هنا</translation>
 <translation id="1397811292916898096">البحث باستخدام <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">متضمّن في <ph name="WEBSITE_URL" /></translation>
@@ -71,7 +74,6 @@
 <translation id="1430915738399379752">طباعة</translation>
 <translation id="1445680696957526815">‏مكونات Chrome غير متوافقة مع بعضها البعض. قد تتم ترقية Chrome؛ لذا يُرجى إعادة المحاولة بعد دقائق قليلة. وإذا استمرت المشكلة، فحاول إلغاء تثبيت Chrome وإعادة تثبيته.</translation>
 <translation id="1446450296470737166">‏السماح بالتحكم الكامل لأجهزة MIDI</translation>
-<translation id="1449080968331948513">يُشار إلى ميزة "توفير البيانات" الآن باسم "الوضع البسيط"</translation>
 <translation id="145097072038377568">‏تم إيقافه في إعدادات Android.</translation>
 <translation id="1477626028522505441">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب مشاكل بالخادم.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (أكثر من عنصر واحد آخر)}zero{ (أكثر من # عناصر أخرى)}two{ (أكثر من عنصرين (#) آخرين)}few{ (أكثر من # عناصر أخرى)}many{ (أكثر من # عنصرًا آخر)}other{ (أكثر من # عنصر آخر)}}</translation>
@@ -81,7 +83,6 @@
 <translation id="1513858653616922153">حذف كلمة المرور</translation>
 <translation id="1516229014686355813">‏تعمل ميزة "البحث بالنقر" على إرسال الكلمة المُحدَّدة والصفحة الحالية كسياق إلى بحث Google. يمكنك إيقافها في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">نشط اليوم</translation>
-<translation id="1539064842193522527">‏تم فتح الرابط في Chrome</translation>
 <translation id="1549000191223877751">الانتقال إلى نافذة أخرى</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
 <translation id="1569387923882100876">جهاز متصل</translation>
@@ -288,7 +289,6 @@
 <translation id="3058498974290601450">يمكنك تفعيل المزامنة في أي وقت في الإعدادات.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{إشارة مرجعية <ph name="BOOKMARKS_COUNT_ONE" />}zero{<ph name="BOOKMARKS_COUNT_MANY" /> إشارات مرجعية}two{إشارتان مرجعيتان (<ph name="BOOKMARKS_COUNT_MANY" />)}few{<ph name="BOOKMARKS_COUNT_MANY" /> إشارات مرجعية}many{<ph name="BOOKMARKS_COUNT_MANY" /> إشارةً مرجعيةً}other{<ph name="BOOKMARKS_COUNT_MANY" /> إشارة مرجعية}}</translation>
 <translation id="3089395242580810162">الفتح في علامة تبويب تصفّح متخفي</translation>
-<translation id="311456632243022227">‏تم فتح عدّة روابط في Chrome</translation>
 <translation id="3115898365077584848">عرض المعلومات</translation>
 <translation id="3123473560110926937">حظر الإعلانات في بعض المواقع</translation>
 <translation id="3137521801621304719">مغادرة وضع التصفح المتخفي</translation>
@@ -402,6 +402,7 @@
 <translation id="4008040567710660924">السماح لموقع ويب معيّن بتشغيل ملفات تعريف الارتباط</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{ساعة واحدة (#)}zero{# ساعة}two{ساعتان (#)}few{# ساعات}many{# ساعةً}other{# ساعة}}</translation>
 <translation id="4042870126885713738">يتم عرض اقتراحات عند تعذّر فتح عنوان ويب أو تعذّر الاتصال بالإنترنت.</translation>
+<translation id="4044912625106523635">يتم فتح منتقي الأجهزة لمشاركة علامة تبويب معه بارتفاع كامل.</translation>
 <translation id="4046123991198612571">المقطع الصوتي التالي</translation>
 <translation id="4048707525896921369">‏يمكنك معرفة معلومات عن مواضيع على المواقع الإلكترونية بدون مغادرة الصفحة. تُرسل ميزة "البحث بالنقر" الكلمة والسياق المحيط بها إلى "بحث Google" للحصول على تعريفات وصور ونتائج بحث وتفاصيل أخرى ذات الصلة بها.
 
@@ -579,6 +580,7 @@
 <translation id="5271967389191913893">لا يمكن للجهاز فتح المحتوى لتنزيله</translation>
 <translation id="528192093759286357">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="5284584623296338184">‏لن تتم بعد الآن مزامنة التغييرات التي تطرأ على الإشارات المرجعية والسجلّ وكلمات المرور وغيرها من الإعدادات مع حسابك على Google، ولكن ستظل بياناتك الحالية مخزّنة في حسابك على Google.</translation>
+<translation id="5292796745632149097">إرسال إلى</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5301954838959518834">حسنًا</translation>
 <translation id="5304593522240415983">لا يمكن ترك هذا الحقل فارغًا</translation>
@@ -740,6 +742,7 @@
 <translation id="6406506848690869874">المزامنة</translation>
 <translation id="641643625718530986">طباعة…</translation>
 <translation id="6416782512398055893">تم التنزيل بحجم <ph name="MBS" /> ميغابايت</translation>
+<translation id="6418750371676080905">تم إغلاق منتقي جهاز لمشاركة علامة تبويب معه.</translation>
 <translation id="6427112570124116297">ترجمة موقع الويب</translation>
 <translation id="6433501201775827830">اختيار محرك البحث</translation>
 <translation id="6437478888915024427">معلومات الصفحة</translation>
@@ -779,6 +782,7 @@
 <translation id="666268767214822976">يمكنك استخدام خدمة التوقّعات لعرض طلبات البحث ذات الصلة ومواقع الويب الشائعة أثناء الكتابة في شريط العناوين.</translation>
 <translation id="666731172850799929">الفتح في <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏إشعار خصوصية Chrome</translation>
+<translation id="6672986458216094438">يتم فتح منتقي الأجهزة لمشاركة علامة تبويب معه بنصف ارتفاع.</translation>
 <translation id="6697492270171225480">عرض اقتراحات للصفحات المشابهة عند تعذّر العثور على صفحة</translation>
 <translation id="6697947395630195233">‏يحتاج Chrome إلى الوصول إلى موقعك الجغرافي لمشاركة موقعك الجغرافي مع موقع الويب هذا.</translation>
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
@@ -850,7 +854,6 @@
 <translation id="7177466738963138057">يمكنك تغيير ذلك لاحقًا من "الإعدادات"</translation>
 <translation id="7180611975245234373">إعادة التحميل</translation>
 <translation id="7189372733857464326">‏انتظار انتهاء تحديث خدمات Google Play</translation>
-<translation id="7189598951263744875">مشاركة...</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
 <translation id="723171743924126238">تحديد الصور</translation>
 <translation id="7233236755231902816">‏للاطّلاع على الويب بلغتك، يمكنك الحصول على أحدث إصدار من Chrome.</translation>
@@ -887,7 +890,6 @@
 <translation id="7445411102860286510">السماح لمواقع الويب بتشغيل الفيديوهات المكتومة الصوت تلقائيًا (مُستحسن)</translation>
 <translation id="7453467225369441013">‏سيتم تسجيل الخروج من معظم مواقع الويب، لكن لن يتم تسجيل الخروج من حسابك على Google.</translation>
 <translation id="7454641608352164238">مساحة التخزين غير كافية</translation>
-<translation id="7455923816558154057">يُرجى النقر للعرض</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="7475192538862203634">إذا تكرّر هذا الخطأ، ننصحك بالاطّلاع على هذه <ph name="BEGIN_LINK" />الاقتراحات<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">‏لم يتم العثور على بطاقة SD. قد يكون بعض الملفات مفقودًا.</translation>
@@ -956,6 +958,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7963646190083259054">المورّد:</translation>
+<translation id="7971136598759319605">نشط قبل يوم واحد</translation>
 <translation id="7975379999046275268">معاينة صفحة <ph name="BEGIN_NEW" />ميزة جديدة<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع أثناء التصفّح والبحث</translation>
 <translation id="79859296434321399">‏لعرض محتوى الواقع المُعزَّز، يُرجى تثبيت ARCore</translation>

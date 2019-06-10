@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1006017844123154345">Відкрити в режимі онлайн</translation>
+<translation id="1028699632127661925">Надсилання на пристрій "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="1036727731225946849">Додається <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">З веб-сайтів</translation>
 <translation id="1049743911850919806">Анонімний перегляд</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Пошук і огляд</translation>
 <translation id="1264974993859112054">Спорт</translation>
 <translation id="1272079795634619415">Зупинити</translation>
+<translation id="1272444412400969138">Засіб вибору пристрою, з яким потрібно поділитися вкладкою.</translation>
 <translation id="1283039547216852943">Торкніться, щоб розгорнути</translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="1291207594882862231">Очистити історію, файли cookie, дані сайтів, кеш…</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Вітаємо, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1384959399684842514">Завантаження призупинено</translation>
+<translation id="1386674309198842382">У мережі <ph name="LAST_UPDATED" /> дн. тому</translation>
 <translation id="1389974829397082527">Немає закладок</translation>
 <translation id="1397811292916898096">Шукати в <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Вбудовано на сайті <ph name="WEBSITE_URL" /></translation>
@@ -71,7 +74,6 @@
 <translation id="1430915738399379752">Друк</translation>
 <translation id="1445680696957526815">Компоненти Chrome несумісні одне з одним. Веб-переглядач може оновлюватися, спробуйте через декілька хвилин. Якщо проблема не зникне, видаліть Chrome і встановіть його знову.</translation>
 <translation id="1446450296470737166">Повний контроль пристроїв MIDI</translation>
-<translation id="1449080968331948513">Заощадження трафіку зараз працює в спрощеному режимі</translation>
 <translation id="145097072038377568">Вимкнено в налаштуваннях Android</translation>
 <translation id="1477626028522505441">Файл <ph name="FILE_NAME" /> не завантажено через проблеми із сервером.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ ще 1)}one{ (+ і ще #)}few{ (+ і ще #)}many{ (+ і ще #)}other{ (+ і ще #)}}</translation>
@@ -81,7 +83,6 @@
 <translation id="1513858653616922153">Видалити пароль</translation>
 <translation id="1516229014686355813">Функція "Торкніться, щоб шукати" надсилає слово та поточну сторінку як додаткові дані в Пошук Google. Її можна вимкнути в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">У мережі сьогодні</translation>
-<translation id="1539064842193522527">Посилання відкрито в Chrome</translation>
 <translation id="1549000191223877751">Відкрити в іншому вікні</translation>
 <translation id="1553358976309200471">Оновити Chrome</translation>
 <translation id="1569387923882100876">Під’єднаний пристрій</translation>
@@ -288,7 +289,6 @@
 <translation id="3058498974290601450">Ви можете будь-коли ввімкнути синхронізацію в налаштуваннях</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> закладка}one{<ph name="BOOKMARKS_COUNT_MANY" /> закладка}few{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}many{<ph name="BOOKMARKS_COUNT_MANY" /> закладок}other{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}}</translation>
 <translation id="3089395242580810162">Відкрити в анонімній вкладці</translation>
-<translation id="311456632243022227">Кілька посилань відкрито в Chrome</translation>
 <translation id="3115898365077584848">Показати інформацію</translation>
 <translation id="3123473560110926937">Заблоковано на деяких сайтах</translation>
 <translation id="3137521801621304719">Вийти з режиму анонімного перегляду</translation>
@@ -402,6 +402,7 @@
 <translation id="4008040567710660924">Дозволити файли cookie для конкретного сайту.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# год}one{# год}few{# год}many{# год}other{# год}}</translation>
 <translation id="4042870126885713738">Показувати пропозиції, коли неможливо перейти за веб-адресою чи не вдається встановити з’єднання</translation>
+<translation id="4044912625106523635">Засіб вибору пристрою, з яким потрібно поділитися вкладкою, відкрито на повну висоту.</translation>
 <translation id="4046123991198612571">Наступна композиція</translation>
 <translation id="4048707525896921369">Дізнавайтеся більше про певну тему, не залишаючи сторінку, яку переглядаєте. Просто торкніться певного слова, щоб надіслати його в Пошук Google разом із контекстом, і отримаєте визначення, зображення, результати пошуку й іншу інформацію.
 
@@ -579,6 +580,7 @@
 <translation id="5271967389191913893">Вміст, який ви хочете завантажити, не можна відкрити на цьому пристрої.</translation>
 <translation id="528192093759286357">Щоб вийти з повноекранного режиму, проведіть пальцем по екрану згори вниз і торкніться кнопки "Назад".</translation>
 <translation id="5284584623296338184">Зміни в закладках, історії, паролях та інших налаштуваннях більше не синхронізуватимуться з вашим обліковим записом Google. Однак наявні дані залишаться у вашому обліковому записі Google.</translation>
+<translation id="5292796745632149097">Кому надіслати:</translation>
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5304593522240415983">Це поле не може бути порожнім</translation>
@@ -740,6 +742,7 @@
 <translation id="6406506848690869874">Синхронізація</translation>
 <translation id="641643625718530986">Друк…</translation>
 <translation id="6416782512398055893">Завантажено <ph name="MBS" /> МБ</translation>
+<translation id="6418750371676080905">Засіб вибору пристрою, з яким потрібно поділитися вкладкою, закрито.</translation>
 <translation id="6427112570124116297">Перекласти веб-сторінки</translation>
 <translation id="6433501201775827830">Виберіть пошукову систему</translation>
 <translation id="6437478888915024427">Інформація про сторінку</translation>
@@ -779,6 +782,7 @@
 <translation id="666268767214822976">Показувати підказки зі схожими запитами та популярними веб-сайтами під час введення запиту в адресному рядку</translation>
 <translation id="666731172850799929">Відкрити в програмі <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Примітка про конфіденційність Chrome</translation>
+<translation id="6672986458216094438">Засіб вибору пристрою, з яким потрібно поділитися вкладкою, відкрито на половину висоти.</translation>
 <translation id="6697492270171225480">Показувати пропозиції схожих сторінок, коли не вдається знайти сторінку</translation>
 <translation id="6697947395630195233">Chrome потрібен доступ до місцезнаходження, щоб повідомляти ваші геодані цьому сайту.</translation>
 <translation id="6698801883190606802">Керування синхронізованими даними</translation>
@@ -850,7 +854,6 @@
 <translation id="7177466738963138057">Це можна змінити пізніше в налаштуваннях</translation>
 <translation id="7180611975245234373">Оновити</translation>
 <translation id="7189372733857464326">Сервіси Google Play оновлюються</translation>
-<translation id="7189598951263744875">Поділитися...</translation>
 <translation id="7191430249889272776">Вкладку відкрито у фоновому режимі.</translation>
 <translation id="723171743924126238">Вибрати зображення</translation>
 <translation id="7233236755231902816">Щоб переглядати сторінки вашою мовою, установіть останню версію Chrome</translation>
@@ -887,7 +890,6 @@
 <translation id="7445411102860286510">Дозволити сайтам автоматично відтворювати відео з вимкненим звуком (рекомендується)</translation>
 <translation id="7453467225369441013">Ви вийдете з більшості сайтів, але не вийдете з облікового запису Google.</translation>
 <translation id="7454641608352164238">Замало місця</translation>
-<translation id="7455923816558154057">Торкніться, щоб переглянути</translation>
 <translation id="7473891865547856676">Ні, дякую</translation>
 <translation id="7475192538862203634">Якщо ви часто бачите таку сторінку, скористайтеся цими <ph name="BEGIN_LINK" />пропозиціями<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Карту SD не знайдено. Деякі файли можуть бути відсутні.</translation>
@@ -956,6 +958,7 @@
 <translation id="7942131818088350342">Застаріла версія <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>
 <translation id="7963646190083259054">Постачальник:</translation>
+<translation id="7971136598759319605">У мережі 1 день тому</translation>
 <translation id="7975379999046275268">Переглянути сторінку <ph name="BEGIN_NEW" />Нове<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Попередньо завантажувати сторінки, щоб швидше переглядати та шукати</translation>
 <translation id="79859296434321399">Щоб переглядати вміст у режимі доповненої реальності, установіть ARCore</translation>

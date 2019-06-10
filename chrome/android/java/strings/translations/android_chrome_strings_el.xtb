@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Εκτύπωση</translation>
 <translation id="1445680696957526815">Τα στοιχεία του Chrome δεν είναι συμβατά μεταξύ τους. Το Chrome ενδεχομένως να αναβαθμίζεται. Δοκιμάστε ξανά σε λίγα λεπτά. Αν το πρόβλημα παραμένει, δοκιμάστε να απεγκαταστήσετε και να εγκαταστήσετε ξανά το Chrome.</translation>
 <translation id="1446450296470737166">Να επιτρέπεται πλήρης έλεγχος σε MIDI</translation>
-<translation id="1449080968331948513">Η Εξοικονόμηση δεδομένων βρίσκεται πλέον σε λειτουργία Lite</translation>
 <translation id="145097072038377568">Έχει απενεργοποιηθεί στις Ρυθμίσεις Android</translation>
 <translation id="1477626028522505441">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω προβλημάτων στον διακομιστή.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 ακόμη)}other{ (+ # ακόμη)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Διαγραφή κωδικού πρόσβασης</translation>
 <translation id="1516229014686355813">Η λειτουργία "Πατήστε για αναζήτηση" αποστέλλει την επιλεγμένη λέξη και την τρέχουσα σελίδα ως περιβάλλον στην Αναζήτηση Google. Μπορείτε να την απενεργοποιήσετε στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Ενεργή σήμερα</translation>
-<translation id="1539064842193522527">Ο σύνδεσμος άνοιξε στο Chrome</translation>
 <translation id="1549000191223877751">Μεταβείτε σε άλλο παράθυρο</translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
 <translation id="1569387923882100876">Συνδεδεμένη συσκευή</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">Μπορείτε να ενεργοποιήσετε τον συγχρονισμό ανά πάσα στιγμή στις ρυθμίσεις</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> σελιδοδείκτης}other{<ph name="BOOKMARKS_COUNT_MANY" /> σελιδοδείκτες}}</translation>
 <translation id="3089395242580810162">Άνοιγμα σε καρτ. ανών. περιήγ.</translation>
-<translation id="311456632243022227">Πολλοί ανοιχτοί σύνδεσμοι στο Chrome</translation>
 <translation id="3115898365077584848">Πληροφορίες εκπομπής</translation>
 <translation id="3123473560110926937">Αποκλεισμός σε ορισμένους ιστοτόπους</translation>
 <translation id="3137521801621304719">Έξοδος από την κατάσταση ανώνυμης περιήγησης</translation>
@@ -857,7 +854,6 @@
 <translation id="7177466738963138057">Μπορείτε να αλλάξετε αργότερα αυτήν την επιλογή στην περιοχή "Ρυθμίσεις"</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
 <translation id="7189372733857464326">Αναμονή για ολοκλήρωση της ενημέρωσης των Υπηρεσιών Google Play</translation>
-<translation id="7189598951263744875">Κοινοποίηση…</translation>
 <translation id="7191430249889272776">Η καρτέλα άνοιξε στο παρασκήνιο.</translation>
 <translation id="723171743924126238">Επιλέξτε εικόνες</translation>
 <translation id="7233236755231902816">Για να δείτε τον ιστό στη γλώσσα σας, κατεβάστε την πιο πρόσφατη έκδοση του Chrome</translation>
@@ -894,7 +890,6 @@
 <translation id="7445411102860286510">Να επιτρέπεται στους ιστότοπους η αυτόματη αναπαραγωγή βίντεο σε σίγαση (συνιστάται)</translation>
 <translation id="7453467225369441013">Θα αποσυνδεθείτε από τους περισσότερους ιστοτόπους. Δεν θα αποσυνδεθείτε από τον Λογαριασμό σας Google.</translation>
 <translation id="7454641608352164238">Ανεπαρκής χώρος</translation>
-<translation id="7455923816558154057">Πατήστε για προβολή</translation>
 <translation id="7473891865547856676">Όχι, ευχαριστώ</translation>
 <translation id="7475192538862203634">Εάν αυτό το μήνυμα εμφανίζεται συχνά, δοκιμάστε αυτές τις <ph name="BEGIN_LINK" />προτάσεις<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Η κάρτα SD δεν βρέθηκε. Μπορεί να λείπουν μερικά από τα αρχεία σας.</translation>

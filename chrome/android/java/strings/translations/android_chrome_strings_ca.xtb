@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Imprimeix</translation>
 <translation id="1445680696957526815">Els components de Chrome no són compatibles entre ells. És possible que Chrome s'estigui actualitzant. Torneu-ho a provar d'aquí a uns quants minuts. Si el problema continua, desinstal·leu Chrome i torneu-lo a instal·lar.</translation>
 <translation id="1446450296470737166">Permet control total disp. MIDI</translation>
-<translation id="1449080968331948513">Ara l'extensió Economitzador de dades funciona en mode bàsic</translation>
 <translation id="145097072038377568">Aquest permís està desactivat a la configuració d'Android</translation>
 <translation id="1477626028522505441">No s'ha pogut baixar <ph name="FILE_NAME" /> a causa de problemes amb el servidor.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (i 1 més)}other{ (i # més)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Suprimeix la contrasenya</translation>
 <translation id="1516229014686355813">La funció Toca per cercar envia la paraula seleccionada i la pàgina actual com a context a la Cerca de Google. La pots desactivar a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Actiu avui</translation>
-<translation id="1539064842193522527">Enllaç obert a Chrome</translation>
 <translation id="1549000191223877751">Mou a l'altra finestra</translation>
 <translation id="1553358976309200471">Actualitza Chrome</translation>
 <translation id="1569387923882100876">Dispositiu connectat</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">Pots activar la sincronització en qualsevol moment des de la configuració</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> adreça d'interès}other{<ph name="BOOKMARKS_COUNT_MANY" /> adreces d'interès}}</translation>
 <translation id="3089395242580810162">Obre en pestanya d'incògnit</translation>
-<translation id="311456632243022227">Diversos enllaços oberts a Chrome</translation>
 <translation id="3115898365077584848">Mostra la informació</translation>
 <translation id="3123473560110926937">Bloquejat en alguns llocs web</translation>
 <translation id="3137521801621304719">Surt del mode d'incògnit</translation>
@@ -857,7 +854,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7177466738963138057">Pots canviar aquesta opció més endavant a Configuració</translation>
 <translation id="7180611975245234373">Actualitza</translation>
 <translation id="7189372733857464326">S'està esperant que Serveis de Google Play s'acabi d'actualitzar</translation>
-<translation id="7189598951263744875">Comparteix...</translation>
 <translation id="7191430249889272776">Pestanya oberta en segon pla</translation>
 <translation id="723171743924126238">Selecciona imatges</translation>
 <translation id="7233236755231902816">Per veure el web en el teu idioma, actualitza Chrome a la versió més recent.</translation>
@@ -894,7 +890,6 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="7445411102860286510">Permet que els llocs web reprodueixin automàticament vídeos silenciats (opció recomanada)</translation>
 <translation id="7453467225369441013">Et tanca la sessió de la majoria de llocs web, però no la del Compte de Google.</translation>
 <translation id="7454641608352164238">No hi ha prou espai</translation>
-<translation id="7455923816558154057">Toca per veure-ho</translation>
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="7475192538862203634">Si això passa sovint, prova aquests <ph name="BEGIN_LINK" />suggeriments<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">La targeta SD no s'ha trobat. Pot ser que faltin alguns fitxers.</translation>

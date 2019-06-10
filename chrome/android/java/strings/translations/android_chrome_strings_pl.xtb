@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Drukuj</translation>
 <translation id="1445680696957526815">Komponenty Chrome są ze sobą niezgodne. Być może przeglądarka się uaktualnia. Spróbuj ponownie za kilka minut. Jeśli problem nie ustąpi, odinstaluj i ponownie zainstaluj Chrome.</translation>
 <translation id="1446450296470737166">Pełne sterowanie urządzeniami MIDI</translation>
-<translation id="1449080968331948513">Oszczędzanie danych to teraz wersja uproszczona</translation>
 <translation id="145097072038377568">Wyłączone w ustawieniach Androida</translation>
 <translation id="1477626028522505441">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu problemów z serwerem.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (i jeszcze 1)}few{ (i jeszcze #)}many{ (i jeszcze #)}other{ (i jeszcze #)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Usuń hasło</translation>
 <translation id="1516229014686355813">Funkcja Kliknij, by wyszukać wysyła zaznaczone słowo i bieżącą stronę jako kontekst do wyszukiwarki Google. Możesz ją wyłączyć w <ph name="BEGIN_LINK" />ustawieniach<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Aktywność: dzisiaj</translation>
-<translation id="1539064842193522527">Link otwarty w Chrome</translation>
 <translation id="1549000191223877751">Przenieś do innego okna</translation>
 <translation id="1553358976309200471">Zaktualizuj Chrome</translation>
 <translation id="1569387923882100876">Połączone urządzenie</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">W każdej chwili możesz włączyć synchronizację w ustawieniach</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> zakładka}few{<ph name="BOOKMARKS_COUNT_MANY" /> zakładki}many{<ph name="BOOKMARKS_COUNT_MANY" /> zakładek}other{<ph name="BOOKMARKS_COUNT_MANY" /> zakładki}}</translation>
 <translation id="3089395242580810162">Otwórz w karcie incognito</translation>
-<translation id="311456632243022227">Wiele linków otwartych w Chrome</translation>
 <translation id="3115898365077584848">Pokaż informacje</translation>
 <translation id="3123473560110926937">Blokowane na niektórych stronach</translation>
 <translation id="3137521801621304719">Wyłącz tryb incognito</translation>
@@ -857,7 +854,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7177466738963138057">Możesz zmienić to później w Ustawieniach</translation>
 <translation id="7180611975245234373">Odśwież</translation>
 <translation id="7189372733857464326">Czekam na zakończenie aktualizacji Usług Google Play</translation>
-<translation id="7189598951263744875">Udostępnij...</translation>
 <translation id="7191430249889272776">Karta otwarta w tle.</translation>
 <translation id="723171743924126238">Wybierz zdjęcia</translation>
 <translation id="7233236755231902816">Aby wyświetlać strony internetowe w swoim języku, pobierz najnowszą wersję Chrome</translation>
@@ -894,7 +890,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7445411102860286510">Zezwalaj witrynom na automatyczne odtwarzanie wyciszonych filmów (zalecane)</translation>
 <translation id="7453467225369441013">Wylogowuje z większości stron internetowych. Nie wyloguje Cię z konta Google.</translation>
 <translation id="7454641608352164238">Za mało miejsca</translation>
-<translation id="7455923816558154057">Kliknij, by wyświetlić</translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7475192538862203634">Jeśli często widzisz ten komunikat, przeczytaj te <ph name="BEGIN_LINK" />wskazówki<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Nie znaleziono karty SD. Może brakować niektórych Twoich plików.</translation>

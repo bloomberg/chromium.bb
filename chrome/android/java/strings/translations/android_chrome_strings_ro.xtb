@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Printează</translation>
 <translation id="1445680696957526815">Componentele Chrome nu sunt compatibile între ele. Chrome poate fi în curs de actualizare. Încearcă din nou peste câteva minute. Dacă problema persistă, încearcă să dezinstalezi și să reinstalezi Chrome.</translation>
 <translation id="1446450296470737166">Control complet dispozitive MIDI</translation>
-<translation id="1449080968331948513">Economizorul de date este acum Modul Lite</translation>
 <translation id="145097072038377568">Dezactivată din Setări Android</translation>
 <translation id="1477626028522505441">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza unor probleme de server.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (și încă unul)}few{ (și încă #)}other{ (și încă #)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Șterge parola</translation>
 <translation id="1516229014686355813">Funcția Atinge pentru a căuta trimite cuvântul selectat și pagina actuală drept context către Căutarea Google. Poți dezactiva această funcție din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Activ astăzi</translation>
-<translation id="1539064842193522527">Link deschis în Chrome</translation>
 <translation id="1549000191223877751">Mută în altă fereastră</translation>
 <translation id="1553358976309200471">Actualizează Chrome</translation>
 <translation id="1569387923882100876">Dispozitiv conectat</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">Poți să activezi sincronizarea oricând în setări</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> marcaj}few{<ph name="BOOKMARKS_COUNT_MANY" /> marcaje}other{<ph name="BOOKMARKS_COUNT_MANY" /> de marcaje}}</translation>
 <translation id="3089395242580810162">Deschide într-o filă incognito</translation>
-<translation id="311456632243022227">Linkuri multiple deschise în Chrome</translation>
 <translation id="3115898365077584848">Afișează informațiile</translation>
 <translation id="3123473560110926937">Blocate pe anumite site-uri</translation>
 <translation id="3137521801621304719">Ieși din modul incognito</translation>
@@ -857,7 +854,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7177466738963138057">Poți modifica ulterior această opțiune în Setări</translation>
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="7189372733857464326">Se așteaptă finalizarea actualizării pentru serviciile Google Play</translation>
-<translation id="7189598951263744875">Trimite...</translation>
 <translation id="7191430249889272776">A fost deschisă o filă în fundal.</translation>
 <translation id="723171743924126238">Selectează imagini</translation>
 <translation id="7233236755231902816">Pentru a naviga pe internet în limba ta, este necesară cea mai recentă versiune de Chrome</translation>
@@ -894,7 +890,6 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="7445411102860286510">Permite site-urilor să redea automat videoclipuri cu sunetul dezactivat (recomandat)</translation>
 <translation id="7453467225369441013">Te deconectează de pe majoritatea site-urilor. Nu te va deconecta de la Contul Google.</translation>
 <translation id="7454641608352164238">Spațiu insuficient</translation>
-<translation id="7455923816558154057">Atinge pentru a afișa</translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7475192538862203634">Dacă acest mesaj apare frecvent, încearcă următoarele <ph name="BEGIN_LINK" />sugestii<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Nu s-a găsit cardul SD. Este posibil ca unele fișiere să lipsească.</translation>

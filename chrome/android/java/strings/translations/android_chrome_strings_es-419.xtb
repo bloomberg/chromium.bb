@@ -71,7 +71,6 @@
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1445680696957526815">Los componentes de Chrome no son compatibles entre sí. Es posible que Chrome esté actualizándose. Espera unos minutos y vuelve a intentarlo. Si el problema continúa, prueba a desinstalar Chrome y volver a instalarlo.</translation>
 <translation id="1446450296470737166">Control de dispositivos MIDI</translation>
-<translation id="1449080968331948513">El "Ahorro de datos" está en modo lite</translation>
 <translation id="145097072038377568">Desactivado en la configuración de Android</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> no se pudo descargar debido a problemas del servidor.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (1 más)}other{ (# más)}}</translation>
@@ -81,7 +80,6 @@
 <translation id="1513858653616922153">Borrar contraseña</translation>
 <translation id="1516229014686355813">La función "Presionar para buscar" envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Para desactivarla, accede a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Activo hoy</translation>
-<translation id="1539064842193522527">Vínculo abierto en Chrome</translation>
 <translation id="1549000191223877751">Mover a otra ventana</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
 <translation id="1569387923882100876">Dispositivo conectado</translation>
@@ -288,7 +286,6 @@
 <translation id="3058498974290601450">Puedes activar la sincronización en la configuración en cualquier momento</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> favorito}other{<ph name="BOOKMARKS_COUNT_MANY" /> favoritos}}</translation>
 <translation id="3089395242580810162">Abrir en pestaña de incógnito</translation>
-<translation id="311456632243022227">Varios vínculos abiertos en Chrome</translation>
 <translation id="3115898365077584848">Mostrar información</translation>
 <translation id="3123473560110926937">Bloqueados en algunos sitios</translation>
 <translation id="3137521801621304719">Salir del modo de navegación de incógnito</translation>
@@ -850,7 +847,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7177466738963138057">Puedes cambiar esta opción más tarde en Configuración</translation>
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7189372733857464326">Esperando que los servicios de Google Play terminen de actualizarse</translation>
-<translation id="7189598951263744875">Compartir...</translation>
 <translation id="7191430249889272776">Pestaña abierta en segundo plano</translation>
 <translation id="723171743924126238">Seleccionar imágenes</translation>
 <translation id="7233236755231902816">Para ver la Web en tu idioma, obtén la versión más reciente de Chrome</translation>
@@ -887,7 +883,6 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="7445411102860286510">Permitir que los sitios reproduzcan videos silenciados de forma automática (recomendado)</translation>
 <translation id="7453467225369441013">Esta acción te hace salir de la mayoría de los sitios. No saldrás de tu cuenta de Google.</translation>
 <translation id="7454641608352164238">No hay suficiente espacio</translation>
-<translation id="7455923816558154057">Presiona para ver</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7475192538862203634">Si el mensaje aparece con frecuencia, prueba estas <ph name="BEGIN_LINK" />sugerencias<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">No se encontró la tarjeta SD. Es posible que falten algunos archivos.</translation>

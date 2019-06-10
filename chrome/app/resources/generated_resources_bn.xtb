@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">ডিফল্ট সাদা রঙের অবতার</translation>
 <translation id="1581962803218266616">ফাইন্ডারে দেখান</translation>
 <translation id="1584990664401018068">আপনি যে ওয়াই-ফাই নেটওয়ার্ক ব্যবহার করছেন (<ph name="NETWORK_ID" />) সেটি যাচাই করার প্রয়োজন হতে পারে৷</translation>
-<translation id="1585238069289523942">আপনার Chromebook-এ অ্যাপ ইনস্টল করুন</translation>
 <translation id="1585717515139318619">আপনার কম্পিউটারের অন্য একটি প্রোগ্রাম একটি থীম যোগ করেছে যা Chrome এর কাজ করার ধরন পাল্টে দিতে পারে।
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -874,7 +873,6 @@
 <translation id="2315414688463285945">Linux ফাইল কনফিগার করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।</translation>
 <translation id="2315587498123194634"><ph name="DEVICE_NAME" />-এ লিঙ্ক পাঠান</translation>
 <translation id="2316129865977710310">না, ধন্যবাদ</translation>
-<translation id="2316739859433277603">অ্যাপ লঞ্চার থেকে সার্চ করার জন্য ব্রাউজারের <ph name="BEGIN_LINK" />সার্চ ইঞ্জিন সেটিংস<ph name="END_LINK" /> ব্যবহার করা হয়।</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% হয়েছে</translation>
 <translation id="2318143611928805047">কাগজের আকার</translation>
 <translation id="2318817390901984578">Android অ্যাপ ব্যবহার করতে, আপনার <ph name="DEVICE_TYPE" /> চার্জ ও আপডেট করতে।</translation>
@@ -5315,6 +5313,7 @@
 <translation id="9094033019050270033">পাসওয়ার্ড আপডেট করুন</translation>
 <translation id="9094982973264386462">সরান</translation>
 <translation id="9095253524804455615">সরান</translation>
+<translation id="9095388113577226029">আরও ভাষা...</translation>
 <translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
 <translation id="9100765901046053179">উন্নত সেটিংস</translation>
 <translation id="9101691533782776290">অ্যাপ্লিকেশন লঞ্চ করুন</translation>

@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Ваші пристрої працюватимуть разом ще краще</translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
 <translation id="1153356358378277386">Підключені пристрої</translation>
+<translation id="1175572348579024023">Прокрутити</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1195412055398077112">облямівка екрана</translation>
 <translation id="119944043368869598">Очистити все</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">Google Асистент недоступний у демонстраційному сеансі.</translation>
 <translation id="479989351350248267">пошук</translation>
 <translation id="4804818685124855865">Від'єднатися</translation>
+<translation id="4831034276697007977">Вимкнути автоматичні кліки?</translation>
 <translation id="4849058404725798627">Підсвічувати об’єкт, вибраний на клавіатурі</translation>
 <translation id="485592688953820832">Нічого не робити (призупинити)</translation>
 <translation id="4872237917498892622">Alt+клавіша пошуку або Shift</translation>
@@ -413,6 +415,7 @@
 <translation id="7561014039265304140">Екран <ph name="DISPLAY_NAME" /> не підтримує роздільну здатність <ph name="SPECIFIED_RESOLUTION" />. Роздільну здатність змінено на <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Смайли</translation>
 <translation id="7564874036684306347">Переміщення вікон на інший робочий стіл може спричинити неочікувану поведінку. Нові сповіщення та вікна можуть розділятися між робочими столами.</translation>
+<translation id="7568294522609223312">Вимкнути автоматичні кліки</translation>
 <translation id="7569509451529460200">Шрифт Брайля та ChromeVox увімкнено</translation>
 <translation id="7593891976182323525">Клавіша пошуку або Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (власник)</translation>

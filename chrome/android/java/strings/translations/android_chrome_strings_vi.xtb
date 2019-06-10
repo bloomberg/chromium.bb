@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1006017844123154345">Mở trực tuyến</translation>
+<translation id="1028699632127661925">Đang gửi đến <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Đang thêm <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Từ trang web</translation>
 <translation id="1049743911850919806">Ẩn danh</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Tìm kiếm và khám phá</translation>
 <translation id="1264974993859112054">Thể thao</translation>
 <translation id="1272079795634619415">Dừng</translation>
+<translation id="1272444412400969138">Trình chọn thiết bị để chia sẻ một tab.</translation>
 <translation id="1283039547216852943">Nhấn để mở rộng</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
 <translation id="1291207594882862231">Xóa lịch sử, cookie, dữ liệu trang web, bộ nhớ đệm…</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Xin chào <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1384959399684842514">Đã tạm dừng quá trình tải xuống</translation>
+<translation id="1386674309198842382">Hoạt động <ph name="LAST_UPDATED" /> ngày trước</translation>
 <translation id="1389974829397082527">Không có dấu trang ở đây</translation>
 <translation id="1397811292916898096">Tìm kiếm bằng <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Được nhúng trong <ph name="WEBSITE_URL" /></translation>
@@ -71,7 +74,6 @@
 <translation id="1430915738399379752">In</translation>
 <translation id="1445680696957526815">Các cấu phần của Chrome không tương thích với nhau. Chrome có thể đang nâng cấp, vui lòng thử lại sau ít phút. Nếu sự cố vẫn tiếp diễn, hãy thử gỡ cài đặt và cài đặt lại Chrome.</translation>
 <translation id="1446450296470737166">Cho phép kiểm soát hoàn toàn thiết bị MIDI</translation>
-<translation id="1449080968331948513">Trình tiết kiệm dữ liệu hiện có tên mới là Chế độ thu gọn</translation>
 <translation id="145097072038377568">Tắt trong Cài đặt Android</translation>
 <translation id="1477626028522505441">Tải xuống <ph name="FILE_NAME" /> không thành công do sự cố máy chủ.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 mục khác)}other{ (+ # mục khác)}}</translation>
@@ -81,7 +83,6 @@
 <translation id="1513858653616922153">Xóa mật khẩu</translation>
 <translation id="1516229014686355813">Tính năng Nhấn để tìm kiếm sẽ gửi từ đã chọn và trang hiện tại dưới dạng ngữ cảnh cho Google Tìm kiếm. Bạn có thể tắt tính năng này trong mục <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Hoạt động hôm nay</translation>
-<translation id="1539064842193522527">Đã mở liên kết trong Chrome</translation>
 <translation id="1549000191223877751">Di chuyển đến cửa sổ khác</translation>
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
 <translation id="1569387923882100876">Thiết bị đã kết nối</translation>
@@ -288,7 +289,6 @@
 <translation id="3058498974290601450">Bạn có thể bật tính năng đồng bộ hóa bất cứ lúc nào trong phần cài đặt</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> dấu trang}other{<ph name="BOOKMARKS_COUNT_MANY" /> dấu trang}}</translation>
 <translation id="3089395242580810162">Mở trong tab ẩn danh</translation>
-<translation id="311456632243022227">Đã mở nhiều liên kết trong Chrome</translation>
 <translation id="3115898365077584848">Hiển thị thông tin</translation>
 <translation id="3123473560110926937">Đã chặn trên một số trang web</translation>
 <translation id="3137521801621304719">Thoát chế độ ẩn danh</translation>
@@ -402,6 +402,7 @@
 <translation id="4008040567710660924">Cho phép cookie của một trang web cụ thể.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# giờ}other{# giờ}}</translation>
 <translation id="4042870126885713738">Hiển thị các đề xuất khi địa chỉ web không khắc phục được hoặc kết nối không thể được thực hiện</translation>
+<translation id="4044912625106523635">Trình chọn thiết bị để chia sẻ một tab đang mở trên toàn màn hình.</translation>
 <translation id="4046123991198612571">Bản nhạc tiếp theo</translation>
 <translation id="4048707525896921369">Tìm hiểu về các chủ đề trên trang web mà không cần rời khỏi trang. Tính năng Nhấn để tìm kiếm sẽ gửi một từ và ngữ cảnh xung quanh từ đó tới Google Tìm kiếm, trả về định nghĩa, hình ảnh, kết quả tìm kiếm và các chi tiết khác.
 
@@ -579,6 +580,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5271967389191913893">Thiết bị không thể mở nội dung được tải xuống.</translation>
 <translation id="528192093759286357">Kéo từ trên xuống và chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="5284584623296338184">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và các tùy chọn cài đặt khác sẽ không đồng bộ hóa với Tài khoản Google của bạn nữa. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong tài khoản Google của bạn.</translation>
+<translation id="5292796745632149097">Gửi đến</translation>
 <translation id="5300589172476337783">Hiển thị</translation>
 <translation id="5301954838959518834">Ok</translation>
 <translation id="5304593522240415983">Không được để trống trường này</translation>
@@ -606,7 +608,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="545042621069398927">Đang tăng tốc độ tải xuống.</translation>
 <translation id="5456381639095306749">Tải trang xuống</translation>
 <translation id="5475862044948910901">Bắt đầu phiên đăng nhập thực tế tăng cường?</translation>
-<translation id="5481942164684849270">Đã thêm <ph name="APP_NAME" /> vào phần ứng dụng của tôi</translation>
+<translation id="5481942164684849270">Đã thêm <ph name="APP_NAME" /> vào danh sách ứng dụng của tôi</translation>
 <translation id="548278423535722844">Mở trong ứng dụng bản đồ</translation>
 <translation id="5487521232677179737">Xóa dữ liệu</translation>
 <translation id="5494752089476963479">Chặn quảng cáo trên các trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
@@ -740,6 +742,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6406506848690869874">Đồng bộ hóa</translation>
 <translation id="641643625718530986">In…</translation>
 <translation id="6416782512398055893">Đã tải xuống <ph name="MBS" /> MB</translation>
+<translation id="6418750371676080905">Trình chọn thiết bị để chia sẻ một tab đang đóng.</translation>
 <translation id="6427112570124116297">Dịch web</translation>
 <translation id="6433501201775827830">Chọn công cụ tìm kiếm của bạn</translation>
 <translation id="6437478888915024427">Thông tin trang</translation>
@@ -779,6 +782,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="666268767214822976">Sử dụng dịch vụ gợi ý để hiển thị các truy vấn có liên quan và các trang web phổ biến khi bạn nhập vào thanh địa chỉ</translation>
 <translation id="666731172850799929">Mở trong <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Thông báo quyền riêng tư của Chrome</translation>
+<translation id="6672986458216094438">Trình chọn thiết bị để chia sẻ một tab đang mở ở nửa dưới của màn hình.</translation>
 <translation id="6697492270171225480">Hiển thị phần đề xuất các trang tương tự khi không tìm thấy một trang</translation>
 <translation id="6697947395630195233">Chrome cần truy cập vị trí của bạn để chia sẻ thông tin vị trí với trang web này.</translation>
 <translation id="6698801883190606802">Quản lý dữ liệu đã đồng bộ hóa</translation>
@@ -850,7 +854,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7177466738963138057">Bạn có thể thay đổi cài đặt này sau trong Cài đặt</translation>
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="7189372733857464326">Đợi Dịch vụ của Google Play cập nhật xong</translation>
-<translation id="7189598951263744875">Chia sẻ...</translation>
 <translation id="7191430249889272776">Tab được mở dưới nền.</translation>
 <translation id="723171743924126238">Chọn hình ảnh</translation>
 <translation id="7233236755231902816">Để duyệt web bằng ngôn ngữ của bạn, hãy tải phiên bản Chrome mới nhất</translation>
@@ -887,7 +890,6 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="7445411102860286510">Cho phép trang web tự động phát video tắt tiếng (được đề xuất)</translation>
 <translation id="7453467225369441013">Đăng xuất bạn khỏi hầu hết các trang web. Bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình.</translation>
 <translation id="7454641608352164238">Không đủ dung lượng</translation>
-<translation id="7455923816558154057">Nhấn để xem</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7475192538862203634">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="BEGIN_LINK" />đề xuất<ph name="END_LINK" /> sau.</translation>
 <translation id="7475688122056506577">Không tìm thấy thẻ SD. Một số tệp của bạn có thể bị thiếu.</translation>
@@ -956,6 +958,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> đã lỗi thời.</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
 <translation id="7963646190083259054">Nhà cung cấp:</translation>
+<translation id="7971136598759319605">Hoạt động 1 ngày trước</translation>
 <translation id="7975379999046275268">Xem trước trang <ph name="BEGIN_NEW" />Mới<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Tải trước các trang để tìm kiếm và duyệt web nhanh hơn</translation>
 <translation id="79859296434321399">Để xem nội dung thực tế tăng cường, hãy cài đặt bộ công cụ ARCore</translation>

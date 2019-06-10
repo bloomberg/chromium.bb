@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Tisk</translation>
 <translation id="1445680696957526815">Komponenty prohlížeče Chrome navzájem nejsou kompatibilní. Je možné, že se Chrome zrovna upgraduje. Pokud problém přetrvává, zkuste Chrome odinstalovat a poté znovu nainstalovat.</translation>
 <translation id="1446450296470737166">Povolit úplné ovládání zařízení MIDI</translation>
-<translation id="1449080968331948513">Spořič dat je teď ve zjednodušeném režimu</translation>
 <translation id="145097072038377568">Vypnuto v Nastavení pro Android</translation>
 <translation id="1477626028522505441">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu problémů se serverem.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 další)}few{ (+ # další)}many{ (+ # dalších)}other{ (+ # dalších)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Vymazat heslo</translation>
 <translation id="1516229014686355813">Vyhledání klepnutím odešle vybrané slovo a aktuální stránku jako kontext do Vyhledávání Google. Tuto funkci můžete vypnout v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Aktivní dnes</translation>
-<translation id="1539064842193522527">V Chromu byl otevřen odkaz</translation>
 <translation id="1549000191223877751">Přejít do jiného okna</translation>
 <translation id="1553358976309200471">Aktualizovat Chrome</translation>
 <translation id="1569387923882100876">Připojené zařízení</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">Synchronizaci můžete kdykoliv zapnout v nastavení</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> záložka}few{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}many{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}other{<ph name="BOOKMARKS_COUNT_MANY" /> záložek}}</translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
-<translation id="311456632243022227">V Chromu byly otevřeny odkazy</translation>
 <translation id="3115898365077584848">Zobrazit informace</translation>
 <translation id="3123473560110926937">Na některých webech blokováno</translation>
 <translation id="3137521801621304719">Ukončit anonymní režim</translation>
@@ -857,7 +854,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7177466738963138057">Svoji volbu můžete později změnit v nabídce Nastavení</translation>
 <translation id="7180611975245234373">Obnovit</translation>
 <translation id="7189372733857464326">Počkejte prosím, než služby Google Play dokončí aktualizaci</translation>
-<translation id="7189598951263744875">Sdílet...</translation>
 <translation id="7191430249889272776">Karta je otevřena na pozadí.</translation>
 <translation id="723171743924126238">Vyberte fotky</translation>
 <translation id="7233236755231902816">Chcete-li si web prohlížet ve svém jazyce, stáhněte si nejnovější verzi Chromu</translation>
@@ -894,7 +890,6 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="7445411102860286510">Povolit webům automaticky přehrávat ztlumená videa (doporučeno)</translation>
 <translation id="7453467225369441013">Odhlásí vás z většiny webů. Z účtu Google odhlášeni nebudete.</translation>
 <translation id="7454641608352164238">Nedostatek místa</translation>
-<translation id="7455923816558154057">Zobrazíte klepnutím</translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="7475192538862203634">Pokud se vám tato stránka zobrazuje často, vyzkoušejte tyto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD karta nebyla nalezena. Některé vaše soubory mohou chybět.</translation>

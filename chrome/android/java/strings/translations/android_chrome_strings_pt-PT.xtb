@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1445680696957526815">Os componentes do Chrome são incompatíveis entre si. O Chrome pode estar a ser atualizado, tente novamente dentro de alguns minutos. Se o problema continuar, experimente desinstalar e reinstalar o Chrome.</translation>
 <translation id="1446450296470737166">Perm. controlo total dispo. MIDI</translation>
-<translation id="1449080968331948513">A Poupança de dados é agora o Modo Lite</translation>
 <translation id="145097072038377568">Desativada nas Definições do Android</translation>
 <translation id="1477626028522505441">A transferência de <ph name="FILE_NAME" /> falhou devido a problemas do servidor.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (e mais 1)}other{ (e mais #)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Eliminar palavra-passe</translation>
 <translation id="1516229014686355813">A funcionalidade Tocar para pesquisar envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Pode desativá-la nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Ativo hoje</translation>
-<translation id="1539064842193522527">Link aberto no Chrome</translation>
 <translation id="1549000191223877751">Mover para outra janela</translation>
 <translation id="1553358976309200471">Atualizar o Chrome</translation>
 <translation id="1569387923882100876">Dispositivo ligado</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">Pode ativar a sincronização em qualquer altura nas definições.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> marcador}other{<ph name="BOOKMARKS_COUNT_MANY" /> marcadores}}</translation>
 <translation id="3089395242580810162">Abrir no separador anónimo</translation>
-<translation id="311456632243022227">Vários links abertos no Chrome</translation>
 <translation id="3115898365077584848">Mostrar informações</translation>
 <translation id="3123473560110926937">Bloqueado em alguns sites.</translation>
 <translation id="3137521801621304719">Sair do modo de navegação anónima</translation>
@@ -857,7 +854,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7177466738963138057">Pode alterar esta opção mais tarde nas Definições</translation>
 <translation id="7180611975245234373">Atualizar</translation>
 <translation id="7189372733857464326">A aguardar pela conclusão da atualização dos Serviços do Google Play…</translation>
-<translation id="7189598951263744875">Partilhar...</translation>
 <translation id="7191430249889272776">Separador aberto em segundo plano.</translation>
 <translation id="723171743924126238">Selecionar imagens</translation>
 <translation id="7233236755231902816">Para ver a Web no seu idioma, obtenha a versão mais recente do Chrome.</translation>
@@ -894,7 +890,6 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="7445411102860286510">Permitir que os sites reproduzam automaticamente vídeos com o som desativado (recomendado)</translation>
 <translation id="7453467225369441013">A sua sessão é terminada na maioria dos sites. A sessão na sua Conta Google não é terminada.</translation>
 <translation id="7454641608352164238">Espaço insuficiente</translation>
-<translation id="7455923816558154057">Tocar para ver</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7475192538862203634">Se vê isto com frequência, experimente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Cartão SD não encontrado. Alguns dos seus ficheiros poderão estar em falta.</translation>

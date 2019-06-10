@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Προεπιλεγμένο λευκό avatar</translation>
 <translation id="1581962803218266616">Εμφάνιση στο Finder</translation>
 <translation id="1584990664401018068">Το δίκτυο Wi-Fi που χρησιμοποιείτε (<ph name="NETWORK_ID" />) ενδέχεται να απαιτεί έλεγχο ταυτότητας.</translation>
-<translation id="1585238069289523942">Εγκαταστήστε εφαρμογές στο Chromebook</translation>
 <translation id="1585717515139318619">Κάποιο άλλο πρόγραμμα στον υπολογιστή σας πρόσθεσε ένα θέμα, το οποίο ενδέχεται να αλλάξει τον τρόπο λειτουργίας του Chrome.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">Παρουσιάστηκε σφάλμα κατά τη διαμόρφωση αρχείων Linux. Δοκιμάστε ξανά.</translation>
 <translation id="2315587498123194634">Αποστολή συνδέσμου σε <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Όχι, ευχαριστώ</translation>
-<translation id="2316739859433277603">Οι αναζητήσεις από την εφαρμογή εκκίνησης χρησιμοποιούν τη <ph name="BEGIN_LINK" />ρύθμιση μηχανής αναζήτησης<ph name="END_LINK" /> του προγράμματος περιήγησής σας.</translation>
 <translation id="2317842250900878657">Ολοκληρώθηκε<ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Μέγεθος χαρτιού</translation>
 <translation id="2318817390901984578">Για να χρησιμοποιήσετε εφαρμογές Android, φορτίστε και ενημερώστε τη συσκευή <ph name="DEVICE_TYPE" />.</translation>
@@ -5317,6 +5315,7 @@
 <translation id="9094033019050270033">Ενημέρωση κωδικού πρόσβασης</translation>
 <translation id="9094982973264386462">Κατάργηση</translation>
 <translation id="9095253524804455615">Κατάργηση</translation>
+<translation id="9095388113577226029">Περισσότερες γλώσσες…</translation>
 <translation id="9100610230175265781">Απαιτείται φράση πρόσβασης</translation>
 <translation id="9100765901046053179">Σύνθετες ρυθμίσεις</translation>
 <translation id="9101691533782776290">Εκκίνηση εφαρμογής</translation>

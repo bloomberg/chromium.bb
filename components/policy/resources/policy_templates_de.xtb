@@ -1115,6 +1115,15 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
           Ist die Richtlinie nicht konfiguriert, bleibt das Verhalten der spezifischeren Richtlinien unverändert.</translation>
 <translation id="2987155890997901449">ARC aktivieren</translation>
 <translation id="2987227569419001736">Verwendung der Web Bluetooth API steuern</translation>
+<translation id="2990018289267778247">Ist diese Richtlinie auf "true" gesetzt, werden die Optionen für Bedienungshilfen immer im Taskleistenmenü angezeigt.
+
+          Wenn die Richtlinie auf "false" gesetzt ist, werden die Optionen für Bedienungshilfen nie im Taskleistenmenü angezeigt.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Ist diese Richtlinie nicht konfiguriert, erscheinen keine Optionen für Bedienungshilfen im Taskleistenmenü, der Nutzer kann deren Anzeige jedoch auf der Seite "Einstellungen" aktivieren.
+
+          Werden Bedienungshilfen anderweitig aktiviert, z. B. über eine Tastenkombination, erscheinen die Optionen für Bedienungshilfen immer im Taskleistenmenü.</translation>
 <translation id="3011301228198307065">Hiermit wird die Standard-URL für die Startseite in <ph name="PRODUCT_NAME" /> konfiguriert und verhindert, dass diese von Nutzern geändert werden kann.
 
           Die Startseite wird über die Schaltfläche "Startseite" geöffnet. Die Seiten, die beim Hochfahren geöffnet werden, werden über die Richtlinien "RestoreOnStartup" kontrolliert.
@@ -1427,6 +1436,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
         Diese Richtlinie wird im Rahmen der Registrierung von Cloud-Richtlinien auf Computern verwendet und kann unter Windows über die Registrierung oder per GPO, auf einem Mac per plist und unter Linux über eine JSON-Richtliniendatei festgelegt werden.</translation>
 <translation id="3660562134618097814">SAML-IdP-Cookies bei der Anmeldung übertragen</translation>
 <translation id="3701121231485832347">Legt die Einstellungen für mit <ph name="MS_AD_NAME" /> verwaltete <ph name="PRODUCT_OS_NAME" />-Geräte fest.</translation>
+<translation id="3702518095257671450">Remote-Attestierung</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> – Das einzeilige Feld ist veraltet und wird in Zukunft entfernt. Bitte nutzen Sie das mehrzeilige Textfeld unten.</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="3711895659073496551">Suspend-Modus</translation>
@@ -1809,6 +1819,15 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="4285674129118156176">Nicht verknüpften Nutzern die Verwendung von ARC gestatten</translation>
+<translation id="4289903996435140853">Hiermit können Sie eine Liste mit URLs festlegen, deren Websites automatisch auf ein USB-Gerät mit der angegebenen Anbieter- und Produkt-ID zugreifen dürfen. Damit die Richtlinie gültig ist, muss jeder Eintrag in der Liste sowohl Geräte als auch URLs aufweisen. Jeder Geräteeintrag kann je ein Feld für eine Anbieter-ID und eine Produkt-ID enthalten. Fehlende IDs werden als Platzhalter betrachtet, wobei als Ausnahme zu berücksichtigen ist, dass eine Produkt-ID nicht ohne zugehörige Anbieter-ID angegeben werden kann. Andernfalls ist die Richtlinie ungültig und wird ignoriert.
+
+        Im USB-Berechtigungsmodell wird die URL der anfragenden Website ("anfragende URL") und die URL der Frame-Website der obersten Ebene ("einbettende URL") verwendet. Dabei wird der anfragenden URL die Berechtigung erteilt, auf das USB-Gerät zuzugreifen. Wird die anfragende Website in einen iFrame geladen, kann die anfragende von der einbettenden URL abweichen. Deshalb darf das Feld "urls" bis zu zwei durch ein Komma voneinander getrennte URL-Strings enthalten: die anfragende URL und die einbettende URL. Falls nur eine einzige URL angegeben ist, wird der Zugriff auf die entsprechenden USB-Geräte gewährt, wenn unabhängig vom Einbettungsstatus die URL der anfragenden Website mit dieser URL übereinstimmt. Die URLs im Feld "urls" müssen gültig sein, da ansonsten die Richtlinie ignoriert wird.
+
+        Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultWebUsbGuardSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
+
+        URL-Muster in dieser Richtlinie dürfen nicht im Widerspruch zu den über "WebUsbBlockedForUrls" konfigurierten URLs stehen. Im Falle einer Diskrepanz hat diese Richtlinie Vorrang vor "WebUsbBlockedForUrls" und "WebUsbAskForUrls".
+
+        Werte für diese Richtlinie und die Richtlinie "WebUsbAllowDevicesForUrls" werden zusammengeführt.</translation>
 <translation id="4298509794364745131">Gibt an, welche Apps auf dem <ph name="PRODUCT_OS_NAME" />-Sperrbildschirm als Notizen-App aktiviert werden können.
 
       Wenn die bevorzugte Notizen-App auf dem Sperrbildschirm aktiviert ist, enthält dieser ein UI-Element zum Öffnen der App.
@@ -1952,6 +1971,7 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 <translation id="4639407427807680016">Namen der Hosts für natives Messaging, die von der schwarzen Liste ausgenommen werden sollen</translation>
 <translation id="4650759511838826572">URL-Protokollschemas deaktivieren</translation>
 <translation id="465099050592230505">Unternehmens-Web-Store-URL (veraltet)</translation>
+<translation id="4661889655253181651">Unter "Inhaltseinstellungen" können Sie angeben, wie Inhalte bestimmter Typen (z. B. Cookies, Bilder oder JavaScript) verarbeitet werden.</translation>
 <translation id="4665897631924472251">Verwaltungseinstellungen für Erweiterungen</translation>
 <translation id="4668325077104657568">Standardeinstellung für Bilder</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -1996,6 +2016,11 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
       Diese Vorschläge werden per Fernzugriff von den Google-Servern abgerufen.
 
       Falls diese Einstellung auf "false" gesetzt ist, werden keine Vorschläge abgerufen oder angezeigt.</translation>
+<translation id="4759650396863318477">Hiermit kann der Zeitraum in Millisekunden festgelegt werden, in dem Nutzer benachrichtigt werden, dass <ph name="PRODUCT_NAME" /> oder <ph name="PRODUCT_OS_NAME" /> für ein Update neu gestartet werden muss.
+
+      Während dieses Zeitraums werden Nutzer wiederholt über die Notwendigkeit eines Updates informiert. Auf <ph name="PRODUCT_OS_NAME" />-Geräten erscheint entsprechend der Richtlinie "<ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />" eine Neustartbenachrichtigung in der Taskleiste. In <ph name="PRODUCT_NAME" />-Browsern ändert sich das App-Menü, sobald ein Drittel des Benachrichtigungszeitraums abgelaufen ist, um zu zeigen, dass ein Neustart nötig ist. Die Farbe dieser Benachrichtigung ändert sich, sobald zwei Drittel des Benachrichtigungszeitraums vergangen sind. Für die zusätzlichen Benachrichtigungen, die über die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />" aktiviert werden, gilt derselbe Zeitplan.
+
+      Wenn die Richtlinie nicht konfiguriert ist, kommt für <ph name="PRODUCT_OS_NAME" />-Geräte der standardmäßige Zeitraum von 3.456.00.000 Millisekunden (vier Tage) zum Einsatz. Für <ph name="PRODUCT_NAME" />-Geräte sind es 6.048.00.000 (eine Woche).</translation>
 <translation id="4788252609789586009">Aktiviert die AutoFill-Funktion von <ph name="PRODUCT_NAME" /> und ermöglicht es Nutzern, Kreditkarteninformationen in Webformularen automatisch mit zuvor gespeicherten Informationen ausfüllen zu lassen.
 
       Wenn diese Einstellung deaktiviert ist, schlägt AutoFill weder Kreditkarteninformationen vor oder füllt sie automatisch aus noch werden zusätzliche Kreditkarteninformationen gespeichert, die der Nutzer während des Surfens im Web möglicherweise sendet.
@@ -2191,6 +2216,15 @@ neues Fenster geöffnet wird.
 <translation id="5208240613060747912">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen es nicht gestattet ist, Benachrichtigungen anzuzeigen. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultNotificationsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="5213038356678567351">Websites, die unter keinen Umständen einen Browserwechsel auslösen sollten.</translation>
 <translation id="5219844027738217407">Bei Android-Apps betrifft diese Richtlinie nur das Mikrofon. Wenn diese Richtlinie auf "true" gesetzt ist, wird das Mikrofon ohne Ausnahme für alle Android-Apps stummgeschaltet.</translation>
+<translation id="5221394278852982313">Hiermit können Sie eine Liste mit URLs festlegen, deren Websites automatisch auf ein USB-Gerät mit der angegebenen Anbieter- und Produkt-ID zugreifen dürfen. Damit die Richtlinie gültig ist, muss jeder Eintrag in der Liste sowohl Geräte als auch URLs aufweisen. Jeder Geräteeintrag kann je ein Feld für eine Anbieter-ID und eine Produkt-ID enthalten. Fehlende IDs werden als Platzhalter betrachtet, wobei als Ausnahme zu berücksichtigen ist, dass eine Produkt-ID nicht ohne zugehörige Anbieter-ID angegeben werden kann. Andernfalls ist die Richtlinie ungültig und wird ignoriert.
+
+        Im USB-Berechtigungsmodell wird die URL der anfragenden Website ("anfragende URL") und die URL der Frame-Website der obersten Ebene ("einbettende URL") verwendet. Dabei wird der anfragenden URL die Berechtigung erteilt, auf das USB-Gerät zuzugreifen. Wird die anfragende Website in einen iFrame geladen, kann die anfragende von der einbettenden URL abweichen. Deshalb darf das Feld "urls" bis zu zwei durch ein Komma voneinander getrennte URL-Strings enthalten: die anfragende URL und die einbettende URL. Falls nur eine einzige URL angegeben ist, wird der Zugriff auf die entsprechenden USB-Geräte gewährt, wenn unabhängig vom Einbettungsstatus die URL der anfragenden Website mit dieser URL übereinstimmt. Die URLs im Feld "urls" müssen gültig sein, da ansonsten die Richtlinie ignoriert wird.
+
+        Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultWebUsbGuardSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
+
+        URL-Muster in dieser Richtlinie dürfen nicht im Widerspruch zu den über "WebUsbBlockedForUrls" konfigurierten URLs stehen. Im Falle einer Diskrepanz hat diese Richtlinie Vorrang vor "WebUsbBlockedForUrls" und "WebUsbAskForUrls".
+
+        Werte für diese Richtlinie und die Richtlinie "DeviceWebUsbAllowDevicesForUrls" werden zusammengeführt.</translation>
 <translation id="5228316810085661003">Diese Richtlinie gibt das Intervall bis zur automatischen Anmeldung in einem lokalen Gerätekonto an.
 
 Falls die Richtlinie |DeviceLocalAccountAutoLoginId| nicht festgelegt ist, hat diese Richtlinie keine Auswirkungen. Anderenfalls gilt:
@@ -2897,6 +2931,20 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 
       Ist diese Richtlinie auf "Nutzern nicht erlauben, Zertifikate zu verwalten" gesetzt, so können Nutzer keine Zertifikate verwalten, sondern sie nur aufrufen.</translation>
 <translation id="6573305661369899995">Eine externe Quelle für URL-Einschränkungen festlegen</translation>
+<translation id="6583851521569686409">Hiermit wird eine Liste von Druckern konfiguriert.
+
+      Mit dieser Richtlinie können Administratoren den Nutzern Druckerkonfigurationen zur Verfügung stellen.
+
+      "<ph name="PRINTER_DISPLAY_NAME" />" und "<ph name="PRINTER_DESCRIPTION" />" sind Freiform-Strings, die für eine einfachere Druckerauswahl angepasst werden können. Mit "<ph name="PRINTER_MANUFACTURER" />" und "<ph name="PRINTER_MODEL" />" können Endnutzer einen Drucker leichter erkennen. Sie geben den Hersteller und das Modell des Druckers an. Bei "<ph name="PRINTER_URI" />" sollte es sich um eine Adresse einschließlich <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> und <ph name="URI_QUEUE" /> handeln, auf die über einen Client-Computer zugegriffen werden kann. Die <ph name="PRINTER_UUID" /> ist optional. Ist sie angegeben, wird sie zum Entfernen von Duplikaten bei <ph name="ZEROCONF_DISCOVERY" />-Druckern verwendet.
+
+      Entweder sollte "<ph name="PRINTER_EFFECTIVE_MODEL" />" den Namen des Druckers enthalten oder "<ph name="PRINTER_AUTOCONF" />" auf "true" festgelegt sein. Drucker mit beiden oder keiner der Eigenschaften werden ignoriert.
+
+      Die Druckereinrichtung wird bei der ersten Verwendung des Druckers abgeschlossen.  PPDs werden erst heruntergeladen, wenn der Drucker genutzt wird.  Anschließend werden häufig verwendete PPDs im Cache gespeichert.
+
+      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer Drucker auf ihren individuellen Geräten konfigurieren können.  Sie ist als Ergänzung zu den Druckerkonfigurationen der einzelnen Nutzer gedacht.
+
+      Bei Geräten, die über Active Directory verwaltet werden, unterstützt diese Richtlinie die Erweiterung von "<ph name="MACHINE_NAME_VARIABLE" />" auf den Active Directory-Computernamen oder einen Teilstring davon. Wenn der Computername beispielsweise "<ph name="MACHINE_NAME_EXAMPLE" />" lautet, wird "<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />" durch die vier Zeichen nach der sechsten Stelle ersetzt, z. B. "<ph name="MACHINE_NAME_PART_EXAMPLE" />". Beachten Sie, dass die Position auf null basiert.
+      </translation>
 <translation id="6598235178374410284">Nutzer-Avatarbild</translation>
 <translation id="6603004149426829878">Beim Auflösen der Zeitzone immer verfügbare Standortsignale an den Server senden</translation>
 <translation id="6628120204569232711">Speicherstatus melden</translation>
@@ -4198,6 +4246,8 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="915194831143859291">Wenn diese Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, erlaubt <ph name="PRODUCT_OS_NAME" /> dem Nutzer, das Gerät herunterzufahren.
       Ist diese Richtlinie auf "true" gesetzt, löst <ph name="PRODUCT_OS_NAME" /> einen Neustart aus, wenn der Nutzer das Gerät herunterfährt. <ph name="PRODUCT_OS_NAME" /> ersetzt alle Schaltflächen zum Herunterfahren auf der Benutzeroberfläche durch Schaltflächen zum Neustarten. Wenn der Nutzer das Gerät über die Ein-/Aus-Taste herunterfährt, wird es nicht automatisch neu gestartet, auch wenn die Richtlinie aktiviert ist.</translation>
 <translation id="9152473318295429890">Kontextbezogene Vorschläge ähnlicher Webseiten aktivieren</translation>
+<translation id="9153446010242995516">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Versuchen Sie nach Möglichkeit, die Einstellungen auf Geräteebene (einschließlich der Anmeldedaten für das Netzwerk) per Rollback zu übertragen. Führen Sie das Rollback jedoch mit einem vollständigen Powerwash durch, selbst wenn das Wiederherstellen von Daten nicht möglich ist, weil rückwärtsinkompatible Änderungen vorliegen oder die Zielversion dies nicht unterstützt.
+Auf <ph name="PRODUCT_OS_NAME" />-Version 75 und höher unterstützt. Bei älteren Clients bedeutet dieser Wert, dass das Rollback deaktiviert ist.</translation>
 <translation id="9158929520101169054">Mehrfachanmeldung im Browser zulassen</translation>
 <translation id="9159126470527871268">Nutzer benachrichtigen, dass <ph name="PRODUCT_NAME" /> neu gestartet werden muss oder ein <ph name="PRODUCT_OS_NAME" />-Gerät neu gestartet werden muss, um ein ausstehendes Update durchzuführen.
 

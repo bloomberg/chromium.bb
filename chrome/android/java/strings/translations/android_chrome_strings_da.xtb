@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1006017844123154345">Åbn på nettet</translation>
+<translation id="1028699632127661925">Sender til <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Tilføjer <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Fra websites</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -43,6 +44,7 @@
 <translation id="1260236875608242557">Søg, og udforsk</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stop</translation>
+<translation id="1272444412400969138">Enhedsvælger, som der skal deles fane med.</translation>
 <translation id="1283039547216852943">Tryk for at udvide</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="1291207594882862231">Ryd historik, cookies, websitedata, cache...</translation>
@@ -59,6 +61,7 @@
 <translation id="138361230106469022">Hej <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1384959399684842514">Download er sat på pause</translation>
+<translation id="1386674309198842382">Aktiv for <ph name="LAST_UPDATED" /> dage siden</translation>
 <translation id="1389974829397082527">Der er ingen bogmærker her</translation>
 <translation id="1397811292916898096">Søg med <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Integreret i <ph name="WEBSITE_URL" /></translation>
@@ -71,7 +74,6 @@
 <translation id="1430915738399379752">Udskriv</translation>
 <translation id="1445680696957526815">Chromes komponenter er ikke kompatible med hinanden. Chrome er muligvis ved at opgradere. Prøv igen om et par minutter. Hvis problemet fortsætter, kan du prøve at afinstallere og geninstallere Chrome.</translation>
 <translation id="1446450296470737166">Tillad fuld kontrol over MIDI-enheder</translation>
-<translation id="1449080968331948513">Datasparefunktionen er nu i Lite-tilstand</translation>
 <translation id="145097072038377568">Deaktiveret i indstillingerne for Android</translation>
 <translation id="1477626028522505441">Download af <ph name="FILE_NAME" /> mislykkedes på grund af serverproblemer.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 anden)}one{ (+ # anden)}other{ (+ # andre)}}</translation>
@@ -81,7 +83,6 @@
 <translation id="1513858653616922153">Slet adgangskoden</translation>
 <translation id="1516229014686355813">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan deaktivere funktionen i <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Aktiv i dag</translation>
-<translation id="1539064842193522527">Der blev åbnet et link i Chrome</translation>
 <translation id="1549000191223877751">Flyt til et andet vindue</translation>
 <translation id="1553358976309200471">Opdater Chrome</translation>
 <translation id="1569387923882100876">Tilsluttet enhed</translation>
@@ -288,7 +289,6 @@
 <translation id="3058498974290601450">Du kan til enhver tid aktivere synkronisering i indstillingerne</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bogmærke}one{<ph name="BOOKMARKS_COUNT_MANY" />bogmærke}other{<ph name="BOOKMARKS_COUNT_MANY" />bogmærker}}</translation>
 <translation id="3089395242580810162">Åbn på inkognitofane</translation>
-<translation id="311456632243022227">Der blev åbnet flere links i Chrome</translation>
 <translation id="3115898365077584848">Vis info</translation>
 <translation id="3123473560110926937">Blokeret på visse websites</translation>
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
@@ -402,6 +402,7 @@
 <translation id="4008040567710660924">Tillad cookies for et bestemt website.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# t.}one{# t.}other{# t.}}</translation>
 <translation id="4042870126885713738">Vis forslag, hvis en webadresse ikke bliver fundet, eller hvis der ikke kan oprettes forbindelse</translation>
+<translation id="4044912625106523635">Den enhedsvælger, som der skal deles fane med, er åbnet i fuld højde.</translation>
 <translation id="4046123991198612571">Næste nummer</translation>
 <translation id="4048707525896921369">Få oplysninger om emner på websites uden at forlade siden. "Tryk for at søge" sender et ord og ordets kontekst til Google Søgning og giver dig definitioner, billeder, søgeresultater og andre oplysninger.
 
@@ -579,6 +580,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5271967389191913893">Enheden kan ikke åbne det indhold, der skal downloades.</translation>
 <translation id="528192093759286357">Træk fra toppen, og tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
 <translation id="5284584623296338184">Ændringer i dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres ikke længere til din Google-konto, men dine eksisterende data er stadig gemt på din Google-konto.</translation>
+<translation id="5292796745632149097">Send til</translation>
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5301954838959518834">OK, det er forstået</translation>
 <translation id="5304593522240415983">Dette felt må ikke være tomt</translation>
@@ -740,6 +742,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6406506848690869874">Synkronisering</translation>
 <translation id="641643625718530986">Udskriv…</translation>
 <translation id="6416782512398055893">Der er downloadet <ph name="MBS" /> MB</translation>
+<translation id="6418750371676080905">Den enhedsvælger, som der skal deles fane med, er lukket.</translation>
 <translation id="6427112570124116297">Oversæt på nettet</translation>
 <translation id="6433501201775827830">Vælg en søgemaskine</translation>
 <translation id="6437478888915024427">Sideoplysninger</translation>
@@ -779,6 +782,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="666268767214822976">Brug en forslagstjeneste til at få vist relaterede forespørgsler og populære websites, mens du skriver i adresselinjen</translation>
 <translation id="666731172850799929">Åbn i <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Erklæring om privatliv for Google Chrome</translation>
+<translation id="6672986458216094438">Den enhedsvælger, der skal deles fane med, er åbnet i halv højde.</translation>
 <translation id="6697492270171225480">Se forslag til lignende sider, når en side ikke kan findes</translation>
 <translation id="6697947395630195233">Chrome skal have adgang til din placering for at dele din placering med dette website.</translation>
 <translation id="6698801883190606802">Administrer synkroniserede data</translation>
@@ -850,7 +854,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7177466738963138057">Du kan ændre dette senere i Indstillinger</translation>
 <translation id="7180611975245234373">Opdater</translation>
 <translation id="7189372733857464326">Venter på, at Google Play-tjenester er opdateret</translation>
-<translation id="7189598951263744875">Del...</translation>
 <translation id="7191430249889272776">Fanen blev åbnet i baggrunden.</translation>
 <translation id="723171743924126238">Vælg billeder</translation>
 <translation id="7233236755231902816">Hent den nyeste version af Chrome for at bruge browseren på dit eget sprog</translation>
@@ -887,7 +890,6 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="7445411102860286510">Tillad, at websites automatisk afspiller videoer med lyden slået fra (anbefales)</translation>
 <translation id="7453467225369441013">Logger dig ud af de fleste websites. Du bliver ikke logget ud af din Google-konto.</translation>
 <translation id="7454641608352164238">Der er ikke nok plads</translation>
-<translation id="7455923816558154057">Tryk for at se</translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="7475192538862203634">Hvis du ser dette jævnligt, kan du prøve disse <ph name="BEGIN_LINK" />forslag<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD-kortet blev fundet. Nogle af dine filer mangler muligvis.</translation>
@@ -956,6 +958,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> er forældet.</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
 <translation id="7963646190083259054">Leverandør:</translation>
+<translation id="7971136598759319605">Aktiv for 1 dag siden</translation>
 <translation id="7975379999046275268">Se forhåndsvisning af siden <ph name="BEGIN_NEW" />Ny<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Forudindlæs sider, så du kan browse og søge hurtigere</translation>
 <translation id="79859296434321399">Installer ARCore for at se augmented reality-indhold</translation>

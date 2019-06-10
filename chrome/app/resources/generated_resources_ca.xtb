@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Avatar blanc predeterminat</translation>
 <translation id="1581962803218266616">Mostra a Finder</translation>
 <translation id="1584990664401018068">És possible que la xarxa Wi-Fi que esteu fent servir (<ph name="NETWORK_ID" />) sol·liciti que us autentiqueu.</translation>
-<translation id="1585238069289523942">Instal·la aplicacions a Chromebook</translation>
 <translation id="1585717515139318619">Un altre programa de l'ordinador ha afegit un tema que pot canviar el funcionament de Chrome.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">S'ha produït un error en configurar els fitxers de Linux. Torna-ho a provar.</translation>
 <translation id="2315587498123194634">Envia l'enllaç a <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">No, gràcies</translation>
-<translation id="2316739859433277603">Per fer cerques des del menú d'aplicacions es fa servir la <ph name="BEGIN_LINK" />configuració del motor de cerca<ph name="END_LINK" /> del navegador.</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% complet</translation>
 <translation id="2318143611928805047">Mida del paper</translation>
 <translation id="2318817390901984578">Per utilitzar les aplicacions d'Android, canvia i actualitza el dispositiu <ph name="DEVICE_TYPE" />.</translation>
@@ -5312,6 +5310,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9094033019050270033">Actualitza la contrasenya</translation>
 <translation id="9094982973264386462">Suprimeix</translation>
 <translation id="9095253524804455615">Suprimeix</translation>
+<translation id="9095388113577226029">Més idiomes...</translation>
 <translation id="9100610230175265781">S'ha d'introduir una frase de contrasenya </translation>
 <translation id="9100765901046053179">Configuració avançada</translation>
 <translation id="9101691533782776290">Inicia l'aplicació</translation>

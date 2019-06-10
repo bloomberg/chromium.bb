@@ -282,6 +282,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ಫೈಲ್</translation>
 <translation id="457386861538956877">ಇನ್ನಷ್ಟು...</translation>
 <translation id="4582497162516204941">Linux (ಬೀಟಾ) ನೊಂದಿಗೆ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
+<translation id="4594543368593301662"><ph name="SEARCH_TERM" /> ಗಾಗಿ ಫಲಿತಾಂಶಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="4631887759990505102">ಕಲೆಗಾರ</translation>
 <translation id="4656293982926141856">ಈ ಕಂಪ್ಯೂಟರ್</translation>
 <translation id="4669606053856530811"><ph name="SOURCE_NAME" /> ನ ಸದಸ್ಯರೊಂದಿಗೆ ಈ ಐಟಂಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳದ ಹೊರತು ಅವರು ಪ್ರವೇಶವನ್ನು ಕಳೆದುಕೊಳ್ಳುತ್ತಾರೆ.</translation>
@@ -381,12 +382,14 @@
 <translation id="5412637665001827670">ಬಲ್ಗೇರಿಯನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="5418923334382419584">ಮ್ಯಾನ್ಮಾರ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="5428105026674456456">ಸ್ಪ್ಯಾನಿಶ್</translation>
+<translation id="5438282218546237410"><ph name="SEARCH_TERM" /> ಗಾಗಿ ಯಾವುದೇ ಫಲಿತಾಂಶಗಳಿಲ್ಲ.</translation>
 <translation id="5464696796438641524">ಪೋಲಿಷ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="5465122519792752163">ನೇಪಾಳಿ ಕೀಬೋರ್ಡ್‌ (ಇನ್‌ಸ್ಕ್ರಿಪ್ಟ್)</translation>
 <translation id="5469868506864199649">ಇಟಾಲಿಯನ್</translation>
 <translation id="5494920125229734069">ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="5500122897333236901">ಐಸ್‌ಲ್ಯಾಂಡಿಕ್</translation>
 <translation id="5508696409934741614">ಚುಕ್ಕೆಗಳು</translation>
+<translation id="5522908512596376669">ಫೈಲ್ ಪಟ್ಟಿಯನ್ನು, ಪಟ್ಟಿ ವೀಕ್ಷಣೆಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ.</translation>
 <translation id="5524517123096967210">ಫೈಲ್ ಅನ್ನು ಓದಲಾಗಲಿಲ್ಲ.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> ಚಿತ್ರ</translation>
 <translation id="5533555070048896610">ಲಿಪ್ಯಂತರಣ (namaste → नमस्ते)</translation>
@@ -431,6 +434,7 @@
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
 <translation id="6054173164583630569">ಫ್ರೆಂಚ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="6074825444536523002">Google ಫಾರ್ಮ್</translation>
+<translation id="6096979789310008754">ಹುಡುಕಾಟ ಪಠ್ಯವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗಿದೆ, ಎಲ್ಲಾ ಫೈಲ್‌ಗಳು ಮತ್ತು ಫೋಲ್ಡರ್‌ಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="6111770213269631447">ಲಿಪ್ಯಂತರಣ (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">ಸ್ಪೇಸ್</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> ಗೆ ಸರಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -638,6 +642,7 @@
 <translation id="8561206103590473338">ಆನೆ</translation>
 <translation id="8569764466147087991">ತೆರೆಯಲು ಫೈಲ್‌ವೊಂದನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> ಐಟಂಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="8600173386174225982">ಫೈಲ್ ಪಟ್ಟಿಯನ್ನು, ಥಂಬ್‌ನೇಲ್ ವೀಕ್ಷಣೆಗೆ ಬದಲಿಸಲಾಗಿದೆ.</translation>
 <translation id="8669949407341943408">ಸರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8671210955687109937">ಕಾಮೆಂಟ್ ಮಾಡಬಹುದು</translation>
 <translation id="8686213429977032554">ಈ ಡ್ರೈವ್ ಫೈಲ್ ಅನ್ನು ಇನ್ನೂ ಹಂಚಿಕೊಳ್ಳಲಾಗಿಲ್ಲ</translation>

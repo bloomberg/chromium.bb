@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Ordner wählen</translation>
 <translation id="1265739287306757398">Weitere Informationen</translation>
 <translation id="1272079795634619415">Stopp</translation>
+<translation id="1283524564873030414">Letzte 24 Stunden</translation>
 <translation id="1323735185997015385">Löschen</translation>
 <translation id="132683371494960526">Tippen Sie hier doppelt, um den übergeordneten Ordner zu ändern.</translation>
 <translation id="1340643665687018190">Menü schließen</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Erweitert</translation>
 <translation id="1989112275319619282">Durchsuchen</translation>
 <translation id="2015722694326466240">Um die Passwörter zu sehen, müssen Sie zuerst einen Passcode auf Ihrem Gerät einrichten.</translation>
+<translation id="2073572773299281212">Vor <ph name="DAYS" /> Tagen aktiv</translation>
 <translation id="2074131957428911366">Sie können in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> auswählen, was Sie synchronisieren möchten.</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="209018056901015185">Desktop-Version</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Alle öffnen</translation>
 <translation id="2570206273416014374">Suchanfragen, die in die Adressleiste und das Suchfeld eingegeben wurden, sowie einige Cookies werden an Ihre Standardsuchmaschine gesendet.</translation>
 <translation id="2572712655377361602">Eine Geräterichtlinie hat den Zugriff auf Ihre Fotos blockiert</translation>
+<translation id="2578571896248130439">Webseite senden</translation>
 <translation id="2584132361465095047">Konto hinzufügen...</translation>
 <translation id="2625189173221582860">Passwort kopiert</translation>
 <translation id="2648803196158606475">Gelesene löschen</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Markieren…</translation>
 <translation id="3157684681743766797">Alle markieren…</translation>
 <translation id="3175081911749765310">Webdienste</translation>
+<translation id="3178650076442119961">Heute aktiv</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
 <translation id="3224641773458703735">Um Passwörter zu exportieren, müssen Sie zuerst einen Passcode auf Ihrem Gerät einrichten.</translation>
 <translation id="3240426699337459095">Link wurde kopiert.</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">Um einen QR-Code zu scannen, aktivieren Sie in den Einstellungen die Kamera</translation>
 <translation id="4281844954008187215">Nutzungsbedingungen</translation>
 <translation id="430793432425771671">Alles synchronisieren</translation>
+<translation id="430967081421617822">Gesamter Zeitraum</translation>
 <translation id="4338650699862464074">URLs der von Ihnen besuchten Seiten werden an Google gesendet.</translation>
 <translation id="4359125752503270327">Diese Seite wird in einer anderen Anwendung geöffnet.</translation>
 <translation id="4370827530403103842">Synchronisierung funktioniert nicht. Tippen zum Reparieren.</translation>
@@ -281,6 +286,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5127805178023152808">Synchronisierung ist deaktiviert</translation>
 <translation id="5132942445612118989">Passwörter, Verlauf und mehr auf allen Geräten synchronisieren</translation>
 <translation id="5140288047769711648">Chrome speichert dieses Passwort für Sie. Sie müssen es sich nicht merken.</translation>
+<translation id="5150492518600715772">An mein Gerät senden</translation>
 <translation id="5181140330217080051">Download wird ausgeführt...</translation>
 <translation id="5186185447130319458">Privat</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
@@ -295,6 +301,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5327248766486351172">Name</translation>
 <translation id="5388358297987318779">Bild öffnen</translation>
 <translation id="5409365236829784218">Es sind keine Apps inst., die diese Datei öffnen können.</translation>
+<translation id="5416022985862681400">Letzte 7 Tage</translation>
 <translation id="5433691172869980887">Nutzername kopiert</translation>
 <translation id="54401264925851789">Sicherheitsinformationen zur Seite</translation>
 <translation id="5443952882982198570">Kreditkarten</translation>
@@ -309,6 +316,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">Vor 1 Tag aktiv</translation>
 <translation id="5711039611392265845">Weitere Einstellungen in Verbindung mit Datenschutz, Sicherheit und der Erhebung von Daten finden Sie unter <ph name="BEGIN_LINK" />Synchronisierung und Google-Dienste<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Beim Anmelden in Ihrem Konto ist ein Fehler aufgetreten.</translation>
 <translation id="5737974891429562743">Die Anmeldeinformationen für das Konto sind veraltet. Aktualisieren Sie sie zur Synchronisierung.</translation>

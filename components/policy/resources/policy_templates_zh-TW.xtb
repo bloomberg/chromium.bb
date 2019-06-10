@@ -1100,6 +1100,15 @@
           如果不設定這項政策，內容更特定的政策將維持相同行為，不受這項政策影響。</translation>
 <translation id="2987155890997901449">啟用 ARC</translation>
 <translation id="2987227569419001736">控制 Web Bluetooth API 使用權限</translation>
+<translation id="2990018289267778247">如果將這項政策設定為 True，系統將一律在系統匣選單中顯示無障礙工具選項。
+
+          如果將這項政策設定為 False，系統匣選單中就永遠不會顯示無障礙工具選項。
+
+          設定這項政策後，使用者即無法變更或覆寫。
+
+          如果不設定這項政策，系統匣選單中不會顯示無障礙工具選項，但使用者可以在「設定」頁面中，將無障礙工具選項設為顯示。
+
+          如果透過其他方式 (例如按鍵組合) 啟用無障礙工具功能，系統將一律在系統匣選單中顯示無障礙工具選項。</translation>
 <translation id="3011301228198307065">設定 <ph name="PRODUCT_NAME" /> 的預設首頁網址，並禁止使用者變更這項設定。
 
           首頁是指點選 [首頁] 按鈕後開啟的網頁。啟動時開啟的網頁由 RestoreOnStartup 政策控管。
@@ -1411,6 +1420,7 @@
         如果將這項政策設定為 True，系統會強制你註冊雲端管理服務。如果註冊失敗，系統會封鎖 Chrome 啟動程序。如果不設定這項政策或設為 False，你可以選擇是否要註冊雲端管理服務。即使註冊失敗，系統也不會封鎖 Chrome 啟動程序。在桌面註冊機器範圍雲端政策時會使用這項政策，你可以透過 Windows 的登錄檔或 GPO、Mac 的 plist 以及 Linux 的 JSON 政策檔設定這項政策。</translation>
 <translation id="3660562134618097814">登入時移轉 SAML IdP Cookie</translation>
 <translation id="3701121231485832347">控管 <ph name="MS_AD_NAME" /> 管理的 <ph name="PRODUCT_OS_NAME" /> 裝置專屬設定。</translation>
+<translation id="3702518095257671450">遠端認證</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (單行欄位已淘汰，日後將遭到移除。請開始使用下方的多行文字方塊。)</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
 <translation id="3711895659073496551">暫停</translation>
@@ -1790,6 +1800,15 @@
 
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="4285674129118156176">允許無關聯的使用者使用 ARC</translation>
+<translation id="4289903996435140853">你可以設定一組網址清單，當中指定的網站會自動取得權限，可存取具有特定廠商和產品 ID 的 USB 裝置。清單中的每個項目都必須包含裝置和網址，這項政策才會生效。裝置中的每個項目可包含廠商 ID 和產品 ID 欄位。如省略任何 ID，系統將視作萬用字元處理，但以下情況例外：如果未指定廠商 ID，也不可指定產品 ID，否則這項政策將不會生效，並會遭到忽略。
+
+        USB 權限模型會使用要求網站的網址 (簡稱「要求網址」) 以及頂層頁框網站的網址 (簡稱「嵌入網址」)，將 USB 裝置的存取權授予要求網址。當要求網站在 iframe 中載入時，要求網址可能與嵌入網址不同。因此，「urls」欄位最多可包含兩個網址字串 (以半形逗號分隔)，以分別指定要求網址和嵌入網址。如果只指定一個網址，當要求網站的網址與這個網址相符時，不論其是否為嵌入網址，系統都會授予相應 USB 裝置的存取權限。「urls」中的網址必須是有效網址，否則系統將忽略這項政策。
+
+        如果不設定這項政策，所有網站都將使用「DefaultWebUsbGuardSetting」政策的全域預設值 (如有設定的話) 或使用者的個人設定值。
+
+        這項政策中的網址模式應與透過 WebUsbBlockedForUrls 所設定的網址模式保持一致。如果兩者不符，這項政策的優先順序高於 WebUsbBlockedForUrls 和 WebUsbAskForUrls。
+
+        系統會將這項政策的值和 WebUsbAllowDevicesForUrls 政策的值合併。</translation>
 <translation id="4298509794364745131">指定可在「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面中做為筆記應用程式使用的應用程式清單。
 
       如果你偏好的筆記應用程式可在螢幕鎖定畫面中啟用，螢幕鎖定畫面就會顯示使用者介面元素，供你啟動該應用程式。
@@ -1931,6 +1950,7 @@
 <translation id="4639407427807680016">要從黑名單中排除的內建訊息傳遞主機名稱</translation>
 <translation id="4650759511838826572">停用網址通訊協定機制</translation>
 <translation id="465099050592230505">企業線上應用程式商店網址 (已不適用)</translation>
+<translation id="4661889655253181651">內容設定可讓你指定特定內容類型 (例如 Cookie、圖片或 JavaScript) 的處理方式。</translation>
 <translation id="4665897631924472251">擴充功能管理設定</translation>
 <translation id="4668325077104657568">預設圖片設定</translation>
 <translation id="4670865688564083639">下限：</translation>
@@ -1975,6 +1995,11 @@
       這些建議是從遠端向 Google 伺服器擷取而來。
 
       如果設為 false，則不會擷取或顯示建議。</translation>
+<translation id="4759650396863318477">你可以設定時間範圍 (以毫秒為單位)，系統會在這段時間內通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />裝置，才能套用未安裝的更新。
+
+      在你設定的時間範圍內，使用者會持續收到更新通知。在 <ph name="PRODUCT_OS_NAME" />裝置上，系統會根據 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策，在系統匣中顯示重新啟動通知。在 <ph name="PRODUCT_NAME" /> 瀏覽器中，當通知時間過了三分之一後，應用程式選單會有所變更，表示瀏覽器需要重新啟動。這項通知會在時間過了三分之二後變更顏色，並於時間結束後再次變色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策啟用的其他通知也會遵循相同的時間表。
+
+      如果不設定，<ph name="PRODUCT_OS_NAME" />裝置的預設通知期間為 345600000 毫秒 (四天)，<ph name="PRODUCT_NAME" /> 的預設通知期間則為 604800000 毫秒 (一週)。</translation>
 <translation id="4788252609789586009">啟用 <ph name="PRODUCT_NAME" /> 的自動填入功能，並允許使用者使用先前儲存的信用卡資訊自動填寫網路表單。
 
       如果停用這項設定，自動填入功能就不會提出填寫建議或填入信用卡資訊，也無法儲存使用者在瀏覽網路時提交的其他信用卡資訊。
@@ -2167,6 +2192,15 @@
 <translation id="5208240613060747912">允許你設定網址模式清單，指定不可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="5213038356678567351">完全不該觸發瀏覽器切換的網站。</translation>
 <translation id="5219844027738217407">這項政策對 Android 應用程式的影響僅限於麥克風。將這項政策設為 true 時，所有 Android 應用程式皆無法使用麥克風 (設為靜音)，沒有任何例外。</translation>
+<translation id="5221394278852982313">你可以設定一組網址清單，當中指定的網站會自動取得權限，可存取具有特定廠商和產品 ID 的 USB 裝置。清單中的每個項目都必須包含裝置和網址，這項政策才會生效。裝置中的每個項目可包含廠商 ID 和產品 ID 欄位。如省略任何 ID，系統將視作萬用字元處理，但以下情況例外：如果未指定廠商 ID，也不可指定產品 ID。否則這項政策將不會生效，並會遭到忽略。
+
+        USB 權限模型會使用要求網站的網址 (簡稱「要求網址」) 以及頂層頁框網站的網址 (簡稱「嵌入網址」)，將 USB 裝置的存取權授予要求網址。當要求網站在 iframe 中載入時，要求網址可能與嵌入網址不同。因此，「urls」欄位最多可包含兩個網址字串 (以半形逗號分隔)，以分別指定要求網址和嵌入網址。如果只指定一個網址，當要求網站的網址與這個網址相符時，不論其是否為嵌入網址，系統都會授予相應 USB 裝置的存取權限。「urls」中的網址必須是有效網址，否則系統將忽略這項政策。
+
+        如果不設定這項政策，所有網站都將使用「DefaultWebUsbGuardSetting」政策的全域預設值 (如有設定的話) 或使用者的個人設定值。
+
+        這項政策中的網址模式應與透過 WebUsbBlockedForUrls 所設定的網址模式保持一致。如果兩者不符，這項政策的優先順序高於 WebUsbBlockedForUrls 和 WebUsbAskForUrls。
+
+        系統會將這項政策的值和 DeviceWebUsbAllowDevicesForUrls 政策的值合併。</translation>
 <translation id="5228316810085661003">裝置本機帳戶自動登入延遲。
 
       如未設定 |DeviceLocalAccountAutoLoginId| 政策，這項政策不會生效。否則：
@@ -2870,6 +2904,20 @@
 
       如果將這項政策設為「禁止使用者管理憑證」，使用者將無法管理憑證，只能查看憑證。</translation>
 <translation id="6573305661369899995">設定外部網址來源限制</translation>
+<translation id="6583851521569686409">設定印表機清單。
+
+      這項政策可讓管理員為使用者提供印表機設定。
+
+      「<ph name="PRINTER_DISPLAY_NAME" />」和「<ph name="PRINTER_DESCRIPTION" />」可填入形式不拘的自訂字串，方便使用者選取印表機。「<ph name="PRINTER_MANUFACTURER" />」和「<ph name="PRINTER_MODEL" />」可讓使用者輕鬆識別印表機，兩者分別代表印表機的製造商和型號。<ph name="PRINTER_URI" /> 必須是可透過用戶端電腦連線的位址，包括 <ph name="URI_SCHEME" />、<ph name="URI_PORT" /> 和 <ph name="URI_QUEUE" />。<ph name="PRINTER_UUID" /> 為選填欄位。如有提供這項資訊，系統會用來刪除重複的 <ph name="ZEROCONF_DISCOVERY" /> 印表機。
+
+      你可以選擇在 <ph name="PRINTER_EFFECTIVE_MODEL" /> 中納入印表機名稱，或將 <ph name="PRINTER_AUTOCONF" /> 設為 True。如果同時設定 (或同時不設定) 這兩個印表機屬性，系統將予以忽略。
+
+      首次使用印表機時，系統會完成印表機設定程序。PPD 則會在有人使用印表機時才下載。之後系統會快取常用的 PPD。
+
+      這項政策對使用者是否能在個別裝置上設定印表機沒有影響，而是補足個別使用者的印表機設定。
+
+      如果是 Active Directory 管理的裝置，這項政策支援將 <ph name="MACHINE_NAME_VARIABLE" /> 擴充為 Active Directory 電腦名稱或其子字串。舉例來說，如果電腦名稱為 <ph name="MACHINE_NAME_EXAMPLE" />，則系統會以第 6 個字元後的 4 個字元取代 <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />，也就是 <ph name="MACHINE_NAME_PART_EXAMPLE" />。請注意，字元序數從 0 開始計算。
+      </translation>
 <translation id="6598235178374410284">使用者顯示圖片</translation>
 <translation id="6603004149426829878">偵測時區時一律將任何可用的位置標記傳送至伺服器</translation>
 <translation id="6628120204569232711">回報儲存空間狀態</translation>
@@ -4149,6 +4197,8 @@
 <translation id="915194831143859291">如果將這項政策設為 False 或不予設定，<ph name="PRODUCT_OS_NAME" /> 會允許使用者關閉裝置。
       如果將這項政策設為 True，<ph name="PRODUCT_OS_NAME" /> 會在使用者關閉裝置時觸發重新啟動程序。此外，<ph name="PRODUCT_OS_NAME" /> 會將使用者介面中的所有關機按鈕改成重新啟動按鈕。如果使用者使用電源按鈕關閉裝置，即使您已啟用這項政策，裝置仍然不會自動重新啟動。</translation>
 <translation id="9152473318295429890">允許根據目前網頁內容建議相關的網頁</translation>
+<translation id="9153446010242995516">如果 OS 版本比目標版本還新，則復原並維持在目標版本。系統會在版本復原過程中儘可能嘗試沿用網路憑證等裝置層級設定，但即使因故無法保留這些資料 (例如目標版本不支援還原資料，或變更內容與舊版不相容)，系統仍會復原至目標版本，並執行完整的 Powerwash。
+          支援 <ph name="PRODUCT_OS_NAME" /> 75 以上版本。如果用戶端版本較舊，則這個值代表復原功能已停用。</translation>
 <translation id="9158929520101169054">允許在瀏覽器中使用多帳戶登入功能</translation>
 <translation id="9159126470527871268">通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />才能套用未安裝的更新。
 

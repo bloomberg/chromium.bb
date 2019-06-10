@@ -286,6 +286,7 @@
 <translation id="4572815280350369984">File <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Lainnya...</translation>
 <translation id="4582497162516204941">Instal dengan Linux (Beta)</translation>
+<translation id="4594543368593301662">Menampilkan hasil untuk <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artis</translation>
 <translation id="4656293982926141856">Komputer ini</translation>
 <translation id="4669606053856530811">Anggota '<ph name="SOURCE_NAME" />' akan kehilangan akses kecuali jika item berikut dibagikan dengan mereka.</translation>
@@ -383,12 +384,14 @@
 <translation id="5412637665001827670">Keyboard untuk bahasa Bulgaria</translation>
 <translation id="5418923334382419584">Keyboard Myanmar</translation>
 <translation id="5428105026674456456">Spanyol</translation>
+<translation id="5438282218546237410">Tidak ada hasil untuk <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Keyboard untuk bahasa Polandia</translation>
 <translation id="5465122519792752163">Keyboard Nepali (Dalam Skrip)</translation>
 <translation id="5469868506864199649">Italia</translation>
 <translation id="5494920125229734069">Pilih semua</translation>
 <translation id="5500122897333236901">Islandia</translation>
 <translation id="5508696409934741614">Titik</translation>
+<translation id="5522908512596376669">Daftar file telah berubah menjadi tampilan daftar.</translation>
 <translation id="5524517123096967210">File tidak dapat dibaca.</translation>
 <translation id="5533102081734025921">Gambar <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Transliterasi (namaste → नमस्ते)</translation>
@@ -435,6 +438,7 @@
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6054173164583630569">Keyboard untuk bahasa Prancis</translation>
 <translation id="6074825444536523002">Google Formulir</translation>
+<translation id="6096979789310008754">Teks penelusuran dihapus, menampilkan semua file dan folder.</translation>
 <translation id="6111770213269631447">Transliterasi (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Spasi</translation>
 <translation id="6133173853026656527">Memindahkan <ph name="FILE_NAME" />...</translation>
@@ -650,6 +654,7 @@
 <translation id="8561206103590473338">Gajah</translation>
 <translation id="8569764466147087991">Pilih file yang akan dibuka</translation>
 <translation id="8579285237314169903">Menyinkronkan <ph name="NUMBER_OF_FILES" /> item...</translation>
+<translation id="8600173386174225982">Daftar file telah diubah menjadi tampilan thumbnail.</translation>
 <translation id="8669949407341943408">Memindahkan...</translation>
 <translation id="8671210955687109937">Dapat mengomentari</translation>
 <translation id="8686213429977032554">File Drive ini belum dibagikan</translation>

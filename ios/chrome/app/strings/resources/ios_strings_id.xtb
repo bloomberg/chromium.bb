@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1265739287306757398">Pelajari Caranya</translation>
 <translation id="1272079795634619415">Berhenti</translation>
+<translation id="1283524564873030414">24 Jam Terakhir</translation>
 <translation id="1323735185997015385">Hapus</translation>
 <translation id="132683371494960526">Ketuk dua kali untuk mengubah folder induk.</translation>
 <translation id="1340643665687018190">Tutup Menu</translation>
@@ -79,6 +80,7 @@
 <translation id="1974060860693918893">Lanjutan</translation>
 <translation id="1989112275319619282">Jelajahi</translation>
 <translation id="2015722694326466240">Untuk melihat sandi, Anda harus menyetel kode sandi di perangkat terlebih dahulu.</translation>
+<translation id="2073572773299281212">Aktif <ph name="DAYS" /> Hari Lalu</translation>
 <translation id="2074131957428911366">Anda dapat memilih konten apa yang akan disinkronkan di <ph name="BEGIN_LINK" />setelan<ph name="END_LINK" /> kapan saja.</translation>
 <translation id="2079545284768500474">Urungkan</translation>
 <translation id="209018056901015185">Ubah situs desktop</translation>
@@ -113,6 +115,7 @@
 <translation id="2529021024822217800">Buka Semua</translation>
 <translation id="2570206273416014374">Mengirimkan beberapa cookie dan penelusuran dari kolom URL dan kotak penelusuran ke mesin telusur default Anda.</translation>
 <translation id="2572712655377361602">Kebijakan perangkat memblokir akses ke foto Anda</translation>
+<translation id="2578571896248130439">Kirim Halaman</translation>
 <translation id="2584132361465095047">Tambahkan Akun…</translation>
 <translation id="2625189173221582860">Sandi disalin</translation>
 <translation id="2648803196158606475">Hapus yang Sudah Dibaca</translation>
@@ -152,6 +155,7 @@
 <translation id="3112556859945124369">Tandai…</translation>
 <translation id="3157684681743766797">Tandai Semua...</translation>
 <translation id="3175081911749765310">Layanan Web</translation>
+<translation id="3178650076442119961">Aktif Hari Ini</translation>
 <translation id="3207960819495026254">Diberi bookmark</translation>
 <translation id="3224641773458703735">Untuk mengekspor sandi, Anda harus menyetel kode sandi di perangkat terlebih dahulu.</translation>
 <translation id="3240426699337459095">Tautan disalin</translation>
@@ -226,6 +230,7 @@
 <translation id="4272631900155121838">Untuk memindai kode QR, aktifkan kamera dari setelan</translation>
 <translation id="4281844954008187215">Persyaratan Layanan</translation>
 <translation id="430793432425771671">Sinkronkan Semua</translation>
+<translation id="430967081421617822">Sepanjang Waktu</translation>
 <translation id="4338650699862464074">Mengirimkan URL halaman yang Anda buka ke Google.</translation>
 <translation id="4359125752503270327">Halaman ini akan dibuka di aplikasi lain.</translation>
 <translation id="4370827530403103842">Sinkronisasi tidak berfungsi. Ketuk untuk memperbaiki.</translation>
@@ -281,6 +286,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5127805178023152808">Sinkronisasi nonaktif</translation>
 <translation id="5132942445612118989">Sinkronkan sandi, histori, dan lainnya di semua perangkat</translation>
 <translation id="5140288047769711648">Chrome akan mengingat sandi ini untuk Anda. Anda tidak perlu mengingatnya.</translation>
+<translation id="5150492518600715772">Kirim ke Perangkat Anda</translation>
 <translation id="5181140330217080051">Mendownload</translation>
 <translation id="5186185447130319458">Pribadi</translation>
 <translation id="5190835502935405962">Bilah Bookmark</translation>
@@ -295,6 +301,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5327248766486351172">Nama</translation>
 <translation id="5388358297987318779">Buka Gambar</translation>
 <translation id="5409365236829784218">Tidak ada aplikasi terpasang yang dapat membuka file ini.</translation>
+<translation id="5416022985862681400">7 Hari Terakhir</translation>
 <translation id="5433691172869980887">Nama pengguna disalin</translation>
 <translation id="54401264925851789">Informasi Keamanan Halaman</translation>
 <translation id="5443952882982198570">Kartu Kredit</translation>
@@ -309,6 +316,7 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versi <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5706552126692816153">Aktif 1 hari yang lalu</translation>
 <translation id="5711039611392265845">Untuk setelan lainnya yang berkaitan dengan privasi, keamanan, dan pengumpulan data, lihat <ph name="BEGIN_LINK" />Sinkronisasi dan Layanan Google<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Maaf, terjadi masalah saat masuk ke akun Anda.</translation>
 <translation id="5737974891429562743">Detail proses masuk akun sudah tidak berlaku lagi. Perbarui untuk memulai sinkronisasi.</translation>

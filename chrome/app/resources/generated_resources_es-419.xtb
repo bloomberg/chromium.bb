@@ -381,7 +381,6 @@
 <translation id="1576594961618857597">Avatar blanco predeterminado</translation>
 <translation id="1581962803218266616">Mostrar en Buscador</translation>
 <translation id="1584990664401018068">La red Wi-Fi que estás usando (<ph name="NETWORK_ID" />) podría exigir autenticación.</translation>
-<translation id="1585238069289523942">Instala apps en tu Chromebook</translation>
 <translation id="1585717515139318619">Otro programa en tu computadora agregó un tema que puede cambiar el funcionamiento de Chrome.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -5288,6 +5287,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="9094033019050270033">Actualizar contraseña</translation>
 <translation id="9094982973264386462">Quitar</translation>
 <translation id="9095253524804455615">Quitar</translation>
+<translation id="9095388113577226029">Más idiomas…</translation>
 <translation id="9100610230175265781">Se necesita una frase de contraseña.</translation>
 <translation id="9100765901046053179">Configuración avanzada</translation>
 <translation id="9101691533782776290">Iniciar aplicación</translation>

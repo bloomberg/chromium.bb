@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">デバイスを連携させると活用の幅が広がります</translation>
 <translation id="112308213915226829">シェルフを自動的に隠す</translation>
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
+<translation id="1175572348579024023">スクロール</translation>
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="1195412055398077112">オーバースキャン</translation>
 <translation id="119944043368869598">すべて削除</translation>
@@ -250,6 +251,7 @@
 <translation id="4778095205580009397">Google アシスタントは、デモセッションではご利用いただけません。</translation>
 <translation id="479989351350248267">検索</translation>
 <translation id="4804818685124855865">切断</translation>
+<translation id="4831034276697007977">自動クリックをオフにしてもよろしいですか？</translation>
 <translation id="4849058404725798627">キーボードのフォーカスがある項目をハイライト表示する</translation>
 <translation id="485592688953820832">なし（一時停止）</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
@@ -414,6 +416,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION" /> に変更されました</translation>
 <translation id="7562368315689366235">絵文字パレット</translation>
 <translation id="7564874036684306347">ウィンドウを別のデスクトップに移動すると、予期しない動作が起こることがあります。以降の通知、ウィンドウ、ダイアログは、複数のデスクトップに分かれて表示される可能性があります。</translation>
+<translation id="7568294522609223312">自動クリックをオフにする</translation>
 <translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>

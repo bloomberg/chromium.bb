@@ -386,7 +386,6 @@
 <translation id="1576594961618857597">Numatytasis baltas pseudoportretas</translation>
 <translation id="1581962803218266616">Rodyti ieškojimo priemonėje</translation>
 <translation id="1584990664401018068">Naudojant šį „Wi-Fi“ tinklą (<ph name="NETWORK_ID" />) gali būti prašoma autentifikuoti.</translation>
-<translation id="1585238069289523942">Įdiekite programas „Chromebook“ įrenginyje</translation>
 <translation id="1585717515139318619">Kita kompiuterio programa pridėjo temą, kuri gali pakeisti, kaip veikia „Chrome“.
 
 <ph name="EXTENSION_NAME" /></translation>
@@ -875,7 +874,6 @@
 <translation id="2315414688463285945">Konfigūruojant „Linux“ failus įvyko klaida. Bandykite dar kartą.</translation>
 <translation id="2315587498123194634">Siųsti nuorodą į „<ph name="DEVICE_NAME" />“</translation>
 <translation id="2316129865977710310">Ne, ačiū</translation>
-<translation id="2316739859433277603">Vykdant paieškas programų paleidimo priemonėje naudojamas naršyklės <ph name="BEGIN_LINK" />paieškos variklio nustatymas<ph name="END_LINK" />.</translation>
 <translation id="2317842250900878657">Atlikta: <ph name="PROGRESS_PERCENT" /> %</translation>
 <translation id="2318143611928805047">Popieriaus lapo dydis</translation>
 <translation id="2318817390901984578">Jei norite naudoti „Android“ programas, įkraukite ir atnaujinkite savo „<ph name="DEVICE_TYPE" />“.</translation>
@@ -5319,6 +5317,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="9094033019050270033">Atnaujinti slaptažodį</translation>
 <translation id="9094982973264386462">Pašalinti</translation>
 <translation id="9095253524804455615">Pašalinti</translation>
+<translation id="9095388113577226029">Daugiau kalbų...</translation>
 <translation id="9100610230175265781">Būtina slaptafrazė</translation>
 <translation id="9100765901046053179">Išplėstiniai nustatymai</translation>
 <translation id="9101691533782776290">Paleisti programą</translation>

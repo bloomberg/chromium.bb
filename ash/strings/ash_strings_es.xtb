@@ -12,6 +12,7 @@
 <translation id="1104621072296271835">Tus dispositivos funcionan aún mejor juntos</translation>
 <translation id="112308213915226829">Ocultar estantería automáticamente</translation>
 <translation id="1153356358378277386">Dispositivos vinculados</translation>
+<translation id="1175572348579024023">Desplazarse</translation>
 <translation id="1178581264944972037">Pausar</translation>
 <translation id="1195412055398077112">reajustar</translation>
 <translation id="119944043368869598">Eliminar todo</translation>
@@ -251,6 +252,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4778095205580009397">El Asistente de Google no está disponible en las sesiones de demostración.</translation>
 <translation id="479989351350248267">buscar</translation>
 <translation id="4804818685124855865">Desvincular</translation>
+<translation id="4831034276697007977">¿Seguro que quieres desactivar los clics automáticos?</translation>
 <translation id="4849058404725798627">Resaltar el objeto con el foco del teclado</translation>
 <translation id="485592688953820832">Ninguna acción (pausa)</translation>
 <translation id="4872237917498892622">Alt+tecla de búsqueda o Mayús</translation>
@@ -414,6 +416,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> no admite una resolución de <ph name="SPECIFIED_RESOLUTION" />. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta de emojis</translation>
 <translation id="7564874036684306347">Si mueves ventanas a otro escritorio, es posible que se produzca un comportamiento inesperado. Puede que las notificaciones, las ventanas y los cuadros de diálogo que aparezcan después de realizar esta acción se dividan entre los escritorios.</translation>
+<translation id="7568294522609223312">Desactivar clics automáticos</translation>
 <translation id="7569509451529460200">Braille y ChromeVox están habilitados</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propietario)</translation>

@@ -71,7 +71,6 @@
 <translation id="1430915738399379752">הדפסה</translation>
 <translation id="1445680696957526815">‏הרכיבים של Chrome אינם תואמים זה לזה. ייתכן ש-Chrome מבצע שדרוג, נסה שוב בעוד כמה דקות. אם הבעיה נמשכת, נסה להסיר את Chrome ולהתקין אותו מחדש.</translation>
 <translation id="1446450296470737166">‏התר שליטה מלאה על מכשירי MIDI</translation>
-<translation id="1449080968331948513">‏Data Saver נקרא עכשיו 'מצב טעינה מהירה'</translation>
 <translation id="145097072038377568">‏כבוי בהגדרות Android</translation>
 <translation id="1477626028522505441">הורדת <ph name="FILE_NAME" /> נכשלה עקב בעיות בשרת.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (ועוד 1)}two{ (ועוד #)}many{ (ועוד #)}other{ (ועוד #)}}</translation>
@@ -81,7 +80,6 @@
 <translation id="1513858653616922153">מחק סיסמה</translation>
 <translation id="1516229014686355813">‏התכונה 'הקשה כדי לחפש' שולחת אל חיפוש Google את המילה הנבחרת, יחד עם הדף הנוכחי בתור הקשר. ניתן לכבות תכונה זאת ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">שימוש אחרון: היום</translation>
-<translation id="1539064842193522527">‏הקישור נפתח ב-Chrome</translation>
 <translation id="1549000191223877751">העבר לחלון האחר</translation>
 <translation id="1553358976309200471">‏כדאי לעדכן את Chrome</translation>
 <translation id="1569387923882100876">מכשיר מחובר</translation>
@@ -288,7 +286,6 @@
 <translation id="3058498974290601450">אפשר להפעיל את הסנכרון בכל זמן דרך ההגדרות</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{סימניה אחת (<ph name="BOOKMARKS_COUNT_ONE" />)}two{<ph name="BOOKMARKS_COUNT_MANY" /> סימניות}many{<ph name="BOOKMARKS_COUNT_MANY" /> סימניות}other{<ph name="BOOKMARKS_COUNT_MANY" /> סימניות}}</translation>
 <translation id="3089395242580810162">פתיחה בכרטיסיית גלישה בסתר</translation>
-<translation id="311456632243022227">‏קישורים מרובים נפתחו ב-Chrome</translation>
 <translation id="3115898365077584848">הצג פרטים</translation>
 <translation id="3123473560110926937">חסומות בחלק מהאתרים</translation>
 <translation id="3137521801621304719">צא ממצב גלישה בסתר</translation>
@@ -850,7 +847,6 @@
 <translation id="7177466738963138057">אפשר לשנות את ההגדרה הזו מאוחר יותר ב'הגדרות'</translation>
 <translation id="7180611975245234373">רענון</translation>
 <translation id="7189372733857464326">‏המערכת ממתינה שיסתיים העדכון של שירותי Google Play</translation>
-<translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
 <translation id="723171743924126238">בחר תמונות</translation>
 <translation id="7233236755231902816">‏כדי לראות באינטרנט תוכן בשפה שלך, יש להוריד את הגרסה האחרונה של Chrome</translation>
@@ -887,7 +883,6 @@
 <translation id="7445411102860286510">אתרים יוכלו להפעיל באופן אוטומטי סרטונים מושתקים (מומלץ)</translation>
 <translation id="7453467225369441013">‏הפעולה תוציא אותך מרוב האתרים אבל לא מחשבון Google שלך.</translation>
 <translation id="7454641608352164238">אין מספיק מקום</translation>
-<translation id="7455923816558154057">הקש כדי להציג</translation>
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7475192538862203634">אם נתקלת בזה לעתים קרובות, כדאי לנסות את <ph name="BEGIN_LINK" />ההצעות<ph name="END_LINK" /> האלה.</translation>
 <translation id="7475688122056506577">‏לא נמצא כרטיס SD. ייתכן שחלק מהקבצים שלך חסרים.</translation>

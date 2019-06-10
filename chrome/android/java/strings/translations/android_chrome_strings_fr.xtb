@@ -74,7 +74,6 @@
 <translation id="1430915738399379752">Imprimer</translation>
 <translation id="1445680696957526815">Les composants de Chrome ne sont pas compatibles entre eux. Une mise à jour de Chrome est peut-être en cours. Veuillez réessayer dans quelques minutes. Si le problème persiste, veuillez désinstaller Chrome, puis le réinstaller.</translation>
 <translation id="1446450296470737166">Autoriser le contrôle complet des appareils MIDI</translation>
-<translation id="1449080968331948513">L'économiseur de données est passé en mode simplifié</translation>
 <translation id="145097072038377568">Désactivée dans les paramètres Android</translation>
 <translation id="1477626028522505441">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de problèmes liés au serveur.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 autre)}one{ (+ # autre)}other{ (+ # autres)}}</translation>
@@ -84,7 +83,6 @@
 <translation id="1513858653616922153">Supprimer le mot de passe</translation>
 <translation id="1516229014686355813">La fonctionnalité "Appuyer pour rechercher" transmet le mot sélectionné et la page actuelle en tant que contexte à la recherche Google. Vous pouvez la désactiver dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="1521774566618522728">Actif aujourd'hui</translation>
-<translation id="1539064842193522527">Lien ouvert dans Chrome</translation>
 <translation id="1549000191223877751">Déplacer vers autre fenêtre</translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
 <translation id="1569387923882100876">Appareil connecté</translation>
@@ -291,7 +289,6 @@
 <translation id="3058498974290601450">Vous pouvez activer la synchronisation à tout moment dans les paramètres</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> favori}one{<ph name="BOOKMARKS_COUNT_MANY" /> favori}other{<ph name="BOOKMARKS_COUNT_MANY" /> favoris}}</translation>
 <translation id="3089395242580810162">Ouvrir onglet navig. privée</translation>
-<translation id="311456632243022227">Liens ouverts dans Chrome</translation>
 <translation id="3115898365077584848">Afficher les informations</translation>
 <translation id="3123473560110926937">Bloqué sur certains sites</translation>
 <translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
@@ -857,7 +854,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7177466738963138057">Vous pourrez modifier le moteur de recherche plus tard dans les paramètres</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7189372733857464326">En attente de la fin de la mise à jour des services Google Play</translation>
-<translation id="7189598951263744875">Partager…</translation>
 <translation id="7191430249889272776">L'onglet a été ouvert en arrière-plan.</translation>
 <translation id="723171743924126238">Sélectionner des images</translation>
 <translation id="7233236755231902816">Pour afficher le Web dans votre langue, téléchargez la dernière version de Chrome</translation>
@@ -894,7 +890,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7445411102860286510">Autoriser les sites à lire automatiquement des vidéos dont le son est coupé (recommandé)</translation>
 <translation id="7453467225369441013">Vous déconnecte de la plupart des sites. Vous ne serez cependant pas déconnecté de votre compte Google.</translation>
 <translation id="7454641608352164238">Espace insuffisant</translation>
-<translation id="7455923816558154057">Appuyer pour afficher</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7475192538862203634">Si vous rencontrez souvent ce problème, essayez les <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" /> suivantes.</translation>
 <translation id="7475688122056506577">Carte SD introuvable. Certains de vos fichiers risquent d'être manquants.</translation>

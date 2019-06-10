@@ -286,6 +286,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 文件</translation>
 <translation id="457386861538956877">更多...</translation>
 <translation id="4582497162516204941">通过 Linux（测试版）安装</translation>
+<translation id="4594543368593301662">目前显示的是与“<ph name="SEARCH_TERM" />”相符的搜索结果。</translation>
 <translation id="4631887759990505102">艺术家</translation>
 <translation id="4656293982926141856">此计算机</translation>
 <translation id="4669606053856530811">“<ph name="SOURCE_NAME" />”的成员将不再能够访问这些内容（除非与他们共享了这些内容）。</translation>
@@ -378,12 +379,14 @@
 <translation id="5412637665001827670">保加利亚语键盘</translation>
 <translation id="5418923334382419584">缅甸语键盘</translation>
 <translation id="5428105026674456456">西班牙语</translation>
+<translation id="5438282218546237410">没有与“<ph name="SEARCH_TERM" />”相符的结果。</translation>
 <translation id="5464696796438641524">波兰语键盘</translation>
 <translation id="5465122519792752163">尼泊尔语键盘(InScript)</translation>
 <translation id="5469868506864199649">意大利语</translation>
 <translation id="5494920125229734069">全选</translation>
 <translation id="5500122897333236901">冰岛语</translation>
 <translation id="5508696409934741614">圆点</translation>
+<translation id="5522908512596376669">文件列表已切换到列表视图。</translation>
 <translation id="5524517123096967210">无法读取该文件。</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> 图片</translation>
 <translation id="5533555070048896610">音译(namaste → नमस्ते)</translation>
@@ -430,6 +433,7 @@
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6054173164583630569">法语键盘</translation>
 <translation id="6074825444536523002">Google 表单</translation>
+<translation id="6096979789310008754">已清除搜索文本，目前显示的是所有文件和文件夹。</translation>
 <translation id="6111770213269631447">音译(namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">空格</translation>
 <translation id="6133173853026656527">正在移动<ph name="FILE_NAME" />…</translation>
@@ -645,6 +649,7 @@
 <translation id="8561206103590473338">大象</translation>
 <translation id="8569764466147087991">选择要打开的文件</translation>
 <translation id="8579285237314169903">正在同步 <ph name="NUMBER_OF_FILES" /> 个文件…</translation>
+<translation id="8600173386174225982">文件列表已切换到缩略图视图。</translation>
 <translation id="8669949407341943408">正在移动…</translation>
 <translation id="8671210955687109937">可以评论</translation>
 <translation id="8686213429977032554">此云端硬盘文件尚未共享</translation>
