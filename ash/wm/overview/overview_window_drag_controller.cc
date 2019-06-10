@@ -259,8 +259,10 @@ void OverviewWindowDragController::ResetGesture() {
     Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
     item_->DestroyPhantomsForDragging();
     item_->overview_grid()->RemoveDropTarget();
-    overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-        IndicatorState::kNone, gfx::Point());
+    if (should_allow_split_view_) {
+      overview_session_->SetSplitViewDragIndicatorsIndicatorState(
+          IndicatorState::kNone, gfx::Point());
+    }
   }
   overview_session_->PositionWindows(/*animate=*/true);
   // This function gets called after a long press release, which bypasses
