@@ -73,7 +73,6 @@ class CONTENT_EXPORT WebContentsViewAura
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            DragDropVirtualFilesOriginateFromRenderer);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropUrlData);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropOnOopif);
 
   class WindowObserver;
 
@@ -194,19 +193,6 @@ class CONTENT_EXPORT WebContentsViewAura
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
-  void DragEnteredCallback(const ui::DropTargetEvent& event,
-                           std::unique_ptr<DropData> drop_data,
-                           base::WeakPtr<RenderWidgetHostViewBase> target,
-                           base::Optional<gfx::PointF> transformed_pt);
-  void DragUpdatedCallback(const ui::DropTargetEvent& event,
-                           std::unique_ptr<DropData> drop_data,
-                           base::WeakPtr<RenderWidgetHostViewBase> target,
-                           base::Optional<gfx::PointF> transformed_pt);
-  void PerformDropCallback(const ui::DropTargetEvent& event,
-                           std::unique_ptr<DropData> drop_data,
-                           base::WeakPtr<RenderWidgetHostViewBase> target,
-                           base::Optional<gfx::PointF> transformed_pt);
-
   // Completes a drop operation by communicating the drop data to the renderer
   // process.
   void CompleteDrop(RenderWidgetHostImpl* target_rwh,
@@ -284,9 +270,11 @@ class CONTENT_EXPORT WebContentsViewAura
 
   bool init_rwhv_with_null_parent_for_testing_;
 
-  // Used to ensure the drag and drop callbacks bound to this
+#if defined(OS_WIN)
+  // Used to ensure that the virtual files retrieval callback bound to this
   // object is canceled when this object is destroyed.
   base::WeakPtrFactory<WebContentsViewAura> weak_ptr_factory_{this};
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);
 };
