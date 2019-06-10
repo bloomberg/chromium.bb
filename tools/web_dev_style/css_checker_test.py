@@ -88,13 +88,23 @@ class CssCheckerTest(SuperMoxTestBase):
   visibility: hidden;
   opacity: 1; /* TODO(dbeam): Fix this. */
 }
-</if>""", """
+</if>
+
+@media (prefers-color-scheme: dark) {
+  a[href] {
+    z-index: 3;
+    color: blue;
+  }
+}""", """
 - Alphabetize properties and list vendor specific (i.e. -webkit) above standard.
     display: block;
     color: red;
 
     z-index: 5;
-    color: black;""")
+    color: black;
+
+    z-index: 3;
+    color: blue;""")
 
   def testCssStringWithAt(self):
     self.VerifyContentIsValid("""
@@ -196,11 +206,6 @@ blah /* hey! */
 
   def testCssCloseBraceOnNewLine(self):
     self.VerifyContentsProducesOutput("""
-@media { /* TODO(dbeam) Fix this case. */
-  .rule {
-    display: block;
-  }}
-
 @-webkit-keyframe blah {
   from { height: rotate(-10turn); }
   100% { height: 500px; }
@@ -583,7 +588,7 @@ body.alternate-logo #logo {
     flex-direction:column;
 """, filename='test.html')
 
-  def testInlineSTyleInHtmlWithTagsInComments(self):
+  def testInlineStyleInHtmlWithTagsInComments(self):
     self.VerifyContentsProducesOutput("""<!doctype html>
 <html>
   <style>
@@ -597,6 +602,108 @@ body.alternate-logo #logo {
 - Colons (:) should have a space after them.
     flex-direction:column;
 """, filename='test.html')
+
+  def testRemoveAtBlocks(self):
+    self.mox.ReplayAll()
+    self.input_api.AffectedFiles(include_deletes=False, file_filter=None)
+
+    checker = css_checker.CSSChecker(self.input_api, self.output_api)
+
+    self.assertEqual(checker.RemoveAtBlocks("""
+@media (prefers-color-scheme: dark) {
+  .magic {
+    color: #000;
+  }
+}"""), """
+  .magic {
+    color: #000;
+  }""")
+
+    self.assertEqual(checker.RemoveAtBlocks("""
+@media (prefers-color-scheme: dark) {
+  .magic {
+    --mixin-definition: {
+      color: red;
+    };
+  }
+}"""), """
+  .magic {
+    --mixin-definition: {
+      color: red;
+    };
+  }""")
+
+    self.assertEqual(checker.RemoveAtBlocks("""
+@keyframes jiggle {
+  from { left: 0; }
+  50% { left: 100%; }
+  to { left: 10%; }
+}"""), """
+  from { left: 0; }
+  50% { left: 100%; }
+  to { left: 10%; }""")
+
+    self.assertEqual(checker.RemoveAtBlocks("""
+@media print {
+  .rule1 {
+    color: black;
+  }
+  .rule2 {
+    margin: 1in;
+  }
+}"""), """
+  .rule1 {
+    color: black;
+  }
+  .rule2 {
+    margin: 1in;
+  }""")
+
+    self.assertEqual(checker.RemoveAtBlocks("""
+@media (prefers-color-scheme: dark) {
+  .rule1 {
+    color: gray;
+  }
+  .rule2 {
+    margin: .5in;
+  }
+  @keyframe dark-fade {
+    0% { background: black; }
+    100% { background: darkgray; }
+  }
+}"""), """
+  .rule1 {
+    color: gray;
+  }
+  .rule2 {
+    margin: .5in;
+  }
+    0% { background: black; }
+    100% { background: darkgray; }""")
+
+    self.assertEqual(checker.RemoveAtBlocks("""
+@-webkit-keyframe anim {
+  0% { /* Ignore key frames */
+    width: 0px;
+  }
+  10% {
+    width: 10px;
+  }
+  50% { background-image: url(blah.svg); }
+  100% {
+    width: 100px;
+  }
+}"""), """
+  0% { /* Ignore key frames */
+    width: 0px;
+  }
+  10% {
+    width: 10px;
+  }
+  50% { background-image: url(blah.svg); }
+  100% {
+    width: 100px;
+  }""")
 
 
 if __name__ == '__main__':
