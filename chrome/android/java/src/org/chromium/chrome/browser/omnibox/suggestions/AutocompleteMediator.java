@@ -95,7 +95,7 @@ class AutocompleteMediator
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
     private final Handler mHandler;
     private final BasicSuggestionProcessor mBasicSuggestionProcessor;
-    private EditUrlSuggestionProcessor mEditUrlProcessor;
+    private @Nullable EditUrlSuggestionProcessor mEditUrlProcessor;
     private AnswerSuggestionProcessor mAnswerSuggestionProcessor;
     private final EntitySuggestionProcessor mEntitySuggestionProcessor;
 
@@ -432,7 +432,7 @@ class AutocompleteMediator
     void setAutocompleteProfile(Profile profile) {
         mAutocomplete.setProfile(profile);
         mBasicSuggestionProcessor.setProfile(profile);
-        mEditUrlProcessor.setProfile(profile);
+        if (mEditUrlProcessor != null) mEditUrlProcessor.setProfile(profile);
     }
 
     /**
