@@ -4174,6 +4174,7 @@
         resolver: "inline-start",
         physical_group: "margin",
       },
+      typedom_types: ["Length", "Percentage"],
       keywords: ["auto"]
     },
     {
@@ -4183,6 +4184,7 @@
         resolver: "inline-end",
         physical_group: "margin",
       },
+      typedom_types: ["Length", "Percentage"],
       keywords: ["auto"]
     },
     {
@@ -4192,6 +4194,7 @@
         resolver: "block-start",
         physical_group: "margin",
       },
+      typedom_types: ["Length", "Percentage"],
       keywords: ["auto"]
     },
     {
@@ -4201,6 +4204,7 @@
         resolver: "block-end",
         physical_group: "margin",
       },
+      typedom_types: ["Length", "Percentage"],
       keywords: ["auto"]
     },
     {
@@ -4209,7 +4213,8 @@
       direction_aware_options: {
         resolver: "inline-start",
         physical_group: "padding",
-      }
+      },
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "padding-inline-end",
@@ -4217,7 +4222,8 @@
       direction_aware_options: {
         resolver: "inline-end",
         physical_group: "padding",
-      }
+      },
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "padding-block-start",
@@ -4225,7 +4231,8 @@
       direction_aware_options: {
         resolver: "block-start",
         physical_group: "padding",
-      }
+      },
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "padding-block-end",
@@ -4233,7 +4240,8 @@
       direction_aware_options: {
         resolver: "block-end",
         physical_group: "padding",
-      }
+      },
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "border-inline-start-width",
@@ -4338,7 +4346,8 @@
       direction_aware_options: {
         resolver: "inline-start",
         physical_group: "inset",
-      }
+      },
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "inset-inline-end",
@@ -4347,7 +4356,8 @@
       direction_aware_options: {
         resolver: "inline-end",
         physical_group: "inset",
-      }
+      },
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "inset-block-start",
@@ -4356,7 +4366,8 @@
       direction_aware_options: {
         resolver: "block-start",
         physical_group: "inset",
-      }
+      },
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "inset-block-end",
@@ -4365,7 +4376,8 @@
       direction_aware_options: {
         resolver: "block-end",
         physical_group: "inset",
-      }
+      },
+      typedom_types: ["Length", "Percentage"]
     },
 
     // Non-standard direction aware properties
