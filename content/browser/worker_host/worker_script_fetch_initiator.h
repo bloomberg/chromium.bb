@@ -14,6 +14,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -59,6 +60,7 @@ class WorkerScriptFetchInitiator {
       int process_id,
       const GURL& script_url,
       const url::Origin& request_initiator,
+      network::mojom::FetchCredentialsMode credentials_mode,
       ResourceType resource_type,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       AppCacheNavigationHandleCore* appcache_handle_core,

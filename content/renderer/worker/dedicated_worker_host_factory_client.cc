@@ -42,13 +42,14 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHostDeprecated(
 void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
     const blink::WebURL& script_url,
     const blink::WebSecurityOrigin& script_origin,
+    network::mojom::FetchCredentialsMode credentials_mode,
     mojo::ScopedMessagePipeHandle blob_url_token) {
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
   blink::mojom::DedicatedWorkerHostFactoryClientPtr client_ptr;
   binding_.Bind(mojo::MakeRequest(&client_ptr));
 
   factory_->CreateWorkerHostAndStartScriptLoad(
-      script_url, script_origin,
+      script_url, script_origin, credentials_mode,
       blink::mojom::BlobURLTokenPtr(blink::mojom::BlobURLTokenPtrInfo(
           std::move(blob_url_token), blink::mojom::BlobURLToken::Version_)),
       std::move(client_ptr));

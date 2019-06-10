@@ -210,12 +210,21 @@ void SharedWorkerServiceImpl::CreateWorker(
     weak_host->SetAppCacheHandle(std::move(appcache_handle));
   }
 
+  // Fetch classic shared worker script with "same-origin" credentials mode.
+  // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
+  //
+  // TODO(nhiroki): The document's renderer should provide credentials mode
+  // specified by WorkerOptions for module script.
+  // (https://crbug.com/824646, https://crbug.com/907749)
+  const auto credentials_mode =
+      network::mojom::FetchCredentialsMode::kSameOrigin;
+
   WorkerScriptFetchInitiator::Start(
       process_id, weak_host->instance()->url(),
-      weak_host->instance()->constructor_origin(), ResourceType::kSharedWorker,
-      service_worker_context_, appcache_handle_core,
-      std::move(blob_url_loader_factory), url_loader_factory_override_,
-      storage_partition_,
+      weak_host->instance()->constructor_origin(), credentials_mode,
+      ResourceType::kSharedWorker, service_worker_context_,
+      appcache_handle_core, std::move(blob_url_loader_factory),
+      url_loader_factory_override_, storage_partition_,
       base::BindOnce(&SharedWorkerServiceImpl::DidCreateScriptLoader,
                      weak_factory_.GetWeakPtr(), std::move(instance), weak_host,
                      std::move(client), process_id, frame_id, message_port));

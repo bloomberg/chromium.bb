@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "services/network/public/mojom/fetch_api.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
@@ -82,6 +83,7 @@ interface DedicatedWorkerHostFactory {
   CreateWorkerHostAndStartScriptLoad(
       url.mojom.Url script_url,
       url.mojom.Origin origin,
+      network.mojom.FetchCredentialsMode credentials_mode,
       blink.mojom.BlobURLToken? blob_url_token,
       DedicatedWorkerHostFactoryClient client);
 };

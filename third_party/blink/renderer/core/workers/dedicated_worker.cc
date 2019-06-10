@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -211,6 +212,18 @@ void DedicatedWorker::Start() {
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*GetExecutionContext()))
     scope->EnsureFetcher();
   if (blink::features::IsPlzDedicatedWorkerEnabled()) {
+    // For classic script, always use "same-origin" credentials mode.
+    // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
+    // For module script, respect the credentials mode specified by
+    // WorkerOptions.
+    // https://html.spec.whatwg.org/C/#workeroptions
+    auto credentials_mode = network::mojom::FetchCredentialsMode::kSameOrigin;
+    if (options_->type() == "module") {
+      bool result = Request::ParseCredentialsMode(options_->credentials(),
+                                                  &credentials_mode);
+      DCHECK(result);
+    }
+
     mojom::blink::BlobURLTokenPtr blob_url_token;
     if (script_request_url_.ProtocolIs("blob") &&
         BlobUtils::MojoBlobURLsEnabled()) {
@@ -221,7 +234,7 @@ void DedicatedWorker::Start() {
     factory_client_->CreateWorkerHost(
         script_request_url_,
         WebSecurityOrigin(GetExecutionContext()->GetSecurityOrigin()),
-        blob_url_token.PassInterface().PassHandle());
+        credentials_mode, blob_url_token.PassInterface().PassHandle());
     // Continue in OnScriptLoadStarted() or OnScriptLoadStartFailed().
     return;
   }

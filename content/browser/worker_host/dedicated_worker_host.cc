@@ -67,6 +67,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   void StartScriptLoad(
       const GURL& script_url,
       const url::Origin& request_initiator_origin,
+      network::mojom::FetchCredentialsMode credentials_mode,
       blink::mojom::BlobURLTokenPtr blob_url_token,
       blink::mojom::DedicatedWorkerHostFactoryClientPtr client) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -99,7 +100,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         storage_partition_impl->GetAppCacheService(), process_id_);
 
     WorkerScriptFetchInitiator::Start(
-        process_id_, script_url, request_initiator_origin,
+        process_id_, script_url, request_initiator_origin, credentials_mode,
         ResourceType::kWorker,
         storage_partition_impl->GetServiceWorkerContext(),
         appcache_handle_->core(), std::move(blob_url_loader_factory), nullptr,
@@ -324,6 +325,7 @@ class DedicatedWorkerHostFactoryImpl
   void CreateWorkerHostAndStartScriptLoad(
       const GURL& script_url,
       const url::Origin& request_initiator_origin,
+      network::mojom::FetchCredentialsMode credentials_mode,
       blink::mojom::BlobURLTokenPtr blob_url_token,
       blink::mojom::DedicatedWorkerHostFactoryClientPtr client) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -347,7 +349,8 @@ class DedicatedWorkerHostFactoryImpl
             mojo::MakeRequest(&interface_provider)));
     client->OnWorkerHostCreated(std::move(interface_provider));
     host_raw->StartScriptLoad(script_url, request_initiator_origin,
-                              std::move(blob_url_token), std::move(client));
+                              credentials_mode, std::move(blob_url_token),
+                              std::move(client));
   }
 
  private:

@@ -36,6 +36,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/base/load_flags.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -50,6 +51,7 @@ void WorkerScriptFetchInitiator::Start(
     int process_id,
     const GURL& script_url,
     const url::Origin& request_initiator,
+    network::mojom::FetchCredentialsMode credentials_mode,
     ResourceType resource_type,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     AppCacheNavigationHandleCore* appcache_handle_core,
@@ -97,6 +99,20 @@ void WorkerScriptFetchInitiator::Start(
     resource_request->site_for_cookies = script_url;
     resource_request->request_initiator = request_initiator;
     resource_request->resource_type = static_cast<int>(resource_type);
+
+    // When the credentials mode is "omit", clear |allow_credentials| and set
+    // load flags to disable sending credentials according to the comments in
+    // CorsURLLoaderFactory::IsSane().
+    // TODO(https://crbug.com/799935): Unify |LOAD_DO_NOT_*| into
+    // |allow_credentials|.
+    resource_request->fetch_credentials_mode = credentials_mode;
+    if (credentials_mode == network::mojom::FetchCredentialsMode::kOmit) {
+      resource_request->allow_credentials = false;
+      const auto load_flags_pattern = net::LOAD_DO_NOT_SAVE_COOKIES |
+                                      net::LOAD_DO_NOT_SEND_COOKIES |
+                                      net::LOAD_DO_NOT_SEND_AUTH_DATA;
+      resource_request->load_flags |= load_flags_pattern;
+    }
 
     switch (resource_type) {
       case ResourceType::kWorker:
