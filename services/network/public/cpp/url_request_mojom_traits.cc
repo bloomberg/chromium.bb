@@ -210,6 +210,8 @@ bool StructTraits<
   out->initiated_in_secure_context = data.initiated_in_secure_context();
   out->upgrade_if_insecure = data.upgrade_if_insecure();
   out->is_revalidating = data.is_revalidating();
+  out->should_also_use_factory_bound_origin_for_cors =
+      data.should_also_use_factory_bound_origin_for_cors();
   return true;
 }
 

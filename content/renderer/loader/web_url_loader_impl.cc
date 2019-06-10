@@ -685,6 +685,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->top_frame_origin = request.TopFrameOrigin();
   resource_request->upgrade_if_insecure = request.UpgradeIfInsecure();
   resource_request->is_revalidating = request.IsRevalidating();
+  resource_request->should_also_use_factory_bound_origin_for_cors =
+      request.ShouldAlsoUseFactoryBoundOriginForCors();
   if (!request.RequestorOrigin().IsNull()) {
     if (request.RequestorOrigin().ToString() == "null") {
       // "file:" origin is treated like an opaque unique origin when

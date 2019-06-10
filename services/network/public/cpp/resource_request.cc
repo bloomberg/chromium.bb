@@ -60,6 +60,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          initiated_in_secure_context == request.initiated_in_secure_context &&
          upgrade_if_insecure == request.upgrade_if_insecure &&
          is_revalidating == request.is_revalidating &&
+         should_also_use_factory_bound_origin_for_cors ==
+             request.should_also_use_factory_bound_origin_for_cors &&
          throttling_profile_id == request.throttling_profile_id &&
          custom_proxy_pre_cache_headers.ToString() ==
              request.custom_proxy_pre_cache_headers.ToString() &&
