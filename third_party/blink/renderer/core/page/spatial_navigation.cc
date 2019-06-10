@@ -289,7 +289,9 @@ bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
   // CanScrollInDirection(). Regular arrow-key scrolling (without
   // --enable-spatial-navigation) already uses smooth scrolling by default.
   ScrollableArea* scroller = ScrollableAreaFor(container);
-  DCHECK(scroller);
+  if (!scroller)
+    return false;
+
   scroller->ScrollBy(ScrollOffset(dx, dy), kUserScroll);
   return true;
 }
