@@ -1,9 +1,10 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 var TEST_DIR =
-      '/extensions/api_test/service_worker/filtered_events_after_restart/';
+    '/extensions/api_test/service_worker/worker_based_background/' +
+    'filtered_events_after_restart/';
 
 function getURL(port, filename) {
   return 'http://127.0.0.1:' + port + TEST_DIR + filename;
@@ -54,3 +55,5 @@ var registerFilteredEventListeners = function() {
 };
 
 registerFilteredEventListeners();
+
+chrome.test.sendMessage('ready');

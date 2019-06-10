@@ -261,6 +261,19 @@ class ServiceWorkerBasedBackgroundTest : public ServiceWorkerTest {
     return running_worker_id;
   }
 
+  bool ExtensionHasRenderProcessHost(const ExtensionId& extension_id) {
+    ProcessMap* process_map = ProcessMap::Get(browser()->profile());
+    content::RenderProcessHost::iterator it =
+        content::RenderProcessHost::AllHostsIterator();
+    while (!it.IsAtEnd()) {
+      if (process_map->Contains(extension_id, it.GetCurrentValue()->GetID())) {
+        return true;
+      }
+      it.Advance();
+    }
+    return false;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerBasedBackgroundTest);
 };
@@ -1629,66 +1642,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, MimeHandlerView) {
   ASSERT_TRUE(RunExtensionTest("service_worker/mime_handler_view"));
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest,
-                       PRE_FilteredEventsAfterRestart) {
-  LazyBackgroundObserver lazy_observer;
-  ResultCatcher catcher;
-  const Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII(
-          "service_worker/filtered_events_after_restart"),
-      kFlagNone);
-  ASSERT_TRUE(extension);
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-  // |extension|'s background page opens a tab to its resource.
-  content::WebContents* extension_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::WaitForLoadStop(extension_web_contents));
-  EXPECT_EQ(extension->GetResourceURL("page.html").spec(),
-            extension_web_contents->GetURL().spec());
-  {
-    // Let the service worker start and register a filtered listener to
-    // chrome.webNavigation.onCommitted event.
-    ExtensionTestMessageListener add_listener_done("listener-added", false);
-    add_listener_done.set_failure_message("FAILURE");
-    content::ExecuteScriptAsync(extension_web_contents,
-                                "window.runServiceWorkerAsync()");
-    EXPECT_TRUE(add_listener_done.WaitUntilSatisfied());
-
-    base::RunLoop run_loop;
-    content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
-    content::StopServiceWorkerForScope(
-        storage_partition->GetServiceWorkerContext(),
-        // The service worker is registered at the top level scope.
-        extension->url(), run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
-  // Close the tab to |extension|'s resource. This will also close the
-  // extension's event page.
-  browser()->tab_strip_model()->CloseWebContentsAt(
-      browser()->tab_strip_model()->active_index(), TabStripModel::CLOSE_NONE);
-  lazy_observer.Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest,
-                       FilteredEventsAfterRestart) {
-  // Create a tab to a.html, expect it to navigate to b.html. The service worker
-  // will see two webNavigation.onCommitted events.
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  GURL page_url = embedded_test_server()->GetURL(
-      "/extensions/api_test/service_worker/filtered_events_after_restart/"
-      "a.html");
-  ExtensionTestMessageListener worker_filtered_event_listener(
-      "PASS_FROM_WORKER", false);
-  worker_filtered_event_listener.set_failure_message("FAIL_FROM_WORKER");
-  content::WebContents* web_contents = AddTab(browser(), page_url);
-  EXPECT_TRUE(web_contents);
-  EXPECT_TRUE(worker_filtered_event_listener.WaitUntilSatisfied());
-}
-
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
                        ProcessManagerRegistrationOnShutdown) {
   // Note that StopServiceWorkerForScope call below expects the worker to be
@@ -1774,15 +1727,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 // tabs.onMoved before browser restarted in PRE_EventsAfterRestart.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, EventsAfterRestart) {
   // Verify there is no RenderProcessHost for the extension.
-  ProcessMap* process_map = ProcessMap::Get(browser()->profile());
-  ASSERT_TRUE(process_map);
-  content::RenderProcessHost::iterator it =
-      content::RenderProcessHost::AllHostsIterator();
-  while (!it.IsAtEnd()) {
-    EXPECT_FALSE(
-        process_map->Contains(kTestExtensionId, it.GetCurrentValue()->GetID()));
-    it.Advance();
-  }
+  EXPECT_FALSE(ExtensionHasRenderProcessHost(kTestExtensionId));
 
   ExtensionTestMessageListener moved_tab_listener("moved-tab", false);
   // Add a tab, then move it.
@@ -1798,6 +1743,51 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnCreated) {
   ASSERT_TRUE(RunExtensionTestWithFlags("tabs/lazy_background_on_created",
                                         kFlagRunAsServiceWorkerBasedExtension))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       PRE_FilteredEventsAfterRestart) {
+  ExtensionTestMessageListener listener_added("ready", false);
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("service_worker/worker_based_background/"
+                                 "filtered_events_after_restart"),
+      kFlagNone);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(kTestExtensionId, extension->id());
+  ProcessManager* pm = ProcessManager::Get(browser()->profile());
+  // TODO(crbug.com/969884): This will break once keep alive counts
+  // for service workers are tracked by the Process Manager.
+  EXPECT_LT(pm->GetLazyKeepaliveCount(extension), 1);
+  EXPECT_TRUE(pm->GetLazyKeepaliveActivities(extension).empty());
+  EXPECT_TRUE(listener_added.WaitUntilSatisfied());
+}
+
+// After browser restarts, this test step ensures that opening a tab fires
+// tabs.onCreated event listener to the extension without explicitly loading the
+// extension. This is because the extension registered a listener for
+// tabs.onMoved before browser restarted in PRE_EventsAfterRestart.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       FilteredEventsAfterRestart) {
+  // Verify there is no RenderProcessHost for the extension.
+  // TODO(crbug.com/971309): This is currently broken because the test
+  // infrastructure opens a tab, which dispatches an event to our
+  // extension, even though the filter doesn't include that URL. The
+  // referenced bug is about moving filtering into the EventRouter so they
+  // get filtered before being dispatched.
+  EXPECT_TRUE(ExtensionHasRenderProcessHost(kTestExtensionId));
+
+  // Create a tab to a.html, expect it to navigate to b.html. The service worker
+  // will see two webNavigation.onCommitted events.
+  GURL page_url = embedded_test_server()->GetURL(
+      "/extensions/api_test/service_worker/worker_based_background/"
+      "filtered_events_after_restart/"
+      "a.html");
+  ExtensionTestMessageListener worker_filtered_event_listener(
+      "PASS_FROM_WORKER", false);
+  worker_filtered_event_listener.set_failure_message("FAIL_FROM_WORKER");
+  content::WebContents* web_contents = AddTab(browser(), page_url);
+  EXPECT_TRUE(web_contents);
+  EXPECT_TRUE(worker_filtered_event_listener.WaitUntilSatisfied());
 }
 
 // Tests that console messages logged by extension service workers, both via
