@@ -479,8 +479,7 @@ class AutofillManager : public AutofillHandler,
                           const AutofillDataModel& data_model,
                           FormFieldData* field_data,
                           bool should_notify,
-                          const base::string16& cvc,
-                          uint32_t profile_form_bitmask);
+                          const base::string16& cvc);
 
   // Whether there should be an attemps to refill the form. Returns true if all
   // the following are satisfied:
