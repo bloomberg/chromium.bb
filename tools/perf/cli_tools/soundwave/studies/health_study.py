@@ -29,6 +29,8 @@ STARTUP_BY_BROWSER = {
 def IterSystemHealthBots():
   yield 'ChromiumPerf/android-go-perf'
   yield 'ChromiumPerf/android-go_webview-perf'
+  yield 'ChromiumPerf/android-pixel2-perf'
+  yield 'ChromiumPerf/android-pixel2_webview-perf'
 
 
 def GetBrowserFromBot(bot):
