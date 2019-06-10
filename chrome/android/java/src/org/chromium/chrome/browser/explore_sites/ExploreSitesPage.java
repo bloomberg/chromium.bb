@@ -182,9 +182,11 @@ public class ExploreSitesPage extends BasicNativePage {
             }
         });
 
-        // When we personalize, we don't want to scroll to the 4th category.
-        mInitialScrollPosition =
-                ExploreSitesBridge.getVariation() == ExploreSitesVariation.PERSONALIZED
+        // We don't want to scroll to the 4th category if personalized
+        // or integrated with Most Likely.
+        int variation = ExploreSitesBridge.getVariation();
+        mInitialScrollPosition = variation == ExploreSitesVariation.PERSONALIZED
+                        || ExploreSitesBridge.isIntegratedWithMostLikely(variation)
                 ? INITIAL_SCROLL_POSITION_PERSONALIZED
                 : INITIAL_SCROLL_POSITION;
 
