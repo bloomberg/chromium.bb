@@ -22,36 +22,37 @@ class ScriptWrappable;
 // TODO(peria): Remove properties just to keep V8 objects alive.
 // e.g. IDBCursor.Request.
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
-#define V8_PRIVATE_PROPERTY_FOR_EACH(X)               \
-  X(CustomElement, Document)                          \
-  X(CustomElement, IsInterfacePrototypeObject)        \
-  X(CustomElement, NamespaceURI)                      \
-  X(CustomElement, TagName)                           \
-  X(CustomElement, Type)                              \
-  X(CustomElementLifecycle, AttachedCallback)         \
-  X(CustomElementLifecycle, AttributeChangedCallback) \
-  X(CustomElementLifecycle, CreatedCallback)          \
-  X(CustomElementLifecycle, DetachedCallback)         \
-  X(DOMException, Error)                              \
-  X(Global, Event)                                    \
-  X(IDBCursor, Request)                               \
-  X(IntersectionObserver, Callback)                   \
-  X(MessageChannel, Port1)                            \
-  X(MessageChannel, Port2)                            \
-  X(MessageEvent, CachedData)                         \
-  X(MutationObserver, Callback)                       \
-  X(NamedConstructor, Initialized)                    \
-  X(PopStateEvent, State)                             \
-  X(SameObject, DetectedBarcodeCornerPoints)          \
-  X(SameObject, DetectedFaceLandmarks)                \
-  X(SameObject, NotificationActions)                  \
-  X(SameObject, NotificationData)                     \
-  X(SameObject, NotificationVibrate)                  \
-  X(SameObject, PerformanceLongTaskTimingAttribution) \
-  X(SameObject, PushManagerSupportedContentEncodings) \
-  X(SameObject, XRPresentationContextCanvas)          \
-  X(SameObject, XRWebGLLayerContext)                  \
-  SCRIPT_PROMISE_PROPERTIES(X, Promise)               \
+#define V8_PRIVATE_PROPERTY_FOR_EACH(X)                 \
+  X(CustomElement, Document)                            \
+  X(CustomElement, IsInterfacePrototypeObject)          \
+  X(CustomElement, NamespaceURI)                        \
+  X(CustomElement, TagName)                             \
+  X(CustomElement, Type)                                \
+  X(CustomElementLifecycle, AttachedCallback)           \
+  X(CustomElementLifecycle, AttributeChangedCallback)   \
+  X(CustomElementLifecycle, CreatedCallback)            \
+  X(CustomElementLifecycle, DetachedCallback)           \
+  X(DOMException, Error)                                \
+  X(Global, Event)                                      \
+  X(IDBCursor, Request)                                 \
+  X(IntersectionObserver, Callback)                     \
+  X(MessageChannel, Port1)                              \
+  X(MessageChannel, Port2)                              \
+  X(MessageEvent, CachedData)                           \
+  X(MutationObserver, Callback)                         \
+  X(NamedConstructor, Initialized)                      \
+  X(PopStateEvent, State)                               \
+  X(SameObject, DetectedBarcodeCornerPoints)            \
+  X(SameObject, DetectedFaceLandmarks)                  \
+  X(SameObject, NotificationActions)                    \
+  X(SameObject, NotificationData)                       \
+  X(SameObject, NotificationVibrate)                    \
+  X(SameObject, PerformanceLongTaskTimingAttribution)   \
+  X(SameObject, PerformanceObserverSupportedEntryTypes) \
+  X(SameObject, PushManagerSupportedContentEncodings)   \
+  X(SameObject, XRPresentationContextCanvas)            \
+  X(SameObject, XRWebGLLayerContext)                    \
+  SCRIPT_PROMISE_PROPERTIES(X, Promise)                 \
   SCRIPT_PROMISE_PROPERTIES(X, Resolver)
 
 // The getter's name for a private property.
