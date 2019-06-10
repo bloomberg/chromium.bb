@@ -25,9 +25,9 @@
             android:layout_width="@dimen/omnibox_suggestion_entity_icon_size"
             android:layout_height="@dimen/omnibox_suggestion_entity_icon_size"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="@dimen/omnibox_suggestion_icon_margin_start"
-            android:contentDescription="@null" />
+            android:layout_marginEnd="@dimen/omnibox_suggestion_36dp_icon_margin_end"
+            android:layout_marginStart="@dimen/omnibox_suggestion_36dp_icon_margin_start"
+            android:contentDescription="@null"/>
 
         <TextView
             android:id="@+id/omnibox_entity_subject_text"

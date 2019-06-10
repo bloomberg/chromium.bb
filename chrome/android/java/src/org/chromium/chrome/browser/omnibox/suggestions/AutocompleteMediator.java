@@ -159,7 +159,7 @@ class AutocompleteMediator
         mBasicSuggestionProcessor = new BasicSuggestionProcessor(mContext, this, textProvider);
         mAnswerSuggestionProcessor = new AnswerSuggestionProcessor(mContext, this, textProvider);
         mEditUrlProcessor = new EditUrlSuggestionProcessor(
-                delegate, (suggestion) -> onSelection(suggestion, 0));
+                mContext, this, delegate, (suggestion) -> onSelection(suggestion, 0));
         mEntitySuggestionProcessor = new EntitySuggestionProcessor(mContext, this);
     }
 
@@ -430,6 +430,7 @@ class AutocompleteMediator
     void setAutocompleteProfile(Profile profile) {
         mAutocomplete.setProfile(profile);
         mBasicSuggestionProcessor.setProfile(profile);
+        mEditUrlProcessor.setProfile(profile);
     }
 
     /**

@@ -27,8 +27,8 @@
             android:id="@+id/omnibox_answer_icon"
             android:layout_centerVertical="true"
             android:layout_height="36dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginStart="@dimen/omnibox_suggestion_icon_margin_start"
+            android:layout_marginEnd="@dimen/omnibox_suggestion_36dp_icon_margin_end"
+            android:layout_marginStart="@dimen/omnibox_suggestion_36dp_icon_margin_start"
             android:layout_width="36dp"
             android:scaleType="fitCenter" />
 
