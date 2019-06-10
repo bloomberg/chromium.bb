@@ -294,21 +294,51 @@ crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/video/vide
 # These fail when device_scale_factor is changed, but only for anti-aliasing:
 crbug.com/968791 virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Failure ]
 crbug.com/968791 virtual/scalefactor200/css3/filters/filterRegions.html [ Failure ]
-crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-blur.html [ Failure ]
-crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-combined-001.html [ Failure ]
-crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
 
 # These appear to be actually incorrect at device_scale_factor 2.0:
-crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure ]
 crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-image-lazy-attach.html [ Failure ]
 crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-image.html [ Failure ]
-crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
 crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
 
 # These seem flaky on scalefactor200:
-crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Pass Failure Timeout ]
-crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Pass Failure Timeout ]
 crbug.com/968791 virtual/scalefactor200/css3/filters/effect-contrast-hw.html [ Pass Failure Timeout ]
+
+# Copying these from elsewhere in TestExpectations (for non-scalefactor200 virtual suite)
+crbug.com/658305 virtual/scalefactor200/css3/filters/buffer-offset.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-after.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-colorspace.html [ Failure Pass ]
+crbug.com/658305 crbug.com/758133 virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-composite.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-composite-hw.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-external.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hidpi.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hidpi-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference.html [ Failure Pass ]
+crbug.com/658305 crbug.com/758133 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-ordering.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-ordering-hw.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-rename.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-chained.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-chained-hw.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-colormatrix.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-tile.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-tile-hw.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-zoom.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-zoom-hw.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/filter-effect-removed.html [ Failure Pass ]
+crbug.com/862716 [ Mac ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
+crbug.com/862716 [ Linux ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
+crbug.com/862716 [ Win ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
+crbug.com/869364 virtual/scalefactor200/css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
+crbug.com/873454 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure Pass ]
+crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-combined-001.html [ Failure ]
+crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-blur.html [ Failure ]
+crbug.com/626703 virtual/scalefactor200/external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
+crbug.com/591099 virtual/scalefactor200/external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
 
 # ==== Regressions introduced by BlinkGenPropertyTrees =====
 # Reflection / mask ordering issue
