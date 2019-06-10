@@ -45,7 +45,15 @@ namespace blink {
         DEFINE_WRAPPERTYPEINFO();
         USING_GARBAGE_COLLECTED_MIXIN(BBWindowHooks);
     public:
+        struct PumpConfigHooks {
+            base::RepeatingCallback<std::vector<std::string>(void)> listSchedulers;
+            base::RepeatingCallback<std::vector<std::string>(void)> listSchedulerTunables;
+            base::RepeatingCallback<int(int)> activateScheduler;
+            base::RepeatingCallback<int(unsigned,int)> setSchedulerTunable;
+        };
+
         static BBWindowHooks* Create(LocalFrame* frame) { return new BBWindowHooks(frame); }
+        BLINK_EXPORT static void InstallPumpConfigHooks(PumpConfigHooks hooks);
 
         bool isBlock(Node* node);
         String getPlainText(Node* node, const String& excluder = "", const String& mask = "");
@@ -60,6 +68,11 @@ namespace blink {
         bool isOverwriteModeEnabled(Document* document);
         void toggleOverwriteMode(Document* document);
 
+        String listPumpSchedulers();
+        String listPumpSchedulerTunables();
+        void activatePumpScheduler(long index);
+        void setPumpSchedulerTunable(long index, long value);
+
         void Trace(blink::Visitor*) override;
 
     private:
@@ -72,3 +85,4 @@ namespace blink {
 } // namespace blink
 
 #endif // BBWindowHooks_h
+
