@@ -1951,6 +1951,20 @@ class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
     value = self._driver.ExecuteScript('return arguments[0].value;', text)
     self.assertEquals('0123456789+-*/ Hi, there!', value)
 
+  def testSendKeysToElementAppend(self):
+      self._driver.Load(self.GetHttpUrlForFile(
+          '/chromedriver/empty.html'))
+      element = self._driver.ExecuteScript(
+          'document.body.innerHTML = '
+          '\'<input type="text" value="send_this_value">\';'
+          'var input = document.getElementsByTagName("input")[0];'
+          'input.focus();'
+          'input.setSelectionRange(0,0);'
+          'return input;')
+      element.SendKeys('hello')
+      value = self._driver.ExecuteScript('return arguments[0].value;', element)
+      self.assertEquals('send_this_valuehello', value)
+
   def testUnexpectedAlertOpenExceptionMessage(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript('window.alert("Hi");')

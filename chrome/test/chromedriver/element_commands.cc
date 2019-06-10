@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -31,6 +32,8 @@
 #include "third_party/webdriver/atoms.h"
 
 const int kFlickTouchEventsPerSecond = 30;
+const std::set<std::string> textControlTypes = {"text", "search", "tel",
+                                                "url",  "email",  "password"};
 
 namespace {
 
@@ -81,14 +84,27 @@ Status FocusToElement(
   return Status(kOk);
 }
 
-Status SendKeysToElement(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::ListValue* key_list) {
+Status SendKeysToElement(Session* session,
+                         WebView* web_view,
+                         const std::string& element_id,
+                         const bool is_text,
+                         const base::ListValue* key_list) {
   Status status = FocusToElement(session, web_view, element_id);
   if (status.IsError())
         return Status(kElementNotInteractable);
+  // Move cursor/caret to append the input keys if element's type is
+  // text-related
+  if (is_text) {
+    base::ListValue args;
+    args.Append(CreateElement(element_id));
+    std::unique_ptr<base::Value> result;
+    status = web_view->CallFunction(
+        session->GetCurrentFrameId(),
+        "elem => elem.setSelectionRange(elem.value.length, elem.value.length)",
+        args, &result);
+    if (status.IsError())
+      return status;
+  }
   return SendKeysOnWindow(web_view, key_list, true, &session->sticky_modifiers);
 }
 
@@ -360,15 +376,20 @@ Status ExecuteSendKeysToElement(Session* session,
   }
 
   bool is_input = false;
-  status = IsElementAttributeEqualToIgnoreCase(
-      session, web_view, element_id, "tagName", "input", &is_input);
+  status = IsElementAttributeEqualToIgnoreCase(session, web_view, element_id,
+                                               "tagName", "input", &is_input);
   if (status.IsError())
     return status;
-  bool is_file = false;
-  status = IsElementAttributeEqualToIgnoreCase(
-      session, web_view, element_id, "type", "file", &is_file);
+  std::unique_ptr<base::Value> get_element_type;
+  status = GetElementAttribute(session, web_view, element_id, "type",
+                               &get_element_type);
   if (status.IsError())
     return status;
+  std::string element_type;
+  if (get_element_type->GetAsString(&element_type))
+    element_type = base::ToLowerASCII(element_type);
+  bool is_file = element_type == "file";
+
   if (is_input && is_file) {
     if (session->strict_file_interactability) {
       status = FocusToElement(session, web_view,element_id);
@@ -420,7 +441,10 @@ Status ExecuteSendKeysToElement(Session* session,
     return web_view->SetFileInputFiles(session->GetCurrentFrameId(), *element,
                                        paths, multiple);
   } else {
-    return SendKeysToElement(session, web_view, element_id, key_list);
+    // If element_type is in textControlTypes, sendKeys should append
+    bool is_text = is_input && textControlTypes.find(element_type) !=
+                                   textControlTypes.end();
+    return SendKeysToElement(session, web_view, element_id, is_text, key_list);
   }
 }
 
