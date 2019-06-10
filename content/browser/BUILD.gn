@@ -992,6 +992,8 @@ jumbo_source_set("browser") {
     "gpu/gpu_process_host.h",
     "gpu/shader_cache_factory.cc",
     "gpu/shader_cache_factory.h",
+    "hid/hid_service.cc",
+    "hid/hid_service.h",
     "histogram_controller.cc",
     "histogram_controller.h",
     "histogram_subscriber.h",

@@ -51,6 +51,7 @@ mojom("mojom_platform") {
     "frame/lifecycle.mojom",
     "frame/navigation_initiator.mojom",
     "geolocation/geolocation_service.mojom",
+    "hid/hid.mojom",
     "hyphenation/hyphenation.mojom",
     "idle/idle_manager.mojom",
     "insecure_input/insecure_input_service.mojom",

@@ -212,6 +212,7 @@
 #include "content/browser/frame_host/render_frame_host_android.h"
 #include "content/public/browser/android/java_interfaces.h"
 #else
+#include "content/browser/hid/hid_service.h"
 #include "content/browser/serial/serial_service.h"
 #endif
 
@@ -4143,6 +4144,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     registry_->AddInterface(
         base::BindRepeating(&RenderFrameHostImpl::BindSerialServiceRequest,
                             base::Unretained(this)));
+    registry_->AddInterface(base::BindRepeating(
+        &RenderFrameHostImpl::BindHidServiceRequest, base::Unretained(this)));
   }
 #endif  // !defined(OS_ANDROID)
 
@@ -5941,6 +5944,14 @@ void RenderFrameHostImpl::BindSerialServiceRequest(
     serial_service_ = std::make_unique<SerialService>(this);
 
   serial_service_->Bind(std::move(request));
+}
+
+void RenderFrameHostImpl::BindHidServiceRequest(
+    blink::mojom::HidServiceRequest request) {
+  if (!hid_service_)
+    hid_service_ = std::make_unique<HidService>();
+
+  hid_service_->Bind(std::move(request));
 }
 
 void RenderFrameHostImpl::BindAuthenticatorRequest(

@@ -216,6 +216,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.FileChooser",
                   "blink.mojom.FileSystemManager",
                   "blink.mojom.GeolocationService",
+                  "blink.mojom.HidService",
                   "blink.mojom.IDBFactory",
                   "blink.mojom.IdleManager",
                   "blink.mojom.InsecureInputService",

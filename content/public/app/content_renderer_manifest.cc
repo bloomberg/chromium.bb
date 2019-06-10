@@ -43,6 +43,7 @@ const service_manager::Manifest& GetContentRendererManifest() {
           .RequireCapability("metrics", "url_keyed_metrics")
           .RequireCapability("ui", "discardable_memory")
           .RequireCapability("ui", "gpu_client")
+          .RequireCapability("device", "device:hid")
           .RequireCapability("device", "device:power_monitor")
           .RequireCapability("device", "device:screen_orientation")
           .RequireCapability("device", "device:time_zone_monitor")

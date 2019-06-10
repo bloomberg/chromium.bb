@@ -95,6 +95,7 @@
 #if defined(OS_ANDROID)
 #include "services/device/public/mojom/nfc.mojom.h"
 #else
+#include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif
 
@@ -136,6 +137,7 @@ class AuthenticatorImpl;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
+class HidService;
 class KeepAliveHandleFactory;
 class MediaInterfaceProxy;
 class NavigationEntryImpl;
@@ -1374,6 +1376,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #if !defined(OS_ANDROID)
   void BindSerialServiceRequest(blink::mojom::SerialServiceRequest request);
   void BindAuthenticatorRequest(blink::mojom::AuthenticatorRequest request);
+  void BindHidServiceRequest(blink::mojom::HidServiceRequest request);
 #endif
 
   void BindPresentationServiceRequest(
@@ -1948,6 +1951,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #if !defined(OS_ANDROID)
   // Hosts blink::mojom::SerialService for the RenderFrame.
   std::unique_ptr<SerialService> serial_service_;
+
+  // Hosts blink::mojom::HidService for the RenderFrame.
+  std::unique_ptr<HidService> hid_service_;
 #endif
 
   // Hosts blink::mojom::PresentationService for the RenderFrame.
