@@ -176,6 +176,10 @@ void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
   DCHECK(options.show_prompt);
 }
 
+void WebViewAutofillClientIOS::CreditCardUploadCompleted() {
+  NOTIMPLEMENTED();
+}
+
 void WebViewAutofillClientIOS::ConfirmCreditCardFillAssist(
     const CreditCard& card,
     base::OnceClosure callback) {}

@@ -173,6 +173,10 @@ void AwAutofillClient::ConfirmSaveCreditCardToCloud(
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::CreditCardUploadCompleted() {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::ConfirmCreditCardFillAssist(
     const autofill::CreditCard& card,
     base::OnceClosure callback) {

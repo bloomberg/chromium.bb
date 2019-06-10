@@ -85,6 +85,11 @@ class SaveCardBubbleControllerImpl
   // just saved and links the user to manage their other cards.
   void ShowBubbleForManageCardsForTesting(const CreditCard& card);
 
+  // Updates the save card icon when credit card upload failed. This will only
+  // update the icon image and stop icon from animating. The actual bubble will
+  // be shown when users click on the icon.
+  void UpdateIconForSaveCardFailure();
+
   // For testing. Sets up the controller for showing the
   // save card failure bubble.
   void ShowBubbleForSaveCardFailureForTesting();

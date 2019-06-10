@@ -164,6 +164,11 @@ void SaveCardBubbleControllerImpl::ShowBubbleForManageCardsForTesting(
   ShowBubble();
 }
 
+void SaveCardBubbleControllerImpl::UpdateIconForSaveCardFailure() {
+  current_bubble_type_ = BubbleType::FAILURE;
+  ShowIconOnly();
+}
+
 void SaveCardBubbleControllerImpl::ShowBubbleForSaveCardFailureForTesting() {
   current_bubble_type_ = BubbleType::FAILURE;
   ShowBubble();

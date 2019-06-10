@@ -319,6 +319,9 @@ void CreditCardSaveManager::OnDidUploadCard(
       // Notify the browsertests that a strike was added.
       OnStrikeChangeComplete(nth_strike_added);
     }
+
+    // Show credit card upload feedback.
+    client_->CreditCardUploadCompleted();
   }
 }
 

@@ -42,6 +42,7 @@
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
@@ -362,6 +363,23 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
   controller->OfferUploadSave(card, std::move(legal_message), options,
                               std::move(callback));
+#endif
+}
+
+void ChromeAutofillClient::CreditCardUploadCompleted() {
+#if defined(OS_ANDROID)
+  // TODO(hozhng@): Placeholder for Clank Notification.
+#else
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardUploadFeedback)) {
+    return;
+  }
+
+  // Do lazy initialization of SaveCardBubbleControllerImpl.
+  // TODO(crbug.com/964127): Add success branch.
+  autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
+  autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents())
+      ->UpdateIconForSaveCardFailure();
 #endif
 }
 

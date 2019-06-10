@@ -3908,6 +3908,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardUploadFeedbackDescription,
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardUploadFeedback)},
+
     {"periodic-background-sync", flag_descriptions::kPeriodicBackgroundSyncName,
      flag_descriptions::kPeriodicBackgroundSyncDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPeriodicBackgroundSync)},
