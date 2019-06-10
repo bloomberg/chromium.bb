@@ -85,7 +85,7 @@ bool StyleCommands::ApplyCommandToFrame(LocalFrame& frame,
                                         EditorCommandSource source,
                                         InputEvent::InputType input_type,
                                         CSSPropertyValueSet* style) {
-  // TODO(editnig-dev): We don't call shouldApplyStyle when the source is DOM;
+  // TODO(editing-dev): We don't call shouldApplyStyle when the source is DOM;
   // is there a good reason for that?
   switch (source) {
     case EditorCommandSource::kMenuOrKeyBinding:
@@ -315,7 +315,7 @@ bool StyleCommands::ExecuteToggleStyleInList(LocalFrame& frame,
   const String new_style =
       ComputeToggleStyleInList(*selection_style, property_id, value);
 
-  // TODO(editnig-dev): We shouldn't be having to convert new style into text.
+  // TODO(editing-dev): We shouldn't be having to convert new style into text.
   // We should have setPropertyCSSValue.
   auto* const new_mutable_style =
       MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
@@ -534,7 +534,7 @@ EditingTriState StyleCommands::StateTextWritingDirection(
   WritingDirection selection_direction = TextDirectionForSelection(
       frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated(),
       frame.GetEditor().TypingStyle(), has_nested_or_multiple_embeddings);
-  // TODO(editnig-dev): We should be returning MixedTriState when
+  // TODO(editing-dev): We should be returning MixedTriState when
   // selectionDirection == direction && hasNestedOrMultipleEmbeddings
   return (selection_direction == direction &&
           !has_nested_or_multiple_embeddings)
@@ -584,7 +584,7 @@ String StyleCommands::SelectionStartCSSPropertyValue(
 String StyleCommands::ValueStyle(LocalFrame& frame, CSSPropertyID property_id) {
   frame.GetDocument()->UpdateStyleAndLayout();
 
-  // TODO(editnig-dev): Rather than retrieving the style at the start of the
+  // TODO(editing-dev): Rather than retrieving the style at the start of the
   // current selection, we should retrieve the style present throughout the
   // selection for non-Mac platforms.
   return SelectionStartCSSPropertyValue(frame, property_id);
