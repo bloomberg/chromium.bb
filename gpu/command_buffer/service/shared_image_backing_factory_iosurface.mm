@@ -462,7 +462,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
         DCHECK(mtl_texture_);
       }
       GrMtlTextureInfo info;
-      info.fTexture = mtl_texture_.get();
+      info.fTexture.retain(mtl_texture_.get());
       gr_backend_texture = GrBackendTexture(size().width(), size().height(),
                                             GrMipMapped::kNo, info);
     }
