@@ -46,6 +46,10 @@ class CONTENT_EXPORT VirtualFidoDiscoveryFactory
       bool has_resident_key,
       bool has_user_verification);
 
+  // Returns the authenticator with the given |id|. Returns nullptr if no
+  // authenticator matches the ID.
+  VirtualAuthenticator* GetAuthenticator(const std::string& id);
+
   // Removes the authenticator with the given |id|. Returns true if an
   // authenticator matched the |id|, false otherwise.
   bool RemoveAuthenticator(const std::string& id);

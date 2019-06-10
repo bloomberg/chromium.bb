@@ -4,6 +4,10 @@
 
 #include "content/browser/devtools/protocol/webauthn_handler.h"
 
+#include <map>
+#include <vector>
+
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
@@ -11,6 +15,7 @@
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "device/fido/virtual_fido_device.h"
 
 namespace content {
 namespace protocol {
@@ -18,7 +23,11 @@ namespace protocol {
 namespace {
 static constexpr char kAuthenticatorNotFound[] =
     "Could not find a Virtual Authenticator matching the ID";
+static constexpr char kCouldNotCreateCredential[] =
+    "An error occurred trying to create the credential";
 static constexpr char kInvalidProtocol[] = "The protocol is not valid";
+static constexpr char kInvalidRpIdHash[] =
+    "The Relying Party ID hash must have a size of ";
 static constexpr char kInvalidTransport[] = "The transport is not valid";
 static constexpr char kVirtualEnvironmentNotEnabled[] =
     "The Virtual Authenticator Environment has not been enabled for this "
@@ -30,6 +39,10 @@ device::ProtocolVersion ConvertToProtocolVersion(base::StringPiece protocol) {
   if (protocol == WebAuthn::AuthenticatorProtocolEnum::U2f)
     return device::ProtocolVersion::kU2f;
   return device::ProtocolVersion::kUnknown;
+}
+
+std::vector<uint8_t> CopyBinaryToVector(const Binary& binary) {
+  return std::vector<uint8_t>(binary.data(), binary.data() + binary.size());
 }
 
 }  // namespace
@@ -96,8 +109,76 @@ Response WebAuthnHandler::RemoveVirtualAuthenticator(
     return Response::Error(kVirtualEnvironmentNotEnabled);
 
   if (!virtual_discovery_factory_->RemoveAuthenticator(authenticator_id))
-    return Response::Error(kAuthenticatorNotFound);
+    return Response::InvalidParams(kAuthenticatorNotFound);
 
+  return Response::OK();
+}
+
+Response WebAuthnHandler::AddCredential(
+    const String& authenticator_id,
+    std::unique_ptr<WebAuthn::Credential> credential) {
+  if (!virtual_discovery_factory_)
+    return Response::Error(kVirtualEnvironmentNotEnabled);
+
+  auto* authenticator =
+      virtual_discovery_factory_->GetAuthenticator(authenticator_id);
+  if (!authenticator)
+    return Response::InvalidParams(kAuthenticatorNotFound);
+
+  if (credential->GetRpIdHash().size() != device::kRpIdHashLength) {
+    return Response::InvalidParams(
+        kInvalidRpIdHash + base::NumberToString(device::kRpIdHashLength));
+  }
+
+  if (!authenticator->AddRegistration(
+          CopyBinaryToVector(credential->GetCredentialId()),
+          CopyBinaryToVector(credential->GetRpIdHash()),
+          CopyBinaryToVector(credential->GetPrivateKey()),
+          credential->GetSignCount())) {
+    return Response::Error(kCouldNotCreateCredential);
+  }
+
+  return Response::OK();
+}
+
+Response WebAuthnHandler::GetCredentials(
+    const String& authenticator_id,
+    std::unique_ptr<Array<WebAuthn::Credential>>* out_credentials) {
+  if (!virtual_discovery_factory_)
+    return Response::Error(kVirtualEnvironmentNotEnabled);
+
+  auto* authenticator =
+      virtual_discovery_factory_->GetAuthenticator(authenticator_id);
+  if (!authenticator)
+    return Response::InvalidParams(kAuthenticatorNotFound);
+
+  *out_credentials = Array<WebAuthn::Credential>::create();
+  for (const auto& credential : authenticator->registrations()) {
+    const auto& rp_id_hash = credential.second.application_parameter;
+    std::vector<uint8_t> private_key;
+    credential.second.private_key->ExportPrivateKey(&private_key);
+    (*out_credentials)
+        ->addItem(WebAuthn::Credential::Create()
+                      .SetCredentialId(Binary::fromVector(credential.first))
+                      .SetRpIdHash(Binary::fromSpan(rp_id_hash.data(),
+                                                    rp_id_hash.size()))
+                      .SetPrivateKey(Binary::fromVector(std::move(private_key)))
+                      .SetSignCount(credential.second.counter)
+                      .Build());
+  }
+  return Response::OK();
+}
+
+Response WebAuthnHandler::ClearCredentials(const String& authenticator_id) {
+  if (!virtual_discovery_factory_)
+    return Response::Error(kVirtualEnvironmentNotEnabled);
+
+  auto* authenticator =
+      virtual_discovery_factory_->GetAuthenticator(authenticator_id);
+  if (!authenticator)
+    return Response::InvalidParams(kAuthenticatorNotFound);
+
+  authenticator->ClearRegistrations();
   return Response::OK();
 }
 

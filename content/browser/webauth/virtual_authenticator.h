@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -34,6 +35,21 @@ class CONTENT_EXPORT VirtualAuthenticator
   ~VirtualAuthenticator() override;
 
   void AddBinding(blink::test::mojom::VirtualAuthenticatorRequest request);
+
+  const device::VirtualFidoDevice::State::RegistrationsMap& registrations()
+      const {
+    return state_->registrations;
+  }
+
+  // Register a new credential. Returns true if the registration was successful,
+  // false otherwise.
+  bool AddRegistration(std::vector<uint8_t> key_handle,
+                       const std::vector<uint8_t>& rp_id_hash,
+                       const std::vector<uint8_t>& private_key,
+                       int32_t counter);
+
+  // Removes all the credentials.
+  void ClearRegistrations();
 
   ::device::FidoTransportProtocol transport() const {
     return state_->transport;

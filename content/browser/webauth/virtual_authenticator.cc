@@ -5,7 +5,6 @@
 #include "content/browser/webauth/virtual_authenticator.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/containers/span.h"
 #include "base/guid.h"
@@ -35,6 +34,32 @@ VirtualAuthenticator::~VirtualAuthenticator() = default;
 void VirtualAuthenticator::AddBinding(
     blink::test::mojom::VirtualAuthenticatorRequest request) {
   binding_set_.AddBinding(this, std::move(request));
+}
+
+bool VirtualAuthenticator::AddRegistration(
+    std::vector<uint8_t> key_handle,
+    const std::vector<uint8_t>& rp_id_hash,
+    const std::vector<uint8_t>& private_key,
+    int32_t counter) {
+  if (rp_id_hash.size() != device::kRpIdHashLength)
+    return false;
+
+  auto ec_private_key =
+      crypto::ECPrivateKey::CreateFromPrivateKeyInfo(private_key);
+  if (!ec_private_key)
+    return false;
+
+  return state_->registrations
+      .emplace(
+          std::move(key_handle),
+          ::device::VirtualFidoDevice::RegistrationData(
+              std::move(ec_private_key),
+              base::make_span<device::kRpIdHashLength>(rp_id_hash), counter))
+      .second;
+}
+
+void VirtualAuthenticator::ClearRegistrations() {
+  state_->registrations.clear();
 }
 
 std::unique_ptr<::device::FidoDevice> VirtualAuthenticator::ConstructDevice() {
@@ -78,26 +103,14 @@ void VirtualAuthenticator::GetRegistrations(GetRegistrationsCallback callback) {
 void VirtualAuthenticator::AddRegistration(
     blink::test::mojom::RegisteredKeyPtr registration,
     AddRegistrationCallback callback) {
-  if (registration->application_parameter.size() != device::kRpIdHashLength) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  bool success = false;
-  std::tie(std::ignore, success) = state_->registrations.emplace(
-      std::move(registration->key_handle),
-      ::device::VirtualFidoDevice::RegistrationData(
-          crypto::ECPrivateKey::CreateFromPrivateKeyInfo(
-              registration->private_key),
-          base::make_span<device::kRpIdHashLength>(
-              registration->application_parameter),
-          registration->counter));
-  std::move(callback).Run(success);
+  std::move(callback).Run(AddRegistration(
+      std::move(registration->key_handle), registration->application_parameter,
+      registration->private_key, registration->counter));
 }
 
 void VirtualAuthenticator::ClearRegistrations(
     ClearRegistrationsCallback callback) {
-  state_->registrations.clear();
+  ClearRegistrations();
   std::move(callback).Run();
 }
 

@@ -70,6 +70,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
   // necessary in order to provide continuity between requests.
   class COMPONENT_EXPORT(DEVICE_FIDO) State : public base::RefCounted<State> {
    public:
+    using RegistrationsMap = std::map<std::vector<uint8_t>,
+                                      RegistrationData,
+                                      fido_parsing_utils::RangeLess>;
+
     State();
 
     // The common name in the attestation certificate.
@@ -80,10 +84,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     std::string individual_attestation_cert_common_name;
 
     // Registered keys. Keyed on key handle (a.k.a. "credential ID").
-    std::map<std::vector<uint8_t>,
-             RegistrationData,
-             fido_parsing_utils::RangeLess>
-        registrations;
+    RegistrationsMap registrations;
 
     // If set, this callback is called whenever a "press" is required. It allows
     // tests to change the state of the world during processing.

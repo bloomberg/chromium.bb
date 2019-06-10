@@ -32,6 +32,14 @@ class WebAuthnHandler : public DevToolsDomainHandler, public WebAuthn::Backend {
       std::unique_ptr<WebAuthn::VirtualAuthenticatorOptions> options,
       String* out_authenticator_id) override;
   Response RemoveVirtualAuthenticator(const String& authenticator_id) override;
+  Response AddCredential(
+      const String& authenticator_id,
+      std::unique_ptr<protocol::WebAuthn::Credential> credential) override;
+  Response GetCredentials(
+      const String& authenticator_id,
+      std::unique_ptr<protocol::Array<protocol::WebAuthn::Credential>>*
+          out_credentials) override;
+  Response ClearCredentials(const String& in_authenticator_id) override;
 
  private:
   RenderFrameHostImpl* frame_host_;

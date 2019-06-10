@@ -1,7 +1,7 @@
 (async function(testRunner) {
   var {page, session, dp} =
       await testRunner.startURL(
-          "https://devtools.test:8443/inspector-protocol/webauthn/resources/create-credential-test.https.html",
+          "https://devtools.test:8443/inspector-protocol/webauthn/resources/webauthn-test.https.html",
           "Check that the WebAuthn command addVirtualAuthenticator works");
 
   // Create an CTAP2 NFC authenticator and verify it is the one responding to
@@ -16,7 +16,7 @@
     },
   })).result.authenticatorId;
 
-  let result = JSON.parse(await session.evaluateAsync("registerCredential()"));
+  let result = await session.evaluateAsync("registerCredential()");
   testRunner.log(result.status);
   testRunner.log(result.credential.transports);
 
@@ -30,7 +30,7 @@
       hasUserVerification: false,
     },
   });
-  result = JSON.parse(await session.evaluateAsync("registerCredential()"));
+  result = await session.evaluateAsync("registerCredential()");
   testRunner.log(result.status);
   testRunner.log(result.credential.transports);
 
