@@ -253,8 +253,3 @@ def GetBinhosts(build_target):
                                          board=build_target.name,
                                          allow_undefined=True)
   return binhosts.split() if binhosts else []
-
-
-def GetPackageIndex(binhost):
-  """Get the package index path for the binhost."""
-  return os.path.join(binhost, 'PackageIndex')

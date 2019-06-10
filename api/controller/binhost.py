@@ -39,7 +39,7 @@ def GetBinhosts(input_proto, output_proto):
   for current in binhosts:
     new_binhost = output_proto.binhosts.add()
     new_binhost.uri = current
-    new_binhost.package_index = binhost.GetPackageIndex(current)
+    new_binhost.package_index = 'Packages'
 
 
 def GetPrivatePrebuiltAclArgs(input_proto, output_proto):
