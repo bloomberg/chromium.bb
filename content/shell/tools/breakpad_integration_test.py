@@ -55,6 +55,17 @@ def GetDevice():
   return GetDevice.device
 
 
+def clear_android_dumps(device):
+  try:
+    pending = ANDROID_CRASH_DIR + '/pending/'
+    files = device.RunShellCommand(['ls', pending], as_root=True)
+    for f in files:
+      device.RunShellCommand(['rm', pending + f], check_return=True,
+                             as_root=True)
+  except:
+    print 'Failed to delete android crash dir %s' % ANDROID_CRASH_DIR
+
+
 def get_android_dump(crash_dir):
   global failure
 
@@ -90,6 +101,8 @@ def run_test(options, crash_dir, symbols_dir, platform,
     device = GetDevice()
 
     failure = None
+    clear_android_dumps(device)
+
     apk_path = os.path.join(options.build_dir, 'apks', 'ContentShell.apk')
     apk = apk_helper.ApkHelper(apk_path)
     view_activity = apk.GetViewActivityName()
@@ -297,14 +310,7 @@ def main():
     except:
       print 'Failed to delete temp directory "%s".' % crash_dir
     if options.platform == 'android':
-      try:
-        pending = ANDROID_CRASH_DIR + '/pending/'
-        files = device.RunShellCommand(['ls', pending], as_root=True)
-        for f in files:
-          GetDevice().RunShellCommand(['rm', pending + f], check_return=True,
-                                      as_root=True)
-      except:
-        print 'Failed to delete android crash dir %s' % ANDROID_CRASH_DIR
+      clear_android_dumps(GetDevice())
 
 
 if '__main__' == __name__:
