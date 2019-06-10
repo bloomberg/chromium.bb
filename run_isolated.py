@@ -453,12 +453,7 @@ def run_command(
           lower_priority=lower_priority, containment=containment)
       with subprocess42.set_signal_handler(subprocess42.STOP_SIGNALS, handler):
         try:
-          # TODO(crbug.com/731375): remove the long poll intervals here if
-          # they don't address the issues on the luci version of
-          # mac_upload_clang.
-          exit_code = proc.wait(hard_timeout or None,
-                                poll_initial_interval=1.0,
-                                poll_max_interval=1.0)
+          exit_code = proc.wait(hard_timeout or None)
         except subprocess42.TimeoutExpired:
           if not had_signal:
             logging.warning('Hard timeout')
