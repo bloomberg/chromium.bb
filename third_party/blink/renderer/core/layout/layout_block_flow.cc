@@ -2647,6 +2647,12 @@ void LayoutBlockFlow::DeleteLineBoxTree() {
     floating_objects_->ClearLineBoxTreePointers();
 
   line_boxes_.DeleteLineBoxTree();
+
+  // This function is called when children are moved to different parent. Clear
+  // NGPaintFragment now, because clearing NGPaintFragment clears associations
+  // between LayoutObject and NGPaintFragment. It needs to happen before moved
+  // children are laid out and associated.
+  SetPaintFragment(nullptr, nullptr);
 }
 
 int LayoutBlockFlow::LineCount(

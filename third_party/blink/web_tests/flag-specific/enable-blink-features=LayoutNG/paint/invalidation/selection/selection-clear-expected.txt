@@ -19,8 +19,18 @@
       "paintInvalidations": [
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='firstLine'",
-          "rect": [8, 108, 100, 100],
-          "reason": "incremental"
+          "rect": [8, 8, 100, 200],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='firstLine'",
+          "rect": [8, 8, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'FAIL: Test did'",
+          "rect": [8, 8, 97, 200],
+          "reason": "disappeared"
         },
         {
           "object": "NGPhysicalTextFragment 'not run'",
@@ -29,7 +39,7 @@
         },
         {
           "object": "NGPhysicalTextFragment '\u00A0'",
-          "rect": [8, 8, 97, 200],
+          "rect": [8, 8, 8, 100],
           "reason": "appeared"
         }
       ]
