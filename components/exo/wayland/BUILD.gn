@@ -41,6 +41,8 @@ source_set("wayland") {
     "wayland_display_output.h",
     "wayland_input_delegate.cc",
     "wayland_input_delegate.h",
+    "wayland_pointer_delegate.cc",
+    "wayland_pointer_delegate.h",
     "wayland_touch_delegate.cc",
     "wayland_touch_delegate.h",
     "wayland_watcher.cc",
@@ -79,8 +81,6 @@ source_set("wayland") {
     sources += [
       "wayland_keyboard_delegate.cc",
       "wayland_keyboard_delegate.h",
-      "wayland_pointer_delegate.cc",
-      "wayland_pointer_delegate.h",
       "wayland_positioner.cc",
       "wayland_positioner.h",
       "wl_shell.cc",
