@@ -131,6 +131,13 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
       CreateCaptionButton(VIEW_ID_RESTORE_BUTTON, IDS_APP_ACCNAME_RESTORE);
   close_button_ =
       CreateCaptionButton(VIEW_ID_CLOSE_BUTTON, IDS_APP_ACCNAME_CLOSE);
+
+  // Because currently focus mode uses a vertically-expanded titlebar, there is
+  // no need to add extra space for a grab handle. However, traditional PWA and
+  // full browser mode require the extra space when the window is not maximized.
+  constexpr int kTopResizeFrameArea = 5;
+  drag_handle_padding_ =
+      browser_view->browser()->is_focus_mode() ? 0 : kTopResizeFrameArea;
 }
 
 GlassBrowserFrameView::~GlassBrowserFrameView() {
@@ -433,8 +440,7 @@ int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
   // When maximized, the OS sizes the window such that the border extends beyond
   // the screen edges. In that case, we must return the default value.
   if ((!frame()->IsFullscreen() && !IsMaximized()) || restored) {
-    constexpr int kTopResizeFrameArea = 5;
-    return kTopResizeFrameArea;
+    return drag_handle_padding_;
   }
 
   // Mouse and touch locations are floored but GetSystemMetricsInDIP is rounded,
