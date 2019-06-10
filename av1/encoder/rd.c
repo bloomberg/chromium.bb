@@ -992,45 +992,42 @@ void av1_get_entropy_contexts(BLOCK_SIZE bsize,
 
 void av1_mv_pred(const AV1_COMP *cpi, MACROBLOCK *x, uint8_t *ref_y_buffer,
                  int ref_y_stride, int ref_frame, BLOCK_SIZE block_size) {
-  int i;
-  int zero_seen = 0;
-  int best_sad = INT_MAX;
-  int this_sad = INT_MAX;
-  int max_mv = 0;
-  uint8_t *src_y_ptr = x->plane[0].src.buf;
-  uint8_t *ref_y_ptr;
-  MV pred_mv[MAX_MV_REF_CANDIDATES + 1];
-  int num_mv_refs = 0;
   const MV_REFERENCE_FRAME ref_frames[2] = { ref_frame, NONE_FRAME };
   const int_mv ref_mv =
       av1_get_ref_mv_from_stack(0, ref_frames, 0, x->mbmi_ext);
   const int_mv ref_mv1 =
       av1_get_ref_mv_from_stack(0, ref_frames, 1, x->mbmi_ext);
-
+  MV pred_mv[MAX_MV_REF_CANDIDATES + 1];
+  int num_mv_refs = 0;
   pred_mv[num_mv_refs++] = ref_mv.as_mv;
   if (ref_mv.as_int != ref_mv1.as_int) {
     pred_mv[num_mv_refs++] = ref_mv1.as_mv;
   }
-  if (cpi->sf.adaptive_motion_search && block_size < x->max_partition_size)
+  if (cpi->sf.adaptive_motion_search && block_size < x->max_partition_size) {
     pred_mv[num_mv_refs++] = x->pred_mv[ref_frame];
+  }
 
   assert(num_mv_refs <= (int)(sizeof(pred_mv) / sizeof(pred_mv[0])));
 
+  const uint8_t *const src_y_ptr = x->plane[0].src.buf;
+  int zero_seen = 0;
+  int best_sad = INT_MAX;
+  int max_mv = 0;
   // Get the sad for each candidate reference mv.
-  for (i = 0; i < num_mv_refs; ++i) {
+  for (int i = 0; i < num_mv_refs; ++i) {
     const MV *this_mv = &pred_mv[i];
-    int fp_row, fp_col;
-    fp_row = (this_mv->row + 3 + (this_mv->row >= 0)) >> 3;
-    fp_col = (this_mv->col + 3 + (this_mv->col >= 0)) >> 3;
+    const int fp_row = (this_mv->row + 3 + (this_mv->row >= 0)) >> 3;
+    const int fp_col = (this_mv->col + 3 + (this_mv->col >= 0)) >> 3;
     max_mv = AOMMAX(max_mv, AOMMAX(abs(this_mv->row), abs(this_mv->col)) >> 3);
 
     if (fp_row == 0 && fp_col == 0 && zero_seen) continue;
     zero_seen |= (fp_row == 0 && fp_col == 0);
 
-    ref_y_ptr = &ref_y_buffer[ref_y_stride * fp_row + fp_col];
+    const uint8_t *const ref_y_ptr =
+        &ref_y_buffer[ref_y_stride * fp_row + fp_col];
     // Find sad for current vector.
-    this_sad = cpi->fn_ptr[block_size].sdf(src_y_ptr, x->plane[0].src.stride,
-                                           ref_y_ptr, ref_y_stride);
+    const int this_sad = cpi->fn_ptr[block_size].sdf(
+        src_y_ptr, x->plane[0].src.stride, ref_y_ptr, ref_y_stride);
     // Note if it is the best so far.
     if (this_sad < best_sad) {
       best_sad = this_sad;
