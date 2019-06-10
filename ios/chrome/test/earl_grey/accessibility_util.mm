@@ -108,6 +108,11 @@ NSArray* AccessibilityElementsHelperStartingFromView(UIView* view,
 namespace chrome_test_util {
 
 void VerifyAccessibilityForCurrentScreen() {
+  // TODO(crbug.com/972681): The GTX analytics ping is preventing the app from
+  // idling, causing EG tests to fail.  Disabling analytics will allow tests to
+  // run, but may not be the correct long-term solution.
+  [GTXAnalytics setEnabled:NO];
+
   GTXToolKit* toolkit = [[GTXToolKit alloc] init];
   NSError* error = nil;
   for (UIWindow* window in [[UIApplication sharedApplication] windows]) {
