@@ -9,8 +9,11 @@
 
 (allow-cvms-blobs)
 
+(allow ipc-posix-shm)
+
 ; Allow communication between the GPU process and the UI server.
 (allow mach-lookup
+  (global-name "com.apple.cfprefsd.agent")
   (global-name "com.apple.cfprefsd.daemon")
   (global-name "com.apple.CoreServices.coreservicesd")
   (global-name "com.apple.coreservices.launchservicesd")
