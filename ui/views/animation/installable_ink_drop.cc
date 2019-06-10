@@ -117,7 +117,7 @@ void InstallableInkDrop::OnViewIsDeleting(View* observed_view) {
 }
 
 void InstallableInkDrop::OnPaintLayer(const ui::PaintContext& context) {
-  DCHECK(view_->size() == layer_->size());
+  DCHECK_EQ(view_->size(), layer_->size());
 
   ui::PaintRecorder paint_recorder(context, layer_->size());
   gfx::Canvas* canvas = paint_recorder.canvas();
