@@ -1271,7 +1271,8 @@ void RenderFrameHostImpl::ExecuteJavaScript(const base::string16& javascript,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(CanExecuteJavaScript());
 
-  GetNavigationControl()->JavaScriptExecuteRequest(javascript,
+  const bool wants_result = !callback.is_null();
+  GetNavigationControl()->JavaScriptExecuteRequest(javascript, wants_result,
                                                    std::move(callback));
 }
 
@@ -1283,8 +1284,9 @@ void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
   DCHECK_GT(world_id, ISOLATED_WORLD_ID_GLOBAL);
   DCHECK_LE(world_id, ISOLATED_WORLD_ID_MAX);
 
+  const bool wants_result = !callback.is_null();
   GetNavigationControl()->JavaScriptExecuteRequestInIsolatedWorld(
-      javascript, world_id, std::move(callback));
+      javascript, wants_result, world_id, std::move(callback));
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptForTests(
@@ -1293,8 +1295,9 @@ void RenderFrameHostImpl::ExecuteJavaScriptForTests(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const bool has_user_gesture = false;
+  const bool wants_result = !callback.is_null();
   GetNavigationControl()->JavaScriptExecuteRequestForTests(
-      javascript, has_user_gesture, std::move(callback));
+      javascript, wants_result, has_user_gesture, std::move(callback));
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
@@ -1303,7 +1306,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
 
   const bool has_user_gesture = true;
   GetNavigationControl()->JavaScriptExecuteRequestForTests(
-      javascript, has_user_gesture, base::NullCallback());
+      javascript, false, has_user_gesture, base::NullCallback());
 }
 
 void RenderFrameHostImpl::CopyImageAt(int x, int y) {

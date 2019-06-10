@@ -630,13 +630,16 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void JavaScriptExecuteRequest(
       const base::string16& javascript,
+      bool wants_result,
       JavaScriptExecuteRequestCallback callback) override;
   void JavaScriptExecuteRequestForTests(
       const base::string16& javascript,
+      bool wants_result,
       bool has_user_gesture,
       JavaScriptExecuteRequestForTestsCallback callback) override;
   void JavaScriptExecuteRequestInIsolatedWorld(
       const base::string16& javascript,
+      bool wants_result,
       int32_t world_id,
       JavaScriptExecuteRequestInIsolatedWorldCallback callback) override;
   void OnPortalActivated(
@@ -1025,6 +1028,7 @@ class CONTENT_EXPORT RenderFrameImpl
    public:
     JavaScriptIsolatedWorldRequest(
         base::WeakPtr<RenderFrameImpl> render_frame_impl,
+        bool wants_result,
         JavaScriptExecuteRequestInIsolatedWorldCallback callback);
     void Completed(
         const blink::WebVector<v8::Local<v8::Value>>& result) override;
@@ -1033,6 +1037,7 @@ class CONTENT_EXPORT RenderFrameImpl
     ~JavaScriptIsolatedWorldRequest() override;
 
     base::WeakPtr<RenderFrameImpl> render_frame_impl_;
+    bool wants_result_;
     JavaScriptExecuteRequestInIsolatedWorldCallback callback_;
 
     DISALLOW_COPY_AND_ASSIGN(JavaScriptIsolatedWorldRequest);
