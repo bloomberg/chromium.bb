@@ -72,6 +72,13 @@ void StartWorkerToDispatchExtendableMessageEvent(
     return;
   }
 
+  // Abort if redundant. This is not strictly needed since RunAfterStartWorker
+  // does the same, but avoids logging UMA about failed startups.
+  if (worker->is_redundant()) {
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorRedundant);
+    return;
+  }
+
   worker->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::MESSAGE,
       base::BindOnce(&DispatchExtendableMessageEventAfterStartWorker, worker,
