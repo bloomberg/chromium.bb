@@ -606,28 +606,9 @@ cc::Layer* Canvas2DLayerBridge::Layer() {
   return layer_.get();
 }
 
-void Canvas2DLayerBridge::DidDraw(const FloatRect& rect) {
-  if (!is_deferral_enabled_)
-    return;
-
-  have_recorded_draw_commands_ = true;
-  IntRect pixel_bounds = EnclosingIntRect(rect);
-  base::CheckedNumeric<int> pixel_bounds_size = pixel_bounds.Width();
-  pixel_bounds_size *= pixel_bounds.Height();
-  recording_pixel_count_ += pixel_bounds_size;
-  if (!recording_pixel_count_.IsValid()) {
-    DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
-    return;
-  }
-  base::CheckedNumeric<int> threshold_size = size_.Width();
-  threshold_size *= size_.Height();
-  threshold_size *= canvas_heuristic_parameters::kExpensiveOverdrawThreshold;
-  if (!threshold_size.IsValid()) {
-    DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
-    return;
-  }
-  if (recording_pixel_count_.ValueOrDie() >= threshold_size.ValueOrDie())
-    DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
+void Canvas2DLayerBridge::DidDraw(const FloatRect& /* rect */) {
+  if (is_deferral_enabled_)
+    have_recorded_draw_commands_ = true;
 }
 
 void Canvas2DLayerBridge::FinalizeFrame() {
