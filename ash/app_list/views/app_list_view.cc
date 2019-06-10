@@ -1896,6 +1896,15 @@ void AppListView::OnWindowBoundsChanged(aura::Window* window,
 void AppListView::OnBoundsAnimationCompleted() {
   const bool was_animation_interrupted =
       GetRemainingBoundsAnimationDistance() != 0;
+
+  // Close embedded Assistant UI if it is open, to reset the
+  // |assistant_page_view| bounds and AppListState.
+  if (app_list_state_ == ash::AppListViewState::kClosed) {
+    auto* contents_view = app_list_main_view()->contents_view();
+    if (contents_view->IsShowingEmbeddedAssistantUI())
+      contents_view->ShowEmbeddedAssistantUI(false);
+  }
+
   // Layout if the animation was completed.
   if (!was_animation_interrupted)
     Layout();

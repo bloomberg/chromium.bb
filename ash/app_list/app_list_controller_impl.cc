@@ -1003,7 +1003,6 @@ void AppListControllerImpl::ViewClosing() {
   }
 
   CloseAssistantUi(AssistantExitPoint::kLauncherClose);
-  model_->SetState(AppListState::kInvalidState);
 
   if (client_)
     client_->ViewClosing();
