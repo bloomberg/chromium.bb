@@ -114,6 +114,11 @@ public class GridTabSwitcherLayout
         }
 
         if (!showShrinkingAnimation) {
+            // Keep the current tab in mLayoutTabs so that thumbnail taking is not blocked.
+            LayoutTab sourceLayoutTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
+                    mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NEED_TITLE);
+            mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
+
             mGridController.showOverview(animate);
             return;
         }
