@@ -254,17 +254,12 @@
         'os_type': 'android',
       },
       'Marshmallow 64 bit Tester': {
+        'mixins': [
+          'marshmallow',
+          'bullhead',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
         },
         'os_type': 'android',
       },
@@ -397,17 +392,12 @@
       },
       'android-cronet-lollipop-arm-rel': {},
       'android-cronet-marshmallow-arm64-rel': {
+        'mixins': [
+          'marshmallow',
+          'bullhead',
+        ],
         'test_suites': {
           'gtest_tests': 'cronet_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
         },
         'os_type': 'android',
       },
@@ -480,21 +470,16 @@
         'os_type': 'android',
       },
       'android-marshmallow-arm64-rel': {
+        'mixins': [
+          'marshmallow',
+          'bullhead',
+        ],
         'additional_compile_targets': [
           'monochrome_static_initializers',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
           'isolated_scripts': 'marshmallow_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
         },
         'os_type': 'android',
       },
@@ -1568,8 +1553,8 @@
       'android-code-coverage': {
         'mixins': [
           'code-coverage',
-          'kitkat',
-          'hammerhead',
+          'marshmallow',
+          'bullhead',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',

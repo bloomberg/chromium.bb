@@ -1173,6 +1173,7 @@
   },
   'perfetto_unittests': {
     'remove_from': [
+      'android-code-coverage',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel',
       'Android CFI',
