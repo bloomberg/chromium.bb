@@ -66,6 +66,10 @@ void AbstractPromise::AddAsDependentForAllPrerequisites() {
 bool AbstractPromise::InsertDependentOnAnyThread(DependentList::Node* node) {
   scoped_refptr<AbstractPromise>& dependent = node->dependent;
 
+  // Used to ensure no reference to the dependent is kept in case the Promise is
+  // already settled.
+  scoped_refptr<AbstractPromise> dependent_to_release;
+
 #if DCHECK_IS_ON()
   {
     CheckedAutoLock lock(GetCheckedLock());
@@ -80,15 +84,18 @@ bool AbstractPromise::InsertDependentOnAnyThread(DependentList::Node* node) {
       break;
 
     case DependentList::InsertResult::FAIL_PROMISE_RESOLVED:
-      dependent->OnPrerequisiteResolved(this);
+      dependent_to_release = std::move(dependent);
+      dependent_to_release->OnPrerequisiteResolved(this);
       break;
 
     case DependentList::InsertResult::FAIL_PROMISE_REJECTED:
-      dependent->OnPrerequisiteRejected(this);
+      dependent_to_release = std::move(dependent);
+      dependent_to_release->OnPrerequisiteRejected(this);
       break;
 
     case DependentList::InsertResult::FAIL_PROMISE_CANCELED:
-      return dependent->OnPrerequisiteCancelled();
+      dependent_to_release = std::move(dependent);
+      return dependent_to_release->OnPrerequisiteCancelled();
   }
 
   return true;
@@ -444,6 +451,11 @@ void AbstractPromise::OnCanceled() {
   // |dependent_list|. It's sufficient however to simply null our references.
   if (prerequisites_) {
     for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
+#if DCHECK_IS_ON()
+      // A settled prerequisite should not keep a reference to this.
+      if (node.prerequisite->IsSettled())
+        DCHECK(!node.dependent_node.dependent);
+#endif
       node.prerequisite = nullptr;
     }
   }
@@ -506,6 +518,11 @@ void AbstractPromise::OnRejected() {
   // |dependent_list|. It's sufficient however to simply null our references.
   if (prerequisites_) {
     for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
+#if DCHECK_IS_ON()
+      // A settled prerequisite should not keep a reference to this.
+      if (node.prerequisite->IsSettled())
+        DCHECK(!node.dependent_node.dependent);
+#endif
       node.prerequisite = nullptr;
     }
   }
