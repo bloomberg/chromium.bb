@@ -3529,6 +3529,11 @@ void RenderFrameHostImpl::OnSetHasReceivedUserGestureBeforeNavigation(
 }
 
 void RenderFrameHostImpl::OnSetNeedsOcclusionTracking(bool needs_tracking) {
+  // Don't process the IPC if this RFH is pending deletion.  See also
+  // https://crbug.com/972566.
+  if (!is_active())
+    return;
+
   RenderFrameProxyHost* proxy =
       frame_tree_node()->render_manager()->GetProxyToParent();
   if (!proxy) {
