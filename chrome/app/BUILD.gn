@@ -395,10 +395,6 @@ static_library("test_support") {
     ]
   }
 
-  if (enable_mus) {
-    deps += [ "//services/ws/public/mojom:constants" ]
-  }
-
   if (enable_gwp_asan_malloc || enable_gwp_asan_partitionalloc) {
     deps += [ "//components/gwp_asan/client" ]
   }

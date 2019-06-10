@@ -37,7 +37,6 @@ component("chromeos") {
     "//mojo/public/cpp/bindings",
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
-    "//services/ws/public/mojom",
     "//skia",
     "//ui/aura",
     "//ui/base",

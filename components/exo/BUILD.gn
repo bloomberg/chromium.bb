@@ -71,7 +71,6 @@ source_set("exo") {
     "//net",
     "//services/data_decoder/public/cpp",
     "//services/viz/privileged/interfaces/compositing",
-    "//services/ws/public/mojom",
     "//skia",
     "//third_party/blink/public/common",
     "//ui/aura",
