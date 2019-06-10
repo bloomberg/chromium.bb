@@ -713,6 +713,9 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
   // may be shown alongside command-line tabs.
   StartupTabs tabs = provider.GetResetTriggerTabs(profile_);
 
+  // Maybe add any tabs which the user has previously pinned.
+  AppendTabs(provider.GetPinnedTabs(command_line_, profile_), &tabs);
+
   // URLs passed on the command line supersede all others.
   AppendTabs(cmd_line_tabs, &tabs);
   if (!cmd_line_tabs.empty())
@@ -753,9 +756,6 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
   // from preferences are explicitly meant to override showing the NTP.
   if (onboarding_tabs.empty() && prefs_tabs.empty())
     AppendTabs(provider.GetNewTabPageTabs(command_line_, profile_), &tabs);
-
-  // Maybe add any tabs which the user has previously pinned.
-  AppendTabs(provider.GetPinnedTabs(command_line_, profile_), &tabs);
 
   return tabs;
 }

@@ -113,17 +113,17 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs) {
                                                  false, false, false, true);
   ASSERT_EQ(4U, output.size());
   EXPECT_EQ("reset-trigger", output[0].url.host());
-  EXPECT_EQ("onboarding", output[1].url.host());
-  EXPECT_EQ("prefs", output[2].url.host());
-  EXPECT_EQ("pinned", output[3].url.host());
+  EXPECT_EQ("pinned", output[1].url.host());
+  EXPECT_EQ("onboarding", output[2].url.host());
+  EXPECT_EQ("prefs", output[3].url.host());
 
   // No extra onboarding content for managed starts.
   output = impl.DetermineStartupTabs(provider, StartupTabs(), true, false,
                                      false, false, false);
   ASSERT_EQ(3U, output.size());
   EXPECT_EQ("reset-trigger", output[0].url.host());
-  EXPECT_EQ("prefs", output[1].url.host());
-  EXPECT_EQ("pinned", output[2].url.host());
+  EXPECT_EQ("pinned", output[1].url.host());
+  EXPECT_EQ("prefs", output[2].url.host());
 }
 
 // Only the New Tab Page should appear in Incognito mode, skipping all the usual
@@ -201,9 +201,10 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_CommandLine) {
 
   StartupTabs output = impl.DetermineStartupTabs(provider, cmd_line_tabs, true,
                                                  false, false, false, true);
-  ASSERT_EQ(2U, output.size());
+  ASSERT_EQ(3U, output.size());
   EXPECT_EQ("reset-trigger", output[0].url.host());
-  EXPECT_EQ("cmd-line", output[1].url.host());
+  EXPECT_EQ("pinned", output[1].url.host());
+  EXPECT_EQ("cmd-line", output[2].url.host());
 
   // Also test that both incognito and crash recovery don't interfere with
   // command line tabs.
@@ -240,8 +241,8 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_NewTabPage) {
       provider_allows_ntp, StartupTabs(), true, false, false, false, true);
   ASSERT_EQ(3U, output.size());
   EXPECT_EQ("reset-trigger", output[0].url.host());
-  EXPECT_EQ("new-tab", output[1].url.host());
-  EXPECT_EQ("pinned", output[2].url.host());
+  EXPECT_EQ("pinned", output[1].url.host());
+  EXPECT_EQ("new-tab", output[2].url.host());
 }
 
 // The welcome back page should appear before any other session restore tabs.
@@ -255,23 +256,23 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_WelcomeBackPage) {
   StartupTabs output = impl.DetermineStartupTabs(
       provider_allows_ntp, StartupTabs(), true, false, false, false, true);
   ASSERT_EQ(3U, output.size());
-  EXPECT_EQ("welcome-back", output[0].url.host());
-  EXPECT_EQ("prefs", output[1].url.host());
-  EXPECT_EQ("pinned", output[2].url.host());
+  EXPECT_EQ("pinned", output[0].url.host());
+  EXPECT_EQ("welcome-back", output[1].url.host());
+  EXPECT_EQ("prefs", output[2].url.host());
 
   // No welcome back for non-startup opens.
   output = impl.DetermineStartupTabs(provider_allows_ntp, StartupTabs(), false,
                                      false, false, false, true);
   ASSERT_EQ(2U, output.size());
-  EXPECT_EQ("prefs", output[0].url.host());
-  EXPECT_EQ("pinned", output[1].url.host());
+  EXPECT_EQ("pinned", output[0].url.host());
+  EXPECT_EQ("prefs", output[1].url.host());
 
   // No welcome back for managed starts even if first run.
   output = impl.DetermineStartupTabs(provider_allows_ntp, StartupTabs(), true,
                                      false, false, false, false);
   ASSERT_EQ(2U, output.size());
-  EXPECT_EQ("prefs", output[0].url.host());
-  EXPECT_EQ("pinned", output[1].url.host());
+  EXPECT_EQ("pinned", output[0].url.host());
+  EXPECT_EQ("prefs", output[1].url.host());
 }
 
 TEST(StartupBrowserCreatorImplTest, DetermineBrowserOpenBehavior_Startup) {
