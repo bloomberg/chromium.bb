@@ -1024,16 +1024,18 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
     PRINTER_LOG(ERROR) << "Discovered printer disappeared";
     // Printer disappeared, so we don't have information about it anymore and
     // can't really do much. Fail the add.
-    FireWebUIListener("on-add-or-edit-cups-printer", base::Value(false),
-                      base::Value(printer_id));
+    FireWebUIListener("on-add-or-edit-cups-printer",
+                      base::Value(PrinterSetupResult::kPrinterUnreachable),
+                      base::Value(""));
     return;
   }
 
   if (!printer->GetUriComponents().has_value()) {
     PRINTER_LOG(DEBUG) << "Could not parse uri";
     // The printer uri was not parsed successfully. Fail the add.
-    FireWebUIListener("on-add-or-edit-cups-printer", base::Value(false),
-                      base::Value(printer_id));
+    FireWebUIListener("on-add-or-edit-cups-printer",
+                      base::Value(PrinterSetupResult::kPrinterUnreachable),
+                      base::Value(""));
     return;
   }
 
