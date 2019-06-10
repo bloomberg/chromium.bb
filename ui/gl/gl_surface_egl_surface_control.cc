@@ -65,6 +65,9 @@ int GLSurfaceEGLSurfaceControl::GetBufferCount() const {
 }
 
 bool GLSurfaceEGLSurfaceControl::Initialize(GLSurfaceFormat format) {
+  if (!root_surface_->surface())
+    return false;
+
   format_ = format;
 
   // Surfaceless is always disabled on Android so we create a 1x1 pbuffer

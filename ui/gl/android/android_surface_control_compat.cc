@@ -330,13 +330,15 @@ SurfaceControl::Surface::Surface() = default;
 SurfaceControl::Surface::Surface(const Surface& parent, const char* name) {
   surface_ = SurfaceControlMethods::Get().ASurfaceControl_createFn(
       parent.surface(), name);
-  DCHECK(surface_);
+  if (!surface_)
+    LOG(ERROR) << "Failed to create ASurfaceControl : " << name;
 }
 
 SurfaceControl::Surface::Surface(ANativeWindow* parent, const char* name) {
   surface_ = SurfaceControlMethods::Get().ASurfaceControl_createFromWindowFn(
       parent, name);
-  DCHECK(surface_);
+  if (!surface_)
+    LOG(ERROR) << "Failed to create ASurfaceControl : " << name;
 }
 
 SurfaceControl::Surface::~Surface() {
