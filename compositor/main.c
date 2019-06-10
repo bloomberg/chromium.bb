@@ -42,7 +42,7 @@
 #include <sys/socket.h>
 #include <libinput.h>
 #include <libevdev/libevdev.h>
-#include <linux/input-event-codes.h>
+#include <linux/input.h>
 #include <sys/time.h>
 #include <linux/limits.h>
 
