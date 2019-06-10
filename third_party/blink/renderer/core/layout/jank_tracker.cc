@@ -27,6 +27,8 @@ namespace blink {
 
 static constexpr TimeDelta kTimerDelay = TimeDelta::FromMilliseconds(500);
 static const float kRegionGranularitySteps = 60.0;
+// TODO: Vary by Finch experiment parameter.
+static const float kSweepLineRegionGranularity = 1.0;
 static const float kMovementThreshold = 3.0;  // CSS pixels.
 
 static FloatPoint LogicalStart(const FloatRect& rect,
@@ -49,7 +51,7 @@ static float GetMoveDistance(const FloatRect& old_rect,
 
 static float RegionGranularityScale(const IntRect& viewport) {
   if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
-    return 1;
+    return kSweepLineRegionGranularity;
 
   return kRegionGranularitySteps /
          std::min(viewport.Height(), viewport.Width());
@@ -275,13 +277,15 @@ void JankTracker::NotifyPrePaintFinished() {
     return;
 
   IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
-  double granularity_scale = RegionGranularityScale(viewport);
-  viewport.Scale(granularity_scale);
-
   if (viewport.IsEmpty())
     return;
 
-  double viewport_area = double(viewport.Width()) * double(viewport.Height());
+  double granularity_scale = RegionGranularityScale(viewport);
+  IntRect scaled_viewport = viewport;
+  scaled_viewport.Scale(granularity_scale);
+
+  double viewport_area =
+      double(scaled_viewport.Width()) * double(scaled_viewport.Height());
   uint64_t region_area =
       use_sweep_line ? region_experimental_.Area() : region_.Area();
   double jank_fraction = region_area / viewport_area;
