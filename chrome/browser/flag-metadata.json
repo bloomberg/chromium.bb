@@ -2663,6 +2663,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "periodic-background-sync",
+    "owners": [ "nator" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "postscript-printing",
     "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76

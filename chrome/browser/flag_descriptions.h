@@ -890,6 +890,9 @@ extern const char kPasswordsKeyboardAccessoryDescription[];
 extern const char kPasswordsMigrateLinuxToLoginDBName[];
 extern const char kPasswordsMigrateLinuxToLoginDBDescription[];
 
+extern const char kPeriodicBackgroundSyncName[];
+extern const char kPeriodicBackgroundSyncDescription[];
+
 extern const char kPerMethodCanMakePaymentQuotaName[];
 extern const char kPerMethodCanMakePaymentQuotaDescription[];
 

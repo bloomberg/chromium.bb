@@ -33853,6 +33853,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="SupervisedUserCommittedInterstitials:enabled"/>
   <int value="-1096595907" label="disable-new-virtual-keyboard-behavior"/>
   <int value="-1095947169" label="ModalPermissionDialogView:disabled"/>
+  <int value="-1093104008" label="PeriodicBackgroundSync:disabled"/>
   <summary>Chrome flags that lead to Chrome restart on Chrome OS.</summary>
 <!--
 Values in LoginCustomFlags are:  value=(uint32_t)MD5(label).
@@ -34003,6 +34004,7 @@ from previous Chrome versions.
   <int value="-876148583" label="ArcBootCompletedBroadcast:disabled"/>
   <int value="-874602599" label="HorizontalTabSwitcherAndroid:enabled"/>
   <int value="-872764392" label="ContextualSuggestionsBottomSheet:disabled"/>
+  <int value="-872302695" label="PeriodicBackgroundSync:enabled"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
   <int value="-866993841" label="OfflinePagesCTV2:disabled"/>
   <int value="-864266073" label="cros-regions-mode"/>

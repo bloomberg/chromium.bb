@@ -3908,6 +3908,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardUploadFeedbackDescription,
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardUploadFeedback)},
+    {"periodic-background-sync", flag_descriptions::kPeriodicBackgroundSyncName,
+     flag_descriptions::kPeriodicBackgroundSyncDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPeriodicBackgroundSync)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

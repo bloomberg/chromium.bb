@@ -1489,6 +1489,10 @@ const char kPasswordsMigrateLinuxToLoginDBDescription[] =
     "Performs a one-off irreversible migration of passwords from the "
     "gnome-keyring or kwallet into the profile directory.";
 
+const char kPeriodicBackgroundSyncName[] = "Periodic Background Sync";
+const char kPeriodicBackgroundSyncDescription[] =
+    "If enabled, web apps can periodically sync content in the background.";
+
 const char kPerMethodCanMakePaymentQuotaName[] =
     "Per-method canMakePayment() quota.";
 const char kPerMethodCanMakePaymentQuotaDescription[] =
