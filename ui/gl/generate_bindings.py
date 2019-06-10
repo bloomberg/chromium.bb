@@ -2430,6 +2430,10 @@ EGL_FUNCTIONS = [
                  'client_extensions': ['EGL_KHR_debug'], }],
   'arguments': 'EGLint attribute, EGLAttrib* value', },
 { 'return_type': 'EGLBoolean',
+  'versions': [{ 'name': 'eglQueryDisplayAttribANGLE',
+                 'extensions': ['EGL_ANGLE_feature_control'] }],
+  'arguments': 'EGLDisplay dpy, EGLint attribute, EGLAttrib* value' },
+{ 'return_type': 'EGLBoolean',
   'versions': [{ 'name': 'eglQueryStreamKHR',
                  'extensions': ['EGL_KHR_stream'] }],
   'arguments':
@@ -2444,6 +2448,10 @@ EGL_FUNCTIONS = [
 { 'return_type': 'const char*',
   'names': ['eglQueryString'],
   'arguments': 'EGLDisplay dpy, EGLint name', },
+{ 'return_type': 'const char *',
+  'versions': [{ 'name': 'eglQueryStringiANGLE',
+                 'extensions': ['EGL_ANGLE_feature_control'] }],
+  'arguments': 'EGLDisplay dpy, EGLint name, EGLint index' },
 { 'return_type': 'EGLBoolean',
   'names': ['eglQuerySurface'],
   'arguments':
@@ -2776,6 +2784,7 @@ FUNCTION_SETS = [
     ],
     [
       'EGL_ANGLE_d3d_share_handle_client_buffer',
+      'EGL_ANGLE_feature_control',
       'EGL_ANGLE_surface_d3d_texture_2d_share_handle',
     ],
   ],

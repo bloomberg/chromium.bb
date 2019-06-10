@@ -501,6 +501,23 @@ std::unique_ptr<base::ListValue> GetVideoAcceleratorsInfo() {
   }
   return info;
 }
+
+std::unique_ptr<base::ListValue> GetANGLEFeatures() {
+  gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
+  auto angle_features_list = std::make_unique<base::ListValue>();
+  for (const auto& feature : gpu_info.angle_features) {
+    auto angle_feature = std::make_unique<base::DictionaryValue>();
+    angle_feature->SetString("name", feature.name);
+    angle_feature->SetString("category", feature.category);
+    angle_feature->SetString("description", feature.description);
+    angle_feature->SetString("bug", feature.bug);
+    angle_feature->SetString("status", feature.status);
+    angle_features_list->Append(std::move(angle_feature));
+  }
+
+  return angle_features_list;
+}
+
 // This class receives javascript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of
 // this class's methods are expected to run on the UI thread.
@@ -671,6 +688,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   for (const auto& workaround : GetDriverBugWorkarounds())
     workarounds->AppendString(workaround);
   feature_status->Set("workarounds", std::move(workarounds));
+  feature_status->Set("ANGLEFeatures", GetANGLEFeatures());
   gpu_info_val->Set("featureStatus", std::move(feature_status));
   if (!GpuDataManagerImpl::GetInstance()->IsGpuProcessUsingHardwareGpu()) {
     auto feature_status_for_hardware_gpu =

@@ -28,20 +28,28 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/init/gl_factory.h"
-
-#if defined(OS_ANDROID)
-#include "ui/gl/gl_surface_egl.h"
-#endif  // OS_ANDROID
 
 #if defined(USE_X11)
 #include "ui/gl/gl_visual_picker_glx.h"
 #endif
 
 namespace {
+
+// From ANGLE's egl/eglext.h.
+#ifndef EGL_ANGLE_feature_control
+#define EGL_ANGLE_feature_control 1
+#define EGL_FEATURE_NAME_ANGLE 0x3460
+#define EGL_FEATURE_CATEGORY_ANGLE 0x3461
+#define EGL_FEATURE_DESCRIPTION_ANGLE 0x3462
+#define EGL_FEATURE_BUG_ANGLE 0x3463
+#define EGL_FEATURE_STATUS_ANGLE 0x3464
+#define EGL_FEATURE_COUNT_ANGLE 0x3465
+#endif /* EGL_ANGLE_feature_control */
 
 scoped_refptr<gl::GLSurface> InitializeGLSurface() {
   scoped_refptr<gl::GLSurface> surface(
@@ -77,6 +85,16 @@ std::string GetGLString(unsigned int pname) {
       reinterpret_cast<const char*>(glGetString(pname));
   if (gl_string)
     return std::string(gl_string);
+  return std::string();
+}
+
+std::string QueryEGLStringi(EGLDisplay display,
+                            unsigned int name,
+                            unsigned int index) {
+  const char* egl_string =
+      reinterpret_cast<const char*>(eglQueryStringiANGLE(display, name, index));
+  if (egl_string)
+    return std::string(egl_string);
   return std::string();
 }
 
@@ -262,6 +280,28 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   std::string glsl_version = GetVersionFromString(glsl_version_string);
   gpu_info->pixel_shader_version = glsl_version;
   gpu_info->vertex_shader_version = glsl_version;
+
+  // Populate the list of ANGLE features by querying the functions exposed by
+  // EGL_ANGLE_feature_control if it's available.
+  if (gl::GLSurfaceEGL::IsANGLEFeatureControlSupported()) {
+    EGLDisplay display = gl::GLSurfaceEGL::GetHardwareDisplay();
+    EGLAttrib feature_count = 0;
+    eglQueryDisplayAttribANGLE(display, EGL_FEATURE_COUNT_ANGLE,
+                               &feature_count);
+    gpu_info->angle_features.resize(static_cast<size_t>(feature_count));
+    for (size_t i = 0; i < gpu_info->angle_features.size(); i++) {
+      gpu_info->angle_features[i].name =
+          QueryEGLStringi(display, EGL_FEATURE_NAME_ANGLE, i);
+      gpu_info->angle_features[i].category =
+          QueryEGLStringi(display, EGL_FEATURE_CATEGORY_ANGLE, i);
+      gpu_info->angle_features[i].description =
+          QueryEGLStringi(display, EGL_FEATURE_DESCRIPTION_ANGLE, i);
+      gpu_info->angle_features[i].bug =
+          QueryEGLStringi(display, EGL_FEATURE_BUG_ANGLE, i);
+      gpu_info->angle_features[i].status =
+          QueryEGLStringi(display, EGL_FEATURE_STATUS_ANGLE, i);
+    }
+  }
 
   IdentifyActiveGPU(gpu_info);
   return true;

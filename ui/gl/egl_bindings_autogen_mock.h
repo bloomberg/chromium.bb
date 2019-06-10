@@ -181,6 +181,10 @@ static EGLBoolean GL_BINDING_CALL Mock_eglQueryContext(EGLDisplay dpy,
                                                        EGLint* value);
 static EGLBoolean GL_BINDING_CALL Mock_eglQueryDebugKHR(EGLint attribute,
                                                         EGLAttrib* value);
+static EGLBoolean GL_BINDING_CALL
+Mock_eglQueryDisplayAttribANGLE(EGLDisplay dpy,
+                                EGLint attribute,
+                                EGLAttrib* value);
 static EGLBoolean GL_BINDING_CALL Mock_eglQueryStreamKHR(EGLDisplay dpy,
                                                          EGLStreamKHR stream,
                                                          EGLenum attribute,
@@ -192,6 +196,9 @@ Mock_eglQueryStreamu64KHR(EGLDisplay dpy,
                           EGLuint64KHR* value);
 static const char* GL_BINDING_CALL Mock_eglQueryString(EGLDisplay dpy,
                                                        EGLint name);
+static const char* GL_BINDING_CALL Mock_eglQueryStringiANGLE(EGLDisplay dpy,
+                                                             EGLint name,
+                                                             EGLint index);
 static EGLBoolean GL_BINDING_CALL Mock_eglQuerySurface(EGLDisplay dpy,
                                                        EGLSurface surface,
                                                        EGLint attribute,

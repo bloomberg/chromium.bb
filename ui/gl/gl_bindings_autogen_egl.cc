@@ -157,6 +157,8 @@ void DriverEGL::InitializeExtensionBindings() {
       gfx::HasExtension(extensions, "EGL_ANDROID_native_fence_sync");
   ext.b_EGL_ANGLE_d3d_share_handle_client_buffer =
       gfx::HasExtension(extensions, "EGL_ANGLE_d3d_share_handle_client_buffer");
+  ext.b_EGL_ANGLE_feature_control =
+      gfx::HasExtension(extensions, "EGL_ANGLE_feature_control");
   ext.b_EGL_ANGLE_query_surface_pointer =
       gfx::HasExtension(extensions, "EGL_ANGLE_query_surface_pointer");
   ext.b_EGL_ANGLE_stream_producer_d3d_texture =
@@ -283,6 +285,12 @@ void DriverEGL::InitializeExtensionBindings() {
         GetGLProcAddress("eglPostSubBufferNV"));
   }
 
+  if (ext.b_EGL_ANGLE_feature_control) {
+    fn.eglQueryDisplayAttribANGLEFn =
+        reinterpret_cast<eglQueryDisplayAttribANGLEProc>(
+            GetGLProcAddress("eglQueryDisplayAttribANGLE"));
+  }
+
   if (ext.b_EGL_KHR_stream) {
     fn.eglQueryStreamKHRFn = reinterpret_cast<eglQueryStreamKHRProc>(
         GetGLProcAddress("eglQueryStreamKHR"));
@@ -291,6 +299,11 @@ void DriverEGL::InitializeExtensionBindings() {
   if (ext.b_EGL_KHR_stream) {
     fn.eglQueryStreamu64KHRFn = reinterpret_cast<eglQueryStreamu64KHRProc>(
         GetGLProcAddress("eglQueryStreamu64KHR"));
+  }
+
+  if (ext.b_EGL_ANGLE_feature_control) {
+    fn.eglQueryStringiANGLEFn = reinterpret_cast<eglQueryStringiANGLEProc>(
+        GetGLProcAddress("eglQueryStringiANGLE"));
   }
 
   if (ext.b_EGL_ANGLE_query_surface_pointer) {
@@ -662,6 +675,12 @@ EGLBoolean EGLApiBase::eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) {
   return driver_->fn.eglQueryDebugKHRFn(attribute, value);
 }
 
+EGLBoolean EGLApiBase::eglQueryDisplayAttribANGLEFn(EGLDisplay dpy,
+                                                    EGLint attribute,
+                                                    EGLAttrib* value) {
+  return driver_->fn.eglQueryDisplayAttribANGLEFn(dpy, attribute, value);
+}
+
 EGLBoolean EGLApiBase::eglQueryStreamKHRFn(EGLDisplay dpy,
                                            EGLStreamKHR stream,
                                            EGLenum attribute,
@@ -678,6 +697,12 @@ EGLBoolean EGLApiBase::eglQueryStreamu64KHRFn(EGLDisplay dpy,
 
 const char* EGLApiBase::eglQueryStringFn(EGLDisplay dpy, EGLint name) {
   return driver_->fn.eglQueryStringFn(dpy, name);
+}
+
+const char* EGLApiBase::eglQueryStringiANGLEFn(EGLDisplay dpy,
+                                               EGLint name,
+                                               EGLint index) {
+  return driver_->fn.eglQueryStringiANGLEFn(dpy, name, index);
 }
 
 EGLBoolean EGLApiBase::eglQuerySurfaceFn(EGLDisplay dpy,
@@ -1160,6 +1185,13 @@ EGLBoolean TraceEGLApi::eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) {
   return egl_api_->eglQueryDebugKHRFn(attribute, value);
 }
 
+EGLBoolean TraceEGLApi::eglQueryDisplayAttribANGLEFn(EGLDisplay dpy,
+                                                     EGLint attribute,
+                                                     EGLAttrib* value) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglQueryDisplayAttribANGLE")
+  return egl_api_->eglQueryDisplayAttribANGLEFn(dpy, attribute, value);
+}
+
 EGLBoolean TraceEGLApi::eglQueryStreamKHRFn(EGLDisplay dpy,
                                             EGLStreamKHR stream,
                                             EGLenum attribute,
@@ -1179,6 +1211,13 @@ EGLBoolean TraceEGLApi::eglQueryStreamu64KHRFn(EGLDisplay dpy,
 const char* TraceEGLApi::eglQueryStringFn(EGLDisplay dpy, EGLint name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglQueryString")
   return egl_api_->eglQueryStringFn(dpy, name);
+}
+
+const char* TraceEGLApi::eglQueryStringiANGLEFn(EGLDisplay dpy,
+                                                EGLint name,
+                                                EGLint index) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglQueryStringiANGLE")
+  return egl_api_->eglQueryStringiANGLEFn(dpy, name, index);
 }
 
 EGLBoolean TraceEGLApi::eglQuerySurfaceFn(EGLDisplay dpy,
@@ -1889,6 +1928,18 @@ EGLBoolean DebugEGLApi::eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) {
   return result;
 }
 
+EGLBoolean DebugEGLApi::eglQueryDisplayAttribANGLEFn(EGLDisplay dpy,
+                                                     EGLint attribute,
+                                                     EGLAttrib* value) {
+  GL_SERVICE_LOG("eglQueryDisplayAttribANGLE"
+                 << "(" << dpy << ", " << attribute << ", "
+                 << static_cast<const void*>(value) << ")");
+  EGLBoolean result =
+      egl_api_->eglQueryDisplayAttribANGLEFn(dpy, attribute, value);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
 EGLBoolean DebugEGLApi::eglQueryStreamKHRFn(EGLDisplay dpy,
                                             EGLStreamKHR stream,
                                             EGLenum attribute,
@@ -1919,6 +1970,16 @@ const char* DebugEGLApi::eglQueryStringFn(EGLDisplay dpy, EGLint name) {
   GL_SERVICE_LOG("eglQueryString"
                  << "(" << dpy << ", " << name << ")");
   const char* result = egl_api_->eglQueryStringFn(dpy, name);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+const char* DebugEGLApi::eglQueryStringiANGLEFn(EGLDisplay dpy,
+                                                EGLint name,
+                                                EGLint index) {
+  GL_SERVICE_LOG("eglQueryStringiANGLE"
+                 << "(" << dpy << ", " << name << ", " << index << ")");
+  const char* result = egl_api_->eglQueryStringiANGLEFn(dpy, name, index);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }

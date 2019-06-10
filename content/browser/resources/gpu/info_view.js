@@ -97,6 +97,8 @@ cr.define('gpu', function() {
       const problemsList = this.querySelector('.problems-list');
       const workaroundsDiv = this.querySelector('.workarounds-div');
       const workaroundsList = this.querySelector('.workarounds-list');
+      const ANGLEFeaturesDiv = this.querySelector('.angle-features-div');
+      const ANGLEFeaturesList = this.querySelector('.angle-features-list');
 
       const basicInfoForHardwareGpuDiv =
           this.querySelector('.basic-info-for-hardware-gpu-div');
@@ -121,11 +123,13 @@ cr.define('gpu', function() {
         if (gpuInfo.featureStatus) {
           this.appendFeatureInfo_(
               gpuInfo.featureStatus, featureStatusList, problemsDiv,
-              problemsList, workaroundsDiv, workaroundsList);
+              problemsList, workaroundsDiv, workaroundsList, ANGLEFeaturesDiv,
+              ANGLEFeaturesList);
         } else {
           featureStatusList.textContent = '';
           problemsList.hidden = true;
           workaroundsList.hidden = true;
+          ANGLEFeaturesList.hidden = true;
         }
 
         if (gpuInfo.featureStatusForHardwareGpu) {
@@ -210,7 +214,7 @@ cr.define('gpu', function() {
 
     appendFeatureInfo_: function(
         featureInfo, featureStatusList, problemsDiv, problemsList,
-        workaroundsDiv, workaroundsList) {
+        workaroundsDiv, workaroundsList, ANGLEFeaturesDiv, ANGLEFeaturesList) {
       // Feature map
       const featureLabelMap = {
         '2d_canvas': 'Canvas',
@@ -317,6 +321,18 @@ cr.define('gpu', function() {
       } else {
         workaroundsDiv.hidden = true;
       }
+
+      if (featureInfo.ANGLEFeatures.length) {
+        ANGLEFeaturesDiv.hidden = false;
+        ANGLEFeaturesList.textContent = '';
+        for (i = 0; i < featureInfo.ANGLEFeatures.length; i++) {
+          const ANGLEFeature = featureInfo.ANGLEFeatures[i];
+          const ANGLEFeatureEl = this.createANGLEFeatureEl_(ANGLEFeature);
+          ANGLEFeaturesList.appendChild(ANGLEFeatureEl);
+        }
+      } else {
+        ANGLEFeaturesDiv.hidden = true;
+      }
     },
 
     createProblemEl_: function(problem) {
@@ -385,6 +401,74 @@ cr.define('gpu', function() {
       }
 
       return problemEl;
+    },
+
+    createANGLEFeatureEl_: function(ANGLEFeature) {
+      const ANGLEFeatureEl = document.createElement('li');
+
+      // Name comes first, bolded
+      const name = document.createElement('b');
+      name.textContent = ANGLEFeature.name;
+      ANGLEFeatureEl.appendChild(name);
+
+      // If there's a category, it follows the name in parentheses
+      if (ANGLEFeature.category) {
+        const separator = document.createElement('span');
+        separator.textContent = ' ';
+        ANGLEFeatureEl.appendChild(separator);
+
+        const category = document.createElement('span');
+        category.textContent = '(' + ANGLEFeature.category + ')';
+        ANGLEFeatureEl.appendChild(category);
+      }
+
+      // If there's a bug link, try to parse the crbug/anglebug number
+      if (ANGLEFeature.bug) {
+        const separator = document.createElement('span');
+        separator.textContent = ' ';
+        ANGLEFeatureEl.appendChild(separator);
+
+        const bug = document.createElement('a');
+        if (ANGLEFeature.bug.includes('crbug.com/')) {
+          bug.textContent = ANGLEFeature.bug.match(/\d+/);
+        } else if (ANGLEFeature.bug.includes('anglebug.com/')) {
+          bug.textContent = 'anglebug:' + ANGLEFeature.bug.match(/\d+/);
+        } else {
+          bug.textContent = ANGLEFeature.bug;
+        }
+        bug.href = ANGLEFeature.bug;
+        ANGLEFeatureEl.appendChild(bug);
+      }
+
+      // Follow with a colon, and the status (colored)
+      const separator = document.createElement('span');
+      separator.textContent = ': ';
+      ANGLEFeatureEl.appendChild(separator);
+
+      const status = document.createElement('span');
+      if (ANGLEFeature.status == 'enabled') {
+        status.textContent = 'Enabled';
+        status.classList.add('feature-green');
+      } else {
+        status.textContent = 'Disabled';
+        status.classList.add('feature-red');
+      }
+      ANGLEFeatureEl.appendChild(status);
+
+      // if there's a description, put on new line, italicized
+      if (ANGLEFeature.description) {
+        const brNode = document.createElement('br');
+        ANGLEFeatureEl.appendChild(brNode);
+
+        const iNode = document.createElement('i');
+        ANGLEFeatureEl.appendChild(iNode);
+
+        const description = document.createElement('span');
+        description.textContent = ANGLEFeature.description;
+        iNode.appendChild(description);
+      }
+
+      return ANGLEFeatureEl;
     },
 
     setText_: function(outputElementId, text) {

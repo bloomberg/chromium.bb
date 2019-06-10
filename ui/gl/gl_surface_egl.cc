@@ -162,6 +162,7 @@ bool g_egl_display_texture_share_group_supported = false;
 bool g_egl_create_context_client_arrays_supported = false;
 bool g_egl_android_native_fence_sync_supported = false;
 bool g_egl_ext_pixel_format_float_supported = false;
+bool g_egl_angle_feature_control_supported = false;
 
 constexpr const char kSwapEventTraceCategories[] = "gpu";
 
@@ -777,6 +778,9 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
   g_egl_ext_pixel_format_float_supported =
       HasEGLExtension("EGL_EXT_pixel_format_float");
 
+  g_egl_angle_feature_control_supported =
+      HasEGLExtension("EGL_ANGLE_feature_control");
+
   initialized_ = true;
   return true;
 }
@@ -812,6 +816,7 @@ void GLSurfaceEGL::ShutdownOneOff() {
   g_egl_robust_resource_init_supported = false;
   g_egl_display_texture_share_group_supported = false;
   g_egl_create_context_client_arrays_supported = false;
+  g_egl_angle_feature_control_supported = false;
 
   initialized_ = false;
 }
@@ -882,6 +887,10 @@ bool GLSurfaceEGL::IsAndroidNativeFenceSyncSupported() {
 
 bool GLSurfaceEGL::IsPixelFormatFloatSupported() {
   return g_egl_ext_pixel_format_float_supported;
+}
+
+bool GLSurfaceEGL::IsANGLEFeatureControlSupported() {
+  return g_egl_angle_feature_control_supported;
 }
 
 GLSurfaceEGL::~GLSurfaceEGL() {}

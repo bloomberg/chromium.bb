@@ -191,6 +191,10 @@ typedef EGLBoolean(GL_BINDING_CALL* eglQueryContextProc)(EGLDisplay dpy,
                                                          EGLint* value);
 typedef EGLBoolean(GL_BINDING_CALL* eglQueryDebugKHRProc)(EGLint attribute,
                                                           EGLAttrib* value);
+typedef EGLBoolean(GL_BINDING_CALL* eglQueryDisplayAttribANGLEProc)(
+    EGLDisplay dpy,
+    EGLint attribute,
+    EGLAttrib* value);
 typedef EGLBoolean(GL_BINDING_CALL* eglQueryStreamKHRProc)(EGLDisplay dpy,
                                                            EGLStreamKHR stream,
                                                            EGLenum attribute,
@@ -202,6 +206,9 @@ typedef EGLBoolean(GL_BINDING_CALL* eglQueryStreamu64KHRProc)(
     EGLuint64KHR* value);
 typedef const char*(GL_BINDING_CALL* eglQueryStringProc)(EGLDisplay dpy,
                                                          EGLint name);
+typedef const char*(GL_BINDING_CALL* eglQueryStringiANGLEProc)(EGLDisplay dpy,
+                                                               EGLint name,
+                                                               EGLint index);
 typedef EGLBoolean(GL_BINDING_CALL* eglQuerySurfaceProc)(EGLDisplay dpy,
                                                          EGLSurface surface,
                                                          EGLint attribute,
@@ -271,6 +278,7 @@ struct ExtensionsEGL {
   bool b_EGL_ANDROID_get_native_client_buffer;
   bool b_EGL_ANDROID_native_fence_sync;
   bool b_EGL_ANGLE_d3d_share_handle_client_buffer;
+  bool b_EGL_ANGLE_feature_control;
   bool b_EGL_ANGLE_query_surface_pointer;
   bool b_EGL_ANGLE_stream_producer_d3d_texture;
   bool b_EGL_ANGLE_surface_d3d_texture_2d_share_handle;
@@ -343,9 +351,11 @@ struct ProcsEGL {
   eglQueryAPIProc eglQueryAPIFn;
   eglQueryContextProc eglQueryContextFn;
   eglQueryDebugKHRProc eglQueryDebugKHRFn;
+  eglQueryDisplayAttribANGLEProc eglQueryDisplayAttribANGLEFn;
   eglQueryStreamKHRProc eglQueryStreamKHRFn;
   eglQueryStreamu64KHRProc eglQueryStreamu64KHRFn;
   eglQueryStringProc eglQueryStringFn;
+  eglQueryStringiANGLEProc eglQueryStringiANGLEFn;
   eglQuerySurfaceProc eglQuerySurfaceFn;
   eglQuerySurfacePointerANGLEProc eglQuerySurfacePointerANGLEFn;
   eglReleaseTexImageProc eglReleaseTexImageFn;
@@ -531,6 +541,9 @@ class GL_EXPORT EGLApi {
                                        EGLint attribute,
                                        EGLint* value) = 0;
   virtual EGLBoolean eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) = 0;
+  virtual EGLBoolean eglQueryDisplayAttribANGLEFn(EGLDisplay dpy,
+                                                  EGLint attribute,
+                                                  EGLAttrib* value) = 0;
   virtual EGLBoolean eglQueryStreamKHRFn(EGLDisplay dpy,
                                          EGLStreamKHR stream,
                                          EGLenum attribute,
@@ -540,6 +553,9 @@ class GL_EXPORT EGLApi {
                                             EGLenum attribute,
                                             EGLuint64KHR* value) = 0;
   virtual const char* eglQueryStringFn(EGLDisplay dpy, EGLint name) = 0;
+  virtual const char* eglQueryStringiANGLEFn(EGLDisplay dpy,
+                                             EGLint name,
+                                             EGLint index) = 0;
   virtual EGLBoolean eglQuerySurfaceFn(EGLDisplay dpy,
                                        EGLSurface surface,
                                        EGLint attribute,
@@ -662,9 +678,12 @@ class GL_EXPORT EGLApi {
 #define eglQueryAPI ::gl::g_current_egl_context->eglQueryAPIFn
 #define eglQueryContext ::gl::g_current_egl_context->eglQueryContextFn
 #define eglQueryDebugKHR ::gl::g_current_egl_context->eglQueryDebugKHRFn
+#define eglQueryDisplayAttribANGLE \
+  ::gl::g_current_egl_context->eglQueryDisplayAttribANGLEFn
 #define eglQueryStreamKHR ::gl::g_current_egl_context->eglQueryStreamKHRFn
 #define eglQueryStreamu64KHR ::gl::g_current_egl_context->eglQueryStreamu64KHRFn
 #define eglQueryString ::gl::g_current_egl_context->eglQueryStringFn
+#define eglQueryStringiANGLE ::gl::g_current_egl_context->eglQueryStringiANGLEFn
 #define eglQuerySurface ::gl::g_current_egl_context->eglQuerySurfaceFn
 #define eglQuerySurfacePointerANGLE \
   ::gl::g_current_egl_context->eglQuerySurfacePointerANGLEFn

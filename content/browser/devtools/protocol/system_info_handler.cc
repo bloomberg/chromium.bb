@@ -106,6 +106,10 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
     in_aux_attributes_ = false;
   }
 
+  void BeginANGLEFeature() override {}
+
+  void EndANGLEFeature() override {}
+
  private:
   protocol::DictionaryValue* dictionary_;
   bool in_aux_attributes_;
