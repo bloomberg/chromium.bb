@@ -234,7 +234,8 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
 };
 
 inline bool IsTextControl(const Node& node) {
-  return node.IsElementNode() && ToElement(node).IsTextControl();
+  auto* element = DynamicTo<Element>(node);
+  return element && element->IsTextControl();
 }
 inline bool IsTextControl(const Node* node) {
   return node && IsTextControl(*node);

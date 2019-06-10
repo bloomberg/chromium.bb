@@ -86,8 +86,8 @@ void CustomElementUpgradeSorter::Sorted(HeapVector<Member<Element>>* result,
 
   // TODO(dominicc): When custom elements are used in UA shadow
   // roots, expand this to include UA shadow roots.
-  ShadowRoot* shadow_root =
-      parent->IsElementNode() ? ToElement(parent)->AuthorShadowRoot() : nullptr;
+  auto* element = DynamicTo<Element>(parent);
+  ShadowRoot* shadow_root = element ? element->AuthorShadowRoot() : nullptr;
   if (shadow_root)
     Visit(result, *children, children->find(shadow_root));
 

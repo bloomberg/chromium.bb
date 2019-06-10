@@ -102,7 +102,7 @@ Element* HTMLDetailsElement::FindMainSummary() const {
   HTMLSlotElement* slot = To<HTMLSlotElement>(element);
   DCHECK(slot->firstChild());
   CHECK(IsHTMLSummaryElement(*slot->firstChild()));
-  return ToElement(slot->firstChild());
+  return To<Element>(slot->firstChild());
 }
 
 void HTMLDetailsElement::ParseAttribute(

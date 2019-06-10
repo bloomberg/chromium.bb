@@ -387,8 +387,8 @@ TEST_F(HTMLSelectElementTest, DefaultToolTip) {
       ">Placeholder</option><optgroup><option>o2</option></optgroup></select>");
   HTMLSelectElement* select =
       ToHTMLSelectElement(GetDocument().body()->firstChild());
-  Element* option = ToElement(select->firstChild());
-  Element* optgroup = ToElement(option->nextSibling());
+  auto* option = To<Element>(select->firstChild());
+  auto* optgroup = To<Element>(option->nextSibling());
 
   EXPECT_EQ(String(), select->DefaultToolTip())
       << "defaultToolTip for SELECT without FORM and without required "

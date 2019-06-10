@@ -150,8 +150,8 @@ class Parser final {
   // Traverses descendants of |node|. The |node| may be removed when it is
   // |CharacterData| node contains only selection markers.
   void Traverse(Node* node) {
-    if (node->IsElementNode()) {
-      HandleElementNode(ToElement(node));
+    if (auto* element = DynamicTo<Element>(node)) {
+      HandleElementNode(element);
       return;
     }
     if (auto* data = DynamicTo<CharacterData>(node)) {
@@ -282,8 +282,8 @@ class Serializer final {
   }
 
   void HandleNode(const Node& node) {
-    if (node.IsElementNode()) {
-      HandleElementNode(ToElement(node));
+    if (auto* element = DynamicTo<Element>(node)) {
+      HandleElementNode(*element);
       return;
     }
     if (node.IsTextNode()) {

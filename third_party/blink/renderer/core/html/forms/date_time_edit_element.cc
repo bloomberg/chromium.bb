@@ -580,9 +580,9 @@ scoped_refptr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
   float width = 0;
   for (Node* child = FieldsWrapperElement()->firstChild(); child;
        child = child->nextSibling()) {
-    if (!child->IsElementNode())
+    auto* child_element = DynamicTo<Element>(child);
+    if (!child_element)
       continue;
-    Element* child_element = ToElement(child);
     if (child_element->IsDateTimeFieldElement()) {
       // We need to pass the ComputedStyle of this element because child
       // elements can't resolve inherited style at this timing.

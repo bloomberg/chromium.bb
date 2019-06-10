@@ -20,7 +20,7 @@ TEST(DocumentStateTest, ToStateVectorConnected) {
   Element* html = doc.CreateRawElement(html_names::kHTMLTag);
   doc.appendChild(html);
   Node* body = html->appendChild(doc.CreateRawElement(html_names::kBodyTag));
-  ToElement(body)->SetInnerHTMLFromString("<select form='ff'></select>");
+  To<Element>(body)->SetInnerHTMLFromString("<select form='ff'></select>");
   DocumentState* document_state = doc.GetFormController().FormElementsState();
   Vector<String> state1 = document_state->ToStateVector();
   // <signature>, <control-size>, <form-key>, <name>, <type>, <data-size(0)>

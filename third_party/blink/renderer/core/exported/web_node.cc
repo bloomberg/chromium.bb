@@ -131,12 +131,13 @@ bool WebNode::IsCommentNode() const {
 }
 
 bool WebNode::IsFocusable() const {
-  if (!private_->IsElementNode())
+  auto* element = DynamicTo<Element>(private_.Get());
+  if (!element)
     return false;
   if (!private_->GetDocument().HaveRenderBlockingResourcesLoaded())
     return false;
   private_->GetDocument().UpdateStyleAndLayoutTreeForNode(private_.Get());
-  return ToElement(private_.Get())->IsFocusable();
+  return element->IsFocusable();
 }
 
 bool WebNode::IsContentEditable() const {

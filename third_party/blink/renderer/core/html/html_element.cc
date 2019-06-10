@@ -127,10 +127,10 @@ bool IsEditable(const Node& node) {
     return true;
   if (IsSVGSVGElement(node))
     return true;
-  if (node.IsElementNode() &&
-      ToElement(node).HasTagName(mathml_names::kMathTag))
+  auto* element = DynamicTo<Element>(node);
+  if (element && element->HasTagName(mathml_names::kMathTag))
     return true;
-  return !node.IsElementNode() && node.parentNode()->IsHTMLElement();
+  return !element && node.parentNode()->IsHTMLElement();
 }
 
 const WebFeature kNoWebFeature = static_cast<WebFeature>(0);
@@ -1044,19 +1044,19 @@ TextDirection HTMLElement::Directionality() const {
   Node* node = FlatTreeTraversal::FirstChild(*this);
   while (node) {
     // Skip bdi, script, style and text form controls.
+    auto* element = DynamicTo<Element>(node);
     if (DeprecatedEqualIgnoringCase(node->nodeName(), "bdi") ||
         IsHTMLScriptElement(*node) || IsHTMLStyleElement(*node) ||
-        (node->IsElementNode() && ToElement(node)->IsTextControl()) ||
-        (node->IsElementNode() &&
-         ToElement(node)->ShadowPseudoId() == "-webkit-input-placeholder")) {
+        (element && element->IsTextControl()) ||
+        (element && element->ShadowPseudoId() == "-webkit-input-placeholder")) {
       node = FlatTreeTraversal::NextSkippingChildren(*node, this);
       continue;
     }
 
     // Skip elements with valid dir attribute
-    if (node->IsElementNode()) {
+    if (auto* element_node = DynamicTo<Element>(node)) {
       AtomicString dir_attribute_value =
-          ToElement(node)->FastGetAttribute(kDirAttr);
+          element_node->FastGetAttribute(kDirAttr);
       if (IsValidDirAttribute(dir_attribute_value)) {
         node = FlatTreeTraversal::NextSkippingChildren(*node, this);
         continue;

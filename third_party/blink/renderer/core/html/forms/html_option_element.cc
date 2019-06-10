@@ -354,7 +354,8 @@ String HTMLOptionElement::CollectOptionInnerText() const {
     if (node->IsTextNode())
       text.Append(node->nodeValue());
     // Text nodes inside script elements are not part of the option text.
-    if (node->IsElementNode() && ToElement(node)->IsScriptElement())
+    auto* element = DynamicTo<Element>(node);
+    if (element && element->IsScriptElement())
       node = NodeTraversal::NextSkippingChildren(*node, this);
     else
       node = NodeTraversal::Next(*node, this);

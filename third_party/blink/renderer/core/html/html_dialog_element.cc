@@ -54,9 +54,9 @@ static void SetFocusForDialog(HTMLDialogElement* dialog) {
                ? FlatTreeTraversal::NextSkippingChildren(*node, dialog)
                : FlatTreeTraversal::Next(*node, dialog);
 
-    if (!node->IsElementNode())
+    auto* element = DynamicTo<Element>(node);
+    if (!element)
       continue;
-    Element* element = ToElement(node);
     if (element->IsFormControlElement()) {
       HTMLFormControlElement* control = ToHTMLFormControlElement(node);
       if (control->IsAutofocusable() && control->IsFocusable()) {

@@ -63,11 +63,10 @@ const Element* ColdModeSpellCheckRequester::CurrentFocusedEditable() const {
   if (position.IsNull())
     return nullptr;
 
-  const ContainerNode* root = HighestEditableRoot(position);
-  if (!root || !root->isConnected() || !root->IsElementNode())
+  const auto* element = DynamicTo<Element>(HighestEditableRoot(position));
+  if (!element || !element->isConnected())
     return nullptr;
 
-  const Element* element = ToElement(root);
   if (!element->IsSpellCheckingEnabled() ||
       !SpellChecker::IsSpellCheckingEnabledAt(position))
     return nullptr;

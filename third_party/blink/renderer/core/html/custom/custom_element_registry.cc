@@ -37,11 +37,10 @@ namespace {
 
 void CollectUpgradeCandidateInNode(Node& root,
                                    HeapVector<Member<Element>>& candidates) {
-  if (root.IsElementNode()) {
-    Element& root_element = ToElement(root);
-    if (root_element.GetCustomElementState() == CustomElementState::kUndefined)
+  if (auto* root_element = DynamicTo<Element>(root)) {
+    if (root_element->GetCustomElementState() == CustomElementState::kUndefined)
       candidates.push_back(root_element);
-    if (auto* shadow_root = root_element.GetShadowRoot()) {
+    if (auto* shadow_root = root_element->GetShadowRoot()) {
       if (shadow_root->GetType() != ShadowRootType::kUserAgent)
         CollectUpgradeCandidateInNode(*shadow_root, candidates);
     }

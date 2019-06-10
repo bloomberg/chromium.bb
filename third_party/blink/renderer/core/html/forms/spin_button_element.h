@@ -105,8 +105,8 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
 DEFINE_TYPE_CASTS(SpinButtonElement,
                   Node,
                   node,
-                  ToElement(node)->IsSpinButtonElement(),
-                  ToElement(node).IsSpinButtonElement());
+                  To<Element>(node)->IsSpinButtonElement(),
+                  To<Element>(node).IsSpinButtonElement());
 
 template <>
 struct DowncastTraits<SpinButtonElement> {
