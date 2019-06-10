@@ -111,8 +111,10 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
   MaybeUpdateActiveSession();
 
   // Notify observers that we lost audio focus.
-  observers_.ForAllPtrs([&row](mojom::AudioFocusObserver* observer) {
-    observer->OnFocusLost(row->ToAudioFocusRequestState());
+  mojom::AudioFocusRequestStatePtr session_state =
+      row->ToAudioFocusRequestState();
+  observers_.ForAllPtrs([&session_state](mojom::AudioFocusObserver* observer) {
+    observer->OnFocusLost(session_state.Clone());
   });
 
   if (!was_top_most_session || audio_focus_stack_.empty())
