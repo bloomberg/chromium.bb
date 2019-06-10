@@ -47,15 +47,6 @@ const char kAshEnablePaletteOnAllDisplays[] =
 // enter tablet mode.
 const char kAshEnableTabletMode[] = "enable-touchview";
 
-// Used to expose additional test-only interfaces.
-// Historical note: this name was originally used by the window-service to
-// enable additional test only interfaces, which also enabled test functionality
-// in ash. While the window-service is no more, autotest lives on. The string
-// value matches that used by the window-service.
-// TODO(crbug.com/958247): this is only necessary because of
-// ShelfIntegrationTestApi, that likely can be removed.
-const char kAshEnableTestInterfaces[] = "use-test-config";
-
 // Enable the wayland server.
 const char kAshEnableWaylandServer[] = "enable-wayland-server";
 

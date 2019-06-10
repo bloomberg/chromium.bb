@@ -14,13 +14,11 @@
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
-#include "ash/autotest/shelf_integration_test_api.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -29,7 +27,6 @@
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/tray_action/tray_action.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -101,11 +98,6 @@ void BindNightLightControllerRequestOnMainThread(
   Shell::Get()->night_light_controller()->BindRequest(std::move(request));
 }
 
-void BindShelfIntegrationTestApiRequestOnMainThread(
-    mojom::ShelfIntegrationTestApiRequest request) {
-  ShelfIntegrationTestApi::BindRequest(std::move(request));
-}
-
 void BindTrayActionRequestOnMainThread(mojom::TrayActionRequest request) {
   Shell::Get()->tray_action()->BindRequest(std::move(request));
 }
@@ -171,13 +163,6 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(base::BindRepeating(&BindVpnListRequestOnMainThread),
                          main_thread_task_runner);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTestInterfaces)) {
-    registry->AddInterface(
-        base::BindRepeating(&BindShelfIntegrationTestApiRequestOnMainThread),
-        main_thread_task_runner);
-  }
 
   // Inject additional optional interfaces.
   if (g_register_interfaces_callback.Get()) {

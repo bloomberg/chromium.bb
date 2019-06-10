@@ -216,15 +216,12 @@ component("cpp") {
   ]
 
   public_deps = [
-    "//ash/public/interfaces:interfaces_internal",
+    "//ash/public/interfaces",
     "//base",
     "//components/session_manager:base",
     "//components/user_manager",
     "//ui/gfx",
   ]
-
-  allow_circular_includes_from =
-      [ "//ash/public/interfaces:interfaces_internal" ]
 
   output_name = "ash_public_cpp"
 }
@@ -236,7 +233,7 @@ source_set("manifest") {
   ]
 
   deps = [
-    "//ash/public/interfaces:interfaces_internal",
+    "//ash/public/interfaces",
     "//base",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/network_config/public/mojom",

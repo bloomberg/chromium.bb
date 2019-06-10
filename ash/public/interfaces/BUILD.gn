@@ -4,15 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# Depend upon //ash/public/cpp, which has a public_dep on this. The two targets
-# must be bundled together as the typemaps depend upon //ash/public/cpp,
-# and //ash/public/cpp needs to depend on this for generated code (such as
-# enums and constants).
-mojom("interfaces_internal") {
-  visibility = [
-    "//ash/public/cpp:*",
-    "//ash/public/interfaces:test_interfaces",
-  ]
+mojom("interfaces") {
   disable_variants = true
 
   sources = [
@@ -27,7 +19,6 @@ mojom("interfaces_internal") {
     "ime_controller.mojom",
     "ime_info.mojom",
     "night_light_controller.mojom",
-    "shelf_integration_test_api.mojom",
     "tray_action.mojom",
     "voice_interaction_controller.mojom",
     "vpn_list.mojom",
@@ -55,7 +46,7 @@ mojom("interfaces_internal") {
     "//url/mojom:url_mojom_gurl",
   ]
 
-  component_output_prefix = "ash_public_interfaces_internal"
+  component_output_prefix = "ash_public_interfaces"
   export_class_attribute = "ASH_PUBLIC_EXPORT"
   export_define = "ASH_PUBLIC_IMPLEMENTATION=1"
   export_header = "ash/public/cpp/ash_public_export.h"
@@ -69,7 +60,7 @@ mojom("test_interfaces") {
     "status_area_widget_test_api.test-mojom",
   ]
   deps = [
-    "//ash/public/interfaces:interfaces_internal",
+    ":interfaces",
     "//components/account_id/interfaces",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",

@@ -25,7 +25,6 @@ ASH_PUBLIC_EXPORT extern const char kAshEnableV1AppBackButton[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
 ASH_PUBLIC_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableTabletMode[];
-ASH_PUBLIC_EXPORT extern const char kAshEnableTestInterfaces[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableWaylandServer[];
 ASH_PUBLIC_EXPORT extern const char kAshForceEnableStylusTools[];
 ASH_PUBLIC_EXPORT extern const char kAshPowerButtonPosition[];

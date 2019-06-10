@@ -1293,7 +1293,6 @@ component("ash") {
     "//ash/assistant/ui",
     "//ash/assistant/ui:constants",
     "//ash/assistant/util",
-    "//ash/autotest",
     "//ash/components/cursor",
     "//ash/components/fast_ink",
     "//ash/components/shortcut_viewer",
@@ -1428,7 +1427,6 @@ component("ash") {
   ]
 
   allow_circular_includes_from = [
-    "//ash/autotest",
     "//components/exo",
     "//components/exo/wayland",
   ]

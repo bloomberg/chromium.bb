@@ -121,7 +121,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                               safe_browsing::mojom::SafeBrowsing>())
         .RequireCapability("apps", "app_service")
         .RequireCapability("ash", "system_ui")
-        // Used by ShelfTestApi and ShelfIntegrationTestApi
         .RequireCapability("ash", "test")
         .RequireCapability("ash", "display")
         .RequireCapability("assistant", "assistant")
