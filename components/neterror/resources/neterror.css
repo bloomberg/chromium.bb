@@ -617,16 +617,34 @@ div.offline-content-suggestion {
 }
 
 #cancel-save-page-button {
+  background-image: url(images/animated_offline_pin.svg);
+  background-position: right 27px center;
+  background-repeat: no-repeat;
   border: 1px solid var(--google-gray-300);
   border-radius: 5px;
   color: var(--google-gray-700);
-  padding: 16px;
-  text-align: center;
+  margin-bottom: 26px;
+  padding-bottom: 16px;
+  padding-inline-end: 88px;
+  padding-inline-start: 16px;
+  padding-top: 16px;
+  text-align: start;
+}
+
+html[dir="rtl"] #cancel-save-page-button {
+  background-position: left 27px center;
 }
 
 #save-page-for-later-button {
   display: flex;
-  justify-content: center;
+  justify-content: start;
+}
+
+#save-page-for-later-button a:before {
+  content: url(images/download-blue.svg);
+  display: inline-block;
+  margin-inline-end: 4px;
+  vertical-align: -webkit-baseline-middle;
 }
 
 .hidden#save-page-for-later-button {
