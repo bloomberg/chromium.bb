@@ -4,6 +4,9 @@
 
 #include "cc/test/pixel_test.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -32,6 +35,7 @@
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/display/software_renderer.h"
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
+#include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
@@ -56,13 +60,11 @@ namespace {
 // for tests.
 class PixelTestSkiaOutputSurfaceImpl : public viz::SkiaOutputSurfaceImpl {
  public:
-  PixelTestSkiaOutputSurfaceImpl(viz::GpuServiceImpl* gpu_service,
-                                 gpu::SurfaceHandle surface_handle,
-                                 const viz::RendererSettings& renderer_settings,
-                                 bool flipped_output_surface)
-      : SkiaOutputSurfaceImpl(gpu_service,
-                              surface_handle,
-                              renderer_settings),
+  PixelTestSkiaOutputSurfaceImpl(
+      std::unique_ptr<viz::SkiaOutputSurfaceDependency> deps,
+      const viz::RendererSettings& renderer_settings,
+      bool flipped_output_surface)
+      : SkiaOutputSurfaceImpl(std::move(deps), renderer_settings),
         flipped_output_surface_(flipped_output_surface) {}
 
   // |capabilities_| is set in InitializeForGL(), so wrap BindToClient() and set
@@ -289,8 +291,9 @@ void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface,
 
   // Set up the skia renderer.
   output_surface_ = std::make_unique<PixelTestSkiaOutputSurfaceImpl>(
-      gpu_service(), gpu::kNullSurfaceHandle, renderer_settings_,
-      flipped_output_surface);
+      std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
+          gpu_service(), gpu::kNullSurfaceHandle),
+      renderer_settings_, flipped_output_surface);
   output_surface_->BindToClient(output_surface_client_.get());
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       viz::DisplayResourceProvider::kGpu,

@@ -18,6 +18,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
+#include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -109,7 +110,9 @@ void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
 #endif
   }
   output_surface_ = std::make_unique<SkiaOutputSurfaceImpl>(
-      gpu_service(), surface_handle_, RendererSettings());
+      std::make_unique<SkiaOutputSurfaceDependencyImpl>(gpu_service(),
+                                                        surface_handle_),
+      RendererSettings());
   output_surface_->BindToClient(output_surface_client_.get());
 }
 

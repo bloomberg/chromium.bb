@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -22,7 +23,7 @@
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "components/viz/service/display_embedder/skia_output_device_gl.h"
 #include "components/viz/service/display_embedder/skia_output_device_offscreen.h"
-#include "components/viz/service/gl/gpu_service_impl.h"
+#include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/context_state.h"
@@ -147,27 +148,25 @@ namespace {
 base::AtomicSequenceNumber g_next_command_buffer_id;
 
 scoped_refptr<gpu::gles2::FeatureInfo> CreateFeatureInfo(
-    GpuServiceImpl* gpu_service) {
-  auto* channel_manager = gpu_service->gpu_channel_manager();
+    SkiaOutputSurfaceDependency* deps) {
   return base::MakeRefCounted<gpu::gles2::FeatureInfo>(
-      channel_manager->gpu_driver_bug_workarounds(),
-      channel_manager->gpu_feature_info());
+      deps->GetGpuDriverBugWorkarounds(), deps->GetGpuFeatureInfo());
 }
 
 scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
-    GpuServiceImpl* gpu_service) {
+    SkiaOutputSurfaceDependency* deps) {
   auto command_buffer_id = gpu::CommandBufferId::FromUnsafeValue(
       g_next_command_buffer_id.GetNext() + 1);
-  return gpu_service->sync_point_manager()->CreateSyncPointClientState(
+  return deps->GetSyncPointManager()->CreateSyncPointClientState(
       gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE, command_buffer_id,
-      gpu_service->skia_output_surface_sequence_id());
+      deps->GetSequenceId());
 }
 
 std::unique_ptr<gpu::SharedImageRepresentationFactory>
-CreateSharedImageRepresentationFactory(GpuServiceImpl* gpu_service) {
+CreateSharedImageRepresentationFactory(SkiaOutputSurfaceDependency* deps) {
   // TODO(https://crbug.com/899905): Use a real MemoryTracker, not nullptr.
   return std::make_unique<gpu::SharedImageRepresentationFactory>(
-      gpu_service->shared_image_manager(), nullptr);
+      deps->GetSharedImageManager(), nullptr);
 }
 
 class ScopedSurfaceToTexture {
@@ -461,39 +460,36 @@ void SkiaOutputSurfaceImplOnGpu::OffscreenSurface::set_surface(
 }
 
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
-    GpuServiceImpl* gpu_service,
-    gpu::SurfaceHandle surface_handle,
+    SkiaOutputSurfaceDependency* deps,
     const RendererSettings& renderer_settings,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     const BufferPresentedCallback& buffer_presented_callback,
     const ContextLostCallback& context_lost_callback)
-    : surface_handle_(surface_handle),
-      feature_info_(CreateFeatureInfo(gpu_service)),
-      mailbox_manager_(gpu_service->mailbox_manager()),
-      sync_point_client_state_(CreateSyncPointClientState(gpu_service)),
+    : dependency_(std::move(deps)),
+      feature_info_(CreateFeatureInfo(dependency_)),
+      sync_point_client_state_(CreateSyncPointClientState(dependency_)),
       shared_image_representation_factory_(
-          CreateSharedImageRepresentationFactory(gpu_service)),
-      gr_shader_cache_(gpu_service->gr_shader_cache()),
-      vulkan_context_provider_(gpu_service->vulkan_context_provider()),
+          CreateSharedImageRepresentationFactory(dependency_)),
+      vulkan_context_provider_(dependency_->GetVulkanContextProvider()),
       renderer_settings_(renderer_settings),
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
       buffer_presented_callback_(buffer_presented_callback),
       context_lost_callback_(context_lost_callback),
-      gpu_service_(gpu_service),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 #if defined(USE_OZONE)
-  window_surface_ = ui::OzonePlatform::GetInstance()
-                        ->GetSurfaceFactoryOzone()
-                        ->CreatePlatformWindowSurface(surface_handle);
+  window_surface_ =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->CreatePlatformWindowSurface(dependency_->GetSurfaceHandle());
 #endif
-  gpu_preferences_ = gpu_service->gpu_channel_manager()->gpu_preferences();
+  gpu_preferences_ = dependency_->GetGpuPreferences();
 
   if (is_using_vulkan())
-    InitializeForVulkan(gpu_service);
+    InitializeForVulkan();
   else
-    InitializeForGLWithGpuService(gpu_service);
+    InitializeForGL();
 }
 
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
@@ -529,7 +525,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
         base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
   }
 
-  if (!MakeCurrent(surface_handle_ /* need_fbo0 */))
+  if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
     return;
 
   size_ = size;
@@ -556,15 +552,16 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   if (!MakeCurrent(true /* need_fbo0 */))
     return;
 
-  auto* channel_manager = gpu_service_->gpu_channel_manager();
-  channel_manager->ScheduleGrContextCleanup();
+  dependency_->ScheduleGrContextCleanup();
 
   PullTextureUpdates(std::move(sync_tokens));
 
   {
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
-    if (gr_shader_cache_)
-      cache_use.emplace(gr_shader_cache_, gpu::kInProcessCommandBufferClientId);
+    if (dependency_->GetGrShaderCache()) {
+      cache_use.emplace(dependency_->GetGrShaderCache(),
+                        gpu::kInProcessCommandBufferClientId);
+    }
 
     ScopedPromiseImageAccess scoped_promise_image_access(
         this, std::move(image_contexts));
@@ -631,7 +628,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(output_sk_surface());
-  if (!MakeCurrent(surface_handle_ /* need_fbo0 */))
+  if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
     return;
 
   DCHECK(output_device_);
@@ -684,8 +681,10 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   }
   {
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
-    if (gr_shader_cache_)
-      cache_use.emplace(gr_shader_cache_, gpu::kInProcessCommandBufferClientId);
+    if (dependency_->GetGrShaderCache()) {
+      cache_use.emplace(dependency_->GetGrShaderCache(),
+                        gpu::kInProcessCommandBufferClientId);
+    }
     ScopedPromiseImageAccess scoped_promise_image_access(
         this, std::move(image_contexts));
     if (!scoped_promise_image_access.begin_semaphores().empty()) {
@@ -747,12 +746,12 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   if (!is_using_vulkan()) {
     // Lazy initialize GLRendererCopier.
     if (!copier_) {
-      auto* channel_manager = gpu_service_->gpu_channel_manager();
       auto client = std::make_unique<DirectContextProviderDelegateImpl>(
-          gpu_preferences_, channel_manager->gpu_driver_bug_workarounds(),
-          channel_manager->gpu_feature_info(), context_state_.get(),
-          mailbox_manager_, gpu_service_->shared_image_manager(),
-          CreateSyncPointClientState(gpu_service_));
+          gpu_preferences_, dependency_->GetGpuDriverBugWorkarounds(),
+          dependency_->GetGpuFeatureInfo(), context_state_.get(),
+          dependency_->GetMailboxManager(),
+          dependency_->GetSharedImageManager(),
+          CreateSyncPointClientState(dependency_));
       context_provider_ = base::MakeRefCounted<DirectContextProvider>(
           context_state_->context(), gl_surface_, supports_alpha_,
           gpu_preferences_, feature_info_.get(), std::move(client));
@@ -777,7 +776,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     bool flipped = from_fbo0 ? !capabilities().flipped_output_surface : false;
 
     base::Optional<ScopedSurfaceToTexture> texture_mapper;
-    if (!from_fbo0 || surface_handle_ == gpu::kNullSurfaceHandle) {
+    if (!from_fbo0 || dependency_->IsOffscreen()) {
       texture_mapper.emplace(context_provider_.get(), surface);
       gl_id = texture_mapper.value().client_id();
       internal_format = GL_RGBA;
@@ -1014,7 +1013,8 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
       continue;
     }
 
-    auto* texture_base = mailbox_manager_->ConsumeTexture(context->mailbox);
+    auto* texture_base =
+        dependency_->GetMailboxManager()->ConsumeTexture(context->mailbox);
     if (!texture_base) {
       DLOG(ERROR) << "Failed to fulfill the promise texture.";
       CreateFallbackImage(context);
@@ -1080,27 +1080,26 @@ void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
     const OutputSurface::Capabilities& capabilities) {
   MakeCurrent(false /* need_fbo0 */);
   // Check that we're using an offscreen surface.
-  DCHECK(!surface_handle_);
+  DCHECK(dependency_->IsOffscreen());
   output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
       gr_context(), capabilities.flipped_output_surface,
       renderer_settings_.requires_alpha_channel,
       did_swap_buffer_complete_callback_);
 }
 
-void SkiaOutputSurfaceImplOnGpu::InitializeForGLWithGpuService(
-    GpuServiceImpl* gpu_service) {
+void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
   std::unique_ptr<SkiaOutputDeviceGL> onscreen_device;
-  if (surface_handle_) {
+  if (!dependency_->IsOffscreen()) {
     onscreen_device = std::make_unique<SkiaOutputDeviceGL>(
-        surface_handle_, gpu_service_, feature_info_,
-        did_swap_buffer_complete_callback_);
+        dependency_, feature_info_, did_swap_buffer_complete_callback_);
     gl_surface_ = onscreen_device->gl_surface();
   } else {
-    gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+    gl_surface_ = dependency_->CreateGLSurface(nullptr);
   }
   DCHECK(gl_surface_);
+  DCHECK_EQ(gl_surface_->IsOffscreen(), dependency_->IsOffscreen());
 
-  context_state_ = gpu_service->GetContextState();
+  context_state_ = dependency_->GetSharedContextState();
   if (!context_state_) {
     LOG(FATAL) << "Failed to create GrContext";
     // TODO(penghuang): handle the failure.
@@ -1128,12 +1127,11 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGLWithGpuService(
   }
 }
 
-void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
-    GpuServiceImpl* gpu_service) {
-  context_state_ = gpu_service->GetContextState();
+void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
+  context_state_ = dependency_->GetSharedContextState();
   DCHECK(context_state_);
 #if BUILDFLAG(ENABLE_VULKAN)
-  if (surface_handle_ == gpu::kNullSurfaceHandle) {
+  if (dependency_->IsOffscreen()) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
         gr_context(), false /* flipped */,
         renderer_settings_.requires_alpha_channel,
@@ -1144,15 +1142,16 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
     supports_alpha_ = true;
     if (gpu_preferences_.disable_vulkan_surface) {
       output_device_ = std::make_unique<SkiaOutputDeviceX11>(
-          gr_context(), surface_handle_, did_swap_buffer_complete_callback_);
+          gr_context(), dependency_->GetSurfaceHandle(),
+          did_swap_buffer_complete_callback_);
     } else {
       output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
-          vulkan_context_provider_, surface_handle_,
+          vulkan_context_provider_, dependency_->GetSurfaceHandle(),
           did_swap_buffer_complete_callback_);
     }
 #else
     output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
-        vulkan_context_provider_, surface_handle_,
+        vulkan_context_provider_, dependency_->GetSurfaceHandle(),
         did_swap_buffer_complete_callback_);
 #endif
   }
@@ -1216,9 +1215,9 @@ void SkiaOutputSurfaceImplOnGpu::PullTextureUpdates(
     std::vector<gpu::SyncToken> sync_tokens) {
   // TODO(https://crbug.com/900973): Remove it when MailboxManager is replaced
   // with SharedImage API.
-  if (mailbox_manager_->UsesSync()) {
+  if (dependency_->GetMailboxManager()->UsesSync()) {
     for (auto& sync_token : sync_tokens)
-      mailbox_manager_->PullTextureUpdates(sync_token);
+      dependency_->GetMailboxManager()->PullTextureUpdates(sync_token);
   }
 }
 
@@ -1226,7 +1225,7 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseFenceSyncAndPushTextureUpdates(
     uint64_t sync_fence_release) {
   // TODO(https://crbug.com/900973): Remove it when MailboxManager is replaced
   // with SharedImage API.
-  if (mailbox_manager_->UsesSync()) {
+  if (dependency_->GetMailboxManager()->UsesSync()) {
     // If MailboxManagerSync is used, we are sharing textures between threads.
     // In this case, sync point can only guarantee GL commands are issued in
     // correct order across threads and GL contexts. However GPU driver may
@@ -1240,7 +1239,7 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseFenceSyncAndPushTextureUpdates(
     gpu::SyncToken sync_token(
         gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE,
         command_buffer_id(), sync_fence_release);
-    mailbox_manager_->PushTextureUpdates(sync_token);
+    dependency_->GetMailboxManager()->PushTextureUpdates(sync_token);
   }
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
 }
