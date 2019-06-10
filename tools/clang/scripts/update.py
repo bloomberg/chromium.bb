@@ -55,7 +55,7 @@ LLVM_BUILD_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'llvm-build',
                               'Release+Asserts')
 
 STAMP_FILE = os.path.normpath(
-    os.path.join(LLVM_BUILD_DIR, '..', 'cr_build_revision'))
+    os.path.join(LLVM_BUILD_DIR, 'cr_build_revision'))
 FORCE_HEAD_REVISION_FILE = os.path.normpath(os.path.join(LLVM_BUILD_DIR, '..',
                                                    'force_head_revision'))
 
@@ -248,8 +248,8 @@ def UpdateClang():
   if ReadStampFile(STAMP_FILE) == expected_stamp:
     return 0
 
-  if os.path.exists(os.path.dirname(LLVM_BUILD_DIR)):
-    RmTree(os.path.dirname(LLVM_BUILD_DIR))
+  if os.path.exists(LLVM_BUILD_DIR):
+    RmTree(LLVM_BUILD_DIR)
 
   DownloadAndUnpackClangPackage(sys.platform, LLVM_BUILD_DIR)
   if 'win' in target_os:
