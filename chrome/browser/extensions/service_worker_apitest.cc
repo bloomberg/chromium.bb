@@ -1317,40 +1317,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateUnpackedExtension) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, EventsToStoppedWorker) {
-  // Extensions APIs from SW are only enabled on trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
-  const Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII("service_worker/events_to_stopped_worker"),
-      kFlagNone);
-  ASSERT_TRUE(extension);
-  ui_test_utils::NavigateToURL(browser(),
-                               extension->GetResourceURL("page.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  {
-    std::string result;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-        web_contents, "window.runServiceWorker()", &result));
-    ASSERT_EQ("ready", result);
-
-    base::RunLoop run_loop;
-    content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
-    content::StopServiceWorkerForScope(
-        storage_partition->GetServiceWorkerContext(),
-        // The service worker is registered at the top level scope.
-        extension->url(), run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, "window.createTabThenUpdate()", &result));
-  ASSERT_EQ("chrome.tabs.onUpdated callback", result);
-}
-
 // Tests that worker ref count increments while extension API function is
 // active.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WorkerRefCount) {
@@ -1582,6 +1548,77 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPushMessagingTest, OnPush) {
 }
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, MimeHandlerView) {
   ASSERT_TRUE(RunExtensionTest("service_worker/mime_handler_view"));
+}
+
+// An observer to block on service worker registration stored.
+class RegistrationStoredObserver
+    : public content::ServiceWorkerContextObserver {
+ public:
+  RegistrationStoredObserver(content::ServiceWorkerContext* context,
+                             base::OnceClosure callback)
+      : context_(context), registered_callback_(std::move(callback)) {
+    context_->AddObserver(this);
+  }
+
+  ~RegistrationStoredObserver() override {
+    if (context_) {
+      context_->RemoveObserver(this);
+    }
+  }
+
+  void OnRegistrationStored(int64_t registration_id,
+                            const GURL& scope) override {
+    if (scope.SchemeIs(kExtensionScheme)) {
+      std::move(registered_callback_).Run();
+    }
+  }
+
+  void OnDestruct(content::ServiceWorkerContext* context) override {
+    context_ = nullptr;
+  }
+
+ private:
+  content::ServiceWorkerContext* context_;
+  base::OnceClosure registered_callback_;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       EventsToStoppedWorker) {
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+  content::ServiceWorkerContext* context =
+      storage_partition->GetServiceWorkerContext();
+
+  // Set up an observer to wait for the registration to be stored.
+  base::RunLoop registration_loop;
+  RegistrationStoredObserver observer(context, registration_loop.QuitClosure());
+
+  ExtensionTestMessageListener event_listener_added("ready", false);
+  event_listener_added.set_failure_message("ERROR");
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII(
+          "service_worker/worker_based_background/events_to_stopped_worker"),
+      kFlagNone);
+  ASSERT_TRUE(extension);
+
+  // Wait for service worker registration to be stored.
+  registration_loop.Run();
+  EXPECT_TRUE(event_listener_added.WaitUntilSatisfied());
+
+  // Stop the service worker.
+  {
+    base::RunLoop run_loop;
+    // The service worker is registered at the root scope.
+    content::StopServiceWorkerForScope(context, extension->url(),
+                                       run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Navigate to a URL, which should wake up the service worker.
+  ExtensionTestMessageListener finished_listener("finished", false);
+  ui_test_utils::NavigateToURL(browser(),
+                               extension->GetResourceURL("page.html"));
+  EXPECT_TRUE(finished_listener.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,

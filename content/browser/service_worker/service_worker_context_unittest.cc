@@ -244,6 +244,7 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
  public:
   enum class EventType {
     RegistrationCompleted,
+    RegistrationStored,
     VersionActivated,
     VersionRedundant,
     NoControllees,
@@ -254,6 +255,7 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
     EventType type;
     base::Optional<GURL> url;
     base::Optional<int64_t> version_id;
+    base::Optional<int64_t> registration_id;
     base::Optional<bool> is_running;
     base::Optional<ServiceWorkerContext*> context;
   };
@@ -271,6 +273,15 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
   void OnRegistrationCompleted(const GURL& scope) override {
     EventLog log;
     log.type = EventType::RegistrationCompleted;
+    log.url = scope;
+    events_.push_back(log);
+  }
+
+  void OnRegistrationStored(int64_t registration_id,
+                            const GURL& scope) override {
+    EventLog log;
+    log.type = EventType::RegistrationStored;
+    log.registration_id = registration_id;
     log.url = scope;
     events_.push_back(log);
   }
@@ -350,16 +361,22 @@ TEST_F(ServiceWorkerContextTest, RegistrationCompletedObserver) {
     if (event.type == TestServiceWorkerContextObserver::EventType::
                           RegistrationCompleted ||
         event.type ==
+            TestServiceWorkerContextObserver::EventType::RegistrationStored ||
+        event.type ==
             TestServiceWorkerContextObserver::EventType::VersionActivated)
       events.push_back(event);
   }
-  ASSERT_EQ(2u, events.size());
+  ASSERT_EQ(3u, events.size());
   EXPECT_EQ(TestServiceWorkerContextObserver::EventType::RegistrationCompleted,
             events[0].type);
   EXPECT_EQ(scope, events[0].url);
-  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::VersionActivated,
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::RegistrationStored,
             events[1].type);
   EXPECT_EQ(scope, events[1].url);
+  EXPECT_EQ(registration_id, events[1].registration_id);
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::VersionActivated,
+            events[2].type);
+  EXPECT_EQ(scope, events[2].url);
 }
 
 // Make sure OnNoControllees is called on observer.

@@ -280,6 +280,12 @@ void ServiceWorkerContextWrapper::OnRegistrationCompleted(
     observer.OnRegistrationCompleted(scope);
 }
 
+void ServiceWorkerContextWrapper::OnRegistrationStored(int64_t registration_id,
+                                                       const GURL& scope) {
+  for (auto& observer : observer_list_)
+    observer.OnRegistrationStored(registration_id, scope);
+}
+
 void ServiceWorkerContextWrapper::OnReportConsoleMessage(
     int64_t version_id,
     const ConsoleMessage& message) {
