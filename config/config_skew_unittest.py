@@ -25,6 +25,7 @@ BUILDER_CONFIG_FILENAME = os.path.join(
 POSTSUBMIT_EXCLUDE_BUILDERS = [
     "chromite-postsubmit",
     "grunt-unittest-only-postsubmit",
+    "moblab-generic-vm-postsubmit",
 ]
 
 class ErrorWrapper(Exception):
