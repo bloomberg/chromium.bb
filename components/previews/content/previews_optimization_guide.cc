@@ -362,6 +362,7 @@ void PreviewsOptimizationGuide::OnFetchedHintsStored() {
   hints_fetch_timer_.Start(
       FROM_HERE, hint_cache_->FetchedHintsUpdateTime() - time_clock_->Now(),
       this, &PreviewsOptimizationGuide::ScheduleHintsFetch);
+  // TODO(mcrouse): Purge hints now that new fetched hints have been stored.
 }
 
 void PreviewsOptimizationGuide::UpdateHints(

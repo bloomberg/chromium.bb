@@ -329,6 +329,59 @@ void HintCacheStore::UpdateFetchedHints(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void HintCacheStore::PurgeExpiredFetchedHints() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsAvailable()) {
+    return;
+  }
+
+  // Load all the fetched hints to check their expiry times.
+  database_->LoadKeysAndEntriesWithFilter(
+      base::BindRepeating(&DatabasePrefixFilter,
+                          GetFetchedHintEntryKeyPrefix()),
+      base::BindOnce(&HintCacheStore::OnLoadFetchedHintsToPurgeExpired,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void HintCacheStore::OnLoadFetchedHintsToPurgeExpired(
+    bool success,
+    std::unique_ptr<EntryMap> fetched_entries) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!success) {
+    return;
+  }
+
+  auto keys_to_remove = std::make_unique<EntryKeySet>();
+  int64_t now_since_epoch =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
+
+  for (const auto& entry : *fetched_entries) {
+    if (entry.second.expiry_time_secs() <= now_since_epoch) {
+      keys_to_remove->insert(entry.first);
+    }
+  }
+
+  // TODO(mcrouse): Record the number of hints that will be expired from the
+  // store.
+
+  data_update_in_flight_ = true;
+  hint_entry_keys_.reset();
+
+  auto empty_entries = std::make_unique<EntryVector>();
+
+  database_->UpdateEntriesWithRemoveFilter(
+      std::move(empty_entries),
+      base::BindRepeating(
+          [](EntryKeySet* keys_to_remove, const std::string& key) {
+            return keys_to_remove->find(key) != keys_to_remove->end();
+          },
+          keys_to_remove.get()),
+      base::BindOnce(&HintCacheStore::OnUpdateHints,
+                     weak_ptr_factory_.GetWeakPtr(), base::DoNothing::Once()));
+}
+
 bool HintCacheStore::FindHintEntryKey(const std::string& host,
                                       EntryKey* out_hint_entry_key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

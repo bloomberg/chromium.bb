@@ -224,6 +224,17 @@ class HintCacheStoreTest : public testing::Test {
     db()->LoadCallback(true);
   }
 
+  void PurgeExpiredFetchedHints() {
+    hint_store()->PurgeExpiredFetchedHints();
+
+    // OnFetchedHintsLoadedToMaybePurge
+    db()->LoadCallback(true);
+    // OnUpdateHints
+    db()->UpdateCallback(true);
+    // OnLoadHintEntryKeys callback
+    db()->LoadCallback(true);
+  }
+
   bool IsMetadataSchemaEntryKeyPresent() const {
     return IsKeyPresent(HintCacheStore::GetMetadataTypeEntryKey(
         HintCacheStore::MetadataType::kSchema));
@@ -1365,6 +1376,72 @@ TEST_F(HintCacheStoreTest, ClearFetchedHints) {
   }
 
   EXPECT_EQ(hint_entry_key, "3_domain1.org");
+}
+
+TEST_F(HintCacheStoreTest, FetchHintsPurgeExpiredFetchedHints) {
+  base::HistogramTester histogram_tester;
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  size_t initial_hint_count = 10;
+  base::Time update_time = base::Time().Now();
+  SeedInitialData(schema_state, initial_hint_count);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  base::Version version("2.0.0");
+  std::unique_ptr<HintUpdateData> update_data =
+      hint_store()->MaybeCreateUpdateDataForComponentHints(
+          base::Version(kUpdateComponentVersion));
+  ASSERT_TRUE(update_data);
+
+  optimization_guide::proto::Hint hint1;
+  hint1.set_key("domain1.org");
+  hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(hint1));
+  optimization_guide::proto::Hint hint2;
+  hint2.set_key("host.domain2.org");
+  hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(hint2));
+
+  UpdateComponentHints(std::move(update_data));
+
+  // Add fetched hints to the store that overlap with the same hosts as the
+  // initial set.
+  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+      update_time, update_time + base::TimeDelta().FromDays(7));
+
+  optimization_guide::proto::Hint fetched_hint1;
+  fetched_hint1.set_key("domain2.org");
+  fetched_hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
+  optimization_guide::proto::Hint fetched_hint2;
+  fetched_hint2.set_key("domain3.org");
+  fetched_hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
+
+  UpdateFetchedHints(std::move(update_data));
+
+  // Add expired fetched hints to the store.
+  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+      update_time, update_time - base::TimeDelta().FromDays(7));
+
+  optimization_guide::proto::Hint fetched_hint3;
+  fetched_hint1.set_key("domain4.org");
+  fetched_hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
+  optimization_guide::proto::Hint fetched_hint4;
+  fetched_hint2.set_key("domain5.org");
+  fetched_hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
+
+  UpdateFetchedHints(std::move(update_data));
+
+  PurgeExpiredFetchedHints();
+
+  HintCacheStore::EntryKey hint_entry_key;
+  EXPECT_FALSE(hint_store()->FindHintEntryKey("domain4.org", &hint_entry_key));
+  EXPECT_FALSE(hint_store()->FindHintEntryKey("domain5.org", &hint_entry_key));
+  EXPECT_TRUE(hint_store()->FindHintEntryKey("domain2.org", &hint_entry_key));
+  EXPECT_TRUE(hint_store()->FindHintEntryKey("domain3.org", &hint_entry_key));
 }
 
 TEST_F(HintCacheStoreTest, LoadingHintUpdatesPrefCorrectly) {
