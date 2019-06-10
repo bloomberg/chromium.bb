@@ -1569,7 +1569,9 @@ void WallpaperControllerImpl::SetDefaultWallpaperImpl(
   // default wallpaper.
   // TODO(wzang|xdai): The current code intentionally distinguishes between
   // |active_user_type| and |user_type|. We should try to unify them.
-  if (active_user_type && *active_user_type == user_manager::USER_TYPE_GUEST) {
+  if (user_type == user_manager::USER_TYPE_GUEST ||
+      (active_user_type &&
+       *active_user_type == user_manager::USER_TYPE_GUEST)) {
     const std::string switch_string =
         use_small ? chromeos::switches::kGuestWallpaperSmall
                   : chromeos::switches::kGuestWallpaperLarge;
