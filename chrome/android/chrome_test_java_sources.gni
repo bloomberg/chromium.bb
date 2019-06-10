@@ -62,7 +62,6 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/bookmarks/BookmarkModelTest.java",
   "javatests/src/org/chromium/chrome/browser/bookmarks/BookmarkPersonalizedSigninPromoTest.java",
   "javatests/src/org/chromium/chrome/browser/bookmarks/BookmarkTest.java",
-  "javatests/src/org/chromium/chrome/browser/browseractions/BrowserActionActivityTest.java",
   "javatests/src/org/chromium/chrome/browser/browserservices/OriginVerifierTest.java",
   "javatests/src/org/chromium/chrome/browser/browserservices/TrustedWebActivityClientTest.java",
   "javatests/src/org/chromium/chrome/browser/browserservices/TrustedWebActivityTest.java",

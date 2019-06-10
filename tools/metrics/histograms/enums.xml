@@ -6491,6 +6491,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BrowserActionsMenuOption">
+  <obsolete>
+    Deprecated in M77 with the removal of Browser Actions.
+  </obsolete>
   <int value="0" label="Open in new Chrome tab"/>
   <int value="1" label="Open in incognito tab"/>
   <int value="2" label="Download page"/>

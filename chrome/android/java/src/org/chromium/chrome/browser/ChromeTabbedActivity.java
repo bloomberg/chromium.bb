@@ -57,8 +57,6 @@ import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
-import org.chromium.chrome.browser.browseractions.BrowserActionsService;
-import org.chromium.chrome.browser.browseractions.BrowserActionsTabModelSelector;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -860,7 +858,6 @@ public class ChromeTabbedActivity
         @LaunchIntentDispatcher.Action
         int action = maybeDispatchExplicitMainViewIntent(
                 intentForDispatching, sExplicitMainViewIntentDispatchedOnNewIntent);
-        BrowserActionsService.recordTabOpenedNotificationClicked(intent);
         if (action != LaunchIntentDispatcher.Action.CONTINUE) {
             // Pressing back button in CCT should bring user to the caller activity.
             moveTaskToBack(true);
@@ -995,8 +992,6 @@ public class ChromeTabbedActivity
             RecordUserAction.record("MobileStartup.UserEnteredTabSwitcher");
         }
 
-        BrowserActionsService.onTabbedModeForegrounded();
-
         resetSavedInstanceState();
     }
 
@@ -1072,10 +1067,6 @@ public class ChromeTabbedActivity
         }
 
         if (getActivityTab() == null && !isOverviewVisible) {
-            toggleOverview();
-        }
-
-        if (BrowserActionsService.shouldToggleOverview(getIntent(), isOverviewVisible)) {
             toggleOverview();
         }
     }
@@ -1219,11 +1210,9 @@ public class ChromeTabbedActivity
 
             boolean hasTabWaitingForReparenting =
                     AsyncTabParamsManager.hasParamsWithTabToReparent();
-            boolean hasBrowserActionTabs = BrowserActionsTabModelSelector.isInitialized()
-                    && BrowserActionsTabModelSelector.getInstance().getTotalTabCount() != 0;
             mCreatedTabOnStartup = getCurrentTabModel().getCount() > 0
                     || mTabModelSelectorImpl.getRestoredTabCount() > 0 || mIntentWithEffect
-                    || hasBrowserActionTabs || hasTabWaitingForReparenting;
+                    || hasTabWaitingForReparenting;
 
             // We always need to try to restore tabs. The set of tabs might be empty, but at least
             // it will trigger the notification that tab restore is complete which is needed by
@@ -1232,10 +1221,6 @@ public class ChromeTabbedActivity
 
             mMainIntentMetrics.setIgnoreEvents(true);
             mTabModelSelectorImpl.restoreTabs(activeTabBeingRestored);
-            if (hasBrowserActionTabs) {
-                BrowserActionsTabModelSelector.getInstance().mergeBrowserActionsTabModel(
-                        this, !mIntentWithEffect);
-            }
             mMainIntentMetrics.setIgnoreEvents(false);
 
             // Only create an initial tab if no tabs were restored and no intent was handled.

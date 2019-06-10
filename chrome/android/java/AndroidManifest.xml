@@ -882,23 +882,6 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
         </activity>
 
-        <!-- Activities for Browser Actions -->
-        <activity android:name="org.chromium.chrome.browser.browseractions.BrowserActionActivity"
-            android:theme="@style/Theme.Chromium.Activity.Fullscreen.Transparent"
-            android:exported="true"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
-            <intent-filter>
-                <action android:name="androidx.browser.browseractions.browser_action_open" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-            </intent-filter>
-        </activity>
-
-        <service android:name="org.chromium.chrome.browser.browseractions.BrowserActionsService"
-            android:exported="false">
-        </service>
-
         <!-- Components for Trusted Web Activities -->
         <receiver android:name="org.chromium.chrome.browser.browserservices.ClientAppBroadcastReceiver"
             android:exported="true">

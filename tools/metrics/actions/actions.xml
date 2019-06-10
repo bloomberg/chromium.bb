@@ -3605,6 +3605,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BrowserActions.MenuOpened">
+  <obsolete>Deprecated in M77 with the removal of Browser Actions.</obsolete>
   <owner>ltian@chromium.org</owner>
   <description>
     A Browser Actions menu is opened in Chrome. A Browser Actions menu is a
@@ -3613,6 +3614,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BrowserActions.TabOpenedNotificationClicked">
+  <obsolete>Deprecated in M77 with the removal of Browser Actions.</obsolete>
   <owner>ltian@chromium.org</owner>
   <description>
     Users click the notification of opening tab in background.
@@ -3620,6 +3622,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BrowserActions.TabOpenedNotificationCreated">
+  <obsolete>Deprecated in M77 with the removal of Browser Actions.</obsolete>
   <owner>ltian@chromium.org</owner>
   <description>
     Browser Actions creates a notifcation of opening tab in background.

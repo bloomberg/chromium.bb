@@ -34,9 +34,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             Item.COPY_LINK_TEXT, Item.SAVE_LINK_AS, Item.LOAD_ORIGINAL_IMAGE, Item.SAVE_IMAGE,
             Item.OPEN_IMAGE, Item.OPEN_IMAGE_IN_NEW_TAB, Item.OPEN_IMAGE_IN_EPHEMERAL_TAB,
             Item.SEARCH_BY_IMAGE, Item.CALL, Item.SEND_MESSAGE, Item.ADD_TO_CONTACTS, Item.COPY,
-            Item.SAVE_VIDEO, Item.OPEN_IN_CHROME, Item.BROWSER_ACTIONS_OPEN_IN_BACKGROUND,
-            Item.BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB, Item.BROWSER_ACTION_SAVE_LINK_AS,
-            Item.BROWSER_ACTIONS_COPY_ADDRESS})
+            Item.SAVE_VIDEO, Item.OPEN_IN_CHROME})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Item {
         // Values are numerated from 0 and can't have gaps.
@@ -69,13 +67,8 @@ public class ChromeContextMenuItem implements ContextMenuItem {
         int SAVE_VIDEO = 20;
         // Other
         int OPEN_IN_CHROME = 21;
-        // Browser Action Items
-        int BROWSER_ACTIONS_OPEN_IN_BACKGROUND = 22;
-        int BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB = 23;
-        int BROWSER_ACTION_SAVE_LINK_AS = 24;
-        int BROWSER_ACTIONS_COPY_ADDRESS = 25;
         // ALWAYS UPDATE!
-        int NUM_ENTRIES = 26;
+        int NUM_ENTRIES = 22;
     }
 
     /**
@@ -104,10 +97,6 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             R.id.contextmenu_copy, // Item.COPY
             R.id.contextmenu_save_video, // Item.SAVE_VIDEO
             R.id.contextmenu_open_in_chrome, // Item.OPEN_IN_CHROME
-            R.id.browser_actions_open_in_background, // Item.BROWSER_ACTIONS_OPEN_IN_BACKGROUND
-            R.id.browser_actions_open_in_incognito_tab, // Item.BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB
-            R.id.browser_actions_save_link_as, // Item.BROWSER_ACTION_SAVE_LINK_AS
-            R.id.browser_actions_copy_address, // Item.BROWSER_ACTIONS_COPY_ADDRESS
     };
 
     /**
@@ -136,10 +125,6 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             R.string.contextmenu_copy, // Item.COPY:
             R.string.contextmenu_save_video, // Item.SAVE_VIDEO:
             R.string.menu_open_in_chrome, // Item.OPEN_IN_CHROME:
-            R.string.browser_actions_open_in_background, // Item.BROWSER_ACTIONS_OPEN_IN_BACKGROUND:
-            R.string.browser_actions_open_in_incognito_tab, // Item.BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB:
-            R.string.browser_actions_save_link_as, // Item.BROWSER_ACTION_SAVE_LINK_AS:
-            R.string.browser_actions_copy_address, // Item.BROWSER_ACTIONS_COPY_ADDRESS:
     };
 
     private final @Item int mItem;

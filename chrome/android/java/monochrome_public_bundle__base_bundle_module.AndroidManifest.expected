@@ -251,18 +251,6 @@
         android:theme="@style/Theme.Chromium.DialogWhenLarge"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-        android:exported="true"
-        android:name="org.chromium.chrome.browser.browseractions.BrowserActionActivity"
-        android:theme="@style/Theme.Chromium.Activity.Fullscreen.Transparent">
-      <intent-filter>
-        <action android:name="androidx.browser.browseractions.browser_action_open"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-        <data android:scheme="http"/>
-        <data android:scheme="https"/>
-      </intent-filter>
-    </activity>
-    <activity
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:name="org.chromium.chrome.browser.bookmarks.BookmarkAddActivity"
         android:theme="@style/Theme.Chromium.DialogWhenLarge"
         android:windowSoftInputMode="stateHidden">
@@ -1425,9 +1413,6 @@
         android:exported="false"
         android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetService"
         android:permission="android.permission.BIND_REMOTEVIEWS"/>
-    <service
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.browseractions.BrowserActionsService"/>
     <service
         android:exported="false"
         android:name="org.chromium.chrome.browser.crash.ChromeMinidumpUploadJobService"

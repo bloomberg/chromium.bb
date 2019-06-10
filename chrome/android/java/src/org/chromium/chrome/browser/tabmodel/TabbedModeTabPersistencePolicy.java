@@ -22,8 +22,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.base.task.TaskRunner;
-import org.chromium.chrome.browser.browseractions.BrowserActionsTabModelSelector;
-import org.chromium.chrome.browser.browseractions.BrowserActionsTabPersistencePolicy;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -121,11 +119,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
         if (FeatureUtilities.isTabModelMergingEnabled()) {
             mergedFileNames.add(getStateFileName(mOtherSelectorIndex));
         }
-        if (!BrowserActionsTabModelSelector.isInitialized()) {
-            BrowserActionsTabPersistencePolicy browserActionsPersistencePolicy =
-                    new BrowserActionsTabPersistencePolicy();
-            mergedFileNames.add(browserActionsPersistencePolicy.getStateFileName());
-        }
+        // TODO(peconn): Can I clean up this code now that Browser Actions are gone?
         return mergedFileNames;
     }
 
