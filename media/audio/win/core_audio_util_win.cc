@@ -24,6 +24,7 @@
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_features.h"
 #include "media/base/media_switches.h"
 
 using Microsoft::WRL::ComPtr;
@@ -313,7 +314,8 @@ ChannelConfig GuessChannelConfig(WORD channels) {
 }
 
 bool IAudioClient3IsSupported() {
-  return CoreAudioUtil::GetIAudioClientVersion() >= 3;
+  return base::FeatureList::IsEnabled(features::kAllowIAudioClient3) &&
+         CoreAudioUtil::GetIAudioClientVersion() >= 3;
 }
 
 std::string GetDeviceID(IMMDevice* device) {

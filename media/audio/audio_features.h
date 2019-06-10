@@ -23,6 +23,10 @@ MEDIA_EXPORT extern const base::Feature kCrOSSystemAECDeactivatedGroups;
 MEDIA_EXPORT extern const base::Feature kForceEnableSystemAec;
 #endif
 
+#if defined(OS_WIN)
+MEDIA_EXPORT extern const base::Feature kAllowIAudioClient3;
+#endif
+
 }  // namespace features
 
 #endif  // MEDIA_AUDIO_AUDIO_FEATURES_H_
