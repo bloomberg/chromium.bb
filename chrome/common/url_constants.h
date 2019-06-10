@@ -233,6 +233,8 @@ extern const char kCrosScheme[];
 
 extern const char kCupsPrintLearnMoreURL[];
 
+extern const char kCupsPrintPPDLearnMoreURL[];
+
 // The URL for the "Learn more" link the the Easy Unlock settings.
 extern const char kEasyUnlockLearnMoreUrl[];
 

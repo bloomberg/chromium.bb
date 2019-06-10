@@ -97,9 +97,15 @@
               value="{{pendingPrinter_.ppdModel}}">
           </cr-searchable-drop-down>
         </div>
+        <div id="ppdLabel" class="field-label">
+          <span>$i18n{selectDriver}</span>
+          <a href="$i18n{printingCUPSPrintPpdLearnMoreUrl}" target="_blank">
+              $i18n{learnMore}
+          </a>
+        </div>
         <div class="settings-box two-line">
           <cr-input class="browse-file-input" readonly tabindex="-1"
-              value="[[userPPD_]]" label="$i18n{selectDriver}"
+              value="[[userPPD_]]" aria-labelledby="ppdLabel"
               error-message="$i18n{selectDriverErrorMessage}"
               invalid="[[invalidPPD_]]">
           </cr-input>

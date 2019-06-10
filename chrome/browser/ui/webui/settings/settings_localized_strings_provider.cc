@@ -2106,6 +2106,9 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
   html_source->AddString("printingCUPSPrintLearnMoreUrl",
                          GetHelpUrlWithBoard(chrome::kCupsPrintLearnMoreURL));
+  html_source->AddString(
+      "printingCUPSPrintPpdLearnMoreUrl",
+      GetHelpUrlWithBoard(chrome::kCupsPrintPPDLearnMoreURL));
 #endif
 }
 
