@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.annotation.VisibleForTesting;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
@@ -113,8 +112,7 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
 
     @VisibleForTesting
     public void applyImageDominantColor(String colorSpec, PropertyModel model) {
-        int color = ContextCompat.getColor(mContext, R.color.modern_secondary_color);
-
+        int color = EntitySuggestionViewBinder.NO_DOMINANT_COLOR;
         if (!TextUtils.isEmpty(colorSpec)) {
             try {
                 color = Color.parseColor(colorSpec);
@@ -127,6 +125,12 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
+        // Note: to avoid flickering and unnecessary updates, ModelListAdapter re-uses values from
+        // previously bound model if the view is being re-used. This means our model may, and likely
+        // will not be empty at this point. Make sure we explicitly specify values to avoid using
+        // stale ones.
+        model.set(EntitySuggestionViewProperties.IMAGE_BITMAP, null);
+
         SuggestionViewDelegate delegate =
                 mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
 

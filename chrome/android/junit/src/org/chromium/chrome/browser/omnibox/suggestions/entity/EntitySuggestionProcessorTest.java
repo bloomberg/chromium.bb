@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.entity;
 
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 
 import android.content.Context;
@@ -29,8 +28,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class EntitySuggestionProcessorTest {
-    private static final int FALLBACK_COLOR = 0x00DEFC01;
-
     private EntitySuggestionProcessor mProcessor;
     private PropertyModel mModel;
 
@@ -47,10 +44,7 @@ public class EntitySuggestionProcessorTest {
         doReturn(mResources).when(mContext).getResources();
 
         mProcessor = new EntitySuggestionProcessor(mContext, mSuggestionHost);
-        mModel = new PropertyModel(EntitySuggestionViewProperties.ALL_KEYS);
-
-        doReturn(FALLBACK_COLOR).when(mResources).getColor(anyInt());
-        doReturn(FALLBACK_COLOR).when(mContext).getColor(anyInt());
+        mModel = mProcessor.createModelForSuggestion(null);
     }
 
     @Test
@@ -67,16 +61,16 @@ public class EntitySuggestionProcessorTest {
     @Test
     public void applyImageDominantColor_InvalidSpecs() {
         mProcessor.applyImageDominantColor("", mModel);
-        Assert.assertEquals(
-                mModel.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR), FALLBACK_COLOR);
+        Assert.assertEquals(mModel.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR),
+                EntitySuggestionViewBinder.NO_DOMINANT_COLOR);
         mProcessor.applyImageDominantColor("#", mModel);
-        Assert.assertEquals(
-                mModel.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR), FALLBACK_COLOR);
+        Assert.assertEquals(mModel.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR),
+                EntitySuggestionViewBinder.NO_DOMINANT_COLOR);
         mProcessor.applyImageDominantColor(null, mModel);
-        Assert.assertEquals(
-                mModel.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR), FALLBACK_COLOR);
+        Assert.assertEquals(mModel.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR),
+                EntitySuggestionViewBinder.NO_DOMINANT_COLOR);
         mProcessor.applyImageDominantColor("not a color", mModel);
-        Assert.assertEquals(
-                mModel.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR), FALLBACK_COLOR);
+        Assert.assertEquals(mModel.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR),
+                EntitySuggestionViewBinder.NO_DOMINANT_COLOR);
     }
 }

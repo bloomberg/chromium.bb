@@ -5,15 +5,22 @@
 package org.chromium.chrome.browser.omnibox.suggestions.entity;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.view.MotionEvent;
 
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** A mechanism binding EntitySuggestion properties to its view. */
 public class EntitySuggestionViewBinder {
+    /** IMAGE_DOMINANT_COLOR Value indicating no fallback color for suggestion. */
+    static final int NO_DOMINANT_COLOR = Color.TRANSPARENT;
+
     private static final class EventListener implements EntitySuggestionView.EventListener {
         final Handler mHandler;
         final SuggestionViewDelegate mDelegate;
@@ -68,13 +75,15 @@ public class EntitySuggestionViewBinder {
 
     private static void applySuggestionImage(PropertyModel model, EntitySuggestionView view) {
         Bitmap bitmap = model.get(EntitySuggestionViewProperties.IMAGE_BITMAP);
-        if (bitmap != null) {
-            view.setImageBitmap(bitmap);
-            return;
-        }
-
         int color = model.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR);
-        view.setImageColor(color);
+
+        if (bitmap != null) {
+            view.setSuggestionImage(new BitmapDrawable(bitmap));
+        } else if (color != NO_DOMINANT_COLOR) {
+            view.setSuggestionImage(new ColorDrawable(color));
+        } else {
+            view.clearSuggestionImage();
+        }
     }
 
     /** @see PropertyModelChangeProcessor.ViewBinder#bind(Object, Object, Object) */
@@ -90,6 +99,8 @@ public class EntitySuggestionViewBinder {
         } else if (EntitySuggestionViewProperties.IMAGE_BITMAP.equals(propertyKey)
                 || EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR.equals(propertyKey)) {
             applySuggestionImage(model, view);
+        } else if (SuggestionCommonProperties.USE_DARK_COLORS.equals(propertyKey)) {
+            view.setUseDarkColors(model.get(SuggestionCommonProperties.USE_DARK_COLORS));
         }
     }
 }
