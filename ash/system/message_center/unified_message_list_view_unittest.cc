@@ -155,7 +155,6 @@ class UnifiedMessageListViewTest : public AshTestBase,
   }
 
   void AnimateToEnd() {
-    EXPECT_TRUE(IsAnimating());
     message_list_view()->animation_->End();
   }
 
@@ -316,10 +315,9 @@ TEST_F(UnifiedMessageListViewTest, RemovingNotificationAnimation) {
 
   MessageCenter::Get()->RemoveNotification(id1, true /* by_user */);
   FinishSlideOutAnimation();
-  AnimateToMiddle();
+  AnimateToEnd();
   EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
   previous_height = message_list_view()->GetPreferredSize().height();
-  AnimateToEnd();
   // Now it lost separator border.
   bounds1.Inset(gfx::Insets(0, 0, 1, 0));
   EXPECT_EQ(bounds0, GetMessageViewBounds(0));
@@ -327,20 +325,18 @@ TEST_F(UnifiedMessageListViewTest, RemovingNotificationAnimation) {
 
   MessageCenter::Get()->RemoveNotification(id2, true /* by_user */);
   FinishSlideOutAnimation();
-  AnimateToMiddle();
+  AnimateToEnd();
   EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
   previous_height = message_list_view()->GetPreferredSize().height();
-  AnimateToEnd();
   // Now it lost separator border.
   bounds0.Inset(gfx::Insets(0, 0, 1, 0));
   EXPECT_EQ(bounds0, GetMessageViewBounds(0));
 
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
   FinishSlideOutAnimation();
-  AnimateToMiddle();
+  AnimateToEnd();
   EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
   previous_height = message_list_view()->GetPreferredSize().height();
-  AnimateToEnd();
 
   EXPECT_EQ(0, message_list_view()->GetPreferredSize().height());
 }

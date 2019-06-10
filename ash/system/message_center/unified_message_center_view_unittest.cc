@@ -244,7 +244,6 @@ TEST_F(UnifiedMessageCenterViewTest, AddAndRemoveNotification) {
   auto* collapse_animation = GetMessageCenterAnimation();
   collapse_animation->SetCurrentValue(0.5);
   message_center_view()->AnimationProgressed(collapse_animation);
-  AnimateMessageListToEnd();
   EXPECT_TRUE(message_center_view()->GetVisible());
 
   // The message center is now hidden after all animations complete.
