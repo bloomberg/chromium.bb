@@ -1291,9 +1291,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
 
       <!-- Lite Mode-->
-      <message name="IDS_DATA_SAVER_IPH_REBRAND_LITE_MODE" desc="An onscreen notification to the user that the Chrome feature previously named 'Data Saver' is now named 'Lite mode'.">
-        Data Saver is now Lite mode
-      </message>
       <message name="IDS_DATA_REDUCTION_TITLE_LITE_MODE" desc="Menu item for Lite mode, which allows users to save mobile data by compressing network traffic.">
         Lite mode
       </message>

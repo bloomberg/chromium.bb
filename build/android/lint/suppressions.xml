@@ -352,9 +352,6 @@ Still reading?
     <ignore regexp="The resource `R.string.search_widget_title.*` appears to be unused"/>
     <!-- 1 resource used by android tv to generate resources.zip file -->
     <ignore regexp="chromecast/internal/shell/browser/android/java/res/drawable-hdpi/ic_settings_cast.png"/>
-    <!-- TODO(crbug.com/909915): Remove this after full Lite mode launch. -->
-    <!-- 12 resources used by Data Saver during rebranding to Lite mode -->
-    <ignore regexp="The resource `R.string..*lite_mode` appears to be unused"/>
     <!-- Module titles may only be used by the Play Store. -->
     <ignore regexp="The resource `R.string.*_module_title` appears to be unused"/>
     <!-- Old-style and new-style WebAPKs use same resources for simplicity. Old-style WebAPKs do
