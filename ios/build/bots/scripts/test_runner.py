@@ -279,7 +279,7 @@ def install_xcode(xcode_build_version, mac_toolchain_cmd, xcode_app_path):
   Args:
     xcode_build_version: (string) Xcode build version to install.
     mac_toolchain_cmd: (string) Path to mac_toolchain command to install Xcode.
-      See https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/cmd/mac_toolchain/
+    See https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/cmd/mac_toolchain/
     xcode_app_path: (string) Path to install the contents of Xcode.app.
 
   Returns:
@@ -1005,6 +1005,7 @@ class SimulatorTestRunner(TestRunner):
       test_filter: List of test cases to filter.
       invert: Whether to invert the filter or not. Inverted, the filter will
         match everything except the given test cases.
+      test_shard: How many shards the tests should be divided into.
 
     Returns:
       A list of strings forming the command to launch the test.
@@ -1505,9 +1506,6 @@ class DeviceTestRunner(TestRunner):
     if len(self.udid.splitlines()) != 1:
       raise DeviceDetectionError(self.udid)
     if xctest:
-      xcode_info = get_current_xcode_info()
-      xcode_version = float(xcode_info['version'])
-      inject_path = 'usr/lib/libXCTestBundleInject.dylib'
       self.xctestrun_file = tempfile.mkstemp()[1]
       self.xctestrun_data = {
         'TestTargetName': {
@@ -1516,7 +1514,8 @@ class DeviceTestRunner(TestRunner):
           'TestHostPath': '%s' % self.app_path,
           'TestingEnvironmentVariables': {
             'DYLD_INSERT_LIBRARIES':
-              '__PLATFORMS__/iPhoneOS.platform/Developer/%s' % inject_path,
+              '__PLATFORMS__/iPhoneOS.platform/Developer/usr/lib/'
+              'libXCTestBundleInject.dylib',
             'DYLD_LIBRARY_PATH':
               '__PLATFORMS__/iPhoneOS.platform/Developer/Library',
             'DYLD_FRAMEWORK_PATH':
