@@ -25,19 +25,23 @@ class SiteSuggestionModel {
             new PropertyModel.ReadableObjectPropertyKey<>();
     static final PropertyModel.WritableObjectPropertyKey<Bitmap> ICON_KEY =
             new PropertyModel.WritableObjectPropertyKey<>();
+    static final PropertyModel.ReadableObjectPropertyKey<Bitmap> DEFAULT_ICON_KEY =
+            new PropertyModel.ReadableObjectPropertyKey<>();
 
-    static PropertyModel getSiteSuggestionModel(SiteSuggestion suggestion) {
+    static PropertyModel getSiteSuggestionModel(SiteSuggestion suggestion, Bitmap defaultIcon) {
         String title = UrlUtilities.getDomainAndRegistry(suggestion.url, false);
         if (TextUtils.isEmpty(title)) {
             // Fallback to title.
             title = suggestion.title;
         }
         return new PropertyModel
-                .Builder(TITLE_KEY, URL_KEY, ICON_KEY, SOURCE_KEY, WHITELIST_ICON_PATH_KEY)
+                .Builder(TITLE_KEY, URL_KEY, ICON_KEY, SOURCE_KEY, WHITELIST_ICON_PATH_KEY,
+                        DEFAULT_ICON_KEY)
                 .with(TITLE_KEY, title)
                 .with(URL_KEY, suggestion.url)
                 .with(SOURCE_KEY, suggestion.source)
                 .with(WHITELIST_ICON_PATH_KEY, suggestion.whitelistIconPath)
+                .with(DEFAULT_ICON_KEY, defaultIcon)
                 .build();
     }
 }

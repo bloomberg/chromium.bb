@@ -17,7 +17,6 @@ import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.graphics.drawable.VectorDrawableCompat;
-import android.support.v7.widget.RecyclerView;
 import android.view.ContextMenu;
 import android.view.View;
 import android.widget.TextView;
@@ -25,7 +24,6 @@ import android.widget.TextView;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.util.UrlConstants;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.touchless.R;
 import org.chromium.ui.modelutil.ForwardingListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -110,38 +108,34 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
 
         @Override
         public Bitmap getIconBitmap() {
+            if (mSuggestion.get(SiteSuggestionModel.ICON_KEY) == null) {
+                return mSuggestion.get(SiteSuggestionModel.DEFAULT_ICON_KEY);
+            }
             return mSuggestion.get(SiteSuggestionModel.ICON_KEY);
         }
     }
 
     private PropertyModel mModel;
-    private RoundedIconGenerator mIconGenerator;
     private SuggestionsNavigationDelegate mNavDelegate;
     private ContextMenuManager mContextMenuManager;
     private SiteSuggestionsLayoutManager mLayoutManager;
     private TextView mTitleView;
 
-    private final RecyclerView mRecyclerView;
-
     /**
      * @param model the main property model coming from {@link SiteSuggestionsCoordinator}.
-     * @param iconGenerator an icon generator for creating icons.
      * @param navigationDelegate delegate for navigation controls
      * @param contextMenuManager handles context menu creation
      * @param layoutManager the layout manager controlling this recyclerview and adapter
      * @param titleView the view to update site title when focus changes.
      */
-    SiteSuggestionsAdapter(PropertyModel model, RoundedIconGenerator iconGenerator,
-            SuggestionsNavigationDelegate navigationDelegate, ContextMenuManager contextMenuManager,
-            SiteSuggestionsLayoutManager layoutManager, TextView titleView,
-            RecyclerView recyclerView) {
+    SiteSuggestionsAdapter(PropertyModel model, SuggestionsNavigationDelegate navigationDelegate,
+            ContextMenuManager contextMenuManager, SiteSuggestionsLayoutManager layoutManager,
+            TextView titleView) {
         mModel = model;
-        mIconGenerator = iconGenerator;
         mNavDelegate = navigationDelegate;
         mContextMenuManager = contextMenuManager;
         mLayoutManager = layoutManager;
         mTitleView = titleView;
-        mRecyclerView = recyclerView;
 
         mModel.get(SUGGESTIONS_KEY).addObserver(this);
         mModel.addObserver(this);
@@ -195,11 +189,10 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
             // Only update the icon for icon updates.
             if (payload == SiteSuggestionModel.ICON_KEY) {
                 tile.updateIcon(item.get(SiteSuggestionModel.ICON_KEY),
-                        item.get(SiteSuggestionModel.TITLE_KEY));
+                        item.get(SiteSuggestionModel.DEFAULT_ICON_KEY));
             } else {
-                tile.initialize(mIconGenerator);
                 tile.updateIcon(item.get(SiteSuggestionModel.ICON_KEY),
-                        item.get(SiteSuggestionModel.TITLE_KEY));
+                        item.get(SiteSuggestionModel.DEFAULT_ICON_KEY));
 
                 SiteSuggestionInteractionDelegate interactionDelegate =
                         new SiteSuggestionInteractionDelegate(item);

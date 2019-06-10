@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.suggestions.ImageFetcher;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
+import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.touchless.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -49,6 +50,7 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
     private ImageFetcher mImageFetcher;
     private MostVisitedSites mMostVisitedSites;
     private Profile mProfile;
+    private RoundedIconGenerator mDefaultIconGenerator;
     private int mIconSize;
 
     // Whether we should set focus to the data. Used to delay focus-setting until after loading
@@ -57,12 +59,13 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
     // Whether we have pending requests for suggestions.
     private boolean mHasPendingRequests;
 
-    SiteSuggestionsMediator(
-            PropertyModel model, Profile profile, ImageFetcher imageFetcher, int minIconSize) {
+    SiteSuggestionsMediator(PropertyModel model, Profile profile, ImageFetcher imageFetcher,
+            RoundedIconGenerator iconGenerator, int minIconSize) {
         mModel = model;
         mImageFetcher = imageFetcher;
         mIconSize = minIconSize;
         mProfile = profile;
+        mDefaultIconGenerator = iconGenerator;
 
         mHasPendingRequests = true;
         mMostVisitedSites =
@@ -89,7 +92,8 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
             // Do not put duplicates.
             if (urls.contains(suggestion.url)) continue;
 
-            PropertyModel siteSuggestion = SiteSuggestionModel.getSiteSuggestionModel(suggestion);
+            PropertyModel siteSuggestion = SiteSuggestionModel.getSiteSuggestionModel(
+                    suggestion, mDefaultIconGenerator.generateIconForText(suggestion.title));
             modelList.add(siteSuggestion);
             if (suggestion.whitelistIconPath.isEmpty()) {
                 makeIconRequest(siteSuggestion);
