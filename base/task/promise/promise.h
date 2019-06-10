@@ -72,6 +72,16 @@ class Promise {
     return abstract_promise_->IsCanceled();
   }
 
+  bool IsResolvedForTesting() const {
+    DCHECK(abstract_promise_);
+    return abstract_promise_->IsResolved();
+  }
+
+  bool IsRejectedForTesting() const {
+    DCHECK(abstract_promise_);
+    return abstract_promise_->IsRejected();
+  }
+
   // A task to execute |on_reject| is posted on |task_runner| as soon as this
   // promise (or an uncaught ancestor) is rejected. A Promise<> for the return
   // value of |on_reject| is returned.

@@ -1938,17 +1938,20 @@ TEST_F(PromiseTest, AllVoidContainer) {
   promises.push_back(mpr4.promise());
 
   RunLoop run_loop;
-  Promises::All(FROM_HERE, promises)
-      .ThenHere(FROM_HERE, BindLambdaForTesting([&](std::vector<Void> result) {
-                  EXPECT_EQ(4u, result.size());
-                  run_loop.Quit();
-                }));
+  Promise<void> result =
+      Promises::All(FROM_HERE, promises)
+          .ThenHere(FROM_HERE,
+                    BindLambdaForTesting([&]() { run_loop.Quit(); }));
 
   mpr1.Resolve();
   mpr2.Resolve();
   mpr3.Resolve();
+  RunLoop().RunUntilIdle();
+  EXPECT_FALSE(result.IsResolvedForTesting());
+
   mpr4.Resolve();
   run_loop.Run();
+  EXPECT_TRUE(result.IsResolvedForTesting());
 }
 
 TEST_F(PromiseTest, AllVoidIntContainerReject) {
@@ -1965,7 +1968,7 @@ TEST_F(PromiseTest, AllVoidIntContainerReject) {
 
   RunLoop run_loop;
   Promises::All(FROM_HERE, promises)
-      .ThenHere(FROM_HERE, BindLambdaForTesting([&](std::vector<Void> result) {
+      .ThenHere(FROM_HERE, BindLambdaForTesting([&]() {
                   FAIL() << "We shouldn't get here, the promise was rejected!";
                   run_loop.Quit();
                 }),
