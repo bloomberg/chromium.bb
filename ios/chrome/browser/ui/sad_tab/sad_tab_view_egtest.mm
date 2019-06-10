@@ -10,7 +10,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -92,9 +91,8 @@ id<GREYMatcher> incognitoHelpContainsText() {
 
   // Prepare a helper block to test Sad Tab navigating from and to normal pages.
   void (^loadAndCheckSimpleURL)() = ^void() {
-    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:simple_URL]);
-    CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebStateContainingText:"You've arrived"]);
+    [ChromeEarlGrey loadURL:simple_URL];
+    [ChromeEarlGrey waitForWebStateContainingText:"You've arrived"];
     [[EarlGrey selectElementWithMatcher:reloadSadTabTitleText()]
         assertWithMatcher:grey_nil()];
     [[EarlGrey selectElementWithMatcher:feedbackSadTabTitleContainsText()]
@@ -105,8 +103,7 @@ id<GREYMatcher> incognitoHelpContainsText() {
 
   // Navigate to the chrome://crash URL which should show the Sad Tab.
   const GURL crash_URL = GURL("chrome://crash");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:crash_URL
-                                  waitForCompletion:NO]);
+  [ChromeEarlGrey loadURL:crash_URL waitForCompletion:NO];
   [[EarlGrey selectElementWithMatcher:reloadSadTabTitleText()]
       assertWithMatcher:grey_notNil()];
 
@@ -117,8 +114,7 @@ id<GREYMatcher> incognitoHelpContainsText() {
   // A second visit to the crashing URL should show a feedback message.
   // It should also show help messages including an invitation to use
   // Incognito Mode.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:crash_URL
-                                  waitForCompletion:NO]);
+  [ChromeEarlGrey loadURL:crash_URL waitForCompletion:NO];
   [[EarlGrey selectElementWithMatcher:feedbackSadTabTitleContainsText()]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:incognitoHelpContainsText()]
@@ -135,17 +131,15 @@ id<GREYMatcher> incognitoHelpContainsText() {
       grey_accessibilityID(kToolsMenuNewIncognitoTabId);
   [[EarlGrey selectElementWithMatcher:newIncognitoTabButtonMatcher]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:1]);
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
   loadAndCheckSimpleURL();
 
   // Test an initial crash, and then a second crash in Incognito mode, as above.
   // Incognito mode should not be suggested if already in Incognito mode.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:crash_URL
-                                  waitForCompletion:NO]);
+  [ChromeEarlGrey loadURL:crash_URL waitForCompletion:NO];
   [[EarlGrey selectElementWithMatcher:reloadSadTabTitleText()]
       assertWithMatcher:grey_notNil()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:crash_URL
-                                  waitForCompletion:NO]);
+  [ChromeEarlGrey loadURL:crash_URL waitForCompletion:NO];
   [[EarlGrey selectElementWithMatcher:feedbackSadTabTitleContainsText()]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:incognitoHelpContainsText()]

@@ -12,7 +12,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/earl_grey/disabled_test_macros.h"
@@ -57,9 +56,8 @@ const char kHTMLURL[] = "http://test";
   responses[url] = response;
   web::test::SetUpSimpleHttpServer(responses);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:url]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:response]);
+  [ChromeEarlGrey loadURL:url];
+  [ChromeEarlGrey waitForWebStateContainingText:response];
 
   [self printCurrentPage];
 }
@@ -71,7 +69,7 @@ const char kHTMLURL[] = "http://test";
 
   web::test::SetUpFileBasedHttpServer();
   GURL url = web::test::HttpServer::MakeUrl(kPDFURL);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:url waitForCompletion:NO]);
+  [ChromeEarlGrey loadURL:url waitForCompletion:NO];
 
   [self printCurrentPage];
 }

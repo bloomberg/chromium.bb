@@ -36,7 +36,6 @@
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -171,14 +170,14 @@ id<GREYMatcher> SearchIconButton() {
 - (void)setUp {
   [super setUp];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey clearBookmarks];
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
   ios::ChromeBrowserState* browser_state =
@@ -197,7 +196,7 @@ id<GREYMatcher> SearchIconButton() {
   std::string expectedURLContent = bookmarkedURL.GetContent();
   NSString* bookmarkTitle = @"my bookmark";
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:bookmarkedURL]);
+  [ChromeEarlGrey loadURL:bookmarkedURL];
   [[EarlGrey selectElementWithMatcher:OmniboxText(expectedURLContent)]
       assertWithMatcher:grey_notNil()];
 
@@ -270,9 +269,9 @@ id<GREYMatcher> SearchIconButton() {
       "http://ios/testing/data/http_server_files/pony.html");
   const GURL secondURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/destination.html");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:firstURL]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:secondURL]);
+  [ChromeEarlGrey loadURL:firstURL];
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:secondURL];
 
   [BookmarksTestCase bookmarkCurrentTabWithTitle:@"my bookmark"];
   [BookmarksTestCase assertBookmarksWithTitle:@"my bookmark" expectedCount:1];
@@ -914,7 +913,7 @@ id<GREYMatcher> SearchIconButton() {
 // Tests that chrome://bookmarks is disabled.
 - (void)testBookmarksURLDisabled {
   const std::string kChromeBookmarksURL = "chrome://bookmarks";
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL(kChromeBookmarksURL)]);
+  [ChromeEarlGrey loadURL:GURL(kChromeBookmarksURL)];
 
   // Verify chrome://bookmarks appears in the omnibox.
   [[EarlGrey selectElementWithMatcher:OmniboxText(kChromeBookmarksURL)]
@@ -922,8 +921,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify that the resulting page is an error page.
   std::string errorMessage = net::ErrorToShortString(net::ERR_INVALID_URL);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:errorMessage]);
+  [ChromeEarlGrey waitForWebStateContainingText:errorMessage];
 }
 
 #pragma mark - Helpers
@@ -1719,14 +1717,14 @@ id<GREYMatcher> SearchIconButton() {
 - (void)setUp {
   [super setUp];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey clearBookmarks];
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
   ios::ChromeBrowserState* browser_state =
@@ -2111,7 +2109,7 @@ id<GREYMatcher> SearchIconButton() {
                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
 
   // Verify there are 3 normal tabs.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:3]);
+  [ChromeEarlGrey waitForMainTabCount:3];
   GREYAssertTrue([ChromeEarlGrey incognitoTabCount] == 0,
                  @"Incognito tab count should be 0");
 
@@ -2119,7 +2117,7 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
 
   // Switch to Incognito mode by adding a new incognito tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
+  [ChromeEarlGrey openNewIncognitoTab];
 
   [BookmarksTestCase openBookmarks];
 
@@ -2128,12 +2126,12 @@ id<GREYMatcher> SearchIconButton() {
                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
 
   // Verify there are 6 normal tabs and no new incognito tabs.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:6]);
+  [ChromeEarlGrey waitForMainTabCount:6];
   GREYAssertTrue([ChromeEarlGrey incognitoTabCount] == 1,
                  @"Incognito tab count should be 1");
 
   // Close the incognito tab to go back to normal mode.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey closeAllIncognitoTabs]);
+  [ChromeEarlGrey closeAllIncognitoTabs];
 
   // The following verifies the selected bookmarks are open in the same order as
   // in folder.
@@ -2154,7 +2152,7 @@ id<GREYMatcher> SearchIconButton() {
                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
 
   // Verify there are 3 incognito tabs and no new normal tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:3]);
+  [ChromeEarlGrey waitForIncognitoTabCount:3];
   GREYAssertTrue([ChromeEarlGrey mainTabCount] == 1,
                  @"Main tab count should be 1");
 
@@ -2175,7 +2173,7 @@ id<GREYMatcher> SearchIconButton() {
   // there will be 2 new tabs only.
 
   // Verify there are 5 incognito tabs and no new normal tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:5]);
+  [ChromeEarlGrey waitForIncognitoTabCount:5];
   GREYAssertTrue([ChromeEarlGrey mainTabCount] == 1,
                  @"Main tab count should be 1");
 
@@ -2208,7 +2206,7 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 
   // Verify there is 1 new normal tab created and no new incognito tab created.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey waitForMainTabCount:2];
   GREYAssertTrue([ChromeEarlGrey incognitoTabCount] == 0,
                  @"Incognito tab count should be 0");
 
@@ -2228,7 +2226,7 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 
   // Verify there is 1 incognito tab created and no new normal tab created.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:1]);
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
   GREYAssertTrue([ChromeEarlGrey mainTabCount] == 2,
                  @"Main tab count should be 2");
 
@@ -2272,7 +2270,7 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 
   // Verify a new incognito tab is created.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:2]);
+  [ChromeEarlGrey waitForIncognitoTabCount:2];
   GREYAssertTrue([ChromeEarlGrey mainTabCount] == 2,
                  @"Main tab count should be 2");
 
@@ -2296,7 +2294,7 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 
   // Verify a new normal tab is created and no incognito tab is created.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:3]);
+  [ChromeEarlGrey waitForMainTabCount:3];
   GREYAssertTrue([ChromeEarlGrey incognitoTabCount] == 2,
                  @"Incognito tab count should be 2");
 
@@ -2710,14 +2708,14 @@ id<GREYMatcher> SearchIconButton() {
 - (void)setUp {
   [super setUp];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey clearBookmarks];
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
   ios::ChromeBrowserState* browser_state =
@@ -2943,14 +2941,14 @@ id<GREYMatcher> SearchIconButton() {
 - (void)setUp {
   [super setUp];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey clearBookmarks];
 
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
@@ -3118,14 +3116,14 @@ id<GREYMatcher> SearchIconButton() {
 - (void)setUp {
   [super setUp];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey clearBookmarks];
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
   ios::ChromeBrowserState* browser_state =
@@ -3878,7 +3876,7 @@ id<GREYMatcher> SearchIconButton() {
                                 expectedCount:0];
   // Open the page.
   std::string expectedURLContent = bookmarkedURL.GetContent();
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:bookmarkedURL]);
+  [ChromeEarlGrey loadURL:bookmarkedURL];
   [[EarlGrey selectElementWithMatcher:OmniboxText(expectedURLContent)]
       assertWithMatcher:grey_notNil()];
 
@@ -4003,7 +4001,7 @@ id<GREYMatcher> SearchIconButton() {
       "http://ios/testing/data/http_server_files/pony.html");
   std::string expectedURLContent = bookmarkedURL.GetContent();
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:bookmarkedURL]);
+  [ChromeEarlGrey loadURL:bookmarkedURL];
   [[EarlGrey selectElementWithMatcher:OmniboxText(expectedURLContent)]
       assertWithMatcher:grey_notNil()];
 
@@ -4057,14 +4055,14 @@ id<GREYMatcher> SearchIconButton() {
 - (void)setUp {
   [super setUp];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey clearBookmarks];
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
   ios::ChromeBrowserState* browser_state =

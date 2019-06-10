@@ -17,7 +17,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/common/features.h"
@@ -90,7 +89,7 @@ void AssertURLIs(const GURL& expectedURL) {
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
+  [ChromeEarlGrey loadURL:URL];
 
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
@@ -118,7 +117,7 @@ void AssertURLIs(const GURL& expectedURL) {
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/single_page_wide.pdf");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
+  [ChromeEarlGrey loadURL:URL];
 
   // TODO(crbug.com/852393): Investigate why synchronization isn't working.  Is
   // an animation going on forever?
@@ -163,7 +162,7 @@ void AssertURLIs(const GURL& expectedURL) {
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
+  [ChromeEarlGrey loadURL:URL];
 
   // Test that the toolbar is hidden after a user swipes up.
   HideToolbarUsingUI();
@@ -185,9 +184,8 @@ void AssertURLIs(const GURL& expectedURL) {
 // header being shown even if was not previously shown.
 - (void)testChromeToChromeURLKeepsHeaderOnScreen {
   const GURL kChromeAboutURL("chrome://chrome-urls");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:kChromeAboutURL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"chrome://version"]);
+  [ChromeEarlGrey loadURL:kChromeAboutURL];
+  [ChromeEarlGrey waitForWebStateContainingText:"chrome://version"];
 
   // Hide the toolbar. The page is not long enough to dismiss the toolbar using
   // the UI so we have to zoom in.
@@ -227,8 +225,7 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // Test that the toolbar is visible when moving from one chrome:// link to
   // another chrome:// link.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"version"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"version"];
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
@@ -241,7 +238,7 @@ void AssertURLIs(const GURL& expectedURL) {
       base::StringPrintf("<p style='height:%dem'>a</p><p>b</p>", kPageHeightEM);
   web::test::SetUpSimpleHttpServer(responses);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
+  [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
   // Simulate a user scroll down.
   HideToolbarUsingUI();
@@ -267,14 +264,13 @@ void AssertURLIs(const GURL& expectedURL) {
       kPageHeightEM);
   web::test::SetUpSimpleHttpServer(responses);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Tall page"]);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"Tall page"];
 
   // Hide the toolbar.
   HideToolbarUsingUI();
   [ChromeEarlGreyUI waitForToolbarVisible:NO];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"link"];
   // Main test is here: Make sure the header is still visible!
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
@@ -304,25 +300,22 @@ void AssertURLIs(const GURL& expectedURL) {
       kPageHeightEM, javaScript.c_str());
 
   web::test::SetUpSimpleHttpServer(responses);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW]);
+  [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"link1"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"link1"];
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Hide the toolbar.
   HideToolbarUsingUI();
   [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Open new window.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link1"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"link1"];
 
   // Check that a new Tab was created.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"link2"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey waitForWebStateContainingText:"link2"];
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   AssertURLIs(destinationURL);
 
@@ -344,11 +337,10 @@ void AssertURLIs(const GURL& expectedURL) {
                @"Failed to receive WKErrorDomain error");
   }
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"link1"]);
+  [ChromeEarlGrey waitForWebStateContainingText:"link1"];
 
   // Make sure the toolbar is on the screen.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey waitForMainTabCount:1];
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
@@ -374,18 +366,16 @@ void AssertURLIs(const GURL& expectedURL) {
                               "id='link2'>link2</a>";
   web::test::SetUpSimpleHttpServer(responses);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:originURL]);
+  [ChromeEarlGrey loadURL:originURL];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"link1"]);
+  [ChromeEarlGrey waitForWebStateContainingText:"link1"];
   // Dismiss the toolbar.
   HideToolbarUsingUI();
   [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Navigate to the other page.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link1"]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"link2"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"link1"];
+  [ChromeEarlGrey waitForWebStateContainingText:"link2"];
 
   // Make sure toolbar is shown since a new load has started.
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
@@ -395,7 +385,7 @@ void AssertURLIs(const GURL& expectedURL) {
   [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Go back.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link2"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"link2"];
 
   // Make sure the toolbar has loaded now that a new page has loaded.
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
@@ -415,16 +405,15 @@ void AssertURLIs(const GURL& expectedURL) {
   responses[URL] = manyLines;
   web::test::SetUpSimpleHttpServer(responses);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"link"]);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"link"];
 
   // Dismiss the toolbar.
   HideToolbarUsingUI();
   [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Go back to NTP, which is a native view.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"link"];
 
   // Make sure the toolbar is visible now that a new page has loaded.
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
@@ -446,11 +435,11 @@ void AssertURLIs(const GURL& expectedURL) {
       new ErrorPageResponseProvider(responses));
   web::test::SetUpHttpServer(std::move(provider));
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
+  [ChromeEarlGrey loadURL:URL];
   HideToolbarUsingUI();
   [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"link"];
   AssertURLIs(ErrorPageResponseProvider::GetDnsFailureUrl());
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }

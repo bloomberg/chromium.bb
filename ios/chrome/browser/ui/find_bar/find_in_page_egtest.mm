@@ -15,7 +15,6 @@
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -222,11 +221,10 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 
 - (void)navigateToTestPage {
   // Navigate to a page with some text.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:self.testURL]);
+  [ChromeEarlGrey loadURL:self.testURL];
 
   // Verify web page finished loading.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kFindInPageResponse]);
+  [ChromeEarlGrey waitForWebStateContainingText:kFindInPageResponse];
 }
 
 @end

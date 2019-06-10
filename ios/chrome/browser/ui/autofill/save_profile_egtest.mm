@@ -12,7 +12,6 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,18 +56,15 @@ const char kProfileForm[] =
 #pragma mark - Page interaction helper methods
 
 - (void)fillAndSubmitForm {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"fill_profile_president"]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"submit_profile"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"fill_profile_president"];
+  [ChromeEarlGrey tapWebStateElementWithID:@"submit_profile"];
 }
 
 #pragma mark - Tests
 
 // Ensures that the profile is saved to Chrome after submitting the form.
 - (void)testUserData_LocalSave {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kProfileForm)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kProfileForm)];
 
   // Ensure there are no saved profiles.
   GREYAssertEqual(0U, personal_data_manager_->GetProfiles().size(),

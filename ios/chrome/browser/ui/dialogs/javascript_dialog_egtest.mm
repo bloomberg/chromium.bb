@@ -20,7 +20,6 @@
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/earl_grey/disabled_test_macros.h"
@@ -389,15 +388,13 @@ void TapSuppressDialogsButton() {
 #pragma mark - Utility
 
 - (void)loadBlankTestPage {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:self.emptyPageURL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:std::string()]);
+  [ChromeEarlGrey loadURL:self.emptyPageURL];
+  [ChromeEarlGrey waitForWebStateContainingText:std::string()];
 }
 
 - (void)loadPageWithLink {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:self.linkPageURL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kLinkPageLinkText]);
+  [ChromeEarlGrey loadURL:self.linkPageURL];
+  [ChromeEarlGrey waitForWebStateContainingText:kLinkPageLinkText];
 }
 
 #pragma mark - Tests
@@ -411,8 +408,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kAlertResultBody]);
+  [ChromeEarlGrey waitForWebStateContainingText:kAlertResultBody];
 }
 
 // Tests that a confirmation dialog is shown, and that the completion block is
@@ -425,8 +421,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kConfirmationResultBodyOK]);
+  [ChromeEarlGrey waitForWebStateContainingText:kConfirmationResultBodyOK];
 }
 
 // Tests that a confirmation dialog is shown, and that the completion block is
@@ -440,8 +435,8 @@ void TapSuppressDialogsButton() {
   TapCancel();
 
   // Wait for the html body to be reset to the correct value.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:kConfirmationResultBodyCancelled]);
+  [ChromeEarlGrey
+      waitForWebStateContainingText:kConfirmationResultBodyCancelled];
 }
 
 // Tests that a prompt dialog is shown, and that the completion block is called
@@ -463,8 +458,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the input text.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPromptTestUserInput]);
+  [ChromeEarlGrey waitForWebStateContainingText:kPromptTestUserInput];
 }
 
 // Tests that a prompt dialog is shown, and that the completion block is called
@@ -487,8 +481,7 @@ void TapSuppressDialogsButton() {
   TapCancel();
 
   // Wait for the html body to be reset to the cancel text.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebStateContainingText:kPromptResultBodyCancelled]);
+  [ChromeEarlGrey waitForWebStateContainingText:kPromptResultBodyCancelled];
 }
 
 // Tests that JavaScript alerts that are shown in a loop can be suppressed.
@@ -515,8 +508,7 @@ void TapSuppressDialogsButton() {
   TapSuppressDialogsButton();
 
   // Wait for the html body to be reset to the loop finished text.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kAlertLoopFinishedText]);
+  [ChromeEarlGrey waitForWebStateContainingText:kAlertLoopFinishedText];
 }
 
 // Tests to ensure crbug.com/658260 does not regress.
@@ -553,8 +545,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kAlertResultBody]);
+  [ChromeEarlGrey waitForWebStateContainingText:kAlertResultBody];
 }
 
 // Tests that an alert is presented after displaying the share menu.
@@ -580,8 +571,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kAlertResultBody]);
+  [ChromeEarlGrey waitForWebStateContainingText:kAlertResultBody];
 }
 
 // Tests that an alert is presented after a new tab animation is finished.

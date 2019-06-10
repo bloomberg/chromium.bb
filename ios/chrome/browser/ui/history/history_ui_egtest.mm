@@ -30,7 +30,6 @@
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -197,19 +196,17 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   // Tap a history entry and assert that navigation to that entry's URL occurs.
   [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse1]);
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
 }
 
 // Tests that history is not changed after performing back navigation.
 - (void)testHistoryUpdateAfterBackNavigation {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL1]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL2]);
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey loadURL:_URL2];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse1]);
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
 
   [self openHistoryPanel];
 
@@ -356,7 +353,7 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           _URL1.GetContent())]
       assertWithMatcher:grey_notNil()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests display and selection of 'Open in New Incognito Tab' in a context menu
@@ -376,8 +373,8 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           _URL1.GetContent())]
       assertWithMatcher:grey_notNil()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForIncognitoTabCount:1]);
+  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
 }
 
 // Tests display and selection of 'Copy URL' in a context menu on a history
@@ -422,17 +419,14 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 #pragma mark Helper Methods
 
 - (void)loadTestURLs {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse1]);
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL2]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse2]);
+  [ChromeEarlGrey loadURL:_URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse2];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL3]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse3]);
+  [ChromeEarlGrey loadURL:_URL3];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse3];
 }
 
 - (void)openHistoryPanel {

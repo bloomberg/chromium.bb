@@ -17,7 +17,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -79,11 +78,9 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 // Tests that Chrome presents PassKit error infobar if pkpass file cannot be
 // parsed.
 - (void)testPassKitParsingError {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Bad"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"bad"]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
+  [ChromeEarlGrey waitForWebStateContainingText:"Bad"];
+  [ChromeEarlGrey tapWebStateElementWithID:@"bad"];
 
   bool infobarShown = WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
     NSError* error = nil;
@@ -102,11 +99,9 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
     EARL_GREY_TEST_SKIPPED(@"Wallet app is not supported on iPads.");
   }
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Good"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"good"]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
+  [ChromeEarlGrey waitForWebStateContainingText:"Good"];
+  [ChromeEarlGrey tapWebStateElementWithID:@"good"];
 
   // PKAddPassesViewController UI is rendered out of host process so EarlGrey
   // matcher can not find PassKit Dialog UI. Instead this test relies on view
