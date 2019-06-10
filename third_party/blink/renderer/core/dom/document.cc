@@ -1193,6 +1193,12 @@ ScriptValue Document::registerElement(ScriptState* script_state,
   return constructor_builder.BindingsReturnValue();
 }
 
+V0CustomElementRegistrationContext* Document::RegistrationContext() const {
+  if (RuntimeEnabledFeatures::CustomElementsV0Enabled(this))
+    return registration_context_.Get();
+  return nullptr;
+}
+
 V0CustomElementMicrotaskRunQueue* Document::CustomElementMicrotaskRunQueue() {
   if (!custom_element_microtask_run_queue_) {
     custom_element_microtask_run_queue_ =
