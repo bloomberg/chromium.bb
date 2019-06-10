@@ -327,14 +327,14 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
       identity_manager_->LegacySeedAccountInfo(info);
   std::string old_authenticated_account_id =
       identity_manager_->GetPrimaryAccountId();
-  // |SigninManager::SetAuthenticatedAccountId| simply ignores the call if
-  // there is already a signed in user. Check that there is no signed in account
-  // or that the new signed in account matches the old one to avoid a mismatch
-  // between the old and the new authenticated accounts.
+  // |PrimaryAccountManager::SetAuthenticatedAccountId| simply ignores the call
+  // if there is already a signed in user. Check that there is no signed in
+  // account or that the new signed in account matches the old one to avoid a
+  // mismatch between the old and the new authenticated accounts.
   if (!old_authenticated_account_id.empty())
     CHECK_EQ(new_authenticated_account_id, old_authenticated_account_id);
 
-  // Update the SigninManager with the new logged in identity.
+  // Update the PrimaryAccountManager with the new logged in identity.
   auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
   DCHECK(account_mutator);
   account_mutator->SetPrimaryAccount(new_authenticated_account_id);

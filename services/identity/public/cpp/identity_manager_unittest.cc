@@ -22,8 +22,8 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
+#include "components/signin/core/browser/primary_account_policy_manager.h"
 #include "components/signin/core/browser/set_accounts_in_cookie_result.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -218,8 +218,9 @@ class IdentityManagerTest : public testing::Test {
     IdentityManager::RegisterProfilePrefs(pref_service_.registry());
     IdentityManager::RegisterLocalStatePrefs(pref_service_.registry());
 
-    RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
-                            SigninManagerSetup::kWithAuthenticatedAccout);
+    RecreateIdentityManager(
+        signin::AccountConsistencyMethod::kDisabled,
+        PrimaryAccountManagerSetup::kWithAuthenticatedAccout);
   }
 
   ~IdentityManagerTest() override {
@@ -252,7 +253,7 @@ class IdentityManagerTest : public testing::Test {
   }
 
   // See RecreateIdentityManager.
-  enum class SigninManagerSetup {
+  enum class PrimaryAccountManagerSetup {
     kWithAuthenticatedAccout,
     kNoAuthenticatedAccount
   };
@@ -260,18 +261,19 @@ class IdentityManagerTest : public testing::Test {
   // Used by some tests that need to re-instantiate IdentityManager after
   // performing some other setup.
   void RecreateIdentityManager() {
-    RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
-                            SigninManagerSetup::kNoAuthenticatedAccount);
+    RecreateIdentityManager(
+        signin::AccountConsistencyMethod::kDisabled,
+        PrimaryAccountManagerSetup::kNoAuthenticatedAccount);
   }
 
   // Recreates IdentityManager with given |account_consistency| and optionally
-  // seeds with an authenticated account depending on |singin_manager_setup|.
-  // This process destroys any existing IdentityManager and its dependencies,
-  // then remakes them. Dependencies that outlive SigninManager (e.g.
-  // SigninClient) will be reused.
+  // seeds with an authenticated account depending on
+  // |primary_account_manager_setup|. This process destroys any existing
+  // IdentityManager and its dependencies, then remakes them. Dependencies that
+  // outlive PrimaryAccountManager (e.g. SigninClient) will be reused.
   void RecreateIdentityManager(
       signin::AccountConsistencyMethod account_consistency,
-      SigninManagerSetup signin_manager_setup) {
+      PrimaryAccountManagerSetup primary_account_manager_setup) {
     // Remove observers first, otherwise IdentityManager destruction might
     // trigger a DCHECK because there are still living observers.
     identity_manager_observer_.reset();
@@ -295,26 +297,29 @@ class IdentityManagerTest : public testing::Test {
 
 #if defined(OS_CHROMEOS)
     DCHECK_EQ(account_consistency, signin::AccountConsistencyMethod::kDisabled)
-        << "AccountConsistency is not used by SigninManagerBase";
-    auto signin_manager = std::make_unique<SigninManagerBase>(
+        << "AccountConsistency is not used by PrimaryAccountManager";
+    auto primary_account_manager = std::make_unique<PrimaryAccountManager>(
         &signin_client_, token_service.get(), account_tracker_service.get(),
         account_consistency);
 #else
-    auto signin_manager = std::make_unique<SigninManager>(
-        &signin_client_, token_service.get(), account_tracker_service.get(),
-        account_consistency);
+    auto primary_account_manager =
+        std::make_unique<PrimaryAccountPolicyManager>(
+            &signin_client_, token_service.get(), account_tracker_service.get(),
+            account_consistency);
 #endif
 
-    // Passing this switch ensures that the new SigninManager starts with a
-    // clean slate. Otherwise SigninManagerBase::Initialize will use the account
-    // id stored in prefs::kGoogleServicesAccountId.
+    // Passing this switch ensures that the new PrimaryAccountManager starts
+    // with a clean slate. Otherwise PrimaryAccountManager::Initialize will use
+    // the account id stored in prefs::kGoogleServicesAccountId.
     base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
     cmd_line->AppendSwitch(switches::kClearTokenService);
 
-    signin_manager->Initialize(&pref_service_);
+    primary_account_manager->Initialize(&pref_service_);
 
-    if (signin_manager_setup == SigninManagerSetup::kWithAuthenticatedAccout) {
-      signin_manager->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+    if (primary_account_manager_setup ==
+        PrimaryAccountManagerSetup::kWithAuthenticatedAccout) {
+      primary_account_manager->SetAuthenticatedAccountInfo(kTestGaiaId,
+                                                           kTestEmail);
     }
 
     auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
@@ -325,9 +330,10 @@ class IdentityManagerTest : public testing::Test {
 
     identity_manager_.reset(new IdentityManager(
         std::move(account_tracker_service), std::move(token_service),
-        std::move(gaia_cookie_manager_service), std::move(signin_manager),
-        std::move(account_fetcher_service), nullptr, nullptr,
-        std::move(accounts_cookie_mutator), std::move(diagnostics_provider)));
+        std::move(gaia_cookie_manager_service),
+        std::move(primary_account_manager), std::move(account_fetcher_service),
+        nullptr, nullptr, std::move(accounts_cookie_mutator),
+        std::move(diagnostics_provider)));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(
@@ -382,7 +388,8 @@ class IdentityManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerTest);
 };
 
-// Test that IdentityManager starts off with the information in SigninManager.
+// Test that IdentityManager starts off with the information in
+// PrimaryAccountManager.
 TEST_F(IdentityManagerTest, PrimaryAccountInfoAtStartup) {
   CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
@@ -993,7 +1000,7 @@ TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
   std::set<std::string> scopes{"scope"};
   std::string access_token = "access_token";
 
-  identity_manager()->GetSigninManager()->SetAuthenticatedAccountInfo(
+  identity_manager()->GetPrimaryAccountManager()->SetAuthenticatedAccountInfo(
       kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
@@ -1032,7 +1039,7 @@ TEST_F(IdentityManagerTest,
   identity_manager_diagnostics_observer()
       ->set_on_access_token_requested_callback(run_loop.QuitClosure());
 
-  identity_manager()->GetSigninManager()->SetAuthenticatedAccountInfo(
+  identity_manager()->GetPrimaryAccountManager()->SetAuthenticatedAccountInfo(
       kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
@@ -1119,7 +1126,7 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
   identity_manager_diagnostics_observer()
       ->set_on_access_token_requested_callback(run_loop.QuitClosure());
 
-  identity_manager()->GetSigninManager()->SetAuthenticatedAccountInfo(
+  identity_manager()->GetPrimaryAccountManager()->SetAuthenticatedAccountInfo(
       kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
@@ -1172,7 +1179,7 @@ TEST_F(IdentityManagerTest,
   identity_manager_diagnostics_observer()
       ->set_on_access_token_request_completed_callback(run_loop.QuitClosure());
 
-  identity_manager()->GetSigninManager()->SetAuthenticatedAccountInfo(
+  identity_manager()->GetPrimaryAccountManager()->SetAuthenticatedAccountInfo(
       kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
   token_service()->set_auto_post_fetch_response_on_message_loop(true);
@@ -1468,7 +1475,7 @@ TEST_F(IdentityManagerTest, IdentityManagerGetsTokensLoadedEvent) {
   identity_manager_observer()->SetOnRefreshTokensLoadedCallback(
       run_loop.QuitClosure());
 
-  // Credentials are already loaded in SigninManager::Initialize()
+  // Credentials are already loaded in PrimaryAccountManager::Initialize()
   // which runs even before the IdentityManager is created. That's why
   // we fake the credentials loaded state and force another load in
   // order to be able to capture the TokensLoaded event.
@@ -1904,7 +1911,7 @@ TEST_F(IdentityManagerTest, OnNetworkInitialized) {
 
 TEST_F(IdentityManagerTest,
        BatchChangeObserversAreNotifiedOnCredentialsUpdate) {
-  identity_manager()->GetSigninManager()->SetAuthenticatedAccountInfo(
+  identity_manager()->GetPrimaryAccountManager()->SetAuthenticatedAccountInfo(
       kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
@@ -1997,7 +2004,7 @@ TEST_F(IdentityManagerTest, AreRefreshTokensLoaded) {
   identity_manager_observer()->SetOnRefreshTokensLoadedCallback(
       run_loop.QuitClosure());
 
-  // Credentials are already loaded in SigninManager::Initialize()
+  // Credentials are already loaded in PrimaryAccountManager::Initialize()
   // which runs even before the IdentityManager is created. That's why
   // we fake the credentials loaded state and force another load in
   // order to test AreRefreshTokensLoaded.

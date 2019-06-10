@@ -15,11 +15,10 @@ SyncUsernameTestBase::SyncUsernameTestBase() = default;
 SyncUsernameTestBase::~SyncUsernameTestBase() = default;
 
 void SyncUsernameTestBase::FakeSigninAs(const std::string& email) {
-  // This method is called in a roll by some tests. Differently than
-  // SigninManager, IdentityTestEnvironment does not allow logging in
-  // without a previously log-out.
-  // So make sure tests only log in once and that the email is the same
-  // in case of FakeSigninAs calls roll.
+  // This method is called in a roll by some tests. IdentityTestEnvironment does
+  // not allow logging in without a previously log-out.
+  // So make sure tests only log in once and that the email is the same in case
+  // of FakeSigninAs calls roll.
   identity::IdentityManager* identity_manager =
       identity_test_env_.identity_manager();
   if (identity_manager->HasPrimaryAccount()) {

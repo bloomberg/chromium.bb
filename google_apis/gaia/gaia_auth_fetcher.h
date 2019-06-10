@@ -49,7 +49,7 @@ enum class GaiaSource {
   kAccountReconcilorDice,
   kAccountReconcilorMirror,
   kOAuth2LoginVerifier,
-  kSigninManager
+  kPrimaryAccountManager
 };
 
 }  // namespace gaia

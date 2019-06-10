@@ -56,7 +56,8 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // after service is used between profile restarts.
   //
   // The primary account is specified with the |primary_account_id| argument.
-  // For a regular profile, the primary account id comes from SigninManager.
+  // For a regular profile, the primary account id comes from
+  // PrimaryAccountManager.
   // For a supervised user, the id comes from SupervisedUserService.
   void LoadCredentials(const std::string& primary_account_id);
 

@@ -2,8 +2,8 @@ IdentityManager is the next-generation C++ API for interacting with Google
 identity. It is backed by //components/signin.
 
 Documentation on the mapping between usage of legacy signin
-classes (notably SigninManager(Base) and ProfileOAuth2TokenService) and usage of
-IdentityManager is available here:
+classes (notably PrimaryAccountManager and ProfileOAuth2TokenService) and usage
+of IdentityManager is available here:
 
 https://docs.google.com/document/d/14f3qqkDM9IE4Ff_l6wuXvCMeHfSC9TxKezXTCyeaPUY/edit#
 
@@ -11,8 +11,8 @@ A quick inline cheat sheet for developers migrating from usage of //components/
 signin and //google_apis/gaia:
 
 - "Primary account" in IdentityManager refers to what is called the
-  "authenticated account" in SigninManager, i.e., the account that has been
-  blessed for sync by the user.
+  "authenticated account" in PrimaryAccountManager, i.e., the account that has
+  been blessed for sync by the user.
 - PrimaryAccountTokenFetcher is the primary client-side interface for obtaining
   access tokens for the primary account. In particular, it can take care of 
   waiting until the primary account is available.
@@ -23,7 +23,7 @@ signin and //google_apis/gaia:
   use in cases where neither the production code nor the unittest is interacting
   with Profile (e.g., //components-level unittests).
 - identity_test_utils.h provides lower-level test facilities for interacting
-  explicitly with IdentityManager and its dependencies (SigninManager,
+  explicitly with IdentityManager and its dependencies (PrimaryAccountManager,
   ProfileOAuth2TokenService). These facilities are the way to interact with
   IdentityManager in unittest contexts where the production code and/or the
   unittest are interacting with Profile (in particular, where the

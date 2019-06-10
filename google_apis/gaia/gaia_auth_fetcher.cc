@@ -125,7 +125,9 @@ std::string GaiaSourceToString(gaia::GaiaSource source) {
     case gaia::GaiaSource::kOAuth2LoginVerifier:
       source_string = "ChromiumOAuth2LoginVerifier";
       break;
-    case gaia::GaiaSource::kSigninManager:
+    case gaia::GaiaSource::kPrimaryAccountManager:
+      // Even though this string refers to an old name from the Chromium POV, it
+      // should not be changed as it is passed server-side.
       source_string = "ChromiumSigninManager";
       break;
   }

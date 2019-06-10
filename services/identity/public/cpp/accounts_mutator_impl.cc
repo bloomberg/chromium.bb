@@ -11,22 +11,22 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/device_id_helper.h"
+#include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 
 namespace identity {
 
 AccountsMutatorImpl::AccountsMutatorImpl(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
-    SigninManagerBase* signin_manager,
+    PrimaryAccountManager* primary_account_manager,
     PrefService* pref_service)
     : token_service_(token_service),
       account_tracker_service_(account_tracker_service),
-      signin_manager_(signin_manager) {
+      primary_account_manager_(primary_account_manager) {
   DCHECK(token_service_);
   DCHECK(account_tracker_service_);
-  DCHECK(signin_manager_);
+  DCHECK(primary_account_manager_);
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   pref_service_ = pref_service;
   DCHECK(pref_service_);
@@ -78,9 +78,9 @@ void AccountsMutatorImpl::RemoveAllAccounts(
 
 void AccountsMutatorImpl::InvalidateRefreshTokenForPrimaryAccount(
     signin_metrics::SourceForRefreshTokenOperation source) {
-  DCHECK(signin_manager_->IsAuthenticated());
+  DCHECK(primary_account_manager_->IsAuthenticated());
   AccountInfo primary_account_info =
-      signin_manager_->GetAuthenticatedAccountInfo();
+      primary_account_manager_->GetAuthenticatedAccountInfo();
   AddOrUpdateAccount(primary_account_info.gaia, primary_account_info.email,
                      OAuth2TokenServiceDelegate::kInvalidRefreshToken,
                      primary_account_info.is_under_advanced_protection, source);

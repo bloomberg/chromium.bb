@@ -386,7 +386,7 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
         signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
 
-  // If the signin manager already has an authenticated username, this is a
+  // If the identity manager already has a primary account, this is a
   // re-auth scenario, and we need to ensure that the user signs in with the
   // same email address.
   if (identity_manager->HasPrimaryAccount()) {
@@ -971,7 +971,7 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
   std::unique_ptr<base::DictionaryValue> sync_status(new base::DictionaryValue);
   if (profile_->IsGuestSession()) {
     // Cannot display signin status when running in guest mode on chromeos
-    // because there is no SigninManager.
+    // because there is no IdentityManager.
     sync_status->SetBoolean("signinAllowed", false);
     return sync_status;
   }

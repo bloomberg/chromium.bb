@@ -64,8 +64,8 @@ base::string16 GetAuthenticatedUsername(
 
 #if defined(OS_CHROMEOS)
     if (user_manager::UserManager::IsInitialized()) {
-      // On CrOS user email is sanitized and then passed to the signin manager.
-      // Original email (containing dots) is stored as "display email".
+      // On CrOS user email is sanitized and then passed to the identity
+      // manager. Original email (containing dots) is stored as "display email".
       user_display_name = user_manager::UserManager::Get()->GetUserDisplayEmail(
           AccountId::FromUserEmail(user_display_name));
     }

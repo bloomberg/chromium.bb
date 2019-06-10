@@ -77,8 +77,9 @@ void UpdateRefreshTokenForAccount(
 CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
                                   const std::string& email) {
   DCHECK(!identity_manager->HasPrimaryAccount());
-  SigninManagerBase* signin_manager = identity_manager->GetSigninManager();
-  DCHECK(!signin_manager->IsAuthenticated());
+  PrimaryAccountManager* primary_account_manager =
+      identity_manager->GetPrimaryAccountManager();
+  DCHECK(!primary_account_manager->IsAuthenticated());
 
   AccountTrackerService* account_tracker_service =
       identity_manager->GetAccountTrackerService();
@@ -101,10 +102,10 @@ CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
   // test-only API.
   identity_manager->LegacySetPrimaryAccount(gaia_id, email);
 #else
-  signin_manager->SignIn(email);
+  primary_account_manager->SignIn(email);
 #endif
 
-  DCHECK(signin_manager->IsAuthenticated());
+  DCHECK(primary_account_manager->IsAuthenticated());
   DCHECK(identity_manager->HasPrimaryAccount());
   return identity_manager->GetPrimaryAccountInfo();
 }
@@ -161,7 +162,8 @@ void ClearPrimaryAccount(IdentityManager* identity_manager,
   TestIdentityManagerObserver signout_observer(identity_manager);
   signout_observer.SetOnPrimaryAccountClearedCallback(run_loop.QuitClosure());
 
-  SigninManagerBase* signin_manager = identity_manager->GetSigninManager();
+  PrimaryAccountManager* primary_account_manager =
+      identity_manager->GetPrimaryAccountManager();
   signin_metrics::ProfileSignout signout_source_metric =
       signin_metrics::SIGNOUT_TEST;
   signin_metrics::SignoutDelete signout_delete_metric =
@@ -169,15 +171,16 @@ void ClearPrimaryAccount(IdentityManager* identity_manager,
 
   switch (policy) {
     case ClearPrimaryAccountPolicy::DEFAULT:
-      signin_manager->SignOut(signout_source_metric, signout_delete_metric);
+      primary_account_manager->SignOut(signout_source_metric,
+                                       signout_delete_metric);
       break;
     case ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS:
-      signin_manager->SignOutAndKeepAllAccounts(signout_source_metric,
-                                                signout_delete_metric);
+      primary_account_manager->SignOutAndKeepAllAccounts(signout_source_metric,
+                                                         signout_delete_metric);
       break;
     case ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS:
-      signin_manager->SignOutAndRemoveAllAccounts(signout_source_metric,
-                                                  signout_delete_metric);
+      primary_account_manager->SignOutAndRemoveAllAccounts(
+          signout_source_metric, signout_delete_metric);
       break;
   }
 

@@ -44,7 +44,7 @@ IdentityManager::IdentityManager(
     std::unique_ptr<AccountTrackerService> account_tracker_service,
     std::unique_ptr<ProfileOAuth2TokenService> token_service,
     std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
-    std::unique_ptr<SigninManagerBase> signin_manager,
+    std::unique_ptr<PrimaryAccountManager> primary_account_manager,
     std::unique_ptr<AccountFetcherService> account_fetcher_service,
     std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
     std::unique_ptr<AccountsMutator> accounts_mutator,
@@ -53,7 +53,7 @@ IdentityManager::IdentityManager(
     : account_tracker_service_(std::move(account_tracker_service)),
       token_service_(std::move(token_service)),
       gaia_cookie_manager_service_(std::move(gaia_cookie_manager_service)),
-      signin_manager_(std::move(signin_manager)),
+      primary_account_manager_(std::move(primary_account_manager)),
       account_fetcher_service_(std::move(account_fetcher_service)),
       primary_account_mutator_(std::move(primary_account_mutator)),
       accounts_mutator_(std::move(accounts_mutator)),
@@ -62,7 +62,7 @@ IdentityManager::IdentityManager(
   DCHECK(account_fetcher_service_);
   DCHECK(accounts_cookie_mutator_);
   DCHECK(diagnostics_provider_);
-  signin_manager_->SetObserver(this);
+  primary_account_manager_->SetObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
   account_tracker_service_->AddObserver(this);
@@ -76,10 +76,11 @@ IdentityManager::IdentityManager(
       base::BindRepeating(&IdentityManager::OnGaiaCookieDeletedByUserAction,
                           base::Unretained(this)));
 
-  // Seed the primary account with any state that |signin_manager_| loaded from
-  // prefs.
-  if (signin_manager_->IsAuthenticated()) {
-    CoreAccountInfo account = signin_manager_->GetAuthenticatedAccountInfo();
+  // Seed the primary account with any state that |primary_account_manager_|
+  // loaded from prefs.
+  if (primary_account_manager_->IsAuthenticated()) {
+    CoreAccountInfo account =
+        primary_account_manager_->GetAuthenticatedAccountInfo();
     DCHECK(!account.account_id.empty());
     primary_account_ = std::move(account);
   }
@@ -91,7 +92,7 @@ IdentityManager::~IdentityManager() {
   token_service_->Shutdown();
   account_tracker_service_->Shutdown();
 
-  signin_manager_->ClearObserver();
+  primary_account_manager_->ClearObserver();
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
   account_tracker_service_->RemoveObserver(this);
@@ -99,16 +100,18 @@ IdentityManager::~IdentityManager() {
 
 // TODO(862619) change return type to base::Optional<CoreAccountInfo>
 CoreAccountInfo IdentityManager::GetPrimaryAccountInfo() const {
-  DCHECK_EQ(primary_account_.has_value(), signin_manager_->IsAuthenticated());
+  DCHECK_EQ(primary_account_.has_value(),
+            primary_account_manager_->IsAuthenticated());
   auto result = primary_account_.value_or(CoreAccountInfo());
-  DCHECK_EQ(result.account_id, signin_manager_->GetAuthenticatedAccountId());
+  DCHECK_EQ(result.account_id,
+            primary_account_manager_->GetAuthenticatedAccountId());
 #if DCHECK_IS_ON()
-  CoreAccountInfo signin_manager_account =
-      signin_manager_->GetAuthenticatedAccountInfo();
-  if (!signin_manager_account.account_id.empty()) {
-    DCHECK_EQ(signin_manager_account, result)
-        << "If signin_manager_'s account is set (account has a refresh token), "
-           "primary_account_ must have the same value.";
+  CoreAccountInfo primary_account_manager_account =
+      primary_account_manager_->GetAuthenticatedAccountInfo();
+  if (!primary_account_manager_account.account_id.empty()) {
+    DCHECK_EQ(primary_account_manager_account, result)
+        << "If primary_account_manager_'s account is set (account has a "
+           "refresh token), primary_account_ must have the same value.";
   }
 #endif
   return result;
@@ -119,7 +122,8 @@ CoreAccountId IdentityManager::GetPrimaryAccountId() const {
 }
 
 bool IdentityManager::HasPrimaryAccount() const {
-  DCHECK_EQ(primary_account_.has_value(), signin_manager_->IsAuthenticated());
+  DCHECK_EQ(primary_account_.has_value(),
+            primary_account_manager_->IsAuthenticated());
   return primary_account_.has_value();
 }
 
@@ -312,13 +316,13 @@ bool IdentityManager::IsAccountIdMigrationSupported() {
 
 // static
 void IdentityManager::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  SigninManagerBase::RegisterPrefs(registry);
+  PrimaryAccountManager::RegisterPrefs(registry);
 }
 
 // static
 void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   ProfileOAuth2TokenService::RegisterProfilePrefs(registry);
-  SigninManagerBase::RegisterProfilePrefs(registry);
+  PrimaryAccountManager::RegisterProfilePrefs(registry);
   AccountFetcherService::RegisterPrefs(registry);
   AccountTrackerService::RegisterPrefs(registry);
 }
@@ -326,8 +330,8 @@ void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 CoreAccountId IdentityManager::PickAccountIdForAccount(
     const std::string& gaia,
     const std::string& email) const {
-  // TODO(triploblastic@): Remove explicit conversion once signin_manager
-  // has been fixed to use CoreAccountId.
+  // TODO(triploblastic@): Remove explicit conversion once
+  // primary_account_manager has been fixed to use CoreAccountId.
   return CoreAccountId(
       account_tracker_service_->PickAccountIdForAccount(gaia, email));
 }
@@ -370,7 +374,7 @@ DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
 void IdentityManager::LegacySetPrimaryAccount(
     const std::string& gaia_id,
     const std::string& email_address) {
-  signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
+  primary_account_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
 
   // TODO(https://crbug.com/944012): Unify the firing of this observer
   // notification between ChromeOS and other platforms.
@@ -437,8 +441,8 @@ void IdentityManager::RemoveDiagnosticsObserver(DiagnosticsObserver* observer) {
   diagnostics_observer_list_.RemoveObserver(observer);
 }
 
-SigninManagerBase* IdentityManager::GetSigninManager() {
-  return signin_manager_.get();
+PrimaryAccountManager* IdentityManager::GetPrimaryAccountManager() {
+  return primary_account_manager_.get();
 }
 
 ProfileOAuth2TokenService* IdentityManager::GetTokenService() {
@@ -508,11 +512,11 @@ void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
   }
 }
 void IdentityManager::AuthenticatedAccountSet(const AccountInfo& account_info) {
-  DCHECK(signin_manager_->IsAuthenticated());
+  DCHECK(primary_account_manager_->IsAuthenticated());
   primary_account_ = account_info;
 }
 void IdentityManager::AuthenticatedAccountCleared() {
-  DCHECK(!signin_manager_->IsAuthenticated());
+  DCHECK(!primary_account_manager_->IsAuthenticated());
   primary_account_.reset();
 }
 

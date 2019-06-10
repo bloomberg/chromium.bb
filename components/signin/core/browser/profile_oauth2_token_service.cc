@@ -24,10 +24,11 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
       return "SupervisedUser::InitSync";
     case SourceForRefreshTokenOperation::kInlineLoginHandler_Signin:
       return "InlineLoginHandler::Signin";
-    case SourceForRefreshTokenOperation::kSigninManager_ClearPrimaryAccount:
-      return "SigninManager::ClearPrimaryAccount";
-    case SourceForRefreshTokenOperation::kSigninManager_LegacyPreDiceSigninFlow:
-      return "SigninManager::LegacyPreDiceSigninFlow";
+    case SourceForRefreshTokenOperation::kPrimaryAccountManager_ClearAccount:
+      return "PrimaryAccountManager::ClearAccount";
+    case SourceForRefreshTokenOperation::
+        kPrimaryAccountManager_LegacyPreDiceSigninFlow:
+      return "PrimaryAccountManager::LegacyPreDiceSigninFlow";
     case SourceForRefreshTokenOperation::kUserMenu_RemoveAccount:
       return "UserMenu::RemoveAccount";
     case SourceForRefreshTokenOperation::kUserMenu_SignOutAllAccounts:

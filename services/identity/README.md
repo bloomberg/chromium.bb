@@ -24,9 +24,9 @@ illustrating connection to the Identity Manager from a client
 
 There is no way to obtain the information of the primary account synchronously,
 i.e., there is no literal equivalent to
-SigninManagerBase::GetAuthenticatedAccountInfo(). Instead, you should call the
+PrimaryAccountManager::GetAuthenticatedAccountInfo(). Instead, you should call the
 asynchronous method IdentityManager::GetPrimaryAccountInfo(). To date, all use
-cases of SigninManagerBase::GetAuthenticatedAccountInfo() that we have seen have
+cases of PrimaryAccountManager::GetAuthenticatedAccountInfo() that we have seen have
 been part of a larger asynchronous flow (e.g., obtaining an access token in
 response to an invocation of the chrome.identity extension API). In these use
 cases, you can simply fold the asynchronous obtaining of the authenticated
@@ -57,7 +57,7 @@ to work this class into the Identity Service interface.
 
 ## Being Notified on Signin of the Primary Account
 
-If you were previously listening to SigninManagerBase::GoogleSigninSucceeded()
+If you were previously listening to PrimaryAccountManager::GoogleSigninSucceeded()
 or OAuth2TokenService::OnRefreshTokenIsAvailable() to determine when the primary
 account is available, you should call
 IdentityManager::GetPrimaryAccountWhenAvailable(). This method will fire when
@@ -102,9 +102,9 @@ blundell@chromium.org.
 
 There are plans to build a unified Observer interface that will supersede the
 various current Observer interfaces (AccountTracker, OAuth2TokenService,
-SigninManager, AccountTrackerService). However, this functionality has not yet
-been built. Contact blundell@chromium.org with your use case, which can help
-drive the bringup of this interface.
+PrimaryAccountManager, AccountTrackerService). However, this functionality has
+not yet been built. Contact blundell@chromium.org with your use case, which can
+help drive the bringup of this interface.
 
 ## Other Needs
 

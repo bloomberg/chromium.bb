@@ -32,7 +32,7 @@ class SyncCredentialsFilter : public CredentialsFilter {
 
   // Implements protection of sync credentials. Uses |client| to get the last
   // commited entry URL for a check against GAIA reauth site. Uses the factory
-  // functions repeatedly to get the sync service and signin manager to pass
+  // functions repeatedly to get the sync service and identity manager to pass
   // them to sync_util methods.
   SyncCredentialsFilter(
       const PasswordManagerClient* client,

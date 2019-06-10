@@ -53119,8 +53119,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="TokenService::LoadCredentials"/>
   <int value="2" label="SupervisedUser::InitSync"/>
   <int value="3" label="InlineLoginHandler::Signin"/>
-  <int value="4" label="SigninManager::ClearPrimaryAccount"/>
-  <int value="5" label="SigninManager::LegacyPreDiceSigninFlow"/>
+  <int value="4" label="PrimaryAccountManager::ClearPrimaryAccount"/>
+  <int value="5" label="PrimaryAccountManager::LegacyPreDiceSigninFlow"/>
   <int value="6" label="UserMenu:RemoveAccount"/>
   <int value="7" label="UserMenu::SignOutAllAccounts"/>
   <int value="8" label="Settings::Signout"/>

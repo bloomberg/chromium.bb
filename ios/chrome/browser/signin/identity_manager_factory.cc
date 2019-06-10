@@ -14,8 +14,8 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/identity_manager_wrapper.h"
+#include "components/signin/core/browser/primary_account_policy_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -60,14 +60,15 @@ std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
   return account_fetcher_service;
 }
 
-std::unique_ptr<SigninManagerBase> BuildSigninManager(
+std::unique_ptr<PrimaryAccountManager> BuildPrimaryAccountManager(
     ios::ChromeBrowserState* chrome_browser_state,
     AccountTrackerService* account_tracker_service,
     ProfileOAuth2TokenService* token_service) {
-  std::unique_ptr<SigninManager> service = std::make_unique<SigninManager>(
-      SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      token_service, account_tracker_service,
-      signin::AccountConsistencyMethod::kMirror);
+  std::unique_ptr<PrimaryAccountPolicyManager> service =
+      std::make_unique<PrimaryAccountPolicyManager>(
+          SigninClientFactory::GetForBrowserState(chrome_browser_state),
+          token_service, account_tracker_service,
+          signin::AccountConsistencyMethod::kMirror);
   service->Initialize(GetApplicationContext()->GetLocalState());
   return service;
 }
@@ -139,12 +140,13 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
       token_service.get(),
       SigninClientFactory::GetForBrowserState(browser_state));
 
-  std::unique_ptr<SigninManagerBase> signin_manager = BuildSigninManager(
-      browser_state, account_tracker_service.get(), token_service.get());
+  std::unique_ptr<PrimaryAccountManager> primary_account_manager =
+      BuildPrimaryAccountManager(browser_state, account_tracker_service.get(),
+                                 token_service.get());
 
   auto primary_account_mutator =
       std::make_unique<identity::PrimaryAccountMutatorImpl>(
-          account_tracker_service.get(), signin_manager.get(),
+          account_tracker_service.get(), primary_account_manager.get(),
           browser_state->GetPrefs());
 
   auto accounts_cookie_mutator =
@@ -162,8 +164,9 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
 
   auto identity_manager = std::make_unique<IdentityManagerWrapper>(
       std::move(account_tracker_service), std::move(token_service),
-      std::move(gaia_cookie_manager_service), std::move(signin_manager),
-      std::move(account_fetcher_service), std::move(primary_account_mutator),
+      std::move(gaia_cookie_manager_service),
+      std::move(primary_account_manager), std::move(account_fetcher_service),
+      std::move(primary_account_mutator),
       /*accounts_mutator=*/nullptr, std::move(accounts_cookie_mutator),
       std::move(diagnostics_provider));
 

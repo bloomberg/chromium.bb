@@ -25,9 +25,9 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/device_id_helper.h"
+#include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
@@ -105,7 +105,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
     MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(
         pref_service_.registry());
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
-    SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
+    PrimaryAccountManager::RegisterProfilePrefs(pref_service_.registry());
     client_.reset(new TestSigninClient(&pref_service_));
     client_->GetTestURLLoaderFactory()->AddResponse(
         GaiaUrls::GetInstance()->oauth2_revoke_url().spec(), "");

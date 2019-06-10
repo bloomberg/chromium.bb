@@ -9,16 +9,16 @@
 
 class AccountTrackerService;
 class PrefService;
-class SigninManagerBase;
+class PrimaryAccountManager;
 
 namespace identity {
 
 // Concrete implementation of PrimaryAccountMutator that is based on the
-// SigninManager API. It is supported on all platform except Chrome OS.
+// PrimaryAccountManager API. It is supported on all platform except Chrome OS.
 class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
  public:
   PrimaryAccountMutatorImpl(AccountTrackerService* account_tracker,
-                            SigninManagerBase* signin_manager,
+                            PrimaryAccountManager* primary_account_manager,
                             PrefService* pref_service);
   ~PrimaryAccountMutatorImpl() override;
 
@@ -33,7 +33,7 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
   // Pointers to the services used by the PrimaryAccountMutatorImpl. They
   // *must* outlive this instance.
   AccountTrackerService* account_tracker_ = nullptr;
-  SigninManagerBase* signin_manager_ = nullptr;
+  PrimaryAccountManager* primary_account_manager_ = nullptr;
   PrefService* pref_service_ = nullptr;
 };
 

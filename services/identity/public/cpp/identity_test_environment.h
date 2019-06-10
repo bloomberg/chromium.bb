@@ -91,8 +91,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   // Sets the primary account for the given email address, generating a GAIA ID
   // that corresponds uniquely to that email address. On non-ChromeOS, results
-  // in the firing of the IdentityManager and SigninManager callbacks for signin
-  // success. Blocks until the primary account is set. Returns the
+  // in the firing of the IdentityManager and PrimaryAccountManager callbacks
+  // for signin success. Blocks until the primary account is set. Returns the
   // CoreAccountInfo of the newly-set account.
   CoreAccountInfo SetPrimaryAccount(const std::string& email);
 
@@ -115,15 +115,15 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Makes the primary account available for the given email address, generating
   // a GAIA ID and refresh token that correspond uniquely to that email address.
   // On non-ChromeOS platforms, this will also result in the firing of the
-  // IdentityManager and SigninManager callbacks for signin success. On all
-  // platforms, this method blocks until the primary account is available.
+  // IdentityManager and PrimaryAccountManager callbacks for signin success. On
+  // all platforms, this method blocks until the primary account is available.
   // Returns the AccountInfo of the newly-available account.
   AccountInfo MakePrimaryAccountAvailable(const std::string& email);
 
   // Clears the primary account if present, with |policy| used to determine
   // whether to keep or remove all accounts. On non-ChromeOS, results in the
-  // firing of the IdentityManager and SigninManager callbacks for signout.
-  // Blocks until the primary account is cleared.
+  // firing of the IdentityManager and PrimaryAccountManager callbacks for
+  // signout. Blocks until the primary account is cleared.
   void ClearPrimaryAccount(
       ClearPrimaryAccountPolicy policy = ClearPrimaryAccountPolicy::DEFAULT);
 

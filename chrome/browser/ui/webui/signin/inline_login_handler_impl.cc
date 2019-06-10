@@ -399,7 +399,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     if (identity_manager->HasPrimaryAccount()) {
       identity_manager->GetAccountsCookieMutator()->AddAccountToCookie(
           identity_manager->GetPrimaryAccountId(),
-          gaia::GaiaSource::kSigninManager, {});
+          gaia::GaiaSource::kPrimaryAccountManager, {});
     }
 
     signin_metrics::LogSigninReason(

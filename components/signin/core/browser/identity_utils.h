@@ -19,18 +19,17 @@ class PrefService;
 namespace identity {
 
 // Returns true if the username is allowed based on the pattern string.
-//
-// NOTE: Can be moved to //services/identity/public/cpp once SigninManager is
-// moved to //services/identity.
 bool IsUsernameAllowedByPattern(base::StringPiece username,
                                 base::StringPiece pattern);
 
 // Returns true if the username is either allowed based on a pattern registered
 // as |pattern_pref_name| with the preferences service referenced by |prefs|,
 // or if such pattern can't be retrieved from |prefs|. This is a legacy
-// method intended to be used to migrate from SigninManager::IsAllowedUsername()
-// only while SigninManager::Initialize() can still accept a null PrefService*,
-// and can be removed once that's no longer the case (see crbug.com/908121).
+// method intended to be used to migrate from
+// PrimaryAccountPolicyManager::IsAllowedUsername() only while
+// PrimaryAccountPolicyManager::Initialize() can still accept a null
+// PrefService*, and can be removed once that's no longer the case (see
+// crbug.com/908121).
 bool LegacyIsUsernameAllowedByPatternFromPrefs(
     PrefService* prefs,
     const std::string& username,

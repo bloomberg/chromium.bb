@@ -2,26 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// The signin manager encapsulates some functionality tracking
-// which user is signed in.
+// The PrimaryAccountManager encapsulates some functionality tracking
+// which account is the primary one.
 //
-// **NOTE** on semantics of SigninManager:
+// **NOTE** on semantics of PrimaryAccountManager:
 //
 // Once a signin is successful, the username becomes "established" and will not
 // be cleared until a SignOut operation is performed (persists across
-// restarts). Until that happens, the signin manager can still be used to
-// refresh credentials, but changing the username is not permitted.
+// restarts). Until that happens, the primary account manager can still be used
+// to refresh credentials, but changing the username is not permitted.
 //
-// On Chrome OS, because of the existence of other components that handle login
-// and signin at a higher level, all that is needed from a SigninManager is
-// caching / handling of the "authenticated username" field, and TokenService
-// initialization, so that components that depend on these two things
-// (i.e on desktop) can continue using it / don't need to change. For this
-// reason, SigninManagerBase is all that exists on Chrome OS. For desktop,
-// see signin/signin_manager.h.
+// On ChromeOS signout is not possible, so that functionality is if-def'd out on
+// that platform.
 
-#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_BASE_H_
-#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_BASE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_PRIMARY_ACCOUNT_MANAGER_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_PRIMARY_ACCOUNT_MANAGER_H_
 
 #include <memory>
 #include <string>
@@ -45,7 +40,7 @@ class PrefService;
 class ProfileOAuth2TokenService;
 class SigninClient;
 
-class SigninManagerBase : public OAuth2TokenService::Observer {
+class PrimaryAccountManager : public OAuth2TokenService::Observer {
  public:
   class Observer {
    public:
@@ -57,31 +52,31 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
     virtual void GoogleSignedOut(const AccountInfo& account_info) {}
 
     // Called during the signin as soon as
-    // SigninManagerBase::authenticated_account_id_ is set.
+    // PrimaryAccountManager::authenticated_account_id_ is set.
     virtual void AuthenticatedAccountSet(const AccountInfo& account_info) {}
 
     // Called during the signout as soon as
-    // SigninManagerBase::authenticated_account_id_ is cleared.
+    // PrimaryAccountManager::authenticated_account_id_ is cleared.
     virtual void AuthenticatedAccountCleared() {}
 
    protected:
     virtual ~Observer() {}
   };
 
-// On non-ChromeOS platforms, SigninManagerBase should only be instantiated
-// via the derived SigninManager class, as the codewise assumes the
-// invariant that any SigninManagerBase object can be cast to a
-// SigninManager object when not on ChromeOS. Make the constructor private
-// and add SigninManager as a friend to support this.
-// TODO(952766): Eliminate this once SigninManager and SigninManagerBase are
-// merged.
+// On non-ChromeOS platforms, PrimaryAccountManager should only be instantiated
+// via the derived PrimaryAccountPolicyManager class, as the codewise assumes
+// the invariant that any PrimaryAccountManager object can be cast to a
+// PrimaryAccountPolicyManager object when not on ChromeOS. Make the constructor
+// private and add PrimaryAccountPolicyManager as a friend to support this.
+// TODO(952766): Eliminate this once the functionality of PrimaryAccountManager
+// and PrimaryAccountPolicyManager is merged.
 #if !defined(OS_CHROMEOS)
  private:
 #endif
-  SigninManagerBase(SigninClient* client,
-                    ProfileOAuth2TokenService* token_service,
-                    AccountTrackerService* account_tracker_service,
-                    signin::AccountConsistencyMethod account_consistency);
+  PrimaryAccountManager(SigninClient* client,
+                        ProfileOAuth2TokenService* token_service,
+                        AccountTrackerService* account_tracker_service,
+                        signin::AccountConsistencyMethod account_consistency);
 #if !defined(OS_CHROMEOS)
  public:
 #endif
@@ -98,7 +93,7 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
   };
 #endif
 
-  ~SigninManagerBase() override;
+  ~PrimaryAccountManager() override;
 
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -138,7 +133,7 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
   // Methods to set or clear the observer of signin.
   // In practice these should only be used by IdentityManager.
   // NOTE: If SetObserver is called, ClearObserver should be called before
-  // the destruction of SigninManagerBase.
+  // the destruction of PrimaryAccountManager.
   void SetObserver(Observer* observer);
   void ClearObserver();
 
@@ -146,8 +141,8 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
   // TODO(https://crbug.com/814787): Go through this API to set the primary
   // account on ChromeOS.
 #if !defined(OS_CHROMEOS)
-  // Signs a user in. SigninManager assumes that |username| can be used to look
-  // up the corresponding account_id and gaia_id for this email.
+  // Signs a user in. PrimaryAccountPolicyManager assumes that |username| can be
+  // used to look up the corresponding account_id and gaia_id for this email.
   void SignIn(const std::string& username);
 #endif
 
@@ -187,10 +182,10 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
   virtual void FinalizeInitBeforeLoadingRefreshTokens(PrefService* local_state);
 
  private:
-  // Added only to allow SigninManager to call the SigninManagerBase
-  // constructor while disallowing any ad-hoc subclassing of
-  // SigninManagerBase.
-  friend class SigninManager;
+  // Added only to allow PrimaryAccountPolicyManager to call the
+  // PrimaryAccountManager constructor while disallowing any ad-hoc subclassing
+  // of PrimaryAccountManager.
+  friend class PrimaryAccountPolicyManager;
 
   // Sets the authenticated user's account id.
   // If the user is already authenticated with the same account id, then this
@@ -202,9 +197,9 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
   void SetAuthenticatedAccountId(const CoreAccountId& account_id);
 
   // Clears the authenticated user's account id.
-  // This method is not public because SigninManagerBase does not allow signing
-  // out by default. Subclasses implementing a sign-out functionality need to
-  // call this.
+  // This method is not public because PrimaryAccountManager does not allow
+  // signing out by default. Subclasses implementing a sign-out functionality
+  // need to call this.
   void ClearAuthenticatedAccountId();
 
 #if !defined(OS_CHROMEOS)
@@ -249,7 +244,7 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
 
   signin::AccountConsistencyMethod account_consistency_;
 
-  DISALLOW_COPY_AND_ASSIGN(SigninManagerBase);
+  DISALLOW_COPY_AND_ASSIGN(PrimaryAccountManager);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_BASE_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_PRIMARY_ACCOUNT_MANAGER_H_

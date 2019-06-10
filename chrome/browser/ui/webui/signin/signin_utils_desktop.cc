@@ -59,7 +59,7 @@ bool CanOfferSignin(Profile* profile,
     if (can_offer == CAN_OFFER_SIGNIN_FOR_SECONDARY_ACCOUNT)
       return true;
 
-    // If the signin manager already has an authenticated name, then this is a
+    // If the identity manager already has a primary account, then this is a
     // re-auth scenario.  Make sure the email just signed in corresponds to
     // the one sign in manager expects.
     std::string current_email = identity_manager->GetPrimaryAccountInfo().email;

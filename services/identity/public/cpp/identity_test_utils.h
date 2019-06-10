@@ -47,8 +47,8 @@ class IdentityManager;
 // Sets the primary account (which must not already be set) to the given email
 // address, generating a GAIA ID that corresponds uniquely to that email
 // address. On non-ChromeOS, results in the firing of the IdentityManager and
-// SigninManager callbacks for signin success. Blocks until the primary account
-// is set. Returns the CoreAccountInfo of the newly-set account.
+// PrimaryAccountManager callbacks for signin success. Blocks until the primary
+// account is set. Returns the CoreAccountInfo of the newly-set account.
 // NOTE: See disclaimer at top of file re: direct usage.
 CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
                                   const std::string& email);
@@ -74,8 +74,8 @@ void RemoveRefreshTokenForPrimaryAccount(IdentityManager* identity_manager);
 // Makes the primary account (which must not already be set) available for the
 // given email address, generating a GAIA ID and refresh token that correspond
 // uniquely to that email address. On non-ChromeOS, results in the firing of the
-// IdentityManager and SigninManager callbacks for signin success. Blocks until
-// the primary account is available. Returns the AccountInfo of the
+// IdentityManager and PrimaryAccountManager callbacks for signin success.
+// Blocks until the primary account is available. Returns the AccountInfo of the
 // newly-available account.
 // NOTE: See disclaimer at top of file re: direct usage.
 AccountInfo MakePrimaryAccountAvailable(IdentityManager* identity_manager,
@@ -83,8 +83,8 @@ AccountInfo MakePrimaryAccountAvailable(IdentityManager* identity_manager,
 
 // Clears the primary account if present, with |policy| used to determine
 // whether to keep or remove all accounts. On non-ChromeOS, results in the
-// firing of the IdentityManager and SigninManager callbacks for signout. Blocks
-// until the primary account is cleared.
+// firing of the IdentityManager and PrimaryAccountManager callbacks for
+// signout. Blocks until the primary account is cleared.
 // NOTE: See disclaimer at top of file re: direct usage.
 void ClearPrimaryAccount(
     IdentityManager* identity_manager,

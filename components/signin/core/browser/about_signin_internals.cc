@@ -228,8 +228,6 @@ signin_internals_util::TimedSigninStatusField& operator++(
 
 // static
 void AboutSigninInternals::RegisterPrefs(PrefRegistrySimple* user_prefs) {
-  // SigninManager information for about:signin-internals.
-
   // TODO(rogerta): leaving untimed fields here for now because legacy
   // profiles still have these prefs.  In three or four version from M43
   // we can probably remove them.

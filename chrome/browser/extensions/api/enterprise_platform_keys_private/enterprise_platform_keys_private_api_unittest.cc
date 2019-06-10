@@ -201,7 +201,7 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
   }
 
   // Derived classes can override this method to set the required authenticated
-  // user in the SigninManager class.
+  // user in the IdentityManager class.
   virtual void SetAuthenticatedUser() {
     auto* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());

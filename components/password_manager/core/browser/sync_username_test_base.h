@@ -23,7 +23,7 @@ class SyncUsernameTestBase : public testing::Test {
   SyncUsernameTestBase();
   ~SyncUsernameTestBase() override;
 
-  // Instruct the signin manager to sign in with |email| or out.
+  // Instruct the identity manager to sign in with |email| or out.
   void FakeSigninAs(const std::string& email);
 
   // Produce a sample PasswordForm.

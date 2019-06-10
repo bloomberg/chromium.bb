@@ -42,7 +42,7 @@ const char kGetPasswordFieldFromDiceSigninPage[] =
     "  return e.querySelector('input[type=password]');"
     "})()";
 
-// The SignInObserver observes the signin manager and blocks until a signin
+// The SignInObserver observes the identity manager and blocks until a signin
 // success or failure notification is fired.
 class SignInObserver : public identity::IdentityManager::Observer {
  public:

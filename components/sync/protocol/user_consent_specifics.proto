@@ -74,7 +74,7 @@ message UserConsentSpecifics {
   // redundant.
   //
   // For semantics and usage of the |account_id| in the signin codebase,
-  // see SigninManagerBase::GetAuthenticatedAccountId()
+  // see PrimaryAccountManager::GetAuthenticatedAccountId()
   // or AccountInfo::account_id.
   optional string account_id = 6;
 

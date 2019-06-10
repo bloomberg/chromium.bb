@@ -12,8 +12,7 @@
 
 namespace invalidation {
 
-// An identity provider implementation that's backed by
-// ProfileOAuth2TokenService and SigninManager.
+// An identity provider implementation that's backed by IdentityManager
 class ProfileIdentityProvider : public IdentityProvider,
                                 public identity::IdentityManager::Observer {
  public:

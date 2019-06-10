@@ -146,9 +146,9 @@ void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
 
 // Child account status is refreshed through invalidations which are only
 // available for the primary account. Finding the primary account requires a
-// dependency on signin_manager which we get around by only allowing a single
-// account. This is possible since we only support a single account to be a
-// child anyway.
+// dependency on PrimaryAccountManager which we get around by only allowing a
+// single account. This is possible since we only support a single account to be
+// a child anyway.
 #if defined(OS_ANDROID)
 void AccountFetcherService::UpdateChildInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

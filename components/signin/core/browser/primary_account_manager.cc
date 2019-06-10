@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/browser/primary_account_manager.h"
 
 #include <string>
 #include <vector>
@@ -25,7 +25,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 
-SigninManagerBase::SigninManagerBase(
+PrimaryAccountManager::PrimaryAccountManager(
     SigninClient* client,
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
@@ -39,14 +39,14 @@ SigninManagerBase::SigninManagerBase(
   DCHECK(account_tracker_service_);
 }
 
-SigninManagerBase::~SigninManagerBase() {
+PrimaryAccountManager::~PrimaryAccountManager() {
   DCHECK(!observer_);
 
   token_service_->RemoveObserver(this);
 }
 
 // static
-void SigninManagerBase::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+void PrimaryAccountManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kGoogleServicesHostedDomain,
                                std::string());
   registry->RegisterStringPref(prefs::kGoogleServicesLastAccountId,
@@ -68,12 +68,12 @@ void SigninManagerBase::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void SigninManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
+void PrimaryAccountManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kGoogleServicesUsernamePattern,
                                std::string());
 }
 
-void SigninManagerBase::Initialize(PrefService* local_state) {
+void PrimaryAccountManager::Initialize(PrefService* local_state) {
   // Should never call Initialize() twice.
   DCHECK(!IsInitialized());
   initialized_ = true;
@@ -162,23 +162,24 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
   token_service_->LoadCredentials(GetAuthenticatedAccountId());
 }
 
-void SigninManagerBase::FinalizeInitBeforeLoadingRefreshTokens(
+void PrimaryAccountManager::FinalizeInitBeforeLoadingRefreshTokens(
     PrefService* local_state) {}
 
-bool SigninManagerBase::IsInitialized() const {
+bool PrimaryAccountManager::IsInitialized() const {
   return initialized_;
 }
 
-AccountInfo SigninManagerBase::GetAuthenticatedAccountInfo() const {
+AccountInfo PrimaryAccountManager::GetAuthenticatedAccountInfo() const {
   return account_tracker_service_->GetAccountInfo(GetAuthenticatedAccountId());
 }
 
-const CoreAccountId& SigninManagerBase::GetAuthenticatedAccountId() const {
+const CoreAccountId& PrimaryAccountManager::GetAuthenticatedAccountId() const {
   return authenticated_account_id_;
 }
 
-void SigninManagerBase::SetAuthenticatedAccountInfo(const std::string& gaia_id,
-                                                    const std::string& email) {
+void PrimaryAccountManager::SetAuthenticatedAccountInfo(
+    const std::string& gaia_id,
+    const std::string& email) {
   DCHECK(!gaia_id.empty());
   DCHECK(!email.empty());
 
@@ -187,7 +188,7 @@ void SigninManagerBase::SetAuthenticatedAccountInfo(const std::string& gaia_id,
   SetAuthenticatedAccountId(account_id);
 }
 
-void SigninManagerBase::SetAuthenticatedAccountId(
+void PrimaryAccountManager::SetAuthenticatedAccountId(
     const CoreAccountId& account_id) {
   DCHECK(!account_id.empty());
   if (!authenticated_account_id_.empty()) {
@@ -233,29 +234,29 @@ void SigninManagerBase::SetAuthenticatedAccountId(
   }
 }
 
-void SigninManagerBase::ClearAuthenticatedAccountId() {
+void PrimaryAccountManager::ClearAuthenticatedAccountId() {
   authenticated_account_id_ = CoreAccountId();
   if (observer_) {
     observer_->AuthenticatedAccountCleared();
   }
 }
 
-bool SigninManagerBase::IsAuthenticated() const {
+bool PrimaryAccountManager::IsAuthenticated() const {
   return !authenticated_account_id_.empty();
 }
 
-void SigninManagerBase::SetObserver(Observer* observer) {
+void PrimaryAccountManager::SetObserver(Observer* observer) {
   DCHECK(!observer_) << "SetObserver shouldn't be called multiple times.";
   observer_ = observer;
 }
 
-void SigninManagerBase::ClearObserver() {
+void PrimaryAccountManager::ClearObserver() {
   DCHECK(observer_);
   observer_ = nullptr;
 }
 
 #if !defined(OS_CHROMEOS)
-void SigninManagerBase::SignIn(const std::string& username) {
+void PrimaryAccountManager::SignIn(const std::string& username) {
   AccountInfo info = account_tracker_service_->FindAccountInfoByEmail(username);
   DCHECK(!info.gaia.empty());
   DCHECK(!info.email.empty());
@@ -275,7 +276,7 @@ void SigninManagerBase::SignIn(const std::string& username) {
                                    signin_client()->GetInstallDate());
 }
 
-void SigninManagerBase::SignOut(
+void PrimaryAccountManager::SignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
   RemoveAccountsOption remove_option =
@@ -285,32 +286,32 @@ void SigninManagerBase::SignOut(
   StartSignOut(signout_source_metric, signout_delete_metric, remove_option);
 }
 
-void SigninManagerBase::SignOutAndRemoveAllAccounts(
+void PrimaryAccountManager::SignOutAndRemoveAllAccounts(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
   StartSignOut(signout_source_metric, signout_delete_metric,
                RemoveAccountsOption::kRemoveAllAccounts);
 }
 
-void SigninManagerBase::SignOutAndKeepAllAccounts(
+void PrimaryAccountManager::SignOutAndKeepAllAccounts(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
   StartSignOut(signout_source_metric, signout_delete_metric,
                RemoveAccountsOption::kKeepAllAccounts);
 }
 
-void SigninManagerBase::StartSignOut(
+void PrimaryAccountManager::StartSignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,
     RemoveAccountsOption remove_option) {
   signin_client()->PreSignOut(
-      base::BindOnce(&SigninManagerBase::OnSignoutDecisionReached,
+      base::BindOnce(&PrimaryAccountManager::OnSignoutDecisionReached,
                      base::Unretained(this), signout_source_metric,
                      signout_delete_metric, remove_option),
       signout_source_metric);
 }
 
-void SigninManagerBase::OnSignoutDecisionReached(
+void PrimaryAccountManager::OnSignoutDecisionReached(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,
     RemoveAccountsOption remove_option,
@@ -356,13 +357,13 @@ void SigninManagerBase::OnSignoutDecisionReached(
       VLOG(0) << "Revoking all refresh tokens on server. Reason: sign out";
       token_service_->RevokeAllCredentials(
           signin_metrics::SourceForRefreshTokenOperation::
-              kSigninManager_ClearPrimaryAccount);
+              kPrimaryAccountManager_ClearAccount);
       break;
     case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
       if (token_service_->RefreshTokenHasError(account_id))
         token_service_->RevokeCredentials(
             account_id, signin_metrics::SourceForRefreshTokenOperation::
-                            kSigninManager_ClearPrimaryAccount);
+                            kPrimaryAccountManager_ClearAccount);
       break;
     case RemoveAccountsOption::kKeepAllAccounts:
       // Do nothing.
@@ -372,13 +373,14 @@ void SigninManagerBase::OnSignoutDecisionReached(
   FireGoogleSignedOut(account_info);
 }
 
-void SigninManagerBase::FireGoogleSignedOut(const AccountInfo& account_info) {
+void PrimaryAccountManager::FireGoogleSignedOut(
+    const AccountInfo& account_info) {
   if (observer_ != nullptr) {
     observer_->GoogleSignedOut(account_info);
   }
 }
 
-void SigninManagerBase::OnRefreshTokensLoaded() {
+void PrimaryAccountManager::OnRefreshTokensLoaded() {
   token_service_->RemoveObserver(this);
 
   if (account_tracker_service_->GetMigrationState() ==

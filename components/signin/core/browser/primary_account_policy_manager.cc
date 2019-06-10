@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/primary_account_policy_manager.h"
 
 #include <string>
 #include <vector>
@@ -23,34 +23,36 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
-SigninManager::SigninManager(
+PrimaryAccountPolicyManager::PrimaryAccountPolicyManager(
     SigninClient* client,
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
     signin::AccountConsistencyMethod account_consistency)
-    : SigninManagerBase(client,
-                        token_service,
-                        account_tracker_service,
-                        account_consistency),
+    : PrimaryAccountManager(client,
+                            token_service,
+                            account_tracker_service,
+                            account_consistency),
       weak_pointer_factory_(this) {}
 
-SigninManager::~SigninManager() {
+PrimaryAccountPolicyManager::~PrimaryAccountPolicyManager() {
   local_state_pref_registrar_.RemoveAll();
 }
 
-void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
+void PrimaryAccountPolicyManager::FinalizeInitBeforeLoadingRefreshTokens(
     PrefService* local_state) {
   // local_state can be null during unit tests.
   if (local_state) {
     local_state_pref_registrar_.Init(local_state);
     local_state_pref_registrar_.Add(
         prefs::kGoogleServicesUsernamePattern,
-        base::Bind(&SigninManager::OnGoogleServicesUsernamePatternChanged,
+        base::Bind(&PrimaryAccountPolicyManager::
+                       OnGoogleServicesUsernamePatternChanged,
                    weak_pointer_factory_.GetWeakPtr()));
   }
-  signin_allowed_.Init(prefs::kSigninAllowed, signin_client()->GetPrefs(),
-                       base::Bind(&SigninManager::OnSigninAllowedPrefChanged,
-                                  base::Unretained(this)));
+  signin_allowed_.Init(
+      prefs::kSigninAllowed, signin_client()->GetPrefs(),
+      base::Bind(&PrimaryAccountPolicyManager::OnSigninAllowedPrefChanged,
+                 base::Unretained(this)));
 
   AccountInfo account_info = GetAuthenticatedAccountInfo();
   if (!account_info.account_id.empty() &&
@@ -65,11 +67,11 @@ void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
     // Note: The token service has not yet loaded its credentials, so accounts
     // cannot be revoked here.
     //
-    // On desktop, when SigninManager is initializing, the profile was not yet
-    // marked with sign out allowed. Therefore sign out is not allowed and all
-    // calls to SignOut methods are no-op.
+    // On desktop, when PrimaryAccountManager is initializing, the profile was
+    // not yet marked with sign out allowed. Therefore sign out is not allowed
+    // and all calls to SignOut methods are no-op.
     //
-    // TODO(msarda): SignOut methods do not gurantee that sign out can actually
+    // TODO(msarda): SignOut methods do not guarantee that sign out can actually
     // be done (this depends on whether sign out is allowed). Add a check here
     // on desktop to make it clear that SignOut does not do anything.
     SignOutAndKeepAllAccounts(signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN,
@@ -77,7 +79,7 @@ void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
   }
 }
 
-void SigninManager::OnGoogleServicesUsernamePatternChanged() {
+void PrimaryAccountPolicyManager::OnGoogleServicesUsernamePatternChanged() {
   if (IsAuthenticated() &&
       !IsAllowedUsername(GetAuthenticatedAccountInfo().email)) {
     // Signed in user is invalid according to the current policy so sign
@@ -87,11 +89,11 @@ void SigninManager::OnGoogleServicesUsernamePatternChanged() {
   }
 }
 
-bool SigninManager::IsSigninAllowed() const {
+bool PrimaryAccountPolicyManager::IsSigninAllowed() const {
   return signin_allowed_.GetValue();
 }
 
-void SigninManager::OnSigninAllowedPrefChanged() {
+void PrimaryAccountPolicyManager::OnSigninAllowedPrefChanged() {
   if (!IsSigninAllowed() && IsAuthenticated()) {
     VLOG(0) << "IsSigninAllowed() set to false, signing out the user";
     SignOut(signin_metrics::SIGNOUT_PREF_CHANGED,
@@ -99,7 +101,8 @@ void SigninManager::OnSigninAllowedPrefChanged() {
   }
 }
 
-bool SigninManager::IsAllowedUsername(const std::string& username) const {
+bool PrimaryAccountPolicyManager::IsAllowedUsername(
+    const std::string& username) const {
   const PrefService* local_state = local_state_pref_registrar_.prefs();
   if (!local_state)
     return true;  // In a unit test with no local state - all names are allowed.

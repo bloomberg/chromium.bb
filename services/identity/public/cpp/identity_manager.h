@@ -13,8 +13,8 @@
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
@@ -50,7 +50,7 @@ struct CookieParams;
 
 // Gives access to information about the user's Google identities. See
 // ./README.md for detailed documentation.
-class IdentityManager : public SigninManagerBase::Observer,
+class IdentityManager : public PrimaryAccountManager::Observer,
                         public OAuth2TokenService::DiagnosticsObserver,
                         public OAuth2TokenService::Observer,
                         public AccountTrackerService::Observer {
@@ -190,7 +190,7 @@ class IdentityManager : public SigninManagerBase::Observer,
       std::unique_ptr<AccountTrackerService> account_tracker_service,
       std::unique_ptr<ProfileOAuth2TokenService> token_service,
       std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
-      std::unique_ptr<SigninManagerBase> signin_manager,
+      std::unique_ptr<PrimaryAccountManager> primary_account_manager,
       std::unique_ptr<AccountFetcherService> account_fetcher_service,
       std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
       std::unique_ptr<AccountsMutator> accounts_mutator,
@@ -563,7 +563,7 @@ class IdentityManager : public SigninManagerBase::Observer,
                            ForceRefreshOfExtendedAccountInfo);
 
   // Private getters used for testing only (i.e. see identity_test_utils.h).
-  SigninManagerBase* GetSigninManager();
+  PrimaryAccountManager* GetPrimaryAccountManager();
   ProfileOAuth2TokenService* GetTokenService();
   AccountTrackerService* GetAccountTrackerService();
   AccountFetcherService* GetAccountFetcherService();
@@ -582,7 +582,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   void FireOnPrimaryAccountSetNotification(
       const CoreAccountInfo& primary_account_info);
 
-  // SigninManagerBase::Observer:
+  // PrimaryAccountManager::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;
   void AuthenticatedAccountSet(const AccountInfo& account_info) override;
@@ -629,7 +629,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   std::unique_ptr<AccountTrackerService> account_tracker_service_;
   std::unique_ptr<ProfileOAuth2TokenService> token_service_;
   std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
-  std::unique_ptr<SigninManagerBase> signin_manager_;
+  std::unique_ptr<PrimaryAccountManager> primary_account_manager_;
   std::unique_ptr<AccountFetcherService> account_fetcher_service_;
 
   // PrimaryAccountMutator instance. May be null if mutation of the primary

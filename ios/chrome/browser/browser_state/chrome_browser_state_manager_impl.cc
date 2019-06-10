@@ -229,7 +229,7 @@ void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(
   size_t browser_state_index =
       cache->GetIndexOfBrowserStateWithPath(browser_state->GetStatePath());
   if (browser_state_index != std::string::npos) {
-    // The BrowserStateInfoCache's info must match the Signin Manager.
+    // The BrowserStateInfoCache's info must match the IdentityManager.
     cache->SetAuthInfoOfBrowserStateAtIndex(browser_state_index,
                                             account_info.gaia, username);
     return;

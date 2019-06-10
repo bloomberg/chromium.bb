@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// The signin manager encapsulates some functionality tracking
-// which user is signed in. See SigninManagerBase for full description of
+// The signin manager encapsulates some functionality tracking which user is
+// signed in. See PrimaryAccountManager for full description of
 // responsibilities. The class defined in this file provides functionality
 // required by all platforms except Chrome OS.
 
-#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_H_
-#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_PRIMARY_ACCOUNT_POLICY_MANAGER_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_PRIMARY_ACCOUNT_POLICY_MANAGER_H_
 
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
 
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/browser/primary_account_manager.h"
 
 #else
 
@@ -32,7 +32,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "net/cookies/canonical_cookie.h"
 
@@ -43,15 +43,16 @@ namespace identity {
 class IdentityManager;
 }  // namespace identity
 
-class SigninManager : public SigninManagerBase {
+class PrimaryAccountPolicyManager : public PrimaryAccountManager {
  public:
-  SigninManager(SigninClient* client,
-                ProfileOAuth2TokenService* token_service,
-                AccountTrackerService* account_tracker_service,
-                signin::AccountConsistencyMethod account_consistency);
-  ~SigninManager() override;
+  PrimaryAccountPolicyManager(
+      SigninClient* client,
+      ProfileOAuth2TokenService* token_service,
+      AccountTrackerService* account_tracker_service,
+      signin::AccountConsistencyMethod account_consistency);
+  ~PrimaryAccountPolicyManager() override;
 
-  // On platforms where SigninManager is responsible for dealing with
+  // On platforms where PrimaryAccountManager is responsible for dealing with
   // invalid username policy updates, we need to check this during
   // initialization and sign the user out.
   void FinalizeInitBeforeLoadingRefreshTokens(
@@ -59,8 +60,8 @@ class SigninManager : public SigninManagerBase {
 
  private:
   friend class identity::IdentityManager;
-  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, Prohibited);
-  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, TestAlternateWildcard);
+  FRIEND_TEST_ALL_PREFIXES(PrimaryAccountManagerTest, Prohibited);
+  FRIEND_TEST_ALL_PREFIXES(PrimaryAccountManagerTest, TestAlternateWildcard);
 
   // Returns true if a signin to Chrome is allowed (by policy or pref).
   bool IsSigninAllowed() const;
@@ -78,11 +79,11 @@ class SigninManager : public SigninManagerBase {
   // Helper object to listen for changes to the signin allowed preference.
   BooleanPrefMember signin_allowed_;
 
-  base::WeakPtrFactory<SigninManager> weak_pointer_factory_;
+  base::WeakPtrFactory<PrimaryAccountPolicyManager> weak_pointer_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SigninManager);
+  DISALLOW_COPY_AND_ASSIGN(PrimaryAccountPolicyManager);
 };
 
 #endif  // !defined(OS_CHROMEOS)
 
-#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_PRIMARY_ACCOUNT_POLICY_MANAGER_H_

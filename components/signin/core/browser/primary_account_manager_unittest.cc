@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/primary_account_policy_manager.h"
 
 #include <memory>
 #include <utility>
@@ -35,11 +35,13 @@
 
 namespace {
 
-class TestSigninManagerObserver : public SigninManagerBase::Observer {
+class TestPrimaryAccountManagerObserver
+    : public PrimaryAccountManager::Observer {
  public:
-  TestSigninManagerObserver() : num_successful_signins_(0), num_signouts_(0) {}
+  TestPrimaryAccountManagerObserver()
+      : num_successful_signins_(0), num_signouts_(0) {}
 
-  ~TestSigninManagerObserver() override {}
+  ~TestPrimaryAccountManagerObserver() override {}
 
   int num_successful_signins_;
   int num_signouts_;
@@ -56,9 +58,9 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
 
 }  // namespace
 
-class SigninManagerTest : public testing::Test {
+class PrimaryAccountManagerTest : public testing::Test {
  public:
-  SigninManagerTest()
+  PrimaryAccountManagerTest()
       : test_signin_client_(&user_prefs_),
         token_service_(&user_prefs_,
                        std::make_unique<FakeOAuth2TokenServiceDelegate>()),
@@ -66,15 +68,15 @@ class SigninManagerTest : public testing::Test {
     AccountFetcherService::RegisterPrefs(user_prefs_.registry());
     AccountTrackerService::RegisterPrefs(user_prefs_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(user_prefs_.registry());
-    SigninManagerBase::RegisterProfilePrefs(user_prefs_.registry());
-    SigninManagerBase::RegisterPrefs(local_state_.registry());
+    PrimaryAccountManager::RegisterProfilePrefs(user_prefs_.registry());
+    PrimaryAccountManager::RegisterPrefs(local_state_.registry());
     account_tracker_.Initialize(&user_prefs_, base::FilePath());
     account_fetcher_.Initialize(
         &test_signin_client_, &token_service_, &account_tracker_,
         std::make_unique<image_fetcher::FakeImageDecoder>());
   }
 
-  ~SigninManagerTest() override {
+  ~PrimaryAccountManagerTest() override {
     if (manager_) {
       ShutDownManager();
     }
@@ -91,18 +93,19 @@ class SigninManagerTest : public testing::Test {
   PrefService* prefs() { return &user_prefs_; }
 
   // Seed the account tracker with information from logged in user.  Normally
-  // this is done by UI code before calling SigninManager.  Returns the string
-  // to use as the account_id.
+  // this is done by UI code before calling PrimaryAccountPolicyManager.
+  // Returns the string to use as the account_id.
   std::string AddToAccountTracker(const std::string& gaia_id,
                                   const std::string& email) {
     account_tracker_.SeedAccountInfo(gaia_id, email);
     return account_tracker_.PickAccountIdForAccount(gaia_id, email);
   }
 
-  // Create a naked signin manager if integration with PKSs is not needed.
-  void CreateSigninManager() {
+  // Create a naked primary account manager if integration with PKSs is not
+  // needed.
+  void CreatePrimaryAccountManager() {
     DCHECK(!manager_);
-    manager_ = std::make_unique<SigninManager>(
+    manager_ = std::make_unique<PrimaryAccountPolicyManager>(
         &test_signin_client_, &token_service_, &account_tracker_,
         account_consistency_);
     manager_->Initialize(&local_state_);
@@ -135,15 +138,15 @@ class SigninManagerTest : public testing::Test {
   ProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
   AccountFetcherService account_fetcher_;
-  std::unique_ptr<SigninManager> manager_;
-  TestSigninManagerObserver test_observer_;
+  std::unique_ptr<PrimaryAccountPolicyManager> manager_;
+  TestPrimaryAccountManagerObserver test_observer_;
   std::vector<std::string> oauth_tokens_fetched_;
   std::vector<std::string> cookies_;
   signin::AccountConsistencyMethod account_consistency_;
 };
 
-TEST_F(SigninManagerTest, SignOut) {
-  CreateSigninManager();
+TEST_F(PrimaryAccountManagerTest, SignOut) {
+  CreatePrimaryAccountManager();
   std::string main_account_id =
       AddToAccountTracker("account_id", "user@gmail.com");
   manager_->SignIn("user@gmail.com");
@@ -154,14 +157,14 @@ TEST_F(SigninManagerTest, SignOut) {
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
   // Should not be persisted anymore
   ShutDownManager();
-  CreateSigninManager();
+  CreatePrimaryAccountManager();
   EXPECT_FALSE(manager_->IsAuthenticated());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().email.empty());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
 }
 
-TEST_F(SigninManagerTest, SignOutRevoke) {
-  CreateSigninManager();
+TEST_F(PrimaryAccountManagerTest, SignOutRevoke) {
+  CreatePrimaryAccountManager();
   std::string main_account_id =
       AddToAccountTracker("main_id", "user@gmail.com");
   std::string other_account_id =
@@ -180,9 +183,9 @@ TEST_F(SigninManagerTest, SignOutRevoke) {
   EXPECT_TRUE(token_service_.GetAccounts().empty());
 }
 
-TEST_F(SigninManagerTest, SignOutDiceNoRevoke) {
+TEST_F(PrimaryAccountManagerTest, SignOutDiceNoRevoke) {
   account_consistency_ = signin::AccountConsistencyMethod::kDice;
-  CreateSigninManager();
+  CreatePrimaryAccountManager();
   std::string main_account_id =
       AddToAccountTracker("main_id", "user@gmail.com");
   std::string other_account_id =
@@ -203,9 +206,9 @@ TEST_F(SigninManagerTest, SignOutDiceNoRevoke) {
   EXPECT_EQ(expected_tokens, token_service_.GetAccounts());
 }
 
-TEST_F(SigninManagerTest, SignOutDiceWithError) {
+TEST_F(PrimaryAccountManagerTest, SignOutDiceWithError) {
   account_consistency_ = signin::AccountConsistencyMethod::kDice;
-  CreateSigninManager();
+  CreatePrimaryAccountManager();
   std::string main_account_id =
       AddToAccountTracker("main_id", "user@gmail.com");
   std::string other_account_id =
@@ -233,8 +236,8 @@ TEST_F(SigninManagerTest, SignOutDiceWithError) {
   EXPECT_EQ(expected_tokens, token_service_.GetAccounts());
 }
 
-TEST_F(SigninManagerTest, SignOutWhileProhibited) {
-  CreateSigninManager();
+TEST_F(PrimaryAccountManagerTest, SignOutWhileProhibited) {
+  CreatePrimaryAccountManager();
   EXPECT_FALSE(manager_->IsAuthenticated());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().email.empty());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
@@ -250,10 +253,10 @@ TEST_F(SigninManagerTest, SignOutWhileProhibited) {
   EXPECT_FALSE(manager_->IsAuthenticated());
 }
 
-TEST_F(SigninManagerTest, Prohibited) {
+TEST_F(PrimaryAccountManagerTest, Prohibited) {
   local_state_.SetString(prefs::kGoogleServicesUsernamePattern,
                          ".*@google.com");
-  CreateSigninManager();
+  CreatePrimaryAccountManager();
   EXPECT_TRUE(manager_->IsAllowedUsername("test@google.com"));
   EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
   EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
@@ -261,11 +264,11 @@ TEST_F(SigninManagerTest, Prohibited) {
   EXPECT_FALSE(manager_->IsAllowedUsername(std::string()));
 }
 
-TEST_F(SigninManagerTest, TestAlternateWildcard) {
+TEST_F(PrimaryAccountManagerTest, TestAlternateWildcard) {
   // Test to make sure we accept "*@google.com" as a pattern (treat it as if
   // the admin entered ".*@google.com").
   local_state_.SetString(prefs::kGoogleServicesUsernamePattern, "*@google.com");
-  CreateSigninManager();
+  CreatePrimaryAccountManager();
   EXPECT_TRUE(manager_->IsAllowedUsername("test@google.com"));
   EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
   EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
@@ -273,21 +276,21 @@ TEST_F(SigninManagerTest, TestAlternateWildcard) {
   EXPECT_FALSE(manager_->IsAllowedUsername(std::string()));
 }
 
-TEST_F(SigninManagerTest, ProhibitedAtStartup) {
+TEST_F(PrimaryAccountManagerTest, ProhibitedAtStartup) {
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   user_prefs_.SetString(prefs::kGoogleServicesAccountId, account_id);
   local_state_.SetString(prefs::kGoogleServicesUsernamePattern,
                          ".*@google.com");
-  CreateSigninManager();
+  CreatePrimaryAccountManager();
   // Currently signed in user is prohibited by policy, so should be signed out.
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
 }
 
-TEST_F(SigninManagerTest, ProhibitedAfterStartup) {
+TEST_F(PrimaryAccountManagerTest, ProhibitedAfterStartup) {
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   user_prefs_.SetString(prefs::kGoogleServicesAccountId, account_id);
-  CreateSigninManager();
+  CreatePrimaryAccountManager();
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
   // Update the profile - user should be signed out.
@@ -297,8 +300,8 @@ TEST_F(SigninManagerTest, ProhibitedAfterStartup) {
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
 }
 
-TEST_F(SigninManagerTest, ExternalSignIn) {
-  CreateSigninManager();
+TEST_F(PrimaryAccountManagerTest, ExternalSignIn) {
+  CreatePrimaryAccountManager();
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
   EXPECT_EQ(0, test_observer_.num_successful_signins_);
@@ -310,8 +313,9 @@ TEST_F(SigninManagerTest, ExternalSignIn) {
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }
 
-TEST_F(SigninManagerTest, ExternalSignIn_ReauthShouldNotSendNotification) {
-  CreateSigninManager();
+TEST_F(PrimaryAccountManagerTest,
+       ExternalSignIn_ReauthShouldNotSendNotification) {
+  CreatePrimaryAccountManager();
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
   EXPECT_EQ(0, test_observer_.num_successful_signins_);
@@ -328,21 +332,21 @@ TEST_F(SigninManagerTest, ExternalSignIn_ReauthShouldNotSendNotification) {
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }
 
-TEST_F(SigninManagerTest, SigninNotAllowed) {
+TEST_F(PrimaryAccountManagerTest, SigninNotAllowed) {
   std::string user("user@google.com");
   std::string account_id = AddToAccountTracker("gaia_id", user);
   user_prefs_.SetString(prefs::kGoogleServicesAccountId, account_id);
   user_prefs_.SetBoolean(prefs::kSigninAllowed, false);
-  CreateSigninManager();
+  CreatePrimaryAccountManager();
   // Currently signing in is prohibited by policy, so should be signed out.
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
 }
 
-TEST_F(SigninManagerTest, UpgradeToNewPrefs) {
+TEST_F(PrimaryAccountManagerTest, UpgradeToNewPrefs) {
   user_prefs_.SetString(prefs::kGoogleServicesUsername, "user@gmail.com");
   user_prefs_.SetString(prefs::kGoogleServicesUserAccountId, "account_id");
-  CreateSigninManager();
+  CreatePrimaryAccountManager();
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
 
   if (account_tracker()->GetMigrationState() ==
@@ -366,13 +370,13 @@ TEST_F(SigninManagerTest, UpgradeToNewPrefs) {
   EXPECT_EQ("account_id", info.gaia);
 }
 
-TEST_F(SigninManagerTest, CanonicalizesPrefs) {
+TEST_F(PrimaryAccountManagerTest, CanonicalizesPrefs) {
   // This unit test is not needed after migrating to gaia id.
   if (account_tracker()->GetMigrationState() ==
       AccountTrackerService::MIGRATION_NOT_STARTED) {
     user_prefs_.SetString(prefs::kGoogleServicesUsername, "user.C@gmail.com");
 
-    CreateSigninManager();
+    CreatePrimaryAccountManager();
     EXPECT_EQ("user.C@gmail.com",
               manager_->GetAuthenticatedAccountInfo().email);
 
@@ -391,7 +395,7 @@ TEST_F(SigninManagerTest, CanonicalizesPrefs) {
   }
 }
 
-TEST_F(SigninManagerTest, GaiaIdMigration) {
+TEST_F(PrimaryAccountManagerTest, GaiaIdMigration) {
   if (account_tracker()->GetMigrationState() !=
       AccountTrackerService::MIGRATION_NOT_STARTED) {
     std::string email = "user@gmail.com";
@@ -413,14 +417,14 @@ TEST_F(SigninManagerTest, GaiaIdMigration) {
 
     client_prefs->SetString(prefs::kGoogleServicesAccountId, email);
 
-    CreateSigninManager();
+    CreatePrimaryAccountManager();
 
     EXPECT_EQ(gaia_id, manager_->GetAuthenticatedAccountId());
     EXPECT_EQ(gaia_id, user_prefs_.GetString(prefs::kGoogleServicesAccountId));
   }
 }
 
-TEST_F(SigninManagerTest, VeryOldProfileGaiaIdMigration) {
+TEST_F(PrimaryAccountManagerTest, VeryOldProfileGaiaIdMigration) {
   if (account_tracker()->GetMigrationState() !=
       AccountTrackerService::MIGRATION_NOT_STARTED) {
     std::string email = "user@gmail.com";
@@ -443,13 +447,13 @@ TEST_F(SigninManagerTest, VeryOldProfileGaiaIdMigration) {
     client_prefs->ClearPref(prefs::kGoogleServicesAccountId);
     client_prefs->SetString(prefs::kGoogleServicesUsername, email);
 
-    CreateSigninManager();
+    CreatePrimaryAccountManager();
     EXPECT_EQ(gaia_id, manager_->GetAuthenticatedAccountId());
     EXPECT_EQ(gaia_id, user_prefs_.GetString(prefs::kGoogleServicesAccountId));
   }
 }
 
-TEST_F(SigninManagerTest, GaiaIdMigrationCrashInTheMiddle) {
+TEST_F(PrimaryAccountManagerTest, GaiaIdMigrationCrashInTheMiddle) {
   if (account_tracker()->GetMigrationState() !=
       AccountTrackerService::MIGRATION_NOT_STARTED) {
     std::string email = "user@gmail.com";
@@ -471,7 +475,7 @@ TEST_F(SigninManagerTest, GaiaIdMigrationCrashInTheMiddle) {
 
     client_prefs->SetString(prefs::kGoogleServicesAccountId, gaia_id);
 
-    CreateSigninManager();
+    CreatePrimaryAccountManager();
     EXPECT_EQ(gaia_id, manager_->GetAuthenticatedAccountId());
     EXPECT_EQ(gaia_id, user_prefs_.GetString(prefs::kGoogleServicesAccountId));
 

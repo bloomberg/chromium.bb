@@ -13,7 +13,7 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/identity_manager_wrapper.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/primary_account_policy_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -198,17 +198,17 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
       signin_client, token_service.get(), account_tracker_service.get(),
       std::make_unique<image_fetcher::FakeImageDecoder>());
 
-  std::unique_ptr<SigninManagerBase> signin_manager =
+  std::unique_ptr<PrimaryAccountManager> primary_account_manager =
 #if defined(OS_CHROMEOS)
-      std::make_unique<SigninManagerBase>(signin_client, token_service.get(),
-                                          account_tracker_service.get(),
-                                          account_consistency);
+      std::make_unique<PrimaryAccountManager>(
+          signin_client, token_service.get(), account_tracker_service.get(),
+          account_consistency);
 #else
-      std::make_unique<SigninManager>(signin_client, token_service.get(),
-                                      account_tracker_service.get(),
-                                      account_consistency);
+      std::make_unique<PrimaryAccountPolicyManager>(
+          signin_client, token_service.get(), account_tracker_service.get(),
+          account_consistency);
 #endif
-  signin_manager->Initialize(pref_service);
+  primary_account_manager->Initialize(pref_service);
 
   std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service =
       std::make_unique<GaiaCookieManagerService>(token_service.get(),
@@ -219,13 +219,14 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
 
 #if !defined(OS_CHROMEOS)
   primary_account_mutator = std::make_unique<PrimaryAccountMutatorImpl>(
-      account_tracker_service.get(), signin_manager.get(), pref_service);
+      account_tracker_service.get(), primary_account_manager.get(),
+      pref_service);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   accounts_mutator = std::make_unique<AccountsMutatorImpl>(
-      token_service.get(), account_tracker_service.get(), signin_manager.get(),
-      pref_service);
+      token_service.get(), account_tracker_service.get(),
+      primary_account_manager.get(), pref_service);
 #endif
 
   auto diagnostics_provider = std::make_unique<DiagnosticsProviderImpl>(
@@ -236,10 +237,10 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
 
   return std::make_unique<IdentityManagerWrapper>(
       std::move(account_tracker_service), std::move(token_service),
-      std::move(gaia_cookie_manager_service), std::move(signin_manager),
-      std::move(account_fetcher_service), std::move(primary_account_mutator),
-      std::move(accounts_mutator), std::move(accounts_cookie_mutator),
-      std::move(diagnostics_provider));
+      std::move(gaia_cookie_manager_service),
+      std::move(primary_account_manager), std::move(account_fetcher_service),
+      std::move(primary_account_mutator), std::move(accounts_mutator),
+      std::move(accounts_cookie_mutator), std::move(diagnostics_provider));
 }
 
 IdentityTestEnvironment::~IdentityTestEnvironment() {

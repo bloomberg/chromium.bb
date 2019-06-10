@@ -198,10 +198,10 @@ void ChromeSigninClient::PreSignOut(
       !keep_window_opened) {
     if (signout_source_metric ==
         signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN) {
-      // SIGNIN_PREF_CHANGED_DURING_SIGNIN will be triggered when SigninManager
-      // is initialized before window opening, there is no need to close window.
-      // Call OnCloseBrowsersSuccess to continue sign out and show UserManager
-      // afterwards.
+      // SIGNIN_PREF_CHANGED_DURING_SIGNIN will be triggered when
+      // IdentityManager is initialized before window opening, there is no need
+      // to close window. Call OnCloseBrowsersSuccess to continue sign out and
+      // show UserManager afterwards.
       should_display_user_manager_ = false;  // Don't show UserManager twice.
       OnCloseBrowsersSuccess(signout_source_metric, profile_->GetPath());
     } else {

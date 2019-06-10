@@ -7,8 +7,8 @@ include_rules = [
   # see https://groups.google.com/a/chromium.org/d/msg/chromium-dev/dgFLuxqZt1o/iEqkyoQQBwAJ for help and info.
   "-components/signin/core/browser/fake_profile_oauth2_token_service.h",
   "-components/signin/core/browser/profile_oauth2_token_service.h",
-  "-components/signin/core/browser/signin_manager.h",
-  "-components/signin/core/browser/signin_manager_base.h",
+  "-components/signin/core/browser/primary_account_manager.h",
+  "-components/signin/core/browser/primary_account_policy_manager.h",
   "+components/version_info",
   "+google_apis/gaia",
   "+mojo/public/cpp",

@@ -233,9 +233,9 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateCredentials(
 
   // Account insertion:
   // Device Account insertion on Chrome OS happens as a 2 step process:
-  // 1. The account is inserted into SigninManager / AccountTrackerService, via
-  // IdentityManager, with a valid Gaia id and email but an invalid refresh
-  // token.
+  // 1. The account is inserted into PrimaryAccountManager /
+  // AccountTrackerService, via IdentityManager, with a valid Gaia id and email
+  // but an invalid refresh token.
   // 2. This API is called to update the aforementioned account with a valid
   // refresh token.
   // Secondary Account insertion on Chrome OS happens atomically in

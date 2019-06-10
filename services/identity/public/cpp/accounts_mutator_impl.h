@@ -15,8 +15,8 @@
 
 class AccountTrackerService;
 class PrefService;
+class PrimaryAccountManager;
 class ProfileOAuth2TokenService;
-class SigninManagerBase;
 
 namespace identity {
 
@@ -25,7 +25,7 @@ class AccountsMutatorImpl : public AccountsMutator {
  public:
   explicit AccountsMutatorImpl(ProfileOAuth2TokenService* token_service,
                                AccountTrackerService* account_tracker_service,
-                               SigninManagerBase* signin_manager,
+                               PrimaryAccountManager* primary_account_manager,
                                PrefService* pref_service);
   ~AccountsMutatorImpl() override;
 
@@ -59,7 +59,7 @@ class AccountsMutatorImpl : public AccountsMutator {
  private:
   ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;
-  SigninManagerBase* signin_manager_;
+  PrimaryAccountManager* primary_account_manager_;
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   PrefService* pref_service_;
 #endif
