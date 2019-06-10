@@ -54,6 +54,12 @@ class AccessibilityTreeFormatterAuraLinux
   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeWithNode(
       AtspiAccessible* node);
 
+  void AddValueProperties(AtkObject* atk_object, base::DictionaryValue* dict);
+  void AddTableProperties(AtkObject* atk_object, base::DictionaryValue* dict);
+  void AddTableCellProperties(const ui::AXPlatformNodeAuraLinux* node,
+                              AtkObject* atk_object,
+                              base::DictionaryValue* dict);
+
   void RecursiveBuildAccessibilityTree(AtspiAccessible* node,
                                        base::DictionaryValue* dict);
   virtual void AddProperties(AtspiAccessible* node,
@@ -318,6 +324,157 @@ const char* const kRoleNames[] = {
     "footnote",  // ATK_ROLE_FOOTNOTE = 122.
 };
 
+void AccessibilityTreeFormatterAuraLinux::AddValueProperties(
+    AtkObject* atk_object,
+    base::DictionaryValue* dict) {
+  if (!ATK_IS_VALUE(atk_object))
+    return;
+
+  auto value_properties = std::make_unique<base::ListValue>();
+  AtkValue* value = ATK_VALUE(atk_object);
+  GValue current = G_VALUE_INIT;
+  g_value_init(&current, G_TYPE_FLOAT);
+  atk_value_get_current_value(value, &current);
+  value_properties->AppendString(
+      base::StringPrintf("current=%f", g_value_get_float(&current)));
+
+  GValue minimum = G_VALUE_INIT;
+  g_value_init(&minimum, G_TYPE_FLOAT);
+  atk_value_get_minimum_value(value, &minimum);
+  value_properties->AppendString(
+      base::StringPrintf("minimum=%f", g_value_get_float(&minimum)));
+
+  GValue maximum = G_VALUE_INIT;
+  g_value_init(&maximum, G_TYPE_FLOAT);
+  atk_value_get_maximum_value(value, &maximum);
+  value_properties->AppendString(
+      base::StringPrintf("maximum=%f", g_value_get_float(&maximum)));
+  dict->Set("value", std::move(value_properties));
+}
+
+void AccessibilityTreeFormatterAuraLinux::AddTableProperties(
+    AtkObject* atk_object,
+    base::DictionaryValue* dict) {
+  if (!ATK_IS_TABLE(atk_object))
+    return;
+
+  // Column details.
+  AtkTable* table = ATK_TABLE(atk_object);
+  int n_cols = atk_table_get_n_columns(table);
+  auto table_properties = std::make_unique<base::ListValue>();
+  table_properties->AppendString(base::StringPrintf("cols=%i", n_cols));
+
+  std::vector<std::string> col_headers;
+  for (int i = 0; i < n_cols; i++) {
+    std::string header = atk_table_get_column_description(table, i);
+    if (!header.empty())
+      col_headers.push_back(base::StringPrintf("'%s'", header.c_str()));
+  }
+
+  if (!col_headers.size())
+    col_headers.push_back("NONE");
+
+  table_properties->AppendString(base::StringPrintf(
+      "headers=(%s);", base::JoinString(col_headers, ", ").c_str()));
+
+  // Row details.
+  int n_rows = atk_table_get_n_rows(table);
+  table_properties->AppendString(base::StringPrintf("rows=%i", n_rows));
+
+  std::vector<std::string> row_headers;
+  for (int i = 0; i < n_rows; i++) {
+    std::string header = atk_table_get_row_description(table, i);
+    if (!header.empty())
+      row_headers.push_back(base::StringPrintf("'%s'", header.c_str()));
+  }
+
+  if (!row_headers.size())
+    row_headers.push_back("NONE");
+
+  table_properties->AppendString(base::StringPrintf(
+      "headers=(%s);", base::JoinString(row_headers, ", ").c_str()));
+
+  // Caption details.
+  AtkObject* caption = atk_table_get_caption(table);
+  table_properties->AppendString(
+      base::StringPrintf("caption=%s;", caption ? "true" : "false"));
+
+  // Summarize information about the cells from the table's perspective here.
+  std::vector<std::string> span_info;
+  for (int r = 0; r < n_rows; r++) {
+    for (int c = 0; c < n_cols; c++) {
+      int row_span = atk_table_get_row_extent_at(table, r, c);
+      int col_span = atk_table_get_column_extent_at(table, r, c);
+      if (row_span != 1 || col_span != 1) {
+        span_info.push_back(base::StringPrintf("cell at %i,%i: %ix%i", r, c,
+                                               row_span, col_span));
+      }
+    }
+  }
+  if (!span_info.size())
+    span_info.push_back("all: 1x1");
+
+  table_properties->AppendString(base::StringPrintf(
+      "spans=(%s)", base::JoinString(span_info, ", ").c_str()));
+  dict->Set("table", std::move(table_properties));
+}
+
+void AccessibilityTreeFormatterAuraLinux::AddTableCellProperties(
+    const ui::AXPlatformNodeAuraLinux* node,
+    AtkObject* atk_object,
+    base::DictionaryValue* dict) {
+  AtkRole role = atk_object_get_role(atk_object);
+  if (role != ATK_ROLE_TABLE_CELL && role != ATK_ROLE_COLUMN_HEADER &&
+      role != ATK_ROLE_ROW_HEADER) {
+    return;
+  }
+
+  int row = 0, col = 0, row_span = 0, col_span = 0;
+  int n_row_headers = 0, n_column_headers = 0;
+
+  // Properties obtained via AtkTableCell, if possible. If we do not have at
+  // least ATK 2.12, use the same logic in our AtkTableCell implementation so
+  // that tests can still be run.
+  auto cell_interface = ui::AtkTableCellInterface::Get();
+  if (cell_interface.has_value()) {
+    AtkTableCell* cell = G_TYPE_CHECK_INSTANCE_CAST(
+        (atk_object), cell_interface->GetType(), AtkTableCell);
+
+    cell_interface->GetRowColumnSpan(cell, &row, &col, &row_span, &col_span);
+
+    GPtrArray* column_headers = cell_interface->GetColumnHeaderCells(cell);
+    n_column_headers = column_headers->len;
+    g_ptr_array_unref(column_headers);
+
+    GPtrArray* row_headers = cell_interface->GetRowHeaderCells(cell);
+    n_row_headers = row_headers->len;
+    g_ptr_array_unref(row_headers);
+  } else {
+    row = node->GetTableRow();
+    col = node->GetTableColumn();
+    row_span = node->GetTableRowSpan();
+    col_span = node->GetTableColumnSpan();
+    if (role == ATK_ROLE_TABLE_CELL) {
+      auto* delegate = node->GetTable()->GetDelegate();
+      n_column_headers = delegate->GetColHeaderNodeIds(col).size();
+      n_row_headers = delegate->GetRowHeaderNodeIds(row).size();
+    }
+  }
+
+  std::vector<std::string> cell_info;
+  cell_info.push_back(base::StringPrintf("row=%i", row));
+  cell_info.push_back(base::StringPrintf("col=%i", col));
+  cell_info.push_back(base::StringPrintf("row_span=%i", row_span));
+  cell_info.push_back(base::StringPrintf("col_span=%i", col_span));
+  cell_info.push_back(base::StringPrintf("n_row_headers=%i", n_row_headers));
+  cell_info.push_back(base::StringPrintf("n_col_headers=%i", n_column_headers));
+
+  auto cell_properties = std::make_unique<base::ListValue>();
+  cell_properties->AppendString(
+      base::StringPrintf("(%s)", base::JoinString(cell_info, ", ").c_str()));
+  dict->Set("cell", std::move(cell_properties));
+}
+
 void AccessibilityTreeFormatterAuraLinux::AddProperties(
     const BrowserAccessibility& node,
     base::DictionaryValue* dict) {
@@ -371,132 +528,9 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
   atk_attribute_set_free(attributes);
 
   // Properties obtained via AtkValue.
-  auto value_properties = std::make_unique<base::ListValue>();
-  if (ATK_IS_VALUE(atk_object)) {
-    AtkValue* value = ATK_VALUE(atk_object);
-    GValue current = G_VALUE_INIT;
-    g_value_init(&current, G_TYPE_FLOAT);
-    atk_value_get_current_value(value, &current);
-    value_properties->AppendString(
-        base::StringPrintf("current=%f", g_value_get_float(&current)));
-
-    GValue minimum = G_VALUE_INIT;
-    g_value_init(&minimum, G_TYPE_FLOAT);
-    atk_value_get_minimum_value(value, &minimum);
-    value_properties->AppendString(
-        base::StringPrintf("minimum=%f", g_value_get_float(&minimum)));
-
-    GValue maximum = G_VALUE_INIT;
-    g_value_init(&maximum, G_TYPE_FLOAT);
-    atk_value_get_maximum_value(value, &maximum);
-    value_properties->AppendString(
-        base::StringPrintf("maximum=%f", g_value_get_float(&maximum)));
-  }
-  dict->Set("value", std::move(value_properties));
-
-  // Properties obtained via AtkTable.
-  auto table_properties = std::make_unique<base::ListValue>();
-  if (ATK_IS_TABLE(atk_object)) {
-    AtkTable* table = ATK_TABLE(atk_object);
-
-    // Column details.
-    int n_cols = atk_table_get_n_columns(table);
-    table_properties->AppendString(base::StringPrintf("cols=%i", n_cols));
-
-    std::vector<std::string> col_headers;
-    for (int i = 0; i < n_cols; i++) {
-      std::string header = atk_table_get_column_description(table, i);
-      if (!header.empty())
-        col_headers.push_back(base::StringPrintf("'%s'", header.c_str()));
-    }
-
-    if (!col_headers.size())
-      col_headers.push_back("NONE");
-
-    table_properties->AppendString(base::StringPrintf(
-        "headers=(%s);", base::JoinString(col_headers, ", ").c_str()));
-
-    // Row details.
-    int n_rows = atk_table_get_n_rows(table);
-    table_properties->AppendString(base::StringPrintf("rows=%i", n_rows));
-
-    std::vector<std::string> row_headers;
-    for (int i = 0; i < n_rows; i++) {
-      std::string header = atk_table_get_row_description(table, i);
-      if (!header.empty())
-        row_headers.push_back(base::StringPrintf("'%s'", header.c_str()));
-    }
-
-    if (!row_headers.size())
-      row_headers.push_back("NONE");
-
-    table_properties->AppendString(base::StringPrintf(
-        "headers=(%s);", base::JoinString(row_headers, ", ").c_str()));
-
-    // Caption details.
-    AtkObject* caption = atk_table_get_caption(table);
-    table_properties->AppendString(
-        base::StringPrintf("caption=%s;", caption ? "true" : "false"));
-
-    // Summarize information about the cells from the table's perspective here.
-    std::vector<std::string> span_info;
-    for (int r = 0; r < n_rows; r++) {
-      for (int c = 0; c < n_cols; c++) {
-        int row_span = atk_table_get_row_extent_at(table, r, c);
-        int col_span = atk_table_get_column_extent_at(table, r, c);
-        if (row_span != 1 || col_span != 1) {
-          span_info.push_back(base::StringPrintf("cell at %i,%i: %ix%i", r, c,
-                                                 row_span, col_span));
-        }
-      }
-    }
-    if (!span_info.size())
-      span_info.push_back("all: 1x1");
-
-    table_properties->AppendString(base::StringPrintf(
-        "spans=(%s)", base::JoinString(span_info, ", ").c_str()));
-  }
-
-  dict->Set("table", std::move(table_properties));
-
-  // Properties obtained via AtkTableCell, if possible. If we do not have at
-  // least ATK 2.12, use the same logic in our AtkTableCell implementation so
-  // that tests can still be run.
-  auto cell_properties = std::make_unique<base::ListValue>();
-  if (role == ATK_ROLE_TABLE_CELL || role == ATK_ROLE_COLUMN_HEADER ||
-      role == ATK_ROLE_ROW_HEADER) {
-    int row, col, row_span, col_span;
-    int n_row_headers = 0, n_column_headers = 0;
-    auto cell_interface = ui::AtkTableCellInterface::Get();
-    if (cell_interface.has_value()) {
-      AtkTableCell* cell = G_TYPE_CHECK_INSTANCE_CAST(
-          (atk_object), cell_interface->GetType(), AtkTableCell);
-      GPtrArray* column_headers = cell_interface->GetColumnHeaderCells(cell);
-      GPtrArray* row_headers = cell_interface->GetRowHeaderCells(cell);
-      n_column_headers = column_headers->len;
-      n_row_headers = row_headers->len;
-      g_ptr_array_unref(column_headers);
-      g_ptr_array_unref(row_headers);
-      cell_interface->GetRowColumnSpan(cell, &row, &col, &row_span, &col_span);
-    } else {
-      row = ax_platform_node->GetTableRow();
-      col = ax_platform_node->GetTableColumn();
-      row_span = ax_platform_node->GetTableRowSpan();
-      col_span = ax_platform_node->GetTableColumnSpan();
-      if (role == ATK_ROLE_TABLE_CELL) {
-        auto* delegate = ax_platform_node->GetTable()->GetDelegate();
-        n_column_headers = delegate->GetColHeaderNodeIds(col).size();
-        n_row_headers = delegate->GetRowHeaderNodeIds(row).size();
-      }
-    }
-    cell_properties->AppendString(
-        base::StringPrintf("(row=%i, col=%i, row_span=%i, col_span=%i", row,
-                           col, row_span, col_span));
-    cell_properties->AppendString(
-        base::StringPrintf("n_row_headers=%i, n_col_headers=%i)", n_row_headers,
-                           n_column_headers));
-  }
-  dict->Set("cell", std::move(cell_properties));
+  AddValueProperties(atk_object, dict);
+  AddTableProperties(atk_object, dict);
+  AddTableCellProperties(ax_platform_node, atk_object, dict);
 }
 
 void AccessibilityTreeFormatterAuraLinux::AddProperties(
