@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -15,9 +16,11 @@
 #include "base/task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_mock_clock_override.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time_override.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/prefetch_browsertest_base.h"
@@ -35,6 +38,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_cache.h"
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -115,6 +119,56 @@ std::string CreatePreloadLinkHeader(const GURL& url, const char* as) {
                             url.spec().c_str(), as);
 }
 
+// This class supplies a mock time which flies faster than the actual time
+// using ScopedTimeClockOverrides. This is used to check the cache expiration
+// logic.
+class MockClock {
+ public:
+  // Returns a MockClock which will not be deleted. If the test use this class,
+  // this method should be called once while single-threaded to initialize
+  // ScopedTimeClockOverrides to avoid threading issues.
+  static MockClock& Get() {
+    static base::NoDestructor<MockClock> mock_clock;
+    return *mock_clock;
+  }
+
+  void Advance(base::TimeDelta delta) {
+    DCHECK_GE(delta, base::TimeDelta());
+    base::AutoLock lock(lock_);
+    offset_ += delta;
+  }
+
+ private:
+  friend base::NoDestructor<MockClock>;
+
+  static base::Time MockedNow() {
+    return base::subtle::TimeNowIgnoringOverride() + mock_clock_->GetOffset();
+  }
+
+  MockClock() {
+    mock_clock_ = this;
+    time_override_ = std::make_unique<base::subtle::ScopedTimeClockOverrides>(
+        &MockClock::MockedNow, nullptr, nullptr);
+  }
+
+  ~MockClock() {}
+
+  base::TimeDelta GetOffset() {
+    base::AutoLock lock(lock_);
+    return offset_;
+  }
+
+  static MockClock* mock_clock_;
+
+  std::unique_ptr<base::subtle::ScopedTimeClockOverrides> time_override_;
+  base::Lock lock_;
+  base::TimeDelta offset_ GUARDED_BY(lock_);
+
+  DISALLOW_COPY_AND_ASSIGN(MockClock);
+};
+
+MockClock* MockClock::mock_clock_ = nullptr;
+
 }  // namespace
 
 class SignedExchangePrefetchBrowserTest
@@ -123,7 +177,11 @@ class SignedExchangePrefetchBrowserTest
                      bool /* sxg_subresource_prefetch_enabled */>>,
       public PrefetchBrowserTestBase {
  public:
-  SignedExchangePrefetchBrowserTest() = default;
+  SignedExchangePrefetchBrowserTest() {
+    // Call MockClock::Get() here to initialize ScopedMockClockOverride which
+    // should be created while single-threaded.
+    MockClock::Get();
+  }
   ~SignedExchangePrefetchBrowserTest() = default;
 
   void SetUp() override {
@@ -137,6 +195,9 @@ class SignedExchangePrefetchBrowserTest
     enable_features.push_back(features::kSignedHTTPExchange);
     if (network_service_enabled) {
       enable_features.push_back(network::features::kNetworkService);
+      // Need to run the network service in process for testing cache expirity
+      // (PrefetchMainResourceSXG_ExceedPrefetchReuseMins) using MockClock.
+      enable_features.push_back(features::kNetworkServiceInProcess);
     } else {
       disabled_features.push_back(network::features::kNetworkService);
     }
@@ -183,9 +244,15 @@ class SignedExchangePrefetchBrowserTest
     const net::SHA256HashValue header_integrity = {{0x01}};
     const std::string content =
         "<head><title>Prefetch Target (SXG)</title></head>";
+    auto sxg_request_counter =
+        RequestCounter::CreateAndMonitor(embedded_test_server(), sxg_path);
+
     LoadPrefetchMainResourceSXGTestPage(
         prefetch_page_hostname, prefetch_page_path, sxg_hostname, sxg_path,
-        inner_url_hostname, inner_url_path, header_integrity, content);
+        inner_url_hostname, inner_url_path, header_integrity, content,
+        {} /* sxg_outer_headers */);
+
+    EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
 
     const GURL sxg_url = embedded_test_server()->GetURL(sxg_hostname, sxg_path);
     const GURL inner_url =
@@ -206,6 +273,8 @@ class SignedExchangePrefetchBrowserTest
     // the target URL. The target content should still be read correctly.
     // The content is loaded from PrefetchedSignedExchangeCache.
     NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
+
+    EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
   }
 
   void LoadPrefetchMainResourceSXGTestPage(
@@ -216,7 +285,9 @@ class SignedExchangePrefetchBrowserTest
       const std::string& inner_url_hostname,
       const std::string& inner_url_path,
       const net::SHA256HashValue& header_integrity,
-      const std::string& content) {
+      const std::string& content,
+      const std::vector<std::pair<std::string, std::string>>&
+          sxg_outer_headers) {
     auto sxg_request_counter =
         RequestCounter::CreateAndMonitor(embedded_test_server(), sxg_path);
     RegisterRequestHandler(embedded_test_server());
@@ -232,7 +303,8 @@ class SignedExchangePrefetchBrowserTest
                      ResponseEntry(base::StringPrintf(
                          "<body><link rel='prefetch' href='%s'></body>",
                          sxg_url.spec().c_str())));
-    RegisterResponse(sxg_path, CreateSignedExchangeResponseEntry(content));
+    RegisterResponse(sxg_path, CreateSignedExchangeResponseEntry(
+                                   content, sxg_outer_headers));
 
     MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
         sxg_url, SignedExchangeLoadResult::kSuccess, net::OK, inner_url,
@@ -261,6 +333,7 @@ class SignedExchangePrefetchBrowserTest
     limits.max_file_size = kTestBlobStorageMaxFileSizeBytes;
     context->context()->set_limits_for_testing(limits);
   }
+
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangePrefetchBrowserTest);
@@ -311,11 +384,186 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
       "example.com" /* sxg_hostname */, "/target.sxg" /* sxg_path */,
       "example.com" /* inner_url_hostname */,
       "/target.html" /* inner_url_path */,
-      net::SHA256HashValue({{0x01}}) /* header_integrity */, content);
+      net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
+      {} /* sxg_outer_headers */);
   const auto cached_exchanges = GetCachedExchanges(shell());
   // The content of prefetched SXG is larger than the Blob storage limit.
   // So the SXG should not be stored to the cache.
   EXPECT_EQ(0u, cached_exchanges.size());
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
+                       PrefetchMainResourceSXG_CacheControlNoStore) {
+  const std::string content =
+      "<head><title>Prefetch Target (SXG)</title></head>";
+
+  LoadPrefetchMainResourceSXGTestPage(
+      "example.com" /* prefetch_page_hostname */,
+      "/prefetch.html" /* prefetch_page_path */,
+      "example.com" /* sxg_hostname */, "/target.sxg" /* sxg_path */,
+      "example.com" /* inner_url_hostname */,
+      "/target.html" /* inner_url_path */,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
+      {{"cache-control", "no-store"}} /* sxg_outer_headers */);
+  const auto cached_exchanges = GetCachedExchanges(shell());
+  // The signed exchange which response header has "cache-control: no-store"
+  // header should not be stored to the cache.
+  EXPECT_EQ(0u, cached_exchanges.size());
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
+                       PrefetchMainResourceSXG_VaryAsteriskHeader) {
+  const std::string content =
+      "<head><title>Prefetch Target (SXG)</title></head>";
+
+  LoadPrefetchMainResourceSXGTestPage(
+      "example.com" /* prefetch_page_hostname */,
+      "/prefetch.html" /* prefetch_page_path */,
+      "example.com" /* sxg_hostname */, "/target.sxg" /* sxg_path */,
+      "example.com" /* inner_url_hostname */,
+      "/target.html" /* inner_url_path */,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
+      {{"vary", "*"}} /* sxg_outer_headers */);
+  const auto cached_exchanges = GetCachedExchanges(shell());
+  // The signed exchange which response header has "vary: *" header should not
+  // be stored to the cache.
+  EXPECT_EQ(0u, cached_exchanges.size());
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
+                       PrefetchMainResourceSXG_VaryAcceptEncodingHeader) {
+  const std::string content =
+      "<head><title>Prefetch Target (SXG)</title></head>";
+
+  LoadPrefetchMainResourceSXGTestPage(
+      "example.com" /* prefetch_page_hostname */,
+      "/prefetch.html" /* prefetch_page_path */,
+      "example.com" /* sxg_hostname */, "/target.sxg" /* sxg_path */,
+      "example.com" /* inner_url_hostname */,
+      "/target.html" /* inner_url_path */,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
+      {{"vary", "accept-encoding"}} /* sxg_outer_headers */);
+  // The signed exchange which response header has "vary: accept-encoding"
+  // header should be stored to the cache.
+  const auto cached_exchanges = GetCachedExchanges(shell());
+  EXPECT_EQ(1u, cached_exchanges.size());
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
+                       PrefetchMainResourceSXG_ExceedPrefetchReuseMins) {
+  const char* hostname = "example.com";
+  const char* sxg_path = "/target.sxg";
+  const char* inner_url_path = "/target.html";
+  const std::string content =
+      "<head><title>Prefetch Target (SXG)</title></head>";
+  auto sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), sxg_path);
+
+  LoadPrefetchMainResourceSXGTestPage(
+      hostname, "/prefetch.html" /* prefetch_page_path */, hostname, sxg_path,
+      hostname, inner_url_path,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
+      {} /* sxg_outer_headers */);
+  EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
+
+  const GURL sxg_url = embedded_test_server()->GetURL(hostname, sxg_path);
+  const GURL inner_url =
+      embedded_test_server()->GetURL(hostname, inner_url_path);
+
+  EXPECT_EQ(1u, GetCachedExchanges(shell()).size());
+
+  MockClock::Get().Advance(base::TimeDelta::FromSeconds(
+      net::HttpCache::kPrefetchReuseMins * 60 + 1));
+
+  // Need to setup MockSignedExchangeHandlerFactory because the SXG is loaded
+  // from the server again.
+  MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
+      sxg_url, SignedExchangeLoadResult::kSuccess, net::OK, inner_url,
+      "text/html", {} /* sxg_inner_headers */,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */)});
+  ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+
+  NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
+
+  // SXG must be fetched again.
+  EXPECT_EQ(2, sxg_request_counter->GetRequestCount());
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
+                       PrefetchMainResourceSXG_CacheControlPublic) {
+  const char* hostname = "example.com";
+  const char* sxg_path = "/target.sxg";
+  const char* inner_url_path = "/target.html";
+  const std::string content =
+      "<head><title>Prefetch Target (SXG)</title></head>";
+  auto sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), sxg_path);
+
+  LoadPrefetchMainResourceSXGTestPage(
+      hostname, "/prefetch.html" /* prefetch_page_path */, hostname, sxg_path,
+      hostname, inner_url_path,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
+      {{"cache-control",
+        base::StringPrintf("public, max-age=%d",
+                           net::HttpCache::kPrefetchReuseMins * 3 *
+                               60)}} /* sxg_outer_headers */);
+  EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
+
+  const GURL sxg_url = embedded_test_server()->GetURL(hostname, sxg_path);
+  const GURL inner_url =
+      embedded_test_server()->GetURL(hostname, inner_url_path);
+
+  EXPECT_EQ(1u, GetCachedExchanges(shell()).size());
+
+  MockClock::Get().Advance(base::TimeDelta::FromSeconds(
+      net::HttpCache::kPrefetchReuseMins * 2 * 60));
+  NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
+
+  // SXG must Not be fetched again.
+  EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
+                       PrefetchMainResourceSXG_CacheControlPublicExpire) {
+  const char* hostname = "example.com";
+  const char* sxg_path = "/target.sxg";
+  const char* inner_url_path = "/target.html";
+  const std::string content =
+      "<head><title>Prefetch Target (SXG)</title></head>";
+  auto sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), sxg_path);
+
+  LoadPrefetchMainResourceSXGTestPage(
+      hostname, "/prefetch.html" /* prefetch_page_path */, hostname, sxg_path,
+      hostname, inner_url_path,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
+      {{"cache-control",
+        base::StringPrintf("public, max-age=%d",
+                           net::HttpCache::kPrefetchReuseMins * 3 *
+                               60)}} /* sxg_outer_headers */);
+  EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
+
+  const GURL sxg_url = embedded_test_server()->GetURL(hostname, sxg_path);
+  const GURL inner_url =
+      embedded_test_server()->GetURL(hostname, inner_url_path);
+
+  EXPECT_EQ(1u, GetCachedExchanges(shell()).size());
+
+  MockClock::Get().Advance(base::TimeDelta::FromSeconds(
+      net::HttpCache::kPrefetchReuseMins * 3 * 60 + 1));
+
+  // Need to setup MockSignedExchangeHandlerFactory because the SXG is loaded
+  // from the server again.
+  MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
+      sxg_url, SignedExchangeLoadResult::kSuccess, net::OK, inner_url,
+      "text/html", {} /* sxg_inner_headers */,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */)});
+  ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+
+  NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
+
+  // SXG must be fetched again, because the cache has been expired.
+  EXPECT_EQ(2, sxg_request_counter->GetRequestCount());
 }
 
 // This test is almost same as SignedExchangeSubresourcePrefetchBrowserTest's
@@ -458,7 +706,11 @@ class SignedExchangeSubresourcePrefetchBrowserTest
     : public testing::WithParamInterface<bool /* network_service_enabled */>,
       public PrefetchBrowserTestBase {
  public:
-  SignedExchangeSubresourcePrefetchBrowserTest() = default;
+  SignedExchangeSubresourcePrefetchBrowserTest() {
+    // Call MockClock::Get() here to initialize ScopedMockClockOverride which
+    // should be created while single-threaded.
+    MockClock::Get();
+  }
   ~SignedExchangeSubresourcePrefetchBrowserTest() = default;
 
   void SetUp() override {
@@ -470,6 +722,9 @@ class SignedExchangeSubresourcePrefetchBrowserTest
     enable_features.push_back(features::kSignedExchangeSubresourcePrefetch);
     if (network_service_enabled) {
       enable_features.push_back(network::features::kNetworkService);
+      // Need to run the network service in process for testing cache expirity
+      // (PrefetchMainResourceSXG_ExceedPrefetchReuseMins) using MockClock.
+      enable_features.push_back(features::kNetworkServiceInProcess);
     } else {
       disabled_features.push_back(network::features::kNetworkService);
     }
@@ -500,7 +755,11 @@ class SignedExchangeSubresourcePrefetchBrowserTest
       const std::string& inner_url_hostname,
       const std::string& page_inner_url_path,
       const std::string& script_inner_url_path,
+      const std::vector<std::pair<std::string, std::string>>&
+          script_sxg_outer_headers,
+      int64_t elapsed_time_after_prefetch,
       const std::string& expected_title,
+      bool script_sxg_should_be_stored,
       int expected_script_fetch_count) {
     // When |expected_script_fetch_count| is -1, we don't check the script fetch
     // count.
@@ -549,9 +808,14 @@ class SignedExchangeSubresourcePrefetchBrowserTest
                      CreateSignedExchangeResponseEntry(
                          "<head><title>Prefetch Target (SXG)</title>"
                          "<script src=\"./script.js\"></script></head>",
-                         {{"link", outer_link_header}}));
-    RegisterResponse(script_sxg_path, CreateSignedExchangeResponseEntry(
-                                          "document.title=\"done\";"));
+                         {{"link", outer_link_header},
+                          {"cache-control",
+                           base::StringPrintf(
+                               "public, max-age=%d",
+                               net::HttpCache::kPrefetchReuseMins * 3 * 60)}}));
+    RegisterResponse(script_sxg_path,
+                     CreateSignedExchangeResponseEntry(
+                         "document.title=\"done\";", script_sxg_outer_headers));
     MockSignedExchangeHandlerFactory factory(
         {MockSignedExchangeHandlerParams(
              sxg_page_url, SignedExchangeLoadResult::kSuccess, net::OK,
@@ -576,7 +840,7 @@ class SignedExchangeSubresourcePrefetchBrowserTest
     EXPECT_EQ(2, GetPrefetchURLLoaderCallCount());
 
     const auto cached_exchanges = GetCachedExchanges(shell());
-    EXPECT_EQ(2u, cached_exchanges.size());
+    EXPECT_EQ(script_sxg_should_be_stored ? 2u : 1u, cached_exchanges.size());
 
     const auto target_it = cached_exchanges.find(sxg_page_url);
     ASSERT_TRUE(target_it != cached_exchanges.end());
@@ -584,11 +848,17 @@ class SignedExchangeSubresourcePrefetchBrowserTest
     EXPECT_EQ(inner_url_page_url, target_it->second->inner_url());
     EXPECT_EQ(page_header_integrity, *target_it->second->header_integrity());
 
-    const auto script_it = cached_exchanges.find(sxg_script_url);
-    ASSERT_TRUE(script_it != cached_exchanges.end());
-    EXPECT_EQ(sxg_script_url, script_it->second->outer_url());
-    EXPECT_EQ(inner_url_script_url, script_it->second->inner_url());
-    EXPECT_EQ(script_header_integrity, *script_it->second->header_integrity());
+    if (script_sxg_should_be_stored) {
+      const auto script_it = cached_exchanges.find(sxg_script_url);
+      ASSERT_TRUE(script_it != cached_exchanges.end());
+      EXPECT_EQ(sxg_script_url, script_it->second->outer_url());
+      EXPECT_EQ(inner_url_script_url, script_it->second->inner_url());
+      EXPECT_EQ(script_header_integrity,
+                *script_it->second->header_integrity());
+    }
+
+    MockClock::Get().Advance(
+        base::TimeDelta::FromSeconds(elapsed_time_after_prefetch));
 
     // Subsequent navigation to the target URL wouldn't hit the network for
     // the target URL. The target content should still be read correctly.
@@ -733,7 +1003,9 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
       "/script.sxg" /* script_sxg_path */,
       "example.com" /* inner_url_hostname */,
       "/target.html" /* page_inner_url_path */,
-      "/script.js" /* script_inner_url_path */, "done" /* expected_title */,
+      "/script.js" /* script_inner_url_path */,
+      {} /* script_sxg_outer_headers */, 0 /* elapsed_time_after_prefetch */,
+      "done" /* expected_title */, true /* script_sxg_should_be_stored */,
       0 /* expected_script_fetch_count */);
 }
 
@@ -749,7 +1021,9 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
       "/script.js" /* script_sxg_path */,
       "example.com" /* inner_url_hostname */,
       "/target.html" /* page_inner_url_path */,
-      "/script.js" /* script_inner_url_path */, "done" /* expected_title */,
+      "/script.js" /* script_inner_url_path */,
+      {} /* script_sxg_outer_headers */, 0 /* elapsed_time_after_prefetch */,
+      "done" /* expected_title */, true /* script_sxg_should_be_stored */,
       // Note that we don't check the script fetch count in this test.
       -1 /* expected_script_fetch_count  */);
 }
@@ -769,7 +1043,9 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
       "/script.sxg" /* script_sxg_path */,
       "publisher.example.com" /* inner_url_hostname */,
       "/target.html" /* page_inner_url_path */,
-      "/script.js" /* script_inner_url_path */, "done" /* expected_title */,
+      "/script.js" /* script_inner_url_path */,
+      {} /* script_sxg_outer_headers */, 0 /* elapsed_time_after_prefetch */,
+      "done" /* expected_title */, true /* script_sxg_should_be_stored */,
       0 /* expected_script_fetch_count */);
 }
 
@@ -787,7 +1063,123 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
       "publisher.example.com" /* inner_url_hostname */,
       "/target.html" /* page_inner_url_path */,
       "/script.js" /* script_inner_url_path */,
-      "from server" /* expected_title */, 1 /* expected_script_fetch_count */);
+      {} /* script_sxg_outer_headers */, 0 /* elapsed_time_after_prefetch */,
+      "from server" /* expected_title */,
+      true /* script_sxg_should_be_stored */,
+      1 /* expected_script_fetch_count */);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       MainResourceSXGAndScriptSXG_CacheControlNoStore) {
+  RunPrefetchMainResourceSXGAndScriptSXGTest(
+      "example.com" /* prefetch_page_hostname */,
+      "/prefetch.html" /* prefetch_page_path */,
+      "example.com" /* page_sxg_hostname */, "/target.sxg" /* page_sxg_path */,
+      "example.com" /* script_sxg_hostname */,
+      "/script.sxg" /* script_sxg_path */,
+      "example.com" /* inner_url_hostname */,
+      "/target.html" /* page_inner_url_path */,
+      "/script.js" /* script_inner_url_path */,
+      {{"cache-control", "no-store"}} /* script_sxg_outer_headers */,
+      0 /* elapsed_time_after_prefetch */, "from server" /* expected_title */,
+      false /* script_sxg_should_be_stored */,
+      1 /* expected_script_fetch_count */);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       MainResourceSXGAndScriptSXG_VaryAsteriskHeader) {
+  RunPrefetchMainResourceSXGAndScriptSXGTest(
+      "example.com" /* prefetch_page_hostname */,
+      "/prefetch.html" /* prefetch_page_path */,
+      "example.com" /* page_sxg_hostname */, "/target.sxg" /* page_sxg_path */,
+      "example.com" /* script_sxg_hostname */,
+      "/script.sxg" /* script_sxg_path */,
+      "example.com" /* inner_url_hostname */,
+      "/target.html" /* page_inner_url_path */,
+      "/script.js" /* script_inner_url_path */,
+      {{"vary", "*"}} /* script_sxg_outer_headers */,
+      0 /* elapsed_time_after_prefetch */, "from server" /* expected_title */,
+      false /* script_sxg_should_be_stored */,
+      1 /* expected_script_fetch_count */);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       MainResourceSXGAndScriptSXG_VaryAcceptEncodingHeader) {
+  RunPrefetchMainResourceSXGAndScriptSXGTest(
+      "example.com" /* prefetch_page_hostname */,
+      "/prefetch.html" /* prefetch_page_path */,
+      "example.com" /* page_sxg_hostname */, "/target.sxg" /* page_sxg_path */,
+      "example.com" /* script_sxg_hostname */,
+      "/script.sxg" /* script_sxg_path */,
+      "example.com" /* inner_url_hostname */,
+      "/target.html" /* page_inner_url_path */,
+      "/script.js" /* script_inner_url_path */,
+      {{"vary", "accept-encoding"}} /* script_sxg_outer_headers */,
+      0 /* elapsed_time_after_prefetch */, "done" /* expected_title */,
+      true /* script_sxg_should_be_stored */,
+      0 /* expected_script_fetch_count */);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       MainResourceSXGAndScriptSXG_ExceedPrefetchReuseMins) {
+  RunPrefetchMainResourceSXGAndScriptSXGTest(
+      "example.com" /* prefetch_page_hostname */,
+      "/prefetch.html" /* prefetch_page_path */,
+      "example.com" /* page_sxg_hostname */, "/target.sxg" /* page_sxg_path */,
+      "example.com" /* script_sxg_hostname */,
+      "/script.sxg" /* script_sxg_path */,
+      "example.com" /* inner_url_hostname */,
+      "/target.html" /* page_inner_url_path */,
+      "/script.js" /* script_inner_url_path */,
+      {} /* script_sxg_outer_headers */,
+      net::HttpCache::kPrefetchReuseMins * 60 + 1
+      /* elapsed_time_after_prefetch */,
+      "from server" /* expected_title */,
+      true /* script_sxg_should_be_stored */,
+      1 /* expected_script_fetch_count */);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       MainResourceSXGAndScriptSXG_CacheControlPublic) {
+  RunPrefetchMainResourceSXGAndScriptSXGTest(
+      "example.com" /* prefetch_page_hostname */,
+      "/prefetch.html" /* prefetch_page_path */,
+      "example.com" /* page_sxg_hostname */, "/target.sxg" /* page_sxg_path */,
+      "example.com" /* script_sxg_hostname */,
+      "/script.sxg" /* script_sxg_path */,
+      "example.com" /* inner_url_hostname */,
+      "/target.html" /* page_inner_url_path */,
+      "/script.js" /* script_inner_url_path */,
+      {{"cache-control",
+        base::StringPrintf("public, max-age=%d",
+                           net::HttpCache::kPrefetchReuseMins * 3 *
+                               60)}} /* script_sxg_outer_headers */,
+      net::HttpCache::kPrefetchReuseMins * 2 * 60
+      /* elapsed_time_after_prefetch */,
+      "done" /* expected_title */, true /* script_sxg_should_be_stored */,
+      0 /* expected_script_fetch_count */);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       MainResourceSXGAndScriptSXG_CacheControlPublicExpire) {
+  RunPrefetchMainResourceSXGAndScriptSXGTest(
+      "example.com" /* prefetch_page_hostname */,
+      "/prefetch.html" /* prefetch_page_path */,
+      "example.com" /* page_sxg_hostname */, "/target.sxg" /* page_sxg_path */,
+      "example.com" /* script_sxg_hostname */,
+      "/script.sxg" /* script_sxg_path */,
+      "example.com" /* inner_url_hostname */,
+      "/target.html" /* page_inner_url_path */,
+      "/script.js" /* script_inner_url_path */,
+      {{"cache-control",
+        base::StringPrintf("public, max-age=%d",
+                           net::HttpCache::kPrefetchReuseMins * 3 *
+                               60)}} /* script_sxg_outer_headers */,
+      net::HttpCache::kPrefetchReuseMins * 3 * 60 + 1
+      /* elapsed_time_after_prefetch */,
+      "from server" /* expected_title */,
+      true /* script_sxg_should_be_stored */,
+      1 /* expected_script_fetch_count */);
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,

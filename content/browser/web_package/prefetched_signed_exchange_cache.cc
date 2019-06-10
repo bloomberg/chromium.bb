@@ -14,6 +14,7 @@
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/http/http_cache.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/cpp/constants.h"
@@ -445,6 +446,48 @@ class PrefetchedNavigationLoaderInterceptor
   DISALLOW_COPY_AND_ASSIGN(PrefetchedNavigationLoaderInterceptor);
 };
 
+bool CanStoreEntry(const PrefetchedSignedExchangeCache::Entry& entry) {
+  const net::HttpResponseHeaders* outer_headers =
+      entry.outer_response()->headers.get();
+  // We don't store responses with a "cache-control: no-store" header.
+  if (outer_headers->HasHeaderValue("cache-control", "no-store"))
+    return false;
+
+  // Generally we don't store responses with a "vary" header. We only allows
+  // "accept-encoding" vary header. This is because content decoding is handled
+  // by the network layer and PrefetchedSignedExchangeCache stores decoded
+  // response bodies, so we can safely ignore varying on the "Accept-Encoding"
+  // header.
+  std::string value;
+  size_t iter = 0;
+  while (outer_headers->EnumerateHeader(&iter, "vary", &value)) {
+    if (!base::EqualsCaseInsensitiveASCII(value, "accept-encoding"))
+      return false;
+  }
+  return true;
+}
+
+bool CanUseEntry(const PrefetchedSignedExchangeCache::Entry& entry) {
+  const std::unique_ptr<const network::ResourceResponseHead>& outer_response =
+      entry.outer_response();
+  // Use the prefetched entry within kPrefetchReuseMins minutes without
+  // validation.
+  if (outer_response->headers->GetCurrentAge(outer_response->request_time,
+                                             outer_response->response_time,
+                                             base::Time::Now()) <
+      base::TimeDelta::FromMinutes(net::HttpCache::kPrefetchReuseMins)) {
+    return true;
+  }
+  // We use the prefetched entry when we don't need the validation.
+  if (outer_response->headers->RequiresValidation(
+          outer_response->request_time, outer_response->response_time,
+          base::Time::Now()) != net::VALIDATION_NONE) {
+    // TODO(crbug.com/935267): Consider discarding this entry.
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 PrefetchedSignedExchangeCache::Entry::Entry() = default;
@@ -526,6 +569,9 @@ void PrefetchedSignedExchangeCache::Store(
   DCHECK(cached_exchange->inner_response());
   DCHECK(cached_exchange->completion_status());
   DCHECK(cached_exchange->blob_data_handle());
+
+  if (!CanStoreEntry(*cached_exchange))
+    return;
   const GURL outer_url = cached_exchange->outer_url();
   exchanges_[outer_url] = std::move(cached_exchange);
 }
@@ -536,9 +582,12 @@ PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
   const auto it = exchanges_.find(outer_url);
   if (it == exchanges_.end())
     return nullptr;
+  const std::unique_ptr<const Entry>& exchange = it->second;
+  if (!CanUseEntry(*exchange.get()))
+    return nullptr;
   return std::make_unique<PrefetchedNavigationLoaderInterceptor>(
-      it->second->Clone(),
-      GetInfoListForNavigation(outer_url, it->second->inner_url()));
+      exchange->Clone(),
+      GetInfoListForNavigation(outer_url, exchange->inner_url()));
 }
 
 const PrefetchedSignedExchangeCache::EntryMap&
@@ -572,6 +621,8 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
       // same origin.
       continue;
     }
+    if (!CanUseEntry(*exchange.get()))
+      continue;
     network::mojom::URLLoaderFactoryPtrInfo loader_factory_info;
     new SubresourceSignedExchangeURLLoaderFactory(
         mojo::MakeRequest(&loader_factory_info), exchange->Clone(),
