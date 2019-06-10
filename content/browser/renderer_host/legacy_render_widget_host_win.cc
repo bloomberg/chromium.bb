@@ -178,9 +178,13 @@ bool LegacyRenderWidgetHostHWND::Init() {
   if (!features::IsUsingWMPointerForTouch())
     RegisterTouchWindow(hwnd(), TWF_WANTPALM);
 
-  HRESULT hr = ::CreateStdAccessibleObject(hwnd(), OBJID_WINDOW,
-                                           IID_PPV_ARGS(&window_accessible_));
-  DCHECK(SUCCEEDED(hr));
+  HRESULT hr;
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    hr = ::CreateStdAccessibleObject(hwnd(), OBJID_WINDOW,
+                                     IID_PPV_ARGS(&window_accessible_));
+  } else {
+    hr = S_OK;
+  }
 
   ui::AXMode mode =
       BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
