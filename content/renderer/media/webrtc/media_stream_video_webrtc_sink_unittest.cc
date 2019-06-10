@@ -7,10 +7,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
-#include "content/renderer/media/stream/mock_media_stream_registry.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_registry.h"
 #include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 
 namespace content {
@@ -49,7 +49,7 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
   MockPeerConnectionDependencyFactory dependency_factory_;
 
  private:
-  MockMediaStreamRegistry registry_;
+  blink::MockMediaStreamRegistry registry_;
   // A ChildProcess is needed to fool the Tracks and Sources into believing they
   // are on the right threads. A ScopedTaskEnvironment must be instantiated
   // before ChildProcess to prevent it from leaking a ThreadPool.

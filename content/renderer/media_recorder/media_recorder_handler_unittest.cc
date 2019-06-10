@@ -12,7 +12,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/mock_media_stream_registry.h"
 #include "content/renderer/media_recorder/media_recorder_handler.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_bus.h"
@@ -22,6 +21,7 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler_client.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_registry.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 using ::testing::_;
@@ -141,7 +141,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
   // and Sources in |registry_| into believing they are on the right threads.
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const ChildProcess child_process_;
-  MockMediaStreamRegistry registry_;
+  blink::MockMediaStreamRegistry registry_;
 
   // The Class under test. Needs to be scoped_ptr to force its destruction.
   std::unique_ptr<MediaRecorderHandler> media_recorder_handler_;

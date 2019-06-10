@@ -1848,8 +1848,6 @@ test("content_unittests") {
     "../renderer/media/stream/media_stream_video_track_unittest.cc",
     "../renderer/media/stream/mock_constraint_factory.cc",
     "../renderer/media/stream/mock_constraint_factory.h",
-    "../renderer/media/stream/mock_media_stream_registry.cc",
-    "../renderer/media/stream/mock_media_stream_registry.h",
     "../renderer/media/stream/mock_media_stream_video_sink.cc",
     "../renderer/media/stream/mock_media_stream_video_sink.h",
     "../renderer/media/stream/processed_local_audio_source_unittest.cc",

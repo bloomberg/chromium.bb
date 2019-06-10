@@ -59,6 +59,7 @@ jumbo_source_set("test_support") {
   testonly = true
 
   sources = [
+    "mock_media_stream_registry.cc",
     "mock_media_stream_video_source.cc",
   ]
 
