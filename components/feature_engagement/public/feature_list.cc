@@ -36,6 +36,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDownloadInfoBarDownloadsAreFasterFeature,
     &kIPHHomePageButtonFeature,
     &kIPHHomepageTileFeature,
+    &kIPHIdentityDiscFeature,
     &kIPHKeyboardAccessoryAddressFillingFeature,
     &kIPHKeyboardAccessoryPasswordFillingFeature,
     &kIPHKeyboardAccessoryPaymentFillingFeature,

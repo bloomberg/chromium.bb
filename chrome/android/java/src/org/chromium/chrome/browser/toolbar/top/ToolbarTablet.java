@@ -589,6 +589,11 @@ public class ToolbarTablet extends ToolbarLayout
         mExperimentalButton.setVisibility(View.GONE);
     }
 
+    @Override
+    View getExperimentalButtonView() {
+        return mExperimentalButton;
+    }
+
     private void setToolbarButtonsVisible(boolean visible) {
         if (mToolbarButtonsVisible == visible) return;
 

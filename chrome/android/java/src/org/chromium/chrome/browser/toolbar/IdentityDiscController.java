@@ -10,12 +10,16 @@ import android.support.annotation.DimenRes;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -89,6 +93,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
             mIsIdentityDiscVisible = true;
             createProfileDataCache(accountName);
             showIdentityDisc(accountName);
+            maybeShowIPH();
         } else {
             mIsIdentityDiscVisible = false;
             mToolbarManager.disableExperimentalButton();
@@ -174,5 +179,18 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
             mAndroidSyncSettings.unregisterObserver(this);
             mAndroidSyncSettings = null;
         }
+    }
+
+    /**
+     * Shows a help bubble below Identity Disc if the In-Product Help conditions are met.
+     */
+    private void maybeShowIPH() {
+        Profile profile = Profile.getLastUsedProfile();
+        Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.IDENTITY_DISC_FEATURE)) return;
+
+        mToolbarManager.showIPHOnExperimentalButton(R.string.iph_identity_disc_text,
+                R.string.iph_identity_disc_accessibility_text,
+                () -> { tracker.dismissed(FeatureConstants.IDENTITY_DISC_FEATURE); });
     }
 }
