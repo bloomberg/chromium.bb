@@ -478,7 +478,16 @@ void AssistantInteractionController::OnSuggestionChipPressed(
   // If the suggestion contains a non-empty action url, we will handle the
   // suggestion chip pressed event by launching the action url in the browser.
   if (!suggestion->action_url.is_empty()) {
-    assistant_controller_->OpenUrl(suggestion->action_url);
+    // Note that we post a new task when opening the |action_url| associated
+    // with |sugggestion| as this will potentially cause Assistant UI to close
+    // and destroy |suggestion| in the process. Failure to post in this case
+    // would cause any subsequent observers of this suggestion chip event to
+    // receive a deleted pointer.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AssistantController::OpenUrl,
+                       assistant_controller_->GetWeakPtr(),
+                       suggestion->action_url, /*from_server=*/false));
     return;
   }
 
@@ -490,7 +499,7 @@ void AssistantInteractionController::OnSuggestionChipPressed(
   // user's preceding voice interaction.
   StartTextInteraction(suggestion->text, /*allow_tts=*/model_.response() &&
                                              model_.response()->has_tts(),
-                       /*query_source*/ AssistantQuerySource::kSuggestionChip);
+                       /*query_source=*/AssistantQuerySource::kSuggestionChip);
 }
 
 void AssistantInteractionController::OnSuggestionsResponse(
