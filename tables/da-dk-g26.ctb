@@ -32,6 +32,8 @@
 #+dots: 6
 #+direction: both
 
+#-has-nocross: yes
+
 # Display opcodes
 include da-dk-octobraille.dis
 
