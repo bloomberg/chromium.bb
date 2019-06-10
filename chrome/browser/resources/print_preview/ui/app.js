@@ -277,7 +277,7 @@ Polymer({
       this.$.sidebar.init(
           settings.isInAppKioskMode, settings.printerName,
           settings.serializedDefaultDestinationSelectionRulesStr,
-          settings.userAccounts || null);
+          settings.userAccounts || null, settings.syncAvailable);
       this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
 
       // This is only visible in the task manager.

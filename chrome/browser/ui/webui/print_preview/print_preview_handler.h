@@ -225,6 +225,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // a boolean indicating whether the user is adding an account.
   void HandleSignin(const base::ListValue* args);
 
+  // Called when the tab opened by HandleSignIn() is closed.
+  void OnSignInTabClosed();
+
 #if defined(OS_CHROMEOS)
   // Generates new token and sends back to UI.
   void HandleGetAccessToken(const base::ListValue* args);

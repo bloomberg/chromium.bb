@@ -177,10 +177,14 @@ Polymer({
    * @param {string} serializedDefaultDestinationRulesStr String with rules for
    *     selecting a default destination.
    * @param {?Array<string>} userAccounts The signed in user accounts.
+   * @param {boolean} syncAvailable Whether sync is available. Used to determine
+   *     whether to wait for user info updates from the handler, or to always
+   *     send requests to the Google Cloud Print server.
    */
   init: function(
-      defaultPrinter, serializedDefaultDestinationRulesStr, userAccounts) {
-    this.$.userManager.initUserAccounts(userAccounts);
+      defaultPrinter, serializedDefaultDestinationRulesStr, userAccounts,
+      syncAvailable) {
+    this.$.userManager.initUserAccounts(userAccounts, syncAvailable);
     this.destinationStore_.init(
         this.appKioskMode, defaultPrinter, serializedDefaultDestinationRulesStr,
         /** @type {!Array<print_preview.RecentDestination>} */

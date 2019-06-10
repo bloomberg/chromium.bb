@@ -111,13 +111,15 @@ Polymer({
    * @param {string} serializedDestinationSelectionRulesStr String with rules
    *     for selecting the default destination.
    * @param {?Array<string>} userAccounts The signed in user accounts.
+   * @param {boolean} syncAvailable
    */
   init: function(
       appKioskMode, defaultPrinter, serializedDestinationSelectionRulesStr,
-      userAccounts) {
+      userAccounts, syncAvailable) {
     this.isInAppKioskMode_ = appKioskMode;
     this.$.destinationSettings.init(
-        defaultPrinter, serializedDestinationSelectionRulesStr, userAccounts);
+        defaultPrinter, serializedDestinationSelectionRulesStr, userAccounts,
+        syncAvailable);
   },
 
   /**

@@ -32,11 +32,6 @@ cr.define('user_manager_test', function() {
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
       cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
-      // Set up a cloud printer for each account, so that search will work.
-      cloudPrintInterface.setPrinter(
-          print_preview_test_utils.getGoogleDriveDestination(account1));
-      cloudPrintInterface.setPrinter(
-          print_preview_test_utils.getGoogleDriveDestination(account2));
 
       userManager = document.createElement('print-preview-user-manager');
 
@@ -61,13 +56,19 @@ cr.define('user_manager_test', function() {
 
     // Checks that initializing and updating user accounts works as expected.
     test('update users', function() {
+      // Set up a cloud printer for each account.
+      cloudPrintInterface.setPrinter(
+          print_preview_test_utils.getGoogleDriveDestination(account1));
+      cloudPrintInterface.setPrinter(
+          print_preview_test_utils.getGoogleDriveDestination(account2));
+
       assertTrue(userManager.cloudPrintDisabled);
 
       userManager.setCloudPrintInterface(cloudPrintInterface);
       assertFalse(userManager.cloudPrintDisabled);
       assertEquals(undefined, userManager.activeUser);
 
-      userManager.initUserAccounts([]);
+      userManager.initUserAccounts([], true /* syncAvailable */);
       assertEquals('', userManager.activeUser);
       assertEquals(0, userManager.users.length);
       assertEquals(0, cloudPrintInterface.getCallCount('search'));
@@ -97,9 +98,61 @@ cr.define('user_manager_test', function() {
       assertEquals(4, cloudPrintInterface.getCallCount('search'));
     });
 
-    test('update active user', function() {
+    // Checks that initializing and updating user accounts works as expected
+    // when sync is unavailable.
+    test('update users without sync', function() {
+      assertTrue(userManager.cloudPrintDisabled);
+
       userManager.setCloudPrintInterface(cloudPrintInterface);
-      userManager.initUserAccounts([account1, account2]);
+      assertFalse(userManager.cloudPrintDisabled);
+      assertEquals(undefined, userManager.activeUser);
+
+      userManager.initUserAccounts([], false /* syncAvailable */);
+      return cloudPrintInterface.whenCalled('printer')
+          .then(() => {
+            assertEquals(undefined, userManager.activeUser);
+            assertEquals(0, userManager.users.length);
+            assertEquals(0, cloudPrintInterface.getCallCount('search'));
+            // Need to check for the Google Drive printer by calling
+            // cloudPrintInterface.printer(), since sync is not available.
+            assertEquals(1, cloudPrintInterface.getCallCount('printer'));
+
+            // Simulate signing into an account by setting a cloud printer for
+            // it and firing the 'check-for-account-update' listener.
+            // This should update the list of users and the active user and
+            // trigger a call to search.
+            cloudPrintInterface.setPrinter(
+                print_preview_test_utils.getGoogleDriveDestination(account1));
+            cr.webUIListenerCallback('check-for-account-update');
+            return cloudPrintInterface.whenCalled('search');
+          })
+          .then(() => {
+            assertEquals(account1, userManager.activeUser);
+            assertEquals(1, userManager.users.length);
+            assertEquals(1, cloudPrintInterface.getCallCount('search'));
+
+            // Simulate signing in to a second account.
+            cloudPrintInterface.setPrinter(
+                print_preview_test_utils.getGoogleDriveDestination(account2));
+            cr.webUIListenerCallback('check-for-account-update');
+            return cloudPrintInterface.whenCalled('search');
+          })
+          .then(() => {
+            assertEquals(account1, userManager.activeUser);
+            assertEquals(2, userManager.users.length);
+            assertEquals(2, cloudPrintInterface.getCallCount('search'));
+          });
+    });
+
+    test('update active user', function() {
+      // Set up a cloud printer for each account.
+      cloudPrintInterface.setPrinter(
+          print_preview_test_utils.getGoogleDriveDestination(account1));
+      cloudPrintInterface.setPrinter(
+          print_preview_test_utils.getGoogleDriveDestination(account2));
+      userManager.setCloudPrintInterface(cloudPrintInterface);
+      userManager.initUserAccounts(
+          [account1, account2], true /* syncAvailable */);
       assertFalse(userManager.cloudPrintDisabled);
       assertEquals(account1, userManager.activeUser);
       assertEquals(2, userManager.users.length);

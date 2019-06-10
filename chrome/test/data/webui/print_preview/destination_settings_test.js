@@ -85,7 +85,7 @@ cr.define('destination_settings_test', function() {
       destinationSettings.init(
           'FooDevice' /* printerName */,
           '' /* serializedDefaultDestinationSelectionRulesStr */,
-          [] /* userAccounts */);
+          [] /* userAccounts */, true /* syncAvailable */);
       assertTrue(dropdown.hidden);
 
       return test_util
@@ -169,7 +169,7 @@ cr.define('destination_settings_test', function() {
       destinationSettings.init(
           '' /* printerName */,
           '' /* serializedDefaultDestinationSelectionRulesStr */,
-          initialAccounts);
+          initialAccounts, true /* syncAvailable */);
       destinationSettings.state = print_preview.State.READY;
       destinationSettings.disabled = false;
     }

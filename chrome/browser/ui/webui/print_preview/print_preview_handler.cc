@@ -284,6 +284,10 @@ const char kIsHeaderFooterManaged[] = "isHeaderFooterManaged";
 const char kCloudPrintURL[] = "cloudPrintURL";
 // Name of a dictionary field holding the signed in user accounts.
 const char kUserAccounts[] = "userAccounts";
+// Name of a dictionary field indicating whether sync is available. If false,
+// Print Preview will always send a request to the Google Cloud Print server on
+// load, to check the user's sign in state.
+const char kSyncAvailable[] = "syncAvailable";
 
 // Get the print job settings dictionary from |json_str|.
 // Returns |base::Value()| on failure.
@@ -861,8 +865,19 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
   CHECK(args->GetBoolean(0, &add_account));
 
   chrome::ScopedTabbedBrowserDisplayer displayer(Profile::FromWebUI(web_ui()));
-  print_dialog_cloud::CreateCloudPrintSigninTab(displayer.browser(),
-                                                add_account);
+  print_dialog_cloud::CreateCloudPrintSigninTab(
+      displayer.browser(), add_account,
+      base::BindOnce(&PrintPreviewHandler::OnSignInTabClosed,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void PrintPreviewHandler::OnSignInTabClosed() {
+  if (identity_manager_) {
+    // Sign in state will be reported in OnAccountsInCookieJarUpdated, so no
+    // need to do anything here.
+    return;
+  }
+  FireWebUIListener("check-for-account-update");
 }
 
 #if defined(OS_CHROMEOS)
@@ -960,6 +975,9 @@ void PrintPreviewHandler::GetUserAccountList(base::Value* settings) {
     for (const gaia::ListedAccount& account : accounts) {
       account_list.GetList().emplace_back(account.email);
     }
+    settings->SetKey(kSyncAvailable, base::Value(true));
+  } else {
+    settings->SetKey(kSyncAvailable, base::Value(false));
   }
   settings->SetKey(kUserAccounts, std::move(account_list));
 }

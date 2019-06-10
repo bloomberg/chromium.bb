@@ -62,8 +62,11 @@ Polymer({
     this.initialized_ = false;
   },
 
-  /** @param {?Array<string>} userAccounts */
-  initUserAccounts: function(userAccounts) {
+  /**
+   * @param {?Array<string>} userAccounts
+   * @param {boolean} syncAvailable
+   */
+  initUserAccounts: function(userAccounts, syncAvailable) {
     assert(!this.initialized_);
     this.initialized_ = true;
 
@@ -74,9 +77,20 @@ Polymer({
 
     // If cloud print is enabled, listen for account changes.
     assert(!this.cloudPrintDisabled);
-    this.addWebUIListener(
-        'user-accounts-updated', this.updateUsers_.bind(this));
-    this.updateUsers_(userAccounts);
+    if (syncAvailable) {
+      this.addWebUIListener(
+          'user-accounts-updated', this.updateUsers_.bind(this));
+      this.updateUsers_(userAccounts);
+    } else {
+      // Request the Google Docs destination from the Google Cloud Print server
+      // directly. We have to do this in incognito mode in order to get the
+      // user's login state.
+      this.destinationStore.startLoadGoogleDrive();
+      this.addWebUIListener('check-for-account-update', () => {
+        this.destinationStore.startLoadCloudDestinations(
+            print_preview.DestinationOrigin.COOKIES);
+      });
+    }
   },
 
   /** @param {!cloudprint.CloudPrintInterface} cloudPrintInterface */

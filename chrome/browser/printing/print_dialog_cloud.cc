@@ -4,6 +4,7 @@
 
 #include "chrome/browser/printing/print_dialog_cloud.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -27,8 +28,10 @@ namespace {
 
 class SignInObserver : public content::WebContentsObserver {
  public:
-  explicit SignInObserver(content::WebContents* web_contents)
-      : WebContentsObserver(web_contents), weak_ptr_factory_(this) {}
+  SignInObserver(content::WebContents* web_contents, base::OnceClosure callback)
+      : WebContentsObserver(web_contents),
+        callback_(std::move(callback)),
+        weak_ptr_factory_(this) {}
 
  private:
   // Overridden from content::WebContentsObserver:
@@ -49,10 +52,12 @@ class SignInObserver : public content::WebContentsObserver {
   void WebContentsDestroyed() override { delete this; }
 
   void OnSignIn() {
+    std::move(callback_).Run();
     if (web_contents())
       web_contents()->Close();
   }
 
+  base::OnceClosure callback_;
   base::WeakPtrFactory<SignInObserver> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SignInObserver);
@@ -60,7 +65,9 @@ class SignInObserver : public content::WebContentsObserver {
 
 }  // namespace
 
-void CreateCloudPrintSigninTab(Browser* browser, bool add_account) {
+void CreateCloudPrintSigninTab(Browser* browser,
+                               bool add_account,
+                               base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(
           browser->profile())) {
@@ -79,7 +86,7 @@ void CreateCloudPrintSigninTab(Browser* browser, bool add_account) {
             content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
             ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
     // This observer will delete itself after destroying the WebContents.
-    new SignInObserver(web_contents);
+    new SignInObserver(web_contents, std::move(callback));
   }
 }
 
