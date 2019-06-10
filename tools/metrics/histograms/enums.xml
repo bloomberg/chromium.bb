@@ -10361,6 +10361,37 @@ Called by update_net_error_codes.py.-->
   <int value="1515864914" label="ZZCR (Early prod samples)"/>
 </enum>
 
+<enum name="Cr50FlashLogs">
+  <summary>
+    List of currently defined Cr50 flash log event types. The latest and
+    greatest set can be found in
+    https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/master/include/flash_log.h
+    (enum flash_event_type and enum nvmem_failure_type). Note that NVMEM errors
+    are logged as subevents of flash log event 5, we register them offset by
+    200.
+  </summary>
+  <int value="0" label="Start"/>
+  <int value="1" label="Corrupted Log"/>
+  <int value="2" label="I2C Error"/>
+  <int value="3" label="Log Overflow"/>
+  <int value="4" label="Log Lock"/>
+  <int value="6" label="TPM Wipe"/>
+  <int value="7" label="TRNG Stall"/>
+  <int value="200" label="Nvmem Malloc"/>
+  <int value="201" label="Nvmem Page Header Size Mismatch"/>
+  <int value="202" label="Nvmem Read Underrun"/>
+  <int value="203" label="Nvmem Corrupted Flash"/>
+  <int value="204" label="Nvmem Migration Failure"/>
+  <int value="205" label="Nvmem Legacy Erase Failure"/>
+  <int value="206" label="Nvmem Deleting Too Many Objects"/>
+  <int value="207" label="Nvmem Unexpected Last Obj"/>
+  <int value="208" label="Nvmem Missing Obj"/>
+  <int value="209" label="Nvmem Section Verification"/>
+  <int value="210" label="Nvmem Pre Erase Mismatch"/>
+  <int value="211" label="Nvmem Page List Oveflow"/>
+  <int value="212" label="Nvmem Cipher Error"/>
+</enum>
+
 <enum name="CrashExitCodes">
 <!-- These are abs() raw exit codes, so always positive. See MapCrashExitCodeForHistogram  function. See also the WindowsExitCode enum. -->
 
