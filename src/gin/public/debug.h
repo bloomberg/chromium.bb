@@ -6,6 +6,7 @@
 #define GIN_PUBLIC_DEBUG_H_
 
 #include <stddef.h>
+#include <set>
 
 #include "build/build_config.h"
 #include "gin/gin_export.h"
@@ -44,29 +45,29 @@ class GIN_EXPORT Debug {
    */
   static void SetCodeRangeDeletedCallback(CodeRangeDeletedCallback callback);
 
-  typedef void (__cdecl *DebugBreakCallback)();
+  /** Abstract interface representing an event listener for debug break
+    and resume events. */
+  class DebugSignalHandler {
+    public:
+        virtual void onDebugBreak() = 0;
+        virtual void onDebugResume() = 0;
+        virtual ~DebugSignalHandler() = default;
+  };
 
-  /* Gets the callback that should be invoked when JavaScript execution is
-   * paused at a debug breakpoint.
-   */
-  static DebugBreakCallback GetDebugBreakCallback();
+  /** A container of registered event listeners **/
+  typedef std::set<DebugSignalHandler*> DebugSignalHandlerRegistry;
 
-  /* Sets a callback that is invoked when JavaScript execution is paused at a
-   * debug breakpoint.
-   */
-  static void SetDebugBreakCallback(DebugBreakCallback callback);
+  /** indicate to registered listeners a debug breakpoint pause **/
+  static void SignalDebugBreak();
 
-  typedef void (__cdecl *DebugResumeCallback)();
+  /** indicate to registered listeners a debug breakpoint resume **/
+  static void SignalDebugResume();
 
-  /* Gets the callback that should be invoked when JavaScript execution is
-   * resumed after a debug breakpoint.
-   */
-  static DebugResumeCallback GetDebugResumeCallback();
+  /** Registers a implementation of DebugSignalHandler **/
+  static void RegisterDebugSignalHandler(DebugSignalHandler *signal);
 
-  /* Sets a callback that is invoked when JavaScript execution is resumed after
-   * a debug breakpoint.
-   */
-  static void SetDebugResumeCallback(DebugResumeCallback callback);
+  /** Unregisters an implementation of DebugSignalHandler **/
+  static void ClearDebugSignalHandler(DebugSignalHandler *signal);
 
 #endif
 };
