@@ -14,4 +14,7 @@ include_rules = [
 
   # ICU dependendencies must be separate from the rest of base.
   "-i18n",
+
+  # //base/util can use //base but not vice versa.
+  "-util",
 ]
