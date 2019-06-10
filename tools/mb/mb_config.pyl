@@ -855,7 +855,7 @@
     },
 
     'tryserver.webrtc': {
-      'win_chromium_compile': 'gpu_tests_release_trybot_x86_resource_whitelisting',
+      'win_chromium_compile': 'gpu_tests_release_trybot_resource_whitelisting',
       'mac_chromium_compile': 'gpu_tests_release_trybot',
       'linux_chromium_compile': 'release_trybot',
       'android_chromium_compile': 'android_release_trybot',
