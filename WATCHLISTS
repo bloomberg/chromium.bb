@@ -1455,6 +1455,10 @@
                   '|third_party/blink/renderer/modules/presentation/' \
                   '|third_party/blink/web_tests/(virtual/)?presentation/'
     },
+    'preview_features': {
+      'filepath': 'components/previews/core/previews_features' \
+                  '|components/previews/core/previews_experiments'
+    },
     'print_preview': {
       'filepath': 'chrome/browser/resources/print_preview/' \
                   '|chrome/browser/ui/webui/print_preview/'
@@ -2495,6 +2499,7 @@
     'prerender': ['gavinp+prer@chromium.org',
                   'tburkard+watch@chromium.org'],
     'presentation': ['mfoltz+watch@chromium.org'],
+    'preview_features': ['chrome-lite-pages+watch@google.com'],
     'print_preview': ['rbpotter@chromium.org'],
     'push_messaging': ['peter@chromium.org'],
     'reading_list': ['stkhapugin@chromium.org'],
