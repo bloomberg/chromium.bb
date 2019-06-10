@@ -18,9 +18,9 @@ declare_args() {
   llvm_force_head_revision = false
 
   # Compile with Xcode version of clang instead of hermetic version shipped
-  # with the build. Used on iOS to ship official builds (as they are built
-  # with the version of clang shipped with Xcode).
-  use_xcode_clang = is_ios && is_official_build
+  # with the build. Used to be used iOS for official builds, but is now off by
+  # default for all configurations.
+  use_xcode_clang = false
 
   # Used for binary size analysis.
   generate_linker_map = is_android && is_official_build
