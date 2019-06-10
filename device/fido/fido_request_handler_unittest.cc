@@ -245,6 +245,10 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
   void HandleResponse(FidoAuthenticator* authenticator,
                       CtapDeviceResponseCode status,
                       base::Optional<std::vector<uint8_t>> response) {
+    auto* device_authenticator =
+        static_cast<FidoDeviceAuthenticator*>(authenticator);
+    device_authenticator->SetTaskForTesting(nullptr);
+
     const base::Optional<FidoReturnCode> maybe_result =
         ConvertDeviceResponseCodeToFidoReturnCode(status);
     if (!maybe_result) {

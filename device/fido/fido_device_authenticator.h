@@ -112,6 +112,24 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
  private:
   void InitializeAuthenticatorDone(base::OnceClosure callback);
 
+  template <typename... Args>
+  void TaskClearProxy(base::OnceCallback<void(Args...)> callback, Args... args);
+  template <typename... Args>
+  void OperationClearProxy(base::OnceCallback<void(Args...)> callback,
+                           Args... args);
+  template <typename Task, typename Request, typename Response>
+  void RunTask(Request request,
+               base::OnceCallback<void(CtapDeviceResponseCode,
+                                       base::Optional<Response>)> callback);
+  template <typename Request, typename Response>
+  void RunOperation(Request request,
+                    base::OnceCallback<void(CtapDeviceResponseCode,
+                                            base::Optional<Response>)> callback,
+                    base::OnceCallback<base::Optional<Response>(
+                        const base::Optional<cbor::Value>&)> parser,
+                    bool (*string_fixup_predicate)(
+                        const std::vector<const cbor::Value*>&) = nullptr);
+
   struct EnumerateCredentialsState;
   void OnEnumerateRPsDone(EnumerateCredentialsState state,
                           CtapDeviceResponseCode status,

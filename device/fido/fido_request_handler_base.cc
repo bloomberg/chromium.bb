@@ -178,7 +178,9 @@ void FidoRequestHandlerBase::InitDiscoveriesWin(
 }
 #endif  // defined(OS_WIN)
 
-FidoRequestHandlerBase::~FidoRequestHandlerBase() = default;
+FidoRequestHandlerBase::~FidoRequestHandlerBase() {
+  CancelActiveAuthenticators();
+}
 
 void FidoRequestHandlerBase::StartAuthenticatorRequest(
     const std::string& authenticator_id) {

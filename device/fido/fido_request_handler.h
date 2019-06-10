@@ -46,10 +46,7 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
                                available_transports),
         completion_callback_(std::move(completion_callback)) {}
 
-  ~FidoRequestHandler() override {
-    if (!is_complete())
-      CancelActiveAuthenticators();
-  }
+  ~FidoRequestHandler() override = default;
 
   bool is_complete() const { return completion_callback_.is_null(); }
 

@@ -59,31 +59,19 @@ void FidoDeviceAuthenticator::InitializeAuthenticatorDone(
 
 void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
                                              MakeCredentialCallback callback) {
-  DCHECK(device_->SupportedProtocolIsInitialized())
-      << "InitializeAuthenticator() must be called first.";
-  task_ = std::make_unique<MakeCredentialTask>(
-      device_.get(), std::move(request), std::move(callback));
+  RunTask<MakeCredentialTask>(std::move(request), std::move(callback));
 }
 
 void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                            GetAssertionCallback callback) {
-  DCHECK(device_->SupportedProtocolIsInitialized())
-      << "InitializeAuthenticator() must be called first.";
-  task_ = std::make_unique<GetAssertionTask>(device_.get(), std::move(request),
-                                             std::move(callback));
+  RunTask<GetAssertionTask>(std::move(request), std::move(callback));
 }
 
 void FidoDeviceAuthenticator::GetNextAssertion(GetAssertionCallback callback) {
-  DCHECK(device_->SupportedProtocolIsInitialized())
-      << "InitializeAuthenticator() must be called first.";
-
-  operation_ =
-      std::make_unique<Ctap2DeviceOperation<CtapGetNextAssertionRequest,
-                                            AuthenticatorGetAssertionResponse>>(
-          device_.get(), CtapGetNextAssertionRequest(), std::move(callback),
-          base::BindOnce(&ReadCTAPGetAssertionResponse),
-          GetAssertionTask::StringFixupPredicate);
-  operation_->Start();
+  RunOperation<CtapGetNextAssertionRequest, AuthenticatorGetAssertionResponse>(
+      CtapGetNextAssertionRequest(), std::move(callback),
+      base::BindOnce(&ReadCTAPGetAssertionResponse),
+      GetAssertionTask::StringFixupPredicate);
 }
 
 void FidoDeviceAuthenticator::GetTouch(base::OnceCallback<void()> callback) {
@@ -110,90 +98,64 @@ void FidoDeviceAuthenticator::GetTouch(base::OnceCallback<void()> callback) {
 }
 
 void FidoDeviceAuthenticator::GetRetries(GetRetriesCallback callback) {
-  DCHECK(device_->SupportedProtocolIsInitialized())
-      << "InitializeAuthenticator() must be called first.";
   DCHECK(Options());
   DCHECK(Options()->client_pin_availability !=
          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
 
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<pin::RetriesRequest, pin::RetriesResponse>>(
-      device_.get(), pin::RetriesRequest(), std::move(callback),
-      base::BindOnce(&pin::RetriesResponse::Parse),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<pin::RetriesRequest, pin::RetriesResponse>(
+      pin::RetriesRequest(), std::move(callback),
+      base::BindOnce(&pin::RetriesResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::GetEphemeralKey(
     GetEphemeralKeyCallback callback) {
-  DCHECK(device_->SupportedProtocolIsInitialized())
-      << "InitializeAuthenticator() must be called first.";
   DCHECK(Options());
   DCHECK(Options()->client_pin_availability !=
          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
 
-  operation_ =
-      std::make_unique<Ctap2DeviceOperation<pin::KeyAgreementRequest,
-                                            pin::KeyAgreementResponse>>(
-          device_.get(), pin::KeyAgreementRequest(), std::move(callback),
-          base::BindOnce(&pin::KeyAgreementResponse::Parse),
-          /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<pin::KeyAgreementRequest, pin::KeyAgreementResponse>(
+      pin::KeyAgreementRequest(), std::move(callback),
+      base::BindOnce(&pin::KeyAgreementResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::GetPINToken(
     std::string pin,
     const pin::KeyAgreementResponse& peer_key,
     GetPINTokenCallback callback) {
-  DCHECK(device_->SupportedProtocolIsInitialized())
-      << "InitializeAuthenticator() must be called first.";
   DCHECK(Options());
   DCHECK(Options()->client_pin_availability !=
          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
 
   pin::TokenRequest request(pin, peer_key);
   std::array<uint8_t, 32> shared_key = request.shared_key();
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<pin::TokenRequest, pin::TokenResponse>>(
-      device_.get(), std::move(request), std::move(callback),
-      base::BindOnce(&pin::TokenResponse::Parse, std::move(shared_key)),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<pin::TokenRequest, pin::TokenResponse>(
+      std::move(request), std::move(callback),
+      base::BindOnce(&pin::TokenResponse::Parse, std::move(shared_key)));
 }
 
 void FidoDeviceAuthenticator::SetPIN(const std::string& pin,
                                      const pin::KeyAgreementResponse& peer_key,
                                      SetPINCallback callback) {
-  DCHECK(device_->SupportedProtocolIsInitialized())
-      << "InitializeAuthenticator() must be called first.";
   DCHECK(Options());
   DCHECK(Options()->client_pin_availability !=
          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
 
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<pin::SetRequest, pin::EmptyResponse>>(
-      device_.get(), pin::SetRequest(pin, peer_key), std::move(callback),
-      base::BindOnce(&pin::EmptyResponse::Parse),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<pin::SetRequest, pin::EmptyResponse>(
+      pin::SetRequest(pin, peer_key), std::move(callback),
+      base::BindOnce(&pin::EmptyResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::ChangePIN(const std::string& old_pin,
                                         const std::string& new_pin,
                                         pin::KeyAgreementResponse& peer_key,
                                         SetPINCallback callback) {
-  DCHECK(device_->SupportedProtocolIsInitialized())
-      << "InitializeAuthenticator() must be called first.";
   DCHECK(Options());
   DCHECK(Options()->client_pin_availability !=
          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
 
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<pin::ChangeRequest, pin::EmptyResponse>>(
-      device_.get(), pin::ChangeRequest(old_pin, new_pin, peer_key),
-      std::move(callback), base::BindOnce(&pin::EmptyResponse::Parse),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<pin::ChangeRequest, pin::EmptyResponse>(
+      pin::ChangeRequest(old_pin, new_pin, peer_key), std::move(callback),
+      base::BindOnce(&pin::EmptyResponse::Parse));
 }
 
 FidoAuthenticator::MakeCredentialPINDisposition
@@ -313,19 +275,13 @@ void FidoDeviceAuthenticator::GetCredentialsMetadata(
   DCHECK(Options()->supports_credential_management ||
          Options()->supports_credential_management_preview);
 
-  operation_ =
-      std::make_unique<Ctap2DeviceOperation<CredentialManagementRequest,
-                                            CredentialsMetadataResponse>>(
-          device_.get(),
-          CredentialManagementRequest::ForGetCredsMetadata(
-              Options()->supports_credential_management
-                  ? CredentialManagementRequest::kDefault
-                  : CredentialManagementRequest::kPreview,
-              pin_token),
-          std::move(callback),
-          base::BindOnce(&CredentialsMetadataResponse::Parse),
-          /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<CredentialManagementRequest, CredentialsMetadataResponse>(
+      CredentialManagementRequest::ForGetCredsMetadata(
+          Options()->supports_credential_management
+              ? CredentialManagementRequest::kDefault
+              : CredentialManagementRequest::kPreview,
+          pin_token),
+      std::move(callback), base::BindOnce(&CredentialsMetadataResponse::Parse));
 }
 
 struct FidoDeviceAuthenticator::EnumerateCredentialsState {
@@ -352,10 +308,7 @@ void FidoDeviceAuthenticator::EnumerateCredentials(
   EnumerateCredentialsState state;
   state.pin_token = fido_parsing_utils::Materialize(pin_token);
   state.callback = std::move(callback);
-
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<CredentialManagementRequest, EnumerateRPsResponse>>(
-      device_.get(),
+  RunOperation<CredentialManagementRequest, EnumerateRPsResponse>(
       CredentialManagementRequest::ForEnumerateRPsBegin(
           Options()->supports_credential_management
               ? CredentialManagementRequest::kDefault
@@ -366,6 +319,72 @@ void FidoDeviceAuthenticator::EnumerateCredentials(
       base::BindOnce(&EnumerateRPsResponse::Parse, /*expect_rp_count=*/true),
       // TODO(martinkr): implement utf-8 fixup and add a test for it.
       /*string_fixup_predicate=*/nullptr);
+}
+
+// TaskClearProxy interposes |callback| and resets |task_| before it runs.
+template <typename... Args>
+void FidoDeviceAuthenticator::TaskClearProxy(
+    base::OnceCallback<void(Args...)> callback,
+    Args... args) {
+  DCHECK(task_);
+  DCHECK(!operation_);
+  task_.reset();
+  std::move(callback).Run(std::forward<Args>(args)...);
+}
+
+// OperationClearProxy interposes |callback| and resets |operation_| before it
+// runs.
+template <typename... Args>
+void FidoDeviceAuthenticator::OperationClearProxy(
+    base::OnceCallback<void(Args...)> callback,
+    Args... args) {
+  DCHECK(operation_);
+  DCHECK(!task_);
+  operation_.reset();
+  std::move(callback).Run(std::forward<Args>(args)...);
+}
+
+// RunTask starts a |FidoTask| and ensures that |task_| is reset when the given
+// callback is called.
+template <typename Task, typename Request, typename Response>
+void FidoDeviceAuthenticator::RunTask(
+    Request request,
+    base::OnceCallback<void(CtapDeviceResponseCode, base::Optional<Response>)>
+        callback) {
+  DCHECK(!task_);
+  DCHECK(!operation_);
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
+
+  task_ = std::make_unique<Task>(
+      device_.get(), std::move(request),
+      base::BindOnce(
+          &FidoDeviceAuthenticator::TaskClearProxy<CtapDeviceResponseCode,
+                                                   base::Optional<Response>>,
+          weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+// RunOperation starts a |Ctap2DeviceOperation| and ensures that |operation_| is
+// reset when the given completion callback is called.
+template <typename Request, typename Response>
+void FidoDeviceAuthenticator::RunOperation(
+    Request request,
+    base::OnceCallback<void(CtapDeviceResponseCode, base::Optional<Response>)>
+        callback,
+    base::OnceCallback<
+        base::Optional<Response>(const base::Optional<cbor::Value>&)> parser,
+    bool (*string_fixup_predicate)(const std::vector<const cbor::Value*>&)) {
+  DCHECK(!task_);
+  DCHECK(!operation_);
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
+
+  operation_ = std::make_unique<Ctap2DeviceOperation<Request, Response>>(
+      device_.get(), std::move(request),
+      base::BindOnce(&FidoDeviceAuthenticator::OperationClearProxy<
+                         CtapDeviceResponseCode, base::Optional<Response>>,
+                     weak_factory_.GetWeakPtr(), std::move(callback)),
+      std::move(parser), string_fixup_predicate);
   operation_->Start();
 }
 
@@ -396,17 +415,14 @@ void FidoDeviceAuthenticator::OnEnumerateRPsDone(
           ? CredentialManagementRequest::kDefault
           : CredentialManagementRequest::kPreview,
       state.pin_token, std::move(*response->rp_id_hash));
-  operation_ =
-      std::make_unique<Ctap2DeviceOperation<CredentialManagementRequest,
-                                            EnumerateCredentialsResponse>>(
-          device_.get(), std::move(request),
-          base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateCredentialsDone,
-                         weak_factory_.GetWeakPtr(), std::move(state)),
-          base::BindOnce(&EnumerateCredentialsResponse::Parse,
-                         /*expect_credential_count=*/true),
-          // TODO(martinkr): implement utf-8 fixup and add a test for it.
-          /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<CredentialManagementRequest, EnumerateCredentialsResponse>(
+      std::move(request),
+      base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateCredentialsDone,
+                     weak_factory_.GetWeakPtr(), std::move(state)),
+      base::BindOnce(&EnumerateCredentialsResponse::Parse,
+                     /*expect_credential_count=*/true),
+      // TODO(martinkr): implement utf-8 fixup and add a test for it.
+      /*string_fixup_predicate=*/nullptr);
 }
 
 void FidoDeviceAuthenticator::OnEnumerateCredentialsDone(
@@ -425,40 +441,32 @@ void FidoDeviceAuthenticator::OnEnumerateCredentialsDone(
 
   if (state.responses.back().credentials.size() <
       state.current_rp_credential_count) {
-    operation_ =
-        std::make_unique<Ctap2DeviceOperation<CredentialManagementRequest,
-                                              EnumerateCredentialsResponse>>(
-            device_.get(),
-            CredentialManagementRequest::ForEnumerateCredentialsGetNext(
-                Options()->supports_credential_management
-                    ? CredentialManagementRequest::kDefault
-                    : CredentialManagementRequest::kPreview),
-            base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateCredentialsDone,
-                           weak_factory_.GetWeakPtr(), std::move(state)),
-            base::BindOnce(&EnumerateCredentialsResponse::Parse,
-                           /*expect_credential_count=*/false),
-            // TODO(martinkr): implement utf-8 fixup and add a test for it.
-            /*string_fixup_predicate=*/nullptr);
-    operation_->Start();
+    RunOperation<CredentialManagementRequest, EnumerateCredentialsResponse>(
+        CredentialManagementRequest::ForEnumerateCredentialsGetNext(
+            Options()->supports_credential_management
+                ? CredentialManagementRequest::kDefault
+                : CredentialManagementRequest::kPreview),
+        base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateCredentialsDone,
+                       weak_factory_.GetWeakPtr(), std::move(state)),
+        base::BindOnce(&EnumerateCredentialsResponse::Parse,
+                       /*expect_credential_count=*/false),
+        // TODO(martinkr): implement utf-8 fixup and add a test for it.
+        /*string_fixup_predicate=*/nullptr);
     return;
   }
 
   if (state.responses.size() < state.rp_count) {
-    operation_ =
-        std::make_unique<Ctap2DeviceOperation<CredentialManagementRequest,
-                                              EnumerateRPsResponse>>(
-            device_.get(),
-            CredentialManagementRequest::ForEnumerateRPsGetNext(
-                Options()->supports_credential_management
-                    ? CredentialManagementRequest::kDefault
-                    : CredentialManagementRequest::kPreview),
-            base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateRPsDone,
-                           weak_factory_.GetWeakPtr(), std::move(state)),
-            base::BindOnce(&EnumerateRPsResponse::Parse,
-                           /*expect_rp_count=*/false),
-            // TODO(martinkr): implement utf-8 fixup and add a test for it.
-            /*string_fixup_predicate=*/nullptr);
-    operation_->Start();
+    RunOperation<CredentialManagementRequest, EnumerateRPsResponse>(
+        CredentialManagementRequest::ForEnumerateRPsGetNext(
+            Options()->supports_credential_management
+                ? CredentialManagementRequest::kDefault
+                : CredentialManagementRequest::kPreview),
+        base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateRPsDone,
+                       weak_factory_.GetWeakPtr(), std::move(state)),
+        base::BindOnce(&EnumerateRPsResponse::Parse,
+                       /*expect_rp_count=*/false),
+        // TODO(martinkr): implement utf-8 fixup and add a test for it.
+        /*string_fixup_predicate=*/nullptr);
     return;
   }
 
@@ -474,18 +482,14 @@ void FidoDeviceAuthenticator::DeleteCredential(
   DCHECK(Options()->supports_credential_management ||
          Options()->supports_credential_management_preview);
 
-  operation_ =
-      std::make_unique<Ctap2DeviceOperation<CredentialManagementRequest,
-                                            DeleteCredentialResponse>>(
-          device_.get(),
-          CredentialManagementRequest::ForDeleteCredential(
-              Options()->supports_credential_management
-                  ? CredentialManagementRequest::kDefault
-                  : CredentialManagementRequest::kPreview,
-              pin_token, fido_parsing_utils::Materialize(credential_id)),
-          std::move(callback), base::BindOnce(&DeleteCredentialResponse::Parse),
-          /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<CredentialManagementRequest, DeleteCredentialResponse>(
+      CredentialManagementRequest::ForDeleteCredential(
+          Options()->supports_credential_management
+              ? CredentialManagementRequest::kDefault
+              : CredentialManagementRequest::kPreview,
+          pin_token, fido_parsing_utils::Materialize(credential_id)),
+      std::move(callback), base::BindOnce(&DeleteCredentialResponse::Parse),
+      /*string_fixup_predicate=*/nullptr);
 }
 
 void FidoDeviceAuthenticator::GetModality(BioEnrollmentCallback callback) {
@@ -493,12 +497,9 @@ void FidoDeviceAuthenticator::GetModality(BioEnrollmentCallback callback) {
       Options()->bio_enrollment_availability_preview !=
       AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
 
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
-      device_.get(), BioEnrollmentRequest::ForGetModality(),
-      std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
+      BioEnrollmentRequest::ForGetModality(), std::move(callback),
+      base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::GetSensorInfo(BioEnrollmentCallback callback) {
@@ -506,12 +507,9 @@ void FidoDeviceAuthenticator::GetSensorInfo(BioEnrollmentCallback callback) {
       Options()->bio_enrollment_availability_preview !=
       AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
 
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
-      device_.get(), BioEnrollmentRequest::ForGetSensorInfo(),
-      std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
+      BioEnrollmentRequest::ForGetSensorInfo(), std::move(callback),
+      base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::BioEnrollFingerprint(
@@ -521,15 +519,12 @@ void FidoDeviceAuthenticator::BioEnrollFingerprint(
       Options()->bio_enrollment_availability_preview !=
       AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
 
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
-      device_.get(), BioEnrollmentRequest::ForEnrollBegin(token),
+  RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
+      BioEnrollmentRequest::ForEnrollBegin(token),
       base::BindOnce(&FidoDeviceAuthenticator::OnBioEnroll,
                      weak_factory_.GetWeakPtr(), std::move(token),
                      std::move(callback)),
-      base::BindOnce(&BioEnrollmentResponse::Parse),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+      base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::OnBioEnroll(
@@ -546,16 +541,12 @@ void FidoDeviceAuthenticator::OnBioEnroll(
     template_id_ = std::move(bio->template_id);
   }
 
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
-      device_.get(),
+  RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
       BioEnrollmentRequest::ForEnrollNextSample(token, *template_id_),
       base::BindOnce(&FidoDeviceAuthenticator::OnBioEnroll,
                      weak_factory_.GetWeakPtr(), std::move(token),
                      std::move(callback)),
-      base::BindOnce(&BioEnrollmentResponse::Parse),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+      base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::BioEnrollCancel(BioEnrollmentCallback callback) {
@@ -563,24 +554,18 @@ void FidoDeviceAuthenticator::BioEnrollCancel(BioEnrollmentCallback callback) {
       Options()->bio_enrollment_availability_preview !=
       AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
 
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
-      device_.get(), BioEnrollmentRequest::ForCancel(), std::move(callback),
-      base::BindOnce(&BioEnrollmentResponse::Parse),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
+      BioEnrollmentRequest::ForCancel(), std::move(callback),
+      base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::Reset(ResetCallback callback) {
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";
 
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<pin::ResetRequest, pin::ResetResponse>>(
-      device_.get(), pin::ResetRequest(), std::move(callback),
-      base::BindOnce(&pin::ResetResponse::Parse),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<pin::ResetRequest, pin::ResetResponse>(
+      pin::ResetRequest(), std::move(callback),
+      base::BindOnce(&pin::ResetResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::Cancel() {

@@ -373,7 +373,15 @@ MATCHER(IsResidentKeyRequest, "") {
 }
 
 ACTION_P(Reply, reply) {
-  std::move(arg1).Run(std::vector<uint8_t>(reply.begin(), reply.end()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::OnceCallback<void(base::Optional<std::vector<uint8_t>>)>
+                 callback,
+             std::vector<uint8_t> reply) {
+            std::move(callback).Run(std::move(reply));
+          },
+          std::move(arg1), std::vector<uint8_t>(reply.begin(), reply.end())));
 }
 
 TEST_F(FidoMakeCredentialHandlerTest, ResidentKeyCancelOtherAuthenticator) {
