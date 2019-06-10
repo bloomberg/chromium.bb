@@ -18,122 +18,147 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow DIV id='content'",
+          "object": "LayoutBlockFlow DIV id='content'",
           "rect": [138, 128, 654, 100],
           "reason": "style change"
         },
         {
-          "object": "NGPhysicalTextFragment 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
           "rect": [138, 128, 651, 99],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
+          "object": "InlineTextBox 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
           "rect": [138, 128, 651, 99],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat, tellus'",
+          "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat, tellus'",
           "rect": [138, 128, 651, 99],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
+          "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
           "rect": [138, 128, 651, 99],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta elit.'",
+          "object": "InlineTextBox 'vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta elit.'",
           "rect": [138, 128, 651, 99],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutNGBlockFlow DIV id='content'",
+          "object": "LayoutBlockFlow DIV id='content'",
           "rect": [148, 128, 644, 100],
           "reason": "style change"
         },
         {
-          "object": "NGPhysicalTextFragment 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
           "rect": [148, 128, 640, 99],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
           "rect": [148, 128, 640, 99],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
+          "object": "InlineTextBox 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
           "rect": [148, 128, 640, 99],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
+          "object": "InlineTextBox 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
           "rect": [148, 128, 640, 99],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
+          "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
           "rect": [148, 128, 640, 99],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutNGBlockFlow DIV id='content'",
+          "object": "InlineTextBox 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
+          "rect": [148, 128, 640, 99],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
+          "rect": [148, 128, 640, 99],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
+          "rect": [148, 128, 640, 99],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
+          "rect": [148, 128, 640, 99],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
+          "rect": [148, 128, 640, 99],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
           "rect": [400, 128, 392, 160],
           "reason": "style change"
         },
         {
-          "object": "LayoutNGBlockFlow DIV id='left'",
+          "object": "LayoutBlockFlow DIV id='left'",
           "rect": [8, 228, 392, 60],
           "reason": "incremental"
         },
         {
-          "object": "NGPhysicalTextFragment 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla'",
-          "rect": [400, 128, 389, 159],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
+          "object": "InlineTextBox 'Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque'",
           "rect": [400, 128, 389, 159],
           "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'condimentum leo neque sed nulla. Nunc quis porta elit.'",
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean'",
           "rect": [400, 128, 389, 159],
           "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [400, 128, 389, 159],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
-          "rect": [400, 128, 389, 159],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
-          "rect": [400, 128, 389, 159],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'tellus vel varius vestibulum, purus quam mollis sapien, in'",
+          "object": "InlineTextBox 'Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
           "rect": [400, 128, 389, 159],
           "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis'",
+          "object": "InlineTextBox 'Sed congue magna vitae dolor feugiat vehicula. Sed volutpat,'",
           "rect": [400, 128, 389, 159],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutNGBlockFlow DIV id='left'",
+          "object": "InlineTextBox 'condimentum leo neque sed nulla. Nunc quis porta elit.'",
+          "rect": [400, 128, 389, 159],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'laoreet dolor id urna eleifend aliquet. Nulla vel dolor ipsum.'",
+          "rect": [400, 128, 389, 159],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'penatibus et magnis dis parturient montes, nascetur ridiculus mus.'",
+          "rect": [400, 128, 389, 159],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'tellus vel varius vestibulum, purus quam mollis sapien, in'",
+          "rect": [400, 128, 389, 159],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='left'",
           "rect": [148, 128, 252, 160],
           "reason": "incremental"
         },
         {
-          "object": "LayoutNGBlockFlow DIV id='left'",
+          "object": "LayoutBlockFlow DIV id='left'",
           "rect": [8, 128, 140, 100],
           "reason": "geometry"
         }

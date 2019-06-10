@@ -18,9 +18,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'PASS'",
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [22, 50, 226, 167],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
           "rect": [23, 51, 72, 110],
-          "reason": "full"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'FAIL'",
+          "rect": [23, 51, 69, 109],
+          "reason": "disappeared"
         }
       ]
     }

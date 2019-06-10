@@ -18,13 +18,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'Text'",
-          "rect": [8, 8, 29, 19],
+          "object": "InlineFlowBox",
+          "rect": [8, 8, 29, 24],
           "reason": "style change"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutInline SPAN id='target'",
-          "rect": [8, 8, 28, 24],
+          "object": "InlineTextBox 'Text'",
+          "rect": [8, 8, 29, 19],
           "reason": "style change"
         }
       ]

@@ -18,24 +18,44 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'Bug 36461 - No vertical scrollbar after the CSS class change'",
+          "object": "InlineTextBox 'Bug 36461 - No vertical scrollbar after the CSS class change'",
           "rect": [118, 52, 370, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'You should see both vertical and horizontal scrollbars.'",
+          "object": "InlineTextBox 'Bug 36461 - No vertical scrollbar after the CSS class change'",
+          "rect": [118, 52, 370, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'You should see both vertical and horizontal scrollbars.'",
           "rect": [8, 16, 323, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'This is the test for '",
+          "object": "InlineTextBox 'You should see both vertical and horizontal scrollbars.'",
+          "rect": [8, 16, 323, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'This is the test for '",
           "rect": [8, 52, 110, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment '.'",
+          "object": "InlineTextBox 'This is the test for '",
+          "rect": [8, 52, 110, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox '.'",
           "rect": [488, 52, 4, 19],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '.'",
+          "rect": [488, 52, 4, 19],
+          "reason": "disappeared"
         }
       ]
     }

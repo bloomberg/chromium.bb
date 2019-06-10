@@ -22,21 +22,26 @@
       "drawsContent": false
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='foo'",
+      "name": "LayoutBlockFlow DIV id='foo'",
       "bounds": [200, 1000],
       "contentsOpaque": true,
       "backgroundColor": "#D3D3D3",
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV)",
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
       "position": [8, 0],
-      "bounds": [300, 655],
+      "bounds": [300, 654],
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'test1'",
+          "object": "InlineTextBox 'test1'",
           "rect": [8, 508, 29, 19],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'test1'",
+          "rect": [8, 508, 29, 19],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutView #document",

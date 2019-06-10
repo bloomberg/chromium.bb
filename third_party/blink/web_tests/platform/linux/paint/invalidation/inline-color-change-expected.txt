@@ -18,12 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutInline SPAN id='target'",
+          "object": "InlineFlowBox",
           "rect": [8, 72, 38, 19],
           "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'PASS'",
+          "object": "InlineTextBox 'PASS'",
           "rect": [8, 72, 38, 19],
           "reason": "style change"
         }

@@ -18,29 +18,34 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'quote 2'",
+          "object": "InlineTextBox 'quote 2'",
           "rect": [17, 28, 46, 19],
-          "reason": "style change"
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'quote 2'",
+          "object": "InlineTextBox 'quote 2'",
           "rect": [15, 28, 46, 19],
-          "reason": "style change"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment '}'",
+          "object": "InlineTextBox '\u003E'",
           "rect": [63, 28, 9, 19],
-          "reason": "style change"
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment '{'",
+          "object": "InlineTextBox '\u003C'",
           "rect": [8, 28, 9, 19],
-          "reason": "style change"
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment '}'",
+          "object": "InlineTextBox '}'",
           "rect": [61, 28, 8, 19],
-          "reason": "style change"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '{'",
+          "rect": [8, 28, 7, 19],
+          "reason": "appeared"
         }
       ]
     }

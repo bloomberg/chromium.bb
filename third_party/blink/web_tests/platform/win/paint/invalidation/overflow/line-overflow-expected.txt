@@ -18,54 +18,84 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment ' eleifend lacus, at'",
+          "object": "InlineTextBox ' eleifend'",
           "rect": [8, 122, 196, 79],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'Integer sollicitudin nisi ut urna'",
+          "object": "InlineTextBox 'lacus, at sagittis eros leo pulvinar'",
           "rect": [8, 122, 196, 79],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'blandit convallis.'",
+          "object": "InlineTextBox 'urna blandit convallis.'",
           "rect": [8, 122, 196, 79],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'sagittis eros leo pulvinar velit.'",
+          "object": "InlineTextBox 'velit. Integer sollicitudin nisi ut'",
           "rect": [8, 122, 196, 79],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'Cras faucibus. Nunc adipiscing,'",
+          "object": "InlineTextBox 'Cras faucibus. Nunc adipiscing,'",
           "rect": [8, 82, 190, 59],
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment 'augue '",
+          "object": "InlineTextBox 'augue '",
           "rect": [8, 82, 190, 59],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'enim in scelerisque convallis,'",
+          "object": "InlineTextBox 'augue '",
           "rect": [8, 82, 190, 59],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutInline SPAN id='t'",
+          "object": "InlineTextBox 'enim in scelerisque convallis,'",
+          "rect": [8, 82, 190, 59],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'enim in scelerisque convallis,'",
+          "rect": [8, 82, 190, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox ' eleifend lacus, at'",
+          "rect": [8, 122, 176, 79],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'Integer sollicitudin nisi ut urna'",
+          "rect": [8, 122, 176, 79],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'blandit convallis.'",
+          "rect": [8, 122, 176, 79],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'sagittis eros leo pulvinar velit.'",
+          "rect": [8, 122, 176, 79],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineFlowBox",
           "rect": [47, 92, 33, 49],
           "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'purus'",
+          "object": "InlineTextBox 'purus'",
           "rect": [77, 122, 33, 19],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'purus'",
+          "object": "InlineTextBox 'purus'",
           "rect": [47, 122, 33, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         }
       ]
     }

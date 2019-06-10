@@ -18,9 +18,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'Passed'",
+          "object": "InlineTextBox 'Passed'",
           "rect": [8, 136, 43, 17],
-          "reason": "full"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'Failed'",
+          "rect": [8, 136, 37, 17],
+          "reason": "disappeared"
         }
       ]
     }

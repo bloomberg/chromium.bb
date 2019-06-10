@@ -18,24 +18,24 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'Hello'",
+          "object": "InlineTextBox 'Hello'",
           "rect": [8, 184, 32, 19],
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment 'Hello'",
+          "object": "InlineTextBox 'Hello'",
           "rect": [8, 156, 32, 19],
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment '\u00A0'",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [8, 150, 4, 19],
-          "reason": "style change"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment '\u00A0'",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [8, 136, 4, 19],
-          "reason": "style change"
+          "reason": "disappeared"
         }
       ]
     }

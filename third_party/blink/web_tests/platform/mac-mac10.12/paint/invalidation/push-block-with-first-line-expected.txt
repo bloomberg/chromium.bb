@@ -18,23 +18,23 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalLineBoxFragment",
+          "object": "RootInlineBox",
           "rect": [8, 68, 784, 20],
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalLineBoxFragment",
+          "object": "RootInlineBox",
           "rect": [8, 8, 784, 20],
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment 'JOCULAR'",
-          "rect": [8, 68, 140, 20],
+          "object": "InlineTextBox 'JOCULAR'",
+          "rect": [8, 67, 140, 22],
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment 'JOCULAR'",
-          "rect": [8, 8, 140, 20],
+          "object": "InlineTextBox 'JOCULAR'",
+          "rect": [8, 7, 140, 22],
           "reason": "geometry"
         }
       ]

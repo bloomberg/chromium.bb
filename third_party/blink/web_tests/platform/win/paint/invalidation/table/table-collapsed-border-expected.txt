@@ -68,49 +68,79 @@
           "reason": "style change"
         },
         {
-          "object": "NGPhysicalTextFragment 'ipsum dolor'",
+          "object": "InlineTextBox 'ipsum dolor'",
           "rect": [23, 317, 71, 19],
           "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'ipsum dolor'",
+          "object": "InlineTextBox 'ipsum dolor'",
           "rect": [23, 133, 71, 19],
           "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'sit amet'",
+          "object": "InlineTextBox 'sit amet'",
           "rect": [23, 339, 46, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'sit amet'",
+          "object": "InlineTextBox 'sit amet'",
+          "rect": [23, 339, 46, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'sit amet'",
           "rect": [23, 155, 46, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'Lorem'",
+          "object": "InlineTextBox 'sit amet'",
+          "rect": [23, 155, 46, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'Lorem'",
           "rect": [23, 295, 40, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'Lorem'",
+          "object": "InlineTextBox 'Lorem'",
+          "rect": [23, 295, 40, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'Lorem'",
           "rect": [23, 111, 40, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'dolor'",
+          "object": "InlineTextBox 'Lorem'",
+          "rect": [23, 111, 40, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'dolor'",
           "rect": [23, 225, 32, 19],
           "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment '\u00A0'",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [17, 225, 4, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalTextFragment '\u00A0'",
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [17, 225, 4, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
           "rect": [17, 133, 4, 19],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [17, 133, 4, 19],
+          "reason": "disappeared"
         }
       ]
     }

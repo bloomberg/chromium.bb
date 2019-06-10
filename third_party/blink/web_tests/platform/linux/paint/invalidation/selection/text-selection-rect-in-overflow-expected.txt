@@ -18,8 +18,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'Should have green background'",
-          "rect": [8, 8, 197, 20],
+          "object": "InlineTextBox 'Should have green background'",
+          "rect": [8, 8, 197, 19],
           "reason": "geometry"
         }
       ]

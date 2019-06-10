@@ -18,8 +18,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'Should have blue, not gray, highlight'",
-          "rect": [18, 18, 215, 20],
+          "object": "InlineTextBox 'Should have blue, not gray, highlight'",
+          "rect": [18, 18, 215, 19],
           "reason": "selection"
         }
       ]

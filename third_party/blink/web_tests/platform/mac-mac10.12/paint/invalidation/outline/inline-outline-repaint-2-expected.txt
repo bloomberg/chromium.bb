@@ -18,13 +18,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutInline SPAN",
+          "object": "LayoutInline SPAN",
           "rect": [210, 0, 50, 15],
           "reason": "outline"
         },
         {
-          "object": "NGPhysicalTextFragment 'Test'",
-          "rect": [215, 0, 40, 10],
+          "object": "InlineTextBox 'Test'",
+          "rect": [215, 0, 40, 11],
           "reason": "style change"
         }
       ]

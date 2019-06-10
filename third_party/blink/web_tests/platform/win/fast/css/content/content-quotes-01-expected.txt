@@ -10,4 +10,4 @@ WWaWWbWWWWWWWW	1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 
 ========Marker3========
 
-PASSED
+FAILED: testWidth=195px; expected 194px

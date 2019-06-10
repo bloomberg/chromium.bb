@@ -18,13 +18,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'Second cell'",
-          "rect": [11, 35, 70, 20],
-          "reason": "geometry"
+          "object": "InlineTextBox 'Second cell'",
+          "rect": [11, 35, 70, 19],
+          "reason": "selection"
         },
         {
-          "object": "NGPhysicalTextFragment 'First cell'",
-          "rect": [11, 11, 55, 20],
+          "object": "InlineTextBox 'First cell'",
+          "rect": [11, 11, 55, 19],
           "reason": "geometry"
         }
       ]

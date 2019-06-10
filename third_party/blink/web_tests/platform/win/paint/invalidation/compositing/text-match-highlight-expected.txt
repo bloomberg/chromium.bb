@@ -33,27 +33,27 @@
           "reason": "DocumentMarker change"
         },
         {
-          "object": "NGPhysicalTextFragment 'findme'",
+          "object": "InlineTextBox 'findme'",
           "rect": [259, 40, 40, 19],
           "reason": "DocumentMarker change"
         },
         {
-          "object": "NGPhysicalTextFragment 'findme'",
+          "object": "InlineTextBox 'findme'",
           "rect": [244, 60, 40, 19],
           "reason": "DocumentMarker change"
         },
         {
-          "object": "NGPhysicalTextFragment 'findme'",
+          "object": "InlineTextBox 'findme'",
           "rect": [204, 60, 40, 19],
           "reason": "DocumentMarker change"
         },
         {
-          "object": "NGPhysicalTextFragment 'findme'",
+          "object": "InlineTextBox 'findme'",
           "rect": [83, 60, 40, 19],
           "reason": "DocumentMarker change"
         },
         {
-          "object": "NGPhysicalTextFragment 'findme'",
+          "object": "InlineTextBox 'findme'",
           "rect": [47, 80, 40, 19],
           "reason": "DocumentMarker change"
         }

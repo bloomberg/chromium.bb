@@ -18,14 +18,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='im'",
-          "rect": [61, 131, 50, 100],
-          "reason": "incremental"
+          "object": "LayoutBlockFlow DIV id='im'",
+          "rect": [11, 131, 100, 100],
+          "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment '\u00A0'",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [11, 131, 4, 19],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [11, 131, 4, 19],
+          "reason": "disappeared"
         }
       ]
     }
