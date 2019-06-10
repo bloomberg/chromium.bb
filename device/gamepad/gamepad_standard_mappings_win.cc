@@ -16,6 +16,16 @@ namespace device {
 
 namespace {
 
+// Older versions of the Stadia Controller firmware use an alternate mapping
+// function.
+const uint16_t kStadiaControllerOldFirmwareVersion = 0x0001;
+
+enum StadiaGamepadButtons {
+  STADIA_GAMEPAD_BUTTON_EXTRA = BUTTON_INDEX_COUNT,
+  STADIA_GAMEPAD_BUTTON_EXTRA2,
+  STADIA_GAMEPAD_BUTTON_COUNT
+};
+
 void MapperLogitechDInput(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[1];
@@ -265,12 +275,7 @@ void MapperMogaPro(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperStadiaController(const Gamepad& input, Gamepad* mapped) {
-  enum StadiaGamepadButtons {
-    STADIA_GAMEPAD_BUTTON_EXTRA = BUTTON_INDEX_COUNT,
-    STADIA_GAMEPAD_BUTTON_EXTRA2,
-    STADIA_GAMEPAD_BUTTON_COUNT
-  };
+void MapperStadiaControllerOldFirmware(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
   mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
@@ -285,6 +290,30 @@ void MapperStadiaController(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
   mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
   mapped->buttons[BUTTON_INDEX_META] = input.buttons[11];
+  mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA] = input.buttons[16];
+  mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA2] = input.buttons[17];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
+  DpadFromAxis(mapped, input.axes[9]);
+
+  mapped->buttons_length = STADIA_GAMEPAD_BUTTON_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
+void MapperStadiaController(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[3]);
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[10];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[12];
   mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA] = input.buttons[16];
   mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA2] = input.buttons[17];
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
@@ -440,7 +469,7 @@ constexpr struct MappingData {
     // boom PSX+N64 USB Converter
     {GamepadId::kPrototypeVendorProduct0667, MapperBoomN64Psx},
     // Stadia Controller prototype
-    {GamepadId::kPrototypeVendorProduct9401, MapperStadiaController},
+    {GamepadId::kPrototypeVendorProduct9401, MapperStadiaControllerOldFirmware},
 };
 
 }  // namespace
@@ -476,6 +505,14 @@ GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
   if (gamepad_id == GamepadId::kNintendoProduct200e &&
       mapper == MapperSwitchPro && bus_type != GAMEPAD_BUS_USB) {
     mapper = MapperSwitchComposite;
+  }
+
+  // Use an alternate mapping function if the Stadia controller is using an old
+  // firmware version.
+  if (gamepad_id == GamepadId::kGoogleProduct9400 &&
+      mapper == MapperStadiaController &&
+      version_number == kStadiaControllerOldFirmwareVersion) {
+    mapper = MapperStadiaControllerOldFirmware;
   }
 
   return mapper;
