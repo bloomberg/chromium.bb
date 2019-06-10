@@ -29,8 +29,10 @@
 namespace blink {
 namespace {
 
+using NoiseSuppression = webrtc::AudioProcessing::Config::NoiseSuppression;
+
 base::Optional<double> GetGainControlCompressionGain(
-    const base::Value* config) {
+    const base::Optional<base::Value>& config) {
   if (!config)
     return base::nullopt;
   const base::Value* found =
@@ -42,7 +44,8 @@ base::Optional<double> GetGainControlCompressionGain(
   return gain;
 }
 
-base::Optional<double> GetPreAmplifierGainFactor(const base::Value* config) {
+base::Optional<double> GetPreAmplifierGainFactor(
+    const base::Optional<base::Value>& config) {
   if (!config)
     return base::nullopt;
   const base::Value* found = config->FindKey("pre_amplifier_fixed_gain_factor");
@@ -51,6 +54,19 @@ base::Optional<double> GetPreAmplifierGainFactor(const base::Value* config) {
   double factor = found->GetDouble();
   DCHECK_GE(factor, 1.f);
   return factor;
+}
+
+void GetExtraGainConfig(
+    const std::string& audio_processing_platform_config_json,
+    base::Optional<double>* gain_control_compression_gain_db,
+    base::Optional<double>* pre_amplifier_fixed_gain_factor) {
+  auto config = base::JSONReader::Read(audio_processing_platform_config_json);
+  if (!config) {
+    LOG(ERROR) << "Failed to parse platform config JSON.";
+    return;
+  }
+  *gain_control_compression_gain_db = GetGainControlCompressionGain(config);
+  *pre_amplifier_fixed_gain_factor = GetPreAmplifierGainFactor(config);
 }
 
 }  // namespace
@@ -113,22 +129,6 @@ AudioProcessingProperties::ToAudioProcessingSettings() const {
   return out;
 }
 
-void EnableEchoCancellation(AudioProcessing::Config* apm_config) {
-  apm_config->echo_canceller.enabled = true;
-#if defined(OS_ANDROID)
-  apm_config->echo_canceller.mobile_mode = true;
-#else
-  apm_config->echo_canceller.mobile_mode = false;
-#endif
-}
-
-void EnableNoiseSuppression(
-    AudioProcessing::Config* apm_config,
-    AudioProcessing::Config::NoiseSuppression::Level ns_level) {
-  apm_config->noise_suppression.enabled = true;
-  apm_config->noise_suppression.level = ns_level;
-}
-
 void EnableTypingDetection(AudioProcessing::Config* apm_config,
                            webrtc::TypingDetection* typing_detector) {
   apm_config->voice_detection.enabled = true;
@@ -158,24 +158,6 @@ void StartEchoCancellationDump(AudioProcessing* audio_processing,
 
 void StopEchoCancellationDump(AudioProcessing* audio_processing) {
   audio_processing->DetachAecDump();
-}
-
-void GetExtraGainConfig(
-    const base::Optional<std::string>& audio_processing_platform_config_json,
-    base::Optional<double>* pre_amplifier_fixed_gain_factor,
-    base::Optional<double>* gain_control_compression_gain_db) {
-  if (!audio_processing_platform_config_json)
-    return;
-  std::unique_ptr<base::Value> config;
-  config =
-      base::JSONReader::ReadDeprecated(*audio_processing_platform_config_json);
-  if (!config) {
-    LOG(ERROR) << "Failed to parse platform config JSON.";
-    return;
-  }
-  *pre_amplifier_fixed_gain_factor = GetPreAmplifierGainFactor(config.get());
-  *gain_control_compression_gain_db =
-      GetGainControlCompressionGain(config.get());
 }
 
 void ConfigAutomaticGainControl(
@@ -234,11 +216,40 @@ void ConfigAutomaticGainControl(
   }
 }
 
-void ConfigPreAmplifier(AudioProcessing::Config* apm_config,
-                        base::Optional<double> fixed_gain_factor) {
-  if (!!fixed_gain_factor) {
+void PopulateApmConfig(
+    AudioProcessing::Config* apm_config,
+    const AudioProcessingProperties& properties,
+    const base::Optional<std::string>& audio_processing_platform_config_json,
+    base::Optional<double>* gain_control_compression_gain_db) {
+  // TODO(saza): When Chrome uses AGC2, handle all JSON config via the
+  // webrtc::AudioProcessing::Config, crbug.com/895814.
+  base::Optional<double> pre_amplifier_fixed_gain_factor;
+  if (audio_processing_platform_config_json.has_value()) {
+    GetExtraGainConfig(audio_processing_platform_config_json.value(),
+                       gain_control_compression_gain_db,
+                       &pre_amplifier_fixed_gain_factor);
+  }
+
+  apm_config->high_pass_filter.enabled = properties.goog_highpass_filter;
+
+  if (pre_amplifier_fixed_gain_factor.has_value()) {
     apm_config->pre_amplifier.enabled = true;
-    apm_config->pre_amplifier.fixed_gain_factor = fixed_gain_factor.value();
+    apm_config->pre_amplifier.fixed_gain_factor =
+        pre_amplifier_fixed_gain_factor.value();
+  }
+
+  if (properties.goog_noise_suppression) {
+    apm_config->noise_suppression.enabled = true;
+    apm_config->noise_suppression.level = NoiseSuppression::kHigh;
+  }
+
+  if (properties.EchoCancellationIsWebRtcProvided()) {
+    apm_config->echo_canceller.enabled = true;
+#if defined(OS_ANDROID)
+    apm_config->echo_canceller.mobile_mode = true;
+#else
+    apm_config->echo_canceller.mobile_mode = false;
+#endif
   }
 }
 

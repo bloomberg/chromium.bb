@@ -420,28 +420,4 @@ TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestWithKeyboardMicChannel) {
   audio_processor->Stop();
 }
 
-TEST_F(MediaStreamAudioProcessorTest, GetExtraGainConfigNullOpt) {
-  base::Optional<std::string> audio_processing_platform_config_json;
-  base::Optional<double> pre_amplifier_fixed_gain_factor,
-      gain_control_compression_gain_db;
-  blink::GetExtraGainConfig(audio_processing_platform_config_json,
-                            &pre_amplifier_fixed_gain_factor,
-                            &gain_control_compression_gain_db);
-  EXPECT_FALSE(pre_amplifier_fixed_gain_factor);
-  EXPECT_FALSE(gain_control_compression_gain_db);
-}
-
-TEST_F(MediaStreamAudioProcessorTest, GetExtraGainConfig) {
-  base::Optional<std::string> audio_processing_platform_config_json =
-      "{\"gain_control_compression_gain_db\": 10}";
-  base::Optional<double> pre_amplifier_fixed_gain_factor,
-      gain_control_compression_gain_db;
-  blink::GetExtraGainConfig(audio_processing_platform_config_json,
-                            &pre_amplifier_fixed_gain_factor,
-                            &gain_control_compression_gain_db);
-  EXPECT_FALSE(pre_amplifier_fixed_gain_factor);
-  EXPECT_TRUE(gain_control_compression_gain_db);
-  EXPECT_EQ(gain_control_compression_gain_db.value(), 10);
-}
-
 }  // namespace content

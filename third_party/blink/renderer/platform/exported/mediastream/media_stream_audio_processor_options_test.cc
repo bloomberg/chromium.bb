@@ -71,4 +71,32 @@ TEST(ConfigAutomaticGainControlTest, EnableHybridAGC) {
       saturation_margin);
 }
 
+TEST(PopulateApmConfigTest, SetGainsInConfigJson) {
+  webrtc::AudioProcessing::Config apm_config;
+  AudioProcessingProperties properties;
+  base::Optional<std::string> audio_processing_platform_config_json =
+      "{\"gain_control_compression_gain_db\": 10, "
+      "\"pre_amplifier_fixed_gain_factor\": 2.0}";
+  base::Optional<double> gain_control_compression_gain_db;
+
+  PopulateApmConfig(&apm_config, properties,
+                    audio_processing_platform_config_json,
+                    &gain_control_compression_gain_db);
+  EXPECT_TRUE(gain_control_compression_gain_db.has_value());
+  EXPECT_EQ(gain_control_compression_gain_db.value(), 10);
+  EXPECT_TRUE(apm_config.high_pass_filter.enabled);
+  EXPECT_TRUE(apm_config.pre_amplifier.enabled);
+  EXPECT_FLOAT_EQ(apm_config.pre_amplifier.fixed_gain_factor, 2.0);
+  EXPECT_TRUE(apm_config.noise_suppression.enabled);
+  EXPECT_EQ(apm_config.noise_suppression.level,
+            webrtc::AudioProcessing::Config::NoiseSuppression::kHigh);
+  EXPECT_TRUE(apm_config.echo_canceller.enabled);
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(
+#else
+  EXPECT_FALSE(
+#endif
+      apm_config.echo_canceller.mobile_mode);
+}
+
 }  // namespace blink
