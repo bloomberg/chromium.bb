@@ -792,10 +792,10 @@ def main():
 
       # And copy it into the main build tree.
       fuchsia_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
-                                         RELEASE_VERSION, target_spec, 'lib')
+                                         RELEASE_VERSION, 'lib', target_spec)
       if not os.path.exists(fuchsia_lib_dst_dir):
         os.makedirs(fuchsia_lib_dst_dir)
-      CopyFile(os.path.join(build_dir, target_spec, 'lib', builtins_a),
+      CopyFile(os.path.join(build_dir, 'lib', target_spec, builtins_a),
                fuchsia_lib_dst_dir)
 
   # Run tests.
