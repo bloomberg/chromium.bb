@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "ios/net/cookies/cookie_store_ios_client.h"
 #import "ios/net/cookies/cookie_store_ios_test_util.h"
 #import "ios/net/cookies/ns_http_system_cookie_store.h"
@@ -68,7 +68,7 @@ struct CookieStoreIOSTestTraits {
   static const bool has_exact_change_ordering = false;
   static const int creation_time_granularity_in_ms = 1000;
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 INSTANTIATE_TYPED_TEST_SUITE_P(CookieStoreIOS,
@@ -195,7 +195,7 @@ class CookieStoreIOSTest : public PlatformTest {
   const GURL kTestCookieURLFoo;
   const GURL kTestCookieURLBarBar;
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client_;
   scoped_refptr<TestPersistentCookieStore> backend_;
   // |system_store_| will point to the NSHTTPSystemCookieStore object owned by
