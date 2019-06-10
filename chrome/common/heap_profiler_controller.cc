@@ -7,6 +7,8 @@
 #include <cmath>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
@@ -14,6 +16,13 @@
 #include "components/metrics/call_stack_profile_builder.h"
 
 namespace {
+
+// Enables reporting of sampling heap profiles over UMA.
+const base::Feature kHeapProfilerReporting{"HeapProfilerReporting",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Sets sampling interval in bytes.
+const char kHeapProfilerSamplingRate[] = "sampling-rate";
 
 constexpr base::TimeDelta kHeapCollectionInterval =
     base::TimeDelta::FromHours(24);
@@ -33,7 +42,19 @@ HeapProfilerController::~HeapProfilerController() {
   stopped_->data.Set();
 }
 
+// static
+bool HeapProfilerController::IsReportingEnabled() {
+  return base::FeatureList::IsEnabled(kHeapProfilerReporting);
+}
+
 void HeapProfilerController::Start() {
+  if (IsReportingEnabled()) {
+    int sampling_rate = base::GetFieldTrialParamByFeatureAsInt(
+        kHeapProfilerReporting, kHeapProfilerSamplingRate, 0);
+    if (sampling_rate > 0)
+      base::SamplingHeapProfiler::Get()->SetSamplingInterval(sampling_rate);
+    base::SamplingHeapProfiler::Get()->Start();
+  }
   ScheduleNextSnapshot(task_runner_ ? std::move(task_runner_)
                                     : base::CreateTaskRunnerWithTraits(
                                           {base::TaskPriority::BEST_EFFORT}),
