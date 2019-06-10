@@ -53,7 +53,9 @@ VSyncThreadWin::VSyncThreadWin(
       callback_(std::move(callback)) {
   DCHECK(window_);
   DCHECK(callback_);
-  vsync_thread_.Start();
+  base::Thread::Options options;
+  options.priority = base::ThreadPriority::DISPLAY;
+  vsync_thread_.StartWithOptions(std::move(options));
 }
 
 VSyncThreadWin::~VSyncThreadWin() {
