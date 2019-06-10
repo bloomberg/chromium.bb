@@ -484,12 +484,14 @@ HttpHandler::HttpHandler(
                                    base::BindRepeating(&ExecuteElementEquals),
                                    false /*w3c_standard_command*/)),
 
-      // No W3C equivalent.
+      // No W3C equivalent. Allowed in W3C mode due to active usage by some APIs
+      // and the difficulty for clients to provide an equivalent implementation.
+      // This endpoint is mentioned in an appendix of W3C spec
+      // (https://www.w3.org/TR/webdriver/#element-displayedness).
       CommandMapping(
           kGet, "session/:sessionId/element/:id/displayed",
           WrapToCommand("IsElementDisplayed",
-                        base::BindRepeating(&ExecuteIsElementDisplayed),
-                        false /*w3c_standard_command*/)),
+                        base::BindRepeating(&ExecuteIsElementDisplayed))),
 
       // No W3C equivalent.
       CommandMapping(
