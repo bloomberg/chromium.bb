@@ -18,6 +18,8 @@ source_set("cpp") {
     sources += [
       "cups_util.cc",
       "cups_util.h",
+      "ipp_messages.cc",
+      "ipp_messages.h",
     ]
   }
 
