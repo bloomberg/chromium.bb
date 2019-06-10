@@ -20,8 +20,13 @@ WebCursor::WebCursor(const CursorInfo& info) {
 }
 
 WebCursor::WebCursor(const WebCursor& other) {
-  SetInfo(other.info_);
-  CopyPlatformData(other);
+  CopyAllData(other);
+}
+
+WebCursor& WebCursor::operator=(const WebCursor& other) {
+  CleanupPlatformData();
+  CopyAllData(other);
+  return *this;
 }
 
 bool WebCursor::SetInfo(const CursorInfo& info) {
@@ -58,6 +63,11 @@ bool WebCursor::operator==(const WebCursor& other) const {
 
 bool WebCursor::operator!=(const WebCursor& other) const {
   return !(*this == other);
+}
+
+void WebCursor::CopyAllData(const WebCursor& other) {
+  SetInfo(other.info_);
+  CopyPlatformData(other);
 }
 
 }  // namespace content

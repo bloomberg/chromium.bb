@@ -30,6 +30,7 @@ class CONTENT_EXPORT WebCursor {
   WebCursor() = default;
   explicit WebCursor(const CursorInfo& info);
   explicit WebCursor(const WebCursor& other);
+  WebCursor& operator=(const WebCursor& other);
   ~WebCursor();
 
   const CursorInfo& info() const { return info_; }
@@ -58,6 +59,9 @@ class CONTENT_EXPORT WebCursor {
  private:
   // Returns true if this cursor's platform data matches that of |other|.
   bool IsPlatformDataEqual(const WebCursor& other) const;
+
+  // Copies all data from |other| to this object.
+  void CopyAllData(const WebCursor& other);
 
   // Copies platform specific data from the WebCursor instance passed in.
   void CopyPlatformData(const WebCursor& other);
