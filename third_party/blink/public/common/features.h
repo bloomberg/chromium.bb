@@ -89,6 +89,8 @@ BLINK_COMMON_EXPORT bool IsOffMainThreadSharedWorkerScriptFetchEnabled();
 // Returns true when PlzDedicatedWorker is enabled.
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
 
+BLINK_COMMON_EXPORT extern const base::Feature kCanvasAlwaysDeferral;
+
 }  // namespace features
 }  // namespace blink
 

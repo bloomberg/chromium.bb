@@ -303,5 +303,8 @@ bool IsPlzDedicatedWorkerEnabled() {
          base::FeatureList::IsEnabled(features::kPlzDedicatedWorker);
 }
 
+const base::Feature kCanvasAlwaysDeferral{"CanvasAlwaysDeferral",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink
