@@ -102,6 +102,10 @@ int GbmPixmapWayland::GetDmaBufOffset(size_t plane) const {
   return gbm_bo_->GetPlaneOffset(plane);
 }
 
+size_t GbmPixmapWayland::GetDmaBufPlaneSize(size_t plane) const {
+  return gbm_bo_->GetPlaneSize(plane);
+}
+
 uint64_t GbmPixmapWayland::GetBufferFormatModifier() const {
   return gbm_bo_->GetFormatModifier();
 }

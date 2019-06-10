@@ -136,7 +136,7 @@ class Buffer final : public ui::GbmBuffer {
   }
   size_t GetPlaneSize(size_t plane) const override {
     DCHECK_LT(plane, handle_.planes.size());
-    return handle_.planes[plane].size;
+    return static_cast<size_t>(handle_.planes[plane].size);
   }
   uint32_t GetPlaneHandle(size_t plane) const override {
     DCHECK_LT(plane, handle_.planes.size());

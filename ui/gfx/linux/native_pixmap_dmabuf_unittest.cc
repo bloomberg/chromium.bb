@@ -68,6 +68,8 @@ TEST_P(NativePixmapDmaBufTest, Convert) {
               handle_clone.planes[i].stride);
     EXPECT_EQ(native_pixmap_dmabuf->GetDmaBufOffset(i),
               handle_clone.planes[i].offset);
+    EXPECT_EQ(native_pixmap_dmabuf->GetDmaBufPlaneSize(i),
+              static_cast<size_t>(handle_clone.planes[i].size));
   }
 }
 

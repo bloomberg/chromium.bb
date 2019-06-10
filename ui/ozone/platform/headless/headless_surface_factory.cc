@@ -85,6 +85,7 @@ class TestPixmap : public gfx::NativePixmap {
   int GetDmaBufFd(size_t plane) const override { return -1; }
   int GetDmaBufPitch(size_t plane) const override { return 0; }
   int GetDmaBufOffset(size_t plane) const override { return 0; }
+  size_t GetDmaBufPlaneSize(size_t plane) const override { return 0; }
   uint64_t GetBufferFormatModifier() const override { return 0; }
   gfx::BufferFormat GetBufferFormat() const override { return format_; }
   gfx::Size GetBufferSize() const override { return gfx::Size(); }

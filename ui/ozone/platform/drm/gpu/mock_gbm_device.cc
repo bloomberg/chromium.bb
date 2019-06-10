@@ -59,7 +59,7 @@ class MockGbmBuffer final : public ui::GbmBuffer {
   }
   size_t GetPlaneSize(size_t plane) const override {
     DCHECK_LT(plane, planes_.size());
-    return planes_[plane].size;
+    return static_cast<size_t>(planes_[plane].size);
   }
   uint32_t GetPlaneHandle(size_t plane) const override {
     DCHECK_LT(plane, planes_.size());

@@ -43,6 +43,11 @@ int NativePixmapDmaBuf::GetDmaBufOffset(size_t plane) const {
   return handle_.planes[plane].offset;
 }
 
+size_t NativePixmapDmaBuf::GetDmaBufPlaneSize(size_t plane) const {
+  DCHECK_LT(plane, handle_.planes.size());
+  return static_cast<size_t>(handle_.planes[plane].size);
+}
+
 uint64_t NativePixmapDmaBuf::GetBufferFormatModifier() const {
   return handle_.modifier;
 }
