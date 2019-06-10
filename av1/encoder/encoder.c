@@ -3587,6 +3587,14 @@ static int get_gfu_boost_from_r0(double r0) {
   return boost;
 }
 
+static int get_kf_boost_from_r0(double r0, int frames_to_key) {
+  double factor = sqrt((double)frames_to_key);
+  factor = AOMMIN(factor, 10.0);
+  factor = AOMMAX(factor, 4.0);
+  int boost = (int)rint((75.0 + 14.0 * factor) / r0);
+  return boost;
+}
+
 static void process_tpl_stats_frame(AV1_COMP *cpi) {
   const GF_GROUP *const gf_group = &cpi->gf_group;
   AV1_COMMON *const cm = &cpi->common;
@@ -3623,8 +3631,14 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
         cpi->rd.arf_r0 = cpi->rd.r0;
         const int gfu_boost = get_gfu_boost_from_r0(cpi->rd.arf_r0);
         // printf("old boost %d new boost %d\n", cpi->rc.gfu_boost,
-        // gfu_boost);
+        //        gfu_boost);
         cpi->rc.gfu_boost = (cpi->rc.gfu_boost + gfu_boost) / 2;
+      } else if (frame_is_intra_only(cm)) {
+        const int kf_boost =
+            get_kf_boost_from_r0(cpi->rd.r0, cpi->rc.frames_to_key);
+        // printf("old kf boost %d new kf boost %d [%d]\n", cpi->rc.kf_boost,
+        //        kf_boost, cpi->rc.frames_to_key);
+        cpi->rc.kf_boost = (cpi->rc.kf_boost + kf_boost) / 2;
       }
       cpi->rd.mc_count_base =
           (double)mc_count_base / (cm->mi_rows * cm->mi_cols);
