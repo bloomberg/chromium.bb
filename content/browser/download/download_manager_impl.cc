@@ -1141,8 +1141,9 @@ void DownloadManagerImpl::PostInitialization(
 }
 
 void DownloadManagerImpl::ImportInProgressDownloads(uint32_t id) {
-  for (auto& download : in_progress_downloads_) {
-    auto item = std::move(download);
+  auto download = in_progress_downloads_.begin();
+  while (download != in_progress_downloads_.end()) {
+    auto item = std::move(*download);
     // If the in-progress download doesn't have an ID, generate new IDs for it.
     if (item->GetId() == download::DownloadItem::kInvalidId) {
       item->SetDownloadId(id++);
@@ -1152,10 +1153,9 @@ void DownloadManagerImpl::ImportInProgressDownloads(uint32_t id) {
     }
     item->SetDelegate(this);
     DownloadItemUtils::AttachInfo(item.get(), GetBrowserContext(), nullptr);
+    download = in_progress_downloads_.erase(download);
     OnDownloadCreated(std::move(item));
   }
-  in_progress_downloads_.clear();
-
   OnDownloadManagerInitialized();
 }
 

@@ -997,8 +997,7 @@ bool DownloadItemImpl::CanOpenDownload() {
   // they aren't owned by the download system.
   const bool is_complete = GetState() == DownloadItem::COMPLETE;
   return (!IsDone() || is_complete) && !IsTemporary() &&
-         !file_externally_removed_ &&
-         delegate_->IsMostRecentDownloadItemAtFilePath(this);
+         !file_externally_removed_;
 }
 
 bool DownloadItemImpl::ShouldOpenFileBasedOnExtension() {
