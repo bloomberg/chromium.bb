@@ -21,6 +21,8 @@
  */
 
 #include <blpwtk2_mainmessagepump.h>
+#include <blpwtk2_queuepumpscheduler.h>
+#include <blpwtk2_timerpumpscheduler.h>
 #include <blpwtk2_statics.h>
 
 #include <base/run_loop.h>
@@ -29,6 +31,7 @@
 #include <base/threading/thread_local.h>
 #include <base/win/wrapped_window_proc.h>
 #include <base/time/time.h>
+#include <third_party/blink/renderer/core/page/bb_window_hooks.h>
 #include <v8.h>
 
 namespace blpwtk2 {
@@ -401,6 +404,20 @@ MainMessagePump::MainMessagePump()
 
     DCHECK(!g_lazy_tls.Pointer()->Get());
     g_lazy_tls.Pointer()->Set(this);
+
+    // Active a default pump scheduler
+    activateScheduler(0);
+
+    // Install hooks into BBWindowHook so we can configure the tunables from
+    // JavaScript.
+
+    blink::BBWindowHooks::PumpConfigHooks hooks;
+    hooks.listSchedulers = base::BindRepeating(&MainMessagePump::listSchedulers, base::Unretained(this));
+    hooks.listSchedulerTunables = base::BindRepeating(&MainMessagePump::listSchedulerTunables, base::Unretained(this));
+    hooks.activateScheduler = base::BindRepeating(&MainMessagePump::activateScheduler, base::Unretained(this));
+    hooks.setSchedulerTunable = base::BindRepeating(&MainMessagePump::setSchedulerTunable, base::Unretained(this));
+
+    blink::BBWindowHooks::InstallPumpConfigHooks(hooks);
 }
 
 MainMessagePump::~MainMessagePump()
@@ -505,34 +522,15 @@ void MainMessagePump::postHandleMessage(const MSG& msg)
     LONG wasPumped = d_isPumped;
 
     if (has_work && 0 == wasPumped) {
-        MSG msg_ = {};
+        bool allowNormalWork = false;
+        bool allowIdleWork = false;
+        d_scheduler->isReadyToWork(&allowNormalWork, &allowIdleWork);
 
-        // We will unintrusively keep our own message loop pumping without
-        // preempting lower-priority messages.  We do this by first checking
-        // what's on the Windows message queue.
-        if (::PeekMessage(&msg_, nullptr, 0, 0, PM_NOREMOVE)) {
-            // There is a message on the queue.  Now we check if there are high
-            // priority messages in the queue.
-
-            unsigned int flags = PM_NOREMOVE | PM_QS_POSTMESSAGE | PM_QS_SENDMESSAGE;
-            if (::PeekMessage(&msg_, nullptr, 0, 0, flags)) {
-
-                // We should never observe a kPumpMessage here if d_isPumped is false
-                DCHECK(kPumpMessage != msg_.message);
-
-                // Yes! There is a high priority message (other than our pump message)
-                // in the queue.  This means that we can piggyback on the current high
-                // priority message in the queue without introducing preemption of low
-                // priority messages.  Given that there are other messages in the
-                // queue, we won't consider the current state to be idle and so we will
-                // skip idle tasks for now.
+        if (allowNormalWork) {
+            if (!allowIdleWork) {
                 d_skipIdleWork = true;
-                schedulePump();
             }
-        }
-        else {
-            // No messages are in the queue.  We need to post our pump message to keep
-            // the loop pumping.
+
             schedulePump();
         }
     }
@@ -544,6 +542,50 @@ void MainMessagePump::setTraceThreshold(unsigned int timeoutMS)
     LOG(INFO) << "blpwtk2::MainMessagePump::setTraceThreshold: Set traceThreshold to "
               << timeoutMS
               << " ms";
+}
+
+std::vector<std::string> MainMessagePump::listSchedulers()
+{
+    std::vector<std::string> list;
+
+    list.push_back(QueuePumpScheduler::name());
+    list.push_back(TimerPumpScheduler::name());
+
+    return list;
+}
+
+std::vector<std::string> MainMessagePump::listSchedulerTunables()
+{
+    DCHECK(d_scheduler);
+    return d_scheduler->listTunables();
+}
+
+int MainMessagePump::activateScheduler(int index)
+{
+    int status = 0;
+
+    switch (index) {
+    case 0:
+      d_scheduler = std::make_unique<QueuePumpScheduler>();
+      break;
+
+    case 1:
+      d_scheduler = std::make_unique<TimerPumpScheduler>();
+      break;
+
+    default:
+      LOG(ERROR) << "blpwtk2::MainMessagePump::activateScheduler: index out of bound: " << index;
+      status = -1;
+      break;
+    }
+
+    return status;
+}
+
+int MainMessagePump::setSchedulerTunable(unsigned index, int value)
+{
+    DCHECK(d_scheduler);
+    return d_scheduler->setTunable(index, value);
 }
 
 void MainMessagePump::ScheduleWork()
@@ -573,6 +615,16 @@ void MainMessagePump::ScheduleWork()
         schedulePump();
     }
 }
+
+                        // --------------------------------
+                        // class MainMessagePump::Scheduler
+                        // --------------------------------
+
+MainMessagePump::Scheduler::~Scheduler()
+{
+}
+
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et

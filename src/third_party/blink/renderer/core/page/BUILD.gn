@@ -8,6 +8,8 @@ blink_core_sources("page") {
   sources = [
     "autoscroll_controller.cc",
     "autoscroll_controller.h",
+    "bb_window_hooks.cc",
+    "bb_window_hooks.h",
     "chrome_client.cc",
     "chrome_client.h",
     "chrome_client_impl.cc",
