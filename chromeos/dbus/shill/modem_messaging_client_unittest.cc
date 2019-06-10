@@ -9,10 +9,10 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
@@ -99,7 +99,7 @@ class ModemMessagingClientTest : public testing::Test {
     EXPECT_EQ(expected_sms_path_, sms_path);
     EXPECT_FALSE(reader.HasMoreData());
 
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*callback), response_));
   }
 
@@ -113,14 +113,14 @@ class ModemMessagingClientTest : public testing::Test {
     dbus::MessageReader reader(method_call);
     EXPECT_FALSE(reader.HasMoreData());
 
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*callback), response_));
   }
 
  protected:
   ModemMessagingClient* client_ = nullptr;  // Unowned convenience pointer.
   // A message loop to emulate asynchronous behavior.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   // The mock bus.
   scoped_refptr<dbus::MockBus> mock_bus_;
   // The mock object proxy.
@@ -141,7 +141,7 @@ class ModemMessagingClientTest : public testing::Test {
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     sms_received_callback_ = signal_callback;
     const bool success = true;
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                   interface_name, signal_name, success));
   }

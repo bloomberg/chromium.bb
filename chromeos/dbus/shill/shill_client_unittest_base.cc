@@ -139,7 +139,8 @@ void ShillClientUnittestBase::SetUp() {
   // Set an expectation so mock_bus's GetDBusTaskRunner will return the current
   // task runner.
   EXPECT_CALL(*mock_bus_.get(), GetDBusTaskRunner())
-      .WillRepeatedly(Return(message_loop_.task_runner().get()));
+      .WillRepeatedly(
+          Return(scoped_task_environment_.GetMainThreadTaskRunner().get()));
 
   // ShutdownAndBlock() will be called in TearDown().
   EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
@@ -380,7 +381,7 @@ void ShillClientUnittestBase::OnConnectToPlatformMessage(
     dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
   platform_message_handler_ = signal_callback;
   const bool success = true;
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                 interface_name, signal_name, success));
 }
@@ -392,7 +393,7 @@ void ShillClientUnittestBase::OnConnectToPacketReceived(
     dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
   packet_receieved__handler_ = signal_callback;
   const bool success = true;
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                 interface_name, signal_name, success));
 }
@@ -404,7 +405,7 @@ void ShillClientUnittestBase::OnConnectToPropertyChanged(
     dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
   property_changed_handler_ = signal_callback;
   const bool success = true;
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
                                 interface_name, signal_name, success));
 }
@@ -417,7 +418,7 @@ void ShillClientUnittestBase::OnCallMethod(
   EXPECT_EQ(expected_method_name_, method_call->GetMember());
   dbus::MessageReader reader(method_call);
   argument_checker_.Run(&reader);
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(std::move(*response_callback), response_));
 }
 
