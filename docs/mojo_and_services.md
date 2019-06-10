@@ -568,7 +568,7 @@ For this step we just modify
 by adding a block of code as follows:
 
 ``` cpp
-void ChromeContentUtilityClient::MaybeCreateMainThreadService(
+std::unique_ptr<service_manager::Service> ChromeContentUtilityClient::MaybeCreateMainThreadService(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
   ...
