@@ -197,12 +197,11 @@ base::FilePath WriteFileContentsToTempFile(const base::FilePath& suggested_name,
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  base::FilePath temp_path = base::FilePath();
-
   if (!hdata)
-    return temp_path;
+    return base::FilePath();
 
-  temp_path = CreateTemporaryFileWithSuggestedName(suggested_name);
+  base::FilePath temp_path =
+      CreateTemporaryFileWithSuggestedName(suggested_name);
 
   if (!temp_path.empty()) {
     base::win::ScopedHGlobal<char*> data(hdata);
@@ -401,7 +400,6 @@ bool GetVirtualFilenames(IDataObject* data_object,
     unsigned int uniquifier = 1;
 
     for (size_t i = 0; i < num_files; i++) {
-      base::FilePath display_name;
       // Folder entries not currently supported--skip this item.
       if ((fgd->fgd[i].dwFlags & FD_ATTRIBUTES) &&
           (fgd->fgd[i].dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
@@ -410,7 +408,7 @@ bool GetVirtualFilenames(IDataObject* data_object,
                       << "' refers to a directory (not supported).";
         continue;
       }
-      display_name = GetUniqueVirtualFilename(
+      base::FilePath display_name = GetUniqueVirtualFilename(
           ConvertString(fgd->fgd[i].cFileName), *filenames, &uniquifier);
 
       filenames->push_back(display_name);

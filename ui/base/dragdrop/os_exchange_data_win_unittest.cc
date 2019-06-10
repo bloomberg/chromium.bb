@@ -370,7 +370,6 @@ TEST_F(OSExchangeDataWinTest, VirtualFiles) {
       EXPECT_EQ(path_placeholder, file_infos[i].path);
     }
 
-    std::string read_contents;
     base::FilePath temp_dir;
     EXPECT_TRUE(base::GetTempDir(&temp_dir));
 
@@ -399,6 +398,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFiles) {
           base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
       EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
+      std::string read_contents;
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
                                          &read_contents));
       if (tymed != TYMED_ISTORAGE) {
@@ -495,7 +495,6 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNames) {
       }
     }
 
-    std::string read_contents;
     base::FilePath temp_dir;
     EXPECT_TRUE(base::GetTempDir(&temp_dir));
 
@@ -535,6 +534,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNames) {
           base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
       EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
+      std::string read_contents;
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
                                          &read_contents));
       if (tymed != TYMED_ISTORAGE) {
@@ -578,7 +578,6 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNamesCaseInsensitivity) {
       }
     }
 
-    std::string read_contents;
     base::FilePath temp_dir;
     EXPECT_TRUE(base::GetTempDir(&temp_dir));
 
@@ -618,6 +617,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNamesCaseInsensitivity) {
           base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
       EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
+      std::string read_contents;
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
                                          &read_contents));
       if (tymed != TYMED_ISTORAGE) {
@@ -651,7 +651,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
           {pathWithInvalidFileNameCharacters,
            std::string("just some data\0with\0nulls", 25)},
           {// Test that still get a unique name if a previous uniquified
-           // name is duplicate of this one.
+           // name is a duplicate of this one.
            pathWithInvalidFileNameCharacters.InsertBeforeExtension(
                FILE_PATH_LITERAL(" (1)")),
            std::string("just some more data")},
@@ -660,7 +660,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
           {empty_display_name, std::string("data for an empty display name")},
           {empty_display_name,
            std::string("data for another empty display name")},
-          // Expect a good behavior if the display name length exceeds MAX_PATH.
+          // Expect good behavior if the display name length exceeds MAX_PATH.
           {maxpath_display_name,
            std::string("data for a >MAX_PATH display name")},
           {maxpath_display_name,
@@ -689,7 +689,6 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
       }
     }
 
-    std::string read_contents;
     base::FilePath temp_dir;
     EXPECT_TRUE(base::GetTempDir(&temp_dir));
 
@@ -737,6 +736,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
           base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
       EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
+      std::string read_contents;
       // Ability to read the contents implies a temp file was successfully
       // created on the file system even though the original suggested display
       // name had invalid filename characters.
@@ -775,7 +775,6 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesEmptyContents) {
                 file_infos[i].display_name);
     }
 
-    std::string read_contents;
     base::FilePath temp_dir;
     EXPECT_TRUE(base::GetTempDir(&temp_dir));
 
@@ -805,6 +804,7 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesEmptyContents) {
           base::MakeLongFilePath(retrieved_virtual_files_[i].path.DirName()));
       EXPECT_EQ(kTestFilenames_and_Contents[i].first.Extension(),
                 retrieved_virtual_files_[i].path.Extension());
+      std::string read_contents;
       EXPECT_TRUE(base::ReadFileToString(retrieved_virtual_files_[i].path,
                                          &read_contents));
       // IStorage uses compound files, so temp files won't be flat text files.
