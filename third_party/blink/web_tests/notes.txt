@@ -1,0 +1,8 @@
+
+What if they set animation-delay to 5s
+and then read animation
+Should it be "5s" or "0s 5s" ?
+
+What if they set animation-name to Paused
+and then read animation
+Should it be "Paused" or "running Paused" ?

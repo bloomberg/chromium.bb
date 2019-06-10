@@ -595,7 +595,10 @@ public class ShareHelper {
     @VisibleForTesting
     public static Intent getShareLinkIntent(ShareParams params) {
         final boolean isFileShare = (params.getFileUris() != null);
-        Intent intent = new Intent(isFileShare ? Intent.ACTION_SEND_MULTIPLE : Intent.ACTION_SEND);
+        final boolean isMultipleFileShare = isFileShare && (params.getFileUris().size() > 1);
+        final String action =
+                isMultipleFileShare ? Intent.ACTION_SEND_MULTIPLE : Intent.ACTION_SEND;
+        Intent intent = new Intent(action);
         intent.addFlags(ApiCompatibilityUtils.getActivityNewDocumentFlag());
         intent.putExtra(EXTRA_TASK_ID, params.getActivity().getTaskId());
 
@@ -626,7 +629,11 @@ public class ShareHelper {
                 intent.setType(params.getFileContentType());
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, params.getFileUris());
+                if (isMultipleFileShare) {
+                    intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, params.getFileUris());
+                } else {
+                    intent.putExtra(Intent.EXTRA_STREAM, params.getFileUris().get(0));
+                }
             } else {
                 intent.setType("text/plain");
             }

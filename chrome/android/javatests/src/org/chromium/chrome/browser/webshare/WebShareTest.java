@@ -417,14 +417,12 @@ public class WebShareTest {
 
     private static void verifyDeliveredOggIntent(Intent intent) throws Exception {
         Assert.assertNotNull(intent);
-        Assert.assertEquals(Intent.ACTION_SEND_MULTIPLE, intent.getAction());
+        Assert.assertEquals(Intent.ACTION_SEND, intent.getAction());
         Assert.assertEquals("video/ogg", intent.getType());
         Assert.assertEquals(Intent.FLAG_GRANT_READ_URI_PERMISSION,
                 intent.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        ArrayList<Uri> fileUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-        Assert.assertEquals(1, fileUris.size());
-        Assert.assertEquals("contents", getFileContents(fileUris.get(0)));
+        Uri fileUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        Assert.assertEquals("contents", getFileContents(fileUri));
     }
 
     // Uses intent picker functionality that is only available since Lollipop MR1.
