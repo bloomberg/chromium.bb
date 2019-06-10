@@ -636,6 +636,9 @@ double timeDelta(base::TimeTicks time,
 
 std::unique_ptr<Network::ResourceTiming> GetTiming(
     const net::LoadTimingInfo& load_timing) {
+  if (load_timing.receive_headers_end.is_null())
+    return nullptr;
+
   const base::TimeTicks kNullTicks;
   return Network::ResourceTiming::Create()
       .SetRequestTime((load_timing.request_start - kNullTicks).InSecondsF())
