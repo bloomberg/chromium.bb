@@ -73,8 +73,8 @@ bool LayoutThemeDefault::ThemeDrawsFocusRing(const ComputedStyle& style) const {
 }
 
 Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id) const {
-  static const Color kDefaultButtonGrayColor(0xffdddddd);
-  static const Color kDefaultMenuColor(0xfff7f7f7);
+  constexpr Color kDefaultButtonGrayColor(0xffdddddd);
+  constexpr Color kDefaultMenuColor(0xfff7f7f7);
 
   if (css_value_id == CSSValueID::kButtonface) {
     if (UseMockTheme())
@@ -249,7 +249,7 @@ bool LayoutThemeDefault::SupportsHover(const ComputedStyle& style) const {
 }
 
 Color LayoutThemeDefault::PlatformFocusRingColor() const {
-  static Color focus_ring_color(229, 151, 0, 255);
+  constexpr Color focus_ring_color(0xFFE59700);
   return focus_ring_color;
 }
 
@@ -386,8 +386,8 @@ int LayoutThemeDefault::MenuListInternalPadding(const ComputedStyle& style,
 //
 // The following values come from the defaults of GTK+.
 //
-static const int kProgressAnimationFrames = 10;
-static constexpr TimeDelta kProgressAnimationInterval =
+constexpr int kProgressAnimationFrames = 10;
+constexpr TimeDelta kProgressAnimationInterval =
     TimeDelta::FromMilliseconds(125);
 
 TimeDelta LayoutThemeDefault::AnimationRepeatIntervalForProgressBar() const {
