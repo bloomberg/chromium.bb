@@ -28,6 +28,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/session.h"
+#include "chrome/test/chromedriver/session_commands.h"
 #include "chrome/test/chromedriver/session_thread_map.h"
 #include "chrome/test/chromedriver/util.h"
 #include "chrome/test/chromedriver/version.h"
@@ -68,8 +69,9 @@ void ExecuteCreateSession(
   if (new_id.empty())
     new_id = GenerateId();
   std::unique_ptr<Session> session = std::make_unique<Session>(new_id);
-  std::unique_ptr<base::Thread> thread = std::make_unique<base::Thread>(new_id);
-  if (!thread->Start()) {
+  std::unique_ptr<SessionThreadInfo> threadInfo =
+      std::make_unique<SessionThreadInfo>(new_id, GetW3CSetting(params));
+  if (!threadInfo->thread()->Start()) {
     callback.Run(
         Status(kUnknownError, "failed to start a thread for the new session"),
         std::unique_ptr<base::Value>(), std::string(),
@@ -77,9 +79,9 @@ void ExecuteCreateSession(
     return;
   }
 
-  thread->task_runner()->PostTask(
+  threadInfo->thread()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&SetThreadLocalSession, std::move(session)));
-  session_thread_map->insert(std::make_pair(new_id, std::move(thread)));
+  session_thread_map->insert(std::make_pair(new_id, std::move(threadInfo)));
   init_session_cmd.Run(params, new_id, callback);
 }
 
@@ -335,7 +337,7 @@ void ExecuteSessionCommand(SessionThreadMap* session_thread_map,
     callback.Run(status, std::unique_ptr<base::Value>(), session_id,
                  kW3CDefault);
   } else {
-    iter->second->task_runner()->PostTask(
+    iter->second->thread()->task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ExecuteSessionCommandOnSessionThread, command_name,
                        command, w3c_standard_command, return_ok_without_session,

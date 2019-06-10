@@ -82,6 +82,41 @@ InitSessionParams::InitSessionParams(const InitSessionParams& other) = default;
 
 InitSessionParams::~InitSessionParams() {}
 
+// Look for W3C mode setting in InitSession command parameters.
+bool GetW3CSetting(const base::DictionaryValue& params) {
+  bool w3c;
+  const base::ListValue* list;
+  const base::DictionaryValue* dict;
+
+  if (params.GetDictionary("capabilities.alwaysMatch", &dict)) {
+    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
+        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
+      return w3c;
+    }
+  }
+
+  if (params.GetList("capabilities.firstMatch", &list) &&
+      list->GetDictionary(0, &dict)) {
+    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
+        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
+      return w3c;
+    }
+  }
+
+  if (params.GetDictionary("desiredCapabilities", &dict)) {
+    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
+        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
+      return w3c;
+    }
+  }
+
+  if (!params.HasKey("capabilities")) {
+    return false;
+  }
+
+  return kW3CDefault;
+}
+
 namespace {
 
 // Creates a JSON object (represented by base::DictionaryValue) that contains
@@ -193,41 +228,6 @@ Status CheckSessionCreated(Session* session) {
   }
 
   return Status(kOk);
-}
-
-// Look for W3C mode setting in InitSession command parameters.
-bool GetW3CSetting(const base::DictionaryValue& params) {
-  bool w3c;
-  const base::ListValue* list;
-  const base::DictionaryValue* dict;
-
-  if (params.GetDictionary("capabilities.alwaysMatch", &dict)) {
-    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
-        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
-      return w3c;
-    }
-  }
-
-  if (params.GetList("capabilities.firstMatch", &list) &&
-      list->GetDictionary(0, &dict)) {
-    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
-        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
-      return w3c;
-    }
-  }
-
-  if (params.GetDictionary("desiredCapabilities", &dict)) {
-    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
-        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
-      return w3c;
-    }
-  }
-
-  if (!params.HasKey("capabilities")) {
-    return false;
-  }
-
-  return kW3CDefault;
 }
 
 Status InitSessionHelper(const InitSessionParams& bound_params,
