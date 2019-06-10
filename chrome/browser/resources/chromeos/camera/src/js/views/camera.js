@@ -99,10 +99,10 @@ cca.views.Camera = function(model, resolBroker) {
       });
 
   /**
-   * @type {string}
+   * @type {?string}
    * @private
    */
-  this.facingMode_ = '';
+  this.facingMode_ = null;
 
   /**
    * @type {boolean}
@@ -264,13 +264,17 @@ cca.views.Camera.prototype.stop_ = function() {
 /**
  * Try start stream reconfiguration with specified device id.
  * @async
- * @param {string} deviceId
+ * @param {?string} deviceId
  * @return {boolean} If found suitable stream and reconfigure successfully.
  */
 cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
   let supportedModes = null;
   for (const mode of this.modes_.getModeCandidates()) {
     try {
+      if (!deviceId) {
+        // Null for requesting default camera on HALv1.
+        throw new Error;
+      }
       const previewRs = (await this.options_.getDeviceResolutions(deviceId))[1];
       var resolCandidates =
           this.modes_.getResolutionCandidates(mode, deviceId, previewRs);
@@ -291,7 +295,8 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
             }
           }
           await this.preview_.start(stream);
-          this.facingMode_ = this.options_.updateValues(constraints, stream);
+          this.facingMode_ =
+              await this.options_.updateValues(constraints, stream);
           await this.modes_.updateModeSelectionUI(supportedModes);
           await this.modes_.updateMode(
               mode, stream, deviceId, captureResolution);

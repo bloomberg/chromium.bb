@@ -79,7 +79,7 @@ cca.views.camera.Modes = function(
           new cca.views.camera.Video(this.stream_, this.doSavePicture_),
       isSupported: async () => true,
       resolutionConfig: videoResolPreferrer,
-      v1Config: cca.views.camera.Modes.videoConstraits,
+      v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, true),
       nextMode: 'photo-mode',
     },
     'photo-mode': {
@@ -87,7 +87,7 @@ cca.views.camera.Modes = function(
           this.stream_, this.doSavePicture_, this.captureResolution_),
       isSupported: async () => true,
       resolutionConfig: photoResolPreferrer,
-      v1Config: cca.views.camera.Modes.photoConstraits,
+      v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'square-mode',
     },
     'square-mode': {
@@ -95,7 +95,7 @@ cca.views.camera.Modes = function(
           this.stream_, this.doSavePicture_, this.captureResolution_),
       isSupported: async () => true,
       resolutionConfig: photoResolPreferrer,
-      v1Config: cca.views.camera.Modes.photoConstraits,
+      v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'portrait-mode',
     },
     'portrait-mode': {
@@ -117,7 +117,7 @@ cca.views.camera.Modes = function(
         }
       },
       resolutionConfig: photoResolPreferrer,
-      v1Config: cca.views.camera.Modes.photoConstraits,
+      v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'video-mode',
     },
   };
@@ -162,14 +162,15 @@ cca.views.camera.Modes.prototype.updateModeUI_ = function(mode) {
 };
 
 /**
- * Returns a set of available video constraints for HALv1 device.
+ * Returns a set of available constraints for HALv1 device.
+ * @param {boolean} videoMode Is getting constraints for video mode.
  * @param {?string} deviceId Id of video device.
  * @return {Array<Object>} Result of constraints-candidates.
  */
-cca.views.camera.Modes.videoConstraits = function(deviceId) {
+cca.views.camera.Modes.getV1Constraints = function(videoMode, deviceId) {
   return [
     {
-      aspectRatio: {ideal: 1.7777777778},
+      aspectRatio: {ideal: videoMode ? 1.7777777778 : 1.3333333333},
       width: {min: 1280},
       frameRate: {min: 24},
     },
@@ -178,30 +179,14 @@ cca.views.camera.Modes.videoConstraits = function(deviceId) {
       frameRate: {min: 24},
     },
   ].map((constraint) => {
-    constraint.deviceId = {exact: deviceId};
-    return {audio: true, video: constraint};
-  });
-};
-
-/**
- * Returns a set of available photo constraints for HALv1 device.
- * @param {?string} deviceId Id of video device.
- * @return {Array<Object>} Result of constraints-candidates.
- */
-cca.views.camera.Modes.photoConstraits = function(deviceId) {
-  return [
-    {
-      aspectRatio: {ideal: 1.3333333333},
-      width: {min: 1280},
-      frameRate: {min: 24},
-    },
-    {
-      width: {min: 640},
-      frameRate: {min: 24},
-    },
-  ].map((constraint) => {
-    constraint.deviceId = {exact: deviceId};
-    return {audio: false, video: constraint};
+    if (deviceId) {
+      constraint.deviceId = {exact: deviceId};
+    } else {
+      // HALv1 devices are unable to know facing before stream configuration,
+      // deviceId is set to null for requesting user facing camera as default.
+      constraint.facingMode = {exact: 'user'};
+    }
+    return {audio: videoMode, video: constraint};
   });
 };
 
@@ -255,7 +240,7 @@ cca.views.camera.Modes.prototype.getResolutionCandidates = function(
  * Gets capture resolution and its corresponding preview constraints for the
  * given mode on camera HALv1 device.
  * @param {string} mode
- * @param {string} deviceId
+ * @param {?string} deviceId
  * @return {Array<[?[number, number], Array<Object>]>} Result capture resolution
  *     width, height and constraints-candidates for its preview.
  */
@@ -299,7 +284,7 @@ cca.views.camera.Modes.prototype.updateModeSelectionUI = function(
  * @async
  * @param {string} mode Classname of mode to be updated.
  * @param {MediaStream} stream Stream of the new switching mode.
- * @param {string} deviceId Device id of currently working video device.
+ * @param {?string} deviceId Device id of currently working video device.
  * @param {?[number, number]} captureResolution Capturing resolution width and
  *     height.
  */
@@ -312,7 +297,7 @@ cca.views.camera.Modes.prototype.updateMode =
   this.stream_ = stream;
   this.captureResolution_ = captureResolution;
   this.current = this.allModes_[mode].captureFactory();
-  if (this.captureResolution_) {
+  if (deviceId && this.captureResolution_) {
     this.allModes_[mode].resolutionConfig.updateCurrentResolution(
         deviceId, ...this.captureResolution_);
   }

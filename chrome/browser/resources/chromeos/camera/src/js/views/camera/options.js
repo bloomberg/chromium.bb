@@ -80,13 +80,24 @@ cca.views.camera.Options = function(
   this.videoDevices_ = null;
 
   /**
-   * List of available video devices and width, height of its supported video
-   * resolutions and photo resolutions.
+   * MediaDeviceInfo and additional information queried from private mojo api of
+   * all available video device. The additional fields in the array entry
+   * represent camera facing, supported photo resolutions, supported video
+   * resolutions. On HALv1 device, the promise will throw exception for its
+   * incapability of building mojo api connection.
    * @type {Promise<!Array<[MediaDeviceInfo, cros.mojom.CameraFacing, ResolList,
    *     ResolList]>>}
    * @private
    */
-  this.deviceResolutions_ = null;
+  this.devicePrivateInfo_ = null;
+
+  /**
+   * Whether the current device is HALv1 and lacks facing configuration.
+   * get facing information.
+   * @type {?boolean}
+   * private
+   */
+  this.isV1NoFacingConfig_ = null;
 
   /**
    * Mirroring set per device.
@@ -170,13 +181,23 @@ cca.views.camera.Options.prototype.animatePreviewGrid_ = function() {
  * Updates the options' values for the current constraints and stream.
  * @param {Object} constraints Current stream constraints in use.
  * @param {MediaStream} stream Current Stream in use.
- * @return {string} Facing-mode in use.
+ * @return {?string} Facing-mode in use.
  */
-cca.views.camera.Options.prototype.updateValues = function(
-    constraints, stream) {
+cca.views.camera.Options.prototype.updateValues =
+    async function(constraints, stream) {
   var track = stream.getVideoTracks()[0];
   var trackSettings = track.getSettings && track.getSettings();
-  var facingMode = trackSettings && trackSettings.facingMode;
+  let facingMode = trackSettings && trackSettings.facingMode;
+  if (this.isV1NoFacingConfig_ === null) {
+    // Because the facing mode of external camera will be set to undefined on
+    // all devices, to distinguish HALv1 device without facing configuration,
+    // assume the first opened camera is built-in camera. Device without facing
+    // configuration won't set facing of built-in cameras. Also if HALv1 device
+    // with facing configuration opened external camera first after CCA launched
+    // the logic here may misjudge it as this category.
+    this.isV1NoFacingConfig_ = facingMode === undefined;
+  }
+  facingMode = this.isV1NoFacingConfig_ ? null : facingMode || 'external';
   this.updateVideoDeviceId_(constraints, trackSettings);
   this.updateMirroring_(facingMode);
   this.audioTrack_ = stream.getAudioTracks()[0];
@@ -265,7 +286,7 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
     this.refreshingVideoDeviceIds_ = false;
   });
 
-  this.deviceResolutions_ =
+  this.devicePrivateInfo_ =
       this.videoDevices_
           .then((devices) => {
             return Promise.all(devices.map((d) => Promise.all([
@@ -285,14 +306,14 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
 
   (async () => {
     try {
-      var deviceResolutions = await this.deviceResolutions_;
+      var devicePrivateInfo = await this.devicePrivateInfo_;
     } catch (e) {
       return;
     }
     let frontSetting = null;
     let backSetting = null;
     let externalSettings = [];
-    deviceResolutions.forEach(([{deviceId}, facing, photoRs, videoRs]) => {
+    devicePrivateInfo.forEach(([{deviceId}, facing, photoRs, videoRs]) => {
       const setting = [deviceId, photoRs, videoRs];
       switch (facing) {
         case cros.mojom.CameraFacing.CAMERA_FACING_FRONT:
@@ -321,28 +342,45 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
 
 /**
  * Gets the video device ids sorted by preference.
- * @return {!Promise<!Array<string>>}
+ * @async
+ * @return {Array<?string>} May contain null for user facing camera on HALv1
+ *     devices.
+ * @throws {Error} Throws exception for no available video devices.
  */
-cca.views.camera.Options.prototype.videoDeviceIds = function() {
-  return this.videoDevices_.then((devices) => {
-    if (devices.length == 0) {
-      throw new Error('Device list empty.');
+cca.views.camera.Options.prototype.videoDeviceIds = async function() {
+  const devices = await this.videoDevices_;
+  if (devices.length == 0) {
+    throw new Error('Device list empty.');
+  }
+  try {
+    var facings = (await this.devicePrivateInfo_)
+                      .reduce(
+                          (facings, [d, facing]) =>
+                              Object.assign(facings, {[d.deviceId]: facing}),
+                          {});
+    this.isV1NoFacingConfig_ = false;
+  } catch (e) {
+    facings = null;
+  }
+  // Put the selected video device id first.
+  var sorted = devices.map((device) => device.deviceId).sort((a, b) => {
+    if (a == b) {
+      return 0;
     }
-    // Put the selected video device id first.
-    return devices
-        .sort((a, b) => {
-          if (a.deviceId == b.deviceId) {
-            return 0;
-          }
-          if (this.videoDeviceId_ ?
-                  (a.deviceId == this.videoDeviceId_) :
-                  (a.label == cca.views.camera.Options.FRONT_CAMERA_LABEL)) {
-            return -1;
-          }
-          return 1;
-        })
-        .map(({deviceId}) => deviceId);
+    if (this.videoDeviceId_ ?
+            a === this.videoDeviceId_ :
+            (facings &&
+             facings[a] === cros.mojom.CameraFacing.CAMERA_FACING_FRONT)) {
+      return -1;
+    }
+    return 1;
   });
+  // Prepended 'null' deviceId means the system default camera on HALv1
+  // device. Add it only when the app is launched (no video-device-id set).
+  if (!facings && this.videoDeviceId_ === null) {
+    sorted.unshift(null);
+  }
+  return sorted;
 };
 
 /**
@@ -355,8 +393,9 @@ cca.views.camera.Options.prototype.videoDeviceIds = function() {
  */
 cca.views.camera.Options.prototype.getDeviceResolutions =
     async function(deviceId) {
-  const deviceResolutions = await this.deviceResolutions_;
+  // HALv1 device will thrown from here.
+  const devicePrivateInfo = await this.devicePrivateInfo_;
   const [, , photoRs, videoRs] =
-      deviceResolutions.find(([d]) => d.deviceId == deviceId);
+      devicePrivateInfo.find(([d]) => d.deviceId === deviceId);
   return [photoRs, videoRs];
 };
