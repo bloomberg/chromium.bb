@@ -2509,8 +2509,11 @@ void FormatConverter::Convert() {
   typedef typename DataTypeForFormat<DstFormat>::Type DstType;
   const int kIntermFormat = IntermediateFormat<DstFormat>::value;
   typedef typename DataTypeForFormat<kIntermFormat>::Type IntermType;
-  const ptrdiff_t src_stride_in_elements = src_stride_ / sizeof(SrcType);
-  const ptrdiff_t dst_stride_in_elements = dst_stride_ / sizeof(DstType);
+  // stride here could be negative.
+  const ptrdiff_t src_stride_in_elements =
+      src_stride_ / static_cast<int>(sizeof(SrcType));
+  const ptrdiff_t dst_stride_in_elements =
+      dst_stride_ / static_cast<int>(sizeof(DstType));
   const bool kTrivialUnpack = SrcFormat == kIntermFormat;
   const bool kTrivialPack = DstFormat == kIntermFormat &&
                             alphaOp == WebGLImageConversion::kAlphaDoNothing;
