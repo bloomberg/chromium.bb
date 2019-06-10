@@ -515,7 +515,7 @@ class AutotestPrivateSendAssistantTextQueryFunction
   void OnInteractionStarted(bool is_voice_interaction) override {}
   void OnSuggestionsResponse(
       std::vector<AssistantSuggestionPtr> response) override {}
-  void OnOpenUrlResponse(const GURL& url) override {}
+  void OnOpenUrlResponse(const GURL& url, bool in_background) override {}
   void OnSpeechRecognitionStarted() override {}
   void OnSpeechRecognitionIntermediateResult(
       const std::string& high_confidence_text,
