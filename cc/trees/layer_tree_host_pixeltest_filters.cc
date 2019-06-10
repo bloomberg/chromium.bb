@@ -12,54 +12,6 @@
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/solid_color_content_layer_client.h"
 
-// TODO(crbug.com/971325): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
-#define MAYBE_CroppedFilter DISABLED_CroppedFilter
-#define MAYBE_EnlargedTextureWithAlphaThresholdFilter \
-  DISABLED_EnlargedTextureWithAlphaThresholdFilter
-#define MAYBE_ImageFilterClipped DISABLED_ImageFilterClipped
-#define MAYBE_BlurFilterWithClip DISABLED_BlurFilterWithClip
-#define MAYBE_NullFilter DISABLED_NullFilter
-#define MAYBE_StandardDpi DISABLED_StandardDpi
-#define MAYBE_BackdropFilterBlurOutsets DISABLED_BackdropFilterBlurOutsets
-#define MAYBE_FilterWithGiantCropRect DISABLED_FilterWithGiantCropRect
-#define MAYBE_HiDpi DISABLED_HiDpi
-#define MAYBE_FilterWithGiantCropRectNoClip \
-  DISABLED_FilterWithGiantCropRectNoClip
-#define MAYBE_ImageRenderSurfaceScaled DISABLED_ImageRenderSurfaceScaled
-#define MAYBE_BackdropFilterBlurRect DISABLED_BackdropFilterBlurRect
-#define MAYBE_ImageFilterScaled DISABLED_ImageFilterScaled
-#define MAYBE_StandardDpi DISABLED_StandardDpi
-#define MAYBE_ImageFilterNonZeroOrigin DISABLED_ImageFilterNonZeroOrigin
-#define MAYBE_ZoomFilter DISABLED_ZoomFilter
-#define MAYBE_HiDpi DISABLED_HiDpi
-#define MAYBE_RotatedFilter DISABLED_RotatedFilter
-#define MAYBE_EnlargedTextureWithCropOffsetFilter \
-  DISABLED_EnlargedTextureWithCropOffsetFilter
-#else
-#define MAYBE_CroppedFilter CroppedFilter
-#define MAYBE_EnlargedTextureWithAlphaThresholdFilter \
-  EnlargedTextureWithAlphaThresholdFilter
-#define MAYBE_ImageFilterClipped ImageFilterClipped
-#define MAYBE_BlurFilterWithClip BlurFilterWithClip
-#define MAYBE_NullFilter NullFilter
-#define MAYBE_StandardDpi StandardDpi
-#define MAYBE_BackdropFilterBlurOutsets BackdropFilterBlurOutsets
-#define MAYBE_FilterWithGiantCropRect FilterWithGiantCropRect
-#define MAYBE_HiDpi HiDpi
-#define MAYBE_FilterWithGiantCropRectNoClip FilterWithGiantCropRectNoClip
-#define MAYBE_ImageRenderSurfaceScaled ImageRenderSurfaceScaled
-#define MAYBE_BackdropFilterBlurRect BackdropFilterBlurRect
-#define MAYBE_ImageFilterScaled ImageFilterScaled
-#define MAYBE_StandardDpi StandardDpi
-#define MAYBE_ImageFilterNonZeroOrigin ImageFilterNonZeroOrigin
-#define MAYBE_ZoomFilter ZoomFilter
-#define MAYBE_HiDpi HiDpi
-#define MAYBE_RotatedFilter RotatedFilter
-#define MAYBE_EnlargedTextureWithCropOffsetFilter \
-  EnlargedTextureWithCropOffsetFilter
-#endif
-
 #if !defined(OS_ANDROID)
 
 namespace cc {
@@ -163,7 +115,7 @@ INSTANTIATE_TEST_SUITE_P(,
 #endif
                                            ));
 
-TEST_P(LayerTreeHostFiltersPixelTestGPU, MAYBE_BackdropFilterBlurRect) {
+TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRect) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -245,7 +197,7 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRounded) {
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_rounded.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestGPU, MAYBE_BackdropFilterBlurOutsets) {
+TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOutsets) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -446,15 +398,15 @@ INSTANTIATE_TEST_SUITE_P(,
 #endif
                                            ));
 
-TEST_P(LayerTreeHostFiltersScaledPixelTest, MAYBE_StandardDpi) {
+TEST_P(LayerTreeHostFiltersScaledPixelTest, StandardDpi) {
   RunPixelTestType(100, 1.f);
 }
 
-TEST_P(LayerTreeHostFiltersScaledPixelTest, MAYBE_HiDpi) {
+TEST_P(LayerTreeHostFiltersScaledPixelTest, HiDpi) {
   RunPixelTestType(50, 2.f);
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_NullFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, NullFilter) {
   layer_transforms_should_scale_layer_contents_ = false;
 
   scoped_refptr<SolidColorLayer> foreground =
@@ -468,7 +420,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_NullFilter) {
                base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_CroppedFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, CroppedFilter) {
   layer_transforms_should_scale_layer_contents_ = false;
 
   scoped_refptr<SolidColorLayer> foreground =
@@ -487,7 +439,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_CroppedFilter) {
                base::FilePath(FILE_PATH_LITERAL("white.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_ImageFilterClipped) {
+TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterClipped) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorYELLOW);
 
@@ -523,7 +475,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_ImageFilterClipped) {
                base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_ImageFilterNonZeroOrigin) {
+TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterNonZeroOrigin) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorYELLOW);
 
@@ -555,7 +507,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_ImageFilterNonZeroOrigin) {
                base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_ImageFilterScaled) {
+TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -682,7 +634,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterRotated) {
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_ImageRenderSurfaceScaled) {
+TEST_P(LayerTreeHostFiltersPixelTest, ImageRenderSurfaceScaled) {
   // A filter will cause a render surface to be used.  Here we force the
   // render surface on, and scale the result to make sure that we rasterize at
   // the correct resolution.
@@ -733,7 +685,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_ImageRenderSurfaceScaled) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_ZoomFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, ZoomFilter) {
   scoped_refptr<SolidColorLayer> root =
       CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorWHITE);
 
@@ -802,7 +754,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_ZoomFilter) {
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_RotatedFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, RotatedFilter) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorWHITE);
 
@@ -935,8 +887,7 @@ TEST_P(LayerTreeHostFiltersPixelTestNonVulkan, TranslatedFilter) {
       base::FilePath(FILE_PATH_LITERAL("translated_blue_green_alpha.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest,
-       MAYBE_EnlargedTextureWithAlphaThresholdFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithAlphaThresholdFilter) {
   // Rectangles chosen so that if flipped, the test will fail.
   gfx::Rect rect1(10, 10, 10, 15);
   gfx::Rect rect2(20, 25, 70, 65);
@@ -976,8 +927,7 @@ TEST_P(LayerTreeHostFiltersPixelTest,
       base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_threshold.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest,
-       MAYBE_EnlargedTextureWithCropOffsetFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithCropOffsetFilter) {
   // Rectangles chosen so that if flipped, the test will fail.
   gfx::Rect rect1(10, 10, 10, 15);
   gfx::Rect rect2(20, 25, 70, 65);
@@ -1015,7 +965,7 @@ TEST_P(LayerTreeHostFiltersPixelTest,
       base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_crop_offset.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_BlurFilterWithClip) {
+TEST_P(LayerTreeHostFiltersPixelTest, BlurFilterWithClip) {
   scoped_refptr<SolidColorLayer> child1 =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLUE);
   scoped_refptr<SolidColorLayer> child2 =
@@ -1068,14 +1018,14 @@ TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_BlurFilterWithClip) {
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestGPU, MAYBE_FilterWithGiantCropRect) {
+TEST_P(LayerTreeHostFiltersPixelTestGPU, FilterWithGiantCropRect) {
   scoped_refptr<SolidColorLayer> tree = BuildFilterWithGiantCropRect(true);
   RunPixelTest(
       renderer_type(), tree,
       base::FilePath(FILE_PATH_LITERAL("filter_with_giant_crop_rect.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestGPU, MAYBE_FilterWithGiantCropRectNoClip) {
+TEST_P(LayerTreeHostFiltersPixelTestGPU, FilterWithGiantCropRectNoClip) {
   scoped_refptr<SolidColorLayer> tree = BuildFilterWithGiantCropRect(false);
   RunPixelTest(
       renderer_type(), tree,
@@ -1132,12 +1082,12 @@ INSTANTIATE_TEST_SUITE_P(,
 #endif
                                            ));
 
-TEST_P(BackdropFilterWithDeviceScaleFactorTest, MAYBE_StandardDpi) {
+TEST_P(BackdropFilterWithDeviceScaleFactorTest, StandardDpi) {
   RunPixelTestType(
       1.f, base::FilePath(FILE_PATH_LITERAL("offset_backdrop_filter_1x.png")));
 }
 
-TEST_P(BackdropFilterWithDeviceScaleFactorTest, MAYBE_HiDpi) {
+TEST_P(BackdropFilterWithDeviceScaleFactorTest, HiDpi) {
   RunPixelTestType(
       2.f, base::FilePath(FILE_PATH_LITERAL("offset_backdrop_filter_2x.png")));
 }
