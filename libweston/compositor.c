@@ -72,6 +72,12 @@
 #include <libweston/plugin-registry.h>
 #include "pixel-formats.h"
 
+/**
+ * \defgroup head Head
+ * \defgroup output Output
+ * \defgroup compositor Compositor
+ */
+
 #define DEFAULT_REPAINT_WINDOW 7 /* milliseconds */
 
 static void
@@ -4668,6 +4674,8 @@ weston_head_remove_global(struct weston_head *head)
  * \param resource A wl_output protocol object.
  * \return The backing object (user data) of a wl_resource representing a
  * wl_output protocol object.
+ *
+ * \ingroup head
  */
 WL_EXPORT struct weston_head *
 weston_head_from_resource(struct wl_resource *resource)
@@ -4688,7 +4696,7 @@ weston_head_from_resource(struct wl_resource *resource)
  * The name is used in logs, and can be used by compositors as a configuration
  * identifier.
  *
- * \memberof weston_head
+ * \ingroup head
  * \internal
  */
 WL_EXPORT void
@@ -4962,7 +4970,7 @@ weston_output_attach_head(struct weston_output *output,
  * If the head is attached to an enabled output and the output will be left
  * with no heads, the output will be disabled.
  *
- * \memberof weston_head
+ * \ingroup head
  * \sa weston_output_disable
  */
 WL_EXPORT void
@@ -5006,7 +5014,7 @@ weston_head_detach(struct weston_head *head)
  * Destroys the head. The caller is responsible for freeing the memory pointed
  * to by \c head.
  *
- * \memberof weston_head
+ * \ingroup head
  * \internal
  */
 WL_EXPORT void
@@ -5058,7 +5066,7 @@ str_null_eq(const char *a, const char *b)
  *
  * This may set the device_changed flag.
  *
- * \memberof weston_head
+ * \ingroup head
  * \internal
  */
 WL_EXPORT void
@@ -5088,7 +5096,7 @@ weston_head_set_monitor_strings(struct weston_head *head,
  * \param head The head to modify.
  * \param non_desktop Whether the head connects to a non-desktop display.
  *
- * \memberof weston_head
+ * \ingroup head
  * \internal
  */
 WL_EXPORT void
@@ -5110,7 +5118,7 @@ weston_head_set_non_desktop(struct weston_head *head, bool non_desktop)
  *
  * This may set the device_changed flag.
  *
- * \memberof weston_head
+ * \ingroup head
  * \internal
  */
 WL_EXPORT void
@@ -5140,7 +5148,7 @@ weston_head_set_physical_size(struct weston_head *head,
  *
  * This may set the device_changed flag.
  *
- * \memberof weston_head
+ * \ingroup head
  * \internal
  */
 WL_EXPORT void
@@ -5164,7 +5172,7 @@ weston_head_set_subpixel(struct weston_head *head,
  * By default a head is external. The type is often inferred from the physical
  * connector type.
  *
- * \memberof weston_head
+ * \ingroup head
  * \internal
  */
 WL_EXPORT void
@@ -5190,7 +5198,7 @@ weston_head_set_internal(struct weston_head *head)
  * hook and sets the device_changed flag.
  *
  * \sa weston_compositor_set_heads_changed_cb
- * \memberof weston_head
+ * \ingroup head
  * \internal
  */
 WL_EXPORT void
@@ -5216,7 +5224,7 @@ weston_head_set_connection_status(struct weston_head *head, bool connected)
  * This is independent from the head being enabled.
  *
  * \sa weston_head_is_enabled
- * \memberof weston_head
+ * \ingroup head
  */
 WL_EXPORT bool
 weston_head_is_connected(struct weston_head *head)
@@ -5234,7 +5242,7 @@ weston_head_is_connected(struct weston_head *head)
  * This is independent of the head being connected.
  *
  * \sa weston_head_is_connected
- * \memberof weston_head
+ * \ingroup head
  */
 WL_EXPORT bool
 weston_head_is_enabled(struct weston_head *head)
@@ -5258,7 +5266,7 @@ weston_head_is_enabled(struct weston_head *head)
  * and sub-pixel type. The connection status is also included.
  *
  * \sa weston_head_reset_device_changed, weston_compositor_set_heads_changed_cb
- * \memberof weston_head
+ * \ingroup head
  */
 WL_EXPORT bool
 weston_head_is_device_changed(struct weston_head *head)
@@ -5274,7 +5282,7 @@ weston_head_is_device_changed(struct weston_head *head)
  * Non-desktop heads are not attached to outputs by default.
  * This stops weston from extending the desktop onto head mounted displays.
  *
- * \memberof weston_head
+ * \ingroup head
  */
 WL_EXPORT bool
 weston_head_is_non_desktop(struct weston_head *head)
@@ -5291,7 +5299,7 @@ weston_head_is_non_desktop(struct weston_head *head)
  * changes.
  *
  * \sa weston_head_is_device_changed
- * \memberof weston_head
+ * \ingroup head
  */
 WL_EXPORT void
 weston_head_reset_device_changed(struct weston_head *head)
@@ -5306,6 +5314,8 @@ weston_head_reset_device_changed(struct weston_head *head)
  *
  * The name depends on the backend. The DRM backend uses connector names,
  * other backends may use hardcoded names or user-given names.
+ *
+ * \ingroup head
  */
 WL_EXPORT const char *
 weston_head_get_name(struct weston_head *head)
@@ -5317,6 +5327,7 @@ weston_head_get_name(struct weston_head *head)
  *
  * \param head The head to query.
  * \return The output the head is attached to, or NULL if detached.
+ * \ingroup head
  */
 WL_EXPORT struct weston_output *
 weston_head_get_output(struct weston_head *head)
@@ -5339,6 +5350,8 @@ weston_head_get_output(struct weston_head *head)
  *
  * The \c data argument to the notify callback is the weston_head being
  * destroyed.
+ *
+ * \ingroup head
  */
 WL_EXPORT void
 weston_head_add_destroy_listener(struct weston_head *head,
@@ -5358,6 +5371,7 @@ weston_head_add_destroy_listener(struct weston_head *head,
  * through \c container_of().
  *
  * \sa wl_signal_get()
+ * \ingroup head
  */
 WL_EXPORT struct wl_listener *
 weston_head_get_destroy_listener(struct weston_head *head,
