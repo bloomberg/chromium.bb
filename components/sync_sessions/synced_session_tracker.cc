@@ -16,8 +16,7 @@
 namespace sync_sessions {
 
 const base::Feature kDeferRecyclingOfSyncTabNodesIfUnsynced{
-    "DeferRecyclingOfSyncTabNodesIfUnsynced",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "DeferRecyclingOfSyncTabNodesIfUnsynced", base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -544,7 +543,7 @@ std::set<int> SyncedSessionTracker::CleanupLocalTabs(
   DCHECK(!local_session_tag_.empty());
   TrackedSession* session = GetTrackedSession(local_session_tag_);
   CleanupSessionImpl(local_session_tag_, is_tab_node_unsynced_cb);
-  return session->tab_node_pool.CleanupTabNodes();
+  return session->tab_node_pool.CleanupFreeTabNodes();
 }
 
 int SyncedSessionTracker::LookupTabNodeFromTabId(const std::string& session_tag,
