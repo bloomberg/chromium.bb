@@ -223,23 +223,6 @@ HttpCache::Transaction::Mode HttpCache::Transaction::mode() const {
   return mode_;
 }
 
-int HttpCache::Transaction::WriteMetadata(IOBuffer* buf,
-                                          int buf_len,
-                                          CompletionOnceCallback callback) {
-  DCHECK(buf);
-  DCHECK_GT(buf_len, 0);
-  DCHECK(!callback.is_null());
-  if (!cache_.get() || !entry_)
-    return ERR_UNEXPECTED;
-
-  // We don't need to track this operation for anything.
-  // It could be possible to check if there is something already written and
-  // avoid writing again (it should be the same, right?), but let's allow the
-  // caller to "update" the contents with something new.
-  return entry_->disk_entry->WriteData(kMetadataIndex, 0, buf, buf_len,
-                                       std::move(callback), true);
-}
-
 LoadState HttpCache::Transaction::GetWriterLoadState() const {
   const HttpTransaction* transaction = network_transaction();
   if (transaction)
@@ -976,13 +959,6 @@ int HttpCache::Transaction::DoLoop(int result) {
       case STATE_PARTIAL_HEADERS_RECEIVED:
         DCHECK_EQ(OK, rv);
         rv = DoPartialHeadersReceived();
-        break;
-      case STATE_CACHE_READ_METADATA:
-        DCHECK_EQ(OK, rv);
-        rv = DoCacheReadMetadata();
-        break;
-      case STATE_CACHE_READ_METADATA_COMPLETE:
-        rv = DoCacheReadMetadataComplete(rv);
         break;
       case STATE_HEADERS_PHASE_CANNOT_PROCEED:
         rv = DoHeadersPhaseCannotProceed(rv);
@@ -2078,17 +2054,7 @@ int HttpCache::Transaction::DoTruncateCachedMetadataComplete(int result) {
 int HttpCache::Transaction::DoPartialHeadersReceived() {
   new_response_ = nullptr;
 
-  if (!partial_) {
-    if (entry_ && entry_->disk_entry->GetDataSize(kMetadataIndex) &&
-        !base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
-      TransitionToState(STATE_CACHE_READ_METADATA);
-    } else {
-      TransitionToState(STATE_FINISH_HEADERS);
-    }
-    return OK;
-  }
-
-  if (mode_ != NONE && !reading_) {
+  if (partial_ && mode_ != NONE && !reading_) {
     // We are about to return the headers for a byte-range request to the user,
     // so let's fix them.
     partial_->FixResponseHeaders(response_.headers.get(), true);
@@ -2173,34 +2139,6 @@ int HttpCache::Transaction::DoFinishHeadersComplete(int rv) {
 
   TransitionToState(STATE_NONE);
   return rv;
-}
-
-int HttpCache::Transaction::DoCacheReadMetadata() {
-  TRACE_EVENT0("io", "HttpCacheTransaction::DoCacheReadMetadata");
-  DCHECK(entry_);
-  DCHECK(!response_.metadata.get());
-  DCHECK(!base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-  TransitionToState(STATE_CACHE_READ_METADATA_COMPLETE);
-
-  response_.metadata = base::MakeRefCounted<IOBufferWithSize>(
-      entry_->disk_entry->GetDataSize(kMetadataIndex));
-
-  net_log_.BeginEvent(NetLogEventType::HTTP_CACHE_READ_INFO);
-  return entry_->disk_entry->ReadData(kMetadataIndex, 0,
-                                      response_.metadata.get(),
-                                      response_.metadata->size(),
-                                      io_callback_);
-}
-
-int HttpCache::Transaction::DoCacheReadMetadataComplete(int result) {
-  TRACE_EVENT0("io", "HttpCacheTransaction::DoCacheReadMetadataComplete");
-  net_log_.EndEventWithNetErrorCode(NetLogEventType::HTTP_CACHE_READ_INFO,
-                                    result);
-  if (result != response_.metadata->size())
-    return OnCacheReadError(result, false);
-
-  TransitionToState(STATE_FINISH_HEADERS);
-  return OK;
 }
 
 int HttpCache::Transaction::DoNetworkReadCacheWrite() {
@@ -2526,12 +2464,7 @@ int HttpCache::Transaction::BeginCacheRead() {
   if (method_ == "HEAD")
     FixHeadersForHead();
 
-  if (entry_->disk_entry->GetDataSize(kMetadataIndex) &&
-      !base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
-    TransitionToState(STATE_CACHE_READ_METADATA);
-  } else {
-    TransitionToState(STATE_FINISH_HEADERS);
-  }
+  TransitionToState(STATE_FINISH_HEADERS);
   return OK;
 }
 
@@ -3104,12 +3037,7 @@ int HttpCache::Transaction::DoSetupEntryForRead() {
   if (method_ == "HEAD")
     FixHeadersForHead();
 
-  if (entry_->disk_entry->GetDataSize(kMetadataIndex) &&
-      !base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
-    TransitionToState(STATE_CACHE_READ_METADATA);
-  } else {
-    TransitionToState(STATE_FINISH_HEADERS);
-  }
+  TransitionToState(STATE_FINISH_HEADERS);
   return OK;
 }
 

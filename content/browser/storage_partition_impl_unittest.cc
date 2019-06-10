@@ -31,7 +31,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/fake_leveldb_database.h"
-#include "net/base/features.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
@@ -1312,10 +1311,6 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
 }
 
 TEST_F(StoragePartitionImplTest, ClearCodeCache) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kIsolatedCodeCache);
-  ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   // Ensure code cache is initialized.
@@ -1347,10 +1342,6 @@ TEST_F(StoragePartitionImplTest, ClearCodeCache) {
 }
 
 TEST_F(StoragePartitionImplTest, ClearCodeCacheSpecificURL) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kIsolatedCodeCache);
-  ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   // Ensure code cache is initialized.
@@ -1388,10 +1379,6 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheSpecificURL) {
 }
 
 TEST_F(StoragePartitionImplTest, ClearCodeCacheDateRange) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kIsolatedCodeCache);
-  ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   // Ensure code cache is initialized.
@@ -1441,11 +1428,7 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheDateRange) {
 
 TEST_F(StoragePartitionImplTest, ClearWasmCodeCache) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      std::vector<base::Feature>(
-          {net::features::kIsolatedCodeCache, blink::features::kWasmCodeCache}),
-      std::vector<base::Feature>());
-  ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
+  feature_list.InitAndEnableFeature(blink::features::kWasmCodeCache);
   ASSERT_TRUE(base::FeatureList::IsEnabled(blink::features::kWasmCodeCache));
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
@@ -1479,32 +1462,7 @@ TEST_F(StoragePartitionImplTest, ClearWasmCodeCache) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(StoragePartitionImplTest, ClearCodeCacheNoIsolatedCodeCache) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(net::features::kIsolatedCodeCache);
-  ASSERT_FALSE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-
-  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
-  base::RunLoop().RunUntilIdle();
-  // We should not create GeneratedCodeCacheContext when IsolatedCodeCache
-  // is disabled.
-  EXPECT_EQ(nullptr, partition->GetGeneratedCodeCacheContext());
-
-  base::RunLoop run_loop;
-  // This shouldn't crash.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ClearCodeCache, partition, base::Time(), base::Time(),
-                     base::RepeatingCallback<bool(const GURL&)>(), &run_loop));
-  run_loop.Run();
-}
-
 TEST_F(StoragePartitionImplTest, ClearCodeCacheIncognito) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kIsolatedCodeCache);
-  ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-
   browser_context()->set_is_off_the_record(true);
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(

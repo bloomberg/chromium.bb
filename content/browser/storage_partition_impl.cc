@@ -60,7 +60,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_context.h"
@@ -818,30 +817,28 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       base::MakeRefCounted<NativeFileSystemManagerImpl>(
           partition->filesystem_context_, blob_context);
 
-  if (base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
-    GeneratedCodeCacheSettings settings =
-        GetContentClient()->browser()->GetGeneratedCodeCacheSettings(context);
+  GeneratedCodeCacheSettings settings =
+      GetContentClient()->browser()->GetGeneratedCodeCacheSettings(context);
 
-    // For Incognito mode, we should not persist anything on the disk so
-    // we do not create a code cache. Caching the generated code in memory
-    // is not useful, since V8 already maintains one copy in memory.
-    if (!in_memory && settings.enabled()) {
-      partition->generated_code_cache_context_ =
-          base::MakeRefCounted<GeneratedCodeCacheContext>();
+  // For Incognito mode, we should not persist anything on the disk so
+  // we do not create a code cache. Caching the generated code in memory
+  // is not useful, since V8 already maintains one copy in memory.
+  if (!in_memory && settings.enabled()) {
+    partition->generated_code_cache_context_ =
+        base::MakeRefCounted<GeneratedCodeCacheContext>();
 
-      base::FilePath code_cache_path;
-      if (partition_domain.empty()) {
-        code_cache_path = settings.path().AppendASCII("Code Cache");
-      } else {
-        // For site isolated partitions use the config directory.
-        code_cache_path = settings.path()
-                              .Append(relative_partition_path)
-                              .AppendASCII("Code Cache");
-      }
-      DCHECK_GE(settings.size_in_bytes(), 0);
-      partition->GetGeneratedCodeCacheContext()->Initialize(
-          code_cache_path, settings.size_in_bytes());
+    base::FilePath code_cache_path;
+    if (partition_domain.empty()) {
+      code_cache_path = settings.path().AppendASCII("Code Cache");
+    } else {
+      // For site isolated partitions use the config directory.
+      code_cache_path = settings.path()
+                            .Append(relative_partition_path)
+                            .AppendASCII("Code Cache");
     }
+    DCHECK_GE(settings.size_in_bytes(), 0);
+    partition->GetGeneratedCodeCacheContext()->Initialize(
+        code_cache_path, settings.size_in_bytes());
   }
 
   return partition;

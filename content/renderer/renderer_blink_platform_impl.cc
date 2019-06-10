@@ -69,7 +69,6 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "net/base/features.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -380,17 +379,12 @@ void RendererBlinkPlatformImpl::CacheMetadata(
     base::Time response_time,
     const uint8_t* data,
     size_t size) {
-  // Only cache WebAssembly if we have isolated code caches.
-  // TODO(bbudge) Remove this check when isolated code caches are on by default.
-  if (cache_type == blink::mojom::CodeCacheType::kJavascript ||
-      base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
-    // Let the browser know we generated cacheable metadata for this resource.
-    // The browser may cache it and return it on subsequent responses to speed
-    // the processing of this resource.
-    GetCodeCacheHost().DidGenerateCacheableMetadata(
-        cache_type, url, response_time,
-        mojo_base::BigBuffer(base::make_span(data, size)));
-  }
+  // Let the browser know we generated cacheable metadata for this resource.
+  // The browser may cache it and return it on subsequent responses to speed
+  // the processing of this resource.
+  GetCodeCacheHost().DidGenerateCacheableMetadata(
+      cache_type, url, response_time,
+      mojo_base::BigBuffer(base::make_span(data, size)));
 }
 
 void RendererBlinkPlatformImpl::FetchCachedCode(

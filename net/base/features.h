@@ -21,12 +21,6 @@ NET_EXPORT extern const base::Feature kAcceptLanguageHeader;
 NET_EXPORT extern const base::Feature kCapRefererHeaderLength;
 NET_EXPORT extern const base::FeatureParam<int> kMaxRefererHeaderLength;
 
-// Uses a site isolated code cache that is keyed on the resource url and the
-// origin lock of the renderer that is requesting the resource. The requests
-// to site-isolated code cache are handled by the content/GeneratedCodeCache
-// When this flag is enabled, the metadata field of the HttpCache is unused.
-NET_EXPORT extern const base::Feature kIsolatedCodeCache;
-
 // Enables the additional TLS 1.3 server-random-based downgrade protection
 // described in https://tools.ietf.org/html/rfc8446#section-4.1.3
 //

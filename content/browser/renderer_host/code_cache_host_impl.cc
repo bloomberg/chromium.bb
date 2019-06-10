@@ -24,7 +24,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "net/base/features.h"
 #include "net/base/io_buffer.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "url/gurl.h"
@@ -135,30 +134,16 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadata(
 
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
-    // Only store Javascript (not WebAssembly) code in the single-keyed cache.
-    if (cache_type == blink::mojom::CodeCacheType::kJavascript) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&CodeCacheHostImpl::DidGenerateCacheableMetadataOnUI,
-                         render_process_id_, url, expected_response_time,
-                         std::move(data)));
-    } else {
-      mojo::ReportBadMessage("Single-keyed code cache is Javascript only.");
-      return;
-    }
-  } else {
-    GeneratedCodeCache* code_cache = GetCodeCache(cache_type);
-    if (!code_cache)
-      return;
+  GeneratedCodeCache* code_cache = GetCodeCache(cache_type);
+  if (!code_cache)
+    return;
 
-    base::Optional<GURL> origin_lock =
-        GetSecondaryKeyForCodeCache(url, render_process_id_);
-    if (!origin_lock)
-      return;
+  base::Optional<GURL> origin_lock =
+      GetSecondaryKeyForCodeCache(url, render_process_id_);
+  if (!origin_lock)
+    return;
 
-    code_cache->WriteData(url, *origin_lock, expected_response_time, data);
-  }
+  code_cache->WriteData(url, *origin_lock, expected_response_time, data);
 }
 
 void CodeCacheHostImpl::FetchCachedCode(blink::mojom::CodeCacheType cache_type,
@@ -266,27 +251,6 @@ void CodeCacheHostImpl::OnCacheStorageOpenCallback(
   cache->WriteSideData(
       base::BindOnce(&NoOpCacheStorageErrorCallback, std::move(cache_handle)),
       url, expected_response_time, trace_id, buf, buf_len);
-}
-
-// static
-void CodeCacheHostImpl::DidGenerateCacheableMetadataOnUI(
-    int render_process_id,
-    const GURL& url,
-    base::Time expected_response_time,
-    mojo_base::BigBuffer data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
-  if (!host)
-    return;
-
-  // Use the same priority for the metadata write as for script
-  // resources (see defaultPriorityForResourceType() in WebKit's
-  // CachedResource.cpp). Note that WebURLRequest::PriorityMedium
-  // corresponds to net::LOW (see ConvertWebKitPriorityToNetPriority()
-  // in weburlloader_impl.cc).
-  const net::RequestPriority kPriority = net::LOW;
-  host->GetStoragePartition()->GetNetworkContext()->WriteCacheMetadata(
-      url, kPriority, expected_response_time, std::move(data));
 }
 
 }  // namespace content

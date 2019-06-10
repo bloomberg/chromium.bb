@@ -56,7 +56,6 @@ namespace net {
 
 class HttpNetworkSession;
 class HttpResponseInfo;
-class IOBuffer;
 class NetLog;
 struct HttpRequestInfo;
 
@@ -203,17 +202,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
                                 HttpResponseInfo* response_info,
                                 bool* response_truncated);
 
-  // Writes |buf_len| bytes of metadata stored in |buf| to the cache entry
-  // referenced by |url|, as long as the entry's |expected_response_time| has
-  // not changed. This method returns without blocking, and the operation will
-  // be performed asynchronously without any completion notification.
-  // Takes ownership of |buf|.
-  virtual void WriteMetadata(const GURL& url,
-                             RequestPriority priority,
-                             base::Time expected_response_time,
-                             IOBuffer* buf,
-                             int buf_len);
-
   // Get/Set the cache's mode.
   void set_mode(Mode value) { mode_ = value; }
   Mode mode() { return mode_; }
@@ -300,13 +288,17 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   enum {
     kResponseInfoIndex = 0,
     kResponseContentIndex,
+    // Only currently used in DoTruncateCachedMetadata().
+    // TODO(mmenke): Remove this in and DoTruncateCachedMetadata() in M79, after
+    // most metadata entries in the cache have been removed. Without
+    // DoTruncateCachedMetadata(), the metadata will be removed when a cache
+    // entry is destroyed, but some conditionalized updates will keep it around.
     kMetadataIndex,
 
     // Must remain at the end of the enum.
     kNumCacheEntryDataIndices
   };
 
-  class MetadataWriter;
   class QuicServerInfoFactoryAdaptor;
   class Transaction;
   class WorkItem;

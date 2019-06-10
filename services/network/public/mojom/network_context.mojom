@@ -611,13 +611,6 @@ interface NetworkContext {
   NotifyExternalCacheHit(url.mojom.Url url, string http_method,
                          url.mojom.Origin? top_frame_origin);
 
-  // Caches |data| associated with |url| and |expected_response_time| in the
-  // HttpCache related to this NetworkContext.
-  WriteCacheMetadata(url.mojom.Url url,
-                     RequestPriority priority,
-                     mojo_base.mojom.Time expected_response_time,
-                     mojo_base.mojom.BigBuffer data);
-
   // Clears the host cache. This will affect all NetworkContexts that share the
   // same HostResolved as the NetworkContext this is called on.
   //

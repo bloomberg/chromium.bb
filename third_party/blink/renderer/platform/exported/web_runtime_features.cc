@@ -128,10 +128,6 @@ void WebRuntimeFeatures::EnableCacheInlineScriptCode(bool enable) {
   RuntimeEnabledFeatures::SetCacheInlineScriptCodeEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableIsolatedCodeCache(bool enable) {
-  RuntimeEnabledFeatures::SetIsolatedCodeCacheEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableWasmCodeCache(bool enable) {
   RuntimeEnabledFeatures::SetWasmCodeCacheEnabled(enable);
 }

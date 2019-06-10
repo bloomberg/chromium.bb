@@ -18,7 +18,6 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
-#include "net/base/features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
@@ -413,8 +412,6 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableCacheInlineScriptCode(
       base::FeatureList::IsEnabled(features::kCacheInlineScriptCode));
 
-  WebRuntimeFeatures::EnableIsolatedCodeCache(
-      base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
   WebRuntimeFeatures::EnableWasmCodeCache(
       base::FeatureList::IsEnabled(blink::features::kWasmCodeCache));
 

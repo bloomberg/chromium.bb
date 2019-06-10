@@ -1386,21 +1386,6 @@ void NetworkContext::NotifyExternalCacheHit(
     cache->OnExternalCacheHit(url, http_method, top_frame_origin);
 }
 
-void NetworkContext::WriteCacheMetadata(const GURL& url,
-                                        net::RequestPriority priority,
-                                        base::Time expected_response_time,
-                                        mojo_base::BigBuffer data) {
-  net::HttpCache* cache =
-      url_request_context_->http_transaction_factory()->GetCache();
-  if (!cache)
-    return;
-
-  auto buf = base::MakeRefCounted<net::IOBuffer>(data.size());
-  memcpy(buf->data(), data.data(), data.size());
-  cache->WriteMetadata(url, priority, expected_response_time, buf.get(),
-                       data.size());
-}
-
 void NetworkContext::SetCorsOriginAccessListsForOrigin(
     const url::Origin& source_origin,
     std::vector<mojom::CorsOriginPatternPtr> allow_patterns,

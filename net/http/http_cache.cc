@@ -232,94 +232,6 @@ class HttpCache::WorkItem {
 
 //-----------------------------------------------------------------------------
 
-// This class encapsulates a transaction whose only purpose is to write metadata
-// to a given entry.
-class HttpCache::MetadataWriter {
- public:
-  explicit MetadataWriter(HttpCache::Transaction* transaction)
-      : verified_(false), buf_len_(0), transaction_(transaction) {}
-
-  ~MetadataWriter() = default;
-
-  // Implements the bulk of HttpCache::WriteMetadata.
-  void Write(const GURL& url,
-             base::Time expected_response_time,
-             IOBuffer* buf,
-             int buf_len);
-
- private:
-  void VerifyResponse(int result);
-  void SelfDestroy();
-  void OnIOComplete(int result);
-
-  bool verified_;
-  scoped_refptr<IOBuffer> buf_;
-  int buf_len_;
-  base::Time expected_response_time_;
-  HttpRequestInfo request_info_;
-
-  // |transaction_| to come after |request_info_| so that |request_info_| is not
-  // destroyed earlier.
-  std::unique_ptr<HttpCache::Transaction> transaction_;
-  DISALLOW_COPY_AND_ASSIGN(MetadataWriter);
-};
-
-void HttpCache::MetadataWriter::Write(const GURL& url,
-                                      base::Time expected_response_time,
-                                      IOBuffer* buf,
-                                      int buf_len) {
-  DCHECK_GT(buf_len, 0);
-  DCHECK(buf);
-  DCHECK(buf->data());
-  request_info_.url = url;
-  request_info_.method = "GET";
-
-  // todo (crbug.com/690099): Incorrect usage of LOAD_ONLY_FROM_CACHE.
-  request_info_.load_flags =
-      LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION | LOAD_SKIP_VARY_CHECK;
-
-  expected_response_time_ = expected_response_time;
-  buf_ = buf;
-  buf_len_ = buf_len;
-  verified_ = false;
-
-  int rv = transaction_->Start(
-      &request_info_,
-      base::Bind(&MetadataWriter::OnIOComplete, base::Unretained(this)),
-      NetLogWithSource());
-  if (rv != ERR_IO_PENDING)
-    VerifyResponse(rv);
-}
-
-void HttpCache::MetadataWriter::VerifyResponse(int result) {
-  verified_ = true;
-  if (result != OK)
-    return SelfDestroy();
-
-  const HttpResponseInfo* response_info = transaction_->GetResponseInfo();
-  DCHECK(response_info->was_cached);
-  if (response_info->response_time != expected_response_time_)
-    return SelfDestroy();
-
-  result = transaction_->WriteMetadata(
-      buf_.get(),
-      buf_len_,
-      base::Bind(&MetadataWriter::OnIOComplete, base::Unretained(this)));
-  if (result != ERR_IO_PENDING)
-    SelfDestroy();
-}
-
-void HttpCache::MetadataWriter::SelfDestroy() {
-  delete this;
-}
-
-void HttpCache::MetadataWriter::OnIOComplete(int result) {
-  if (!verified_)
-    return VerifyResponse(result);
-  SelfDestroy();
-}
-
-//-----------------------------------------------------------------------------
 HttpCache::HttpCache(HttpNetworkSession* session,
                      std::unique_ptr<BackendFactory> backend_factory,
                      bool is_main_cache)
@@ -423,28 +335,6 @@ bool HttpCache::ParseResponseInfo(const char* data, int len,
                                   bool* response_truncated) {
   base::Pickle pickle(data, len);
   return response_info->InitFromPickle(pickle, response_truncated);
-}
-
-void HttpCache::WriteMetadata(const GURL& url,
-                              RequestPriority priority,
-                              base::Time expected_response_time,
-                              IOBuffer* buf,
-                              int buf_len) {
-  if (!buf_len)
-    return;
-
-  // Do lazy initialization of disk cache if needed.
-  if (!disk_cache_.get()) {
-    // We don't care about the result.
-    CreateBackend(nullptr, CompletionOnceCallback());
-  }
-
-  HttpCache::Transaction* transaction =
-      new HttpCache::Transaction(priority, this);
-  MetadataWriter* writer = new MetadataWriter(transaction);
-
-  // The writer will self destruct when done.
-  writer->Write(url, expected_response_time, buf, buf_len);
 }
 
 void HttpCache::CloseAllConnections() {
