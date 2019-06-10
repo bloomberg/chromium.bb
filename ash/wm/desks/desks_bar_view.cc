@@ -42,6 +42,11 @@ base::string16 GetMiniViewTitle(int mini_view_index) {
   return l10n_util::GetStringUTF16(kStringIds[mini_view_index]);
 }
 
+gfx::Point GetGestureEventScreenPoint(const ui::Event& event) {
+  DCHECK(event.IsGestureEvent());
+  return event.AsGestureEvent()->details().bounding_box().CenterPoint();
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -55,7 +60,9 @@ class DeskBarHoverObserver : public ui::EventObserver {
             this,
             widget_window,
             {ui::ET_MOUSE_PRESSED, ui::ET_MOUSE_DRAGGED, ui::ET_MOUSE_RELEASED,
-             ui::ET_MOUSE_MOVED, ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_EXITED})) {}
+             ui::ET_MOUSE_MOVED, ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_EXITED,
+             ui::ET_GESTURE_LONG_PRESS, ui::ET_GESTURE_LONG_TAP,
+             ui::ET_GESTURE_TAP, ui::ET_GESTURE_TAP_DOWN})) {}
 
   ~DeskBarHoverObserver() override = default;
 
@@ -69,6 +76,18 @@ class DeskBarHoverObserver : public ui::EventObserver {
       case ui::ET_MOUSE_ENTERED:
       case ui::ET_MOUSE_EXITED:
         owner_->OnHoverStateMayHaveChanged();
+        break;
+
+      case ui::ET_GESTURE_LONG_PRESS:
+      case ui::ET_GESTURE_LONG_TAP:
+        owner_->OnGestureTap(GetGestureEventScreenPoint(event),
+                             /*is_long_gesture=*/true);
+        break;
+
+      case ui::ET_GESTURE_TAP:
+      case ui::ET_GESTURE_TAP_DOWN:
+        owner_->OnGestureTap(GetGestureEventScreenPoint(event),
+                             /*is_long_gesture=*/false);
         break;
 
       default:
@@ -148,6 +167,12 @@ void DesksBarView::Init() {
 void DesksBarView::OnHoverStateMayHaveChanged() {
   for (auto& mini_view : mini_views_)
     mini_view->OnHoverStateMayHaveChanged();
+}
+
+void DesksBarView::OnGestureTap(const gfx::Point& screen_location,
+                                bool is_long_gesture) {
+  for (auto& mini_view : mini_views_)
+    mini_view->OnWidgetGestureTap(screen_location, is_long_gesture);
 }
 
 void DesksBarView::SetDragDetails(const gfx::Point& screen_location,

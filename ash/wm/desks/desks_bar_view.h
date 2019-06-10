@@ -58,8 +58,10 @@ class ASH_EXPORT DesksBarView : public views::View,
   // layout.
   void Init();
 
-  // Updates the visibility state of the close buttons on all the mini_views.
+  // Updates the visibility state of the close buttons on all the mini_views as
+  // a result of mouse and gesture events.
   void OnHoverStateMayHaveChanged();
+  void OnGestureTap(const gfx::Point& screen_location, bool is_long_gesture);
 
   // Called when an item is being dragged in overview mode to update whether it
   // is currently intersecting with this view, and the |screen_location| of the

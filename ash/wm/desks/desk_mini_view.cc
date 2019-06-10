@@ -104,13 +104,26 @@ aura::Window* DeskMiniView::GetDeskContainer() const {
 }
 
 void DeskMiniView::OnHoverStateMayHaveChanged() {
-  // TODO(afakhry): In tablet mode, discuss showing the close button on long
-  // press.
   // Don't show the close button when hovered while the dragged window is on
   // the DesksBarView.
-  close_desk_button_->SetVisible(DesksController::Get()->CanRemoveDesks() &&
-                                 !owner_bar_->dragged_item_over_bar() &&
-                                 IsMouseHovered());
+  close_desk_button_->SetVisible(
+      DesksController::Get()->CanRemoveDesks() &&
+      !owner_bar_->dragged_item_over_bar() &&
+      (IsMouseHovered() || force_show_close_button_));
+}
+
+void DeskMiniView::OnWidgetGestureTap(const gfx::Point& screen_location,
+                                      bool is_long_gesture) {
+  const bool old_force_show_close_button = force_show_close_button_;
+  // Note that we don't want to hide the close button if it's a single tap
+  // within the bounds of an already visible button, which will later be handled
+  // as a press event on that close button that will result in closing the desk.
+  force_show_close_button_ =
+      (is_long_gesture && IsPointOnMiniView(screen_location)) ||
+      (!is_long_gesture && close_desk_button_->GetVisible() &&
+       close_desk_button_->IsPointOnButton(screen_location));
+  if (old_force_show_close_button != force_show_close_button_)
+    OnHoverStateMayHaveChanged();
 }
 
 void DeskMiniView::UpdateBorderColor() {

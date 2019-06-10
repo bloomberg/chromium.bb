@@ -83,4 +83,10 @@ std::unique_ptr<views::InkDropMask> CloseDeskButton::CreateInkDropMask() const {
                                                        kCornerRadius);
 }
 
+bool CloseDeskButton::IsPointOnButton(const gfx::Point& screen_location) const {
+  gfx::Point point_in_view = screen_location;
+  ConvertPointFromScreen(this, &point_in_view);
+  return HitTestPoint(point_in_view);
+}
+
 }  // namespace ash

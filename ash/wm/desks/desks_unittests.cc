@@ -32,6 +32,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/compositor_extra/shadow.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_util.h"
@@ -90,6 +91,28 @@ void ClickOnMiniView(const DeskMiniView* desk_mini_view,
       desk_mini_view->GetBoundsInScreen().CenterPoint();
   event_generator->MoveMouseTo(mini_view_center);
   event_generator->ClickLeftButton();
+}
+
+void LongGestureTapOnView(const views::View* view,
+                          ui::test::EventGenerator* event_generator) {
+  event_generator->set_current_screen_location(
+      view->GetBoundsInScreen().CenterPoint());
+  event_generator->PressTouch();
+  ui::GestureConfiguration* gesture_config =
+      ui::GestureConfiguration::GetInstance();
+  const int long_press_delay_ms = gesture_config->long_press_time_in_ms() +
+                                  gesture_config->show_press_delay_in_ms();
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(long_press_delay_ms));
+  run_loop.Run();
+  event_generator->ReleaseTouch();
+}
+
+void GestureTapOnView(const views::View* view,
+                      ui::test::EventGenerator* event_generator) {
+  event_generator->GestureTapAt(view->GetBoundsInScreen().CenterPoint());
 }
 
 // If |drop| is false, the dragged |item| won't be dropped; giving the caller
@@ -1232,6 +1255,57 @@ TEST_F(DesksTest, TabletModeDesksCreationRemovalCycle) {
       EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window()->IsVisible());
     }
   }
+}
+
+TEST_F(DesksTest, MiniViewsTouchGestures) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  controller->NewDesk();
+  ASSERT_EQ(3u, controller->desks().size());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  const auto* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_EQ(3u, desks_bar_view->mini_views().size());
+  auto* desk_1_mini_view = desks_bar_view->mini_views()[0].get();
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  auto* desk_3_mini_view = desks_bar_view->mini_views()[2].get();
+
+  // Override the long-tap delays.
+  ui::GestureConfiguration* gesture_config =
+      ui::GestureConfiguration::GetInstance();
+  gesture_config->set_long_press_time_in_ms(50);
+  gesture_config->set_show_press_delay_in_ms(50);
+
+  // Long gesture tapping on one mini_view shows its close button, and hides
+  // those of other mini_views.
+  auto* event_generator = GetEventGenerator();
+  LongGestureTapOnView(desk_1_mini_view, event_generator);
+  EXPECT_TRUE(desk_1_mini_view->close_desk_button()->GetVisible());
+  EXPECT_FALSE(desk_2_mini_view->close_desk_button()->GetVisible());
+  EXPECT_FALSE(desk_3_mini_view->close_desk_button()->GetVisible());
+  LongGestureTapOnView(desk_2_mini_view, event_generator);
+  EXPECT_FALSE(desk_1_mini_view->close_desk_button()->GetVisible());
+  EXPECT_TRUE(desk_2_mini_view->close_desk_button()->GetVisible());
+  EXPECT_FALSE(desk_3_mini_view->close_desk_button()->GetVisible());
+
+  // Tapping on the visible close button, closes the desk rather than switches
+  // to that desk.
+  GestureTapOnView(desk_2_mini_view->close_desk_button(), event_generator);
+  ASSERT_EQ(2u, controller->desks().size());
+  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // Tapping on the invisible close button should not result in closing that
+  // desk; rather activating that desk.
+  EXPECT_FALSE(desk_1_mini_view->close_desk_button()->GetVisible());
+  GestureTapOnView(desk_1_mini_view->close_desk_button(), event_generator);
+  ASSERT_EQ(2u, controller->desks().size());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(controller->desks()[0]->is_active());
 }
 
 class DesksWithSplitViewTest : public AshTestBase {

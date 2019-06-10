@@ -29,6 +29,8 @@ class ASH_EXPORT CloseDeskButton : public views::ImageButton {
   SkColor GetInkDropBaseColor() const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
+  bool IsPointOnButton(const gfx::Point& screen_location) const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CloseDeskButton);
 };

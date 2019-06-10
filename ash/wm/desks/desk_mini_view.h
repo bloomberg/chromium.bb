@@ -51,6 +51,12 @@ class ASH_EXPORT DeskMiniView : public views::Button,
   // view is mouse hovered.
   void OnHoverStateMayHaveChanged();
 
+  // Gesture tapping may affect the visibility of the close button. There's only
+  // one mini_view that shows the close button on long press at any time.
+  // This is useful for touch-only UIs.
+  void OnWidgetGestureTap(const gfx::Point& screen_location,
+                          bool is_long_gesture);
+
   // Updates the border color of the DeskPreviewView based on the activation
   // state of the corresponding desk.
   void UpdateBorderColor();
@@ -88,6 +94,10 @@ class ASH_EXPORT DeskMiniView : public views::Button,
 
   // The close button that shows on hover.
   CloseDeskButton* close_desk_button_;
+
+  // We force showing the close button when the mini_view is long pressed or
+  // tapped using touch gestures.
+  bool force_show_close_button_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DeskMiniView);
 };
