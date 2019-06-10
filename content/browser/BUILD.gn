@@ -2419,6 +2419,8 @@ jumbo_source_set("browser") {
       "frame_host/render_frame_host_android.h",
       "media/capture/screen_capture_device_android.cc",
       "media/capture/screen_capture_device_android.h",
+      "renderer_host/compositor_dependencies_android.cc",
+      "renderer_host/compositor_dependencies_android.h",
       "renderer_host/compositor_impl_android.cc",
       "renderer_host/compositor_impl_android.h",
       "renderer_host/delegated_frame_host_client_android.cc",
