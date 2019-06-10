@@ -5740,6 +5740,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        AllocateLocalSurfaceIdOnEviction) {
   view_->InitAsChild(nullptr);
+  // View has to not be empty in order for frame eviction to be invoked.
+  view_->SetSize(gfx::Size(54, 32));
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
