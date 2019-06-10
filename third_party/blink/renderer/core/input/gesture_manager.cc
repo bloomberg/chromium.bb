@@ -292,9 +292,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
       tapped_element->UpdateDistributionForFlatTreeTraversal();
       Node* click_target_node = current_hit_test.InnerNode()->CommonAncestor(
           *tapped_element, event_handling_util::ParentForClickEvent);
-      Element* click_target_element = nullptr;
-      if (click_target_node && click_target_node->IsElementNode())
-        click_target_element = ToElement(click_target_node);
+      auto* click_target_element = DynamicTo<Element>(click_target_node);
 
       click_event_result =
           mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(

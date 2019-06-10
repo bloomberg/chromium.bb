@@ -289,7 +289,7 @@ int HTMLViewSourceDocument::AddRange(const String& source,
   }
   AddText(text, class_name);
   if (!class_name.IsEmpty() && current_ != tbody_)
-    current_ = ToElement(current_->parentNode());
+    current_ = To<Element>(current_->parentNode());
   return end;
 }
 
@@ -337,7 +337,7 @@ int HTMLViewSourceDocument::AddSrcset(const String& source,
       AtomicString link(tmp[0]);
       current_ = AddLink(link, false);
       AddText(srclist[i], "html-attribute-value");
-      current_ = ToElement(current_->parentNode());
+      current_ = To<Element>(current_->parentNode());
     } else {
       AddText(srclist[i], "html-attribute-value");
     }

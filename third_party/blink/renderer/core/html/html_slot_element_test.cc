@@ -157,16 +157,16 @@ TEST_F(HTMLSlotElementReattachTest, RecalcAssignedNodeStyleForReattach) {
   shadow_root.SetInnerHTMLFromString(
       R"HTML(<span><slot /></span>)HTML");
 
-  Element& shadow_span = *ToElement(shadow_root.firstChild());
+  auto* shadow_span = To<Element>(shadow_root.firstChild());
   GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 
-  shadow_span.setAttribute(html_names::kStyleAttr, "display:block");
+  shadow_span->setAttribute(html_names::kStyleAttr, "display:block");
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   GetDocument().GetStyleEngine().RecalcStyle({});
 
-  EXPECT_TRUE(shadow_span.GetComputedStyle());
+  EXPECT_TRUE(shadow_span->GetComputedStyle());
   EXPECT_TRUE(span.GetComputedStyle());
 }
 

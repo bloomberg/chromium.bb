@@ -322,8 +322,8 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
   if (ShadowRoot* root = node->GetShadowRoot())
     Unbind(root, nodes_map);
 
-  if (node->IsElementNode()) {
-    Element* element = ToElement(node);
+  auto* element = DynamicTo<Element>(node);
+  if (element) {
     if (element->GetPseudoElement(kPseudoIdBefore))
       Unbind(element->GetPseudoElement(kPseudoIdBefore), nodes_map);
     if (element->GetPseudoElement(kPseudoIdAfter))
@@ -387,9 +387,9 @@ Response InspectorDOMAgent::AssertElement(int node_id, Element*& element) {
   if (!response.isSuccess())
     return response;
 
-  if (!node->IsElementNode())
+  element = DynamicTo<Element>(node);
+  if (!element)
     return Response::Error("Node is not an Element");
-  element = ToElement(node);
   return Response::OK();
 }
 
@@ -766,10 +766,7 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
     fragment->ParseXML(markup, contextElement, kAllowScriptingContent);
   }
 
-  Element* parsed_element =
-      fragment->firstChild() && fragment->firstChild()->IsElementNode()
-          ? ToElement(fragment->firstChild())
-          : nullptr;
+  Element* parsed_element = DynamicTo<Element>(fragment->firstChild());
   if (!parsed_element)
     return Response::Error("Could not parse value as attributes");
 
@@ -1033,7 +1030,7 @@ Response InspectorDOMAgent::performSearch(
             break;
           }
           // Go through all attributes and serialize them.
-          const Element* element = ToElement(node);
+          const auto* element = To<Element>(node);
           AttributeCollection attributes = element->Attributes();
           for (auto& attribute : attributes) {
             // Add attribute pair
@@ -1252,9 +1249,9 @@ Response InspectorDOMAgent::focus(Maybe<int> node_id,
   Response response = AssertNode(node_id, backend_node_id, object_id, node);
   if (!response.isSuccess())
     return response;
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return Response::Error("Node is not an Element");
-  Element* element = ToElement(node);
   element->GetDocument().UpdateStyleAndLayout();
   if (!element->IsFocusable())
     return Response::Error("Element is not focusable");
@@ -1445,7 +1442,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
       local_name = To<Attr>(node)->localName();
       break;
     case Node::kElementNode:
-      local_name = ToElement(node)->localName();
+      local_name = To<Element>(node)->localName();
       break;
     default:
       break;
@@ -1465,8 +1462,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     value->setIsSVG(true);
 
   bool force_push_children = false;
-  if (node->IsElementNode()) {
-    Element* element = ToElement(node);
+  if (auto* element = DynamicTo<Element>(node)) {
     value->setAttributes(BuildArrayForElementAttributes(element));
 
     if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
@@ -1764,8 +1760,8 @@ void InspectorDOMAgent::CollectNodes(
   if (--depth <= 0)
     return;
 
-  if (pierce && node->IsElementNode()) {
-    Element* element = ToElement(node);
+  auto* element = DynamicTo<Element>(node);
+  if (pierce && element) {
     if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
       if (frame_owner->ContentFrame() &&
           frame_owner->ContentFrame()->IsLocalFrame()) {
@@ -1978,7 +1974,7 @@ void InspectorDOMAgent::DidInvalidateStyleAttr(Node* node) {
   if (!id)
     return;
 
-  RevalidateTask()->ScheduleStyleAttrRevalidationFor(ToElement(node));
+  RevalidateTask()->ScheduleStyleAttrRevalidationFor(To<Element>(node));
 }
 
 void InspectorDOMAgent::DidPushShadowRoot(Element* host, ShadowRoot* root) {
@@ -2089,12 +2085,13 @@ void InspectorDOMAgent::PseudoElementDestroyed(PseudoElement* pseudo_element) {
 }
 
 static ShadowRoot* ShadowRootForNode(Node* node, const String& type) {
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return nullptr;
   if (type == "a")
-    return ToElement(node)->AuthorShadowRoot();
+    return element->AuthorShadowRoot();
   if (type == "u")
-    return ToElement(node)->UserAgentShadowRoot();
+    return element->UserAgentShadowRoot();
   return nullptr;
 }
 

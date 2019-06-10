@@ -33,13 +33,14 @@ namespace {
 
 InspectorHighlightContrastInfo FetchContrast(Node* node) {
   InspectorHighlightContrastInfo result;
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return result;
 
   Vector<Color> bgcolors;
   String font_size;
   String font_weight;
-  InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors, &font_size,
+  InspectorCSSAgent::GetBackgroundColors(element, &bgcolors, &font_size,
                                          &font_weight);
   if (bgcolors.size() == 1) {
     result.font_size = font_size;

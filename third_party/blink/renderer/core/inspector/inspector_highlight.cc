@@ -466,8 +466,9 @@ InspectorHighlight::InspectorHighlight(
   AppendPathsForShapeOutside(node, highlight_config);
   AppendNodeHighlight(node, highlight_config);
   auto* text_node = DynamicTo<Text>(node);
-  if (append_element_info && node->IsElementNode())
-    element_info_ = BuildElementInfo(ToElement(node));
+  auto* element = DynamicTo<Element>(node);
+  if (append_element_info && element)
+    element_info_ = BuildElementInfo(element);
   else if (append_element_info && text_node)
     element_info_ = BuildTextNodeInfo(text_node);
   if (element_info_ && highlight_config.show_styles)
@@ -523,9 +524,7 @@ void InspectorHighlight::VisitAndCollectDistanceInfo(Node* node) {
   if (layout_object)
     AddLayoutBoxToDistanceInfo(layout_object);
 
-  if (node->IsElementNode()) {
-    Element* element = ToElement(node);
-
+  if (auto* element = DynamicTo<Element>(node)) {
     if (element->GetPseudoId()) {
       if (layout_object)
         VisitAndCollectDistanceInfo(element->GetPseudoId(), layout_object);

@@ -416,8 +416,8 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
     }
   }
 
-  if (node->IsElementNode()) {
-    Element* element = ToElement(node);
+  auto* element = DynamicTo<Element>(node);
+  if (element) {
     value->setAttributes(BuildArrayForElementAttributes(element));
 
     if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
@@ -651,8 +651,8 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
   if (node->WillRespondToMouseClickEvents())
     SetRare(nodes->getIsClickable(nullptr), index);
 
-  if (node->IsElementNode()) {
-    Element* element = ToElement(node);
+  auto* element = DynamicTo<Element>(node);
+  if (element) {
     if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
       if (Document* doc = frame_owner->contentDocument()) {
         SetRare(nodes->getContentDocumentIndex(nullptr), index,
@@ -842,9 +842,10 @@ InspectorDOMSnapshotAgent::BuildArrayForElementAttributes(Element* element) {
 std::unique_ptr<protocol::Array<int>>
 InspectorDOMSnapshotAgent::BuildArrayForElementAttributes2(Node* node) {
   auto result = protocol::Array<int>::create();
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return result;
-  AttributeCollection attributes = ToElement(node)->Attributes();
+  AttributeCollection attributes = element->Attributes();
   for (const auto& attribute : attributes) {
     result->addItem(AddString(attribute.GetName().ToString()));
     result->addItem(AddString(attribute.Value()));
@@ -935,8 +936,7 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
         layout_tree_snapshot->getScrollRects(nullptr);
     DCHECK(scrollRects);
 
-    if (node->IsElementNode()) {
-      auto* element = ToElement(node);
+    if (auto* element = DynamicTo<Element>(node)) {
       offsetRects->addItem(
           BuildRectForLayout(element->OffsetLeft(), element->OffsetTop(),
                              element->OffsetWidth(), element->OffsetHeight()));

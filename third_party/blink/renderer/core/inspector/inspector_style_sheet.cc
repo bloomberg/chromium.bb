@@ -1858,9 +1858,9 @@ bool InspectorStyleSheet::ResourceStyleSheetText(String* result) {
 
 Element* InspectorStyleSheet::OwnerStyleElement() {
   Node* owner_node = page_style_sheet_->ownerNode();
-  if (!owner_node || !owner_node->IsElementNode())
+  auto* owner_element = DynamicTo<Element>(owner_node);
+  if (!owner_element)
     return nullptr;
-  Element* owner_element = ToElement(owner_node);
 
   if (!IsHTMLStyleElement(owner_element) && !IsSVGStyleElement(owner_element))
     return nullptr;

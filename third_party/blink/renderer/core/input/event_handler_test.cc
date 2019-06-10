@@ -540,7 +540,7 @@ TEST_F(EventHandlerTest, ReadOnlyInputDoesNotInheritUserSelect) {
 
 TEST_F(EventHandlerTest, ImagesCannotStartSelection) {
   SetHtmlInnerHTML("<img>");
-  Element* const img = ToElement(GetDocument().body()->firstChild());
+  auto* const img = To<Element>(GetDocument().body()->firstChild());
   HitTestLocation location(
       img->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =

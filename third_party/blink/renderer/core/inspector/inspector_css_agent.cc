@@ -169,9 +169,10 @@ HeapVector<Member<Element>> ElementsFromRect(const PhysicalRect& rect,
       continue;
     if (node->IsPseudoElement() || node->IsTextNode())
       node = node->ParentOrShadowHostNode();
-    if (!node || node == previous_node || !node->IsElementNode())
+    auto* element = DynamicTo<Element>(node);
+    if (!node || node == previous_node || !element)
       continue;
-    elements.push_back(ToElement(node));
+    elements.push_back(element);
     previous_node = node;
   }
   return elements;
@@ -2135,7 +2136,7 @@ void InspectorCSSAgent::StyleSheetChanged(
 void InspectorCSSAgent::ResetPseudoStates() {
   HeapHashSet<Member<Document>> documents_to_change;
   for (auto& state : node_id_to_forced_pseudo_state_) {
-    Element* element = ToElement(dom_agent_->NodeForId(state.key));
+    auto* element = To<Element>(dom_agent_->NodeForId(state.key));
     if (element && element->ownerDocument())
       documents_to_change.insert(element->ownerDocument());
   }

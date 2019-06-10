@@ -295,8 +295,9 @@ void HTMLConstructionSite::QueueTask(const HTMLConstructionSiteTask& task) {
 void HTMLConstructionSite::AttachLater(ContainerNode* parent,
                                        Node* child,
                                        bool self_closing) {
-  DCHECK(ScriptingContentIsAllowed(parser_content_policy_) ||
-         !child->IsElementNode() || !ToElement(child)->IsScriptElement());
+  auto* element = DynamicTo<Element>(child);
+  DCHECK(ScriptingContentIsAllowed(parser_content_policy_) || !element ||
+         !element->IsScriptElement());
   DCHECK(PluginContentIsAllowed(parser_content_policy_) ||
          !IsHTMLPlugInElement(child));
 

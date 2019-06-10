@@ -117,7 +117,7 @@ Node* DOMPatchSupport::PatchNode(Node* node,
   // root children, as it provides an equivalent parsing context.
   if (target_node->IsShadowRoot())
     target_node = GetDocument().body();
-  Element* target_element = ToElement(target_node);
+  auto* target_element = To<Element>(target_node);
 
   // FIXME: This code should use one of createFragment* in Serialization.h
   if (GetDocument().IsHTMLDocument())
@@ -185,12 +185,12 @@ bool DOMPatchSupport::InnerPatchNode(Digest* old_digest,
       return false;
   }
 
-  if (!old_node->IsElementNode())
+  auto* old_element = DynamicTo<Element>(old_node);
+  if (!old_element)
     return true;
 
   // Patch attributes
-  Element* old_element = ToElement(old_node);
-  Element* new_element = ToElement(new_node);
+  auto* new_element = To<Element>(new_node);
   if (old_digest->attrs_sha1_ != new_digest->attrs_sha1_) {
     // FIXME: Create a function in Element for removing all properties. Take in
     // account whether did/willModifyAttribute are important.

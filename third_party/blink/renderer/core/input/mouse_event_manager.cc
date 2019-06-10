@@ -45,10 +45,10 @@ namespace blink {
 namespace {
 
 String CanvasRegionId(Node* node, const WebMouseEvent& mouse_event) {
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return String();
 
-  Element* element = ToElement(node);
   if (!element->IsInCanvasSubtree())
     return String();
 
