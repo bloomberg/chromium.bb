@@ -709,7 +709,8 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
     // worse performance since reads become asynchronous.
     if (loaded_url_.SchemeIs(url::kDataScheme)) {
       std::string mime_type, charset, data;
-      if (!net::DataURL::Parse(loaded_url_, &mime_type, &charset, &data)) {
+      if (!net::DataURL::Parse(loaded_url_, &mime_type, &charset, &data) ||
+          data.empty()) {
         DataSourceInitialized(false);
         return;
       }
