@@ -11,8 +11,8 @@ v8::JitCodeEventHandler g_jit_code_event_handler = NULL;
 #if defined(OS_WIN)
 Debug::CodeRangeCreatedCallback g_code_range_created_callback = NULL;
 Debug::CodeRangeDeletedCallback g_code_range_deleted_callback = NULL;
-Debug::DebugBreakCallback g_debug_break_callback = NULL;
-Debug::DebugResumeCallback g_debug_resume_callback = NULL;
+
+Debug::DebugSignalHandlerRegistry g_debug_signal_handlers;
 #endif
 }  // namespace
 
@@ -32,15 +32,26 @@ void Debug::SetCodeRangeDeletedCallback(CodeRangeDeletedCallback callback) {
   g_code_range_deleted_callback = callback;
 }
 
-// static
-void Debug::SetDebugBreakCallback(DebugBreakCallback callback) {
-  g_debug_break_callback = callback;
+void Debug::RegisterDebugSignalHandler(DebugSignalHandler *signal){
+  g_debug_signal_handlers.insert(signal);
 }
 
-// static
-void Debug::SetDebugResumeCallback(DebugResumeCallback callback) {
-  g_debug_resume_callback = callback;
+void Debug::ClearDebugSignalHandler(DebugSignalHandler *signal) {
+  g_debug_signal_handlers.erase(signal);
 }
+
+void Debug::SignalDebugBreak() {
+    for (auto *debugStateSignal : g_debug_signal_handlers) {
+        debugStateSignal->onDebugBreak();
+    }
+}
+
+void Debug::SignalDebugResume() {
+    for (auto *debugStateSignal : g_debug_signal_handlers) {
+        debugStateSignal->onDebugResume();
+    }
+}
+
 #endif
 
 // static
@@ -59,15 +70,6 @@ Debug::CodeRangeDeletedCallback DebugImpl::GetCodeRangeDeletedCallback() {
   return g_code_range_deleted_callback;
 }
 
-// static
-Debug::DebugBreakCallback Debug::GetDebugBreakCallback() {
-  return g_debug_break_callback;
-}
-
-// static
-Debug::DebugResumeCallback Debug::GetDebugResumeCallback() {
-  return g_debug_resume_callback;
-}
 #endif
 
 }  // namespace gin

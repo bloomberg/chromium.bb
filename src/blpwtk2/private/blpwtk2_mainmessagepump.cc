@@ -349,17 +349,6 @@ MainMessagePump* MainMessagePump::current()
     return pump;
 }
 
-// CLASS METHODS
-void MainMessagePump::OnDebugBreak()
-{
-    current()->modalLoop(true);
-}
-
-void MainMessagePump::OnDebugResume()
-{
-    current()->modalLoop(false);
-}
-
 // CREATORS
 MainMessagePump::MainMessagePump()
     : base::MessagePumpForUI()
@@ -414,17 +403,23 @@ MainMessagePump::MainMessagePump()
     DCHECK(!g_lazy_tls.Pointer()->Get());
     g_lazy_tls.Pointer()->Set(this);
 
-    gin::Debug::SetDebugBreakCallback(&MainMessagePump::OnDebugBreak);
-    gin::Debug::SetDebugResumeCallback(&MainMessagePump::OnDebugResume);
+    // register debug signal handler
+    gin::Debug::RegisterDebugSignalHandler(this);
 }
 
 MainMessagePump::~MainMessagePump()
 {
-    gin::Debug::SetDebugBreakCallback(nullptr);
-    gin::Debug::SetDebugResumeCallback(nullptr);
-
+    gin::Debug::ClearDebugSignalHandler(this);
     ::DestroyWindow(d_window);
     g_lazy_tls.Pointer()->Set(nullptr);
+}
+
+void MainMessagePump::onDebugBreak(){
+    current()->modalLoop(true);
+}
+
+void MainMessagePump::onDebugResume(){
+    current()->modalLoop(false);
 }
 
 void MainMessagePump::init()

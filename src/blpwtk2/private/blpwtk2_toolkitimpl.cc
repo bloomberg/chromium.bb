@@ -588,6 +588,9 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         switches::kDisableFeatures, feature_list.get());
         base::FeatureList::SetInstance(std::move(feature_list));    
     }
+
+    gin::Debug::RegisterDebugSignalHandler(this);
+
     // Start pumping the message loop.
     startMessageLoop(sandboxInfo);
 
@@ -628,6 +631,8 @@ ToolkitImpl::~ToolkitImpl()
         InProcessRenderer::cleanup();
 
     d_messagePump->cleanup();
+
+    gin::Debug::ClearDebugSignalHandler(this);
 
     if (Statics::isRendererMainThreadMode()) {
         d_renderMainMessageLoop.reset();
@@ -728,17 +733,34 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
     d_messagePump->setTraceThreshold(timeoutMS);
 }
 
+// expose an api to allow us to manage our own listeners
+void ToolkitImpl::registerToolkitDelegate(ToolkitDelegate *delegate) {
+    d_delegates.insert(delegate);
+}
 
+// expose an api to allow us to manage our own listeners
+void ToolkitImpl::clearToolkitDelegate(ToolkitDelegate *delegate){
+    d_delegates.erase(delegate);
+}
+
+// When gin fires an internal signal, we will alert our external listeners
+void ToolkitImpl::onDebugBreak(){
+    for (auto *toolkitDelegate : d_delegates) {
+        toolkitDelegate->onDebugBreak();
+    }
+}
+
+void ToolkitImpl::onDebugResume(){
+    for (auto *toolkitDelegate : d_delegates) {
+        toolkitDelegate->onDebugResume();
+    }
+}
 
 // patch section: embedder ipc
 
-
 // patch section: expose v8 platform
 
-
 // patch section: multi-heap tracer
-
-
 
 }  // close namespace blpwtk2
 
