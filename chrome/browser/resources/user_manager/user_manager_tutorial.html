@@ -116,10 +116,12 @@
         right: auto;
       }
 
-      :host-context([dark]) .arrow-down {
-        --gg900-blended-with-4percent-white: rgb(40, 41, 44);
-        border-bottom-color: var(--gg900-blended-with-4percent-white);
-        border-left-color: var(--gg900-blended-with-4percent-white);  /* csschecker-disable-line left-right */
+      @media (prefers-color-scheme: dark) {
+        .arrow-down {
+          --gg900-blended-with-4percent-white: rgb(40, 41, 44);
+          border-bottom-color: var(--gg900-blended-with-4percent-white);
+          border-left-color: var(--gg900-blended-with-4percent-white);  /* csschecker-disable-line left-right */
+        }
       }
 
       #guests .arrow-down {
@@ -160,8 +162,10 @@
             url(chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_COMPLETE);
       }
 
-      :host-context([dark]) #notYou {
-        color: var(--cr-primary-text-color);
+      @media (prefers-color-scheme: dark) {
+        #notYou {
+          color: var(--cr-primary-text-color);
+        }
       }
 
       #notYou #dismiss {
@@ -171,8 +175,10 @@
         top: 5px;
       }
 
-      :host-context([dark]) #notYou #dismiss {
-        color: var(--google-grey-500);
+      @media (prefers-color-scheme: dark) {
+        #notYou #dismiss {
+          color: var(--google-grey-500);
+        }
       }
 
       #notYou #slide-add-user {

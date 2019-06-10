@@ -38,8 +38,10 @@
         --cr-dialog-body-border-top: 1px solid var(--border-top-color);
       }
 
-      :host-context([dark]) #clearBrowsingDataDialog {
-        --border-top-color: var(--cr-separator-color);
+      @media (prefers-color-scheme: dark) {
+        #clearBrowsingDataDialog {
+          --border-top-color: var(--cr-separator-color);
+        }
       }
 
       #clearBrowsingDataDialog:not(.fully-rendered) {
@@ -56,8 +58,10 @@
         padding: 0;
       }
 
-      :host-context([dark]) #clearBrowsingDataDialog [slot=footer] {
-        background: rgb(50, 54, 57);  /* Custom color from Namrata. */
+      @media (prefers-color-scheme: dark) {
+        #clearBrowsingDataDialog [slot=footer] {
+          background: rgb(50, 54, 57);  /* Custom color from Namrata. */
+        }
       }
 
       .row {

@@ -164,8 +164,10 @@
         width: 100px;
       }
 
-      :host-context([dark]) #grey-oval {
-        mix-blend-mode: screen;
+      @media (prefers-color-scheme: dark) {
+        #grey-oval {
+          mix-blend-mode: screen;
+        }
       }
     </style>
     <div id="container">

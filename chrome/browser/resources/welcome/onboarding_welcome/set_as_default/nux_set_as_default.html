@@ -28,8 +28,10 @@
         width: 42px;
       }
 
-      :host-context([dark]) .logo {
-        content: url(../images/module_icons/set_default_dark.svg);
+      @media (prefers-color-scheme: dark) {
+        .logo {
+          content: url(../images/module_icons/set_default_dark.svg);
+        }
       }
 
       .illustration {
@@ -38,8 +40,10 @@
         width: 454px;
       }
 
-      :host-context([dark]) .illustration {
-        content: url(../images/set_default_dark.svg);
+      @media (prefers-color-scheme: dark) {
+        .illustration {
+          content: url(../images/set_default_dark.svg);
+        }
       }
 
       h1 {

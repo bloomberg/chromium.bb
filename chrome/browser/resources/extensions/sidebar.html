@@ -22,8 +22,10 @@
         width: 256px;
       }
 
-      :host-context([dark]) {
-        --sidebar-inactive-color: var(--cr-primary-text-color);
+      @media (prefers-color-scheme: dark) {
+        :host {
+          --sidebar-inactive-color: var(--cr-primary-text-color);
+        }
       }
 
       iron-selector .iron-selected {

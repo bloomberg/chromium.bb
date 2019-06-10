@@ -62,8 +62,10 @@
         --iron-icon-fill-color: var(--google-green-refresh-700);
       }
 
-      :host-context([dark]) iron-icon[icon='cr:sync'] {
-        --iron-icon-fill-color: var(--google-green-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        iron-icon[icon='cr:sync'] {
+          --iron-icon-fill-color: var(--google-green-refresh-300);
+        }
       }
 
       #sync-status[actionable] iron-icon[icon='settings:sync-problem'] {
@@ -75,9 +77,11 @@
         --iron-icon-fill-color: var(--google-blue-500);
       }
 
-      :host-context([dark]) #sync-status[actionable].auth-error
-          iron-icon[icon='settings:sync-disabled'] {
-        --iron-icon-fill-color: var(--google-blue-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        #sync-status[actionable].auth-error
+            iron-icon[icon='settings:sync-disabled'] {
+          --iron-icon-fill-color: var(--google-blue-refresh-300);
+        }
       }
 
       #sync-status:not([actionable]) .subpage-arrow {

@@ -32,8 +32,10 @@
         width: 42px;
       }
 
-      :host-context([dark]) .chrome-logo {
-        content: url(../images/module_icons/google_dark.svg);
+      @media (prefers-color-scheme: dark) {
+        .chrome-logo {
+          content: url(../images/module_icons/google_dark.svg);
+        }
       }
 
       h1 {

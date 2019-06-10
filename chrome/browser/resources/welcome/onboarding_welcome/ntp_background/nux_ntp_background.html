@@ -65,8 +65,10 @@
         width: 44px;
       }
 
-      :host-context([dark]) .ntp-background-logo {
-        content: url(../images/module_icons/wallpaper_dark.svg);
+      @media (prefers-color-scheme: dark) {
+        .ntp-background-logo {
+          content: url(../images/module_icons/wallpaper_dark.svg);
+        }
       }
 
       h1 {

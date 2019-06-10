@@ -91,8 +91,10 @@
         padding: 0;
       }
 
-      :host-context([dark]) #dialog #promos {
-        background: rgb(50, 54, 57);
+      @media (prefers-color-scheme: dark) {
+        #dialog #promos {
+          background: rgb(50, 54, 57);
+        }
       }
 
       #dialog .promo {
@@ -134,8 +136,10 @@
         margin: 0 4px;
       }
 
-      :host-context(html:not([dark])) #invitationPromo cr-button {
-        background-color: white;
+      @media (prefers-color-scheme: light) {
+        #invitationPromo cr-button {
+          background-color: white;
+        }
       }
 
       #invitationPromo invitation-details {

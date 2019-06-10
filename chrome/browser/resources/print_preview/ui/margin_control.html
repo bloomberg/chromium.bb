@@ -46,8 +46,10 @@
         border: 1px dashed var(--google-blue-500);
       }
 
-      :host-context([dark]) #line {
-        border-color: var(--google-blue-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        #line {
+          border-color: var(--google-blue-refresh-300);
+        }
       }
 
       :host([side=top]) #line,
@@ -73,15 +75,19 @@
         width: 60px;
       }
 
-      :host-context(html:not([dark])) #textbox {
-        --cr-input-background-color: var(--cr-primary-text-color);
-        --cr-input-color: white;
-        color: white;
+      @media (prefers-color-scheme: light) {
+        #textbox {
+          --cr-input-background-color: var(--cr-primary-text-color);
+          --cr-input-color: white;
+          color: white;
+        }
       }
 
-      :host-context([dark]) #textbox {
-        --cr-input-background-color: #1b1c1e;  /* GG900 + 30% black */
-        --cr-input-color: var(--cr-primary-text-color);
+      @media (prefers-color-scheme: dark) {
+        #textbox {
+          --cr-input-background-color: #1b1c1e;  /* GG900 + 30% black */
+          --cr-input-color: var(--cr-primary-text-color);
+        }
       }
 
       :host([side=top]) #textbox {

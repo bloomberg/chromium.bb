@@ -27,8 +27,10 @@
         width: 594.5px;
       }
 
-      :host-context([dark]) #illustration {
-        background-image: url(images/sign_in_promo_dark.svg);
+      @media (prefers-color-scheme: dark) {
+        #illustration {
+          background-image: url(images/sign_in_promo_dark.svg);
+        }
       }
 
       #no-synced-tabs {

@@ -9,8 +9,10 @@
   </head>
   <body>
     <style>
-      html[dark] {
-        background: var(--md-background-color);
+      @media (prefers-color-scheme: dark) {
+        html {
+          background: var(--md-background-color);
+        }
       }
     </style>
     <welcome-app></welcome-app>

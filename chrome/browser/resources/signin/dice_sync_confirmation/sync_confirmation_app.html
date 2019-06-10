@@ -59,8 +59,11 @@
         width: 100%;
       }
 
-      :host-context([dark]) #illustration {
-        background-image: url(./images/sync_confirmation_illustration_dark.svg);
+      @media (prefers-color-scheme: dark) {
+        #illustration {
+          background-image:
+              url(./images/sync_confirmation_illustration_dark.svg);
+        }
       }
 
       #illustration-container > img {
@@ -98,11 +101,13 @@
         color: var(--cr-secondary-text-color);
       }
 
-      :host-context(html:not([dark])) #grey-banner {
-        background: var(--paper-grey-50);
-        height: 128px;
-        top: 0;
-        width: 100%;
+      @media (prefers-color-scheme: light) {
+        #grey-banner {
+          background: var(--paper-grey-50);
+          height: 128px;
+          top: 0;
+          width: 100%;
+        }
       }
 
       #footer {

@@ -35,13 +35,15 @@
       height: 54px;
     }
 
-    html[dark].loading.in-dev-mode body::before {
-      background: none;
-    }
+    @media (prefers-color-scheme: dark) {
+      html.loading.in-dev-mode body::before {
+        background: none;
+      }
 
-    html[dark].loading::before,
-    html[dark].loading.in-dev-mode body::before {
-      border-bottom: var(--md-toolbar-border);
+      html.loading::before,
+      html.loading.in-dev-mode body::before {
+        border-bottom: var(--md-toolbar-border);
+      }
     }
 
     html,

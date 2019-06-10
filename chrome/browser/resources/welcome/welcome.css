@@ -15,8 +15,10 @@ body {
   padding: 8px;
 }
 
-[dark] body {
-  color: var(--cr-primary-text-color);
+@media (prefers-color-scheme: dark) {
+  body {
+    color: var(--cr-primary-text-color);
+  }
 }
 
 .watermark {
@@ -31,8 +33,10 @@ body {
   width: 74px;
 }
 
-[dark] .watermark {
-  background: var(--cr-secondary-text-color);
+@media (prefers-color-scheme: dark) {
+  .watermark {
+    background: var(--cr-secondary-text-color);
+  }
 }
 
 @media(max-height: 608px) {

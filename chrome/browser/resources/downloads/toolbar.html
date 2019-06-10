@@ -32,8 +32,10 @@
         margin: 4px;
       }
 
-      :host-context(html:not([dark])) cr-icon-button {
-        --cr-icon-button-color: currentColor;
+      @media (prefers-color-scheme: light) {
+        cr-icon-button {
+          --cr-icon-button-color: currentColor;
+        }
       }
     </style>
     <cr-toolbar id="toolbar" page-name="$i18n{title}"

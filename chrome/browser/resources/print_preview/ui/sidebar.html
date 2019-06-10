@@ -48,8 +48,10 @@
         flex-direction: column;
       }
 
-      :host-context([dark]) {
-        background-color: rgba(255, 255, 255, .04);
+      @media (prefers-color-scheme: dark) {
+        :host {
+          background-color: rgba(255, 255, 255, .04);
+        }
       }
 
       #container {

@@ -55,8 +55,10 @@
         color: var(--google-blue-500);
       }
 
-      :host-context([dark]) #enable-section .enabled-text {
-        color: var(--google-blue-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        #enable-section .enabled-text {
+          color: var(--google-blue-refresh-300);
+        }
       }
 
       #icon {
@@ -107,13 +109,15 @@
         width: auto;  /* override the default button size of 24x24 */
       }
 
-      :host-context(html:not([dark])) .warning .action-button {
-        background: white;
-        color: var(--google-blue-500);
-      }
+      @media (prefers-color-scheme: light) {
+        .warning .action-button {
+          background: white;
+          color: var(--google-blue-500);
+        }
 
-      :host-context(html:not([dark])) #reload-button {
-        color: var(--google-blue-500);
+        #reload-button {
+          color: var(--google-blue-500);
+        }
       }
 
       .warning span {

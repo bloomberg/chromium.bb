@@ -20,8 +20,10 @@
         padding: 20px var(--print-preview-sidebar-margin) 8px;
       }
 
-      :host-context(html:not([dark])) {
-        background-color: white;
+      @media (prefers-color-scheme: light) {
+        :host {
+          background-color: white;
+        }
       }
 
       .title-container {

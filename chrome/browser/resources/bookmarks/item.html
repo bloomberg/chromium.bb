@@ -28,9 +28,11 @@
         background-color: var(--highlight-color);
       }
 
-      :host-context([dark]):host([is-selected-item_]),
-      :host-context([dark]):host([is-selected-item_]) .folder-icon {
-        color: var(--google-grey-refresh-700);
+      @media (prefers-color-scheme: dark) {
+        :host([is-selected-item_]),
+        :host([is-selected-item_]) .folder-icon {
+          color: var(--google-grey-refresh-700);
+        }
       }
 
       #website-title {
@@ -44,8 +46,10 @@
         flex: 0 auto;
       }
 
-      :host-context([dark]):host([is-selected-item_]) #website-title {
-        color: var(--google-grey-900);
+      @media (prefers-color-scheme: dark) {
+        :host([is-selected-item_]) #website-title {
+          color: var(--google-grey-900);
+        }
       }
 
       #website-url {
@@ -57,8 +61,10 @@
         min-width: 100px;
       }
 
-      :host-context([dark]) #website-url {
-        color: var(--google-grey-800);
+      @media (prefers-color-scheme: dark) {
+        #website-url {
+          color: var(--google-grey-800);
+        }
       }
 
       :host([is-selected-item_]) #website-url {
@@ -73,8 +79,10 @@
         margin-inline-end: 12px;
       }
 
-      :host-context([dark]):host([is-selected-item_]) cr-icon-button {
-        --cr-icon-button-color: var(--google-grey-700);
+      @media (prefers-color-scheme: dark) {
+        :host([is-selected-item_]) cr-icon-button {
+          --cr-icon-button-color: var(--google-grey-700);
+        }
       }
 
       :host(:focus) {

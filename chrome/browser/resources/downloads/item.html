@@ -34,10 +34,12 @@
         outline: none;
       }
 
-      :host-context([dark]) {
-        --controlled-by-active-color: inherit;
-        --controlled-by-active-link-color: var(--cr-link-color);
-        --controlled-by-inactive-color: inherit;
+      @media (prefers-color-scheme: dark) {
+        :host {
+          --controlled-by-active-color: inherit;
+          --controlled-by-active-link-color: var(--cr-link-color);
+          --controlled-by-inactive-color: inherit;
+        }
       }
 
       cr-button {
@@ -74,8 +76,10 @@
         @apply --cr-card-elevation;
       }
 
-      :host-context(html:not([dark])) #content.is-active {
-        background-color: var(--cr-card-background-color);
+      @media (prefers-color-scheme: light) {
+        #content.is-active {
+          background-color: var(--cr-card-background-color);
+        }
       }
 
       #content:not(.is-active) {
@@ -83,9 +87,11 @@
         border: 1px var(--google-grey-300) solid;
       }
 
-      :host-context([dark]) #content:not(.is-active) {
-        background: none;  /* override */
-        border-color: var(--google-grey-800);
+      @media (prefers-color-scheme: dark) {
+        #content:not(.is-active) {
+          background: none;  /* override */
+          border-color: var(--google-grey-800);
+        }
       }
 
       #details {
@@ -100,24 +106,30 @@
         padding-top: 16px;
       }
 
-      :host-context([dark]) #details {
-        border-color: rgba(var(--google-grey-800-rgb), .8);
+      @media (prefers-color-scheme: dark) {
+        #details {
+          border-color: rgba(var(--google-grey-800-rgb), .8);
+        }
       }
 
       #content:not(.is-active) #details {
         color: rgba(27, 27, 27, .6);
       }
 
-      :host-context([dark]) #content:not(.is-active) #details {
-        color: rgba(var(--google-grey-refresh-500-rgb), .6);
+      @media (prefers-color-scheme: dark) {
+        #content:not(.is-active) #details {
+          color: rgba(var(--google-grey-refresh-500-rgb), .6);
+        }
       }
 
       #content:not(.is-active) #name {
         text-decoration: line-through;
       }
 
-      :host-context([dark]) #content:not(.is-active) :-webkit-any(#name, #tag) {
-        color: var(--google-grey-refresh-500);
+      @media (prefers-color-scheme: dark) {
+        #content:not(.is-active) :-webkit-any(#name, #tag) {
+          color: var(--google-grey-refresh-500);
+        }
       }
 
       .icon-wrapper {
@@ -163,9 +175,11 @@
         color: var(--google-yellow-500);
       }
 
-      :host-context([dark]) #file-icon-wrapper iron-icon[icon='cr:warning'],
-      :host-context([dark]) .dangerous #description {
-        color: var(--google-red-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        #file-icon-wrapper iron-icon[icon='cr:warning'],
+        .dangerous #description {
+          color: var(--google-red-refresh-300);
+        }
       }
 
       #name,
@@ -180,9 +194,10 @@
         word-break: break-all;
       }
 
-      :host-context(html:not([dark])) .is-active
-          :-webkit-any(#name, #file-link, #show) {
-        color: var(--google-blue-600);
+      @media (prefers-color-scheme: light) {
+        .is-active :-webkit-any(#name, #file-link, #show) {
+          color: var(--google-blue-600);
+        }
       }
 
       #name {
@@ -214,8 +229,10 @@
         margin-top: 16px;
       }
 
-      :host-context(html:not([dark])) .is-active #description {
-        color: #616161;
+      @media (prefers-color-scheme: light) {
+        .is-active #description {
+          color: #616161;
+        }
       }
 
       #progress {
@@ -225,9 +242,11 @@
         width: auto;
       }
 
-      :host-context([dark]) #progress {
-        --paper-progress-active-color: var(--google-blue-refresh-300);
-        --paper-progress-container-color: var(--google-grey-800);
+      @media (prefers-color-scheme: dark) {
+        #progress {
+          --paper-progress-active-color: var(--google-blue-refresh-300);
+          --paper-progress-container-color: var(--google-grey-800);
+        }
       }
 
       #show {

@@ -48,8 +48,10 @@
         --cr-toolbar-center-basis: var(--settings-main-basis);
       }
 
-      :host-context(html:not([dark])) cr-toolbar {
-        --iron-icon-fill-color: white;
+      @media (prefers-color-scheme: light) {
+        cr-toolbar {
+          --iron-icon-fill-color: white;
+        }
       }
 
       #cr-container-shadow-top {

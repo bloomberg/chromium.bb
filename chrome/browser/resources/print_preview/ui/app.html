@@ -29,8 +29,10 @@
         user-select: none;
       }
 
-      :host-context([dark]) {
-        background: var(--google-grey-900);
+      @media (prefers-color-scheme: dark) {
+        :host {
+          background: var(--google-grey-900);
+        }
       }
 
       :host([new-print-preview-layout_]) {

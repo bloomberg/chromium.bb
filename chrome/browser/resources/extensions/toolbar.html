@@ -27,12 +27,14 @@
       }
 
       /* This toggle needs special styling because it's on blue background. */
-      :host-context(html:not([dark])) cr-toolbar cr-toggle {
-        --cr-toggle-checked-bar-color: var(--google-grey-refresh-100);
-        --cr-toggle-checked-button-color: white;
-        --cr-toggle-checked-ink-color: white;
-        --cr-toggle-unchecked-bar-color: var(--google-grey-600);
-        --cr-toggle-unchecked-ink-color: white;
+      @media (prefers-color-scheme: light) {
+        cr-toolbar cr-toggle {
+          --cr-toggle-checked-bar-color: var(--google-grey-refresh-100);
+          --cr-toggle-checked-button-color: white;
+          --cr-toggle-checked-ink-color: white;
+          --cr-toggle-unchecked-bar-color: var(--google-grey-600);
+          --cr-toggle-unchecked-ink-color: white;
+        }
       }
 
       cr-tooltip-icon {
@@ -53,9 +55,11 @@
         transition: height var(--drawer-transition);
       }
 
-      :host-context([dark]) #devDrawer {
-        background: none;
-        border-bottom-color: var(--cr-separator-color);
+      @media (prefers-color-scheme: dark) {
+        #devDrawer {
+          background: none;
+          border-bottom-color: var(--cr-separator-color);
+        }
       }
 
       #devDrawer[expanded] {

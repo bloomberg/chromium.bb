@@ -35,8 +35,10 @@
         text-align: center;
       }
 
-      :host-context([dark]) .empty-list-message {
-        color: var(--cr-secondary-text-color);
+      @media (prefers-color-scheme: dark) {
+        .empty-list-message {
+          color: var(--cr-secondary-text-color);
+        }
       }
 
       .items-container {

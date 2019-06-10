@@ -63,8 +63,10 @@
       padding-inline-start: 24px;
     }
 
-    html[dark] #loading-toolbar {
-      color: rgb(232, 234, 237);  /* --google-grey-200 */
+    @media (prefers-color-scheme: dark) {
+      #loading-toolbar {
+        color: rgb(232, 234, 237);  /* --google-grey-200 */
+      }
     }
 
     #loading-message {

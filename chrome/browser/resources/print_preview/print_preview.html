@@ -13,16 +13,20 @@
       touch-action: manipulation;
     }
 
-    html[dark] {
-      background: rgb(189, 193, 198);  /* --google-grey-400 */
+    @media (prefers-color-scheme: dark) {
+      html {
+        background: rgb(189, 193, 198);  /* --google-grey-400 */
+      }
     }
 
     html[new-print-preview-layout] {
       background: rgb(218, 220, 224);  /* --google-grey-refresh-300 */
     }
 
-    html[new-print-preview-layout][dark] {
-      background: rgb(95, 99, 104);  /* --google-grey-refresh-700 */
+    @media (prefers-color-scheme: dark) {
+      html[new-print-preview-layout] {
+        background: rgb(95, 99, 104);  /* --google-grey-refresh-700 */
+      }
     }
 
     html,
@@ -60,9 +64,11 @@
       border-inline-start-width: 1px;
     }
 
-    [dark].loading body::before {
-      background: rgb(40, 41, 44);
-      border-color: rgba(255, 255, 255, .04);
+    @media (prefers-color-scheme: dark) {
+      .loading body::before {
+        background: rgb(40, 41, 44);
+        border-color: rgba(255, 255, 255, .04);
+      }
     }
   </style>
 </head>

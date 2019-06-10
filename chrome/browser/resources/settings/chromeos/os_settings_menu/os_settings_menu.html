@@ -88,8 +88,10 @@
         margin-top: 8px;
       }
 
-      :host-context([dark]) #menuSeparator {
-        border-bottom: var(--cr-separator-line);  /* override */
+      @media (prefers-color-scheme: dark) {
+        #menuSeparator {
+          border-bottom: var(--cr-separator-line);  /* override */
+        }
       }
     </style>
     <iron-selector id="topMenu"

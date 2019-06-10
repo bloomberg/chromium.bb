@@ -23,9 +23,11 @@
         z-index: 10;
       }
 
-      :host-context([dark]) {
-        /* TODO(dbeam): share with cr-dialog dialog::backdrop? */
-        background-color: rgba(0, 0, 0, .6);
+      @media (prefers-color-scheme: dark) {
+        :host {
+          /* TODO(dbeam): share with cr-dialog dialog::backdrop? */
+          background-color: rgba(0, 0, 0, .6);
+        }
       }
 
       #container {

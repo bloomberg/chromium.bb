@@ -32,8 +32,10 @@
         @apply --cr-page-host;
       }
 
-      :host-context([dark]) {
-        color: var(--cr-secondary-text-color);
+      @media (prefers-color-scheme: dark) {
+        :host {
+          color: var(--cr-secondary-text-color);
+        }
       }
 
       #toolbar {
@@ -81,8 +83,10 @@
         min-height: min-content;
       }
 
-      :host-context([dark]) #no-downloads {
-        color: var(--cr-secondary-text-color);
+      @media (prefers-color-scheme: dark) {
+        #no-downloads {
+          color: var(--cr-secondary-text-color);
+        }
       }
 
       #no-downloads .illustration {

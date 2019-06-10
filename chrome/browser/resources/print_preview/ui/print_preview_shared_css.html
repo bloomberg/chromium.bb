@@ -44,8 +44,10 @@
         text-decoration: none;
       }
 
-      :host-context([dark]) :-webkit-any(a[href], a[is='action-link']) {
-        color: var(--cr-link-color);
+      @media (prefers-color-scheme: dark) {
+        :-webkit-any(a[href], a[is='action-link']) {
+          color: var(--cr-link-color);
+        }
       }
 
       print-preview-settings-section [slot=controls] > * {

@@ -48,10 +48,12 @@
         visibility: hidden;
       }
 
-      :host-context([dark]) #message-container {
-        background-color: unset;
-        border-bottom: var(--cr-separator-line);
-        box-shadow: none;
+      @media (prefers-color-scheme: dark) {
+        #message-container {
+          background-color: unset;
+          border-bottom: var(--cr-separator-line);
+          box-shadow: none;
+        }
       }
 
       #message-container[visible] {

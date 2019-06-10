@@ -101,8 +101,10 @@
         position: relative;
       }
 
-      :host-context([dark]) .heading-container {
-        color: var(--cr-primary-text-color);
+      @media (prefers-color-scheme: dark) {
+        .heading-container {
+          color: var(--cr-primary-text-color);
+        }
       }
 
       .heading {
