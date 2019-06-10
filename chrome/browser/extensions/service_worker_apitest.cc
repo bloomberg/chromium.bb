@@ -1351,64 +1351,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, EventsToStoppedWorker) {
   ASSERT_EQ("chrome.tabs.onUpdated callback", result);
 }
 
-// Tests that events to service worker arrives correctly event if the owner
-// extension of the worker is not running.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest,
-                       EventsToStoppedExtension) {
-  LazyBackgroundObserver lazy_observer;
-  ResultCatcher catcher;
-  const Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII("service_worker/events_to_stopped_extension"),
-      kFlagNone);
-  ASSERT_TRUE(extension);
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-  ProcessManager* pm = ProcessManager::Get(browser()->profile());
-  EXPECT_GT(pm->GetLazyKeepaliveCount(extension), 0);
-  EXPECT_FALSE(pm->GetLazyKeepaliveActivities(extension).empty());
-
-  // |extension|'s background page opens a tab to its resource.
-  content::WebContents* extension_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::WaitForLoadStop(extension_web_contents));
-  EXPECT_EQ(extension->GetResourceURL("page.html").spec(),
-            extension_web_contents->GetURL().spec());
-  {
-    // Let the service worker start and register a listener to
-    // chrome.tabs.onCreated event.
-    ExtensionTestMessageListener add_listener_done("listener-added", false);
-    content::ExecuteScriptAsync(extension_web_contents,
-                                "window.runServiceWorkerAsync()");
-    EXPECT_TRUE(add_listener_done.WaitUntilSatisfied());
-
-    base::RunLoop run_loop;
-    content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
-    content::StopServiceWorkerForScope(
-        storage_partition->GetServiceWorkerContext(),
-        // The service worker is registered at the top level scope.
-        extension->url(), run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
-  // Close the tab to |extension|'s resource. This will also close the
-  // extension's event page.
-  browser()->tab_strip_model()->CloseWebContentsAt(
-      browser()->tab_strip_model()->active_index(), TabStripModel::CLOSE_NONE);
-  lazy_observer.Wait();
-
-  // At this point both the extension worker and extension event page is not
-  // running. Since the worker registered a listener for tabs.onCreated, it
-  // will be started to dispatch the event once we create a tab.
-  ExtensionTestMessageListener newtab_listener("hello-newtab", false);
-  newtab_listener.set_failure_message("WRONG_NEWTAB");
-  content::WebContents* new_web_contents =
-      AddTab(browser(), GURL(url::kAboutBlankURL));
-  EXPECT_TRUE(new_web_contents);
-  EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
-}
-
 // Tests that worker ref count increments while extension API function is
 // active.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WorkerRefCount) {
