@@ -62,6 +62,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, LocalNTPTests) {
   EXPECT_TRUE(success);
 }
 
+// TODO(crbug.com/971853): renable the windows on Windows when flakiness is
+// resolved.
 #if defined(OS_WIN)
 #define MAYBE_CustomBackgroundsTests DISABLED_CustomBackgroundsTests
 #else
