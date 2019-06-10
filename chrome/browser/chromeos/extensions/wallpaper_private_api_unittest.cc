@@ -69,8 +69,8 @@ TEST_F(WallpaperPrivateApiUnittest, ResetWallpaper) {
       chromeos::SystemSaltGetter::RawSalt({1, 2, 3, 4, 5, 6, 7, 8}));
 
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
-  WallpaperControllerClient client;
   TestWallpaperController test_controller;
+  WallpaperControllerClient client;
   client.InitForTesting(&test_controller);
   fake_user_manager()->AddUser(AccountId::FromUserEmail(kTestAccount));
 
