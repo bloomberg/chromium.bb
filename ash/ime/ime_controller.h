@@ -130,10 +130,6 @@ class ASH_EXPORT ImeController : public mojom::ImeController,
     return mode_indicator_observer_.get();
   }
 
-  // Asynchronously show the current IME mode indicator. If it's already shown,
-  // switch to the next available IME.
-  void ShowOrSwitchIme();
-
  private:
   // Returns the IDs of the subset of input methods which are active and are
   // associated with |accelerator|. For example, two Japanese IMEs can be

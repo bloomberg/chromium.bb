@@ -2304,30 +2304,14 @@ TEST_P(MediaSessionAcceleratorTest,
 }
 
 // Tests the IME mode change key.
-TEST_F(AcceleratorControllerTest,
-       ChangeIMEMode_ModeIndicatorHiddenShowsIndicator) {
+TEST_F(AcceleratorControllerTest, ChangeIMEMode_SwitchesInputMethod) {
+  AddTestImes();
+
   ImeController* controller = Shell::Get()->ime_controller();
 
   TestImeControllerClient client;
   controller->SetClient(client.CreateInterfacePtr());
 
-  EXPECT_FALSE(controller->mode_indicator_observer()->active_widget());
-  EXPECT_EQ(0, client.show_mode_indicator_count_);
-
-  ProcessInController(ui::Accelerator(ui::VKEY_MODECHANGE, ui::EF_NONE));
-  controller->FlushMojoForTesting();
-
-  EXPECT_EQ(1, client.show_mode_indicator_count_);
-}
-
-TEST_F(AcceleratorControllerTest,
-       ChangeIMEMode_ModeIndicatorVisibleSwitchesInputMethod) {
-  ImeController* controller = Shell::Get()->ime_controller();
-
-  TestImeControllerClient client;
-  controller->SetClient(client.CreateInterfacePtr());
-
-  controller->ShowModeIndicator(gfx::Rect(10, 10), base::ASCIIToUTF16("test"));
   EXPECT_EQ(0, client.next_ime_count_);
 
   ProcessInController(ui::Accelerator(ui::VKEY_MODECHANGE, ui::EF_NONE));
