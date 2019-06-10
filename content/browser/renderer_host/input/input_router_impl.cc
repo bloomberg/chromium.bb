@@ -621,10 +621,8 @@ void InputRouterImpl::TouchEventHandled(
     }
   }
 
-  bool should_stop_timeout_monitor =
-      !compositor_touch_action_enabled_ ||
-      (compositor_touch_action_enabled_ &&
-       touch_action_filter_.allowed_touch_action().has_value());
+  // TODO(crbug.com/953547): find a proper way to stop the timeout monitor.
+  bool should_stop_timeout_monitor = true;
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
   touch_event_queue_.ProcessTouchAck(source, state, latency,
                                      touch_event.event.unique_touch_event_id,
