@@ -261,7 +261,9 @@ class SplitViewController::DividerSnapAnimation
         CurrentValueBetween(starting_position_, ending_position_);
     split_view_controller_->NotifyDividerPositionChanged();
     split_view_controller_->UpdateSnappedWindowsAndDividerBounds();
-    split_view_controller_->SetWindowsTransformDuringResizing();
+    // Updating the window may stop animation.
+    if (is_animating())
+      split_view_controller_->SetWindowsTransformDuringResizing();
   }
 
   SplitViewController* split_view_controller_;
@@ -672,8 +674,11 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
   const bool is_divider_animating = IsDividerAnimating();
   if (is_resizing_ || is_divider_animating) {
     is_resizing_ = false;
-    if (is_divider_animating)
-      StopAndShoveAnimatedDivider();
+    if (is_divider_animating) {
+      // Don't call StopAndShoveAnimatedDivider as it will call observers.
+      divider_snap_animation_->Stop();
+      divider_position_ = divider_snap_animation_->ending_position();
+    }
     EndResizeImpl();
   }
 
