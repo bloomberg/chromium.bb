@@ -714,12 +714,14 @@ HttpHandler::HttpHandler(
                                                        kSessionStorage),
                                    false /*w3c_standard_command*/)),
 
-      // Non-standard command but supported in the foreseeable future.
+      // No W3C equivalent, temporarily enabled until clients start using
+      // "session/:sessionId/se/log".
+      // Superseded by "session/:sessionId/se/log".
       CommandMapping(
           kPost, "session/:sessionId/log",
           WrapToCommand("GetLog", base::BindRepeating(&ExecuteGetLog))),
 
-      // No W3C equivalent.
+      // No W3C equivalent. Superseded by "session/:sessionId/se/log/types".
       CommandMapping(
           kGet, "session/:sessionId/log/types",
           WrapToCommand("GetLogTypes",
@@ -751,6 +753,20 @@ HttpHandler::HttpHandler(
           kPost, "session/:sessionId/network_connection",
           WrapToCommand("SetNetworkConnection",
                         base::BindRepeating(&ExecuteSetNetworkConnection))),
+
+      //
+      // Non-standard extension commands
+      //
+
+      // Commands to access Chrome logs, defined by agreement with Selenium.
+      // Using "se" prefix for "Selenium".
+      CommandMapping(
+          kPost, "session/:sessionId/se/log",
+          WrapToCommand("GetLog", base::BindRepeating(&ExecuteGetLog))),
+      CommandMapping(
+          kGet, "session/:sessionId/se/log/types",
+          WrapToCommand("GetLogTypes",
+                        base::BindRepeating(&ExecuteGetAvailableLogTypes))),
 
       //
       // ChromeDriver specific extension commands.
