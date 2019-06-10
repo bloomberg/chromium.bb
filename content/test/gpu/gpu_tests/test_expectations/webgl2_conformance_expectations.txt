@@ -282,7 +282,7 @@ crbug.com/870856 [ sierra amd ] conformance2/textures/misc/tex-base-level-bug.ht
 
 # Flaky on 10.13 as well.
 crbug.com/870856 [ sierra amd ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
-crbug.com/870856 [ highsierra amd ] conformance2/textures/misc/tex-mipmap-levels.html [ RetryOnFailure ]
+crbug.com/870856 [ highsierra amd ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
 
 # Regressions in 10.13
 crbug.com/774826 [ highsierra intel-0xa2e ] deqp/functional/gles3/fbocolorbuffer/tex2d_00.html [ Failure ]
