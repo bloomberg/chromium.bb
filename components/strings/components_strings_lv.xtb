@@ -211,6 +211,7 @@
 <translation id="202813660234680402">Nē, nepievienot</translation>
 <translation id="2030481566774242610">Vai domājāt <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Pārbaudiet starpniekserveri un ugunsmūri<ph name="END_LINK" />.</translation>
+<translation id="2039578192324174100">Kontrolē ierīces datu apstrādi. To, kā Google apstrādā un izmanto jūsu ierīces datus, nosaka jūsu ierīces pārvaldnieks.</translation>
 <translation id="2053111141626950936">Lapas netiks tulkotas no šīs valodas: <ph name="LANGUAGE" /></translation>
 <translation id="2053553514270667976">Pasta indekss</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 ieteikums}zero{# ieteikumi}one{# ieteikums}other{# ieteikumi}}</translation>
@@ -541,6 +542,7 @@
 <translation id="382518646247711829">Ja izmantojat starpniekserveri...</translation>
 <translation id="3828924085048779000">Tukša ieejas frāze nav atļauta.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> instalēja paplašinājumus papildu funkcijām. Paplašinājumiem ir piekļuve dažiem jūsu datiem.</translation>
+<translation id="3835128043098956141">Kontrolē konta datu apstrādi. To, kā Google apstrādā un izmanto jūsu konta datus, nosaka jūsu konta pārvaldnieks.</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3858027520442213535">Atjaunināt datumu un laiku</translation>
 <translation id="3884278016824448484">Ierīces identifikators rada konfliktu.</translation>
@@ -973,6 +975,7 @@
 <translation id="6290238015253830360">Ieteiktie raksti tiek parādīti šeit</translation>
 <translation id="6302269476990306341">Tiek pārtraukta Google asistenta darbība pārlūkprogrammā Chrome.</translation>
 <translation id="6305205051461490394">Vietne <ph name="URL" /> nav sasniedzama.</translation>
+<translation id="6321321051990674438">Kontrolē jūsu ierīces un konta datu apstrādi. To, kā Google apstrādā un izmanto jūsu ierīces un konta datus, nosaka jūsu ierīces un konta pārvaldnieks.</translation>
 <translation id="6321917430147971392">Sistēmas DNS iestatījumu pārbaude</translation>
 <translation id="6328639280570009161">Tīkla prognožu atspējošana</translation>
 <translation id="6328784461820205019">“Savienojums nav privāts”, “&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;”, “&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;”, “&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;”, “&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;” vai “SSL sertifikāta kļūda”</translation>

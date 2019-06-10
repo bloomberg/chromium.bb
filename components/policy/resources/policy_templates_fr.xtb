@@ -2090,6 +2090,11 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Ces suggestions sont récupérées à distance sur les serveurs Google.
 
       Si cette règle est définie sur False, aucune suggestion n'est récupérée ni affichée.</translation>
+<translation id="4759650396863318477">Permet de définir la période, en millisecondes, pendant laquelle les utilisateurs sont avertis que <ph name="PRODUCT_NAME" /> doit être relancé ou qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour appliquer une mise à jour en attente.
+
+      Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système conformément à la règle <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent ce même programme.
+
+      Si ce paramètre n'est pas défini, la période par défaut est fixée à 345 600 000 millisecondes (quatre jours) pour les appareils <ph name="PRODUCT_OS_NAME" /> et à 604 800 000 millisecondes (une semaine) pour <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Active la fonctionnalité de saisie automatique de <ph name="PRODUCT_NAME" />, qui permet à l'utilisateur de remplir automatiquement des formulaires Web à partir de données stockées précédemment, telles que des informations relatives à sa carte de crédit.
 
       Si ce paramètre est désactivé, ces informations ne sont jamais suggérées ni saisies automatiquement. De même, les informations complémentaires de carte de crédit que l'utilisateur est susceptible de fournir sur une page Web ne sont pas enregistrées.
@@ -4401,6 +4406,8 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="915194831143859291">Si la règle est définie sur "False" ou n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> permet à l'utilisateur d'arrêter l'appareil.
       Si cette règle est définie sur "True", <ph name="PRODUCT_OS_NAME" /> déclenche un redémarrage lorsque l'utilisateur arrête l'appareil. <ph name="PRODUCT_OS_NAME" /> remplace toutes les occurrences des boutons d'arrêt de l'interface utilisateur par des boutons de redémarrage. Si l'utilisateur arrête l'appareil au moyen du bouton Marche/Arrêt, celui-ci ne redémarre pas automatiquement, même si la règle est activée.</translation>
 <translation id="9152473318295429890">Activer les suggestions contextuelles des pages Web associées</translation>
+<translation id="9153446010242995516">Effectuez un rollback et conservez la version cible si elle est antérieure à la version de l'OS. Essayez de conserver la configuration de l'appareil (y compris les identifiants réseau) lors du processus si possible, mais effectuez un Powerwash complet même s'il est impossible de restaurer les données (car la version cible n'est pas compatible avec la restauration de données ou en raison d'une modification incompatible avec la restauration).
+          Compatible avec la version 75 et les versions ultérieures de <ph name="PRODUCT_OS_NAME" />. Pour les clients plus anciens, cette valeur signifie que la fonction de rollback est désactivée.</translation>
 <translation id="9158929520101169054">Autoriser la connexion multicompte dans le navigateur</translation>
 <translation id="9159126470527871268">Avertit les utilisateurs que <ph name="PRODUCT_NAME" /> doit être relancé ou que l'appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour qu'une mise à jour en cours puisse être appliquée.
 

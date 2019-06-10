@@ -212,6 +212,7 @@
 <translation id="202813660234680402">አይ፣ አታክል</translation>
 <translation id="2030481566774242610"><ph name="LINK" />ን ማለትዎ ነው?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ወኪሉን እና ኬላውን መፈተሽ<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">የመሣሪያዎ ውሂብ እንዴት እንደሚያዝ ይቆጣጠራል። የእርስዎን መሣሪያ ውሂብ Google እንዴት እንደሚያስተናግድ እና እንደሚጠቀምበት በእርስዎ መሣሪያ አስተዳዳሪ ይወሰናል።</translation>
 <translation id="2053111141626950936">በ<ph name="LANGUAGE" /> ያሉ ገጾች አይተረጎሙም።</translation>
 <translation id="2053553514270667976">ዚፕ ኮድ</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 የአስተያየት ጥቆማ}one{# የአስተያየት ጥቆማዎች}other{# የአስተያየት ጥቆማዎች}}</translation>
@@ -542,6 +543,7 @@
 <translation id="382518646247711829">ተኪ አገልጋይ የሚጠቀሙ ከሆኑ...</translation>
 <translation id="3828924085048779000">ባዶ የይለፍ ሐረግ አይፈቀድም።</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> ለተጨማሪ ተግባራት ቅጥያዎችን ጭኗል። ቅጥያዎች የአንዳንድ ውሂብዎ መዳረሻ አላቸው።</translation>
+<translation id="3835128043098956141">የመለያዎ ውሂብ እንዴት እንደሚያዝ ይቆጣጠራል። የእርስዎን መለያ ውሂብ Google እንዴት እንደሚያስተናግድ እና እንደሚጠቀምበት በእርስዎ መለያ አስተዳዳሪ ይወሰናል።</translation>
 <translation id="385051799172605136">ተመለስ</translation>
 <translation id="3858027520442213535">ቀን እና ሰዓትን አዘምን</translation>
 <translation id="3884278016824448484">የሚጋጭ የመሣሪያ ለዪ</translation>
@@ -974,6 +976,7 @@
 <translation id="6290238015253830360">የእርስዎ የተጠቆሙ ዘገባዎች እዚህ ይመጣሉ</translation>
 <translation id="6302269476990306341">በChrome ውስጥ Google ረዳት እያቆመ ነው</translation>
 <translation id="6305205051461490394"><ph name="URL" /> ሊደረስበት አይችልም።</translation>
+<translation id="6321321051990674438">የእርስዎ የመሣሪያ እና የመለያ ውሂብ እንዴት እንደሚያዝ ቁጥጥር ይደረግበታል። የእርስዎን መሣሪያ እና መለያ ውሂብ Google እንዴት እንደሚያስተናግድ እና እንደሚጠቀምበት በእርስዎ መሣሪያ እና መለያ አስተዳዳሪ ይወሰናል።</translation>
 <translation id="6321917430147971392">የዲኤንኤስ ቅንብሮችዎን ይፈትሹ</translation>
 <translation id="6328639280570009161">የአውታረ መረብ መገመትን አሰናክለው ይሞክሩ</translation>
 <translation id="6328784461820205019">«የእርስዎ ግንኙነት ግላዊ አይደለም» ወይም «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;» ወይም «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;» ወይም «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;» ወይም «&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;» ወይም «SSL የእውቅና ማረጋገጫ ስህተት»</translation>

@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Hayır, ekleme</translation>
 <translation id="2030481566774242610">Şunu mu demek istediniz?: <ph name="LINK" /></translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Proxy'yi ve güvenlik duvarını kontrol etme<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Cihaz verilerinizin nasıl kullanılacağını denetler. Google'ın cihaz verilerinizi nasıl işlediğini ve kullandığını, cihaz yöneticiniz belirler.</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" /> dilindeki sayfalar çevrilmeyecek.</translation>
 <translation id="2053553514270667976">Posta kodu</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 öneri}other{# öneri}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Proxy sunucu kullanıyorsanız...</translation>
 <translation id="3828924085048779000">Boş parolaya izin verilmez.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> diğer işlevler için uzantılar yüklemiş. Söz konusu uzantıların bazı verilerinize erişimi bulunuyor.</translation>
+<translation id="3835128043098956141">Hesap verilerinizin nasıl kullanılacağını denetler. Google'ın hesap verilerinizi nasıl işlediğini ve kullandığını, hesap yöneticiniz belirler.</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3858027520442213535">Tarih ve saati güncelle</translation>
 <translation id="3884278016824448484">Çakışan cihaz tanımlayıcısı</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Önerilen makaleler burada görünür</translation>
 <translation id="6302269476990306341">Chrome'da Google Asistan durduruluyor</translation>
 <translation id="6305205051461490394"><ph name="URL" /> adresine ulaşılamıyor.</translation>
+<translation id="6321321051990674438">Cihaz ve hesap verilerinizin nasıl kullanılacağını denetler. Google'ın cihaz ve hesap verilerinizi nasıl işlediğini ve kullandığını, cihaz ve hesap yöneticiniz belirler.</translation>
 <translation id="6321917430147971392">DNS ayarlarınızı kontrol edin</translation>
 <translation id="6328639280570009161">Ağ tahmin özelliğini devre dışı bırakmayı deneyin</translation>
 <translation id="6328784461820205019">"Bağlantınız gizli değil", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" veya "SSL sertifika hatası"</translation>
@@ -1012,7 +1015,7 @@
 <translation id="6451458296329894277">Yeniden Form Gönderme İşlemini Onayla</translation>
 <translation id="6465306955648956876">Şifreleri yönet...</translation>
 <translation id="647261751007945333">Cihaz politikaları</translation>
-<translation id="6476284679642588870">Ödeme yöntemlerini yönet</translation>
+<translation id="6476284679642588870">Ödeme yöntemlerini yönetin</translation>
 <translation id="6477321094435799029">Chrome, bu sayfada olağan dışı kod tespit etti ve kişisel bilgilerinizi (örneğin, şifreler, telefon numaraları ve kredi kartları) korumak için sayfayı engelledi.</translation>
 <translation id="6489534406876378309">Kilitlenmeleri yüklemeye başla</translation>
 <translation id="6499038740797743453">Şifre sıfırlansın mı?</translation>

@@ -250,6 +250,7 @@
 <translation id="4778095205580009397">‏لا يتوفَّر "مساعد Google" في جلسة تجريبية.</translation>
 <translation id="479989351350248267">بحث</translation>
 <translation id="4804818685124855865">قطع الاتصال</translation>
+<translation id="4831034276697007977">هل تريد فعلاً إيقاف النقرات التلقائية؟</translation>
 <translation id="4849058404725798627">تمييز الكائن باستخدام تركيز لوحة المفاتيح</translation>
 <translation id="485592688953820832">عدم اتخاذ أي إجراء (إيقاف مؤقَّت)</translation>
 <translation id="4872237917498892622">‏Alt+مفتاح البحث أو Shift</translation>
@@ -414,6 +415,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> غير متوافق مع <ph name="SPECIFIED_RESOLUTION" />. تم تغيير الدقة إلى <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">لوحة ألوان الرموز التعبيرية</translation>
 <translation id="7564874036684306347">قد ينتج عن نقل النوافذ إلى سطح مكتب آخر سلوك غير متوقع. من الممكن أن يتم تقسيم مربعات الحوار والنوافذ والإشعارات المتتالية بين سطحَي المكتب.</translation>
+<translation id="7568294522609223312">إيقاف النقرات التلقائية</translation>
 <translation id="7569509451529460200">‏تم تفعيل Braille وChromeVox</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (المالك)</translation>

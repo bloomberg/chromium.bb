@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Ні, не додавати</translation>
 <translation id="2030481566774242610">Можливо, ви мали на увазі <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />перевірити проксі-сервер і брандмауер<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Керує обробкою даних пристрою. Адміністратор пристрою вказує, як Google має обробляти й використовувати дані з вашого пристрою</translation>
 <translation id="2053111141626950936">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться.</translation>
 <translation id="2053553514270667976">Поштовий індекс</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 пропозиція}one{# пропозиція}few{# пропозиції}many{# пропозицій}other{# пропозиції}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Якщо ви використовуєте проксі-сервер…</translation>
 <translation id="3828924085048779000">Порожня парольна фраза заборонена.</translation>
 <translation id="3831915413245941253">Адміністратор домену <ph name="ENROLLMENT_DOMAIN" /> установив розширення для додаткових функцій. Розширення мають доступ до деяких ваших даних.</translation>
+<translation id="3835128043098956141">Керує обробкою даних облікового запису. Адміністратор облікового запису вказує, як Google має обробляти й використовувати дані з вашого облікового запису.</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Оновити дату й час</translation>
 <translation id="3884278016824448484">Конфліктуючий ідентифікатор пристрою</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Тут відображатимуться рекомендовані статті</translation>
 <translation id="6302269476990306341">Припинення роботи Google Асистента в Chrome</translation>
 <translation id="6305205051461490394">Сторінка <ph name="URL" /> недоступна.</translation>
+<translation id="6321321051990674438">Керує обробкою даних із пристрою й облікового запису. Адміністратор облікового запису та пристрою вказує, як Google має обробляти й використовувати дані.</translation>
 <translation id="6321917430147971392">Перевірте налаштування DNS</translation>
 <translation id="6328639280570009161">Спробуйте вимкнути прогнозування мережі.</translation>
 <translation id="6328784461820205019">"З’єднання не конфіденційне", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" або "Помилка сертифіката SSL"</translation>

@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Избор на папка</translation>
 <translation id="1265739287306757398">Научете как</translation>
 <translation id="1272079795634619415">Стоп</translation>
+<translation id="1283524564873030414">Последните 24 часа</translation>
 <translation id="1323735185997015385">Изтриване</translation>
 <translation id="132683371494960526">Докоснете двукратно, за да промените главната папка.</translation>
 <translation id="1340643665687018190">Затваряне на менюто</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">За да сканирате код за бърза реакция, активирайте камерата от настройките</translation>
 <translation id="4281844954008187215">Условия за ползване</translation>
 <translation id="430793432425771671">Синхронизиране на всичко</translation>
+<translation id="430967081421617822">За цялото време</translation>
 <translation id="4338650699862464074">Изпраща до Google URL адресите на посещаваните от вас страници.</translation>
 <translation id="4359125752503270327">Тази страница ще се отвори в друго приложение.</translation>
 <translation id="4370827530403103842">Синхронизирането не работи. Докоснете, за да отстраните проблема.</translation>
@@ -295,6 +297,7 @@
 <translation id="5327248766486351172">Име</translation>
 <translation id="5388358297987318779">Отваряне на изображението</translation>
 <translation id="5409365236829784218">Няма инсталирани приложения, които могат да отворят файла.</translation>
+<translation id="5416022985862681400">Последните 7 дни</translation>
 <translation id="5433691172869980887">Потребителското име е копирано</translation>
 <translation id="54401264925851789">Информация за сигурността на страницата</translation>
 <translation id="5443952882982198570">Кредитни карти</translation>

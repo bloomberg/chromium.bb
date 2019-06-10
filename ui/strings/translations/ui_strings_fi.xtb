@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1028699632127661925">Lähetetään: <ph name="DEVICE_NAME" /></translation>
 <translation id="111910763555783249">Ilmoitusasetukset</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 päivä sitten}other{# päivää sitten}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minuutti sitten}other{# minuuttia sitten}}</translation>

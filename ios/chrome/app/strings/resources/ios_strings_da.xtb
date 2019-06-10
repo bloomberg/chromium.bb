@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Vælg mappe</translation>
 <translation id="1265739287306757398">Se, hvordan du gør</translation>
 <translation id="1272079795634619415">Stop</translation>
+<translation id="1283524564873030414">De seneste 24 timer</translation>
 <translation id="1323735185997015385">Slet</translation>
 <translation id="132683371494960526">Tryk to gange for at ændre den overordnede mappe.</translation>
 <translation id="1340643665687018190">Luk menu</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">Aktivér kameraet i Indstillinger for at scanne en QR-kode</translation>
 <translation id="4281844954008187215">Servicevilkår</translation>
 <translation id="430793432425771671">Synkroniser alt</translation>
+<translation id="430967081421617822">Altid</translation>
 <translation id="4338650699862464074">Sender webadresser for de sider, du besøger, til Google.</translation>
 <translation id="4359125752503270327">Denne side åbner i en anden app.</translation>
 <translation id="4370827530403103842">Synkronisering fungerer ikke. Tryk for at rette problemet.</translation>
@@ -295,6 +297,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5388358297987318779">Åbn billede</translation>
 <translation id="5409365236829784218">Der er ingen installerede apps, der kan åbne denne fil.</translation>
+<translation id="5416022985862681400">De seneste syv dage</translation>
 <translation id="5433691172869980887">Brugernavnet er kopieret</translation>
 <translation id="54401264925851789">Oplysninger om sidesikkerhed</translation>
 <translation id="5443952882982198570">Kreditkort</translation>

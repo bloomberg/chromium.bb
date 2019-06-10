@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Không, không thêm</translation>
 <translation id="2030481566774242610">Ý của bạn là <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kiểm tra proxy và tường lửa<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Kiểm soát cách Google xử lý dữ liệu thiết bị. Cách Google xử lý và sử dụng dữ liệu thiết bị của bạn là do người quản lý thiết bị xác định.</translation>
 <translation id="2053111141626950936">Các trang viết bằng <ph name="LANGUAGE" /> sẽ không được dịch.</translation>
 <translation id="2053553514270667976">Mã zip</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 đề xuất}other{# đề xuất}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Nếu bạn sử dụng máy chủ proxy...</translation>
 <translation id="3828924085048779000">Không cho phép cụm mật khẩu trống.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> đã cài đặt các tiện ích để bổ sung thêm chức năng. Các tiện ích có quyền truy cập vào một số dữ liệu của bạn.</translation>
+<translation id="3835128043098956141">Kiểm soát cách Google xử lý dữ liệu tài khoản. Cách Google xử lý và sử dụng dữ liệu tài khoản của bạn là do người quản lý tài khoản xác định.</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3858027520442213535">Cập nhật ngày và giờ</translation>
 <translation id="3884278016824448484">Số nhận dạng thiết bị xung đột</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Bài viết đề xuất cho bạn sẽ xuất hiện ở đây</translation>
 <translation id="6302269476990306341">Trợ lý Google trong Chrome đang dừng</translation>
 <translation id="6305205051461490394">Không thể truy cập <ph name="URL" />.</translation>
+<translation id="6321321051990674438">Kiểm soát cách Google xử lý dữ liệu tài khoản và thiết bị. Cách Google xử lý và sử dụng thiết bị cũng như dữ liệu tài khoản của bạn là do người quản lý thiết bị và tài khoản xác định.</translation>
 <translation id="6321917430147971392">Kiểm tra cài đặt DNS của bạn</translation>
 <translation id="6328639280570009161">Thử tắt dự đoán mạng</translation>
 <translation id="6328784461820205019">"Kết nối của bạn không phải là kết nối riêng tư" hoặc "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" hoặc "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" hoặc "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" hoặc "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" hoặc "Lỗi chứng chỉ SSL"</translation>

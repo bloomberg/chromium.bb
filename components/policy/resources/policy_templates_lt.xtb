@@ -2091,6 +2091,11 @@
       Šie siūlymai gaunami nuotoliniu būdu iš „Google“ serverių.
 
       Jei šis nustatymas nustatytas kaip „false“, siūlymai nebus gaunami ar pateikiami.</translation>
+<translation id="4759650396863318477">Galima nustatyti laikotarpį (milisekundėmis), per kurį naudotojams pranešama, kad „<ph name="PRODUCT_NAME" />“ reikia paleisti iš naujo arba kad „<ph name="PRODUCT_OS_NAME" />“ įrenginį reikia paleisti iš naujo, norint pritaikyti laukiantį naujinį.
+
+      Per šį laikotarpį naudotojai bus pakartotinai pranešama apie būtinybę atnaujinti. „<ph name="PRODUCT_OS_NAME" />“ įrenginiuose pranešimas apie paleidimą iš naujo rodomas sistemos juostelėje pagal politiką „<ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />“. Praėjus trečdaliui pranešimo laikotarpio „<ph name="PRODUCT_NAME" />“ naršyklėse pakeičiamas programų meniu nurodant, kad reikia paleisti iš naujo. Šio pranešimo spalva pakeičiama praėjus dviem trečdaliams pranešimo laikotarpio ir dar kartą pakeičiama praėjus visam pranešimo laikotarpiui. Tas pats tvarkaraštis taikomas papildomiems pranešimams, įgalintiems taikant politiką „<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />“.
+
+      Jei nenustatyta, „<ph name="PRODUCT_OS_NAME" />“ įrenginiuose naudojamas numatytasis 345 600 000 milisekundžių (keturių dienų) laikotarpis, o „<ph name="PRODUCT_NAME" />“ – 604 800 000 milisekundžių (vienos savaitės) laikotarpis.</translation>
 <translation id="4788252609789586009">Įgalinama „<ph name="PRODUCT_NAME" />“ automatinio pildymo funkcija ir naudotojams leidžiama automatiškai užpildyti žiniatinklio formas, naudojant anksčiau išsaugotą informaciją, pvz., kredito kortelės informaciją.
 
       Jei šis nustatymas išjungtas, Automatinio pildymo funkcija niekada nesiūlys ir automatiškai nepildys kredito kortelės informacijos, taip pat neišsaugos papildomos kredito kortelės informacijos, kurią naudotojas gali pateikti naršydamas žiniatinklyje.
@@ -4419,6 +4424,8 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="915194831143859291">Jei ši politika nustatyta į „false“ arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ leidžia naudotojui išjungti įrenginį.
       Jei ši politika nustatyta į „true“, „<ph name="PRODUCT_OS_NAME" />“ suaktyvina paleidimą iš naujo, kai naudotojas išjungia įrenginį. Visus išjungimo mygtukų atvejus NS „<ph name="PRODUCT_OS_NAME" />“ pakeičia paleidimo iš naujo mygtukais. Jei naudotojas išjungia įrenginį naudodamas maitinimo mygtuką, įrenginys nėra automatiškai paleidžiamas iš naujo, net jei politika įgalinta.</translation>
 <translation id="9152473318295429890">Kontekstinių susijusių tinklalapių siūlymų įgalinimas</translation>
+<translation id="9153446010242995516">Grąžinti ir palikti tikslinę versiją, jei OS versija naujesnė nei tikslinė. Pabandykite perduoti įrenginio lygio konfigūraciją (įskaitant tinklo prisijungimo duomenis) vykdydami grąžinimo procesą, jei įmanoma, bet grąžinimą atlikite naudodami išsamų „Powerwash“, net jei negalima atkurti duomenų (nes tikslinė versija nepalaiko duomenų atkūrimo arba dėl nesuderinamo atgalinio pakeitimo).
+          Palaikoma naudojant 75 ir naujesnių versijų „<ph name="PRODUCT_OS_NAME" />“. Jei kliento programa senesnė, ši vertė reiškia, kad grąžinimas išjungtas.</translation>
 <translation id="9158929520101169054">Leidimas naršyklėje prisijungti prie kelių paskyrų</translation>
 <translation id="9159126470527871268">Pranešama naudotojams, kad būtina iš naujo paleisti „<ph name="PRODUCT_NAME" />“ arba „<ph name="PRODUCT_OS_NAME" />“, norint pritaikyti laukiantį naujinį.
 

@@ -2076,6 +2076,11 @@ politikayı geçersiz kılamaz.
       Bu öneriler uzaktaki Google sunucularından getirilir.
 
       Bu ayar yanlış (false) değerine ayarlanırsa öneri getirilmez veya görüntülenmez.</translation>
+<translation id="4759650396863318477">Beklemedeki bir güncellemenin uygulanması için <ph name="PRODUCT_NAME" /> ürününün veya bir <ph name="PRODUCT_OS_NAME" /> cihazının yeniden başlatılması gerektiği konusunda kullanıcıların bilgilendirileceği dönemi milisaniye cinsinden ayarlamanıza olanak tanır.
+
+      Bu zaman diliminde kullanıcı, güncelleme yapılması gerektiğine dair tekrar tekrar bilgilendirilir. <ph name="PRODUCT_OS_NAME" /> cihazları için yeniden başlatma bildirimi, <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> politikası gereği sistem tepsisinde görünür. <ph name="PRODUCT_NAME" /> tarayıcıları için uygulama menüsü, bildirim süresinin üçte biri geçtikten sonra yeniden başlatmanın gerekli olduğunu gösterecek şekilde değişir. Bu bildirim, bildirim süresinin üçte ikisi geçtikten sonra renk değiştirir ve bildirim süresinin tamamı geçtikten sonra tekrar renk değiştirir. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikası tarafından etkinleştirilen ek bildirimler, aynı programı takip eder.
+
+      Bu değer ayarlanmazsa <ph name="PRODUCT_OS_NAME" /> cihazlarda varsayılan süre olan 345600000 milisaniye (dört gün) ve <ph name="PRODUCT_NAME" /> cihazlarda 604800000 milisaniye (bir hafta) kullanılır.</translation>
 <translation id="4788252609789586009"><ph name="PRODUCT_NAME" /> Otomatik Doldurma özelliğini etkinleştirir ve kullanıcıların web formlarındaki kredi kartı bilgilerini önceden kaydedilmiş bilgilerle otomatik olarak doldurmasına olanak tanır.
 
       Bu ayar devre dışı bırakılırsa Otomatik Doldurma hiçbir zaman öneride bulunmaz, kredi kartı bilgilerini doldurmaz veya kullanıcının internette gezerken gönderebileceği ek kredi kartı bilgilerini kaydetmez.
@@ -2412,7 +2417,7 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
 
           Bu politika etkinleştirilirse tarayıcı penceresi başlatılmaz.
 
-          Bu politika devre dışı bırakılır veya ayarlanmazsa tarayıcı penceresinin başlatılmasına izin verilir. Tarayıcı penceresinin başka politikalar veya komut satırı işaretleri nedeniyle başlamayabileceğini göz önünde bulundurun.</translation>
+          Bu politika devre dışı bırakılır veya ayarlanmazsa tarayıcı penceresinin başlatılmasına izin verilir. Tarayıcı penceresinin başka politikalar veya komut satırı işaretleri nedeniyle de başlamayabileceğini göz önünde bulundurun.</translation>
 <translation id="5427879482805712214">Bu politika, giriş ekranında kullanıcıyı temsil eden avatar resmini yapılandırmanıza olanak tanır. Politika, avatar resminin <ph name="PRODUCT_OS_NAME" /> tarafından indirilebileceği URL'nin belirtilmesi ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreleme karmasının tanımlanmasıyla ayarlanır. Resim JPEG biçiminde olmalı, boyutu 512 kB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir.
 
       Avatar resmi indirilir ve önbelleğe alınır. URL veya karma her değiştiğinde resim tekrar indirilir.
@@ -4354,6 +4359,8 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="915194831143859291">Bu politika yanlış seçeneğine ayarlanırsa veya hiç yapılandırılmazsa <ph name="PRODUCT_OS_NAME" />, kullanıcının cihazı kapatmasına izin verir.
       Bu politika doğru seçeneğine ayarlanırsa, kullanıcı cihazı kapattığında <ph name="PRODUCT_OS_NAME" />, yeniden başlatma işlemi tetikler. <ph name="PRODUCT_OS_NAME" />, kullanıcı arayüzündeki tüm kapatma düğmelerini yeniden başlatma düğmeleriyle değiştirir. Kullanıcı güç düğmesini kullanarak cihazı kapatırsa, politika etkinleştirilmiş olsa dahi cihaz otomatik olarak yeniden başlatılmaz.</translation>
 <translation id="9152473318295429890">İlişkili web sayfalarının bağlam önerilerini etkinleştir</translation>
+<translation id="9153446010242995516">OS sürümü hedeften daha yeniyse geri alın ve hedefin sürümünde kalın. Mümkünse geri alma işlemiyle cihaz düzeyinde yapılandırmayı (ağ kimlik bilgileri dahil) aktarmayı deneyin, ancak (hedef sürümün verilerin geri yüklenmesini desteklememesi veya geriye dönük uyumluluğu olmayan bir değişiklik nedeniyle) verilerin geri yüklenmesi mümkün olmazsa bile geri yükleme işlemini tam powerwash yöntemiyle gerçekleştirin.
+          <ph name="PRODUCT_OS_NAME" /> sürüm 75'te ve sonraki sürümlerde desteklenir. Daha eski istemciler için bu değer, geri yüklemenin devre dışı bırakıldığı anlamına gelir.</translation>
 <translation id="9158929520101169054">Tarayıcıda Çoklu Oturum Açmaya İzin Ver</translation>
 <translation id="9159126470527871268">Kullanıcılara, bekleyen bir güncellemeyi uygulamak için <ph name="PRODUCT_NAME" /> uygulamasının veya <ph name="PRODUCT_OS_NAME" /> cihazının yeniden başlatılması gerektiğini bildirin.
 

@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Välj mapp</translation>
 <translation id="1265739287306757398">Läs mer</translation>
 <translation id="1272079795634619415">Stopp</translation>
+<translation id="1283524564873030414">Senaste 24 timmarna</translation>
 <translation id="1323735185997015385">Radera</translation>
 <translation id="132683371494960526">Tryck snabbt två gånger om du vill ändra överordnad mapp.</translation>
 <translation id="1340643665687018190">Stäng menyn</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">Om du vill skanna en QR-kod aktiverar du kameran i inställningarna</translation>
 <translation id="4281844954008187215">Användarvillkor</translation>
 <translation id="430793432425771671">Synkronisera allt</translation>
+<translation id="430967081421617822">Alltid</translation>
 <translation id="4338650699862464074">Skickar webbadresser till sidor du besöker till Google.</translation>
 <translation id="4359125752503270327">Sidan öppnas i en annan app.</translation>
 <translation id="4370827530403103842">Det går inte att synkronisera. Tryck här för att åtgärda detta.</translation>
@@ -295,6 +297,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5327248766486351172">Namn</translation>
 <translation id="5388358297987318779">Öppna bild</translation>
 <translation id="5409365236829784218">Det finns inga installerade appar som kan öppna filen.</translation>
+<translation id="5416022985862681400">Senaste 7 dagarna</translation>
 <translation id="5433691172869980887">Användarnamnet har kopierats</translation>
 <translation id="54401264925851789">Sidans säkerhetsinfo</translation>
 <translation id="5443952882982198570">Kreditkort</translation>

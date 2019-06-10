@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Wybierz folder</translation>
 <translation id="1265739287306757398">Instrukcje</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
+<translation id="1283524564873030414">Ostatnie 24 godziny</translation>
 <translation id="1323735185997015385">Usuń</translation>
 <translation id="132683371494960526">Kliknij dwukrotnie, by zmienić folder nadrzędny.</translation>
 <translation id="1340643665687018190">Zamknij menu</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">Aby zeskanować kod QR, włącz aparat w ustawieniach</translation>
 <translation id="4281844954008187215">Warunki korzystania z usługi</translation>
 <translation id="430793432425771671">Synchronizuj wszystko</translation>
+<translation id="430967081421617822">Od początku</translation>
 <translation id="4338650699862464074">Adresy URL odwiedzanych stron będą wysyłane do Google.</translation>
 <translation id="4359125752503270327">Strona zostanie otwarta w innej aplikacji.</translation>
 <translation id="4370827530403103842">Synchronizacja nie działa. Kliknij, by ją naprawić.</translation>
@@ -295,6 +297,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5327248766486351172">Nazwa</translation>
 <translation id="5388358297987318779">Otwórz obraz</translation>
 <translation id="5409365236829784218">Nie masz aplikacji, w których można otworzyć ten plik.</translation>
+<translation id="5416022985862681400">Ostatnie 7 dni</translation>
 <translation id="5433691172869980887">Nazwa użytkownika została skopiowana</translation>
 <translation id="54401264925851789">Informacje o bezpieczeństwie strony</translation>
 <translation id="5443952882982198570">Karty kredytowe</translation>

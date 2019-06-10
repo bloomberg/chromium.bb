@@ -250,6 +250,7 @@
 <translation id="4778095205580009397">Google asistents nav pieejams demonstrācijas sesijā.</translation>
 <translation id="479989351350248267">meklēt</translation>
 <translation id="4804818685124855865">Atvienot</translation>
+<translation id="4831034276697007977">Vai tiešām vēlaties izslēgt automātiskos klikšķus?</translation>
 <translation id="4849058404725798627">Izcelt objektu ar tastatūras fokusu</translation>
 <translation id="485592688953820832">Neveikt darbību (pārtraukt)</translation>
 <translation id="4872237917498892622">Alt+Meklēt vai Shift</translation>
@@ -413,6 +414,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> neatbalsta šādu izšķirtspēju: <ph name="SPECIFIED_RESOLUTION" />. Izšķirtspēja tika mainīta uz <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Emocijzīmju palete</translation>
 <translation id="7564874036684306347">Logu pārvietošana uz citu darbvirsmu var izraisīt neparedzētu darbību. Turpmākie paziņojumi, logi un dialoglodziņi var tikt sadalīti pa darbvirsmām.</translation>
+<translation id="7568294522609223312">Izslēgt automātiskos klikšķus</translation>
 <translation id="7569509451529460200">Braila raksts un ChromeVox ir iespējoti</translation>
 <translation id="7593891976182323525">Meklēt vai Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (īpašnieks)</translation>

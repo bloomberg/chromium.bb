@@ -2084,6 +2084,11 @@
       These suggestions are fetched remotely from Google servers.
 
       If this setting is set to false, suggestions will not be fetched or displayed.</translation>
+<translation id="4759650396863318477">Allows you to set the time period, in milliseconds, over which users are notified that <ph name="PRODUCT_NAME" /> must be relaunched or that a <ph name="PRODUCT_OS_NAME" /> device must be restarted to apply a pending update.
+
+      Over this time period, the user will be repeatedly informed of the need for an update. For <ph name="PRODUCT_OS_NAME" /> devices, a restart notification appears in the system tray according to the <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> policy. For <ph name="PRODUCT_NAME" /> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes colour once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy follow this same schedule.
+
+      If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME" /> devices and 604800000 milliseconds (one week) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Enables <ph name="PRODUCT_NAME" />'s Auto-Fill feature and allows users to auto-complete credit card information in web forms using previously stored information.
 
       If this setting is disabled, Auto-fill will never suggest or fill in credit card information, nor will it save additional credit card information that the user might submit while browsing the web.
@@ -4400,6 +4405,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="915194831143859291">If this policy is set to false or not configured, <ph name="PRODUCT_OS_NAME" /> will allow the user to shut down the device.
       If this policy is set to true, <ph name="PRODUCT_OS_NAME" /> will trigger a reboot when the user shuts down the device. <ph name="PRODUCT_OS_NAME" /> replaces all occurrences of shutdown buttons in the UI by reboot buttons. If the user shuts down the device using the power button, it will not automatically reboot, even if the policy is enabled.</translation>
 <translation id="9152473318295429890">Enable contextual suggestions of related web pages</translation>
+<translation id="9153446010242995516">Roll back and stay on target version if OS version is newer than target. Try to carry over device-level configuration (including network credentials) through the rollback process, if possible, but do the rollback with full powerwash even if restoring the data is not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
+          Supported on <ph name="PRODUCT_OS_NAME" /> version 75 and higher. For older clients, this value means that rollback is disabled.</translation>
 <translation id="9158929520101169054">Allow Multiple Sign-in Within the Browser</translation>
 <translation id="9159126470527871268">Notify users that <ph name="PRODUCT_NAME" /> must be relaunched or <ph name="PRODUCT_OS_NAME" /> must be restarted to apply a pending update.
 

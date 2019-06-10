@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Výběr složky</translation>
 <translation id="1265739287306757398">Postup</translation>
 <translation id="1272079795634619415">Zastavit</translation>
+<translation id="1283524564873030414">Posledních 24 hodin</translation>
 <translation id="1323735185997015385">Smazat</translation>
 <translation id="132683371494960526">Dvojitým klepnutím změníte nadřazenou složku.</translation>
 <translation id="1340643665687018190">Zavřít nabídku</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">Chcete-li naskenovat QR kód, povolte v nastavení fotoaparát</translation>
 <translation id="4281844954008187215">Smluvní podmínky</translation>
 <translation id="430793432425771671">Synchronizovat vše</translation>
+<translation id="430967081421617822">Od počátku věků</translation>
 <translation id="4338650699862464074">Odesílá do Googlu adresy URL navštívených stránek.</translation>
 <translation id="4359125752503270327">Tato stránka se otevře v jiné aplikaci.</translation>
 <translation id="4370827530403103842">Synchronizace nefunguje. Problém odstraníte klepnutím.</translation>
@@ -295,6 +297,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5327248766486351172">Jméno</translation>
 <translation id="5388358297987318779">Otevřít obrázek</translation>
 <translation id="5409365236829784218">Nemáte nainstalovanou žádnou aplikaci, která by tento soubor uměla otevřít.</translation>
+<translation id="5416022985862681400">Posledních 7 dnů</translation>
 <translation id="5433691172869980887">Uživatelské jméno bylo zkopírováno</translation>
 <translation id="54401264925851789">Informace o zabezpečení stránky</translation>
 <translation id="5443952882982198570">Platební karty</translation>

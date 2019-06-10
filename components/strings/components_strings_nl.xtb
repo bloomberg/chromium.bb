@@ -210,6 +210,7 @@
 <translation id="202813660234680402">Nee, niet toevoegen</translation>
 <translation id="2030481566774242610">Bedoelde je <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Controleer de proxy en firewall<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Bepalen hoe je apparaatgegevens worden verwerkt. De manier waarop Google je apparaatgegevens verwerkt en gebruikt wordt bepaald door de apparaatbeheerder.</translation>
 <translation id="2053111141626950936">Pagina's in het <ph name="LANGUAGE" /> worden niet vertaald.</translation>
 <translation id="2053553514270667976">Postcode</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggestie}other{# suggesties}}</translation>
@@ -536,6 +537,7 @@
 <translation id="382518646247711829">Als je een proxyserver gebruikt...</translation>
 <translation id="3828924085048779000">Een lege wachtwoordzin is niet toegestaan.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> heeft extensies voor aanvullende functies geïnstalleerd. Extensies hebben toegang tot sommige van je gegevens.</translation>
+<translation id="3835128043098956141">Bepalen hoe je accountgegevens worden verwerkt. De manier waarop Google je accountgegevens verwerkt en gebruikt wordt bepaald door de accountmanager.</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3858027520442213535">Datum en tijd updaten</translation>
 <translation id="3884278016824448484">Conflicterende apparaat-ID's</translation>
@@ -967,6 +969,7 @@
 <translation id="6290238015253830360">Je voorgestelde artikelen worden hier weergegeven</translation>
 <translation id="6302269476990306341">De Google Assistent in Chrome wordt gestopt</translation>
 <translation id="6305205051461490394"><ph name="URL" /> is niet bereikbaar.</translation>
+<translation id="6321321051990674438">Bepalen hoe je apparaat- en accountgegevens worden verwerkt. De manier waarop Google je apparaat- en accountgegevens verwerkt en gebruikt wordt bepaald door de apparaatbeheerder en accountmanager.</translation>
 <translation id="6321917430147971392">Controleer je DNS-instellingen</translation>
 <translation id="6328639280570009161">Probeer netwerkvoorspelling uit te schakelen</translation>
 <translation id="6328784461820205019">'Je verbinding is niet privé' of '&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;' of '&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;' of '&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;' of '&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;' of 'SSL certificaatfout'</translation>

@@ -215,6 +215,7 @@
 <translation id="202813660234680402">否，不要新增</translation>
 <translation id="2030481566774242610">你要找的是 <ph name="LINK" /> 嗎？</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />檢查 Proxy 和防火牆<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">控管 Google 如何處理你的裝置資料。Google 會依照裝置管理員的指示，處理及使用你的裝置資料。</translation>
 <translation id="2053111141626950936">系統不會翻譯<ph name="LANGUAGE" />網頁。</translation>
 <translation id="2053553514270667976">郵遞區號</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 個建議項目}other{# 個建議項目}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">如果你使用 Proxy 伺服器...</translation>
 <translation id="3828924085048779000">通關密語欄位不得留空。</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> 的管理員已安裝支援額外功能的擴充功能。這些擴充功能可存取你的部分資料。</translation>
+<translation id="3835128043098956141">控管 Google 處理你帳戶資料的方式。Google 會依照帳戶管理員的指示，處理及使用你的帳戶資料。</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3858027520442213535">更新日期和時間</translation>
 <translation id="3884278016824448484">裝置識別碼發生衝突</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">這裡會顯示推薦給你的文章</translation>
 <translation id="6302269476990306341">正在停止 Chrome 版 Google 助理</translation>
 <translation id="6305205051461490394">無法連上 <ph name="URL" />。</translation>
+<translation id="6321321051990674438">控管 Google 如何處理你的裝置和帳戶資料。Google 會依照裝置和帳戶管理員的指示，處理及使用你的裝置和帳戶資料。</translation>
 <translation id="6321917430147971392">檢查 DNS 設定</translation>
 <translation id="6328639280570009161">建議停用網路預測功能</translation>
 <translation id="6328784461820205019">「你的連線不是私人連線」、「&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;」或「SSL 憑證錯誤」</translation>

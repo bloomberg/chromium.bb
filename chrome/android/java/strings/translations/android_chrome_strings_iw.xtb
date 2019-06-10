@@ -16,6 +16,12 @@
 <translation id="1121094540300013208">דוחות קריסה ושימוש</translation>
 <translation id="1124772482545689468">משתמש</translation>
 <translation id="1129510026454351943">פרטים: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1140872012279790904">‏שיתוף נתוני החיישנים יתבצע רק במהלך ההשתתפות בחוויית ה-VR הזו. ייתכן שהאתר ילמד עליך באמצעות פרטים מסוימים, למשל:
+  - המיקום שלך
+  - המאפיינים הגופניים שלך, כמו מיקום העיניים
+  - התנועות שלך, למשל צורת ההליכה
+
+לפני הענקת הגישה, יש לוודא שמדובר באתר מהימן.</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{הורדה אחת בהמתנה.}two{# הורדות בהמתנה.}many{# הורדות בהמתנה.}other{# הורדות בהמתנה.}}</translation>
 <translation id="1145536944570833626">מחק נתונים קיימים.</translation>
 <translation id="1146678959555564648">‏כניסה למצב VR</translation>
@@ -604,6 +610,7 @@
 <translation id="545042621069398927">הדפדפן מאיץ את ההורדה.</translation>
 <translation id="5456381639095306749">הורד דף זה</translation>
 <translation id="5475862044948910901">להתחיל פעילות של מציאות רבודה?</translation>
+<translation id="5481942164684849270">'<ph name="APP_NAME" />' נוסף לאפליקציות שלי</translation>
 <translation id="548278423535722844">פתח יישום מפות</translation>
 <translation id="5487521232677179737">ניקוי נתונים</translation>
 <translation id="5494752089476963479">חסימת מודעות באתרים שמוצגות בהם מודעות מפריעות או מטעות</translation>

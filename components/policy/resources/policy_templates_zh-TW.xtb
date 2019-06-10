@@ -2015,6 +2015,11 @@
       這些建議是從遠端向 Google 伺服器擷取而來。
 
       如果設為 false，則不會擷取或顯示建議。</translation>
+<translation id="4759650396863318477">你可以設定時間範圍 (以毫秒為單位)，系統會在這段時間內通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />裝置，才能套用未安裝的更新。
+
+      在你設定的時間範圍內，使用者會持續收到更新通知。在 <ph name="PRODUCT_OS_NAME" />裝置上，系統會根據 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策，在系統匣中顯示重新啟動通知。在 <ph name="PRODUCT_NAME" /> 瀏覽器中，當通知時間過了三分之一後，應用程式選單會有所變更，表示瀏覽器需要重新啟動。這項通知會在時間過了三分之二後變更顏色，並於時間結束後再次變色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策啟用的其他通知也會遵循相同的時間表。
+
+      如果不設定，<ph name="PRODUCT_OS_NAME" />裝置的預設通知期間為 345600000 毫秒 (四天)，<ph name="PRODUCT_NAME" /> 的預設通知期間則為 604800000 毫秒 (一週)。</translation>
 <translation id="4788252609789586009">啟用 <ph name="PRODUCT_NAME" /> 的自動填入功能，並允許使用者使用先前儲存的信用卡資訊自動填寫網路表單。
 
       如果停用這項設定，自動填入功能就不會提出填寫建議或填入信用卡資訊，也無法儲存使用者在瀏覽網路時提交的其他信用卡資訊。
@@ -3042,6 +3047,17 @@
       </translation>
 <translation id="6922884955650325312">封鎖 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
 <translation id="6923366716660828830">指定預設搜尋引擎名稱。如果名稱欄位留空或未設定，系統會使用搜尋網址指定的主機名稱。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
+<translation id="6924223708804692571">這項政策會強制停用指定語言的拼字檢查功能。系統會忽略該清單中無法辨識的語言。
+
+      如果啟用這項政策，系統會為指定的語言停用拼字檢查功能。針對不在清單上的語言，使用者仍可以啟用或停用拼字檢查功能。
+
+      如果停用或不設定這項政策，則使用者的拼字檢查偏好設定不會受到任何影響。
+
+      如果將 <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> 政策設為 False，這項政策就不會有任何作用。
+
+      如果某個語言同時列在這項政策和 <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> 政策中，系統會優先執行後者，為該語言啟用拼字檢查功能。
+
+      拼字檢查功能目前支援的語言如下：af、bg、ca、cs、da、de、el、en-AU、en-CA、en-GB、en-US、es、es-419、es-AR、es-ES、es-MX、es-US、et、fa、fo、fr、he、hi、hr、hu、id、it、ko、lt、lv、nb、nl、pl、pt-BR、pt-PT、ro、ru、sh、sk、sl、sq、sr、sv、ta、tg、tr、uk、vi。</translation>
 <translation id="6926703471186170050">啟用長邊雙面列印</translation>
 <translation id="6931242315485576290">停用 Google 資料同步處理功能</translation>
 <translation id="6936894225179401731">指定 Proxy 伺服器的同時連線數量上限。
@@ -3178,7 +3194,7 @@
 
       系統套用這個 XML 檔案中所含規則的方式與 <ph name="GREYLIST_POLICY_NAME" /> 相同。也就是說，這些規則會禁止 <ph name="PRODUCT_NAME" /> 開啟替代瀏覽器，並禁止替代瀏覽器開啟 <ph name="PRODUCT_NAME" />。
 
-      如果未設定這項政策，或是將此政策設為無效的網址，<ph name="PRODUCT_NAME" /> 不會將其當做「不觸發瀏覽器切換」的規則來源。
+      如果未設定這項政策，或是設為無效網址，<ph name="PRODUCT_NAME" /> 就不會將政策當做「不觸發瀏覽器切換」的規則來源。
 
       如果將這項政策設為有效的網址，<ph name="PRODUCT_NAME" /> 會從該網址下載網站清單，然後按照 <ph name="SITELIST_POLICY_NAME" /> 政策中的設定套用規則。
 
@@ -3852,7 +3868,7 @@
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
 <translation id="8465746466645315861">如果不設定這項政策，使用者可以在語言設定中啟用或停用拼字檢查功能。
 
-      如果將這項政策設為 True，系統會啟用拼字檢查功能，且使用者無法停用。在 <ph name="MS_WIN_NAME" />、<ph name="PRODUCT_OS_NAME" />和 <ph name="LINUX_OS_NAME" /> 中，使用者可以開啟或關閉各語言的拼字檢查功能，因此仍然可以透過關閉每個語言的拼字檢查來停用這項功能。如要避免這種情況，可以使用 <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> 政策強制啟用特定語言的拼字檢查功能。
+      如果將這項政策設為 True，系統會啟用拼字檢查功能，且使用者無法停用。在 <ph name="MS_WIN_NAME" />、<ph name="PRODUCT_OS_NAME" />和 <ph name="LINUX_OS_NAME" /> 中，使用者可以開啟或關閉個別語言的拼字檢查功能，因此只要關閉所有語言的拼字檢查，即可停用這項功能。如要避免這種情況，可以使用 <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> 政策強制啟用特定語言的拼字檢查功能。
 
       如果將這項政策設為 False，系統會停用拼字檢查功能，且使用者無法啟用。如果將這項政策設為 False，<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> 和 <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> 政策將不會有任何作用。
       </translation>
@@ -4187,6 +4203,8 @@
 <translation id="915194831143859291">如果將這項政策設為 False 或不予設定，<ph name="PRODUCT_OS_NAME" /> 會允許使用者關閉裝置。
       如果將這項政策設為 True，<ph name="PRODUCT_OS_NAME" /> 會在使用者關閉裝置時觸發重新啟動程序。此外，<ph name="PRODUCT_OS_NAME" /> 會將使用者介面中的所有關機按鈕改成重新啟動按鈕。如果使用者使用電源按鈕關閉裝置，即使您已啟用這項政策，裝置仍然不會自動重新啟動。</translation>
 <translation id="9152473318295429890">允許根據目前網頁內容建議相關的網頁</translation>
+<translation id="9153446010242995516">如果 OS 版本比目標版本還新，則復原並維持在目標版本。系統會在版本復原過程中儘可能嘗試沿用網路憑證等裝置層級設定，但即使因故無法保留這些資料 (例如目標版本不支援還原資料，或變更內容與舊版不相容)，系統仍會復原至目標版本，並執行完整的 Powerwash。
+          支援 <ph name="PRODUCT_OS_NAME" /> 75 以上版本。如果用戶端版本較舊，則這個值代表復原功能已停用。</translation>
 <translation id="9158929520101169054">允許在瀏覽器中使用多帳戶登入功能</translation>
 <translation id="9159126470527871268">通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />才能套用未安裝的更新。
 

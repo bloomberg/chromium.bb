@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" />에 보내는 중...</translation>
 <translation id="111910763555783249">알림 설정</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1일 전}other{#일 전}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1분 전}other{#분 전}}</translation>

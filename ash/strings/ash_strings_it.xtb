@@ -251,6 +251,7 @@
 <translation id="4778095205580009397">L'Assistente Google non è disponibile in una sessione demo.</translation>
 <translation id="479989351350248267">ricerca</translation>
 <translation id="4804818685124855865">Disconnetti</translation>
+<translation id="4831034276697007977">Vuoi disattivare i clic automatici?</translation>
 <translation id="4849058404725798627">Evidenzia oggetto con stato attivo della tastiera</translation>
 <translation id="485592688953820832">Nessuna azione (pausa)</translation>
 <translation id="4872237917498892622">Alt+tasto per la ricerca o Maiusc</translation>
@@ -414,6 +415,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> non supporta <ph name="SPECIFIED_RESOLUTION" />. La risoluzione è stata modificata in <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Riquadro di emoji</translation>
 <translation id="7564874036684306347">Lo spostamento delle finestre su un altro desktop potrebbe causare comportamenti imprevisti. Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere divise tra i desktop.</translation>
+<translation id="7568294522609223312">Disattiva i clic automatici</translation>
 <translation id="7569509451529460200">Braille e ChromeVox attivati</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietario)</translation>

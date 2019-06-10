@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Ne, nepridėti</translation>
 <translation id="2030481566774242610">Ar turėjote omenyje <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Patikrinti tarpinį serverį ir užkardą<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Valdoma, kaip apdorojami jūsų įrenginio duomenys. Tai, kaip „Google“ apdoroja ir naudoja įrenginio duomenis, priklauso nuo įrenginio valdytojo.</translation>
 <translation id="2053111141626950936">Puslapiai, parašyti <ph name="LANGUAGE" />, verčiami nebus.</translation>
 <translation id="2053553514270667976">Pašto kodas</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 pasiūlymas}one{# pasiūlymas}few{# pasiūlymai}many{# pasiūlymo}other{# pasiūlymų}}</translation>
@@ -550,6 +551,7 @@
 <translation id="382518646247711829">Jei naudojate tarpinį serverį…</translation>
 <translation id="3828924085048779000">Neleidžiama naudoti tuščios slaptafrazės.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> įdiegta papildomų funkcijų plėtinių. Naudojant plėtinius galima pasiekti kai kuriuos jūsų duomenis.</translation>
+<translation id="3835128043098956141">Valdoma, kaip apdorojami jūsų paskyros duomenys. Tai, kaip „Google“ apdoroja ir naudoja paskyros duomenis, priklauso nuo paskyros valdytojo.</translation>
 <translation id="385051799172605136">Atgal</translation>
 <translation id="3858027520442213535">Atnaujinti datą ir laiką</translation>
 <translation id="3884278016824448484">Nesuderinamas įrenginio identifikatorius</translation>
@@ -982,6 +984,7 @@
 <translation id="6290238015253830360">Jūsų pasiūlyti straipsniai rodomi čia</translation>
 <translation id="6302269476990306341">„Google“ padėjėjas sistemoje „Chrome“ sustabdomas</translation>
 <translation id="6305205051461490394"><ph name="URL" /> nepasiekiama.</translation>
+<translation id="6321321051990674438">Valdoma, kaip apdorojami jūsų įrenginio ir paskyros duomenys. Tai, kaip „Google“ apdoroja ir naudoja įrenginio ir paskyros duomenis, priklauso nuo įrenginio ir paskyros valdytojo.</translation>
 <translation id="6321917430147971392">Patikrinkite DNS nustatymus</translation>
 <translation id="6328639280570009161">Bandykite neleisti tinklo numatymo</translation>
 <translation id="6328784461820205019">„Ryšys nėra privatus“, „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ arba „SSL sertifikato klaida“</translation>

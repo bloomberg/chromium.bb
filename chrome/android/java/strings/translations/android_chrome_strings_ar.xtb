@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1006017844123154345">فتح على الإنترنت</translation>
+<translation id="1028699632127661925">جارٍ الإرسال إلى <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">جارٍ إضافة <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">من المواقع الإلكترونية</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
@@ -16,10 +17,17 @@
 <translation id="1121094540300013208">تقارير الاستخدام والأعطال</translation>
 <translation id="1124772482545689468">المستخدم</translation>
 <translation id="1129510026454351943">التفاصيل: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1140872012279790904">لن تتم مشاركة بيانات جهاز الاستشعار إلا أثناء الدخول في تجربة الواقع الافتراضي هذه. قد يتمكن الموقع من التعرف عليك من خلال معلومات معينة، مثل:
+     - موقعك الجغرافي
+    - سماتك البدنية، مثل موضع العين
+    - حركاتك، مثل طريقة المشي
+
+يُرجى التأكد من أنك تثق بهذا الموقع قبل منحه الإذن بالوصول.</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{هناك عملية تنزيل واحدة مُعلَّقة.}zero{هناك # عملية تنزيل مُعلَّقة.}two{هناك عمليتا تنزيل (#) مُعلَّقتان.}few{هناك # عمليات تنزيل مُعلَّقة.}many{هناك # عملية تنزيل مُعلَّقة.}other{هناك # عملية تنزيل مُعلَّقة.}}</translation>
 <translation id="1145536944570833626">يمكنك حذف البيانات الحالية.</translation>
 <translation id="1146678959555564648">‏إدخال VR</translation>
 <translation id="116280672541001035">المستخدَمة</translation>
+<translation id="1171770572613082465">عرض مواقع الويب الشائعة من خلال النقر على الزر "أهم المواقع"</translation>
 <translation id="1172593791219290334">صفحة بدء التشغيل</translation>
 <translation id="1173894706177603556">إعادة تسمية</translation>
 <translation id="1175310183703641346">‏لن تتم مزامنة الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى مع حسابك على Google بعد الآن.</translation>
@@ -42,6 +50,7 @@
 <translation id="1260236875608242557">البحث والاستكشاف</translation>
 <translation id="1264974993859112054">رياضة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
+<translation id="1272444412400969138">منتقي جهاز لمشاركة علامة تبويب معه.</translation>
 <translation id="1283039547216852943">النقر للتوسيع</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
@@ -58,6 +67,7 @@
 <translation id="138361230106469022">مرحبًا، <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1384959399684842514">تم إيقاف التنزيل مؤقتًا</translation>
+<translation id="1386674309198842382">نشط قبل <ph name="LAST_UPDATED" /> من الأيام</translation>
 <translation id="1389974829397082527">ما مِن إشارات مرجعية هنا</translation>
 <translation id="1397811292916898096">البحث باستخدام <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">متضمّن في <ph name="WEBSITE_URL" /></translation>
@@ -258,6 +268,7 @@
 <translation id="2836148919159985482">المس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2845873210977809562">تم إغلاق علامات التبويب المفتوحة</translation>
+<translation id="2858138569776157458">أهم المواقع</translation>
 <translation id="2870560284913253234">الموقع</translation>
 <translation id="2874939134665556319">المقطع الصوتي السابق</translation>
 <translation id="2876369937070532032">‏يتم إرسال عناوين URL لبعض الصفحات التي تزورها إلى Google، عندما يكون أمانك في خطر</translation>
@@ -402,6 +413,7 @@
 <translation id="4008040567710660924">السماح لموقع ويب معيّن بتشغيل ملفات تعريف الارتباط</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{ساعة واحدة (#)}zero{# ساعة}two{ساعتان (#)}few{# ساعات}many{# ساعةً}other{# ساعة}}</translation>
 <translation id="4042870126885713738">يتم عرض اقتراحات عند تعذّر فتح عنوان ويب أو تعذّر الاتصال بالإنترنت.</translation>
+<translation id="4044912625106523635">يتم فتح منتقي الأجهزة لمشاركة علامة تبويب معه بارتفاع كامل.</translation>
 <translation id="4046123991198612571">المقطع الصوتي التالي</translation>
 <translation id="4048707525896921369">‏يمكنك معرفة معلومات عن مواضيع على المواقع الإلكترونية بدون مغادرة الصفحة. تُرسل ميزة "البحث بالنقر" الكلمة والسياق المحيط بها إلى "بحث Google" للحصول على تعريفات وصور ونتائج بحث وتفاصيل أخرى ذات الصلة بها.
 
@@ -575,6 +587,7 @@
 <translation id="5271967389191913893">لا يمكن للجهاز فتح المحتوى لتنزيله</translation>
 <translation id="528192093759286357">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="5284584623296338184">‏لن تتم بعد الآن مزامنة التغييرات التي تطرأ على الإشارات المرجعية والسجلّ وكلمات المرور وغيرها من الإعدادات مع حسابك على Google، ولكن ستظل بياناتك الحالية مخزّنة في حسابك على Google.</translation>
+<translation id="5292796745632149097">إرسال إلى</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5301954838959518834">حسنًا</translation>
 <translation id="5304593522240415983">لا يمكن ترك هذا الحقل فارغًا</translation>
@@ -602,6 +615,7 @@
 <translation id="545042621069398927">جارٍ تسريع التنزيل.</translation>
 <translation id="5456381639095306749">تنزيل الصفحة</translation>
 <translation id="5475862044948910901">هل تريد بدء جلسة الواقع المعزّز؟</translation>
+<translation id="5481942164684849270">تمت إضافة <ph name="APP_NAME" /> إلى تطبيقاتي</translation>
 <translation id="548278423535722844">فتح في تطبيق الخرائط</translation>
 <translation id="5487521232677179737">محو البيانات</translation>
 <translation id="5494752089476963479">حظر الإعلانات في المواقع الإلكترونية التي تعرض إعلانات مضلِّلة أو غير مرغوب فيها</translation>
@@ -738,6 +752,7 @@
 <translation id="6406506848690869874">المزامنة</translation>
 <translation id="641643625718530986">طباعة…</translation>
 <translation id="6416782512398055893">تم التنزيل بحجم <ph name="MBS" /> ميغابايت</translation>
+<translation id="6418750371676080905">تم إغلاق منتقي جهاز لمشاركة علامة تبويب معه.</translation>
 <translation id="6427112570124116297">ترجمة موقع الويب</translation>
 <translation id="6433501201775827830">اختيار محرك البحث</translation>
 <translation id="6437478888915024427">معلومات الصفحة</translation>
@@ -778,6 +793,7 @@
 <translation id="666268767214822976">يمكنك استخدام خدمة التوقّعات لعرض طلبات البحث ذات الصلة ومواقع الويب الشائعة أثناء الكتابة في شريط العناوين.</translation>
 <translation id="666731172850799929">الفتح في <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏إشعار خصوصية Chrome</translation>
+<translation id="6672986458216094438">يتم فتح منتقي الأجهزة لمشاركة علامة تبويب معه بنصف ارتفاع.</translation>
 <translation id="6697492270171225480">عرض اقتراحات للصفحات المشابهة عند تعذّر العثور على صفحة</translation>
 <translation id="6697947395630195233">‏يحتاج Chrome إلى الوصول إلى موقعك الجغرافي لمشاركة موقعك الجغرافي مع موقع الويب هذا.</translation>
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
@@ -956,6 +972,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7963646190083259054">المورّد:</translation>
+<translation id="7971136598759319605">نشط قبل يوم واحد</translation>
 <translation id="7975379999046275268">معاينة صفحة <ph name="BEGIN_NEW" />ميزة جديدة<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع أثناء التصفّح والبحث</translation>
 <translation id="79859296434321399">‏لعرض محتوى الواقع المُعزَّز، يُرجى تثبيت ARCore</translation>
@@ -976,6 +993,7 @@
 <translation id="8058746566562539958">‏فتح بعلامة تبويب Chrome جديدة</translation>
 <translation id="8063895661287329888">تعذّرت إضافة الإشارة المرجعية.</translation>
 <translation id="806745655614357130">الحفاظ على البيانات التابعة لي منفصلة</translation>
+<translation id="8067883171444229417">تشغيل الفيديو</translation>
 <translation id="8068648041423924542">يتعذر تحديد الشهادة.</translation>
 <translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="8076492880354921740">علامات التبويب</translation>
@@ -1012,6 +1030,7 @@
 <translation id="8327155640814342956">‏للحصول على أفضل تجربة للتصفّح، يُرجى الفتح لتحديث Chrome.</translation>
 <translation id="8339163506404995330">لن تتم ترجمة الصفحات باللغة <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">الترتيب حسب مقدار البيانات المُستخدَمة</translation>
+<translation id="8364299278605033898">عرض مواقع الويب الشائعة</translation>
 <translation id="8372893542064058268">السماح لموقع ويب معيّن بتشغيل "المزامنة في الخلفية"</translation>
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
 <translation id="8378714024927312812">بإدارة مؤسستك</translation>

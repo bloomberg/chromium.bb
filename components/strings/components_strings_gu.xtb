@@ -215,6 +215,7 @@
 <translation id="202813660234680402">ના, ઉમેરશો નહીં</translation>
 <translation id="2030481566774242610">શું તમારો અર્થ <ph name="LINK" /> છે?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />પ્રૉક્સી અને ફાયરવૉલ ચેક કરવાનો પ્રયાસ કરો<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">તમારા ડિવાઇસના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા ડિવાઇસના ડેટાની પ્રક્રિયા કેવી રીતે કરે તે તમારા ડિવાઇસ મેનેજર દ્વારા નક્કી કરવામાં આવે છે.</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" />માં લખાયેલાં પેજનો અનુવાદ થશે નહીં.</translation>
 <translation id="2053553514270667976">પિન કોડ</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 સૂચન}one{# સૂચન}other{# સૂચન}}</translation>
@@ -548,6 +549,7 @@
 <translation id="382518646247711829">જો તમે કોઈ પ્રૉક્સી સર્વરનો ઉપયોગ કરો છો...</translation>
 <translation id="3828924085048779000">ખાલી પાસફ્રેઝને અનુમતિ નથી. </translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" />એ વધારાના કાર્યો માટે એક્સ્ટેંશન ઇન્સ્ટૉલ કર્યા છે. એક્સ્ટેંશન પાસે તમારા કેટલાક ડેટાનો ઍક્સેસ છે.</translation>
+<translation id="3835128043098956141">તમારા એકાઉન્ટના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા એકાઉન્ટના ડેટાની પ્રક્રિયા અને ઉપયોગ કેવી રીતે કરે તે તમારા એકાઉન્ટ મેનેજર દ્વારા નક્કી કરવામાં આવે છે.</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="3858027520442213535">તારીખ અને સમય અપડેટ કરો</translation>
 <translation id="3884278016824448484">વિરોધાભાસી ઉપકરણ ઓળખકર્તા</translation>
@@ -980,6 +982,7 @@
 <translation id="6290238015253830360">તમારા સૂચવેલા લેખ અહીં દેખાય છે</translation>
 <translation id="6302269476990306341">Chromeમાં Google આસિસ્ટંટ રોકાઈ રહ્યું છે</translation>
 <translation id="6305205051461490394"><ph name="URL" />, પહોંચવા યોગ્ય નથી.</translation>
+<translation id="6321321051990674438">તમારા ડિવાઇસના અને એકાઉન્ટના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા ડિવાઇસ અને એકાઉન્ટ ડેટાની પ્રક્રિયા અને ઉપયોગ કેવી રીતે કરે તે તમારા ડિવાઇસ અને એકાઉન્ટ મેનેજર દ્વારા નક્કી કરવામાં આવે છે.</translation>
 <translation id="6321917430147971392">તમારી DNS સેટિંગ્સ તપાસો</translation>
 <translation id="6328639280570009161">નેટવર્ક પૂર્વાનુમાનને અક્ષમ કરવાનો પ્રયાસ કરો</translation>
 <translation id="6328784461820205019">"તમારું કનેક્શન ખાનગી નથી" અથવા "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" અથવા "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" અથવા "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" અથવા "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" અથવા "SSL પ્રમાણપત્ર ભૂલ"</translation>

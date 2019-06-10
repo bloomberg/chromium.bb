@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1028699632127661925">Küldés a következő eszközre: <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">Értesítési beállítások</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 napja}other{# napja}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 perce}other{# perce}}</translation>

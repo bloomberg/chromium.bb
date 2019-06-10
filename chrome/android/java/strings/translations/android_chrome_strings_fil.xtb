@@ -259,7 +259,7 @@
 <translation id="2836148919159985482">Pindutin ang button na bumalik upang lumabas sa full screen.</translation>
 <translation id="2842985007712546952">Pangunahing folder</translation>
 <translation id="2845873210977809562">Nakasara ang mga binuksang tab</translation>
-<translation id="2858138569776157458">Sikat site</translation>
+<translation id="2858138569776157458">Top na sites</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Nakaraang track</translation>
 <translation id="2876369937070532032">Ipadala ang mga URL ng ilang page na binibisita mo sa Google kapag nanganganib ang iyong seguridad</translation>
@@ -604,6 +604,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="545042621069398927">Pinapabilis ang iyong pag-download.</translation>
 <translation id="5456381639095306749">I-download ang page</translation>
 <translation id="5475862044948910901">Magsimula ng session ng Augmented Reality?</translation>
+<translation id="5481942164684849270">Idinagdag ang <ph name="APP_NAME" /> sa aking mga app</translation>
 <translation id="548278423535722844">Buksan sa app na mga mapa</translation>
 <translation id="5487521232677179737">I-clear ang data</translation>
 <translation id="5494752089476963479">I-block ang mga ad sa mga site na nagpapakita ng mga nakakasagabal o nakakapanlinlang na ad</translation>

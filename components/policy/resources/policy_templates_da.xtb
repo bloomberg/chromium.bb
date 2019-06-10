@@ -2032,6 +2032,11 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       Disse forslag hentes fra Googles servere.
 
       Hvis denne indstilling er angivet som Falsk, hentes eller vises forslag ikke.</translation>
+<translation id="4759650396863318477">Giver dig mulighed for at angive et tidsrum i millisekunder, hvor brugerne får besked om, at <ph name="PRODUCT_NAME" /> skal genstartes, eller at en <ph name="PRODUCT_OS_NAME" />-enhed skal genstartes for anvende en afventende opdatering.
+
+      I dette tidsrum vil brugeren gentagne gange få besked om, at der skal opdateres. På <ph name="PRODUCT_OS_NAME" />-enheder vises der i systembakken en notifikation om, at der skal genstartes, i henhold politikken <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. I <ph name="PRODUCT_NAME" />-browsere ændres appmenuen for at indikere, at der skal foretages en opdatering, når en tredjedel af notifikationsperioden er gået. Notifikationen skifter farve, når to tredjedele af notifikationsperioden er gået, og igen når hele notifikationsperioden er udløbet. De yderligere notifikationer, der aktiveres af politikken <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, følger samme tidsplan.
+
+      Hvis den ikke er angivet, anvendes standardtidsrummet på 345600000 millisekunder (fire dage) for <ph name="PRODUCT_OS_NAME" />-enheder og 604800000 millisekunder (en uge) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Aktiverer funktionen AutoFyld for <ph name="PRODUCT_NAME" /> og giver brugerne mulighed for automatisk at udfylde webformularer med betalingskortoplysninger, der er gemt tidligere.
 
       Hvis denne indstilling er deaktiveret, foreslår eller udfylder AutoFyld aldrig betalingskortoplysninger, og der gemmes heller ikke yderligere betalingskortoplysninger, som brugeren muligvis indsender, når vedkommende er på nettet.
@@ -4260,6 +4265,8 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="915194831143859291">Hvis denne politik er angivet til Falsk eller ikke er konfigureret, tillader <ph name="PRODUCT_OS_NAME" />, at brugeren lukker enheden ned.
       Hvis denne politik er angivet til Sand, aktiverer <ph name="PRODUCT_OS_NAME" /> en genstart, når brugeren lukker enheden ned. <ph name="PRODUCT_OS_NAME" /> erstatter alle forekomster af Luk-knapper i grænsefladen med genstartsknapper. Hvis brugeren lukker enheden ved hjælp af afbryderknappen, genstartes den ikke automatisk, selvom politikken er aktiveret.</translation>
 <translation id="9152473318295429890">Aktivér indholdsbestemte forslag for relaterede websider</translation>
+<translation id="9153446010242995516">Træk udgivelsen tilbage, og behold målversionen, hvis versionen af operativsystemet er nyere end målversionen. Forsøg at overføre konfigurationen på enhedsniveau (herunder loginoplysninger til netværket) via tilbagetrækningsprocessen, hvis det er muligt, men udfør tilbagetrækningen med en fuldstændig Powerwash, selvom det ikke er muligt at gendanne dataene (eftersom målversionen ikke understøtter gendannelse af data eller på grund af en ikke-kompatibel ændring tilbage).
+          Understøttes i <ph name="PRODUCT_OS_NAME" /> version 75 og nyere. Ved ældre klienter betyder denne værdi, at tilbagetrækning er deaktiveret.</translation>
 <translation id="9158929520101169054">Tillad samlet login fra flere konti i browseren</translation>
 <translation id="9159126470527871268">Underretter brugeren om, at <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> skal genstartes for at anvende en afventende opdatering.
 

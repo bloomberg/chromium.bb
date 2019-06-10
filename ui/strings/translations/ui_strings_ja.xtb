@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" /> に送信しています...</translation>
 <translation id="111910763555783249">通知設定</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 日前}other{# 日前}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 分前}other{# 分前}}</translation>

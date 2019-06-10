@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
+<translation id="1028699632127661925">Menghantar ke <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Tetapan pemberitahuan</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 hari yang lalu}other{# hari yang lalu}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Seminit yang lalu}other{# minit yang lalu}}</translation>

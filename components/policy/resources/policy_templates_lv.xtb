@@ -2076,6 +2076,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Šie ieteikumi tiek izgūti attāli no Google serveriem.
 
       Ja šīs politikas iestatījums ir “False”, ieteikumi netiks izgūti vai parādīti.</translation>
+<translation id="4759650396863318477">Ļauj iestatīt laika periodu milisekundēs, kura laikā lietotājiem tiek paziņots par to, ka pārlūkprogramma <ph name="PRODUCT_NAME" /> ir atkārtoti jāpalaiž vai <ph name="PRODUCT_OS_NAME" /> ierīce ir jārestartē, lai veiktu nepabeigto atjaunināšanu.
+
+      Šajā periodā lietotājs tiks atkārtoti informēts par atjaunināšanu. <ph name="PRODUCT_OS_NAME" /> ierīcēs paziņojums par restartēšanu tiek rādīts sistēmas teknē atbilstoši politikai <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. <ph name="PRODUCT_NAME" /> pārlūkprogrammās: kad ir pagājusi trešdaļa no perioda, lietotnes izvēlne tiek mainīta, lai norādītu, ka nepieciešama atkārtota lietotnes palaišana. Kad ir pagājusi puse no perioda, šī paziņojuma krāsa tiek mainīta. Kad ir pagājis viss periods, paziņojuma krāsa tiek mainīta vēl vienu reizi. Tādā pašā veidā tiek rādīti arī pārlūkprogrammas <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikas papildu iespējotie paziņojumi.
+
+      Ja šī politika nav iestatīta, <ph name="PRODUCT_OS_NAME" /> ierīcēs tiek izmantots noklusējuma periods 345 600 000 milisekundes (četras dienas), savukārt pārlūkprogrammā <ph name="PRODUCT_NAME" /> — 604 800 000 milisekundes (viena nedēļa).</translation>
 <translation id="4788252609789586009">Iespējo pārlūka <ph name="PRODUCT_NAME" /> funkciju Automātiskā aizpilde un ļauj lietotājiem automātiski aizpildīt kredītkaršu informāciju tīmekļa veidlapās, izmantojot iepriekš saglabāto informāciju.
 
       Ja šis iestatījums ir atspējots, funkcija Automātiskā aizpilde nekad nerādīs kredītkaršu informācijas ieteikumus un neaizpildīs šo informāciju, kā arī nesaglabās papildu kredītkaršu informāciju, ko lietotājs var norādīt, pārlūkojot tīmekli.
@@ -4376,6 +4381,8 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="915194831143859291">Ja šai politikai ir iestatīta vērtība Nepatiesa vai ja politika nav konfigurēta, lietotājs var izslēgt <ph name="PRODUCT_OS_NAME" /> ierīci.
       Ja šai politikai ir iestatīta vērtība Patiesa, lietotājam izslēdzot ierīci, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiek aktivizēta atkārtotā palaišana. <ph name="PRODUCT_OS_NAME" /> aizstāj visas lietotāja saskarnē esošās izslēgšanas pogas ar atkārtotas palaišanas pogām. Ja lietotājs izslēdz ierīci, izmantojot barošanas pogu, ierīce tiek automātiski atkārtoti palaista, pat ja ir iespējota politika.</translation>
 <translation id="9152473318295429890">Iespējojiet saistīto tīmekļa lapu kontekstuālos ieteikumus</translation>
+<translation id="9153446010242995516">Veikt atriti un paturēt mērķa versiju, ja operētājsistēmas versija ir jaunāka nekā mērķa versija. Mēģiniet pārnest konfigurāciju ierīces līmenī (tostarp tīkla akreditācijas datus) ar atrites palīdzību, ja tas ir iespējams, taču veiciet atriti, pilnībā izmantojot funkciju Powerwash, pat ja datu atjaunošana nav iespējama (jo mērķa versija neatbalsta atjaunošanas datus vai atpakaļ nesavietojamu izmaiņu dēļ).
+          Tiek atbalstīts <ph name="PRODUCT_OS_NAME" /> 75. versijā un jaunākās. Senākiem klientiem šī vērtība nozīmē to, ka atrite ir atspējota.</translation>
 <translation id="9158929520101169054">Atļauj pārlūkā vairākkārtēju pierakstīšanos</translation>
 <translation id="9159126470527871268">Paziņo lietotājiem, ka pārlūks <ph name="PRODUCT_NAME" /> ir atkārtoti jāpalaiž vai <ph name="PRODUCT_OS_NAME" /> ierīce ir jārestartē, lai veiktu nepabeigto atjaunināšanu.
 

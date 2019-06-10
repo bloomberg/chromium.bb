@@ -215,6 +215,7 @@
 <translation id="202813660234680402">نه، اضافه نشود</translation>
 <translation id="2030481566774242610">منظورتان <ph name="LINK" /> بود؟</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />بررسی پروکسی و دیوار آتش<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">‏نحوه پردازش داده‌های دستگاهتان را کنترل می‌کند. مدیر دستگاهتان مشخص می‌کند که Google چگونه داده‌های دستگاهتان را پردازش کند و از آن‌ها استفاده کند.</translation>
 <translation id="2053111141626950936">صفحه‌های <ph name="LANGUAGE" /> ترجمه نخواهند شد.</translation>
 <translation id="2053553514270667976">کد پستی</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{۱ پیشنهاد}one{# پیشنهاد}other{# پیشنهاد}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">اگر از سرور پراکسی استفاده می‌کنید...</translation>
 <translation id="3828924085048779000">عبارت عبور خالی مجاز نیست.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> افزونه‌هایی را برای عملکردهای اضافی نصب کرده است. افزونه‌ها به برخی از داده‌های شما دسترسی دارند.</translation>
+<translation id="3835128043098956141">‏نحوه پردازش داده‌های حسابتان را کنترل می‌کند. مدیر حسابتان مشخص می‌کند که Google چگونه داده‌های حسابتان را پردازش کند و از آن استفاده کند.</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3858027520442213535">به‌روزرسانی تاریخ و زمان</translation>
 <translation id="3884278016824448484">شناسه دستگاه یکسان نیست</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">مقاله‌های پیشنهادی شما در اینجا نشان داده می‌شوند</translation>
 <translation id="6302269476990306341">‏توقف «دستیار Google» در Chrome</translation>
 <translation id="6305205051461490394">دسترسی به <ph name="URL" /> امکان‌پذیر نیست.</translation>
+<translation id="6321321051990674438">‏نحوه مدیریت داده‌های دستگاه و حسابتان را کنترل می‌کند. مدیر دستگاه و حسابتان مشخص می‌کند Google چگونه داده‌های حساب و دستگاهتان را پردازش کند و از آن‌ها استفاده کند.</translation>
 <translation id="6321917430147971392">‏تنظیمات DNS خودتان را بررسی کنید</translation>
 <translation id="6328639280570009161">غیرفعال کردن پیش‌بینی شبکه را امتحان کنید</translation>
 <translation id="6328784461820205019">‏«اتصالتان خصوصی نیست» یا «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;» یا «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;» یا «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;» یا «خطای گواهینامه SSL»</translation>

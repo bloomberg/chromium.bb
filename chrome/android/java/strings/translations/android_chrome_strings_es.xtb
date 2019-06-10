@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="1006017844123154345">Abrir versión online</translation>
+<translation id="1028699632127661925">Enviando a <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Añadiendo <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De sitios web</translation>
 <translation id="1049743911850919806">Incógnito</translation>
@@ -16,11 +17,17 @@
 <translation id="1121094540300013208">Informes de uso y sobre fallos</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1129510026454351943">Detalles: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1140872012279790904">Los datos de sensores solo se podrán compartir mientras estés inmerso en esta experiencia de realidad virtual. Es posible que el sitio web aprenda sobre ti usando cierta información, como la siguiente:
+  - Tu ubicación
+  - Tus características físicas, como la posición de los ojos
+  - Tus movimientos, como tu forma de andar
+
+Antes de permitirle el acceso, asegúrate de que el sitio web sea de confianza.</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Hay 1 descarga pendiente.}other{Hay # descargas pendientes.}}</translation>
 <translation id="1145536944570833626">Elimina los datos actuales.</translation>
 <translation id="1146678959555564648">Iniciar RV</translation>
 <translation id="116280672541001035">Usados</translation>
-<translation id="1171770572613082465">Toca el botón "Populares" para ver los sitios web más populares</translation>
+<translation id="1171770572613082465">Toca el botón Populares para ver los sitios web más populares</translation>
 <translation id="1172593791219290334">Página de inicio</translation>
 <translation id="1173894706177603556">Cambiar nombre</translation>
 <translation id="1175310183703641346">Tus marcadores, el historial, las contraseñas y otros datos dejarán de sincronizarse con tu cuenta de Google.</translation>
@@ -43,6 +50,7 @@
 <translation id="1260236875608242557">Buscar y explorar</translation>
 <translation id="1264974993859112054">Deportes</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
+<translation id="1272444412400969138">Selector de dispositivo con el que se comparte una pestaña.</translation>
 <translation id="1283039547216852943">Toca para ampliar</translation>
 <translation id="1285320974508926690">No traducir nunca este sitio</translation>
 <translation id="1291207594882862231">Borrar el historial, las cookies, los datos de sitios web, la caché…</translation>
@@ -59,6 +67,7 @@
 <translation id="138361230106469022">Hola, <ph name="FULL_NAME" />:</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1384959399684842514">Descarga en pausa</translation>
+<translation id="1386674309198842382">Activo hace <ph name="LAST_UPDATED" /> días</translation>
 <translation id="1389974829397082527">Ningún marcador incluido</translation>
 <translation id="1397811292916898096">Buscar con <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Insertado en <ph name="WEBSITE_URL" /></translation>
@@ -404,6 +413,7 @@
 <translation id="4008040567710660924">Permitir cookies en un sitio web específico.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Muestra sugerencias cuando no se puede resolver una dirección web o no se puede establecer una conexión</translation>
+<translation id="4044912625106523635">Se ha abierto el selector de dispositivo con el que se comparte una pestaña para que ocupe toda la pantalla.</translation>
 <translation id="4046123991198612571">Pista siguiente</translation>
 <translation id="4048707525896921369">Obtén información sobre los temas que aparecen en los sitios web sin salir de la página. La función Tocar para buscar envía una palabra y el contexto que la rodea a la Búsqueda de Google y te muestra definiciones, imágenes, resultados de búsqueda y más información.
 
@@ -577,6 +587,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5271967389191913893">El dispositivo no puede abrir el contenido para descargarlo.</translation>
 <translation id="528192093759286357">Arrastra el dedo desde la parte superior y toca el botón de retroceso para salir de la pantalla completa.</translation>
 <translation id="5284584623296338184">Los cambios que realices en los marcadores, el historial, las contraseñas y otras opciones no se sincronizarán con tu cuenta de Google. Sin embargo, tus datos actuales seguirán almacenados en tu cuenta.</translation>
+<translation id="5292796745632149097">Enviar a</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">Entendido</translation>
 <translation id="5304593522240415983">Este campo no puede estar vacío</translation>
@@ -604,6 +615,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="545042621069398927">Acelerando descarga.</translation>
 <translation id="5456381639095306749">Descargar página</translation>
 <translation id="5475862044948910901">¿Quieres iniciar la sesión de realidad aumentada?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> se ha añadido a mis aplicaciones</translation>
 <translation id="548278423535722844">Abrirla en una aplicación de mapas</translation>
 <translation id="5487521232677179737">Borrar datos</translation>
 <translation id="5494752089476963479">Bloquea anuncios invasivos o engañosos en los sitios web que los muestran</translation>
@@ -740,6 +752,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="6416782512398055893">MB descargados: <ph name="MBS" /></translation>
+<translation id="6418750371676080905">Se ha cerrado el selector de dispositivo con el que se comparte una pestaña.</translation>
 <translation id="6427112570124116297">Traduce la Web</translation>
 <translation id="6433501201775827830">Elegir tu motor de búsqueda</translation>
 <translation id="6437478888915024427">Información de la página</translation>
@@ -780,6 +793,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="666268767214822976">Utiliza un servicio de predicciones para mostrar consultas relacionadas y sitios web populares a medida que escribes en la barra de direcciones</translation>
 <translation id="666731172850799929">Abrir en <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Aviso de privacidad de Chrome</translation>
+<translation id="6672986458216094438">Se ha abierto a media altura el selector de dispositivo con el que se comparte una pestaña.</translation>
 <translation id="6697492270171225480">Mostrar sugerencias de páginas similares cuando no se encuentre una página</translation>
 <translation id="6697947395630195233">Chrome necesita acceder a tu ubicación para compartirla con este sitio web.</translation>
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>
@@ -958,6 +972,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está obsoleto.</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7963646190083259054">Proveedor:</translation>
+<translation id="7971136598759319605">Activo hace 1 día</translation>
 <translation id="7975379999046275268">Revisar página <ph name="BEGIN_NEW" />Nuevo<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Cargar previamente las páginas para que la navegación y las búsquedas sean más rápidas</translation>
 <translation id="79859296434321399">Instala ARCore para visualizar contenido de realidad aumentada</translation>
@@ -978,7 +993,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8058746566562539958">Abrir en una pestaña nueva</translation>
 <translation id="8063895661287329888">No se ha podido añadir el marcador.</translation>
 <translation id="806745655614357130">Mantener mis datos separados</translation>
-<translation id="8067883171444229417">Ver vídeo</translation>
+<translation id="8067883171444229417">Reproducir vídeo</translation>
 <translation id="8068648041423924542">No se puede seleccionar el certificado.</translation>
 <translation id="8073388330009372546">Abrir en pestaña nueva</translation>
 <translation id="8076492880354921740">Pestañas</translation>

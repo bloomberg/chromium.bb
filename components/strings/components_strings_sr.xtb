@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Не, немој да додаш</translation>
 <translation id="2030481566774242610">Да ли сте мислили <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />да проверите прокси и заштитни зид<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Контролише како се рукује подацима са уређаја. Менаџер уређаја одређује начин на који Google обрађује и користи податке са уређаја.</translation>
 <translation id="2053111141626950936">Странице на језику <ph name="LANGUAGE" /> неће бити преведене.</translation>
 <translation id="2053553514270667976">Поштански број</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 предлог}one{# предлог}few{# предлога}other{# предлога}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Ако користите прокси сервер...</translation>
 <translation id="3828924085048779000">Није дозвољено да поље за приступну фразу буде празно.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> је инсталирао додатке за додатне функције. Додаци имају приступ некима од података.</translation>
+<translation id="3835128043098956141">Контролише како се рукује подацима са налога. Начин на који Google обрађује и користи податке са налога утврђује менаџер налога.</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Ажурирајте датум и време</translation>
 <translation id="3884278016824448484">Неусаглашени идентификатор уређаја</translation>
@@ -980,6 +982,7 @@
 <translation id="6290238015253830360">Предложени чланци се приказују овде</translation>
 <translation id="6302269476990306341">Google помоћник у Chrome-у се зауставља</translation>
 <translation id="6305205051461490394">URL <ph name="URL" /> није доступан.</translation>
+<translation id="6321321051990674438">Контролише како се рукује подацима са уређаја и налога. Начин на који Google обрађује и користи податке са уређаја и налога утврђује менаџер уређаја и налога.</translation>
 <translation id="6321917430147971392">Проверите DNS подешавања</translation>
 <translation id="6328639280570009161">Покушајте да онемогућите предвиђање мреже</translation>
 <translation id="6328784461820205019">„Веза није приватна“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“ или „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“ или „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ или „Грешка у вези са SSL сертификатом“</translation>

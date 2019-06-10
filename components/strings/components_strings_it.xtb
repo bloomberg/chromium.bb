@@ -215,6 +215,7 @@
 <translation id="202813660234680402">No, non aggiungere</translation>
 <translation id="2030481566774242610">Forse cercavi <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Controllare il proxy e firewall<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Controlla in che modo vengono gestiti i dati del tuo dispositivo. Il modo in cui Google elabora e utilizza i dati del tuo dispositivo è determinato dal gestore del tuo dispositivo.</translation>
 <translation id="2053111141626950936">Le pagine in <ph name="LANGUAGE" /> non verranno tradotte.</translation>
 <translation id="2053553514270667976">ZIP</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggerimento}other{# suggerimenti}}</translation>
@@ -546,6 +547,7 @@
 <translation id="382518646247711829">Se utilizzi un server proxy...</translation>
 <translation id="3828924085048779000">Non è consentita una passphrase vuota.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> ha installato estensioni relative a funzioni aggiuntive. Le estensioni hanno accesso ad alcuni tuoi dati.</translation>
+<translation id="3835128043098956141">Controlla in che modo vengono gestiti i dati del tuo account. Il modo in cui Google elabora e utilizza i dati del tuo account è determinato dal gestore del tuo account.</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3858027520442213535">Aggiorna data e ora</translation>
 <translation id="3884278016824448484">Identificativo del dispositivo in conflitto</translation>
@@ -977,6 +979,7 @@
 <translation id="6290238015253830360">Gli articoli suggeriti vengono visualizzati qui</translation>
 <translation id="6302269476990306341">Interruzione dell'Assistente Google in Chrome</translation>
 <translation id="6305205051461490394"><ph name="URL" /> non è raggiungibile.</translation>
+<translation id="6321321051990674438">Controlla in che modo vengono gestiti i dati del tuo dispositivo e del tuo account. Il modo in cui Google elabora e utilizza i dati del tuo dispositivo e del tuo account è determinato dal gestore del tuo dispositivo e del tuo account.</translation>
 <translation id="6321917430147971392">Controlla le impostazioni DNS</translation>
 <translation id="6328639280570009161">Prova a disattivare la previsione della rete</translation>
 <translation id="6328784461820205019">"La connessione non è privata", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" o "Errore certificato SSL"</translation>

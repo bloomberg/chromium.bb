@@ -210,6 +210,7 @@
 <translation id="202813660234680402">Nie, nepridať</translation>
 <translation id="2030481566774242610">Mysleli ste stránku <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Skontrolovať proxy server a bránu firewall<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Umožňuje ovládať spôsob spracovania údajov zariadenia. Google spracováva a využíva údaje o vašom zariadení podľa pokynov správcu zariadenia.</translation>
 <translation id="2053111141626950936">Stránky v jazyku <ph name="LANGUAGE" /> nebudú prekladané.</translation>
 <translation id="2053553514270667976">PSČ</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 návrh}few{# návrhy}many{# návrhu}other{# návrhov}}</translation>
@@ -537,6 +538,7 @@
 <translation id="382518646247711829">Ak používate server proxy...</translation>
 <translation id="3828924085048779000">Prístupová fráza nemôže byť prázdna.</translation>
 <translation id="3831915413245941253">Doména <ph name="ENROLLMENT_DOMAIN" /> nainštalovala rozšírenia pre ďalšie funkcie. Rozšírenia majú prístup k niektorým vašim údajom.</translation>
+<translation id="3835128043098956141">Umožňuje ovládať spôsob spracovania údajov účtu. Google spracováva a využíva údaje o vašom účte podľa pokynov správcu zariadenia.</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="3858027520442213535">Aktualizovať dátum a čas</translation>
 <translation id="3884278016824448484">Kolidujúci identifikátor zariadenia</translation>
@@ -968,6 +970,7 @@
 <translation id="6290238015253830360">Tu sa zobrazia vaše navrhované články</translation>
 <translation id="6302269476990306341">Zastavuje sa Asistent Google v Chrome</translation>
 <translation id="6305205051461490394">Web <ph name="URL" /> je nedostupný.</translation>
+<translation id="6321321051990674438">Ovláda spôsob spracovania údajov zariadenia a účtu. Google spracováva a využíva údaje o vašom zariadení a účte podľa pokynov správcu zariadenia a účtu.</translation>
 <translation id="6321917430147971392">Skontrolujte nastavenia DNS</translation>
 <translation id="6328639280570009161">Skúste zakázať predpovede siete</translation>
 <translation id="6328784461820205019">„Vaše pripojenie nie je súkromné“, „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“ alebo „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ alebo „Chyba certifikátu SSL“.</translation>

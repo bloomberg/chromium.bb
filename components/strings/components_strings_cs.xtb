@@ -210,6 +210,7 @@
 <translation id="202813660234680402">Ne, nepřidávat</translation>
 <translation id="2030481566774242610">Měli jste na mysli <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Zkontrolovat proxy server a firewall<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Určuje způsob zpracování dat z vašeho zařízení. Jak společnost Google zpracovává a používá data z vašeho zařízení, určuje správce zařízení.</translation>
 <translation id="2053111141626950936">Stránky v jazyce <ph name="LANGUAGE" /> se nebudou překládat.</translation>
 <translation id="2053553514270667976">PSČ</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 návrh}few{# návrhy}many{# návrhu}other{# návrhů}}</translation>
@@ -537,6 +538,7 @@
 <translation id="382518646247711829">Pokud používáte proxy server...</translation>
 <translation id="3828924085048779000">Prázdná heslová fráze není povolena.</translation>
 <translation id="3831915413245941253">Z domény <ph name="ENROLLMENT_DOMAIN" />do tohoto zařízení byla nainstalována rozšíření pro dodatečné funkce. Rozšíření mají přístup k některým vašim datům.</translation>
+<translation id="3835128043098956141">Určuje způsob zpracování dat z vašeho účtu. Jak společnost Google zpracovává a používá data z vašeho účtu, určuje správce účtu.</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3858027520442213535">Aktualizovat datum a čas</translation>
 <translation id="3884278016824448484">Konfliktní identifikátor zařízení</translation>
@@ -968,6 +970,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6290238015253830360">Zde se zobrazí navrhované články</translation>
 <translation id="6302269476990306341">Zastavování Asistenta Google v Chromu</translation>
 <translation id="6305205051461490394">Web <ph name="URL" /> není dostupný.</translation>
+<translation id="6321321051990674438">Určuje způsob zpracování dat z vašeho zařízení a účtu. Jak společnost Google zpracovává a používá data z vašeho zařízení a účtu, určuje správce zařízení a účtu.</translation>
 <translation id="6321917430147971392">Zkontrolujte nastavení DNS</translation>
 <translation id="6328639280570009161">Zkuste deaktivovat předvídání akcí sítě</translation>
 <translation id="6328784461820205019">Vaše připojení není soukromé, &lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;, &lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;, &lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;, &lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt; nebo Chyba certifikátu SSL</translation>

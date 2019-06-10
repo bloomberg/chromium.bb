@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1006017844123154345">Открыть в Интернете</translation>
+<translation id="1028699632127661925">Отправка на устройство "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="1036727731225946849">Добавление файла "<ph name="WEBAPK_NAME" />"…</translation>
 <translation id="1041308826830691739">От сайтов</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
@@ -16,6 +17,12 @@
 <translation id="1121094540300013208">Отчеты об использовании и сбоях</translation>
 <translation id="1124772482545689468">Пользователь</translation>
 <translation id="1129510026454351943">Сведения об ошибке: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1140872012279790904">Данные датчиков будут использоваться только во время сеанса виртуальной реальности. Сайт сможет определять:
+    – ваше местоположение;
+    – ваши внешние черты, например положение глаз;
+    – ваши движения и походку.
+
+    Предоставляйте доступ только тем сайтам, которым вы доверяете.</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Ожидание скачивания 1 файла…}one{Ожидание скачивания # файла…}few{Ожидание скачивания # файлов…}many{Ожидание скачивания # файлов…}other{Ожидание скачивания # файла…}}</translation>
 <translation id="1145536944570833626">Удалить сохраненные данные.</translation>
 <translation id="1146678959555564648">Войти в режим VR</translation>
@@ -43,6 +50,7 @@
 <translation id="1260236875608242557">Поиск и рекомендации</translation>
 <translation id="1264974993859112054">Спорт</translation>
 <translation id="1272079795634619415">Остановить</translation>
+<translation id="1272444412400969138">Выбор устройства, на которое будет отправлена вкладка.</translation>
 <translation id="1283039547216852943">Нажмите, чтобы развернуть</translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
 <translation id="1291207594882862231">Удалить файлы cookie и данные сайтов, очистить историю и кеш</translation>
@@ -59,6 +67,7 @@
 <translation id="138361230106469022">Здравствуйте, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1384959399684842514">Скачивание приостановлено.</translation>
+<translation id="1386674309198842382">Последние действия: <ph name="LAST_UPDATED" /> дн. назад</translation>
 <translation id="1389974829397082527">Закладок пока нет.</translation>
 <translation id="1397811292916898096">Поиск в <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Встроено в <ph name="WEBSITE_URL" /></translation>
@@ -404,6 +413,7 @@
 <translation id="4008040567710660924">Разрешить определенному сайту сохранять файлы cookie.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# час}one{# час}few{# часа}many{# часов}other{# часа}}</translation>
 <translation id="4042870126885713738">Предлагать альтернативы, если веб-адрес недоступен или с ним не удается установить соединение</translation>
+<translation id="4044912625106523635">Окно выбора устройства для отправки вкладки открыто во весь экран.</translation>
 <translation id="4046123991198612571">Следующий трек</translation>
 <translation id="4048707525896921369">Ищите картинки, определения и другую информацию, не покидая выбранную страницу. Просто выберите слово, и оно будет отправлено в Google Поиск вместе с контекстом.
 
@@ -537,7 +547,7 @@
 <translation id="4962975101802056554">Отозвать все разрешения для устройства</translation>
 <translation id="4970824347203572753">Функция недоступна в вашей стране.</translation>
 <translation id="497421865427891073">Вперед</translation>
-<translation id="4988210275050210843">Скачивание файла (<ph name="MEGABYTES" /> МБ).</translation>
+<translation id="4988210275050210843">Скачивание файла (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Страницы</translation>
 <translation id="4994033804516042629">Контакты не найдены</translation>
 <translation id="4996978546172906250">Способ отправки</translation>
@@ -577,6 +587,7 @@
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
 <translation id="528192093759286357">Чтобы выйти из полноэкранного режима, проведите по экрану сверху вниз и нажмите кнопку "Назад".</translation>
 <translation id="5284584623296338184">Изменения в ваших закладках, паролях, истории и других настройках больше не будут синхронизироваться с аккаунтом Google. Это изменение не затронет данные, сохраненные в аккаунте ранее.</translation>
+<translation id="5292796745632149097">Куда отправить</translation>
 <translation id="5300589172476337783">Показать</translation>
 <translation id="5301954838959518834">ОК</translation>
 <translation id="5304593522240415983">Это поле нужно заполнить</translation>
@@ -604,6 +615,7 @@
 <translation id="545042621069398927">Ускорение скачивания…</translation>
 <translation id="5456381639095306749">Скачать страницу</translation>
 <translation id="5475862044948910901">Начать сеанс дополненной реальности?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" />: добавлено в "Мои приложения".</translation>
 <translation id="548278423535722844">Показать на карте</translation>
 <translation id="5487521232677179737">Удалить данные</translation>
 <translation id="5494752089476963479">Блокировать объявления на сайтах, которые показывают навязчивую или вводящую в заблуждение рекламу</translation>
@@ -740,6 +752,7 @@
 <translation id="6406506848690869874">Синхронизация...</translation>
 <translation id="641643625718530986">Печать</translation>
 <translation id="6416782512398055893">Скачано <ph name="MBS" /> МБ</translation>
+<translation id="6418750371676080905">Окно выбора устройства для отправки вкладки закрыто.</translation>
 <translation id="6427112570124116297">Перевод веб-страниц</translation>
 <translation id="6433501201775827830">Выберите поисковую систему</translation>
 <translation id="6437478888915024427">Информация о странице</translation>
@@ -780,6 +793,7 @@
 <translation id="666268767214822976">Показывать подсказки с похожими запросами и часто посещаемыми сайтами по мере ввода в адресную строку</translation>
 <translation id="666731172850799929">Открыть в <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Примечание о конфиденциальности Chrome</translation>
+<translation id="6672986458216094438">Окно выбора устройства для отправки вкладки открыто на половину экрана.</translation>
 <translation id="6697492270171225480">Предлагать варианты, если страница, которую вы пытаетесь открыть, не найдена</translation>
 <translation id="6697947395630195233">Для этого сайта Chrome запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
@@ -958,6 +972,7 @@
 <translation id="7942131818088350342">Версия <ph name="PRODUCT_NAME" /> устарела.</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
 <translation id="7963646190083259054">Поставщик:</translation>
+<translation id="7971136598759319605">Последние действия: 1 день назад</translation>
 <translation id="7975379999046275268">Просмотреть страницу <ph name="BEGIN_NEW" />Новинка<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Разрешить предзагрузку страниц для повышения скорости работы браузера и поиска</translation>
 <translation id="79859296434321399">Чтобы просматривать контент в режиме дополненной реальности, установите приложение ARCore.</translation>

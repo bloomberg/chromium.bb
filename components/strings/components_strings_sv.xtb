@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Nej, lägg inte till</translation>
 <translation id="2030481566774242610">Menade du <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />kontrollera proxyn och brandväggen<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Styr hur enhetens data hanteras. Enhetshanteraren bestämmer på vilket sätt Google bearbetar och använder enhetens data.</translation>
 <translation id="2053111141626950936">Sidor på <ph name="LANGUAGE" /> översätts inte.</translation>
 <translation id="2053553514270667976">ZIP</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 förslag}other{# förslag}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Om du använder en proxyserver ...</translation>
 <translation id="3828924085048779000">Lösenfrasen får inte vara tom.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> har installerat tillägg för fler funktioner. Tilläggen har åtkomst till en del av din data.</translation>
+<translation id="3835128043098956141">Styr hur kontots data hanteras. Den kontoansvariga bestämmer på vilket sätt Google bearbetar och använder kontodata.</translation>
 <translation id="385051799172605136">Bakåt</translation>
 <translation id="3858027520442213535">Uppdatera datum och tid</translation>
 <translation id="3884278016824448484">Motstridiga enhetsidentifierare</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Rekommenderade artiklar visas här</translation>
 <translation id="6302269476990306341">Google-assistenten i Chrome stoppas</translation>
 <translation id="6305205051461490394"><ph name="URL" /> kan inte nås.</translation>
+<translation id="6321321051990674438">Styr hur enhets- och kontodata hanteras. Enhetshanteraren och den kontoansvariga bestämmer på vilket sätt Google bearbetar och använder enhets- och kontodata.</translation>
 <translation id="6321917430147971392">Kontrollera DNS-inställningarna</translation>
 <translation id="6328639280570009161">Prova att inaktivera nätverksförslag</translation>
 <translation id="6328784461820205019">Anslutningen är inte privat eller &lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt; eller &lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt; eller &lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt; eller &lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;eller SSL-certifikatfel</translation>

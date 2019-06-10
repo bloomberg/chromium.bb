@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">フォルダの選択</translation>
 <translation id="1265739287306757398">詳細</translation>
 <translation id="1272079795634619415">中止</translation>
+<translation id="1283524564873030414">過去 24 時間</translation>
 <translation id="1323735185997015385">削除</translation>
 <translation id="132683371494960526">ダブルタップして親フォルダを変更。</translation>
 <translation id="1340643665687018190">メニューを閉じる</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">QR コードをスキャンするには、設定でカメラを有効にしてください</translation>
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="430793432425771671">すべて同期</translation>
+<translation id="430967081421617822">全期間</translation>
 <translation id="4338650699862464074">アクセスしたページの URL を Google に送信します。</translation>
 <translation id="4359125752503270327">このページは別のアプリケーションで開かれます。</translation>
 <translation id="4370827530403103842">同期が機能していません。修正するにはタップしてください。</translation>
@@ -295,6 +297,7 @@
 <translation id="5327248766486351172">名前</translation>
 <translation id="5388358297987318779">画像を開く</translation>
 <translation id="5409365236829784218">このファイルを開くアプリがインストールされていません。</translation>
+<translation id="5416022985862681400">過去 7 日間</translation>
 <translation id="5433691172869980887">ユーザー名がコピーされました</translation>
 <translation id="54401264925851789">ページのセキュリティ情報</translation>
 <translation id="5443952882982198570">クレジット カード</translation>

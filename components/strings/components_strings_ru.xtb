@@ -210,6 +210,7 @@
 <translation id="202813660234680402">Не добавлять</translation>
 <translation id="2030481566774242610">Возможно, вы имели в виду <ph name="LINK" />.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверьте настройки прокси-сервера и брандмауэра<ph name="END_LINK" />.</translation>
+<translation id="2039578192324174100">Определяет, как обрабатываются данные вашего устройства. Google обрабатывает и использует эти данные только в целях, указанных администратором устройства.</translation>
 <translation id="2053111141626950936">Страницы на этом языке (<ph name="LANGUAGE" />) не будут переводиться автоматически.</translation>
 <translation id="2053553514270667976">Почтовый индекс</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 вариант}one{# вариант}few{# варианта}many{# вариантов}other{# варианта}}</translation>
@@ -540,6 +541,7 @@
 <translation id="382518646247711829">Если вы используете прокси-сервер...</translation>
 <translation id="3828924085048779000">Пустые кодовые фразы запрещены.</translation>
 <translation id="3831915413245941253">Администратор <ph name="ENROLLMENT_DOMAIN" /> установил расширения с дополнительными функциями для браузера. У расширений есть доступ к некоторым вашим данным.</translation>
+<translation id="3835128043098956141">Определяет, как обрабатываются данные вашего аккаунта. Google обрабатывает и использует эти данные только в целях, указанных администратором аккаунта.</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Обновить дату и время</translation>
 <translation id="3884278016824448484">Конфликт идентификаторов устройств</translation>
@@ -972,6 +974,7 @@
 <translation id="6290238015253830360">Здесь появятся рекомендуемые статьи.</translation>
 <translation id="6302269476990306341">Google Ассистент в Chrome отключится</translation>
 <translation id="6305205051461490394">Сайт <ph name="URL" /> недоступен.</translation>
+<translation id="6321321051990674438">Определяет, как обрабатываются данные вашего аккаунта и устройства. Google обрабатывает и использует эти данные только в целях, указанных администратором устройства и аккаунта.</translation>
 <translation id="6321917430147971392">Проверьте настройки DNS</translation>
 <translation id="6328639280570009161">Отключите предсказание сетевых действий</translation>
 <translation id="6328784461820205019">"Подключение не защищено", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" или "Ошибка сертификата SSL"</translation>

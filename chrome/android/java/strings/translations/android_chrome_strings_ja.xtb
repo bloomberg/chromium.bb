@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1006017844123154345">オンライン版を開く</translation>
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" /> に送信しています...</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> を追加しています...</translation>
 <translation id="1041308826830691739">ウェブサイトから</translation>
 <translation id="1049743911850919806">シークレット モード</translation>
@@ -16,6 +17,12 @@
 <translation id="1121094540300013208">利用状況と障害レポート</translation>
 <translation id="1124772482545689468">ユーザー</translation>
 <translation id="1129510026454351943">詳細: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1140872012279790904">センサーデータは、この VR 空間を利用している間のみ共有されます。次のような特定の情報により、サイトがお客様を記憶できる場合があります。
+  - お客様の位置情報
+  - お客様の身体的特徴（目の位置など）
+  - お客様の動き（歩き方など）
+
+アクセスを許可する前に、このサイトを信頼できるかどうか確認してください。</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 件のダウンロードが保留中です。}other{# 件のダウンロードが保留中です。}}</translation>
 <translation id="1145536944570833626">既存のデータを削除します。</translation>
 <translation id="1146678959555564648">VR を入力</translation>
@@ -43,6 +50,7 @@
 <translation id="1260236875608242557">検索</translation>
 <translation id="1264974993859112054">スポーツ</translation>
 <translation id="1272079795634619415">中止</translation>
+<translation id="1272444412400969138">タブを共有するデバイスの選択ツールです。</translation>
 <translation id="1283039547216852943">タップして展開</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="1291207594882862231">履歴、Cookie、サイトデータ、キャッシュを削除…</translation>
@@ -59,6 +67,7 @@
 <translation id="138361230106469022">こんにちは、<ph name="FULL_NAME" /> さん</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1384959399684842514">ダウンロードを一時停止しました</translation>
+<translation id="1386674309198842382">最終同期: <ph name="LAST_UPDATED" /> 日前</translation>
 <translation id="1389974829397082527">ブックマークはありません</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> で検索</translation>
 <translation id="1404122904123200417">埋め込み先: <ph name="WEBSITE_URL" /></translation>
@@ -404,6 +413,7 @@
 <translation id="4008040567710660924">特定のサイトの Cookie を許可します。</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 時間}other{# 時間}}</translation>
 <translation id="4042870126885713738">ウェブアドレスが解決されない場合や接続を確立できない場合にアドバイスを表示します</translation>
+<translation id="4044912625106523635">タブを共有するデバイスの選択ツールが画面全体に表示されました。</translation>
 <translation id="4046123991198612571">次のトラック</translation>
 <translation id="4048707525896921369">ウェブサイト上のトピックについてページを移動せずに調べられます。「タップして検索」では、単語とその周囲のコンテキストが Google 検索に送信され、定義、画像、検索結果などの情報が返されます。
 
@@ -577,6 +587,7 @@
 <translation id="5271967389191913893">デバイスでダウンロード コンテンツを開くことができません。</translation>
 <translation id="528192093759286357">全画面表示を終了するには、上からドラッグして、戻るボタンをタップします。</translation>
 <translation id="5284584623296338184">今後、ブックマーク、履歴、パスワードなどの設定への変更は Google アカウントに同期されません。ただし、既存のデータは Google アカウントに保存されたままとなります。</translation>
+<translation id="5292796745632149097">送信先</translation>
 <translation id="5300589172476337783">表示</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5304593522240415983">この項目は必須です</translation>
@@ -604,6 +615,7 @@
 <translation id="545042621069398927">ダウンロード速度が向上しました。</translation>
 <translation id="5456381639095306749">ページをダウンロード</translation>
 <translation id="5475862044948910901">拡張現実セッションを開始しますか？</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> をマイアプリに追加しました</translation>
 <translation id="548278423535722844">マップアプリで開く</translation>
 <translation id="5487521232677179737">データを削除</translation>
 <translation id="5494752089476963479">煩わしい広告や誤解を招く広告が表示されるサイトで広告をブロックする</translation>
@@ -740,6 +752,7 @@
 <translation id="6406506848690869874">同期</translation>
 <translation id="641643625718530986">印刷...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB をダウンロード済み</translation>
+<translation id="6418750371676080905">タブを共有するデバイスの選択ツールが閉じられました。</translation>
 <translation id="6427112570124116297">ウェブの翻訳</translation>
 <translation id="6433501201775827830">検索エンジンを選択</translation>
 <translation id="6437478888915024427">ページ情報</translation>
@@ -780,6 +793,7 @@
 <translation id="666268767214822976">予測サービスを使用し、アドレスバーへの入力時に関連性の高い検索キーワードや人気のウェブサイトを表示します</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" />で開く</translation>
 <translation id="666981079809192359">Chrome のプライバシーに関するお知らせ</translation>
+<translation id="6672986458216094438">タブを共有するデバイスの選択ツールが画面の下半分に表示されました。</translation>
 <translation id="6697492270171225480">ページが見つからない場合に類似のページを候補として表示する</translation>
 <translation id="6697947395630195233">このサイトで現在地を共有するには、Chrome で位置情報の使用を許可する必要があります。</translation>
 <translation id="6698801883190606802">同期データを管理</translation>
@@ -958,6 +972,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> は最新ではありません。</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
 <translation id="7963646190083259054">ベンダー:</translation>
+<translation id="7971136598759319605">最終同期: 1 日前</translation>
 <translation id="7975379999046275268">ページをプレビュー <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">ページをプリロードして、閲覧と検索をすばやく行えるようにします</translation>
 <translation id="79859296434321399">拡張現実（AR）コンテンツを表示するには ARCore をインストールしてください</translation>

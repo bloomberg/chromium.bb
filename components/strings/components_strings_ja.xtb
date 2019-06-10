@@ -210,6 +210,7 @@
 <translation id="202813660234680402">いいえ、追加しません</translation>
 <translation id="2030481566774242610">もしかして: <ph name="LINK" /></translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />プロキシとファイアウォールを確認する<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">デバイスデータの処理方法を管理します。Google によるデバイスデータの処理および使用方法は、デバイス管理者によって決定されます。</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" />のページは翻訳されません。</translation>
 <translation id="2053553514270667976">郵便番号</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 件の候補}other{# 件の候補}}</translation>
@@ -541,6 +542,7 @@
 <translation id="382518646247711829">プロキシ サーバーを使用している場合...</translation>
 <translation id="3828924085048779000">パスフレーズは必ず指定してください。</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> によって、機能を追加する拡張機能がインストールされました。この拡張機能では、ユーザーデータの一部にアクセスする場合があります。</translation>
+<translation id="3835128043098956141">アカウント データの処理方法を管理します。Google によるアカウント データの処理および使用方法は、アカウント管理者によって決定されます。</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="3858027520442213535">日時を更新</translation>
 <translation id="3884278016824448484">競合するデバイス識別子です</translation>
@@ -973,6 +975,7 @@
 <translation id="6290238015253830360">おすすめの記事がここに表示されます</translation>
 <translation id="6302269476990306341">Chrome の Google アシスタントを停止しています</translation>
 <translation id="6305205051461490394"><ph name="URL" /> にアクセスできません。</translation>
+<translation id="6321321051990674438">デバイスとアカウントのデータの処理方法を管理します。Google によるデバイスおよびアカウント データの処理および使用方法は、デバイスおよびアカウント管理者によって決定されます。</translation>
 <translation id="6321917430147971392">DNS 設定を確認してください</translation>
 <translation id="6328639280570009161">ネットワーク予測を無効にしてみてください</translation>
 <translation id="6328784461820205019">「この接続ではプライバシーが保護されません」、「&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;」、「SSL 証明書エラー」</translation>

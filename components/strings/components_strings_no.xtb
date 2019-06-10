@@ -131,7 +131,7 @@
       &lt;p&gt;Juster datoen og klokkeslettet under &lt;strong&gt;Generelt&lt;/strong&gt; i &lt;strong&gt;Innstillinger&lt;/strong&gt;-appen.&lt;/p&gt;</translation>
 <translation id="1569487616857761740">Oppgi utløpsdato</translation>
 <translation id="1581080074034554886">CVC</translation>
-<translation id="1583429793053364125">Noe gikk galt under åpningen av denne nettsiden.</translation>
+<translation id="1583429793053364125">Noe gikk galt da denne nettsiden skulle åpnes.</translation>
 <translation id="1592005682883173041">Tilgang til lokale data</translation>
 <translation id="1594030484168838125">Velg</translation>
 <translation id="161042844686301425">Cyan</translation>
@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Nei, ikke legg til</translation>
 <translation id="2030481566774242610">Mener du <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Sjekk proxy-tjeneren og brannmuren<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Styrer hvordan enhetsdataene dine håndteres. Enhetsadministratoren bestemmer hvordan Google behandler og bruker enhetsdataene dine.</translation>
 <translation id="2053111141626950936">Sider på <ph name="LANGUAGE" /> oversettes ikke.</translation>
 <translation id="2053553514270667976">Postnummer</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 forslag}other{# forslag}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Hvis du bruker en mellomtjener...</translation>
 <translation id="3828924085048779000">Tom passordfrase er ikke tillatt.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> har installert utvidelser for tilleggsfunksjoner. Utvidelsene har tilgang til noen av dataene dine.</translation>
+<translation id="3835128043098956141">Styrer hvordan kontodataene dine håndteres. Kontoadministratoren bestemmer hvordan Google behandler og bruker kontodataene dine.</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3858027520442213535">Oppdater dato og klokkeslett</translation>
 <translation id="3884278016824448484">Motstridende enhetsidentifikator</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">De foreslåtte artiklene dine vises her</translation>
 <translation id="6302269476990306341">Stopper Google-assistenten i Chrome</translation>
 <translation id="6305205051461490394"><ph name="URL" /> er ikke tilgjengelig.</translation>
+<translation id="6321321051990674438">Styrer hvordan enhets- og kontodataene dine håndteres. Enhets- og kontoadministratoren bestemmer hvordan Google behandler og bruker enhets- og kontodataene dine.</translation>
 <translation id="6321917430147971392">Kontrollér DNS-innstillingene dine</translation>
 <translation id="6328639280570009161">Prøv å slå av nettverksforutsigelse</translation>
 <translation id="6328784461820205019">«Tilkoblingen din er ikke privat», «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;», «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;», «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;», «&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;» eller «SSL-sertifikatfeil»</translation>

@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Nie, nie dodawaj</translation>
 <translation id="2030481566774242610">Czy chodziło Ci o <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Sprawdź serwer proxy i zaporę sieciową<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Kontroluje sposób przetwarzania danych z Twojego urządzenia. Sposób, w jaki Google przetwarza i wykorzystuje dane z Twojego urządzenia, określa menedżer urządzenia.</translation>
 <translation id="2053111141626950936">Strony w tym języku (<ph name="LANGUAGE" />) nie będą tłumaczone.</translation>
 <translation id="2053553514270667976">Kod pocztowy</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 podpowiedź}few{# podpowiedzi}many{# podpowiedzi}other{# podpowiedzi}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Jeśli używasz serwera proxy...</translation>
 <translation id="3828924085048779000">Puste hasło jest niedozwolone.</translation>
 <translation id="3831915413245941253">Administrator <ph name="ENROLLMENT_DOMAIN" /> zainstalował rozszerzenia obsługujące dodatkowe funkcje. Rozszerzenia mają dostęp do niektórych Twoich danych.</translation>
+<translation id="3835128043098956141">Kontroluje sposób przetwarzania danych z Twojego konta. Sposób, w jaki Google przetwarza i wykorzystuje dane z Twojego konta, określa menedżer konta.</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3858027520442213535">Zaktualizuj datę i godzinę</translation>
 <translation id="3884278016824448484">Konflikt identyfikatorów urządzeń</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Tutaj wyświetlą się sugerowane artykuły</translation>
 <translation id="6302269476990306341">Wyłączam Asystenta Google w Chrome</translation>
 <translation id="6305205051461490394">Strona <ph name="URL" /> jest nieosiągalna.</translation>
+<translation id="6321321051990674438">Kontroluje sposób przetwarzania danych z Twojego urządzenia i konta. Sposób, w jaki Google przetwarza i wykorzystuje dane z Twojego urządzenia i konta, określa menedżer urządzenia i konta.</translation>
 <translation id="6321917430147971392">Sprawdź ustawienia DNS</translation>
 <translation id="6328639280570009161">Wyłącz przewidywanie działań sieciowych</translation>
 <translation id="6328784461820205019">„Połączenie nie jest prywatne” lub „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;” lub „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;” lub „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;” lub „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;” lub „Błąd certyfikatu SSL”</translation>

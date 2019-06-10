@@ -2025,6 +2025,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Saran ini diambil dari jarak jauh dari server Google.
 
       Jika setelan ini disetel ke false, saran tidak akan diambil atau ditampilkan.</translation>
+<translation id="4759650396863318477">Memungkinkan Anda menyetel jangka waktu, dalam milidetik, untuk memberi tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang atau bahwa perangkat <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update yang tertunda.
+
+      Selama jangka waktu ini, pengguna akan berulang kali diberi tahu tentang perlunya update. Untuk perangkat <ph name="PRODUCT_OS_NAME" />, notifikasi mulai ulang akan muncul di baki sistem sesuai dengan kebijakan <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Untuk browser <ph name="PRODUCT_NAME" />, menu aplikasi berubah untuk menunjukkan bahwa peluncuran ulang diperlukan setelah sepertiga periode notifikasi berlalu. Warna notifikasi akan berubah setelah dua pertiga periode notifikasi berlalu, dan berubah lagi setelah seluruh periode notifikasi berlalu. Notifikasi tambahan yang diaktifkan oleh kebijakan <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> mengikuti jadwal yang sama seperti ini.
+
+      Jika tidak disetel, periode default 345600000 milidetik (empat hari) digunakan untuk perangkat <ph name="PRODUCT_OS_NAME" /> dan 604800000 milidetik (satu minggu) untuk <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Mengaktifkan fitur IsiOtomatis <ph name="PRODUCT_NAME" /> dan memungkinkan pengguna mengisi otomatis informasi kartu kredit di formulir web menggunakan informasi yang disimpan sebelumnya.
 
       Jika setelan ini dinonaktifkan, IsiOtomatis tidak akan menyarankan atau mengisi informasi kartu kredit, serta tidak akan menyimpan informasi kartu kredit tambahan yang mungkin dikirim oleh pengguna saat browsing web.
@@ -4216,6 +4221,8 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="915194831143859291">Jika kebijakan ini disetel ke False atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan memungkinkan pengguna menonaktifkan perangkat.
       Jika kebijakan ini disetel ke True, <ph name="PRODUCT_OS_NAME" /> akan memicu boot ulang ketika pengguna mematikan perangkat. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kemunculan tombol matikan di antarmuka pengguna dengan tombol boot ulang. Jika pengguna mematikan perangkat menggunakan tombol daya, perangkat tidak otomatis melakukan boot ulang, meskipun kebijakan ini diaktifkan.</translation>
 <translation id="9152473318295429890">Aktifkan saran kontekstual halaman terkait</translation>
+<translation id="9153446010242995516">Roll back dan tetap menggunakan versi target jika versi OS lebih baru dari. Mencoba untuk menerapkan konfigurasi tingkat perangkat (termasuk kredensial jaringan) melalui proses rollback, jika memungkinkan, tetapi melakukan rollback dengan powerwash penuh meskipun pemulihan data tidak memungkinkan (karena versi target tidak mendukung pemulihan data atau karena perubahan tidak kompatibel untuk dikembalikan).
+          Didukung pada <ph name="PRODUCT_OS_NAME" /> versi 75 dan yang lebih baru. Untuk klien yang lebih lama, nilai ini berarti rollback dinonaktifkan.</translation>
 <translation id="9158929520101169054">Izinkan Login Multipel Dalam Browser</translation>
 <translation id="9159126470527871268">Beri tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang atau <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update yang tertunda.
 

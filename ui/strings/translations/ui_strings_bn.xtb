@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" />-এ পাঠানো হচ্ছে...</translation>
 <translation id="111910763555783249">বিজ্ঞপ্তি সেটিংস</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{১ দিন পূর্বে}one{# দিন পূর্বে}other{# দিন পূর্বে}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{১ মিনিট আগে}one{# মিনিট আগে}other{# মিনিট আগে}}</translation>

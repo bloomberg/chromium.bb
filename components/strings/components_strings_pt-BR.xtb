@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Não adicionar</translation>
 <translation id="2030481566774242610">Você quis dizer <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Verificar o proxy e o firewall<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Controla como os dados do dispositivo são tratados. O modo como o Google processa e usa os dados do seu dispositivo é determinado pelo gerenciador de dispositivos.</translation>
 <translation id="2053111141626950936">Páginas em <ph name="LANGUAGE" /> não serão traduzidas.</translation>
 <translation id="2053553514270667976">CEP</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 sugestão}one{# sugestão}other{# sugestões}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Se você usa um servidor proxy...</translation>
 <translation id="3828924085048779000">Uma senha vazia não é permitida.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> instalou extensões para funções adicionais. As extensões têm acesso a alguns dos seus dados.</translation>
+<translation id="3835128043098956141">Controla como os dados da sua conta são tratados. O modo como o Google processa e usa os dados da sua conta é determinado pelo gerente de contas.</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3858027520442213535">Atualizar data e hora</translation>
 <translation id="3884278016824448484">Identificador de dispositivo em conflito</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Os artigos sugeridos aparecerão aqui</translation>
 <translation id="6302269476990306341">Parando o Google Assistente no Chrome</translation>
 <translation id="6305205051461490394">Não é possível acessar <ph name="URL" />.</translation>
+<translation id="6321321051990674438">Controla como os dados do dispositivo e da conta são tratados. O modo como o Google processa e usa os dados do dispositivo e da conta é determinado pelo gerenciador do dispositivo e da conta.</translation>
 <translation id="6321917430147971392">Verifique suas configurações do DNS</translation>
 <translation id="6328639280570009161">Tente desativar a previsão de rede</translation>
 <translation id="6328784461820205019">"Sua conexão não é particular" ou "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ou "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ou "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ou "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ou "Erro de certificado SSL"</translation>

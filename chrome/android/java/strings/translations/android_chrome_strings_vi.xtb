@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1006017844123154345">Mở trực tuyến</translation>
+<translation id="1028699632127661925">Đang gửi đến <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Đang thêm <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Từ trang web</translation>
 <translation id="1049743911850919806">Ẩn danh</translation>
@@ -16,6 +17,12 @@
 <translation id="1121094540300013208">Báo cáo sử dụng và sự cố</translation>
 <translation id="1124772482545689468">Người dùng</translation>
 <translation id="1129510026454351943">Chi tiết: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1140872012279790904">Dữ liệu cảm biến sẽ chỉ được chia sẻ khi bạn bắt đầu trải nghiệm thực tế ảo này. Trang web này có thể tìm hiểu về bạn thông qua một số thông tin, chẳng hạn như:
+  – Vị trí của bạn
+  – Đặc điểm ngoại hình của bạn, như vị trí mắt
+  – Cử động của bạn, ví dụ như cách đi
+
+Nhớ kiểm tra xem trang web này có đáng tin cậy không trước khi cho phép truy cập.</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 tệp đang chờ tải xuống.}other{# tệp đang chờ tải xuống.}}</translation>
 <translation id="1145536944570833626">Xóa dữ liệu hiện có.</translation>
 <translation id="1146678959555564648">Nhập VR</translation>
@@ -43,6 +50,7 @@
 <translation id="1260236875608242557">Tìm kiếm và khám phá</translation>
 <translation id="1264974993859112054">Thể thao</translation>
 <translation id="1272079795634619415">Dừng</translation>
+<translation id="1272444412400969138">Trình chọn thiết bị để chia sẻ một tab.</translation>
 <translation id="1283039547216852943">Nhấn để mở rộng</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
 <translation id="1291207594882862231">Xóa lịch sử, cookie, dữ liệu trang web, bộ nhớ đệm…</translation>
@@ -59,6 +67,7 @@
 <translation id="138361230106469022">Xin chào <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1384959399684842514">Đã tạm dừng quá trình tải xuống</translation>
+<translation id="1386674309198842382">Hoạt động <ph name="LAST_UPDATED" /> ngày trước</translation>
 <translation id="1389974829397082527">Không có dấu trang ở đây</translation>
 <translation id="1397811292916898096">Tìm kiếm bằng <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Được nhúng trong <ph name="WEBSITE_URL" /></translation>
@@ -404,6 +413,7 @@
 <translation id="4008040567710660924">Cho phép cookie của một trang web cụ thể.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# giờ}other{# giờ}}</translation>
 <translation id="4042870126885713738">Hiển thị các đề xuất khi địa chỉ web không khắc phục được hoặc kết nối không thể được thực hiện</translation>
+<translation id="4044912625106523635">Trình chọn thiết bị để chia sẻ một tab đang mở trên toàn màn hình.</translation>
 <translation id="4046123991198612571">Bản nhạc tiếp theo</translation>
 <translation id="4048707525896921369">Tìm hiểu về các chủ đề trên trang web mà không cần rời khỏi trang. Tính năng Nhấn để tìm kiếm sẽ gửi một từ và ngữ cảnh xung quanh từ đó tới Google Tìm kiếm, trả về định nghĩa, hình ảnh, kết quả tìm kiếm và các chi tiết khác.
 
@@ -577,6 +587,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5271967389191913893">Thiết bị không thể mở nội dung được tải xuống.</translation>
 <translation id="528192093759286357">Kéo từ trên xuống và chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="5284584623296338184">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và các tùy chọn cài đặt khác sẽ không đồng bộ hóa với Tài khoản Google của bạn nữa. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong tài khoản Google của bạn.</translation>
+<translation id="5292796745632149097">Gửi đến</translation>
 <translation id="5300589172476337783">Hiển thị</translation>
 <translation id="5301954838959518834">Ok</translation>
 <translation id="5304593522240415983">Không được để trống trường này</translation>
@@ -604,6 +615,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="545042621069398927">Đang tăng tốc độ tải xuống.</translation>
 <translation id="5456381639095306749">Tải trang xuống</translation>
 <translation id="5475862044948910901">Bắt đầu phiên đăng nhập thực tế tăng cường?</translation>
+<translation id="5481942164684849270">Đã thêm <ph name="APP_NAME" /> vào danh sách ứng dụng của tôi</translation>
 <translation id="548278423535722844">Mở trong ứng dụng bản đồ</translation>
 <translation id="5487521232677179737">Xóa dữ liệu</translation>
 <translation id="5494752089476963479">Chặn quảng cáo trên các trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
@@ -740,6 +752,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6406506848690869874">Đồng bộ hóa</translation>
 <translation id="641643625718530986">In…</translation>
 <translation id="6416782512398055893">Đã tải xuống <ph name="MBS" /> MB</translation>
+<translation id="6418750371676080905">Trình chọn thiết bị để chia sẻ một tab đang đóng.</translation>
 <translation id="6427112570124116297">Dịch web</translation>
 <translation id="6433501201775827830">Chọn công cụ tìm kiếm của bạn</translation>
 <translation id="6437478888915024427">Thông tin trang</translation>
@@ -780,6 +793,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="666268767214822976">Sử dụng dịch vụ gợi ý để hiển thị các truy vấn có liên quan và các trang web phổ biến khi bạn nhập vào thanh địa chỉ</translation>
 <translation id="666731172850799929">Mở trong <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Thông báo quyền riêng tư của Chrome</translation>
+<translation id="6672986458216094438">Trình chọn thiết bị để chia sẻ một tab đang mở ở nửa dưới của màn hình.</translation>
 <translation id="6697492270171225480">Hiển thị phần đề xuất các trang tương tự khi không tìm thấy một trang</translation>
 <translation id="6697947395630195233">Chrome cần truy cập vị trí của bạn để chia sẻ thông tin vị trí với trang web này.</translation>
 <translation id="6698801883190606802">Quản lý dữ liệu đã đồng bộ hóa</translation>
@@ -958,6 +972,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> đã lỗi thời.</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
 <translation id="7963646190083259054">Nhà cung cấp:</translation>
+<translation id="7971136598759319605">Hoạt động 1 ngày trước</translation>
 <translation id="7975379999046275268">Xem trước trang <ph name="BEGIN_NEW" />Mới<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Tải trước các trang để tìm kiếm và duyệt web nhanh hơn</translation>
 <translation id="79859296434321399">Để xem nội dung thực tế tăng cường, hãy cài đặt bộ công cụ ARCore</translation>

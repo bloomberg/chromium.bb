@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1006017844123154345">在线打开</translation>
+<translation id="1028699632127661925">正在发送到<ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">正在添加<ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">来自网站</translation>
 <translation id="1049743911850919806">无痕</translation>
@@ -16,6 +17,12 @@
 <translation id="1121094540300013208">使用情况信息和崩溃报告</translation>
 <translation id="1124772482545689468">用户</translation>
 <translation id="1129510026454351943">错误详情：<ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1140872012279790904">仅在您体验此 VR 时才会分享传感器数据。这可能会让网站可以使用某些信息来了解您，例如：
+    - 您的位置信息
+    - 您的身体特征，例如眼睛位置
+    - 您的动作，例如走路姿势
+
+    请确保您信任此网站，然后再允许访问。</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{有 1 项下载尚待处理。}other{有 # 项下载尚待处理。}}</translation>
 <translation id="1145536944570833626">删除现有数据。</translation>
 <translation id="1146678959555564648">进入 VR</translation>
@@ -43,6 +50,7 @@
 <translation id="1260236875608242557">搜索内容与浏览相关建议</translation>
 <translation id="1264974993859112054">体育</translation>
 <translation id="1272079795634619415">停止</translation>
+<translation id="1272444412400969138">要与之分享标签页的设备选择器。</translation>
 <translation id="1283039547216852943">点按即可展开</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="1291207594882862231">清除历史记录、Cookie、网站数据、缓存内容…</translation>
@@ -59,6 +67,7 @@
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好！</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1384959399684842514">已暂停下载</translation>
+<translation id="1386674309198842382"><ph name="LAST_UPDATED" /> 天前曾有活动</translation>
 <translation id="1389974829397082527">该文件夹中没有书签</translation>
 <translation id="1397811292916898096">使用 <ph name="PRODUCT_NAME" /> 进行搜索</translation>
 <translation id="1404122904123200417">嵌入位置：<ph name="WEBSITE_URL" /></translation>
@@ -404,6 +413,7 @@
 <translation id="4008040567710660924">允许特定网站使用 Cookie。</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 小时}other{# 小时}}</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
+<translation id="4044912625106523635">要与之分享标签页的设备选择器已全屏打开。</translation>
 <translation id="4046123991198612571">下一曲</translation>
 <translation id="4048707525896921369">无需离开所在页面，便可了解网站上的主题。“点按搜索”功能会将所选字词及上下文一起发送给 Google 搜索，后者即会据此返回相应的定义、图片、搜索结果及其他详情。
 
@@ -577,6 +587,7 @@
 <translation id="5271967389191913893">设备无法打开要下载的内容。</translation>
 <translation id="528192093759286357">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
 <translation id="5284584623296338184">对您的书签、历史记录、密码和其他设置所做的更改将不再同步到您的 Google 帐号。但是，您的现有数据将继续存储在您的 Google 帐号中。</translation>
+<translation id="5292796745632149097">发送到</translation>
 <translation id="5300589172476337783">显示</translation>
 <translation id="5301954838959518834">知道了</translation>
 <translation id="5304593522240415983">此字段不能为空</translation>
@@ -604,6 +615,7 @@
 <translation id="545042621069398927">正在加快您的下载速度。</translation>
 <translation id="5456381639095306749">下载网页</translation>
 <translation id="5475862044948910901">启动增强现实会话？</translation>
+<translation id="5481942164684849270">“<ph name="APP_NAME" />”已添加到“我的应用”</translation>
 <translation id="548278423535722844">在地图应用中打开</translation>
 <translation id="5487521232677179737">清除数据</translation>
 <translation id="5494752089476963479">禁止会展示侵扰性或误导性广告的网站显示广告</translation>
@@ -740,6 +752,7 @@
 <translation id="6406506848690869874">同步</translation>
 <translation id="641643625718530986">打印…</translation>
 <translation id="6416782512398055893">已下载 <ph name="MBS" /> MB</translation>
+<translation id="6418750371676080905">要与之分享标签页的设备选择器已关闭。</translation>
 <translation id="6427112570124116297">翻译网页</translation>
 <translation id="6433501201775827830">选择您的搜索引擎</translation>
 <translation id="6437478888915024427">网页信息</translation>
@@ -780,6 +793,7 @@
 <translation id="666268767214822976">当您在地址栏中输入查询内容时，使用联想查询服务显示相关查询和热门网站</translation>
 <translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
+<translation id="6672986458216094438">要与之分享标签页的设备选择器已半屏打开。</translation>
 <translation id="6697492270171225480">找不到相应网页时，显示有关类似网页的建议</translation>
 <translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
@@ -958,6 +972,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 不是最新版本。</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7963646190083259054">供应商：</translation>
+<translation id="7971136598759319605">1 天前曾有活动</translation>
 <translation id="7975379999046275268">预览网页<ph name="BEGIN_NEW" />新<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">预加载网页，以便实现更快速的浏览和搜索</translation>
 <translation id="79859296434321399">要查看增强现实内容，请安装 ARCore</translation>

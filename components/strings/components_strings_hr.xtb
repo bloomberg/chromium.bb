@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Ne, nemoj dodati</translation>
 <translation id="2030481566774242610">Jeste li mislili <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />provjerite proxy i vatrozid<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">određuje način rukovanja podacima uređaja. Upravitelj uređaja određuje kako Google obrađuje i upotrebljava podatke uređaja.</translation>
 <translation id="2053111141626950936">Neće se prevoditi <ph name="LANGUAGE" />.</translation>
 <translation id="2053553514270667976">ZIP kôd</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 prijedlog}one{# prijedlog}few{# prijedloga}other{# prijedloga}}</translation>
@@ -548,6 +549,7 @@
 <translation id="382518646247711829">Ako upotrebljavate proxy poslužitelj...</translation>
 <translation id="3828924085048779000">Prazne zaporke nisu dopuštene.</translation>
 <translation id="3831915413245941253">Domena <ph name="ENROLLMENT_DOMAIN" /> instalirala je proširenja za dodatne funkcije. Proširenja imaju pristup nekim vašim podacima.</translation>
+<translation id="3835128043098956141">određuje način rukovanja podacima računa. Upravitelj računa određuje kako Google obrađuje i upotrebljava podatke vašeg računa.</translation>
 <translation id="385051799172605136">Natrag</translation>
 <translation id="3858027520442213535">Ažuriraj datum i vrijeme</translation>
 <translation id="3884278016824448484">Identifikator uređaja sukobljen je</translation>
@@ -980,6 +982,7 @@
 <translation id="6290238015253830360">Ovdje će se prikazivati predloženi članci</translation>
 <translation id="6302269476990306341">Zaustavljanje Google asistenta u Chromeu</translation>
 <translation id="6305205051461490394">Web-lokacija <ph name="URL" /> nije dostupna.</translation>
+<translation id="6321321051990674438">određuje način rukovanja podacima uređaja i računa. Upravitelj uređaja i računa određuje kako Google obrađuje i upotrebljava podatke uređaja i računa.</translation>
 <translation id="6321917430147971392">Provjerite postavke DNS-a</translation>
 <translation id="6328639280570009161">Pokušajte onemogućiti predviđanja mreže</translation>
 <translation id="6328784461820205019">"Vaša veza nije privatna" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ili "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ili "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ili "Pogreška SSL certifikata"</translation>

@@ -215,6 +215,7 @@
 <translation id="202813660234680402">아니요, 추가하지 않습니다</translation>
 <translation id="2030481566774242610"><ph name="LINK" />을(를) 찾으셨나요?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />프록시 및 방화벽 확인<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">기기 데이터 처리 방식을 관리합니다. Google에서 사용자의 기기 데이터를 처리 및 사용하는 방식은 기기 관리자가 결정합니다.</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" />로 된 페이지를 번역하지 않습니다.</translation>
 <translation id="2053553514270667976">우편번호</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{제안 1개}other{제안 #개}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">프록시 서버를 사용하는 경우</translation>
 <translation id="3828924085048779000">암호를 빈 칸으로 두어서는 안 됩니다.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" />에서 추가 기능을 위한 확장 프로그램을 설치했습니다. 확장 프로그램에는 내 데이터 중 일부에 액세스할 권한이 있습니다.</translation>
+<translation id="3835128043098956141">계정 데이터 처리 방식을 관리합니다. Google에서 사용자의 계정 데이터를 처리 및 사용하는 방식은 계정 관리자가 결정합니다.</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3858027520442213535">시간과 날짜 업데이트</translation>
 <translation id="3884278016824448484">기기 식별자 충돌</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">추천 콘텐츠가 여기에 표시됩니다.</translation>
 <translation id="6302269476990306341">Chrome의 Google 어시스턴트 중지하는 중</translation>
 <translation id="6305205051461490394"><ph name="URL" />에 연결할 수 없습니다.</translation>
+<translation id="6321321051990674438">기기 및 계정 데이터 처리 방식을 관리합니다. Google에서 사용자의 기기 및 계정 데이터를 처리하고 사용하는 방식은 기기 및 계정 관리자가 결정합니다.</translation>
 <translation id="6321917430147971392">DNS 설정 확인</translation>
 <translation id="6328639280570009161">네트워크 예측을 사용 중지해 보세요.</translation>
 <translation id="6328784461820205019">'연결이 비공개로 설정되어 있지 않습니다.', '&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;', '&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;', '&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;', '&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;' 또는 'SSL 인증서 오류'</translation>

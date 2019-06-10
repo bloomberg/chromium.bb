@@ -2089,6 +2089,11 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
       Cadangan ini diambil secara jauh daripada pelayan Google.
 
       Sekiranya tetapan ini ditetapkan kepada palsu, cadangan tidak akan diambil atau dipaparkan.</translation>
+<translation id="4759650396863318477">Membenarkan anda menetapkan tempoh masa dalam milisaat. Sepanjang tempoh ini, pengguna akan dimaklumi bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula atau bahawa peranti <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula untuk menerapkan kemas kini yang belum selesai.
+
+      Sepanjang tempoh masa ini, pengguna akan dimaklumi berulang kali tentang keperluan mengemas kini. Untuk peranti <ph name="PRODUCT_OS_NAME" />, pemberitahuan mula semula akan dipaparkan dalam dulang sistem menurut dasar <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Untuk penyemak imbas <ph name="PRODUCT_NAME" />, menu apl akan berubah untuk menunjukkan pelancaran semula diperlukan apabila satu pertiga daripada tempoh pemberitahuan telah berlalu. Pemberitahuan ini berubah warna apabila dua pertiga daripada tempoh pemberitahuan telah berlalu dan sekali lagi apabila tempoh penuh pemberitahuan telah tamat. Pemberitahuan tambahan yang didayakan oleh dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> akan mengikut jadual yang sama ini.
+
+      Jika tidak ditetapkan, tempoh lalai selama 345,600,000 milisaat (empat hari) digunakan untuk peranti <ph name="PRODUCT_OS_NAME" /> dan 604,800,000 milisaat (satu minggu) untuk <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Mendayakan ciri Autolengkap <ph name="PRODUCT_NAME" /> dan membolehkan pengguna mengisikan maklumat kad kredit dalam borang web secara automatik dengan menggunakan maklumat yang disimpan sebelum itu.
 
       Jika tetapan ini dilumpuhkan, Autolengkap tidak akan mencadangkan atau mengisikan maklumat kad kredit atau menyimpan maklumat kad kredit tambahan yang mungkin diserahkan oleh pengguna semasa menyemak imbas web.
@@ -4418,6 +4423,8 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="915194831143859291">Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, <ph name="PRODUCT_OS_NAME" /> akan membenarkan pengguna mematikan peranti.
       Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan mencetus but semula apabila pengguna mematikan peranti. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kejadian bagi butang matikan dalam UI oleh butang but semula. Jika pengguna mematikan peranti menggunakan butang kuasa, peranti tidak akan but semula secara automatik, walaupun dasar didayakan.</translation>
 <translation id="9152473318295429890">Dayakan cadangan kontekstual halaman web yang berkaitan</translation>
+<translation id="9153446010242995516">Undur dan kekal pada versi sasaran jika versi OS lebih baharu daripada versi sasaran. Cuba bawa ke depan konfigurasi tahap peranti (termasuk bukti kelayakan rangkaian) melalui proses pengunduran, jika boleh, tetapi lakukan pengunduran dengan powerwash penuh walaupun pemulihan data tidak boleh dilakukan (kerana versi sasaran tidak meyokong pemulihan data atau kerana perubahan undur yang tidak serasi).
+          Disokong pada <ph name="PRODUCT_OS_NAME" /> versi 75 ke atas. Untuk klien lama, nilai ini bermakna pengunduran telah dilumpuhkan.</translation>
 <translation id="9158929520101169054">Benarkan Berbilang Log Masuk Dalam Penyemak Imbas</translation>
 <translation id="9159126470527871268">Maklumi pengguna bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula atau <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula untuk menerapkan kemas kini yang belum selesai.
 

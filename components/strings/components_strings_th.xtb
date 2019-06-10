@@ -215,6 +215,7 @@
 <translation id="202813660234680402">ไม่ต้องเพิ่ม</translation>
 <translation id="2030481566774242610">หรือคุณหมายถึง <ph name="LINK" /></translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ตรวจสอบพร็อกซีและไฟร์วอลล์<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">ควบคุมวิธีจัดการข้อมูลอุปกรณ์ของคุณ ผู้จัดการอุปกรณ์ของคุณจะเป็นผู้กำหนดวิธีที่ Google ประมวลผลและใช้ข้อมูลอุปกรณ์</translation>
 <translation id="2053111141626950936">ระบบจะไม่แปลหน้าเว็บภาษา<ph name="LANGUAGE" /></translation>
 <translation id="2053553514270667976">รหัสไปรษณีย์</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 คำแนะนำ}other{# คำแนะนำ}}</translation>
@@ -548,6 +549,7 @@
 <translation id="382518646247711829">หากคุณใช้พร็อกซีเซิร์ฟเวอร์...</translation>
 <translation id="3828924085048779000">ข้อความรหัสผ่านต้องไม่เว้นว่างไว้</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> ได้ติดตั้งส่วนขยายสำหรับฟังก์ชันเพิ่มเติม ส่วนขยายเข้าถึงข้อมูลบางส่วนของคุณได้</translation>
+<translation id="3835128043098956141">ควบคุมวิธีจัดการข้อมูลบัญชีของคุณ ผู้จัดการบัญชีของคุณจะเป็นผู้กำหนดวิธีที่ Google ประมวลผลและใช้ข้อมูลบัญชี</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3858027520442213535">อัปเดตวันที่และเวลา</translation>
 <translation id="3884278016824448484">ตัวชี้อุปกรณ์ขัดแย้งกัน</translation>
@@ -980,6 +982,7 @@
 <translation id="6290238015253830360">บทความที่แนะนำจะปรากฏที่นี่</translation>
 <translation id="6302269476990306341">Google Assistant ใน Chrome หยุดทำงาน</translation>
 <translation id="6305205051461490394">ไม่สามารถเข้าถึง <ph name="URL" /></translation>
+<translation id="6321321051990674438">ควบคุมวิธีจัดการข้อมูลอุปกรณ์และบัญชีของคุณ ผู้จัดการอุปกรณ์และบัญชีของคุณจะเป็นผู้กำหนดวิธีที่ Google ประมวลผลและใช้ข้อมูลอุปกรณ์และบัญชี</translation>
 <translation id="6321917430147971392">ตรวจสอบการตั้งค่า DNS</translation>
 <translation id="6328639280570009161">ลองปิดการคาดคะเนเครือข่าย</translation>
 <translation id="6328784461820205019">"การเชื่อมต่อของคุณไม่เป็นส่วนตัว" หรือ "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" หรือ "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" หรือ "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" หรือ "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" หรือ "ข้อผิดพลาดของใบรับรอง SSL"</translation>

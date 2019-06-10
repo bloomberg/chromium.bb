@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1265739287306757398">Pelajari Caranya</translation>
 <translation id="1272079795634619415">Berhenti</translation>
+<translation id="1283524564873030414">24 Jam Terakhir</translation>
 <translation id="1323735185997015385">Hapus</translation>
 <translation id="132683371494960526">Ketuk dua kali untuk mengubah folder induk.</translation>
 <translation id="1340643665687018190">Tutup Menu</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">Untuk memindai kode QR, aktifkan kamera dari setelan</translation>
 <translation id="4281844954008187215">Persyaratan Layanan</translation>
 <translation id="430793432425771671">Sinkronkan Semua</translation>
+<translation id="430967081421617822">Sepanjang Waktu</translation>
 <translation id="4338650699862464074">Mengirimkan URL halaman yang Anda buka ke Google.</translation>
 <translation id="4359125752503270327">Halaman ini akan dibuka di aplikasi lain.</translation>
 <translation id="4370827530403103842">Sinkronisasi tidak berfungsi. Ketuk untuk memperbaiki.</translation>
@@ -295,6 +297,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5327248766486351172">Nama</translation>
 <translation id="5388358297987318779">Buka Gambar</translation>
 <translation id="5409365236829784218">Tidak ada aplikasi terpasang yang dapat membuka file ini.</translation>
+<translation id="5416022985862681400">7 Hari Terakhir</translation>
 <translation id="5433691172869980887">Nama pengguna disalin</translation>
 <translation id="54401264925851789">Informasi Keamanan Halaman</translation>
 <translation id="5443952882982198570">Kartu Kredit</translation>

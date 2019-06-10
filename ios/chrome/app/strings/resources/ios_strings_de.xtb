@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Ordner wählen</translation>
 <translation id="1265739287306757398">Weitere Informationen</translation>
 <translation id="1272079795634619415">Stopp</translation>
+<translation id="1283524564873030414">Letzte 24 Stunden</translation>
 <translation id="1323735185997015385">Löschen</translation>
 <translation id="132683371494960526">Tippen Sie hier doppelt, um den übergeordneten Ordner zu ändern.</translation>
 <translation id="1340643665687018190">Menü schließen</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">Um einen QR-Code zu scannen, aktivieren Sie in den Einstellungen die Kamera</translation>
 <translation id="4281844954008187215">Nutzungsbedingungen</translation>
 <translation id="430793432425771671">Alles synchronisieren</translation>
+<translation id="430967081421617822">Gesamter Zeitraum</translation>
 <translation id="4338650699862464074">URLs der von Ihnen besuchten Seiten werden an Google gesendet.</translation>
 <translation id="4359125752503270327">Diese Seite wird in einer anderen Anwendung geöffnet.</translation>
 <translation id="4370827530403103842">Synchronisierung funktioniert nicht. Tippen zum Reparieren.</translation>
@@ -295,6 +297,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5327248766486351172">Name</translation>
 <translation id="5388358297987318779">Bild öffnen</translation>
 <translation id="5409365236829784218">Es sind keine Apps inst., die diese Datei öffnen können.</translation>
+<translation id="5416022985862681400">Letzte 7 Tage</translation>
 <translation id="5433691172869980887">Nutzername kopiert</translation>
 <translation id="54401264925851789">Sicherheitsinformationen zur Seite</translation>
 <translation id="5443952882982198570">Kreditkarten</translation>

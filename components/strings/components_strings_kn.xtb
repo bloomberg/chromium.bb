@@ -214,6 +214,7 @@
 <translation id="202813660234680402">ಬೇಡ, ಸೇರಿಸಬೇಡಿ</translation>
 <translation id="2030481566774242610">ನಿಮ್ಮ ಮಾತಿನ ಅರ್ಥ <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ಪ್ರಾಕ್ಸಿ ಮತ್ತು ಫೈರ್‌ವಾಲ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">ನಿಮ್ಮ ಸಾಧನದ ಡೇಟಾವನ್ನು ಹೇಗೆ ನಿರ್ವಹಿಸಲಾಗುತ್ತದೆ ಎಂಬುದನ್ನು ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ. ನಿಮ್ಮ ಸಾಧನದ ಡೇಟಾವನ್ನು, Google ಹೇಗೆ ಪ್ರಕ್ರಿಯೆಗೊಳಪಡಿಸುತ್ತದೆ ಮತ್ತು ಬಳಸುತ್ತದೆ ಎಂಬುದನ್ನು ನಿಮ್ಮ ಸಾಧನ ನಿರ್ವಾಹಕವು ನಿರ್ಧರಿಸುತ್ತದೆ.</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" />ಭಾಷೆಯಲ್ಲಿರುವ ಪುಟಗಳು ಅನುವಾದಕ್ಕೊಳಪಡುವುದಿಲ್ಲ.</translation>
 <translation id="2053553514270667976">ಪಿನ್ ಕೋಡ್</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 ಸಲಹೆ}one{# ಸಲಹೆಗಳು}other{# ಸಲಹೆಗಳು}}</translation>
@@ -544,6 +545,7 @@
 <translation id="382518646247711829">ನೀವು ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್ ಬಳಸಿದರೆ...</translation>
 <translation id="3828924085048779000">ಖಾಲಿ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ಅನುಮತಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="3831915413245941253">ಹೆಚ್ಚುವರಿ ಕಾರ್ಯವಿಧಾನಗಳಿಗಾಗಿ <ph name="ENROLLMENT_DOMAIN" /> ವಿಸ್ತರಣೆಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿದೆ. ವಿಸ್ತರಣೆಗಳು ನಿಮ್ಮ ಕೆಲವು ಡೇಟಾಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿರುತ್ತವೆ.</translation>
+<translation id="3835128043098956141">ನಿಮ್ಮ ಖಾತೆಯ ಡೇಟಾವನ್ನು ಹೇಗೆ ನಿರ್ವಹಿಸಲಾಗುತ್ತದೆ ಎಂಬುದನ್ನು ನಿಯಂತ್ರಿಸುತ್ತದೆ. ನಿಮ್ಮ ಖಾತೆಯ ಡೇಟಾವನ್ನು, Google ಹೇಗೆ ಪ್ರಕ್ರಿಯೆಗೊಳಪಡಿಸುತ್ತದೆ ಮತ್ತು ಬಳಸುತ್ತದೆ ಎಂಬುದನ್ನು ನಿಮ್ಮ ಖಾತೆಯ ನಿರ್ವಾಹಕವು ನಿರ್ಧರಿಸುತ್ತದೆ.</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
 <translation id="3858027520442213535">ದಿನಾಂಕ ಮತ್ತು ಸಮಯವನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="3884278016824448484">ಸಂಘರ್ಷಗೊಳ್ಳುತ್ತಿರುವ ಸಾಧನ ಗುರುತಿಸುವಿಕೆ</translation>
@@ -975,6 +977,7 @@
 <translation id="6290238015253830360">ನೀವು ಸಲಹೆ ನೀಡಿರುವ ಲೇಖನಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>
 <translation id="6302269476990306341">Chrome ನಲ್ಲಿನ Google ಅಸಿಸ್ಟೆಂಟ್ ನಿಲ್ಲುತ್ತಿದೆ</translation>
 <translation id="6305205051461490394"><ph name="URL" /> ತಲುಪಲಾಗುವುದಿಲ್ಲ.</translation>
+<translation id="6321321051990674438">ನಿಮ್ಮ ಸಾಧನ ಮತ್ತು ಖಾತೆಯ ಡೇಟಾವನ್ನು ಹೇಗೆ ನಿರ್ವಹಿಸಲಾಗುತ್ತದೆ ಎಂಬುದನ್ನು ನಿಯಂತ್ರಿಸುತ್ತದೆ. ನಿಮ್ಮ ಸಾಧನ ಹಾಗೂ ಖಾತೆಯ ಡೇಟಾವನ್ನು Google ಹೇಗೆ ಪ್ರಕ್ರಿಯೆಗೆ ಒಳಪಡಿಸುತ್ತದೆ ಎಂಬುದನ್ನು ನಿಮ್ಮ ಸಾಧನ ಹಾಗೂ ಖಾತೆಯ ನಿರ್ವಾಹಕವು ನಿರ್ಧರಿಸುತ್ತದೆ.</translation>
 <translation id="6321917430147971392">ನಿಮ್ಮ DNS ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="6328639280570009161">ನೆಟ್‌ವರ್ಕ್ ಮುನ್ಸೂಚನೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="6328784461820205019">"ನಿಮ್ಮ ಸಂಪರ್ಕ ಖಾಸಗಿಯಾಗಿಲ್ಲ" ಅಥವಾ "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ಅಥವಾ "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ಅಥವಾ "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ಅಥವಾ "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ಅಥವಾ "SSL ಪ್ರಮಾಣಪತ್ರ ದೋಷ"</translation>

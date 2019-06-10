@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Выбор папки</translation>
 <translation id="1265739287306757398">Подробнее</translation>
 <translation id="1272079795634619415">Остановить</translation>
+<translation id="1283524564873030414">Последние 24 часа</translation>
 <translation id="1323735185997015385">Удалить</translation>
 <translation id="132683371494960526">Чтобы изменить родительскую папку, нажмите дважды.</translation>
 <translation id="1340643665687018190">Закрыть меню</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">Чтобы отсканировать QR-код, разрешите доступ к камере в настройках.</translation>
 <translation id="4281844954008187215">Условия использования</translation>
 <translation id="430793432425771671">Синхронизировать все</translation>
+<translation id="430967081421617822">Все время</translation>
 <translation id="4338650699862464074">Отправлять URL страниц, которые вы посещаете, в Google.</translation>
 <translation id="4359125752503270327">Страница откроется в другом приложении.</translation>
 <translation id="4370827530403103842">Синхронизация не работает. Нажмите, чтобы исправить.</translation>
@@ -295,6 +297,7 @@
 <translation id="5327248766486351172">Название</translation>
 <translation id="5388358297987318779">Открыть изображение</translation>
 <translation id="5409365236829784218">Нет приложений, поддерживающих файлы этого типа.</translation>
+<translation id="5416022985862681400">Последние 7 дней</translation>
 <translation id="5433691172869980887">Имя пользователя скопировано</translation>
 <translation id="54401264925851789">Сведения о надежности страницы</translation>
 <translation id="5443952882982198570">Кредитные карты</translation>

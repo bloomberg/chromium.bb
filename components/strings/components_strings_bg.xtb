@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Не, не искам</translation>
 <translation id="2030481566774242610">Може би имахте предвид <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверете прокси сървъра и защитната стена<ph name="END_LINK" />.</translation>
+<translation id="2039578192324174100">Контролира обработката на данните от устройството ви. Начинът, по който Google обработва и използва тези данни, се определя от мениджъра на устройството ви.</translation>
 <translation id="2053111141626950936">Страниците на <ph name="LANGUAGE" /> няма да се превеждат.</translation>
 <translation id="2053553514270667976">Пощенски код</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 предложение}other{# предложения}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Ако използвате прокси сървър...</translation>
 <translation id="3828924085048779000">Не може пропускът да не се попълни.</translation>
 <translation id="3831915413245941253">От <ph name="ENROLLMENT_DOMAIN" /> са инсталирани разширения за допълнителни функции. Разширенията имат достъп до част от данните ви.</translation>
+<translation id="3835128043098956141">Контролира обработката на данните от профила ви. Начинът, по който Google обработва и използва тези данни, се определя от мениджъра на профила ви.</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Актуализиране на датата и часа</translation>
 <translation id="3884278016824448484">Идентификационният номер на устройството е несъвместим</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Предложените ви статии ще се показват тук</translation>
 <translation id="6302269476990306341">Google Асистент в Chrome се спира</translation>
 <translation id="6305205051461490394">Няма достъп до <ph name="URL" />.</translation>
+<translation id="6321321051990674438">Контролира обработката на данните от устройството и от профила ви. Начинът, по-който Google обработва и използва тези данни, се определя от мениджъра на устройството и профила ви.</translation>
 <translation id="6321917430147971392">Проверете настройките си за DNS</translation>
 <translation id="6328639280570009161">Опитайте да деактивирате предвижданията за мрежата</translation>
 <translation id="6328784461820205019">„Връзката ви не е частна“, „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ или „Грешка при SSL сертификатите“</translation>

@@ -2041,6 +2041,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Aceste sugestii vor fi preluate de la distanță de pe serverele Google.
 
       Dacă setarea este dezactivată, nu se vor prelua și nu se vor afișa sugestii.</translation>
+<translation id="4759650396863318477">Îți permite să setezi perioada, în milisecunde, în care utilizatorii sunt informați că <ph name="PRODUCT_NAME" /> trebuie relansat sau că un dispozitiv <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru a aplica o actualizare în așteptare.
+
+      În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări. Pentru dispozitivele <ph name="PRODUCT_OS_NAME" />, notificarea privind repornirea apare în bara de sistem, conform politicii <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pentru browserele <ph name="PRODUCT_NAME" />, meniul aplicației se modifică, indicând faptul că este necesară o relansare după expirarea unei treimi din perioada de notificare. Această notificare își schimbă culoarea după expirarea a două treimi din perioada de notificare și încă o dată, după încheierea întregii perioade de notificare. Notificările suplimentare activate de politica <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> urmează același program.
+
+      Dacă nu este configurată, se aplică o perioadă prestabilită de 345.600.000 de milisecunde (patru zile) pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> și 604.800.000 de milisecunde (o săptămână) pentru <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Activează funcția de completare automată din <ph name="PRODUCT_NAME" /> și permite utilizatorilor să completeze automat informațiile despre carduri de credit în formularele web folosind informațiile stocate anterior.
 
       Dacă această setare este dezactivată, completarea automată nu va sugera și nu va completa niciodată informațiile despre carduri de credit, nici nu va salva informații suplimentare despre carduri de credit pe care utilizatorul le-ar putea trimite când navighează pe web.
@@ -4279,6 +4284,8 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="915194831143859291">Dacă această politică este dezactivată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> îi va permite utilizatorului să oprească dispozitivul.
       Dacă această politică este activată, <ph name="PRODUCT_OS_NAME" /> va declanșa o repornire când utilizatorul închide dispozitivul. <ph name="PRODUCT_OS_NAME" /> înlocuiește toate aparițiile butoanelor de închidere din interfața de utilizare cu butoane de repornire. Dacă utilizatorul închide dispozitivul folosind butonul de pornire, acesta nu va reporni automat, chiar dacă politica este activată.</translation>
 <translation id="9152473318295429890">Activează sugestiile contextuale ale paginilor web asociate</translation>
+<translation id="9153446010242995516">Revino la starea anterioară și rămâi la versiunea țintă dacă versiunea sistemului de operare este mai nouă decât ținta. Încearcă să preiei configurația la nivel de dispozitiv (inclusiv acreditările de rețea) prin procesul de revenire, dacă este posibil, dar fă revenirea cu un Powerwash complet, chiar dacă restabilirea datelor nu este posibilă (deoarece versiunea țintă nu acceptă restabilirea datelor sau din cauza unei schimbări care nu acceptă revenirea la starea anterioară).
+          Se acceptă în versiunea 75 și versiunile ulterioare de <ph name="PRODUCT_OS_NAME" />. Pentru clienții mai vechi, această valoare înseamnă că revenirea este dezactivată.</translation>
 <translation id="9158929520101169054">Permite conectarea multiplă în browser</translation>
 <translation id="9159126470527871268">Notifică utilizatorul că <ph name="PRODUCT_NAME" /> trebuie relansat sau <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru aplicarea unei actualizări în așteptare.
 

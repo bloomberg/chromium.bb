@@ -2091,6 +2091,11 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Need soovitused tuuakse kaugühenduse kaudu Google'i serveritest.
 
       Kui reegel on seatud väärtusele Väär, siis soovitusi ei tooda ega kuvata.</translation>
+<translation id="4759650396863318477">Võimaldab määrata ajavahemiku (millisekundites), mille jooksul antakse kasutajatele teada, et ootel oleva värskenduse rakendamiseks tuleb <ph name="PRODUCT_NAME" /> või operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seade taaskäivitada.
+
+      Selle vahemiku jooksul teavitatakse kasutajat värskendusest korduvalt. Operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete puhul kuvatakse taaskäivituse märguanne süsteemisalves reegli <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> alusel. Brauseri <ph name="PRODUCT_NAME" /> puhul rakenduse menüü muutub, kui kolmandik ajavahemikust on möödunud, ja näitab, et rakendus on vaja taaskäivitada. Märguanne muudab esimest korda värvi siis, kui möödunud on kaks kolmandikku ajavahemikust, ja teist korda ajavahemiku lõpus. Reegliga <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> lubatud lisamärguanded järgivad sama ajakava.
+
+      Kui reegel on määramata, kasutatakse vaikeperioodi, mis on operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete puhul 345 600 000 millisekundit (neli päeva) ja brauseri <ph name="PRODUCT_NAME" /> puhul 604 800 000 millisekundit (üks nädal).</translation>
 <translation id="4788252609789586009">Lubab rakenduse <ph name="PRODUCT_NAME" /> automaattäite funktsiooni ja võimaldab kasutajatel veebivormidel krediitkaardiandmeid automaatselt täita, kasutades selleks varem salvestatud teavet.
 
       Kui seade on keelatud, ei anna automaattäite funktsioon krediitkaardiandmete kohta soovitusi ega sisesta neid. Samuti ei salvesta see krediitkaardi lisateavet, mille kasutaja võib veebi sirvimisel esitada.
@@ -4417,6 +4422,8 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="915194831143859291">Kui reegel on määramata või seatud väärtusele Väär, lubab <ph name="PRODUCT_OS_NAME" /> kasutajal seadme välja lülitada.
       Kui reegel on seatud väärtusele Tõene ja kasutaja lülitab seadme välja, taaskäivitab <ph name="PRODUCT_OS_NAME" /> seadme. <ph name="PRODUCT_OS_NAME" /> asendab kasutajaliidese kõik väljalülitamisnupud taaskäivitusnuppudega. Kui kasutaja lülitab seadme toitenupuga välja, ei taaskäivitata seda automaatselt, isegi kui reegel on lubatud.</translation>
 <translation id="9152473318295429890">Seotud veebilehtede kontekstipõhiste soovituste lubamine</translation>
+<translation id="9153446010242995516">Võimaldab naasta ja jääda sihtversioonile, kui operatsioonisüsteemi versioon on sihtversioonist uuem. Proovige võimaluse korral seadme tasemel seadistus (sh võrgumandaat) tagasiminekuprotsessi kaudu üle viia, ent tehke seejuures täielik powerwash, isegi kui andmete taastamine ei ole võimalik (kuna sihtversioon ei toeta andmete taastamist või muudatus ei ole tagasiühilduv).
+          Seda toetatakse alates operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> 75. versioonist. Vanemate klientide puhul tähendab väärtus, et tagasiminek on keelatud.</translation>
 <translation id="9158929520101169054">Brauseris mitmele kontole sisselogimise lubamine</translation>
 <translation id="9159126470527871268">Võimaldab anda kasutajatele teada, et ootel oleva värskenduse rakendamiseks tuleb <ph name="PRODUCT_NAME" /> või <ph name="PRODUCT_OS_NAME" /> taaskäivitada.
 

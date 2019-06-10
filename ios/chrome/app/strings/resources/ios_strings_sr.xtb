@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Избор директоријума</translation>
 <translation id="1265739287306757398">Сазнајте како</translation>
 <translation id="1272079795634619415">Заустави</translation>
+<translation id="1283524564873030414">Последња 24 сата</translation>
 <translation id="1323735185997015385">Избриши</translation>
 <translation id="132683371494960526">Додирните двапут да бисте променили надређени директоријум.</translation>
 <translation id="1340643665687018190">Затвори мени</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">Да бисте скенирали QR кôд, омогућите камеру у подешавањима</translation>
 <translation id="4281844954008187215">Услови коришћења услуге</translation>
 <translation id="430793432425771671">Синхронизуј све</translation>
+<translation id="430967081421617822">Одувек</translation>
 <translation id="4338650699862464074">Шаље URL-ове страница које посећујете Google-у.</translation>
 <translation id="4359125752503270327">Ова страница ће се отворити у другој апликацији.</translation>
 <translation id="4370827530403103842">Синхронизација не функционише. Додирните да бисте решили проблем.</translation>
@@ -295,6 +297,7 @@
 <translation id="5327248766486351172">Назив</translation>
 <translation id="5388358297987318779">Отвори слику</translation>
 <translation id="5409365236829784218">Није инсталирана ниједна апликација за отварање ове датотеке.</translation>
+<translation id="5416022985862681400">Последњих 7 дана</translation>
 <translation id="5433691172869980887">Корисничко име је копирано</translation>
 <translation id="54401264925851789">Информације о безбедности странице</translation>
 <translation id="5443952882982198570">Кредитне картице</translation>

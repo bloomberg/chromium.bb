@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Não, não adicionar</translation>
 <translation id="2030481566774242610">Será que quis dizer <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Verificar o proxy e a firewall<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Controla de que forma são processados os dados do seu dispositivo. A forma como a Google processa e utiliza os dados do seu dispositivo é determinada pelo gestor do mesmo.</translation>
 <translation id="2053111141626950936">As páginas em <ph name="LANGUAGE" /> não serão traduzidas.</translation>
 <translation id="2053553514270667976">Código postal</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 sugestão}other{# sugestões}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Se utilizar um servidor de proxy...</translation>
 <translation id="3828924085048779000">Não é permitida uma frase de acesso vazia.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> instalou extensões para funções adicionais. As extensões têm acesso a alguns dos seus dados.</translation>
+<translation id="3835128043098956141">Controla de que forma são processados os dados da sua conta. A forma como a Google processa e utiliza os dados da sua conta é determinada pelo gestor da mesma.</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="3858027520442213535">Atualizar a data e a hora</translation>
 <translation id="3884278016824448484">Identificador do dispositivo em conflito</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Os seus artigos sugeridos são apresentados aqui</translation>
 <translation id="6302269476990306341">Paragem do Assistente Google no Chrome</translation>
 <translation id="6305205051461490394"><ph name="URL" /> está inacessível.</translation>
+<translation id="6321321051990674438">Controla de que forma são processados os dados do seu dispositivo e da sua conta. A forma como a Google processa e utiliza os dados do seu dispositivo e da sua conta é determinada pelos gestores dos mesmos.</translation>
 <translation id="6321917430147971392">Verificar as definições do DNS</translation>
 <translation id="6328639280570009161">Tente desativar a previsão de rede</translation>
 <translation id="6328784461820205019">"A sua ligação não é privada", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ou "Erro de certificado SSL"</translation>

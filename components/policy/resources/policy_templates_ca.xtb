@@ -1866,6 +1866,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Aquests suggeriments s'obtenen dels servidors de Google de manera remota.
 
       Si aquesta opció de configuració s'estableix en "false", no s'obtindran ni es mostraran suggeriments.</translation>
+<translation id="4759650396863318477">Et permet establir el període de temps, en mil·lisegons, durant el qual es notifica als usuaris que <ph name="PRODUCT_NAME" /> o <ph name="PRODUCT_OS_NAME" /> s'han de reiniciar per aplicar una actualització pendent.
+
+      Durant aquest període de temps, s'informa l'usuari repetidament de la necessitat de dur a terme una actualització. En dispositius amb <ph name="PRODUCT_OS_NAME" />, es mostra una notificació de reinici a la safata del sistema de conformitat amb la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En navegadors <ph name="PRODUCT_NAME" />, el menú d'aplicacions canvia un cop transcorregut un terç del període de notificació per indicar que cal dur a terme un reinici. Aquesta notificació canvia de color quan han transcorregut dos terços del període de notificació i, de nou, quan ha transcorregut el període de notificació complet. Les altres notificacions activades per la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> segueixen aquest mateix patró.
+
+      Si la política no s'estableix, s'utilitza el període predeterminat de 345.600.000 mil·lisegons (4 dies) per a dispositius amb <ph name="PRODUCT_OS_NAME" /> i 604.800.000 mil·lisegons (1 setmana) per a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Activa la funció Emplenament automàtic de <ph name="PRODUCT_NAME" /> i permet que els usuaris emplenin la informació de targetes de crèdit automàticament als formularis web amb dades emmagatzemades anteriorment.
 
       Si es desactiva aquesta opció, Emplenament automàtic mai no suggerirà ni emplenarà la informació de targetes de crèdit, ni tampoc desarà la informació addicional de targetes de crèdit que l'usuari enviï mentre navega pel web.
@@ -3472,7 +3477,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si no es defineix aquesta política, no es faran excepcions a la llista negra de la política "URLBlacklist".</translation>
 <translation id="8176035528522326671">Permet que un usuari d'empresa només sigui un usuari multiperfil principal (comportament predeterminat per a usuaris gestionats per l'empresa)</translation>
-<translation id="8183108371184777472">Cancel·la l'inici de la finestra del navegador</translation>
+<translation id="8183108371184777472">Impedeix que s'obri la finestra del navegador</translation>
 <translation id="8214600119442850823">Configura el gestor de contrasenyes.</translation>
 <translation id="8244171102276095471">Activa els sistemes de xifratge RC4 de TLS</translation>
 <translation id="8244525275280476362">Retard màxim en l'obtenció després de la invalidació d'una política</translation>
@@ -3869,6 +3874,8 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="915194831143859291">Si aquesta política s'estableix en false o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà que l'usuari apagui el dispositiu.
       Si aquesta política s'estableix en true, <ph name="PRODUCT_OS_NAME" /> reiniciarà el dispositiu quan l'usuari l'apagui. És a dir, <ph name="PRODUCT_OS_NAME" /> substitueix tots els botons d'apagat de la interfície d'usuari per botons de reinici. Per tant, si l'usuari apaga el dispositiu amb el botó d'engegada, es reiniciarà de manera automàtica, encara que la política estigui activada.</translation>
 <translation id="9152473318295429890">Activa suggeriments contextuals de pàgines web relacionades</translation>
+<translation id="9153446010242995516">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació. Prova de dur a terme una configuració a nivell del dispositiu (que inclogui les credencials de xarxa) mitjançant el procés de reversió sempre que sigui possible. Executa la reversió amb la funció Powerwash completa, fins i tot si no es poden restaurar les dades, ja sigui perquè la versió de destinació no admet la restauració de dades o a causa d'un canvi incompatible amb versions anteriors.
+          S'admet a <ph name="PRODUCT_OS_NAME" /> en la versió 75 i posteriors. En clients més antics, aquest valor indica que la reversió està desactivada.</translation>
 <translation id="9158929520101169054">Permet l'inici de sessió múltiple al navegador</translation>
 <translation id="9159126470527871268">Notifica els usuaris que cal reiniciar <ph name="PRODUCT_NAME" /> o <ph name="PRODUCT_OS_NAME" /> per aplicar una actualització pendent.
 

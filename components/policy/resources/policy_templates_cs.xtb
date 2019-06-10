@@ -2031,6 +2031,11 @@ Pokud zásadu nenastavíte, <ph name="PRODUCT_NAME" /> nebude delegovat přihla�
       Tyto návrhy se načítají vzdáleně ze serverů Google.
 
       Pokud je tato zásada nastavená na hodnotu false, návrhy se načítat ani zobrazovat nebudou.</translation>
+<translation id="4759650396863318477">Umožňuje nastavit dobu v milisekundách, po kterou se uživatelům bude zobrazovat oznámení, že je třeba prohlížeč <ph name="PRODUCT_NAME" /> nebo zařízení se systémem <ph name="PRODUCT_OS_NAME" /> restartovat, aby bylo možné nainstalovat čekající aktualizaci.
+
+      Během této doby bude uživatel opakovaně informován, že je potřeba nainstalovat aktualizaci. Na zařízeních se systémem <ph name="PRODUCT_OS_NAME" /> se oznámení o restartu zobrazuje na hlavním panelu systému podle zásady <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. V prohlížečích <ph name="PRODUCT_NAME" /> se po uplynutí jedné třetiny lhůty pro oznámení změní nabídka aplikace na znamení, že je prohlížeč potřeba aktualizovat. Barva tohoto oznámení se změní po uplynutí dvou třetin lhůty a poté znovu po uplynutí celé lhůty. Další oznámení aktivovaná pomocí zásady <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> se řídí stejným časovým plánem.
+
+      Pokud tuto zásadu nenastavíte, použije se pro systém <ph name="PRODUCT_OS_NAME" /> výchozí doba 345 600 000 milisekund (čtyři dny) a pro prohlížeč <ph name="PRODUCT_NAME" /> 604 800 000 milisekund (jeden týden).</translation>
 <translation id="4788252609789586009">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> funkci Automatické vyplňování a umožňuje uživatelům automaticky ve webových formulářích vyplňovat informace o platebních kartách pomocí dříve uložených údajů.
 
       Pokud je toto nastavení vypnuto, nebude automatické vyplňování navrhovat ani vyplňovat informace o platebních kartách a nebude ani ukládat další informace o platebních kartách, které uživatel při prohlížení webu odešle.
@@ -4276,6 +4281,8 @@ Pokud je zásada nastavena na hodnotu true, systémové protokoly budou odesíl�
 <translation id="915194831143859291">Pokud je tato zásada nastavena na hodnotu false nebo není nastavena, systém <ph name="PRODUCT_OS_NAME" /> umožní uživateli vypnout zařízení.
 Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, spustí systém <ph name="PRODUCT_OS_NAME" /> restart. Systém <ph name="PRODUCT_OS_NAME" /> nahradí všechna tlačítka pro vypnutí v uživatelském rozhraní tlačítky pro restart. Pokud uživatel zařízení vypne pomocí vypínače, zařízení se automaticky restartovat nebude, a to ani v případě, že je tato zásada aktivována.</translation>
 <translation id="9152473318295429890">Povolit kontextové návrhy souvisejících webových stránek</translation>
+<translation id="9153446010242995516">Pokud je verze operačního systému novější než cílová verze, vrátit se zpět k cílové verzi a zachovat ji. Při procesu vrácení se systém pokusí obnovit stávající konfiguraci na úrovni zařízení (včetně přihlašovacích údajů k sítím). Vrácení k cílové verzi a úplné vyčištění Powerwash se však provede i v případě, že obnovení těchto dat nebude možné (protože cílová verze nepodporuje obnovení dat nebo protože došlo ke změně, která není zpětně kompatibilní).
+          Tato funkce je podporována v systému <ph name="PRODUCT_OS_NAME" /> verze 75 a vyšších verzích. U starších klientů tato hodnota znamená, že je vrácení zpět zakázáno.</translation>
 <translation id="9158929520101169054">Povolit v prohlížeči vícenásobné přihlášení</translation>
 <translation id="9159126470527871268">Oznamuje uživateli, že je třeba restartovat prohlížeč <ph name="PRODUCT_NAME" /> nebo systém <ph name="PRODUCT_OS_NAME" />, aby bylo možné nainstalovat čekající aktualizaci.
 

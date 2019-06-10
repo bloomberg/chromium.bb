@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">اختيار مجلد</translation>
 <translation id="1265739287306757398">تعرَّف على الطريقة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
+<translation id="1283524564873030414">آخر 24 ساعة</translation>
 <translation id="1323735185997015385">حذف</translation>
 <translation id="132683371494960526">انقر مرّتين لتغيير المجلد الرئيسي.</translation>
 <translation id="1340643665687018190">إغلاق القائمة</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">لمسح رمز الاستجابة السريعة ضوئيًا، يمكنك تفعيل الكاميرا من الإعدادات</translation>
 <translation id="4281844954008187215">بنود الخدمة</translation>
 <translation id="430793432425771671">مزامنة كل شيء</translation>
+<translation id="430967081421617822">جميع الأوقات</translation>
 <translation id="4338650699862464074">‏إرسال عناوين URL للصفحات التي تزورها إلى Google</translation>
 <translation id="4359125752503270327">ستفتح هذه الصفحة في تطبيق آخر.</translation>
 <translation id="4370827530403103842">المزامنة لا تعمل. انقر للإصلاح.</translation>
@@ -295,6 +297,7 @@
 <translation id="5327248766486351172">الاسم</translation>
 <translation id="5388358297987318779">فتح الصورة</translation>
 <translation id="5409365236829784218">لا تتوفر تطبيقات مثبتة يمكن من خلالها فتح هذا الملف.</translation>
+<translation id="5416022985862681400">آخر 7 أيام</translation>
 <translation id="5433691172869980887">تم نسخ اسم المستخدم</translation>
 <translation id="54401264925851789">معلومات أمان الصفحة</translation>
 <translation id="5443952882982198570">بطاقات الائتمان</translation>
@@ -499,6 +502,7 @@
 <translation id="8532105204136943229">عام انتهاء الصلاحية</translation>
 <translation id="8534481786647257214">‏اكتمل النشر على Google+‎.</translation>
 <translation id="8548878600947630424">بحث في الصفحة...</translation>
+<translation id="8583866649835978847">يُرجى إرسال <ph name="TITLE" /> إلى أحد أجهزتك.</translation>
 <translation id="8605219856220328675">إغلاق علامة التبويب.</translation>
 <translation id="8620640915598389714">تعديل</translation>
 <translation id="8636825310635137004">للحصول على علامات التبويب من أجهزتك الأخرى، شغِّل المزامنة.</translation>

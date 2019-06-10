@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1006017844123154345">Buka versi Online</translation>
+<translation id="1028699632127661925">Mengirim ke <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Menambahkan <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Dari situs</translation>
 <translation id="1049743911850919806">Penyamaran</translation>
@@ -16,6 +17,12 @@
 <translation id="1121094540300013208">Laporan penggunaan dan error</translation>
 <translation id="1124772482545689468">Pengguna</translation>
 <translation id="1129510026454351943">Detail: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1140872012279790904">Data sensor hanya akan dibagikan selama Anda berada di pengalaman VR ini. Situs mungkin dapat mempelajari Anda dengan menggunakan informasi tertentu, seperti:
+    - Lokasi Anda
+    - Ciri fisik Anda, seperti posisi mata
+    - Gerakan Anda, seperti cara Anda berjalan
+
+Pastikan Anda memercayai situs ini sebelum mengizinkan akses.</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download tertunda.}other{# download tertunda.}}</translation>
 <translation id="1145536944570833626">Hapus data yang sudah ada.</translation>
 <translation id="1146678959555564648">Masuki VR</translation>
@@ -43,6 +50,7 @@
 <translation id="1260236875608242557">Telusuri &amp; jelajahi</translation>
 <translation id="1264974993859112054">Olahraga</translation>
 <translation id="1272079795634619415">Berhenti</translation>
+<translation id="1272444412400969138">Pemilih perangkat yang diajak berbagi tab.</translation>
 <translation id="1283039547216852943">Tap untuk meluaskan</translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
 <translation id="1291207594882862231">Menghapus histori, cookie, data situs, cache...</translation>
@@ -59,6 +67,7 @@
 <translation id="138361230106469022">Hai, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Telusuri</translation>
 <translation id="1384959399684842514">Download dijeda</translation>
+<translation id="1386674309198842382">Aktif <ph name="LAST_UPDATED" /> hari lalu</translation>
 <translation id="1389974829397082527">Tidak ada bookmark di sini</translation>
 <translation id="1397811292916898096">Telusuri dengan <ph name="PRODUCT_NAME" /></translation>
 <translation id="1404122904123200417">Tersemat dalam <ph name="WEBSITE_URL" /></translation>
@@ -404,6 +413,7 @@
 <translation id="4008040567710660924">Izinkan cookie untuk situs tertentu.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# jam}other{# jam}}</translation>
 <translation id="4042870126885713738">Tampilkan saran saat alamat web tidak ditemukan atau koneksi bermasalah</translation>
+<translation id="4044912625106523635">Pemilih perangkat yang diajak berbagi tab terbuka dalam layar penuh.</translation>
 <translation id="4046123991198612571">Lagu berikutnya</translation>
 <translation id="4048707525896921369">Pelajari topik di situs tanpa meninggalkan halaman. Fitur Tap untuk Menelusuri mengirimkan kata dan konteks di sekitarnya ke Google Penelusuran, yang kemudian menampilkan definisi, gambar, hasil penelusuran, dan detail lainnya.
 
@@ -577,6 +587,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5271967389191913893">Perangkat tidak dapat membuka konten untuk didownload.</translation>
 <translation id="528192093759286357">Tarik dari atas dan ketuk tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="5284584623296338184">Perubahan pada bookmark, histori, sandi, dan setelan lainnya tidak akan disinkronkan lagi dengan Akun Google Anda. Namun, data yang sudah ada akan tetap disimpan di akun Google Anda.</translation>
+<translation id="5292796745632149097">Kirim ke</translation>
 <translation id="5300589172476337783">Tampilkan</translation>
 <translation id="5301954838959518834">Oke, mengerti</translation>
 <translation id="5304593522240415983">Bidang ini tidak boleh kosong</translation>
@@ -604,6 +615,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="545042621069398927">Mempercepat download.</translation>
 <translation id="5456381639095306749">Download halaman</translation>
 <translation id="5475862044948910901">Mulai sesi Augmented Reality?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> ditambahkan ke aplikasi saya</translation>
 <translation id="548278423535722844">Buka di aplikasi peta</translation>
 <translation id="5487521232677179737">Hapus data</translation>
 <translation id="5494752089476963479">Blokir iklan di situs yang menampilkan iklan yang mengganggu atau menyesatkan</translation>
@@ -740,6 +752,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6406506848690869874">Sinkronisasi</translation>
 <translation id="641643625718530986">Cetak...</translation>
 <translation id="6416782512398055893">Terdownload <ph name="MBS" /> MB</translation>
+<translation id="6418750371676080905">Pemilih perangkat yang diajak berbagi ditutup.</translation>
 <translation id="6427112570124116297">Terjemahkan Web</translation>
 <translation id="6433501201775827830">Pilih mesin telusur Anda</translation>
 <translation id="6437478888915024427">Info halaman</translation>
@@ -780,6 +793,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="666268767214822976">Gunakan pencarian otomatis untuk menunjukkan situs web populer saat Anda mengetik alamat situs</translation>
 <translation id="666731172850799929">Buka di <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Notifikasi Privasi Chrome</translation>
+<translation id="6672986458216094438">Pemilih perangkat yang diajak berbagi tab terbuka dalam setengah layar.</translation>
 <translation id="6697492270171225480">Tampilkan saran untuk halaman yang serupa jika halaman tidak dapat ditemukan</translation>
 <translation id="6697947395630195233">Chrome memerlukan akses ke lokasi Anda untuk berbagi lokasi dengan situs ini.</translation>
 <translation id="6698801883190606802">Kelola data yang disinkronkan</translation>
@@ -958,6 +972,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> sudah usang.</translation>
 <translation id="7947953824732555851">Terima dan masuk</translation>
 <translation id="7963646190083259054">Vendor:</translation>
+<translation id="7971136598759319605">Aktif 1 hari yang lalu</translation>
 <translation id="7975379999046275268">Pratinjau halaman <ph name="BEGIN_NEW" />Baru<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Pramuat halaman agar browsing dan menelusuri lebih cepat</translation>
 <translation id="79859296434321399">Untuk melihat konten augmented reality, instal ARCore</translation>

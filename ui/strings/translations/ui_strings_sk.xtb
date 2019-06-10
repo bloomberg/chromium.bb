@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
+<translation id="1028699632127661925">Odosiela sa do zariadenia <ph name="DEVICE_NAME" />…</translation>
 <translation id="111910763555783249">Nastavenia upozornení</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Včera}few{Pred # dňami}many{Pred # dňom}other{Pred # dňami}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{pred minútou}few{pred # minútami}many{pred # minútami}other{pred # minútami}}</translation>

@@ -2054,6 +2054,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Forslagene hentes fra Googles tjenere.
 
       Hvis innstillingen er angitt som usann, verken hentes eller vises forslag.</translation>
+<translation id="4759650396863318477">Med denne regelen kan du angi tidsperioden (i millisekunder) der brukerne skal varsles om at <ph name="PRODUCT_NAME" /> eller en <ph name="PRODUCT_OS_NAME" />-enhet må startes på nytt for å ta i bruk en ventende oppdatering.
+
+      I denne tidsperioden blir brukerne gjentatte ganger informert om behovet for oppdatering. På <ph name="PRODUCT_OS_NAME" />-enheter vises et varsel om omstart i systemfeltet i samsvar med <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />-regelen. I <ph name="PRODUCT_NAME" />-nettlesere endres appmenyen for å indikere at det er nødvendig med en omstart, når en tredjedel av varselperioden er gått. Varselet endrer farge når to tredjedeler av varselperioden er gått, og en gang til når hele varselperioden er omme. Tilleggsvarslene som slås på av <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-regelen, følger den samme tidsplanen.
+
+      Hvis regelen ikke er angitt, brukes standardperioden på 345 600 000 millisekunder (fire dager) for <ph name="PRODUCT_OS_NAME" />-enheter og 604 800 000 millisekunder (én uke) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Slår på autofyllfunksjonen i <ph name="PRODUCT_NAME" /> og gjør det mulig for brukere å fylle ut informasjon om kredittkort i nettskjemaer automatisk ved å bruke tidligere lagret informasjon.
 
 
@@ -4327,6 +4332,8 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="915194831143859291">Hvis denne regelen settes til usann eller ikke konfigureres, kan brukerne slå av enhetene sine i <ph name="PRODUCT_OS_NAME" />.
       Hvis denne regelen settes til sann, gjør <ph name="PRODUCT_OS_NAME" /> at enhetene starter på nytt når brukerne slår dem av. Alle «slå av»-knappene i <ph name="PRODUCT_OS_NAME" />-brukergrensesnittet blir byttet ut med «start på nytt»-knapper. Hvis brukerne slår av enhetene med den fysiske av/på-knappen, starter de ikke på nytt – selv om regelen er slått på.</translation>
 <translation id="9152473318295429890">Aktiver kontekstavhengige forslag for lignende nettsider</translation>
+<translation id="9153446010242995516">Rull tilbake til og behold målversjonen hvis OS-versjonen er nyere enn målet. Prøv å overføre konfigurering på enhetsnivå (inkludert nettverkslegitimasjon) gjennom rollback-prosessen, hvis mulig, men gjennomfør rollback med full powerwash selv om gjenoppretting av data ikke er mulig (fordi målversjonen ikke støtter gjenoppretting av data, eller på grunn av en bakover-inkompatibel endring).
+          Støttes på <ph name="PRODUCT_OS_NAME" /> versjon 75 og nyere. For eldre klienter betyr denne verdien at rollback er deaktivert.</translation>
 <translation id="9158929520101169054">Tillat multipålogging i nettleseren</translation>
 <translation id="9159126470527871268">Varsle brukere om at <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> må startes på nytt på grunn av en ventende oppdatering.
 

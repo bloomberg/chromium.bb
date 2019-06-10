@@ -251,6 +251,7 @@
 <translation id="4778095205580009397">Asystent Google jest niedostępny w sesji demonstracyjnej.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
+<translation id="4831034276697007977">Czy na pewno chcesz wyłączyć automatyczne kliknięcia?</translation>
 <translation id="4849058404725798627">Podświetlaj obiekt wybrany za pomocą klawiatury</translation>
 <translation id="485592688953820832">Brak działania (wstrzymaj)</translation>
 <translation id="4872237917498892622">Alt+Szukaj lub Shift</translation>
@@ -414,6 +415,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> nie obsługuje <ph name="SPECIFIED_RESOLUTION" />. Zmieniono rozdzielczość na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta emotikonów</translation>
 <translation id="7564874036684306347">Przenoszenie okien na inny pulpit może spowodować nieoczekiwane zachowanie. Kolejne powiadomienia, okna i okna dialogowe mogą pojawiać się na różnych pulpitach.</translation>
+<translation id="7568294522609223312">Wyłączanie automatycznych kliknięć</translation>
 <translation id="7569509451529460200">Włączono Braille'a i ChromeVox</translation>
 <translation id="7593891976182323525">Szukaj lub Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (właściciel)</translation>

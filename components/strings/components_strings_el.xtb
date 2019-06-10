@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Όχι, να μην προστεθεί</translation>
 <translation id="2030481566774242610">Μήπως εννοείτε <ph name="LINK" />;</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Ελέγξτε το διακομιστή μεσολάβησης και το τείχος προστασίας<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Ελέγχει τον τρόπο χειρισμού των δεδομένων της συσκευής σας. Ο τρόπος με τον οποίο η Google επεξεργάζεται και χρησιμοποιεί τα δεδομένα της συσκευής σας καθορίζεται από τον διαχειριστή της συσκευής σας.</translation>
 <translation id="2053111141626950936">Οι σελίδες στα <ph name="LANGUAGE" /> δεν θα μεταφράζονται.</translation>
 <translation id="2053553514270667976">Ταχυδρομικός κώδικας</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 πρόταση}other{# προτάσεις}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Εάν χρησιμοποιείτε διακομιστή μεσολάβησης…</translation>
 <translation id="3828924085048779000">Δεν επιτρέπεται να είναι κενή η φράση πρόσβασης.</translation>
 <translation id="3831915413245941253">Ο τομέας <ph name="ENROLLMENT_DOMAIN" /> εγκατέστησε επεκτάσεις για επιπλέον λειτουργίες. Οι επεκτάσεις έχουν πρόσβαση σε κάποια από τα δεδομένα σας.</translation>
+<translation id="3835128043098956141">Ελέγχει τον τρόπο χειρισμού των δεδομένων του λογαριασμού σας. Ο τρόπος με τον οποίο η Google επεξεργάζεται και χρησιμοποιεί τα δεδομένα του λογαριασμού σας καθορίζεται από τον διαχειριστή του λογαριασμού σας.</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3858027520442213535">Ενημέρωση ημερομηνίας και ώρας</translation>
 <translation id="3884278016824448484">Αναγνωριστικό συσκευής που προκαλεί διένεξη</translation>
@@ -982,6 +984,7 @@
 <translation id="6290238015253830360">Τα προτεινόμενα άρθρα σας εμφανίζονται εδώ</translation>
 <translation id="6302269476990306341">Διακοπή Βοηθού Google στο Chrome</translation>
 <translation id="6305205051461490394">Δεν είναι δυνατή η πρόσβαση στο <ph name="URL" />.</translation>
+<translation id="6321321051990674438">Ελέγχει τον τρόπο χειρισμού των δεδομένων της συσκευής και του λογαριασμού σας. Ο τρόπος με τον οποίο η Google επεξεργάζεται και χρησιμοποιεί τα δεδομένα της συσκευής και του λογαριασμού σας καθορίζεται από τον διαχειριστή της συσκευής και του λογαριασμού σας.</translation>
 <translation id="6321917430147971392">Ελέγξτε τις ρυθμίσεις DNS</translation>
 <translation id="6328639280570009161">Δοκιμάστε να απενεργοποιήσετε την πρόβλεψη δικτύου</translation>
 <translation id="6328784461820205019">"Η σύνδεσή σας δεν είναι ιδιωτική" ή "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ή "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ή "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ή "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ή "Σφάλμα πιστοποιητικού SSL"</translation>

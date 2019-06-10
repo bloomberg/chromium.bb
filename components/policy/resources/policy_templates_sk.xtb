@@ -2060,6 +2060,11 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Tieto návrhy sa načítajú vzdialene zo serverov Googlu.
 
       Ak toto pravidlo nastavíte na hodnotu false, návrhy sa nenačítajú ani zobrazia.</translation>
+<translation id="4759650396863318477">Umožňuje nastaviť časové obdobie v milisekundách, po uplynutí ktorého budú používatelia upozornení, že <ph name="PRODUCT_NAME" /> sa musí znova spustiť alebo že zariadenie so systémom <ph name="PRODUCT_OS_NAME" /> musí byť reštartované, aby sa použila čakajúca aktualizácia.
+
+      V priebehu tohto časového obdobia bude používateľ opakovane informovaný o potrebe aktualizácie. V zariadeniach so systémom<ph name="PRODUCT_OS_NAME" /> sa zobrazí v oblasti oznámení upozornenie na reštartovanie v súlade s pravidlom <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. V prípade prehliadačov <ph name="PRODUCT_NAME" /> sa po uplynutí jednej tretiny časového obdobia upozornenia zmení ponuka aplikácie tak, aby oznamovala potrebu opätovného spustenia. Farba upozornenia sa zmení po uplynutí dvoch tretín obdobia a znova po uplynutí celého obdobia. Ďalšie upozornenia povolené pravidlom <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pre prehliadače dodržiavajú rovnaký rozpis.
+
+      Ak pravidlo nenastavíte, použije sa predvolené obdobie 345 600 000 milisekúnd (štyri dni) pre zariadenia so systémom <ph name="PRODUCT_OS_NAME" /> a 604 800 000 milisekúnd (jeden týždeň) pre prehliadače <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Povolí v prehliadači <ph name="PRODUCT_NAME" /> funkciu Automatické dopĺňanie, ktorá používateľom umožňuje automaticky dopĺňať údaje kreditných kariet do webových formulárov na základe predtým uložených informácií.
 
       Ak toto nastavenie deaktivujete, Automatické dopĺňanie nebude nikdy navrhovať ani vyplňovať údaje kreditných kariet ani ukladať informácie o ďalších kartách, ktoré môže používateľ odoslať počas prehliadania webu.
@@ -4348,6 +4353,8 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
 <translation id="915194831143859291">Ak toto pravidlo nastavíte na možnosť False alebo ho nenakonfigurujete, systém <ph name="PRODUCT_OS_NAME" /> umožní používateľovi vypnúť zariadenie.
       Ak toto pravidlo nastavíte na možnosť True, systém <ph name="PRODUCT_OS_NAME" /> spustí reštart, keď používateľ vypne zariadenie. <ph name="PRODUCT_OS_NAME" /> nahradí v používateľskom rozhraní všetky výskyty tlačidiel na vypnutie tlačidlami na reštartovanie. Ak teda používateľ vypne zariadenie pomocou vypínača, automaticky sa nereštartuje, a to ani vtedy, keď je toto pravidlo povolené.</translation>
 <translation id="9152473318295429890">Povoliť kontextové návrhy súvisiacich webových stránok</translation>
+<translation id="9153446010242995516">Ak je verzia operačného systému novšia ako cieľová, vráťte sa na cieľovú verziu. Ak je to možné, vyskúšajte v rámci prechodu na nižšiu verziu preniesť konfiguráciu na úrovni zariadenia (vrátane prihlasovacích údajov do siete). Prejdite na nižšiu verziu a vykonajte úplné obnovenie Powerwash, aj keď sa údaje nedajú obnoviť (pretože cieľová verzia nepodporuje obnovu údajov alebo ste vykonali zmenu, ktorá neumožňuje prechod na nižšiu verziu).
+          Podporované v prehliadači <ph name="PRODUCT_OS_NAME" /> verzie 75 a novšej. V prípade starších klientov táto hodnota znamená, že prechod na nižšiu verziu je zakázaný.</translation>
 <translation id="9158929520101169054">Povoliť viacnásobné prihlásenie v rámci prehliadača</translation>
 <translation id="9159126470527871268">Umožňuje používateľov upozorniť, že <ph name="PRODUCT_NAME" /> musia znova spustiť alebo <ph name="PRODUCT_OS_NAME" /> reštartovať, aby sa použila čakajúca aktualizácia.
 

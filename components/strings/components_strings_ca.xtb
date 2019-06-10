@@ -210,6 +210,7 @@
 <translation id="202813660234680402">No, no afegeixis</translation>
 <translation id="2030481566774242610">Volíeu dir <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Comproveu el servidor intermediari i el tallafoc<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Controla com es gestionen les dades del dispositiu. El gestor del dispositiu determina de quina manera Google processa i fa servir les dades del dispositiu.</translation>
 <translation id="2053111141626950936">Les pàgines en <ph name="LANGUAGE" /> no es traduiran.</translation>
 <translation id="2053553514270667976">Codi postal</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggeriment}other{# suggeriments}}</translation>
@@ -541,6 +542,7 @@
 <translation id="382518646247711829">Si feu servir un servidor intermediari...</translation>
 <translation id="3828924085048779000">Les frases de contrasenya no poder estar buides.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> ha instal·lat extensions per obtenir funcions addicionals. Les extensions tenen accés a algunes de les teves dades.</translation>
+<translation id="3835128043098956141">Controla com es gestionen les dades del compte. El gestor del compte determina de quina manera Google processa i fa servir les dades del compte.</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3858027520442213535">Actualitza la data i l'hora</translation>
 <translation id="3884278016824448484">L'identificador del dispositiu ja s'està utilitzant</translation>
@@ -973,6 +975,7 @@
 <translation id="6290238015253830360">Els articles suggerits es mostren aquí</translation>
 <translation id="6302269476990306341">S'està aturant l'Assistent de Google a Chrome</translation>
 <translation id="6305205051461490394">No es pot accedir a <ph name="URL" />.</translation>
+<translation id="6321321051990674438">Controla com es gestionen les dades del compte i del dispositiu. El gestor del dispositiu i del compte determina de quina manera Google processa i fa servir les dades del dispositiu i del compte.</translation>
 <translation id="6321917430147971392">Reviseu la configuració de DNS</translation>
 <translation id="6328639280570009161">Proveu de desactivar la predicció de xarxa</translation>
 <translation id="6328784461820205019">"La connexió no és privada", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" o "Error de certificat SSL"</translation>

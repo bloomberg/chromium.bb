@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Escolher pasta</translation>
 <translation id="1265739287306757398">Saiba como</translation>
 <translation id="1272079795634619415">Parar</translation>
+<translation id="1283524564873030414">Últimas 24 horas</translation>
 <translation id="1323735185997015385">Excluir</translation>
 <translation id="132683371494960526">Toque duas vezes para alterar a pasta pai.</translation>
 <translation id="1340643665687018190">Fechar menu</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">Para ler um código QR, ative a câmera nas configurações</translation>
 <translation id="4281844954008187215">Termos de Serviço</translation>
 <translation id="430793432425771671">Sincronizar tudo</translation>
+<translation id="430967081421617822">Todo o período</translation>
 <translation id="4338650699862464074">Envia URLs das páginas que você visita para o Google.</translation>
 <translation id="4359125752503270327">Esta página será aberta em outro aplicativo.</translation>
 <translation id="4370827530403103842">A sincronização não está funcionando. Toque para corrigir.</translation>
@@ -295,6 +297,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5388358297987318779">Abrir imagem</translation>
 <translation id="5409365236829784218">Nenhum aplicativo instalado pode abrir este arquivo.</translation>
+<translation id="5416022985862681400">Últimos sete dias</translation>
 <translation id="5433691172869980887">Nome de usuário copiado</translation>
 <translation id="54401264925851789">Informações de segurança</translation>
 <translation id="5443952882982198570">Cartões de crédito</translation>

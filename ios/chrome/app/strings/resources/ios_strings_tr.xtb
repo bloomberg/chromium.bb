@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Klasör Seçin</translation>
 <translation id="1265739287306757398">Nasıl Yapacağınızı Öğrenin</translation>
 <translation id="1272079795634619415">Durdur</translation>
+<translation id="1283524564873030414">Son 24 Saat</translation>
 <translation id="1323735185997015385">Sil</translation>
 <translation id="132683371494960526">Üst klasörü değiştirmek için iki kez dokunun.</translation>
 <translation id="1340643665687018190">Menüyü Kapat</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">QR kodu taramak için ayarlardan kamerayı etkinleştirin.</translation>
 <translation id="4281844954008187215">Hizmet Şartları</translation>
 <translation id="430793432425771671">Her Şeyi Senkronize Et</translation>
+<translation id="430967081421617822">Tüm Zamanlar</translation>
 <translation id="4338650699862464074">Ziyaret ettiğiniz sayfaların URL'lerini Google'a gönderir.</translation>
 <translation id="4359125752503270327">Bu sayfa, başka bir uygulamada açılacak.</translation>
 <translation id="4370827530403103842">Senkronizasyon çalışmıyor. Düzeltmek için dokunun.</translation>
@@ -295,6 +297,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5327248766486351172">Ad</translation>
 <translation id="5388358297987318779">Resmi Aç</translation>
 <translation id="5409365236829784218">Bu dosyayı açabilecek yüklü uygulama yok.</translation>
+<translation id="5416022985862681400">Son 7 Gün</translation>
 <translation id="5433691172869980887">Kullanıcı adı kopyalandı</translation>
 <translation id="54401264925851789">Sayfa Güvenlik Bilgileri</translation>
 <translation id="5443952882982198570">Kredi Kartları</translation>

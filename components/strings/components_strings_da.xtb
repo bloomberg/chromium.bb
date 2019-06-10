@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Nej, tilføj ikke</translation>
 <translation id="2030481566774242610">Mente du <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kontrollere din proxy og din firewall<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Styrer, hvordan enhedens data håndteres. Din enhedsadministrator fastlægger, hvordan Google behandler og anvender dine enhedsdata.</translation>
 <translation id="2053111141626950936">Sider på <ph name="LANGUAGE" /> oversættes ikke.</translation>
 <translation id="2053553514270667976">Postnummer</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 forslag}one{# forslag}other{# forslag}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Hvis du bruger en proxyserver...</translation>
 <translation id="3828924085048779000">Tomme adgangssætninger er ikke tilladt.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> har installeret udvidelser til yderligere funktioner. Udvidelser har adgang til nogle af dine data.</translation>
+<translation id="3835128043098956141">Styrer, hvordan dine kontodata håndteres. Din kontoadministrator fastlægger, hvordan Google behandler og anvender dine kontodata.</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3858027520442213535">Opdater dato og tid</translation>
 <translation id="3884278016824448484">Modstridende enheds-id</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Forslag til artikler til dig vises her</translation>
 <translation id="6302269476990306341">Google Assistent i Chrome stopper</translation>
 <translation id="6305205051461490394"><ph name="URL" /> kan ikke nås.</translation>
+<translation id="6321321051990674438">Styrer, hvordan dine enheds- og kontodata håndteres. Din enheds- og kontoadministrator fastlægger, hvordan Google behandler og anvender dine enheds- og kontodata.</translation>
 <translation id="6321917430147971392">Kontrollér dine DNS-indstillinger</translation>
 <translation id="6328639280570009161">Prøv at deaktivere netværksforslag</translation>
 <translation id="6328784461820205019">"Din forbindelse er ikke privat" eller "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" eller "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" eller "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" eller "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" eller "SSL-certifikatfejl"</translation>

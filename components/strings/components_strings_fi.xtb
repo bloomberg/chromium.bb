@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Ei, älä lisää</translation>
 <translation id="2030481566774242610">Tarkoititko: <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Tarkista välityspalvelimen ja palomuurin määritykset.<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Määrittää, kuinka dataasi käsitellään. Laitteen ylläpitäjä määrittää, miten Google käsittelee ja käyttää laitedataasi.</translation>
 <translation id="2053111141626950936">Kielellä <ph name="LANGUAGE" /> kirjoitettuja sivuja ei käännetä.</translation>
 <translation id="2053553514270667976">Postinumero</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 ehdotus}other{# ehdotusta}}</translation>
@@ -550,6 +551,7 @@
 <translation id="382518646247711829">Jos käytät välityspalvelinta…</translation>
 <translation id="3828924085048779000">Tunnuslause ei voi olla tyhjä.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> on asentanut lisätoimintojen laajennuksia. Laajennuksilla on pääsy osaan datastasi.</translation>
+<translation id="3835128043098956141">Määrittää, kuinka tilidataasi käsitellään. Tilin ylläpitäjä määrittää, kuinka Google käsittelee ja käyttää tilidataasi.</translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="3858027520442213535">Päivitä päivämäärä ja aika</translation>
 <translation id="3884278016824448484">Ristiriitainen laitteen tunnus</translation>
@@ -982,6 +984,7 @@
 <translation id="6290238015253830360">Suositellut artikkelit näkyvät tässä.</translation>
 <translation id="6302269476990306341">Chromen Google Assistant suljetaan</translation>
 <translation id="6305205051461490394">Sivustoon <ph name="URL" /> ei saada yhteyttä.</translation>
+<translation id="6321321051990674438">Määrittää, kuinka laite- ja tilidataasi käsitellään. Laitteen ja tilin ylläpitäjä määrittää, kuinka Google käsittelee ja käyttää tilidataasi.</translation>
 <translation id="6321917430147971392">Tarkista DNS-asetukset</translation>
 <translation id="6328639280570009161">Kokeile verkon ennakoinnin poistamista käytöstä.</translation>
 <translation id="6328784461820205019">"Yhteytesi ei ole salattu", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" tai "SSL-varmennevirhe"</translation>

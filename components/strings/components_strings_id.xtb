@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Tidak, jangan tambahkan</translation>
 <translation id="2030481566774242610">Mungkin maksud Anda <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Memeriksa proxy dan firewall<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Mengontrol penanganan data perangkat Anda. Cara Google memproses dan menggunakan data ditentukan oleh pengelola perangkat Anda.</translation>
 <translation id="2053111141626950936">Halaman dalam bahasa <ph name="LANGUAGE" /> tidak akan diterjemahkan.</translation>
 <translation id="2053553514270667976">Kode pos</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 saran}other{# saran}}</translation>
@@ -548,6 +549,7 @@
 <translation id="382518646247711829">Jika Anda menggunakan server proxy...</translation>
 <translation id="3828924085048779000">Frasa sandi kosong tidak dibolehkan.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> telah menginstal ekstensi untuk fungsi tambahan. Ekstensi memiliki akses ke sebagian data Anda.</translation>
+<translation id="3835128043098956141">Mengontrol cara data akun Anda ditangani. Cara Google memproses dan menggunakan data akun Anda ditentukan oleh pengelola akun.</translation>
 <translation id="385051799172605136">Mundur</translation>
 <translation id="3858027520442213535">Perbarui tanggal dan waktu</translation>
 <translation id="3884278016824448484">Pengenal perangkat bertentangan</translation>
@@ -980,6 +982,7 @@
 <translation id="6290238015253830360">Artikel yang disarankan ditampilkan di sini</translation>
 <translation id="6302269476990306341">Asisten Google di Chrome sedang dihentikan</translation>
 <translation id="6305205051461490394"><ph name="URL" /> tidak dapat dijangkau.</translation>
+<translation id="6321321051990674438">Mengontrol cara data perangkat dan akun Anda ditangani. Cara Google memproses dan menggunakan perangkat dan akun Anda ditentukan oleh perangkat dan pengelola akun Anda.</translation>
 <translation id="6321917430147971392">Periksa setelan DNS Anda</translation>
 <translation id="6328639280570009161">Coba nonaktifkan prediksi jaringan</translation>
 <translation id="6328784461820205019">"Koneksi Anda tidak bersifat pribadi" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" atau "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" atau "SSL certificate error"S</translation>

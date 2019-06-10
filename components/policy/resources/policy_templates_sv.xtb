@@ -2084,6 +2084,11 @@
       Förslagen fjärrhämtas från Googles servrar.
 
       Om principen är inställd på falskt kommer inte förslag att hämtas eller visas.</translation>
+<translation id="4759650396863318477">Gör att du kan ställa in i millisekunder under hur lång tid in som användare aviseras om att <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" />-enheten måste startas om när en uppdatering väntar.
+
+      Under den tiden visas upprepade uppmaningar att starta om för användaren. På <ph name="PRODUCT_OS_NAME" />-enheter visas en avisering om att starta om i systemfältet i enlighet med principen <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. I <ph name="PRODUCT_NAME" />-webbläsare ändras appmenyn för att visa att en omstart behövs när en tredjedel av tidsperioden har gått. Aviseringen byter färg när två tredjedelar av tidsperioden har gått och igen när tidsperioden har löpt ut. För ytterligare aviseringar som aktiveras med principen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> används samma schema.
+
+      Om principen inte ställs in används som standard tidsperioden 345 600 000 millisekunder (fyra dagar) för <ph name="PRODUCT_OS_NAME" />-enheter och 604 800 000 millisekunder (en vecka) för <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Aktiverar funktionen Autofyll i <ph name="PRODUCT_NAME" /> så att användarna kan fylla i webbformulär automatiskt med kreditkortsuppgifter som har sparats sedan tidigare.
 
       Om inställningen inaktiveras visas inga förslag med Autofyll och inga kreditkortsuppgifter fylls i. Ytterligare kreditkortsuppgifter som användaren kan ange på webben sparas inte heller.
@@ -4413,6 +4418,8 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="915194831143859291">Om policyn är inställd på falskt eller inte har konfigurerats tillåter <ph name="PRODUCT_OS_NAME" /> att användaren stänger av enheten.
       Om policyn är inställd på sant utlöser <ph name="PRODUCT_OS_NAME" /> en omstart när användaren stänger av enheten. <ph name="PRODUCT_OS_NAME" /> ersätter alla förekomster av avstängningsknappar i gränssnittet med omstartsknappar. Om användaren stänger av enheten med strömbrytaren startas den inte om automatiskt även om policyn är aktiverad.</translation>
 <translation id="9152473318295429890">Aktivera innehållsbaserade förslag för relaterade webbsidor</translation>
+<translation id="9153446010242995516">Återställ till målversionen om operativsystemet är nyare än målversionen. Försök att föra över konfigurationen på enhetsnivå (inklusive användaruppgifter i nätverket) vid återställningen om det går, men gör återställningen med fullständig powerwash även om det inte går att återställa data (därför att målversionen inte har stöd för att återställa data eller på grund av en ändring som inte är bakåtkompatibel).
+          Stöds i version 75 eller senare av <ph name="PRODUCT_OS_NAME" />. I äldre klienter än så innebär det här värdet att återställning inaktiveras.</translation>
 <translation id="9158929520101169054">Aktivera multiinloggning i webbläsaren</translation>
 <translation id="9159126470527871268">Meddela användarna att <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> måste startas om eftersom en uppdatering väntar.
 

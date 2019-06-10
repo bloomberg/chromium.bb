@@ -210,6 +210,7 @@
 <translation id="202813660234680402">Tidak, jangan tambahkan</translation>
 <translation id="2030481566774242610">Adakah anda maksudkan <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Menyemak proksi dan tembok api<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Mengawal cara data peranti anda dikendalikan. Cara Google memproses dan menggunakan data peranti anda ditentukan oleh pengurus peranti anda.</translation>
 <translation id="2053111141626950936">Halaman dalam <ph name="LANGUAGE" /> tidak akan diterjemah.</translation>
 <translation id="2053553514270667976">Poskod</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 cadangan}other{# cadangan}}</translation>
@@ -543,6 +544,7 @@
 <translation id="382518646247711829">Jika anda menggunakan pelayan proksi...</translation>
 <translation id="3828924085048779000">Kosongkan frasa laluan adalah tidak dibenarkan.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> telah memasang sambungan bagi fungsi tambahan. Sambungan mempunyai akses kepada sesetengah data anda.</translation>
+<translation id="3835128043098956141">Mengawal cara data akaun anda dikendalikan. Cara Google memproses dan menggunakan data akaun anda ditentukan oleh pengurus akaun anda.</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3858027520442213535">Kemas kini tarikh dan masa</translation>
 <translation id="3884278016824448484">Pengecam peranti bercanggah</translation>
@@ -975,6 +977,7 @@
 <translation id="6290238015253830360">Artikel cadangan anda dipaparkan di sini</translation>
 <translation id="6302269476990306341">Google Assistant dalam Chrome berhenti</translation>
 <translation id="6305205051461490394"><ph name="URL" /> tidak dapat dicapai.</translation>
+<translation id="6321321051990674438">Mengawal cara data peranti dan akaun anda dikendalikan. Cara Google memproses dan menggunakan data peranti dan akaun anda ditentukan oleh pengurus peranti dan akaun anda.</translation>
 <translation id="6321917430147971392">Semak tetapan DNS anda</translation>
 <translation id="6328639280570009161">Cuba lumpuhkan ramalan rangkaian</translation>
 <translation id="6328784461820205019">"Sambungan anda tidak peribadi" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" atau "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" atau "Ralat sijil SSL"</translation>

@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Ne, ne dodaj</translation>
 <translation id="2030481566774242610">Ali ste mislili <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />preveriti strežnik proxy in požarni zid<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Nadzira obravnavo podatkov v napravi. Način, kako Google obdeluje in uporablja podatke o napravi, določi upravitelj naprave.</translation>
 <translation id="2053111141626950936">Strani v jeziku <ph name="LANGUAGE" /> ne bodo prevedene.</translation>
 <translation id="2053553514270667976">Poštna številka</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 predlog}one{# predlog}two{# predloga}few{# predlogi}other{# predlogov}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Če uporabite namestniški strežnik ...</translation>
 <translation id="3828924085048779000">Prazno geslo ni dovoljeno.</translation>
 <translation id="3831915413245941253">Domena <ph name="ENROLLMENT_DOMAIN" /> je namestila razširitve zaradi dodatnih funkcij. Razširitve imajo dostop do nekaterih vaših podatkov.</translation>
+<translation id="3835128043098956141">Nadzira obravnavo podatkov v računu. Način, kako Google obdeluje in uporablja podatke o računu, določi upravitelj računa.</translation>
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3858027520442213535">Posodobi datum in uro</translation>
 <translation id="3884278016824448484">Identifikator naprave je v sporu</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Tu so prikazani predlagani članki</translation>
 <translation id="6302269476990306341">Pomočnik Google v Chromu se ustavlja</translation>
 <translation id="6305205051461490394">Naslov <ph name="URL" /> je nedosegljiv.</translation>
+<translation id="6321321051990674438">Nadzira obravnavo podatkov v napravi in računu. Način, kako Google obdeluje in uporablja podatke o napravi in računu, določa upravitelj naprave in računa.</translation>
 <translation id="6321917430147971392">Preverite nastavitve za DNS</translation>
 <translation id="6328639280570009161">Poskusite onemogočiti omrežno predvidevanje</translation>
 <translation id="6328784461820205019">»Vaša povezava ni zasebna« ali »&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;« ali »&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;« ali »&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;« ali »&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;« ali »Napaka v potrdilu SSL«</translation>

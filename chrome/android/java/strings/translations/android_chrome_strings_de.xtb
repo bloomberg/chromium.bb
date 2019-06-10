@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1006017844123154345">Online öffnen</translation>
+<translation id="1028699632127661925">Wird an <ph name="DEVICE_NAME" /> gesendet…</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> wird hinzugefügt...</translation>
 <translation id="1041308826830691739">Von Websites</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -16,6 +17,12 @@
 <translation id="1121094540300013208">Nutzungs- und Absturzberichte</translation>
 <translation id="1124772482545689468">Nutzer</translation>
 <translation id="1129510026454351943">Details: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1140872012279790904">Sensordaten werden nur geteilt, während Sie diese VR-Funktion verwenden. Die Website erhält möglicherweise bestimmte Informationen über Sie. Dazu gehören
+– Ihr Standort,
+– physische Merkmale wie Ihre Augenposition und
+– Bewegungen, wie z. B. Ihre Art zu gehen.
+
+Geben Sie dieser Website nur Zugriff, wenn Sie ihr vertrauen.</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 Download ausstehend.}other{# Downloads ausstehend.}}</translation>
 <translation id="1145536944570833626">Vorhandene Daten löschen</translation>
 <translation id="1146678959555564648">VR aktivieren</translation>
@@ -43,6 +50,7 @@
 <translation id="1260236875608242557">Suchen und entdecken</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stopp</translation>
+<translation id="1272444412400969138">Geräteauswahl zum Teilen eines Tabs.</translation>
 <translation id="1283039547216852943">Zum Maximieren tippen</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="1291207594882862231">Verlauf, Cookies, Websitedaten, Cache leeren…</translation>
@@ -59,6 +67,7 @@
 <translation id="138361230106469022">Hallo <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1384959399684842514">Download angehalten</translation>
+<translation id="1386674309198842382">Vor <ph name="LAST_UPDATED" /> Tagen aktiv</translation>
 <translation id="1389974829397082527">Keine Lesezeichen vorhanden</translation>
 <translation id="1397811292916898096">Mit <ph name="PRODUCT_NAME" /> suchen</translation>
 <translation id="1404122904123200417">Eingebettet in <ph name="WEBSITE_URL" /></translation>
@@ -404,6 +413,7 @@
 <translation id="4008040567710660924">Cookies für eine bestimmte Website werden zugelassen.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Vorschläge einblenden, wenn eine Webadresse nicht gefunden oder keine Verbindung hergestellt werden kann</translation>
+<translation id="4044912625106523635">Geräteauswahl zum Teilen eines Tabs, der ganz geöffnet ist.</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="4048707525896921369">Erfahren Sie mehr zu Themen auf einer Website, ohne die Seite verlassen zu müssen. Mit der Option "Zum Suchen tippen" wird ein Wort sowie dessen Kontext an die Google-Suche gesendet. Daraufhin erhalten Sie Definitionen, Bilder, Suchergebnisse und andere Details.
 
@@ -577,6 +587,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5271967389191913893">Das Gerät kann den Inhalt, der heruntergeladen werden soll, nicht öffnen.</translation>
 <translation id="528192093759286357">Ziehen Sie zum Beenden des Vollbildmodus von oben und tippen Sie auf die Zurück-Taste.</translation>
 <translation id="5284584623296338184">Änderungen an Ihren Lesezeichen, Ihrem Verlauf, Ihren Passwörtern und anderen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Ihre vorhandenen Daten bleiben aber in Ihrem Google-Konto gespeichert.</translation>
+<translation id="5292796745632149097">Senden an</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5301954838959518834">Ok</translation>
 <translation id="5304593522240415983">Dieses Feld darf nicht leer sein.</translation>
@@ -604,6 +615,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="545042621069398927">Download wird beschleunigt.</translation>
 <translation id="5456381639095306749">Seite herunterladen</translation>
 <translation id="5475862044948910901">Augmented-Reality-Sitzung starten?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> zu meinen Apps hinzugefügt</translation>
 <translation id="548278423535722844">In einer Karten-App öffnen</translation>
 <translation id="5487521232677179737">Daten löschen</translation>
 <translation id="5494752089476963479">Werbung auf Websites blockieren, auf denen aufdringliche oder irreführende Werbung angezeigt wird</translation>
@@ -740,6 +752,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6406506848690869874">Synchronisierung</translation>
 <translation id="641643625718530986">Drucken...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB heruntergeladen</translation>
+<translation id="6418750371676080905">Geräteauswahl zum Teilen eines Tabs, der geschlossen ist.</translation>
 <translation id="6427112570124116297">Das Web übersetzen</translation>
 <translation id="6433501201775827830">Suchmaschine auswählen</translation>
 <translation id="6437478888915024427">Seiteninfo</translation>
@@ -780,6 +793,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="666268767214822976">Während der Eingabe in die Adressleiste mithilfe einer Vervollständigungsfunktion ähnliche Suchanfragen und beliebte Websites einblenden</translation>
 <translation id="666731172850799929">In <ph name="APP_NAME" /> öffnen</translation>
 <translation id="666981079809192359">Chrome-Datenschutzhinweise</translation>
+<translation id="6672986458216094438">Geräteauswahl zum Teilen eines Tabs, der halb geöffnet ist.</translation>
 <translation id="6697492270171225480">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
 <translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
@@ -958,6 +972,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ist veraltet.</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="7963646190083259054">Anbieter:</translation>
+<translation id="7971136598759319605">Vor 1 Tag aktiv</translation>
 <translation id="7975379999046275268">Seitenvorschau <ph name="BEGIN_NEW" />Neu<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Seiten vorab laden, um das Surfen und die Suche zu beschleunigen</translation>
 <translation id="79859296434321399">ARCore installieren, um Augmented-Reality-Inhalte zu sehen</translation>

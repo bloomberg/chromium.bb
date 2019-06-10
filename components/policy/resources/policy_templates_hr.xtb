@@ -2037,6 +2037,11 @@
       Ti se prijedlozi dohvaćaju daljinski s Googleovih poslužitelja.
 
       Ako se pravilo postavi na False, prijedlozi se neće dohvaćati ni prikazivati.</translation>
+<translation id="4759650396863318477">Omogućuje postavljanje razdoblja u milisekundama tijekom kojeg će se prikazivati obavijesti o ponovnom pokretanju preglednika <ph name="PRODUCT_NAME" /> ili da je potrebno ponovo pokrenuti <ph name="PRODUCT_OS_NAME" /> radi primjene ažuriranja na čekanju.
+
+      Tijekom tog će se vremena korisniku prikazivati ponavljajuća obavijest o potrebnom ažuriranju. Za <ph name="PRODUCT_OS_NAME" /> uređaje obavijest o ponovnom pokretanju prikazuje se na traci sustava u skladu s pravilom <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Za preglednike <ph name="PRODUCT_NAME" /> izbornik aplikacije mijenja se kada istekne trećina razdoblja obavijesti kako bi se naznačilo da je potrebno ponovno pokretanje. Boja te obavijesti mijenja se kada isteknu dvije trećine razdoblja i još jednom kada istekne cijelo razdoblje. Dodatne obavijesti omogućene pravilom <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> za preglednike imaju isti raspored.
+
+      Ako se ne postavi, za <ph name="PRODUCT_OS_NAME" /> uređaje upotrebljava se zadano razdoblje od 345.600.000 milisekundi (četiri dana), a za <ph name="PRODUCT_NAME" /> zadano razdoblje od 604.800.000 milisekundi (jedan tjedan).</translation>
 <translation id="4788252609789586009">Omogućuje značajku Automatsko popunjavanje na usluzi <ph name="PRODUCT_NAME" /> i omogućuje korisnicima automatsko unošenje podataka o kreditnim karticama u web-obrasce pomoću prethodno pohranjenih podataka.
 
       Ako se ta postavka onemogući, Automatsko popunjavanje nikada neće predlagati niti unositi podatke o kreditnim karticama niti će spremiti dodatne podatke o kreditnim karticama koje bi korisnik mogao unijeti tijekom pregledavanja weba.
@@ -4272,6 +4277,8 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="915194831143859291">Ako se to pravilo postavi na "netočno" ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> dopustit će korisniku isključivanje uređaja.
       Ako se pravilo postavi na "točno", <ph name="PRODUCT_OS_NAME" /> ponovo će pokrenuti uređaj kada ga korisnik isključi. <ph name="PRODUCT_OS_NAME" /> zamjenjuje sve gumbe za isključivanje na korisničkom sučelju gumbima za ponovno pokretanje. Ako korisnik isključi uređaj tipkom za uključivanje/isključivanje, uređaj se neće automatski ponovo pokrenuti, čak ni ako je to pravilo omogućeno.</translation>
 <translation id="9152473318295429890">Omogući kontekstualne prijedloge povezanih web-stranica</translation>
+<translation id="9153446010242995516">Vraća uređaj na ciljnu verziju i ostaje na njoj ako je verzija OS-a novija od ciljne. Pokušajte prenijeti konfiguraciju uređaja (uključujući mrežne vjerodajnice) ako je moguće, ali vraćanje izvršite uz potpuni powerwash čak i ako oporavak podataka nije moguć (zato što ciljna verzija ne podržava oporavak podataka ili zbog promjene koja nije kompatibilna sa starijim verzijama).
+          Podržano u sustavu <ph name="PRODUCT_OS_NAME" /> verzije 75 i novijima. Za starije klijente ta vrijednost znači da vraćanje nije omogućeno.</translation>
 <translation id="9158929520101169054">Omogući višestruku prijavu u pregledniku</translation>
 <translation id="9159126470527871268">Obavještava korisnike da se <ph name="PRODUCT_NAME" /> mora ponovo pokrenuti ili se <ph name="PRODUCT_OS_NAME" /> mora ponovo pokrenuti radi primjene ažuriranja na čekanju.
 

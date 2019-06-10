@@ -2054,6 +2054,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Essas sugestões são obtidas remotamente a partir dos servidores da Google.
 
       Se esta definição estiver definida como falsa, as sugestões não serão obtidas nem apresentadas.</translation>
+<translation id="4759650396863318477">Permite-lhe definir o período de tempo, em milissegundos, ao longo do qual os utilizadores são notificados de que o <ph name="PRODUCT_NAME" /> tem de ser reiniciado ou que um dispositivo<ph name="PRODUCT_OS_NAME" /> tem de ser reiniciado para aplicar uma atualização pendente.
+
+      Ao longo deste período de tempo, o utilizador é informado, repetidamente, de que é necessária uma atualização. Relativamente aos dispositivos <ph name="PRODUCT_OS_NAME" />, é apresentada uma notificação de reinício no tabuleiro do sistema de acordo com a política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Quanto aos navegadores <ph name="PRODUCT_NAME" />, o menu da aplicação muda e passa a indicar que é necessário reiniciar assim que for ultrapassado um terço do período de notificação. A cor da notificação muda quando forem ultrapassados dois terços do período de notificação e volta a mudar quando o período terminar. As outras notificações que a política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> ativa seguem este mesmo horário.
+
+      Se não for definida, é utilizado o período predefinido de 345 600 000 milissegundos (quatro dias) para os dispositivos <ph name="PRODUCT_OS_NAME" /> e de 604 800 000 milissegundos (uma semana) para o <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Ativa a funcionalidade de Preenchimento automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente as informações de cartões de crédito em formulários Web ao utilizar informações armazenadas anteriormente.
 
       Se esta definição estiver desativada, o Preenchimento automático nunca sugere nem preenche formulários com informações de cartões de crédito e também não guarda informações adicionais de cartões de crédito que o utilizador possa enviar enquanto navega na Web.
@@ -4299,6 +4304,8 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="915194831143859291">Se esta política estiver definida como falsa ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> permite ao utilizador encerrar o dispositivo.
       Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> aciona um reinício quando o utilizador encerrar o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de encerramento na IU por botões de reinício. Se o utilizador encerrar o dispositivo através do botão ligar/desligar, este não reinicia automaticamente, mesmo que a política esteja ativada.</translation>
 <translation id="9152473318295429890">Ativar sugestões contextuais de páginas Web relacionadas</translation>
+<translation id="9153446010242995516">Reverta e continue com a versão de destino se a versão do SO for mais recente do que a do destino. Tente transferir a configuração ao nível do dispositivo (incluindo as credenciais da rede) através do processo de reversão, se possível, mas efetue a reversão com Powerwash completo, mesmo que não seja possível restaurar os dados (por a versão do destino não ser compatível com o restauro de dados ou devido a uma alteração incompatível com anterior).
+          Compatível com a versão 75 e superior do <ph name="PRODUCT_OS_NAME" />. Para clientes mais antigos, este valor significa que a reversão está desativada.</translation>
 <translation id="9158929520101169054">Permitir o início de sessão integrado no navegador</translation>
 <translation id="9159126470527871268">Notifique os utilizadores de que o <ph name="PRODUCT_NAME" /> tem de ser reiniciado ou que o <ph name="PRODUCT_OS_NAME" /> tem de ser reiniciado para aplicar uma atualização pendente.
 

@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Choose Folder</translation>
 <translation id="1265739287306757398">Learn How</translation>
 <translation id="1272079795634619415">Stop</translation>
+<translation id="1283524564873030414">Last 24 hours</translation>
 <translation id="1323735185997015385">Delete</translation>
 <translation id="132683371494960526">Double tap to change the parent folder.</translation>
 <translation id="1340643665687018190">Close menu</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">To scan a QR code, enable the camera from settings</translation>
 <translation id="4281844954008187215">Terms of Service</translation>
 <translation id="430793432425771671">Sync Everything</translation>
+<translation id="430967081421617822">All time</translation>
 <translation id="4338650699862464074">Sends URLs of pages that you visit to Google.</translation>
 <translation id="4359125752503270327">This page will open in another application.</translation>
 <translation id="4370827530403103842">Sync isn't working. Tap to fix.</translation>
@@ -295,6 +297,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5327248766486351172">Name</translation>
 <translation id="5388358297987318779">Open Image</translation>
 <translation id="5409365236829784218">There are no applications installed that can open this file.</translation>
+<translation id="5416022985862681400">Last 7 days</translation>
 <translation id="5433691172869980887">Username copied</translation>
 <translation id="54401264925851789">Page Security Info</translation>
 <translation id="5443952882982198570">Credit cards</translation>

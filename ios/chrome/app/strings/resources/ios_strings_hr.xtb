@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Odabir mape</translation>
 <translation id="1265739287306757398">Saznajte kako</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
+<translation id="1283524564873030414">Posljednja 24 sata</translation>
 <translation id="1323735185997015385">Izbriši</translation>
 <translation id="132683371494960526">Dodirnite dvaput da biste promijenili nadređenu mapu.</translation>
 <translation id="1340643665687018190">Zatvori izbornik</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">Da biste skenirali QR kod, omogućite fotoaparat u postavkama</translation>
 <translation id="4281844954008187215">Uvjeti upotrebe usluge</translation>
 <translation id="430793432425771671">Sinkroniziraj sve</translation>
+<translation id="430967081421617822">Cijelo vrijeme</translation>
 <translation id="4338650699862464074">Šalje Googleu URL-ove stranica koje posjećujete.</translation>
 <translation id="4359125752503270327">Stranica će se otvoriti u nekoj drugoj aplikaciji.</translation>
 <translation id="4370827530403103842">Sinkronizacija ne radi. Dodirnite za ispravak.</translation>
@@ -295,6 +297,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5327248766486351172">Naziv</translation>
 <translation id="5388358297987318779">Otvori sliku</translation>
 <translation id="5409365236829784218">Nema instalirane aplikacije za otvaranje ove datoteke.</translation>
+<translation id="5416022985862681400">Posljednjih sedam dana</translation>
 <translation id="5433691172869980887">Korisničko je ime kopirano</translation>
 <translation id="54401264925851789">Informacije o sigurnosti stranice</translation>
 <translation id="5443952882982198570">Kreditne kartice</translation>

@@ -1981,6 +1981,11 @@
       这些建议是从 Google 服务器远程提取的。
 
       如果此政策设为 false，将不会提取或显示此类建议。</translation>
+<translation id="4759650396863318477">让您能够设置一个时间段（以毫秒为单位），在该时间段内，如果必须重新启动 <ph name="PRODUCT_NAME" /> 或必须重启 <ph name="PRODUCT_OS_NAME" />设备以应用待应用的更新，用户将会收到通知。
+
+      在该时间段内，如果需要更新，系统会反复通知用户。对于 <ph name="PRODUCT_OS_NAME" />设备，系统会根据 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策在系统任务栏中显示重启通知。对于 <ph name="PRODUCT_NAME" /> 浏览器，应用菜单会在通知时间段过去三分之一后立即发生变化，以指示需要重新启动浏览器。此通知会在通知时间段过去三分之二后立即改变颜色，并会在整个通知时间段过后再次立即改变颜色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策启用的其他通知也会遵循这一时间表。
+
+      如果此政策未设置，对于 <ph name="PRODUCT_OS_NAME" />设备，系统会使用 345600000 毫秒（4 天）的默认通知时间段，对于 <ph name="PRODUCT_NAME" />，则会使用 604800000 毫秒（1 周）的默认通知时间段。</translation>
 <translation id="4788252609789586009">启用 <ph name="PRODUCT_NAME" /> 的“自动填充”功能，并允许用户使用以前存储的信用卡信息在网络表单中自动填写相关信息。
 
       如果停用了此设置，“自动填充”功能将不会提供建议或填充信用卡信息，也不会保存用户可能会在浏览网页时提交的其他信用卡信息。
@@ -4151,6 +4156,8 @@
 <translation id="915194831143859291">如果此政策设为 false 或未配置，<ph name="PRODUCT_OS_NAME" />将允许用户关闭设备。
       如果此政策设为 true，<ph name="PRODUCT_OS_NAME" />会在用户关闭设备时触发重新启动操作。<ph name="PRODUCT_OS_NAME" />会将界面中的所有关机按钮替换为重新启动按钮。如果用户通过电源按钮关闭设备，设备将不会自动重新启动，即使启用了此政策也是如此。</translation>
 <translation id="9152473318295429890">允许根据上下文建议相关的网页</translation>
+<translation id="9153446010242995516">如果操作系统版本比目标版本新，则回滚到并持续使用目标版本。会尽量尝试通过回滚过程继承设备级配置（包括网络凭据），但即使无法恢复数据（因为目标版本不支持恢复数据，或因为发生了无法向后兼容的更改），也会通过执行完整的 Powerwash 操作进行回滚。
+          在 <ph name="PRODUCT_OS_NAME" />版本 75 及更高版本上均受支持。对于旧版客户端，此值意味着已停用回滚。</translation>
 <translation id="9158929520101169054">允许在同一浏览器中登录多个帐号</translation>
 <translation id="9159126470527871268">必须重新启动 <ph name="PRODUCT_NAME" /> 或必须重启 <ph name="PRODUCT_OS_NAME" />以应用待应用的更新时，通知用户。
 

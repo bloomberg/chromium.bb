@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="1006017844123154345">İnternet'te aç</translation>
+<translation id="1028699632127661925"><ph name="DEVICE_NAME" /> cihazına gönderiliyor...</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> ekleniyor...</translation>
 <translation id="1041308826830691739">Web sitelerinden</translation>
 <translation id="1049743911850919806">Gizli mod</translation>
@@ -16,6 +17,12 @@
 <translation id="1121094540300013208">Kullanım ve kilitlenme raporları</translation>
 <translation id="1124772482545689468">Kullanıcı</translation>
 <translation id="1129510026454351943">Ayrıntılar: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1140872012279790904">Sensör verileri yalnızca bu VR deneyiminiz sırasında paylaşılacak. Bu site bazı verileri kullanarak hakkınızda bilgi edinebilir. Örneğin:
+    - Konumunuz
+    - Fiziksel özellikleriniz (ör. gözünüzün konumu)
+    - Hareketleriniz (ör. yürüme biçiminiz)
+
+Erişime izin vermeden önce bu siteye güvendiğinizden emin olun.</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 indirme işlemi beklemede.}other{# indirme işlemi beklemede.}}</translation>
 <translation id="1145536944570833626">Mevcut verileri silin.</translation>
 <translation id="1146678959555564648">VR'ye Gir</translation>
@@ -43,6 +50,7 @@
 <translation id="1260236875608242557">Arama yapın ve keşfedin</translation>
 <translation id="1264974993859112054">Spor</translation>
 <translation id="1272079795634619415">Durdur</translation>
+<translation id="1272444412400969138">Sekmenin paylaşılacağı cihazı seçme aracı</translation>
 <translation id="1283039547216852943">Genişletmek için dokunun</translation>
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
 <translation id="1291207594882862231">Geçmişi, çerezleri, site verilerini, önbelleği temizleyin…</translation>
@@ -59,6 +67,7 @@
 <translation id="138361230106469022">Merhaba <ph name="FULL_NAME" />,</translation>
 <translation id="1383876407941801731">Ara</translation>
 <translation id="1384959399684842514">İndirme işlemi duraklatıldı</translation>
+<translation id="1386674309198842382"><ph name="LAST_UPDATED" /> gün önce etkindi</translation>
 <translation id="1389974829397082527">Burada yer işareti yok</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> ile ara</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> sitesinde yerleşik</translation>
@@ -404,6 +413,7 @@
 <translation id="4008040567710660924">Belirli bir site için çerezlere izin verin.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# sa.}other{# sa.}}</translation>
 <translation id="4042870126885713738">Bir web adresi çözümlenemezse veya bağlantı yapılamazsa öneriler göster</translation>
+<translation id="4044912625106523635">Sekme paylaşmak için cihaz seçici, tam yükseklikte açıldı.</translation>
 <translation id="4046123991198612571">Sonraki parça</translation>
 <translation id="4048707525896921369">Sayfadan ayrılmadan web siteleriyle ilgili konuları öğrenin. Dokun ve Ara özelliği seçilen kelimeyi, çevresindeki içerikle birlikte Google Arama'ya gönderir ve karşılığında ilgili tanımlar, resimler, arama sonuçları ve diğer ayrıntıları döndürür.
 
@@ -577,6 +587,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5271967389191913893">Cihaz, indirilecek içeriği açamıyor.</translation>
 <translation id="528192093759286357">Tam ekrandan çıkmak için yukarıdan sürükleyin ve geri düğmesine dokunun.</translation>
 <translation id="5284584623296338184">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızda yaptığınız değişiklikler artık Google Hesabınız ile senkronize edilmeyecek. Ancak, mevcut verileriniz Google hesabınızda saklanmaya devam edecek.</translation>
+<translation id="5292796745632149097">Alıcılar</translation>
 <translation id="5300589172476337783">Göster</translation>
 <translation id="5301954838959518834">Tamam, anladım</translation>
 <translation id="5304593522240415983">Bu alan boş olamaz</translation>
@@ -604,6 +615,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="545042621069398927">İndirme işleminiz hızlandırılıyor.</translation>
 <translation id="5456381639095306749">Sayfayı indir</translation>
 <translation id="5475862044948910901">Artırılmış Gerçeklik oturumu başlatılsın mı?</translation>
+<translation id="5481942164684849270"><ph name="APP_NAME" /> uygulamalarıma eklendi</translation>
 <translation id="548278423535722844">Haritalar uygulamasında aç</translation>
 <translation id="5487521232677179737">Verileri temizle</translation>
 <translation id="5494752089476963479">Araya giren veya yanıltıcı reklamlar gösteren sitelerde reklamları engelle</translation>
@@ -740,6 +752,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6406506848690869874">Senkronizasyon</translation>
 <translation id="641643625718530986">Yazdır…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB indirildi</translation>
+<translation id="6418750371676080905">Sekme paylaşılacak cihazı seçme aracı kapalı.</translation>
 <translation id="6427112570124116297">Web'i çevir</translation>
 <translation id="6433501201775827830">Arama motorunuzu seçin</translation>
 <translation id="6437478888915024427">Sayfa bilgileri</translation>
@@ -780,6 +793,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="666268767214822976">Adres çubuğuna yazarken ilgili sorguları ve popüler siteleri göstermek için bir tahmin hizmeti kullan</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> uygulamasında aç</translation>
 <translation id="666981079809192359">Chrome Gizlilik Uyarısı</translation>
+<translation id="6672986458216094438">Sekme paylaşmak için cihaz seçici, yarım yükseklikte açıldı.</translation>
 <translation id="6697492270171225480">Bir sayfa bulunamadığında benzer sayfalar için önerileri göster</translation>
 <translation id="6697947395630195233">Konumunuzu bu siteyle paylaşabilmek için Chrome'un konum bilgilerinize erişmesi gerekiyor.</translation>
 <translation id="6698801883190606802">Senkronize edilen verileri yönet</translation>
@@ -958,6 +972,7 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> güncel değil.</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
 <translation id="7963646190083259054">Firma:</translation>
+<translation id="7971136598759319605">1 gün önce etkinleştirildi</translation>
 <translation id="7975379999046275268">Sayfanın önizlemesini aç <ph name="BEGIN_NEW" />Yeni<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Daha hızlı göz atmak ve arama yapmak için sayfaları önceden yükle</translation>
 <translation id="79859296434321399">Artırılmış gerçeklik içeriğini görüntülemek için ARCore'u yükleyin</translation>

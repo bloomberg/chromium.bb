@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">Sélectionner un dossier</translation>
 <translation id="1265739287306757398">En savoir plus</translation>
 <translation id="1272079795634619415">Arrêter</translation>
+<translation id="1283524564873030414">Dernières 24 heures</translation>
 <translation id="1323735185997015385">Supprimer</translation>
 <translation id="132683371494960526">Appuyez deux fois pour modifier le dossier parent.</translation>
 <translation id="1340643665687018190">Fermer le menu</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">Pour scanner un code QR, activez l'appareil photo depuis les paramètres</translation>
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="430793432425771671">Tout synchroniser</translation>
+<translation id="430967081421617822">Toutes les périodes</translation>
 <translation id="4338650699862464074">Envoie à Google les URL des pages que vous consultez.</translation>
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
 <translation id="4370827530403103842">La synchronisation ne fonctionne pas. Appuyez pour corriger.</translation>
@@ -295,6 +297,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5388358297987318779">Ouvrir l'image</translation>
 <translation id="5409365236829784218">Aucune application installée ne peut ouvrir ce fichier.</translation>
+<translation id="5416022985862681400">Sept derniers jours</translation>
 <translation id="5433691172869980887">Nom d'utilisateur copié</translation>
 <translation id="54401264925851789">Informations sur la sécurité de cette page</translation>
 <translation id="5443952882982198570">Cartes de crédit</translation>
@@ -499,7 +502,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8532105204136943229">Année d'expiration</translation>
 <translation id="8534481786647257214">Post Google+ publié.</translation>
 <translation id="8548878600947630424">Rechercher sur la page…</translation>
-<translation id="8583866649835978847">Envoyez <ph name="TITLE" /> vers un de vos appareils.</translation>
+<translation id="8583866649835978847">Envoyez l'onglet <ph name="TITLE" /> sur un de vos appareils.</translation>
 <translation id="8605219856220328675">Fermer l'onglet</translation>
 <translation id="8620640915598389714">Modifier</translation>
 <translation id="8636825310635137004">Activez la synchronisation pour accéder à vos onglets sur vos autres appareils.</translation>

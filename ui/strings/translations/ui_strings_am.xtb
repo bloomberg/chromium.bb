@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
+<translation id="1028699632127661925">ወደ <ph name="DEVICE_NAME" /> በመላክ ላይ...</translation>
 <translation id="111910763555783249">የማሳወቂያ ቅንብሮች</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 ቀን በፊት}one{# ቀኖች በፊት}other{# ቀኖች በፊት}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{ከ1 ደቂቃ በፊት}one{ከ# ደቂቃዎች በፊት}other{ከ# ደቂቃዎች በፊት}}</translation>

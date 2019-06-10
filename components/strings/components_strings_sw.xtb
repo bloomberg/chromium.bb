@@ -215,6 +215,7 @@
 <translation id="202813660234680402">La, usiongeze</translation>
 <translation id="2030481566774242610">Je, ulimaanisha <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kuangalia seva mbadala na kinga mtandao<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Hudhibiti jinsi data ya kifaa inashughulikiwa. Kidhibiti cha kifaa chako hubaini jinsi Google inachakata na kutumia data ya kifaa chako.</translation>
 <translation id="2053111141626950936">Haitatafsiri kurasa za <ph name="LANGUAGE" />.</translation>
 <translation id="2053553514270667976">Msimbo wa eneo</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{Pendekezo 1}other{Mapendekezo #}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Ukitumia seva mbadala...</translation>
 <translation id="3828924085048779000">Kaulisiri tupu hairuhusiwi.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> imesakinisha viendelezi kwa ajili ya majukumu ya ziada. Viendelezi vina idhini ya kufikia baadhi ya data yako.</translation>
+<translation id="3835128043098956141">Hudhibiti jinsi data ya akaunti yako inashughulikiwa. Msimamizi wa akaunti yako hubaini jinsi Google huchakata na kutumia data ya akaunti yako.</translation>
 <translation id="385051799172605136">Rudi nyuma</translation>
 <translation id="3858027520442213535">Sasisha tarehe na saa</translation>
 <translation id="3884278016824448484">Kitambulisho cha kifaa kinachokinzana</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Makala unayopendekezewa yataonekana hapa</translation>
 <translation id="6302269476990306341">Programu ya Mratibu wa Google katika Chrome inaacha kufanya kazi</translation>
 <translation id="6305205051461490394"><ph name="URL" /> haiwezi kufikiwa.</translation>
+<translation id="6321321051990674438">Hudhibiti jinsi data ya kifaa na akaunti yako hushughulikiwa. Msimamizi wa kifaa na akaunti yako hubaini jinsi Google inavyochakata na kutumia data ya kifaa na akaunti yako.</translation>
 <translation id="6321917430147971392">Angalia mipangilio yako ya DNS</translation>
 <translation id="6328639280570009161">Jaribu kuzima utabiri wa mtandao</translation>
 <translation id="6328784461820205019">"Muunganisho wako si wa faragha" au "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" au "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" au "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" au "hitilafu ya cheti cha SSL"</translation>

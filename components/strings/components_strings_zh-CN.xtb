@@ -176,7 +176,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">持卡人姓名</translation>
 <translation id="1821930232296380041">请求或请求参数无效</translation>
-<translation id="1822370876374026111">若想在下次购物时更快捷地付款，请将您的付款卡信息和帐单邮寄地址添加到您的 Google 帐号名下以及这台设备中。</translation>
+<translation id="1822370876374026111">若想在下次购物时更快捷地付款，请将您的付款卡信息和帐单邮寄地址添加到您的 Google 帐号以及这台设备中。</translation>
 <translation id="1822540298136254167">您访问过的网站和您在这些网站上花费的时间</translation>
 <translation id="1826516787628120939">正在检查</translation>
 <translation id="1834321415901700177">此网站包含有害程序</translation>
@@ -210,6 +210,7 @@
 <translation id="202813660234680402">不添加</translation>
 <translation id="2030481566774242610">您是想访问<ph name="LINK" />吗？</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />检查代理服务器和防火墙<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">控制对设备数据的处理方式。Google 对设备数据的处理和使用方式由设备管理器决定。</translation>
 <translation id="2053111141626950936">系统不会翻译<ph name="LANGUAGE" />网页。</translation>
 <translation id="2053553514270667976">邮编</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 条建议}other{# 条建议}}</translation>
@@ -537,6 +538,7 @@
 <translation id="382518646247711829">如果您使用代理服务器…</translation>
 <translation id="3828924085048779000">密码输入字段不能留空。</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> 已安装了一些扩展程序来提供更多功能。这些扩展程序有权访问您的部分数据。</translation>
+<translation id="3835128043098956141">控制对帐号数据的处理方式。Google 对帐号数据的处理和使用方式由帐号管理器决定。</translation>
 <translation id="385051799172605136">后退</translation>
 <translation id="3858027520442213535">更新日期和时间</translation>
 <translation id="3884278016824448484">设备标识符存在冲突</translation>
@@ -968,6 +970,7 @@
 <translation id="6290238015253830360">为您推荐的文章会显示在此处</translation>
 <translation id="6302269476990306341">Chrome 中的 Google 助理即将停止工作</translation>
 <translation id="6305205051461490394">无法访问 <ph name="URL" />。</translation>
+<translation id="6321321051990674438">控制对设备数据和帐号数据的处理方式。Google 对设备数据和帐号数据的处理和使用方式由设备管理器和帐号管理器决定。</translation>
 <translation id="6321917430147971392">请检查您的DNS设置是否正确</translation>
 <translation id="6328639280570009161">请尝试停用网络联想查询功能</translation>
 <translation id="6328784461820205019">“您的连接不是私密连接”、“&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;”、“&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;”、“&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;”、“&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;”或“SSL 证书错误”</translation>
@@ -1137,7 +1140,7 @@
 <translation id="7298195798382681320">推荐</translation>
 <translation id="7300012071106347854">钴蓝色</translation>
 <translation id="7302712225291570345">“<ph name="TEXT" />”</translation>
-<translation id="7303701124147721189">若想在下次购物时更快捷地付款，请将您的付款卡信息和帐单邮寄地址保存到您的 Google 帐号名下以及这台设备中。</translation>
+<translation id="7303701124147721189">若想在下次购物时更快捷地付款，请将您的付款卡信息和帐单邮寄地址保存到您的 Google 帐号以及这台设备中。</translation>
 <translation id="7309308571273880165">崩溃报告获取时间：<ph name="CRASH_TIME" />（用户已请求上传，但尚未上传）</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />安全浏览<ph name="END_LINK" />警告</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1366,7 +1369,7 @@
 <translation id="8428213095426709021">设置</translation>
 <translation id="8433057134996913067">这将使您退出大多数网站。</translation>
 <translation id="8437238597147034694">撤消移动(&amp;U)</translation>
-<translation id="8440508849222143646">若想在下次购物时更快捷地付款，请将您的付款卡信息和帐单邮寄地址保存到您的 Google 帐号名下。</translation>
+<translation id="8440508849222143646">若想在下次购物时更快捷地付款，请将您的付款卡信息和帐单邮寄地址保存到您的 Google 帐号中。</translation>
 <translation id="8461694314515752532">使用您自己的同步密码加密已同步的数据</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 张信用卡}other{# 张信用卡}}</translation>
 <translation id="8473863474539038330">地址和其他信息</translation>

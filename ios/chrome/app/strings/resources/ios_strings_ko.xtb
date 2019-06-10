@@ -25,6 +25,7 @@
 <translation id="1254117744268754948">폴더 선택</translation>
 <translation id="1265739287306757398">자세히 알아보기</translation>
 <translation id="1272079795634619415">중지</translation>
+<translation id="1283524564873030414">지난 24시간</translation>
 <translation id="1323735185997015385">삭제</translation>
 <translation id="132683371494960526">상위 폴더를 변경하려면 두 번 탭하세요.</translation>
 <translation id="1340643665687018190">메뉴 닫기</translation>
@@ -226,6 +227,7 @@
 <translation id="4272631900155121838">QR 코드를 스캔하려면 설정에서 카메라를 사용하도록 설정하세요.</translation>
 <translation id="4281844954008187215">서비스 약관</translation>
 <translation id="430793432425771671">모두 동기화</translation>
+<translation id="430967081421617822">전체 기간</translation>
 <translation id="4338650699862464074">방문한 페이지의 URL을 Google에 전송합니다.</translation>
 <translation id="4359125752503270327">이 페이지는 다른 애플리케이션에서 열립니다.</translation>
 <translation id="4370827530403103842">동기화가 작동하지 않습니다. 탭하여 수정하세요.</translation>
@@ -295,6 +297,7 @@
 <translation id="5327248766486351172">이름</translation>
 <translation id="5388358297987318779">이미지 열기</translation>
 <translation id="5409365236829784218">이 파일을 열 수 있는 애플리케이션이 설치되어 있지 않습니다.</translation>
+<translation id="5416022985862681400">지난 7일</translation>
 <translation id="5433691172869980887">사용자 이름 복사됨</translation>
 <translation id="54401264925851789">페이지 보안 정보</translation>
 <translation id="5443952882982198570">신용카드</translation>

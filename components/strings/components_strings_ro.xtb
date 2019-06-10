@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Nu, nu adăuga</translation>
 <translation id="2030481566774242610">Ați dorit să scrieți <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />să verifici proxy-ul și firewallul;<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Stabilește cum sunt gestionate datele dispozitivului. Modul în care Google prelucrează și folosește datele dispozitivului este indicat de managerul de dispozitiv.</translation>
 <translation id="2053111141626950936">Paginile în <ph name="LANGUAGE" /> nu vor fi traduse.</translation>
 <translation id="2053553514270667976">Cod zip</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 sugestie}few{# sugestii}other{# de sugestii}}</translation>
@@ -549,6 +550,7 @@
 <translation id="382518646247711829">Dacă utilizați un server proxy...</translation>
 <translation id="3828924085048779000">Trebuie să fie introdusă expresia de acces.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> a instalat extensii pentru funcții suplimentare. Extensiile au acces la unele dintre datele tale.</translation>
+<translation id="3835128043098956141">Stabilește cum sunt gestionate datele contului. Modul în care Google prelucrează și folosește datele contului este indicat de managerul contului.</translation>
 <translation id="385051799172605136">Înapoi</translation>
 <translation id="3858027520442213535">Actualizează data și ora</translation>
 <translation id="3884278016824448484">Identificator de gadget în conflict</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">Articolele sugerate apar aici</translation>
 <translation id="6302269476990306341">Asistentul Google în Chrome se oprește</translation>
 <translation id="6305205051461490394">Adresa URL <ph name="URL" /> nu poate fi accesată.</translation>
+<translation id="6321321051990674438">Stabilește modul în care sunt gestionate datele dispozitivului și ale contului. Modul în care Google prelucrează și folosește datele dispozitivului și ale contului este indicat de managerul dispozitivului și al contului.</translation>
 <translation id="6321917430147971392">Verificați setările DNS</translation>
 <translation id="6328639280570009161">Încercați să dezactivați anticiparea rețelei</translation>
 <translation id="6328784461820205019">„Conexiunea nu este privată” sau „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;” sau „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;” sau „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;” sau „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;” sau „Eroare privind certificatul SSL”</translation>

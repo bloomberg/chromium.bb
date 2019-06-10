@@ -2064,6 +2064,11 @@ Sera hii ikiwekwa kuwa sivyo au isiwekwe, kibodi itatoa amri za vitufe vya media
       Mapendekezo haya yanatafutwa kwa mbali kutoka seva za Google.
 
       Ikiwa mipangilio hii imewekwa kuwa sivyo, haitatafuta wala kuonyesha mapendekezo.</translation>
+<translation id="4759650396863318477">Hukuruhusu uweke kipindi katika milisekunde, ambapo watumiaji wataarifiwa kwamba ni lazima <ph name="PRODUCT_NAME" /> ifunguliwe upya au ni sharti kifaa cha <ph name="PRODUCT_OS_NAME" /> kizimwe kisha kiwashwe ili kukamilisha kuweka sasisho.
+
+      Katika kipindi hiki, mtumiaji ataarifiwa mara kwa mara kuhusu umuhimu wa kusasisha. Kwa vifaa vya <ph name="PRODUCT_OS_NAME" />, arifa itakayokutaka uzime kisha uwashe kifaa itaonekana katika ubao wa aikoni kulingana na sera ya <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Kwa vivinjari vya <ph name="PRODUCT_NAME" />, mabadiliko kwenye menyu ya programu ya kuashiria kuwa unahitaji kufungua programu upya yanahitajika baada ya thuluthi ya kipindi cha arifa kuisha. Rangi ya arifa hizi itabadilika baada ya thuluthi mbili za kipindi cha kutoa arifa kuisha na itabadilika tena kipindi kamili cha arifa kitakapokwisha. Arifa za ziada zitakazowashwa na sera ya <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> zitafuata ratiba ii hii.
+
+      Kama hujaweka kipindi, kipindi chaguomsingi cha milisekunde 345600000 (siku nne) kitatumika kwenye vifaa vya <ph name="PRODUCT_OS_NAME" /> na milisekunde 604800000 (wiki moja) kitatumika kwenye <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Huwasha kipengele cha Kujaza Kiotomatiki cha <ph name="PRODUCT_NAME" /> na kuruhusu watumiaji wajaze kiotomatiki maelezo ya kadi ya mikopo katika fomu za wavuti wakitumia maelezo waliyohifadhi awali.
 
       Iwapo mipangilio hii imezimwa, kipengele cha Kujaza Kiotomatiki hakitawahi kupendekeza wala kujaza maelezo ya kadi ya mikopo. Pia hakitaweza kuhifadhi maelezo ya ziada ya kadi ya mikopo ambayo huenda mtumiaji atawasilisha atakapovinjari kwenye wavuti.
@@ -4342,6 +4347,8 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
 <translation id="915194831143859291">Sera hii ikiwekwa kuwa sivyo au isisanidiwe, <ph name="PRODUCT_OS_NAME" /> itamruhusu mtumiaji kuzima kifaa.
       Sera hii ikiwekwa kuwa ndivyo, <ph name="PRODUCT_OS_NAME" /> itaanzisha kuwasha tena mtumiaji anapozima kifaa. <ph name="PRODUCT_OS_NAME" /> huchukua nafasi ya matukio yote ya vitufe vya kuzima katika kiolesura kwa kutumia vitufe vya kuzima. Mtumiaji akizima kifaa akitumia kitufe cha kuwasha/kuzima, hakitawasha tena kiotomatiki, hata kama sera imewashwa.</translation>
 <translation id="9152473318295429890">Washa mapendekezo ya muktadha wa kurasa za wavuti husika</translation>
+<translation id="9153446010242995516">Rejesha na uendelee kutumia toleo lengwa ikiwa toleo la mfumo wa uendeshaji ni jipya zaidi kuliko toleo lengwa. Jaribu kuleta mipangilio kwenye kiwango cha kifaa (ikiwa ni pamoja na kitambulisho cha mtandao) kupitia mchakato wa urejeshaji, ikiwezekana, lakini usirejeshe katika hali kamili ya Powerwash hata kama urejeshaji wa data hauwezekani (kwa sababu toleo lengwa haliwezi kurejesha data au kutokana na mabadiliko ya urejeshaji yasiyooana).
+          Inaweza kutumika kwenye toleo la <ph name="PRODUCT_OS_NAME" /> la 75 na mapya zaidi. Kwa viteja vya zamani zaidi, thamani hii ina maana kuwa urejeshaji umezimwa.</translation>
 <translation id="9158929520101169054">Ruhusu Kuingia katika Akaunt Nyingi katika Kivinjari</translation>
 <translation id="9159126470527871268">Iwaarifu watumiaji kwamba ni sharti <ph name="PRODUCT_NAME" /> ifunguliwe upya au ni sharti wazime kisha wawashe <ph name="PRODUCT_OS_NAME" /> ili wakamilishe kuweka sasisho. 
 

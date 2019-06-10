@@ -215,6 +215,7 @@
 <translation id="202813660234680402">Nem adom hozzá</translation>
 <translation id="2030481566774242610">Erre gondolt: <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />A proxy és a tűzfal ellenőrzése<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Az eszközadatok kezelését szabályozza. Az eszköz kezelője határozza meg, hogy a Google hogyan dolgozza és használja fel az eszköz adatait.</translation>
 <translation id="2053111141626950936">A(z) <ph name="LANGUAGE" /> nyelvű oldalak nem lesznek lefordítva.</translation>
 <translation id="2053553514270667976">Irányítószám</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 javaslat}other{# javaslat}}</translation>
@@ -547,6 +548,7 @@
 <translation id="382518646247711829">Ha proxyszervert használ...</translation>
 <translation id="3828924085048779000">Az üres összetett jelszó nem engedélyezett.</translation>
 <translation id="3831915413245941253">A(z) <ph name="ENROLLMENT_DOMAIN" /> bővítményeket telepített további funkciók használata céljából. A bővítmények hozzáférhetnek az Ön bizonyos adataihoz.</translation>
+<translation id="3835128043098956141">A fiókadatok kezelését szabályozza. A fiók kezelője határozza meg, hogy a Google hogyan dolgozhatja és használhatja fel a fiók adatait.</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3858027520442213535">Dátum és idő frissítése</translation>
 <translation id="3884278016824448484">Eszközazonosító-ütközés</translation>
@@ -979,6 +981,7 @@
 <translation id="6290238015253830360">A javasolt cikkek helye</translation>
 <translation id="6302269476990306341">A Google Segéd a Chrome-ban szolgáltatás leáll</translation>
 <translation id="6305205051461490394">A(z) <ph name="URL" /> nem érhető el.</translation>
+<translation id="6321321051990674438">Az eszköz- és fiókadatok kezelésének módját szabályozza. Az eszköz és a fiók kezelője határozza meg, hogy a Google hogyan dolgozhatja és használhatja fel az eszköz és a fiók adatait.</translation>
 <translation id="6321917430147971392">Ellenőrizze a DNS-beállításokat</translation>
 <translation id="6328639280570009161">Próbálkozzon a hálózati előrejelzések kikapcsolásával</translation>
 <translation id="6328784461820205019">„Az Ön kapcsolata nem privát”, „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;”, „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;”, „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;”, „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;” vagy „SSL-tanúsítványhiba”</translation>

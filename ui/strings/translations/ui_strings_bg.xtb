@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="1028699632127661925">Изпраща се до <ph name="DEVICE_NAME" />...</translation>
 <translation id="111910763555783249">Настройки за известяване</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Преди 1 ден}other{Преди # дни}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Преди 1 минута}other{Преди # минути}}</translation>

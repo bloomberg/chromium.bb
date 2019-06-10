@@ -210,6 +210,7 @@
 <translation id="202813660234680402">No, don't add</translation>
 <translation id="2030481566774242610">Did you mean <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Checking the proxy and the firewall<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">Controls how your device data is handled. How Google processes and uses your device data is determined by your device manager.</translation>
 <translation id="2053111141626950936">Pages in <ph name="LANGUAGE" /> will not be translated.</translation>
 <translation id="2053553514270667976">ZIP code</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggestion}other{# suggestions}}</translation>
@@ -541,6 +542,7 @@
 <translation id="382518646247711829">If you use a proxy server...</translation>
 <translation id="3828924085048779000">Empty passphrase is not allowed.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> has installed extensions for additional functions. Extensions have access to some of your data.</translation>
+<translation id="3835128043098956141">Controls how your account data is handled. How Google processes and uses your account data is determined by your account manager.</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3858027520442213535">Update date and time</translation>
 <translation id="3884278016824448484">Conflicting device identifier</translation>
@@ -973,6 +975,7 @@
 <translation id="6290238015253830360">Your suggested articles appear here</translation>
 <translation id="6302269476990306341">Google Assistant in Chrome stopping</translation>
 <translation id="6305205051461490394"><ph name="URL" /> is unreachable.</translation>
+<translation id="6321321051990674438">Controls how your device and account data is handled. How Google processes and uses your device and account data is determined by your device and account manager.</translation>
 <translation id="6321917430147971392">Check your DNS settings</translation>
 <translation id="6328639280570009161">Try disabling network prediction</translation>
 <translation id="6328784461820205019">'Your connection is not private' or '&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;' or '&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;' or '&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;' or '&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;' or 'SSL certificate error'</translation>
