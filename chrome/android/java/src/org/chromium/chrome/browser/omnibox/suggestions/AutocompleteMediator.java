@@ -102,6 +102,7 @@ class AutocompleteMediator
     private ToolbarDataProvider mDataProvider;
     private boolean mNativeInitialized;
     private AutocompleteController mAutocomplete;
+    private long mUrlFocusTime;
 
     @IntDef({SuggestionVisibilityState.DISALLOWED, SuggestionVisibilityState.PENDING_ALLOW,
             SuggestionVisibilityState.ALLOWED})
@@ -385,6 +386,7 @@ class AutocompleteMediator
     /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */
     void onUrlFocusChange(boolean hasFocus) {
         if (hasFocus) {
+            mUrlFocusTime = System.currentTimeMillis();
             mSuggestionVisibilityState = SuggestionVisibilityState.PENDING_ALLOW;
             if (mNativeInitialized) {
                 startZeroSuggest();
@@ -892,6 +894,10 @@ class AutocompleteMediator
      */
     private void loadUrlFromOmniboxMatch(int matchPosition, OmniboxSuggestion suggestion,
             long inputStart, boolean inVisibleSuggestionList) {
+        final long activationTime = System.currentTimeMillis();
+        RecordHistogram.recordMediumTimesHistogram(
+                "Omnibox.FocusToOpenTimeAnyPopupState3", activationTime - mUrlFocusTime);
+
         String url =
                 updateSuggestionUrlIfNeeded(suggestion, matchPosition, !inVisibleSuggestionList);
 
