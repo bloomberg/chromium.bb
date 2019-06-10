@@ -253,26 +253,17 @@ void AssistantUiController::OnDeepLinkReceived(
   UpdateUiMode(AssistantUiMode::kWebUi);
 }
 
-void AssistantUiController::OnOpeningUrl(const GURL& url,
-                                         bool in_background,
-                                         bool from_server) {
+void AssistantUiController::OnOpeningUrl(const GURL& url, bool from_server) {
   if (model_.visibility() != AssistantVisibility::kVisible)
     return;
 
-  // If the specified |url| should be opening |in_background| with respect to
-  // Assistant UI, we transition into mini state so as not to obstruct the
-  // browser.
-  // TODO(b/134931713): Desired behavior is not yet defined when Assistant is
-  // embedded in the launcher.
   // We close the Assistant UI entirely when opening a new browser tab if the
   // navigation was initiated by a server response. Otherwise the navigation
   // was user initiated so we only hide the UI to retain session state. That way
   // the user can choose to resume their session if they are so inclined.
   // However, we close the UI if the feature |IsEmbeddedAssistantUIEnabled| is
   // enabled, where we only maintain |kVisible| and |kClosed| two states.
-  if (in_background && !app_list_features::IsEmbeddedAssistantUIEnabled())
-    UpdateUiMode(AssistantUiMode::kMiniUi);
-  else if (from_server)
+  if (from_server)
     CloseUi(AssistantExitPoint::kNewBrowserTabFromServer);
   else if (app_list_features::IsEmbeddedAssistantUIEnabled())
     CloseUi(AssistantExitPoint::kNewBrowserTabFromUser);
