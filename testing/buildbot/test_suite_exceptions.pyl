@@ -301,8 +301,6 @@
       'mac-archive-rel',
     ],
   },
-  # Note: keep experiment percentages the same as
-  # network_service_chrome_public_test_apk.
   'chrome_public_test_apk': {
     'remove_from': [
       'android-asan',  # https://crbug.com/964562
@@ -892,36 +890,6 @@
       },
     },
   },
-  # Note: keep experiment percentages the same as chrome_public_test_apk.
-  'network_service_chrome_public_test_apk': {
-    # Only run these on the phone testers for now due to capacity.
-    'remove_from': [
-      # chromium.android
-      'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel',
-      'KitKat Tablet Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow Tablet Tester',
-      'KitKat Phone Tester (dbg)',
-      # chromium.memory
-      'android-asan',  # https://crbug.com/964562
-      'Android CFI',
-      # chromium.clang
-      'ToTAndroid',
-      'ToTAndroidCFI',
-    ],
-    'modifications': {
-      # chromium.android
-      'Marshmallow 64 bit Tester': {
-        # TODO(crbug.com/731759): Enable this once we're confident that it
-        # passes.
-        'experiment_percentage': 100,
-      },
-      'Oreo Phone Tester': {
-        'experiment_percentage': 100,
-      },
-    },
-  },
   'network_service_components_browsertests': {
     'remove_from': [
       # chromium.memory
@@ -961,24 +929,6 @@
       'Mac ASan 64 Tests (1)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
-    ],
-  },
-  'network_service_content_shell_test_apk': {
-    # Only run these on the phone testers for now due to capacity.
-    'remove_from': [
-      # chromium.android
-      'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel',
-      'KitKat Tablet Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow Tablet Tester',
-      'KitKat Phone Tester (dbg)',
-      # chromium.memory
-      'android-asan',  # https://crbug.com/964562
-      'Android CFI',
-      # chromium.clang
-      'ToTAndroid',
-      'ToTAndroidCFI',
     ],
   },
   'network_service_extensions_browsertests': {
@@ -1041,7 +991,11 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel'
+      'android-marshmallow-arm64-rel',
+      # No capacity for tablet testers.
+      'KitKat Tablet Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow Tablet Tester',
     ],
   },
   'network_service_out_of_process_components_browsertests': {
@@ -1050,7 +1004,11 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel'
+      'android-marshmallow-arm64-rel',
+      # No capacity for tablet testers.
+      'KitKat Tablet Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow Tablet Tester',
     ],
   },
   'network_service_out_of_process_content_browsertests': {
@@ -1059,7 +1017,11 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel'
+      'android-marshmallow-arm64-rel',
+      # No capacity for tablet testers.
+      'KitKat Tablet Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow Tablet Tester',
     ],
   },
   'network_service_out_of_process_content_shell_test_apk': {
@@ -1068,7 +1030,11 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel'
+      'android-marshmallow-arm64-rel',
+      # No capacity for tablet testers.
+      'KitKat Tablet Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow Tablet Tester',
     ],
   },
   'network_service_webview_instrumentation_test_apk': {
@@ -1095,7 +1061,11 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel'
+      'android-marshmallow-arm64-rel',
+      # No capacity for tablet testers.
+      'KitKat Tablet Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow Tablet Tester',
     ],
   },
   'non_network_service_content_shell_test_apk': {
@@ -1104,7 +1074,11 @@
       'android-asan',
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel'
+      'android-marshmallow-arm64-rel',
+      # No capacity for tablet testers.
+      'KitKat Tablet Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow Tablet Tester',
     ],
   },
   'non_network_service_webkit_layout_tests' : {
