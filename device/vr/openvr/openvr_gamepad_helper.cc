@@ -78,14 +78,25 @@ std::map<vr::EVRButtonId, GamepadBuilder::ButtonData> GetAxesButtons(
         button_data.x_axis = x_axis;
         button_data.y_axis = y_axis;
         vr::EVRButtonId button_id = GetAxisId(j);
+
+        // Even if the button associated with the axis isn't supported, if we
+        // have valid axis data, we should still send that up.  Since the spec
+        // expects buttons with axes, then we will add a dummy button to match
+        // the axes.
         GamepadButton button;
         if (TryGetGamepadButton(controller_state, supported_buttons, button_id,
                                 &button)) {
           button_data.touched = button.touched;
           button_data.pressed = button.pressed;
           button_data.value = button.value;
-          button_data_map[button_id] = button_data;
+        } else {
+          button_data.pressed = false;
+          button_data.value = 0.0;
+          button_data.touched =
+              (std::fabs(x_axis) > 0 || std::fabs(y_axis) > 0);
         }
+
+        button_data_map[button_id] = button_data;
       } break;
       case vr::k_eControllerAxis_Trigger: {
         GamepadButton button;
