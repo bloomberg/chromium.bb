@@ -24,7 +24,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/trees/draw_property_utils.h"
-#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
@@ -1138,6 +1137,23 @@ void Layer::SetCacheRenderSurface(bool cache) {
   cache_render_surface_ = cache;
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
+}
+
+RenderSurfaceReason Layer::GetRenderSurfaceReason() const {
+  if (!layer_tree_host_)
+    return RenderSurfaceReason::kNone;
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
+  DCHECK(!property_trees->needs_rebuild);
+  EffectNode* effect_node =
+      property_trees->effect_tree.Node(this->effect_tree_index());
+
+  // Effect node can also be the effect node of an ancestor layer.
+  // Check if this effect node was created for this layer specifically.
+  if (!effect_node ||
+      (parent_ && this->effect_tree_index() == parent_->effect_tree_index())) {
+    return RenderSurfaceReason::kNone;
+  }
+  return effect_node->render_surface_reason;
 }
 
 void Layer::SetForceRenderSurfaceForTesting(bool force) {

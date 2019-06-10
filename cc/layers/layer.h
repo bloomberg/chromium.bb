@@ -28,6 +28,7 @@
 #include "cc/layers/touch_action_region.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/paint/paint_record.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/target_property.h"
@@ -507,6 +508,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // output.
   void SetCacheRenderSurface(bool cache_render_surface);
   bool cache_render_surface() const { return cache_render_surface_; }
+
+  // If the layer induces a render surface, this returns the cause for the
+  // render surface. If the layer does not induce a render surface, this returns
+  // kNone.
+  RenderSurfaceReason GetRenderSurfaceReason() const;
 
   // Set or get if the layer and its subtree will be drawn through an
   // intermediate texture, called a RenderSurface. This mimics the need

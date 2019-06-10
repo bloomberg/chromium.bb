@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/ui_element_delegate.h"
+#include "components/ui_devtools/views/element_utility.h"
 #include "ui/views/widget/widget.h"
 
 namespace ui_devtools {
@@ -66,6 +67,13 @@ ViewElement::GetCustomProperties() const {
   for (views::metadata::MemberMetaDataBase* member : *metadata) {
     ret.emplace_back(member->member_name(),
                      base::UTF16ToUTF8(member->GetValueAsString(view_)));
+  }
+
+  ret.emplace_back("is-drawn", view_->IsDrawn() ? "true" : "false");
+  ui::Layer* layer = view_->layer();
+  if (layer) {
+    ret.emplace_back("layer", layer->name());
+    AppendLayerProperties(layer, &ret);
   }
 
   base::string16 description = view_->GetTooltipText(gfx::Point());

@@ -255,6 +255,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Furthermore: A mask layer can only be set to one layer.
   void SetMaskLayer(Layer* layer_mask);
   Layer* layer_mask_layer() { return layer_mask_; }
+  const Layer* layer_mask_layer() const { return layer_mask_; }
 
   // Sets the visibility of the Layer. A Layer may be visible but not drawn.
   // This happens if any ancestor of a Layer is not visible.
@@ -431,6 +432,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   size_t GetApproximateUnsharedMemoryUsage() const override;
 
   cc::Layer* cc_layer_for_testing() { return cc_layer_; }
+  const cc::Layer* cc_layer_for_testing() const { return cc_layer_; }
 
   // TextureLayerClient implementation.
   bool PrepareTransferableResource(

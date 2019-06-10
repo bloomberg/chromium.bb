@@ -6,6 +6,7 @@
 
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/ui_element_delegate.h"
+#include "components/ui_devtools/views/element_utility.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_util.h"
 
@@ -67,7 +68,23 @@ void WindowElement::OnWindowBoundsChanged(aura::Window* window,
 
 std::vector<std::pair<std::string, std::string>>
 WindowElement::GetCustomProperties() const {
-  return {};
+  std::vector<std::pair<std::string, std::string>> ret;
+
+  std::string state_str =
+      aura::Window::OcclusionStateToString(window_->occlusion_state());
+  // change OcclusionState::UNKNOWN to UNKNOWN
+  state_str = state_str.substr(state_str.find("::") + 2);
+  ret.emplace_back("occlusion-state", state_str);
+  ret.emplace_back("surface", window_->GetSurfaceId().is_valid()
+                                  ? window_->GetSurfaceId().ToString()
+                                  : "none");
+  ret.emplace_back("capture", window_->HasCapture() ? "true" : "false");
+  ret.emplace_back("is-activatable",
+                   wm::CanActivateWindow(window_) ? "true" : "false");
+  ui::Layer* layer = window_->layer();
+  if (layer)
+    AppendLayerProperties(layer, &ret);
+  return ret;
 }
 
 void WindowElement::GetBounds(gfx::Rect* bounds) const {
