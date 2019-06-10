@@ -85,8 +85,6 @@ DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
   SetInkDropMode(InkDropMode::OFF);
 
   UpdateBorderColor();
-
-  SchedulePaint();
 }
 
 DeskMiniView::~DeskMiniView() {
@@ -149,8 +147,6 @@ void DeskMiniView::Layout() {
       kCloseButtonMargin, kCloseButtonSize.width(), kCloseButtonSize.height());
 
   Button::Layout();
-
-  SchedulePaint();
 }
 
 gfx::Size DeskMiniView::CalculatePreferredSize() const {
