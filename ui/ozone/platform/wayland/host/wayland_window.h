@@ -51,9 +51,18 @@ class WaylandWindow : public PlatformWindow,
 
   bool Initialize(PlatformWindowInitProperties properties);
 
+  // Updates the surface buffer scale of the window.  Top level windows take
+  // scale according to the scale of their current display or the primary one if
+  // their widget is not yet created, children inherit scale from their parent.
+  // The method recalculates window bounds appropriately if asked to do so
+  // (this is not needed upon window initialization).
+  void UpdateBufferScale(bool update_bounds);
+
   wl_surface* surface() const { return surface_.get(); }
   XDGSurfaceWrapper* xdg_surface() const { return xdg_surface_.get(); }
   XDGPopupWrapper* xdg_popup() const { return xdg_popup_.get(); }
+
+  WaylandWindow* parent_window() const { return parent_window_; }
 
   gfx::AcceleratedWidget GetWidget() const;
 
@@ -88,6 +97,8 @@ class WaylandWindow : public PlatformWindow,
   // in Chrome code). Implicit grabs happen while a pointer is down.
   void set_has_implicit_grab(bool value) { has_implicit_grab_ = value; }
   bool has_implicit_grab() const { return has_implicit_grab_; }
+
+  int32_t buffer_scale() const { return buffer_scale_; }
 
   bool is_active() const { return is_active_; }
 
@@ -128,6 +139,10 @@ class WaylandWindow : public PlatformWindow,
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
+  // Handles the configuration events coming from the surface (see
+  // |XDGSurfaceWrapperV5::Configure| and
+  // |XDGSurfaceWrapperV6::ConfigureTopLevel|.  The width and height come in
+  // DIP of the output that the surface is currently bound to.
   void HandleSurfaceConfigure(int32_t widht,
                               int32_t height,
                               bool is_maximized,
@@ -146,6 +161,9 @@ class WaylandWindow : public PlatformWindow,
   void OnDragSessionClose(uint32_t dnd_action);
 
  private:
+  void SetBoundsDip(const gfx::Rect& bounds_dip);
+  void SetBufferScale(int32_t scale, bool update_bounds);
+
   bool IsMinimized() const;
   bool IsMaximized() const;
   bool IsFullscreen() const;
@@ -213,14 +231,27 @@ class WaylandWindow : public PlatformWindow,
 
   base::OnceCallback<void(int)> drag_closed_callback_;
 
-  gfx::Rect bounds_;
-  gfx::Rect pending_bounds_;
-  // The bounds of the window before it went maximized or fullscreen.
-  gfx::Rect restored_bounds_;
+  // These bounds attributes below have suffices that indicate units used.
+  // Wayland operates in DIP but the platform operates in physical pixels so
+  // our WaylandWindow is the link that has to translate the units.  See also
+  // comments in the implementation.
+  //
+  // Bounds that will be applied when the window state is finalized.  The window
+  // may get several configuration events that update the pending bounds, and
+  // only upon finalizing the state is the latest value stored as the current
+  // bounds via |ApplyPendingBounds|.  Measured in DIP because updated in the
+  // handler that receives DIP from Wayland.
+  gfx::Rect pending_bounds_dip_;
+  // Current bounds of the platform window.
+  gfx::Rect bounds_px_;
+  // The bounds of the platform window before it went maximized or fullscreen.
+  gfx::Rect restored_bounds_px_;
+
   bool has_pointer_focus_ = false;
   bool has_keyboard_focus_ = false;
   bool has_touch_focus_ = false;
   bool has_implicit_grab_ = false;
+  int32_t buffer_scale_ = 1;
 
   // Stores current states of the window.
   ui::PlatformWindowState state_;
@@ -236,7 +267,14 @@ class WaylandWindow : public PlatformWindow,
 
   bool is_tooltip_ = false;
 
-  // Stores the list of entered outputs that the window is currently in.
+  // For top level window, stores the list of entered outputs that the window
+  // is currently in.
+  //
+  // Not used by popups.  When sub-menus are hidden and shown again, Wayland
+  // 'repositions' sub-menus to wrong outputs by sending them leave and enter
+  // events so their list of entered outputs becomes meaningless after they have
+  // been hidden at least once.  To determine which output the popup belongs to,
+  // we ask its parent.
   std::set<uint32_t> entered_outputs_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWindow);

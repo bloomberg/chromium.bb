@@ -62,6 +62,9 @@ class WaylandConnection : public PlatformEventSource,
   WaylandWindow* GetWindowWithLargestBounds() const;
   WaylandWindow* GetCurrentFocusedWindow() const;
   WaylandWindow* GetCurrentKeyboardFocusedWindow() const;
+  // TODO(crbug.com/971525): remove this in favor of targeted subscription of
+  // windows to their outputs.
+  std::vector<WaylandWindow*> GetWindowsOnOutput(uint32_t output_id);
   void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
   void RemoveWindow(gfx::AcceleratedWidget widget);
 
@@ -163,7 +166,7 @@ class WaylandConnection : public PlatformEventSource,
   // xdg_shell_listener
   static void Ping(void* data, xdg_shell* shell, uint32_t serial);
 
-  std::map<gfx::AcceleratedWidget, WaylandWindow*> window_map_;
+  base::flat_map<gfx::AcceleratedWidget, WaylandWindow*> window_map_;
 
   wl::Object<wl_display> display_;
   wl::Object<wl_registry> registry_;

@@ -6,6 +6,8 @@
 
 #include "base/run_loop.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_screen.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -42,6 +44,8 @@ WaylandTest::~WaylandTest() {}
 void WaylandTest::SetUp() {
   ASSERT_TRUE(server_.Start(GetParam()));
   ASSERT_TRUE(connection_->Initialize());
+  screen_ = connection_->wayland_output_manager()->CreateWaylandScreen(
+      connection_.get());
   EXPECT_CALL(delegate_, OnAcceleratedWidgetAvailable(_))
       .WillOnce(SaveArg<0>(&widget_));
   PlatformWindowInitProperties properties;
