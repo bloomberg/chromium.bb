@@ -455,6 +455,7 @@ enum Decoration {
     DecorationHlslCounterBufferGOOGLE = 5634,
     DecorationHlslSemanticGOOGLE = 5635,
     DecorationUserSemantic = 5635,
+    DecorationUserTypeGOOGLE = 5636,
     DecorationMax = 0x7fffffff,
 };
 

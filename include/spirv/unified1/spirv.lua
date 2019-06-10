@@ -428,6 +428,7 @@ spv = {
         HlslCounterBufferGOOGLE = 5634,
         HlslSemanticGOOGLE = 5635,
         UserSemantic = 5635,
+        UserTypeGOOGLE = 5636,
     },
 
     BuiltIn = {
