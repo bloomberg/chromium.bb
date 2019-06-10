@@ -21,7 +21,7 @@ class AutocompleteController;
 struct AutocompleteMatch;
 class AutocompleteClassifier;
 class AutocompleteSchemeClassifier;
-class ContextualSuggestionsService;
+class RemoteSuggestionsService;
 class DocumentSuggestionsService;
 class GURL;
 class InMemoryURLIndex;
@@ -61,7 +61,7 @@ class AutocompleteProviderClient {
   virtual InMemoryURLIndex* GetInMemoryURLIndex() = 0;
   virtual TemplateURLService* GetTemplateURLService() = 0;
   virtual const TemplateURLService* GetTemplateURLService() const = 0;
-  virtual ContextualSuggestionsService* GetContextualSuggestionsService(
+  virtual RemoteSuggestionsService* GetRemoteSuggestionsService(
       bool create_if_necessary) const = 0;
   virtual DocumentSuggestionsService* GetDocumentSuggestionsService(
       bool create_if_necessary) const = 0;

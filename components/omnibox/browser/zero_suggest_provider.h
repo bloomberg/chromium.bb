@@ -142,11 +142,11 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   void OnMostVisitedUrlsAvailable(size_t request_num,
                                   const history::MostVisitedURLList& urls);
 
-  // When the user is in the contextual omnibox suggestions field trial, we ask
-  // the ContextualSuggestionsService for a loader to retrieve recommendations.
-  // When the loader has started, the contextual suggestion service then calls
+  // When the user is in the remote omnibox suggestions field trial, we ask
+  // the RemoteSuggestionsService for a loader to retrieve recommendations.
+  // When the loader has started, the remote suggestion service then calls
   // back to this function with the |loader| to pass its ownership to |this|.
-  void OnContextualSuggestionsLoaderAvailable(
+  void OnRemoteSuggestionsLoaderAvailable(
       std::unique_ptr<network::SimpleURLLoader> loader);
 
   // Whether zero suggest suggestions are allowed in the given context.

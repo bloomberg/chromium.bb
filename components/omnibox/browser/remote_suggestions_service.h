@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OMNIBOX_BROWSER_CONTEXTUAL_SUGGESTIONS_SERVICE_H_
-#define COMPONENTS_OMNIBOX_BROWSER_CONTEXTUAL_SUGGESTIONS_SERVICE_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_REMOTE_SUGGESTIONS_SERVICE_H_
+#define COMPONENTS_OMNIBOX_BROWSER_REMOTE_SUGGESTIONS_SERVICE_H_
 
 #include <memory>
 #include <string>
@@ -38,18 +38,15 @@ class SimpleURLLoader;
 // This service is always sent the user's authentication state, so the
 // suggestions always can be personalized. This service is also sometimes sent
 // the user's current URL, so the suggestions are sometimes also contextual.
-//
-// TODO(tommycli): Probably we should just rename this RemoteSuggestionsService,
-// as the suggestions are not always contextual.
-class ContextualSuggestionsService : public KeyedService {
+class RemoteSuggestionsService : public KeyedService {
  public:
   // |identity_manager| may be null but only unauthenticated requests will
   // issued.
-  ContextualSuggestionsService(
+  RemoteSuggestionsService(
       identity::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
-  ~ContextualSuggestionsService() override;
+  ~RemoteSuggestionsService() override;
 
   using StartCallback = base::OnceCallback<void(
       std::unique_ptr<network::SimpleURLLoader> loader)>;
@@ -58,7 +55,7 @@ class ContextualSuggestionsService : public KeyedService {
       base::OnceCallback<void(const network::SimpleURLLoader* source,
                               std::unique_ptr<std::string> response_body)>;
 
-  // Creates a loader for contextual suggestions for |current_url| and passes
+  // Creates a loader for remote suggestions for |current_url| and passes
   // the loader to |start_callback|. It uses a number of signals to create the
   // loader, including field trial / experimental parameters, and it may
   // pass a nullptr to |start_callback| (see below for details).
@@ -85,16 +82,15 @@ class ContextualSuggestionsService : public KeyedService {
   //
   // This method sends a request for an OAuth2 token and temporarily
   // instantiates |token_fetcher_|.
-  void CreateContextualSuggestionsRequest(
-      const std::string& current_url,
-      const base::Time& visit_time,
-      const AutocompleteInput& input,
-      const TemplateURLService* template_url_service,
-      StartCallback start_callback,
-      CompletionCallback completion_callback);
+  void CreateSuggestionsRequest(const std::string& current_url,
+                                const base::Time& visit_time,
+                                const AutocompleteInput& input,
+                                const TemplateURLService* template_url_service,
+                                StartCallback start_callback,
+                                CompletionCallback completion_callback);
 
   // Advises the service to stop any process that creates a suggestion request.
-  void StopCreatingContextualSuggestionsRequest();
+  void StopCreatingSuggestionsRequest();
 
   // Returns a URL representing the address of the server where the zero suggest
   // request is being sent. Does not take into account whether sending this
@@ -109,10 +105,9 @@ class ContextualSuggestionsService : public KeyedService {
   //
   // Note that this method is public and is also used by ZeroSuggestProvider for
   // suggestions that do not take |current_url| into consideration.
-  static GURL ContextualSuggestionsUrl(
-      const std::string& current_url,
-      const AutocompleteInput& input,
-      const TemplateURLService* template_url_service);
+  static GURL EndpointUrl(const std::string& current_url,
+                          const AutocompleteInput& input,
+                          const TemplateURLService* template_url_service);
 
  private:
   // Returns a URL representing the address of the server where the zero suggest
@@ -127,16 +122,16 @@ class ContextualSuggestionsService : public KeyedService {
   // * The suggest request is over HTTPS. This avoids leaking the current page
   //   URL or personal data in unencrypted network traffic.
   // Note: these checks are in addition to CanSendUrl() on the default
-  // contextual suggestion URL.
-  GURL ExperimentalContextualSuggestionsUrl(
+  // remote suggestion URL.
+  GURL ExperimentalEndpointUrl(
       const std::string& current_url,
       const TemplateURLService* template_url_service) const;
 
-  // Upon succesful creation of an HTTP GET request for default contextual
+  // Upon succesful creation of an HTTP GET request for default remote
   // suggestions, the |callback| function is run with the HTTP GET request as a
   // parameter.
   //
-  // This function is called by CreateContextualSuggestionsRequest. See its
+  // This function is called by CreateSuggestionsRequest. See its
   // function definition for details on the parameters.
   void CreateDefaultRequest(const std::string& current_url,
                             const AutocompleteInput& input,
@@ -144,11 +139,11 @@ class ContextualSuggestionsService : public KeyedService {
                             StartCallback start_callback,
                             CompletionCallback completion_callback);
 
-  // Upon succesful creation of an HTTP POST request for experimental contextual
+  // Upon succesful creation of an HTTP POST request for experimental remote
   // suggestions, the |callback| function is run with the HTTP POST request as a
   // parameter.
   //
-  // This function is called by CreateContextualSuggestionsRequest. See its
+  // This function is called by CreateSuggestionsRequest. See its
   // function definition for details on the parameters.
   void CreateExperimentalRequest(const std::string& current_url,
                                  const base::Time& visit_time,
@@ -168,7 +163,7 @@ class ContextualSuggestionsService : public KeyedService {
   // request to load the suggestions.
   //
   // |start_callback|, |completion_callback| are the same as passed to
-  // CreateContextualSuggestionsRequest()
+  // CreateSuggestionsRequest()
   //
   // |error| and |access_token| are the results of token request.
   void AccessTokenAvailable(std::unique_ptr<network::ResourceRequest> request,
@@ -196,7 +191,7 @@ class ContextualSuggestionsService : public KeyedService {
   // token request is currently in progress.
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContextualSuggestionsService);
+  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsService);
 };
 
-#endif  // COMPONENTS_OMNIBOX_BROWSER_CONTEXTUAL_SUGGESTIONS_SERVICE_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_REMOTE_SUGGESTIONS_SERVICE_H_

@@ -28,9 +28,9 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
-#include "components/omnibox/browser/contextual_suggestions_service.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
+#include "components/omnibox/browser/remote_suggestions_service.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/verbatim_match.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -154,7 +154,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   current_page_classification_ = input.current_page_classification();
   current_url_match_ = MatchForCurrentURL();
 
-  GURL suggest_url = ContextualSuggestionsService::ContextualSuggestionsUrl(
+  GURL suggest_url = RemoteSuggestionsService::EndpointUrl(
       /*current_url=*/"", input, client()->GetTemplateURLService());
   if (!suggest_url.is_valid())
     return;
@@ -185,14 +185,14 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   const std::string current_url =
       result_type_running_ == REMOTE_SEND_URL ? current_query_ : std::string();
   // Create a request for suggestions, routing completion to
-  // OnContextualSuggestionsLoaderAvailable.
+  // OnRemoteSuggestionsLoaderAvailable.
   client()
-      ->GetContextualSuggestionsService(/*create_if_necessary=*/true)
-      ->CreateContextualSuggestionsRequest(
+      ->GetRemoteSuggestionsService(/*create_if_necessary=*/true)
+      ->CreateSuggestionsRequest(
           current_url, client()->GetCurrentVisitTimestamp(), input,
           client()->GetTemplateURLService(),
           base::BindOnce(
-              &ZeroSuggestProvider::OnContextualSuggestionsLoaderAvailable,
+              &ZeroSuggestProvider::OnRemoteSuggestionsLoaderAvailable,
               weak_ptr_factory_.GetWeakPtr()),
           base::BindOnce(
               &ZeroSuggestProvider::OnURLLoadComplete,
@@ -204,11 +204,11 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
   if (loader_)
     LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED);
   loader_.reset();
-  auto* contextual_suggestions_service =
-      client()->GetContextualSuggestionsService(/*create_if_necessary=*/false);
-  // contextual_suggestions_service can be null if in incognito mode.
-  if (contextual_suggestions_service != nullptr) {
-    contextual_suggestions_service->StopCreatingContextualSuggestionsRequest();
+  auto* remote_suggestions_service =
+      client()->GetRemoteSuggestionsService(/*create_if_necessary=*/false);
+  // remote_suggestions_service can be null if in incognito mode.
+  if (remote_suggestions_service != nullptr) {
+    remote_suggestions_service->StopCreatingSuggestionsRequest();
   }
   // TODO(krb): It would allow us to remove some guards if we could also cancel
   // the TopSites::GetMostVisitedURLs request.
@@ -264,13 +264,13 @@ ZeroSuggestProvider::ZeroSuggestProvider(
       listener_(listener),
       result_type_running_(NONE),
       weak_ptr_factory_(this) {
-  // Record whether contextual zero suggest is possible for this user / profile.
+  // Record whether remote zero suggest is possible for this user / profile.
   const TemplateURLService* template_url_service =
       client->GetTemplateURLService();
   // Template URL service can be null in tests.
   if (template_url_service != nullptr) {
     AutocompleteInput empty_input;
-    GURL suggest_url = ContextualSuggestionsService::ContextualSuggestionsUrl(
+    GURL suggest_url = RemoteSuggestionsService::EndpointUrl(
         /*current_url=*/"", /*empty input*/ empty_input, template_url_service);
     // To check whether this is allowed, use an arbitrary insecure (http) URL
     // as the URL we'd want suggestions for.  The value of OTHER as the current
@@ -423,9 +423,9 @@ void ZeroSuggestProvider::OnMostVisitedUrlsAvailable(
   listener_->OnProviderUpdate(true);
 }
 
-void ZeroSuggestProvider::OnContextualSuggestionsLoaderAvailable(
+void ZeroSuggestProvider::OnRemoteSuggestionsLoaderAvailable(
     std::unique_ptr<network::SimpleURLLoader> loader) {
-  // ContextualSuggestionsService has already started |loader|, so here it's
+  // RemoteSuggestionsService has already started |loader|, so here it's
   // only neccessary to grab its ownership until results come in to
   // OnURLLoadComplete().
   loader_ = std::move(loader);
@@ -546,7 +546,7 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
   // pages with URLs the user will recognize.
   //
   // This list intentionally does not include items such as ftp: and file:
-  // because (a) these do not work on Android and iOS, where non-contextual
+  // because (a) these do not work on Android and iOS, where most visited
   // zero suggest is launched and (b) on desktop, where contextual zero suggest
   // is running, these types of schemes aren't eligible to be sent to the
   // server to ask for suggestions (and thus in practice we won't display zero

@@ -12,9 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/autocomplete/contextual_suggestions_service_factory.h"
 #include "chrome/browser/autocomplete/document_suggestions_service_factory.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
+#include "chrome/browser/autocomplete/remote_suggestions_service_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
@@ -154,11 +154,11 @@ ChromeAutocompleteProviderClient::GetTemplateURLService() const {
   return TemplateURLServiceFactory::GetForProfile(profile_);
 }
 
-ContextualSuggestionsService*
-ChromeAutocompleteProviderClient::GetContextualSuggestionsService(
+RemoteSuggestionsService*
+ChromeAutocompleteProviderClient::GetRemoteSuggestionsService(
     bool create_if_necessary) const {
-  return ContextualSuggestionsServiceFactory::GetForProfile(
-      profile_, create_if_necessary);
+  return RemoteSuggestionsServiceFactory::GetForProfile(profile_,
+                                                        create_if_necessary);
 }
 
 DocumentSuggestionsService*

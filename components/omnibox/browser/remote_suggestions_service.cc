@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/browser/contextual_suggestions_service.h"
+#include "components/omnibox/browser/remote_suggestions_service.h"
 
 #include <memory>
 #include <utility>
@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/omnibox/browser/base_search_provider.h"
@@ -35,7 +36,7 @@ void AddVariationHeaders(network::ResourceRequest* request) {
   // Add Chrome experiment state to the request headers.
   //
   // Note: It's OK to pass InIncognito::kNo since we are expected to be in
-  // non-incognito state here (i.e. contextual sugestions are not served in
+  // non-incognito state here (i.e. remote sugestions are not served in
   // incognito mode).
   variations::AppendVariationsHeaderUnknownSignedIn(
       request->url, variations::InIncognito::kNo, request);
@@ -68,7 +69,8 @@ std::string FormatRequestBodyExperimentalService(const std::string& current_url,
   url_entry->SetString("url", current_url);
   url_entry->SetString(
       "timestamp_usec",
-      std::to_string((visit_time - base::Time::UnixEpoch()).InMicroseconds()));
+      base::NumberToString(
+          (visit_time - base::Time::UnixEpoch()).InMicroseconds()));
   url_list->Append(std::move(url_entry));
   request->Set("urls", std::move(url_list));
   // stream_type = 1 corresponds to zero suggest suggestions.
@@ -84,7 +86,7 @@ std::string FormatRequestBodyExperimentalService(const std::string& current_url,
 
 }  // namespace
 
-ContextualSuggestionsService::ContextualSuggestionsService(
+RemoteSuggestionsService::RemoteSuggestionsService(
     identity::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(url_loader_factory),
@@ -93,9 +95,9 @@ ContextualSuggestionsService::ContextualSuggestionsService(
   DCHECK(url_loader_factory);
 }
 
-ContextualSuggestionsService::~ContextualSuggestionsService() {}
+RemoteSuggestionsService::~RemoteSuggestionsService() {}
 
-void ContextualSuggestionsService::CreateContextualSuggestionsRequest(
+void RemoteSuggestionsService::CreateSuggestionsRequest(
     const std::string& current_url,
     const base::Time& visit_time,
     const AutocompleteInput& input,
@@ -103,7 +105,7 @@ void ContextualSuggestionsService::CreateContextualSuggestionsRequest(
     StartCallback start_callback,
     CompletionCallback completion_callback) {
   const GURL experimental_suggest_url =
-      ExperimentalContextualSuggestionsUrl(current_url, template_url_service);
+      ExperimentalEndpointUrl(current_url, template_url_service);
   if (experimental_suggest_url.is_valid())
     CreateExperimentalRequest(current_url, visit_time, experimental_suggest_url,
                               std::move(start_callback),
@@ -114,13 +116,13 @@ void ContextualSuggestionsService::CreateContextualSuggestionsRequest(
                          std::move(completion_callback));
 }
 
-void ContextualSuggestionsService::StopCreatingContextualSuggestionsRequest() {
+void RemoteSuggestionsService::StopCreatingSuggestionsRequest() {
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
       token_fetcher_deleter(std::move(token_fetcher_));
 }
 
 // static
-GURL ContextualSuggestionsService::ContextualSuggestionsUrl(
+GURL RemoteSuggestionsService::EndpointUrl(
     const std::string& current_url,
     const AutocompleteInput& input,
     const TemplateURLService* template_url_service) {
@@ -154,7 +156,7 @@ GURL ContextualSuggestionsService::ContextualSuggestionsUrl(
                                                     search_terms_data));
 }
 
-GURL ContextualSuggestionsService::ExperimentalContextualSuggestionsUrl(
+GURL RemoteSuggestionsService::ExperimentalEndpointUrl(
     const std::string& current_url,
     const TemplateURLService* template_url_service) const {
   if (current_url.empty() || template_url_service == nullptr) {
@@ -192,14 +194,14 @@ GURL ContextualSuggestionsService::ExperimentalContextualSuggestionsUrl(
   return suggest_url;
 }
 
-void ContextualSuggestionsService::CreateDefaultRequest(
+void RemoteSuggestionsService::CreateDefaultRequest(
     const std::string& current_url,
     const AutocompleteInput& input,
     const TemplateURLService* template_url_service,
     StartCallback start_callback,
     CompletionCallback completion_callback) {
   const GURL suggest_url =
-      ContextualSuggestionsUrl(current_url, input, template_url_service);
+      EndpointUrl(current_url, input, template_url_service);
   DCHECK(suggest_url.is_valid());
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -244,7 +246,7 @@ void ContextualSuggestionsService::CreateDefaultRequest(
                                  std::move(completion_callback));
 }
 
-void ContextualSuggestionsService::CreateExperimentalRequest(
+void RemoteSuggestionsService::CreateExperimentalRequest(
     const std::string& current_url,
     const base::Time& visit_time,
     const GURL& suggest_url,
@@ -294,7 +296,7 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   request->allow_credentials = false;
 
   // If authentication services are unavailable or if this request is still
-  // waiting for an oauth2 token, run the contextual service without access
+  // waiting for an oauth2 token, run the remote service without access
   // tokens.
   if ((identity_manager_ == nullptr) || (token_fetcher_ != nullptr)) {
     StartDownloadAndTransferLoader(
@@ -307,15 +309,15 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   const identity::ScopeSet scopes{
       "https://www.googleapis.com/auth/cusco-chrome-extension"};
   token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-      "contextual_suggestions_service", identity_manager_, scopes,
-      base::BindOnce(&ContextualSuggestionsService::AccessTokenAvailable,
+      "remote_suggestions_service", identity_manager_, scopes,
+      base::BindOnce(&RemoteSuggestionsService::AccessTokenAvailable,
                      base::Unretained(this), std::move(request),
                      std::move(request_body), traffic_annotation,
                      std::move(start_callback), std::move(completion_callback)),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
-void ContextualSuggestionsService::AccessTokenAvailable(
+void RemoteSuggestionsService::AccessTokenAvailable(
     std::unique_ptr<network::ResourceRequest> request,
     std::string request_body,
     net::NetworkTrafficAnnotationTag traffic_annotation,
@@ -340,7 +342,7 @@ void ContextualSuggestionsService::AccessTokenAvailable(
                                  std::move(completion_callback));
 }
 
-void ContextualSuggestionsService::StartDownloadAndTransferLoader(
+void RemoteSuggestionsService::StartDownloadAndTransferLoader(
     std::unique_ptr<network::ResourceRequest> request,
     std::string request_body,
     net::NetworkTrafficAnnotationTag traffic_annotation,

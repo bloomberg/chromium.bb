@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
-#include "components/omnibox/browser/contextual_suggestions_service.h"
 #include "components/omnibox/browser/document_suggestions_service.h"
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
+#include "components/omnibox/browser/remote_suggestions_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -53,9 +53,9 @@ class MockAutocompleteProviderClient
   const TemplateURLService* GetTemplateURLService() const override {
     return template_url_service_.get();
   }
-  ContextualSuggestionsService* GetContextualSuggestionsService(
+  RemoteSuggestionsService* GetRemoteSuggestionsService(
       bool create_if_necessary) const override {
-    return contextual_suggestions_service_.get();
+    return remote_suggestions_service_.get();
   }
   DocumentSuggestionsService* GetDocumentSuggestionsService(
       bool create_if_necessary) const override {
@@ -125,7 +125,7 @@ class MockAutocompleteProviderClient
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 
-  std::unique_ptr<ContextualSuggestionsService> contextual_suggestions_service_;
+  std::unique_ptr<RemoteSuggestionsService> remote_suggestions_service_;
   std::unique_ptr<DocumentSuggestionsService> document_suggestions_service_;
   std::unique_ptr<OmniboxPedalProvider> pedal_provider_;
   std::unique_ptr<TemplateURLService> template_url_service_;

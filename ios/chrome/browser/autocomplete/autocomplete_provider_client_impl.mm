@@ -99,8 +99,8 @@ AutocompleteProviderClientImpl::GetTemplateURLService() const {
   return ios::TemplateURLServiceFactory::GetForBrowserState(browser_state_);
 }
 
-ContextualSuggestionsService*
-AutocompleteProviderClientImpl::GetContextualSuggestionsService(
+RemoteSuggestionsService*
+AutocompleteProviderClientImpl::GetRemoteSuggestionsService(
     bool create_if_necessary) const {
   return nullptr;
 }

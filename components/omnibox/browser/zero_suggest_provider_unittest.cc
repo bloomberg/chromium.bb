@@ -497,7 +497,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
 
 TEST_F(ZeroSuggestProviderTest, CustomEndpoint) {
   // Coverage for the URL-specific page. (Regression test for a DCHECK).
-  // This is exercising ContextualSuggestionsService::CreateExperimentalRequest,
+  // This is exercising RemoteSuggestionsService::CreateExperimentalRequest,
   // and to do that, ZeroSuggestProvider needs to be looking for
   // DEFAULT_SERP_FOR_URL results (which needs various personalization
   // experiments off, IsPersonalizedUrlDataCollectionActive true), and the

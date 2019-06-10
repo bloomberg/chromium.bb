@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/browser/contextual_suggestions_service.h"
+#include "components/omnibox/browser/remote_suggestions_service.h"
 
 #include <memory>
 #include <string>
@@ -22,9 +22,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ContextualSuggestionsServiceTest : public testing::Test {
+class RemoteSuggestionsServiceTest : public testing::Test {
  public:
-  ContextualSuggestionsServiceTest()
+  RemoteSuggestionsServiceTest()
       : mock_task_runner_(new base::TestMockTimeTaskRunner(
             base::TestMockTimeTaskRunner::Type::kBoundToThread)) {}
 
@@ -45,23 +45,23 @@ class ContextualSuggestionsServiceTest : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
 };
 
-TEST_F(ContextualSuggestionsServiceTest, EnsureAttachCookies) {
+TEST_F(RemoteSuggestionsServiceTest, EnsureAttachCookies) {
   network::ResourceRequest resource_request;
   test_url_loader_factory_.SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         resource_request = request;
       }));
 
-  ContextualSuggestionsService service(nullptr /* identity_manager */,
-                                       GetUrlLoaderFactory());
+  RemoteSuggestionsService service(nullptr /* identity_manager */,
+                                   GetUrlLoaderFactory());
   AutocompleteInput input;
   base::Time visit_time;
   TemplateURLService template_url_service(nullptr, 0);
-  service.CreateContextualSuggestionsRequest(
+  service.CreateSuggestionsRequest(
       "https://www.google.com/", visit_time, input, &template_url_service,
-      base::BindOnce(&ContextualSuggestionsServiceTest::OnRequestStart,
+      base::BindOnce(&RemoteSuggestionsServiceTest::OnRequestStart,
                      base::Unretained(this)),
-      base::BindOnce(&ContextualSuggestionsServiceTest::OnRequestComplete,
+      base::BindOnce(&RemoteSuggestionsServiceTest::OnRequestComplete,
                      base::Unretained(this)));
 
   RunAndWait();
