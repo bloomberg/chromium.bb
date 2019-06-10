@@ -19,12 +19,6 @@
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 #include "third_party/blink/public/web/web_heap.h"
 
-using ::testing::_;
-using ::testing::AllOf;
-using ::testing::InSequence;
-using ::testing::Mock;
-using ::testing::Property;
-
 namespace blink {
 
 static const int kNumChannelsForTest = 1;
@@ -129,20 +123,20 @@ TEST_F(HTMLAudioElementCapturerSourceTest, ConstructAndDestruct) {}
 // This test verifies that Audio can be properly captured when injected in the
 // WebAudioSourceProviderImpl.
 TEST_F(HTMLAudioElementCapturerSourceTest, CaptureAudio) {
-  InSequence s;
+  testing::InSequence s;
 
   base::RunLoop run_loop;
   base::OnceClosure quit_closure = run_loop.QuitClosure();
 
   MockMediaStreamAudioSink sink;
   track()->AddSink(&sink);
-  EXPECT_CALL(sink, OnSetFormat(_)).Times(1);
-  EXPECT_CALL(
-      sink,
-      OnData(AllOf(Property(&media::AudioBus::channels, kNumChannelsForTest),
-                   Property(&media::AudioBus::frames,
-                            kAudioTrackSamplesPerBuffer)),
-             _))
+  EXPECT_CALL(sink, OnSetFormat(testing::_)).Times(1);
+  EXPECT_CALL(sink, OnData(testing::AllOf(
+                               testing::Property(&media::AudioBus::channels,
+                                                 kNumChannelsForTest),
+                               testing::Property(&media::AudioBus::frames,
+                                                 kAudioTrackSamplesPerBuffer)),
+                           testing::_))
       .Times(1)
       .WillOnce([&](const auto&, auto) { std::move(quit_closure).Run(); });
 
@@ -160,7 +154,7 @@ TEST_F(HTMLAudioElementCapturerSourceTest, CaptureAudio) {
 // delivered in this case.
 TEST_F(HTMLAudioElementCapturerSourceTest,
        StartAndStopInSameTaskCapturesZeroFrames) {
-  InSequence s;
+  testing::InSequence s;
 
   // Stop the original track and start a new one so that it can be stopped in
   // in the same task.
@@ -170,12 +164,12 @@ TEST_F(HTMLAudioElementCapturerSourceTest,
 
   MockMediaStreamAudioSink sink;
   track()->AddSink(&sink);
-  EXPECT_CALL(
-      sink,
-      OnData(AllOf(Property(&media::AudioBus::channels, kNumChannelsForTest),
-                   Property(&media::AudioBus::frames,
-                            kAudioTrackSamplesPerBuffer)),
-             _))
+  EXPECT_CALL(sink, OnData(testing::AllOf(
+                               testing::Property(&media::AudioBus::channels,
+                                                 kNumChannelsForTest),
+                               testing::Property(&media::AudioBus::frames,
+                                                 kAudioTrackSamplesPerBuffer)),
+                           testing::_))
       .Times(0);
 
   std::unique_ptr<media::AudioBus> bus =

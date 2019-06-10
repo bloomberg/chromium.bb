@@ -24,13 +24,6 @@
 
 using base::TimeTicks;
 using ::testing::_;
-using ::testing::DoAll;
-using ::testing::InSequence;
-using ::testing::Mock;
-using ::testing::Return;
-using ::testing::SaveArg;
-using ::testing::TestWithParam;
-using ::testing::ValuesIn;
 
 namespace {
 
@@ -92,7 +85,7 @@ const ATRTestParams kATRTestParams[] = {
      AudioTrackRecorder::CodecId::PCM},
 };
 
-class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
+class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
  public:
   // Initialize |first_params_| based on test parameters, and |second_params_|
   // to always be the same thing.
@@ -260,7 +253,7 @@ TEST_P(AudioTrackRecorderTest, OnDataOpus) {
   if (codec_ != AudioTrackRecorder::CodecId::OPUS)
     return;
 
-  InSequence s;
+  testing::InSequence s;
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
 
@@ -301,14 +294,14 @@ TEST_P(AudioTrackRecorderTest, OnDataOpus) {
     audio_track_recorder_->OnData(*GetSecondSourceAudioBus(), TimeTicks::Now());
 
   run_loop.Run();
-  Mock::VerifyAndClearExpectations(this);
+  testing::Mock::VerifyAndClearExpectations(this);
 }
 
 TEST_P(AudioTrackRecorderTest, OnDataPcm) {
   if (codec_ != AudioTrackRecorder::CodecId::PCM)
     return;
 
-  InSequence s;
+  testing::InSequence s;
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
 
@@ -323,14 +316,14 @@ TEST_P(AudioTrackRecorderTest, OnDataPcm) {
     audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
 
   run_loop.Run();
-  Mock::VerifyAndClearExpectations(this);
+  testing::Mock::VerifyAndClearExpectations(this);
 }
 
 TEST_P(AudioTrackRecorderTest, PauseResume) {
   if (codec_ != AudioTrackRecorder::CodecId::OPUS)
     return;
 
-  InSequence s;
+  testing::InSequence s;
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
 
@@ -355,8 +348,10 @@ TEST_P(AudioTrackRecorderTest, PauseResume) {
     audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
 
   run_loop.Run();
-  Mock::VerifyAndClearExpectations(this);
+  testing::Mock::VerifyAndClearExpectations(this);
 }
 
-INSTANTIATE_TEST_SUITE_P(, AudioTrackRecorderTest, ValuesIn(kATRTestParams));
+INSTANTIATE_TEST_SUITE_P(,
+                         AudioTrackRecorderTest,
+                         testing::ValuesIn(kATRTestParams));
 }  // namespace blink
