@@ -191,6 +191,15 @@ void OAuthTokenExchanger::OnRobotTokenResponse(
     return;
   }
 
+  // When offline mode is used, this class will return a new refresh token
+  // as well as an access token. It doesn't make sense to continue exchanging
+  // tokens every hour in this case. OAuthTokenGetterImpl remembers the new
+  // refresh token and uses that for fetching new access tokens every hour. So
+  // there's no need for further token-exchanges after the first successful one.
+  if (offline_mode_) {
+    need_token_exchange_ = false;
+  }
+
   // The redirect_uri parameter is required for GetTokensFromAuthCode(), but
   // "oob" (out of band) can be used for robot accounts.
   gaia::OAuthClientInfo client_info = {

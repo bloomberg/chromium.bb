@@ -77,7 +77,7 @@ class OAuthTokenExchanger : public gaia::GaiaOAuthClient::Delegate {
   base::queue<TokenCallback> pending_callbacks_;
   std::string oauth_access_token_;
 
-  bool offline_mode_ = false;
+  bool offline_mode_ = true;
 
   // True if the OAuth refresh token is lacking required scopes and the
   // token-exchange service is needed to provide a new access-token.
