@@ -39,8 +39,8 @@ class CacheStorageManager;
 
 // One instance of this exists per StoragePartition, and services multiple
 // child processes/origins. Most logic is delegated to the owned
-// CacheStorageManager instance, which is only accessed on the IO
-// thread.
+// CacheStorageManager instance, which is only accessed on the target
+// sequence.
 class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
  public:
   explicit CacheStorageContextImpl(BrowserContext* browser_context);
@@ -91,7 +91,7 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
   ~CacheStorageContextImpl() override;
 
  private:
-  void CreateCacheStorageManager(
+  void CreateCacheStorageManagerOnTaskRunner(
       const base::FilePath& user_data_directory,
       scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
@@ -100,6 +100,9 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
 
   void SetBlobParametersForCacheOnTaskRunner(
       ChromeBlobStorageContext* blob_storage_context);
+
+  void CreateQuotaClientsOnIOThread(
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   // Initialized at construction.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -111,7 +114,7 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
   // Initialized in Init().
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
-  // Only accessed on the IO thread.
+  // Only accessed on the target sequence.
   scoped_refptr<CacheStorageManager> cache_manager_;
 
   // Initialized from the UI thread and bound to |task_runner_|.

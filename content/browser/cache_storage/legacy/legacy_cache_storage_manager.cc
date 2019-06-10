@@ -276,7 +276,7 @@ void LegacyCacheStorageManager::GetAllOriginsUsage(
       base::BindOnce(&ListOriginsAndLastModifiedOnTaskRunner, usages_ptr,
                      root_path_, owner),
       base::BindOnce(&LegacyCacheStorageManager::GetAllOriginsUsageGetSizes,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(usages),
+                     base::WrapRefCounted(this), std::move(usages),
                      std::move(callback)));
 }
 
@@ -389,7 +389,7 @@ void LegacyCacheStorageManager::DeleteOriginData(
   cache_storage_map_.erase({origin, owner});
   cache_storage->GetSizeThenCloseAllCaches(
       base::BindOnce(&LegacyCacheStorageManager::DeleteOriginDidClose,
-                     weak_ptr_factory_.GetWeakPtr(), origin, owner,
+                     base::WrapRefCounted(this), origin, owner,
                      std::move(callback), base::WrapUnique(cache_storage)));
 }
 
@@ -441,15 +441,7 @@ LegacyCacheStorageManager::LegacyCacheStorageManager(
       cache_task_runner_(std::move(cache_task_runner)),
       scheduler_task_runner_(std::move(scheduler_task_runner)),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
-      observers_(std::move(observers)),
-      weak_ptr_factory_(this) {
-  if (quota_manager_proxy_.get()) {
-    quota_manager_proxy_->RegisterClient(new CacheStorageQuotaClient(
-        weak_ptr_factory_.GetWeakPtr(), CacheStorageOwner::kCacheAPI));
-    quota_manager_proxy_->RegisterClient(new CacheStorageQuotaClient(
-        weak_ptr_factory_.GetWeakPtr(), CacheStorageOwner::kBackgroundFetch));
-  }
-}
+      observers_(std::move(observers)) {}
 
 // static
 base::FilePath LegacyCacheStorageManager::ConstructOriginPath(

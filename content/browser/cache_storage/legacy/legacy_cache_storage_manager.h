@@ -88,10 +88,6 @@ class CONTENT_EXPORT LegacyCacheStorageManager : public CacheStorageManager {
   void NotifyCacheContentChanged(const url::Origin& origin,
                                  const std::string& name);
 
-  base::WeakPtr<CacheStorageManager> AsWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
   base::FilePath root_path() const { return root_path_; }
 
   // This method is called when the last CacheStorageHandle for a particular
@@ -161,7 +157,9 @@ class CONTENT_EXPORT LegacyCacheStorageManager : public CacheStorageManager {
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  base::WeakPtrFactory<LegacyCacheStorageManager> weak_ptr_factory_;
+  // Do not add a WeakPtrFactory since this class is destroyed via a
+  // cross-thread delete helper.
+
   DISALLOW_COPY_AND_ASSIGN(LegacyCacheStorageManager);
 };
 

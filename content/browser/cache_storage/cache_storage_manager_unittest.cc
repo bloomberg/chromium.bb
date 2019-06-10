@@ -2260,8 +2260,8 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
 
   void SetUp() override {
     CacheStorageManagerTest::SetUp();
-    quota_client_.reset(new CacheStorageQuotaClient(
-        cache_manager_->AsWeakPtr(), CacheStorageOwner::kCacheAPI));
+    quota_client_ = std::make_unique<CacheStorageQuotaClient>(
+        cache_manager_, CacheStorageOwner::kCacheAPI);
   }
 
   void QuotaUsageCallback(base::RunLoop* run_loop, int64_t usage) {
@@ -2432,8 +2432,8 @@ TEST_F(CacheStorageQuotaClientDiskOnlyTest, QuotaDeleteUnloadedOriginData) {
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   cache_manager_ =
       LegacyCacheStorageManager::CreateForTesting(cache_manager_.get());
-  quota_client_.reset(new CacheStorageQuotaClient(
-      cache_manager_->AsWeakPtr(), CacheStorageOwner::kCacheAPI));
+  quota_client_ = std::make_unique<CacheStorageQuotaClient>(
+      cache_manager_, CacheStorageOwner::kCacheAPI);
 
   EXPECT_TRUE(QuotaDeleteOriginData(origin1_));
   EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));

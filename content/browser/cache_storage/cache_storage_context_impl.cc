@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
+#include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -50,8 +51,20 @@ void CacheStorageContextImpl::Init(
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&CacheStorageContextImpl::CreateCacheStorageManager, this,
-                     user_data_directory, std::move(cache_task_runner),
+      base::BindOnce(
+          &CacheStorageContextImpl::CreateCacheStorageManagerOnTaskRunner, this,
+          user_data_directory, std::move(cache_task_runner),
+          quota_manager_proxy));
+
+  // If our target sequence is the IO thread, then the manager is guaranteed to
+  // be created before this task fires to create the quota clients.  If we are
+  // running with a different target sequence then the quota client code will
+  // get a cross-sequence wrapper that is guaranteed to initialize its internal
+  // SequenceBound<> object after the real manager is created.
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&CacheStorageContextImpl::CreateQuotaClientsOnIOThread,
+                     base::WrapRefCounted(this),
                      std::move(quota_manager_proxy)));
 }
 
@@ -147,7 +160,7 @@ void CacheStorageContextImpl::RemoveObserver(
   observers_->RemoveObserver(observer);
 }
 
-void CacheStorageContextImpl::CreateCacheStorageManager(
+void CacheStorageContextImpl::CreateCacheStorageManagerOnTaskRunner(
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
@@ -156,7 +169,7 @@ void CacheStorageContextImpl::CreateCacheStorageManager(
   DCHECK(!cache_manager_);
   cache_manager_ = LegacyCacheStorageManager::Create(
       user_data_directory, std::move(cache_task_runner), task_runner_,
-      std::move(quota_manager_proxy), observers_);
+      quota_manager_proxy, observers_);
 }
 
 void CacheStorageContextImpl::ShutdownOnTaskRunner() {
@@ -211,6 +224,17 @@ void CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner(
     cache_manager_->SetBlobParametersForCache(
         blob_storage_context->context()->AsWeakPtr());
   }
+}
+
+void CacheStorageContextImpl::CreateQuotaClientsOnIOThread(
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!quota_manager_proxy.get())
+    return;
+  quota_manager_proxy->RegisterClient(new CacheStorageQuotaClient(
+      cache_manager(), CacheStorageOwner::kCacheAPI));
+  quota_manager_proxy->RegisterClient(new CacheStorageQuotaClient(
+      cache_manager(), CacheStorageOwner::kBackgroundFetch));
 }
 
 }  // namespace content
