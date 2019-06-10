@@ -84,7 +84,7 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
   //     }
   //
   //     // Mock main task runner.
-  //     base::MessageLoop message_loop_;
+  //     base::test::ScopedTaskEnvironment scoped_task_environment_;
   //     base::ScopedMockTimeMessageLoopTaskRunner main_task_runner_;
   //
   //     // Mock foo task runner.
