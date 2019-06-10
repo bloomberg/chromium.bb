@@ -50,10 +50,7 @@ typedef base::OnceCallback<void(
 
 // Callback type for GetUnmaskDetails callback.
 typedef base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                                std::string,
-                                bool,
-                                std::unique_ptr<base::Value>,
-                                std::set<std::string>)>
+                                AutofillClient::UnmaskDetails&)>
     GetUnmaskDetailsCallback;
 
 // Billable service number is defined in Payments server to distinguish

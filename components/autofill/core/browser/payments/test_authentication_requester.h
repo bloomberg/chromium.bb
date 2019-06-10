@@ -10,32 +10,39 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "components/autofill/core/browser/payments/credit_card_fido_authenticator.h"
 
 namespace autofill {
 
 // Test class for requesting authentication from CreditCardCVCAuthenticator.
 class TestAuthenticationRequester
-    : public CreditCardCVCAuthenticator::Requester {
+    : public CreditCardCVCAuthenticator::Requester,
+      public CreditCardFIDOAuthenticator::Requester {
  public:
   TestAuthenticationRequester();
   ~TestAuthenticationRequester() override;
 
+  // CreditCardCVCAuthenticator::Requester:
   void OnCVCAuthenticationComplete(
       bool did_succeed,
       const CreditCard* card = nullptr,
       const base::string16& cvc = base::string16()) override;
 
+  // CreditCardFIDOAuthenticator::Requester:
+  void OnFIDOAuthenticationComplete(bool did_succeed,
+                                    const CreditCard* card = nullptr) override;
+
   base::WeakPtr<TestAuthenticationRequester> GetWeakPtr();
 
   base::string16 number() { return number_; }
 
-  MOCK_METHOD0(Success, void());
-  MOCK_METHOD0(Failure, void());
+  bool did_succeed() { return did_succeed_; }
 
  private:
-  // The card number returned from OnCVCAuthenticationComplete.
+  // Is set to true if authentication was successful.
+  bool did_succeed_ = false;
+
+  // The card number returned from On*AuthenticationComplete().
   base::string16 number_;
 
   base::WeakPtrFactory<TestAuthenticationRequester> weak_ptr_factory_;

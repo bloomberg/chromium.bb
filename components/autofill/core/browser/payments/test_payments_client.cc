@@ -4,6 +4,9 @@
 
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 
+#include <memory>
+#include <unordered_map>
+
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -23,8 +26,7 @@ TestPaymentsClient::~TestPaymentsClient() {}
 
 void TestPaymentsClient::GetUnmaskDetails(GetUnmaskDetailsCallback callback,
                                           const std::string& app_locale) {
-  std::move(callback).Run(AutofillClient::SUCCESS, auth_method_, offer_opt_in_,
-                          std::move(request_options_), fido_eligible_card_ids_);
+  std::move(callback).Run(AutofillClient::SUCCESS, unmask_details_);
 }
 
 void TestPaymentsClient::GetUploadDetails(
@@ -67,22 +69,16 @@ void TestPaymentsClient::MigrateCards(
                           "this is display text");
 }
 
-void TestPaymentsClient::SetAuthenticationMethod(std::string auth_method) {
-  auth_method_ = auth_method;
+void TestPaymentsClient::AllowFidoRegistration(bool offer_fido_opt_in) {
+  unmask_details_.offer_fido_opt_in = offer_fido_opt_in;
 }
 
-void TestPaymentsClient::AllowFidoRegistration(bool offer_opt_in) {
-  offer_opt_in_ = offer_opt_in;
-}
-
-void TestPaymentsClient::SetFidoRequestOptions(
-    std::unique_ptr<base::Value> request_options) {
-  request_options_ = std::move(request_options);
-}
-
-void TestPaymentsClient::SetFidoEligibleCardIds(
-    std::set<std::string> fido_eligible_card_ids) {
-  fido_eligible_card_ids_ = fido_eligible_card_ids;
+void TestPaymentsClient::AddFidoEligibleCard(std::string server_id) {
+  unmask_details_.offer_fido_opt_in = false;
+  unmask_details_.unmask_auth_method = AutofillClient::UnmaskAuthMethod::FIDO;
+  unmask_details_.fido_request_options =
+      base::Value(base::Value::Type::DICTIONARY);
+  unmask_details_.fido_eligible_card_ids.insert(server_id);
 }
 
 void TestPaymentsClient::SetServerIdForCardUpload(std::string server_id) {

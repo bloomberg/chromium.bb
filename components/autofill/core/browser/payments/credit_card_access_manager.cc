@@ -5,12 +5,18 @@
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 
 #include <memory>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/strings/string16.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -22,6 +28,17 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
+
+namespace {
+// Timeout to wait for unmask details from Google Payments in milliseconds.
+constexpr int64_t kUnmaskDetailsResponseTimeout = 1000;
+// Used for asynchronously waiting for |event| to be signaled.
+bool WaitForEvent(base::WaitableEvent* event) {
+  event->declare_only_used_while_idle();
+  return event->TimedWait(
+      base::TimeDelta::FromMilliseconds(kUnmaskDetailsResponseTimeout));
+}
+}  // namespace
 
 CreditCardAccessManager::CreditCardAccessManager(
     AutofillManager* autofill_manager)
@@ -37,6 +54,9 @@ CreditCardAccessManager::CreditCardAccessManager(
       payments_client_(client_->GetPaymentsClient()),
       personal_data_manager_(personal_data_manager),
       form_event_logger_(form_event_logger),
+      ready_to_start_authentication_(
+          base::WaitableEvent::ResetPolicy::AUTOMATIC,
+          base::WaitableEvent::InitialState::NOT_SIGNALED),
       weak_ptr_factory_(this) {}
 
 CreditCardAccessManager::~CreditCardAccessManager() {}
@@ -124,26 +144,104 @@ CreditCard* CreditCardAccessManager::GetCreditCard(std::string guid) {
   return nullptr;
 }
 
+void CreditCardAccessManager::PrepareToFetchCreditCard() {
+  // Reset in case a late response was ignored.
+  ready_to_start_authentication_.Reset();
+
+  // If user is not verifiable, the only option is to perform CVC Auth, which
+  // does not require unmask details.
+  if (!GetOrCreateFIDOAuthenticator()->IsUserVerifiable())
+    return;
+
+  payments_client_->GetUnmaskDetails(
+      base::BindOnce(&CreditCardAccessManager::OnDidGetUnmaskDetails,
+                     weak_ptr_factory_.GetWeakPtr()),
+      personal_data_manager_->app_locale());
+}
+
+void CreditCardAccessManager::OnDidGetUnmaskDetails(
+    AutofillClient::PaymentsRpcResult result,
+    AutofillClient::UnmaskDetails& unmask_details) {
+  unmask_details_.offer_fido_opt_in = unmask_details.offer_fido_opt_in;
+  unmask_details_.unmask_auth_method = unmask_details.unmask_auth_method;
+  unmask_details_.fido_request_options =
+      std::move(unmask_details.fido_request_options);
+  unmask_details_.fido_eligible_card_ids =
+      unmask_details.fido_eligible_card_ids;
+
+  ready_to_start_authentication_.Signal();
+}
+
 void CreditCardAccessManager::FetchCreditCard(
     const CreditCard* card,
     base::WeakPtr<Accessor> accessor,
-    const base::TimeTicks& timestamp) {
-  if (!card || card->record_type() != CreditCard::MASKED_SERVER_CARD) {
-    accessor->OnCreditCardFetched(/*did_succeed=*/card != nullptr, card);
+    const base::TimeTicks& form_parsed_timestamp) {
+  if (is_authentication_in_progress_ || !card) {
+    accessor->OnCreditCardFetched(/*did_succeed=*/false, nullptr);
     return;
   }
 
+  if (card->record_type() != CreditCard::MASKED_SERVER_CARD) {
+    accessor->OnCreditCardFetched(/*did_succeed=*/true, card);
+    return;
+  }
+
+  card_ = card;
   accessor_ = accessor;
+  form_parsed_timestamp_ = form_parsed_timestamp;
   is_authentication_in_progress_ = true;
-  credit_card_cvc_authenticator()->Authenticate(
-      card, weak_ptr_factory_.GetWeakPtr(), personal_data_manager_, timestamp);
+
+  if (AuthenticationRequiresUnmaskDetails()) {
+    // Wait for |ready_to_start_authentication_| to be signaled by
+    // OnDidGetUnmaskDetails() or until timeout before calling Authenticate().
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&WaitForEvent, &ready_to_start_authentication_),
+        base::BindOnce(&CreditCardAccessManager::Authenticate,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    Authenticate();
+  }
+}
+
+void CreditCardAccessManager::Authenticate(bool did_get_unmask_details) {
+  // Reset now that we have started authentication.
+  ready_to_start_authentication_.Reset();
+
+  // Do not use FIDO if card is not listed in unmask details, as each Card must
+  // be CVC authed at least once per device.
+  bool card_is_eligible_for_fido =
+      did_get_unmask_details &&
+      unmask_details_.unmask_auth_method ==
+          AutofillClient::UnmaskAuthMethod::FIDO &&
+      unmask_details_.fido_eligible_card_ids.find(card_->server_id()) !=
+          unmask_details_.fido_eligible_card_ids.end();
+
+  if (card_is_eligible_for_fido) {
+    DCHECK(unmask_details_.fido_request_options.is_dict());
+    GetOrCreateFIDOAuthenticator()->Authenticate(
+        card_, weak_ptr_factory_.GetWeakPtr(),
+        std::move(unmask_details_.fido_request_options));
+  } else {
+    GetOrCreateCVCAuthenticator()->Authenticate(
+        card_, weak_ptr_factory_.GetWeakPtr(), personal_data_manager_,
+        form_parsed_timestamp_);
+  }
 }
 
 CreditCardCVCAuthenticator*
-CreditCardAccessManager::credit_card_cvc_authenticator() {
+CreditCardAccessManager::GetOrCreateCVCAuthenticator() {
   if (!cvc_authenticator_)
-    cvc_authenticator_.reset(new CreditCardCVCAuthenticator(client_));
+    cvc_authenticator_ = std::make_unique<CreditCardCVCAuthenticator>(client_);
   return cvc_authenticator_.get();
+}
+
+CreditCardFIDOAuthenticator*
+CreditCardAccessManager::GetOrCreateFIDOAuthenticator() {
+  if (!fido_authenticator_)
+    fido_authenticator_ =
+        std::make_unique<CreditCardFIDOAuthenticator>(client_);
+  return fido_authenticator_.get();
 }
 
 void CreditCardAccessManager::OnCVCAuthenticationComplete(
@@ -152,6 +250,26 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
     const base::string16& cvc) {
   is_authentication_in_progress_ = false;
   accessor_->OnCreditCardFetched(did_succeed, card, cvc);
+}
+
+void CreditCardAccessManager::OnFIDOAuthenticationComplete(
+    bool did_succeed,
+    const CreditCard* card) {
+  if (did_succeed) {
+    is_authentication_in_progress_ = false;
+    accessor_->OnCreditCardFetched(did_succeed, card);
+  } else {
+    // Fall back to CVC if WebAuthn failed.
+    // TODO(crbug/949269): Add metrics to log fallback CVC auths.
+    GetOrCreateCVCAuthenticator()->Authenticate(
+        card_, weak_ptr_factory_.GetWeakPtr(), personal_data_manager_,
+        form_parsed_timestamp_);
+  }
+}
+
+bool CreditCardAccessManager::AuthenticationRequiresUnmaskDetails() {
+  return GetOrCreateFIDOAuthenticator()->IsUserVerifiable() &&
+         GetOrCreateFIDOAuthenticator()->IsUserOptedIn();
 }
 
 bool CreditCardAccessManager::IsLocalCard(const CreditCard* card) {

@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_TEST_PAYMENTS_CLIENT_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_TEST_PAYMENTS_CLIENT_H_
 
+#include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -54,13 +56,9 @@ class TestPaymentsClient : public payments::PaymentsClient {
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrateCardsCallback callback) override;
 
-  void SetAuthenticationMethod(std::string auth_method);
+  void AllowFidoRegistration(bool offer_fido_opt_in = true);
 
-  void AllowFidoRegistration(bool offer_opt_in = true);
-
-  void SetFidoRequestOptions(std::unique_ptr<base::Value> request_options);
-
-  void SetFidoEligibleCardIds(std::set<std::string> fido_eligible_card_ids);
+  void AddFidoEligibleCard(std::string server_id);
 
   void SetServerIdForCardUpload(std::string);
 
@@ -89,10 +87,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
 
  private:
   std::string server_id_;
-  std::string auth_method_;
-  bool offer_opt_in_ = false;
-  std::unique_ptr<base::Value> request_options_ = nullptr;
-  std::set<std::string> fido_eligible_card_ids_;
+  AutofillClient::UnmaskDetails unmask_details_;
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
   std::vector<AutofillProfile> upload_details_addresses_;
   std::vector<AutofillProfile> upload_card_addresses_;

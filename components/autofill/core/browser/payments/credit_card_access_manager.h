@@ -6,15 +6,19 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_CREDIT_CARD_ACCESS_MANAGER_H_
 
 #include <memory>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/synchronization/waitable_event.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
+#include "components/autofill/core/browser/payments/credit_card_fido_authenticator.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 
@@ -24,7 +28,8 @@ class AutofillManager;
 
 // Manages logic for accessing credit cards either stored locally or stored
 // with Google Payments. Owned by AutofillManager.
-class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester {
+class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
+                                public CreditCardFIDOAuthenticator::Requester {
  public:
   class Accessor {
    public:
@@ -64,12 +69,17 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester {
   // Retrieves instance of CreditCard with given guid.
   CreditCard* GetCreditCard(std::string guid);
 
+  // Makes a call to Google Payments to retrieve authentication details.
+  void PrepareToFetchCreditCard();
+
   // Calls |accessor->OnCreditCardFetched()| once credit card is fetched.
   void FetchCreditCard(const CreditCard* card,
                        base::WeakPtr<Accessor> accessor,
                        const base::TimeTicks& timestamp = base::TimeTicks());
 
-  CreditCardCVCAuthenticator* credit_card_cvc_authenticator();
+  CreditCardCVCAuthenticator* GetOrCreateCVCAuthenticator();
+
+  CreditCardFIDOAuthenticator* GetOrCreateFIDOAuthenticator();
 
  private:
   friend class AutofillAssistantTest;
@@ -77,11 +87,30 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester {
   friend class AutofillMetricsTest;
   friend class CreditCardAccessManagerTest;
 
-  // CreditCardCVCAuthenticator::Requester
+  void set_fido_authenticator_for_testing(
+      std::unique_ptr<CreditCardFIDOAuthenticator> fido_authenticator) {
+    fido_authenticator_ = std::move(fido_authenticator);
+  }
+
+  // Sets |unmask_details_|. May be ignored if response is too late and user is
+  // not opted-in for FIDO auth, or if user does not select a card.
+  void OnDidGetUnmaskDetails(AutofillClient::PaymentsRpcResult result,
+                             AutofillClient::UnmaskDetails& unmask_details);
+
+  // Calls either CreditCardFIDOAuthenticator::Authenticate() or
+  // CreditCardCVCAuthenticator::Authenticate() depending on the response
+  // contained in |unmask_details_|.
+  void Authenticate(bool did_get_unmask_details = false);
+
+  // CreditCardCVCAuthenticator::Requester:
   void OnCVCAuthenticationComplete(
       bool did_succeed,
       const CreditCard* card = nullptr,
       const base::string16& cvc = base::string16()) override;
+
+  // CreditCardFIDOAuthenticator::Requester:
+  void OnFIDOAuthenticationComplete(bool did_succeed,
+                                    const CreditCard* card = nullptr) override;
 
   bool is_authentication_in_progress() {
     return is_authentication_in_progress_;
@@ -89,6 +118,11 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester {
 
   // Returns true only if |credit_card| is a local card.
   bool IsLocalCard(const CreditCard* credit_card);
+
+  // If true, FetchCreditCard() should wait for OnDidGetUnmaskDetails() to begin
+  // authentication. If false, FetchCreditCard() can begin authentication
+  // immediately.
+  bool AuthenticationRequiresUnmaskDetails();
 
   // Is set to true only when waiting for the callback to
   // OnCVCAuthenticationComplete() to be executed.
@@ -109,8 +143,24 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester {
   // For logging metrics. May be NULL for tests.
   CreditCardFormEventLogger* form_event_logger_;
 
-  // Authenticator for card requests.
+  // Meant for histograms recorded in FullCardRequest.
+  base::TimeTicks form_parsed_timestamp_;
+
+  // Authenticators for card unmasking.
   std::unique_ptr<CreditCardCVCAuthenticator> cvc_authenticator_;
+  std::unique_ptr<CreditCardFIDOAuthenticator> fido_authenticator_;
+
+  // Suggested authentication method and other information to facilitate card
+  // unmasking.
+  AutofillClient::UnmaskDetails unmask_details_;
+
+  // Resets when PrepareToFetchCreditCard() is called, if not already reset.
+  // Signaled when OnDidGetUnmaskDetails() is called or after timeout.
+  // Authenticate() is called when signaled.
+  base::WaitableEvent ready_to_start_authentication_;
+
+  // The credit card being accessed.
+  const CreditCard* card_;
 
   // The object attempting to access a card.
   base::WeakPtr<Accessor> accessor_;

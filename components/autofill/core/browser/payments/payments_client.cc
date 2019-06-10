@@ -270,33 +270,42 @@ class GetUnmaskDetailsRequest : public PaymentsRequest {
 
   void ParseResponse(const base::Value& response) override {
     const auto* method = response.FindStringKey("authentication_method");
-    auth_method_ = method ? *method : std::string();
+    if (method) {
+      if (*method == "CVC") {
+        unmask_details_.unmask_auth_method =
+            AutofillClient::UnmaskAuthMethod::CVC;
+      } else if (*method == "FIDO") {
+        unmask_details_.unmask_auth_method =
+            AutofillClient::UnmaskAuthMethod::FIDO;
+      }
+    }
 
-    const auto* offer_opt_in =
-        response.FindKeyOfType("offer_opt_in", base::Value::Type::BOOLEAN);
-    offer_opt_in_ = offer_opt_in && offer_opt_in->GetBool();
+    const auto* offer_fido_opt_in =
+        response.FindKeyOfType("offer_fido_opt_in", base::Value::Type::BOOLEAN);
+    unmask_details_.offer_fido_opt_in =
+        offer_fido_opt_in && offer_fido_opt_in->GetBool();
 
     const auto* dictionary_value = response.FindKeyOfType(
         "request_options", base::Value::Type::DICTIONARY);
     if (dictionary_value)
-      request_options_ =
-          std::make_unique<base::Value>(dictionary_value->Clone());
+      unmask_details_.fido_request_options = dictionary_value->Clone();
 
     const auto* fido_eligible_card_ids = response.FindKeyOfType(
         "fido_eligible_credit_card_id", base::Value::Type::LIST);
     if (fido_eligible_card_ids) {
       for (const base::Value& result : fido_eligible_card_ids->GetList()) {
-        fido_eligible_card_ids_.insert(result.GetString());
+        unmask_details_.fido_eligible_card_ids.insert(result.GetString());
       }
     }
   }
 
-  bool IsResponseComplete() override { return !auth_method_.empty(); }
+  bool IsResponseComplete() override {
+    return unmask_details_.unmask_auth_method !=
+           AutofillClient::UnmaskAuthMethod::UNKNOWN;
+  }
 
   void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
-    std::move(callback_).Run(result, auth_method_, offer_opt_in_,
-                             std::move(request_options_),
-                             fido_eligible_card_ids_);
+    std::move(callback_).Run(result, unmask_details_);
   }
 
  private:
@@ -304,16 +313,9 @@ class GetUnmaskDetailsRequest : public PaymentsRequest {
   std::string app_locale_;
   const bool full_sync_enabled_;
 
-  // The type of authentication method suggested for card unmask.
-  std::string auth_method_;
-  // Set to true if the user should be offered opt-in for FIDO Authentication.
-  bool offer_opt_in_;
-  // Public Key Credential Request Options required for authentication.
-  // https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions
-  std::unique_ptr<base::Value> request_options_;
-  // Set of credit cards ids that are eligible for FIDO Authentication.
-  std::set<std::string> fido_eligible_card_ids_;
-
+  // Suggested authentication method and other information to facilitate card
+  // unmasking.
+  AutofillClient::UnmaskDetails unmask_details_;
   DISALLOW_COPY_AND_ASSIGN(GetUnmaskDetailsRequest);
 };
 

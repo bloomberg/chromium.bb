@@ -1016,13 +1016,13 @@ bool AutofillManager::ShouldClearPreviewedForm() {
 }
 
 payments::FullCardRequest* AutofillManager::GetOrCreateFullCardRequest() {
-  return credit_card_access_manager_->credit_card_cvc_authenticator()
+  return credit_card_access_manager_->GetOrCreateCVCAuthenticator()
       ->GetFullCardRequest();
 }
 
 base::WeakPtr<payments::FullCardRequest::UIDelegate>
 AutofillManager::GetAsFullCardRequestUIDelegate() {
-  return credit_card_access_manager_->credit_card_cvc_authenticator()
+  return credit_card_access_manager_->GetOrCreateCVCAuthenticator()
       ->GetAsFullCardRequestUIDelegate();
 }
 

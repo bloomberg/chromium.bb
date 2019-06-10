@@ -393,7 +393,7 @@ void AutofillMetricsTest::OnDidGetRealPan(
     const std::string& real_pan) {
   payments::FullCardRequest* full_card_request =
       autofill_manager_->credit_card_access_manager_
-          ->credit_card_cvc_authenticator()
+          ->GetOrCreateCVCAuthenticator()
           ->full_card_request_.get();
   DCHECK(full_card_request);
   full_card_request->OnDidGetRealPan(result, real_pan);

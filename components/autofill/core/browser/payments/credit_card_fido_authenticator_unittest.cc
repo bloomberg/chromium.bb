@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
+#include "components/autofill/core/browser/payments/credit_card_fido_authenticator.h"
 
 #include <stddef.h>
 
@@ -29,6 +29,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
@@ -76,12 +77,6 @@ namespace {
 const char kTestGUID[] = "00000000-0000-0000-0000-000000000001";
 const char kTestNumber[] = "4234567890123456";  // Visa
 
-std::string NextYear() {
-  base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
-  return base::NumberToString(now.year + 1);
-}
-
 std::string NextMonth() {
   base::Time::Exploded now;
   base::Time::Now().LocalExplode(&now);
@@ -90,9 +85,9 @@ std::string NextMonth() {
 
 }  // namespace
 
-class CreditCardCVCAuthenticatorTest : public testing::Test {
+class CreditCardFIDOAuthenticatorTest : public testing::Test {
  public:
-  CreditCardCVCAuthenticatorTest() {}
+  CreditCardFIDOAuthenticatorTest() {}
 
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
@@ -118,17 +113,14 @@ class CreditCardCVCAuthenticatorTest : public testing::Test {
             autofill_client_.GetIdentityManager(), &personal_data_manager_);
     autofill_client_.set_test_payments_client(
         std::unique_ptr<payments::TestPaymentsClient>(payments_client));
-    cvc_authenticator_ =
-        std::make_unique<CreditCardCVCAuthenticator>(&autofill_client_);
+    fido_authenticator_ =
+        std::make_unique<CreditCardFIDOAuthenticator>(&autofill_client_);
   }
 
   void TearDown() override {
     // Order of destruction is important as AutofillDriver relies on
     // PersonalDataManager to be around when it gets destroyed.
     autofill_driver_.reset();
-
-    personal_data_manager_.SetPrefService(nullptr);
-    personal_data_manager_.ClearCreditCards();
 
     request_context_ = nullptr;
   }
@@ -137,7 +129,7 @@ class CreditCardCVCAuthenticatorTest : public testing::Test {
     CreditCard masked_server_card = CreditCard();
     test::SetCreditCardInfo(&masked_server_card, "Elvis Presley",
                             number.c_str(), NextMonth().c_str(),
-                            NextYear().c_str(), "1");
+                            test::NextYear().c_str(), "1");
     masked_server_card.set_guid(guid);
     masked_server_card.set_record_type(CreditCard::MASKED_SERVER_CARD);
 
@@ -145,14 +137,6 @@ class CreditCardCVCAuthenticatorTest : public testing::Test {
     personal_data_manager_.AddServerCreditCard(masked_server_card);
 
     return masked_server_card;
-  }
-
-  void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
-                       const std::string& real_pan) {
-    payments::FullCardRequest* full_card_request =
-        cvc_authenticator_->full_card_request_.get();
-    DCHECK(full_card_request);
-    full_card_request->OnDidGetRealPan(result, real_pan);
   }
 
  protected:
@@ -164,56 +148,23 @@ class CreditCardCVCAuthenticatorTest : public testing::Test {
   scoped_refptr<AutofillWebDataService> database_;
   TestPersonalDataManager personal_data_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<CreditCardCVCAuthenticator> cvc_authenticator_;
+  std::unique_ptr<CreditCardFIDOAuthenticator> fido_authenticator_;
 };
 
-TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardSuccess) {
-  CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
-
-  cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                   &personal_data_manager_,
-                                   base::TimeTicks::Now());
-
-  OnDidGetRealPan(AutofillClient::SUCCESS, kTestNumber);
-  EXPECT_TRUE(requester_->did_succeed());
-  EXPECT_EQ(ASCIIToUTF16(kTestNumber), requester_->number());
+TEST_F(CreditCardFIDOAuthenticatorTest, IsUserOptedInFalse) {
+  EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
 }
 
-TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardNetworkError) {
-  CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
-
-  cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                   &personal_data_manager_,
-                                   base::TimeTicks::Now());
-
-  OnDidGetRealPan(AutofillClient::NETWORK_ERROR, std::string());
-  EXPECT_FALSE(requester_->did_succeed());
+TEST_F(CreditCardFIDOAuthenticatorTest, IsUserVerifiableFalse) {
+  EXPECT_FALSE(fido_authenticator_->IsUserVerifiable());
 }
 
-TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardPermanentFailure) {
+TEST_F(CreditCardFIDOAuthenticatorTest, AuthenticateCardFailure) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
-  cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                   &personal_data_manager_,
-                                   base::TimeTicks::Now());
-
-  OnDidGetRealPan(AutofillClient::PERMANENT_FAILURE, std::string());
+  fido_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
+                                    base::Value());
   EXPECT_FALSE(requester_->did_succeed());
-}
-
-TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardTryAgainFailure) {
-  CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
-
-  cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                   &personal_data_manager_,
-                                   base::TimeTicks::Now());
-
-  OnDidGetRealPan(AutofillClient::TRY_AGAIN_FAILURE, std::string());
-  EXPECT_FALSE(requester_->did_succeed());
-
-  OnDidGetRealPan(AutofillClient::SUCCESS, kTestNumber);
-  EXPECT_TRUE(requester_->did_succeed());
-  EXPECT_EQ(ASCIIToUTF16(kTestNumber), requester_->number());
 }
 
 }  // namespace autofill

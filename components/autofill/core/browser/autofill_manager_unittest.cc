@@ -545,7 +545,7 @@ class AutofillManagerTest : public testing::Test {
   CardUnmaskDelegate* full_card_unmask_delegate() {
     payments::FullCardRequest* full_card_request =
         autofill_manager_->credit_card_access_manager_
-            ->credit_card_cvc_authenticator()
+            ->GetOrCreateCVCAuthenticator()
             ->full_card_request_.get();
     DCHECK(full_card_request);
     return static_cast<CardUnmaskDelegate*>(full_card_request);

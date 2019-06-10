@@ -114,15 +114,9 @@ class PaymentsClientTest : public testing::Test {
   }
 
   void OnDidGetUnmaskDetails(AutofillClient::PaymentsRpcResult result,
-                             std::string auth_method,
-                             bool offer_opt_in,
-                             std::unique_ptr<base::Value> request_options,
-                             std::set<std::string> fido_eligible_card_ids) {
+                             AutofillClient::UnmaskDetails& unmask_details) {
     result_ = result;
-    auth_method_ = auth_method;
-    offer_opt_in_ = offer_opt_in;
-    request_options_ = std::move(request_options);
-    fido_eligible_card_ids_ = fido_eligible_card_ids;
+    unmask_details_ = &unmask_details;
   }
 
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
@@ -258,10 +252,7 @@ class PaymentsClientTest : public testing::Test {
   }
 
   AutofillClient::PaymentsRpcResult result_;
-  std::string auth_method_;
-  bool offer_opt_in_;
-  std::unique_ptr<base::Value> request_options_;
-  std::set<std::string> fido_eligible_card_ids_;
+  AutofillClient::UnmaskDetails* unmask_details_;
 
   std::string server_id_;
   std::string real_pan_;
@@ -320,12 +311,13 @@ class PaymentsClientTest : public testing::Test {
 TEST_F(PaymentsClientTest, GetUnmaskDetailsSuccess) {
   StartGettingUnmaskDetails();
   IssueOAuthToken();
-  ReturnResponse(
-      net::HTTP_OK,
-      "{ \"offer_opt_in\": \"false\", \"authentication_method\": \"CVC\" }");
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"offer_fido_opt_in\": \"false\", "
+                 "\"authentication_method\": \"CVC\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_EQ(false, offer_opt_in_);
-  EXPECT_EQ("CVC", auth_method_);
+  EXPECT_EQ(false, unmask_details_->offer_fido_opt_in);
+  EXPECT_EQ(AutofillClient::UnmaskAuthMethod::CVC,
+            unmask_details_->unmask_auth_method);
 }
 
 TEST_F(PaymentsClientTest, GetUnmaskDetailsIncludesChromeUserContext) {
