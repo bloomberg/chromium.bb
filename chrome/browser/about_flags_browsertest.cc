@@ -60,7 +60,8 @@ void SetSwitch(base::CommandLine::SwitchMap* switch_map,
 class AboutFlagsBrowserTest : public InProcessBrowserTest {};
 
 // Tests experiments with origin values in chrome://flags page.
-IN_PROC_BROWSER_TEST_F(AboutFlagsBrowserTest, OriginFlag) {
+// TODO(crbug.com/972121): renable the test when flakiness is resolved.
+IN_PROC_BROWSER_TEST_F(AboutFlagsBrowserTest, DISABLED_OriginFlag) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
 
   const base::CommandLine::SwitchMap switches =
