@@ -28,6 +28,8 @@ const char* TaskQueue::PriorityToString(TaskQueue::QueuePriority priority) {
       return "control";
     case kHighestPriority:
       return "highest";
+    case kVeryHighPriority:
+      return "very_high";
     case kHighPriority:
       return "high";
     case kNormalPriority:
