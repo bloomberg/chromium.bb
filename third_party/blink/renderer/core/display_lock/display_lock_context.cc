@@ -92,10 +92,7 @@ DisplayLockContext::DisplayLockContext(Element* element,
     : ContextLifecycleObserver(context),
       element_(element),
       document_(&element_->GetDocument()),
-      state_(this) {
-  if (document_->View())
-    document_->View()->RegisterForLifecycleNotifications(this);
-}
+      state_(this) {}
 
 DisplayLockContext::~DisplayLockContext() {
   DCHECK_EQ(state_, kUnlocked);
@@ -125,9 +122,6 @@ void DisplayLockContext::Dispose() {
   FinishAcquireResolver(kDetach);
   CancelTimeoutTask();
   state_ = kUnlocked;
-
-  if (document_ && document_->View())
-    document_->View()->UnregisterFromLifecycleNotifications(this);
 }
 
 void DisplayLockContext::ContextDestroyed(ExecutionContext*) {
@@ -376,6 +370,7 @@ void DisplayLockContext::FinishResolver(Member<ScriptPromiseResolver>* resolver,
       break;
     case kDetach:
       (*resolver)->Detach();
+      break;
   }
   *resolver = nullptr;
   if (!HasResolver() && ConnectedToView())
