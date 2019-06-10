@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -44,6 +45,12 @@ namespace {
 // The maximum number of attempts we'll do to see if the page has finshed
 // loading before giving up the translation
 const int kMaxTranslateLoadCheckAttempts = 20;
+
+// Overrides the hrefTranslate logic to auto-translate when the navigation is
+// from any origin rather than only Google origins. Used for manual testing
+// where the test page may reside on a test domain.
+const base::Feature kAutoHrefTranslateAllOrigins{
+    "AutoHrefTranslateAllOrigins", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -262,9 +269,10 @@ void ContentTranslateDriver::DidFinishNavigation(
 
   bool navigation_from_google =
       initiator_origin.has_value() &&
-      google_util::IsGoogleDomainUrl(initiator_origin->GetURL(),
-                                     google_util::DISALLOW_SUBDOMAIN,
-                                     google_util::ALLOW_NON_STANDARD_PORTS);
+      (google_util::IsGoogleDomainUrl(initiator_origin->GetURL(),
+                                      google_util::DISALLOW_SUBDOMAIN,
+                                      google_util::ALLOW_NON_STANDARD_PORTS) ||
+       base::FeatureList::IsEnabled(kAutoHrefTranslateAllOrigins));
 
   translate_manager_->GetLanguageState().DidNavigate(
       navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
