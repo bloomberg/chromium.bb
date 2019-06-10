@@ -700,6 +700,21 @@ void AppListControllerImpl::OnUiVisibilityChanged(
       // |ShowEmbeddedAssistantUI(false)|, which will show previous state page
       // in Launcher and make the UI flash.
       if (IsHomeScreenAvailable()) {
+        base::Optional<
+            app_list::ContentsView::ScopedSetActiveStateAnimationDisabler>
+            set_active_state_animation_disabler;
+        // When taking a screenshot by Assistant, we do not want to animate to
+        // the final state. Otherwise the screenshot may have tansient state
+        // during the animation. In tablet mode, we want to go back to
+        // kStateApps immediately, i.e. skipping the animation in
+        // |SetActiveStateInternal|, which are called from
+        // |ShowEmbeddedAssistantUI(false)| and
+        // |ClearSearchAndDeactivateSearchBox()|.
+        if (exit_point == AssistantExitPoint::kScreenshot) {
+          set_active_state_animation_disabler.emplace(
+              presenter_.GetView()->app_list_main_view()->contents_view());
+        }
+
         presenter_.ShowEmbeddedAssistantUI(false);
 
         if (exit_point != AssistantExitPoint::kBackInLauncher) {
@@ -708,6 +723,15 @@ void AppListControllerImpl::OnUiVisibilityChanged(
               ->ClearSearchAndDeactivateSearchBox();
         }
       } else if (exit_point != AssistantExitPoint::kBackInLauncher) {
+        base::Optional<
+            app_list::AppListPresenterImpl::ScopedDismissAnimationDisabler>
+            dismiss_animation_disabler;
+        // Similarly, when taking a screenshot by Assistant in clamshell mode,
+        // we do not want to dismiss launcher with animation. Otherwise the
+        // screenshot may have tansient state during the animation.
+        if (exit_point == AssistantExitPoint::kScreenshot)
+          dismiss_animation_disabler.emplace(presenter());
+
         DismissAppList();
       }
 

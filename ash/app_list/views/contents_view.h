@@ -62,6 +62,23 @@ class APP_LIST_EXPORT ContentsView : public views::View,
     virtual void OnSearchBoxClearAndDeactivated() = 0;
   };
 
+  // Used to SetActiveState without animations.
+  class ScopedSetActiveStateAnimationDisabler {
+   public:
+    explicit ScopedSetActiveStateAnimationDisabler(ContentsView* contents_view)
+        : contents_view_(contents_view) {
+      contents_view_->set_active_state_without_animation_ = true;
+    }
+    ~ScopedSetActiveStateAnimationDisabler() {
+      contents_view_->set_active_state_without_animation_ = false;
+    }
+
+   private:
+    ContentsView* const contents_view_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedSetActiveStateAnimationDisabler);
+  };
+
   explicit ContentsView(AppListView* app_list_view);
   ~ContentsView() override;
 
@@ -292,6 +309,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Manages the pagination for the launcher pages.
   ash::PaginationModel pagination_model_;
+
+  // If true, SetActiveState immediately.
+  bool set_active_state_without_animation_ = false;
 
   base::ObserverList<SearchBoxUpdateObserver> search_box_observers_;
 

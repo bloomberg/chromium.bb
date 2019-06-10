@@ -253,10 +253,11 @@ void ContentsView::SetActiveStateInternal(int page_index, bool animate) {
   app_list_pages_[GetActivePageIndex()]->OnWillBeHidden();
 
   // Start animating to the new page.
-  pagination_model_.SelectPage(page_index, animate);
+  const bool should_animate = animate && !set_active_state_without_animation_;
+  pagination_model_.SelectPage(page_index, should_animate);
   ActivePageChanged();
 
-  if (!animate)
+  if (!should_animate)
     Layout();
 }
 
