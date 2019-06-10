@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/http/http_status_code.h"
@@ -108,7 +108,7 @@ class KidsManagementURLCheckerClientTest : public testing::Test {
                void(const GURL& url,
                     safe_search_api::ClientClassification classification));
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string account_id_;
   identity::IdentityTestEnvironment identity_test_env_;
   network::TestURLLoaderFactory test_url_loader_factory_;

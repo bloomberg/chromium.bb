@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
@@ -176,7 +176,7 @@ class FamilyInfoFetcherTest
     SendResponse(net::ERR_ABORTED, std::string());
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   identity::IdentityTestEnvironment identity_test_env_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<FamilyInfoFetcher> fetcher_;
