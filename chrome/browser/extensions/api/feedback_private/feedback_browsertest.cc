@@ -108,14 +108,7 @@ class TestFeedbackUploaderDelegate
   base::RunLoop* quit_on_dispatch_;
 };
 
-// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
-// See crbug.com/757243.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ShowFeedback DISABLED_ShowFeedback
-#else
-#define MAYBE_ShowFeedback ShowFeedback
-#endif
-IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedback) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -123,14 +116,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedback) {
   VerifyFeedbackAppLaunch();
 }
 
-// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
-// See crbug.com/757243.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ShowLoginFeedback DISABLED_ShowLoginFeedback
-#else
-#define MAYBE_ShowLoginFeedback ShowLoginFeedback
-#endif
-IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowLoginFeedback) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -152,16 +138,9 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowLoginFeedback) {
   EXPECT_TRUE(bool_result);
 }
 
-// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
-// See crbug.com/757243.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_AnonymousUser DISABLED_AnonymousUser
-#else
-#define MAYBE_AnonymousUser AnonymousUser
-#endif
 // Tests that there's an option in the email drop down box with a value
 // 'anonymous_user'.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_AnonymousUser) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -190,16 +169,9 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_AnonymousUser) {
   EXPECT_TRUE(bool_result);
 }
 
-// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
-// See crbug.com/757243.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ExtraDiagnostics DISABLED_ExtraDiagnostics
-#else
-#define MAYBE_ExtraDiagnostics ExtraDiagnostics
-#endif
 // Ensures that when extra diagnostics are provided with feedback, they are
 // injected properly in the system information.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ExtraDiagnostics) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ExtraDiagnostics) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -230,16 +202,9 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ExtraDiagnostics) {
   EXPECT_TRUE(bool_result);
 }
 
-// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
-// See crbug.com/757243.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ShowFeedbackFromAssistant DISABLED_ShowFeedbackFromAssistant
-#else
-#define MAYBE_ShowFeedbackFromAssistant ShowFeedbackFromAssistant
-#endif
 // Ensures that when triggered from Assistant with Google account, Assistant
 // checkbox are not hidden.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedbackFromAssistant) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedbackFromAssistant) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
