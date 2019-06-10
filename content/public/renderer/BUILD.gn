@@ -61,7 +61,6 @@ target(link_target_type, "renderer_sources") {
     "renderer_ppapi_host.h",
     "request_peer.h",
     "resource_dispatcher_delegate.h",
-    "resource_fetcher.h",
     "seccomp_sandbox_status_android.h",
     "url_loader_throttle_provider.h",
     "v8_value_converter.h",

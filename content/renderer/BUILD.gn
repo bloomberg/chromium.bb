@@ -78,8 +78,6 @@ target(link_target_type, "renderer") {
     "fetchers/associated_resource_fetcher_impl.h",
     "fetchers/multi_resolution_image_resource_fetcher.cc",
     "fetchers/multi_resolution_image_resource_fetcher.h",
-    "fetchers/resource_fetcher_impl.cc",
-    "fetchers/resource_fetcher_impl.h",
     "frame_blame_context.cc",
     "frame_blame_context.h",
     "frame_owner_properties.cc",

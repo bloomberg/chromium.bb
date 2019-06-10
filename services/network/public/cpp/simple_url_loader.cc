@@ -1163,9 +1163,9 @@ SimpleURLLoaderImpl::SimpleURLLoaderImpl(
          *resource_request_->request_body->elements()) {
       // Files should be attached with AttachFileForUpload, so that (Once
       // supported) they can be opened in the current process.
-      //
-      // TODO(mmenke): Add a similar method for bytes, to allow streaming of
-      // large byte buffers to the network process when uploading.
+
+      // Bytes should be attached with AttachStringForUpload to allow
+      // streaming of large byte buffers to the network process when uploading.
       DCHECK(element.type() != mojom::DataElementType::kFile &&
              element.type() != mojom::DataElementType::kBytes);
     }

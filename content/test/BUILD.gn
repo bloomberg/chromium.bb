@@ -1325,7 +1325,6 @@ test("content_browsertests") {
     sources += [
       "../renderer/browser_render_view_browsertest.cc",
       "../renderer/dom_serializer_browsertest.cc",
-      "../renderer/fetchers/resource_fetcher_browsertest.cc",
       "../renderer/render_thread_impl_discardable_memory_browsertest.cc",
       "../renderer/savable_resources_browsertest.cc",
     ]

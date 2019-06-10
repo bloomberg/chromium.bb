@@ -32,17 +32,13 @@
 
 class GURL;
 
-namespace blink {
-class WebURLResponse;
-}
-
-namespace content {
-class ResourceFetcher;
-}
-
 namespace error_page {
 class Error;
 struct ErrorPageParams;
+}
+
+namespace network {
+class SimpleURLLoader;
 }
 
 // Listens for NetErrorInfo messages from the NetErrorTabHelper on the
@@ -114,6 +110,10 @@ class NetErrorHelper
   bool ShouldSuppressErrorPage(const GURL& url);
 
  private:
+  // Returns ResourceRequest filled with |url|. It has request_initiator from
+  // the frame origin and origin header with "null" for a unique origin.
+  std::unique_ptr<network::ResourceRequest> CreatePostRequest(
+      const GURL& url) const;
   chrome::mojom::NetworkDiagnostics* GetRemoteNetworkDiagnostics();
   chrome::mojom::NetworkEasterEgg* GetRemoteNetworkEasterEgg();
 
@@ -159,11 +159,10 @@ class NetErrorHelper
                                      const std::string& api_key,
                                      const GURL& search_url);
 
-  void OnNavigationCorrectionsFetched(const blink::WebURLResponse& response,
-                                      const std::string& data);
+  void OnNavigationCorrectionsFetched(
+      std::unique_ptr<std::string> response_body);
 
-  void OnTrackingRequestComplete(const blink::WebURLResponse& response,
-                                 const std::string& data);
+  void OnTrackingRequestComplete(std::unique_ptr<std::string> response_body);
 
   void OnNetworkDiagnosticsClientRequest(
       chrome::mojom::NetworkDiagnosticsClientAssociatedRequest request);
@@ -181,8 +180,8 @@ class NetErrorHelper
                                    const std::string& api_key,
                                    const GURL& search_url) override;
 
-  std::unique_ptr<content::ResourceFetcher> correction_fetcher_;
-  std::unique_ptr<content::ResourceFetcher> tracking_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> correction_loader_;
+  std::unique_ptr<network::SimpleURLLoader> tracking_loader_;
 
   std::unique_ptr<NetErrorHelperCore> core_;
 
