@@ -1239,6 +1239,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter bytesWritten
 [Worker]     getter status
 [Worker]     method constructor
+[Worker] interface UserActivation
+[Worker]     attribute @@toStringTag
+[Worker]     getter hasBeenActive
+[Worker]     getter isActive
+[Worker]     method constructor
 [Worker] interface WebGL2RenderingContext
 [Worker]     attribute @@toStringTag
 [Worker]     attribute ACTIVE_ATTRIBUTES

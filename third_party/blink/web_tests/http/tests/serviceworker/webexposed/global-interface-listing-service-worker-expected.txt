@@ -1347,6 +1347,11 @@ interface URLSearchParams
     method sort
     method toString
     method values
+interface UserActivation
+    attribute @@toStringTag
+    getter hasBeenActive
+    getter isActive
+    method constructor
 interface WebGL2ComputeRenderingContext
     attribute @@toStringTag
     attribute ACTIVE_ATOMIC_COUNTER_BUFFERS
