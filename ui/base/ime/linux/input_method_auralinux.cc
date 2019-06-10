@@ -29,6 +29,9 @@ InputMethodAuraLinux::InputMethodAuraLinux(
       is_sync_mode_(false),
       composition_changed_(false),
       weak_ptr_factory_(this) {
+  DCHECK(LinuxInputMethodContextFactory::instance())
+      << "Trying to initialize InputMethodAuraLinux, but "
+         "LinuxInputMethodContextFactory is not initialized yet.";
   context_ =
       LinuxInputMethodContextFactory::instance()->CreateInputMethodContext(
           this, false);
