@@ -1401,7 +1401,7 @@ void DocumentLoader::DidCommitNavigation(
   // DidObserveLoadingBehavior() must be called after DispatchDidCommitLoad() is
   // called for the metrics tracking logic to handle it properly.
   if (service_worker_network_provider_ &&
-      service_worker_network_provider_->IsControlledByServiceWorker() ==
+      service_worker_network_provider_->GetControllerServiceWorkerMode() ==
           blink::mojom::ControllerServiceWorkerMode::kControlled) {
     GetLocalFrameClient().DidObserveLoadingBehavior(
         kWebLoadingBehaviorServiceWorkerControlled);

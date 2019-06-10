@@ -90,7 +90,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // (ServiceWorkerContainer#controller).
   int64_t GetControllerVersionId() const;
 
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker() const;
+  blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
+      const;
 
   // Takes the controller service worker object info set by SetController() if
   // any, otherwise returns nullptr.

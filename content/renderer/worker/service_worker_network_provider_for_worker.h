@@ -55,7 +55,7 @@ class ServiceWorkerNetworkProviderForWorker final
       const blink::WebURLRequest& request,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
           task_runner_handle) override;
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+  blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       override;
   int64_t ControllerServiceWorkerID() override;
   void DispatchNetworkQuiet() override;

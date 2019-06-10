@@ -93,7 +93,7 @@ int64_t ServiceWorkerProviderContext::GetControllerVersionId() const {
 }
 
 blink::mojom::ControllerServiceWorkerMode
-ServiceWorkerProviderContext::IsControlledByServiceWorker() const {
+ServiceWorkerProviderContext::GetControllerServiceWorkerMode() const {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
   return state_for_client_->controller_mode;

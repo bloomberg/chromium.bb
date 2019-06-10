@@ -49,7 +49,7 @@ class ServiceWorkerFetchContextImpl final
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
   blink::WebURLLoaderFactory* GetScriptLoaderFactory() override;
   void WillSendRequest(blink::WebURLRequest&) override;
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+  blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       const override;
   blink::WebURL SiteForCookies() const override;
   base::Optional<blink::WebSecurityOrigin> TopFrameOrigin() const override;

@@ -114,7 +114,7 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
 }
 
 blink::mojom::ControllerServiceWorkerMode
-ServiceWorkerFetchContextImpl::IsControlledByServiceWorker() const {
+ServiceWorkerFetchContextImpl::GetControllerServiceWorkerMode() const {
   return blink::mojom::ControllerServiceWorkerMode::kNoController;
 }
 

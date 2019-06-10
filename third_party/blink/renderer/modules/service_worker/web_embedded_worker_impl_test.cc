@@ -59,7 +59,7 @@ class FakeServiceWorkerNetworkProvider final
         nullptr);
   }
 
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+  blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       override {
     return blink::mojom::ControllerServiceWorkerMode::kNoController;
   }
@@ -133,7 +133,7 @@ class FakeWebWorkerFetchContext final : public WebWorkerFetchContext {
     return nullptr;
   }
   void WillSendRequest(WebURLRequest&) override {}
-  mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+  mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       const override {
     return mojom::ControllerServiceWorkerMode::kNoController;
   }

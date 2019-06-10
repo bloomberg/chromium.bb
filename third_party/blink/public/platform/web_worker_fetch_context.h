@@ -90,9 +90,10 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   // worker)
   virtual void WillSendRequest(WebURLRequest&) = 0;
 
-  // Whether the fetch context is controlled by a service worker.
+  // Returns whether a controller service worker exists and if it has fetch
+  // handler.
   virtual blink::mojom::ControllerServiceWorkerMode
-  IsControlledByServiceWorker() const = 0;
+  GetControllerServiceWorkerMode() const = 0;
 
   // This flag is used to block all mixed content in subframes.
   virtual void SetIsOnSubframe(bool) {}

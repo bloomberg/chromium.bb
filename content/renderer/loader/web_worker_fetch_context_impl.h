@@ -100,7 +100,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
   std::unique_ptr<blink::CodeCacheLoader> CreateCodeCacheLoader() override;
   void WillSendRequest(blink::WebURLRequest&) override;
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+  blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       const override;
   void SetIsOnSubframe(bool) override;
   bool IsOnSubframe() const override;
@@ -126,7 +126,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // it's copied from the ancestor frame (directly for non-nested workers, or
   // indirectly via its parent worker for nested workers). For shared workers,
   // it's copied from the shadow page.
-  void set_is_controlled_by_service_worker(
+  void set_controller_service_worker_mode(
       blink::mojom::ControllerServiceWorkerMode mode);
   void set_ancestor_frame_id(int id);
   void set_frame_request_blocker(
@@ -221,7 +221,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // Consumed on the worker thread to create |fallback_factory_|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info_;
 
-  blink::mojom::ControllerServiceWorkerMode is_controlled_by_service_worker_ =
+  blink::mojom::ControllerServiceWorkerMode controller_service_worker_mode_ =
       blink::mojom::ControllerServiceWorkerMode::kNoController;
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
