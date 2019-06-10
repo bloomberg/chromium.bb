@@ -1041,6 +1041,8 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
           .setSecurityOrigin(
               SecurityOrigin::Create(loader->Url())->ToRawString())
           .build();
+  if (loader->Url().HasFragmentIdentifier())
+    frame_object->setUrlFragment("#" + loader->Url().FragmentIdentifier());
   Frame* parent_frame = frame->Tree().Parent();
   if (parent_frame) {
     frame_object->setParentId(IdentifiersFactory::FrameId(parent_frame));
