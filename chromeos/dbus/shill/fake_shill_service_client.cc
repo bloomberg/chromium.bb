@@ -120,6 +120,29 @@ bool IsSimilarService(const std::string& service_type,
   return false;
 }
 
+// Properties that should be retained when a visible service is deleted from a
+// profile, i.e. when all its configured properties are removed. This should
+// contain properties which can be "observed", e.g. a SSID.
+// For simplicity, these are not distinguished by service type.
+constexpr const char* kIntrinsicServiceProperties[] = {
+    shill::kTypeProperty,
+    shill::kDeviceProperty,
+    shill::kVisibleProperty,
+    shill::kStateProperty,
+    shill::kSSIDProperty,
+    shill::kWifiHexSsid,
+    shill::kSignalStrengthProperty,
+    shill::kWifiFrequency,
+    shill::kWifiFrequencyListProperty,
+    shill::kWifiHexSsid,
+    shill::kModeProperty,
+    shill::kSecurityProperty,
+    shill::kSecurityClassProperty,
+    shill::kNetworkTechnologyProperty,
+    shill::kNameProperty,
+    shill::kProviderProperty,
+    shill::kTetheringProperty};
+
 }  // namespace
 
 FakeShillServiceClient::FakeShillServiceClient() : weak_ptr_factory_(this) {}
@@ -558,6 +581,40 @@ const base::DictionaryValue* FakeShillServiceClient::GetServiceProperties(
   const base::DictionaryValue* properties = nullptr;
   stub_services_.GetDictionaryWithoutPathExpansion(service_path, &properties);
   return properties;
+}
+
+bool FakeShillServiceClient::ClearConfiguredServiceProperties(
+    const std::string& service_path) {
+  base::Value* service_dict = GetModifiableServiceProperties(
+      service_path, false /* create_if_missing */);
+  if (!service_dict)
+    return false;
+
+  const base::Value* visible_property = service_dict->FindKeyOfType(
+      shill::kVisibleProperty, base::Value::Type::BOOLEAN);
+  if (!visible_property || !visible_property->GetBool()) {
+    stub_services_.RemoveKey(service_path);
+    RemoveService(service_path);
+    return true;
+  }
+
+  base::DictionaryValue properties_after_delete_entry;
+
+  // Explicitly clear the profile property using SetServiceProperty so a
+  // notification is sent about that.
+  SetServiceProperty(service_path, shill::kProfileProperty,
+                     base::Value(std::string()));
+  properties_after_delete_entry.SetKey(shill::kProfileProperty,
+                                       base::Value(std::string()));
+
+  for (const std::string& property_to_retain : kIntrinsicServiceProperties) {
+    const base::Value* value = service_dict->FindKey(property_to_retain);
+    if (!value)
+      continue;
+    properties_after_delete_entry.SetKey(property_to_retain, value->Clone());
+  }
+  stub_services_.SetKey(service_path, std::move(properties_after_delete_entry));
+  return true;
 }
 
 std::string FakeShillServiceClient::FindServiceMatchingGUID(

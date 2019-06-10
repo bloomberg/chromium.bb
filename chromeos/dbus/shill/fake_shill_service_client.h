@@ -100,6 +100,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
                           const base::Value& value) override;
   const base::DictionaryValue* GetServiceProperties(
       const std::string& service_path) const override;
+  bool ClearConfiguredServiceProperties(
+      const std::string& service_path) override;
   std::string FindServiceMatchingGUID(const std::string& guid) override;
   std::string FindSimilarService(
       const base::Value& template_service_properties) override;

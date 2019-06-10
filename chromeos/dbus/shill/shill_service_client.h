@@ -76,6 +76,16 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
     virtual const base::DictionaryValue* GetServiceProperties(
         const std::string& service_path) const = 0;
 
+    // If the service referenced by |service_path| is not visible (according to
+    // its |shill::kVisibleProperty|, it is removed completely. If the service
+    // referenced by |service_path| is visible, keeps only its "intrinsic"
+    // properties and removes all other properties. Intrinsic properties are
+    // properties that describe the identity or the state of  the service and
+    // are not configurable, such as SSID (for wifi), signal strength (for wifi)
+    // or provider (for VPN). All other properties are removed.
+    virtual bool ClearConfiguredServiceProperties(
+        const std::string& service_path) = 0;
+
     // Returns the service path for the service which has the GUID property set
     // to |guid|. If no such service exists, returns the empty string.
     virtual std::string FindServiceMatchingGUID(const std::string& guid) = 0;

@@ -418,4 +418,94 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
   }
 }
 
+// Checks the edge case where a policy with GUID {same_guid} applies to network
+// with SSID "WifiTwo", and subsequently the policy changes, the new
+// NetworkConfiguration with GUID {same_guid} now applying to SSID "WifiOne".
+// For this to work correctly, PolicyApplicator must first clear the "WifiTwo"
+// settings so it is not matched by GUID, and then write the new policy to
+// shill.
+IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
+                       PolicyWithSameGUIDAppliesToOtherSSID) {
+  // Set up two services.
+  shill_service_client_test_->AddService(
+      kServiceWifi1, "wifi_orig_guid_1", "WifiOne", shill::kTypeWifi,
+      shill::kStateOnline, true /* add_to_visible */);
+  shill_service_client_test_->SetServiceProperty(
+      kServiceWifi1, shill::kSSIDProperty, base::Value("WifiOne"));
+  shill_service_client_test_->SetServiceProperty(
+      kServiceWifi1, shill::kSecurityClassProperty,
+      base::Value(shill::kSecurityPsk));
+
+  shill_service_client_test_->AddService(
+      kServiceWifi2, "wifi_orig_guid_2", "WifiTwo", shill::kTypeWifi,
+      shill::kStateOnline, true /* add_to_visible */);
+  shill_service_client_test_->SetServiceProperty(
+      kServiceWifi2, shill::kSSIDProperty, base::Value("WifiTwo"));
+  shill_service_client_test_->SetServiceProperty(
+      kServiceWifi2, shill::kSecurityClassProperty,
+      base::Value(shill::kSecurityPsk));
+
+  const char kDeviceONC1[] = R"(
+    {
+      "NetworkConfigurations": [
+        {
+          "GUID": "{same_guid}",
+          "Name": "X",
+          "Type": "WiFi",
+          "WiFi": {
+             "AutoConnect": false,
+             "HiddenSSID": false,
+             "Passphrase": "Passphrase",
+             "SSID": "WifiTwo",
+             "Security": "WPA-PSK"
+          }
+        }
+      ]
+    })";
+  SetDeviceOpenNetworkConfiguration(kDeviceONC1);
+
+  {
+    const base::Value* wifi_service_properties =
+        shill_service_client_test_->GetServiceProperties(kServiceWifi2);
+    ASSERT_TRUE(wifi_service_properties);
+    EXPECT_THAT(
+        *wifi_service_properties,
+        DictionaryHasValue(shill::kGuidProperty, base::Value("{same_guid}")));
+  }
+
+  // Same GUID for a different SSID.
+  const char kDeviceONC2[] = R"(
+    {
+      "NetworkConfigurations": [
+        {
+          "GUID": "{same_guid}",
+          "Name": "X",
+          "Type": "WiFi",
+          "WiFi": {
+             "AutoConnect": false,
+             "HiddenSSID": false,
+             "Passphrase": "SomePassphrase",
+             "SSID": "WifiOne",
+             "Security": "WPA-PSK"
+          }
+        }
+      ]
+    })";
+  SetDeviceOpenNetworkConfiguration(kDeviceONC2);
+  {
+    const base::Value* wifi_service_properties =
+        shill_service_client_test_->GetServiceProperties(kServiceWifi2);
+    ASSERT_TRUE(wifi_service_properties);
+    EXPECT_FALSE(wifi_service_properties->FindKey(shill::kGuidProperty));
+  }
+  {
+    const base::Value* wifi_service_properties =
+        shill_service_client_test_->GetServiceProperties(kServiceWifi1);
+    ASSERT_TRUE(wifi_service_properties);
+    EXPECT_THAT(
+        *wifi_service_properties,
+        DictionaryHasValue(shill::kGuidProperty, base::Value("{same_guid}")));
+  }
+}
+
 }  // namespace chromeos

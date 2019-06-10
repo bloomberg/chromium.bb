@@ -112,9 +112,9 @@ void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
     return;
   }
 
-  base::Value profile_path_value("");
-  ShillServiceClient::Get()->GetTestInterface()->SetServiceProperty(
-      entry_path, shill::kProfileProperty, profile_path_value);
+  ShillServiceClient::Get()
+      ->GetTestInterface()
+      ->ClearConfiguredServiceProperties(entry_path);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }

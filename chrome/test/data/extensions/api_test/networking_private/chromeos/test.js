@@ -642,7 +642,6 @@ var availableTests = [
       'stub_wifi2',
       callbackPass(function(result) {
         assertEq({
-          Connectable: true,
           ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: 'stub_wifi2',
           Name: {
@@ -662,7 +661,6 @@ var availableTests = [
           Type: NetworkType.WI_FI,
           WiFi: {
             AutoConnect: {
-              Active: false,
               UserEditable: true
             },
             HexSSID: {
