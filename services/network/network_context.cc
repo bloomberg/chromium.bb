@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/domain_reliability/monitor.h"
@@ -1697,7 +1698,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store;
   if (params_->cookie_path) {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
-        base::MessageLoopCurrent::Get()->task_runner();
+        base::ThreadTaskRunnerHandle::Get();
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
