@@ -15,10 +15,10 @@
 #include "base/threading/thread_checker_impl.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/mock_media_stream_video_sink.h"
-#include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/public/web/web_heap.h"
 
@@ -72,7 +72,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
  protected:
   void InitializeSource() {
     blink_source_.Reset();
-    mock_source_ = new MockMediaStreamVideoSource(
+    mock_source_ = new blink::MockMediaStreamVideoSource(
         media::VideoCaptureFormat(
             gfx::Size(kMockSourceWidth, kMockSourceHeight), 30.0,
             media::PIXEL_FORMAT_I420),
@@ -118,7 +118,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
 
   void UpdateVideoSourceToRespondToRequestRefreshFrame() {
     blink_source_.Reset();
-    mock_source_ = new MockMediaStreamVideoSource(
+    mock_source_ = new blink::MockMediaStreamVideoSource(
         media::VideoCaptureFormat(
             gfx::Size(kMockSourceWidth, kMockSourceHeight), 30.0,
             media::PIXEL_FORMAT_I420),
@@ -130,7 +130,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
     blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
   }
 
-  MockMediaStreamVideoSource* mock_source() { return mock_source_; }
+  blink::MockMediaStreamVideoSource* mock_source() { return mock_source_; }
   const blink::WebMediaStreamSource& blink_source() const {
     return blink_source_;
   }
@@ -142,7 +142,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   const ChildProcess child_process_;
   blink::WebMediaStreamSource blink_source_;
   // |mock_source_| is owned by |webkit_source_|.
-  MockMediaStreamVideoSource* mock_source_;
+  blink::MockMediaStreamVideoSource* mock_source_;
   bool source_started_;
 };
 

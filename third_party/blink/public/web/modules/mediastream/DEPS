@@ -14,3 +14,9 @@ include_rules = [
     "+media/capture",
     "+ui/gfx/geometry/size.h"
 ]
+
+specific_include_rules = {
+    "mock_media_stream_video_source.h" : [
+        "+testing/gmock/include/gmock/gmock.h",
+    ],
+}

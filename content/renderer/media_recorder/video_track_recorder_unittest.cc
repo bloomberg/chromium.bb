@@ -19,7 +19,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,6 +26,7 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 using media::VideoFrame;
@@ -68,7 +68,7 @@ class VideoTrackRecorderTest
   VideoTrackRecorderTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        mock_source_(new MockMediaStreamVideoSource()) {
+        mock_source_(new blink::MockMediaStreamVideoSource()) {
     const blink::WebString webkit_track_id(
         blink::WebString::FromASCII("dummy"));
     blink_source_.Initialize(webkit_track_id,
@@ -154,7 +154,7 @@ class VideoTrackRecorderTest
 
   // All members are non-const due to the series of initialize() calls needed.
   // |mock_source_| is owned by |blink_source_|, |track_| by |blink_track_|.
-  MockMediaStreamVideoSource* mock_source_;
+  blink::MockMediaStreamVideoSource* mock_source_;
   blink::WebMediaStreamSource blink_source_;
   blink::MediaStreamVideoTrack* track_;
   blink::WebMediaStreamTrack blink_track_;

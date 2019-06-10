@@ -14,7 +14,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/mock_media_stream_video_sink.h"
-#include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 namespace content {
@@ -68,7 +68,8 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
                           blink::WebMediaStreamSource::kTypeVideo,
                           blink::WebString::FromUTF8("local_video_track"),
                           false);
-    MockMediaStreamVideoSource* video_source = new MockMediaStreamVideoSource();
+    blink::MockMediaStreamVideoSource* video_source =
+        new blink::MockMediaStreamVideoSource();
     // Takes ownership of |video_source|.
     web_source.SetPlatformSource(base::WrapUnique(video_source));
 

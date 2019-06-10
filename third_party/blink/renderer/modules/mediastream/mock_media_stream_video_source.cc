@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/mock_media_stream_video_source.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
-namespace content {
+namespace blink {
 
 MockMediaStreamVideoSource::MockMediaStreamVideoSource()
     : MockMediaStreamVideoSource(false) {}
@@ -38,14 +39,14 @@ MockMediaStreamVideoSource::~MockMediaStreamVideoSource() {}
 void MockMediaStreamVideoSource::StartMockedSource() {
   DCHECK(attempted_to_start_);
   attempted_to_start_ = false;
-  OnStartDone(blink::mojom::MediaStreamRequestResult::OK);
+  OnStartDone(mojom::blink::MediaStreamRequestResult::OK);
 }
 
 void MockMediaStreamVideoSource::FailToStartMockedSource() {
   DCHECK(attempted_to_start_);
   attempted_to_start_ = false;
   OnStartDone(
-      blink::mojom::MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO);
+      mojom::blink::MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO);
 }
 
 void MockMediaStreamVideoSource::RequestRefreshFrame() {
@@ -54,8 +55,10 @@ void MockMediaStreamVideoSource::RequestRefreshFrame() {
     const scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::CreateColorFrame(format_.frame_size, 0, 0, 0,
                                             base::TimeDelta());
-    io_task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(frame_callback_, frame, base::TimeTicks()));
+    // TODO(crbug.com/964947): Remove the rebind of |frame_callback_|.
+    PostCrossThreadTask(
+        *io_task_runner(), FROM_HERE,
+        CrossThreadBind(frame_callback_, frame, base::TimeTicks()));
   }
 }
 
@@ -64,19 +67,18 @@ void MockMediaStreamVideoSource::OnHasConsumers(bool has_consumers) {
 }
 
 void MockMediaStreamVideoSource::DoChangeSource(
-    const blink::MediaStreamDevice& new_device) {
+    const MediaStreamDevice& new_device) {
   ChangeSourceImpl(new_device);
 }
 
 void MockMediaStreamVideoSource::StartSourceImpl(
-    const blink::VideoCaptureDeliverFrameCB& frame_callback) {
+    const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(frame_callback_.is_null());
   attempted_to_start_ = true;
   frame_callback_ = frame_callback;
 }
 
-void MockMediaStreamVideoSource::StopSourceImpl() {
-}
+void MockMediaStreamVideoSource::StopSourceImpl() {}
 
 base::Optional<media::VideoCaptureFormat>
 MockMediaStreamVideoSource::GetCurrentFormat() const {
@@ -95,9 +97,10 @@ void MockMediaStreamVideoSource::DeliverVideoFrame(
     scoped_refptr<media::VideoFrame> frame) {
   DCHECK(!is_stopped_for_restart_);
   DCHECK(!frame_callback_.is_null());
-  io_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(frame_callback_, std::move(frame), base::TimeTicks()));
+  // TODO(crbug.com/964947): Remove the rebind of |frame_callback_|.
+  PostCrossThreadTask(
+      *io_task_runner(), FROM_HERE,
+      CrossThreadBind(frame_callback_, std::move(frame), base::TimeTicks()));
 }
 
 void MockMediaStreamVideoSource::StopSourceForRestartImpl() {
@@ -118,4 +121,4 @@ void MockMediaStreamVideoSource::RestartSourceImpl(
   OnRestartDone(true);
 }
 
-}  // namespace content
+}  // namespace blink

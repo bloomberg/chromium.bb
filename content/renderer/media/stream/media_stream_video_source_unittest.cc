@@ -15,13 +15,13 @@
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "content/renderer/media/stream/mock_media_stream_video_sink.h"
-#include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/public/web/web_heap.h"
 
@@ -41,7 +41,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
         number_of_failed_constraints_applied_(0),
         result_(blink::mojom::MediaStreamRequestResult::OK),
         result_name_(""),
-        mock_source_(new MockMediaStreamVideoSource(
+        mock_source_(new blink::MockMediaStreamVideoSource(
             media::VideoCaptureFormat(gfx::Size(1280, 720),
                                       1000.0,
                                       media::PIXEL_FORMAT_I420),
@@ -128,7 +128,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
   blink::mojom::MediaStreamRequestResult error_type() const { return result_; }
   blink::WebString error_name() const { return result_name_; }
 
-  MockMediaStreamVideoSource* mock_source() { return mock_source_; }
+  blink::MockMediaStreamVideoSource* mock_source() { return mock_source_; }
 
   const blink::WebMediaStreamSource& web_source() { return web_source_; }
 
@@ -264,7 +264,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
   blink::WebString result_name_;
   blink::WebMediaStreamSource web_source_;
   // |mock_source_| is owned by |web_source_|.
-  MockMediaStreamVideoSource* mock_source_;
+  blink::MockMediaStreamVideoSource* mock_source_;
 };
 
 TEST_F(MediaStreamVideoSourceTest, AddTrackAndStartSource) {

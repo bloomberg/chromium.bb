@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("mediastream") {
@@ -51,5 +52,21 @@ blink_modules_sources("mediastream") {
     "video_track_adapter.h",
     "video_track_adapter_settings.cc",
     "web_media_stream_utils.cc",
+  ]
+}
+
+jumbo_source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_media_stream_video_source.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gmock",
+    "//third_party/blink/public/mojom:mojom_platform_blink_headers",
   ]
 }

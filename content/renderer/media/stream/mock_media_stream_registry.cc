@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -15,6 +14,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 
 namespace content {
@@ -67,7 +67,8 @@ void MockMediaStreamRegistry::AddVideoTrack(
   blink_source.Initialize("mock video source id",
                           blink::WebMediaStreamSource::kTypeVideo,
                           "mock video source name", false /* remote */);
-  MockMediaStreamVideoSource* native_source = new MockMediaStreamVideoSource();
+  blink::MockMediaStreamVideoSource* native_source =
+      new blink::MockMediaStreamVideoSource();
   blink_source.SetPlatformSource(base::WrapUnique(native_source));
   blink::WebMediaStreamTrack blink_track;
   blink_track.Initialize(blink::WebString::FromUTF8(track_id), blink_source);

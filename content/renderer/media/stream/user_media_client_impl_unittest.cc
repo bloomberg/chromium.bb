@@ -19,7 +19,6 @@
 #include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
-#include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "content/renderer/media/stream/mock_mojo_media_stream_dispatcher_host.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/audio/audio_device_description.h"
@@ -39,6 +38,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 using testing::_;
@@ -154,12 +154,13 @@ class MockLocalMediaStreamAudioSource : public blink::MediaStreamAudioSource {
   }
 };
 
-class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
+class MockMediaStreamVideoCapturerSource
+    : public blink::MockMediaStreamVideoSource {
  public:
   MockMediaStreamVideoCapturerSource(const blink::MediaStreamDevice& device,
                                      const SourceStoppedCallback& stop_callback,
                                      PeerConnectionDependencyFactory* factory)
-      : MockMediaStreamVideoSource() {
+      : blink::MockMediaStreamVideoSource() {
     SetDevice(device);
     SetStopCallback(stop_callback);
   }

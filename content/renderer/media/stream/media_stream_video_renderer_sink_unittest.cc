@@ -14,13 +14,13 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/mock_media_stream_registry.h"
-#include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 using ::testing::_;
@@ -39,7 +39,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
  public:
   MediaStreamVideoRendererSinkTest()
       : child_process_(new ChildProcess()),
-        mock_source_(new MockMediaStreamVideoSource()) {
+        mock_source_(new blink::MockMediaStreamVideoSource()) {
     blink_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
                              blink::WebMediaStreamSource::kTypeVideo,
                              blink::WebString::FromASCII("dummy_source_name"),
@@ -120,7 +120,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
   }
 
   blink::WebMediaStreamSource blink_source_;
-  MockMediaStreamVideoSource* mock_source_;
+  blink::MockMediaStreamVideoSource* mock_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoRendererSinkTest);
 };

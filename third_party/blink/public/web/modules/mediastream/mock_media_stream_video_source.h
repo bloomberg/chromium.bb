@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MOCK_MEDIA_STREAM_VIDEO_SOURCE_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MOCK_MEDIA_STREAM_VIDEO_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MOCK_MEDIA_STREAM_VIDEO_SOURCE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MOCK_MEDIA_STREAM_VIDEO_SOURCE_H_
 
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace content {
+namespace blink {
 
 class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
  public:
@@ -89,6 +89,6 @@ class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamVideoSource);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MOCK_MEDIA_STREAM_VIDEO_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MOCK_MEDIA_STREAM_VIDEO_SOURCE_H_
