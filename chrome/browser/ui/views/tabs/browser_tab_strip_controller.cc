@@ -325,7 +325,8 @@ void BrowserTabStripController::CreateNewTab() {
       browser_view_->browser()->profile());
   reopen_tab_iph->NewTabOpened();
 
-  model_->delegate()->AddTabAt(GURL(), -1, true);
+  const auto group_id = model_->GetTabGroupForTab(model_->active_index());
+  model_->delegate()->AddTabAt(GURL(), -1, true, group_id);
 
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   auto* new_tab_tracker =

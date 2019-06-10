@@ -635,8 +635,10 @@ void NewTab(Browser* browser) {
   reopen_tab_iph->NewTabOpened();
 
   if (browser->is_type_tabbed()) {
-    AddTabAt(browser, GURL(), -1, true);
-    browser->tab_strip_model()->GetActiveWebContents()->RestoreFocus();
+    TabStripModel* const model = browser->tab_strip_model();
+    const auto group_id = model->GetTabGroupForTab(model->active_index());
+    AddTabAt(browser, GURL(), -1, true, group_id);
+    model->GetActiveWebContents()->RestoreFocus();
   } else {
     ScopedTabbedBrowserDisplayer displayer(browser->profile());
     Browser* b = displayer.browser();
