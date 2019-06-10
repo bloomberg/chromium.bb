@@ -105,8 +105,11 @@ class NavigatorShareTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    GetDocument().SetSecurityOrigin(
-        SecurityOrigin::Create(KURL("https://example.com")));
+    GetFrame().Loader().CommitNavigation(
+        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(),
+                                                  KURL("https://example.com")),
+        nullptr /* extra_data */);
+    test::RunPendingTasks();
 
     service_manager::InterfaceProvider::TestApi test_api(
         &GetFrame().GetInterfaceProvider());

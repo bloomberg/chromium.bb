@@ -51,9 +51,8 @@ class MainThreadWorkletTest : public PageTestBase {
   }
   void SetUpScope(const String& csp_header) {
     PageTestBase::SetUp(IntSize());
+    NavigateTo(KURL("https://example.com/"));
     Document* document = &GetDocument();
-    document->SetURL(KURL("https://example.com/"));
-    document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
 
     // Set up the CSP for Document before starting MainThreadWorklet because
     // MainThreadWorklet inherits the owner Document's CSP.

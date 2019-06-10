@@ -40,9 +40,7 @@ class AudioWorkletThreadTest : public PageTestBase {
   void SetUp() override {
     AudioWorkletThread::EnsureSharedBackingThread();
     PageTestBase::SetUp(IntSize());
-    Document* document = &GetDocument();
-    document->SetURL(KURL("https://example.com/"));
-    document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
+    NavigateTo(KURL("https://example.com/"));
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 

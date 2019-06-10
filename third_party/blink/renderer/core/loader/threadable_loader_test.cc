@@ -160,9 +160,11 @@ class ThreadableLoaderTestHelper final {
  public:
   ThreadableLoaderTestHelper()
       : dummy_page_holder_(std::make_unique<DummyPageHolder>(IntSize(1, 1))) {
-    GetDocument().SetURL(KURL("http://fake.url/"));
-    GetDocument().SetSecurityOrigin(
-        SecurityOrigin::Create(KURL("http://fake.url/")));
+    KURL url("http://fake.url/");
+    dummy_page_holder_->GetFrame().Loader().CommitNavigation(
+        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
+        nullptr /* extra_data */);
+    blink::test::RunPendingTasks();
   }
 
   void CreateLoader(ThreadableLoaderClient* client) {

@@ -27,9 +27,8 @@ class HasEnrolledInstrumentTest
 };
 
 TEST_F(HasEnrolledInstrumentTest, RejectPromiseOnUserCancel) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -42,9 +41,8 @@ TEST_F(HasEnrolledInstrumentTest, RejectPromiseOnUserCancel) {
 }
 
 TEST_F(HasEnrolledInstrumentTest, RejectPromiseOnUnknownError) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -57,9 +55,8 @@ TEST_F(HasEnrolledInstrumentTest, RejectPromiseOnUnknownError) {
 }
 
 TEST_F(HasEnrolledInstrumentTest, RejectDuplicateRequest) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -69,9 +66,8 @@ TEST_F(HasEnrolledInstrumentTest, RejectDuplicateRequest) {
 }
 
 TEST_F(HasEnrolledInstrumentTest, RejectQueryQuotaExceeded) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -84,9 +80,8 @@ TEST_F(HasEnrolledInstrumentTest, RejectQueryQuotaExceeded) {
 }
 
 TEST_F(HasEnrolledInstrumentTest, ReturnHasNoEnrolledInstrument) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -102,9 +97,8 @@ TEST_F(HasEnrolledInstrumentTest, ReturnHasNoEnrolledInstrument) {
 }
 
 TEST_F(HasEnrolledInstrumentTest, ReturnHasEnrolledInstrument) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -134,9 +128,8 @@ class CanMakePaymentTest
 };
 
 TEST_P(CanMakePaymentTest, RejectPromiseOnUserCancel) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -149,9 +142,9 @@ TEST_P(CanMakePaymentTest, RejectPromiseOnUserCancel) {
 }
 
 TEST_P(CanMakePaymentTest, RejectPromiseOnUnknownError) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
+
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -164,9 +157,8 @@ TEST_P(CanMakePaymentTest, RejectPromiseOnUnknownError) {
 }
 
 TEST_P(CanMakePaymentTest, RejectDuplicateRequest) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -177,9 +169,8 @@ TEST_P(CanMakePaymentTest, RejectDuplicateRequest) {
 }
 
 TEST_P(CanMakePaymentTest, RejectQueryQuotaExceeded) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -192,9 +183,8 @@ TEST_P(CanMakePaymentTest, RejectQueryQuotaExceeded) {
 }
 
 TEST_P(CanMakePaymentTest, ReturnCannotMakePayment) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -210,9 +200,8 @@ TEST_P(CanMakePaymentTest, ReturnCannotMakePayment) {
 }
 
 TEST_P(CanMakePaymentTest, ReturnCanMakePayment) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());

@@ -16,10 +16,12 @@ class HTMLFrameElementTest : public testing::Test {};
 // Frame elements do not have any container-policy related attributes, but the
 // fullscreen feature should be unconditionally disabled.
 TEST_F(HTMLFrameElementTest, DefaultContainerPolicy) {
-  auto* document = MakeGarbageCollected<Document>();
   const KURL document_url("http://example.com");
-  document->SetURL(document_url);
-  document->UpdateSecurityOrigin(SecurityOrigin::Create(document_url));
+  DocumentInit init =
+      DocumentInit::Create()
+          .WithInitiatorOrigin(SecurityOrigin::Create(document_url))
+          .WithURL(document_url);
+  auto* document = MakeGarbageCollected<Document>(init);
 
   auto* frame_element = MakeGarbageCollected<HTMLFrameElement>(*document);
 

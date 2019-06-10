@@ -277,7 +277,7 @@ TEST(DOMWebSocketTest, insecureRequestsDoNotUpgrade) {
 TEST(DOMWebSocketTest, mixedContentAutoUpgrade) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kMixedContentAutoupgrade);
-  V8TestingScope scope;
+  V8TestingScope scope(KURL("https://example.com"));
   DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
@@ -285,8 +285,6 @@ TEST(DOMWebSocketTest, mixedContentAutoUpgrade) {
                 Connect(KURL("wss://example.com/endpoint"), String()))
         .WillOnce(Return(true));
   }
-  scope.GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL("https://example.com")));
   scope.GetDocument().SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
   websocket_scope.Socket().Connect("ws://example.com/endpoint",
                                    Vector<String>(), scope.GetExceptionState());

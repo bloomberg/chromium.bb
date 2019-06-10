@@ -22,11 +22,12 @@ class HTMLIFrameElementTest : public testing::Test {
   }
 
   void SetUp() final {
-    document_ = MakeGarbageCollected<Document>();
     const KURL document_url("http://example.com");
-    document_->SetURL(document_url);
-    document_->UpdateSecurityOrigin(SecurityOrigin::Create(document_url));
-
+    DocumentInit init =
+        DocumentInit::Create()
+            .WithOriginToCommit(SecurityOrigin::Create(document_url))
+            .WithURL(document_url);
+    document_ = MakeGarbageCollected<Document>(init);
     frame_element_ = MakeGarbageCollected<HTMLIFrameElement>(*document_);
   }
 

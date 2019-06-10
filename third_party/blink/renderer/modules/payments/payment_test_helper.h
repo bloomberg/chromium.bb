@@ -21,10 +21,10 @@
 
 namespace blink {
 
-class Document;
 class PaymentMethodData;
 class ScriptState;
 class ScriptValue;
+class V8TestingScope;
 
 enum PaymentTestDetailToChange {
   kPaymentTestDetailNone,
@@ -87,7 +87,12 @@ payments::mojom::blink::PaymentResponsePtr BuildPaymentResponseForTest();
 
 payments::mojom::blink::PaymentAddressPtr BuildPaymentAddressForTest();
 
-void MakePaymentRequestOriginSecure(Document&);
+class PaymentRequestV8TestingScope : public V8TestingScope {
+  STACK_ALLOCATED();
+
+ public:
+  PaymentRequestV8TestingScope();
+};
 
 class PaymentRequestMockFunctionScope {
   STACK_ALLOCATED();

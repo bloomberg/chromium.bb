@@ -36,8 +36,9 @@ class SourceListDirectiveTest : public testing::Test {
     KURL secure_url("https://example.test/image.png");
     scoped_refptr<SecurityOrigin> secure_origin(
         SecurityOrigin::Create(secure_url));
-    document = MakeGarbageCollected<Document>();
-    document->SetSecurityOrigin(secure_origin);
+    DocumentInit init =
+        DocumentInit::Create().WithOriginToCommit(secure_origin);
+    document = MakeGarbageCollected<Document>(init);
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
   }
 
@@ -45,8 +46,9 @@ class SourceListDirectiveTest : public testing::Test {
     KURL secure_url(origin);
     scoped_refptr<SecurityOrigin> secure_origin(
         SecurityOrigin::Create(secure_url));
-    auto* document = MakeGarbageCollected<Document>();
-    document->SetSecurityOrigin(secure_origin);
+    DocumentInit init =
+        DocumentInit::Create().WithOriginToCommit(secure_origin);
+    auto* document = MakeGarbageCollected<Document>(init);
     auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     return csp;

@@ -188,11 +188,7 @@ class ServiceWorkerContainerTest : public PageTestBase {
   }
 
   void SetPageURL(const String& url) {
-    // For URL completion.
-    GetDocument().SetURL(KURL(NullURL(), url));
-
-    // The basis for security checks.
-    GetDocument().SetSecurityOrigin(SecurityOrigin::CreateFromString(url));
+    NavigateTo(KURL(NullURL(), url));
 
     if (url.StartsWith("https://") || url.StartsWith("http://localhost/")) {
       GetDocument().SetSecureContextStateForTesting(

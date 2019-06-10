@@ -198,8 +198,7 @@ class ModuleMapTest : public PageTestBase {
 
 void ModuleMapTest::SetUp() {
   PageTestBase::SetUp(IntSize(500, 500));
-  GetDocument().SetURL(KURL("https://example.com"));
-  GetDocument().SetSecurityOrigin(SecurityOrigin::Create(GetDocument().Url()));
+  NavigateTo(KURL("https://example.com"));
   modulator_ = MakeGarbageCollected<ModuleMapTestModulator>(
       ToScriptStateForMainWorld(&GetFrame()));
   map_ = MakeGarbageCollected<ModuleMap>(modulator_);

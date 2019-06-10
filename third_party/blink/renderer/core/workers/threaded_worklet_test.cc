@@ -230,9 +230,13 @@ class ThreadedWorkletTest : public testing::Test {
  public:
   void SetUp() override {
     page_ = std::make_unique<DummyPageHolder>();
-    Document* document = page_->GetFrame().GetDocument();
-    document->SetURL(KURL("https://example.com/"));
-    document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
+    KURL url("https://example.com/");
+    page_->GetFrame().Loader().CommitNavigation(
+        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
+        nullptr /* extra_data */);
+    blink::test::RunPendingTasks();
+    ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
+
     messaging_proxy_ =
         MakeGarbageCollected<ThreadedWorkletMessagingProxyForTest>(
             &page_->GetDocument());

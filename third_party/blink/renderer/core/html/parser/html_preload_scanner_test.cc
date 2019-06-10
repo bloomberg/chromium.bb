@@ -245,8 +245,7 @@ class HTMLPreloadScannerTest : public PageTestBase {
     KURL document_url = KURL("http://whatever.test/");
     if (use_secure_document_url)
       document_url = KURL("https://whatever.test/");
-    GetDocument().SetURL(document_url);
-    GetDocument().SetSecurityOrigin(SecurityOrigin::Create(document_url));
+    NavigateTo(document_url);
     GetDocument().GetSettings()->SetViewportEnabled(viewport_state ==
                                                     kViewportEnabled);
     GetDocument().GetSettings()->SetViewportMetaEnabled(viewport_state ==

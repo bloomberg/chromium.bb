@@ -123,9 +123,8 @@ class CredentialManagerTestingContext {
 
  public:
   CredentialManagerTestingContext(
-      MockCredentialManager* mock_credential_manager) {
-    dummy_context_.GetDocument().SetSecurityOrigin(
-        SecurityOrigin::CreateFromString("https://example.test"));
+      MockCredentialManager* mock_credential_manager)
+      : dummy_context_(KURL("https://example.test")) {
     dummy_context_.GetDocument().SetSecureContextStateForTesting(
         SecureContextState::kSecure);
     mojom::blink::DocumentInterfaceBrokerPtr doc;

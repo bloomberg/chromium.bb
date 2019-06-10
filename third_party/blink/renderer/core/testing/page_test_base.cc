@@ -114,6 +114,14 @@ void PageTestBase::SetHtmlInnerHTML(const std::string& html_content) {
   UpdateAllLifecyclePhasesForTest();
 }
 
+void PageTestBase::NavigateTo(const KURL& url) {
+  GetFrame().Loader().CommitNavigation(
+      WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
+      nullptr /* extra_data */);
+  blink::test::RunPendingTasks();
+  ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
+}
+
 void PageTestBase::UpdateAllLifecyclePhasesForTest() {
   GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);

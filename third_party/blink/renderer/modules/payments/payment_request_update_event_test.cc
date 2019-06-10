@@ -135,9 +135,8 @@ TEST(PaymentRequestUpdateEventTest, UpdaterNotRequired) {
 }
 
 TEST(PaymentRequestUpdateEventTest, AddressChangeUpdateWithTimeout) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -173,9 +172,8 @@ TEST(PaymentRequestUpdateEventTest, AddressChangeUpdateWithTimeout) {
 }
 
 TEST(PaymentRequestUpdateEventTest, OptionChangeUpdateWithTimeout) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -211,9 +209,8 @@ TEST(PaymentRequestUpdateEventTest, OptionChangeUpdateWithTimeout) {
 }
 
 TEST(PaymentRequestUpdateEventTest, AddressChangePromiseTimeout) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
@@ -246,9 +243,8 @@ TEST(PaymentRequestUpdateEventTest, AddressChangePromiseTimeout) {
 }
 
 TEST(PaymentRequestUpdateEventTest, OptionChangePromiseTimeout) {
-  V8TestingScope scope;
+  PaymentRequestV8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
-  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentRequest* request = PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
       BuildPaymentDetailsInitForTest(), scope.GetExceptionState());

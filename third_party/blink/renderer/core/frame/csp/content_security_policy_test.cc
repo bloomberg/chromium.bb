@@ -69,9 +69,10 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
                           kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.expected_policy, csp->GetInsecureRequestPolicy());
 
-    auto* document = MakeGarbageCollected<Document>();
-    document->SetSecurityOrigin(secure_origin);
-    document->SetURL(secure_url);
+    DocumentInit init = DocumentInit::Create()
+                            .WithOriginToCommit(secure_origin)
+                            .WithURL(secure_url);
+    auto* document = MakeGarbageCollected<Document>(init);
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     EXPECT_EQ(test.expected_policy, document->GetInsecureRequestPolicy());
     bool expect_upgrade = test.expected_policy & kUpgradeInsecureRequests;
@@ -720,8 +721,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
   WTF::OrdinalNumber context_line;
 
   // We need document for HTMLScriptElement tests.
-  auto* document = MakeGarbageCollected<Document>();
-  document->SetSecurityOrigin(secure_origin);
+  DocumentInit init = DocumentInit::Create().WithOriginToCommit(secure_origin);
+  auto* document = MakeGarbageCollected<Document>(init);
 
   for (const auto& test : cases) {
     SCOPED_TRACE(testing::Message() << "Policy: `" << test.policy

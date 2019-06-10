@@ -33,6 +33,10 @@ class PageTestBase : public testing::Test {
   void SetBodyInnerHTML(const String&);
   void SetHtmlInnerHTML(const std::string&);
 
+  // Navigate to |url| providing an empty response but
+  // URL and security origin of the Document will be set to |url|.
+  void NavigateTo(const KURL& url);
+
   Document& GetDocument() const;
   Page& GetPage() const;
   LocalFrame& GetFrame() const;

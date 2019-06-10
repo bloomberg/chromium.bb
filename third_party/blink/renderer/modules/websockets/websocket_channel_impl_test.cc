@@ -132,6 +132,8 @@ class WebSocketChannelImplTest : public PageTestBase {
 
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
+    const KURL page_url("http://example.com/");
+    NavigateTo(page_url);
     channel_ = WebSocketChannelImpl::CreateForTesting(
         &GetDocument(), channel_client_.Get(), SourceLocation::Capture(),
         Handle(), base::WrapUnique(handshake_throttle_));
@@ -210,13 +212,8 @@ TEST_F(WebSocketChannelImplTest, connectSuccess) {
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
 
-  const KURL page_url("http://example.com/");
-  GetFrame().GetSecurityContext()->SetSecurityOrigin(
-      SecurityOrigin::Create(page_url));
-  Document& document = GetDocument();
-  document.SetURL(page_url);
   // Make sure that firstPartyForCookies() is set to the given value.
-  EXPECT_EQ("http://example.com/", document.SiteForCookies().GetString());
+  EXPECT_EQ("http://example.com/", GetDocument().SiteForCookies().GetString());
 
   EXPECT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
 

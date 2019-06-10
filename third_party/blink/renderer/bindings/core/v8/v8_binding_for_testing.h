@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "v8/include/v8.h"
@@ -17,13 +18,14 @@ class Document;
 class DummyPageHolder;
 class ExecutionContext;
 class LocalFrame;
+class KURL;
 class Page;
 
 class V8TestingScope {
   STACK_ALLOCATED();
 
  public:
-  V8TestingScope();
+  explicit V8TestingScope(const KURL& url = KURL());
   ScriptState* GetScriptState() const;
   ExecutionContext* GetExecutionContext() const;
   v8::Isolate* GetIsolate() const;

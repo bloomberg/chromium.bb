@@ -31,10 +31,7 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
 
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    Document* document = &GetDocument();
-    document->SetURL(KURL("https://example.com/"));
-    document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
-
+    NavigateTo(KURL("https://example.com/"));
     dispatcher_ = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
     proxy_client_ =
         MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr, dispatcher_);

@@ -125,11 +125,7 @@ class PaymentRequestDetailsTest
     : public testing::TestWithParam<DetailsTestCase> {};
 
 TEST_P(PaymentRequestDetailsTest, ValidatesDetails) {
-  V8TestingScope scope;
-  scope.GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL("https://www.example.com/")));
-  scope.GetDocument().SetSecureContextStateForTesting(
-      SecureContextState::kSecure);
+  PaymentRequestV8TestingScope scope;
   PaymentOptions* options = PaymentOptions::Create();
   options->setRequestShipping(true);
   PaymentRequest::Create(
