@@ -83,11 +83,9 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
     return stream->writer_;
   }
 
-  void Serialize(ScriptState*, MessagePort*, ExceptionState&) override;
-
-  static WritableStreamNative* Deserialize(ScriptState*,
-                                           MessagePort*,
-                                           ExceptionState&);
+  void Serialize(ScriptState*, MessagePort*, ExceptionState&) override {
+    // TODO(ricea): Implement this.
+  }
 
   //
   // Methods used by ReadableStreamNative::PipeTo

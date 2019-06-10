@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_WRITABLE_STREAM_DEFAULT_WRITER_H_
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "v8/include/v8.h"
 
@@ -22,7 +21,7 @@ class WritableStream;
 class WritableStreamNative;
 
 // https://streams.spec.whatwg.org/#default-writer-class
-class CORE_EXPORT WritableStreamDefaultWriter final : public ScriptWrappable {
+class WritableStreamDefaultWriter final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

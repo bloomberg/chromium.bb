@@ -30,8 +30,6 @@ blink_core_sources("streams") {
     "stream_algorithms.h",
     "stream_promise_resolver.cc",
     "stream_promise_resolver.h",
-    "transferable_streams.cc",
-    "transferable_streams.h",
     "transform_stream.cc",
     "transform_stream.h",
     "transform_stream_default_controller.cc",

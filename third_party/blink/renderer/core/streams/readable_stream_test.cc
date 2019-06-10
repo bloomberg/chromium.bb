@@ -410,6 +410,11 @@ TEST_P(ReadableStreamTest, LockAndDisturb) {
 }
 
 TEST_P(ReadableStreamTest, Serialize) {
+  if (GetParam()) {
+    // Serialize() is not yet supported in the C++ implementation.
+    return;
+  }
+
   ScopedTransferableStreamsForTest enabled(true);
 
   V8TestingScope scope;

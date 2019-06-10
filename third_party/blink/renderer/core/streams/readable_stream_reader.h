@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_READER_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "v8/include/v8.h"
 
@@ -26,7 +25,7 @@ class Visitor;
 // with the standard, ReadableStreamDefaultReader is implemented by the
 // ReadableStreamReader class.
 // TODO(ricea): Refactor this when implementing ReadableStreamBYOBReader.
-class CORE_EXPORT ReadableStreamReader : public ScriptWrappable {
+class ReadableStreamReader : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
