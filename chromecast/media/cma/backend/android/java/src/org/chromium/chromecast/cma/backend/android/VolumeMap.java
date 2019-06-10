@@ -55,14 +55,21 @@ public final class VolumeMap {
 
     private static final SparseIntArray MIN_VOLUME_INDEX = new SparseIntArray(4) {
         {
-            append(AudioManager.STREAM_MUSIC,
-                    getAudioManager().getStreamMinVolume(AudioManager.STREAM_MUSIC));
-            append(AudioManager.STREAM_ALARM,
-                    getAudioManager().getStreamMinVolume(AudioManager.STREAM_ALARM));
-            append(AudioManager.STREAM_SYSTEM,
-                    getAudioManager().getStreamMinVolume(AudioManager.STREAM_SYSTEM));
-            append(AudioManager.STREAM_VOICE_CALL,
-                    getAudioManager().getStreamMinVolume(AudioManager.STREAM_VOICE_CALL));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                append(AudioManager.STREAM_MUSIC,
+                        getAudioManager().getStreamMinVolume(AudioManager.STREAM_MUSIC));
+                append(AudioManager.STREAM_ALARM,
+                        getAudioManager().getStreamMinVolume(AudioManager.STREAM_ALARM));
+                append(AudioManager.STREAM_SYSTEM,
+                        getAudioManager().getStreamMinVolume(AudioManager.STREAM_SYSTEM));
+                append(AudioManager.STREAM_VOICE_CALL,
+                        getAudioManager().getStreamMinVolume(AudioManager.STREAM_VOICE_CALL));
+            } else {
+                append(AudioManager.STREAM_MUSIC, 0);
+                append(AudioManager.STREAM_ALARM, 0);
+                append(AudioManager.STREAM_SYSTEM, 0);
+                append(AudioManager.STREAM_VOICE_CALL, 0);
+            }
         }
     };
 
