@@ -259,31 +259,41 @@ AXPlatformRange CreateTextRange(const BrowserAccessibility& start_object,
 }
 
 void AddMisspelledTextAttributes(
-    const std::vector<const BrowserAccessibility*>& text_only_objects,
+    const std::vector<AXPlatformRange>& anchor_ranges,
     NSMutableAttributedString* attributed_string) {
+  int anchor_start_offset = 0;
   [attributed_string beginEditing];
-  for (const BrowserAccessibility* text_object : text_only_objects) {
-    const std::vector<int32_t>& marker_types = text_object->GetIntListAttribute(
-        ax::mojom::IntListAttribute::kMarkerTypes);
-    const std::vector<int>& marker_starts = text_object->GetIntListAttribute(
-        ax::mojom::IntListAttribute::kMarkerStarts);
-    const std::vector<int>& marker_ends = text_object->GetIntListAttribute(
-        ax::mojom::IntListAttribute::kMarkerEnds);
+  for (const AXPlatformRange& anchor_range : anchor_ranges) {
+    DCHECK(!anchor_range.IsNull());
+    DCHECK_EQ(anchor_range.anchor()->GetAnchor(),
+              anchor_range.focus()->GetAnchor())
+        << "An anchor range should only span a single object.";
+    const BrowserAccessibility* anchor = anchor_range.focus()->GetAnchor();
+    const std::vector<int32_t>& marker_types =
+        anchor->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes);
+    const std::vector<int>& marker_starts =
+        anchor->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts);
+    const std::vector<int>& marker_ends =
+        anchor->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds);
     for (size_t i = 0; i < marker_types.size(); ++i) {
       if (!(marker_types[i] &
             static_cast<int32_t>(ax::mojom::MarkerType::kSpelling))) {
         continue;
       }
 
-      int misspelling_start = marker_starts[i];
-      int misspelling_end = marker_ends[i];
+      int misspelling_start = anchor_start_offset + marker_starts[i];
+      int misspelling_end = anchor_start_offset + marker_ends[i];
       int misspelling_length = misspelling_end - misspelling_start;
+      DCHECK_LE(static_cast<unsigned long>(misspelling_end),
+                [attributed_string length]);
       DCHECK_GT(misspelling_length, 0);
       [attributed_string
           addAttribute:NSAccessibilityMarkedMisspelledTextAttribute
                  value:@YES
                  range:NSMakeRange(misspelling_start, misspelling_length)];
     }
+
+    anchor_start_offset += anchor_range.GetText().length();
   }
   [attributed_string endEditing];
 }
@@ -297,54 +307,21 @@ NSString* GetTextForTextMarkerRange(AXTextMarkerRangeRef marker_range) {
 
 NSAttributedString* GetAttributedTextForTextMarkerRange(
     AXTextMarkerRangeRef marker_range) {
-  BrowserAccessibility* start_object;
-  BrowserAccessibility* end_object;
-  int start_offset, end_offset;
-  ax::mojom::TextAffinity start_affinity, end_affinity;
   AXPlatformRange ax_range = CreateRangeFromTextMarkerRange(marker_range);
   if (ax_range.IsNull())
     return nil;
-  start_object = ax_range.anchor()->GetAnchor();
-  end_object = ax_range.focus()->GetAnchor();
-  start_offset = ax_range.anchor()->text_offset();
-  end_offset = ax_range.focus()->text_offset();
-  start_affinity = ax_range.anchor()->affinity();
-  end_affinity = ax_range.focus()->affinity();
 
-  NSString* text = base::SysUTF16ToNSString(
-      BrowserAccessibilityManager::GetTextForRange(*start_object, *end_object));
+  NSString* text = base::SysUTF16ToNSString(ax_range.GetText());
   if ([text length] == 0)
     return nil;
 
-  // Be permissive with the start and end offsets.
-  if (start_object == end_object && end_offset < start_offset)
-    std::swap(start_offset, end_offset);
-
-  int trim_length = 0;
-  if ((end_object->IsPlainTextField() || end_object->IsTextOnlyObject()) &&
-      end_offset < static_cast<int>(end_object->GetInnerText().length())) {
-    trim_length =
-        static_cast<int>(end_object->GetInnerText().length()) - end_offset;
-  }
-  int range_length = [text length] - start_offset - trim_length;
-
-  // http://crbug.com/651145
-  // This shouldn't happen, so this is a temporary workaround to prevent
-  // hard crashes.
-  if (range_length < 0)
-    return nil;
-
-  DCHECK_GE(range_length, 0);
-  NSRange range = NSMakeRange(start_offset, range_length);
-  DCHECK_LE(NSMaxRange(range), [text length]);
-
   NSMutableAttributedString* attributed_text =
       [[[NSMutableAttributedString alloc] initWithString:text] autorelease];
-  std::vector<const BrowserAccessibility*> text_only_objects =
-      BrowserAccessibilityManager::FindTextOnlyObjectsInRange(*start_object,
-                                                              *end_object);
-  AddMisspelledTextAttributes(text_only_objects, attributed_text);
-  return [attributed_text attributedSubstringFromRange:range];
+  const std::vector<AXPlatformRange> anchor_ranges = ax_range.GetAnchors();
+  // Currently, we only decorate the attributed string with misspelling
+  // information.
+  AddMisspelledTextAttributes(anchor_ranges, attributed_text);
+  return attributed_text;
 }
 
 // Returns an autoreleased copy of the AXNodeData's attribute.
@@ -2389,13 +2366,16 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return base::SysUTF16ToNSString(value.substr(range.location, range.length));
 }
 
+// Retrieves the text inside this object and decorates it with attributes
+// indicating specific ranges of interest within the text, e.g. the location of
+// misspellings.
 - (NSAttributedString*)attributedValueForRange:(NSRange)range {
   if (![self instanceActive])
     return nil;
 
   base::string16 text = owner_->GetValue();
   if (owner_->IsTextOnlyObject() && text.empty())
-    text = owner_->GetInnerText();
+    text = owner_->GetText();
 
   // We need to get the whole text because a spelling mistake might start or end
   // outside our range.
@@ -2404,10 +2384,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       [[[NSMutableAttributedString alloc] initWithString:value] autorelease];
 
   if (!owner_->IsTextOnlyObject()) {
-    std::vector<const BrowserAccessibility*> textOnlyObjects =
-        BrowserAccessibilityManager::FindTextOnlyObjectsInRange(*owner_,
-                                                                *owner_);
-    AddMisspelledTextAttributes(textOnlyObjects, attributedValue);
+    const std::vector<AXPlatformRange> anchorRanges =
+        AXPlatformRange(owner_->CreatePositionAt(0),
+                        owner_->CreatePositionAt(int{text.length()}))
+            .GetAnchors();
+    AddMisspelledTextAttributes(anchorRanges, attributedValue);
   }
 
   return [attributedValue attributedSubstringFromRange:range];
