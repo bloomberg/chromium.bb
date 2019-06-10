@@ -22,7 +22,6 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -60,7 +59,7 @@ namespace viz {
 struct ImageContext;
 class DirectContextProvider;
 class GLRendererCopier;
-class GpuServiceImpl;
+class SkiaOutputSurfaceDependency;
 class TextureDeleter;
 class VulkanContextProvider;
 
@@ -80,8 +79,7 @@ class SkiaOutputSurfaceImplOnGpu {
   using ContextLostCallback = base::RepeatingCallback<void()>;
 
   SkiaOutputSurfaceImplOnGpu(
-      GpuServiceImpl* gpu_service,
-      gpu::SurfaceHandle surface_handle,
+      SkiaOutputSurfaceDependency* deps,
       const RendererSettings& renderer_settings_,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       const BufferPresentedCallback& buffer_presented_callback,
@@ -151,8 +149,8 @@ class SkiaOutputSurfaceImplOnGpu {
  private:
   class ScopedPromiseImageAccess;
 
-  void InitializeForGLWithGpuService(GpuServiceImpl* gpu_service);
-  void InitializeForVulkan(GpuServiceImpl* gpu_service);
+  void InitializeForGL();
+  void InitializeForVulkan();
 
   // Returns true if |texture_base| is a gles2::Texture and all necessary
   // operations completed successfully. In this case, |*size| is the size of
@@ -182,13 +180,11 @@ class SkiaOutputSurfaceImplOnGpu {
 
   void CreateFallbackImage(ImageContext* context);
 
-  const gpu::SurfaceHandle surface_handle_;
+  SkiaOutputSurfaceDependency* const dependency_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
-  gpu::MailboxManager* const mailbox_manager_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   std::unique_ptr<gpu::SharedImageRepresentationFactory>
       shared_image_representation_factory_;
-  gpu::raster::GrShaderCache* const gr_shader_cache_;
   VulkanContextProvider* const vulkan_context_provider_;
   const RendererSettings renderer_settings_;
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
@@ -239,8 +235,6 @@ class SkiaOutputSurfaceImplOnGpu {
   scoped_refptr<DirectContextProvider> context_provider_;
   std::unique_ptr<TextureDeleter> texture_deleter_;
   std::unique_ptr<GLRendererCopier> copier_;
-
-  GpuServiceImpl* const gpu_service_;
 
   bool delayed_work_pending_ = false;
 

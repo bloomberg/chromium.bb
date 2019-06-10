@@ -15,7 +15,6 @@
 #include "components/viz/service/display_embedder/skia_output_surface_base.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
@@ -28,7 +27,7 @@ class WaitableEvent;
 
 namespace viz {
 
-class GpuServiceImpl;
+class SkiaOutputSurfaceDependency;
 class SkiaOutputSurfaceImplOnGpu;
 
 // The SkiaOutputSurface implementation. It is the output surface for
@@ -43,8 +42,7 @@ class SkiaOutputSurfaceImplOnGpu;
 // through SkiaOutputSurfaceImpleOnGpu.
 class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurfaceBase {
  public:
-  SkiaOutputSurfaceImpl(GpuServiceImpl* gpu_service,
-                        gpu::SurfaceHandle surface_handle,
+  SkiaOutputSurfaceImpl(std::unique_ptr<SkiaOutputSurfaceDependency> deps,
                         const RendererSettings& renderer_settings);
   ~SkiaOutputSurfaceImpl() override;
 
@@ -115,9 +113,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurfaceBase {
       base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info = base::nullopt);
 
   uint64_t sync_fence_release_ = 0;
-  GpuServiceImpl* const gpu_service_;
+  std::unique_ptr<SkiaOutputSurfaceDependency> dependency_;
   const bool is_using_vulkan_;
-  const gpu::SurfaceHandle surface_handle_;
   UpdateVSyncParametersCallback update_vsync_parameters_callback_;
 
   std::unique_ptr<base::WaitableEvent> initialize_waitable_event_;
@@ -145,9 +142,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurfaceBase {
   // Sync tokens for resources which are used for the current frame or render
   // pass.
   std::vector<gpu::SyncToken> resource_sync_tokens_;
-
-  // The task runner for running task on the client (compositor) thread.
-  scoped_refptr<base::SingleThreadTaskRunner> client_thread_task_runner_;
 
   const RendererSettings renderer_settings_;
 

@@ -7,11 +7,10 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "components/viz/service/gl/gpu_service_impl.h"
+#include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/ipc/service/image_transport_surface.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -25,21 +24,14 @@
 namespace viz {
 
 SkiaOutputDeviceGL::SkiaOutputDeviceGL(
-    gpu::SurfaceHandle surface_handle,
-    GpuServiceImpl* gpu_service,
+    SkiaOutputSurfaceDependency* deps,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
                        did_swap_buffer_complete_callback),
-      surface_handle_(surface_handle),
-      gpu_service_(gpu_service),
+      dependency_(deps),
       feature_info_(feature_info) {
-  DCHECK(surface_handle_);
-  gl_surface_ = gpu::ImageTransportSurface::CreateNativeSurface(
-      weak_ptr_factory_.GetWeakPtr(), surface_handle_, gl::GLSurfaceFormat());
-#if !defined(OS_WIN)
-  ALLOW_UNUSED_LOCAL(gpu_service_);
-#endif
+  gl_surface_ = dependency_->CreateGLSurface(weak_ptr_factory_.GetWeakPtr());
 }
 
 void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
@@ -142,7 +134,8 @@ void SkiaOutputDeviceGL::DiscardBackbuffer() {
 void SkiaOutputDeviceGL::DidCreateAcceleratedSurfaceChildWindow(
     gpu::SurfaceHandle parent_window,
     gpu::SurfaceHandle child_window) {
-  gpu_service_->SendCreatedChildWindow(parent_window, child_window);
+  dependency_->DidCreateAcceleratedSurfaceChildWindow(parent_window,
+                                                      child_window);
 }
 #endif
 
