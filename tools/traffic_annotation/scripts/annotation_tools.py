@@ -8,6 +8,11 @@ import os
 import subprocess
 import sys
 
+script_dir = os.path.dirname(os.path.realpath(__file__))
+tool_dir = os.path.abspath(os.path.join(script_dir, '../../clang/pylib'))
+sys.path.insert(0, tool_dir)
+
+from clang import compile_db
 
 class NetworkTrafficAnnotationTools():
   def __init__(self, build_path=None):
@@ -60,6 +65,18 @@ class NetworkTrafficAnnotationTools():
     """
     return all(os.path.exists(
         os.path.join(path, item)) for item in ('gen', 'build.ninja'))
+
+  def GetCompDBFiles(self):
+    """Gets the list of files.
+
+    Returns:
+      A set of absolute filepaths, with all compile-able C++ files (based on the
+      compilation database).
+    """
+    compdb = compile_db.Read(self.build_path)
+    return set(
+        os.path.abspath(os.path.join(self.build_path, e['file']))
+        for e in compdb)
 
   def GetModifiedFiles(self):
     """Gets the list of modified files from git. Returns None if any error
