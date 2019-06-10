@@ -1919,6 +1919,17 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
     self.assertEquals('PASS', analysisResult)
 
+  def testTakeLargeElementScreenshot(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/large_element.html'))
+    self._driver.SetWindowRect(500, 500, 0, 0)
+    elementScreenshotPNGBase64 = self._driver.FindElement(
+        'css selector','#A').TakeElementScreenshot()
+    self.assertIsNotNone(elementScreenshotPNGBase64)
+    analysisResult = self._driver.ExecuteAsyncScript(
+        ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
+    self.assertEquals('PASS', analysisResult)
+
   def testGenerateTestReport(self):
     self._driver.Load(self.GetHttpUrlForFile(
                       '/chromedriver/reporting_observer.html'))

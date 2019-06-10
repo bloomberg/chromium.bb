@@ -785,16 +785,23 @@ Status ExecuteElementScreenshot(Session* session,
   // document.body, depending on document compatibility mode. The parentheses
   // around the JavaScript code below is needed because JavaScript syntax
   // doesn't allow a statement to start with an object literal.
-  std::unique_ptr<base::Value> scroll;
+  // document.documentElement.clientHeight and Width provide viewport height
+  // and width to crop screenshot if necessary.
+  std::unique_ptr<base::Value> browser_info;
   status = web_view->EvaluateScript(
       std::string(),
       "({x: document.documentElement.scrollLeft || document.body.scrollLeft,"
-      "  y: document.documentElement.scrollTop || document.body.scrollTop})",
-      &scroll);
+      "  y: document.documentElement.scrollTop || document.body.scrollTop,"
+      "  height: document.documentElement.clientHeight,"
+      "  width: document.documentElement.clientWidth})",
+      &browser_info);
   if (status.IsError())
     return status;
-  int scroll_left = scroll->FindKey("x")->GetInt();
-  int scroll_top = scroll->FindKey("y")->GetInt();
+
+  int scroll_left = browser_info->FindKey("x")->GetInt();
+  int scroll_top = browser_info->FindKey("y")->GetInt();
+  double viewport_height = browser_info->FindKey("height")->GetDouble();
+  double viewport_width = browser_info->FindKey("width")->GetDouble();
 
   std::unique_ptr<base::DictionaryValue> clip_dict =
       base::DictionaryValue::From(std::move(clip));
@@ -807,6 +814,13 @@ Status ExecuteElementScreenshot(Session* session,
   clip_dict->SetInteger("x", location.x + scroll_left);
   clip_dict->SetInteger("y", location.y + scroll_top);
   clip_dict->SetDouble("scale", 1.0);
+  // Crop screenshot by viewport if element is larger than viewport
+  clip_dict->SetInteger(
+      "height",
+      std::min(viewport_height, clip_dict->FindKey("height")->GetDouble()));
+  clip_dict->SetInteger(
+      "width",
+      std::min(viewport_width, clip_dict->FindKey("width")->GetDouble()));
   base::DictionaryValue screenshot_params;
   screenshot_params.SetDictionary("clip", std::move(clip_dict));
 
