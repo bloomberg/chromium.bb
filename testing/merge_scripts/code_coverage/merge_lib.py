@@ -207,3 +207,29 @@ def merge_profiles(input_dir, output_file, input_extension, profdata_tool_path):
     os.remove(input_file)
 
   return invalid_profraw_files + invalid_profdata_files
+
+# We want to retry shards that contain one or more profiles that cannot be
+# merged (typically due to corruption described in crbug.com/937521).
+def get_shards_to_retry(bad_profiles):
+  bad_shard_ids = set()
+
+  def is_task_id(s):
+    # Swarming task ids are 16 hex chars. The pythonic way to validate this is
+    # to cast to int and catch a value error.
+    try:
+      assert len(s) == 16, 'Swarming task IDs are expected be of length 16'
+      _int_id = int(s, 16)
+      return True
+    except (AssertionError, ValueError):
+      return False
+
+  for profile in bad_profiles:
+    # E.g. /b/s/w/ir/tmp/t/tmpSvBRii/44b643576cf39f10/profraw/default-1.profraw
+    _base_path, task_id, _profraw, _filename = os.path.normpath(profile).rsplit(
+        os.path.sep, maxsplit=3)
+    # Since we are getting a task_id from a file path, which is less than ideal,
+    # do some checking to at least verify that the snippet looks like a valid
+    # task id.
+    assert is_task_id(task_id)
+    bad_shard_ids.add(task_id)
+  return bad_shard_ids

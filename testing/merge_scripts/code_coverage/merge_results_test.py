@@ -206,6 +206,25 @@ class MergeProfilesTest(unittest.TestCase):
                   stderr=-2,
               ), mock_exec_cmd.call_args)
 
+  @mock.patch('__builtin__.open',
+              new_callable=mock.mock_open,
+              read_data=json.dumps(
+                  {'shards': [{'task_id': '1234567890abcdeff'}]}))
+  def test_mark_invalid_shards(self, mo):
+    mock_result = mock.mock_open()
+    mock_write = mock.MagicMock()
+    mock_result.return_value.write = mock_write
+    mo.side_effect = (
+        mo.return_value,
+        mock.mock_open(read_data='{}').return_value,
+        mock_result.return_value,
+    )
+    merge_results.mark_invalid_shards(['1234567890abcdeff'], 'dummy.json',
+                                      'o.json')
+    written = json.loads(''.join(c[0][0] for c in mock_write.call_args_list))
+    self.assertIn('missing_shards', written)
+    self.assertEqual(written['missing_shards'], [0])
+
 
 if __name__ == '__main__':
   unittest.main()

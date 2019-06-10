@@ -113,17 +113,38 @@ def main():
       failed = True
       logging.warning('Additional merge script %s exited with %s' %
                       (params.additional_merge_script, rc))
+    mark_invalid_shards(coverage_merger.get_shards_to_retry(invalid_profiles),
+                        params.summary_json, params.output_json)
   elif len(params.jsons_to_merge) == 1:
     logging.info("Only one output needs to be merged; directly copying it.")
     with open(params.jsons_to_merge[0]) as f_read:
       with open(params.output_json, 'w') as f_write:
         f_write.write(f_read.read())
+    mark_invalid_shards(coverage_merger.get_shards_to_retry(invalid_profiles),
+                        params.summary_json, params.output_json)
   else:
     logging.warning(
         "This script was told to merge %d test results, but no additional "
         "merge script was given.")
 
   return 1 if (failed or bool(invalid_profiles)) else 0
+
+def mark_invalid_shards(bad_shards, summary_file, output_file):
+  shard_indices = []
+  with open(summary_file) as f:
+    summary = json.load(f)
+
+  for i in range(len(summary['shards'])):
+    shard_id = summary['shards'][i]['task_id']
+    if shard_id in bad_shards:
+      shard_indices.append(i)
+
+  with open(output_file) as f:
+    output = json.load(f)
+  output.setdefault('missing_shards', [])
+  output['missing_shards'].extend(shard_indices)
+  with open(output_file, 'w') as f:
+    json.dump(output, f)
 
 
 if __name__ == '__main__':
