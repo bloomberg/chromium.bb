@@ -155,10 +155,10 @@ class PaintPropertyNode : public RefCounted<NodeType> {
 
  protected:
   PaintPropertyNode(const NodeType* parent, bool is_parent_alias = false)
-      : parent_(parent),
-        is_parent_alias_(is_parent_alias),
+      : is_parent_alias_(is_parent_alias),
         changed_(parent ? PaintPropertyChangeType::kNodeAddedOrRemoved
-                        : PaintPropertyChangeType::kUnchanged) {}
+                        : PaintPropertyChangeType::kUnchanged),
+        parent_(parent) {}
 
   PaintPropertyChangeType SetParent(const NodeType* parent) {
     DCHECK(!IsRoot());
@@ -183,13 +183,6 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   // Object paint properties can set the parent directly for an alias update.
   friend class ObjectPaintProperties;
 
-  scoped_refptr<const NodeType> parent_;
-
-  // Caches the id of the associated cc property node. It's valid only when
-  // cc_sequence_number_ matches the sequence number of the cc property tree.
-  mutable int cc_node_id_ = -1;
-  mutable int cc_sequence_number_ = 0;
-
   // Indicates whether this node is an alias for its parent. Parent aliases are
   // nodes that do not affect rendering and are ignored for the purposes of
   // display item list generation.
@@ -202,6 +195,13 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   // LocalFrameView::RunPaintLifecyclePhase), otherwise this is cleared through
   // PaintController::FinishCycle.
   mutable PaintPropertyChangeType changed_;
+
+  scoped_refptr<const NodeType> parent_;
+
+  // Caches the id of the associated cc property node. It's valid only when
+  // cc_sequence_number_ matches the sequence number of the cc property tree.
+  mutable int cc_node_id_ = -1;
+  mutable int cc_sequence_number_ = 0;
 
 #if DCHECK_IS_ON()
   String debug_name_;
