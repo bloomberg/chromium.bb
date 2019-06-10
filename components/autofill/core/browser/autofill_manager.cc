@@ -553,15 +553,19 @@ void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
 
   UpdatePendingForm(form);
 
-  if (!user_did_type_ || autofill_field->is_autofilled)
+  uint32_t profile_form_bitmask = 0;
+  if (!user_did_type_ || autofill_field->is_autofilled) {
     form_interactions_ukm_logger_->LogTextFieldDidChange(*form_structure,
                                                          *autofill_field);
+    profile_form_bitmask =
+        data_util::DetermineGroups(form_structure->GetServerFieldTypes());
+  }
 
   if (!user_did_type_) {
     user_did_type_ = true;
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::USER_DID_TYPE, autofill_field->Type().group(),
-        client_->GetSecurityLevelForUmaHistograms());
+        client_->GetSecurityLevelForUmaHistograms(), profile_form_bitmask);
   }
 
   if (autofill_field->is_autofilled) {
@@ -570,14 +574,14 @@ void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD,
         autofill_field->Type().group(),
-        client_->GetSecurityLevelForUmaHistograms());
+        client_->GetSecurityLevelForUmaHistograms(), profile_form_bitmask);
 
     if (!user_did_edit_autofilled_field_) {
       user_did_edit_autofilled_field_ = true;
       AutofillMetrics::LogUserHappinessMetric(
           AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE,
           autofill_field->Type().group(),
-          client_->GetSecurityLevelForUmaHistograms());
+          client_->GetSecurityLevelForUmaHistograms(), profile_form_bitmask);
     }
   }
 
@@ -861,14 +865,20 @@ void AutofillManager::OnDidFillAutofillFormData(const FormData& form,
   if (FindCachedForm(form, &form_structure)) {
     form_types = form_structure->GetFormTypes();
   }
+
+  uint32_t profile_form_bitmask =
+      form_structure
+          ? data_util::DetermineGroups(form_structure->GetServerFieldTypes())
+          : 0;
+
   AutofillMetrics::LogUserHappinessMetric(
       AutofillMetrics::USER_DID_AUTOFILL, form_types,
-      client_->GetSecurityLevelForUmaHistograms());
+      client_->GetSecurityLevelForUmaHistograms(), profile_form_bitmask);
   if (!user_did_autofill_) {
     user_did_autofill_ = true;
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::USER_DID_AUTOFILL_ONCE, form_types,
-        client_->GetSecurityLevelForUmaHistograms());
+        client_->GetSecurityLevelForUmaHistograms(), profile_form_bitmask);
   }
 
   UpdateInitialInteractionTimestamp(timestamp);
@@ -892,15 +902,17 @@ void AutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
 
+  uint32_t profile_form_bitmask =
+      data_util::DetermineGroups(form_structure->GetServerFieldTypes());
   AutofillMetrics::LogUserHappinessMetric(
       AutofillMetrics::SUGGESTIONS_SHOWN, autofill_field->Type().group(),
-      client_->GetSecurityLevelForUmaHistograms());
+      client_->GetSecurityLevelForUmaHistograms(), profile_form_bitmask);
 
   if (!did_show_suggestions_) {
     did_show_suggestions_ = true;
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::SUGGESTIONS_SHOWN_ONCE, autofill_field->Type().group(),
-        client_->GetSecurityLevelForUmaHistograms());
+        client_->GetSecurityLevelForUmaHistograms(), profile_form_bitmask);
   }
 
   if (autofill_field->Type().group() == CREDIT_CARD) {
@@ -1433,8 +1445,9 @@ void AutofillManager::FillOrPreviewDataModelForm(
 
     // Fill the non-empty value from |data_model| into the result vector, which
     // will be sent to the renderer.
-    FillFieldWithValue(cached_field, data_model, &result.fields[i],
-                       should_notify, cvc);
+    FillFieldWithValue(
+        cached_field, data_model, &result.fields[i], should_notify, cvc,
+        data_util::DetermineGroups(form_structure->GetServerFieldTypes()));
 
     if (!cached_field->IsVisible() && result.fields[i].is_autofilled) {
       AutofillMetrics::LogHiddenOrPresentationalSelectFieldsFilled();
@@ -1634,7 +1647,8 @@ void AutofillManager::OnFormsParsed(
   if (!queryable_forms.empty() || !non_queryable_forms.empty()) {
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::FORMS_LOADED, form_types,
-        client_->GetSecurityLevelForUmaHistograms());
+        client_->GetSecurityLevelForUmaHistograms(),
+        /*profile_form_bitmask=*/0);
 
 #if defined(OS_IOS)
     // Log this from same location as AutofillMetrics::FORMS_LOADED to ensure
@@ -1932,7 +1946,8 @@ void AutofillManager::FillFieldWithValue(AutofillField* autofill_field,
                                          const AutofillDataModel& data_model,
                                          FormFieldData* field_data,
                                          bool should_notify,
-                                         const base::string16& cvc) {
+                                         const base::string16& cvc,
+                                         uint32_t profile_form_bitmask) {
   if (field_filler_.FillFormField(*autofill_field, data_model, field_data,
                                   cvc)) {
     // Mark the cached field as autofilled, so that we can detect when a
@@ -1945,7 +1960,7 @@ void AutofillManager::FillFieldWithValue(AutofillField* autofill_field,
     field_data->is_autofilled = true;
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::FIELD_WAS_AUTOFILLED, autofill_field->Type().group(),
-        client_->GetSecurityLevelForUmaHistograms());
+        client_->GetSecurityLevelForUmaHistograms(), profile_form_bitmask);
 
     if (should_notify) {
       client_->DidFillOrPreviewField(

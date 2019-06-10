@@ -53,13 +53,16 @@ bool ContainsEmail(uint32_t groups);
 // Returns true if kPhone is set in |groups|.
 bool ContainsPhone(uint32_t groups);
 
-// Returns a bitmask indicating whether the NAME, ADDRESS_HOME, EMAIL, and
-// PHONE_HOME FieldTypeGroups are associated with the given |field_types|.
+// Returns a bitmask indicating which of the name, address, email address, and
+// phone number FieldTypeGroups are associated with the given |types|.
 uint32_t DetermineGroups(const std::vector<ServerFieldType>& types);
 
 // Returns true if a form has address fields or has least two supported
 // non-address fields.
 bool IsSupportedFormType(uint32_t groups);
+
+// Returns the histogram suffix corresponding to the given |bitmask|.
+std::string GetSuffixForProfileFormType(uint32_t bitmask);
 
 // Truncates a string to the nearest UTF-8 character that will leave
 // the string less than or equal to the specified byte size.
