@@ -1512,29 +1512,6 @@ function runAllActionsAsync(whenTestDone) {
 }
 
 /**
- * Syntactic sugar for use with will() on a Mock4JS.Mock.
- * Creates an action for will() that invokes a callback that the tested code
- * passes to a mocked function.
- * @param {SaveMockArguments} savedArgs Arguments that will contain the
- *     callback once the mocked function is called.
- * @param {number} callbackParameter Index of the callback parameter in
- *     |savedArgs|.
- * @param {...Object} var_args Arguments to pass to the callback.
- * @return {CallFunctionAction} Action for use in will().
- */
-function invokeCallback(savedArgs, callbackParameter, var_args) {
-  var callbackArguments = Array.prototype.slice.call(arguments, 2);
-  return callFunction(function() {
-    savedArgs.arguments[callbackParameter].apply(null, callbackArguments);
-
-    // Mock4JS does not clear the saved args after invocation.
-    // To allow reuse of the same SaveMockArguments for multiple
-    // invocations with similar arguments, clear them here.
-    savedArgs.arguments.splice(0, savedArgs.arguments.length);
-  });
-}
-
-/**
  * Mock4JS matcher object that matches the actual argument and the expected
  * value iff their JSON representations are same.
  * @param {Object} expectedValue
@@ -1572,46 +1549,6 @@ MatchJSON.prototype = {
  */
 function eqJSON(expectedValue) {
   return new MatchJSON(expectedValue);
-}
-
-/**
- * Mock4JS matcher object that matches the actual argument and the expected
- * value iff the the string representation of the actual argument is equal to
- * the expected value.
- * @param {string} expectedValue
- * @constructor
- */
-function MatchToString(expectedValue) {
-  this.expectedValue_ = expectedValue;
-}
-
-MatchToString.prototype = {
-  /**
-   * Checks that the the string representation of the actual argument matches
-   * the expected value.
-   * @param {*} actualArgument The argument to match.
-   * @return {boolean} Result of the comparison.
-   */
-  argumentMatches: function(actualArgument) {
-    return this.expectedValue_ === String(actualArgument);
-  },
-
-  /**
-   * Describes the matcher.
-   * @return {string} Description of this Mock4JS matcher.
-   */
-  describe: function() {
-    return 'eqToString("' + this.expectedValue_ + '")';
-  },
-};
-
-/**
- * Builds a MatchToString argument matcher for a given expected value.
- * @param {Object} expectedValue
- * @return {MatchToString} Resulting Mock4JS matcher.
- */
-function eqToString(expectedValue) {
-  return new MatchToString(expectedValue);
 }
 
 /**
@@ -1658,8 +1595,6 @@ function exportMock4JsHelpers() {
   exports.callFunction = callFunction;
   exports.callFunctionWithSavedArgs = callFunctionWithSavedArgs;
   exports.eqJSON = eqJSON;
-  exports.eqToString = eqToString;
-  exports.invokeCallback = invokeCallback;
   exports.SaveMockArguments = SaveMockArguments;
 
   // Import the Mock4JS helpers.
