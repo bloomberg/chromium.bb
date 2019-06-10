@@ -172,16 +172,16 @@
     <style include="cups-printer-shared">
       .subtext {
         margin-bottom: 10px;
+        padding-inline-end: 20px;
         padding-inline-start: 20px;
       }
     </style>
     <add-printer-dialog>
       <div slot="dialog-title">$i18n{manufacturerAndModelDialogTitle}</div>
       <div slot="dialog-body">
-        <div class="subtext" id="makeModelTextInfo"
-            hidden="[[!activePrinter.printerMakeAndModel]]">
-          <span>[[getManufacturerAndModelSubtext_(
-              activePrinter.printerMakeAndModel)]]</span>
+        <div class="subtext" id="makeModelTextInfo">
+          <span>[[getManufacturerAndModelSubtext_(activePrinter.*)]]
+          </span>
           <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
             $i18n{learnMore}
           </a>
