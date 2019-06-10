@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/unguessable_token.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "dbus/mock_bus.h"
@@ -210,9 +210,11 @@ class PowerManagerClientTest : public testing::Test {
         .WillRepeatedly(Return(proxy_.get()));
 
     EXPECT_CALL(*bus_, GetDBusTaskRunner())
-        .WillRepeatedly(Return(message_loop_.task_runner().get()));
+        .WillRepeatedly(
+            Return(scoped_task_environment_.GetMainThreadTaskRunner().get()));
     EXPECT_CALL(*bus_, GetOriginTaskRunner())
-        .WillRepeatedly(Return(message_loop_.task_runner().get()));
+        .WillRepeatedly(
+            Return(scoped_task_environment_.GetMainThreadTaskRunner().get()));
 
     // Save |client_|'s signal and name-owner-changed callbacks.
     EXPECT_CALL(*proxy_, DoConnectToSignal(kInterface, _, _, _))
@@ -295,7 +297,7 @@ class PowerManagerClientTest : public testing::Test {
   static const int kSuspendDelayId = 100;
   static const int kDarkSuspendDelayId = 200;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Mock bus and proxy for simulating calls to powerd.
   scoped_refptr<dbus::MockBus> bus_;
@@ -321,7 +323,7 @@ class PowerManagerClientTest : public testing::Test {
     CHECK_EQ(interface_name, power_manager::kPowerManagerInterface);
     signal_callbacks_[signal_name] = signal_callback;
 
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(*on_connected_callback), interface_name,
                        signal_name, true /* success */));
@@ -342,7 +344,7 @@ class PowerManagerClientTest : public testing::Test {
         dbus::Response::FromMethodCall(method_call));
     CHECK(dbus::MessageWriter(response.get()).AppendProtoAsArrayOfBytes(proto));
 
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&RunResponseCallback, std::move(*callback),
                                   std::move(response)));
   }

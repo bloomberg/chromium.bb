@@ -10,9 +10,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/biod/messages.pb.h"
 #include "chromeos/dbus/biod/test_utils.h"
 #include "dbus/mock_bus.h"
@@ -158,7 +158,7 @@ class BiodClientTest : public testing::Test {
 
   std::map<std::string, std::unique_ptr<dbus::Response>> pending_method_calls_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Mock bus and proxy for simulating calls.
   scoped_refptr<dbus::MockBus> bus_;
@@ -182,7 +182,7 @@ class BiodClientTest : public testing::Test {
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     EXPECT_EQ(interface_name, kInterface);
     signal_callbacks_[signal_name] = signal_callback;
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(*on_connected_callback), interface_name,
                        signal_name, true /* success */));
@@ -197,7 +197,7 @@ class BiodClientTest : public testing::Test {
     auto pending_response = std::move(it->second);
     pending_method_calls_.erase(it);
 
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&RunResponseCallback, std::move(*callback),
                                   std::move(pending_response)));
   }
