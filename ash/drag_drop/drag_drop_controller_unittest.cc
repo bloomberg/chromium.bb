@@ -362,7 +362,7 @@ class DragDropControllerTest : public AshTestBase {
 };
 
 TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
@@ -403,7 +403,7 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
 }
 
 TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
@@ -556,7 +556,7 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
 }
 
 TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   std::unique_ptr<DragTestView> drag_view(new DragTestView);
   AddViewToWidgetAndResize(widget.get(), drag_view.get());
   ui::OSExchangeData data;
@@ -619,7 +619,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
   EXPECT_TRUE(cb->IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(),
                                     ui::CLIPBOARD_TYPE_COPY_PASTE));
 
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
 
@@ -647,7 +647,7 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
 }
 
 TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   aura::Window* window = widget->GetNativeView();
@@ -693,7 +693,7 @@ TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
 }
 
 TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
@@ -743,7 +743,7 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
 }
 
 TEST_F(DragDropControllerTest, PressingEscapeCancelsDragDrop) {
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
@@ -785,7 +785,7 @@ TEST_F(DragDropControllerTest, PressingEscapeCancelsDragDrop) {
 }
 
 TEST_F(DragDropControllerTest, CaptureLostCancelsDragDrop) {
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
@@ -897,7 +897,7 @@ TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
 TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchDragDrop);
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -923,7 +923,7 @@ TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
 TEST_F(DragDropControllerTest, TouchDragDropLongTapGestureIsForwarded) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchDragDrop);
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -974,7 +974,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
   {
-    std::unique_ptr<views::Widget> widget = CreateTestWidget();
+    std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
         data, window->GetRootWindow(), window, gfx::Point(5, 5),
@@ -1005,7 +1005,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
   }
 
   {
-    std::unique_ptr<views::Widget> widget = CreateTestWidget();
+    std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
         data, window->GetRootWindow(), window, gfx::Point(405, 405),
@@ -1048,7 +1048,7 @@ TEST_F(DragDropControllerTest, DragCancelOnDisplayDisconnect) {
 
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   aura::Window* window = widget->GetNativeWindow();
   drag_drop_controller_->StartDragAndDrop(
       data, window->GetRootWindow(), window, gfx::Point(5, 5),
@@ -1082,7 +1082,7 @@ TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
       switches::kEnableTouchDragDrop);
   ui::GestureConfiguration::GetInstance()
       ->set_max_touch_move_in_pixels_for_click(1);
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
   ui::OSExchangeData data;
@@ -1139,7 +1139,7 @@ TEST_F(DragDropControllerTest, DragStartedAndEndedEvents) {
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
   {
-    std::unique_ptr<views::Widget> widget = CreateTestWidget();
+    std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
     aura::Window* window = widget->GetNativeWindow();
     drag_drop_controller_->StartDragAndDrop(
         data, window->GetRootWindow(), window, gfx::Point(5, 5),
@@ -1166,7 +1166,7 @@ TEST_F(DragDropControllerTest, SetEnabled) {
   // Data for the drag.
   ui::OSExchangeData data;
   data.SetString(base::UTF8ToUTF16("I am being dragged"));
-  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
   aura::Window* window = widget->GetNativeWindow();
 
   // Cannot start a drag when the controller is disabled.
