@@ -4,7 +4,6 @@
 
 #include "components/viz/service/display_embedder/output_surface_provider_impl.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -17,7 +16,6 @@
 #include "components/viz/service/display_embedder/gl_output_surface.h"
 #include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
-#include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl_non_ddl.h"
 #include "components/viz/service/display_embedder/software_output_surface.h"
@@ -140,9 +138,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
 
     } else {
       output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-          std::make_unique<SkiaOutputSurfaceDependencyImpl>(gpu_service_impl_,
-                                                            surface_handle),
-          renderer_settings);
+          gpu_service_impl_, surface_handle, renderer_settings);
     }
 #endif
   } else {

@@ -23,12 +23,9 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
-#include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl_non_ddl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "gpu/command_buffer/service/sequence_id.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -47,138 +44,6 @@ SurfacesInstance* g_surfaces_instance = nullptr;
 
 void OnContextLost() {
   NOTREACHED() << "Non owned context lost!";
-}
-
-class SkiaOutputSurfaceDependencyWebView
-    : public viz::SkiaOutputSurfaceDependency {
- public:
-  SkiaOutputSurfaceDependencyWebView(
-      DeferredGpuCommandService* const service,
-      gpu::GpuDriverBugWorkarounds& workarounds,
-      scoped_refptr<gpu::SharedContextState> shared_context_state,
-      scoped_refptr<gl::GLSurface> gl_surface);
-  ~SkiaOutputSurfaceDependencyWebView() override;
-
-  void ScheduleGpuTask(base::OnceClosure task,
-                       std::vector<gpu::SyncToken> sync_tokens) override;
-  bool IsUsingVulkan() override;
-  gpu::SharedImageManager* GetSharedImageManager() override;
-  gpu::SyncPointManager* GetSyncPointManager() override;
-  const gpu::GpuDriverBugWorkarounds& GetGpuDriverBugWorkarounds() override;
-  scoped_refptr<gpu::SharedContextState> GetSharedContextState() override;
-  gpu::raster::GrShaderCache* GetGrShaderCache() override;
-  viz::VulkanContextProvider* GetVulkanContextProvider() override;
-  const gpu::GpuPreferences& GetGpuPreferences() override;
-  gpu::SequenceId GetSequenceId() override;
-  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() override;
-  gpu::MailboxManager* GetMailboxManager() override;
-  bool IsOffscreen() override;
-  gpu::SurfaceHandle GetSurfaceHandle() override;
-  scoped_refptr<gl::GLSurface> CreateGLSurface(
-      base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) override;
-  void PostTaskToClientThread(base::OnceClosure closure) override;
-
- private:
-  DeferredGpuCommandService* const service_;
-  gpu::GpuDriverBugWorkarounds workarounds_;
-  scoped_refptr<gpu::SharedContextState> shared_context_state_;
-  std::unique_ptr<gpu::CommandBufferTaskExecutor::Sequence> sequence_;
-  gpu::SequenceId sequence_id_;
-  scoped_refptr<gl::GLSurface> gl_surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurfaceDependencyWebView);
-};
-
-SkiaOutputSurfaceDependencyWebView::SkiaOutputSurfaceDependencyWebView(
-    DeferredGpuCommandService* const service,
-    gpu::GpuDriverBugWorkarounds& workarounds,
-    scoped_refptr<gpu::SharedContextState> shared_context_state,
-    scoped_refptr<gl::GLSurface> gl_surface)
-    : service_(service),
-      workarounds_(workarounds),
-      shared_context_state_(std::move(shared_context_state)),
-      sequence_(service_->CreateSequence()),
-      sequence_id_(sequence_->GetSequenceId()),
-      gl_surface_(std::move(gl_surface)) {}
-
-SkiaOutputSurfaceDependencyWebView::~SkiaOutputSurfaceDependencyWebView() =
-    default;
-
-void SkiaOutputSurfaceDependencyWebView::ScheduleGpuTask(
-    base::OnceClosure task,
-    std::vector<gpu::SyncToken> sync_tokens) {
-  sequence_->ScheduleTask(std::move(task), std::move(sync_tokens));
-}
-
-bool SkiaOutputSurfaceDependencyWebView::IsUsingVulkan() {
-  return shared_context_state_ && shared_context_state_->GrContextIsVulkan();
-}
-
-gpu::SharedImageManager*
-SkiaOutputSurfaceDependencyWebView::GetSharedImageManager() {
-  return service_->shared_image_manager();
-}
-
-gpu::SyncPointManager*
-SkiaOutputSurfaceDependencyWebView::GetSyncPointManager() {
-  return service_->sync_point_manager();
-}
-
-const gpu::GpuDriverBugWorkarounds&
-SkiaOutputSurfaceDependencyWebView::GetGpuDriverBugWorkarounds() {
-  return workarounds_;
-}
-
-scoped_refptr<gpu::SharedContextState>
-SkiaOutputSurfaceDependencyWebView::GetSharedContextState() {
-  return shared_context_state_;
-}
-
-gpu::raster::GrShaderCache*
-SkiaOutputSurfaceDependencyWebView::GetGrShaderCache() {
-  return nullptr;
-}
-
-viz::VulkanContextProvider*
-SkiaOutputSurfaceDependencyWebView::GetVulkanContextProvider() {
-  return shared_context_state_->vk_context_provider();
-}
-
-const gpu::GpuPreferences&
-SkiaOutputSurfaceDependencyWebView::GetGpuPreferences() {
-  return service_->gpu_preferences();
-}
-
-gpu::SequenceId SkiaOutputSurfaceDependencyWebView::GetSequenceId() {
-  return sequence_id_;
-}
-
-const gpu::GpuFeatureInfo&
-SkiaOutputSurfaceDependencyWebView::GetGpuFeatureInfo() {
-  return service_->gpu_feature_info();
-}
-
-gpu::MailboxManager* SkiaOutputSurfaceDependencyWebView::GetMailboxManager() {
-  return service_->mailbox_manager();
-}
-
-bool SkiaOutputSurfaceDependencyWebView::IsOffscreen() {
-  return false;
-}
-
-gpu::SurfaceHandle SkiaOutputSurfaceDependencyWebView::GetSurfaceHandle() {
-  return gpu::kNullSurfaceHandle;
-}
-
-scoped_refptr<gl::GLSurface>
-SkiaOutputSurfaceDependencyWebView::CreateGLSurface(
-    base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) {
-  return gl_surface_;
-}
-
-void SkiaOutputSurfaceDependencyWebView::PostTaskToClientThread(
-    base::OnceClosure closure) {
-  service_->PostNonNestableToClient(std::move(closure));
 }
 
 }  // namespace
@@ -218,6 +83,7 @@ SurfacesInstance::SurfacesInstance()
       this, frame_sink_manager_.get(), frame_sink_id_, is_root,
       needs_sync_points);
 
+  // Android WebView always uses non-DDL regardless of RendererSetting.
   const bool use_skia_renderer =
       settings.use_skia_renderer || settings.use_skia_renderer_non_ddl;
   auto* command_line = base::CommandLine::ForCurrentProcess();
@@ -236,10 +102,8 @@ SurfacesInstance::SurfacesInstance()
       enable_vulkan ? AwVulkanContextProvider::GetOrCreateInstance() : nullptr;
   std::unique_ptr<viz::OutputSurface> output_surface;
   gl_surface_ = base::MakeRefCounted<AwGLSurface>();
-  if (settings.use_skia_renderer || settings.use_skia_renderer_non_ddl) {
+  if (use_skia_renderer) {
     auto* task_executor = DeferredGpuCommandService::GetInstance();
-    gpu::GpuDriverBugWorkarounds workarounds(
-        task_executor->gpu_feature_info().enabled_gpu_driver_bug_workarounds);
     if (!shared_context_state_) {
       auto gl_context =
           gl::init::CreateGLContext(task_executor->share_group().get(),
@@ -249,21 +113,15 @@ SurfacesInstance::SurfacesInstance()
           task_executor->share_group(), gl_surface_, std::move(gl_context),
           false /* use_virtualized_gl_contexts */,
           base::BindOnce(&OnContextLost), vulkan_context_provider.get());
-      shared_context_state_->InitializeGrContext(workarounds,
-                                                 nullptr /* gr_shader_cache */);
+      shared_context_state_->InitializeGrContext(
+          gpu::GpuDriverBugWorkarounds(task_executor->gpu_feature_info()
+                                           .enabled_gpu_driver_bug_workarounds),
+          nullptr /* gr_shader_cache */);
     }
-    if (settings.use_skia_renderer_non_ddl) {
-      output_surface = std::make_unique<viz::SkiaOutputSurfaceImplNonDDL>(
-          gl_surface_, shared_context_state_, task_executor->mailbox_manager(),
-          task_executor->shared_image_manager(),
-          task_executor->sync_point_manager(),
-          false /* need_swapbuffers_ack */);
-    } else {
-      output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
-          std::make_unique<SkiaOutputSurfaceDependencyWebView>(
-              task_executor, workarounds, shared_context_state_, gl_surface_),
-          settings);
-    }
+    output_surface = std::make_unique<viz::SkiaOutputSurfaceImplNonDDL>(
+        gl_surface_, shared_context_state_, task_executor->mailbox_manager(),
+        task_executor->shared_image_manager(),
+        task_executor->sync_point_manager(), false /* need_swapbuffers_ack */);
   } else {
     auto context_provider = AwRenderThreadContextProvider::Create(
         gl_surface_, DeferredGpuCommandService::GetInstance());

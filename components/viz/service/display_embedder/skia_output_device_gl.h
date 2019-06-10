@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 
 class GrContext;
@@ -29,14 +30,14 @@ class FeatureInfo;
 }  // namespace gpu
 
 namespace viz {
-
-class SkiaOutputSurfaceDependency;
+class GpuServiceImpl;
 
 class SkiaOutputDeviceGL final : public SkiaOutputDevice,
                                  public gpu::ImageTransportSurfaceDelegate {
  public:
   SkiaOutputDeviceGL(
-      SkiaOutputSurfaceDependency* deps,
+      gpu::SurfaceHandle surface_handle,
+      GpuServiceImpl* gpu_service,
       scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceGL() override;
@@ -75,12 +76,13 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice,
   GpuVSyncCallback GetGpuVSyncCallback() override;
 
  private:
-  SkiaOutputSurfaceDependency* const dependency_;
+  const gpu::SurfaceHandle surface_handle_;
+  GpuServiceImpl* const gpu_service_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
   gpu::GpuPreferences gpu_preferences_;
 
-  scoped_refptr<gl::GLSurface> gl_surface_;
   GrContext* gr_context_ = nullptr;
+  scoped_refptr<gl::GLSurface> gl_surface_;
 
   bool supports_alpha_ = false;
 

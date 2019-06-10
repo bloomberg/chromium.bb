@@ -25,7 +25,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/service/display/software_output_device.h"
-#include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_gpu_service_holder.h"
@@ -86,10 +85,8 @@ std::unique_ptr<viz::SkiaOutputSurface>
 LayerTreePixelTest::CreateDisplaySkiaOutputSurfaceOnThread() {
   // Set up the SkiaOutputSurfaceImpl.
   auto output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
-      std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
-          viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
-          gpu::kNullSurfaceHandle),
-      viz::RendererSettings());
+      viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
+      gpu::kNullSurfaceHandle, viz::RendererSettings());
   return output_surface;
 }
 

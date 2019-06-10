@@ -22,8 +22,8 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/resource_metadata.h"
 #include "components/viz/service/display_embedder/image_context.h"
-#include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.h"
+#include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
@@ -45,27 +45,31 @@ sk_sp<SkPromiseImageTexture> Fulfill(void* texture_context) {
 void DoNothing(void* texture_context) {}
 
 template <typename... Args>
-void PostAsyncTask(SkiaOutputSurfaceDependency* dependency,
-                   const base::RepeatingCallback<void(Args...)>& callback,
-                   Args... args) {
-  dependency->PostTaskToClientThread(base::BindOnce(callback, args...));
+void PostAsyncTask(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const base::RepeatingCallback<void(Args...)>& callback,
+    Args... args) {
+  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, args...));
 }
 
 template <typename... Args>
 base::RepeatingCallback<void(Args...)> CreateSafeCallback(
-    SkiaOutputSurfaceDependency* dependency,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const base::RepeatingCallback<void(Args...)>& callback) {
-  DCHECK(dependency);
-  return base::BindRepeating(&PostAsyncTask<Args...>, dependency, callback);
+  if (!task_runner)
+    return callback;
+  return base::BindRepeating(&PostAsyncTask<Args...>, task_runner, callback);
 }
 
 }  // namespace
 
 SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
-    std::unique_ptr<SkiaOutputSurfaceDependency> deps,
+    GpuServiceImpl* gpu_service,
+    gpu::SurfaceHandle surface_handle,
     const RendererSettings& renderer_settings)
-    : dependency_(std::move(deps)),
-      is_using_vulkan_(dependency_->IsUsingVulkan()),
+    : gpu_service_(gpu_service),
+      is_using_vulkan_(gpu_service_->is_using_vulkan()),
+      surface_handle_(surface_handle),
       renderer_settings_(renderer_settings),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -113,6 +117,7 @@ void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SkiaOutputSurfaceBase::BindToClient(client);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
+  client_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   auto callback = base::BindOnce(&SkiaOutputSurfaceImpl::InitializeOnGpuThread,
@@ -506,19 +511,20 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
 
   auto did_swap_buffer_complete_callback = base::BindRepeating(
       &SkiaOutputSurfaceImpl::DidSwapBuffersComplete, weak_ptr_);
-  did_swap_buffer_complete_callback =
-      CreateSafeCallback(dependency_.get(), did_swap_buffer_complete_callback);
+  did_swap_buffer_complete_callback = CreateSafeCallback(
+      client_thread_task_runner_, did_swap_buffer_complete_callback);
   auto buffer_presented_callback =
       base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
   buffer_presented_callback =
-      CreateSafeCallback(dependency_.get(), buffer_presented_callback);
+      CreateSafeCallback(client_thread_task_runner_, buffer_presented_callback);
   auto context_lost_callback =
       base::BindRepeating(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
   context_lost_callback =
-      CreateSafeCallback(dependency_.get(), context_lost_callback);
+      CreateSafeCallback(client_thread_task_runner_, context_lost_callback);
   impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
-      dependency_.get(), renderer_settings_, did_swap_buffer_complete_callback,
-      buffer_presented_callback, context_lost_callback);
+      gpu_service_, surface_handle_, renderer_settings_,
+      did_swap_buffer_complete_callback, buffer_presented_callback,
+      context_lost_callback);
   capabilities_ = impl_on_gpu_->capabilities();
 }
 
@@ -596,7 +602,9 @@ void SkiaOutputSurfaceImpl::BufferPresented(
 void SkiaOutputSurfaceImpl::ScheduleGpuTask(
     base::OnceClosure callback,
     std::vector<gpu::SyncToken> sync_tokens) {
-  dependency_->ScheduleGpuTask(std::move(callback), std::move(sync_tokens));
+  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
+  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
+      sequence_id, std::move(callback), std::move(sync_tokens)));
 }
 
 GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
