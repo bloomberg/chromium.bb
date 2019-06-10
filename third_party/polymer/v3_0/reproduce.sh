@@ -56,6 +56,10 @@ echo 'Updating paper/iron elements to point to the minified file.'
 find components-chromium/ -name '*.js' -exec sed -i \
   's/\/polymer\/[a-zA-Z\/\.-]\+/\/polymer\/polymer_bundled.min.js/' {} +
 
+# Undo any changes in paper-ripple, since Chromium's implementation is a fork of
+# the original paper-ripple.
+git checkout -- components-chromium/paper-ripple/*
+
 new=$(git status --porcelain components-chromium | grep '^??' | \
       cut -d' ' -f2 | egrep '\.(js|css)$' || true)
 
