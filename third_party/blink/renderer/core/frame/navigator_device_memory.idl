@@ -7,6 +7,6 @@
 [
     Exposed=(Window, Worker)
 ] interface mixin NavigatorDeviceMemory {
-    [HighEntropy,MeasureAs=NavigatorDeviceMemory,RuntimeEnabled=NavigatorDeviceMemory,SecureContext]
+    [HighEntropy,MeasureAs=NavigatorDeviceMemory,SecureContext]
     readonly attribute float deviceMemory;
 };
