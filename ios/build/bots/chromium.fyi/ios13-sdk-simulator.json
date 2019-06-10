@@ -24,10 +24,30 @@
       "device type": "iPhone X",
       "os": "13.0",
       "pool":"Chrome",
-      "host os": "Mac-10.14.3",
+      "host os": "Mac-10.14.4",
       "optional_dimensions": {
           "60": [{
-            "host os": "Mac-10.14.4"
+            "host os": "Mac-10.14.5"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      },
+      "priority": 30
+    },
+    {
+      "xcode parallelization": true,
+      "include": "eg2_tests.json",
+      "device type": "iPad 6th Gen",
+      "os": "13.0",
+      "pool":"Chrome",
+      "host os": "Mac-10.14.4",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.5"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
           }]
       },
       "priority": 30
