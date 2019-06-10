@@ -1561,17 +1561,11 @@ void WallpaperControllerImpl::SetDefaultWallpaperImpl(
       use_small ? WALLPAPER_LAYOUT_CENTER : WALLPAPER_LAYOUT_CENTER_CROPPED;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::FilePath file_path;
-  base::Optional<user_manager::UserType> active_user_type =
-      Shell::Get()->session_controller()->GetUserType();
 
   // The wallpaper is determined in the following order:
   // Guest wallpaper, child wallpaper, customized default wallpaper, and regular
   // default wallpaper.
-  // TODO(wzang|xdai): The current code intentionally distinguishes between
-  // |active_user_type| and |user_type|. We should try to unify them.
-  if (user_type == user_manager::USER_TYPE_GUEST ||
-      (active_user_type &&
-       *active_user_type == user_manager::USER_TYPE_GUEST)) {
+  if (user_type == user_manager::USER_TYPE_GUEST) {
     const std::string switch_string =
         use_small ? chromeos::switches::kGuestWallpaperSmall
                   : chromeos::switches::kGuestWallpaperLarge;

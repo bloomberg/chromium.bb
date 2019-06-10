@@ -375,13 +375,15 @@ class WallpaperControllerTest : public AshTestBase {
                          base::Time::Now().LocalMidnight());
   }
 
-  // Helper function to create a |WallpaperUserInfo| structwith default values.
-  // In addition, clear the wallpaper count and the decoding request list. May
-  // be called multiple times for the same |account_id|.
-  WallpaperUserInfo InitializeUser(const AccountId& account_id) {
+  // Creates a |WallpaperUserInfo| struct for |account_id| and optional |type|.
+  // Additionally, clear the wallpaper count and the decoding request list.
+  // This may be called multiple times for the same |account_id|.
+  WallpaperUserInfo InitializeUser(
+      const AccountId& account_id,
+      user_manager::UserType type = user_manager::USER_TYPE_REGULAR) {
     WallpaperUserInfo wallpaper_user_info;
     wallpaper_user_info.account_id = account_id;
-    wallpaper_user_info.type = user_manager::USER_TYPE_REGULAR;
+    wallpaper_user_info.type = type;
     wallpaper_user_info.is_ephemeral = false;
     wallpaper_user_info.has_gaia_account = true;
     ClearWallpaperCount();
@@ -1356,9 +1358,10 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForGuestSession) {
   // instead of the regular default wallpaper.
   UpdateDisplay("1600x1200");
   RunAllTasksUntilIdle();
-  controller_->SetDefaultWallpaper(InitializeUser(account_id_1),
-                                   wallpaper_files_id_1,
-                                   true /*show_wallpaper=*/);
+
+  controller_->SetDefaultWallpaper(
+      InitializeUser(account_id_1, user_manager::USER_TYPE_GUEST),
+      wallpaper_files_id_1, true /*show_wallpaper=*/);
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
@@ -1371,9 +1374,9 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForGuestSession) {
 
   UpdateDisplay("800x600");
   RunAllTasksUntilIdle();
-  controller_->SetDefaultWallpaper(InitializeUser(account_id_1),
-                                   wallpaper_files_id_1,
-                                   true /*show_wallpaper=*/);
+  controller_->SetDefaultWallpaper(
+      InitializeUser(account_id_1, user_manager::USER_TYPE_GUEST),
+      wallpaper_files_id_1, true /*show_wallpaper=*/);
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
