@@ -260,7 +260,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
     // Set-Cookie if it existed.
     auto saved_headers = current_response_.headers;
     current_response_ = head;
-    current_response_.headers = saved_headers;
+    if (saved_headers)
+      current_response_.headers = saved_headers;
     ContinueToBeforeRedirect(redirect_info, net::OK);
   } else {
     current_response_ = head;
