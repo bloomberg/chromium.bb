@@ -114,6 +114,7 @@
             {
               "gpu": null,
               "id": "build370-a7",
+              "os": "Windows-10",
               "pool": "chrome.tests.perf-fyi"
             }
           ],

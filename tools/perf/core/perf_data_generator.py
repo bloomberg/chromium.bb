@@ -149,6 +149,7 @@ FYI_BUILDERS = {
       # TODO(crbug.com/971204): Explicitly set the gpu to None to make
       # chromium_swarming recipe_module ignore this dimension.
       'gpu': None,
+      'os': 'Windows-10',
     },
   },
 }
