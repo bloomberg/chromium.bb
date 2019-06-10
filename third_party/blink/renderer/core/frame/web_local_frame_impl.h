@@ -82,6 +82,7 @@ class WebViewImpl;
 enum class WebFrameLoadType;
 struct WebContentSecurityPolicyViolation;
 struct WebPrintParams;
+class WindowAgentFactory;
 
 template <typename T>
 class WebVector;
@@ -343,7 +344,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   void WasHidden() override;
   void WasShown() override;
 
-  void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
+  void InitializeCoreFrame(Page&,
+                           FrameOwner*,
+                           const AtomicString& name,
+                           WindowAgentFactory*);
   LocalFrame* GetFrame() const { return frame_.Get(); }
 
   void WillBeDetached();

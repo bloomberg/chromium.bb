@@ -128,7 +128,8 @@ bool WebFrame::Swap(WebFrame* frame) {
                            ToTraceValue(&local_frame));
     }
   } else {
-    ToWebRemoteFrameImpl(frame)->InitializeCoreFrame(*page, owner, name);
+    ToWebRemoteFrameImpl(frame)->InitializeCoreFrame(
+        *page, owner, name, &old_frame->window_agent_factory());
   }
 
   Frame* new_frame = ToCoreFrame(*frame);

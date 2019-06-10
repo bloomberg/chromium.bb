@@ -119,10 +119,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 
  public:
+  // For a description of |inheriting_agent_factory| go see the comment on the
+  // Frame constructor.
   LocalFrame(LocalFrameClient*,
              Page&,
              FrameOwner*,
-             InterfaceRegistry* = nullptr);
+             WindowAgentFactory* inheriting_agent_factory,
+             InterfaceRegistry*);
 
   void Init();
   void SetView(LocalFrameView*);

@@ -25,6 +25,7 @@ enum class WebFrameLoadType;
 class WebView;
 struct WebRect;
 struct WebScrollIntoViewParams;
+class WindowAgentFactory;
 
 class CORE_EXPORT WebRemoteFrameImpl final
     : public GarbageCollectedFinalized<WebRemoteFrameImpl>,
@@ -99,7 +100,10 @@ class CORE_EXPORT WebRemoteFrameImpl final
   WebRect GetCompositingRect() override;
   void RenderFallbackContent() const override;
 
-  void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
+  void InitializeCoreFrame(Page&,
+                           FrameOwner*,
+                           const AtomicString& name,
+                           WindowAgentFactory*);
   RemoteFrame* GetFrame() const { return frame_.Get(); }
 
   WebRemoteFrameClient* Client() const { return client_; }

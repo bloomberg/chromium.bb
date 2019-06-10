@@ -65,6 +65,7 @@ class Settings;
 class WindowProxy;
 class WindowProxyManager;
 struct FrameLoadRequest;
+class WindowAgentFactory;
 
 enum class FrameDetachType { kRemove, kSwap };
 
@@ -238,8 +239,21 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
     opener_feature_state_ = state;
   }
 
+  WindowAgentFactory& window_agent_factory() const {
+    return *window_agent_factory_;
+  }
+
  protected:
-  Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
+  // |inheriting_agent_factory| should basically be set to the parent frame or
+  // opener's WindowAgentFactory. Pass nullptr if the frame is isolated from
+  // other frames (i.e. if it and its child frames shall never be script
+  // accessible from other frames), and a new WindowAgentFactory will be
+  // created.
+  Frame(FrameClient*,
+        Page&,
+        FrameOwner*,
+        WindowProxyManager*,
+        WindowAgentFactory* inheriting_agent_factory);
 
   // Perform initialization that must happen after the constructor has run so
   // that vtables are initialized.
@@ -284,6 +298,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // Feature policy state inherited from an opener. It is always empty for child
   // frames.
   FeaturePolicy::FeatureState opener_feature_state_;
+
+  Member<WindowAgentFactory> window_agent_factory_;
 
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;

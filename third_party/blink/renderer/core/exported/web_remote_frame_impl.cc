@@ -88,7 +88,9 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
   // swapping path and instead directly overwrites the main frame.
   // TODO(dcheng): Remove the need for this and strongly enforce this condition
   // with a DCHECK.
-  frame->InitializeCoreFrame(page, nullptr, g_null_atom);
+  frame->InitializeCoreFrame(
+      page, nullptr, g_null_atom,
+      opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr);
   return frame;
 }
 
@@ -159,16 +161,20 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
   InsertAfter(child, previous_sibling);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
       frame_policy, frame_owner_properties, frame_owner_element_type);
-  child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name);
+  child->InitializeCoreFrame(
+      *GetFrame()->GetPage(), owner, name,
+      opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr);
   DCHECK(child->GetFrame());
   return child;
 }
 
-void WebRemoteFrameImpl::InitializeCoreFrame(Page& page,
-                                             FrameOwner* owner,
-                                             const AtomicString& name) {
-  SetCoreFrame(
-      MakeGarbageCollected<RemoteFrame>(frame_client_.Get(), page, owner));
+void WebRemoteFrameImpl::InitializeCoreFrame(
+    Page& page,
+    FrameOwner* owner,
+    const AtomicString& name,
+    WindowAgentFactory* window_agent_factory) {
+  SetCoreFrame(MakeGarbageCollected<RemoteFrame>(frame_client_.Get(), page,
+                                                 owner, window_agent_factory));
   GetFrame()->CreateView();
   frame_->Tree().SetName(name);
 }
@@ -185,7 +191,9 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
   AppendChild(child);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
       frame_policy, WebFrameOwnerProperties(), frame_owner_element_type);
-  child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name);
+  child->InitializeCoreFrame(
+      *GetFrame()->GetPage(), owner, name,
+      opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr);
   return child;
 }
 

@@ -1633,7 +1633,9 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
-  frame->InitializeCoreFrame(page, nullptr, name);
+  frame->InitializeCoreFrame(
+      page, nullptr, name,
+      opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr);
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
     frame->GetFrame()->SetOpenerFeatureState(opener_feature_state);
   // Can't force sandbox flags until there's a core frame.
@@ -1667,9 +1669,10 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   // unscriptable. Once the provisional frame gets properly attached and is
   // observable, it will have the real FrameOwner, and any subsequent real
   // documents will correctly inherit sandbox flags from the owner.
-  web_frame->InitializeCoreFrame(*previous_frame->GetPage(),
-                                 MakeGarbageCollected<DummyFrameOwner>(),
-                                 previous_frame->Tree().GetName());
+  web_frame->InitializeCoreFrame(
+      *previous_frame->GetPage(), MakeGarbageCollected<DummyFrameOwner>(),
+      previous_frame->Tree().GetName(),
+      &ToCoreFrame(*previous_web_frame)->window_agent_factory());
 
   LocalFrame* new_frame = web_frame->GetFrame();
   new_frame->SetOwner(previous_frame->Owner());
@@ -1744,11 +1747,14 @@ void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
   frame_ = frame;
 }
 
-void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
-                                            FrameOwner* owner,
-                                            const AtomicString& name) {
+void WebLocalFrameImpl::InitializeCoreFrame(
+    Page& page,
+    FrameOwner* owner,
+    const AtomicString& name,
+    WindowAgentFactory* window_agent_factory) {
   SetCoreFrame(MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), page,
-                                                owner, interface_registry_));
+                                                owner, window_agent_factory,
+                                                interface_registry_));
   frame_->Tree().SetName(name);
   // We must call init() after frame_ is assigned because it is referenced
   // during init().
@@ -1797,7 +1803,8 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
     return nullptr;
 
   webframe_child->InitializeCoreFrame(*GetFrame()->GetPage(), owner_element,
-                                      name);
+                                      name,
+                                      &GetFrame()->window_agent_factory());
 
   DCHECK(webframe_child->Parent());
   return webframe_child->GetFrame();
@@ -1810,8 +1817,8 @@ std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
   auto pair = client_->CreatePortal(portal_receiver.PassHandle(),
                                     portal_client.PassHandle());
   WebRemoteFrameImpl* portal_frame = ToWebRemoteFrameImpl(pair.first);
-  portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal,
-                                    g_null_atom);
+  portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal, g_null_atom,
+                                    &GetFrame()->window_agent_factory());
   return std::pair<RemoteFrame*, base::UnguessableToken>(
       portal_frame->GetFrame(), pair.second);
 }
@@ -1819,8 +1826,8 @@ std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
 RemoteFrame* WebLocalFrameImpl::AdoptPortal(HTMLPortalElement* portal) {
   WebRemoteFrameImpl* portal_frame =
       ToWebRemoteFrameImpl(client_->AdoptPortal(portal->GetToken()));
-  portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal,
-                                    g_null_atom);
+  portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal, g_null_atom,
+                                    &GetFrame()->window_agent_factory());
   return portal_frame->GetFrame();
 }
 

@@ -868,8 +868,8 @@ void InspectorOverlayAgent::EnsureOverlayPageCreated() {
 
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  auto* frame = MakeGarbageCollected<LocalFrame>(dummy_local_frame_client,
-                                                 *overlay_page_, nullptr);
+  auto* frame = MakeGarbageCollected<LocalFrame>(
+      dummy_local_frame_client, *overlay_page_, nullptr, nullptr, nullptr);
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
@@ -884,8 +884,8 @@ void InspectorOverlayAgent::LoadFrameForTool() {
 
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  auto* frame = MakeGarbageCollected<LocalFrame>(dummy_local_frame_client,
-                                                 *overlay_page_, nullptr);
+  auto* frame = MakeGarbageCollected<LocalFrame>(
+      dummy_local_frame_client, *overlay_page_, nullptr, nullptr, nullptr);
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);

@@ -23,7 +23,8 @@ LocalFrame* SingleChildLocalFrameClient::CreateFrame(
   auto* child_client =
       MakeGarbageCollected<LocalFrameClientWithParent>(parent_frame);
   child_ = MakeGarbageCollected<LocalFrame>(
-      child_client, *parent_frame->GetPage(), owner_element);
+      child_client, *parent_frame->GetPage(), owner_element,
+      &parent_frame->window_agent_factory(), nullptr);
   child_->CreateView(IntSize(500, 500), Color::kTransparent);
   child_->Init();
 
