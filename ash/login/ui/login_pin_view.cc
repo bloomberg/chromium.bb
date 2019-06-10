@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -105,8 +106,8 @@ class BasePinButton : public views::InkDropHostView {
     layer()->SetFillsBoundsOpaquely(false);
     SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
 
-    focus_painter_ = views::Painter::CreateSolidFocusPainter(
-        kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF());
+    focus_ring_ = views::FocusRing::Install(this);
+    focus_ring_->SetColor(kShelfFocusBorderColor);
   }
 
   ~BasePinButton() override = default;
@@ -114,7 +115,6 @@ class BasePinButton : public views::InkDropHostView {
   // views::InkDropHostView:
   void OnPaint(gfx::Canvas* canvas) override {
     InkDropHostView::OnPaint(canvas);
-    views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
   }
   void OnFocus() override {
     InkDropHostView::OnFocus();
@@ -195,7 +195,7 @@ class BasePinButton : public views::InkDropHostView {
 
  private:
   const base::string16 accessible_name_;
-  std::unique_ptr<views::Painter> focus_painter_;
+  std::unique_ptr<views::FocusRing> focus_ring_;
 
   DISALLOW_COPY_AND_ASSIGN(BasePinButton);
 };

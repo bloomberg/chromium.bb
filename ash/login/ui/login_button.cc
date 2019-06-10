@@ -4,7 +4,7 @@
 
 #include "ash/login/ui/login_button.h"
 
-#include "ash/public/cpp/ash_constants.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -27,8 +27,8 @@ LoginButton::LoginButton(views::ButtonListener* listener)
     : views::ImageButton(listener) {
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
+  SetInstallFocusRingOnFocus(true);
+  focus_ring()->SetColor(kShelfFocusBorderColor);
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
 }
