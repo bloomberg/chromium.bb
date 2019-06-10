@@ -1371,6 +1371,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfInfoBarController.java",
   "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfModelObserverBridge.java",
   "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfShareActivity.java",
+  "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfMetrics.java",
   "java/src/org/chromium/chrome/browser/send_tab_to_self/TargetDeviceInfo.java",
   "java/src/org/chromium/chrome/browser/services/AccountsChangedReceiver.java",
   "java/src/org/chromium/chrome/browser/services/AndroidEduAndChildAccountHelper.java",
