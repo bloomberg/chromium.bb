@@ -50,7 +50,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       scoped_refptr<NGPaintFragment> previous_instance = nullptr);
 
   const NGPhysicalFragment& PhysicalFragment() const {
-    CHECK(!is_layout_object_destroyed_);
     return *physical_fragment_;
   }
 
@@ -116,7 +115,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
    public:
     static NGPaintFragment* Next(NGPaintFragment* current) {
-      return current->NextSibling();
+      return current->next_sibling_.get();
     }
   };
   using ChildList = List<TraverseNextSibling>;
@@ -125,11 +124,9 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // is not for NGPaint. In the first phase, this means that this is a root of
   // an inline formatting context.
   NGPaintFragment* Parent() const { return parent_; }
-  NGPaintFragment* FirstChild() const { return FirstAlive(first_child_.get()); }
-  NGPaintFragment* NextSibling() const {
-    return FirstAlive(next_sibling_.get());
-  }
-  ChildList Children() const { return ChildList(FirstChild()); }
+  NGPaintFragment* FirstChild() const { return first_child_.get(); }
+  NGPaintFragment* NextSibling() const { return next_sibling_.get(); }
+  ChildList Children() const { return ChildList(first_child_.get()); }
 
   // Note, as the name implies, |IsDescendantOfNotSelf| returns false for the
   // same object. This is different from |LayoutObject::IsDescendant| but is
@@ -272,9 +269,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   const NGPaintFragment* LastForSameLayoutObject() const;
   NGPaintFragment* LastForSameLayoutObject();
-  void LayoutObjectWillBeDestroyed();
-
-  void ClearAssociationWithLayoutObject();
 
   // Called when lines containing |child| is dirty.
   static void DirtyLinesFromChangedChild(LayoutObject* child);
@@ -294,14 +288,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   static base::Optional<PhysicalRect> LocalVisualRectFor(const LayoutObject&);
 
  private:
-  // Returns the first "alive" fragment; i.e., fragment that doesn't have
-  // destroyed LayoutObject.
-  static NGPaintFragment* FirstAlive(NGPaintFragment* fragment) {
-    while (UNLIKELY(fragment && fragment->is_layout_object_destroyed_))
-      fragment = fragment->next_sibling_.get();
-    return fragment;
-  }
-
   struct CreateContext {
     STACK_ALLOCATED();
 
@@ -315,7 +301,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
           last_fragment_map(parent_context->last_fragment_map),
           previous_instance(std::move(parent->first_child_)) {}
 
-    void SkipDestroyedPreviousInstances();
     void DestroyPreviousInstances();
 
     NGPaintFragment* parent = nullptr;
@@ -386,9 +371,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     PhysicalRect contents_ink_overflow;
   };
   std::unique_ptr<NGInkOverflowModel> ink_overflow_;
-
-  // Set when the corresponding LayoutObject is destroyed.
-  unsigned is_layout_object_destroyed_ : 1;
 
   // For a line box, this indicates it is dirty. This helps to determine if the
   // fragment is re-usable when part of an inline formatting context is changed.

@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
 namespace blink {
@@ -46,8 +45,15 @@ void InvalidateInlineItems(LayoutObject* object) {
   DCHECK(object->IsInLayoutNGInlineFormattingContext());
 
   if (auto* layout_text = ToLayoutTextOrNull(object)) {
+    layout_text->SetFirstInlineFragment(nullptr);
     layout_text->InvalidateInlineItems();
-  } else if (auto* layout_inline = ToLayoutInlineOrNull(object)) {
+    layout_text->SetIsInLayoutNGInlineFormattingContext(false);
+    return;
+  }
+
+  if (auto* layout_inline = ToLayoutInlineOrNull(object)) {
+    layout_inline->SetFirstInlineFragment(nullptr);
+
     // In some cases, only top-level objects are moved, when |SplitFlow()| moves
     // subtree, or when moving without |notify_layout_object|. Ensure to
     // invalidate all descendants in this inline formatting context.
@@ -56,14 +62,11 @@ void InvalidateInlineItems(LayoutObject* object) {
       if (child->IsInLayoutNGInlineFormattingContext())
         InvalidateInlineItems(child);
     }
+    layout_inline->SetIsInLayoutNGInlineFormattingContext(false);
+    return;
   }
 
-  if (NGPaintFragment* fragment = object->FirstInlineFragment()) {
-    // This LayoutObject is not technically destroyed, but further access should
-    // be prohibited when moved to different parent as if it were destroyed.
-    fragment->LayoutObjectWillBeDestroyed();
-    object->SetFirstInlineFragment(nullptr);
-  }
+  object->SetFirstInlineFragment(nullptr);
   object->SetIsInLayoutNGInlineFormattingContext(false);
 }
 

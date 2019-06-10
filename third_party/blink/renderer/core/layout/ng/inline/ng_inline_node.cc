@@ -920,12 +920,9 @@ void NGInlineNode::ClearAssociatedFragments(
   LayoutObject* last_object = nullptr;
   for (unsigned i = start_index; i < items.size(); i++) {
     const NGInlineItem& item = items[i];
-    if (item.Type() == NGInlineItem::kFloating ||
-        item.Type() == NGInlineItem::kOutOfFlowPositioned) {
-      // These items are not associated and that no need to clear.
-      DCHECK(!item.GetLayoutObject()->FirstInlineFragment());
+    if (item.Type() == NGInlineItem::kOutOfFlowPositioned ||
+        item.Type() == NGInlineItem::kListMarker)
       continue;
-    }
     LayoutObject* object = item.GetLayoutObject();
     if (!object || object == last_object)
       continue;

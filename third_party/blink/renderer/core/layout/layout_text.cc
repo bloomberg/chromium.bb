@@ -220,17 +220,9 @@ void LayoutText::RemoveAndDestroyTextBoxes() {
       }
       for (InlineTextBox* box : TextBoxes())
         box->Remove();
-    } else {
-      if (NGPaintFragment* first_inline_fragment = FirstInlineFragment()) {
-        first_inline_fragment->LayoutObjectWillBeDestroyed();
-        SetFirstInlineFragment(nullptr);
-      }
-      if (Parent())
-        Parent()->DirtyLinesFromChangedChild(this);
+    } else if (Parent()) {
+      Parent()->DirtyLinesFromChangedChild(this);
     }
-  } else if (NGPaintFragment* first_inline_fragment = FirstInlineFragment()) {
-    // Still do this to clear the global hash map in  NGAbstractInlineTextBox.
-    SetFirstInlineFragment(nullptr);
   }
   DeleteTextBoxes();
 }
@@ -265,7 +257,9 @@ void LayoutText::RemoveTextBox(InlineTextBox* box) {
 }
 
 void LayoutText::DeleteTextBoxes() {
-  if (!IsInLayoutNGInlineFormattingContext())
+  if (IsInLayoutNGInlineFormattingContext())
+    SetFirstInlineFragment(nullptr);
+  else
     MutableTextBoxes().DeleteLineBoxes();
 }
 
