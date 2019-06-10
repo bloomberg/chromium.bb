@@ -201,6 +201,10 @@ struct weston_head {
 	bool non_desktop;		/**< non-desktop display, e.g. HMD */
 };
 
+/** Represents an output
+ *
+ * \ingroup output
+ */
 struct weston_output {
 	uint32_t id;
 	char *name;

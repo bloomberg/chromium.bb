@@ -187,6 +187,9 @@ static void
 weston_compositor_reflow_outputs(struct weston_compositor *compositor,
 				struct weston_output *resized_output, int delta_width);
 
+/**
+ * \ingroup output
+ */
 WL_EXPORT int
 weston_output_mode_set_native(struct weston_output *output,
 			      struct weston_mode *mode,
@@ -224,6 +227,9 @@ weston_output_mode_set_native(struct weston_output *output,
 	return 0;
 }
 
+/**
+ * \ingroup output
+ */
 WL_EXPORT int
 weston_output_mode_switch_to_native(struct weston_output *output)
 {
@@ -258,6 +264,9 @@ weston_output_mode_switch_to_native(struct weston_output *output)
 	return 0;
 }
 
+/**
+ * \ingroup output
+ */
 WL_EXPORT int
 weston_output_mode_switch_to_temporary(struct weston_output *output,
 				       struct weston_mode *mode,
@@ -2223,6 +2232,9 @@ weston_compositor_damage_all(struct weston_compositor *compositor)
 		weston_output_damage(output);
 }
 
+/**
+ * \ingroup output
+ */
 WL_EXPORT void
 weston_output_damage(struct weston_output *output)
 {
@@ -2701,6 +2713,9 @@ output_repaint_timer_handler(void *data)
 	return 0;
 }
 
+/**
+ * \ingroup output
+ */
 WL_EXPORT void
 weston_output_finish_frame(struct weston_output *output,
 			   const struct timespec *stamp,
@@ -2887,6 +2902,9 @@ weston_layer_mask_is_infinite(struct weston_layer *layer)
 	       layer->mask.y2 == INT32_MIN + UINT32_MAX;
 }
 
+/**
+ * \ingroup output
+ */
 WL_EXPORT void
 weston_output_schedule_repaint(struct weston_output *output)
 {
@@ -4725,6 +4743,8 @@ weston_head_init(struct weston_head *head, const char *name)
  *
  * If connection status change causes the compositor to attach or detach a head
  * to an enabled output, the registered callbacks may be called multiple times.
+ *
+ * \ingroup output
  */
 static void
 weston_output_emit_heads_changed(struct weston_output *output)
@@ -4882,7 +4902,7 @@ weston_compositor_iterate_heads(struct weston_compositor *compositor,
  *  If you cause \c iter to be removed from the list, you cannot use it to
  * continue iterating. Removing any other item is safe.
  *
- * \memberof weston_compositor
+ * \ingroup ouput
  */
 WL_EXPORT struct weston_head *
 weston_output_iterate_heads(struct weston_output *output,
@@ -4925,7 +4945,7 @@ weston_output_iterate_heads(struct weston_output *output,
  * guarantee the output configuration is actually valid. The final checks are
  * made on weston_output_enable() unless the output was already enabled.
  *
- * \memberof weston_output
+ * \ingroup output
  */
 WL_EXPORT int
 weston_output_attach_head(struct weston_output *output,
@@ -5492,6 +5512,9 @@ weston_output_init_geometry(struct weston_output *output, int x, int y)
 				  output->height);
 }
 
+/**
+ * \ingroup output
+ */
 WL_EXPORT void
 weston_output_move(struct weston_output *output, int x, int y)
 {
@@ -5589,7 +5612,7 @@ weston_compositor_add_output(struct weston_compositor *compositor,
  * units) to the global coordinate space (logical pixel units).  This takes
  * into account output transform and scale.
  *
- * \memberof weston_output
+ * \ingroup output
  * \internal
  */
 WL_EXPORT void
@@ -5677,7 +5700,7 @@ weston_compositor_remove_output(struct weston_output *output)
  * It only supports setting scale for an output that
  * is not enabled and it can only be ran once.
  *
- * \memberof weston_output
+ * \ingroup ouput
  */
 WL_EXPORT void
 weston_output_set_scale(struct weston_output *output,
@@ -5701,7 +5724,7 @@ weston_output_set_scale(struct weston_output *output,
  * https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_output
  * for list of values that can be passed to this function.
  *
- * \memberof weston_output
+ * \ingroup output
  */
 WL_EXPORT void
 weston_output_set_transform(struct weston_output *output,
@@ -5780,7 +5803,7 @@ weston_output_set_transform(struct weston_output *output,
  * The name is used in logs, and can be used by compositors as a configuration
  * identifier.
  *
- * \memberof weston_output
+ * \ingroup output
  * \internal
  */
 WL_EXPORT void
@@ -5816,7 +5839,7 @@ weston_output_init(struct weston_output *output,
  *
  * The opposite of this operation is built into weston_output_release().
  *
- * \memberof weston_output
+ * \ingroup output
  * \internal
  */
 WL_EXPORT void
@@ -5833,6 +5856,8 @@ weston_compositor_add_pending_output(struct weston_output *output,
 /** Create a string with the attached heads' names.
  *
  * The string must be free()'d.
+ *
+ * \ingroup output
  */
 static char *
 weston_output_create_heads_string(struct weston_output *output)
@@ -5888,6 +5913,8 @@ weston_output_create_heads_string(struct weston_output *output)
  * to be reconfigured or just so it can be destroyed at shutdown.
  *
  * 0 is returned on success, -1 on failure.
+ *
+ * \ingroup output
  */
 WL_EXPORT int
 weston_output_enable(struct weston_output *output)
@@ -5993,6 +6020,8 @@ weston_output_enable(struct weston_output *output)
  * If the output has never been enabled yet, this function can still be
  * called to ensure that the output is actually turned off rather than left
  * in the state it was discovered in.
+ *
+ * \ingroup output
  */
 WL_EXPORT void
 weston_output_disable(struct weston_output *output)
@@ -6049,6 +6078,8 @@ weston_compositor_flush_heads_changed(struct weston_compositor *compositor)
  *
  * @note This is for the final destruction of an output, not when it gets
  * disabled. If you want to keep track of enabled outputs, this is not it.
+ *
+ * \ingroup ouput
  */
 WL_EXPORT void
 weston_output_add_destroy_listener(struct weston_output *output,
@@ -6068,6 +6099,7 @@ weston_output_add_destroy_listener(struct weston_output *output,
  * through \c container_of().
  *
  * \sa wl_signal_get() weston_output_add_destroy_listener()
+ * \ingroup output
  */
 WL_EXPORT struct wl_listener *
 weston_output_get_destroy_listener(struct weston_output *output,
@@ -6085,7 +6117,7 @@ weston_output_get_destroy_listener(struct weston_output *output,
  * All fields of weston_output become uninitialized, i.e. should not be used
  * anymore. The caller can free the memory after this.
  *
- * \memberof weston_output
+ * \ingroup ouput
  * \internal
  */
 WL_EXPORT void
@@ -6208,7 +6240,7 @@ weston_compositor_create_output_with_head(struct weston_compositor *compositor,
  * weston_compositor_destroy() will automatically destroy any remaining
  * outputs.
  *
- * \memberof weston_output
+ * \ingroup ouput
  */
 WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
@@ -6223,6 +6255,8 @@ weston_output_destroy(struct weston_output *output)
  *
  * \param output The weston_output whose head to get.
  * \return The first head in the output's list.
+ *
+ * \ingroup ouput
  */
 WL_EXPORT struct weston_head *
 weston_output_get_first_head(struct weston_output *output)
