@@ -5,7 +5,7 @@
 #include "chromeos/services/network_config/cros_network_config.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -89,7 +89,7 @@ class CrosNetworkConfigTest : public testing::Test {
   std::string wifi1_path() { return wifi1_path_; }
 
  private:
-  const base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
   std::unique_ptr<CrosNetworkConfig> cros_network_config_;
   std::unique_ptr<CrosNetworkConfigTestObserver> observer_;

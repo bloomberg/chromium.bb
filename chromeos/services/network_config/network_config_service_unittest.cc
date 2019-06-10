@@ -4,7 +4,7 @@
 
 #include "chromeos/services/network_config/network_config_service.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_observer.h"
@@ -24,7 +24,7 @@ class NetworkConfigServiceTest : public testing::Test {
   }
 
  private:
-  const base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   CrosNetworkConfigTestHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigServiceTest);
