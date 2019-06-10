@@ -30,7 +30,6 @@
 
 namespace offline_pages {
 
-using LifetimeType = LifetimePolicy::LifetimeType;
 using ClearStorageResult = ClearStorageTask::ClearStorageResult;
 
 namespace {
@@ -115,7 +114,7 @@ std::vector<OfflinePageItem> GetPagesToClear(
   PageClearCriteria additional_criteria(policy_controller, start_time, stats);
 
   PageCriteria criteria;
-  criteria.removed_on_cache_reset = true;
+  criteria.lifetime_type = LifetimeType::TEMPORARY;
   // Order is critical for correctness of PageClearCriteria::should_delete_item.
   criteria.result_order = PageCriteria::kDescendingAccessTime;
   criteria.additional_criteria =

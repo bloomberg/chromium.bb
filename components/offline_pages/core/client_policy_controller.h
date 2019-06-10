@@ -29,21 +29,20 @@ class ClientPolicyController {
   // Returns a list of all known namespaces.
   std::vector<std::string> GetAllNamespaces() const;
 
-  // Returns whether pages for |name_space| should be removed on cache reset.
-  bool IsRemovedOnCacheReset(const std::string& name_space) const;
-  const std::vector<std::string>& GetNamespacesRemovedOnCacheReset() const;
+  // Returns whether pages for |name_space| are temporary.
+  bool IsTemporary(const std::string& name_space) const;
+
+  // Returns a list of all temporary namespaces.
+  const std::vector<std::string>& GetTemporaryNamespaces() const;
+
+  // Returns whether pages for |name_space| persistent.
+  bool IsPersistent(const std::string& name_space) const;
+
+  // Returns a list of all persistent namespaces.
+  const std::vector<std::string>& GetPersistentNamespaces() const;
 
   // Returns whether pages for |name_space| are shown in Download UI.
   bool IsSupportedByDownload(const std::string& name_space) const;
-
-  // Returns whether pages for |name_space| are explicitly offlined due to user
-  // action.
-  bool IsUserRequestedDownload(const std::string& name_space) const;
-  const std::vector<std::string>& GetNamespacesForUserRequestedDownload() const;
-
-  // Returns whether pages for |name_space| are shown in recent tabs UI,
-  // currently only available on NTP.
-  bool IsShownAsRecentlyVisitedSite(const std::string& name_space) const;
 
   // Returns whether pages for |name_space| should only be opened in a
   // specifically assigned tab.
@@ -51,23 +50,27 @@ class ClientPolicyController {
   // must have the respective tab id set to their ClientId::id field.
   bool IsRestrictedToTabFromClientId(const std::string& name_space) const;
 
-  bool IsDisabledWhenPrefetchDisabled(const std::string& name_space) const;
+  // Returns whether pages for |name_space| can be saved only if specific user
+  // settings are properly set. See
+  // FeaturePolicy::requires_specific_user_settings for details).
+  bool RequiresSpecificUserSettings(const std::string& name_space) const;
 
   // Returns whether pages for |name_space| originate from suggested URLs and
   // are downloaded on behalf of user.
   bool IsSuggested(const std::string& name_space) const;
 
-  // Returns whether we should allow pages for |name_space| to trigger
-  // downloads.
-  bool ShouldAllowDownloads(const std::string& name_space) const;
+  // Returns whether we should allow background downloads of pages for
+  // |name_space| to be converted to regular file downloads.
+  bool AllowsConversionToBackgroundFileDownload(
+      const std::string& name_space) const;
 
  private:
   // The map from name_space to a client policy. Will be generated
   // as pre-defined values for now.
   std::map<std::string, OfflinePageClientPolicy> policies_;
 
-  std::vector<std::string> cache_reset_namespaces_;
-  std::vector<std::string> user_requested_download_namespaces_;
+  std::vector<std::string> temporary_namespaces_;
+  std::vector<std::string> persistent_namespaces_;
 };
 
 }  // namespace offline_pages

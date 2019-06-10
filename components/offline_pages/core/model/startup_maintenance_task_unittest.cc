@@ -5,6 +5,9 @@
 #include "components/offline_pages/core/model/startup_maintenance_task.h"
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -314,7 +317,7 @@ TEST_F(StartupMaintenanceTaskTest, TestReportStorageUsage) {
     // correct directories, otherwise they might be cleaned based on consistency
     // check.
     generator()->SetNamespace(name_space);
-    if (policy_controller()->IsRemovedOnCacheReset(name_space))
+    if (policy_controller()->IsTemporary(name_space))
       generator()->SetArchiveDirectory(TemporaryDir());
     else
       generator()->SetArchiveDirectory(PrivateDir());

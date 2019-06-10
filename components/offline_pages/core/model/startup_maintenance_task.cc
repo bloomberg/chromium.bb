@@ -280,9 +280,9 @@ void StartupMaintenanceTask::Run() {
   std::vector<std::string> all_namespaces =
       policy_controller_->GetAllNamespaces();
   std::vector<std::string> temporary_namespaces =
-      policy_controller_->GetNamespacesRemovedOnCacheReset();
+      policy_controller_->GetTemporaryNamespaces();
   std::vector<std::string> persistent_namespaces =
-      policy_controller_->GetNamespacesForUserRequestedDownload();
+      policy_controller_->GetPersistentNamespaces();
 
   store_->Execute(
       base::BindOnce(&StartupMaintenanceSync, persistent_namespaces,

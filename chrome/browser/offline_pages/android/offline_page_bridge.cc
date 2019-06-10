@@ -912,13 +912,12 @@ jboolean OfflinePageBridge::IsInPrivateDirectory(
   return offline_page_model_->IsArchiveInInternalDir(file_path);
 }
 
-jboolean OfflinePageBridge::IsUserRequestedDownloadNamespace(
+jboolean OfflinePageBridge::IsTemporaryNamespace(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& j_name_space) {
   std::string name_space(ConvertJavaStringToUTF8(env, j_name_space));
-  return (offline_page_model_->GetPolicyController()->IsUserRequestedDownload(
-      name_space));
+  return (offline_page_model_->GetPolicyController()->IsTemporary(name_space));
 }
 
 ScopedJavaLocalRef<jobject> OfflinePageBridge::GetOfflinePage(

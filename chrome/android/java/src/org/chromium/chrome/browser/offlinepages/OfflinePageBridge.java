@@ -641,12 +641,12 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Determines if the page is in one of the user requested download namespaces.
+     * Returns whether |nameSpace| is a temporary namespace.
      * @param nameSpace Namespace of the page in question.
-     * @return true if the page is in a user requested download namespace.
+     * @return true if the page is in a temporary namespace.
      */
-    public boolean isUserRequestedDownloadNamespace(String nameSpace) {
-        return nativeIsUserRequestedDownloadNamespace(mNativeOfflinePageBridge, nameSpace);
+    public boolean isTemporaryNamespace(String nameSpace) {
+        return nativeIsTemporaryNamespace(mNativeOfflinePageBridge, nameSpace);
     }
 
     /**
@@ -863,7 +863,7 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, WebContents webContents);
     private native boolean nativeIsInPrivateDirectory(
             long nativeOfflinePageBridge, String filePath);
-    private native boolean nativeIsUserRequestedDownloadNamespace(
+    private native boolean nativeIsTemporaryNamespace(
             long nativeOfflinePageBridge, String nameSpace);
     private native OfflinePageItem nativeGetOfflinePage(
             long nativeOfflinePageBridge, WebContents webContents);

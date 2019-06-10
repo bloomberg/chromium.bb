@@ -308,7 +308,7 @@ TEST_F(GetPagesTaskTest, RemovedOnCacheReset) {
   store_test_util()->InsertItem(generator()->CreateItem());
 
   PageCriteria criteria;
-  criteria.removed_on_cache_reset = true;
+  criteria.lifetime_type = LifetimeType::TEMPORARY;
   RunTask(CreateTask(criteria));
 
   EXPECT_EQ(std::set<OfflinePageItem>({cct_item}), task_result());

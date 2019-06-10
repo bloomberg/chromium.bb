@@ -353,7 +353,7 @@ void OfflinePageModelTaskified::GetVisualsAvailability(
 
 const base::FilePath& OfflinePageModelTaskified::GetInternalArchiveDirectory(
     const std::string& name_space) const {
-  if (policy_controller_->IsRemovedOnCacheReset(name_space))
+  if (policy_controller_->IsTemporary(name_space))
     return archive_manager_->GetTemporaryArchivesDir();
   return archive_manager_->GetPrivateArchivesDir();
 }
@@ -437,9 +437,9 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
     offline_page.original_url_if_different = save_page_params.original_url;
   }
 
-  if (policy_controller_->IsUserRequestedDownload(
-          offline_page.client_id.name_space)) {
-    // If the user intentionally downloaded the page, move it to a public place.
+  if (policy_controller_->IsPersistent(offline_page.client_id.name_space)) {
+    // If the user intentionally downloaded the page (aka it belongs to a
+    // persistent namespace), move it to a public place.
     // Note: Moving the archiver instance into the callback so it won't be
     // deleted.
     OfflinePageArchiver* raw_archiver = archiver.get();

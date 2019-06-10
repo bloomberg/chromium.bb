@@ -148,12 +148,12 @@ void ClearStorageTaskTest::AddPages(const PageSettings& setting) {
   // during each test.
 
   // Make sure no persistent pages are marked as expired.
-  if (!policy_controller()->IsRemovedOnCacheReset(setting.name_space))
+  if (!policy_controller()->IsTemporary(setting.name_space))
     ASSERT_FALSE(setting.expired_page_count);
 
   generator()->SetCreationTime(clock()->Now());
   generator()->SetNamespace(setting.name_space);
-  if (policy_controller()->IsRemovedOnCacheReset(setting.name_space)) {
+  if (policy_controller()->IsTemporary(setting.name_space)) {
     generator()->SetArchiveDirectory(TemporaryDir());
   } else {
     generator()->SetArchiveDirectory(PrivateDir());
@@ -270,12 +270,9 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
       policy_controller()->GetPolicy(kLastNNamespace).lifetime_policy;
   LifetimePolicy download_policy =
       policy_controller()->GetPolicy(kDownloadNamespace).lifetime_policy;
-  ASSERT_EQ(LifetimePolicy::LifetimeType::TEMPORARY,
-            bookmark_policy.lifetime_type);
-  ASSERT_EQ(LifetimePolicy::LifetimeType::TEMPORARY,
-            last_n_policy.lifetime_type);
-  ASSERT_EQ(LifetimePolicy::LifetimeType::PERSISTENT,
-            download_policy.lifetime_type);
+  ASSERT_EQ(LifetimeType::TEMPORARY, bookmark_policy.lifetime_type);
+  ASSERT_EQ(LifetimeType::TEMPORARY, last_n_policy.lifetime_type);
+  ASSERT_EQ(LifetimeType::PERSISTENT, download_policy.lifetime_type);
   ASSERT_GT(last_n_policy.expiration_period, bookmark_policy.expiration_period);
 
   // Advance 30 minutes from initial pages creation time.

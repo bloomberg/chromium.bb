@@ -182,8 +182,7 @@ DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
     DeletePageTask::DeletePageTaskCallback callback,
     const UrlPredicate& predicate) {
   PageCriteria criteria;
-  criteria.client_namespaces =
-      policy_controller.GetNamespacesRemovedOnCacheReset();
+  criteria.lifetime_type = LifetimeType::TEMPORARY;
   criteria.additional_criteria = base::BindRepeating(
       [](const UrlPredicate& predicate, const OfflinePageItem& item) {
         return predicate.Run(item.url);

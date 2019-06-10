@@ -438,12 +438,12 @@ public class OfflinePageUtils {
 
         final String pageUrl = tab.getUrl();
         // We share temporary pages by content URI to prevent unanticipated side effects in the
-        // public directory. Temporary pages are ones not in a user requested download namespace.
+        // public directory.
         Uri uri;
-        boolean isPageUserRequested = offlinePageBridge.isUserRequestedDownloadNamespace(
-                offlinePage.getClientId().getNamespace());
+        boolean isPageTemporary =
+                offlinePageBridge.isTemporaryNamespace(offlinePage.getClientId().getNamespace());
         // Ensure that we have a file path that is longer than just "/".
-        if (!isPageUserRequested && offlinePath.length() > 1) {
+        if (isPageTemporary && offlinePath.length() > 1) {
             File file = new File(offlinePath);
             // We might get an exception if chrome does not have sharing roots configured.  If so,
             // just share by URL of the original page instead of sharing the offline page.
@@ -458,8 +458,8 @@ public class OfflinePageUtils {
 
         if (!isOfflinePageShareable(offlinePageBridge, offlinePage, uri)) return false;
 
-        if (!isPageUserRequested || !offlinePageBridge.isInPrivateDirectory(offlinePath)) {
-            // Share pages temporary pages and pages already in a public location.
+        if (isPageTemporary || !offlinePageBridge.isInPrivateDirectory(offlinePath)) {
+            // Share temporary pages and pages already in a public location.
             final String pageTitle = tab.getTitle();
             final File offlinePageFile = new File(offlinePath);
             sharePage(activity, uri.toString(), pageTitle, offlinePath, offlinePageFile,
@@ -475,8 +475,7 @@ public class OfflinePageUtils {
                 return;
             }
 
-            // If a user requested page is not in a public location, we must publish it before
-            // sharing it.
+            // If the page is not in a public location, we must publish it before sharing it.
             publishThenShareInternalPage(activity, offlinePageBridge, offlinePage, shareCallback);
         });
 

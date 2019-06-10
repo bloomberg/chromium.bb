@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "components/offline_pages/core/client_id.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -46,10 +47,8 @@ struct PageCriteria {
   // Whether to restrict pages to those in namespaces supported by the
   // downloads UI.
   bool supported_by_downloads = false;
-  // Whether to restrict pages to those removed on cache reset.
-  bool removed_on_cache_reset = false;
-  // Whether to restrict pages to those requested by users for download.
-  bool user_requested_download = false;
+  // If set, the page's lifetime type must match this.
+  base::Optional<LifetimeType> lifetime_type;
   // If set, the page's file_size must match.
   base::Optional<int64_t> file_size;
   // If non-empty, the page's digest must match.

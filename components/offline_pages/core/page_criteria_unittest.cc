@@ -110,9 +110,9 @@ TEST_F(PageCriteriaTest, MeetsCriteria_SupportedByDownloads) {
   EXPECT_FALSE(MeetsCriteria(policy_controller_, criteria, item.client_id));
 }
 
-TEST_F(PageCriteriaTest, MeetsCriteria_UserRequestedDownload) {
+TEST_F(PageCriteriaTest, MeetsCriteria_PersistentLifetime) {
   PageCriteria criteria;
-  criteria.user_requested_download = true;
+  criteria.lifetime_type = LifetimeType::PERSISTENT;
 
   OfflinePageItem item;
   item.client_id.name_space = kDownloadNamespace;
@@ -124,9 +124,9 @@ TEST_F(PageCriteriaTest, MeetsCriteria_UserRequestedDownload) {
   EXPECT_FALSE(MeetsCriteria(policy_controller_, criteria, item.client_id));
 }
 
-TEST_F(PageCriteriaTest, MeetsCriteria_RemovedOnCacheReset) {
+TEST_F(PageCriteriaTest, MeetsCriteria_TemporaryLifetime) {
   PageCriteria criteria;
-  criteria.removed_on_cache_reset = true;
+  criteria.lifetime_type = LifetimeType::TEMPORARY;
 
   OfflinePageItem item;
   item.client_id.name_space = kLastNNamespace;

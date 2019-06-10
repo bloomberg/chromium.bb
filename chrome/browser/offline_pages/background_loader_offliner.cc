@@ -160,7 +160,7 @@ bool BackgroundLoaderOffliner::LoadAndSave(
 
   ClientPolicyController* policy_controller =
       offline_page_model_->GetPolicyController();
-  if (policy_controller->IsDisabledWhenPrefetchDisabled(
+  if (policy_controller->RequiresSpecificUserSettings(
           request.client_id().name_space) &&
       (AreThirdPartyCookiesBlocked(browser_context_) ||
        IsNetworkPredictionDisabled(browser_context_))) {
@@ -303,8 +303,9 @@ void BackgroundLoaderOffliner::CanDownload(
   // If we want to proceed with the file download, fail with
   // DOWNLOAD_THROTTLED. If we don't want to proceed with the file download,
   // fail with LOADING_FAILED_DOWNLOAD.
-  if (offline_page_model_->GetPolicyController()->ShouldAllowDownloads(
-          pending_request_.get()->client_id().name_space)) {
+  if (offline_page_model_->GetPolicyController()
+          ->AllowsConversionToBackgroundFileDownload(
+              pending_request_.get()->client_id().name_space)) {
     should_allow_downloads = true;
     final_status = Offliner::RequestStatus::DOWNLOAD_THROTTLED;
   }

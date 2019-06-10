@@ -10,8 +10,6 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 
-using LifetimeType = offline_pages::LifetimePolicy::LifetimeType;
-
 namespace offline_pages {
 namespace {
 
@@ -40,7 +38,6 @@ ClientPolicyController::ClientPolicyController() {
       OfflinePageClientPolicyBuilder(kLastNNamespace, LifetimeType::TEMPORARY,
                                      kUnlimitedPages, kUnlimitedPages)
           .SetExpirePeriod(base::TimeDelta::FromDays(30))
-          .SetIsSupportedByRecentTabs(true)
           .SetIsRestrictedToTabFromClientId(true)
           .Build());
   policies_.emplace(
@@ -48,39 +45,31 @@ ClientPolicyController::ClientPolicyController() {
       OfflinePageClientPolicyBuilder(kAsyncNamespace, LifetimeType::PERSISTENT,
                                      kUnlimitedPages, kUnlimitedPages)
           .SetIsSupportedByDownload(true)
-          .SetIsUserRequestedDownload(true)
-          .SetIsRemovedOnCacheReset(false)
           .Build());
   policies_.emplace(
       kCCTNamespace,
       OfflinePageClientPolicyBuilder(kCCTNamespace, LifetimeType::TEMPORARY,
                                      kUnlimitedPages, 1)
           .SetExpirePeriod(base::TimeDelta::FromDays(2))
-          .SetIsDisabledWhenPrefetchDisabled(true)
+          .SetRequiresSpecificUserSettings(true)
           .Build());
   policies_.emplace(kDownloadNamespace,
                     OfflinePageClientPolicyBuilder(
                         kDownloadNamespace, LifetimeType::PERSISTENT,
                         kUnlimitedPages, kUnlimitedPages)
-                        .SetIsRemovedOnCacheReset(false)
                         .SetIsSupportedByDownload(true)
-                        .SetIsUserRequestedDownload(true)
                         .Build());
   policies_.emplace(kNTPSuggestionsNamespace,
                     OfflinePageClientPolicyBuilder(
                         kNTPSuggestionsNamespace, LifetimeType::PERSISTENT,
                         kUnlimitedPages, kUnlimitedPages)
                         .SetIsSupportedByDownload(true)
-                        .SetIsUserRequestedDownload(true)
-                        .SetIsRemovedOnCacheReset(false)
                         .Build());
   policies_.emplace(
       kSuggestedArticlesNamespace,
       OfflinePageClientPolicyBuilder(kSuggestedArticlesNamespace,
                                      LifetimeType::TEMPORARY, kUnlimitedPages,
                                      kUnlimitedPages)
-          .SetIsRemovedOnCacheReset(true)
-          .SetIsDisabledWhenPrefetchDisabled(true)
           .SetExpirePeriod(base::TimeDelta::FromDays(30))
           .SetIsSupportedByDownload(IsPrefetchingOfflinePagesEnabled())
           .SetIsSuggested(true)
@@ -89,16 +78,13 @@ ClientPolicyController::ClientPolicyController() {
                     OfflinePageClientPolicyBuilder(
                         kBrowserActionsNamespace, LifetimeType::PERSISTENT,
                         kUnlimitedPages, kUnlimitedPages)
-                        .SetIsRemovedOnCacheReset(false)
                         .SetIsSupportedByDownload(true)
-                        .SetIsUserRequestedDownload(true)
-                        .SetShouldAllowDownload(true)
+                        .SetAllowConversionToBackgroundFileDownload(true)
                         .Build());
   policies_.emplace(kLivePageSharingNamespace,
                     OfflinePageClientPolicyBuilder(kLivePageSharingNamespace,
                                                    LifetimeType::TEMPORARY,
                                                    kUnlimitedPages, 1)
-                        .SetIsRemovedOnCacheReset(true)
                         .SetExpirePeriod(base::TimeDelta::FromHours(1))
                         .SetIsRestrictedToTabFromClientId(true)
                         .Build());
@@ -106,9 +92,7 @@ ClientPolicyController::ClientPolicyController() {
       kAutoAsyncNamespace,
       OfflinePageClientPolicyBuilder(
           kAutoAsyncNamespace, LifetimeType::TEMPORARY, kUnlimitedPages, 1)
-          .SetIsRemovedOnCacheReset(true)
           .SetExpirePeriod(base::TimeDelta::FromDays(30))
-          .SetIsUserRequestedDownload(false)
           .SetDeferBackgroundFetchWhilePageIsActive(true)
           .Build());
 
@@ -119,10 +103,14 @@ ClientPolicyController::ClientPolicyController() {
 
   for (const auto& policy_item : policies_) {
     const std::string& name = policy_item.first;
-    if (policy_item.second.feature_policy.is_removed_on_cache_reset)
-      cache_reset_namespaces_.push_back(name);
-    if (policy_item.second.feature_policy.is_user_requested_download)
-      user_requested_download_namespaces_.push_back(name);
+    switch (policy_item.second.lifetime_policy.lifetime_type) {
+      case LifetimeType::TEMPORARY:
+        temporary_namespaces_.push_back(name);
+        break;
+      case LifetimeType::PERSISTENT:
+        persistent_namespaces_.push_back(name);
+        break;
+    }
   }
 }
 
@@ -145,9 +133,14 @@ std::vector<std::string> ClientPolicyController::GetAllNamespaces() const {
   return result;
 }
 
-bool ClientPolicyController::IsRemovedOnCacheReset(
-    const std::string& name_space) const {
-  return GetPolicy(name_space).feature_policy.is_removed_on_cache_reset;
+bool ClientPolicyController::IsTemporary(const std::string& name_space) const {
+  return GetPolicy(name_space).lifetime_policy.lifetime_type ==
+         LifetimeType::TEMPORARY;
+}
+
+const std::vector<std::string>& ClientPolicyController::GetTemporaryNamespaces()
+    const {
+  return temporary_namespaces_;
 }
 
 bool ClientPolicyController::IsSupportedByDownload(
@@ -155,24 +148,14 @@ bool ClientPolicyController::IsSupportedByDownload(
   return GetPolicy(name_space).feature_policy.is_supported_by_download;
 }
 
-bool ClientPolicyController::IsUserRequestedDownload(
-    const std::string& name_space) const {
-  return GetPolicy(name_space).feature_policy.is_user_requested_download;
+bool ClientPolicyController::IsPersistent(const std::string& name_space) const {
+  return GetPolicy(name_space).lifetime_policy.lifetime_type ==
+         LifetimeType::PERSISTENT;
 }
 
 const std::vector<std::string>&
-ClientPolicyController::GetNamespacesRemovedOnCacheReset() const {
-  return cache_reset_namespaces_;
-}
-
-const std::vector<std::string>&
-ClientPolicyController::GetNamespacesForUserRequestedDownload() const {
-  return user_requested_download_namespaces_;
-}
-
-bool ClientPolicyController::IsShownAsRecentlyVisitedSite(
-    const std::string& name_space) const {
-  return GetPolicy(name_space).feature_policy.is_supported_by_recent_tabs;
+ClientPolicyController::GetPersistentNamespaces() const {
+  return persistent_namespaces_;
 }
 
 bool ClientPolicyController::IsRestrictedToTabFromClientId(
@@ -181,18 +164,19 @@ bool ClientPolicyController::IsRestrictedToTabFromClientId(
       .feature_policy.is_restricted_to_tab_from_client_id;
 }
 
-bool ClientPolicyController::IsDisabledWhenPrefetchDisabled(
+bool ClientPolicyController::RequiresSpecificUserSettings(
     const std::string& name_space) const {
-  return GetPolicy(name_space).feature_policy.disabled_when_prefetch_disabled;
+  return GetPolicy(name_space).feature_policy.requires_specific_user_settings;
 }
 
 bool ClientPolicyController::IsSuggested(const std::string& name_space) const {
   return GetPolicy(name_space).feature_policy.is_suggested;
 }
 
-bool ClientPolicyController::ShouldAllowDownloads(
+bool ClientPolicyController::AllowsConversionToBackgroundFileDownload(
     const std::string& name_space) const {
-  return GetPolicy(name_space).feature_policy.should_allow_download;
+  return GetPolicy(name_space)
+      .feature_policy.allows_conversion_to_background_file_download;
 }
 
 }  // namespace offline_pages

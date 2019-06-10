@@ -352,7 +352,7 @@ bool OfflinePageUtils::GetCachedOfflinePageSizeBetween(
   if (!offline_page_model || begin_time > end_time)
     return false;
   PageCriteria criteria;
-  criteria.removed_on_cache_reset = true;
+  criteria.lifetime_type = LifetimeType::TEMPORARY;
   offline_page_model->GetPagesWithCriteria(
       criteria, base::BindOnce(&DoCalculateSizeBetween, std::move(callback),
                                begin_time, end_time));

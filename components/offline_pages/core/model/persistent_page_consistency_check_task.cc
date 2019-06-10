@@ -38,7 +38,7 @@ std::vector<OfflinePageItem> GetPersistentPages(
     const ClientPolicyController* policy_controller,
     sql::Database* db) {
   PageCriteria criteria;
-  criteria.user_requested_download = true;
+  criteria.lifetime_type = LifetimeType::PERSISTENT;
   return std::move(
       GetPagesTask::ReadPagesWithCriteriaSync(policy_controller, criteria, db)
           .pages);

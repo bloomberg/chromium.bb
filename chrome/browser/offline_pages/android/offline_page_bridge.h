@@ -208,7 +208,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_file_path);
 
-  jboolean IsUserRequestedDownloadNamespace(
+  jboolean IsTemporaryNamespace(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_name_space);
