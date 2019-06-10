@@ -30,6 +30,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.browser.test.CommandLineInitRule;
+import org.chromium.chrome.browser.util.UrlConstants;
 
 import java.util.ArrayList;
 import java.util.List;

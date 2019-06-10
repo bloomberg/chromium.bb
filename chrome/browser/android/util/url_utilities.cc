@@ -18,23 +18,22 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-static const char* const g_supported_schemes[] = { "about", "data", "file",
-    "http", "https", "inline", "javascript", nullptr };
+static const char* const g_supported_schemes[] = {
+    "about", "data", "file", "http", "https", "inline", "javascript", nullptr};
 
 static const char* const g_downloadable_schemes[] = {
-    "data", "blob", "file", "filesystem", "http", "https", nullptr };
+    "data", "blob", "file", "filesystem", "http", "https", nullptr};
 
-static const char* const g_fallback_valid_schemes[] = {
-    "http", "https", nullptr };
+static const char* const g_fallback_valid_schemes[] = {"http", "https",
+                                                       nullptr};
 
 GURL JNI_UrlUtilities_ConvertJavaStringToGURL(JNIEnv* env, jstring url) {
   return url ? GURL(ConvertJavaStringToUTF8(env, url)) : GURL();
 }
 
-bool CheckSchemeBelongsToList(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& url,
-    const char* const* scheme_list) {
+bool CheckSchemeBelongsToList(JNIEnv* env,
+                              const JavaParamRef<jstring>& url,
+                              const char* const* scheme_list) {
   GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
   if (gurl.is_valid()) {
     for (size_t i = 0; scheme_list[i]; i++) {
@@ -49,8 +48,8 @@ bool CheckSchemeBelongsToList(
 net::registry_controlled_domains::PrivateRegistryFilter GetRegistryFilter(
     jboolean include_private) {
   return include_private
-      ? net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES
-      : net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
+             ? net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES
+             : net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
 }
 
 }  // namespace
@@ -68,8 +67,7 @@ static jboolean JNI_UrlUtilities_SameDomainOrHost(
   net::registry_controlled_domains::PrivateRegistryFilter filter =
       GetRegistryFilter(include_private);
 
-  return net::registry_controlled_domains::SameDomainOrHost(url_1,
-                                                            url_2,
+  return net::registry_controlled_domains::SameDomainOrHost(url_1, url_2,
                                                             filter);
 }
 

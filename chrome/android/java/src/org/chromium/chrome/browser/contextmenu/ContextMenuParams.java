@@ -9,7 +9,7 @@ import android.text.TextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink_public.web.WebContextMenuMediaType;
-import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.MenuSourceType;
 /**

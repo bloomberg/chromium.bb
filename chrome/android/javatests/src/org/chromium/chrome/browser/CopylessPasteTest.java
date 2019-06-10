@@ -26,6 +26,7 @@ import org.chromium.blink.mojom.document_metadata.Property;
 import org.chromium.blink.mojom.document_metadata.Values;
 import org.chromium.blink.mojom.document_metadata.WebPage;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;

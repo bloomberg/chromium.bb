@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.tabmodel;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.TraceEvent;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 

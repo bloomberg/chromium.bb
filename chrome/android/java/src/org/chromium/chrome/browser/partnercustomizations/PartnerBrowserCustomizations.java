@@ -22,9 +22,9 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 

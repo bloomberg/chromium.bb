@@ -22,9 +22,9 @@ import android.view.ContextMenu;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.touchless.R;
 import org.chromium.ui.modelutil.ForwardingListObservable;

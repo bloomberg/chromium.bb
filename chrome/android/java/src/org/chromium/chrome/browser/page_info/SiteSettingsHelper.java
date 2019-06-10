@@ -8,12 +8,12 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.StrictModeContext;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.net.GURLUtils;
 
 /**

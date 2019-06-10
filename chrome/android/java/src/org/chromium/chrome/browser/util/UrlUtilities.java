@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.io.UnsupportedEncodingException;

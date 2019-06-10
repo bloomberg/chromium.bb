@@ -11,12 +11,12 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionDataUseItem;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxySavingsClearedReason;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionStatsPreference;
 import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.chrome.browser.util.UrlConstants;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
