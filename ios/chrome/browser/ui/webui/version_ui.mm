@@ -96,6 +96,12 @@ web::WebUIIOSDataSource* CreateVersionUIDataSource() {
 
   html_source->AddString(version_ui::kSanitizer, version_info::GetSanitizerList());
 
+#if defined(__apple_build_version__)
+  html_source->AddString(version_ui::kCompiler, "Apple Clang");
+#else
+  html_source->AddString(version_ui::kCompiler, "LLVM clang");
+#endif
+
   html_source->SetJsonPath("strings.js");
   html_source->AddResourcePath(version_ui::kVersionJS, IDR_VERSION_UI_JS);
   html_source->AddResourcePath(version_ui::kAboutVersionCSS,
