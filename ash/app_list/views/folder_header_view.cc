@@ -59,8 +59,12 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
 
   void OnBlur() override {
     // Collapse whitespace when FolderNameView loses focus.
-    SetText(base::CollapseWhitespace(text(), false));
-    folder_header_view_->ContentsChanged(this, text());
+    folder_header_view_->ContentsChanged(
+        this, base::CollapseWhitespace(text(), false));
+
+    // Ensure folder name is truncated when FolderNameView loses focus.
+    SetText(folder_header_view_->GetElidedFolderName(
+        base::UTF8ToUTF16(folder_header_view_->folder_item_->name())));
 
     // Record metric each time a folder is renamed.
     if (text() != starting_name_) {
@@ -197,6 +201,10 @@ const char* FolderHeaderView::GetClassName() const {
   return "FolderHeaderView";
 }
 
+void FolderHeaderView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  Update();
+}
+
 views::View* FolderHeaderView::GetFolderNameViewForTest() const {
   return folder_name_view_;
 }
@@ -212,7 +220,7 @@ base::string16 FolderHeaderView::GetElidedFolderName(
       folder_name.substr(0, AppListConfig::instance().max_folder_name_chars());
 
   // Get maximum text width for fitting into |folder_name_view_|.
-  int text_width = GetMaxFolderNameWidth() -
+  int text_width = std::min(GetMaxFolderNameWidth(), width()) -
                    folder_name_view_->GetCaretBounds().width() -
                    folder_name_view_->GetInsets().width();
   base::string16 elided_name = gfx::ElideText(
@@ -234,11 +242,13 @@ void FolderHeaderView::Layout() {
       folder_name_view_->GetCaretBounds().width() +
       folder_name_view_->GetInsets().width();
   text_width = std::min(text_width, GetMaxFolderNameWidth());
-  text_bounds.set_x(rect.x() + (rect.width() - text_width) / 2);
+  text_bounds.set_x(std::max(0, rect.x() + (rect.width() - text_width) / 2));
 
-  // The width of the text field should always be maximum length, to prevent the
-  // touch target from resizing with the text.
-  text_bounds.set_width(GetMaxFolderNameWidth());
+  // The width of the text field should always be the maximum length possible,
+  // to prevent the touch target from resizing with the text. The width should
+  // also stay within the FolderHeaderView bounds.
+  text_bounds.set_width(std::min(rect.width(), GetMaxFolderNameWidth()));
+
   text_bounds.ClampToCenteredSize(gfx::Size(
       text_bounds.width(), folder_name_view_->GetPreferredSize().height()));
   folder_name_view_->SetBoundsRect(text_bounds);
