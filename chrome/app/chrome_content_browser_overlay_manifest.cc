@@ -61,7 +61,8 @@
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/multidevice_setup/public/cpp/manifest.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
 #include "chromeos/services/assistant/public/cpp/manifest.h"  // nogncheck
@@ -124,7 +125,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("ash", "test")
         .RequireCapability("ash", "display")
         .RequireCapability("assistant", "assistant")
-        .RequireCapability("cellular_setup", "cellular_setup")
         // Only used in the classic Ash case
         .RequireCapability("chrome", "input_device_controller")
         .RequireCapability("chrome_printing", "converter")
@@ -145,7 +145,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("ime", "input_engine")
         .RequireCapability("media_gallery_util", "parse_media")
         .RequireCapability("mirroring", "mirroring")
-        .RequireCapability("multidevice_setup", "multidevice_setup")
         .RequireCapability("nacl_broker", "browser")
         .RequireCapability("nacl_loader", "browser")
         .RequireCapability("noop", "noop")
@@ -177,9 +176,16 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             chromeos::printing::mojom::kCupsProxyServiceName,
             chromeos::printing::mojom::kStartCupsProxyServiceCapability)
         .ExposeInterfaceFilterCapability_Deprecated(
+            "navigation:frame",
+            chromeos::network_config::mojom::kNetworkConfigCapability,
+            service_manager::Manifest::InterfaceList<
+                chromeos::network_config::mojom::CrosNetworkConfig>())
+        .RequireCapability("cellular_setup", "cellular_setup")
+        .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "cellular_setup",
             service_manager::Manifest::InterfaceList<
                 chromeos::cellular_setup::mojom::CellularSetup>())
+        .RequireCapability("multidevice_setup", "multidevice_setup")
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "multidevice_setup",
             service_manager::Manifest::InterfaceList<

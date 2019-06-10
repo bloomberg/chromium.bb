@@ -6,6 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":mojo_interface_provider",
     ":network_apnlist",
     ":network_choose_mobile",
     ":network_config",
@@ -20,6 +21,13 @@ js_type_check("closure_compile") {
     ":network_proxy_exclusions",
     ":network_proxy_input",
     ":network_siminfo",
+  ]
+}
+
+js_library("mojo_interface_provider") {
+  deps = [
+    "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:cr",
   ]
 }
 

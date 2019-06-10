@@ -75,6 +75,7 @@ specific_include_rules = {
     "+components/arc/common",
   ],
   "chrome_content_renderer_overlay_manifest\.cc": [
+    "+chromeos/services/network_config/public",
     "+components/autofill/content/common",
     "+components/dom_distiller/content/common",
     "+components/spellcheck/common",

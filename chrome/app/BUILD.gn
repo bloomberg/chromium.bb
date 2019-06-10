@@ -537,6 +537,10 @@ source_set("chrome_content_renderer_overlay_manifest") {
     "//third_party/blink/public/common",
   ]
 
+  if (is_chromeos) {
+    deps += [ "//chromeos/services/network_config/public/mojom" ]
+  }
+
   if (is_mac) {
     deps += [ "//components/spellcheck/common:interfaces" ]
   }

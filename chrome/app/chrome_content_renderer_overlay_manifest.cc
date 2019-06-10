@@ -26,6 +26,10 @@
 #include "third_party/blink/public/mojom/document_metadata/copyless_paste.mojom.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
+#endif
+
 #if defined(OS_MACOSX)
 #include "components/spellcheck/common/spellcheck_panel.mojom.h"
 #endif
@@ -71,10 +75,15 @@ const service_manager::Manifest& GetChromeContentRendererOverlayManifest() {
                 spellcheck::mojom::SpellCheckPanel,
 #endif
                 subresource_filter::mojom::SubresourceFilterAgent>())
+#if defined(OS_CHROMEOS)
         .RequireInterfaceFilterCapability_Deprecated(
             "content_browser", "navigation:frame", "cellular_setup")
         .RequireInterfaceFilterCapability_Deprecated(
             "content_browser", "navigation:frame", "multidevice_setup")
+        .RequireInterfaceFilterCapability_Deprecated(
+            "content_browser", "navigation:frame",
+            chromeos::network_config::mojom::kNetworkConfigCapability)
+#endif
         .Build()
   };
   return *manifest;

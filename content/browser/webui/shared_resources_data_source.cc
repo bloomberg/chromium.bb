@@ -161,6 +161,18 @@ const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
       {IDR_MULTIDEVICE_MULTIDEVICE_TYPES_MOJOM_LITE_JS,
        "mojo/chromeos/components/multidevice/mojom/"
        "multidevice_types.mojom-lite.js"},
+      {IDR_NETWORK_CONFIG_MOJOM_HTML,
+       "mojo/chromeos/services/network_config/public/mojom/"
+       "cros_network_config.mojom.html"},
+      {IDR_NETWORK_CONFIG_MOJOM_LITE_JS,
+       "mojo/chromeos/services/network_config/public/mojom/"
+       "cros_network_config.mojom-lite.js"},
+      {IDR_IP_ADDRESS_MOJOM_HTML,
+       "mojo/services/network/public/mojom/"
+       "ip_address.mojom.html"},
+      {IDR_IP_ADDRESS_MOJOM_LITE_JS,
+       "mojo/services/network/public/mojom/"
+       "ip_address.mojom-lite.js"},
   };
 }
 #endif  // !defined(OS_CHROMEOS)
