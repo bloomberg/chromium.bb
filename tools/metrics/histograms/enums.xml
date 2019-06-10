@@ -3925,6 +3925,13 @@ Unknown properties are collapsed to zero. -->
   <int value="10" label="All Bits"/>
 </enum>
 
+<enum name="AutofillPredictionSource">
+  <int value="0" label="PREDICTION_SOURCE_UNKNOWN"/>
+  <int value="1" label="PREDICTION_SOURCE_HEURISTIC"/>
+  <int value="2" label="PREDICTION_SOURCE_SERVER"/>
+  <int value="3" label="PREDICTION_SOURCE_OVERALL"/>
+</enum>
+
 <enum name="AutofillProfileAction">
   <int value="0" label="Existing profile used"/>
   <int value="1" label="Existing profile updated"/>
@@ -3938,6 +3945,12 @@ Unknown properties are collapsed to zero. -->
              server profile)"/>
   <int value="2" label="Resolving conflict in incremental remote update"/>
   <int value="3" label="Upload / conflict resolution in initial sync"/>
+</enum>
+
+<enum name="AutofillQualitiyMetricType">
+  <int value="0" label="TYPE_SUBMISSION"/>
+  <int value="1" label="TYPE_NO_SUBMISSION"/>
+  <int value="2" label="TYPE_AUTOCOMPLETE_BASED"/>
 </enum>
 
 <enum name="AutofillQuality">
@@ -4015,6 +4028,91 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="Scan card shown"/>
   <int value="1" label="Scan card selected"/>
   <int value="2" label="Some other item selected"/>
+</enum>
+
+<enum name="AutofillServerFieldType">
+  <int value="0" label="NO_SERVER_DATA"/>
+  <int value="1" label="UNKNOWN_TYPE"/>
+  <int value="2" label="EMPTY_TYPE"/>
+  <int value="3" label="NAME_FIRST"/>
+  <int value="4" label="NAME_MIDDLE"/>
+  <int value="5" label="NAME_LAST"/>
+  <int value="6" label="NAME_MIDDLE_INITIAL"/>
+  <int value="7" label="NAME_FULL"/>
+  <int value="8" label="NAME_SUFFIX"/>
+  <int value="9" label="EMAIL_ADDRESS"/>
+  <int value="10" label="PHONE_HOME_NUMBER"/>
+  <int value="11" label="PHONE_HOME_CITY_CODE"/>
+  <int value="12" label="PHONE_HOME_COUNTRY_CODE"/>
+  <int value="13" label="PHONE_HOME_CITY_AND_NUMBER"/>
+  <int value="14" label="PHONE_HOME_WHOLE_NUMBER"/>
+  <int value="20" label="PHONE_FAX_NUMBER"/>
+  <int value="21" label="PHONE_FAX_CITY_CODE"/>
+  <int value="22" label="PHONE_FAX_COUNTRY_CODE"/>
+  <int value="23" label="PHONE_FAX_CITY_AND_NUMBER"/>
+  <int value="24" label="PHONE_FAX_WHOLE_NUMBER"/>
+  <int value="30" label="ADDRESS_HOME_LINE1"/>
+  <int value="31" label="ADDRESS_HOME_LINE2"/>
+  <int value="32" label="ADDRESS_HOME_APT_NUM"/>
+  <int value="33" label="ADDRESS_HOME_CITY"/>
+  <int value="34" label="ADDRESS_HOME_STATE"/>
+  <int value="35" label="ADDRESS_HOME_ZIP"/>
+  <int value="36" label="ADDRESS_HOME_COUNTRY"/>
+  <int value="37" label="ADDRESS_BILLING_LINE1"/>
+  <int value="38" label="ADDRESS_BILLING_LINE2"/>
+  <int value="39" label="ADDRESS_BILLING_APT_NUM"/>
+  <int value="40" label="ADDRESS_BILLING_CITY"/>
+  <int value="41" label="ADDRESS_BILLING_STATE"/>
+  <int value="42" label="ADDRESS_BILLING_ZIP"/>
+  <int value="43" label="ADDRESS_BILLING_COUNTRY"/>
+  <int value="51" label="CREDIT_CARD_NAME_FULL"/>
+  <int value="52" label="CREDIT_CARD_NUMBER"/>
+  <int value="53" label="CREDIT_CARD_EXP_MONTH"/>
+  <int value="54" label="CREDIT_CARD_EXP_2_DIGIT_YEAR"/>
+  <int value="55" label="CREDIT_CARD_EXP_4_DIGIT_YEAR"/>
+  <int value="56" label="CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR"/>
+  <int value="57" label="CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR"/>
+  <int value="58" label="CREDIT_CARD_TYPE"/>
+  <int value="59" label="CREDIT_CARD_VERIFICATION_CODE"/>
+  <int value="60" label="COMPANY_NAME"/>
+  <int value="61" label="FIELD_WITH_DEFAULT_VALUE"/>
+  <int value="62" label="PHONE_BILLING_NUMBER"/>
+  <int value="63" label="PHONE_BILLING_CITY_CODE"/>
+  <int value="64" label="PHONE_BILLING_COUNTRY_CODE"/>
+  <int value="65" label="PHONE_BILLING_CITY_AND_NUMBER"/>
+  <int value="66" label="PHONE_BILLING_WHOLE_NUMBER"/>
+  <int value="67" label="NAME_BILLING_FIRST"/>
+  <int value="68" label="NAME_BILLING_MIDDLE"/>
+  <int value="69" label="NAME_BILLING_LAST"/>
+  <int value="70" label="NAME_BILLING_MIDDLE_INITIAL"/>
+  <int value="71" label="NAME_BILLING_FULL"/>
+  <int value="72" label="NAME_BILLING_SUFFIX"/>
+  <int value="73" label="MERCHANT_EMAIL_SIGNUP"/>
+  <int value="74" label="MERCHANT_PROMO_CODE"/>
+  <int value="75" label="PASSWORD"/>
+  <int value="76" label="ACCOUNT_CREATION_PASSWORD"/>
+  <int value="77" label="ADDRESS_HOME_STREET_ADDRESS"/>
+  <int value="78" label="ADDRESS_BILLING_STREET_ADDRESS"/>
+  <int value="79" label="ADDRESS_HOME_SORTING_CODE"/>
+  <int value="80" label="ADDRESS_BILLING_SORTING_CODE"/>
+  <int value="81" label="ADDRESS_HOME_DEPENDENT_LOCALITY"/>
+  <int value="82" label="ADDRESS_BILLING_DEPENDENT_LOCALITY"/>
+  <int value="83" label="ADDRESS_HOME_LINE3"/>
+  <int value="84" label="ADDRESS_BILLING_LINE3"/>
+  <int value="85" label="NOT_ACCOUNT_CREATION_PASSWORD"/>
+  <int value="86" label="USERNAME"/>
+  <int value="87" label="USERNAME_AND_EMAIL_ADDRESS"/>
+  <int value="88" label="NEW_PASSWORD"/>
+  <int value="89" label="PROBABLY_NEW_PASSWORD"/>
+  <int value="90" label="NOT_NEW_PASSWORD"/>
+  <int value="91" label="CREDIT_CARD_NAME_FIRST"/>
+  <int value="92" label="CREDIT_CARD_NAME_LAST"/>
+  <int value="93" label="PHONE_HOME_EXTENSION"/>
+  <int value="95" label="CONFIRMATION_PASSWORD"/>
+  <int value="96" label="AMBIGUOUS_TYPE"/>
+  <int value="97" label="SEARCH_TERM"/>
+  <int value="98" label="PRICE"/>
+  <int value="99" label="NOT_PASSWORD"/>
 </enum>
 
 <enum name="AutofillSessionStates">

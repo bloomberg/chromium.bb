@@ -725,10 +725,19 @@ be describing additional metrics about the same event.
     Recorded when Chrome validates field type predictions (on submit, on leaving
     a form, on receiving a form with autocomplete attributes).
   </summary>
-  <metric name="ActualType">
+  <metric name="ActualType" enum="AutofillServerFieldType">
     <summary>
       The observed type of the field. See: autofill::ServerFieldType
     </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.PredictedType"/>
+        <index fields="metrics.PredictionSource,metrics.PredictedType"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="FieldSignature">
     <summary>
@@ -744,22 +753,53 @@ be describing additional metrics about the same event.
     <summary>
       Time since form parse.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.ValidationEvent"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="PredictedType">
+  <metric name="PredictedType" enum="AutofillServerFieldType">
     <summary>
       The predicted type of the field. See: autofill::ServerFieldType
     </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.ActualType"/>
+        <index fields="metrics.ActualType,metrics.PredictionSource"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="PredictionSource">
+  <metric name="PredictionSource" enum="AutofillPredictionSource">
     <summary>
       The system which generated the prediction: heuristics, server, overall.
     </summary>
+    <aggregation>
+      <history>
+        <statistics export="False">
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="ValidationEvent">
+  <metric name="ValidationEvent" enum="AutofillQualitiyMetricType">
     <summary>
       The event which triggered the validation: Submission, Left Form, Form has
       Autocomplete attributes.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
