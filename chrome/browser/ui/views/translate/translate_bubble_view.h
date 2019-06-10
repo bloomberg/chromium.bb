@@ -25,6 +25,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -52,7 +53,9 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
     ALWAYS_TRANSLATE_LANGUAGE,
     NEVER_TRANSLATE_LANGUAGE,
     NEVER_TRANSLATE_SITE,
-    MORE_OPTIONS
+    MORE_OPTIONS,
+    CHANGE_TARGET_LANGUAGE,
+    CHANGE_SOURCE_LANGUAGE
   };
 
   ~TranslateBubbleView() override;
@@ -136,6 +139,9 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
     BUTTON_ID_ALWAYS_TRANSLATE,
     BUTTON_ID_ADVANCED,
     BUTTON_ID_OPTIONS_MENU,
+    BUTTON_ID_OPTIONS_MENU_TAB,
+    BUTTON_ID_CLOSE,
+    BUTTON_ID_RESET
   };
 
   enum ComboboxID {
@@ -150,6 +156,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
       ::Browser*,
       const ::base::string16&);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TranslateButton);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TabUiTranslateButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, AdvancedLink);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, ShowOriginalButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TryAgainButton);
@@ -158,7 +165,15 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            AlwaysTranslateCheckboxAndDoneButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, DoneButton);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TabUiSourceDoneButton);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TabUiTargetDoneButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           DoneButtonWithoutTranslating);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           TabUiSourceDoneButtonWithoutTranslating);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           TabUiTargetDoneButtonWithoutTranslating);
+  FRIEND_TEST_ALL_PREFIXES(TabUiSourceTranslateBubbleViewTest,
                            DoneButtonWithoutTranslating);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            CancelButtonReturningBeforeTranslate);
@@ -168,11 +183,19 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            OptionsMenuNeverTranslateLanguage);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           TabUiOptionsMenuNeverTranslateLanguage);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            OptionsMenuRespectsBlacklistSite);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           TabUiOptionsMenuRespectsBlacklistSite);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            OptionsMenuNeverTranslateSite);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           TabUiOptionsMenuNeverTranslateSite);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            AlwaysTranslateLanguageMenuItem);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           TabUiAlwaysTranslateLanguageMenuItem);
   FRIEND_TEST_ALL_PREFIXES(TranslateLanguageBrowserTest, TranslateAndRevert);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewBrowserTest,
                            CheckNeverTranslateThisSiteBlacklist);
@@ -196,6 +219,9 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Triggers options menu.
   void ShowOptionsMenu(views::Button* source);
 
+  // Triggers options menu in TAB ui.
+  void ShowOptionsMenuTab(views::Button* source);
+
   // Handles the event when the user clicks a link.
   void HandleLinkClicked(LinkID sender_id);
 
@@ -212,7 +238,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // Creates the view for TAB UI. This view is being used before/during/after
   // translate.
-  views::View* CreateTabView();
+  views::View* CreateViewTab();
 
   // AddTab function requires a view element to be shown below each tab.
   // This function creates an empty view so no extra white space below the tab.
@@ -236,6 +262,18 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Three options depending on UI selection in kUseButtonTranslateBubbleUI.
   views::View* CreateViewAdvanced();
 
+  // Creates source language label and combobox for Tab Ui advanced view
+  views::View* TabUiCreateViewAdvanedSource();
+
+  // Creates source language label and combobox for Tab Ui advanced view
+  views::View* TabUiCreateViewAdvanedTarget();
+
+  // Creates the 'advanced' view to show source/target language combobox under
+  // TAB UI. Caller takes ownership of the returned view.
+  views::View* CreateViewAdvancedTabUi(
+      views::Combobox* combobox,
+      std::unique_ptr<views::Label> language_title_label);
+
   // Get the current always translate checkbox
   views::Checkbox* GetAlwaysTranslateCheckbox();
 
@@ -253,6 +291,9 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   void ShowOriginal();
   void ConfirmAdvancedOptions();
 
+  // Return true if the current state is in advanced state for TAB UI.
+  bool TabUiIsAdvancedState(TranslateBubbleModel::ViewState view_state);
+
   static TranslateBubbleView* translate_bubble_view_;
 
   views::View* before_translate_view_;
@@ -261,6 +302,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   views::View* error_view_;
   views::View* advanced_view_;
   views::View* tab_translate_view_;
+  views::View* advanced_view_source_;
+  views::View* advanced_view_target_;
 
   std::unique_ptr<SourceLanguageComboboxModel> source_language_combobox_model_;
   std::unique_ptr<TargetLanguageComboboxModel> target_language_combobox_model_;
@@ -276,8 +319,11 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // Used to trigger the options menu in tests.
   views::Button* before_translate_options_button_;
+
   std::unique_ptr<ui::SimpleMenuModel> options_menu_model_;
   std::unique_ptr<views::MenuRunner> options_menu_runner_;
+
+  std::unique_ptr<ui::SimpleMenuModel> tab_options_menu_model_;
 
   std::unique_ptr<TranslateBubbleModel> model_;
 
@@ -286,7 +332,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Whether the window is an incognito window.
   const bool is_in_incognito_window_;
 
-  language::TranslateUIBubbleModel bubble_ui_model_;
+  const language::TranslateUIBubbleModel bubble_ui_model_;
 
   bool should_always_translate_;
 

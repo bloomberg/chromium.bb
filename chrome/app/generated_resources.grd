@@ -7483,7 +7483,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE_TITLE" desc="Title text for the translate bubble label when the page could not be translated.">
           This page could not be translated
         </message>
-
         <if expr="not use_titlecase">
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_LINK" desc="Text to show for the translate bubble link label to jump to the advanced panel.">
             Options
@@ -7493,6 +7492,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_MENU_BUTTON" desc="Text to show for the translate bubble menu button to jump to the advanced panel, specifically to change which languages are translated between.">
             Change languages
+          </message>
+          <message name="IDS_TRANSLATE_BUBBLE_CHANGE_TARGET_LANGUAGE" desc="Text for the menu item that lets the user open a dialog to choose another target language for translation, from a list of available languages.">
+            More languages...
+          </message>
+          <message name="IDS_TRANSLATE_BUBBLE_CHANGE_SOURCE_LANGUAGE" desc="Text for the menu item that lets the user open a dialog to choose another source language for translation, from a list of available languages.">
+            Page is not in <ph name="language">$1<ex>French</ex></ph> ?
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_ACCEPT" desc="Text to show for the translate bubble button to accept translation.">
             Translate
@@ -7542,6 +7547,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_TRANSLATE_BUBBLE_LANGUAGE_SETTINGS" desc="Text to show for the translate bubble link label next to jump to the language setting page.">
             Language settings
           </message>
+          <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_TARGET" desc="Text to show in the advanced source language view for TAB UI">
+            Language to translate into
+          </message>
+          <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_SOURCE" desc="Text to show in the advanced source language view for TAB UI">
+            Page language to translate
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_LINK" desc="In Title Case: Text to show for the translate bubble link label to jump to the advanced panel.">
@@ -7552,6 +7563,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_MENU_BUTTON" desc="In Title Case: Text to show for the translate bubble menu button to jump to the advanced panel, specifically to change which languages are translated between.">
             Change Languages
+          </message>
+          <message name="IDS_TRANSLATE_BUBBLE_CHANGE_TARGET_LANGUAGE" desc="Text to show for the translate bubble menu button which invokes the target language menu.">
+            More Languages...
+          </message>
+          <message name="IDS_TRANSLATE_BUBBLE_CHANGE_SOURCE_LANGUAGE" desc="Text to show for the translate bubble menu button which invokes the source language menu.">
+            Page Is Not In <ph name="language">$1<ex>French</ex></ph> ?
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_ACCEPT" desc="In Title Case: Text to show for the translate bubble button to accept translation.">
             Translate
@@ -7601,9 +7618,18 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_TRANSLATE_BUBBLE_LANGUAGE_SETTINGS" desc="In Title Case: Text to show for the translate bubble link label next to jump to the language setting page.">
             Language Settings
           </message>
+          <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_TARGET" desc="Text to show in the advanced source language view for TAB UI">
+            Language To Translate Into
+          </message>
+          <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_SOURCE" desc="Text to show in the advanced source language view for TAB UI">
+            Page Language To Translate
+          </message>
         </if>
         <message name="IDS_TRANSLATE_BUBBLE_UNKNOWN_LANGUAGE" desc="Text to show for the translate bubble link label when the page source language cannot be determined. Used in place of a language name, so should be capitalized as such (e.g. &quot;Unknown&quot; for English, &quot;sconosciuto&quot; for Italian)" meaning="Noun to use in place of a language name in part of a translate bubble message.">
           Unknown
+        </message>
+        <message name="IDS_TRANSLATE_BUBBLE_RESET" desc="Text to show for the language combobox to revert to its original state in the advanced view under TAB UI">
+            Reset
         </message>
       </if>
 

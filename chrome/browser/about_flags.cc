@@ -1582,7 +1582,7 @@ const FeatureEntry kFeatureEntries[] = {
     defined(OS_CHROMEOS)
     {"translate-ui-bubble-options", flag_descriptions::kTranslateBubbleUIName,
      flag_descriptions::kTranslateBubbleUIDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(language::kUseButtonTranslateBubbleUI,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(language::kUseButtonTranslateBubbleUi,
                                     kTranslateBubbleUIVariations,
                                     "UseButtonTranslateBubbleUI")},
 #endif  // OS_LINUX || OS_MACOSX || OS_WIN || OS_CHROMEOS
