@@ -298,6 +298,30 @@ bool IsSupportedFormType(uint32_t groups) {
              2;
 }
 
+std::string GetSuffixForProfileFormType(uint32_t bitmask) {
+  switch (bitmask) {
+    case kAddress | kEmail | kPhone:
+    case kName | kAddress | kEmail | kPhone:
+      return ".AddressPlusEmailPlusPhone";
+    case kAddress | kPhone:
+    case kName | kAddress | kPhone:
+      return ".AddressPlusPhone";
+    case kAddress | kEmail:
+    case kName | kAddress | kEmail:
+      return ".AddressPlusEmail";
+    case kAddress:
+    case kName | kAddress:
+      return ".AddressOnly";
+    case kEmail | kPhone:
+    case kName | kEmail | kPhone:
+    case kName | kEmail:
+    case kName | kPhone:
+      return ".ContactOnly";
+    default:
+      return ".Other";
+  }
+}
+
 std::string TruncateUTF8(const std::string& data) {
   std::string trimmed_value;
   base::TruncateUTF8ToByteSize(data, AutofillTable::kMaxDataLength,
