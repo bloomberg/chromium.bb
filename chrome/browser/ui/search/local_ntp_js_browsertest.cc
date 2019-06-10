@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
@@ -61,9 +62,15 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, LocalNTPTests) {
   EXPECT_TRUE(success);
 }
 
+#if defined(OS_WIN)
+#define MAYBE_CustomBackgroundsTests DISABLED_CustomBackgroundsTests
+#else
+#define MAYBE_CustomBackgroundsTests CustomBackgroundsTests
+#endif
+
 // This runs a bunch of pure JS-side tests for custom backgrounds, i.e. those
 // that don't require any interaction from the native side.
-IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, CustomBackgroundsTests) {
+IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, MAYBE_CustomBackgroundsTests) {
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
       browser(), GURL(chrome::kChromeUINewTabURL));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
