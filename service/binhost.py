@@ -113,20 +113,35 @@ def GetPrebuiltsRoot(chroot, sysroot, build_target):
   return root
 
 
-def GetPrebuiltsFiles(prebuilts_root):
+def GetPrebuiltsFiles(prebuilts_root, package_index_paths):
   """Find paths to prebuilts at the given root directory.
 
   Assumes the root contains a Portage package index named Packages.
 
+  The package index paths are used to de-duplicate prebuilts uploaded. The
+  immediate consequence of this is reduced storage usage. The non-obvious
+  consequence is the shared packages generally end up with public permissions,
+  while the board-specific packages end up with private permissions. This is
+  what is meant to happen, but a further consequence of that is that when
+  something happens that causes the toolchains to be uploaded as a private
+  board's package, the board will not be able to build properly because
+  it won't be able to fetch the toolchain packages, because they're expected
+  to be public.
+
   Args:
     prebuilts_root: Absolute path to root directory containing a package index.
+    package_index_paths (list[str]): A list of paths to previous package index
+      files used to de-duplicate prebuilts.
 
   Returns:
     List of paths to all prebuilt archives, relative to the root.
   """
   package_index = binpkg.GrabLocalPackageIndex(prebuilts_root)
+  indexes = [binpkg.GrabLocalPackageIndex(p) for p in package_index_paths]
+  packages = package_index.ResolveDuplicateUploads(indexes)
+
   prebuilt_paths = []
-  for package in package_index.packages:
+  for package in packages:
     prebuilt_paths.append(package['CPV'] + '.tbz2')
 
     include_debug_symbols = package.get('DEBUG_SYMBOLS')
@@ -223,3 +238,23 @@ def GetPrebuiltAclArgs(build_target):
   lines = [line.strip() for line in lines if line.strip()]
 
   return [line.split() for line in lines]
+
+
+def GetBinhosts(build_target):
+  """Get the binhosts for the build target.
+
+  Args:
+    build_target (build_target_util.BuildTarget): The build target.
+
+  Returns:
+    list[str]: The build target's binhosts.
+  """
+  binhosts = portage_util.PortageqEnvvar('PORTAGE_BINHOST',
+                                         board=build_target.name,
+                                         allow_undefined=True)
+  return binhosts.split() if binhosts else []
+
+
+def GetPackageIndex(binhost):
+  """Get the package index path for the binhost."""
+  return os.path.join(binhost, 'PackageIndex')

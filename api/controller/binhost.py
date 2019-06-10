@@ -26,6 +26,22 @@ _OVERLAY_TYPE_TO_NAME = {
 }
 
 
+def GetBinhosts(input_proto, output_proto):
+  """Get a list of binhosts."""
+  target_name = input_proto.build_target.name
+  if not target_name:
+    cros_build_lib.Die('BuildTarget.name is required.')
+
+  build_target = build_target_util.BuildTarget(target_name)
+
+  binhosts = binhost.GetBinhosts(build_target)
+
+  for current in binhosts:
+    new_binhost = output_proto.binhosts.add()
+    new_binhost.uri = current
+    new_binhost.package_index = binhost.GetPackageIndex(current)
+
+
 def GetPrivatePrebuiltAclArgs(input_proto, output_proto):
   """Get the ACL args from the files in the private overlays."""
   build_target_name = input_proto.build_target.name
@@ -74,6 +90,8 @@ def PrepareBinhostUploads(input_proto, output_proto):
   if not gs.PathIsGs(uri):
     raise ValueError('Upload URI %s must be Google Storage.' % uri)
 
+  package_index_paths = [f.path for f in input_proto.package_index_files]
+
   parsed_uri = urlparse.urlparse(uri)
   upload_uri = gs.GetGsURL(parsed_uri.netloc)
   upload_path = parsed_uri.path.lstrip('/')
@@ -81,7 +99,7 @@ def PrepareBinhostUploads(input_proto, output_proto):
   # Read all packages and update the index. The index must be uploaded to the
   # binhost for Portage to use it, so include it in upload_targets.
   uploads_dir = binhost.GetPrebuiltsRoot(chroot, sysroot, build_target)
-  upload_targets = binhost.GetPrebuiltsFiles(uploads_dir)
+  upload_targets = binhost.GetPrebuiltsFiles(uploads_dir, package_index_paths)
   index_path = binhost.UpdatePackageIndex(uploads_dir, upload_uri, upload_path,
                                           sudo=True)
   assert index_path.startswith(uploads_dir), (
