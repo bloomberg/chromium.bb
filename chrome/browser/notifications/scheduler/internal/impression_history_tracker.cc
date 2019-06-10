@@ -39,26 +39,43 @@ std::string ToDatabaseKey(SchedulerClientType type) {
 ImpressionHistoryTrackerImpl::ImpressionHistoryTrackerImpl(
     const SchedulerConfig& config,
     std::vector<SchedulerClientType> registered_clients,
-    std::unique_ptr<CollectionStore<ClientState>> store)
+    std::unique_ptr<CollectionStore<ClientState>> store,
+    base::Clock* clock)
     : store_(std::move(store)),
       config_(config),
       registered_clients_(std::move(registered_clients)),
       initialized_(false),
       delegate_(nullptr),
+      clock_(clock),
       weak_ptr_factory_(this) {}
 
 ImpressionHistoryTrackerImpl::~ImpressionHistoryTrackerImpl() = default;
 
 void ImpressionHistoryTrackerImpl::Init(Delegate* delegate,
                                         InitCallback callback) {
-  DCHECK(!delegate_ && delegate);
+  DCHECK(!delegate_ && delegate && !initialized_);
   delegate_ = delegate;
   store_->InitAndLoad(
       base::BindOnce(&ImpressionHistoryTrackerImpl::OnStoreInitialized,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void ImpressionHistoryTrackerImpl::AddImpression(SchedulerClientType type,
+                                                 const std::string& guid) {
+  DCHECK(initialized_);
+  auto it = client_states_.find(type);
+  if (it == client_states_.end())
+    return;
+
+  it->second->impressions.emplace_back(Impression(type, guid, clock_->Now()));
+  impression_map_.emplace(guid, &it->second->impressions.back());
+  SetNeedsUpdate(type, true /*needs_update*/);
+  MaybeUpdateDb(type);
+  NotifyImpressionUpdate();
+}
+
 void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory() {
+  DCHECK(initialized_);
   for (auto& client_state : client_states_)
     AnalyzeImpressionHistory(client_state.second.get());
   if (MaybeUpdateAllDb())
@@ -67,6 +84,7 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory() {
 
 void ImpressionHistoryTrackerImpl::GetClientStates(
     std::map<SchedulerClientType, const ClientState*>* client_states) const {
+  DCHECK(initialized_);
   DCHECK(client_states);
   client_states->clear();
   for (const auto& pair : client_states_) {
@@ -149,7 +167,7 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
     ClientState* client_state) {
   DCHECK(client_state);
   std::deque<Impression*> dismisses;
-  base::Time now = base::Time::Now();
+  base::Time now = clock_->Now();
 
   for (auto it = client_state->impressions.begin();
        it != client_state->impressions.end();) {
@@ -277,8 +295,7 @@ void ImpressionHistoryTrackerImpl::ApplyNegativeImpression(
 
   // Suppress the notification, the user will not see this type of notification
   // for a while.
-  SuppressionInfo supression_info(base::Time::Now(),
-                                  config_.suppression_duration);
+  SuppressionInfo supression_info(clock_->Now(), config_.suppression_duration);
   client_state->suppression_info = std::move(supression_info);
   client_state->current_max_daily_show = 0;
 }
@@ -290,7 +307,7 @@ void ImpressionHistoryTrackerImpl::CheckSuppressionExpiration(
     return;
 
   SuppressionInfo& suppression = client_state->suppression_info.value();
-  base::Time now = base::Time::Now();
+  base::Time now = clock_->Now();
 
   // Still in the suppression time window.
   if (now - suppression.last_trigger_time < suppression.duration)

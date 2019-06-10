@@ -156,7 +156,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   void DisplayNotification(
       std::unique_ptr<NotificationEntry> notification) override {
     // TODO(xingliu): Inform the clients and show the notification.
-    NOTIMPLEMENTED();
+    context_->impression_tracker()->AddImpression(notification->type,
+                                                  notification->guid);
   }
 
   // ImpressionHistoryTracker::Delegate implementation.

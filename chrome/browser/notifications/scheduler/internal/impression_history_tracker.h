@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/notifications/scheduler/internal/collection_store.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
@@ -45,6 +46,10 @@ class ImpressionHistoryTracker : public UserActionHandler {
   // Initializes the impression tracker.
   virtual void Init(Delegate* delegate, InitCallback callback) = 0;
 
+  // Add a new impression, called after the notification is shown.
+  virtual void AddImpression(SchedulerClientType type,
+                             const std::string& guid) = 0;
+
   // Analyzes the impression history for all notification clients, and adjusts
   // the |current_max_daily_show|.
   virtual void AnalyzeImpressionHistory() = 0;
@@ -69,12 +74,15 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   explicit ImpressionHistoryTrackerImpl(
       const SchedulerConfig& config,
       std::vector<SchedulerClientType> registered_clients,
-      std::unique_ptr<CollectionStore<ClientState>> store);
+      std::unique_ptr<CollectionStore<ClientState>> store,
+      base::Clock* clock);
   ~ImpressionHistoryTrackerImpl() override;
 
  private:
   // ImpressionHistoryTracker implementation.
   void Init(Delegate* delegate, InitCallback callback) override;
+  void AddImpression(SchedulerClientType type,
+                     const std::string& guid) override;
   void AnalyzeImpressionHistory() override;
   void GetClientStates(std::map<SchedulerClientType, const ClientState*>*
                            client_states) const override;
@@ -161,6 +169,9 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   std::map<SchedulerClientType, bool> need_update_db_;
 
   Delegate* delegate_;
+
+  // The clock to provide the current timestamp.
+  base::Clock* clock_;
 
   base::WeakPtrFactory<ImpressionHistoryTrackerImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ImpressionHistoryTrackerImpl);

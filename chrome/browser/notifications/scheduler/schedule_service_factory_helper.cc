@@ -9,6 +9,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_store.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
@@ -60,8 +61,8 @@ KeyedService* CreateNotificationScheduleService(
   std::vector<SchedulerClientType> registered_clients;
   client_registrar->GetRegisteredClients(&registered_clients);
   auto impression_tracker = std::make_unique<ImpressionHistoryTrackerImpl>(
-      *config.get(), std::move(registered_clients),
-      std::move(impression_store));
+      *config.get(), std::move(registered_clients), std::move(impression_store),
+      base::DefaultClock::GetInstance());
 
   // Build scheduled notification manager.
   base::FilePath notification_store_dir =

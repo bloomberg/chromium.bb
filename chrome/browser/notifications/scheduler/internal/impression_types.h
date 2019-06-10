@@ -25,6 +25,11 @@ namespace notifications {
 // an impression result, which may affect notification exposure.
 // 4. The impression is deleted after it expires.
 struct Impression {
+  Impression();
+  Impression(SchedulerClientType type,
+             const std::string& guid,
+             const base::Time& create_time);
+
   bool operator==(const Impression& other) const;
 
   // Creation timestamp.

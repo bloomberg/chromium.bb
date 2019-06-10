@@ -6,6 +6,13 @@
 
 namespace notifications {
 
+Impression::Impression() = default;
+
+Impression::Impression(SchedulerClientType type,
+                       const std::string& guid,
+                       const base::Time& create_time)
+    : create_time(create_time), guid(guid), type(type) {}
+
 bool Impression::operator==(const Impression& other) const {
   return create_time == other.create_time && feedback == other.feedback &&
          impression == other.impression && integrated == other.integrated &&

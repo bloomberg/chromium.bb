@@ -13,6 +13,8 @@ source_set("test_lib") {
       [ "//chrome/browser/notifications/scheduler/internal:unit_tests" ]
 
   sources = [
+    "fake_clock.cc",
+    "fake_clock.h",
     "test_utils.cc",
     "test_utils.h",
   ]

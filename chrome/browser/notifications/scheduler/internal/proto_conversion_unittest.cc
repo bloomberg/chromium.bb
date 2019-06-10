@@ -101,13 +101,11 @@ TEST(ProtoConversionTest, ImpressionProtoConversion) {
   base::Time create_time;
   bool success = base::Time::FromString("03/25/19 00:00:00 AM", &create_time);
   DCHECK(success);
-  Impression impression{create_time,
-                        UserFeedback::kHelpful,
-                        ImpressionResult::kPositive,
-                        true /*integrated*/,
-                        SchedulerTaskTime::kMorning,
-                        kGuid,
-                        SchedulerClientType::kTest1};
+
+  Impression impression = test::CreateImpression(
+      create_time, UserFeedback::kHelpful, ImpressionResult::kPositive,
+      true /*integrated*/, SchedulerTaskTime::kMorning, kGuid,
+      SchedulerClientType::kTest1);
   client_state.impressions.emplace_back(impression);
   TestClientStateConversion(&client_state);
 
@@ -149,12 +147,14 @@ TEST(ProtoConversionTest, MultipleImpressionConversion) {
   bool success = base::Time::FromString("04/25/20 01:00:00 AM", &create_time);
   DCHECK(success);
 
-  Impression impression{create_time, UserFeedback::kHelpful,
-                        ImpressionResult::kPositive, true,
-                        SchedulerTaskTime::kMorning};
-  Impression other_impression{create_time, UserFeedback::kNoFeedback,
-                              ImpressionResult::kNegative, false,
-                              SchedulerTaskTime::kEvening};
+  Impression impression = test::CreateImpression(
+      create_time, UserFeedback::kHelpful, ImpressionResult::kPositive,
+      true /*integrated*/, SchedulerTaskTime::kMorning, "guid1",
+      SchedulerClientType::kUnknown);
+  Impression other_impression = test::CreateImpression(
+      create_time, UserFeedback::kNoFeedback, ImpressionResult::kNegative,
+      false /*integrated*/, SchedulerTaskTime::kEvening, "guid2",
+      SchedulerClientType::kUnknown);
   client_state.impressions.emplace_back(std::move(impression));
   client_state.impressions.emplace_back(std::move(other_impression));
   TestClientStateConversion(&client_state);

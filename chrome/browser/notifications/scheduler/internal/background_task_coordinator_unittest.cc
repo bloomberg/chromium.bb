@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/test/scoped_task_environment.h"
-#include "base/time/clock.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
+#include "chrome/browser/notifications/scheduler/test/fake_clock.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,22 +58,6 @@ class MockNotificationBackgroundTaskScheduler
   DISALLOW_COPY_AND_ASSIGN(MockNotificationBackgroundTaskScheduler);
 };
 
-// Clock to mock Clock::Now() to get a fixed time in the test.
-class FakeClock : public base::Clock {
- public:
-  FakeClock() = default;
-  ~FakeClock() override = default;
-
-  void SetTime(const base::Time& time) { time_ = time; }
-
- private:
-  // base::Clock implementation.
-  base::Time Now() const override { return time_; }
-
-  base::Time time_;
-  DISALLOW_COPY_AND_ASSIGN(FakeClock);
-};
-
 struct TestData {
   // Impression data as the input.
   std::vector<test::ImpressionTestData> impression_test_data;
@@ -112,16 +96,10 @@ class BackgroundTaskCoordinatorTest : public testing::Test {
 
   SchedulerConfig* config() { return &config_; }
 
-  void SetNow(const char* now_str) {
-    base::Time now = GetTime(now_str);
-    clock_.SetTime(now);
-  }
+  void SetNow(const char* now_str) { clock_.SetNow(now_str); }
 
   base::Time GetTime(const char* time_str) {
-    base::Time time;
-    bool success = base::Time::FromString(time_str, &time);
-    DCHECK(success);
-    return time;
+    return test::FakeClock::GetTime(time_str);
   }
 
   void ScheduleTask(const TestData& test_data) {
@@ -144,7 +122,7 @@ class BackgroundTaskCoordinatorTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  FakeClock clock_;
+  test::FakeClock clock_;
   SchedulerConfig config_;
   std::unique_ptr<BackgroundTaskCoordinator> coordinator_;
   MockNotificationBackgroundTaskScheduler* background_task_;

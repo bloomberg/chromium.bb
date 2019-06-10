@@ -63,6 +63,21 @@ void AddImpressionTestData(
   }
 }
 
+Impression CreateImpression(const base::Time& create_time,
+                            UserFeedback feedback,
+                            ImpressionResult impression_result,
+                            bool integrated,
+                            SchedulerTaskTime task_start_time,
+                            const std::string& guid,
+                            SchedulerClientType type) {
+  Impression impression(type, guid, create_time);
+  impression.feedback = feedback;
+  impression.impression = impression_result;
+  impression.integrated = integrated;
+  impression.task_start_time = task_start_time;
+  return impression;
+}
+
 std::string DebugString(const NotificationData* data) {
   DCHECK(data);
   std::ostringstream stream;
