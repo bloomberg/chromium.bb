@@ -13,8 +13,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/host_zoom_map.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -108,7 +107,7 @@ class AppMenuModel : public ui::SimpleMenuModel,
                      public ui::SimpleMenuModel::Delegate,
                      public ui::ButtonMenuItemModel::Delegate,
                      public TabStripModelObserver,
-                     public content::NotificationObserver {
+                     public content::WebContentsObserver {
  public:
   // Range of command IDs to use for the items in the recent tabs submenu.
   static const int kMinRecentTabsCommandId = 1001;
@@ -146,10 +145,9 @@ class AppMenuModel : public ui::SimpleMenuModel,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
 
-  // Overridden from content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // content::WebContentsObserver:
+  void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) override;
 
   // Getters.
   Browser* browser() const { return browser_; }
@@ -233,7 +231,6 @@ class AppMenuModel : public ui::SimpleMenuModel,
 
   std::unique_ptr<content::HostZoomMap::Subscription>
       browser_zoom_subscription_;
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuModel);
 };

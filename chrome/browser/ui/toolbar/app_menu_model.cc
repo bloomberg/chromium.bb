@@ -61,9 +61,6 @@
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/profiling.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -251,17 +248,16 @@ AppMenuModel::~AppMenuModel() {
 
 void AppMenuModel::Init() {
   Build();
-  UpdateZoomControls();
 
   browser_zoom_subscription_ =
       zoom::ZoomEventManager::GetForBrowserContext(browser_->profile())
           ->AddZoomLevelChangedCallback(base::Bind(
               &AppMenuModel::OnZoomLevelChanged, base::Unretained(this)));
 
-  browser_->tab_strip_model()->AddObserver(this);
-
-  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 content::NotificationService::AllSources());
+  TabStripModel* tab_strip_model = browser_->tab_strip_model();
+  tab_strip_model->AddObserver(this);
+  Observe(tab_strip_model->GetActiveWebContents());
+  UpdateZoomControls();
 }
 
 bool AppMenuModel::DoesCommandIdDismissMenu(int command_id) const {
@@ -698,14 +694,13 @@ void AppMenuModel::OnTabStripModelChanged(
   if (selection.active_tab_changed()) {
     // The user has switched between tabs and the new tab may have a different
     // zoom setting. Or web contents for a tab has been replaced.
+    Observe(selection.new_contents);
     UpdateZoomControls();
   }
 }
 
-void AppMenuModel::Observe(int type,
-                           const content::NotificationSource& source,
-                           const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
+void AppMenuModel::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
   UpdateZoomControls();
 }
 
@@ -891,11 +886,12 @@ void AppMenuModel::CreateZoomMenu() {
 }
 
 void AppMenuModel::UpdateZoomControls() {
-  WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
-  zoom_label_ = base::FormatPercent(
-      contents
-          ? zoom::ZoomController::FromWebContents(contents)->GetZoomPercent()
-          : 100);
+  int zoom_percent = 100;  // Defaults to 100% zoom.
+  if (web_contents()) {
+    zoom_percent =
+        zoom::ZoomController::FromWebContents(web_contents())->GetZoomPercent();
+  }
+  zoom_label_ = base::FormatPercent(zoom_percent);
 }
 
 bool AppMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
