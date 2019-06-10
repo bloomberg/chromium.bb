@@ -93,28 +93,6 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-const BluetoothRemoteGattService* GetFidoService(
-    const BluetoothDevice* device) {
-  if (!device) {
-    FIDO_LOG(ERROR) << "No device present.";
-    return nullptr;
-  }
-
-  for (const auto* service : device->GetGattServices()) {
-    // This assumes that no device is representing as both a FIDO BLE
-    // and a caBLE device.
-    if (service->GetUUID() == BluetoothUUID(kFidoServiceUUID) ||
-        service->GetUUID() == BluetoothUUID(kCableAdvertisementUUID128)) {
-      FIDO_LOG(EVENT) << "Found caBLE service UUID: "
-                      << service->GetUUID().value();
-      return service;
-    }
-  }
-
-  FIDO_LOG(ERROR) << "No Fido service present.";
-  return nullptr;
-}
-
 void OnWriteRemoteCharacteristic(FidoBleConnection::WriteCallback callback) {
   FIDO_LOG(DEBUG) << "Writing Remote Characteristic Succeeded.";
   std::move(callback).Run(true);
@@ -224,7 +202,7 @@ void FidoBleConnection::Connect(ConnectionCallback callback) {
 
 void FidoBleConnection::ReadControlPointLength(
     ControlPointLengthCallback callback) {
-  const auto* fido_service = GetFidoService(GetBleDevice());
+  const auto* fido_service = GetFidoService();
   if (!fido_service) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
@@ -258,7 +236,7 @@ void FidoBleConnection::ReadControlPointLength(
 
 void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
                                           WriteCallback callback) {
-  const auto* fido_service = GetFidoService(GetBleDevice());
+  const auto* fido_service = GetFidoService();
   if (!fido_service) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
@@ -332,7 +310,7 @@ void FidoBleConnection::OnCreateGattConnectionError(
 void FidoBleConnection::ConnectToFidoService() {
   FIDO_LOG(EVENT) << "Attempting to connect to a Fido service.";
   DCHECK(pending_connection_callback_);
-  const auto* fido_service = GetFidoService(GetBleDevice());
+  const auto* fido_service = GetFidoService();
   if (!fido_service) {
     FIDO_LOG(ERROR) << "Failed to get Fido Service.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -425,7 +403,7 @@ void FidoBleConnection::WriteServiceRevision(ServiceRevision service_revision) {
   auto callback = base::BindOnce(&FidoBleConnection::OnServiceRevisionWritten,
                                  weak_factory_.GetWeakPtr());
 
-  const auto* fido_service = GetFidoService(GetBleDevice());
+  const auto* fido_service = GetFidoService();
   if (!fido_service) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
@@ -455,7 +433,7 @@ void FidoBleConnection::OnServiceRevisionWritten(bool success) {
 
 void FidoBleConnection::StartNotifySession() {
   DCHECK(pending_connection_callback_);
-  const auto* fido_service = GetFidoService(GetBleDevice());
+  const auto* fido_service = GetFidoService();
   if (!fido_service) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -511,6 +489,30 @@ void FidoBleConnection::GattServicesDiscovered(BluetoothAdapter* adapter,
     waiting_for_gatt_discovery_ = false;
     ConnectToFidoService();
   }
+}
+
+const BluetoothRemoteGattService* FidoBleConnection::GetFidoService() {
+  if (!connection_ || !connection_->IsConnected()) {
+    FIDO_LOG(ERROR) << "No BLE connection.";
+    return nullptr;
+  }
+
+  DCHECK_EQ(address_, connection_->GetDeviceAddress());
+  BluetoothDevice* device = GetBleDevice();
+
+  for (const auto* service : device->GetGattServices()) {
+    // This assumes that no device is representing as both a FIDO BLE
+    // and a caBLE device.
+    if (service->GetUUID() == BluetoothUUID(kFidoServiceUUID) ||
+        service->GetUUID() == BluetoothUUID(kCableAdvertisementUUID128)) {
+      FIDO_LOG(EVENT) << "Found caBLE service UUID: "
+                      << service->GetUUID().value();
+      return service;
+    }
+  }
+
+  FIDO_LOG(ERROR) << "No Fido service present.";
+  return nullptr;
 }
 
 // static
