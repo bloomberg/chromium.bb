@@ -77,24 +77,25 @@ static void add_ref_mv_candidate(
     CANDIDATE_MV *ref_mv_stack, uint16_t *ref_mv_weight,
     int_mv *gm_mv_candidates, const WarpedMotionParams *gm_params, int col,
     uint16_t weight) {
-  if (!is_inter_block(candidate)) return;  // for intrabc
-  int index = 0, ref;
+  if (!is_inter_block(candidate)) return;
   assert(weight % 2 == 0);
+  int index, ref;
 
   if (rf[1] == NONE_FRAME) {
     // single reference frame
     for (ref = 0; ref < 2; ++ref) {
       if (candidate->ref_frame[ref] == rf[0]) {
-        int_mv this_refmv;
-        if (is_global_mv_block(candidate, gm_params[rf[0]].wmtype))
-          this_refmv = gm_mv_candidates[0];
-        else
-          this_refmv = get_sub_block_mv(candidate, ref, col);
-
-        for (index = 0; index < *refmv_count; ++index)
-          if (ref_mv_stack[index].this_mv.as_int == this_refmv.as_int) break;
-
-        if (index < *refmv_count) ref_mv_weight[index] += weight;
+        const int is_gm_block =
+            is_global_mv_block(candidate, gm_params[rf[0]].wmtype);
+        const int_mv this_refmv = is_gm_block
+                                      ? gm_mv_candidates[0]
+                                      : get_sub_block_mv(candidate, ref, col);
+        for (index = 0; index < *refmv_count; ++index) {
+          if (ref_mv_stack[index].this_mv.as_int == this_refmv.as_int) {
+            ref_mv_weight[index] += weight;
+            break;
+          }
+        }
 
         // Add a new item to the list.
         if (index == *refmv_count && *refmv_count < MAX_REF_MV_STACK_SIZE) {
@@ -118,12 +119,13 @@ static void add_ref_mv_candidate(
           this_refmv[ref] = get_sub_block_mv(candidate, ref, col);
       }
 
-      for (index = 0; index < *refmv_count; ++index)
+      for (index = 0; index < *refmv_count; ++index) {
         if ((ref_mv_stack[index].this_mv.as_int == this_refmv[0].as_int) &&
-            (ref_mv_stack[index].comp_mv.as_int == this_refmv[1].as_int))
+            (ref_mv_stack[index].comp_mv.as_int == this_refmv[1].as_int)) {
+          ref_mv_weight[index] += weight;
           break;
-
-      if (index < *refmv_count) ref_mv_weight[index] += weight;
+        }
+      }
 
       // Add a new item to the list.
       if (index == *refmv_count && *refmv_count < MAX_REF_MV_STACK_SIZE) {
