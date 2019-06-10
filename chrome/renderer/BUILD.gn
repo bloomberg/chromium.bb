@@ -402,6 +402,8 @@ jumbo_static_library("renderer") {
       "searchbox/searchbox_extension.cc",
       "searchbox/searchbox_extension.h",
     ]
+
+    deps += [ "//chrome/common/search:generate_chrome_colors_info" ]
   }
 
   if (is_android) {

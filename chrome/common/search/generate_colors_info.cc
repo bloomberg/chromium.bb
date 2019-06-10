@@ -7,7 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/search/chrome_colors/selected_colors_info.h"
+#include "chrome/common/search/selected_colors_info.h"
 
 // TODO(gayane): Replace with real template.
 // Template for the icon svg.
@@ -44,15 +44,16 @@ const char kColorInfoLineTemplate[] =
 
 // Template for the generated file content.
 // $1 - lines for updated color info.
+// $2 - number of colors.
 const char kFileContentTemplate[] =
     "// Generated from generate_colors_info.cc. Do not edit!\n"
     "\n"
-    "#ifndef CHROME_BROWSER_SEARCH_CHROME_COLORS_GENERATED_COLORS_INFO_H_\n"
-    "#define CHROME_BROWSER_SEARCH_CHROME_COLORS_GENERATED_COLORS_INFO_H_\n"
+    "#ifndef CHROME_COMMON_SEARCH_GENERATED_COLORS_INFO_H_\n"
+    "#define CHROME_COMMON_SEARCH_GENERATED_COLORS_INFO_H_\n"
     "\n"
     "#include <stdint.h>\n"
     "\n"
-    "#include \"chrome/common/search/instant_types.h\"\n"
+    "#include \"chrome/common/search/selected_colors_info.h\"\n"
     "#include \"third_party/skia/include/core/SkColor.h\"\n"
     "\n"
     "namespace chrome_colors {\n"
@@ -63,9 +64,11 @@ const char kFileContentTemplate[] =
     "$1\n"
     "};\n"
     "\n"
+    "const size_t kNumColorsInfo = $2;"
+    "\n"
     "} // namespace chrome_colors\n"
     "\n"
-    "#endif  // CHROME_BROWSER_SEARCH_CHROME_COLORS_GENERATED_COLORS_INFO_H_\n";
+    "#endif  // CHROME_COMMON_SEARCH_GENERATED_COLORS_INFO_H_\n";
 
 // Returns hex string representation for the |color| in "#FFFFFF" format.
 std::string SkColorToHexString(SkColor color) {
@@ -106,11 +109,16 @@ std::string GenerateColorLine(chrome_colors::ColorInfo color_info) {
 // |chrome_colors::kSelectedColorsInfo| along with generated icon data.
 void GenerateColorsInfoFile(std::string output_dir) {
   std::vector<std::string> updated_color_info;
-  for (chrome_colors::ColorInfo color_info : chrome_colors::kSelectedColorsInfo)
+  int colors_num = 0;
+  for (chrome_colors::ColorInfo color_info :
+       chrome_colors::kSelectedColorsInfo) {
     updated_color_info.push_back(GenerateColorLine(color_info));
+    colors_num++;
+  }
 
   std::vector<std::string> subst;
   subst.push_back(base::JoinString(updated_color_info, ",\n"));
+  subst.push_back(base::NumberToString(colors_num));
   std::string output =
       base::ReplaceStringPlaceholders(kFileContentTemplate, subst, NULL);
 
