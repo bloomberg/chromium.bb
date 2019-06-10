@@ -89,7 +89,7 @@ if (use_arm_neon_optimizations) {
   source_set("zlib_arm_crc32") {
     visibility = [ ":*" ]
 
-    if (is_clang && !is_ios) {
+    if (!is_ios) {
       include_dirs = [ "." ]
 
       if (is_android) {
@@ -101,6 +101,10 @@ if (use_arm_neon_optimizations) {
         } else {
           assert(false, "CPU detection requires the Android NDK")
         }
+      } else if (!is_win && !is_clang) {
+        assert(!thin_lto_enable_optimizations,
+               "ThinLTO fails mixing different module-level targets")
+        cflags_c = [ "-march=armv8-a+crc" ]
       }
 
       sources = [
