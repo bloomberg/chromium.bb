@@ -260,6 +260,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
     // Set-Cookie if it existed.
     auto saved_headers = current_response_.headers;
     current_response_ = head;
+    // If this redirect is from an HSTS upgrade, OnHeadersReceived will not be
+    // called before OnReceiveRedirect, so make sure the saved headers exist
+    // before setting them.
     if (saved_headers)
       current_response_.headers = saved_headers;
     ContinueToBeforeRedirect(redirect_info, net::OK);
