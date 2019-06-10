@@ -48,10 +48,10 @@ const base::Feature kEnableTextQueriesWithClientDiscourseContext{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTimerTicks{"ChromeOSAssistantTimerTicks",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+                                base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableAssistantAlarmTimerManager{
-    "EnableAssistantAlarmTimerManager", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableAssistantAlarmTimerManager", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -129,7 +129,10 @@ bool IsTimerNotificationEnabled() {
 }
 
 bool IsTimerTicksEnabled() {
-  return base::FeatureList::IsEnabled(kTimerTicks);
+  // The timer ticks feature is dependent on new notification add/remove logic
+  // that is tied to new events delivered from the AlarmTimerManager API.
+  return IsAlarmTimerManagerEnabled() &&
+         base::FeatureList::IsEnabled(kTimerTicks);
 }
 
 bool IsWarmerWelcomeEnabled() {
