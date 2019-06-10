@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "ui/gfx/geometry/size.h"
@@ -20,7 +20,7 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace content {
+namespace blink {
 
 // MediaStreamVideoRendererSink is a blink::WebMediaStreamVideoRenderer designed
 // for rendering Video MediaStreamTracks [1], MediaStreamVideoRendererSink
@@ -34,7 +34,7 @@ namespace content {
 // TODO(wuchengli): Add unit test. See the link below for reference.
 // https://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_
 // video_decoder_unittest.cc?revision=180591&view=markup
-class CONTENT_EXPORT MediaStreamVideoRendererSink
+class BLINK_EXPORT MediaStreamVideoRendererSink
     : public blink::WebMediaStreamVideoRenderer,
       public blink::MediaStreamVideoSink {
  public:
@@ -87,6 +87,6 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoRendererSink);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_

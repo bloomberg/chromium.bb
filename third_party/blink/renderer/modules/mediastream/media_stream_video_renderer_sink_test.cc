@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_video_renderer_sink.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_renderer_sink.h"
 
 #include <memory>
 #include <vector>
@@ -11,17 +11,17 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
-#include "content/child/child_process.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_registry.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -29,25 +29,20 @@ using ::testing::InSequence;
 using ::testing::Lt;
 using ::testing::Mock;
 
-namespace content {
-
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
+namespace blink {
 
 class MediaStreamVideoRendererSinkTest : public testing::Test {
  public:
   MediaStreamVideoRendererSinkTest()
-      : child_process_(new ChildProcess()),
-        mock_source_(new blink::MockMediaStreamVideoSource()) {
-    blink_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
-                             blink::WebMediaStreamSource::kTypeVideo,
-                             blink::WebString::FromASCII("dummy_source_name"),
+      : mock_source_(new MockMediaStreamVideoSource()) {
+    blink_source_.Initialize(WebString::FromASCII("dummy_source_id"),
+                             WebMediaStreamSource::kTypeVideo,
+                             WebString::FromASCII("dummy_source_name"),
                              false /* remote */);
     blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
-    blink_track_ = blink::MediaStreamVideoTrack::CreateVideoTrack(
-        mock_source_,
-        blink::WebPlatformMediaStreamSource::ConstraintsCallback(), true);
+    blink_track_ = MediaStreamVideoTrack::CreateVideoTrack(
+        mock_source_, WebPlatformMediaStreamSource::ConstraintsCallback(),
+        true);
     mock_source_->StartMockedSource();
     base::RunLoop().RunUntilIdle();
 
@@ -55,8 +50,8 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
         blink_track_,
         base::Bind(&MediaStreamVideoRendererSinkTest::RepaintCallback,
                    base::Unretained(this)),
-        child_process_->io_task_runner(),
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+        Platform::Current()->GetIOTaskRunner(),
+        scheduler::GetSingleThreadTaskRunnerForTesting());
     base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(IsInStoppedState());
@@ -66,7 +61,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
     media_stream_video_renderer_sink_ = nullptr;
     blink_source_.Reset();
     blink_track_.Reset();
-    blink::WebHeap::CollectAllGarbageForTesting();
+    WebHeap::CollectAllGarbageForTesting();
 
     // Let the message loop run to finish destroying the pool.
     base::RunLoop().RunUntilIdle();
@@ -100,27 +95,23 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
   scoped_refptr<MediaStreamVideoRendererSink> media_stream_video_renderer_sink_;
 
  protected:
-  // A ChildProcess is needed to fool the Tracks and Sources into believing they
-  // are on the right threads. A ScopedTaskEnvironment must be instantiated
-  // before ChildProcess to prevent it from leaking a ThreadPool.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const std::unique_ptr<ChildProcess> child_process_;
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 
-  blink::WebMediaStreamTrack blink_track_;
+  WebMediaStreamTrack blink_track_;
 
  private:
   void RunIOUntilIdle() const {
     // |blink_track_| uses IO thread to send frames to sinks. Make sure that
     // tasks on IO thread are completed before moving on.
     base::RunLoop run_loop;
-    child_process_->io_task_runner()->PostTaskAndReply(
+    Platform::Current()->GetIOTaskRunner()->PostTaskAndReply(
         FROM_HERE, base::BindOnce([] {}), run_loop.QuitClosure());
     run_loop.Run();
     base::RunLoop().RunUntilIdle();
   }
 
-  blink::WebMediaStreamSource blink_source_;
-  blink::MockMediaStreamVideoSource* mock_source_;
+  WebMediaStreamSource blink_source_;
+  MockMediaStreamVideoSource* mock_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoRendererSinkTest);
 };
@@ -165,8 +156,8 @@ class MediaStreamVideoRendererSinkTransparencyTest
         base::Bind(&MediaStreamVideoRendererSinkTransparencyTest::
                        VerifyTransparentFrame,
                    base::Unretained(this)),
-        child_process_->io_task_runner(),
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+        Platform::Current()->GetIOTaskRunner(),
+        scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
   void VerifyTransparentFrame(scoped_refptr<media::VideoFrame> frame) {
@@ -174,8 +165,7 @@ class MediaStreamVideoRendererSinkTransparencyTest
   }
 };
 
-TEST_F(MediaStreamVideoRendererSinkTransparencyTest,
-       SendTransparentFrame) {
+TEST_F(MediaStreamVideoRendererSinkTransparencyTest, SendTransparentFrame) {
   media_stream_video_renderer_sink_->Start();
 
   InSequence s;
@@ -190,4 +180,4 @@ TEST_F(MediaStreamVideoRendererSinkTransparencyTest,
   media_stream_video_renderer_sink_->Stop();
 }
 
-}  // namespace content
+}  // namespace blink

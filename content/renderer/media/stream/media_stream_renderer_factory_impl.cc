@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/stream/media_stream_video_renderer_sink.h"
 #include "content/renderer/media/stream/track_audio_renderer.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
@@ -16,6 +15,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_renderer_sink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
@@ -68,9 +68,9 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
     return nullptr;
   }
 
-  return new MediaStreamVideoRendererSink(video_tracks[0], repaint_cb,
-                                          std::move(io_task_runner),
-                                          std::move(main_render_task_runner));
+  return new blink::MediaStreamVideoRendererSink(
+      video_tracks[0], repaint_cb, std::move(io_task_runner),
+      std::move(main_render_task_runner));
 }
 
 scoped_refptr<blink::WebMediaStreamAudioRenderer>

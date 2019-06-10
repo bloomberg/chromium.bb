@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_video_renderer_sink.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_renderer_sink.h"
 
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
-#include "base/memory/weak_ptr.h"
-#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 const int kMinFrameSize = 2;
 
-namespace content {
+namespace blink {
 
 // FrameDeliverer is responsible for delivering frames received on
 // OnVideoFrame() to |repaint_cb_| on the IO thread.
@@ -60,11 +58,11 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
     if (state_ != STARTED) {
       if (emit_frame_drop_events_) {
         emit_frame_drop_events_ = false;
-        main_render_task_runner_->PostTask(
-            FROM_HERE,
-            base::BindOnce(frame_dropped_cb_,
-                           media::VideoCaptureFrameDropReason::
-                               kRendererSinkFrameDelivererIsNotStarted));
+        PostCrossThreadTask(
+            *main_render_task_runner_, FROM_HERE,
+            CrossThreadBind(frame_dropped_cb_,
+                            media::VideoCaptureFrameDropReason::
+                                kRendererSinkFrameDelivererIsNotStarted));
       }
       return;
     }
@@ -132,7 +130,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
 };
 
 MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
-    const blink::WebMediaStreamTrack& video_track,
+    const WebMediaStreamTrack& video_track,
     const RepaintCB& repaint_cb,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)
@@ -151,36 +149,39 @@ void MediaStreamVideoRendererSink::Start() {
 
   frame_deliverer_.reset(new MediaStreamVideoRendererSink::FrameDeliverer(
       repaint_cb_,
-      base::BindRepeating(&blink::MediaStreamVideoSink::OnFrameDropped,
-                          weak_factory_.GetWeakPtr()),
+      ConvertToBaseCallback(CrossThreadBind(
+          &MediaStreamVideoSink::OnFrameDropped, weak_factory_.GetWeakPtr())),
       main_render_task_runner_));
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&FrameDeliverer::Start,
-                                base::Unretained(frame_deliverer_.get())));
+  PostCrossThreadTask(
+      *io_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&FrameDeliverer::Start,
+                          WTF::CrossThreadUnretained(frame_deliverer_.get())));
 
-  blink::MediaStreamVideoSink::ConnectToTrack(
+  MediaStreamVideoSink::ConnectToTrack(
       video_track_,
       // This callback is run on IO thread. It is safe to use base::Unretained
       // here because |frame_receiver_| will be destroyed on IO thread after
       // sink is disconnected from track.
-      base::Bind(&FrameDeliverer::OnVideoFrame,
-                 base::Unretained(frame_deliverer_.get())),
+      ConvertToBaseCallback(WTF::CrossThreadBind(
+          &FrameDeliverer::OnVideoFrame,
+          WTF::CrossThreadUnretained(frame_deliverer_.get()))),
       // Local display video rendering is considered a secure link.
       true);
 
   if (video_track_.Source().GetReadyState() ==
-          blink::WebMediaStreamSource::kReadyStateEnded ||
+          WebMediaStreamSource::kReadyStateEnded ||
       !video_track_.IsEnabled()) {
-    io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&FrameDeliverer::RenderEndOfStream,
-                                  base::Unretained(frame_deliverer_.get())));
+    PostCrossThreadTask(*io_task_runner_, FROM_HERE,
+                        WTF::CrossThreadBind(&FrameDeliverer::RenderEndOfStream,
+                                             WTF::CrossThreadUnretained(
+                                                 frame_deliverer_.get())));
   }
 }
 
 void MediaStreamVideoRendererSink::Stop() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
-  blink::MediaStreamVideoSink::DisconnectFromTrack();
+  MediaStreamVideoSink::DisconnectFromTrack();
   if (frame_deliverer_)
     io_task_runner_->DeleteSoon(FROM_HERE, frame_deliverer_.release());
 }
@@ -190,9 +191,10 @@ void MediaStreamVideoRendererSink::Resume() {
   if (!frame_deliverer_)
     return;
 
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&FrameDeliverer::Resume,
-                                base::Unretained(frame_deliverer_.get())));
+  PostCrossThreadTask(*io_task_runner_, FROM_HERE,
+                      WTF::CrossThreadBindOnce(
+                          &FrameDeliverer::Resume,
+                          WTF::CrossThreadUnretained(frame_deliverer_.get())));
 }
 
 void MediaStreamVideoRendererSink::Pause() {
@@ -200,19 +202,21 @@ void MediaStreamVideoRendererSink::Pause() {
   if (!frame_deliverer_)
     return;
 
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&FrameDeliverer::Pause,
-                                base::Unretained(frame_deliverer_.get())));
+  PostCrossThreadTask(*io_task_runner_, FROM_HERE,
+                      WTF::CrossThreadBindOnce(
+                          &FrameDeliverer::Pause,
+                          WTF::CrossThreadUnretained(frame_deliverer_.get())));
 }
 
 void MediaStreamVideoRendererSink::OnReadyStateChanged(
-    blink::WebMediaStreamSource::ReadyState state) {
+    WebMediaStreamSource::ReadyState state) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  if (state == blink::WebMediaStreamSource::kReadyStateEnded &&
-      frame_deliverer_) {
-    io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&FrameDeliverer::RenderEndOfStream,
-                                  base::Unretained(frame_deliverer_.get())));
+  if (state == WebMediaStreamSource::kReadyStateEnded && frame_deliverer_) {
+    PostCrossThreadTask(
+        *io_task_runner_, FROM_HERE,
+        WTF::CrossThreadBindOnce(
+            &FrameDeliverer::RenderEndOfStream,
+            WTF::CrossThreadUnretained(frame_deliverer_.get())));
   }
 }
 
@@ -224,4 +228,4 @@ MediaStreamVideoRendererSink::GetStateForTesting() {
   return frame_deliverer_->state_;
 }
 
-}  // namespace content
+}  // namespace blink
