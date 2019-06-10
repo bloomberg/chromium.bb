@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/time/time.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -35,13 +36,13 @@ const BluetoothUUID& FidoBleDiscovery::FidoServiceUUID() {
 
 void FidoBleDiscovery::OnSetPowered() {
   DCHECK(adapter());
-  VLOG(2) << "Adapter " << adapter()->GetAddress() << " is powered on.";
+  FIDO_LOG(DEBUG) << "Adapter " << adapter()->GetAddress() << " is powered on.";
 
   for (BluetoothDevice* device : adapter()->GetDevices()) {
     if (!CheckForExcludedDeviceAndCacheAddress(device) &&
         base::Contains(device->GetUUIDs(), FidoServiceUUID())) {
       const auto& device_address = device->GetAddress();
-      VLOG(2) << "FIDO BLE device: " << device_address;
+      FIDO_LOG(DEBUG) << "FIDO BLE device: " << device_address;
       AddDevice(std::make_unique<FidoBleDevice>(adapter(), device_address));
       CheckAndRecordDevicePairingModeOnDiscovery(
           FidoBleDevice::GetIdForAddress(device_address));
@@ -67,7 +68,7 @@ void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
   if (!CheckForExcludedDeviceAndCacheAddress(device) &&
       base::Contains(device->GetUUIDs(), FidoServiceUUID())) {
     const auto& device_address = device->GetAddress();
-    VLOG(2) << "Discovered FIDO BLE device: " << device_address;
+    FIDO_LOG(DEBUG) << "Discovered FIDO BLE device: " << device_address;
     AddDevice(std::make_unique<FidoBleDevice>(adapter, device_address));
     CheckAndRecordDevicePairingModeOnDiscovery(
         FidoBleDevice::GetIdForAddress(device_address));
@@ -84,8 +85,8 @@ void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
   auto authenticator_id = FidoBleDevice::GetIdForAddress(device->GetAddress());
   auto* authenticator = GetAuthenticator(authenticator_id);
   if (!authenticator) {
-    VLOG(2) << "Discovered FIDO service on existing BLE device: "
-            << device->GetAddress();
+    FIDO_LOG(DEBUG) << "Discovered FIDO service on existing BLE device: "
+                    << device->GetAddress();
     AddDevice(std::make_unique<FidoBleDevice>(adapter, device->GetAddress()));
     CheckAndRecordDevicePairingModeOnDiscovery(std::move(authenticator_id));
     return;
@@ -100,7 +101,7 @@ void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
 void FidoBleDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
   if (base::Contains(device->GetUUIDs(), FidoServiceUUID())) {
-    VLOG(2) << "FIDO BLE device removed: " << device->GetAddress();
+    FIDO_LOG(DEBUG) << "FIDO BLE device removed: " << device->GetAddress();
     auto device_id = FidoBleDevice::GetIdForAddress(device->GetAddress());
     RemoveDevice(device_id);
     RemoveDeviceFromPairingTracker(device_id);
@@ -131,8 +132,9 @@ void FidoBleDiscovery::DeviceAddressChanged(BluetoothAdapter* adapter,
   if (it != authenticators_.end())
     return;
 
-  VLOG(2) << "Discovered FIDO BLE device address change from old address : "
-          << old_address << " to new address : " << device->GetAddress();
+  FIDO_LOG(DEBUG)
+      << "Discovered FIDO BLE device address change from old address : "
+      << old_address << " to new address : " << device->GetAddress();
 
   auto change_map_keys = [&](auto* map) {
     auto it = map->find(previous_device_id);
