@@ -125,11 +125,6 @@ class RepeatingCallback<R(Args...)> : public internal::CallbackBaseCopyable {
     return !operator==(other);
   }
 
-  // TODO(http://crbug.com/937566): Deprecated, use == or != instead.
-  bool Equals(const RepeatingCallback& other) const {
-    return EqualsInternal(other);
-  }
-
   R Run(Args... args) const & {
     PolymorphicInvoke f =
         reinterpret_cast<PolymorphicInvoke>(this->polymorphic_invoke());
