@@ -369,9 +369,7 @@ TEST_F(HttpServiceTest, InvalidURL) {
 }
 
 // Ensure the service can handle multiple concurrent requests.
-// TODO(crbug.com/972212): re-enable test when reason of the flakiness is
-// resolved.
-TEST_F(HttpServiceTest, DISABLED_MultipleRequests) {
+TEST_F(HttpServiceTest, MultipleRequests) {
   oldhttp::URLLoaderPtr url_loaders[100];
   for (int i = 0; i < 100; i++) {
     http_service()->CreateURLLoader(url_loaders[i].NewRequest());
