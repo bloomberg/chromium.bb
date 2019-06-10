@@ -88,6 +88,7 @@ class CrosUprevChromeTest(cros_test_lib.MockTempDirTestCase,
     """Test a failed PFQ build_id with one followed PFQ which is passed."""
     self.SetupCommandMock(self.cmd_args)
     pass_list_history = [{'id': '101',
+                          'buildbucket_id': '1234',
                           'status': constants.BUILDER_STATUS_PASSED}]
     fake_cidb.FakeCIDBConnection.GetBuildHistory = mock.Mock(
         return_value=pass_list_history)
@@ -98,8 +99,10 @@ class CrosUprevChromeTest(cros_test_lib.MockTempDirTestCase,
     """Test a failed PFQ build_id with two followed PFQs, one is passed."""
     self.SetupCommandMock(self.cmd_args)
     pass_list_history = [{'id': '101',
+                          'buildbucket_id': '1234',
                           'status': constants.BUILDER_STATUS_FAILED},
                          {'id': '102',
+                          'buildbucket_id': '2341',
                           'status': constants.BUILDER_STATUS_PASSED}]
     fake_cidb.FakeCIDBConnection.GetBuildHistory = mock.Mock(
         return_value=pass_list_history)

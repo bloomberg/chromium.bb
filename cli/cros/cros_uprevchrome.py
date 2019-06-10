@@ -18,7 +18,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.cli import command
-from chromite.cli.cros import cros_cidbcreds
 from chromite.cli.cros import cros_pinchrome
 
 
@@ -58,16 +57,16 @@ class UprevChromeCommand(command.CliCommand):
   to fetch the updates from the remote staging branch, generate CLs to manually
   uprev chrome and upload the CLs to Gerrit for review.
 
-  Users need to provide a failed master_chrome_pfq build_id, the cidb
-  credentials directory and the bug id to track this manual uprev. This tool
-  first verifies if the build_id is valid and if the staging branches exist,
-  then fetches the changes into local branches, updates commit messages,
-  adds CQ-DEPEND, rebases based on master and uploads CLs to Gerrit.
+  Users need to provide a failed master_chrome_pfq build_id, the bug id to track
+  this manual uprev. This tool first verifies if the build_id is valid and if
+  the staging branches exist, then fetches the changes into local branches,
+  updates commit messages, adds CQ-DEPEND, rebases based on master and uploads
+  CLs to Gerrit.
 
   Examples:
 
   cros uprevchrome --pfq-build XXXX --bug='chromium:XXXXX'
-      [--cred-dir path_to_cidb_creds] [--dry-run] [--debug] [--nowipe] [--draft]
+      [--dry-run] [--debug] [--nowipe] [--draft]
 
   After successfully executing this tool, review and submit CLs from Gerrit.
   https://chromium-review.googlesource.com
@@ -109,12 +108,6 @@ class UprevChromeCommand(command.CliCommand):
                         help='The buildbucket_id of the master chrome pfq'
                         ' build. Note this is a 19 digit ID that can be found'
                         'in the Milo or GoldenEye URL for the build.')
-    parser.add_argument('--cred-dir', action='store',
-                        metavar='CIDB_CREDENTIALS_DIR',
-                        help=('Database credentials directory with '
-                              'certificates and other connection '
-                              'information. Obtain your credentials '
-                              'at go/cros-cidb-admin.'))
     parser.add_argument('--fake-buildstore', action='store', default=False,
                         help='Use a FakeBuildStore instance')
     parser.add_argument('--bug', action='store', required=True,
@@ -179,7 +172,7 @@ class UprevChromeCommand(command.CliCommand):
       if build_info['status'] == 'pass':
         raise InvalidPFQBuildbucketIdException(
             'pfq_build %s is invalid as build %s passed.' %
-            (pfq_build, build_info['id']))
+            (pfq_build, build_info['buildbucket_id']))
 
     return buildstore_lib.BuildIdentifier(cidb_id=pfq_info['id'],
                                           buildbucket_id=pfq_build)
@@ -265,7 +258,6 @@ class UprevChromeCommand(command.CliCommand):
       Exception when no commit ID is found in the private overlay CL.
     """
     pfq_build = pfq_identifier.buildbucket_id
-    pfq_cidb_id = pfq_identifier.cidb_id
 
     # Verify the format of reviewers
     reviewers = self.options.reviewers
@@ -287,20 +279,9 @@ class UprevChromeCommand(command.CliCommand):
     branch_name = constants.STAGING_PFQ_BRANCH_PREFIX + pfq_build
     remote_ref = ('refs/' + constants.PFQ_REF + '/' + branch_name)
     local_branch = '%s_%s' % (branch_name, cros_build_lib.GetRandomString())
-
-    try:
-      logging.info('Checking remote refs.')
-      self.CheckRemoteBranch(pub_overlay, remote, remote_ref)
-      self.CheckRemoteBranch(priv_overlay, remote, remote_ref)
-    except MissingBranchException:
-      # TODO(dhanya): remove the whole retry logic after a couple of weeks.
-      logging.info('Couldn\'t find the pfq staging_branch.'
-                   ' Retrying with cidb_id.')
-      branch_name = constants.STAGING_PFQ_BRANCH_PREFIX + str(pfq_cidb_id)
-      remote_ref = ('refs/' + constants.PFQ_REF + '/' + branch_name)
-      local_branch = '%s_%s' % (branch_name, cros_build_lib.GetRandomString())
-      self.CheckRemoteBranch(pub_overlay, remote, remote_ref)
-      self.CheckRemoteBranch(priv_overlay, remote, remote_ref)
+    logging.info('Checking remote refs.')
+    self.CheckRemoteBranch(pub_overlay, remote, remote_ref)
+    self.CheckRemoteBranch(priv_overlay, remote, remote_ref)
 
     # Fetch the remote refspec for the public overlay
     logging.info('git fetch %s %s:%s', remote, remote_ref, local_branch)
@@ -369,21 +350,10 @@ class UprevChromeCommand(command.CliCommand):
     """
     self.options.Freeze()
 
-    cidb_creds = self.options.cred_dir
-    if cidb_creds is None:
-      try:
-        cidb_creds = cros_cidbcreds.CheckAndGetCIDBCreds()
-      except:
-        logging.error('Failed to download CIDB creds from gs.\n'
-                      'Can try obtaining your credentials at '
-                      'go/cros-cidb-admin and manually passing it in '
-                      'with --cred-dir.')
-        raise
-
     if self.options.fake_buildstore:
       buildstore = buildstore_lib.FakeBuildStore()
     else:
-      buildstore = buildstore_lib.BuildStore(cidb_creds=cidb_creds)
+      buildstore = buildstore_lib.BuildStore(_write_to_cidb=False)
     pfq_identifier = self.ValidatePFQBuild(self.options.pfq_build,
                                            buildstore)
 
