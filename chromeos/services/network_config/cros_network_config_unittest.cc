@@ -287,6 +287,9 @@ TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {
 }
 
 TEST_F(CrosNetworkConfigTest, RequestNetworkScan) {
+  // Observe device state list changes and track when the wifi scanning state
+  // gets set to true. Note: In the test the scan will complete immediately and
+  // the scanning state will get set back to false, so ignore that change.
   class ScanningObserver : public CrosNetworkConfigTestObserver {
    public:
     explicit ScanningObserver(CrosNetworkConfig* cros_network_config)
@@ -296,8 +299,8 @@ TEST_F(CrosNetworkConfigTest, RequestNetworkScan) {
           [](bool* wifi_scanning,
              std::vector<mojom::DeviceStatePropertiesPtr> devices) {
             for (auto& device : devices) {
-              if (device->type == mojom::NetworkType::kWiFi)
-                *wifi_scanning = device->scanning;
+              if (device->type == mojom::NetworkType::kWiFi && device->scanning)
+                *wifi_scanning = true;
             }
           },
           &wifi_scanning_));
@@ -309,12 +312,9 @@ TEST_F(CrosNetworkConfigTest, RequestNetworkScan) {
   cros_network_config()->AddObserver(observer.GenerateInterfacePtr());
   base::RunLoop().RunUntilIdle();
 
-  // Set a short delay so that the scan does not complete before the
-  // CrosNetworkConfig observer method gets fired.
-  helper().manager_test()->SetInteractiveDelay(
-      base::TimeDelta::FromMilliseconds(1));
   cros_network_config()->RequestNetworkScan(mojom::NetworkType::kWiFi);
   base::RunLoop().RunUntilIdle();
+  observer.FlushForTesting();
   EXPECT_TRUE(observer.wifi_scanning_);
 }
 
