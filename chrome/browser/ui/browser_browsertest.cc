@@ -62,6 +62,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -809,14 +810,18 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, NewTabFromLinkOpensInGroup) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kTabGroups);
+
   // Add a grouped tab.
-  TabStripModel* model = browser()->tab_strip_model();
+  TabStripModel* const model = browser()->tab_strip_model();
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/empty.html"));
-  model->AddToNewGroup({0});
+  const TabGroupId group_id = model->AddToNewGroup({0});
 
   // Open a new background tab.
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* const contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   OpenURLFromTab(
       contents,
       OpenURLParams(embedded_test_server()->GetURL("/empty.html"), Referrer(),
@@ -824,8 +829,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NewTabFromLinkOpensInGroup) {
                     ui::PAGE_TRANSITION_TYPED, false));
 
   // It should have inherited the tab group from the first tab.
-  EXPECT_EQ(browser()->tab_strip_model()->GetTabGroupForTab(0),
-            browser()->tab_strip_model()->GetTabGroupForTab(1));
+  EXPECT_EQ(group_id, browser()->tab_strip_model()->GetTabGroupForTab(1));
 }
 
 // BeforeUnloadAtQuitWithTwoWindows is a regression test for

@@ -103,6 +103,8 @@
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_scanning_prompt_controller.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_scanning_prompt_desktop.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
@@ -146,6 +148,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -220,8 +223,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/shell_dialogs/selected_file_info.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 
 #if defined(OS_WIN)
 #include <shellapi.h>
@@ -1372,12 +1373,17 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
     return nullptr;
   }
 
-  if (source &&
-      (nav_params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
-       nav_params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)) {
-    nav_params.group = tab_strip_model()->GetTabGroupForTab(
-        tab_strip_model()->GetIndexOfWebContents(source));
+  if (base::FeatureList::IsEnabled(features::kTabGroups)) {
+    if (source &&
+        (nav_params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+         nav_params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)) {
+      const int source_index = tab_strip_model()->GetIndexOfWebContents(source);
+      nav_params.group = tab_strip_model()->GetTabGroupForTab(source_index);
+      if (!nav_params.group)
+        nav_params.group = tab_strip_model()->AddToNewGroup({source_index});
+    }
   }
+
   Navigate(&nav_params);
 
   if (is_popup && nav_params.navigated_or_inserted_contents) {
