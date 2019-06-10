@@ -38,37 +38,9 @@ class ProfileNetworkContextService : public KeyedService,
   // Creates a NetworkContext for the BrowserContext, using the specified
   // parameters. An empty |relative_partition_path| corresponds to the main
   // network context.
-  //
-  // Uses the network service if enabled. Otherwise creates one that will use
-  // the IOThread's NetworkService. This may be called either before or after
-  // SetUpProfileIODataNetworkContext.
   network::mojom::NetworkContextPtr CreateNetworkContext(
       bool in_memory,
       const base::FilePath& relative_partition_path);
-
-  // Initializes |*network_context_params| to set up the ProfileIOData's
-  // main URLRequestContext and |*network_context_request| to be one end of a
-  // Mojo pipe to be bound to the NetworkContext for that URLRequestContext.
-  // The caller will need to send these parameters to the IOThread's in-process
-  // NetworkService.
-  //
-  // If the network service is disabled, CreateNetworkContext(), which is called
-  // first, will return the other end of the pipe.  In this case, all requests
-  // associated with this Profile will use the associated URLRequestContext
-  // (either accessed through the StoragePartition's GetURLRequestContext() or
-  // directly).
-  //
-  // If the network service is enabled, CreateNetworkContext() will instead
-  // return a NetworkContext vended by the network service's NetworkService
-  // (Instead of the IOThread's in-process one).  In this case, the
-  // ProfileIOData's URLRequest context will be configured not to use on-disk
-  // storage (so as not to conflict with the network service vended context),
-  // and will only be used for legacy requests that use it directly.
-  void SetUpProfileIODataNetworkContext(
-      bool in_memory,
-      const base::FilePath& relative_partition_path,
-      network::mojom::NetworkContextRequest* network_context_request,
-      network::mojom::NetworkContextParamsPtr* network_context_params);
 
 #if defined(OS_CHROMEOS)
   void UpdateAdditionalCertificates(
@@ -129,23 +101,6 @@ class ProfileNetworkContextService : public KeyedService,
   Profile* const profile_;
 
   ProxyConfigMonitor proxy_config_monitor_;
-
-  // The |in_memory| / |relative_partition_path| corresponding to the values
-  // passed into CreateNetworkContext.
-  using PartitionInfo = std::pair<bool, base::FilePath>;
-
-  // These are the NetworkContext interfaces that use the ProfileIOData's
-  // NetworkContexts. If the network service is disabled, ownership is passed to
-  // StoragePartition when CreateNetworkContext is called.  Otherwise, retains
-  // ownership, though nothing uses these after construction.
-  std::map<PartitionInfo, network::mojom::NetworkContextPtr>
-      profile_io_data_network_contexts_;
-
-  // Request corresponding to |profile_io_data_main_network_context_|. Ownership
-  // is passed to ProfileIOData when SetUpProfileIODataNetworkContext() is
-  // called.
-  std::map<PartitionInfo, network::mojom::NetworkContextRequest>
-      profile_io_data_context_requests_;
 
   BooleanPrefMember quic_allowed_;
   StringPrefMember pref_accept_language_;

@@ -85,17 +85,6 @@ namespace {
 // The global instance of the SystemNetworkContextmanager.
 SystemNetworkContextManager* g_system_network_context_manager = nullptr;
 
-// Called on IOThread to disable QUIC for HttpNetworkSessions not using the
-// network service. Note that re-enabling QUIC dynamically is not supported for
-// simpliciy and requires a browser restart.
-void DisableQuicOnIOThread(IOThread* io_thread) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    content::GetNetworkServiceImpl()->DisableQuic();
-  io_thread->DisableQuic();
-}
-
 void GetStubResolverConfig(
     PrefService* local_state,
     bool* stub_resolver_enabled,
@@ -333,26 +322,6 @@ SystemNetworkContextManager::GetURLLoaderFactory() {
 scoped_refptr<network::SharedURLLoaderFactory>
 SystemNetworkContextManager::GetSharedURLLoaderFactory() {
   return shared_url_loader_factory_;
-}
-
-void SystemNetworkContextManager::SetUp(
-    network::mojom::NetworkContextRequest* network_context_request,
-    network::mojom::NetworkContextParamsPtr* network_context_params,
-    bool* stub_resolver_enabled,
-    base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
-        dns_over_https_servers,
-    network::mojom::HttpAuthStaticParamsPtr* http_auth_static_params,
-    network::mojom::HttpAuthDynamicParamsPtr* http_auth_dynamic_params,
-    bool* is_quic_allowed) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    *network_context_request = mojo::MakeRequest(&io_thread_network_context_);
-    *network_context_params = CreateNetworkContextParams();
-  }
-  *is_quic_allowed = is_quic_allowed_;
-  *http_auth_static_params = CreateHttpAuthStaticParams(local_state_);
-  *http_auth_dynamic_params = CreateHttpAuthDynamicParams(local_state_);
-  GetStubResolverConfig(local_state_, stub_resolver_enabled,
-                        dns_over_https_servers);
 }
 
 // static
@@ -608,18 +577,9 @@ void SystemNetworkContextManager::DisableQuic() {
   is_quic_allowed_ = false;
 
   // Disabling QUIC for a profile disables QUIC globally. As a side effect, new
-  // Profiles will also have QUIC disabled (because both IOThread's
-  // NetworkService and the network service, if enabled will disable QUIC).
-
+  // Profiles will also have QUIC disabled because the network service will
+  // disable QUIC.
   content::GetNetworkService()->DisableQuic();
-
-  IOThread* io_thread = g_browser_process->io_thread();
-  // Nothing more to do if IOThread has already been shut down.
-  if (!io_thread)
-    return;
-
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(&DisableQuicOnIOThread, io_thread));
 }
 
 void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(

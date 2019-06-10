@@ -1171,9 +1171,7 @@ void BrowserProcessImpl::PreCreateThreads(
   // itself), this can be created on first use.
   if (!SystemNetworkContextManager::GetInstance())
     SystemNetworkContextManager::CreateInstance(local_state());
-  io_thread_ = std::make_unique<IOThread>(
-      local_state(), policy_service(), net_log_.get(),
-      SystemNetworkContextManager::GetInstance());
+  io_thread_ = std::make_unique<IOThread>(net_log_.get());
 }
 
 void BrowserProcessImpl::ServiceManagerConnectionStarted(

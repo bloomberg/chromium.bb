@@ -25,18 +25,13 @@
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
-#include "net/http/http_cache.h"
-#include "net/http/http_network_session.h"
-#include "net/net_buildflags.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_interceptor.h"
-#include "net/url_request/url_request_job_factory.h"
+#include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/url_request_context_owner.h"
 
 class HostContentSettingsMap;
 class ProtocolHandlerRegistry;
@@ -183,10 +178,6 @@ class ProfileIOData {
     return protocol_handler_registry_io_thread_delegate_.get();
   }
 
-  // Returns the predictor service for this Profile. Returns nullptr if there is
-  // no Predictor, as is the case with OffTheRecord profiles.
-  virtual chrome_browser_net::Predictor* GetPredictor();
-
   // Get platform ClientCertStore. May return nullptr.
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
 
@@ -213,11 +204,6 @@ class ProfileIOData {
 
     base::FilePath path;
     IOThread* io_thread = nullptr;
-
-    // Used to configure the main URLRequestContext through the IOThread's
-    // in-process network service.
-    network::mojom::NetworkContextRequest main_network_context_request;
-    network::mojom::NetworkContextParamsPtr main_network_context_params;
 
     scoped_refptr<content_settings::CookieSettings> cookie_settings;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;

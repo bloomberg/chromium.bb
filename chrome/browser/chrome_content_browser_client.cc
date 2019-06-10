@@ -74,6 +74,7 @@
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
+#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/notifications/platform_notification_service_factory.h"
@@ -326,6 +327,7 @@
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
+#include "net/http/http_util.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -4652,8 +4654,6 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  bool network_service_enabled =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
 
   ProfileIOData* io_data = nullptr;
@@ -4697,10 +4697,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   if (io_data && safe_browsing_service_) {
     bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
         request.url, io_data->safe_browsing_whitelist_domains());
-    if (!matches_enterprise_whitelist &&
-        (network_service_enabled ||
-         base::FeatureList::IsEnabled(
-             safe_browsing::kCheckByURLLoaderThrottle))) {
+    if (!matches_enterprise_whitelist) {
       auto* delegate = GetSafeBrowsingUrlCheckerDelegate(resource_context);
       if (delegate && !delegate->ShouldSkipRequestCheck(
                           resource_context, request.url, frame_tree_node_id,
@@ -4740,10 +4737,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
         is_off_the_record, std::move(dynamic_params)));
 
-    if (network_service_enabled) {
-      result.push_back(std::make_unique<ProtocolHandlerThrottle>(
-          io_data->protocol_handler_registry_io_thread_delegate()));
-    }
+    result.push_back(std::make_unique<ProtocolHandlerThrottle>(
+        io_data->protocol_handler_registry_io_thread_delegate()));
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -4751,14 +4746,13 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       resource_context, request.resource_type, frame_tree_node_id));
 #endif
 
-  if (network_service_enabled) {
-    auto delegate = std::make_unique<signin::HeaderModificationDelegateImpl>(
-        resource_context);
-    auto signin_throttle = signin::URLLoaderThrottle::MaybeCreate(
-        std::move(delegate), navigation_ui_data, wc_getter);
-    if (signin_throttle)
-      result.push_back(std::move(signin_throttle));
-  }
+  auto delegate = std::make_unique<signin::HeaderModificationDelegateImpl>(
+      resource_context);
+  auto signin_throttle = signin::URLLoaderThrottle::MaybeCreate(
+      std::move(delegate), navigation_ui_data, wc_getter);
+  if (signin_throttle)
+    result.push_back(std::move(signin_throttle));
+
   return result;
 }
 
@@ -4934,7 +4928,6 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     network::mojom::URLLoaderFactoryRequest* factory_request,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     bool* bypass_redirect_checks) {
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   bool use_proxy = false;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -4970,12 +4963,9 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
       interceptors;
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // NetworkService cases only.
-    interceptors.push_back(
-        std::make_unique<offline_pages::OfflinePageURLLoaderRequestInterceptor>(
-            navigation_ui_data, frame_tree_node_id));
-  }
+  interceptors.push_back(
+      std::make_unique<offline_pages::OfflinePageURLLoaderRequestInterceptor>(
+          navigation_ui_data, frame_tree_node_id));
 #endif
 
   ChromeNavigationUIData* chrome_navigation_ui_data =
@@ -4984,8 +4974,7 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   // TODO(ryansturm): Once this is on the UI thread, stop passing
   // |network_loader_factory| and have interceptors create one themselves.
   // https://crbug.com/931786
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      base::FeatureList::IsEnabled(
+  if (base::FeatureList::IsEnabled(
           previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
     interceptors.push_back(
         std::make_unique<previews::PreviewsLitePageURLLoaderInterceptor>(

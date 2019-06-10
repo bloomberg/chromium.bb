@@ -150,30 +150,9 @@ ProfileNetworkContextService::CreateNetworkContext(
     const base::FilePath& relative_partition_path) {
   network::mojom::NetworkContextPtr network_context;
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    content::GetNetworkService()->CreateNetworkContext(
-        MakeRequest(&network_context),
-        CreateNetworkContextParams(in_memory, relative_partition_path));
-  } else {
-    // The corresponding |profile_io_data_network_contexts_| may already be
-    // initialized if SetUpProfileIODataNetworkContext was called first.
-    PartitionInfo partition_info(in_memory, relative_partition_path);
-    auto iter = profile_io_data_network_contexts_.find(partition_info);
-    if (iter == profile_io_data_network_contexts_.end()) {
-      // If this is not the main network context, then this method is expected
-      // to be called after the URLRequestContext is configured.
-      DCHECK(relative_partition_path.empty());
-      // If the NetworkContext has not been requested yet, go ahead and create a
-      // request for it.
-      profile_io_data_context_requests_[partition_info] =
-          mojo::MakeRequest(&network_context);
-    } else {
-      network_context = std::move(iter->second);
-      // This is not strictly necessary, since the network service can't crash,
-      // and NetworkContexts can't be destroyed without destroying the profile.
-      profile_io_data_network_contexts_.erase(iter);
-    }
-  }
+  content::GetNetworkService()->CreateNetworkContext(
+      MakeRequest(&network_context),
+      CreateNetworkContextParams(in_memory, relative_partition_path));
 
   if ((!in_memory && !profile_->IsOffTheRecord())) {
     // TODO(jam): delete this code 1 year after Network Service shipped to all
@@ -192,44 +171,6 @@ ProfileNetworkContextService::CreateNetworkContext(
   UpdateCTPolicyForContexts(contexts);
 
   return network_context;
-}
-
-void ProfileNetworkContextService::SetUpProfileIODataNetworkContext(
-    bool in_memory,
-    const base::FilePath& relative_partition_path,
-    network::mojom::NetworkContextRequest* network_context_request,
-    network::mojom::NetworkContextParamsPtr* network_context_params) {
-  DCHECK(network_context_request);
-  DCHECK(network_context_params);
-
-  PartitionInfo partition_info(in_memory, relative_partition_path);
-
-  // This may be called either before or after CreateNetworkContext().
-  auto iter = profile_io_data_context_requests_.find(partition_info);
-  if (iter == profile_io_data_context_requests_.end()) {
-    DCHECK(profile_io_data_network_contexts_.find(partition_info) ==
-           profile_io_data_network_contexts_.end());
-    *network_context_request =
-        mojo::MakeRequest(&profile_io_data_network_contexts_[partition_info]);
-  } else {
-    DCHECK(relative_partition_path.empty());
-
-    *network_context_request = std::move(iter->second);
-    // Not strictly necessary, since this should only be called once per storage
-    // partition.
-    profile_io_data_context_requests_.erase(iter);
-  }
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    *network_context_params =
-        CreateNetworkContextParams(in_memory, relative_partition_path);
-    return;
-  }
-
-  // Just use default if network service is enabled, to avoid the legacy
-  // in-process URLRequestContext from fighting with the NetworkService over
-  // ownership of on-disk files.
-  *network_context_params = network::mojom::NetworkContextParams::New();
 }
 
 #if defined(OS_CHROMEOS)
@@ -396,11 +337,6 @@ ProfileNetworkContextService::CreateNetworkContextParams(
       ->secure_origin_cookies_allowed_schemes.push_back(
           content::kChromeUIScheme);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    network_context_params->cookie_manager_params
-        ->matching_scheme_cookies_allowed_schemes.push_back(
-            extensions::kExtensionScheme);
-  }
   network_context_params->cookie_manager_params
       ->third_party_cookies_allowed_schemes.push_back(
           extensions::kExtensionScheme);
@@ -523,8 +459,7 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
 #if defined(OS_CHROMEOS)
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      user_manager &&
+  if (user_manager &&
       policy::PolicyCertServiceFactory::CreateAndStartObservingForProfile(
           profile_)) {
     const user_manager::User* user =
@@ -549,13 +484,11 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   }
 #endif
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Should be initialized with existing per-profile CORS access lists.
-    network_context_params->cors_origin_access_list =
-        profile_->GetSharedCorsOriginAccessList()
-            ->GetOriginAccessList()
-            .CreateCorsOriginAccessPatternsList();
-  }
+  // Should be initialized with existing per-profile CORS access lists.
+  network_context_params->cors_origin_access_list =
+      profile_->GetSharedCorsOriginAccessList()
+          ->GetOriginAccessList()
+          .CreateCorsOriginAccessPatternsList();
 
   return network_context_params;
 }

@@ -68,40 +68,11 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/base/layered_network_delegate.h"
-#include "net/cert/caching_cert_verifier.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cert/cert_verify_proc.h"
-#include "net/cert/ct_log_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/multi_log_ct_verifier.h"
-#include "net/cert/multi_threaded_cert_verifier.h"
-#include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_store.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_transaction_factory.h"
-#include "net/http/http_util.h"
-#include "net/http/transport_security_persister.h"
-#include "net/net_buildflags.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/ssl/client_cert_store.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/data_protocol_handler.h"
-#include "net/url_request/file_protocol_handler.h"
-#include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_builder.h"
-#include "net/url_request/url_request_context_storage.h"
-#include "net/url_request/url_request_file_job.h"
-#include "net/url_request/url_request_intercepting_job_factory.h"
-#include "net/url_request/url_request_interceptor.h"
-#include "net/url_request/url_request_job_factory_impl.h"
 #include "services/network/ignore_errors_cert_verifier.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/proxy_config_mojom_traits.h"
-#include "services/network/url_request_context_builder_mojo.h"
 #include "third_party/blink/public/public_buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -153,11 +124,6 @@
 #if defined(OS_MACOSX)
 #include "net/ssl/client_cert_store_mac.h"
 #endif  // defined(OS_MACOSX)
-
-#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-#include "net/cert/cert_verify_proc_builtin.h"
-#include "services/network/trial_comparison_cert_verifier_mojo.h"
-#endif
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -292,13 +258,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   params->io_thread = g_browser_process->io_thread();
 
-  ProfileNetworkContextServiceFactory::GetForContext(profile)
-      ->SetUpProfileIODataNetworkContext(
-          profile->IsOffTheRecord() /* in_memory */,
-          base::FilePath() /* relative_partition_path */,
-          &params->main_network_context_request,
-          &params->main_network_context_params);
-
   params->cookie_settings = CookieSettingsFactory::GetForProfile(profile);
   params->host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
@@ -430,11 +389,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   // object to the IO thread after this function.
   BrowserContext::EnsureResourceContextInitialized(profile);
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ProfileIOData::Init, base::Unretained(this)));
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ProfileIOData::Init, base::Unretained(this)));
 }
 
 ProfileIOData::ProfileParams::ProfileParams() = default;
@@ -544,10 +501,6 @@ std::string ProfileIOData::GetSigninScopedDeviceId() const {
 bool ProfileIOData::IsOffTheRecord() const {
   return profile_type() == Profile::INCOGNITO_PROFILE ||
          profile_type() == Profile::GUEST_PROFILE;
-}
-
-chrome_browser_net::Predictor* ProfileIOData::GetPredictor() {
-  return nullptr;
 }
 
 std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {

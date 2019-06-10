@@ -41,9 +41,6 @@
 #include "net/base/hash_value.h"
 #include "net/base/url_util.h"
 #include "net/cert/x509_certificate.h"
-#include "net/http/http_transaction_factory.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
@@ -171,15 +168,6 @@ bool DoesRecurrentInterstitialPrefMeetThreshold(Profile* profile,
       return base::MakeStrictNum(error_list.size() - i) >= threshold;
   }
   return false;
-}
-
-void CloseIdleConnections(
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
-  url_request_context_getter->
-      GetURLRequestContext()->
-      http_transaction_factory()->
-      GetSession()->
-      CloseIdleConnections();
 }
 
 // All SSL decisions are per host (and are shared arcoss schemes), so this
@@ -470,17 +458,10 @@ bool ChromeSSLHostStateDelegate::HasAllowException(const std::string& host) {
 void ChromeSSLHostStateDelegate::RevokeUserAllowExceptionsHard(
     const std::string& host) {
   RevokeUserAllowExceptions(host);
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    auto* network_context =
-        content::BrowserContext::GetDefaultStoragePartition(profile_)
-            ->GetNetworkContext();
-    network_context->CloseIdleConnections(base::NullCallback());
-    return;
-  }
-  scoped_refptr<net::URLRequestContextGetter> getter(
-      profile_->GetRequestContext());
-  getter->GetNetworkTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&CloseIdleConnections, getter));
+  auto* network_context =
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetNetworkContext();
+  network_context->CloseIdleConnections(base::NullCallback());
 }
 
 void ChromeSSLHostStateDelegate::DidDisplayErrorPage(int error) {
