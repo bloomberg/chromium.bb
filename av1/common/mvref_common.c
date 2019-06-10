@@ -708,17 +708,19 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       }
 
       // Build up the compound mv predictor
-      int_mv comp_list[3][2];
+      int_mv comp_list[MAX_MV_REF_CANDIDATES][2];
 
       for (int idx = 0; idx < 2; ++idx) {
         int comp_idx = 0;
-        for (int list_idx = 0; list_idx < ref_id_count[idx] && comp_idx < 2;
+        for (int list_idx = 0;
+             list_idx < ref_id_count[idx] && comp_idx < MAX_MV_REF_CANDIDATES;
              ++list_idx, ++comp_idx)
           comp_list[comp_idx][idx] = ref_id[idx][list_idx];
-        for (int list_idx = 0; list_idx < ref_diff_count[idx] && comp_idx < 2;
+        for (int list_idx = 0;
+             list_idx < ref_diff_count[idx] && comp_idx < MAX_MV_REF_CANDIDATES;
              ++list_idx, ++comp_idx)
           comp_list[comp_idx][idx] = ref_diff[idx][list_idx];
-        for (; comp_idx < 3; ++comp_idx)
+        for (; comp_idx < MAX_MV_REF_CANDIDATES; ++comp_idx)
           comp_list[comp_idx][idx] = gm_mv_candidates[idx];
       }
 
