@@ -72,29 +72,25 @@ TEST(WakeLockControllerTest, AcquireMultipleLocks) {
   EXPECT_TRUE(system_lock.is_acquired());
 }
 
-TEST(WakeLockControllerTest, ReleaseWakeLockWithWrongType) {
+TEST(WakeLockControllerTest, ReleaseUnaquiredWakeLockRejectsPromise) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
   auto& controller = WakeLockController::From(*context.GetDocument());
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
-  MockWakeLock& system_lock =
-      wake_lock_service.get_wake_lock(WakeLockType::kSystem);
 
   auto* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise = resolver->Promise();
 
-  controller.AcquireWakeLock(WakeLockType::kScreen, resolver);
-  screen_lock.WaitForRequest();
-  controller.ReleaseWakeLock(WakeLockType::kSystem, resolver);
-
-  test::RunPendingTasks();
-
   EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(promise));
-  EXPECT_TRUE(screen_lock.is_acquired());
-  EXPECT_FALSE(system_lock.is_acquired());
+  controller.ReleaseWakeLock(WakeLockType::kScreen, resolver);
+  context.WaitForPromiseRejection(promise);
+
+  // The promise is always rejected, even if it is not in [[ActiveLocks]].
+  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise));
+  EXPECT_FALSE(screen_lock.is_acquired());
 }
 
 TEST(WakeLockControllerTest, ReleaseWakeLock) {

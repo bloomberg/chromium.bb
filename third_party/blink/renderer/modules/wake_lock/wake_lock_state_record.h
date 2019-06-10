@@ -34,10 +34,6 @@ class MODULES_EXPORT WakeLockStateRecord
 
   friend class WakeLockControllerTest;
 
-  // Actually releases a given wake lock. Callers are responsible for passing a
-  // valid |iterator|.
-  void ReleaseWakeLock(ActiveLocksType::iterator iterator);
-
   // Handle connection errors from |wake_lock_|.
   void OnWakeLockConnectionError();
 
@@ -57,6 +53,7 @@ class MODULES_EXPORT WakeLockStateRecord
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseAllWakeLocks);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseNonExistentWakeLock);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseOneWakeLock);
+  FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseRejectsPromise);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ClearWakeLocks);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, WakeLockConnectionError);
 };

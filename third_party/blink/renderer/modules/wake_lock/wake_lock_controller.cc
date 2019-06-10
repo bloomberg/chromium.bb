@@ -12,7 +12,12 @@ namespace blink {
 WakeLockController::WakeLockController(Document& document)
     : Supplement<Document>(document),
       ContextLifecycleObserver(&document),
-      PageVisibilityObserver(document.GetPage()) {}
+      PageVisibilityObserver(document.GetPage()),
+      state_records_{
+          MakeGarbageCollected<WakeLockStateRecord>(&document,
+                                                    WakeLockType::kScreen),
+          MakeGarbageCollected<WakeLockStateRecord>(&document,
+                                                    WakeLockType::kSystem)} {}
 
 const char WakeLockController::kSupplementName[] = "WakeLockController";
 
@@ -36,21 +41,17 @@ void WakeLockController::Trace(Visitor* visitor) {
 
 void WakeLockController::AcquireWakeLock(WakeLockType type,
                                          ScriptPromiseResolver* resolver) {
-  // Use a reference so we can create an WakeLockStateRecord object on demand.
-  Member<WakeLockStateRecord>& state_record =
-      state_records_[static_cast<size_t>(type)];
-  if (!state_record) {
-    state_record =
-        MakeGarbageCollected<WakeLockStateRecord>(GetSupplementable(), type);
-  }
+  DCHECK_LE(type, WakeLockType::kMaxValue);
+  WakeLockStateRecord* state_record = state_records_[static_cast<size_t>(type)];
+  DCHECK(state_record);
   state_record->AcquireWakeLock(resolver);
 }
 
 void WakeLockController::ReleaseWakeLock(WakeLockType type,
                                          ScriptPromiseResolver* resolver) {
+  DCHECK_LE(type, WakeLockType::kMaxValue);
   WakeLockStateRecord* state_record = state_records_[static_cast<size_t>(type)];
-  if (!state_record)
-    return;
+  DCHECK(state_record);
   state_record->ReleaseWakeLock(resolver);
 }
 

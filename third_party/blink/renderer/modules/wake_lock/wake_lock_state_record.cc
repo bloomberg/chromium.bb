@@ -53,20 +53,16 @@ void WakeLockStateRecord::AcquireWakeLock(ScriptPromiseResolver* resolver) {
 }
 
 void WakeLockStateRecord::ReleaseWakeLock(ScriptPromiseResolver* resolver) {
-  ReleaseWakeLock(active_locks_.find(resolver));
-}
-
-void WakeLockStateRecord::ReleaseWakeLock(ActiveLocksType::iterator iterator) {
   // https://w3c.github.io/wake-lock/#release-wake-lock-algorithm
-  // 1. If record.[[ActiveLocks]] does not contain lockPromise, abort these
-  // steps.
-  if (iterator == active_locks_.end())
-    return;
-
-  // 2. Reject lockPromise with an "AbortError" DOMException.
-  ScriptPromiseResolver* resolver = *iterator;
+  // 1. Reject lockPromise with an "AbortError" DOMException.
   resolver->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kAbortError, "Wake Lock released"));
+
+  // 2. If record.[[ActiveLocks]] does not contain lockPromise, abort these
+  // steps.
+  auto iterator = active_locks_.find(resolver);
+  if (iterator == active_locks_.end())
+    return;
 
   // 3. Let document be the responsible document of the current settings object.
   // 4. Let record be the platform wake lock's state record associated with
@@ -91,7 +87,7 @@ void WakeLockStateRecord::ReleaseWakeLock(ActiveLocksType::iterator iterator) {
 
 void WakeLockStateRecord::ClearWakeLocks() {
   while (!active_locks_.IsEmpty())
-    ReleaseWakeLock(active_locks_.begin());
+    ReleaseWakeLock(*active_locks_.begin());
 }
 
 void WakeLockStateRecord::OnWakeLockConnectionError() {

@@ -160,6 +160,28 @@ TEST(WakeLockStateRecordTest, ReleaseOneWakeLock) {
   EXPECT_TRUE(screen_lock.is_acquired());
 }
 
+TEST(WakeLockStateRecordTest, ReleaseRejectsPromise) {
+  MockWakeLockService wake_lock_service;
+  WakeLockTestingContext context(&wake_lock_service);
+  auto* state_record = MakeStateRecord(context, WakeLockType::kScreen);
+
+  MockWakeLock& screen_lock =
+      wake_lock_service.get_wake_lock(WakeLockType::kScreen);
+
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise promise = resolver->Promise();
+
+  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(promise));
+
+  state_record->ReleaseWakeLock(resolver);
+  context.WaitForPromiseRejection(promise);
+
+  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise));
+  EXPECT_EQ(0U, state_record->active_locks_.size());
+  EXPECT_FALSE(screen_lock.is_acquired());
+}
+
 TEST(WakeLockStateRecordTest, ClearEmptyActiveLocksList) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
