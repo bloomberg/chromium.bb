@@ -211,7 +211,8 @@ void RawInputDataFetcher::EnumerateDevices() {
         pad.vibration_actuator.not_null = device->SupportsVibration();
 
         state->mapper = GetGamepadStandardMappingFunction(
-            vendor_int, product_int, version_number, GAMEPAD_BUS_UNKNOWN);
+            vendor_int, product_int, /*hid_specification_version=*/0,
+            version_number, GAMEPAD_BUS_UNKNOWN);
         state->axis_mask = 0;
         state->button_mask = 0;
 

@@ -147,6 +147,11 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
   // The product ID of the device.
   uint16_t product_id_;
 
+  // The version of the HID specification that this device is compliant with.
+  // The hid-sony driver patches this value to indicate that a newer mapping has
+  // been applied.
+  uint16_t hid_specification_version_;
+
   // The version number of the device.
   uint16_t version_number_;
 

@@ -634,6 +634,7 @@ constexpr struct MappingData {
 GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
     const uint16_t vendor_id,
     const uint16_t product_id,
+    const uint16_t hid_specification_version,
     const uint16_t version_number,
     GamepadBusType bus_type) {
   GamepadId gamepad_id =

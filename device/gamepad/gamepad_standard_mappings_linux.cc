@@ -18,12 +18,12 @@ namespace {
 // The hid-sony driver in newer kernels uses an alternate mapping for Sony
 // Playstation 3 and Playstation 4 gamepads than in older kernels. To allow
 // applications to distinguish between the old mapping and the new mapping,
-// hid-sony sets the high bit of the device's version number.
+// hid-sony sets the high bit of the bcdHID value.
 // Dualshock 4 devices are patched in 4.10:
 // https://github.com/torvalds/linux/commit/9131f8cc2b4eaf7c08d402243429e0bfba9aa0d6
 // Dualshock 3 and SIXAXIS devices are patched in 4.12:
 // https://github.com/torvalds/linux/commit/e19a267b9987135c00155a51e683e434b9abb56b
-const uint16_t kDualshockPatchedVersion = 0x8111;
+const uint16_t kDualshockPatchedBcdHidMask = 0x8000;
 
 void MapperXInputStyleGamepad(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
@@ -760,6 +760,7 @@ constexpr struct MappingData {
 GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
     const uint16_t vendor_id,
     const uint16_t product_id,
+    const uint16_t hid_specification_version,
     const uint16_t version_number,
     GamepadBusType bus_type) {
   GamepadId gamepad_id =
@@ -773,13 +774,13 @@ GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
       (find_it == end) ? nullptr : find_it->function;
 
   // The Linux kernel was updated in version 4.10 to better support Dualshock 4
-  // and Dualshock 3/SIXAXIS gamepads. The driver patches the hardware version
-  // when using the new mapping to allow downstream users to distinguish them.
+  // and Dualshock 3/SIXAXIS gamepads. The driver patches the bcdHID value when
+  // using the new mapping to allow downstream users to distinguish them.
   if (mapper == MapperDualshock4 &&
-      version_number == kDualshockPatchedVersion) {
+      (hid_specification_version & kDualshockPatchedBcdHidMask)) {
     mapper = MapperDualshock4New;
   } else if (mapper == MapperDualshock3SixAxis &&
-             version_number == kDualshockPatchedVersion) {
+             (hid_specification_version & kDualshockPatchedBcdHidMask)) {
     mapper = MapperDualshock3SixAxisNew;
   }
 
