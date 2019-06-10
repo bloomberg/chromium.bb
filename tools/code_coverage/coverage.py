@@ -799,16 +799,6 @@ def _SetupOutputDir():
   os.makedirs(coverage_utils.GetCoverageReportRootDirPath(OUTPUT_DIR))
 
 
-def _SetMacXcodePath():
-  """Set DEVELOPER_DIR to the path to hermetic Xcode.app on Mac OS X."""
-  if sys.platform != 'darwin':
-    return
-
-  xcode_path = os.path.join(SRC_ROOT_PATH, 'build', 'mac_files', 'Xcode.app')
-  if os.path.exists(xcode_path):
-    os.environ['DEVELOPER_DIR'] = xcode_path
-
-
 def _ParseCommandArguments():
   """Adds and parses relevant arguments for tool comands.
 
@@ -995,11 +985,6 @@ def Main():
     # An input prof-data file is already provided. Just calculate binary paths.
     profdata_file_path = args.profdata_file
     binary_paths = _GetBinaryPathsFromTargets(args.targets, args.build_dir)
-
-  # DEVELOPER_DIR needs to be set when Xcode isn't in a standard location
-  # and xcode-select wasn't run.  This path needs to be set prior to calling
-  # otool which happens on mac in coverage_utils.GetSharedLibraries().
-  _SetMacXcodePath()
 
   binary_paths.extend(
       coverage_utils.GetSharedLibraries(binary_paths, BUILD_DIR))

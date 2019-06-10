@@ -678,6 +678,9 @@ def GetSharedLibraries(binary_paths, build_dir):
     shared_library_re = re.compile(r'.*\.so[.0-9]*\s=>\s(.*' + build_dir +
                                    r'.*\.so[.0-9]*)\s.*')
   elif sys.platform.startswith('darwin'):
+    # 'otool' is installed as part of CommandLineTools. This script makes the
+    # assumption that 'otool' is available and does not specify an explicit
+    # path.
     cmd.extend(['otool', '-L'])
     shared_library_re = re.compile(r'\s+(@rpath/.*\.dylib)\s.*')
   else:
