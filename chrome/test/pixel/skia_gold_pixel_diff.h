@@ -76,6 +76,9 @@ class SkiaGoldPixelDiff {
   // Use luci auth on bots. Don't use luci auth for local development.
   bool luci_auth_ = true;
   std::string build_revision_;
+  std::string issue_;
+  std::string patchset_;
+  std::string job_id_;
   // The working dir for goldctl. It's the dir for storing temporary files.
   base::FilePath working_dir_;
 };

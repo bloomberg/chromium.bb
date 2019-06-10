@@ -41,6 +41,11 @@ std::string kSkiaGoldCtl = "tools/skia_goldctl/goldctl";
 
 std::string kBuildRevisionKey = "build-revision";
 
+// The switch keys for tryjob.
+std::string kIssueKey = "issue";
+std::string kPatchSetKey = "patchset";
+std::string kJobIdKey = "jobid";
+
 std::string kNoLuciAuth = "no-luci-auth";
 
 SkiaGoldPixelDiff::SkiaGoldPixelDiff() = default;
@@ -151,6 +156,11 @@ void SkiaGoldPixelDiff::InitSkiaGold() {
   cmd.AppendSwitchPath("failure-file", failure_temp_file);
   cmd.AppendSwitch("passfail");
   cmd.AppendSwitchASCII("commit", build_revision_);
+  if (issue_.length()) {
+    cmd.AppendSwitchASCII("issue", issue_);
+    cmd.AppendSwitchASCII("patchset", patchset_);
+    cmd.AppendSwitchASCII("jobid", job_id_);
+  }
   AppendArgsJustAfterProgram(cmd, {FILE_PATH_LITERAL("imgtest"), FILE_PATH_LITERAL("init")});
   cmd_str = cmd.GetCommandLineString();
   LOG(INFO) << "Skia Gold imgtest init Commandline: " << cmd_str;
@@ -163,7 +173,21 @@ void SkiaGoldPixelDiff::Init(BrowserWindow* browser,
   auto* cmd_line = base::CommandLine::ForCurrentProcess();
   ASSERT_TRUE(cmd_line->HasSwitch(kBuildRevisionKey))
       << "Missing switch " << kBuildRevisionKey;
+  ASSERT_TRUE(cmd_line->HasSwitch(kIssueKey) &&
+      cmd_line->HasSwitch(kPatchSetKey) &&
+      cmd_line->HasSwitch(kJobIdKey) ||
+      !cmd_line->HasSwitch(kIssueKey) &&
+      !cmd_line->HasSwitch(kPatchSetKey) &&
+      !cmd_line->HasSwitch(kJobIdKey))
+      << "Missing switch. If it's running for tryjob, you should pass --"
+      << kIssueKey << " --" << kPatchSetKey << " --" << kJobIdKey
+      << ". Otherwise, do not pass any one of them.";
   build_revision_ = cmd_line->GetSwitchValueASCII(kBuildRevisionKey);
+  if (cmd_line->HasSwitch(kIssueKey)) {
+    issue_ = cmd_line->GetSwitchValueASCII(kIssueKey);
+    patchset_ = cmd_line->GetSwitchValueASCII(kPatchSetKey);
+    job_id_ = cmd_line->GetSwitchValueASCII(kJobIdKey);
+  }
   if (cmd_line->HasSwitch(kNoLuciAuth)) {
     luci_auth_ = false;
   }
