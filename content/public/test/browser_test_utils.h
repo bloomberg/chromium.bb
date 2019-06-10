@@ -36,6 +36,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_type.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "ipc/message_filter.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -996,6 +997,8 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
   RenderProcessHost* render_process_host_;
   WatchType type_;
   bool did_exit_normally_;
+
+  ScopedAllowRendererCrashes allow_renderer_crashes_;
 
   base::RunLoop run_loop_;
   base::OnceClosure quit_closure_;
