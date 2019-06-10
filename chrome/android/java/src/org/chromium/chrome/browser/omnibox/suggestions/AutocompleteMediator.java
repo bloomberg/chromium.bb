@@ -82,6 +82,7 @@ class AutocompleteMediator
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
     // with the new characters.
     private static final long OMNIBOX_SUGGESTION_START_DELAY_MS = 30;
+    private static final int OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS = 10;
 
     private final Context mContext;
     private final AutocompleteDelegate mDelegate;
@@ -188,12 +189,21 @@ class AutocompleteMediator
      * revisiting or a secondary metric telling us how many answer suggestions have been shown.
      */
     private void recordAnswersHistogram() {
+        int richEntitiesCount = 0;
         for (SuggestionViewInfo info : mCurrentModels) {
             if (info.suggestion.hasAnswer()) {
                 RecordHistogram.recordEnumeratedHistogram("Omnibox.AnswerInSuggestShown",
                         info.suggestion.getAnswer().getType(), AnswerType.TOTAL_COUNT);
+            } else if (mEntitySuggestionProcessor.doesProcessSuggestion(info.suggestion)) {
+                richEntitiesCount++;
             }
         }
+
+        // Note: valid range for histograms must start with (at least) 1. This does not prevent us
+        // from reporting 0 as a count though - values lower than 'min' fall in the 'underflow'
+        // bucket, while values larger than 'max' will be reported in 'overflow' bucket.
+        RecordHistogram.recordLinearCountHistogram("Omnibox.RichEntityShown", richEntitiesCount, 1,
+                OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS, OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS + 1);
     }
 
     /**
