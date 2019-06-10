@@ -556,6 +556,9 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   if (!MakeCurrent(true /* need_fbo0 */))
     return;
 
+  auto* channel_manager = gpu_service_->gpu_channel_manager();
+  channel_manager->ScheduleGrContextCleanup();
+
   PullTextureUpdates(std::move(sync_tokens));
 
   {
