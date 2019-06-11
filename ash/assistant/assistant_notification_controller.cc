@@ -266,7 +266,10 @@ void AssistantNotificationController::OnNotificationClicked(
 
   // Open the action url if it is valid.
   if (IsValidActionUrl(action_url)) {
-    assistant_controller_->OpenUrl(action_url);
+    // Note that we copy construct a new GURL as our |notification| may be
+    // destroyed during the |OpenUrl| sequence leaving |action_url| in a bad
+    // state.
+    assistant_controller_->OpenUrl(GURL(action_url));
     model_.RemoveNotificationById(id, /*from_server=*/false);
     return;
   }
