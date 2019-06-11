@@ -482,5 +482,16 @@ bool ParseModelIdentifier(const std::string& ident,
   return true;
 }
 
+std::string GetOSDisplayName() {
+  std::string os_name;
+  if (IsAtMostOS10_11())
+    os_name = "OS X";
+  else
+    os_name = "macOS";
+  std::string version_string = base::SysNSStringToUTF8(
+      [[NSProcessInfo processInfo] operatingSystemVersionString]);
+  return os_name + " " + version_string;
+}
+
 }  // namespace mac
 }  // namespace base

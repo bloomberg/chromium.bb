@@ -84,6 +84,10 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome/browser/ui/webui/version_util_win.h"
 #endif
@@ -1052,6 +1056,8 @@ void PolicyUIHandler::WritePoliciesToJSONFile(
   chrome_metadata.SetKey("platform",
                          base::Value(chromeos::version_loader::GetVersion(
                              chromeos::version_loader::VERSION_FULL)));
+#elif defined(OS_MACOSX)
+  chrome_metadata.SetKey("OS", base::Value(base::mac::GetOSDisplayName()));
 #else
   std::string os = version_info::GetOSType();
 #if defined(OS_WIN)

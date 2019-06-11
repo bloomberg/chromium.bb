@@ -40,6 +40,10 @@
 #include "chrome/browser/ui/webui/version_handler_chromeos.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome/browser/ui/webui/version_handler_win.h"
 #endif
@@ -107,9 +111,11 @@ WebUIDataSource* CreateVersionUIDataSource() {
   html_source->AddString(version_ui::kExecutablePath, std::string());
   html_source->AddString(version_ui::kProfilePath, std::string());
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_MACOSX)
+  html_source->AddString(version_ui::kOSType, base::mac::GetOSDisplayName());
+#elif !defined(OS_CHROMEOS)
   html_source->AddString(version_ui::kOSType, version_info::GetOSType());
-#endif  // !OS_CHROMEOS
+#endif  // OS_MACOSX
 
 #if defined(OS_ANDROID)
   html_source->AddString(version_ui::kOSVersion,

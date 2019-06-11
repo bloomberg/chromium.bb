@@ -69,7 +69,7 @@ about:version template page
 <if expr="is_android">
             <span>$i18n{os_version}</span>
 </if>
-<if expr="is_win">
+<if expr="is_win or is_macosx">
             <span id="os_version"></span>
 </if>
           </td>

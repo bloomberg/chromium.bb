@@ -190,6 +190,14 @@ BASE_EXPORT bool ParseModelIdentifier(const std::string& ident,
                                       int32_t* major,
                                       int32_t* minor);
 
+// Returns an OS name + version string. e.g.:
+//
+//   "macOS Version 10.14.3 (Build 18D109)"
+//
+// Parts of this string change based on OS locale, so it's only useful for
+// displaying to the user.
+BASE_EXPORT std::string GetOSDisplayName();
+
 }  // namespace mac
 }  // namespace base
 
