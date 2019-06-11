@@ -2371,7 +2371,7 @@
             ]
         }
     ],
-    "GwpAsanPartitionAlloc": [
+    "GwpAsanPartitionAllocLaunch": [
         {
             "platforms": [
                 "mac",
