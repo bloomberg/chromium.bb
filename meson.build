@@ -60,6 +60,8 @@ global_args_maybe = [
 	'-Wno-unused-parameter',
 	'-Wno-shift-negative-value', # required due to Pixman
 	'-Wno-missing-field-initializers',
+	'-Wno-pedantic',
+	'-Wno-error=pedantic',
 	'-fvisibility=hidden',
 ]
 foreach a : global_args_maybe
