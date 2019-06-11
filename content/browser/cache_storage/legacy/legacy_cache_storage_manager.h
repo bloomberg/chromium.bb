@@ -15,6 +15,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/sequence_checker.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage.h"
@@ -156,6 +157,8 @@ class CONTENT_EXPORT LegacyCacheStorageManager : public CacheStorageManager {
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Do not add a WeakPtrFactory since this class is destroyed via a
   // cross-thread delete helper.
