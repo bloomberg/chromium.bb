@@ -333,8 +333,9 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
   }
 
 #if BUILDFLAG(ENABLE_PRINTING)
-  if (service_name == chrome::mojom::kCupsIppParserServiceName)
-    return std::make_unique<CupsIppParserService>(std::move(request));
+  if (service_name == cups_ipp_parser::mojom::kCupsIppParserServiceName)
+    return std::make_unique<cups_ipp_parser::CupsIppParserService>(
+        std::move(request));
 #endif
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)

@@ -34,7 +34,7 @@ class IppValidator {
   // Validates each of |to_validate|'s fields and returns a POD representation
   // of the IPP request. Returns empty Optional on failure.
   base::Optional<IppRequest> ValidateIppRequest(
-      chrome::mojom::IppRequestPtr to_validate);
+      cups_ipp_parser::mojom::IppRequestPtr to_validate);
 
  private:
   base::Optional<HttpRequestLine> ValidateHttpRequestLine(
@@ -45,7 +45,7 @@ class IppValidator {
   base::Optional<std::vector<ipp_converter::HttpHeader>> ValidateHttpHeaders(
       const base::flat_map<std::string, std::string>& headers);
 
-  ipp_t* ValidateIppMessage(chrome::mojom::IppMessagePtr ipp_message);
+  ipp_t* ValidateIppMessage(cups_ipp_parser::mojom::IppMessagePtr ipp_message);
 
   bool ValidateIppData(const std::vector<uint8_t>& ipp_data);
 

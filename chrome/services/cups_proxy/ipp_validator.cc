@@ -32,10 +32,10 @@ const char kLocaleEnglish[] = "en";
 
 // Converting to vector<char> for libCUPS API:
 // ippAddBooleans(..., int num_values, const char *values)
-// TODO(crbug.com/945409): Convert chrome::mojom::Value to using
+// TODO(crbug.com/945409): Convert cups_ipp_parser::mojom::Value to using
 // mojo_base::Value.
 base::Optional<std::vector<char>> ParseBooleans(
-    const std::vector<chrome::mojom::ValuePtr>& values) {
+    const std::vector<cups_ipp_parser::mojom::ValuePtr>& values) {
   std::vector<char> ret;
   for (auto& value : values) {
     if (!value->is_bool_value()) {
@@ -50,7 +50,7 @@ base::Optional<std::vector<char>> ParseBooleans(
 // Converting to vector<int> for libCUPS API:
 // ippAddIntegers(..., int num_values, const int *values)
 base::Optional<std::vector<int>> ParseIntegers(
-    const std::vector<chrome::mojom::ValuePtr>& values) {
+    const std::vector<cups_ipp_parser::mojom::ValuePtr>& values) {
   std::vector<int> ret;
   for (auto& value : values) {
     if (!value->is_int_value()) {
@@ -65,7 +65,7 @@ base::Optional<std::vector<int>> ParseIntegers(
 // Converting to vector<const char*> for libCUPS API:
 // ippAddStrings(..., int num_values, const char *const *values)
 base::Optional<std::vector<const char*>> ParseStrings(
-    const std::vector<chrome::mojom::ValuePtr>& values) {
+    const std::vector<cups_ipp_parser::mojom::ValuePtr>& values) {
   std::vector<const char*> ret;
   for (auto& value : values) {
     if (!value->is_string_value()) {
@@ -119,7 +119,7 @@ IppValidator::ValidateHttpHeaders(
 }
 
 ipp_t* IppValidator::ValidateIppMessage(
-    chrome::mojom::IppMessagePtr ipp_message) {
+    cups_ipp_parser::mojom::IppMessagePtr ipp_message) {
   printing::ScopedIppPtr ipp = printing::WrapIpp(ippNew());
 
   // Fill ids.
@@ -139,11 +139,11 @@ ipp_t* IppValidator::ValidateIppMessage(
 
   // Fill attributes.
   for (size_t i = 0; i < ipp_message->attributes.size(); ++i) {
-    chrome::mojom::IppAttributePtr attribute =
+    cups_ipp_parser::mojom::IppAttributePtr attribute =
         std::move(ipp_message->attributes[i]);
 
     switch (attribute->type) {
-      case chrome::mojom::ValueType::BOOLEAN: {
+      case cups_ipp_parser::mojom::ValueType::BOOLEAN: {
         base::Optional<std::vector<char>> values =
             ParseBooleans(attribute->values);
         if (!values.has_value()) {
@@ -159,7 +159,7 @@ ipp_t* IppValidator::ValidateIppMessage(
         break;
       }
       // TODO(crbug.com/945409): Include for multiple value checking.
-      case chrome::mojom::ValueType::DATE: {
+      case cups_ipp_parser::mojom::ValueType::DATE: {
         if (!attribute->values.front()->is_char_value()) {
           return nullptr;
         }
@@ -173,7 +173,7 @@ ipp_t* IppValidator::ValidateIppMessage(
         }
         break;
       }
-      case chrome::mojom::ValueType::INTEGER: {
+      case cups_ipp_parser::mojom::ValueType::INTEGER: {
         base::Optional<std::vector<int>> values =
             ParseIntegers(attribute->values);
         if (!values.has_value()) {
@@ -189,7 +189,7 @@ ipp_t* IppValidator::ValidateIppMessage(
         }
         break;
       }
-      case chrome::mojom::ValueType::STRING: {
+      case cups_ipp_parser::mojom::ValueType::STRING: {
         // Note: cstrings_values references attribute->values, i.e.
         // cstrings_values MUST outlive attribute->values.
         base::Optional<std::vector<const char*>> cstrings_values =
@@ -251,7 +251,7 @@ IppValidator::IppValidator(
 IppValidator::~IppValidator() = default;
 
 base::Optional<IppRequest> IppValidator::ValidateIppRequest(
-    chrome::mojom::IppRequestPtr to_validate) {
+    cups_ipp_parser::mojom::IppRequestPtr to_validate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!delegate_) {
     // TODO(crbug/495409): Add fatal error option to bring down service.

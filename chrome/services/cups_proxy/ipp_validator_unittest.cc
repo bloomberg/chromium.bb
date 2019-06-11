@@ -19,11 +19,11 @@ namespace cups_proxy {
 namespace {
 
 // Mojom using statements to remove chrome::mojom everywhere...
-using chrome::mojom::IppAttributePtr;
-using chrome::mojom::IppMessagePtr;
-using chrome::mojom::IppRequestPtr;
-using chrome::mojom::Value;
-using chrome::mojom::ValueType;
+using cups_ipp_parser::mojom::IppAttributePtr;
+using cups_ipp_parser::mojom::IppMessagePtr;
+using cups_ipp_parser::mojom::IppRequestPtr;
+using cups_ipp_parser::mojom::Value;
+using cups_ipp_parser::mojom::ValueType;
 
 using Printer = chromeos::Printer;
 
@@ -76,7 +76,7 @@ class IppValidatorTest : public testing::Test {
 IppAttributePtr BuildAttributePtr(std::string name,
                                   ipp_tag_t group_tag,
                                   ipp_tag_t value_tag) {
-  auto ret = chrome::mojom::IppAttribute::New();
+  auto ret = cups_ipp_parser::mojom::IppAttribute::New();
   ret->name = name;
   ret->group_tag = group_tag;
   ret->value_tag = value_tag;
@@ -85,7 +85,7 @@ IppAttributePtr BuildAttributePtr(std::string name,
 
 // Returns a mojom representation of a standard IPP request.
 IppRequestPtr GetBasicIppRequest() {
-  IppRequestPtr ret = chrome::mojom::IppRequest::New();
+  IppRequestPtr ret = cups_ipp_parser::mojom::IppRequest::New();
 
   // Request line.
   ret->method = "POST";
@@ -102,7 +102,7 @@ IppRequestPtr GetBasicIppRequest() {
        "CUPS/2.3b1 (Linux 4.4.159-15303-g65f4b5a7b3d3; i686) IPP/2.0"}};
 
   // IppMessage.
-  IppMessagePtr ipp_message = chrome::mojom::IppMessage::New();
+  IppMessagePtr ipp_message = cups_ipp_parser::mojom::IppMessage::New();
   ipp_message->major_version = 2;
   ipp_message->minor_version = 0;
   ipp_message->operation_id = IPP_OP_CUPS_GET_DEFAULT;
