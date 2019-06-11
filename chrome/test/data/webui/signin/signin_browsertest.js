@@ -11,7 +11,7 @@ GEN('#include "chrome/test/data/webui/signin_browsertest.h"');
 
 /**
  * Test fixture for
- * chrome/browser/resources/signin/dice_sync_confirmation/sync_confirmation.html.
+ * chrome/browser/resources/signin/sync_confirmation/sync_confirmation.html.
  * This has to be declared as a variable for TEST_F to find it correctly.
  */
 // eslint-disable-next-line no-var
@@ -36,7 +36,7 @@ var SigninSyncConfirmationTest = class extends PolymerTest {
     return [
       ...super.extraLibraries,
       '//chrome/test/data/webui/test_browser_proxy.js',
-      '//chrome/browser/resources/signin/dice_sync_confirmation/' +
+      '//chrome/browser/resources/signin/sync_confirmation/' +
           'sync_confirmation_browser_proxy.js',
       'test_sync_confirmation_browser_proxy.js',
       'sync_confirmation_test.js',

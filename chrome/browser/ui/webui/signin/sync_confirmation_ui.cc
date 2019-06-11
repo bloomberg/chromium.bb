@@ -42,17 +42,16 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   int confirm_button_ids = -1;
   int undo_button_ids = -1;
   if (is_sync_allowed) {
-    source->SetDefaultResource(IDR_DICE_SYNC_CONFIRMATION_HTML);
+    source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);
     source->AddResourcePath("sync_confirmation_browser_proxy.html",
-                            IDR_DICE_SYNC_CONFIRMATION_BROWSER_PROXY_HTML);
+                            IDR_SYNC_CONFIRMATION_BROWSER_PROXY_HTML);
     source->AddResourcePath("sync_confirmation_browser_proxy.js",
-                            IDR_DICE_SYNC_CONFIRMATION_BROWSER_PROXY_JS);
+                            IDR_SYNC_CONFIRMATION_BROWSER_PROXY_JS);
     source->AddResourcePath("sync_confirmation_app.html",
-                            IDR_DICE_SYNC_CONFIRMATION_APP_HTML);
+                            IDR_SYNC_CONFIRMATION_APP_HTML);
     source->AddResourcePath("sync_confirmation_app.js",
-                            IDR_DICE_SYNC_CONFIRMATION_APP_JS);
-    source->AddResourcePath("sync_confirmation.js",
-                            IDR_DICE_SYNC_CONFIRMATION_JS);
+                            IDR_SYNC_CONFIRMATION_APP_JS);
+    source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
 
     AddStringResource(source, "syncConfirmationSyncInfoTitle",
                       IDS_SYNC_CONFIRMATION_UNITY_SYNC_INFO_TITLE);

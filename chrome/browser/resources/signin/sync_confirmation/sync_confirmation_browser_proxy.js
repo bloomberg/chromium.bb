@@ -8,7 +8,6 @@
  */
 
 cr.define('sync.confirmation', function() {
-
   /** @interface */
   class SyncConfirmationBrowserProxy {
     /**
@@ -20,7 +19,8 @@ cr.define('sync.confirmation', function() {
      */
     confirm(description, confirmation) {}
 
-    /** Called when the user undoes the Sync confirmation.
+    /**
+     * Called when the user undoes the Sync confirmation.
      */
     undo() {}
 
