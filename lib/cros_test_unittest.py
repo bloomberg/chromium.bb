@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import mock
 import os
 
 from chromite.lib import cros_test_lib
@@ -63,3 +64,63 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
         'test_that', '--no-quickmerge', '--ssh_options',
         '-F /dev/null -i /dev/null',
         'localhost:9222', 'accessiblity_Sanity'])
+
+  def testSingleBaseTastTest(self):
+    """Verify running a single tast test."""
+    self._tester.tast = ['ui.ChromeLogin']
+    self._tester.Run()
+    self.assertCommandContains(['tast', 'run', '-build=false',
+                                '-waituntilready', '-extrauseflags=tast_vm',
+                                'localhost:9222', 'ui.ChromeLogin'])
+
+  def testExpressionBaseTastTest(self):
+    """Verify running a set of tast tests with an expression."""
+    self._tester.tast = [
+        '(("dep:chrome" || "dep:android") && !flaky && !disabled)'
+    ]
+    self._tester.Run()
+    self.assertCommandContains([
+        'tast', 'run', '-build=false', '-waituntilready',
+        '-extrauseflags=tast_vm', 'localhost:9222',
+        '(("dep:chrome" || "dep:android") && !flaky && !disabled)'
+    ])
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot')
+  def testTastTestWithOtherArgs(self, check_inside_chroot_mock):
+    """Verify running a single tast test with various arguments."""
+    self._tester.tast = ['ui.ChromeLogin']
+    self._tester.test_timeout = 100
+    self._tester._device.log_level = 'debug'
+    self._tester._device.ssh_port = None
+    self._tester._device.device = '100.90.29.199'
+    self._tester.results_dir = '/tmp/results'
+    self._tester.Run()
+    check_inside_chroot_mock.assert_called()
+    self.assertCommandContains(['tast', '-verbose', 'run', '-build=false',
+                                '-waituntilready', '-timeout=100',
+                                '-resultsdir', '/tmp/results', '100.90.29.199',
+                                'ui.ChromeLogin'])
+
+  def testTastTestSDK(self):
+    """Verify running tast tests from the SimpleChrome SDK."""
+    self._tester.tast = ['ui.ChromeLogin']
+    self._tester._device.private_key = '/tmp/.ssh/testing_rsa'
+    tast_cache_dir = cros_test_lib.FakeSDKCache(
+        self._tester.cache_dir).CreateCacheReference(
+            self._tester._device.board, 'chromeos-base')
+    tast_bin_dir = os.path.join(tast_cache_dir, 'tast-cmd/usr/bin')
+    osutils.SafeMakedirs(tast_bin_dir)
+    self._tester.Run()
+    self.assertCommandContains([
+        os.path.join(tast_bin_dir, 'tast'), 'run', '-build=false',
+        '-waituntilready', '-remoterunner=%s'
+        % os.path.join(tast_bin_dir, 'remote_test_runner'),
+        '-remotebundledir=%s' % os.path.join(tast_cache_dir,
+                                             'tast-remote-tests-cros/usr',
+                                             'libexec/tast/bundles/remote'),
+        '-remotedatadir=%s' % os.path.join(tast_cache_dir,
+                                           'tast-remote-tests-cros/usr',
+                                           'share/tast/data'),
+        '-ephemeraldevserver=false', '-keyfile', '/tmp/.ssh/testing_rsa',
+        '-extrauseflags=tast_vm', 'localhost:9222', 'ui.ChromeLogin'
+    ])
