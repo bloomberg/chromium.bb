@@ -171,6 +171,7 @@ class AssistantDetailsViewBinder
         hideIfEmpty(viewHolder.mDescriptionLine1View);
         hideIfEmpty(viewHolder.mDescriptionLine2View);
         hideIfEmpty(viewHolder.mDescriptionLine3View);
+        hideIfEmpty(viewHolder.mPriceAttributionView);
 
         // If no price provided, hide the price view (containing separator, price label, and price).
         viewHolder.mPriceView.setVisibility(
