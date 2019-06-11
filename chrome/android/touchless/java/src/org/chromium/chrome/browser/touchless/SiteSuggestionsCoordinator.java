@@ -73,9 +73,9 @@ class SiteSuggestionsCoordinator {
 
         RecyclerView recyclerView =
                 suggestionsView.findViewById(R.id.most_likely_launcher_recycler);
-        SiteSuggestionsAdapter adapterDelegate = new SiteSuggestionsAdapter(model, iconGenerator,
+        SiteSuggestionsAdapter adapterDelegate = new SiteSuggestionsAdapter(model,
                 navigationDelegate, contextMenuManager, layoutManager,
-                suggestionsView.findViewById(R.id.most_likely_web_title_text), recyclerView);
+                suggestionsView.findViewById(R.id.most_likely_web_title_text));
 
         RecyclerViewAdapter<SiteSuggestionsViewHolderFactory.SiteSuggestionsViewHolder, PropertyKey>
                 adapter = new RecyclerViewAdapter<>(
@@ -98,7 +98,8 @@ class SiteSuggestionsCoordinator {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 
-        mMediator = new SiteSuggestionsMediator(model, profile, imageFetcher, iconSize);
+        mMediator =
+                new SiteSuggestionsMediator(model, profile, imageFetcher, iconGenerator, iconSize);
     }
 
     public void destroy() {
