@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
@@ -91,14 +92,6 @@ autofill::PasswordForm MakePasswordForm(const std::string& signon_realm) {
   form.password_element = base::UTF8ToUTF16("password_element");
   form.signon_realm = signon_realm;
   return form;
-}
-
-// Creates an EntityData around a copy of the given specifics.
-std::unique_ptr<syncer::EntityData> SpecificsToEntity(
-    const sync_pb::PasswordSpecifics& specifics) {
-  auto data = std::make_unique<syncer::EntityData>();
-  *data->specifics.mutable_password() = specifics;
-  return data;
 }
 
 // A mini database class the supports Add/Update/Remove functionality. It also
@@ -262,6 +255,16 @@ class PasswordSyncBridgeTest : public testing::Test {
         .WillByDefault(testing::Return(true));
   }
 
+  // Creates an EntityData around a copy of the given specifics.
+  std::unique_ptr<syncer::EntityData> SpecificsToEntity(
+      const sync_pb::PasswordSpecifics& specifics) {
+    auto data = std::make_unique<syncer::EntityData>();
+    *data->specifics.mutable_password() = specifics;
+    data->client_tag_hash = syncer::GenerateSyncableHash(
+        syncer::PASSWORDS, bridge()->GetClientTag(*data));
+    return data;
+  }
+
   ~PasswordSyncBridgeTest() override {}
 
   base::Optional<sync_pb::PasswordSpecifics> GetDataFromBridge(
@@ -422,10 +425,10 @@ TEST_F(PasswordSyncBridgeTest,
 
   sync_pb::PasswordSpecifics specifics =
       CreateSpecificsWithSignonRealm(kSignonRealm1);
-  const std::string client_tag =
-      bridge()->GetClientTag(*SpecificsToEntity(specifics));
 
-  EXPECT_CALL(mock_processor(), UntrackEntityForClientTagHash(client_tag));
+  EXPECT_CALL(mock_processor(),
+              UntrackEntityForClientTagHash(
+                  SpecificsToEntity(specifics)->client_tag_hash));
 
   syncer::EntityChangeList entity_change_list;
   entity_change_list.push_back(syncer::EntityChange::CreateAdd(
@@ -718,10 +721,10 @@ TEST_F(PasswordSyncBridgeTest,
 
   sync_pb::PasswordSpecifics specifics =
       CreateSpecificsWithSignonRealm(kSignonRealm1);
-  const std::string client_tag =
-      bridge()->GetClientTag(*SpecificsToEntity(specifics));
 
-  EXPECT_CALL(mock_processor(), UntrackEntityForClientTagHash(client_tag));
+  EXPECT_CALL(mock_processor(),
+              UntrackEntityForClientTagHash(
+                  SpecificsToEntity(specifics)->client_tag_hash));
 
   syncer::EntityChangeList entity_change_list;
   entity_change_list.push_back(syncer::EntityChange::CreateAdd(

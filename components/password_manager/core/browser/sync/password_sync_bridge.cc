@@ -454,7 +454,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
         // move on.
         if (add_login_error == AddLoginError::kConstraintViolation) {
           change_processor()->UntrackEntityForClientTagHash(
-              client_tag_of_remote_password);
+              entity_change->data().client_tag_hash);
           continue;
         }
         // For all other types of error, we should stop syncing.
@@ -548,7 +548,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
             // and move on.
             if (add_login_error == AddLoginError::kConstraintViolation) {
               change_processor()->UntrackEntityForClientTagHash(
-                  GetClientTag(entity_change->data()));
+                  entity_change->data().client_tag_hash);
               continue;
             }
             // For all other types of error, we should stop syncing.
