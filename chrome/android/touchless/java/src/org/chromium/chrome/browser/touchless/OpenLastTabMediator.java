@@ -8,8 +8,12 @@ import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
 import static android.text.format.DateUtils.getRelativeTimeSpanString;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import android.net.Uri;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -43,6 +47,8 @@ class OpenLastTabMediator extends EmptyTabObserver
     private static final String FIRST_LAUNCHED_KEY = "TOUCHLESS_WAS_FIRST_LAUNCHED";
     private static final String LAST_REMOVED_VISIT_TIMESTAMP_KEY =
             "TOUCHLESS_LAST_REMOVED_VISIT_TIMESTAMP";
+    // Used to match URLs in Chome's history to PWA launches via webapk.
+    private static final String WEBAPK_CLASS_NAME = "org.chromium.webapk.shell_apk";
 
     private final Context mContext;
     private final Profile mProfile;
@@ -131,12 +137,25 @@ class OpenLastTabMediator extends EmptyTabObserver
 
     @Override
     public void onQueryHistoryComplete(List<HistoryItem> items, boolean hasMorePotentialMatches) {
-        if (items.size() == 0) {
-            mHistoryItem = null;
-        } else {
-            // First item is most recent.
-            mHistoryItem = items.get(0);
+        mHistoryItem = null;
+        if (items.size() > 0) {
+            for (int i = 0; i < items.size(); i++) {
+                HistoryItem currentItem = items.get(i);
+                // Filter for history items that correspond to PWAs launched through webapk.
+                if (historyItemMatchesWebApkIntent(currentItem)) {
+                    continue;
+                } else {
+                    mHistoryItem = currentItem;
+                    break;
+                }
+            }
+
+            if (mHistoryItem == null && hasMorePotentialMatches) {
+                mHistoryBridge.queryHistoryContinuation();
+                return;
+            }
         }
+
         if (mPreferencesRead) {
             updateModel();
         }
@@ -242,5 +261,31 @@ class OpenLastTabMediator extends EmptyTabObserver
                     }
                 };
         mModel.set(OpenLastTabProperties.CONTEXT_MENU_DELEGATE, delegate);
+    }
+
+    /**
+     * @param item The HistoryItem to check.
+     * @return True if the HistoryItem corresponds to a PWA launched through webapk.
+     */
+    private boolean historyItemMatchesWebApkIntent(HistoryItem item) {
+        Uri uri = Uri.parse(item.getUrl());
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+
+        List<ResolveInfo> resolveInfo = mContext.getPackageManager().queryIntentActivities(
+                intent, PackageManager.MATCH_ALL);
+        if (resolveInfo == null || resolveInfo.isEmpty()) {
+            return false;
+        }
+        for (ResolveInfo info : resolveInfo) {
+            if (info.activityInfo == null) {
+                continue;
+            }
+
+            if (info.activityInfo.name.contains(WEBAPK_CLASS_NAME)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
