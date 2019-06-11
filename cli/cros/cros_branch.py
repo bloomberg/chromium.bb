@@ -296,7 +296,12 @@ class CrosCheckout(object):
       path: Path to the manifest file.
     """
     logging.notice('Syncing checkout %s to manifest %s.', self.root, path)
-    self._Sync(['--manifest-file', path])
+    # SyncFile uses repo sync instead of repo_sync_manifest because
+    # repo_sync_manifest sometimes corrupts .repo/manifest.xml when
+    # syncing to a file. See crbug.com/973106.
+    cmd = ['repo', 'sync', '--manifest-name', os.path.abspath(path)]
+    cros_build_lib.RunCommand(cmd, cwd=self.root, print_cmd=True)
+    self.manifest = repo_util.Repository(self.root).Manifest()
 
   def ReadVersion(self, **kwargs):
     """Returns VersionInfo for the current checkout."""

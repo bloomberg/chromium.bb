@@ -662,22 +662,20 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
     """Test SyncFile passes correct args to repo_sync_manifest."""
     checkout = CrosCheckout('/root')
     checkout.SyncFile('manifest.xml')
+    manifest_path = os.path.abspath('manifest.xml')
     self.rc_mock.assertCommandContains(
-        ['/run-root/chromite/scripts/repo_sync_manifest',
-         '--repo-root', '/root',
-         '--manifest-file', 'manifest.xml'])
+        ['repo', 'sync', '--manifest-name', manifest_path],
+        cwd="/root")
 
   def testSyncFileAllOptions(self):
     """Test SyncFile passes all args to repo_sync_manifest."""
     checkout = CrosCheckout(
         '/root', repo_url='repo.com', manifest_url='manifest.com')
     checkout.SyncFile('manifest.xml')
+    manifest_path = os.path.abspath('manifest.xml')
     self.rc_mock.assertCommandContains(
-        ['/run-root/chromite/scripts/repo_sync_manifest',
-         '--repo-root', '/root',
-         '--manifest-file', 'manifest.xml',
-         '--repo-url', 'repo.com',
-         '--manifest-url', 'manifest.com'])
+        ['repo', 'sync', '--manifest-name', manifest_path],
+        cwd="/root")
 
   def testAbsolutePath(self):
     """Test AbsolutePath joins root to given path."""
@@ -1029,6 +1027,14 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.cmd.rc_mock.assertCommandContains(
         [partial_mock.ListRegex('.*/repo_sync_manifest')] + args)
 
+  def AssertSyncedUsingRepo(self, args):
+    """Assert repo sync was run with at least the given args.
+
+    Args:
+      args: Expected args for repo sync.
+    """
+    self.cmd.rc_mock.assertCommandContains(['repo', 'sync'] + args)
+
   def AssertNoDangerousOptions(self):
     """Assert that force and push were not set."""
     self.assertFalse(self.cmd.inst.options.force)
@@ -1131,7 +1137,8 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
   def testCreateSyncsToFile(self):
     """Test `cros branch create` calls repo_sync_manifest to sync to file."""
     self.RunCommandMock(['create', '--file', 'manifest.xml', '--stabilize'])
-    self.AssertSynced(['--manifest-file', 'manifest.xml'])
+    manifest_path = os.path.abspath('manifest.xml')
+    self.AssertSyncedUsingRepo(['--manifest-name', manifest_path])
 
   def testCreateSyncsToVersion(self):
     """Test `cros branch create` calls repo_sync_manifest to sync to version."""
