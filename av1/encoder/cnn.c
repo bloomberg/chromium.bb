@@ -93,7 +93,7 @@ static void copy_tensor(const TENSOR *src, int copy_channels, int dst_offset,
   }
 }
 
-static void assign_tensor(TENSOR *tensor, const float *buf[CNN_MAX_CHANNELS],
+static void assign_tensor(TENSOR *tensor, float *buf[CNN_MAX_CHANNELS],
                           int channels, int width, int height, int stride) {
   tensor->allocsize = 0;
   tensor->channels = channels;
@@ -101,7 +101,7 @@ static void assign_tensor(TENSOR *tensor, const float *buf[CNN_MAX_CHANNELS],
   tensor->height = height;
   tensor->stride = stride;
   if (buf) {
-    for (int c = 0; c < channels; ++c) tensor->buf[c] = (float *)buf[c];
+    for (int c = 0; c < channels; ++c) tensor->buf[c] = buf[c];
   } else {
     for (int c = 0; c < channels; ++c) tensor->buf[c] = NULL;
   }
@@ -785,7 +785,8 @@ void av1_cnn_predict_c(const float **input, int in_width, int in_height,
   TENSOR tensor1[CNN_MAX_BRANCHES] = { 0 };
   TENSOR tensor2[CNN_MAX_BRANCHES] = { 0 };
 
-  int i_width, i_height;
+  int i_width = in_width;
+  int i_height = in_height;
   int o_width = 0, o_height = 0;
   for (int b = 0; b < CNN_MAX_BRANCHES; ++b) {
     init_tensor(&tensor1[b]);
@@ -796,38 +797,31 @@ void av1_cnn_predict_c(const float **input, int in_width, int in_height,
     const CNN_LAYER_CONFIG *layer_config = &cnn_config->layer_config[layer];
     const int branch = layer_config->branch;
     const CNN_BRANCH_CONFIG *branch_config = &layer_config->branch_config;
+
+    // Allocate input tensor
     if (layer == 0) {       // First layer
       assert(branch == 0);  // First layer must be primary branch
-      assign_tensor(&tensor1[branch], input, layer_config->in_channels,
-                    in_width, in_height, in_stride);
-      find_layer_output_size(in_width, in_height, layer_config, &o_width,
-                             &o_height);
-      if (cnn_config->num_layers == 1) {  // single layer case
-        assign_tensor(&tensor2[branch], (const float **)output,
-                      layer_config->out_channels, o_width, o_height,
-                      out_stride);
-      } else {  // more than one layer case
-        realloc_tensor(&tensor2[branch], layer_config->out_channels, o_width,
-                       o_height);
-      }
+      assign_tensor(&tensor1[branch], (float **)input,
+                    layer_config->in_channels, in_width, in_height, in_stride);
     } else {  // Non-first layer
       // Swap tensor1 and tensor2
       swap_tensor(&tensor1[branch], &tensor2[branch]);
 
       i_width = o_width;
       i_height = o_height;
-      find_layer_output_size(i_width, i_height, layer_config, &o_width,
-                             &o_height);
-      if (layer < cnn_config->num_layers - 1) {  // Non-last layer
-        realloc_tensor(&tensor2[branch], layer_config->out_channels, o_width,
-                       o_height);
-      } else {                // Last layer
-        assert(branch == 0);  // Last layer must be primary branch
-        free_tensor(&tensor2[branch]);
-        assign_tensor(&tensor2[branch], (const float **)output,
-                      layer_config->out_channels, o_width, o_height,
-                      out_stride);
-      }
+    }
+
+    // Allocate output tensor
+    find_layer_output_size(i_width, i_height, layer_config, &o_width,
+                           &o_height);
+    if (layer < cnn_config->num_layers - 1) {  // Non-last layer
+      realloc_tensor(&tensor2[branch], layer_config->out_channels, o_width,
+                     o_height);
+    } else {                // Last layer
+      assert(branch == 0);  // Last layer must be primary branch
+      free_tensor(&tensor2[branch]);
+      assign_tensor(&tensor2[branch], output, layer_config->out_channels,
+                    o_width, o_height, out_stride);
     }
 
     // If we are combining branches make sure that the branch to combine
@@ -910,7 +904,7 @@ void av1_cnn_predict_c(const float **input, int in_width, int in_height,
             assert(check_tensor_equal_dims(&tensor2[b], &tensor2[branch]));
             const int existing_channels = tensor2[branch].channels;
             // Needed only to assign the new channel buffers
-            assign_tensor(&tensor2[branch], (const float **)output,
+            assign_tensor(&tensor2[branch], output,
                           existing_channels + tensor2[b].channels, o_width,
                           o_height, out_stride);
             copy_tensor(&tensor2[b], tensor2[b].channels, existing_channels,
