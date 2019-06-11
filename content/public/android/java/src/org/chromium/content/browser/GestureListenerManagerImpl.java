@@ -328,9 +328,10 @@ public class GestureListenerManagerImpl
     private void setTouchScrollInProgress(boolean touchScrollInProgress) {
         mIsTouchScrollInProgress = touchScrollInProgress;
 
-        // Use the active touch scroll signal for hiding. The animation movement
-        // by fling will naturally hide the ActionMode by invalidating its content rect.
-        getSelectionPopupController().setScrollInProgress(touchScrollInProgress);
+        // Use the active touch scroll and fling scroll signal for hiding.
+        // The animation movement by fling will naturally hide the ActionMode
+        // by invalidating its content rect.
+        getSelectionPopupController().setScrollInProgress(isScrollInProgress());
     }
 
     /**
