@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
+import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 
@@ -27,7 +28,8 @@ import org.chromium.webapk.lib.client.WebApkNavigationClient;
  * {@link SingleTabActivity}.
  */
 public class WebappDelegateFactory extends TabDelegateFactory {
-    private static class WebappWebContentsDelegateAndroid extends TabWebContentsDelegateAndroid {
+    private static class WebappWebContentsDelegateAndroid
+            extends ActivityTabWebContentsDelegateAndroid {
         private final WebappActivity mActivity;
 
         /** Action for do-nothing activity for activating WebAPK. */
@@ -35,7 +37,7 @@ public class WebappDelegateFactory extends TabDelegateFactory {
                 "org.chromium.chrome.browser.webapps.ActivateWebApkActivity.ACTIVATE";
 
         public WebappWebContentsDelegateAndroid(WebappActivity activity, Tab tab) {
-            super(tab);
+            super(tab, activity);
             mActivity = activity;
         }
 

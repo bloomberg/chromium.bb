@@ -7,11 +7,13 @@ package org.chromium.chrome.browser.tab;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
+import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 
 /**
  * A factory class to create {@link Tab} related delegates.
+ * TODO(jinsukkim): Turn this into an interface.
  */
 public class TabDelegateFactory {
     /**
@@ -20,7 +22,7 @@ public class TabDelegateFactory {
      * @return The {@link WebContentsDelegateAndroid} to be used for this tab.
      */
     public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
-        return new TabWebContentsDelegateAndroid(tab);
+        return new ActivityTabWebContentsDelegateAndroid(tab, tab.getActivity());
     }
 
     /**

@@ -13,6 +13,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -31,6 +32,7 @@ import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
+import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
@@ -153,16 +155,17 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
         }
     }
 
-    private static class CustomTabWebContentsDelegate extends TabWebContentsDelegateAndroid {
+    private static class CustomTabWebContentsDelegate
+            extends ActivityTabWebContentsDelegateAndroid {
         private final MultiWindowUtils mMultiWindowUtils;
         private final boolean mShouldEnableEmbeddedMediaExperience;
 
         /**
          * See {@link TabWebContentsDelegateAndroid}.
          */
-        public CustomTabWebContentsDelegate(Tab tab, MultiWindowUtils multiWindowUtils,
-                boolean shouldEnableEmbeddedMediaExperience) {
-            super(tab);
+        public CustomTabWebContentsDelegate(Tab tab, ChromeActivity activity,
+                MultiWindowUtils multiWindowUtils, boolean shouldEnableEmbeddedMediaExperience) {
+            super(tab, activity);
             mMultiWindowUtils = multiWindowUtils;
             mShouldEnableEmbeddedMediaExperience = shouldEnableEmbeddedMediaExperience;
         }
@@ -210,6 +213,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
         }
     }
 
+    private final ChromeActivity mActivity;
     private final boolean mShouldHideBrowserControls;
     private final boolean mIsOpenedByChrome;
     private final boolean mShouldAllowAppBanners;
@@ -221,6 +225,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     private ExternalNavigationDelegateImpl mNavigationDelegate;
 
     /**
+     * @param activity {@link ChromeActivity} instance.
      * @param shouldHideBrowserControls Whether or not the browser controls may auto-hide.
      * @param isOpenedByChrome Whether the CustomTab was originally opened by Chrome.
      * @param shouldAllowAppBanners Whether app install banners can be shown.
@@ -228,10 +233,12 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
      * @param visibilityDelegate The delegate that handles browser control visibility associated
      *                           with browser actions (as opposed to tab state).
      */
-    private CustomTabDelegateFactory(boolean shouldHideBrowserControls, boolean isOpenedByChrome,
-            boolean shouldAllowAppBanners, boolean shouldEnableEmbeddedMediaExperience,
+    private CustomTabDelegateFactory(ChromeActivity activity, boolean shouldHideBrowserControls,
+            boolean isOpenedByChrome, boolean shouldAllowAppBanners,
+            boolean shouldEnableEmbeddedMediaExperience,
             BrowserControlsVisibilityDelegate visibilityDelegate, ExternalAuthUtils authUtils,
             MultiWindowUtils multiWindowUtils) {
+        mActivity = activity;
         mShouldHideBrowserControls = shouldHideBrowserControls;
         mIsOpenedByChrome = isOpenedByChrome;
         mShouldAllowAppBanners = shouldAllowAppBanners;
@@ -242,13 +249,14 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     }
 
     @Inject
-    public CustomTabDelegateFactory(CustomTabIntentDataProvider intentDataProvider,
+    public CustomTabDelegateFactory(ChromeActivity activity,
+            CustomTabIntentDataProvider intentDataProvider,
             CustomTabBrowserControlsVisibilityDelegate visibilityDelegate,
             ExternalAuthUtils authUtils, MultiWindowUtils multiWindowUtils) {
         // Don't show an app install banner for the user of a Trusted Web Activity - they've already
         // got an app installed!
-        this(intentDataProvider.shouldEnableUrlBarHiding(), intentDataProvider.isOpenedByChrome(),
-                !intentDataProvider.isTrustedWebActivity(),
+        this(activity, intentDataProvider.shouldEnableUrlBarHiding(),
+                intentDataProvider.isOpenedByChrome(), !intentDataProvider.isTrustedWebActivity(),
                 intentDataProvider.shouldEnableEmbeddedMediaExperience(), visibilityDelegate,
                 authUtils, multiWindowUtils);
     }
@@ -258,7 +266,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
      * be replaced when the hidden Tab becomes shown.
      */
     static CustomTabDelegateFactory createDummy() {
-        return new CustomTabDelegateFactory(false, false, false, false, null, null, null);
+        return new CustomTabDelegateFactory(null, false, false, false, false, null, null, null);
     }
 
     @Override
@@ -281,7 +289,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     @Override
     public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
         return new CustomTabWebContentsDelegate(
-                tab, mMultiWindowUtils, mShouldEnableEmbeddedMediaExperience);
+                tab, mActivity, mMultiWindowUtils, mShouldEnableEmbeddedMediaExperience);
     }
 
     @Override

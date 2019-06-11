@@ -55,8 +55,6 @@ import org.chromium.chrome.browser.tab.TabState.WebContentsState;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -531,7 +529,7 @@ public class Tab
     /**
      * @return The application {@link Context} associated with this tab.
      */
-    protected Context getApplicationContext() {
+    public Context getApplicationContext() {
         return mThemedApplicationContext.getApplicationContext();
     }
 
