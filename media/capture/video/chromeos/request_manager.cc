@@ -597,8 +597,7 @@ void RequestManager::HandleNotifyError(
       // buffer will be reused in SubmitCaptureResult.
       warning_msg =
           std::string(
-              "An error occurred while filling output buffer of stream ") +
-          StreamTypeToString(stream_type) + std::string(" in frame ") +
+              "An error occurred while filling output buffer for frame ") +
           std::to_string(frame_number);
       break;
 
@@ -607,7 +606,7 @@ void RequestManager::HandleNotifyError(
       break;
   }
 
-  LOG(WARNING) << warning_msg << stream_type;
+  LOG(WARNING) << warning_msg << " with type = " << stream_type;
   device_context_->LogToClient(warning_msg);
 
   // If the buffer is already returned by the HAL, submit it and we're done.
