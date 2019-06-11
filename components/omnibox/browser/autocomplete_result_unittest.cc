@@ -690,6 +690,79 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
             result.match_at(2)->destination_url.spec());
 }
 
+TEST_F(AutocompleteResultTest, DemoteByTypeButPreserveDefaultMatchScore) {
+  // Add some matches.
+  ACMatches matches;
+  const AutocompleteMatchTestData data[] = {
+      {"http://history-url/", AutocompleteMatchType::HISTORY_URL},
+      {"http://history-title/", AutocompleteMatchType::HISTORY_TITLE},
+      {"http://search-what-you-typed/",
+       AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
+      {"http://search-history/", AutocompleteMatchType::SEARCH_HISTORY},
+  };
+  PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
+
+  // Make history-title and search-history the only default matches, so that
+  // they compete.
+  matches[0].allowed_to_be_default_match = false;
+  matches[2].allowed_to_be_default_match = false;
+
+  // Add a rule demoting history-title.
+  {
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":*:*"] = "2:50";
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kOmniboxPreserveDefaultMatchScore);
+
+  {
+    AutocompleteInput input(base::ASCIIToUTF16("a"),
+                            OmniboxEventProto::HOME_PAGE,
+                            TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.SortAndCull(input, template_url_service_.get());
+
+    // Make sure history-title is the default match, despite demotion.
+    ASSERT_EQ(4u, result.size());
+    EXPECT_EQ("http://history-title/",
+              result.match_at(0)->destination_url.spec());
+    EXPECT_EQ("http://history-url/",
+              result.match_at(1)->destination_url.spec());
+    EXPECT_EQ("http://search-what-you-typed/",
+              result.match_at(2)->destination_url.spec());
+    EXPECT_EQ("http://search-history/",
+              result.match_at(3)->destination_url.spec());
+  }
+
+  {
+    // Re-sort with a page classification of fake-box, and make sure
+    // history-title is now demoted.
+    AutocompleteInput input(
+        base::ASCIIToUTF16("a"),
+        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
+        TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.SortAndCull(input, template_url_service_.get());
+
+    ASSERT_EQ(4u, result.size());
+    EXPECT_EQ("http://search-history/",
+              result.match_at(0)->destination_url.spec());
+    EXPECT_EQ("http://history-url/",
+              result.match_at(1)->destination_url.spec());
+    EXPECT_EQ("http://search-what-you-typed/",
+              result.match_at(2)->destination_url.spec());
+    EXPECT_EQ("http://history-title/",
+              result.match_at(3)->destination_url.spec());
+  }
+}
+
 TEST_F(AutocompleteResultTest, SortAndCullWithMatchDupsAndDemotionsByType) {
   // Add some matches.
   ACMatches matches;
