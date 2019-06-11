@@ -115,7 +115,7 @@ class ImageEditor extends cr.EventTarget {
      * @const
      */
     this.exitButton_ = /** @type {!HTMLElement} */
-        (queryRequiredElement('.edit-mode-toolbar paper-button.exit'));
+        (queryRequiredElement('.edit-mode-toolbar cr-button.exit'));
     this.exitButton_.addEventListener('click', this.onExitClicked_.bind(this));
 
     /**

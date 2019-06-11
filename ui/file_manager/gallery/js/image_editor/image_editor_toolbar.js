@@ -338,7 +338,13 @@ class ImageEditorToolbar extends cr.EventTarget {
       var input = this.container_.querySelector(
           // Crop aspect ratio buttons should not be focused immediately
           // crbug.com/655943
-          'button:not(.crop-aspect-ratio), paper-button, input, cr-slider, cr-input');
+          [
+            'button:not(.crop-aspect-ratio)',
+            'cr-button',
+            'input',
+            'cr-slider',
+            'cr-input',
+          ].join(', '));
       if (input) {
         input.focus();
         // Fix for crbug/914741 set selection to the end (> 32-bit int)
