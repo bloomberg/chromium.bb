@@ -1209,9 +1209,12 @@ class MetaBuildWrapper(object):
                                 output_path=None)
 
     if test_type == 'generated_script':
+      script = isolate_map[target]['script']
+      if self.platform == 'win32':
+        script += '.bat'
       cmdline = [
           '../../testing/test_env.py',
-          isolate_map[target]['script'],
+          script,
       ]
     elif test_type == 'fuzzer':
       cmdline = [

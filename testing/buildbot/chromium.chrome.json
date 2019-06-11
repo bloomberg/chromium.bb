@@ -2142,17 +2142,72 @@
     "additional_compile_targets": [
       "chrome",
       "chrome/installer/linux"
+    ],
+    "isolated_scripts": [
+      {
+        "experiment_percentage": 100,
+        "isolate_name": "chrome_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "chrome_sizes",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chrome.tests"
+            }
+          ]
+        }
+      }
     ]
   },
   "mac-google-rel": {
     "additional_compile_targets": [
       "chrome"
+    ],
+    "isolated_scripts": [
+      {
+        "experiment_percentage": 100,
+        "isolate_name": "chrome_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "chrome_sizes",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chrome.tests"
+            }
+          ]
+        }
+      }
     ]
   },
   "win-google-rel": {
     "additional_compile_targets": [
       "chrome",
       "chrome_official_builder"
+    ],
+    "isolated_scripts": [
+      {
+        "experiment_percentage": 100,
+        "isolate_name": "chrome_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "chrome_sizes",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-15063",
+              "pool": "chrome.tests"
+            }
+          ]
+        }
+      }
     ]
   }
 }

@@ -612,6 +612,11 @@
     "label": "//sandbox/linux:chrome_sandbox",
     "type": "additional_compile_target",
   },
+  "chrome_sizes": {
+    "label": "//chrome/test:chrome_sizes",
+    "type": "generated_script",
+    "script": "bin/run_chrome_sizes",
+  },
   "chromedriver": {
     "label": "//chrome/test/chromedriver:chromedriver",
     "type": "additional_compile_target",
@@ -809,7 +814,7 @@
   "cronet_sizes": {
     "label": "//components/cronet/android:cronet_sizes",
     "type": "generated_script",
-    "script": "bin/cronet_sizes",
+    "script": "bin/run_cronet_sizes",
   },
   "cronet_smoketests_missing_native_library_instrumentation_apk": {
     "label": "//components/cronet/android:cronet_smoketests_missing_native_library_instrumentation_apk",

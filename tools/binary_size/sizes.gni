@@ -9,7 +9,7 @@ template("sizes_test") {
     forward_variables_from(invoker, [ "data" ])
     testonly = true
     executable = "//tools/binary_size/sizes.py"
-    wrapper_script = "$root_out_dir/bin/${target_name}"
+    wrapper_script = "$root_out_dir/bin/run_${target_name}"
 
     data_deps = [
       "//tools/binary_size:sizes_py",
