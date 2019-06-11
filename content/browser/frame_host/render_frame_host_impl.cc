@@ -4756,6 +4756,21 @@ void RenderFrameHostImpl::CommitNavigation(
   const bool is_same_document =
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type);
 
+  // Network isolation key should be filled before the URLLoaderFactory for
+  // sub-resources is created. Only update for cross document navigations since
+  // for opaque origin same document navigations, a new origin should not be
+  // created as that would be different from the original.
+  // TODO(crbug.com/971796): For about:blank and other such urls,
+  // common_params.url currently leads to an opaque origin to be created. Once
+  // this is fixed, the origin which these navigations eventually get committed
+  // to will be available here as well.
+  if (!is_same_document) {
+    base::Optional<url::Origin> top_frame_origin =
+        frame_tree_node_->IsMainFrame() ? url::Origin::Create(common_params.url)
+                                        : frame_tree_->root()->current_origin();
+    network_isolation_key_ = net::NetworkIsolationKey(top_frame_origin);
+  }
+
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
@@ -5658,11 +5673,13 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
 
   // Create the URLLoaderFactory - either via ContentBrowserClient or ourselves.
   if (GetCreateNetworkFactoryCallbackForRenderFrame().is_null()) {
-    GetProcess()->CreateURLLoaderFactory(origin, std::move(header_client),
+    GetProcess()->CreateURLLoaderFactory(origin, network_isolation_key_,
+                                         std::move(header_client),
                                          std::move(default_factory_request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
-    GetProcess()->CreateURLLoaderFactory(origin, std::move(header_client),
+    GetProcess()->CreateURLLoaderFactory(origin, network_isolation_key_,
+                                         std::move(header_client),
                                          mojo::MakeRequest(&original_factory));
     GetCreateNetworkFactoryCallbackForRenderFrame().Run(
         std::move(default_factory_request), GetProcess()->GetID(),

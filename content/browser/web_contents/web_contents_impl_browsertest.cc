@@ -60,6 +60,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "net/base/features.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -1008,6 +1009,8 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
 
     RenderFrameHost* host_to_load_resource =
         shell()->web_contents()->GetMainFrame();
+    RenderFrameHostImpl* main_frame =
+        static_cast<RenderFrameHostImpl*>(host_to_load_resource);
 
     // If there is supposed to be a sub-frame, create it.
     if (sub_frame.is_valid()) {
@@ -1039,6 +1042,18 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
 
     EXPECT_TRUE(ExecuteScript(host_to_load_resource, loader_script));
     observer.WaitForResourceCompletion(resource);
+
+    // Test the network isolation key.
+    RenderFrameHostImpl* frame_host =
+        static_cast<RenderFrameHostImpl*>(host_to_load_resource);
+    url::Origin top_frame_origin =
+        main_frame->frame_tree_node()->current_origin();
+
+    if (!top_frame_origin.opaque()) {
+      EXPECT_EQ(net::NetworkIsolationKey(top_frame_origin),
+                frame_host->network_isolation_key_);
+    }
+
     return (*observer.FindResource(resource))->was_cached;
   }
 
@@ -1120,8 +1135,20 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
 
   // Load the same resource from the same data url, it shouldn't be cached
   // because the origin should be unique.
-
   EXPECT_FALSE(TestResourceLoad(data_url, GURL()));
+
+  // Load the resource from a document that points to about:blank.
+  GURL blank_url("about:blank");
+  EXPECT_FALSE(TestResourceLoad(blank_url, GURL()));
+
+  // Load the same resource from about:blank url again, it shouldn't be cached
+  // because the origin is unique. TODO(crbug.com/888079) will change this
+  // behavior and about:blank main frame pages will inherit the origin of the
+  // page that opened it.
+  EXPECT_FALSE(TestResourceLoad(blank_url, GURL()));
+
+  // TODO(crbug.com/950069): Add tests for about:blank, about:srcdoc subframes
+  // when the cache key also starts using subframe origin.
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,

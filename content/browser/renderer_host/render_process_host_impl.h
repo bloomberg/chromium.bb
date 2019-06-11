@@ -51,6 +51,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -217,6 +218,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(
       const base::Optional<url::Origin>& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
       network::mojom::URLLoaderFactoryRequest request) override;
 

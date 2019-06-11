@@ -58,6 +58,7 @@
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/network_isolation_key.h"
 #include "net/http/http_response_headers.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -1006,6 +1007,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   friend class RenderFrameHostFeaturePolicyTest;
   friend class TestRenderFrameHost;
   friend class TestRenderViewHost;
+  friend class WebContentsSplitCacheBrowserTest;
 
   FRIEND_TEST_ALL_PREFIXES(NavigatorTest, TwoNavigationsRacingCommit);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBeforeUnloadBrowserTest,
@@ -2140,6 +2142,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // They will be passed to the next navigation.
   scoped_refptr<PrefetchedSignedExchangeCache>
       prefetched_signed_exchange_cache_;
+
+  // Network isolation key to be used for subresources from the currently
+  // committed navigation. This is specific to a document and should be reset on
+  // every document commit.
+  net::NetworkIsolationKey network_isolation_key_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
