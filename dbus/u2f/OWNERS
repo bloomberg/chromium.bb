@@ -1,3 +1,1 @@
-set noparent
-apronin@chromium.org
-louiscollard@chromium.org
+include /u2fd/OWNERS
