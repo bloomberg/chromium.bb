@@ -15,6 +15,7 @@
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 

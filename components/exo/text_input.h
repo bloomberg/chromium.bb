@@ -6,6 +6,7 @@
 #define COMPONENTS_EXO_TEXT_INPUT_H_
 
 #include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "base/optional.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_mode.h"

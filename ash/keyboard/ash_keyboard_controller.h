@@ -8,10 +8,12 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace gfx {
 class Rect;

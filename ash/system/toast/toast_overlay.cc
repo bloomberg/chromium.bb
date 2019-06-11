@@ -4,6 +4,7 @@
 
 #include "ash/system/toast/toast_overlay.h"
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"

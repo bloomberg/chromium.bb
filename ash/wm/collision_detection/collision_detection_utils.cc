@@ -4,6 +4,7 @@
 
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"

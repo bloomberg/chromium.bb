@@ -7,12 +7,9 @@
 
 #include <set>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_export.h"
-
-namespace gfx {
-class Rect;
-}
+#include "ash/public/cpp/keyboard/keyboard_types.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace keyboard {
 

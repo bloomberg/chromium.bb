@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/text_input.h"
 #include "components/exo/wayland/server_util.h"
+#include "ui/events/event.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 #if defined(OS_CHROMEOS)
