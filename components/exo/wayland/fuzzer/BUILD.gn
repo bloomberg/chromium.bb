@@ -1,0 +1,83 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
+import("//third_party/protobuf/proto_library.gni")
+
+if (use_libfuzzer) {
+  fuzzer_test("wayland_fuzzer") {
+    sources = [
+      "fuzzer.cc",
+    ]
+
+    deps = [
+      ":actions",
+      ":harness",
+      ":server_environment",
+      "//base",
+      "//third_party/libprotobuf-mutator",
+    ]
+
+    libfuzzer_options = [ "len_control=0" ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "harness_unittest.cc",
+  ]
+
+  deps = [
+    ":actions",
+    ":harness",
+    "//base",
+    "//components/exo",
+    "//components/exo:test_support",
+    "//components/exo/wayland",
+    "//skia",
+  ]
+}
+
+source_set("server_environment") {
+  testonly = true
+
+  sources = [
+    "server_environment.cc",
+    "server_environment.h",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//components/exo",
+    "//components/exo/wayland:wayland",
+    "//components/exo/wayland:wayland_client_test_helper",
+    "//mojo/core/embedder",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/gl:test_support",
+  ]
+}
+
+source_set("harness") {
+  sources = [
+    "harness.cc",
+    "harness.h",
+  ]
+
+  deps = [
+    ":actions",
+    "//base",
+    "//third_party/wayland:wayland_client",
+  ]
+}
+
+fuzzable_proto_library("actions") {
+  sources = [
+    "actions.proto",
+  ]
+}

@@ -200,6 +200,7 @@ source_set("unit_tests") {
     "//base",
     "//components/exo",
     "//components/exo:test_support",
+    "//components/exo/wayland/fuzzer:unit_tests",
     "//skia",
     "//testing/gtest",
     "//third_party/wayland:wayland_client",
@@ -450,6 +451,7 @@ source_set("wayland_client_test_helper") {
     ":wayland",
     "//base",
     "//components/exo",
+    "//components/exo/wayland",
     "//ui/aura",
     "//ui/events:gesture_detection",
     "//ui/wm",
@@ -458,6 +460,12 @@ source_set("wayland_client_test_helper") {
   data_deps = []
 
   if (is_chromeos) {
+    data_deps += [
+      "//ash/strings:ash_test_strings",
+      "//ash/resources:ash_test_resources_100_percent",
+      "//ash/resources:ash_test_resources_200_percent",
+    ]
+
     deps += [
       "//ash",
       "//ash:test_support",

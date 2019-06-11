@@ -6,6 +6,7 @@ include_rules = [
   "+components/viz/service",
   "+device/gamepad",
   "+gpu",
+  "+mojo/core/embedder/embedder.h",
   "+mojo/public/cpp",
   "+net/base",
   "+services/data_decoder/public/cpp",
@@ -17,10 +18,6 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "run_all_unittests\.cc": [
-    "+mojo/core/embedder/embedder.h",
-  ],
-
   "surface_unittest\.cc": [
     "+components/viz/test",
   ],

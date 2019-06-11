@@ -28,7 +28,7 @@ class WMHelper;
 class WaylandClientTestHelper {
  public:
   WaylandClientTestHelper();
-  ~WaylandClientTestHelper();
+  virtual ~WaylandClientTestHelper();
 
   static void SetUIThreadTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
@@ -36,10 +36,12 @@ class WaylandClientTestHelper {
   void SetUp();
   void TearDown();
 
+ protected:
+  virtual void SetUpOnUIThread(base::WaitableEvent* event);
+
  private:
   class WaylandWatcher;
 
-  void SetUpOnUIThread(base::WaitableEvent* event);
   void TearDownOnUIThread(base::WaitableEvent* event);
 
   // Below objects can only be accessed from UI thread.
