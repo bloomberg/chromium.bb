@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.tile.TileView;
 import org.chromium.chrome.touchless.R;
 
@@ -21,8 +20,6 @@ import org.chromium.chrome.touchless.R;
 public class SiteSuggestionsTileView extends TileView {
     private final int mIconSizePx;
 
-    // Used to generate textual icons.
-    private RoundedIconGenerator mIconGenerator;
 
     public SiteSuggestionsTileView(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
@@ -30,33 +27,25 @@ public class SiteSuggestionsTileView extends TileView {
     }
 
     /**
-     * Initializes the icon generator and clears the model processor attached to this view.
-     * @param generator The generator for icons.
-     */
-    public void initialize(RoundedIconGenerator generator) {
-        mIconGenerator = generator;
-    }
-
-    /**
      * Updates the icon in the tile.
      *
      * @param iconImage Bitmap icon to update.
-     * @param text Text to generate scrabble text from.
+     * @param defaultIcon Default icon for the tile.
      */
-    public void updateIcon(Bitmap iconImage, String text) {
-        setIconDrawable(getDrawableForBitmap(iconImage, text));
+    public void updateIcon(Bitmap iconImage, Bitmap defaultIcon) {
+        setIconDrawable(getDrawableForBitmap(iconImage, defaultIcon));
     }
 
     /**
      * Generates a Drawable from the Bitmap version of an icon.
      *
      * @param image The Bitmap image. Can be null.
-     * @param text The text to generate a scrabble text from if the bitmap is null.
+     * @param defaultIcon Default icon for the tile.
      * @return Drawable encapsulating either the scrabble tile or the bitmap.
      */
-    public Drawable getDrawableForBitmap(Bitmap image, String text) {
+    public Drawable getDrawableForBitmap(Bitmap image, Bitmap defaultIcon) {
         if (image == null) {
-            return new BitmapDrawable(getResources(), mIconGenerator.generateIconForText(text));
+            return new BitmapDrawable(getResources(), defaultIcon);
         }
         return ViewUtils.createRoundedBitmapDrawable(
                 Bitmap.createScaledBitmap(image, mIconSizePx, mIconSizePx, false),
