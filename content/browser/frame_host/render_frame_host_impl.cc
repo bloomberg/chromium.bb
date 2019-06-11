@@ -6694,8 +6694,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
        navigation_request->GetMimeType() == "message/rfc822");
 
   accessibility_reset_count_ = 0;
-  appcache_handle_ =
-      navigation_request->navigation_handle()->TakeAppCacheHandle();
+  appcache_handle_ = navigation_request->TakeAppCacheHandle();
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
                                               std::move(navigation_request),
                                               is_same_document_navigation);
