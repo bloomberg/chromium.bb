@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_audio_level_calculator.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_level_calculator.h"
 
 #include <cmath>
 #include <limits>
@@ -11,7 +11,7 @@
 #include "base/stl_util.h"
 #include "media/base/audio_bus.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -79,4 +79,4 @@ void MediaStreamAudioLevelCalculator::Calculate(
   }
 }
 
-}  // namespace content
+}  // namespace blink

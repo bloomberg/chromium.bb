@@ -44,7 +44,7 @@ void WebRtcAudioSink::SetAudioProcessor(
 }
 
 void WebRtcAudioSink::SetLevel(
-    scoped_refptr<MediaStreamAudioLevelCalculator::Level> level) {
+    scoped_refptr<blink::MediaStreamAudioLevelCalculator::Level> level) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(level.get());
   adapter_->set_level(std::move(level));

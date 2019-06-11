@@ -12,10 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/renderer/media/stream/audio_service_audio_processor_proxy.h"
-#include "content/renderer/media/stream/media_stream_audio_level_calculator.h"
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/webrtc/audio_processor_controls.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_level_calculator.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 
@@ -83,8 +83,8 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
            (audio_processor_ && audio_processor_->has_audio_processing());
   }
 
-  const scoped_refptr<MediaStreamAudioLevelCalculator::Level>& audio_level()
-      const {
+  const scoped_refptr<blink::MediaStreamAudioLevelCalculator::Level>&
+  audio_level() const {
     return level_calculator_.level();
   }
 
@@ -152,7 +152,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   base::subtle::Atomic32 volume_;
 
   // Used to calculate the signal level that shows in the UI.
-  MediaStreamAudioLevelCalculator level_calculator_;
+  blink::MediaStreamAudioLevelCalculator level_calculator_;
 
   bool allow_invalid_render_frame_id_for_testing_;
 
