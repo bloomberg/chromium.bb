@@ -53,51 +53,6 @@ NotificationImageLoader::NotificationImageLoader(Type type)
 
 NotificationImageLoader::~NotificationImageLoader() = default;
 
-// static
-SkBitmap NotificationImageLoader::ScaleDownIfNeeded(const SkBitmap& image,
-                                                    Type type) {
-  int max_width_px = 0, max_height_px = 0;
-  switch (type) {
-    case Type::kImage:
-      max_width_px = kWebNotificationMaxImageWidthPx;
-      max_height_px = kWebNotificationMaxImageHeightPx;
-      break;
-    case Type::kIcon:
-      max_width_px = kWebNotificationMaxIconSizePx;
-      max_height_px = kWebNotificationMaxIconSizePx;
-      break;
-    case Type::kBadge:
-      max_width_px = kWebNotificationMaxBadgeSizePx;
-      max_height_px = kWebNotificationMaxBadgeSizePx;
-      break;
-    case Type::kActionIcon:
-      max_width_px = kWebNotificationMaxActionIconSizePx;
-      max_height_px = kWebNotificationMaxActionIconSizePx;
-      break;
-  }
-  DCHECK_GT(max_width_px, 0);
-  DCHECK_GT(max_height_px, 0);
-  // TODO(peter): Explore doing the scaling on a background thread.
-  if (image.width() > max_width_px || image.height() > max_height_px) {
-    double scale =
-        std::min(static_cast<double>(max_width_px) / image.width(),
-                 static_cast<double>(max_height_px) / image.height());
-    TimeTicks start_time = CurrentTimeTicks();
-    // TODO(peter): Try using RESIZE_BETTER for large images.
-    SkBitmap scaled_image = skia::ImageOperations::Resize(
-        image, skia::ImageOperations::RESIZE_BEST,
-        static_cast<int>(std::lround(scale * image.width())),
-        static_cast<int>(std::lround(scale * image.height())));
-    NOTIFICATION_HISTOGRAM_COUNTS(
-        LoadScaleDownTime, type,
-        base::saturated_cast<base::HistogramBase::Sample>(
-            (CurrentTimeTicks() - start_time).InMilliseconds()),
-        1000 * 10 /* 10 seconds max */);
-    return scaled_image;
-  }
-  return image;
-}
-
 void NotificationImageLoader::Start(ExecutionContext* context,
                                     const KURL& url,
                                     ImageCallback image_callback) {
@@ -167,7 +122,8 @@ void NotificationImageLoader::DidFinishLoading(uint64_t resource_identifier) {
       // The |ImageFrame*| is owned by the decoder.
       ImageFrame* image_frame = decoder->DecodeFrameBufferAtIndex(0);
       if (image_frame) {
-        std::move(image_callback_).Run(image_frame->Bitmap());
+        std::move(image_callback_)
+            .Run(ScaleDownIfNeeded(image_frame->Bitmap()));
         return;
       }
     }
@@ -196,6 +152,49 @@ void NotificationImageLoader::RunCallbackWithEmptyBitmap() {
     return;
 
   std::move(image_callback_).Run(SkBitmap());
+}
+
+SkBitmap NotificationImageLoader::ScaleDownIfNeeded(const SkBitmap& image) {
+  int max_width_px = 0, max_height_px = 0;
+  switch (type_) {
+    case Type::kImage:
+      max_width_px = kWebNotificationMaxImageWidthPx;
+      max_height_px = kWebNotificationMaxImageHeightPx;
+      break;
+    case Type::kIcon:
+      max_width_px = kWebNotificationMaxIconSizePx;
+      max_height_px = kWebNotificationMaxIconSizePx;
+      break;
+    case Type::kBadge:
+      max_width_px = kWebNotificationMaxBadgeSizePx;
+      max_height_px = kWebNotificationMaxBadgeSizePx;
+      break;
+    case Type::kActionIcon:
+      max_width_px = kWebNotificationMaxActionIconSizePx;
+      max_height_px = kWebNotificationMaxActionIconSizePx;
+      break;
+  }
+  DCHECK_GT(max_width_px, 0);
+  DCHECK_GT(max_height_px, 0);
+  // TODO(peter): Explore doing the scaling on a background thread.
+  if (image.width() > max_width_px || image.height() > max_height_px) {
+    double scale =
+        std::min(static_cast<double>(max_width_px) / image.width(),
+                 static_cast<double>(max_height_px) / image.height());
+    TimeTicks start_time = CurrentTimeTicks();
+    // TODO(peter): Try using RESIZE_BETTER for large images.
+    SkBitmap scaled_image = skia::ImageOperations::Resize(
+        image, skia::ImageOperations::RESIZE_BEST,
+        static_cast<int>(std::lround(scale * image.width())),
+        static_cast<int>(std::lround(scale * image.height())));
+    NOTIFICATION_HISTOGRAM_COUNTS(
+        LoadScaleDownTime, type_,
+        base::saturated_cast<base::HistogramBase::Sample>(
+            (CurrentTimeTicks() - start_time).InMilliseconds()),
+        1000 * 10 /* 10 seconds max */);
+    return scaled_image;
+  }
+  return image;
 }
 
 }  // namespace blink

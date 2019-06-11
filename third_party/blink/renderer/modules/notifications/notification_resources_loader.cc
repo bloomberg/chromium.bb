@@ -93,20 +93,17 @@ void NotificationResourcesLoader::LoadImage(
 }
 
 void NotificationResourcesLoader::DidLoadImage(const SkBitmap& image) {
-  image_ = NotificationImageLoader::ScaleDownIfNeeded(
-      image, NotificationImageLoader::Type::kImage);
+  image_ = image;
   DidFinishRequest();
 }
 
 void NotificationResourcesLoader::DidLoadIcon(const SkBitmap& image) {
-  icon_ = NotificationImageLoader::ScaleDownIfNeeded(
-      image, NotificationImageLoader::Type::kIcon);
+  icon_ = image;
   DidFinishRequest();
 }
 
 void NotificationResourcesLoader::DidLoadBadge(const SkBitmap& image) {
-  badge_ = NotificationImageLoader::ScaleDownIfNeeded(
-      image, NotificationImageLoader::Type::kBadge);
+  badge_ = image;
   DidFinishRequest();
 }
 
@@ -114,8 +111,7 @@ void NotificationResourcesLoader::DidLoadActionIcon(wtf_size_t action_index,
                                                     const SkBitmap& image) {
   DCHECK_LT(action_index, action_icons_.size());
 
-  action_icons_[action_index] = NotificationImageLoader::ScaleDownIfNeeded(
-      image, NotificationImageLoader::Type::kActionIcon);
+  action_icons_[action_index] = image;
   DidFinishRequest();
 }
 

@@ -40,10 +40,6 @@ class MODULES_EXPORT NotificationImageLoader final
   explicit NotificationImageLoader(Type type);
   ~NotificationImageLoader() override;
 
-  // Scales down |image| according to its type and returns result. If it is
-  // already small enough, |image| is returned unchanged.
-  static SkBitmap ScaleDownIfNeeded(const SkBitmap& image, Type type);
-
   // Asynchronously downloads an image from the given url, decodes the loaded
   // data, and passes the bitmap to the callback. Times out if the load takes
   // too long and ImageCallback is invoked with an empty bitmap.
@@ -67,6 +63,10 @@ class MODULES_EXPORT NotificationImageLoader final
   }
 
  private:
+  // Scales down |image| according to its |type_| and returns result. If it is
+  // already small enough, |image| is returned unchanged.
+  SkBitmap ScaleDownIfNeeded(const SkBitmap& image);
+
   void RunCallbackWithEmptyBitmap();
 
   Type type_;
