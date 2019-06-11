@@ -68,6 +68,9 @@ char kLSanDefaultSuppressions[] =
     "leak:crash_reporter::(anonymous "
     "namespace)::CrashKeyBaseSupport::Allocate\n"
 
+    // Suppress leaks in CreateCdmInstance. https://crbug.com/961062
+    "leak:media::CdmAdapter::CreateCdmInstance\n"
+
     // PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
 
     // End of suppressions.
