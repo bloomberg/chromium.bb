@@ -82,7 +82,8 @@ cca.views.camera.Options = function(
   /**
    * List of available video devices and width, height of its supported video
    * resolutions and photo resolutions.
-   * @type {Promise<!Array<[MediaDeviceInfo, ResolList, ResolList]>>}
+   * @type {Promise<!Array<[MediaDeviceInfo, cros.mojom.CameraFacing, ResolList,
+   *     ResolList]>>}
    * @private
    */
   this.deviceResolutions_ = null;
@@ -125,20 +126,6 @@ cca.views.camera.Options = function(
   this.maybeRefreshVideoDeviceIds_();
   setInterval(() => this.maybeRefreshVideoDeviceIds_(), 1000);
 };
-
-/**
- * Label of front facing camera from MediaDeviceInfo.
- * @type {string}
- * @const
- */
-cca.views.camera.Options.FRONT_CAMERA_LABEL = 'Front Camera';
-
-/**
- * Label of back facing camera from MediaDeviceInfo.
- * @type {string}
- * @const
- */
-cca.views.camera.Options.BACK_CAMERA_LABEL = 'Back Camera';
 
 /**
  * Switches to the next available camera device.
@@ -283,6 +270,7 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
           .then((devices) => {
             return Promise.all(devices.map((d) => Promise.all([
               d,
+              cca.mojo.getCameraFacing(d.deviceId),
               cca.mojo.getPhotoResolutions(d.deviceId),
               cca.mojo.getVideoConfigs(d.deviceId)
                   .then(
@@ -304,18 +292,20 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
     let frontSetting = null;
     let backSetting = null;
     let externalSettings = [];
-    deviceResolutions.forEach(([{deviceId, label}, photoRs, videoRs]) => {
+    deviceResolutions.forEach(([{deviceId}, facing, photoRs, videoRs]) => {
       const setting = [deviceId, photoRs, videoRs];
-      switch (label) {
-        case cca.views.camera.Options.FRONT_CAMERA_LABEL:
+      switch (facing) {
+        case cros.mojom.CameraFacing.CAMERA_FACING_FRONT:
           frontSetting = setting;
           break;
-        case cca.views.camera.Options.BACK_CAMERA_LABEL:
+        case cros.mojom.CameraFacing.CAMERA_FACING_BACK:
           backSetting = setting;
           break;
-        default:
-          // TODO(inker): Use private API to get camera facing information.
+        case cros.mojom.CameraFacing.CAMERA_FACING_EXTERNAL:
           externalSettings.push(setting);
+          break;
+        default:
+          console.error(`Ignore device of unknown facing: ${facing}`);
       }
     });
     this.photoResolPreferrer_.updateResolutions(
@@ -366,7 +356,7 @@ cca.views.camera.Options.prototype.videoDeviceIds = function() {
 cca.views.camera.Options.prototype.getDeviceResolutions =
     async function(deviceId) {
   const deviceResolutions = await this.deviceResolutions_;
-  const [, photoRs, videoRs] =
+  const [, , photoRs, videoRs] =
       deviceResolutions.find(([d]) => d.deviceId == deviceId);
   return [photoRs, videoRs];
 };
