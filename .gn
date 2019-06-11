@@ -666,6 +666,8 @@ exec_script_whitelist =
       # in the Chromium repo outside of //build.
       "//build_overrides/build.gni",
 
+      "//chrome/android/webapk/shell_apk/prepare_upload_dir/BUILD.gn",
+
       # TODO(dgn): Layer violation but breaks the build otherwise, see
       # https://crbug.com/474506.
       "//clank/java/BUILD.gn",
