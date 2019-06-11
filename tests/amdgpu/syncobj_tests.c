@@ -22,6 +22,7 @@
 */
 
 #include "CUnit/Basic.h"
+#include "xf86drm.h"
 
 #include "amdgpu_test.h"
 #include "amdgpu_drm.h"
@@ -36,6 +37,13 @@ static void amdgpu_syncobj_timeline_test(void);
 
 CU_BOOL suite_syncobj_timeline_tests_enable(void)
 {
+	int r;
+	uint64_t cap = 0;
+
+	r = drmGetCap(drm_amdgpu[0], DRM_CAP_SYNCOBJ_TIMELINE, &cap);
+	if (r || cap == 0)
+		return CU_FALSE;
+
 	return CU_TRUE;
 }
 
