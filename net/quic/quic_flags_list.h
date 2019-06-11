@@ -96,7 +96,7 @@ QUIC_FLAG(double, FLAGS_quic_lumpy_pacing_cwnd_fraction, 0.25f)
 // stream map. static_stream_map will no longer be used.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_eliminate_static_stream_map_3,
-          false)
+          true)
 
 // Default enables QUIC ack decimation and adds a connection option to disable
 // it.
@@ -283,9 +283,7 @@ QUIC_FLAG(bool,
           false)
 
 // If true, disable lumpy pacing for low bandwidth flows.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_no_lumpy_pacing_at_low_bw,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_lumpy_pacing_at_low_bw, true)
 
 // If true, ignore TLPR for retransmission delay when sending pings from ping
 // alarm.
@@ -294,7 +292,7 @@ QUIC_FLAG(bool,
           true)
 
 // If true, non-ASCII QUIC tags are printed as hex instead of integers."
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_print_tag_hex, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_print_tag_hex, true)
 
 // If true, terminate Google QUIC connections similary as IETF QUIC.
 QUIC_FLAG(bool,
@@ -346,7 +344,7 @@ QUIC_FLAG(bool,
           false)
 
 // Do not send STOP_WAITING if no_stop_waiting_frame_ is true.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_stop_waiting, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_stop_waiting, true)
 
 // If true, export number of packets written per write operation histogram.")
 QUIC_FLAG(bool, FLAGS_quic_export_server_num_packets_per_write_histogram, false)
