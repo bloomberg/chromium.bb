@@ -12,8 +12,6 @@ import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -39,9 +37,10 @@ class AssistantInfoBoxViewBinder
     private final Context mContext;
     private ImageFetcher mImageFetcher;
 
-    AssistantInfoBoxViewBinder(Context context) {
+    /** Allows to inject an image fetcher for testing. */
+    AssistantInfoBoxViewBinder(Context context, ImageFetcher imageFetcher) {
         mContext = context;
-        mImageFetcher = ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY);
+        mImageFetcher = imageFetcher;
     }
 
     /**
