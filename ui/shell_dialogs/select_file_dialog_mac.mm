@@ -19,10 +19,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/remote_cocoa/browser/window.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #import "ui/base/cocoa/controls/textfield_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/strings/grit/ui_strings.h"
+
+using remote_cocoa::mojom::SelectFileDialogType;
+using remote_cocoa::mojom::SelectFileTypeInfo;
+using remote_cocoa::mojom::SelectFileTypeInfoPtr;
 
 namespace {
 
@@ -86,6 +92,8 @@ base::scoped_nsobject<NSView> CreateAccessoryView() {
   return view;
 }
 
+NSSavePanel* g_last_created_panel_for_testing = nil;
+
 }  // namespace
 
 // A bridge class to act as the modal delegate to the save/open sheet and send
@@ -115,16 +123,17 @@ namespace ui {
 using Type = SelectFileDialog::Type;
 using FileTypeInfo = SelectFileDialog::FileTypeInfo;
 
-SavePanelBridge::SavePanelBridge(PanelEndedCallback callback)
-    : callback_(std::move(callback)), weak_factory_(this) {}
+SavePanelBridge::SavePanelBridge(NSWindow* owning_window)
+    : owning_window_(owning_window, base::scoped_policy::RETAIN),
+      weak_factory_(this) {}
 
 SavePanelBridge::~SavePanelBridge() {
   // If we never executed our callback, then the panel never closed. Cancel it
   // now.
-  if (callback_)
+  if (show_callback_)
     [panel_ cancel:panel_];
 
-  // Balance the setDelegate called during Initialize.
+  // Balance the setDelegate called during Show.
   [panel_ setDelegate:nil];
 }
 
@@ -197,38 +206,78 @@ void SelectFileDialogImpl::SelectFileImpl(
   hasMultipleFileTypeChoices_ =
       file_types ? file_types->extensions.size() > 1 : true;
 
-  // Add a new DialogData to the list.
+  // Add a new DialogData to the list. Note that it is safe to pass
+  // |dialog_data| by a pointer because it will only be removed from the list
+  // when the callback is made or after the callback has been cancelled by
+  // |weak_factory_|.
   dialog_data_list_.emplace_back(owning_window, params);
   DialogData& dialog_data = dialog_data_list_.back();
 
-  // Create a NSSavePanel for it. Note that it is safe to pass |dialog_data| by
-  // a pointer because it will only be removed from the list when the callback
-  // is made or after the callback has been cancelled by |weak_factory_|.
-  dialog_data.save_panel_bridge =
-      std::make_unique<SavePanelBridge>(base::BindOnce(
-          &SelectFileDialogImpl::FileWasSelected, weak_factory_.GetWeakPtr(),
-          &dialog_data, type == SELECT_OPEN_MULTI_FILE));
-  dialog_data.save_panel_bridge->Initialize(type, owning_window, title,
-                                            default_path, file_types,
-                                            file_type_index, default_extension);
+  // Create a NSSavePanel for it.
+  mojo::MakeStrongBinding(std::make_unique<SavePanelBridge>(owning_window),
+                          mojo::MakeRequest(&dialog_data.select_file_dialog));
+
+  // Show the panel.
+  SelectFileDialogType mojo_type = SelectFileDialogType::kFolder;
+  switch (type) {
+    case SELECT_FOLDER:
+      mojo_type = SelectFileDialogType::kFolder;
+      break;
+    case SELECT_UPLOAD_FOLDER:
+      mojo_type = SelectFileDialogType::kUploadFolder;
+      break;
+    case SELECT_EXISTING_FOLDER:
+      mojo_type = SelectFileDialogType::kExistingFolder;
+      break;
+    case SELECT_OPEN_FILE:
+      mojo_type = SelectFileDialogType::kOpenFile;
+      break;
+    case SELECT_OPEN_MULTI_FILE:
+      mojo_type = SelectFileDialogType::kOpenMultiFile;
+      break;
+    case SELECT_SAVEAS_FILE:
+      mojo_type = SelectFileDialogType::kSaveAsFile;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  SelectFileTypeInfoPtr mojo_file_types;
+  if (file_types) {
+    mojo_file_types = SelectFileTypeInfo::New();
+    mojo_file_types->extensions = file_types->extensions;
+    mojo_file_types->extension_description_overrides =
+        file_types->extension_description_overrides;
+    mojo_file_types->include_all_files = file_types->include_all_files;
+  }
+
+  auto callback = base::BindOnce(&SelectFileDialogImpl::FileWasSelected,
+                                 weak_factory_.GetWeakPtr(), &dialog_data,
+                                 type == SELECT_OPEN_MULTI_FILE);
+
+  dialog_data.select_file_dialog->Show(
+      mojo_type, title, default_path, std::move(mojo_file_types),
+      file_type_index, default_extension, std::move(callback));
 }
 
-void SavePanelBridge::Initialize(
-    Type type,
-    NSWindow* owning_window,
-    const base::string16& title,
-    const base::FilePath& default_path,
-    const FileTypeInfo* file_types,
-    int file_type_index,
-    const base::FilePath::StringType& default_extension) {
+void SavePanelBridge::Show(SelectFileDialogType type,
+                           const base::string16& title,
+                           const base::FilePath& default_path,
+                           SelectFileTypeInfoPtr file_types,
+                           int file_type_index,
+                           const base::FilePath::StringType& default_extension,
+                           PanelEndedCallback initialize_callback) {
+  show_callback_ = std::move(initialize_callback);
   type_ = type;
-  // Note: we need to retain the dialog as |owning_window| can be null.
+  // Note: we need to retain the dialog as |owning_window_| can be null.
   // (See http://crbug.com/29213 .)
-  if (type_ == SelectFileDialog::SELECT_SAVEAS_FILE)
+  if (type_ == SelectFileDialogType::kSaveAsFile)
     panel_.reset([[NSSavePanel savePanel] retain]);
   else
     panel_.reset([[NSOpenPanel openPanel] retain]);
   NSSavePanel* dialog = panel_.get();
+  g_last_created_panel_for_testing = dialog;
 
   if (!title.empty())
     [dialog setMessage:base::SysUTF16ToNSString(title)];
@@ -248,18 +297,19 @@ void SavePanelBridge::Initialize(
     }
   }
 
-  if (type_ != SelectFileDialog::SELECT_FOLDER &&
-      type_ != SelectFileDialog::SELECT_UPLOAD_FOLDER &&
-      type_ != SelectFileDialog::SELECT_EXISTING_FOLDER) {
+  if (type_ != SelectFileDialogType::kFolder &&
+      type_ != SelectFileDialogType::kUploadFolder &&
+      type_ != SelectFileDialogType::kExistingFolder) {
     if (file_types) {
-      SetAccessoryView(file_types, file_type_index, default_extension);
+      SetAccessoryView(std::move(file_types), file_type_index,
+                       default_extension);
     } else {
       // If no type_ info is specified, anything goes.
       [dialog setAllowsOtherFileTypes:YES];
     }
   }
 
-  if (type_ == SelectFileDialog::SELECT_SAVEAS_FILE) {
+  if (type_ == SelectFileDialogType::kSaveAsFile) {
     // When file extensions are hidden and removing the extension from
     // the default filename gives one which still has an extension
     // that OS X recognizes, it will get confused and think the user
@@ -277,24 +327,24 @@ void SavePanelBridge::Initialize(
   } else {
     NSOpenPanel* open_dialog = base::mac::ObjCCastStrict<NSOpenPanel>(dialog);
 
-    if (type_ == SelectFileDialog::SELECT_OPEN_MULTI_FILE)
+    if (type_ == SelectFileDialogType::kOpenMultiFile)
       [open_dialog setAllowsMultipleSelection:YES];
     else
       [open_dialog setAllowsMultipleSelection:NO];
 
-    if (type_ == SelectFileDialog::SELECT_FOLDER ||
-        type_ == SelectFileDialog::SELECT_UPLOAD_FOLDER ||
-        type_ == SelectFileDialog::SELECT_EXISTING_FOLDER) {
+    if (type_ == SelectFileDialogType::kFolder ||
+        type_ == SelectFileDialogType::kUploadFolder ||
+        type_ == SelectFileDialogType::kExistingFolder) {
       [open_dialog setCanChooseFiles:NO];
       [open_dialog setCanChooseDirectories:YES];
 
-      if (type_ == SelectFileDialog::SELECT_FOLDER)
+      if (type_ == SelectFileDialogType::kFolder)
         [open_dialog setCanCreateDirectories:YES];
       else
         [open_dialog setCanCreateDirectories:NO];
 
       NSString* prompt =
-          (type_ == SelectFileDialog::SELECT_UPLOAD_FOLDER)
+          (type_ == SelectFileDialogType::kUploadFolder)
               ? l10n_util::GetNSString(IDS_SELECT_UPLOAD_FOLDER_BUTTON_TITLE)
               : l10n_util::GetNSString(IDS_SELECT_FOLDER_BUTTON_TITLE);
       [open_dialog setPrompt:prompt];
@@ -314,10 +364,15 @@ void SavePanelBridge::Initialize(
   // Ensure that |callback| (rather than |this|) be retained by the block.
   auto callback = base::BindRepeating(&SavePanelBridge::OnPanelEnded,
                                       weak_factory_.GetWeakPtr());
-  [dialog beginSheetModalForWindow:owning_window
+  [dialog beginSheetModalForWindow:owning_window_
                  completionHandler:^(NSInteger result) {
                    callback.Run(result != NSFileHandlingPanelOKButton);
                  }];
+}
+
+// static
+NSSavePanel* SavePanelBridge::GetLastCreatedNativePanelForTesting() {
+  return g_last_created_panel_for_testing;
 }
 
 SelectFileDialogImpl::DialogData::DialogData(gfx::NativeWindow parent_window_,
@@ -343,7 +398,7 @@ SelectFileDialogImpl::~SelectFileDialogImpl() {
 }
 
 void SavePanelBridge::SetAccessoryView(
-    const FileTypeInfo* file_types,
+    SelectFileTypeInfoPtr file_types,
     int file_type_index,
     const base::FilePath::StringType& default_extension) {
   DCHECK(file_types);
@@ -445,13 +500,13 @@ SelectFileDialog* CreateSelectFileDialog(
 }
 
 void SavePanelBridge::OnPanelEnded(bool did_cancel) {
-  if (!callback_)
+  if (!show_callback_)
     return;
 
   int index = 0;
   std::vector<base::FilePath> paths;
   if (!did_cancel) {
-    if (type_ == SelectFileDialog::SELECT_SAVEAS_FILE) {
+    if (type_ == SelectFileDialogType::kSaveAsFile) {
       if ([[panel_ URL] isFileURL]) {
         paths.push_back(base::mac::NSStringToFilePath([[panel_ URL] path]));
       }
@@ -475,7 +530,7 @@ void SavePanelBridge::OnPanelEnded(bool did_cancel) {
     }
   }
 
-  std::move(callback_).Run(did_cancel, paths, index);
+  std::move(show_callback_).Run(did_cancel, paths, index);
 }
 
 }  // namespace ui

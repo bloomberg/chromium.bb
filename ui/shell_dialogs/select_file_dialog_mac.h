@@ -15,6 +15,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/remote_cocoa/common/select_file_dialog.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
@@ -31,7 +32,8 @@ class SelectFileDialogMacTest;
 // TODO(https://crbug.com/913303): Move this structure to
 // components/remote_cocoa. This structure provides a C++ (or mojo) interface
 // for creating a NSSavePanel.
-class SavePanelBridge {
+class SHELL_DIALOGS_EXPORT SavePanelBridge
+    : public remote_cocoa::mojom::SelectFileDialog {
  public:
   // Callback made from the NSSavePanel's completion block.
   using PanelEndedCallback =
@@ -39,22 +41,26 @@ class SavePanelBridge {
                               const std::vector<base::FilePath>& files,
                               int index)>;
 
-  SavePanelBridge(PanelEndedCallback callback);
-  ~SavePanelBridge();
+  SavePanelBridge(NSWindow* owning_window);
+  ~SavePanelBridge() override;
 
-  void Initialize(SelectFileDialog::Type type,
-                  NSWindow* owning_window,
-                  const base::string16& title,
-                  const base::FilePath& default_path,
-                  const SelectFileDialog::FileTypeInfo* file_types,
-                  int file_type_index,
-                  const base::FilePath::StringType& default_extension);
-  NSSavePanel* GetNativePanelForTesting() { return panel_.get(); }
+  // mojom::SelectFileDialog:
+  void Show(remote_cocoa::mojom::SelectFileDialogType type,
+            const base::string16& title,
+            const base::FilePath& default_path,
+            remote_cocoa::mojom::SelectFileTypeInfoPtr file_types,
+            int file_type_index,
+            const base::FilePath::StringType& default_extension,
+            ShowCallback callback) override;
+
+  // Return the most recently created NSSavePanel. There is no guarantee that
+  // this will be a valid pointer.
+  static NSSavePanel* GetLastCreatedNativePanelForTesting();
 
  private:
   // Sets the accessory view for |dialog_| and sets
   // |extension_dropdown_handler_|.
-  void SetAccessoryView(const SelectFileDialog::FileTypeInfo* file_types,
+  void SetAccessoryView(remote_cocoa::mojom::SelectFileTypeInfoPtr file_types,
                         int file_type_index,
                         const base::FilePath::StringType& default_extension);
 
@@ -62,13 +68,16 @@ class SavePanelBridge {
   void OnPanelEnded(bool did_cancel);
 
   // The callback to make when this dialog ends.
-  PanelEndedCallback callback_;
+  ShowCallback show_callback_;
 
   // Type type of this dialog.
-  SelectFileDialog::Type type_;
+  remote_cocoa::mojom::SelectFileDialogType type_;
 
   // The NSSavePanel that |this| tracks.
   base::scoped_nsobject<NSSavePanel> panel_;
+
+  // The parent window for |panel_|.
+  base::scoped_nsobject<NSWindow> owning_window_;
 
   // The delegate for |panel|.
   base::scoped_nsobject<SelectFileDialogDelegate> delegate_;
@@ -119,7 +128,7 @@ class SHELL_DIALOGS_EXPORT SelectFileDialogImpl : public ui::SelectFileDialog {
     void* params;
 
     // Bridge to the Cocoa NSSavePanel.
-    std::unique_ptr<SavePanelBridge> save_panel_bridge;
+    remote_cocoa::mojom::SelectFileDialogPtr select_file_dialog;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(DialogData);

@@ -10,10 +10,12 @@
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
@@ -92,12 +94,15 @@ class SelectFileDialogMacTest : public testing::Test,
                     void* params) override {}
 
  protected:
+  base::test::ScopedTaskEnvironment task_environment_;
+
   // Helper method to launch a dialog with the given |args|.
   void SelectFileWithParams(FileDialogArguments args) {
     dialog_->SelectFile(args.type, args.title, args.default_path,
                         args.file_types, args.file_type_index,
                         args.default_extension, args.owning_window,
                         args.params);
+    base::RunLoop().RunUntilIdle();
   }
 
   // Returns the number of panels currently active.
@@ -105,16 +110,16 @@ class SelectFileDialogMacTest : public testing::Test,
     return dialog_->dialog_data_list_.size();
   }
 
-  // Returns one of the created NSSavePanel. If multiple SelectFile calls were
-  // made on the same |dialog_| object, any of the created NSSavePanel will be
-  // returned.
+  // Returns the most recently created NSSavePanel.
   NSSavePanel* GetPanel() const {
     DCHECK_GE(GetActivePanelCount(), 1lu);
-    return dialog_->dialog_data_list_.begin()
-        ->save_panel_bridge->GetNativePanelForTesting();
+    return SavePanelBridge::GetLastCreatedNativePanelForTesting();
   }
 
-  void ResetDialog() { dialog_ = new SelectFileDialogImpl(this, nullptr); }
+  void ResetDialog() {
+    dialog_ = new SelectFileDialogImpl(this, nullptr);
+    base::RunLoop().RunUntilIdle();
+  }
 
  private:
   scoped_refptr<SelectFileDialogImpl> dialog_;
@@ -429,16 +434,18 @@ TEST_F(SelectFileDialogMacTest, MultipleDialogs) {
 
   FileDialogArguments args(GetDefaultArguments());
   SelectFileWithParams(args);
+  NSSavePanel* panel1 = GetPanel();
   SelectFileWithParams(args);
+  NSSavePanel* panel2 = GetPanel();
   EXPECT_EQ(2lu, GetActivePanelCount());
 
   // Verify closing the panel decreases the panel count.
-  NSSavePanel* panel = GetPanel();
-  [panel cancel:panel];
+  [panel1 cancel:panel1];
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1lu, GetActivePanelCount());
 
-  panel = GetPanel();
-  [panel ok:panel];
+  [panel2 ok:panel2];
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0lu, GetActivePanelCount());
 }
 

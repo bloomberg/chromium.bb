@@ -75,7 +75,10 @@ jumbo_component("shell_dialogs") {
       "Foundation.framework",
       "AppKit.framework",
     ]
-    deps += [ "//components/remote_cocoa/browser" ]
+    deps += [
+      "//components/remote_cocoa/browser",
+      "//components/remote_cocoa/common:mojo",
+    ]
   }
 
   if (is_fuchsia) {
@@ -97,6 +100,7 @@ test("shell_dialogs_unittests") {
     ":shell_dialogs",
     "//base",
     "//base/test:test_support",
+    "//mojo/core/embedder",
     "//testing/gtest",
     "//ui/base",
     "//ui/resources:ui_test_pak_data",
