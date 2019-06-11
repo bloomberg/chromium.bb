@@ -4,8 +4,12 @@
 
 package org.chromium.base.library_loader;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
@@ -15,6 +19,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -48,9 +54,10 @@ public class LibraryPrefetcher {
         }
     }
 
+    private static final String TAG = "LibraryPrefetcher";
     // One-way switch that becomes true once
     // {@link asyncPrefetchLibrariesToMemory} has been called.
-    private final static AtomicBoolean sPrefetchLibraryHasBeenCalled = new AtomicBoolean();
+    private static final AtomicBoolean sPrefetchLibraryHasBeenCalled = new AtomicBoolean();
 
     /**
      * Prefetches the native libraries in a background thread.
@@ -98,10 +105,36 @@ public class LibraryPrefetcher {
         });
     }
 
+    @SuppressLint("WrongConstant")
     public static void pinOrderedCodeInMemory() {
         try (TraceEvent e = TraceEvent.scoped("LibraryPrefetcher::pinOrderedCodeInMemory")) {
             OrderedCodeInfo info = nativeGetOrderedCodeInfo();
-            if (info != null) TraceEvent.instant("pinOrderedCodeInMemory", info.toString());
+            if (info == null) return;
+            TraceEvent.instant("pinOrderedCodeInMemory", info.toString());
+
+            Context context = ContextUtils.getApplicationContext();
+            Object pinner = context.getSystemService("pinner");
+            if (pinner == null) {
+                Log.w(TAG, "Cannot get PinnerService.");
+                return;
+            }
+
+            // Reflection is required because the method is neither visible in the platform, nor
+            // available everywhere.
+            try {
+                Method pinRangeFromFile = pinner.getClass().getMethod(
+                        "pinRangeFromFile", String.class, int.class, int.class);
+                boolean ok = (Boolean) pinRangeFromFile.invoke(
+                        pinner, info.filename, (int) info.startOffset, (int) info.length);
+                if (!ok) {
+                    Log.e(TAG, "Not allowed to call the method, should not happen");
+                } else {
+                    Log.i(TAG, "Successfully pinned ordered code");
+                }
+            } catch (
+                    NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+                Log.w(TAG, "Error invoking the method. " + ex.getMessage());
+            }
         }
     }
 
