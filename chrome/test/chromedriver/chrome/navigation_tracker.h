@@ -62,6 +62,12 @@ class NavigationTracker : public DevToolsEventListener,
                           const Timeout& command_timeout) override;
 
  private:
+  Status HandlePageFrameEvent(DevToolsClient* client,
+                              const std::string& method,
+                              const base::DictionaryValue& params);
+  Status HandleRuntimeEvent(DevToolsClient* client,
+                            const std::string& method,
+                            const base::DictionaryValue& params);
   DevToolsClient* client_;
   LoadingState loading_state_;
   const JavaScriptDialogManager* dialog_manager_;

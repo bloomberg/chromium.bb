@@ -4,6 +4,7 @@
 
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
 
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
@@ -207,6 +208,25 @@ Status NavigationTracker::OnConnected(DevToolsClient* client) {
 Status NavigationTracker::OnEvent(DevToolsClient* client,
                                   const std::string& method,
                                   const base::DictionaryValue& params) {
+  Status status = Status(kOk);
+  if (method == "Page.loadEventFired") {
+    load_event_fired_ = true;
+  } else if (base::StartsWith(method, "Runtime.executionContext",
+                              base::CompareCase::SENSITIVE)) {
+    status = HandleRuntimeEvent(client, method, params);
+  } else if (base::StartsWith(method, "Page.frame",
+                              base::CompareCase::SENSITIVE)) {
+    status = HandlePageFrameEvent(client, method, params);
+  } else if (method == "Inspector.targetCrashed") {
+    ResetLoadingState(kNotLoading);
+  }
+  return status;
+}
+
+Status NavigationTracker::HandlePageFrameEvent(
+    DevToolsClient* client,
+    const std::string& method,
+    const base::DictionaryValue& params) {
   if (method == "Page.frameStartedLoading") {
     std::string frame_id;
     if (!params.GetString("frameId", &frame_id))
@@ -285,7 +305,15 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       if (name == kDummyFrameName && url == kDummyFrameUrl)
         params.GetString("frame.id", &dummy_frame_id_);
     }
-  } else if (method == "Runtime.executionContextsCleared") {
+  }
+  return Status(kOk);
+}
+
+Status NavigationTracker::HandleRuntimeEvent(
+    DevToolsClient* client,
+    const std::string& method,
+    const base::DictionaryValue& params) {
+  if (method == "Runtime.executionContextsCleared") {
     execution_context_set_.clear();
     load_event_fired_ = false;
     // As of crrev.com/382211, DevTools sends an executionContextsCleared
@@ -320,10 +348,6 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
         dummy_execution_context_id_ = 0;
       }
     }
-  } else if (method == "Page.loadEventFired") {
-    load_event_fired_ = true;
-  } else if (method == "Inspector.targetCrashed") {
-    ResetLoadingState(kNotLoading);
   }
   return Status(kOk);
 }
