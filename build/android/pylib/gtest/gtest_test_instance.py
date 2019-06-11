@@ -23,8 +23,9 @@ with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
 
 
 BROWSER_TEST_SUITES = [
-  'components_browsertests',
-  'content_browsertests',
+    'android_browsertests',
+    'components_browsertests',
+    'content_browsertests',
 ]
 
 RUN_IN_SUB_THREAD_TEST_SUITES = [
