@@ -90,7 +90,7 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
   // IPC message handlers:
   void OnStartListening();
   void OnForwardForSurfaceRequest(const base::UnguessableToken& request_token);
-  void OnSetSize(const gfx::Size& size) { size_ = size; }
+  void OnSetSize(const gfx::Size& size);
 
   std::unique_ptr<SurfaceOwner> surface_owner_;
 
