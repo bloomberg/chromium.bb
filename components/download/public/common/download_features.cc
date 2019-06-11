@@ -50,7 +50,7 @@ const base::Feature kAllowDownloadResumptionWithoutStrongValidators{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUseParallelRequestsForUnknwonRangeSupport{
-    "UseParallelRequestForUnknwonRangeSupport",
+    "UseParallelRequestForUnknownRangeSupport",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
