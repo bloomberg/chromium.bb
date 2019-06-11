@@ -2321,8 +2321,7 @@ RTCPeerConnectionHandler::FirstSessionDescription::FirstSessionDescription(
 
   for (const auto& content : sdesc->description()->contents()) {
     if (content.type == cricket::MediaProtocolType::kRtp) {
-      const auto* mdesc =
-          static_cast<cricket::MediaContentDescription*>(content.description);
+      const auto* mdesc = content.media_description();
       audio = audio || (mdesc->type() == cricket::MEDIA_TYPE_AUDIO);
       video = video || (mdesc->type() == cricket::MEDIA_TYPE_VIDEO);
       rtcp_mux = rtcp_mux || mdesc->rtcp_mux();
