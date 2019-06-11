@@ -8,6 +8,17 @@ module cros.mojom;
 
 import "media/capture/video/chromeos/mojo/camera_metadata.mojom";
 
+// These usages flags are defined in gralloc.h. They determine the nature of
+// the buffers allocated by gralloc. Read more on:
+// https://source.android.com/devices/graphics/arch-bq-gralloc#gralloc_HAL
+const uint32 GRALLOC_USAGE_SW_READ_NEVER = 0x00000000;
+const uint32 GRALLOC_USAGE_SW_READ_OFTEN = 0x00000003;
+const uint32 GRALLOC_USAGE_SW_WRITE_NEVER = 0x00000000;
+const uint32 GRALLOC_USAGE_SW_WRITE_OFTEN = 0x00000030;
+const uint32 GRALLOC_USAGE_HW_COMPOSER = 0x00000800;
+const uint32 GRALLOC_USAGE_HW_CAMERA_WRITE = 0x00020000;
+const uint32 GRALLOC_USAGE_HW_CAMERA_READ = 0x00040000;
+
 [Extensible]
 enum HalPixelFormat {
   HAL_PIXEL_FORMAT_RGBA_8888 = 0x1,
@@ -56,6 +67,10 @@ struct Camera3Stream {
   uint32 width;
   uint32 height;
   HalPixelFormat format;
+  // usage stores the gralloc usage flags for this stream and determines the
+  // nature of it. The value is used by Chrome VCD, Android framework and camera
+  // HAL. Read more on:
+  // https://source.android.com/devices/graphics/arch-bq-gralloc#gralloc_HAL
   uint32 usage;
   uint32 max_buffers;
   uint32 data_space;
