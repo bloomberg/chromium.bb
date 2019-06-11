@@ -55,13 +55,16 @@ def GetDevice():
   return GetDevice.device
 
 
-def clear_android_dumps(device):
+def clear_android_dumps(options, device):
   try:
+    print '# Deleting stale crash dumps'
     pending = ANDROID_CRASH_DIR + '/pending/'
     files = device.RunShellCommand(['ls', pending], as_root=True)
     for f in files:
-      device.RunShellCommand(['rm', pending + f], check_return=True,
-                             as_root=True)
+      if f.endswith('.dmp'):
+        if options.verbose:
+          print ' deleting %s' % f
+        device.RunShellCommand(['rm', f], check_return=True, as_root=True)
   except:
     print 'Failed to delete android crash dir %s' % ANDROID_CRASH_DIR
 
@@ -101,7 +104,7 @@ def run_test(options, crash_dir, symbols_dir, platform,
     device = GetDevice()
 
     failure = None
-    clear_android_dumps(device)
+    clear_android_dumps(options, device)
 
     apk_path = os.path.join(options.build_dir, 'apks', 'ContentShell.apk')
     apk = apk_helper.ApkHelper(apk_path)
@@ -260,7 +263,6 @@ def main():
       print '# Install ContentShell.apk'
       apk_path = os.path.join(options.build_dir, 'apks', 'ContentShell.apk')
       device.Install(apk_path, reinstall=False, allow_downgrade=True)
-      #device.RunShellCommand(['mkdir', ANDROID_CRASH_DIR], check_return=True)
 
     if options.platform != 'win32':
       print '# Generate symbols.'
@@ -310,7 +312,7 @@ def main():
     except:
       print 'Failed to delete temp directory "%s".' % crash_dir
     if options.platform == 'android':
-      clear_android_dumps(GetDevice())
+      clear_android_dumps(options, GetDevice())
 
 
 if '__main__' == __name__:
