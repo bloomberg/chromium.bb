@@ -45,6 +45,7 @@ public class WebApkValidator {
     private static byte[] sExpectedSignature;
     private static byte[] sCommentSignedPublicKeyBytes;
     private static PublicKey sCommentSignedPublicKey;
+    private static boolean sDisableValidation;
     private static boolean sOverrideValidationForTesting;
 
     /**
@@ -188,7 +189,8 @@ public class WebApkValidator {
      * @return true iff the WebAPK is installed and passes security checks
      */
     public static boolean isValidWebApk(Context context, String webappPackageName) {
-        if (sExpectedSignature == null || sCommentSignedPublicKeyBytes == null) {
+        if ((sExpectedSignature == null || sCommentSignedPublicKeyBytes == null)
+                && !sDisableValidation) {
             Log.wtf(TAG,
                     "WebApk validation failure - expected signature not set."
                             + "missing call to WebApkValidator.initWithBrowserHostSignature");
@@ -208,7 +210,7 @@ public class WebApkValidator {
         if (isNotWebApkQuick(packageInfo)) {
             return false;
         }
-        if (sOverrideValidationForTesting) {
+        if (sDisableValidation || sOverrideValidationForTesting) {
             if (DEBUG) {
                 Log.d(TAG, "Ok! Looks like a WebApk (has start url) and validation is disabled.");
             }
@@ -354,11 +356,19 @@ public class WebApkValidator {
     }
 
     /**
-     * Disables all verification performed by this class. This is meant only for development with
+     * Disables all validation performed by this class. This is meant only for development with
      * unsigned WebApks and should never be enabled in a real build.
      */
     public static void disableValidationForTesting() {
         sOverrideValidationForTesting = true;
+    }
+
+    /**
+     * Disables all validation performed by this class. This should only be called when some other
+     * means of validating WebApks is already present and otherwise should never be called.
+     */
+    public static void disableValidationUnsafe() {
+        sDisableValidation = true;
     }
 
     /**
