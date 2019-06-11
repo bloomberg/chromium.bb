@@ -1694,6 +1694,9 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
       // Sign out if force-sign-in policy is enabled and profile is not signed
       // in.
+      VLOG(1) << "ForceSigninCheck: " << signin_util::IsForceSigninEnabled()
+              << ", " << was_authenticated_status << ", "
+              << !entry->IsAuthenticated();
       if (signin_util::IsForceSigninEnabled() && was_authenticated_status &&
           !entry->IsAuthenticated()) {
         auto* account_mutator = identity_manager->GetPrimaryAccountMutator();
