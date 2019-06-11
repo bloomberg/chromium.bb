@@ -9,7 +9,15 @@ source_set("send_tab_to_self") {
     "send_tab_to_self_coordinator.mm",
   ]
   deps = [
+    ":send_tab_to_self_ui",
     "//base",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+  ]
+}
+source_set("send_tab_to_self_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "send_tab_to_self_modal_presentation_controller.h",
+    "send_tab_to_self_modal_presentation_controller.mm",
   ]
 }
