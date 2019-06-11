@@ -11,6 +11,10 @@ functionality that can eventually be centralized here.
 
 from __future__ import print_function
 
+import os
+
+from chromite.lib import osutils
+
 from chromite.lib import constants
 
 
@@ -31,7 +35,24 @@ class Chroot(object):
     return (self.path == other.path and self.cache_dir == other.cache_dir
             and self.env == other.env)
 
+  def exists(self):
+    """Checks if the chroot exists."""
+    return os.path.exists(self.path)
+
+  @property
+  def tmp(self):
+    """Get the chroot's tmp dir."""
+    return os.path.join(self.path, 'tmp')
+
+  def tempdir(self):
+    """Get a TempDir in the chroot's tmp dir."""
+    return osutils.TempDir(base_dir=self.tmp)
+
   def GetEnterArgs(self):
+    """Build the arguments to enter this chroot."""
+    return self.get_enter_args()
+
+  def get_enter_args(self):
     """Build the arguments to enter this chroot."""
     args = []
 
