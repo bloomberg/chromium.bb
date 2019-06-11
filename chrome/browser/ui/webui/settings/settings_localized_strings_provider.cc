@@ -1785,6 +1785,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_LESS_SECURE},
     {"lockScreenDeleteFingerprintLabel",
      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_DELETE_FINGERPRINT_ARIA_LABEL},
+    {"lockScreenMediaKeys", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_MEDIA_KEYS},
     {"lockScreenNotificationHide",
      IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_HIDE},
     {"lockScreenNotificationHideSensitive",

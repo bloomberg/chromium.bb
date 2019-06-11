@@ -3675,6 +3675,9 @@
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME" desc="The default name (plus a number for a newly added fingerprint).">
       Finger <ph name="NEW_FINGER_NUMBER">$1<ex>1</ex></ph>
     </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_MEDIA_KEYS" desc="Label for the checkbox which enables or disables media keys on the lock screen.">
+      Enable Chrome media playback at lock screen
+    </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL" desc="Label of the Add account button in Account Manager.">
       Add account
     </message>
