@@ -59,19 +59,11 @@ cmake "${AOM_DIR}" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCONFIG_PIC=1 \
 # Build the codec.
 make -j$(nproc)
 
-# Build some libaom utils that are not part of the core lib.
-$CC -std=c99 -c -I${AOM_DIR} -I${BUILD_DIR} \
-  ${AOM_DIR}/common/ivfdec.c -o ${BUILD_DIR}/ivfdec.o
-
-$CC -std=c99 -c -I${AOM_DIR} -I${BUILD_DIR} \
-  ${AOM_DIR}/common/tools_common.c -o ${BUILD_DIR}/tools_common.o
-
 # Build the av1 fuzzer
 $CXX -std=c++11 -DDECODER=av1 -I${AOM_DIR} -I${BUILD_DIR} \
     -fsanitize=fuzzer,address -Wl,--start-group \
     ${AOM_DIR}/examples/av1_dec_fuzzer.cc -o ${BUILD_DIR}/av1_dec_fuzzer \
-    ${BUILD_DIR}/libaom.a ${BUILD_DIR}/ivfdec.o ${BUILD_DIR}/tools_common.o \
-    -Wl,--end-group
+    ${BUILD_DIR}/libaom.a -Wl,--end-group
 
 echo "Fuzzer built at ${BUILD_DIR}/av1_dec_fuzzer."
 echo "Create a corpus directory, copy IVF files in there, and run:"
