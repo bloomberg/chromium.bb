@@ -1089,8 +1089,7 @@ config("compiler_deterministic") {
   }
 
   # Makes builds independent of absolute file path.
-  if (symbol_level != 0 && is_clang &&
-      strip_absolute_paths_from_debug_symbols) {
+  if (symbol_level != 0 && is_clang && strip_absolute_paths_from_debug_symbols) {
     # If debug option is given, clang includes $cwd in debug info by default.
     # For such build, this flag generates reproducible obj files even we use
     # different build directory like "out/feature_a" and "out/feature_b" if
@@ -2333,17 +2332,15 @@ config("symbols") {
 # when crash happens in unittests running on buildbot.
 config("minimal_symbols") {
   if (is_win) {
-    # Linker symbols for backtraces only.
+    # Functions, files, and line tables only.
     cflags = []
     ldflags = [ "/DEBUG" ]
 
     # All configs using /DEBUG should include this:
     configs = [ ":win_pdbaltpath" ]
 
-    # For win/asan, get stack traces with full line numbers.
-    # AddressSanitizerTests.TestAddressSanitizer needs this, and since
-    # win/asan isn't a default cq bot the build time hit is ok.
-    if (is_clang && using_sanitizer) {
+    # Enable line tables for clang. MSVC doesn't have an equivalent option.
+    if (is_clang) {
       # -gline-tables-only is the same as -g1, but clang-cl only exposes the
       # former.
       cflags += [ "-gline-tables-only" ]
