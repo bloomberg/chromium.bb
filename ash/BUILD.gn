@@ -484,8 +484,6 @@ component("ash") {
     "multi_user/multi_user_window_manager_impl.cc",
     "multi_user/user_switch_animator.cc",
     "multi_user/user_switch_animator.h",
-    "network_connect_delegate_mus.cc",
-    "network_connect_delegate_mus.h",
     "policy/policy_recommendation_restorer.cc",
     "policy/policy_recommendation_restorer.h",
     "root_window_controller.cc",
