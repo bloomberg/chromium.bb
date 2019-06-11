@@ -55,7 +55,6 @@ class ExternalBeginFrameControllerClientImpl;
 namespace viz {
 class Display;
 class FrameSinkId;
-class FrameSinkManagerImpl;
 class HostDisplayClient;
 class OutputSurface;
 }
@@ -79,10 +78,6 @@ class CONTENT_EXPORT CompositorImpl
   ~CompositorImpl() override;
 
   static bool IsInitialized();
-
-  static viz::FrameSinkManagerImpl* GetFrameSinkManager();
-  static viz::HostFrameSinkManager* GetHostFrameSinkManager();
-  static viz::FrameSinkId AllocateFrameSinkId();
 
   // ui::ResourceProvider implementation.
   cc::UIResourceId CreateUIResource(cc::UIResourceClient* client) override;

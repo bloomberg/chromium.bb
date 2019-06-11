@@ -205,9 +205,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     delegated_frame_host_client_ =
         std::make_unique<DelegatedFrameHostClientAndroid>(this);
     delegated_frame_host_ = std::make_unique<ui::DelegatedFrameHostAndroid>(
-        &view_, CompositorImpl::GetHostFrameSinkManager(),
-        delegated_frame_host_client_.get(), host()->GetFrameSinkId(),
-        features::IsSurfaceSynchronizationEnabled());
+        &view_, GetHostFrameSinkManager(), delegated_frame_host_client_.get(),
+        host()->GetFrameSinkId(), features::IsSurfaceSynchronizationEnabled());
     if (is_showing_) {
       delegated_frame_host_->WasShown(
           local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
@@ -226,7 +225,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   host()->SetView(this);
   touch_selection_controller_client_manager_ =
       std::make_unique<TouchSelectionControllerClientManagerAndroid>(
-          this, CompositorImpl::GetHostFrameSinkManager());
+          this, GetHostFrameSinkManager());
 
   UpdateNativeViewTree(parent_native_view);
   // This RWHVA may have been created speculatively. We should give any
