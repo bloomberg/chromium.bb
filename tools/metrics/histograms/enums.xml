@@ -19705,6 +19705,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ExtensionIconState">
+  <obsolete>
+    Corresponding metric removed 2019-06.
+  </obsolete>
   <int value="0" label="DISABLED"/>
   <int value="1" label="VISIBLE"/>
   <int value="2" label="OVERFLOWED"/>
