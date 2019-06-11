@@ -50,26 +50,28 @@ class SupportResolutionChecker : public V4L2StatefulWorkaround {
 std::unique_ptr<V4L2StatefulWorkaround>
 SupportResolutionChecker::CreateIfNeeded(V4L2Device::Type device_type,
                                          VideoCodecProfile profile) {
-  scoped_refptr<V4L2Device> device = V4L2Device::Create();
-  if (device_type == V4L2Device::Type::kDecoder && profile >= VP8PROFILE_MIN &&
-      profile <= VP8PROFILE_MAX) {
-    if (!device->Open(V4L2Device::Type::kDecoder, V4L2_PIX_FMT_VP8)) {
-      VPLOGF(1) << "Failed to open device for profile: " << profile
-                << " fourcc: " << FourccToString(V4L2_PIX_FMT_VP8);
-      return nullptr;
-    }
-
-    // Get the driver name.
-    struct v4l2_capability caps;
-    if (device->Ioctl(VIDIOC_QUERYCAP, &caps) != 0) {
-      VPLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP"
-                << ", caps check failed: 0x" << std::hex << caps.capabilities;
-      return nullptr;
-    }
-    constexpr char go2001[] = "go2001";
-    if (strcmp(reinterpret_cast<const char*>(caps.driver), go2001))
-      return nullptr;
+  if (device_type != V4L2Device::Type::kDecoder || profile < VP8PROFILE_MIN ||
+      profile > VP8PROFILE_MAX) {
+    return nullptr;
   }
+
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
+  if (!device->Open(V4L2Device::Type::kDecoder, V4L2_PIX_FMT_VP8)) {
+    VPLOGF(1) << "Failed to open device for profile: " << profile
+              << " fourcc: " << FourccToString(V4L2_PIX_FMT_VP8);
+    return nullptr;
+  }
+
+  // Get the driver name.
+  struct v4l2_capability caps;
+  if (device->Ioctl(VIDIOC_QUERYCAP, &caps) != 0) {
+    VPLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP"
+              << ", caps check failed: 0x" << std::hex << caps.capabilities;
+    return nullptr;
+  }
+  constexpr char go2001[] = "go2001";
+  if (strcmp(reinterpret_cast<const char*>(caps.driver), go2001))
+    return nullptr;
 
   constexpr uint32_t supported_input_fourccs[] = {
       V4L2_PIX_FMT_VP8,
