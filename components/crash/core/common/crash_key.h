@@ -226,6 +226,10 @@ CRASH_KEY_EXPORT void InitializeCrashKeys();
 // current component.
 CRASH_KEY_EXPORT std::string GetCrashKeyValue(const std::string& key_name);
 
+// Initializes the crash key subsystem with testing configuration if it is
+// required.
+CRASH_KEY_EXPORT void InitializeCrashKeysForTesting();
+
 // Resets crash key state and, depending on the platform, de-initializes
 // the system.
 CRASH_KEY_EXPORT void ResetCrashKeysForTesting();

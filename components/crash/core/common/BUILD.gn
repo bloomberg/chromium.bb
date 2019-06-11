@@ -153,14 +153,6 @@ source_set("unit_tests") {
     sources += [ "objc_zombie_unittest.mm" ]
   }
 
-  # TODO(crbug.com/970280): crash_key* is failing on iOS.
-  if (is_ios) {
-    sources -= [
-      "crash_key_unittest.cc",
-      "crash_keys_unittest.cc",
-    ]
-  }
-
   if (!is_mac && !is_ios && !is_win && !is_fuchsia && !is_android) {
     include_dirs = [ "//third_party/breakpad/breakpad/src/" ]
     sources += [ "crash_key_breakpad_unittest.cc" ]
