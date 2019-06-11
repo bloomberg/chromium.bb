@@ -1110,7 +1110,8 @@ void AutomationInternalCustomBindings::AddRoutes() {
           return;
         }
         std::vector<ui::LanguageSpan> language_annotation =
-            node->GetLanguageAnnotationForStringAttribute(attr);
+            tree->language_info_stats->GetLanguageAnnotationForStringAttribute(
+                *node, attr);
         const std::string& attribute_value = node->GetStringAttribute(attr);
         // Build array.
         v8::Local<v8::Context> context = isolate->GetCurrentContext();

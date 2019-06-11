@@ -697,12 +697,14 @@ TEST(AXLanguageInfoTest, ShortLanguageDetectorLabeledTest) {
   AXNode* item = tree.GetFromId(2);
   std::vector<LanguageSpan> annotation;
   // Empty output.
-  annotation = item->GetLanguageAnnotationForStringAttribute(
-      ax::mojom::StringAttribute::kInnerHtml);
+  annotation =
+      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+          *item, ax::mojom::StringAttribute::kInnerHtml);
   ASSERT_EQ(0, (int)annotation.size());
   // Returns single LanguageSpan.
-  annotation = item->GetLanguageAnnotationForStringAttribute(
-      ax::mojom::StringAttribute::kName);
+  annotation =
+      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+          *item, ax::mojom::StringAttribute::kName);
   ASSERT_EQ(1, (int)annotation.size());
   LanguageSpan* lang_span = &annotation[0];
   ASSERT_EQ("en", lang_span->language);
@@ -729,8 +731,9 @@ TEST(AXLanguageInfoTest, ShortLanguageDetectorCharacterTest) {
   AXNode* item = tree.GetFromId(2);
   std::vector<LanguageSpan> annotation;
   // Returns single LanguageSpan.
-  annotation = item->GetLanguageAnnotationForStringAttribute(
-      ax::mojom::StringAttribute::kName);
+  annotation =
+      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+          *item, ax::mojom::StringAttribute::kName);
   ASSERT_EQ(1, (int)annotation.size());
   LanguageSpan* lang_span = &annotation[0];
   ASSERT_EQ("el", lang_span->language);
@@ -757,8 +760,8 @@ TEST(AXLanguageInfoTest, ShortLanguageDetectorMultipleLanguagesTest) {
 
   AXNode* item = tree.GetFromId(2);
   std::vector<LanguageSpan> annotation =
-      item->GetLanguageAnnotationForStringAttribute(
-          ax::mojom::StringAttribute::kName);
+      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+          *item, ax::mojom::StringAttribute::kName);
   ASSERT_EQ(3, (int)annotation.size());
   std::string name =
       item->GetStringAttribute(ax::mojom::StringAttribute::kName);
@@ -788,10 +791,11 @@ TEST(AXLanguageInfoTest, DetectLanguageForRoleTest) {
   initial_state.nodes[0].AddStringAttribute(ax::mojom::StringAttribute::kValue,
                                             "どうぞよろしくお願いします.");
   AXTree tree(initial_state);
+
   AXNode* item = tree.GetFromId(1);
   std::vector<LanguageSpan> annotation =
-      item->GetLanguageAnnotationForStringAttribute(
-          ax::mojom::StringAttribute::kValue);
+      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+          *item, ax::mojom::StringAttribute::kValue);
   ASSERT_EQ(1, (int)annotation.size());
   std::string value =
       item->GetStringAttribute(ax::mojom::StringAttribute::kValue);

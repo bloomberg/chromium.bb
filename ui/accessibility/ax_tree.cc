@@ -1186,11 +1186,4 @@ void AXTree::SetTreeUpdateInProgressState(bool set_tree_update_value) {
   tree_update_in_progress_ = set_tree_update_value;
 }
 
-std::vector<LanguageSpan> AXTree::GetLanguageAnnotationForStringAttribute(
-    const AXNode& node,
-    ax::mojom::StringAttribute attr) const {
-  return language_info_stats->GetLanguageAnnotationForStringAttribute(node,
-                                                                      attr);
-}
-
 }  // namespace ui
