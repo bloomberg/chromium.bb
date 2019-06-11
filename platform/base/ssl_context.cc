@@ -53,7 +53,7 @@ ErrorOr<SSLContext> SSLContext::Create(absl::string_view cert_filename,
   return context;
 }
 
-bssl::UniquePtr<SSL> SSLContext::GetNewSSL() const {
+bssl::UniquePtr<SSL> SSLContext::CreateSSL() const {
   return bssl::UniquePtr<SSL>(SSL_new(context_.get()));
 }
 }  // namespace platform

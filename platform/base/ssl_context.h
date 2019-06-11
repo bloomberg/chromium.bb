@@ -33,11 +33,13 @@ class SSLContext {
   // shared |SSL_CTX| is thread-safe, an |SSL| is not thread-safe and may only
   // be used on one thread at a time. Calling classes can use the returned SSL
   // to open a TLS Socket.
-  bssl::UniquePtr<SSL> GetNewSSL() const;
+  bssl::UniquePtr<SSL> CreateSSL() const;
 
  private:
   bssl::UniquePtr<SSL_CTX> context_;
 };
+
 }  // namespace platform
 }  // namespace openscreen
+
 #endif  // PLATFORM_BASE_SSL_CONTEXT_H_

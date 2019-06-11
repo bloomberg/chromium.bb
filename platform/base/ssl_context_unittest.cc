@@ -128,7 +128,7 @@ TEST_F(SSLContextTest, InitSucceedsWithValidCertAndKey) {
   ASSERT_TRUE(context);
 }
 
-TEST_F(SSLContextTest, CanGetNewSSLPtr) {
+TEST_F(SSLContextTest, CanCreateSSLPtr) {
   TemporaryFile cert;
   TemporaryFile key;
 
@@ -137,7 +137,7 @@ TEST_F(SSLContextTest, CanGetNewSSLPtr) {
 
   auto context = SSLContext::Create(cert.get_file_name(), key.get_file_name());
   ASSERT_TRUE(context);
-  auto ssl_ptr = context.value().GetNewSSL();
+  auto ssl_ptr = context.value().CreateSSL();
   ASSERT_TRUE(ssl_ptr);
 }
 
