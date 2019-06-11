@@ -303,8 +303,6 @@ const char EPKPChallengeMachineKey::kKeyRegistrationFailedError[] =
 const char EPKPChallengeMachineKey::kNonEnterpriseDeviceError[] =
     "The device is not enterprise enrolled.";
 
-const char EPKPChallengeMachineKey::kKeyName[] = "attest-ent-machine";
-
 EPKPChallengeMachineKey::EPKPChallengeMachineKey() : EPKPChallengeKeyBase() {
 }
 
@@ -380,7 +378,7 @@ void EPKPChallengeMachineKey::GetDeviceAttestationEnabledCallback(
 
   PrepareKey(chromeos::attestation::KEY_DEVICE,
              EmptyAccountId(),  // Not used.
-             kKeyName,
+             chromeos::attestation::kEnterpriseMachineKey,
              chromeos::attestation::PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
              false,  // user consent is not required.
              base::Bind(&EPKPChallengeMachineKey::PrepareKeyCallback,
@@ -400,7 +398,8 @@ void EPKPChallengeMachineKey::PrepareKeyCallback(const std::string& challenge,
   async_caller_->TpmAttestationSignEnterpriseChallenge(
       chromeos::attestation::KEY_DEVICE,
       cryptohome::Identification(),  // Not used.
-      kKeyName, GetEnterpriseDomain(), GetDeviceId(),
+      chromeos::attestation::kEnterpriseMachineKey, GetEnterpriseDomain(),
+      GetDeviceId(),
       register_key ? chromeos::attestation::CHALLENGE_INCLUDE_SIGNED_PUBLIC_KEY
                    : chromeos::attestation::CHALLENGE_OPTION_NONE,
       challenge,
@@ -420,7 +419,7 @@ void EPKPChallengeMachineKey::SignChallengeCallback(
     async_caller_->TpmAttestationRegisterKey(
         chromeos::attestation::KEY_DEVICE,
         cryptohome::Identification(),  // Not used.
-        kKeyName,
+        chromeos::attestation::kEnterpriseMachineKey,
         base::Bind(&EPKPChallengeMachineKey::RegisterKeyCallback,
                    base::Unretained(this), response));
   } else {
@@ -449,8 +448,6 @@ const char EPKPChallengeUserKey::kUserPolicyDisabledError[] =
     "Remote attestation is not enabled for your account.";
 const char EPKPChallengeUserKey::kUserKeyNotAvailable[] =
     "User keys cannot be challenged in this profile.";
-
-const char EPKPChallengeUserKey::kKeyName[] = "attest-ent-user";
 
 EPKPChallengeUserKey::EPKPChallengeUserKey() : EPKPChallengeKeyBase() {
 }
@@ -544,7 +541,8 @@ void EPKPChallengeUserKey::GetDeviceAttestationEnabledCallback(
     return;
   }
 
-  PrepareKey(chromeos::attestation::KEY_USER, GetAccountId(), kKeyName,
+  PrepareKey(chromeos::attestation::KEY_USER, GetAccountId(),
+             chromeos::attestation::kEnterpriseUserKey,
              chromeos::attestation::PROFILE_ENTERPRISE_USER_CERTIFICATE,
              require_user_consent,
              base::Bind(&EPKPChallengeUserKey::PrepareKeyCallback,
@@ -563,12 +561,13 @@ void EPKPChallengeUserKey::PrepareKeyCallback(const std::string& challenge,
   // Everything is checked. Sign the challenge.
   async_caller_->TpmAttestationSignEnterpriseChallenge(
       chromeos::attestation::KEY_USER,
-      cryptohome::Identification(GetAccountId()), kKeyName, GetUserEmail(),
-      GetDeviceId(),
+      cryptohome::Identification(GetAccountId()),
+      chromeos::attestation::kEnterpriseUserKey, GetUserEmail(), GetDeviceId(),
       register_key ? chromeos::attestation::CHALLENGE_INCLUDE_SIGNED_PUBLIC_KEY
                    : chromeos::attestation::CHALLENGE_OPTION_NONE,
-      challenge, base::Bind(&EPKPChallengeUserKey::SignChallengeCallback,
-                            base::Unretained(this), register_key));
+      challenge,
+      base::Bind(&EPKPChallengeUserKey::SignChallengeCallback,
+                 base::Unretained(this), register_key));
 }
 
 void EPKPChallengeUserKey::SignChallengeCallback(bool register_key,
@@ -582,7 +581,8 @@ void EPKPChallengeUserKey::SignChallengeCallback(bool register_key,
   if (register_key) {
     async_caller_->TpmAttestationRegisterKey(
         chromeos::attestation::KEY_USER,
-        cryptohome::Identification(GetAccountId()), kKeyName,
+        cryptohome::Identification(GetAccountId()),
+        chromeos::attestation::kEnterpriseUserKey,
         base::Bind(&EPKPChallengeUserKey::RegisterKeyCallback,
                    base::Unretained(this), response));
   } else {
