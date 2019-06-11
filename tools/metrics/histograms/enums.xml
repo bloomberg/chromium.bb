@@ -38909,6 +38909,7 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="TimedOut"/>
   <int value="1" label="SwipedUp"/>
   <int value="2" label="ExpandedToModal"/>
+  <int value="3" label="TappedToModal"/>
 </enum>
 
 <enum name="MobileMessagesBannerEvent">
