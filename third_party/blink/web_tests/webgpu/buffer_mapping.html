@@ -310,6 +310,90 @@ promise_test(async t => {
     }
 
     {
+      // Test that ArrayBuffers are detached after unmap().
+      {
+        const buffer = device.createBuffer({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        const arrayBuffer = await buffer.mapWriteAsync();
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.unmap();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const buffer = device.createBuffer({
+          size: 4,
+          usage: GPUBufferUsage.MAP_READ,
+        });
+        const arrayBuffer = await buffer.mapReadAsync();
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.unmap();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const [buffer, arrayBuffer] = device.createBufferMapped({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.unmap();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.unmap();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+    }
+
+    {
+      // Test that ArrayBuffers are detached after destroy().
+      {
+        const buffer = device.createBuffer({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        const arrayBuffer = await buffer.mapWriteAsync();
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.destroy();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const buffer = device.createBuffer({
+          size: 4,
+          usage: GPUBufferUsage.MAP_READ,
+        });
+        const arrayBuffer = await buffer.mapReadAsync();
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.destroy();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const [buffer, arrayBuffer] = device.createBufferMapped({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.destroy();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+      {
+        const [buffer, arrayBuffer] = await device.createBufferMappedAsync({
+          size: 4,
+          usage: GPUBufferUsage.MAP_WRITE,
+        });
+        assert_equals(arrayBuffer.byteLength, 4);
+        buffer.destroy();
+        assert_equals(arrayBuffer.byteLength, 0, "Array buffer is detached.");
+      }
+    }
+
+    {
       // Test OOM buffer mapping errors.
       {
         let didReject = false;
