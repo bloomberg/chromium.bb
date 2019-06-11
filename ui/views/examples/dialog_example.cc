@@ -182,11 +182,6 @@ void DialogExample::CreateExampleView(View* container) {
       MdTextButton::CreateSecondaryUiButton(this, base::ASCIIToUTF16("Show"))
           .release();
   layout->AddView(show_);
-
-  // Grow the dialog a bit when this example is first selected, so it all fits.
-  gfx::Size dialog_size = container->GetWidget()->GetRestoredBounds().size();
-  dialog_size.set_height(dialog_size.height() + 80);
-  container->GetWidget()->SetSize(dialog_size);
 }
 
 void DialogExample::StartRowWithLabel(GridLayout* layout, const char* label) {
@@ -272,10 +267,10 @@ void DialogExample::ButtonPressed(Button* sender, const ui::Event& event) {
       // be created as MODAL_TYPE_WINDOW without specifying a parent.
       gfx::NativeView parent = nullptr;
       if (mode_->GetSelectedIndex() != kFakeModeless)
-        parent = container()->GetWidget()->GetNativeView();
+        parent = example_view()->GetWidget()->GetNativeView();
 
       DialogDelegate::CreateDialogWidget(
-          dialog, container()->GetWidget()->GetNativeWindow(), parent);
+          dialog, example_view()->GetWidget()->GetNativeWindow(), parent);
     }
     last_dialog_->GetWidget()->Show();
     return;

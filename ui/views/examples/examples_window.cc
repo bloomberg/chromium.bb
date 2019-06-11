@@ -90,6 +90,9 @@ ExampleVector CreateExamples() {
   examples.push_back(std::make_unique<TreeViewExample>());
   examples.push_back(std::make_unique<VectorExample>());
   examples.push_back(std::make_unique<WidgetExample>());
+
+  for (auto& example : examples)
+    example->CreateExampleView(example->example_view());
   return examples;
 }
 
@@ -150,7 +153,8 @@ class ExamplesWindowContents : public WidgetDelegateView,
     instance_ = this;
     combobox_->set_listener(this);
 
-    SetBackground(CreateStandardPanelBackground());
+    SetBackground(CreateThemedSolidBackground(
+        this, ui::NativeTheme::kColorId_DialogBackground));
     GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>(this));
     ColumnSet* column_set = layout->AddColumnSet(0);
@@ -197,16 +201,22 @@ class ExamplesWindowContents : public WidgetDelegateView,
       std::move(on_close_).Run();
   }
   gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(800, 300);
+    gfx::Size size(800, 300);
+    for (int i = 0; i < combobox_model_->GetItemCount(); i++) {
+      size.set_height(
+          std::max(size.height(),
+                   combobox_model_->GetItemViewAt(i)->GetHeightForWidth(800)));
+    }
+    return size;
   }
 
   // ComboboxListener:
   void OnPerformAction(Combobox* combobox) override {
     DCHECK_EQ(combobox, combobox_);
-    DCHECK(combobox->GetSelectedIndex());
+    int index = combobox->GetSelectedIndex();
+    DCHECK_LT(index, combobox_model_->GetItemCount());
     example_shown_->RemoveAllChildViews(false);
-    example_shown_->AddChildView(
-        combobox_model_->GetItemViewAt(combobox->GetSelectedIndex()));
+    example_shown_->AddChildView(combobox_model_->GetItemViewAt(index));
     example_shown_->RequestFocus();
     SetStatus(std::string());
     InvalidateLayout();
@@ -244,7 +254,8 @@ void ShowExamplesWindow(base::OnceClosure on_close,
 }
 
 void LogStatus(const std::string& string) {
-  ExamplesWindowContents::instance()->SetStatus(string);
+  if (ExamplesWindowContents::instance())
+    ExamplesWindowContents::instance()->SetStatus(string);
 }
 
 }  // namespace examples

@@ -180,8 +180,8 @@ void MultilineExample::ContentsChanged(Textfield* sender,
   render_text_view_->SetText(new_contents);
   if (label_checkbox_->GetChecked())
     label_->SetText(new_contents);
-  container()->InvalidateLayout();
-  container()->SchedulePaint();
+  example_view()->InvalidateLayout();
+  example_view()->SchedulePaint();
 }
 
 void MultilineExample::ButtonPressed(Button* sender, const ui::Event& event) {
@@ -191,8 +191,8 @@ void MultilineExample::ButtonPressed(Button* sender, const ui::Event& event) {
   } else if (sender == elision_checkbox_) {
     render_text_view_->SetMaxLines(elision_checkbox_->GetChecked() ? 3 : 0);
   }
-  container()->InvalidateLayout();
-  container()->SchedulePaint();
+  example_view()->InvalidateLayout();
+  example_view()->SchedulePaint();
 }
 
 }  // namespace examples
