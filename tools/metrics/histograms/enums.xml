@@ -33460,6 +33460,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1839874877" label="WebXROrientationSensorDevice:enabled"/>
   <int value="-1839496458" label="disable-file-manager-touch-mode"/>
   <int value="-1838482444" label="disable-settings-window"/>
+  <int value="-1837401779" label="EnableFileManagerFormatDialog:enabled"/>
   <int value="-1837329460" label="NewEncodeCpuLoadEstimator:enabled"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
@@ -34817,6 +34818,7 @@ from previous Chrome versions.
   <int value="151022756" label="ArcAvailableForChildAccount:disabled"/>
   <int value="151101719" label="HtmlBaseUsernameDetector:enabled"/>
   <int value="153347646" label="SmartDimModelV3:disabled"/>
+  <int value="155977192" label="EnableFileManagerFormatDialog:disabled"/>
   <int value="157217034" label="enable-tab-for-desktop-share"/>
   <int value="157318016" label="AutomaticTabDiscarding:enabled"/>
   <int value="160838658" label="SmartDimModelV3:enabled"/>

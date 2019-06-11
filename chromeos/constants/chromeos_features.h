@@ -35,6 +35,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kDriveFs;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableFileManagerFeedbackPanel;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kEnableFileManagerFormatDialog;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableFileManagerPiexWasm;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableMessagesWebPush;

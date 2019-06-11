@@ -2025,6 +2025,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "file-manager-format-dialog",
+    "owners": [ "austinct" ],
+    "expiry_milestone": 78
+  },
+  {
     // See https://crbug.com/904630, offical builds only.
     "name": "file-manager-piex-wasm",
     "owners": [ "noel" ],

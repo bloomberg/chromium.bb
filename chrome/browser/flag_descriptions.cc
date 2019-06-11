@@ -3111,6 +3111,12 @@ const char kFileManagerFeedbackPanelDescription[] =
     "Enable feedback panel in the Files app.";
 const char kFileManagerFeedbackPanelName[] = "Files App. feedback panel";
 
+const char kFileManagerFormatDialogName[] =
+    "Enable enhanced Files App format dialog.";
+const char kFileManagerFormatDialogDescription[] =
+    "Enable the enhanced external media format dialog in Files App, with "
+    "with support for labelling and also NTFS/exFAT filesystems.";
+
 const char kFileManagerPiexWasmName[] = "Enable FilesApp piex-wasm module";
 const char kFileManagerPiexWasmDescription[] =
     "Enable the FilesApp piex-wasm raw image extractor module.";
