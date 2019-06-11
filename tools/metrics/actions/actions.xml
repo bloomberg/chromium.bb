@@ -2270,6 +2270,17 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AppList_WindowFocused">
+  <owner>newcomer@chromium.org</owner>
+  <description>
+    Emitted when the AppList has gained focus. The AppList gains focus every
+    time it is shown to the user, so this is equivalent to being emitted when
+    the AppList is shown to the user. This can be used in combination with
+    launch/activation metrics to calculate the click through rate in the
+    AppList.
+  </description>
+</action>
+
 <action name="AppList_ZeroStateOpenInstalledApp">
   <owner>jennyz@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>

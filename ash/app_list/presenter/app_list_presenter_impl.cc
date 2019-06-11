@@ -379,15 +379,19 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
                                            aura::Window* lost_focus) {
   if (view_ && is_target_visibility_show_) {
     aura::Window* applist_window = view_->GetWidget()->GetNativeView();
+    const bool applist_gained_focus = applist_window->Contains(gained_focus);
     if (delegate_->IsTabletMode()) {
       if (applist_window->Contains(lost_focus)) {
         home_launcher_shown_ = false;
         HandleCloseOpenSearchBox();
-      } else if (applist_window->Contains(gained_focus)) {
+      } else if (applist_gained_focus) {
         home_launcher_shown_ = true;
         view_->OnHomeLauncherGainingFocusWithoutAnimation();
       }
     }
+
+    if (applist_gained_focus)
+      base::RecordAction(base::UserMetricsAction("AppList_WindowFocused"));
 
     aura::Window* applist_container = applist_window->parent();
     if (applist_container->Contains(lost_focus) &&
