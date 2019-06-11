@@ -10,6 +10,8 @@
     readonly attribute GPUAdapter adapter;
 
     GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
+    [CallWith=ScriptState, RaisesException] GPUMappedBuffer createBufferMapped(GPUBufferDescriptor descriptor);
+    [CallWith=ScriptState, RaisesException] Promise<GPUMappedBuffer> createBufferMappedAsync(GPUBufferDescriptor descriptor);
     GPUTexture createTexture(GPUTextureDescriptor descriptor);
     GPUSampler createSampler(GPUSamplerDescriptor descriptor);
 
@@ -26,4 +28,5 @@
     GPUQueue getQueue();
 };
 
+typedef sequence<any> GPUMappedBuffer;  // [GPUBuffer, ArrayBuffer]
 typedef (GPUOutOfMemoryError or GPUValidationError) GPUError;
