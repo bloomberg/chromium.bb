@@ -1020,6 +1020,8 @@ typedef struct AV1_COMP {
 
   // whether any no-zero delta_q was actually used
   int deltaq_used;
+
+  double *ssim_rdmult_scaling_factors;
 } AV1_COMP;
 
 typedef struct {

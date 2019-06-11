@@ -537,6 +537,9 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->active_map.map);
   cpi->active_map.map = NULL;
 
+  aom_free(cpi->ssim_rdmult_scaling_factors);
+  cpi->ssim_rdmult_scaling_factors = NULL;
+
   aom_free(cpi->td.mb.above_pred_buf);
   cpi->td.mb.above_pred_buf = NULL;
 
@@ -2764,6 +2767,17 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   av1_set_speed_features_framesize_independent(cpi, oxcf->speed);
   av1_set_speed_features_framesize_dependent(cpi, oxcf->speed);
 
+  {
+    const int bsize = BLOCK_16X16;
+    const int w = mi_size_wide[bsize];
+    const int h = mi_size_high[bsize];
+    const int num_cols = (cm->mi_cols + w - 1) / w;
+    const int num_rows = (cm->mi_rows + h - 1) / h;
+    CHECK_MEM_ERROR(cm, cpi->ssim_rdmult_scaling_factors,
+                    aom_calloc(num_rows * num_cols,
+                               sizeof(*cpi->ssim_rdmult_scaling_factors)));
+  }
+
   for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
     int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
     int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
@@ -4957,6 +4971,85 @@ static void refresh_reference_frames(AV1_COMP *cpi) {
   }
 }
 
+// Implementation and modifications of C. Yeo, H. L. Tan, and Y. H. Tan, "On
+// rate distortion optimization using SSIM," Circuits and Systems for Video
+// Technology, IEEE Transactions on, vol. 23, no. 7, pp. 1170-1181, 2013.
+// SSIM_VAR_SCALE defines the strength of the bias towards SSIM in RDO.
+#define SSIM_VAR_SCALE 16.0
+static void set_mb_ssim_rdmult_scaling(AV1_COMP *cpi) {
+  AV1_COMMON *cm = &cpi->common;
+  ThreadData *td = &cpi->td;
+  MACROBLOCK *x = &td->mb;
+  MACROBLOCKD *xd = &x->e_mbd;
+  uint8_t *y_buffer = cpi->source->y_buffer;
+  const int y_stride = cpi->source->y_stride;
+  const int block_size = BLOCK_16X16;
+
+  const int num_mi_w = mi_size_wide[block_size];
+  const int num_mi_h = mi_size_high[block_size];
+  const int num_cols = (cm->mi_cols + num_mi_w - 1) / num_mi_w;
+  const int num_rows = (cm->mi_rows + num_mi_h - 1) / num_mi_h;
+  double log_sum = 0.0;
+  int row, col;
+  const int use_hbd = cpi->source->flags & YV12_FLAG_HIGHBITDEPTH;
+
+  double c2;
+  if (xd->bd == 10) {
+    c2 = 941.8761;  // (.03*1023)^2
+  } else if (xd->bd == 12) {
+    c2 = 15092.1225;  // (.03*4095)^2
+  } else {
+    c2 = 58.5225;  // (.03*255)^2
+  }
+
+  // Loop through each 16x16 block.
+  for (row = 0; row < num_rows; ++row) {
+    for (col = 0; col < num_cols; ++col) {
+      int mi_row, mi_col;
+      double var = 0.0, num_of_var = 0.0;
+      const int index = row * num_cols + col;
+
+      // Loop through each 8x8 block.
+      for (mi_row = row * num_mi_h;
+           mi_row < cm->mi_rows && mi_row < (row + 1) * num_mi_h; mi_row += 2) {
+        for (mi_col = col * num_mi_w;
+             mi_col < cm->mi_cols && mi_col < (col + 1) * num_mi_w;
+             mi_col += 2) {
+          struct buf_2d buf;
+          const int row_offset_y = mi_row << 2;
+          const int col_offset_y = mi_col << 2;
+
+          buf.buf = y_buffer + row_offset_y * y_stride + col_offset_y;
+          buf.stride = y_stride;
+
+          if (use_hbd) {
+            var += av1_high_get_sby_perpixel_variance(cpi, &buf, BLOCK_8X8,
+                                                      xd->bd);
+          } else {
+            var += av1_get_sby_perpixel_variance(cpi, &buf, BLOCK_8X8);
+          }
+
+          num_of_var += 1.0;
+        }
+      }
+      var = var / num_of_var / SSIM_VAR_SCALE;
+      var = 2.0 * var + c2;
+      cpi->ssim_rdmult_scaling_factors[index] = var;
+      log_sum += log(var);
+    }
+  }
+  log_sum = exp(log_sum / (double)(num_rows * num_cols));
+
+  for (row = 0; row < num_rows; ++row) {
+    for (col = 0; col < num_cols; ++col) {
+      const int index = row * num_cols + col;
+      cpi->ssim_rdmult_scaling_factors[index] /= log_sum;
+    }
+  }
+
+  (void)xd;
+}
+
 static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
                                      uint8_t *dest) {
   AV1_COMMON *const cm = &cpi->common;
@@ -5085,6 +5178,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       return AOM_CODEC_OK;
     }
   }
+
+  if (oxcf->tuning == AOM_TUNE_SSIM) set_mb_ssim_rdmult_scaling(cpi);
 
   aom_clear_system_state();
 
