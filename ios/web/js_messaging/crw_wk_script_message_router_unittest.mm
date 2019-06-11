@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/ui/crw_wk_script_message_router.h"
+#import "ios/web/js_messaging/crw_wk_script_message_router.h"
 
 #include "base/mac/scoped_block.h"
 #include "base/memory/ptr_util.h"

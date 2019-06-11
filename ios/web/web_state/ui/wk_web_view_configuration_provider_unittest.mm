@@ -7,12 +7,12 @@
 #import <WebKit/WebKit.h>
 
 #include "base/memory/ptr_util.h"
+#import "ios/web/js_messaging/crw_wk_script_message_router.h"
 #import "ios/web/js_messaging/page_script_util.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/test/fakes/fake_wk_configuration_provider_observer.h"
-#import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"

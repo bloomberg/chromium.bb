@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_UI_CRW_WK_SCRIPT_MESSAGE_ROUTER_H_
-#define IOS_WEB_WEB_STATE_UI_CRW_WK_SCRIPT_MESSAGE_ROUTER_H_
+#ifndef IOS_WEB_JS_MESSAGING_CRW_WK_SCRIPT_MESSAGE_ROUTER_H_
+#define IOS_WEB_JS_MESSAGING_CRW_WK_SCRIPT_MESSAGE_ROUTER_H_
 
 #import <WebKit/WebKit.h>
 
@@ -41,4 +41,4 @@
 
 @end
 
-#endif  // IOS_WEB_WEB_STATE_UI_CRW_WK_SCRIPT_MESSAGE_ROUTER_H_
+#endif  // IOS_WEB_JS_MESSAGING_CRW_WK_SCRIPT_MESSAGE_ROUTER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/ui/crw_wk_script_message_router.h"
+#import "ios/web/js_messaging/crw_wk_script_message_router.h"
 
 #include "base/logging.h"
 #include "ios/web/navigation/wk_navigation_util.h"
@@ -12,7 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface CRWWKScriptMessageRouter ()<WKScriptMessageHandler>
+@interface CRWWKScriptMessageRouter () <WKScriptMessageHandler>
 
 // Removes a specific message handler. Does nothing if handler does not exist.
 - (void)tryRemoveScriptMessageHandlerForName:(NSString*)messageName

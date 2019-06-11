@@ -8,7 +8,6 @@ source_set("ui") {
   deps = [
     ":crw_context_menu_controller",
     ":crw_web_view_navigation_proxy",
-    ":crw_wk_script_message_router",
     ":favicon_util",
     "//base",
     "//ios/net",
@@ -69,24 +68,6 @@ source_set("ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("crw_wk_script_message_router") {
-  deps = [
-    "//base",
-    "//ios/web/navigation:core",
-    "//ios/web/navigation:wk_navigation_util",
-    "//net",
-  ]
-
-  sources = [
-    "crw_wk_script_message_router.h",
-    "crw_wk_script_message_router.mm",
-  ]
-
-  libs = [ "WebKit.framework" ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
 source_set("crw_web_view_navigation_proxy") {
   sources = [
     "crw_web_view_navigation_proxy.h",
@@ -100,10 +81,10 @@ source_set("crw_web_view_navigation_proxy") {
 source_set("crw_context_menu_controller") {
   deps = [
     "//base",
+    "//ios/web/js_messaging",
     "//ios/web/public",
     "//ios/web/public/deprecated",
     "//ios/web/web_state:context_menu",
-    "//ios/web/web_state/ui:crw_wk_script_message_router",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
   ]
 
@@ -119,7 +100,6 @@ source_set("crw_context_menu_controller") {
 
 source_set("wk_web_view_configuration_provider") {
   deps = [
-    ":crw_wk_script_message_router",
     "//base",
     "//ios/web/common",
     "//ios/web/js_messaging",
