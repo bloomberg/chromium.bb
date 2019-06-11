@@ -854,16 +854,7 @@ bool AccountReconcilor::MarkAccountAsAddedToCookie(
 }
 
 bool AccountReconcilor::IsIdentityManagerReady() {
-#if defined(OS_CHROMEOS)
-  // TODO(droger): ChromeOS should use the same logic as other platforms. See
-  // https://crbug.com/749535
-  // On ChromeOS, there are cases where the IdentityManager is never fully
-  // initialized and AreAllCredentialsLoaded() always return false.
-  return identity_manager_->AreRefreshTokensLoaded() ||
-         (identity_manager_->GetAccountsWithRefreshTokens().size() > 0);
-#else
   return identity_manager_->AreRefreshTokensLoaded();
-#endif
 }
 
 void AccountReconcilor::OnSetAccountsInCookieCompleted(

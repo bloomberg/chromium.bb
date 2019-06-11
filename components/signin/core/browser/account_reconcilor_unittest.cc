@@ -1957,13 +1957,10 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, TokensNotLoaded) {
   AccountReconcilor* reconcilor = GetMockReconcilor();
   reconcilor->StartReconcile();
 
-#if !defined(OS_CHROMEOS)
-  // No reconcile when tokens are not loaded, except on ChromeOS where reconcile
-  // can start as long as the token service is not empty.
+  // No reconcile when tokens are not loaded.
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
   // When tokens are loaded, reconcile starts automatically.
   identity_test_env()->ReloadAccountsFromDisk();
-#endif
 
   if (!IsMultiloginEnabled()) {
     EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
