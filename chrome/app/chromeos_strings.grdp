@@ -4009,6 +4009,9 @@
   </message>
 
   <!-- Strings for per-account Migration welcome screen -->
+  <message name="IDS_ACCOUNT_MIGRATION_WELCOME_PAGE_TITLE" desc="Title for the Account Migration Welcome page.">
+    Sign in again
+  </message>
   <message name="IDS_ACCOUNT_MIGRATION_WELCOME_TITLE" desc="Title for the Account Migration Welcome screen.">
     Sign in again to update <ph name="USER_EMAIL">$1<ex>john.doe@example.com</ex></ph>
   </message>

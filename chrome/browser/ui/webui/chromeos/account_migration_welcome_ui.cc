@@ -78,6 +78,8 @@ AccountMigrationWelcomeUI::AccountMigrationWelcomeUI(content::WebUI* web_ui)
   html_source->SetJsonPath("strings.js");
 
   // Add localized strings.
+  html_source->AddLocalizedString("welcomePageTitle",
+                                  IDS_ACCOUNT_MIGRATION_WELCOME_PAGE_TITLE);
   html_source->AddLocalizedString("welcomeTitle",
                                   IDS_ACCOUNT_MIGRATION_WELCOME_TITLE);
   html_source->AddLocalizedString("welcomeMessage",

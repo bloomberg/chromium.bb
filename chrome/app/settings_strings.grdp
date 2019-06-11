@@ -3696,11 +3696,20 @@
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_UNMIGRATED_ACCOUNT_PLACEHOLDER" desc="Placeholder text for the unmigrated account in Account Manager.">
       Not updated yet
     </message>
+    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_MORE_ACTIONS_TOOLTIP" desc="Tooltip text (shows on hover or for screenreaders) for a button that shows a menu with more actions when clicked or tapped.">
+      More actions, <ph name="EMAIL">$1<ex>abcd@google.com</ex></ph>
+    </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_MIGRATION_LABEL" desc="Label of the migration button on Account Manager Settings page.">
       Update account
     </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_REAUTHENTICATION_LABEL" desc="Label of the re-authentication button on Account Manager Settings page.">
       Sign in
+    </message>
+    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_MIGRATION_TOOLTIP" desc="Tooltip text (shows on hover or for screenreaders) for the migration button on Account Manager Settings page.">
+      Update account, <ph name="EMAIL">$1<ex>abcd@google.com</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_REAUTHENTICATION_TOOLTIP" desc="Tooltip text (shows on hover or for screenreaders) for the re-authentication button on Account Manager Settings page.">
+      Sign in, <ph name="EMAIL">$1<ex>abcd@google.com</ex></ph>
     </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_ACCOUNT_LABEL" desc="Label of the Remove account button in Account Manager.">
       Remove this account

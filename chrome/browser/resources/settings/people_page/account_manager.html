@@ -139,10 +139,10 @@
 
           <template is="dom-if"
               if="[[shouldShowReauthenticationButton_(item)]]">
-            <cr-button class="reauth-button"
-                on-click="onReauthenticationTap_">
+            <paper-button title="[[getAccountManagerSignedOutTitle_(item)]]"
+                class="reauth-button" on-click="onReauthenticationTap_">
               [[getAccountManagerSignedOutLabel_(item.unmigrated)]]
-            </cr-button>
+            </paper-button>
           </template>
 
           <!-- If this is the Device Account, display the management status -->
@@ -153,8 +153,10 @@
           </template>
           <!-- Else, display a hamburger menu for removing the account -->
           <template is="dom-if" if="[[!item.isDeviceAccount]]">
-            <cr-icon-button class="icon-more-vert" title="$i18n{moreActions}"
-                on-click="onAccountActionsMenuButtonTap_"></cr-icon-button>
+            <cr-icon-button class="icon-more-vert"
+                title="[[getMoreActionsTitle_(item)]]"
+                on-click="onAccountActionsMenuButtonTap_">
+            </cr-icon-button>
           </template>
         </div>
       </template>

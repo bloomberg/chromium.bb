@@ -1,7 +1,7 @@
 <!doctype html>
 <html dir="$i18n{textdirection}" lang="$i18n{language}">
-
 <head>
+  <title>$i18n{welcomeTitle}</title>
   <meta charset="utf-8">
   <link rel="import" href="chrome://resources/html/polymer.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -26,13 +26,14 @@
 <body>
   <div id="content">
     <if expr="_google_chrome">
-      <img id="google-logo" src="googleg.svg">
+      <img id="google-logo" src="googleg.svg" alt="">
     </if>
     <h1>$i18n{welcomeTitle}</h1>
     <p>$i18nRaw{welcomeMessage}</p>
     <if expr="_google_chrome">
-      <img id="welcome-image" srcset="account_manager_welcome_1x.png 1x,
-                account_manager_welcome_2x.png 2x">
+      <img id="welcome-image" alt=""
+          srcset="account_manager_welcome_1x.png 1x,
+                  account_manager_welcome_2x.png 2x">
     </if>
     <div class="button-container">
       <paper-button id="ok-button" class="action-button">
@@ -41,5 +42,4 @@
     </div>
   </div>
 </body>
-
 </html>
