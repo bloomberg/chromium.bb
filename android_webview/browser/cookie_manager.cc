@@ -66,35 +66,9 @@ using net::CookieList;
 
 namespace android_webview {
 
-// Holds a Java BooleanCookieCallback, knows how to invoke it and turn it
-// into a base callback.
-class BoolCookieCallbackHolder {
- public:
-  BoolCookieCallbackHolder(JNIEnv* env, jobject callback) {
-    callback_.Reset(env, callback);
-    DCHECK(callback_);
-  }
-
-  void Invoke(bool result) {
-    base::android::RunBooleanCallbackAndroid(callback_, result);
-  }
-
-  static base::RepeatingCallback<void(bool)> ConvertToCallback(
-      std::unique_ptr<BoolCookieCallbackHolder> me) {
-    return base::BindRepeating(&BoolCookieCallbackHolder::Invoke,
-                               base::Owned(me.release()));
-  }
-
- private:
-  ScopedJavaGlobalRef<jobject> callback_;
-  DISALLOW_COPY_AND_ASSIGN(BoolCookieCallbackHolder);
-};
-
 namespace {
 
-// TODO(ntfschr): see if we can turn this into OnceCallback.
-// http://crbug.com/932535.
-void MaybeRunCookieCallback(base::RepeatingCallback<void(bool)> callback,
+void MaybeRunCookieCallback(base::OnceCallback<void(bool)> callback,
                             const bool& result) {
   if (callback)
     std::move(callback).Run(result);
@@ -122,27 +96,24 @@ GURL MaybeFixUpSchemeForSecureCookie(const GURL& host,
 
 // Construct a closure which signals a waitable event if and when the closure
 // is called the waitable event must still exist.
-static base::RepeatingClosure SignalEventClosure(WaitableEvent* completion) {
-  return base::BindRepeating(&WaitableEvent::Signal,
-                             base::Unretained(completion));
+static base::OnceClosure SignalEventClosure(WaitableEvent* completion) {
+  return base::BindOnce(&WaitableEvent::Signal, base::Unretained(completion));
 }
 
-static void DiscardBool(base::RepeatingClosure f, bool b) {
-  f.Run();
+static void DiscardBool(base::OnceClosure f, bool b) {
+  std::move(f).Run();
 }
 
-static base::RepeatingCallback<void(bool)> BoolCallbackAdapter(
-    base::RepeatingClosure f) {
-  return base::BindRepeating(&DiscardBool, std::move(f));
+static base::OnceCallback<void(bool)> BoolCallbackAdapter(base::OnceClosure f) {
+  return base::BindOnce(&DiscardBool, std::move(f));
 }
 
-static void DiscardInt(base::RepeatingClosure f, int i) {
-  f.Run();
+static void DiscardInt(base::OnceClosure f, int i) {
+  std::move(f).Run();
 }
 
-static base::RepeatingCallback<void(int)> IntCallbackAdapter(
-    base::RepeatingClosure f) {
-  return base::BindRepeating(&DiscardInt, std::move(f));
+static base::OnceCallback<void(int)> IntCallbackAdapter(base::OnceClosure f) {
+  return base::BindOnce(&DiscardInt, std::move(f));
 }
 
 // Are cookies allowed for file:// URLs by default?
@@ -184,7 +155,7 @@ CookieManager::~CookieManager() {}
 //
 // Ignore a bool callback.
 void CookieManager::ExecCookieTaskSync(
-    base::OnceCallback<void(base::RepeatingCallback<void(bool)>)> task) {
+    base::OnceCallback<void(base::OnceCallback<void(bool)>)> task) {
   WaitableEvent completion(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   ExecCookieTask(base::BindOnce(
@@ -198,7 +169,7 @@ void CookieManager::ExecCookieTaskSync(
 
 // Ignore an int callback.
 void CookieManager::ExecCookieTaskSync(
-    base::OnceCallback<void(base::RepeatingCallback<void(int)>)> task) {
+    base::OnceCallback<void(base::OnceCallback<void(int)>)> task) {
   WaitableEvent completion(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   ExecCookieTask(base::BindOnce(
@@ -342,15 +313,12 @@ bool CookieManager::GetShouldAcceptCookies() {
   return AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();
 }
 
-void CookieManager::SetCookie(
-    const GURL& host,
-    const std::string& cookie_value,
-    std::unique_ptr<BoolCookieCallbackHolder> callback_holder) {
-  base::RepeatingCallback<void(bool)> callback =
-      BoolCookieCallbackHolder::ConvertToCallback(std::move(callback_holder));
+void CookieManager::SetCookie(const GURL& host,
+                              const std::string& cookie_value,
+                              base::OnceCallback<void(bool)> callback) {
   ExecCookieTask(base::BindOnce(&CookieManager::SetCookieHelper,
                                 base::Unretained(this), host, cookie_value,
-                                callback));
+                                std::move(callback)));
 }
 
 void CookieManager::SetCookieSync(const GURL& host,
@@ -360,10 +328,9 @@ void CookieManager::SetCookieSync(const GURL& host,
                                     cookie_value));
 }
 
-void CookieManager::SetCookieHelper(
-    const GURL& host,
-    const std::string& value,
-    const base::RepeatingCallback<void(bool)> callback) {
+void CookieManager::SetCookieHelper(const GURL& host,
+                                    const std::string& value,
+                                    base::OnceCallback<void(bool)> callback) {
   net::CookieOptions options;
   options.set_include_httponly();
 
@@ -388,11 +355,13 @@ void CookieManager::SetCookieHelper(
     // will make a copy before our smart pointer goes out of scope.
     GetMojoCookieManager()->SetCanonicalCookie(
         *cc.get(), new_host.scheme(), options,
-        net::cookie_util::AdaptCookieInclusionStatusToBool(callback));
+        net::cookie_util::AdaptCookieInclusionStatusToBool(
+            std::move(callback)));
   } else {
     GetCookieStore()->SetCanonicalCookieAsync(
         std::move(cc), new_host.scheme(), options,
-        net::cookie_util::AdaptCookieInclusionStatusToBool(callback));
+        net::cookie_util::AdaptCookieInclusionStatusToBool(
+            std::move(callback)));
   }
 }
 
@@ -435,11 +404,9 @@ void CookieManager::GetCookieListCompleted(
 }
 
 void CookieManager::RemoveSessionCookies(
-    std::unique_ptr<BoolCookieCallbackHolder> callback_holder) {
-  base::RepeatingCallback<void(bool)> callback =
-      BoolCookieCallbackHolder::ConvertToCallback(std::move(callback_holder));
+    base::OnceCallback<void(bool)> callback) {
   ExecCookieTask(base::BindOnce(&CookieManager::RemoveSessionCookiesHelper,
-                                base::Unretained(this), callback));
+                                base::Unretained(this), std::move(callback)));
 }
 
 void CookieManager::RemoveSessionCookiesSync() {
@@ -448,7 +415,7 @@ void CookieManager::RemoveSessionCookiesSync() {
 }
 
 void CookieManager::RemoveSessionCookiesHelper(
-    base::RepeatingCallback<void(bool)> callback) {
+    base::OnceCallback<void(bool)> callback) {
   if (GetMojoCookieManager()) {
     auto match_session_cookies = network::mojom::CookieDeletionFilter::New();
     match_session_cookies->session_control =
@@ -456,26 +423,23 @@ void CookieManager::RemoveSessionCookiesHelper(
     GetMojoCookieManager()->DeleteCookies(
         std::move(match_session_cookies),
         base::BindOnce(&CookieManager::RemoveCookiesCompleted,
-                       base::Unretained(this), callback));
+                       base::Unretained(this), std::move(callback)));
   } else {
     GetCookieStore()->DeleteSessionCookiesAsync(
         base::BindOnce(&CookieManager::RemoveCookiesCompleted,
-                       base::Unretained(this), callback));
+                       base::Unretained(this), std::move(callback)));
   }
 }
 
 void CookieManager::RemoveCookiesCompleted(
-    base::RepeatingCallback<void(bool)> callback,
+    base::OnceCallback<void(bool)> callback,
     uint32_t num_deleted) {
-  callback.Run(num_deleted > 0u);
+  std::move(callback).Run(num_deleted > 0u);
 }
 
-void CookieManager::RemoveAllCookies(
-    std::unique_ptr<BoolCookieCallbackHolder> callback_holder) {
-  base::RepeatingCallback<void(bool)> callback =
-      BoolCookieCallbackHolder::ConvertToCallback(std::move(callback_holder));
+void CookieManager::RemoveAllCookies(base::OnceCallback<void(bool)> callback) {
   ExecCookieTask(base::BindOnce(&CookieManager::RemoveAllCookiesHelper,
-                                base::Unretained(this), callback));
+                                base::Unretained(this), std::move(callback)));
 }
 
 void CookieManager::RemoveAllCookiesSync() {
@@ -484,18 +448,18 @@ void CookieManager::RemoveAllCookiesSync() {
 }
 
 void CookieManager::RemoveAllCookiesHelper(
-    const base::RepeatingCallback<void(bool)> callback) {
+    base::OnceCallback<void(bool)> callback) {
   if (GetMojoCookieManager()) {
     // An empty filter matches all cookies.
     auto match_all_cookies = network::mojom::CookieDeletionFilter::New();
     GetMojoCookieManager()->DeleteCookies(
         std::move(match_all_cookies),
         base::BindOnce(&CookieManager::RemoveCookiesCompleted,
-                       base::Unretained(this), callback));
+                       base::Unretained(this), std::move(callback)));
   } else {
     GetCookieStore()->DeleteAllAsync(
         base::BindOnce(&CookieManager::RemoveCookiesCompleted,
-                       base::Unretained(this), callback));
+                       base::Unretained(this), std::move(callback)));
   }
 }
 
@@ -618,12 +582,13 @@ static void JNI_AwCookieManager_SetCookie(
     const JavaParamRef<jstring>& url,
     const JavaParamRef<jstring>& value,
     const JavaParamRef<jobject>& java_callback) {
+  DCHECK(java_callback) << "Unexpected null Java callback";
   GURL host(ConvertJavaStringToUTF16(env, url));
   std::string cookie_value(ConvertJavaStringToUTF8(env, value));
-  std::unique_ptr<BoolCookieCallbackHolder> callback(
-      new BoolCookieCallbackHolder(env, java_callback));
-  CookieManager::GetInstance()->SetCookie(host, cookie_value,
-                                          std::move(callback));
+  CookieManager::GetInstance()->SetCookie(
+      host, cookie_value,
+      base::BindOnce(&base::android::RunBooleanCallbackAndroid,
+                     ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 static void JNI_AwCookieManager_SetCookieSync(
@@ -651,9 +616,10 @@ static void JNI_AwCookieManager_RemoveSessionCookies(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& java_callback) {
-  std::unique_ptr<BoolCookieCallbackHolder> callback(
-      new BoolCookieCallbackHolder(env, java_callback));
-  CookieManager::GetInstance()->RemoveSessionCookies(std::move(callback));
+  DCHECK(java_callback) << "Unexpected null Java callback";
+  CookieManager::GetInstance()->RemoveSessionCookies(
+      base::BindOnce(&base::android::RunBooleanCallbackAndroid,
+                     ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 static void JNI_AwCookieManager_RemoveSessionCookiesSync(
@@ -666,9 +632,10 @@ static void JNI_AwCookieManager_RemoveAllCookies(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& java_callback) {
-  std::unique_ptr<BoolCookieCallbackHolder> callback(
-      new BoolCookieCallbackHolder(env, java_callback));
-  CookieManager::GetInstance()->RemoveAllCookies(std::move(callback));
+  DCHECK(java_callback) << "Unexpected null Java callback";
+  CookieManager::GetInstance()->RemoveAllCookies(
+      base::BindOnce(&base::android::RunBooleanCallbackAndroid,
+                     ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 static void JNI_AwCookieManager_RemoveAllCookiesSync(
