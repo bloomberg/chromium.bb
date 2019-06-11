@@ -179,6 +179,10 @@ class DataReductionProxyService
 
   base::WeakPtr<DataReductionProxyService> GetWeakPtr();
 
+  base::SequencedTaskRunner* GetDBTaskRunnerForTesting() const {
+    return db_task_runner_.get();
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestLoFiSessionStateHistograms);

@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
@@ -59,7 +60,10 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     : public InProcessBrowserTest {
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({features::kLazyImageLoading}, {});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kLazyImageLoading,
+          {{"automatic-lazy-load-images-enabled", "true"}}}},
+        {});
     InProcessBrowserTest::SetUp();
   }
 
@@ -69,6 +73,16 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
                       true);
+  }
+
+  void WaitForDBToInitialize() {
+    base::RunLoop run_loop;
+    DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+        browser()->profile())
+        ->data_reduction_proxy_service()
+        ->GetDBTaskRunnerForTesting()
+        ->PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -104,6 +118,15 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     if (it != data_usage_map.end())
       return it->second->original_size() - it->second->data_used();
     return 0;
+  }
+
+  void ScrollToAndWaitForScroll(unsigned int scroll_offset) {
+    ASSERT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::StringPrintf("window.scrollTo(0, %d);", scroll_offset)));
+    content::RenderFrameSubmissionObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    observer.WaitForScrollOffset(gfx::Vector2dF(0, scroll_offset));
   }
 
  private:
@@ -146,7 +169,8 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
-                       DISABLED_LazyImagesDataSavings) {
+                       LazyImagesDataSavings) {
+  WaitForDBToInitialize();
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url(
@@ -169,9 +193,9 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
                                  data_savings_before_navigation);
 }
 
-// TODO(rajendrant): Re-enable scrolling browser tests. https://crbug.com/949319
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
-                       DISABLED_LazyImagesDataSavingsScrollRemovesSavings) {
+                       LazyImagesDataSavingsScrollRemovesSavings) {
+  WaitForDBToInitialize();
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url(
@@ -183,10 +207,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(browser(), test_url);
 
   // Scroll to remove data savings by loading the images.
-  ASSERT_TRUE(content::ExecuteScript(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.scrollTo(0, 10000);"));
-
+  ScrollToAndWaitForScroll(10000);
   base::RunLoop().RunUntilIdle();
 
   // Navigate away to force the histogram recording.
