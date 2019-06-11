@@ -548,14 +548,14 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
 static void init_gop_frames_for_tpl(AV1_COMP *cpi,
                                     YV12_BUFFER_CONFIG **gf_picture,
                                     GF_GROUP *gf_group, int *tpl_group_frames,
-                                    const EncodeFrameInput *const frame_input,
-                                    int is_for_kf) {
+                                    const EncodeFrameInput *const frame_input) {
   AV1_COMMON *cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
   int frame_idx = 0;
   int frame_disp_idx = 0;
   RefCntBuffer *frame_bufs = cm->buffer_pool->frame_bufs;
   int pframe_qindex = 0;
+  int cur_frame_idx = gf_group->index;
 
   for (int i = 0; i < FRAME_BUFFERS && frame_idx < INTER_REFS_PER_FRAME + 1;
        ++i) {
@@ -574,20 +574,25 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi,
 
   *tpl_group_frames = 0;
 
-  if (!is_for_kf) {
+  if (cur_frame_idx > 0) {
     // Initialize Golden reference frame.
     RefCntBuffer *ref_buf = get_ref_frame_buf(cm, GOLDEN_FRAME);
     gf_picture[0] = &ref_buf->buf;
     ++*tpl_group_frames;
   }
 
-  int start_idx = !is_for_kf;
+  if (cur_frame_idx > 1) {
+    // Initialize Alt reference frame.
+    RefCntBuffer *ref_buf = get_ref_frame_buf(cm, ALTREF_FRAME);
+    gf_picture[1] = &ref_buf->buf;
+    ++*tpl_group_frames;
+  }
 
   // Initialize frames in the GF group
-  for (frame_idx = start_idx;
+  for (frame_idx = cur_frame_idx;
        frame_idx <= AOMMIN(gf_group->size, MAX_LENGTH_TPL_FRAME_STATS - 1);
        ++frame_idx) {
-    if (frame_idx == start_idx) {
+    if (frame_idx == cur_frame_idx) {
       gf_picture[frame_idx] = frame_input->source;
       frame_disp_idx = gf_group->frame_disp_idx[frame_idx];
     } else {
@@ -613,7 +618,7 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi,
     ++*tpl_group_frames;
   }
 
-  if (is_for_kf) return;
+  if (cur_frame_idx == 0) return;
 
   if (frame_idx < MAX_LENGTH_TPL_FRAME_STATS) {
     ++frame_disp_idx;
@@ -689,20 +694,19 @@ static void init_tpl_stats(AV1_COMP *cpi) {
 }
 
 void av1_tpl_setup_stats(AV1_COMP *cpi,
-                         const EncodeFrameInput *const frame_input,
-                         int is_for_kf) {
+                         const EncodeFrameInput *const frame_input) {
   YV12_BUFFER_CONFIG *gf_picture[MAX_LENGTH_TPL_FRAME_STATS];
   GF_GROUP *gf_group = &cpi->gf_group;
 
   init_gop_frames_for_tpl(cpi, gf_picture, gf_group, &cpi->tpl_gf_group_frames,
-                          frame_input, is_for_kf);
+                          frame_input);
 
   init_tpl_stats(cpi);
 
   if (cpi->oxcf.enable_tpl_model == 1) {
     // Backward propagation from tpl_group_frames to 1.
-    for (int frame_idx = cpi->tpl_gf_group_frames - 1; frame_idx >= !is_for_kf;
-         --frame_idx) {
+    for (int frame_idx = cpi->tpl_gf_group_frames - 1;
+         frame_idx >= gf_group->index; --frame_idx) {
       if (gf_group->update_type[frame_idx] == OVERLAY_UPDATE ||
           gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE)
         continue;

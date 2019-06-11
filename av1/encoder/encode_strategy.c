@@ -1168,7 +1168,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
       frame_params.show_frame) {
     av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
     av1_set_frame_size(cpi, cm->width, cm->height);
-    av1_tpl_setup_stats(cpi, &frame_input, 1);
+    av1_tpl_setup_stats(cpi, &frame_input);
   }
 #endif  // ENABLE_KF_TPL
 
@@ -1180,7 +1180,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
       if (cpi->gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
         av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
         av1_set_frame_size(cpi, cm->width, cm->height);
-        av1_tpl_setup_stats(cpi, &frame_input, 0);
+        av1_tpl_setup_stats(cpi, &frame_input);
         assert(cpi->num_gf_group_show_frames == 1);
       }
     }
