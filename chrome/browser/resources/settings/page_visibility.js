@@ -125,9 +125,7 @@ cr.define('settings', function() {
       autofill: false,
       people: false,
       onStartup: false,
-      reset: {
-        powerwash: false,
-      },
+      reset: false,
       appearance: {
         setWallpaper: false,
         setTheme: false,
