@@ -1481,6 +1481,7 @@ const std::string Converter::kPropertyLookupTable[] = {
     "inset",
     "overflow-block",
     "overflow-inline",
+    "forced-color-adjust",
     "INVALID_PROPERTY",
 };
 

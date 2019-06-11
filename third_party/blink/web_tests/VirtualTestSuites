@@ -1048,5 +1048,10 @@
     "prefix": "blink-cors",
     "base": "http/tests/xmlhttprequest",
     "args": ["--disable-features=OutOfBlinkCors"]
+  },
+  {
+    "prefix": "forced-colors",
+    "base": "external/wpt/css/css-forced-color-adjust",
+    "args": ["--enable-blink-features=ForcedColors"]
   }
 ]

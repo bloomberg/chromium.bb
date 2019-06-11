@@ -676,6 +676,7 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/font_variant_numeric.h",
     "$blink_core_output_dir/css/properties/longhands/font_variation_settings.h",
     "$blink_core_output_dir/css/properties/longhands/font_weight.h",
+    "$blink_core_output_dir/css/properties/longhands/forced_color_adjust.h",
     "$blink_core_output_dir/css/properties/longhands/grid_auto_columns.h",
     "$blink_core_output_dir/css/properties/longhands/grid_auto_flow.h",
     "$blink_core_output_dir/css/properties/longhands/grid_auto_rows.h",

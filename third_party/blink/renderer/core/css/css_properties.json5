@@ -773,6 +773,17 @@
       priority: "High",
     },
     {
+      name: "forced-color-adjust",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      inherited: true,
+      runtime_flag: "ForcedColors",
+      field_template: "keyword",
+      priority: "High",
+      keywords: ["auto", "none"],
+      typedom_types: ["Keyword"],
+      default_value: "auto",
+    },
+    {
       name: "-webkit-locale",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,

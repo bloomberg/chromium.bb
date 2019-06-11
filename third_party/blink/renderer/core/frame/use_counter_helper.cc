@@ -1241,6 +1241,8 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 638;
     case CSSPropertyID::kOverflowBlock:
       return 639;
+    case CSSPropertyID::kForcedColorAdjust:
+      return 640;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId (defined in

@@ -36856,7 +36856,7 @@ from previous Chrome versions.
 </enum>
 
 <enum name="MappedCSSProperties">
-<!-- Generated from third_party/blink/renderer/core/frame/use_counter.cc.
+<!-- Generated from third_party/blink/renderer/core/frame/use_counter_helper.cc.
 Called by update_use_counter_css.py.-->
 
   <int value="1" label="Total Pages Measured"/>
@@ -37498,6 +37498,7 @@ Called by update_use_counter_css.py.-->
   <int value="637" label="color-scheme"/>
   <int value="638" label="overflow-inline"/>
   <int value="639" label="overflow-block"/>
+  <int value="640" label="forced-color-adjust"/>
 </enum>
 
 <enum name="MappedEditingCommands">

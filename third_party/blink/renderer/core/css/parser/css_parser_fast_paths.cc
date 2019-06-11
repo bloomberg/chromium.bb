@@ -623,6 +623,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
               (value_id == CSSValueID::kInlineStart ||
                value_id == CSSValueID::kInlineEnd)) ||
              value_id == CSSValueID::kNone;
+    case CSSPropertyID::kForcedColorAdjust:
+      return value_id == CSSValueID::kNone || value_id == CSSValueID::kAuto;
     case CSSPropertyID::kImageRendering:
       return value_id == CSSValueID::kAuto ||
              value_id == CSSValueID::kWebkitOptimizeContrast ||
@@ -996,6 +998,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kEmptyCells:
     case CSSPropertyID::kFillRule:
     case CSSPropertyID::kFloat:
+    case CSSPropertyID::kForcedColorAdjust:
     case CSSPropertyID::kHyphens:
     case CSSPropertyID::kImageRendering:
     case CSSPropertyID::kListStylePosition:

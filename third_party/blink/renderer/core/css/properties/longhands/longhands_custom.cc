@@ -153,6 +153,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/font_variant_numeric.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/font_variation_settings.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/font_weight.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/forced_color_adjust.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/grid_auto_columns.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/grid_auto_flow.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/grid_auto_rows.h"
@@ -3267,6 +3268,15 @@ const CSSValue* FontWeight::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontWeight(style);
+}
+
+const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(style.ForcedColorAdjust());
 }
 
 const CSSValue* GridAutoColumns::ParseSingleValue(
