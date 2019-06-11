@@ -1350,7 +1350,9 @@
         "test": "gpu_unittests"
       },
       {
-        "experiment_percentage": 100,
+        "args": [
+          "--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

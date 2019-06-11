@@ -739,9 +739,10 @@
         'experiment_percentage': 100,
       },
       'linux-chromeos-google-rel': {
-        # TODO(https://crbug.com/932269): Promote out of experiment when the
-        # tests are green.
-        'experiment_percentage': 100,
+        # TODO(crbug.com/970649): Remove this filter.
+        'args': [
+          '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
+        ],
       },
     },
   },
