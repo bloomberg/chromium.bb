@@ -35,8 +35,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "third_party/blink/renderer/platform/date_components.h"
 #include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/text/date_time_format.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"

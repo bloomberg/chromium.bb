@@ -356,7 +356,7 @@ Day.prototype.format = function() {
   return Day.formatter.format(this.startDate());
 };
 
-// See platform/date_components.h.
+// See platform/text/date_components.h.
 Day.Minimum = Day.createFromValue(-62135596800000.0);
 Day.Maximum = Day.createFromValue(8640000000000000.0);
 
@@ -391,7 +391,7 @@ function Week(year, week) {
 
 Week.ISOStringRegExp = /^(\d+)-[wW](\d+)$/;
 
-// See platform/date_components.h.
+// See platform/text/date_components.h.
 Week.Minimum = new Week(1, 1);
 Week.Maximum = new Week(275760, 37);
 
@@ -613,7 +613,7 @@ function Month(year, month) {
 
 Month.ISOStringRegExp = /^(\d+)-(\d+)$/;
 
-// See platform/date_components.h.
+// See platform/text/date_components.h.
 Month.Minimum = new Month(1, 0);
 Month.Maximum = new Month(275760, 8);
 
