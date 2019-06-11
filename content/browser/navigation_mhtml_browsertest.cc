@@ -409,4 +409,31 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeContentIdNotFound) {
   EXPECT_FALSE(iframe_navigation.is_error());
 }
 
+// Tests Content-Security-Policy: frame-ancestors enforcement in MHTML
+// subframes. It isn't enforced currently.
+// See https://crbug.com/969711.
+IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, CspFrameAncestor) {
+  MhtmlArchive mhtml_archive;
+  mhtml_archive.AddHtmlDocument(
+      GURL("http://example.com/main"),
+      "<iframe src=\"http://example.com/subframe\"></iframe>");
+  mhtml_archive.AddHtmlDocument(
+      GURL("http://example.com/subframe"),
+      "Content-Security-Policy: frame-ancestors 'none'\n", "<iframe></iframe>");
+  GURL mhtml_url = mhtml_archive.Write("index.mhtml");
+
+  EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
+
+  RenderFrameHostImpl* main_frame = main_frame_host();
+  ASSERT_EQ(1u, main_frame->child_count());
+  RenderFrameHostImpl* sub_frame =
+      main_frame->child_at(0)->current_frame_host();
+
+  // Currently, frame-ancestors is not enforced. See https://crbug.com/969711.
+  // Check that the iframe is properly loaded. EvalJs("document.body.innerHTML")
+  // can't be used, because javascript is disabled. Instead, check it was able
+  // to load an iframe.
+  ASSERT_EQ(1u, sub_frame->child_count());
+}
+
 }  // namespace content
