@@ -453,8 +453,10 @@ def WriteFunctionPointerInitialization(file, proc_addr_function, parent,
                                        functions, allow_missing=False):
   template = Template("""  ${name}Fn = reinterpret_cast<PFN_${name}>(
     $get_proc_addr($parent, "$name"));
-  if (!${name}Fn${check_swiftshader})
+  if (!${name}Fn${check_swiftshader}) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: " << "${name}";
     return false;
+  }
 
 """)
   if allow_missing:
