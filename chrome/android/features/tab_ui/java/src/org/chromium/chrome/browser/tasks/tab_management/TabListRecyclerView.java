@@ -287,4 +287,17 @@ class TabListRecyclerView extends RecyclerView {
             float left1, float top1, float left2, float top2, float threshold) {
         return Math.abs(left1 - left2) < threshold && Math.abs(top1 - top2) < threshold;
     }
+
+    /**
+     * This method gets the position of certain item in the {@link TabListRecyclerView}.
+     *
+     * @param index  The index of the item whose position is requested.
+     * @return The {@link Rect} that contains the position information.
+     */
+    Rect getTabPosition(int index) {
+        Rect rect = new Rect();
+        View holder = findViewHolderForAdapterPosition(index).itemView;
+        holder.getGlobalVisibleRect(rect);
+        return rect;
+    }
 }

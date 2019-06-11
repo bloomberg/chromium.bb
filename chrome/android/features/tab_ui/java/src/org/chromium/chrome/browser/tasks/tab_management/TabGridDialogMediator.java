@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.view.View;
 
@@ -14,7 +15,9 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -41,6 +44,21 @@ public class TabGridDialogMediator {
         void resetWithListOfTabs(@Nullable List<Tab> tabs);
     }
 
+    /**
+     * Defines an interface for a {@link TabGridDialogMediator} to get the position on the screen
+     * of the tab grid card related to TabGridDialog in order to prepare animation.
+     */
+    interface AnimationOriginProvider {
+        /**
+         * Provide position of a tab card in GridTabSwitcher as the originate position of a
+         * animation.
+         *
+         * @param index Index in GridTabSwitcher of the tab whose position is requested.
+         * @return  A {@link Rect} that contains position information of the tab card.
+         */
+        Rect getAnimationOriginRect(int index);
+    }
+
     private final Context mContext;
     private final PropertyModel mModel;
     private final TabModelSelector mTabModelSelector;
@@ -48,18 +66,21 @@ public class TabGridDialogMediator {
     private final TabCreatorManager mTabCreatorManager;
     private final TabGridDialogMediator.ResetHandler mDialogResetHandler;
     private final GridTabSwitcherMediator.ResetHandler mGridTabSwitcherResetHandler;
+    private final AnimationOriginProvider mAnimationOriginProvider;
     private int mCurrentTabId = Tab.INVALID_TAB_ID;
 
     TabGridDialogMediator(Context context, TabGridDialogMediator.ResetHandler dialogResetHandler,
             PropertyModel model, TabModelSelector tabModelSelector,
             TabCreatorManager tabCreatorManager,
-            GridTabSwitcherMediator.ResetHandler gridTabSwitcherResetHandler) {
+            GridTabSwitcherMediator.ResetHandler gridTabSwitcherResetHandler,
+            AnimationOriginProvider animationOriginProvider) {
         mContext = context;
         mModel = model;
         mTabModelSelector = tabModelSelector;
         mTabCreatorManager = tabCreatorManager;
         mDialogResetHandler = dialogResetHandler;
         mGridTabSwitcherResetHandler = gridTabSwitcherResetHandler;
+        mAnimationOriginProvider = animationOriginProvider;
 
         // Register for tab model.
         mTabModelObserver = new EmptyTabModelObserver() {
@@ -78,6 +99,8 @@ public class TabGridDialogMediator {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
                 if (type == TabSelectionType.FROM_USER)
+                    // Cancel the zooming into tab grid card animation.
+                    mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
                     mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
             }
 
@@ -106,7 +129,14 @@ public class TabGridDialogMediator {
     void onReset(Integer tabId) {
         if (tabId != null) {
             mCurrentTabId = tabId;
+            TabGroupModelFilter filter =
+                    (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                            .getCurrentTabModelFilter();
+            int index = filter.indexOf(
+                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId));
+            Rect rect = mAnimationOriginProvider.getAnimationOriginRect(index);
             updateDialog();
+            mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, rect);
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
         } else {
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
@@ -169,6 +199,8 @@ public class TabGridDialogMediator {
 
     private View.OnClickListener getAddButtonClickListener() {
         return view -> {
+            mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
+            mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
             Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
             List<Tab> relatedTabs = getRelatedTabs(currentTab.getId());
 

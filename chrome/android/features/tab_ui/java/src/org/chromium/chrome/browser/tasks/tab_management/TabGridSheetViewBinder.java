@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.ADD_CLICK_LISTENER;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.ANIMATION_SOURCE_RECT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.COLLAPSE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.CONTENT_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.HEADER_TITLE;
@@ -72,6 +73,8 @@ class TabGridSheetViewBinder {
             } else {
                 viewHolder.dialogView.hideDialog();
             }
+        } else if (ANIMATION_SOURCE_RECT == propertyKey) {
+            viewHolder.dialogView.setupDialogAnimation(model.get(ANIMATION_SOURCE_RECT));
         }
     }
 }

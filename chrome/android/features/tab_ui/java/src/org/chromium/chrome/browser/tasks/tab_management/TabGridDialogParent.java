@@ -6,19 +6,20 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
@@ -32,28 +33,39 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
  * show/hide dialog.
  */
 public class TabGridDialogParent {
-    private PopupWindow mPopupWindow;
-    private LinearLayout mDialogContainerView;
-    private ScrimView mScrimView;
-    private ScrimView.ScrimParams mScrimParams;
-    private ValueAnimator mDialogFadeIn;
-    private ValueAnimator mDialogFadeOut;
-    private Animator mCurrentAnimator;
+    private static final int DIALOG_ANIMATION_DURATION = 300;
     private final ComponentCallbacks mComponentCallbacks;
     private final FrameLayout.LayoutParams mContainerParams;
     private final ViewGroup mParent;
-    private final int mSideMargin;
-    private final int mTopMargin;
     private final int mStatusBarHeight;
+    private final int mToolbarHeight;
+    private final float mTabGridCardPadding;
+    private PopupWindow mPopupWindow;
+    private RelativeLayout mDialogContainerView;
+    private ScrimView mScrimView;
+    private ScrimView.ScrimParams mScrimParams;
+    private View mBlockView;
+    private Animator mCurrentAnimator;
+    private ObjectAnimator mBasicFadeOut;
+    private AnimatorSet mShowDialogAnimation;
+    private AnimatorSet mHideDialogAnimation;
+    private AnimatorListenerAdapter mShowDialogAnimationListener;
+    private AnimatorListenerAdapter mHideDialogAnimationListener;
+    private int mDialogWidth;
+    private int mDialogHeight;
+    private int mSideMargin;
+    private int mTopMargin;
 
     TabGridDialogParent(Context context, ViewGroup parent) {
         mParent = parent;
-        mSideMargin =
-                (int) context.getResources().getDimension(R.dimen.tab_grid_dialog_side_margin);
-        mTopMargin = (int) context.getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
+        mShowDialogAnimation = new AnimatorSet();
+        mHideDialogAnimation = new AnimatorSet();
         int statusBarHeightResourceId =
                 context.getResources().getIdentifier("status_bar_height", "dimen", "android");
         mStatusBarHeight = context.getResources().getDimensionPixelSize(statusBarHeightResourceId);
+        mTabGridCardPadding = context.getResources().getDimension(R.dimen.tab_list_card_padding);
+        mToolbarHeight =
+                (int) context.getResources().getDimension(R.dimen.bottom_sheet_peek_height);
         mContainerParams = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mComponentCallbacks = new ComponentCallbacks() {
@@ -67,54 +79,113 @@ public class TabGridDialogParent {
         };
         ContextUtils.getApplicationContext().registerComponentCallbacks(mComponentCallbacks);
         setupDialogContent(context);
-        setupDialogAnimation();
+        prepareAnimation();
     }
 
     private void setupDialogContent(Context context) {
         FrameLayout backgroundView = new FrameLayout(context);
-        mDialogContainerView = new LinearLayout(context);
+        mDialogContainerView = new RelativeLayout(context);
         mDialogContainerView.setLayoutParams(mContainerParams);
         mDialogContainerView.setBackgroundColor(ApiCompatibilityUtils.getColor(
                 context.getResources(), org.chromium.chrome.R.color.modern_primary_color));
-        mDialogContainerView.setOrientation(LinearLayout.VERTICAL);
         mScrimView = new ScrimView(context, null, backgroundView);
         mPopupWindow = new PopupWindow(backgroundView, 0, 0);
+        mBlockView = new View(context);
+        mBlockView.setLayoutParams(new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        mBlockView.setOnClickListener(null);
         backgroundView.addView(mDialogContainerView);
         updateDialogWithOrientation(context, context.getResources().getConfiguration().orientation);
     }
 
-    private void setupDialogAnimation() {
-        mDialogFadeIn = ObjectAnimator.ofFloat(mDialogContainerView, View.ALPHA, 0f, 1f);
-        mDialogFadeIn.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
-        mDialogFadeIn.setDuration(TabListRecyclerView.BASE_ANIMATION_DURATION_MS);
-        mDialogFadeIn.addListener(new AnimatorListenerAdapter() {
+    private void prepareAnimation() {
+        mBasicFadeOut = ObjectAnimator.ofFloat(mDialogContainerView, View.ALPHA, 1f, 0f);
+        mBasicFadeOut.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+        mBasicFadeOut.setDuration(DIALOG_ANIMATION_DURATION);
+        mShowDialogAnimationListener = new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mCurrentAnimator = null;
             }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                mCurrentAnimator = null;
-            }
-        });
-
-        mDialogFadeOut = ObjectAnimator.ofFloat(mDialogContainerView, View.ALPHA, 1f, 0f);
-        mDialogFadeOut.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-        mDialogFadeOut.setDuration(TabListRecyclerView.BASE_ANIMATION_DURATION_MS);
-        mDialogFadeOut.addListener(new AnimatorListenerAdapter() {
+        };
+        mHideDialogAnimationListener = new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mPopupWindow.dismiss();
                 mCurrentAnimator = null;
+                mDialogContainerView.setAlpha(1f);
+                mDialogContainerView.removeView(mBlockView);
             }
+        };
+    }
 
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                mPopupWindow.dismiss();
-                mCurrentAnimator = null;
-            }
-        });
+    void setupDialogAnimation(Rect rect) {
+        // In case where user jumps to a new page from dialog, clean existing animations in
+        // mHideDialogAnimation and play basic fade out instead of zooming back to corresponding tab
+        // grid card.
+        if (rect == null) {
+            mHideDialogAnimation = new AnimatorSet();
+            mHideDialogAnimation.play(mBasicFadeOut);
+            mHideDialogAnimation.removeAllListeners();
+            mHideDialogAnimation.addListener(mHideDialogAnimationListener);
+            return;
+        }
+
+        float sourceLeft = rect.left + mTabGridCardPadding;
+        float sourceTop = rect.top - mStatusBarHeight + mTabGridCardPadding;
+        float sourceHeight = rect.height() - 2 * mTabGridCardPadding;
+        float sourceWidth = rect.width() - 2 * mTabGridCardPadding;
+
+        float initYPosition = -(mDialogHeight / 2 + mTopMargin - sourceHeight / 2 - sourceTop);
+        float initXPosition = -(mDialogWidth / 2 + mSideMargin - sourceWidth / 2 - sourceLeft);
+        float initYScale = sourceHeight / mDialogHeight;
+        float initXScale = sourceWidth / mDialogWidth;
+        float scaleOffset = 0.02f;
+
+        final ObjectAnimator showMoveYAnimator =
+                ObjectAnimator.ofFloat(mDialogContainerView, "translationY", initYPosition, 0f);
+        showMoveYAnimator.setDuration(DIALOG_ANIMATION_DURATION);
+        final ObjectAnimator showMoveXAnimator =
+                ObjectAnimator.ofFloat(mDialogContainerView, "translationX", initXPosition, 0f);
+        showMoveXAnimator.setDuration(DIALOG_ANIMATION_DURATION);
+        final ObjectAnimator showScaleYAnimator = ObjectAnimator.ofFloat(
+                mDialogContainerView, View.SCALE_Y, initYScale - scaleOffset, 1f);
+        showScaleYAnimator.setDuration(DIALOG_ANIMATION_DURATION);
+        final ObjectAnimator showScaleXAnimator = ObjectAnimator.ofFloat(
+                mDialogContainerView, View.SCALE_X, initXScale - scaleOffset, 1f);
+        showScaleXAnimator.setDuration(DIALOG_ANIMATION_DURATION);
+        mShowDialogAnimation = new AnimatorSet();
+        mShowDialogAnimation.play(showMoveXAnimator)
+                .with(showMoveYAnimator)
+                .with(showScaleXAnimator)
+                .with(showScaleYAnimator);
+        mShowDialogAnimation.addListener(mShowDialogAnimationListener);
+
+        final ObjectAnimator hideMoveYAnimator =
+                ObjectAnimator.ofFloat(mDialogContainerView, "translationY", 0f, initYPosition);
+        hideMoveYAnimator.setDuration(DIALOG_ANIMATION_DURATION);
+        final ObjectAnimator hideMoveXAnimator =
+                ObjectAnimator.ofFloat(mDialogContainerView, "translationX", 0f, initXPosition);
+        hideMoveXAnimator.setDuration(DIALOG_ANIMATION_DURATION);
+        final ObjectAnimator hideScaleYAnimator = ObjectAnimator.ofFloat(
+                mDialogContainerView, View.SCALE_Y, 1f, initYScale - scaleOffset);
+        hideScaleYAnimator.setDuration(DIALOG_ANIMATION_DURATION);
+        final ObjectAnimator hideScaleXAnimator = ObjectAnimator.ofFloat(
+                mDialogContainerView, View.SCALE_X, 1f, initXScale - scaleOffset);
+        hideScaleXAnimator.setDuration(DIALOG_ANIMATION_DURATION);
+
+        final ObjectAnimator scaleAnimator =
+                ObjectAnimator.ofFloat(mDialogContainerView, View.ALPHA, 1f, 0f);
+        scaleAnimator.setDuration(TabListRecyclerView.BASE_ANIMATION_DURATION_MS);
+        scaleAnimator.setStartDelay(DIALOG_ANIMATION_DURATION);
+        mHideDialogAnimation = new AnimatorSet();
+        mHideDialogAnimation.play(hideMoveXAnimator)
+                .with(hideMoveYAnimator)
+                .with(hideScaleXAnimator)
+                .with(hideScaleYAnimator)
+                .with(scaleAnimator);
+        mHideDialogAnimation.removeAllListeners();
+        mHideDialogAnimation.addListener(mHideDialogAnimationListener);
     }
 
     private void updateDialogWithOrientation(Context context, int orientation) {
@@ -122,19 +193,30 @@ public class TabGridDialogParent {
         ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
                 .getDefaultDisplay()
                 .getMetrics(displayMetrics);
-        mPopupWindow.setHeight(displayMetrics.heightPixels);
-        mPopupWindow.setWidth(displayMetrics.widthPixels);
+        int screenHeight = displayMetrics.heightPixels;
+        int screenWidth = displayMetrics.widthPixels;
+        mPopupWindow.setHeight(screenHeight);
+        mPopupWindow.setWidth(screenWidth);
         if (mPopupWindow != null && mPopupWindow.isShowing()) {
             mPopupWindow.dismiss();
             mPopupWindow.showAtLocation(mParent, Gravity.CENTER, 0, 0);
         }
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            mContainerParams.setMargins(
-                    mSideMargin, mTopMargin, mSideMargin, mTopMargin + mStatusBarHeight);
+            mSideMargin =
+                    (int) context.getResources().getDimension(R.dimen.tab_grid_dialog_side_margin);
+            mTopMargin =
+                    (int) context.getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
+
         } else {
-            mContainerParams.setMargins(
-                    mTopMargin, mSideMargin, mTopMargin, mSideMargin + mStatusBarHeight);
+            mSideMargin =
+                    (int) context.getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
+            mTopMargin =
+                    (int) context.getResources().getDimension(R.dimen.tab_grid_dialog_side_margin);
         }
+        mContainerParams.setMargins(
+                mSideMargin, mTopMargin, mSideMargin, mTopMargin + mStatusBarHeight);
+        mDialogHeight = screenHeight - 2 * mTopMargin - mStatusBarHeight;
+        mDialogWidth = screenWidth - 2 * mSideMargin;
     }
 
     /**
@@ -157,6 +239,9 @@ public class TabGridDialogParent {
         mDialogContainerView.removeAllViews();
         mDialogContainerView.addView(toolbarView);
         mDialogContainerView.addView(recyclerView);
+        RelativeLayout.LayoutParams params =
+                (RelativeLayout.LayoutParams) recyclerView.getLayoutParams();
+        params.setMargins(0, mToolbarHeight, 0, 0);
         recyclerView.setVisibility(View.VISIBLE);
     }
 
@@ -164,25 +249,31 @@ public class TabGridDialogParent {
      * Show {@link PopupWindow} for dialog with animation.
      */
     void showDialog() {
-        if (mCurrentAnimator != null && mCurrentAnimator != mDialogFadeIn) {
-            mCurrentAnimator.cancel();
+        if (mCurrentAnimator != null && mCurrentAnimator != mShowDialogAnimation) {
+            mCurrentAnimator.end();
         }
-        mPopupWindow.showAtLocation(mParent, Gravity.CENTER, 0, 0);
+        mCurrentAnimator = mShowDialogAnimation;
         mScrimView.showScrim(mScrimParams);
-        mDialogFadeIn.start();
-        mCurrentAnimator = mDialogFadeIn;
+        mPopupWindow.showAtLocation(mParent, Gravity.CENTER, 0, 0);
+        mShowDialogAnimation.start();
     }
 
     /**
      * Hide {@link PopupWindow} for dialog with animation.
      */
     void hideDialog() {
-        if (mCurrentAnimator != null && mCurrentAnimator != mDialogFadeOut) {
-            mCurrentAnimator.cancel();
+        if (mCurrentAnimator != null && mCurrentAnimator != mHideDialogAnimation) {
+            mCurrentAnimator.end();
         }
+        mCurrentAnimator = mHideDialogAnimation;
         mScrimView.hideScrim(true);
-        mDialogFadeOut.start();
-        mCurrentAnimator = mDialogFadeOut;
+        // Use mBlockView to disable all click behaviors on dialog when the hide animation is
+        // playing.
+        if (mBlockView.getParent() == null) {
+            mDialogContainerView.addView(mBlockView);
+        }
+        mDialogContainerView.bringChildToFront(mBlockView);
+        mHideDialogAnimation.start();
     }
 
     /**
