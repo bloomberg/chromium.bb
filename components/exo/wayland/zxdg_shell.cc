@@ -548,7 +548,6 @@ void xdg_surface_v6_get_popup(wl_client* client,
       parent->GetWidget()->widget_delegate()->GetContentsView(), &origin);
   shell_surface->SetOrigin(origin);
   shell_surface->SetSize(position.size);
-  shell_surface->SetContainer(ash::kShellWindowId_MenuContainer);
   shell_surface->DisableMovement();
   shell_surface->SetActivatable(false);
   shell_surface->SetCanMinimize(false);
