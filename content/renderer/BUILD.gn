@@ -600,6 +600,7 @@ target(link_target_type, "renderer") {
     "//third_party/webrtc/api/video:video_bitrate_allocation",
     "//third_party/webrtc/api/video:video_frame",
     "//third_party/webrtc/api/video:video_frame_i420",
+    "//third_party/webrtc/api/video:video_rtp_headers",
     "//third_party/webrtc/api/video_codecs:rtc_software_fallback_wrappers",
     "//third_party/webrtc/api/video_codecs:video_codecs_api",
     "//third_party/webrtc/common_video:common_video",
