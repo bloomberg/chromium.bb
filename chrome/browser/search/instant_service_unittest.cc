@@ -141,6 +141,30 @@ TEST_F(InstantServiceTest, DoesToggleMostVisitedOrCustomLinks) {
   EXPECT_FALSE(instant_service_->most_visited_info_->use_most_visited);
 }
 
+TEST_F(InstantServiceTest, DoesToggleShortcutsVisibility) {
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      profile()->GetTestingPrefService();
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  ASSERT_TRUE(pref_service->GetBoolean(prefs::kNtpShortcutsVisible));
+  ASSERT_TRUE(instant_service_->most_visited_info_->is_visible);
+
+  // Hide shortcuts.
+  EXPECT_TRUE(instant_service_->ToggleShortcutsVisibility());
+  EXPECT_FALSE(pref_service->GetBoolean(prefs::kNtpShortcutsVisible));
+  EXPECT_FALSE(instant_service_->most_visited_info_->is_visible);
+
+  // Show shortcuts.
+  EXPECT_TRUE(instant_service_->ToggleShortcutsVisibility());
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kNtpShortcutsVisible));
+  EXPECT_TRUE(instant_service_->most_visited_info_->is_visible);
+
+  // Should do nothing if this is a non-Google NTP.
+  SetUserSelectedDefaultSearchProvider("https://www.search.com");
+  EXPECT_FALSE(instant_service_->ToggleShortcutsVisibility());
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kNtpShortcutsVisible));
+  EXPECT_TRUE(instant_service_->most_visited_info_->is_visible);
+}
+
 TEST_F(InstantServiceTest,
        DisableUndoCustomLinkActionForNonGoogleSearchProvider) {
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");

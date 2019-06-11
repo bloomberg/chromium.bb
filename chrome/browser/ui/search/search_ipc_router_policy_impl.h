@@ -31,13 +31,14 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessDeleteMostVisitedItem() override;
   bool ShouldProcessUndoMostVisitedDeletion() override;
   bool ShouldProcessUndoAllMostVisitedDeletions() override;
-  bool ShouldProcessToggleMostVisitedOrCustomLinks() override;
   bool ShouldProcessAddCustomLink() override;
   bool ShouldProcessUpdateCustomLink() override;
   bool ShouldProcessReorderCustomLink() override;
   bool ShouldProcessDeleteCustomLink() override;
   bool ShouldProcessUndoCustomLinkAction() override;
   bool ShouldProcessResetCustomLinks() override;
+  bool ShouldProcessToggleMostVisitedOrCustomLinks() override;
+  bool ShouldProcessToggleShortcutsVisibility() override;
   bool ShouldProcessLogEvent() override;
   bool ShouldProcessLogSuggestionEventWithValue() override;
   bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) override;

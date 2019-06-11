@@ -37,10 +37,6 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessUndoAllMostVisitedDeletions() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
-bool SearchIPCRouterPolicyImpl::ShouldProcessToggleMostVisitedOrCustomLinks() {
-  return !is_incognito_ && search::IsInstantNTP(web_contents_);
-}
-
 bool SearchIPCRouterPolicyImpl::ShouldProcessAddCustomLink() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
@@ -62,6 +58,14 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessUndoCustomLinkAction() {
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessResetCustomLinks() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessToggleMostVisitedOrCustomLinks() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessToggleShortcutsVisibility() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
