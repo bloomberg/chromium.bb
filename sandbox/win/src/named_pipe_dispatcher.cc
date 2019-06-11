@@ -77,7 +77,7 @@ bool NamedPipeDispatcher::CreateNamedPipe(IPCInfo* ipc,
   // http://msdn.microsoft.com/en-us/library/aa365247(VS.85).aspx
   // This ensures even if there is a path traversal in the pipe name, and it is
   // able to get past the checks above, it will still not be allowed to escape
-  // our whitelisted namespace.
+  // our allowed namespace.
   if (name->compare(0, 4, L"\\\\.\\") == 0)
     name->replace(0, 4, L"\\\\\?\\");
 

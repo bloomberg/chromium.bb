@@ -355,7 +355,7 @@ ResultCode PolicyBase::AddRule(SubSystem subsystem,
 }
 
 ResultCode PolicyBase::AddDllToUnload(const wchar_t* dll_name) {
-  blacklisted_dlls_.push_back(dll_name);
+  blocklisted_dlls_.push_back(dll_name);
   return SBOX_ALL_OK;
 }
 
@@ -659,7 +659,7 @@ ResultCode PolicyBase::SetupAllInterceptions(TargetProcess* target) {
     }
   }
 
-  for (const base::string16& dll : blacklisted_dlls_)
+  for (const base::string16& dll : blocklisted_dlls_)
     manager.AddToUnloadModules(dll.c_str());
 
   if (!SetupBasicInterceptions(&manager, is_csrss_connected_))

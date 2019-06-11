@@ -156,7 +156,7 @@ class PolicyBase final : public TargetPolicy {
   // Memory structure that stores the low level policy.
   PolicyGlobal* policy_;
   // The list of dlls to unload in the target process.
-  std::vector<base::string16> blacklisted_dlls_;
+  std::vector<base::string16> blocklisted_dlls_;
   // This is a map of handle-types to names that we need to close in the
   // target process. A null set means we need to close all handles of the
   // given type.
