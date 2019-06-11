@@ -195,6 +195,10 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
     tick_clock_ = tick_clock;
   }
 
+  void simulate_start_arc_timer_failure(bool simulate) {
+    simulate_start_arc_timer_failure_ = simulate;
+  }
+
  private:
   // Notifies |observers_| that |props_| has been updated.
   void NotifyObservers();
@@ -290,6 +294,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
 
   // Clock to use to calculate time ticks. Used for ArcTimer related APIs.
   const base::TickClock* tick_clock_;
+
+  // If set then |StartArcTimer| returns failure.
+  bool simulate_start_arc_timer_failure_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

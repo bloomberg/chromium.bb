@@ -321,6 +321,12 @@ void FakePowerManagerClient::StartArcTimer(
     TimerId timer_id,
     base::TimeTicks absolute_expiration_time,
     VoidDBusMethodCallback callback) {
+  if (simulate_start_arc_timer_failure_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
   auto it = timer_expiration_fds_.find(timer_id);
   if (it == timer_expiration_fds_.end()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
