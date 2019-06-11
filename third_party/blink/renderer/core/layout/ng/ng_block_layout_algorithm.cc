@@ -1022,8 +1022,14 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     auto_margins.inline_end = opportunity.rect.InlineSize() -
                               fragment.InlineSize() - auto_margins.inline_start;
   } else {
+    LayoutUnit inline_size = fragment.InlineSize();
+    // Negative margins are not used to determine opportunity, but need to take
+    // them into account for positioning.
+    LayoutUnit inline_margin = child_data.margins.InlineSum();
+    if (inline_margin < 0)
+      inline_size += inline_margin;
     ResolveInlineMargins(child_style, Style(), opportunity.rect.InlineSize(),
-                         fragment.InlineSize(), &auto_margins);
+                         inline_size, &auto_margins);
   }
 
   LayoutUnit child_bfc_line_offset = opportunity.rect.start_offset.line_offset +
