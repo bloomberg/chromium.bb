@@ -59,9 +59,9 @@ class WebStateImpl;
                 didLoadNewURL:(const GURL&)webViewURL
     forSameDocumentNavigation:(BOOL)isSameDocumentNavigation;
 
-// Returns whether the navigation to |URL| is a navigation in the same document.
-- (BOOL)navigationObserver:(CRWWebViewNavigationObserver*)navigationObserver
-    isURLChangeSameDocumentNavigation:(const GURL&)URL;
+// Notifies the delegate that a non-document-changing URL change occurs.
+- (void)navigationObserver:(CRWWebViewNavigationObserver*)navigationObserver
+    URLDidChangeWithoutDocumentChange:(const GURL&)newURL;
 
 @end
 
