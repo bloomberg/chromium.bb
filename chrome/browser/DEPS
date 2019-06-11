@@ -113,7 +113,8 @@ include_rules = [
   "+ash/keyboard/ui/resources",
   "+ash/components/shortcut_viewer",
 
-  # The message center may not exist, or may run out of process (in mash).
+  # The message center should only be accessed through
+  # //chrome/browser/notifications.
   "-ui/message_center",
   "+ui/message_center/public",
 

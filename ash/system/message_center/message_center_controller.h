@@ -53,7 +53,6 @@ class ASH_EXPORT MessageCenterController
                           const gfx::ImageSkia& icon) override;
   void NotifierEnabledChanged(const message_center::NotifierId& notifier_id,
                               bool enabled) override;
-  void GetActiveNotifications(GetActiveNotificationsCallback callback) override;
   void SetQuietMode(bool enabled) override;
 
   // Handles get app id calls from ArcNotificationManager.

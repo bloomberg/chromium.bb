@@ -166,21 +166,6 @@ void MessageCenterController::NotifierEnabledChanged(
     MessageCenter::Get()->RemoveNotificationsForNotifierId(notifier_id);
 }
 
-void MessageCenterController::GetActiveNotifications(
-    GetActiveNotificationsCallback callback) {
-  message_center::NotificationList::Notifications notification_set =
-      MessageCenter::Get()->GetVisibleNotifications();
-  std::vector<message_center::Notification> notification_vector;
-  notification_vector.reserve(notification_set.size());
-  for (auto* notification : notification_set) {
-    notification_vector.emplace_back(*notification);
-    // The client doesn't know how to de-serialize vector icons,
-    // nor does it need to.
-    notification_vector.back().set_vector_small_image(gfx::kNoneIcon);
-  }
-  std::move(callback).Run(notification_vector);
-}
-
 void MessageCenterController::SetQuietMode(bool enabled) {
   MessageCenter::Get()->SetQuietMode(enabled);
 }

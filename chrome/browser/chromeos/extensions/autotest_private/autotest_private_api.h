@@ -20,12 +20,7 @@
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/snapshot/screenshot_grabber.h"
-
-namespace message_center {
-class Notification;
-}
 
 namespace crostini {
 enum class CrostiniResult;
@@ -199,9 +194,6 @@ class AutotestPrivateGetVisibleNotificationsFunction
  private:
   ~AutotestPrivateGetVisibleNotificationsFunction() override;
   ResponseAction Run() override;
-
-  void OnGotNotifications(
-      const std::vector<message_center::Notification>& notifications);
 
   ash::mojom::AshMessageCenterControllerPtr controller_;
 };
