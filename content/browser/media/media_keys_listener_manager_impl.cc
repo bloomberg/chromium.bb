@@ -130,7 +130,7 @@ void MediaKeysListenerManagerImpl::OnMediaKeysAccelerator(
   // We should never receive an accelerator that was never registered.
   DCHECK(delegate_map_.contains(accelerator.key_code()));
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   // For privacy, we don't want to handle media keys when the system is locked.
   // On Windows and Mac OS X, this will happen unless we explicitly prevent it.
   // TODO(steimel): Consider adding an idle monitor instead and disabling the

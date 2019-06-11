@@ -7,10 +7,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/time/time.h"
 #include "content/public/browser/content_browser_client.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/idle/idle.h"
 #include "ui/base/win/system_media_controls/system_media_controls_service.h"
 
 namespace content {
@@ -20,6 +23,12 @@ using ABI::Windows::Media::MediaPlaybackStatus;
 const int kMinImageSize = 71;
 const int kDesiredImageSize = 150;
 
+constexpr base::TimeDelta kScreenLockPollInterval =
+    base::TimeDelta::FromSeconds(1);
+constexpr int kHideSmtcDelaySeconds = 5;
+constexpr base::TimeDelta kHideSmtcDelay =
+    base::TimeDelta::FromSeconds(kHideSmtcDelaySeconds);
+
 SystemMediaControlsNotifier::SystemMediaControlsNotifier(
     service_manager::Connector* connector)
     : connector_(connector) {}
@@ -27,6 +36,8 @@ SystemMediaControlsNotifier::SystemMediaControlsNotifier(
 SystemMediaControlsNotifier::~SystemMediaControlsNotifier() = default;
 
 void SystemMediaControlsNotifier::Initialize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // |service_| can be set in tests.
   if (!service_)
     service_ = system_media_controls::SystemMediaControlsService::GetInstance();
@@ -35,6 +46,11 @@ void SystemMediaControlsNotifier::Initialize() {
   // Media Transport Controls.
   if (!service_)
     return;
+
+  lock_polling_timer_.Start(
+      FROM_HERE, kScreenLockPollInterval,
+      base::BindRepeating(&SystemMediaControlsNotifier::CheckLockState,
+                          base::Unretained(this)));
 
   // |connector_| can be null in tests.
   if (!connector_)
@@ -65,14 +81,77 @@ void SystemMediaControlsNotifier::Initialize() {
       kDesiredImageSize, std::move(image_observer_ptr));
 }
 
+void SystemMediaControlsNotifier::CheckLockState() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  bool new_state = ui::CheckIdleStateIsLocked();
+  if (screen_locked_ == new_state)
+    return;
+
+  screen_locked_ = new_state;
+  if (screen_locked_)
+    OnScreenLocked();
+  else
+    OnScreenUnlocked();
+}
+
+void SystemMediaControlsNotifier::OnScreenLocked() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(service_);
+
+  // If media is currently playing, don't hide the SMTC.
+  if (session_info_ptr_ &&
+      session_info_ptr_->playback_state ==
+          media_session::mojom::MediaPlaybackState::kPlaying) {
+    return;
+  }
+
+  // Otherwise, hide them.
+  service_->SetEnabled(false);
+}
+
+void SystemMediaControlsNotifier::OnScreenUnlocked() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(service_);
+
+  StopHideSmtcTimer();
+  service_->SetEnabled(true);
+}
+
+void SystemMediaControlsNotifier::StartHideSmtcTimer() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  hide_smtc_timer_.Start(
+      FROM_HERE, kHideSmtcDelay,
+      base::BindOnce(&SystemMediaControlsNotifier::HideSmtcTimerFired,
+                     base::Unretained(this)));
+}
+
+void SystemMediaControlsNotifier::StopHideSmtcTimer() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  hide_smtc_timer_.Stop();
+}
+
+void SystemMediaControlsNotifier::HideSmtcTimerFired() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(service_);
+
+  service_->SetEnabled(false);
+}
+
 void SystemMediaControlsNotifier::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr session_info_ptr) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(service_);
+
+  bool is_playing = false;
 
   session_info_ptr_ = std::move(session_info_ptr);
   if (session_info_ptr_) {
     if (session_info_ptr_->playback_state ==
         media_session::mojom::MediaPlaybackState::kPlaying) {
+      is_playing = true;
       service_->SetPlaybackStatus(
           MediaPlaybackStatus::MediaPlaybackStatus_Playing);
     } else {
@@ -89,10 +168,18 @@ void SystemMediaControlsNotifier::MediaSessionInfoChanged(
     // presented to the platform, and terminate these steps.
     service_->ClearMetadata();
   }
+
+  if (screen_locked_) {
+    if (is_playing)
+      StopHideSmtcTimer();
+    else if (!hide_smtc_timer_.IsRunning())
+      StartHideSmtcTimer();
+  }
 }
 
 void SystemMediaControlsNotifier::MediaSessionMetadataChanged(
     const base::Optional<media_session::MediaMetadata>& metadata) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(service_);
 
   if (metadata.has_value()) {
@@ -116,6 +203,7 @@ void SystemMediaControlsNotifier::MediaSessionMetadataChanged(
 void SystemMediaControlsNotifier::MediaControllerImageChanged(
     media_session::mojom::MediaSessionImageType type,
     const SkBitmap& bitmap) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(service_);
 
   if (!bitmap.empty()) {

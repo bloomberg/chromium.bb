@@ -31,6 +31,9 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControlsService {
   virtual void AddObserver(SystemMediaControlsServiceObserver* observer) = 0;
   virtual void RemoveObserver(SystemMediaControlsServiceObserver* observer) = 0;
 
+  // Enables/disables the service.
+  virtual void SetEnabled(bool enabled) = 0;
+
   // TODO(steimel): Add other controls.
   // Enable or disable specific controls.
   virtual void SetIsNextEnabled(bool value) = 0;
