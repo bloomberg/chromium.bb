@@ -39,29 +39,6 @@ class _BaseCastBenchmark(perf_benchmark.PerfBenchmark):
     ])
 
 
-class TraceEventCastBenckmark(_BaseCastBenchmark):
-  """Benchmark for dialog latency from trace event."""
-
-  def CreateCoreTimelineBasedMeasurementOptions(self):
-    media_router_category = 'media_router'
-    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
-        media_router_category)
-    category_filter.AddIncludedCategory('blink.console')
-    options = timeline_based_measurement.Options(category_filter)
-    options.SetLegacyTimelineBasedMetrics([
-        media_router_timeline_metric.MediaRouterMetric()])
-    return options
-
-  @classmethod
-  def Name(cls):
-    return 'media_router.dialog.latency.tracing'
-
-  @classmethod
-  def ShouldAddValue(cls, _, from_first_story_run):
-    """Only drops the first result."""
-    return not from_first_story_run
-
-
 class HistogramCastBenckmark(_BaseCastBenchmark):
   """Benchmark for dialog latency from histograms."""
 
