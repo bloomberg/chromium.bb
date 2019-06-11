@@ -67,11 +67,11 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   DesktopMediaPickerViews* parent_;
   ui::ModalType modality_;
 
-  views::Label* description_label_;
+  views::Label* description_label_ = nullptr;
 
-  views::Checkbox* audio_share_checkbox_;
+  views::Checkbox* audio_share_checkbox_ = nullptr;
 
-  views::TabbedPane* tabbed_pane_;
+  views::TabbedPane* tabbed_pane_ = nullptr;
   std::vector<std::unique_ptr<DesktopMediaListController>> list_controllers_;
   std::vector<content::DesktopMediaID::Type> source_types_;
 
