@@ -1258,7 +1258,7 @@ video::cue(i) {
 video::-internal-media-controls-overlay-cast-button {
     -webkit-appearance: none;
     background-image: -webkit-image-set(
-      url(default_100_percent/legacy/mediaplayer_overlay_cast_off.png) 1x);
+      url(default_100_percent/modern/mediaplayer_overlay_cast_off.png) 1x);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
@@ -1278,7 +1278,7 @@ video::-internal-media-controls-overlay-cast-button {
 
 video::-internal-media-controls-overlay-cast-button.on {
     background-image: -webkit-image-set(
-      url(default_100_percent/legacy/mediaplayer_overlay_cast_on.png) 1x);
+      url(default_100_percent/modern/mediaplayer_overlay_cast_on.png) 1x);
 }
 
 /**

@@ -82,10 +82,6 @@ void MediaControlOverflowMenuListElement::SetIsWanted(bool wanted) {
   }
 }
 
-Element* MediaControlOverflowMenuListElement::PopupAnchor() const {
-  return &GetMediaControls().OverflowButton();
-}
-
 void MediaControlOverflowMenuListElement::OnItemSelected() {
   MaybeRecordTimeTaken(kTimeToAction);
 

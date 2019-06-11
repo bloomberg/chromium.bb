@@ -22,7 +22,6 @@ class MediaControlTextTrackListElement final
   bool WillRespondToMouseClickEvents() override;
 
   void SetIsWanted(bool) final;
-  Element* PopupAnchor() const final;
 
  private:
   void DefaultEventHandler(Event&) override;

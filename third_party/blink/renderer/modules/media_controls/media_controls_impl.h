@@ -83,9 +83,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   explicit MediaControlsImpl(HTMLMediaElement&);
   ~MediaControlsImpl() override = default;
 
-  // Returns whether the ModernMediaControlsEnabled runtime flag is on.
-  static bool IsModern();
-
   // Returns whether the event is considered a touch event.
   static bool IsTouchEvent(Event*);
 

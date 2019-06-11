@@ -26,9 +26,7 @@ MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(
   SetShadowPseudoId(AtomicString("-webkit-media-controls-volume-slider"));
   SetVolumeInternal(MediaElement().volume());
 
-  // The slider starts closed in modern media controls.
-  if (MediaControlsImpl::IsModern())
-    CloseSlider();
+  CloseSlider();
 }
 
 void MediaControlVolumeSliderElement::SetVolume(double volume) {

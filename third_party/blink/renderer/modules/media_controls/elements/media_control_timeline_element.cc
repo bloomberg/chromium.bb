@@ -64,19 +64,17 @@ MediaControlTimelineElement::MediaControlTimelineElement(
     : MediaControlSliderElement(media_controls) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-timeline"));
 
-  if (MediaControlsImpl::IsModern()) {
-    Element& track = GetTrackElement();
+  Element& track = GetTrackElement();
 
-    // TODO(851144): This stylesheet no longer contains animations, so should
-    // be re-combined with the UA sheet.
-    // This stylesheet element contains rules that cannot be present in the UA
-    // stylesheet (e.g. animations).
-    auto* style = MakeGarbageCollected<HTMLStyleElement>(GetDocument(),
-                                                         CreateElementFlags());
-    style->setTextContent(
-        MediaControlsResourceLoader::GetShadowTimelineStyleSheet());
-    track.ParserAppendChild(style);
-  }
+  // TODO(851144): This stylesheet no longer contains animations, so should
+  // be re-combined with the UA sheet.
+  // This stylesheet element contains rules that cannot be present in the UA
+  // stylesheet (e.g. animations).
+  auto* style = MakeGarbageCollected<HTMLStyleElement>(GetDocument(),
+                                                       CreateElementFlags());
+  style->setTextContent(
+      MediaControlsResourceLoader::GetShadowTimelineStyleSheet());
+  track.ParserAppendChild(style);
 }
 
 bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
@@ -229,41 +227,23 @@ void MediaControlTimelineElement::RenderBarSegments() {
   MediaControlSliderElement::Position after_segment(0, 0);
 
   // The before segment (i.e. what has been played) should be purely be based on
-  // the current time in the modern controls.
-  if (MediaControlsImpl::IsModern())
-    before_segment.width = current_position;
+  // the current time.
+  before_segment.width = current_position;
 
   base::Optional<unsigned> current_buffered_time_range =
       MediaControlsSharedHelpers::GetCurrentBufferedTimeRange(MediaElement());
 
   if (current_buffered_time_range) {
-    float start = buffered_time_ranges->start(
-        current_buffered_time_range.value(), ASSERT_NO_EXCEPTION);
     float end = buffered_time_ranges->end(current_buffered_time_range.value(),
                                           ASSERT_NO_EXCEPTION);
 
-    double start_position = start / duration;
     double end_position = end / duration;
 
-    if (MediaControlsImpl::IsModern()) {
-      // Draw dark grey highlight to show what we have loaded. This just uses a
-      // width since it just starts at zero just like the before segment.
-      // We use |std::max()| here because |current_position| has an offset added
-      // to it and can therefore be greater than |end_position| in some cases.
-      after_segment.width = std::max(current_position, end_position);
-    } else {
-      // Draw highlight to show what we have played.
-      if (current_position > start_position) {
-        after_segment.left = start_position;
-        after_segment.width = current_position - start_position;
-      }
-
-      // Draw dark grey highlight to show what we have loaded.
-      if (end_position > current_position) {
-        before_segment.left = current_position;
-        before_segment.width = end_position - current_position;
-      }
-    }
+    // Draw dark grey highlight to show what we have loaded. This just uses a
+    // width since it just starts at zero just like the before segment.
+    // We use |std::max()| here because |current_position| has an offset added
+    // to it and can therefore be greater than |end_position| in some cases.
+    after_segment.width = std::max(current_position, end_position);
   }
 
   // Update the positions of the segments.

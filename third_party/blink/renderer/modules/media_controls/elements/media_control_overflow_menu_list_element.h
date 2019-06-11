@@ -26,7 +26,6 @@ class MediaControlOverflowMenuListElement final
 
   // Override MediaControlPopupMenuElement
   void SetIsWanted(bool) final;
-  Element* PopupAnchor() const final;
   void OnItemSelected() final;
 
  private:

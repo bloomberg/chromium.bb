@@ -99,19 +99,6 @@ namespace blink {
 
 namespace {
 
-// TODO(steimel): should have better solution than hard-coding pixel values.
-// Defined in core/css/mediaControls.css, core/css/mediaControlsAndroid.css,
-// and core/paint/MediaControlsPainter.cpp.
-constexpr int kOverlayPlayButtonWidth = 48;
-constexpr int kOverlayPlayButtonHeight = 48;
-constexpr int kOverlayBottomMargin = 10;
-constexpr int kAndroidMediaPanelHeight = 48;
-
-constexpr int kMinWidthForOverlayPlayButton = kOverlayPlayButtonWidth;
-constexpr int kMinHeightForOverlayPlayButton = kOverlayPlayButtonHeight +
-                                               kAndroidMediaPanelHeight +
-                                               (2 * kOverlayBottomMargin);
-
 // TODO(steimel): When modern media controls launches, remove above constants
 // and rename below constants.
 // (2px left border + 6px left padding + 56px button + 6px right padding + 2px
@@ -198,15 +185,11 @@ bool PreferHiddenVolumeControls(const Document& document) {
 
 // If you change this value, then also update the corresponding value in
 // web_tests/media/media-controls.js.
-constexpr TimeDelta kTimeWithoutMouseMovementBeforeHidingMediaControls =
-    TimeDelta::FromSeconds(3);
 constexpr TimeDelta kModernTimeWithoutMouseMovementBeforeHidingMediaControls =
     TimeDelta::FromSecondsD(2.5);
 
 TimeDelta GetTimeWithoutMouseMovementBeforeHidingMediaControls() {
-  return MediaControlsImpl::IsModern()
-             ? kModernTimeWithoutMouseMovementBeforeHidingMediaControls
-             : kTimeWithoutMouseMovementBeforeHidingMediaControls;
+  return kModernTimeWithoutMouseMovementBeforeHidingMediaControls;
 }
 
 }  // namespace
@@ -324,11 +307,6 @@ class MediaControlsImpl::MediaElementMutationCallback
   Member<MediaControlsImpl> controls_;
   Member<MutationObserver> observer_;
 };
-
-// static
-bool MediaControlsImpl::IsModern() {
-  return true;
-}
 
 bool MediaControlsImpl::IsTouchEvent(Event* event) {
   return event->IsTouchEvent() || event->IsGestureEvent() ||
@@ -515,7 +493,7 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 // +-MediaControlDisplayCutoutFullscreenElement
 //       (-internal-media-controls-display-cutout-fullscreen-button)
 void MediaControlsImpl::InitializeControls() {
-  if (IsModern() && ShouldShowVideoControls()) {
+  if (ShouldShowVideoControls()) {
     loading_panel_ =
         MakeGarbageCollected<MediaControlLoadingPanelElement>(*this);
     ParserAppendChild(loading_panel_);
@@ -527,9 +505,6 @@ void MediaControlsImpl::InitializeControls() {
   if (RuntimeEnabledFeatures::MediaControlsOverlayPlayButtonEnabled()) {
     overlay_play_button_ =
         MakeGarbageCollected<MediaControlOverlayPlayButtonElement>(*this);
-
-    if (!IsModern())
-      overlay_enclosure_->ParserAppendChild(overlay_play_button_);
   }
 
   overlay_cast_button_ =
@@ -546,7 +521,7 @@ void MediaControlsImpl::InitializeControls() {
 
   // If using the modern media controls, the buttons should belong to a
   // seperate button panel. This is because they are displayed in two lines.
-  if (IsModern() && ShouldShowVideoControls()) {
+  if (ShouldShowVideoControls()) {
     media_button_panel_ =
         MakeGarbageCollected<MediaControlButtonPanelElement>(*this);
     scrubbing_message_ =
@@ -648,7 +623,7 @@ void MediaControlsImpl::PopulatePanel() {
     media_button_panel_->setInnerHTML(StringOrTrustedHTML::FromString(""));
 
   Element* button_panel = panel_;
-  if (IsModern() && ShouldShowVideoControls()) {
+  if (ShouldShowVideoControls()) {
     MaybeParserAppendChild(panel_, scrubbing_message_);
     if (display_cutout_fullscreen_button_)
       panel_->ParserAppendChild(display_cutout_fullscreen_button_);
@@ -662,43 +637,27 @@ void MediaControlsImpl::PopulatePanel() {
   button_panel->ParserAppendChild(current_time_display_);
   button_panel->ParserAppendChild(duration_display_);
 
-  if (IsModern() && ShouldShowVideoControls()) {
+  if (ShouldShowVideoControls()) {
     MediaControlElementsHelper::CreateDiv(
         "-internal-media-controls-button-spacer", button_panel);
   }
 
   panel_->ParserAppendChild(timeline_);
 
-  // On modern controls, the volume slider is to the left of the mute button.
-  if (IsModern()) {
-    MaybeParserAppendChild(volume_control_container_, volume_slider_);
-    volume_control_container_->ParserAppendChild(mute_button_);
-    button_panel->ParserAppendChild(volume_control_container_);
-  } else {
-    button_panel->ParserAppendChild(mute_button_);
-    MaybeParserAppendChild(button_panel, volume_slider_);
-  }
+  MaybeParserAppendChild(volume_control_container_, volume_slider_);
+  volume_control_container_->ParserAppendChild(mute_button_);
+  button_panel->ParserAppendChild(volume_control_container_);
 
   MaybeParserAppendChild(button_panel, picture_in_picture_button_);
 
   button_panel->ParserAppendChild(fullscreen_button_);
 
-  // The download, cast and captions buttons should not be present on the modern
-  // controls button panel.
-  if (!IsModern()) {
-    button_panel->ParserAppendChild(download_button_);
-    button_panel->ParserAppendChild(cast_button_);
-    button_panel->ParserAppendChild(toggle_closed_captions_button_);
-  }
-
   button_panel->ParserAppendChild(overflow_menu_);
 
-  // Attach hover background div to modern controls
-  if (IsModern()) {
-    AttachHoverBackground(play_button_);
-    AttachHoverBackground(fullscreen_button_);
-    AttachHoverBackground(overflow_menu_);
-  }
+  // Attach hover background divs.
+  AttachHoverBackground(play_button_);
+  AttachHoverBackground(fullscreen_button_);
+  AttachHoverBackground(overflow_menu_);
 }
 
 void MediaControlsImpl::AttachHoverBackground(Element* element) {
@@ -790,7 +749,7 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
   // video element.
   // TODO(https://crbug.org/930001): Reconsider skipping this block when not
   // connected.
-  if (IsModern() && MediaElement().isConnected()) {
+  if (MediaElement().isConnected()) {
     bool updated = false;
 
     if (state == kNoSource) {
@@ -941,7 +900,7 @@ void MediaControlsImpl::UpdateTimeIndicators() {
 void MediaControlsImpl::OnControlsListUpdated() {
   BatchedControlUpdate batch(this);
 
-  if (IsModern() && ShouldShowVideoControls()) {
+  if (ShouldShowVideoControls()) {
     fullscreen_button_->SetIsWanted(true);
     fullscreen_button_->setAttribute(
         html_names::kDisabledAttr,
@@ -1119,10 +1078,7 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
 bool MediaControlsImpl::AreVideoControlsHovered() const {
   DCHECK(MediaElement().IsHTMLVideoElement());
 
-  if (IsModern())
-    return media_button_panel_->IsHovered() || timeline_->IsHovered();
-
-  return panel_->IsHovered();
+  return media_button_panel_->IsHovered() || timeline_->IsHovered();
 }
 
 void MediaControlsImpl::UpdatePlayState() {
@@ -1139,7 +1095,6 @@ HTMLDivElement* MediaControlsImpl::PanelElement() {
 }
 
 HTMLDivElement* MediaControlsImpl::ButtonPanelElement() {
-  DCHECK(IsModern());
   return media_button_panel_;
 }
 
@@ -1358,7 +1313,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
                     ((controls_size.width - element_size.width) >= 0);
     element->SetDoesFit(does_fit);
 
-    if (element == mute_button_.Get() && IsModern())
+    if (element == mute_button_.Get())
       volume_control_container_->SetIsWanted(does_fit);
 
     // The element does fit and is sticky so we should allocate space for it. If
@@ -1390,7 +1345,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
     last_element->SetDoesFit(false);
     last_element->SetOverflowElementIsWanted(true);
 
-    if (last_element == mute_button_.Get() && IsModern())
+    if (last_element == mute_button_.Get())
       volume_control_container_->SetIsWanted(false);
   }
 
@@ -1532,7 +1487,7 @@ void MediaControlsImpl::DefaultEventHandler(Event& event) {
       !IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
     const String& key = ToKeyboardEvent(event).key();
     if (key == "Enter" || ToKeyboardEvent(event).keyCode() == ' ') {
-      if (IsModern() && overlay_play_button_) {
+      if (overlay_play_button_) {
         overlay_play_button_->OnMediaKeyboardEvent(&event);
       } else {
         play_button_->OnMediaKeyboardEvent(&event);
@@ -1586,7 +1541,7 @@ void MediaControlsImpl::HandlePointerEvent(Event* event) {
 }
 
 void MediaControlsImpl::HandleClickEvent(Event* event) {
-  if (!IsModern() || ContainsRelatedTarget(event) || !IsFullscreenEnabled())
+  if (ContainsRelatedTarget(event) || !IsFullscreenEnabled())
     return;
 
   if (tap_timer_.IsActive()) {
@@ -1617,54 +1572,37 @@ void MediaControlsImpl::HandleClickEvent(Event* event) {
 }
 
 void MediaControlsImpl::HandleTouchEvent(Event* event) {
-  if (IsModern()) {
-    is_mouse_over_controls_ = false;
-    is_touch_interaction_ = true;
-
-    if (event->type() == event_type_names::kGesturetap &&
-        !ContainsRelatedTarget(event)) {
-      event->SetDefaultHandled();
-
-      // Since handling the gesturetap event will prevent the click event from
-      // happening, we need to manually hide any popups.
-      HidePopupMenu();
-
-      // In immersive mode we don't use double-tap features, so instead of
-      // waiting 300 ms for a potential second tap, we just immediately toggle
-      // controls visiblity.
-      if (GetDocument().GetSettings() &&
-          GetDocument().GetSettings()->GetImmersiveModeEnabled()) {
-        MaybeToggleControlsFromTap();
-        return;
-      }
-
-      if (tap_timer_.IsActive()) {
-        // Cancel the visibility toggle event.
-        tap_timer_.Stop();
-
-        if (IsOnLeftSide(event)) {
-          MaybeJump(kNumberOfSecondsToJump * -1);
-        } else {
-          MaybeJump(kNumberOfSecondsToJump);
-        }
-      } else {
-        tap_timer_.StartOneShot(kDoubleTapDelay, FROM_HERE);
-      }
-    }
-    return;
-  }
+  is_mouse_over_controls_ = false;
+  is_touch_interaction_ = true;
 
   if (event->type() == event_type_names::kGesturetap &&
-      !ContainsRelatedTarget(event) && !MediaElement().paused()) {
-    if (!IsVisible()) {
-      MakeOpaque();
-      // When the panel switches from invisible to visible, we need to mark
-      // the event handled to avoid buttons below the tap to be activated.
-      event->SetDefaultHandled();
+      !ContainsRelatedTarget(event)) {
+    event->SetDefaultHandled();
+
+    // Since handling the gesturetap event will prevent the click event from
+    // happening, we need to manually hide any popups.
+    HidePopupMenu();
+
+    // In immersive mode we don't use double-tap features, so instead of
+    // waiting 300 ms for a potential second tap, we just immediately toggle
+    // controls visibility.
+    if (GetDocument().GetSettings() &&
+        GetDocument().GetSettings()->GetImmersiveModeEnabled()) {
+      MaybeToggleControlsFromTap();
+      return;
     }
-    if (ShouldHideMediaControls(kIgnoreWaitForTimer)) {
-      keep_showing_until_timer_fires_ = true;
-      StartHideMediaControlsTimer();
+
+    if (tap_timer_.IsActive()) {
+      // Cancel the visibility toggle event.
+      tap_timer_.Stop();
+
+      if (IsOnLeftSide(event)) {
+        MaybeJump(kNumberOfSecondsToJump * -1);
+      } else {
+        MaybeJump(kNumberOfSecondsToJump);
+      }
+    } else {
+      tap_timer_.StartOneShot(kDoubleTapDelay, FROM_HERE);
     }
   }
 }
@@ -1794,20 +1732,16 @@ void MediaControlsImpl::OnVolumeChange() {
     volume_slider_->SetIsWanted(MediaElement().HasAudio() &&
                                 !PreferHiddenVolumeControls(GetDocument()));
   }
-  if (IsModern()) {
-    mute_button_->SetIsWanted(true);
-    mute_button_->setAttribute(
-        html_names::kDisabledAttr,
-        MediaElement().HasAudio() ? AtomicString() : AtomicString(""));
-  } else {
-    mute_button_->SetIsWanted(MediaElement().HasAudio());
-    mute_button_->removeAttribute(html_names::kDisabledAttr);
-  }
+
+  mute_button_->SetIsWanted(true);
+  mute_button_->setAttribute(
+      html_names::kDisabledAttr,
+      MediaElement().HasAudio() ? AtomicString() : AtomicString(""));
 
   // On modern media controls, if the volume slider is being used we don't want
-  // to update controls visiblity, since this can shift the position of the
+  // to update controls visibility, since this can shift the position of the
   // volume slider and make it unusable.
-  if (!IsModern() || !volume_slider_ || !volume_slider_->IsHovered())
+  if (!volume_slider_ || !volume_slider_->IsHovered())
     BatchedControlUpdate batch(this);
 }
 
@@ -1986,8 +1920,7 @@ void MediaControlsImpl::NotifyElementSizeChanged(DOMRectReadOnly* new_size) {
     // Update the sizing CSS class before computing which controls fit so that
     // the element sizes can update from the CSS class change before we start
     // calculating.
-    if (IsModern())
-      UpdateSizingCSSClass();
+    UpdateSizingCSSClass();
     element_size_changed_timer_.StartOneShot(TimeDelta(), FROM_HERE);
   }
 }
@@ -2007,126 +1940,8 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
   // Hide all controls that don't fit, and show the ones that do.
   // This might be better suited for a layout, but since JS media controls
   // won't benefit from that anwyay, we just do it here like JS will.
-  if (IsModern()) {
-    UpdateOverflowMenuWanted();
-    UpdateScrubbingMessageFits();
-    return;
-  }
-
-  // Controls that we'll hide / show, in order of decreasing priority.
-  MediaControlElementBase* elements[] = {
-      // Exclude m_overflowMenu; we handle it specially.
-      play_button_.Get(),
-      fullscreen_button_.Get(),
-      download_button_.Get(),
-      timeline_.Get(),
-      mute_button_.Get(),
-      volume_slider_.Get(),
-      toggle_closed_captions_button_.Get(),
-      picture_in_picture_button_.Get() ? picture_in_picture_button_.Get()
-                                       : nullptr,
-      cast_button_.Get(),
-      current_time_display_.Get(),
-      duration_display_.Get(),
-  };
-
-  // TODO(mlamouri): we need a more dynamic way to find out the width of an
-  // element.
-  const int kSliderMargin = 36;  // Sliders have 18px margin on each side.
-
-  if (!size_.Width()) {
-    // No layout yet -- hide everything, then make them show up later.
-    // This prevents the wrong controls from being shown briefly
-    // immediately after the first layout and paint, but before we have
-    // a chance to revise them.
-    for (MediaControlElementBase* element : elements) {
-      if (element)
-        element->SetDoesFit(false);
-    }
-    return;
-  }
-
-  // Assume that all controls require 48px, unless we can get the computed
-  // style for a button. The minimumWidth is recorded and re-use for future
-  // MediaControls instances and future calls to this method given that at the
-  // moment the controls button width is per plataform.
-  // TODO(mlamouri): improve the mechanism without bandaid.
-  static int minimum_width = 48;
-  if (play_button_->GetLayoutObject() &&
-      play_button_->GetLayoutObject()->Style()) {
-    const ComputedStyle* style = play_button_->GetLayoutObject()->Style();
-    minimum_width = ceil(style->Width().Pixels() / style->EffectiveZoom());
-  } else if (overflow_menu_->GetLayoutObject() &&
-             overflow_menu_->GetLayoutObject()->Style()) {
-    const ComputedStyle* style = overflow_menu_->GetLayoutObject()->Style();
-    minimum_width = ceil(style->Width().Pixels() / style->EffectiveZoom());
-  }
-
-  // Insert an overflow menu. However, if we see that the overflow menu
-  // doesn't end up containing at least two elements, we will not display it
-  // but instead make place for the first element that was dropped.
-  overflow_menu_->SetDoesFit(true);
-  overflow_menu_->SetIsWanted(true);
-  int used_width = minimum_width;
-
-  std::list<MediaControlElementBase*> overflow_elements;
-  MediaControlElementBase* first_displaced_element = nullptr;
-  // For each control that fits, enable it in order of decreasing priority.
-  for (MediaControlElementBase* element : elements) {
-    if (!element)
-      continue;
-
-    int width = minimum_width;
-    if ((element == timeline_.Get()) || (element == volume_slider_.Get()))
-      width += kSliderMargin;
-
-    element->SetOverflowElementIsWanted(false);
-    if (!element->IsWanted())
-      continue;
-
-    if (used_width + width <= size_.Width()) {
-      element->SetDoesFit(true);
-      used_width += width;
-    } else {
-      element->SetDoesFit(false);
-      element->SetOverflowElementIsWanted(true);
-      if (element->HasOverflowButton())
-        overflow_elements.push_front(element);
-      // We want a way to access the first media element that was
-      // removed. If we don't end up needing an overflow menu, we can
-      // use the space the overflow menu would have taken up to
-      // instead display that media element.
-      if (!element->HasOverflowButton() && !first_displaced_element)
-        first_displaced_element = element;
-    }
-  }
-
-  // If we don't have at least two overflow elements, we will not show the
-  // overflow menu.
-  if (overflow_elements.empty()) {
-    overflow_menu_->SetIsWanted(false);
-    used_width -= minimum_width;
-    if (first_displaced_element) {
-      int width = minimum_width;
-      if ((first_displaced_element == timeline_.Get()) ||
-          (first_displaced_element == volume_slider_.Get()))
-        width += kSliderMargin;
-      if (used_width + width <= size_.Width())
-        first_displaced_element->SetDoesFit(true);
-    }
-  } else if (overflow_elements.size() == 1) {
-    overflow_menu_->SetIsWanted(false);
-    overflow_elements.front()->SetDoesFit(true);
-  }
-
-  // Decide if the overlay play button fits.
-  if (overlay_play_button_) {
-    bool does_fit = size_.Width() >= kMinWidthForOverlayPlayButton &&
-                    size_.Height() >= kMinHeightForOverlayPlayButton;
-    overlay_play_button_->SetDoesFit(does_fit);
-  }
-
-  MaybeRecordElementsDisplayed();
+  UpdateOverflowMenuWanted();
+  UpdateScrubbingMessageFits();
 }
 
 void MediaControlsImpl::MaybeRecordElementsDisplayed() const {
@@ -2179,7 +1994,7 @@ MediaControlsImpl::ToggleClosedCaptions() {
 bool MediaControlsImpl::ShouldActAsAudioControls() const {
   // A video element should act like an audio element when it has an audio track
   // but no video track.
-  return IsModern() && MediaElement().ShouldShowControls() &&
+  return MediaElement().ShouldShowControls() &&
          MediaElement().IsHTMLVideoElement() && MediaElement().HasAudio() &&
          !MediaElement().HasVideo();
 }
@@ -2214,8 +2029,7 @@ void MediaControlsImpl::UpdateActingAsAudioControls() {
 }
 
 bool MediaControlsImpl::ShouldShowAudioControls() const {
-  return IsModern() &&
-         (MediaElement().IsHTMLAudioElement() || is_acting_as_audio_controls_);
+  return (MediaElement().IsHTMLAudioElement() || is_acting_as_audio_controls_);
 }
 
 bool MediaControlsImpl::ShouldShowVideoControls() const {
@@ -2292,14 +2106,14 @@ void MediaControlsImpl::CloseVolumeSliderIfNecessary() {
 }
 
 bool MediaControlsImpl::ShouldOpenVolumeSlider() const {
-  if (!volume_slider_ || !IsModern())
+  if (!volume_slider_)
     return false;
 
   return !PreferHiddenVolumeControls(GetDocument());
 }
 
 bool MediaControlsImpl::ShouldCloseVolumeSlider() const {
-  if (!volume_slider_ || !IsModern())
+  if (!volume_slider_)
     return false;
 
   return !(volume_control_container_->IsHovered() ||

@@ -75,10 +75,6 @@ void MediaControlTextTrackListElement::SetIsWanted(bool wanted) {
   MediaControlPopupMenuElement::SetIsWanted(wanted);
 }
 
-Element* MediaControlTextTrackListElement::PopupAnchor() const {
-  return &GetMediaControls().ToggleClosedCaptions();
-}
-
 void MediaControlTextTrackListElement::DefaultEventHandler(Event& event) {
   if (event.type() == event_type_names::kClick) {
     // This handles the back button click. Clicking on a menu item triggers the
@@ -144,11 +140,6 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
   track_item->setTabIndex(0);
   track_item_input->setTabIndex(-1);
 
-  // Modern media controls should have the checkbox after the text instead of
-  // the other way around.
-  if (!MediaControlsImpl::IsModern())
-    track_item->ParserAppendChild(track_item_input);
-
   // Set track label into an aria-hidden span so that aria will not repeat the
   // contents twice.
   String track_label =
@@ -159,8 +150,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
   track_item->setAttribute(html_names::kAriaLabelAttr,
                            WTF::AtomicString(track_label));
   track_item->ParserAppendChild(track_label_span);
-  if (MediaControlsImpl::IsModern())
-    track_item->ParserAppendChild(track_item_input);
+  track_item->ParserAppendChild(track_item_input);
 
   // Add a track kind marker icon if there are multiple tracks with the same
   // label or if the track has no label.
@@ -206,8 +196,7 @@ void MediaControlTextTrackListElement::RefreshTextTrackListMenu() {
   EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
   RemoveChildren(kOmitSubtreeModifiedEvent);
 
-  if (MediaControlsImpl::IsModern())
-    ParserAppendChild(CreateTextTrackHeaderItem());
+  ParserAppendChild(CreateTextTrackHeaderItem());
 
   TextTrackList* track_list = MediaElement().textTracks();
 

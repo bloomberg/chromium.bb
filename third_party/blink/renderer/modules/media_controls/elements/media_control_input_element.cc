@@ -75,18 +75,14 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   overflow_label_element_->setTabIndex(0);
   button->setTabIndex(-1);
 
-  if (MediaControlsImpl::IsModern()) {
-    overflow_menu_container_ =
-        MakeGarbageCollected<HTMLDivElement>(GetDocument());
-    overflow_menu_container_->ParserAppendChild(overflow_menu_text_);
-    overflow_menu_container_->setAttribute(html_names::kAriaHiddenAttr, "true");
-    aria_label_ = button->getAttribute(html_names::kAriaLabelAttr) + " " +
-                  button->GetOverflowMenuString();
-    UpdateOverflowSubtitleElement(button->GetOverflowMenuSubtitleString());
-    overflow_label_element_->ParserAppendChild(overflow_menu_container_);
-  } else {
-    overflow_label_element_->ParserAppendChild(overflow_menu_text_);
-  }
+  overflow_menu_container_ =
+      MakeGarbageCollected<HTMLDivElement>(GetDocument());
+  overflow_menu_container_->ParserAppendChild(overflow_menu_text_);
+  overflow_menu_container_->setAttribute(html_names::kAriaHiddenAttr, "true");
+  aria_label_ = button->getAttribute(html_names::kAriaLabelAttr) + " " +
+                button->GetOverflowMenuString();
+  UpdateOverflowSubtitleElement(button->GetOverflowMenuSubtitleString());
+  overflow_label_element_->ParserAppendChild(overflow_menu_container_);
 
   // Initialize the internal states of the main element and the overflow one.
   button->is_overflow_element_ = true;
@@ -180,8 +176,7 @@ void MediaControlInputElement::UpdateOverflowString() {
   overflow_menu_text_->setInnerText(GetOverflowMenuString(),
                                     ASSERT_NO_EXCEPTION);
 
-  if (MediaControlsImpl::IsModern())
-    UpdateOverflowSubtitleElement(GetOverflowMenuSubtitleString());
+  UpdateOverflowSubtitleElement(GetOverflowMenuSubtitleString());
 }
 
 MediaControlInputElement::MediaControlInputElement(

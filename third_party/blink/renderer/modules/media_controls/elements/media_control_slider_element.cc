@@ -146,9 +146,7 @@ void MediaControlSliderElement::SetAfterSegmentPosition(
 }
 
 int MediaControlSliderElement::TrackWidth() {
-  LayoutBoxModelObject* box = MediaControlsImpl::IsModern()
-                                  ? GetTrackElement().GetLayoutBoxModelObject()
-                                  : GetLayoutBoxModelObject();
+  LayoutBoxModelObject* box = GetTrackElement().GetLayoutBoxModelObject();
   return box ? box->OffsetWidth().Round() : 0;
 }
 

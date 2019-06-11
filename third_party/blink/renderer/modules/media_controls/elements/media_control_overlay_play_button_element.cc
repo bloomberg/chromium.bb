@@ -33,7 +33,6 @@ namespace blink {
 // MediaControlOverlayPlayButtonElement
 //   (-webkit-media-controls-overlay-play-button)
 // +-div (-internal-media-controls-overlay-play-button-internal)
-//   {if MediaControlsImpl::IsModern}
 //   This contains the inner circle with the actual play/pause icon.
 MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
     MediaControlsImpl& media_controls)
@@ -42,23 +41,19 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
   setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-overlay-play-button"));
 
-  if (MediaControlsImpl::IsModern()) {
-    internal_button_ = MediaControlElementsHelper::CreateDiv(
-        "-internal-media-controls-overlay-play-button-internal",
-        GetShadowRoot());
-  }
+  internal_button_ = MediaControlElementsHelper::CreateDiv(
+      "-internal-media-controls-overlay-play-button-internal", GetShadowRoot());
 }
 
 void MediaControlOverlayPlayButtonElement::UpdateDisplayType() {
-  SetIsWanted(MediaElement().ShouldShowControls() &&
-              (MediaControlsImpl::IsModern() || MediaElement().paused()));
-  if (MediaControlsImpl::IsModern()) {
-    WebLocalizedString::Name state =
-        MediaElement().paused() ? WebLocalizedString::kAXMediaPlayButton
-                                : WebLocalizedString::kAXMediaPauseButton;
-    setAttribute(html_names::kAriaLabelAttr,
-                 WTF::AtomicString(GetLocale().QueryString(state)));
-  }
+  SetIsWanted(MediaElement().ShouldShowControls());
+
+  WebLocalizedString::Name state =
+      MediaElement().paused() ? WebLocalizedString::kAXMediaPlayButton
+                              : WebLocalizedString::kAXMediaPauseButton;
+  setAttribute(html_names::kAriaLabelAttr,
+               WTF::AtomicString(GetLocale().QueryString(state)));
+
   MediaControlInputElement::UpdateDisplayType();
 }
 
