@@ -4,7 +4,6 @@
 
 """Wraps os, os.path and shutil functions to work around MAX_PATH on Windows."""
 
-import __builtin__
 import inspect
 import os
 import re
@@ -12,6 +11,11 @@ import shutil
 import subprocess
 import sys
 
+from utils import tools
+tools.force_local_third_party()
+
+# third_party/
+from six.moves import builtins
 
 if sys.platform == 'win32':
   import ctypes
@@ -392,7 +396,7 @@ else:
 
 
 def open(path, *args, **kwargs):  # pylint: disable=redefined-builtin
-  return __builtin__.open(extend(path), *args, **kwargs)
+  return builtins.open(extend(path), *args, **kwargs)
 
 
 ## os

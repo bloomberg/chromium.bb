@@ -5,7 +5,9 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.14'
+from __future__ import print_function
+
+__version__ = '1.0'
 
 import collections
 import datetime
@@ -295,8 +297,8 @@ def trigger_task_shards(swarming, task_request, shards):
     if (not priority_warning and
         int(task['request']['priority']) != task_request.priority):
       priority_warning = True
-      print >> sys.stderr, (
-          'Priority was reset to %s' % task['request']['priority'])
+      print('Priority was reset to %s' % task['request']['priority'],
+            file=sys.stderr)
     tasks[request['name']] = {
       'shard_index': shard_index,
       'task_id': task['task_id'],
@@ -306,8 +308,8 @@ def trigger_task_shards(swarming, task_request, shards):
   # Some shards weren't triggered. Abort everything.
   if len(tasks) != len(requests):
     if tasks:
-      print >> sys.stderr, 'Only %d shard(s) out of %d were triggered' % (
-          len(tasks), len(requests))
+      print('Only %d shard(s) out of %d were triggered' % (
+          len(tasks), len(requests)), file=sys.stderr)
       for task_dict in tasks.itervalues():
         abort_task(swarming, task_dict['task_id'])
     return None
@@ -439,7 +441,7 @@ class TaskOutputCollector(object):
         isolateserver.fetch_isolated(
             result['outputs_ref']['isolated'],
             storage,
-            local_caching.MemoryContentAddressedCache(file_mode_mask=0700),
+            local_caching.MemoryContentAddressedCache(file_mode_mask=0o700),
             os.path.join(self.task_output_dir, str(shard_index)),
             False, self.filter_cb)
 
@@ -806,8 +808,8 @@ def collect(
 
   if len(seen_shards) != len(task_ids):
     missing_shards = [x for x in range(len(task_ids)) if x not in seen_shards]
-    print >> sys.stderr, ('Results from some shards are missing: %s' %
-        ', '.join(map(str, missing_shards)))
+    print('Results from some shards are missing: %s' %
+        ', '.join(map(str, missing_shards)), file=sys.stderr)
     return 1
 
   return exit_code if exit_code is not None else 1
@@ -1407,12 +1409,12 @@ def CMDbots(parser, args):
     sys.stderr.write('\n%s\n' % e)
     return 1
   for bot in natsort.natsorted(bots, key=lambda x: x['bot_id']):
-    print bot['bot_id']
+    print(bot['bot_id'])
     if not options.bare:
       dimensions = {i['key']: i.get('value') for i in bot.get('dimensions', {})}
-      print '  %s' % json.dumps(dimensions, sort_keys=True)
+      print('  %s' % json.dumps(dimensions, sort_keys=True))
       if bot.get('task_id'):
-        print '  task: %s' % bot['task_id']
+        print('  task: %s' % bot['task_id'])
   return 0
 
 
@@ -1611,8 +1613,8 @@ def CMDquery_list(parser, args):
     for i, (api_id, api) in enumerate(sorted(apis.iteritems())):
       if i:
         print('')
-      print api_id
-      print '  ' + api['description'].strip()
+      print(api_id)
+      print('  ' + api['description'].strip())
       if 'resources' in api:
         # Old.
         # TODO(maruel): Remove.
@@ -1625,22 +1627,22 @@ def CMDquery_list(parser, args):
             # Only list the GET ones.
             if method['httpMethod'] != 'GET':
               continue
-            print '- %s.%s: %s' % (
-                resource_name, method_name, method['path'])
+            print('- %s.%s: %s' % (
+                resource_name, method_name, method['path']))
             print('\n'.join(
                 '  ' + l for l in textwrap.wrap(
                     method.get('description', 'No description'), 78)))
-            print '  %s%s%s' % (help_url, api['servicePath'], method['id'])
+            print('  %s%s%s' % (help_url, api['servicePath'], method['id']))
       else:
         # New.
         for method_name, method in sorted(api['methods'].iteritems()):
           # Only list the GET ones.
           if method['httpMethod'] != 'GET':
             continue
-          print '- %s: %s' % (method['id'], method['path'])
+          print('- %s: %s' % (method['id'], method['path']))
           print('\n'.join(
               '  ' + l for l in textwrap.wrap(method['description'], 78)))
-          print '  %s%s%s' % (help_url, api['servicePath'], method['id'])
+          print('  %s%s%s' % (help_url, api['servicePath'], method['id']))
   return 0
 
 
@@ -1738,7 +1740,7 @@ def CMDreproduce(parser, args):
   url = options.swarming + '/_ah/api/swarming/v1/task/%s/request' % args[0]
   request = net.url_read_json(url)
   if not request:
-    print >> sys.stderr, 'Failed to retrieve request data for the task'
+    print('Failed to retrieve request data for the task', file=sys.stderr)
     return 1
 
   workdir = unicode(os.path.abspath(options.work))
@@ -1831,8 +1833,8 @@ def CMDreproduce(parser, args):
   try:
     return subprocess42.call(command + extra_args, env=env, cwd=workdir)
   except OSError as e:
-    print >> sys.stderr, 'Failed to run: %s' % ' '.join(command)
-    print >> sys.stderr, str(e)
+    print('Failed to run: %s' % ' '.join(command), file=sys.stderr)
+    print(str(e), file=sys.stderr)
     return 1
   finally:
     # Do not delete options.cache.
@@ -1855,7 +1857,7 @@ def CMDterminate(parser, args):
   url = options.swarming + '/_ah/api/swarming/v1/bot/%s/terminate' % args[0]
   request = net.url_read_json(url, data={})
   if not request:
-    print >> sys.stderr, 'Failed to ask for termination'
+    print('Failed to ask for termination', file=sys.stderr)
     return 1
   if options.wait:
     return collect(
@@ -1870,7 +1872,7 @@ def CMDterminate(parser, args):
         False,
         None)
   else:
-    print request['task_id']
+    print(request['task_id'])
   return 0
 
 

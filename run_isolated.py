@@ -106,7 +106,7 @@ ISOLATED_TMP_DIR = u'it'
 
 
 # Keep synced with task_request.py
-CACHE_NAME_RE = re.compile(ur'^[a-z0-9_]{1,4096}$')
+CACHE_NAME_RE = re.compile(r'^[a-z0-9_]{1,4096}$')
 
 
 OUTLIVING_ZOMBIE_MSG = """\
@@ -672,7 +672,7 @@ def map_and_run(data, constant_run_path):
   }
 
   if data.root_dir:
-    file_path.ensure_tree(data.root_dir, 0700)
+    file_path.ensure_tree(data.root_dir, 0o700)
   elif data.isolate_cache.cache_dir:
     data = data._replace(
         root_dir=os.path.dirname(data.isolate_cache.cache_dir))
@@ -684,7 +684,7 @@ def map_and_run(data, constant_run_path):
     run_dir = os.path.join(data.root_dir, ISOLATED_RUN_DIR)
     if os.path.isdir(run_dir):
       file_path.rmtree(run_dir)
-    os.mkdir(run_dir, 0700)
+    os.mkdir(run_dir, 0o700)
   else:
     run_dir = make_temp_dir(ISOLATED_RUN_DIR, data.root_dir)
   # storage should be normally set but don't crash if it is not. This can happen
@@ -737,7 +737,7 @@ def map_and_run(data, constant_run_path):
 
       if not os.path.isdir(cwd):
         # Accepts relative_cwd that does not exist.
-        os.makedirs(cwd, 0700)
+        os.makedirs(cwd, 0o700)
 
       # If we have an explicit list of files to return, make sure their
       # directories exist now.

@@ -4,10 +4,11 @@
 
 """OAuth2 related utilities and implementation of browser based login flow."""
 
+from __future__ import print_function
+
 # pylint: disable=W0613
 
 import base64
-import BaseHTTPServer
 import collections
 import datetime
 import json
@@ -19,8 +20,16 @@ import sys
 import threading
 import time
 import urllib
-import urlparse
+# pylint: disable=ungrouped-imports
+# pylint: disable=no-name-in-module
+if sys.version_info.major == 2:
+  import urlparse # Python 2
+else:
+  from urllib import parse as urlparse # Python 3
 import webbrowser
+
+from utils import tools
+tools.force_local_third_party()
 
 # third_party/
 import httplib2
@@ -33,7 +42,7 @@ from oauth2client import multistore_file
 import requests
 
 from libs import luci_context
-from utils import tools
+from six.moves import BaseHTTPServer
 
 
 # Path to a file with cached OAuth2 credentials used by default. Can be
@@ -550,9 +559,9 @@ def _make_signed_jwt(payload, pkey):
 def _run_oauth_dance(urlhost, config):
   """Perform full OAuth2 dance with the browser."""
   def out(s):
-    print s
+    print(s)
   def err(s):
-    print >> sys.stderr, s
+    print(s, file=sys.stderr)
 
   # Fetch client_id and client_secret from the service itself.
   service_config = _fetch_service_config(urlhost)

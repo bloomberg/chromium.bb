@@ -25,7 +25,10 @@ import unicodedata
 from utils import fs
 from utils import subprocess42
 from utils import tools
+tools.force_local_third_party()
 
+# third_party/
+import six
 
 # Types of action accepted by link_file().
 HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, SYMLINK_WITH_FALLBACK, COPY = range(
@@ -241,7 +244,7 @@ if sys.platform == 'win32':
     # the set_read_only() call to remove the read only bit had silently failed
     # because there was no DACL for the user.
     if not (os.stat(path).st_mode & stat.S_IWUSR):
-      os.chmod(path, 0777)
+      os.chmod(path, 0o777)
 
 
   def isabs(path):
@@ -293,7 +296,7 @@ if sys.platform == 'win32':
     # Go figure why GetShortPathName() is needed.
     try:
       out = GetLongPathName(GetShortPathName(p))
-    except OSError, e:
+    except OSError as e:
       if e.args[0] in (2, 3, 5):
         # The path does not exist. Try to recurse and reconstruct the path.
         base = os.path.dirname(p)
@@ -581,7 +584,7 @@ elif sys.platform == 'darwin':
       if p.endswith(os.path.sep) and not out.endswith(os.path.sep):
         return out + os.path.sep
       return out
-    except MacOS.Error, e:
+    except MacOS.Error as e:
       if e.args[0] in (-43, -120):
         # The path does not exist. Try to recurse and reconstruct the path.
         # -43 means file not found.
@@ -830,8 +833,8 @@ def is_same_filesystem(path1, path2):
     # If the drive letter mismatches, assume it's a separate partition.
     # TODO(maruel): It should look at the underlying drive, a drive letter could
     # be a mount point to a directory on another drive.
-    assert re.match(ur'^[a-zA-Z]\:\\.*', path1), path1
-    assert re.match(ur'^[a-zA-Z]\:\\.*', path2), path2
+    assert re.match(r'^[a-zA-Z]\:\\.*', path1), path1
+    assert re.match(r'^[a-zA-Z]\:\\.*', path2), path2
     if path1[0].lower() != path2[0].lower():
       return False
   return fs.stat(path1).st_dev == fs.stat(path2).st_dev
@@ -1031,7 +1034,7 @@ def atomic_replace(path, body):
 ### Write directory functions.
 
 
-def ensure_tree(path, perm=0777):
+def ensure_tree(path, perm=0o777):
   """Ensures a directory exists."""
   if not fs.isdir(path):
     try:
@@ -1216,7 +1219,7 @@ def rmtree(root):
 
   # If soft retries fail on Linux, there's nothing better we can do.
   if sys.platform != 'win32':
-    raise errors[0][2][0], errors[0][2][1], errors[0][2][2]
+    six.reraise(errors[0][2][0], errors[0][2][1], errors[0][2][2])
 
   # The soft way was not good enough. Try the hard way.
   for i in xrange(max_tries):
@@ -1228,7 +1231,7 @@ def rmtree(root):
     processes = _get_children_processes_win(root)
     if processes:
       sys.stderr.write('Failed to terminate processes.\n')
-      raise errors[0][2][0], errors[0][2][1], errors[0][2][2]
+      six.reraise(errors[0][2][0], errors[0][2][1], errors[0][2][2])
 
   # Now that annoying processes in root are evicted, try again.
   errors = []
@@ -1241,7 +1244,7 @@ def rmtree(root):
     # The same path may be listed multiple times.
     for path in sorted(set(path for _, path, _ in errors)):
       sys.stderr.write('- %s\n' % path)
-    raise errors[0][2][0], errors[0][2][1], errors[0][2][2]
+    six.reraise(errors[0][2][0], errors[0][2][1], errors[0][2][2])
   return False
 
 

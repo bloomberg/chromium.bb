@@ -13,7 +13,6 @@ import functools
 import logging
 import optparse
 import os
-import Queue
 import re
 import signal
 import stat
@@ -30,6 +29,7 @@ tools.force_local_third_party()
 import colorama
 from depot_tools import fix_encoding
 from depot_tools import subcommand
+from six.moves import queue as Queue
 
 # pylint: disable=ungrouped-imports
 import auth
@@ -538,7 +538,8 @@ class Storage(object):
     """ThreadPool for CPU-bound tasks like zipping."""
     if self._cpu_thread_pool is None:
       threads = max(threading_utils.num_processors(), 2)
-      if sys.maxsize <= 2L**32:
+      max_size = long(2)**32 if sys.version_info.major == 2 else 2**32
+      if sys.maxsize <= max_size:
         # On 32 bits userland, do not try to use more than 16 threads.
         threads = min(threads, 16)
       self._cpu_thread_pool = threading_utils.ThreadPool(2, threads, 0, 'zip')
@@ -1236,10 +1237,10 @@ def _map_file(dst, digest, props, cache, read_only, use_symlinks):
 
     if filetype == 'basic':
       # Ignore all bits apart from the user.
-      file_mode = (props.get('m') or 0500) & 0700
+      file_mode = (props.get('m') or 0o500) & 0o700
       if read_only:
         # Enforce read-only if the root bundle does.
-        file_mode &= 0500
+        file_mode &= 0o500
       putfile(srcfileobj, dst, file_mode,
               use_symlink=use_symlinks)
 
@@ -1263,10 +1264,10 @@ def _map_file(dst, digest, props, cache, read_only, use_symlinks):
                 fp)
           ifd = t.extractfile(ti)
           file_path.ensure_tree(os.path.dirname(fp))
-          file_mode = ti.mode & 0700
+          file_mode = ti.mode & 0o700
           if read_only:
             # Enforce read-only if the root bundle does.
-            file_mode &= 0500
+            file_mode &= 0o500
           putfile(ifd, fp, file_mode, ti.size)
 
     else:
