@@ -103,8 +103,10 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_item.h"
+#import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
+#import "ios/chrome/browser/ui/dialogs/overlay_java_script_dialog_presenter.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
@@ -423,7 +425,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DialogPresenter* _dialogPresenter;
 
   // Handles presentation of JavaScript dialogs.
-  std::unique_ptr<JavaScriptDialogPresenterImpl> _javaScriptDialogPresenter;
+  std::unique_ptr<web::JavaScriptDialogPresenter> _javaScriptDialogPresenter;
 
   // Keyboard commands provider.  It offloads most of the keyboard commands
   // management off of the BVC.
@@ -799,8 +801,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     _browserContainerViewController = browserContainerViewController;
     _dependencyFactory = factory;
-    _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
-                                        presentingViewController:self];
     self.commandDispatcher = commandDispatcher;
     [self.commandDispatcher
         startDispatchingToTarget:self
@@ -837,8 +837,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _downloadManagerCoordinator.presenter =
         [[VerticalAnimationContainer alloc] init];
 
-    _javaScriptDialogPresenter.reset(
-        new JavaScriptDialogPresenterImpl(_dialogPresenter));
+    if (base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
+      _javaScriptDialogPresenter =
+          std::make_unique<OverlayJavaScriptDialogPresenter>();
+    } else {
+      _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
+                                          presentingViewController:self];
+      _javaScriptDialogPresenter =
+          std::make_unique<JavaScriptDialogPresenterImpl>(_dialogPresenter);
+    }
     _webStateDelegate.reset(new web::WebStateDelegateBridge(self));
     _inNewTabAnimation = NO;
 
