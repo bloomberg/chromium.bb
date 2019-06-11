@@ -33,7 +33,6 @@
 #include "processor/range_map-inl.h"
 
 #include "breakpad_googletest_includes.h"
-#include "common/scoped_ptr.h"
 #include "processor/linked_ptr.h"
 #include "processor/logging.h"
 
@@ -42,7 +41,6 @@ namespace {
 using google_breakpad::linked_ptr;
 using google_breakpad::MergeRangeStrategy;
 using google_breakpad::RangeMap;
-using google_breakpad::scoped_ptr;
 
 // A CountedObject holds an int.  A global (not thread safe!) count of
 // allocated CountedObjects is maintained to help test memory management.
