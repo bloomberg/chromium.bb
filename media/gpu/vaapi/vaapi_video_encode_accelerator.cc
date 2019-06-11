@@ -384,7 +384,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       (native_input_mode_ ? 0 : kNumSurfacesPerInputVideoFrame);
 
   if (!vaapi_wrapper_->CreateContextAndSurfaces(
-          VA_RT_FORMAT_YUV420, coded_size_,
+          kVaSurfaceFormat, coded_size_,
           (num_frames_in_flight + 1) * va_surfaces_per_video_frame_,
           &available_va_surface_ids_)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed creating VASurfaces");
@@ -581,14 +581,13 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
   }
 
   scoped_refptr<VASurface> input_surface = new VASurface(
-      va_input_surface_id, coded_size_, vaapi_wrapper_->va_surface_format(),
+      va_input_surface_id, coded_size_, kVaSurfaceFormat,
       native_input_mode_ ? base::DoNothing()
                          : base::BindOnce(va_surface_release_cb_));
 
   scoped_refptr<VASurface> reconstructed_surface =
       new VASurface(available_va_surface_ids_.back(), coded_size_,
-                    vaapi_wrapper_->va_surface_format(),
-                    base::BindOnce(va_surface_release_cb_));
+                    kVaSurfaceFormat, base::BindOnce(va_surface_release_cb_));
   available_va_surface_ids_.pop_back();
 
   auto job = base::MakeRefCounted<VaapiEncodeJob>(

@@ -158,8 +158,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // The client is responsible for releasing it via DestroyContext() or
   // DestroyContextAndSurfaces(), or it will be released on dtor.
   virtual bool CreateContext(unsigned int va_format, const gfx::Size& size);
-  // Destroys the context identified by |va_context_id_| and clears the local
-  // associated |va_surface_format_|.
+  // Destroys the context identified by |va_context_id_|.
   void DestroyContext();
 
   // Creates a self-releasing VASurface from |pixmap|. The ownership of the
@@ -266,9 +265,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Initialize static data before sandbox is enabled.
   static void PreSandboxInitialization();
 
-  // Get the created surfaces format. TODO(crbug.com/971891): remove.
-  unsigned int va_surface_format() const { return va_surface_format_; }
-
  protected:
   VaapiWrapper();
   virtual ~VaapiWrapper();
@@ -308,9 +304,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Pointer to VADisplayState's member |va_lock_|. Guaranteed to be valid for
   // the lifetime of VaapiWrapper.
   base::Lock* va_lock_;
-
-  // VA format of allocated surfaces. TODO(crbug.com/971891): remove.
-  unsigned int va_surface_format_;
 
   // VA handles.
   // All valid after successful Initialize() and until Deinitialize().

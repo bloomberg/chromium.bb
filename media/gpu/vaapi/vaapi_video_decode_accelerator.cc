@@ -145,6 +145,7 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       vaapi_picture_factory_(new VaapiPictureFactory()),
       buffer_allocation_mode_(BufferAllocationMode::kNormal),
       surfaces_available_(&lock_),
+      va_surface_format_(VA_INVALID_ID),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VaapiDecoderThread"),
       finish_flush_pending_(false),
@@ -631,7 +632,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
       << ", requested " << requested_num_pics_ << ")", INVALID_ARGUMENT, );
   DCHECK(requested_pic_size_ == buffers[0].size());
 
-  const unsigned int va_format = GetVaFormatForVideoCodecProfile(profile_);
+  va_surface_format_ = GetVaFormatForVideoCodecProfile(profile_);
   std::vector<VASurfaceID> va_surface_ids;
 
   // If we aren't in BufferAllocationMode::kNone, we have to allocate a
@@ -684,7 +685,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   if (buffer_allocation_mode_ == BufferAllocationMode::kNone) {
     DCHECK(!va_surface_ids.empty());
     RETURN_AND_NOTIFY_ON_FAILURE(
-        vaapi_wrapper_->CreateContext(va_format, requested_pic_size_),
+        vaapi_wrapper_->CreateContext(va_surface_format_, requested_pic_size_),
         "Failed creating VA Context", PLATFORM_FAILURE, );
     DCHECK_EQ(va_surface_ids.size(), buffers.size());
   } else {
@@ -695,7 +696,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     CHECK_NE(requested_num_surfaces, 0u);
     va_surface_ids.clear();
     RETURN_AND_NOTIFY_ON_FAILURE(vaapi_wrapper_->CreateContextAndSurfaces(
-                                     va_format, requested_pic_size_,
+                                     va_surface_format_, requested_pic_size_,
                                      requested_num_surfaces, &va_surface_ids),
                                  "Failed creating VA Surfaces",
                                  PLATFORM_FAILURE, );
@@ -1011,6 +1012,7 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
   if (available_va_surfaces_.empty())
     return nullptr;
 
+  DCHECK_NE(VA_INVALID_ID, va_surface_format_);
   DCHECK(!awaiting_va_surfaces_recycle_);
   if (buffer_allocation_mode_ != BufferAllocationMode::kNone) {
     const VASurfaceID id = available_va_surfaces_.front();
@@ -1023,8 +1025,7 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
                           available_va_surfaces_.size(),
                       "available", available_va_surfaces_.size());
 
-    return new VASurface(id, requested_pic_size_,
-                         vaapi_wrapper_->va_surface_format(),
+    return new VASurface(id, requested_pic_size_, va_surface_format_,
                          base::BindOnce(va_surface_release_cb_));
   }
 
@@ -1039,7 +1040,7 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
         // to return a new VASurface.
         base::Erase(available_va_surfaces_, va_surface_id);
         return new VASurface(va_surface_id, requested_pic_size_,
-                             vaapi_wrapper_->va_surface_format(),
+                             va_surface_format_,
                              base::BindOnce(va_surface_release_cb_));
       }
     }
@@ -1132,12 +1133,11 @@ bool VaapiVideoDecodeAccelerator::OnMemoryDump(
 
   constexpr float kNumBytesPerPixelYUV420 = 12.0 / 8;
   constexpr float kNumBytesPerPixelYUV420_10bpp = 2 * kNumBytesPerPixelYUV420;
-  unsigned int va_surface_format = GetVaFormatForVideoCodecProfile(profile_);
-  DCHECK(va_surface_format == VA_RT_FORMAT_YUV420 ||
-         va_surface_format == VA_RT_FORMAT_YUV420_10BPP);
+  DCHECK(va_surface_format_ == VA_RT_FORMAT_YUV420 ||
+         va_surface_format_ == VA_RT_FORMAT_YUV420_10BPP);
   const float va_surface_bytes_per_pixel =
-      va_surface_format == VA_RT_FORMAT_YUV420 ? kNumBytesPerPixelYUV420
-                                               : kNumBytesPerPixelYUV420_10bpp;
+      va_surface_format_ == VA_RT_FORMAT_YUV420 ? kNumBytesPerPixelYUV420
+                                                : kNumBytesPerPixelYUV420_10bpp;
   // Report |requested_num_surfaces| and the associated memory size. The
   // calculated size is an estimation since we don't know the internal VA
   // strides, texture compression, headers, etc, but is a good lower boundary.

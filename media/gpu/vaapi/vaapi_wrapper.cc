@@ -1216,8 +1216,9 @@ bool VaapiWrapper::CreateContextAndSurfaces(
   DVLOG(2) << "Creating " << num_surfaces << " surfaces";
   DCHECK(va_surfaces->empty());
 
-  if (va_surface_format_ != 0u) {
-    LOG(ERROR) << "Surfaces should be destroyed before creating new surfaces";
+  if (va_context_id_ != VA_INVALID_ID) {
+    LOG(ERROR)
+        << "The current context should be destroyed before creating a new one";
     return false;
   }
 
@@ -1250,10 +1251,7 @@ bool VaapiWrapper::CreateContext(unsigned int va_format,
       vaCreateContext(va_display_, va_config_id_, size.width(), size.height(),
                       VA_PROGRESSIVE, empty_va_surfaces_ids_pointer,
                       empty_va_surfaces_ids_size, &va_context_id_);
-
   VA_LOG_ON_ERROR(va_res, "vaCreateContext failed");
-  if (va_res == VA_STATUS_SUCCESS)
-    va_surface_format_ = va_format;
   return va_res == VA_STATUS_SUCCESS;
 }
 
@@ -1711,7 +1709,6 @@ void VaapiWrapper::PreSandboxInitialization() {
 
 VaapiWrapper::VaapiWrapper()
     : va_lock_(VADisplayState::Get()->va_lock()),
-      va_surface_format_(0),
       va_display_(NULL),
       va_config_id_(VA_INVALID_ID),
       va_context_id_(VA_INVALID_ID) {}
@@ -1808,7 +1805,6 @@ void VaapiWrapper::DestroyContext() {
   }
 
   va_context_id_ = VA_INVALID_ID;
-  va_surface_format_ = 0;
 }
 
 bool VaapiWrapper::CreateSurfaces(unsigned int va_format,

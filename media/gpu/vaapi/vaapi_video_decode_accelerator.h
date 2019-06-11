@@ -269,6 +269,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   std::list<VASurfaceID> available_va_surfaces_ GUARDED_BY(lock_);
   // Signalled when output surfaces are queued into |available_va_surfaces_|.
   base::ConditionVariable surfaces_available_;
+  // VASurfaceIDs format, filled in when created.
+  unsigned int va_surface_format_;
 
   // Pending output requests from the decoder. When it indicates that we should
   // output a surface and we have an available Picture (i.e. texture) ready
