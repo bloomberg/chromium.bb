@@ -28,12 +28,12 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
  public:
   FrameDeliverer(
       const RepaintCB& repaint_cb,
-      base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
-          frame_dropped_cb,
+      base::WeakPtr<MediaStreamVideoRendererSink>
+          media_stream_video_renderer_sink,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)
       : main_render_task_runner_(std::move(main_render_task_runner)),
         repaint_cb_(repaint_cb),
-        frame_dropped_cb_(std::move(frame_dropped_cb)),
+        media_stream_video_renderer_sink_(media_stream_video_renderer_sink),
         state_(STOPPED),
         frame_size_(kMinFrameSize, kMinFrameSize),
         emit_frame_drop_events_(true) {
@@ -60,7 +60,8 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
         emit_frame_drop_events_ = false;
         PostCrossThreadTask(
             *main_render_task_runner_, FROM_HERE,
-            CrossThreadBind(frame_dropped_cb_,
+            CrossThreadBind(&MediaStreamVideoRendererSink::OnFrameDropped,
+                            media_stream_video_renderer_sink_,
                             media::VideoCaptureFrameDropReason::
                                 kRendererSinkFrameDelivererIsNotStarted));
       }
@@ -117,8 +118,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner_;
   const RepaintCB repaint_cb_;
-  const base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
-      frame_dropped_cb_;
+  base::WeakPtr<MediaStreamVideoRendererSink> media_stream_video_renderer_sink_;
   State state_;
   gfx::Size frame_size_;
   bool emit_frame_drop_events_;
@@ -148,10 +148,7 @@ void MediaStreamVideoRendererSink::Start() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
   frame_deliverer_.reset(new MediaStreamVideoRendererSink::FrameDeliverer(
-      repaint_cb_,
-      ConvertToBaseCallback(CrossThreadBind(
-          &MediaStreamVideoSink::OnFrameDropped, weak_factory_.GetWeakPtr())),
-      main_render_task_runner_));
+      repaint_cb_, weak_factory_.GetWeakPtr(), main_render_task_runner_));
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&FrameDeliverer::Start,
