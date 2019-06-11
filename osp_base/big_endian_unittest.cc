@@ -226,6 +226,64 @@ TEST(BigEndianReaderTest, RespectLength) {
   EXPECT_EQ(reader.length(), size_t(8));
 }
 
+TEST(BigEndianBufferCursorTest, CursorCommit) {
+  uint8_t data[16] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+                      0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
+  BigEndianReader reader(data, sizeof(data));
+
+  {
+    BigEndianReader::Cursor cursor(&reader);
+
+    uint8_t u8;
+    EXPECT_TRUE(reader.Read<uint8_t>(&u8));
+    EXPECT_EQ(cursor.delta(), 1);
+
+    uint16_t u16;
+    EXPECT_TRUE(reader.Read<uint16_t>(&u16));
+    EXPECT_EQ(cursor.delta(), 3);
+
+    uint32_t u32;
+    EXPECT_TRUE(reader.Read<uint32_t>(&u32));
+    EXPECT_EQ(cursor.delta(), 7);
+
+    uint64_t u64;
+    EXPECT_TRUE(reader.Read<uint64_t>(&u64));
+    EXPECT_EQ(cursor.delta(), 15);
+
+    EXPECT_FALSE(reader.Skip(2));
+    EXPECT_EQ(cursor.delta(), 15);
+    EXPECT_EQ(reader.current() - cursor.origin(), cursor.delta());
+
+    cursor.Commit();
+  }
+
+  EXPECT_EQ(reader.begin(), data);
+  EXPECT_EQ(reader.current(), data + 15);
+  EXPECT_EQ(reader.end(), data + 16);
+  EXPECT_EQ(reader.offset(), size_t(15));
+  EXPECT_EQ(reader.remaining(), size_t(1));
+  EXPECT_EQ(reader.length(), size_t(16));
+}
+
+TEST(BigEndianBufferCursorTest, CursorRollback) {
+  uint8_t data[16];
+  BigEndianReader reader(data, sizeof(data));
+
+  {
+    BigEndianReader::Cursor cursor(&reader);
+
+    EXPECT_TRUE(reader.Skip(4));
+    EXPECT_EQ(cursor.delta(), 4);
+  }
+
+  EXPECT_EQ(reader.begin(), data);
+  EXPECT_EQ(reader.current(), data);
+  EXPECT_EQ(reader.end(), data + 16);
+  EXPECT_EQ(reader.offset(), size_t(0));
+  EXPECT_EQ(reader.remaining(), size_t(16));
+  EXPECT_EQ(reader.length(), size_t(16));
+}
+
 TEST(BigEndianWriterTest, ConstructWithValidBuffer) {
   uint8_t data[64];
   BigEndianWriter writer(data, sizeof(data));

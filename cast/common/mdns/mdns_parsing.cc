@@ -176,7 +176,7 @@ bool MdnsWriter::WriteDomainName(const DomainName& name) {
     return false;
   }
 
-  uint8_t* const rollback_position = current();
+  Cursor cursor(this);
   const std::vector<uint64_t> subhashes = ComputeDomainNameSubhashes(name);
   // Tentative dictionary contains label pointer entries to be added to the
   // compression dictionary after successfully writing the domain name.
@@ -190,11 +190,11 @@ bool MdnsWriter::WriteDomainName(const DomainName& name) {
     auto find_result = dictionary_.find(subhashes[i]);
     if (find_result != dictionary_.end()) {
       if (!Write<uint16_t>(find_result->second)) {
-        set_current(rollback_position);
         return false;
       }
       dictionary_.insert(tentative_dictionary.begin(),
                          tentative_dictionary.end());
+      cursor.Commit();
       return true;
     }
     // Only add a pointer_label for compression if the offset into the buffer
@@ -209,18 +209,17 @@ bool MdnsWriter::WriteDomainName(const DomainName& name) {
         (static_cast<uint8_t>(label.size()) & ~kLabelMask) | kLabelDirect;
     if (!Write<uint8_t>(direct_label) ||
         !WriteBytes(label.data(), label.size())) {
-      set_current(rollback_position);
       return false;
     }
   }
   if (!Write<uint8_t>(kLabelTermination)) {
-    set_current(rollback_position);
     return false;
   }
   // The probability of a collision is extremely low in this application, as the
   // number of domain names compressed is insignificant in comparison to the
   // hash function image.
   dictionary_.insert(tentative_dictionary.begin(), tentative_dictionary.end());
+  cursor.Commit();
   return true;
 }
 

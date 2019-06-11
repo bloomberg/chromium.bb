@@ -7,43 +7,27 @@
 namespace openscreen {
 
 BigEndianReader::BigEndianReader(const uint8_t* buffer, size_t length)
-    : begin_(buffer), current_(buffer), end_(buffer + length) {}
+    : BigEndianBuffer(buffer, length) {}
 
 bool BigEndianReader::ReadBytes(size_t length, void* out) {
-  if (current_ + length > end_) {
-    return false;
+  const uint8_t* read_position = current();
+  if (Skip(length)) {
+    memcpy(out, read_position, length);
+    return true;
   }
-  memcpy(out, current_, length);
-  current_ += length;
-  return true;
-}
-
-bool BigEndianReader::Skip(size_t length) {
-  if (current_ + length > end_) {
-    return false;
-  }
-  current_ += length;
-  return true;
+  return false;
 }
 
 BigEndianWriter::BigEndianWriter(uint8_t* buffer, size_t length)
-    : begin_(buffer), current_(buffer), end_(buffer + length) {}
+    : BigEndianBuffer(buffer, length) {}
 
 bool BigEndianWriter::WriteBytes(const void* buffer, size_t length) {
-  if (current_ + length > end_) {
-    return false;
+  uint8_t* write_position = current();
+  if (Skip(length)) {
+    memcpy(write_position, buffer, length);
+    return true;
   }
-  memcpy(current_, buffer, length);
-  current_ += length;
-  return true;
-}
-
-bool BigEndianWriter::Skip(size_t length) {
-  if (current_ + length > end_) {
-    return false;
-  }
-  current_ += length;
-  return true;
+  return false;
 }
 
 }  // namespace openscreen
