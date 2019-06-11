@@ -51429,6 +51429,24 @@ Called by update_net_trust_anchors.py.-->
              start)"/>
 </enum>
 
+<enum name="SecureCookieAction">
+  <int value="0"
+      label="The provided URL was invalid, so no URL-modification was
+             performed"/>
+  <int value="1"
+      label="Cookie was already for an 'HTTPS' URL, so no URL-modification
+             was performed"/>
+  <int value="2"
+      label="Cookie data was formatted incorrectly, so no URL-modification
+             was performed"/>
+  <int value="3"
+      label="Cookie was not marked as 'Secure', so no URL-modification was
+             performed"/>
+  <int value="4"
+      label="The URL's scheme was fixed up 'HTTPS' for backwards
+             compatibility"/>
+</enum>
+
 <enum name="SecurityInterstitialDecision">
   <int value="0" label="SHOW"/>
   <int value="1" label="PROCEED"/>
