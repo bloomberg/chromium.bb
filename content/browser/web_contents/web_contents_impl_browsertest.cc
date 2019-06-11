@@ -52,6 +52,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -874,6 +875,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // Kill the renderer process so when the navigate again, it will be a fresh
   // renderer with an empty in-memory cache.
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   NavigateToURL(shell(), GetWebUIURL("crash"));
 
   // Reload that URL, the subresource should be served from the network cache.
@@ -975,10 +977,20 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
   }
 
  protected:
+  // Terminates the renderer to clear the in-memory cache.
+  void TerminateRenderer() {
+    RenderProcessHost* process =
+        shell()->web_contents()->GetMainFrame()->GetProcess();
+    RenderProcessHostWatcher process_watcher(
+        process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    NavigateToURL(shell(), GetWebUIURL("crash"));
+    process_watcher.Wait();
+  }
+
   bool TestResourceLoadFromDedicatedWorker(const GURL& url,
                                            const GURL& worker) {
-    // Kill the renderer to clear the in-memory cache.
-    NavigateToURL(shell(), GURL("chrome:crash"));
+    TerminateRenderer();
 
     // Observe network requests.
     ResourceLoadObserver observer(shell());
@@ -999,8 +1011,7 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
   // Loads 3p.com/script on page |url|, optionally from |sub_frame| if it's
   // valid and return if the script was cached or not.
   bool TestResourceLoad(const GURL& url, const GURL& sub_frame) {
-    // Kill the renderer to clear the in-memory cache.
-    NavigateToURL(shell(), GetWebUIURL("crash"));
+    TerminateRenderer();
 
     // Observe network requests.
     ResourceLoadObserver observer(shell());
