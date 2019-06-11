@@ -1078,6 +1078,10 @@ struct weston_desktop_xwayland;
 struct weston_desktop_xwayland_interface;
 struct weston_debug_compositor;
 
+/** Main object, container-like structure which aggregates all other objects.
+ *
+ * \ingroup compositor
+ */
 struct weston_compositor {
 	struct wl_signal destroy_signal;
 
