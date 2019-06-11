@@ -215,6 +215,7 @@
 <translation id="202813660234680402">नको, जोडू नका</translation>
 <translation id="2030481566774242610">तुम्हाला असे म्हणायचे होते <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रॉक्सी आणि फायरवॉल तपासणे<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">तुमच्या डिव्हाइसचा डेटा कसा हाताळला जातो ते नियंत्रित करते. Google तुमचा डिव्हाइस डेटा कसा वापरते आणि त्यावर कशी प्रक्रिया करते हे तुमच्या डिव्हाइस व्यवस्थापकाकडून निर्धारित केले जाते.</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" />मधील पेज भाषांतरीत केले जाणार नाहीत.</translation>
 <translation id="2053553514270667976">पिनकोड</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 सूचना}other{# सूचना}}</translation>
@@ -548,6 +549,7 @@
 <translation id="382518646247711829">तुम्ही प्रॉक्सी सर्व्हर वापरत असल्यास...</translation>
 <translation id="3828924085048779000">रिक्त सांकेतिक पासफ्रेझाची परवानगी नाही.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> ने अतिरिक्त फंक्शनसाठी एक्स्टेंशन इंस्टॉल केले आहे. एक्स्टेंशनकडे तुमच्या काही डेटाचा अ‍ॅक्सेस आहे.</translation>
+<translation id="3835128043098956141">तुमच्या खात्याचा डेटा कसा हाताळला जातो ते नियंत्रित करते. Google तुमचा खाते डेटा कसा वापरते आणि त्यावर कशी प्रक्रिया करते ते तुमच्या खाते व्यवस्थापकाद्वारे निर्धारित केले जाते.</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3858027520442213535">तारीख आणि वेळ अपडेट करा</translation>
 <translation id="3884278016824448484">संघर्ष करणारा डिव्हाइस अभिज्ञापक</translation>
@@ -981,6 +983,7 @@
 <translation id="6290238015253830360">तुम्ही सुचविलेले लेख येथे दिसतील</translation>
 <translation id="6302269476990306341">Chrome मधील Google असिस्टंट थांबत आहे</translation>
 <translation id="6305205051461490394"><ph name="URL" /> आवाक्याबाहेर आहे.</translation>
+<translation id="6321321051990674438">तुमचे डिव्हाइस आणि खात्यामधील डेटा कसा हाताळला जातो हे नियंत्रित करते. Google तुमचे डिव्हाइस आणि खाते डेटा कसे वापरते आणि त्यावर कशी प्रक्रिया करते ते तुमच्या डिव्हाइस आणि खाते व्यवस्थापकाद्वारे निर्धारित केले जाते.</translation>
 <translation id="6321917430147971392">आपल्या DNS सेटिंग्ज तपासा</translation>
 <translation id="6328639280570009161">नेटवर्क पूर्वानुमान अक्षम करून पहा</translation>
 <translation id="6328784461820205019">"तुमचे कनेक्शन खाजगी नाही" किंवा "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" किंवा "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" किंवा "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" किंवा "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" किंवा "SSL सर्टिफिकेट एरर"</translation>

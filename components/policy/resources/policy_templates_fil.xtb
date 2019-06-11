@@ -2091,6 +2091,11 @@
       Malayuang kinuha ang mga suhestyong ito sa mga server ng Google.
 
       Kung nakatakda sa false ang setting na ito, hindi makukuha o maipapakita ang mga suhestyon.</translation>
+<translation id="4759650396863318477">Nagbibigay-daan sa iyong itakda ang yugto ng panahon, sa millisecond, kung kailan aabisuhan ang mga user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> o dapat i-restart ang <ph name="PRODUCT_OS_NAME" /> para malapat ang nakabinbing pag-update.
+
+      Sa yugto ng panahong ito, paulit-ulit na ipapaalam sa user ang pangangailangang mag-update. Para sa mga <ph name="PRODUCT_OS_NAME" /> device, lalabas sa system tray ang notification sa pag-restart alinsunod sa patakarang <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Para sa mga <ph name="PRODUCT_NAME" /> browser, magbabago ang menu ng app para isaad na kinakailangan ng muling paglulunsad kapag lumipas ang one third ng yugto ng panahon ng notification. Magbabago ng kulay ang notification na ito kapag lumipas ang two thirds ng yugto ng panahon ng notification, at muli kapag lumipas ang buong yugto ng panahon ng notification. Ang mga karagdagang notification na na-enable ng patakarang <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> ay sumusunod sa kaparehong iskedyul na ito.
+
+      Kung hindi itatakda, ang default na yugto ng panahong 345600000 millisecond (apat na araw) ang gagamitin para sa mga <ph name="PRODUCT_OS_NAME" /> device at 604800000 millisecond (isang linggo) ang gagamitin para sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Ine-enable ang feature na AutoFill ng <ph name="PRODUCT_NAME" /> at binibigyang-daan ang mga user na awtomatikong kumpletuhin ang impormasyon ng credit card sa mga web form gamit ang dati nang na-store na impormasyon.
 
       Kung idi-disable ang setting na ito, hindi kailanman magmumungkahi o magkukumpleto ang AutoFill ng impormasyon ng credit card, o hindi nito ise-save ang karagdagang impormasyon ng credit card na maaaring isumite ng user habang nagba-browse siya sa web.
@@ -4415,6 +4420,8 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="915194831143859291">Kung nakatakda sa false o hindi naka-configure ang patakarang ito, papayagan ng <ph name="PRODUCT_OS_NAME" /> ang user na i-shut down ang device.
       Kung nakatakda sa true ang patakarang ito, magti-trigger ang <ph name="PRODUCT_OS_NAME" /> ng reboot kapag i-shut down ng user ang device. Papalitan ng <ph name="PRODUCT_OS_NAME" /> ang lahat ng button ng pag-shutdown sa UI ng mga button sa pag-reboot. Kung i-shut down ng user ang device gamit ang button ng power, hindi ito awtomatikong magre-reboot, kahit na naka-enable ang patakaran.</translation>
 <translation id="9152473318295429890">Ine-enable ang mga kontekstwal na suhestyon ng mga nauugnay na web page</translation>
+<translation id="9153446010242995516">Mag-roll back at manatili sa target na bersyon kung mas bago ang bersyon ng OS kaysa sa target. Subukang i-carry over ang pag-configure sa antas ng device (kabilang ang mga kredensyal ng network) sa pamamagitan ng proseso ng pag-roll back, kung posible, pero mag-roll back nang may ganap na powerwash kahit pa hindi posible ang pag-restore ng data (dahil hindi sinusuportahan ng target na bersyon ang pag-restore ng data o dahil sa backward-incompatible na pagbabago).
+          Sinusuportahan sa bersyon 75 pataas ng <ph name="PRODUCT_OS_NAME" />. Para sa mga dati nang kliyente, ang ibig sabihin ng value na ito ay naka-disable ang pag-roll back.</translation>
 <translation id="9158929520101169054">Payagan ang Maraming Pag-sign Sa Browser</translation>
 <translation id="9159126470527871268">Nag-aabiso sa mga user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> o i-restart ang <ph name="PRODUCT_OS_NAME" /> para malapat ang nakabinbing pag-update.
 

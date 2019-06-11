@@ -214,6 +214,7 @@
 <translation id="202813660234680402">नहीं, न जोड़ें</translation>
 <translation id="2030481566774242610">क्या आप मतलब <ph name="LINK" /> से है?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रॉक्सी और फायरवॉल की जाँच करें<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">यह नीति नियंत्रित करती है कि आपका डिवाइस डेटा किस तरह प्रबंधित किया जाता है. यह आपका डिवाइस प्रबंधक तय करता है कि Google आपके डिवाइस डेटा को कैसे प्रोसेस और इस्तेमाल करेगा.</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" /> भाषा के पेजों का अनुवाद नहीं किया जाएगा.</translation>
 <translation id="2053553514270667976">ज़िप कोड</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 सुझाव}one{# सुझाव}other{# सुझाव}}</translation>
@@ -547,6 +548,7 @@
 <translation id="382518646247711829">अगर आप प्रॉक्सी सर्वर का उपयोग करते हैं...</translation>
 <translation id="3828924085048779000">खाली 'पासफ़्रेज़' की अनुमति नहीं है.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> ने और सुविधाओं के लिए एक्सटेंशन इंस्टॉल किया है. एक्सटेंशन आपका कुछ डेटा एक्सेस कर सकते हैं.</translation>
+<translation id="3835128043098956141">यह नीति नियंत्रित करती है कि आपके खाते का डेटा किस तरह प्रबंधित किया जाता है. यह आपका खाता मैनेजर तय करता है कि Google आपके खाते के डेटा को कैसे प्रोसेस और इस्तेमाल करेगा.</translation>
 <translation id="385051799172605136">वापस</translation>
 <translation id="3858027520442213535">तारीख और समय अपडेट करें</translation>
 <translation id="3884278016824448484">विरोधाभासी डिवाइस पहचानकर्ता</translation>
@@ -979,6 +981,7 @@
 <translation id="6290238015253830360">आपके सुझाए हुए लेख यहां दिखाई देते हैं</translation>
 <translation id="6302269476990306341">'Chrome में Google Assistant' को रोका जा रहा है</translation>
 <translation id="6305205051461490394"><ph name="URL" /> तक नहीं पहुंचा जा सकता.</translation>
+<translation id="6321321051990674438">यह नीति नियंत्रित करती है कि आपके डिवाइस और खाते का डेटा किस तरह प्रबंधित किया जाता है. यह आपका डिवाइस और खाता मैनेजर तय करता है कि Google आपके डिवाइस और खाते के डेटा को कैसे प्रोसेस और इस्तेमाल करेगा.</translation>
 <translation id="6321917430147971392">अपनी DNS सेटिंग जांचे</translation>
 <translation id="6328639280570009161">नेटवर्क पूर्वानुमान को अक्षम करके देखें</translation>
 <translation id="6328784461820205019">"आपका कनेक्शन निजी नहीं है" या "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" या "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" या "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" या "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" या "एसएसएल प्रमाणपत्र गड़बड़ी"</translation>

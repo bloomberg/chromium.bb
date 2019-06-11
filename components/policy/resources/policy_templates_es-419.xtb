@@ -2037,6 +2037,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Estas sugerencias se obtienen de forma remota de los servidores de Google.
 
       Si se establece como falsa, no se obtendrán ni mostrarán las sugerencias.</translation>
+<translation id="4759650396863318477">Te permite establecer el período, en milisegundos, en el que se notifica a los usuarios que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
+
+      En este período, se le informará reiteradamente al usuario acerca de la necesidad de la actualización. En dispositivos <ph name="PRODUCT_OS_NAME" />, se muestra una notificación de reinicio en la bandeja del sistema, en conformidad con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En navegadores <ph name="PRODUCT_NAME" />, el menú de la app indica que se debe reiniciar después de transcurrido un tercio del período de la notificación. Esta notificación cambia de color tras dos tercios del período de la notificación y una vez más cuando finaliza este período. Las notificaciones adicionales que habilita la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen el mismo patrón.
+
+      Si no se establece, se utiliza el período predeterminado de 345600000 milisegundos (cuatro días) para los dispositivos <ph name="PRODUCT_OS_NAME" /> y 604800000 milisegundos (una semana) para los dispositivos <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4788252609789586009">Habilita la función "Autocompletar" de <ph name="PRODUCT_NAME" /> y permite que los usuarios completen automáticamente formularios web con información ya almacenada de las tarjetas de crédito.
 
       Si se inhabilita esta configuración, "Autocompletar" nunca sugerirá ni completará información de tarjetas de crédito. Tampoco guardará información adicional de tarjetas que el usuario haya enviado cuando navegaba en la Web.
@@ -4291,6 +4296,8 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="915194831143859291">Si esta política se establece en false o no se configura, <ph name="PRODUCT_OS_NAME" /> permitirá que el usuario apague el dispositivo.
       Si esta política se establece en true, <ph name="PRODUCT_OS_NAME" /> desencadenará un reinicio cuando el usuario apague el dispositivo. <ph name="PRODUCT_OS_NAME" /> reemplaza todos los botones de apagado de la UI por botones de reinicio. Si el usuario apaga el dispositivo con el botón de encendido, no se reiniciará automáticamente aunque la política esté habilitada.</translation>
 <translation id="9152473318295429890">Habilitar las sugerencias contextuales de páginas web relacionadas</translation>
+<translation id="9153446010242995516">Implementa la reversión y mantiene la versión objetivo si la versión del sistema operativo es más reciente que la objetivo. Intenta llevar a cabo la configuración a nivel de dispositivos (incluidas las credenciales de red) mediante el proceso de reversión, si es posible, pero realiza la reversión completa con la función Powerwash, incluso si no es posible restablecer los datos (porque la versión objetivo no admite el restablecimiento de los datos o porque un cambio no es compatible con las versiones anteriores).
+          Esta política es compatible con la versión 75 de <ph name="PRODUCT_OS_NAME" /> y versiones posteriores. Para los clientes anteriores, este valor significa que la reversión está inhabilitada.</translation>
 <translation id="9158929520101169054">Permitir el acceso múltiple en el navegador</translation>
 <translation id="9159126470527871268">Notifica a los usuarios que se deben reiniciar <ph name="PRODUCT_NAME" /> o <ph name="PRODUCT_OS_NAME" /> para que se aplique una actualización pendiente.
 

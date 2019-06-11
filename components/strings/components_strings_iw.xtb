@@ -210,6 +210,7 @@
 <translation id="202813660234680402">לא להוסיף</translation>
 <translation id="2030481566774242610">האם התכוונת ל-<ph name="LINK" />?</translation>
 <translation id="2032962459168915086">‏<ph name="BEGIN_LINK" />לבדוק את שרת ה-Proxy ואת חומת האש<ph name="END_LINK" /></translation>
+<translation id="2039578192324174100">‏אפשרות זו קובעת את אופן הטיפול בנתוני המכשיר. מנהל המכשיר קובע איך Google מעבדת את נתוני המכשיר ומשתמשת בהם.</translation>
 <translation id="2053111141626950936">דפים ב<ph name="LANGUAGE" /> לא יתורגמו.</translation>
 <translation id="2053553514270667976">מספר / מיקוד</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{הצעה אחת}two{שתי הצעות}many{# הצעות}other{# הצעות}}</translation>
@@ -541,6 +542,7 @@
 <translation id="382518646247711829">‏אם אתה משתמש בשרת Proxy...</translation>
 <translation id="3828924085048779000">אין אפשרות להשתמש במשפט-סיסמה ריק.</translation>
 <translation id="3831915413245941253">הותקנו תוספים מהדומיין <ph name="ENROLLMENT_DOMAIN" /> כדי להשתמש בפונקציות נוספות. לתוספים יש גישה לחלק מהנתונים שלך.</translation>
+<translation id="3835128043098956141">‏אפשרות זו קובעת את אופן הטיפול בנתוני החשבון. מנהל החשבון קובע איך Google מעבדת את נתוני החשבון ומשתמשת בהם.</translation>
 <translation id="385051799172605136">חזרה</translation>
 <translation id="3858027520442213535">עדכן את התאריך והשעה</translation>
 <translation id="3884278016824448484">מזהה מכשיר מתנגש</translation>
@@ -978,6 +980,7 @@ Del</translation>
 <translation id="6290238015253830360">הצעות של מאמרים עבורך מופיעות כאן</translation>
 <translation id="6302269476990306341">‏Google Assistant ב-Chrome מופסק</translation>
 <translation id="6305205051461490394">לא ניתן לגשת אל <ph name="URL" />.</translation>
+<translation id="6321321051990674438">‏אפשרות זו קובעת את אופן הטיפול בנתוני המכשיר והחשבון שלך. מנהל החשבון קובע איך Google מעבדת את נתוני המכשיר והחשבון ומשתמשת בהם.</translation>
 <translation id="6321917430147971392">‏בדוק את הגדרות ה-DNS</translation>
 <translation id="6328639280570009161">נסה להשבית את חיזוי הרשת</translation>
 <translation id="6328784461820205019">‏"החיבור שלך אינו פרטי" או "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" או "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" או "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" או "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" או "שגיאת אישור SSL"</translation>
