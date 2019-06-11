@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -159,13 +160,13 @@ void AudioProcessor::StartEchoCancellationDump(base::File file) {
 
   DCHECK(file.IsValid());
 
-  base::PlatformFile stream = file.TakePlatformFile();
   if (!worker_queue_) {
     worker_queue_ = std::make_unique<rtc::TaskQueue>(
         CreateWebRtcTaskQueue(rtc::TaskQueue::Priority::LOW));
   }
   auto aec_dump = webrtc::AecDumpFactory::Create(
-      stream, -1 /* max_log_size_bytes */, worker_queue_.get());
+      FileToFILE(std::move(file), "wb"), -1 /* max_log_size_bytes */,
+      worker_queue_.get());
   if (!aec_dump) {
     // AecDumpFactory::Create takes ownership of stream even if it fails, so we
     // don't need to close it.
