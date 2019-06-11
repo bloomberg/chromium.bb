@@ -137,6 +137,13 @@
   }
 }
 
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  if (@available(iOS 13, *)) {
+    [self updateLayoutForPreviousTraitCollection:nil];
+  }
+}
+
 - (void)didMoveToParentViewController:(UIViewController*)parent {
   [super didMoveToParentViewController:parent];
   UIView* omniboxView = self.view.locationBarContainer;
@@ -146,24 +153,7 @@
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  [self.delegate
-      viewControllerTraitCollectionDidChange:previousTraitCollection];
-  if (IsCompactHeight(self)) {
-    self.view.locationBarExtraBottomPadding.constant =
-        kAdaptiveLocationBarExtraVerticalMargin;
-  } else {
-    self.view.locationBarExtraBottomPadding.constant = 0;
-  }
-  self.view.locationBarBottomConstraint.constant =
-      [self verticalMarginForLocationBarForFullscreenProgress:
-                self.previousFullscreenProgress];
-  if (previousTraitCollection.preferredContentSizeCategory !=
-      self.traitCollection.preferredContentSizeCategory) {
-    self.view.locationBarHeight.constant = [self
-        locationBarHeightForFullscreenProgress:self.previousFullscreenProgress];
-    self.view.locationBarContainer.layer.cornerRadius =
-        self.view.locationBarHeight.constant / 2;
-  }
+  [self updateLayoutForPreviousTraitCollection:previousTraitCollection];
 }
 
 #pragma mark - Property accessors
@@ -265,6 +255,28 @@
 }
 
 #pragma mark - Private
+
+- (void)updateLayoutForPreviousTraitCollection:
+    (UITraitCollection*)previousTraitCollection {
+  [self.delegate
+      viewControllerTraitCollectionDidChange:previousTraitCollection];
+  if (IsCompactHeight(self)) {
+    self.view.locationBarExtraBottomPadding.constant =
+        kAdaptiveLocationBarExtraVerticalMargin;
+  } else {
+    self.view.locationBarExtraBottomPadding.constant = 0;
+  }
+  self.view.locationBarBottomConstraint.constant =
+      [self verticalMarginForLocationBarForFullscreenProgress:
+                self.previousFullscreenProgress];
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    self.view.locationBarHeight.constant = [self
+        locationBarHeightForFullscreenProgress:self.previousFullscreenProgress];
+    self.view.locationBarContainer.layer.cornerRadius =
+        self.view.locationBarHeight.constant / 2;
+  }
+}
 
 - (CGFloat)clampedFontSizeMultiplier {
   return ToolbarClampedFontSizeMultiplier(
