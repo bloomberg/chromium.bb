@@ -543,8 +543,10 @@ const FeatureEntry::Choice kForceColorProfileChoices[] = {
      switches::kForceDisplayColorProfile, "display-p3-d65"},
     {flag_descriptions::kForceColorProfileColorSpin,
      switches::kForceDisplayColorProfile, "color-spin-gamma24"},
-    {flag_descriptions::kForceColorProfileHdr,
+    {flag_descriptions::kForceColorProfileSCRGBLinear,
      switches::kForceDisplayColorProfile, "scrgb-linear"},
+    {flag_descriptions::kForceColorProfileHDR10,
+     switches::kForceDisplayColorProfile, "hdr10"},
 };
 
 const FeatureEntry::Choice kForceEffectiveConnectionTypeChoices[] = {

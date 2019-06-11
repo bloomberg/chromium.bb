@@ -414,12 +414,11 @@ void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space,
   gfx::ColorSpace output_color_space = color_space;
 
 #if defined(OS_WIN)
-  // Ensure output color space for HDR is linear if we need alpha blending, and
-  // HDR10 (BT.2020 primaries with PQ transfer function) otherwise.
   if (color_space.IsHDR()) {
     bool transparent = SkColorGetA(host_->background_color()) != SK_AlphaOPAQUE;
-    output_color_space = transparent ? gfx::ColorSpace::CreateSCRGBLinear()
-                                     : gfx::ColorSpace::CreateHDR10();
+    // Ensure output color space for HDR is linear if we need alpha blending.
+    if (transparent)
+      output_color_space = gfx::ColorSpace::CreateSCRGBLinear();
     output_color_space = output_color_space.GetScaledColorSpace(
         gfx::ColorSpace::kDefaultSDRWhiteLevel / sdr_white_level);
   }
@@ -456,7 +455,12 @@ void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space,
 void Compositor::SetBackgroundColor(SkColor color) {
   host_->set_background_color(color);
   // Update color space based on whether background color is transparent.
-  SetDisplayColorSpace(output_color_space_, sdr_white_level_);
+  if (output_color_space_.IsHDR()) {
+    gfx::ColorSpace unscaled_color_space =
+        output_color_space_.GetScaledColorSpace(
+            sdr_white_level_ / gfx::ColorSpace::kDefaultSDRWhiteLevel);
+    SetDisplayColorSpace(unscaled_color_space, sdr_white_level_);
+  }
   ScheduleDraw();
 }
 

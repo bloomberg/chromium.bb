@@ -97,7 +97,7 @@ TEST_F(WindowTreeHostTest, ColorSpaceHDR) {
 
   // UI compositor overrides HDR color space based on whether alpha blending is
   // needed or not.
-  test_screen()->SetColorSpace(gfx::ColorSpace::CreateSCRGBLinear());
+  test_screen()->SetColorSpace(gfx::ColorSpace::CreateHDR10());
   host()->compositor()->SetBackgroundColor(SK_ColorBLACK);
   EXPECT_EQ(gfx::ColorSpace::CreateHDR10(),
             host()->compositor()->output_color_space());

@@ -277,7 +277,9 @@ const char kFocusModeDescription[] =
 const char kForceColorProfileSRGB[] = "sRGB";
 const char kForceColorProfileP3[] = "Display P3 D65";
 const char kForceColorProfileColorSpin[] = "Color spin with gamma 2.4";
-const char kForceColorProfileHdr[] = "scRGB linear (HDR where available)";
+const char kForceColorProfileSCRGBLinear[] =
+    "scRGB linear (HDR where available)";
+const char kForceColorProfileHDR10[] = "HDR10 (HDR where available)";
 
 const char kForceColorProfileName[] = "Force color profile";
 const char kForceColorProfileDescription[] =

@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_layout_builder.h"
@@ -210,9 +211,13 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
   display.set_display_frequency(display_info.display_frequency());
   if (!Display::HasForceDisplayColorProfile()) {
     if (hdr_enabled) {
-      // It doesn't matter what HDR color space we set since UI compositor will
-      // override it to HDR10 if opaque or SCRGB linear if translucent.
-      display.SetColorSpaceAndDepth(gfx::ColorSpace::CreateHDR10(),
+      // Using RGBA F16 backbuffers required by SCRGB linear causes stuttering
+      // on Windows RS3, but RGB10A2 with HDR10 color space works fine.
+      gfx::ColorSpace hdr_color_space =
+          base::win::GetVersion() > base::win::Version::WIN10_RS3
+              ? gfx::ColorSpace::CreateSCRGBLinear()
+              : gfx::ColorSpace::CreateHDR10();
+      display.SetColorSpaceAndDepth(hdr_color_space,
                                     display_info.sdr_white_level());
     } else {
       display.SetColorSpaceAndDepth(

@@ -194,7 +194,8 @@ extern const char kFCMInvalidationsDescription[];
 extern const char kForceColorProfileSRGB[];
 extern const char kForceColorProfileP3[];
 extern const char kForceColorProfileColorSpin[];
-extern const char kForceColorProfileHdr[];
+extern const char kForceColorProfileSCRGBLinear[];
+extern const char kForceColorProfileHDR10[];
 
 extern const char kForceColorProfileName[];
 extern const char kForceColorProfileDescription[];
