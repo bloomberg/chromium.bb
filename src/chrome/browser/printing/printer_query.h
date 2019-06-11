@@ -55,6 +55,7 @@ class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
                    int expected_page_count,
                    bool has_selection,
                    MarginType margin_type,
+                   HWND hwnd,
                    bool is_scripted,
                    bool is_modifiable,
                    base::OnceClosure callback);

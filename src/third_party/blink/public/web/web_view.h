@@ -472,6 +472,11 @@ class WebView {
   virtual void ClearAutoplayFlags() = 0;
   virtual int32_t AutoplayFlagsForTest() = 0;
 
+  // HWND ----------------------------------------------------------------
+  // Save the hwnd of WebView if available
+  virtual HWND GetHwnd() { return 0; }
+  virtual void SetHwnd(HWND hwnd) {}
+
   // Suspend and resume ---------------------------------------------------
 
   // Pausing and unpausing current scheduled tasks.

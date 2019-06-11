@@ -1570,6 +1570,8 @@ void RenderWebView::notifyRoutingId(int id)
     updateVisibility();
     updateGeometry();
 
+    rv->GetWebView()->SetHwnd(d_hwnd.get());
+
     // Set input event routing:
     d_inputRouterImpl.reset(
         new content::InputRouterImpl(

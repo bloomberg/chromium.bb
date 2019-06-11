@@ -78,6 +78,7 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                int expected_page_count,
                                bool has_selection,
                                MarginType margin_type,
+                               HWND hwnd,
                                bool is_scripted,
                                bool is_modifiable,
                                base::OnceClosure callback) {
@@ -94,7 +95,7 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
       base::BindOnce(&PrintJobWorker::GetSettings,
                      base::Unretained(worker_.get()),
                      is_print_dialog_box_shown_, expected_page_count,
-                     has_selection, margin_type, is_scripted, is_modifiable));
+                     has_selection, margin_type, hwnd, is_scripted, is_modifiable));
 }
 
 void PrinterQuery::SetSettings(

@@ -447,6 +447,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ClearAutoplayFlags() override;
   int32_t AutoplayFlagsForTest() override;
 
+  HWND GetHwnd() override;
+  void SetHwnd(HWND hwnd) override;
+
   IntSize MainFrameSize();
   WebDisplayMode DisplayMode() const { return display_mode_; }
 
@@ -711,6 +714,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebDisplayMode display_mode_;
 
   FloatSize elastic_overscroll_;
+
+  // hwnd of WebView if available. e.g. blpwtk2::RenderWebview
+  HWND hwnd_;
 
   // This is owned by the LayerTreeHostImpl, and should only be used on the
   // compositor thread, so we keep the TaskRunner where you post tasks to

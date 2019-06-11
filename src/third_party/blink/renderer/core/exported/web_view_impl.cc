@@ -337,6 +337,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       should_dispatch_first_layout_after_finished_loading_(false),
       display_mode_(kWebDisplayModeBrowser),
       elastic_overscroll_(FloatSize()),
+      hwnd_(0),
       mutator_dispatcher_(nullptr) {
   DCHECK_EQ(!!client_, !!widget_client_);
   Page::PageClients page_clients;
@@ -3437,6 +3438,14 @@ void WebViewImpl::ClearAutoplayFlags() {
 
 int32_t WebViewImpl::AutoplayFlagsForTest() {
   return page_->AutoplayFlags();
+}
+
+HWND WebViewImpl::GetHwnd() {
+  return hwnd_;
+}
+
+void WebViewImpl::SetHwnd(HWND hwnd) {
+  hwnd_ = hwnd;
 }
 
 void WebViewImpl::DeferMainFrameUpdateForTesting() {
