@@ -4,13 +4,10 @@
      found in the LICENSE file. -->
 
 <!-- An icon tile. -->
-<org.chromium.chrome.browser.suggestions.tile.TopSitesTileView
+<merge
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="@dimen/tile_view_width_condensed"
-    android:layout_height="wrap_content"
-    android:paddingStart="@dimen/tile_view_padding"
-    android:paddingEnd="@dimen/tile_view_padding" >
+    xmlns:tools="http://schemas.android.com/tools" >
 
     <!-- The icon background. -->
     <View
@@ -19,7 +16,7 @@
         android:layout_height="@dimen/tile_view_icon_size"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/tile_view_icon_background_margin_top_modern"
-        android:background="@drawable/tile_view_hairline_border_background" />
+        android:background="@drawable/tile_view_icon_background_modern" />
 
     <!-- The main icon. -->
     <ImageView
@@ -28,7 +25,7 @@
         android:layout_height="@dimen/tile_view_icon_size_modern"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/tile_view_icon_margin_top_modern"
-        android:importantForAccessibility="no" />
+        tools:ignore="ContentDescription" />
 
     <!-- The touch highlight. -->
     <View
@@ -45,20 +42,9 @@
         android:layout_width="@dimen/tile_view_offline_badge_size_modern"
         android:layout_height="@dimen/tile_view_offline_badge_size_modern"
         android:layout_gravity="top|end"
-        android:layout_marginTop="@dimen/tile_view_offline_badge_margin_top_modern_condensed"
-        android:layout_marginEnd="@dimen/tile_view_offline_badge_margin_end_modern_condensed"
+        android:layout_marginTop="@dimen/tile_view_offline_badge_margin_top_modern"
+        android:layout_marginEnd="@dimen/tile_view_offline_badge_margin_end_modern"
         android:visibility="gone"
         android:contentDescription="@string/accessibility_ntp_offline_badge"
         app:srcCompat="@drawable/ic_offline_pin_blue_white" />
-
-    <org.chromium.ui.widget.TextViewWithLeading
-        android:id="@+id/tile_view_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/tile_view_title_margin_top_modern"
-        android:ellipsize="end"
-        android:gravity="center_horizontal"
-        android:lines="2"
-        android:textAppearance="@style/TextAppearance.BlackCaption"
-        app:leading="@dimen/text_size_small_leading"/>
-</org.chromium.chrome.browser.suggestions.tile.TopSitesTileView>
+</merge>
