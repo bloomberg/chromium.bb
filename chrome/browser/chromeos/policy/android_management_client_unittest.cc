@@ -8,9 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -62,7 +62,7 @@ class AndroidManagementClientTest : public testing::Test {
   // Protobuf is used in successfil responsees.
   em::DeviceManagementResponse android_management_response_;
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockDeviceManagementService service_;
   StrictMock<base::MockCallback<AndroidManagementClient::StatusCallback>>
       callback_observer_;
