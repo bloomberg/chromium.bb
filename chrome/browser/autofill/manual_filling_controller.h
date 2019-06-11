@@ -71,15 +71,21 @@ class ManualFillingController {
 
   // Requests to show the accessory bar. The accessory will only be shown
   // when the keyboard becomes visible.
+  // TODO(crbug.com/965478): Rename method to reflect latest logic changes.
   virtual void ShowWhenKeyboardIsVisible(FillingSource source) = 0;
 
   // Requests to show the touch to fill sheet.
   virtual void ShowTouchToFillSheet(
       const autofill::AccessorySheetData& data) = 0;
 
+  // This signals that the accessory data corresponding to |source| doesn't
+  // need to be shown anymore. If no FillingSource needs to be shown, the
+  // accessory sheet and bar will be hidden.
+  virtual void DeactivateFillingSource(FillingSource source) = 0;
+
   // Requests to hide the accessory. This hides both the accessory sheet
   // (if open) and the accessory bar.
-  virtual void Hide(FillingSource source) = 0;
+  virtual void Hide() = 0;
 
   // Notifies the view that automatic password generation status changed.
   //
@@ -105,12 +111,13 @@ class ManualFillingController {
       autofill::AccessoryAction selected_action) const = 0;
 
   // Called by the UI code to signal that the user requested password
-  // generation. This should prompt a modal dialog with the generated password.
+  // generation from the automatically shown button. This should prompt a modal
+  // dialog with the generated password.
   //
   // TODO(crbug.com/905669): This controller doesn't need to know about password
   // generation. Generalize this to forward an action request from the UI to a
   // type-specific accessory controller.
-  virtual void OnGenerationRequested() = 0;
+  virtual void OnAutomaticGenerationRequested() const = 0;
 
   // Gets an icon for the currently focused frame and passes it to
   // |icon_callback|. The callback is invoked with an image unless an icon for

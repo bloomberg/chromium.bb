@@ -16,6 +16,7 @@
 #include "chrome/browser/autofill/manual_filling_utils.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
+#include "chrome/browser/password_manager/password_generation_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
@@ -149,6 +150,29 @@ void PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
           web_contents, std::move(mf_controller), favicon_service)));
 }
 
+// static
+bool PasswordAccessoryControllerImpl::ShouldAcceptFocusEvent(
+    content::WebContents* web_contents,
+    password_manager::ContentPasswordManagerDriver* driver,
+    FocusedFieldType focused_field_type) {
+  // Only react to focus events that are sent for the current focused frame.
+  // This is used to make sure that obsolette events that come in an unexpected
+  // order are not processed. Example: (Frame1, focus) -> (Frame2, focus) ->
+  // (Frame1, unfocus) would otherwise unset all the data set for Frame2, which
+  // would be wrong.
+  if (web_contents->GetFocusedFrame() &&
+      driver->render_frame_host() == web_contents->GetFocusedFrame())
+    return true;
+
+  // The one event that is accepted even if there is no focused frame is an
+  // "unfocus" event that resulted in all frames being unfocused. This can be
+  // used to reset the state of the accessory.
+  if (!web_contents->GetFocusedFrame() &&
+      focused_field_type == FocusedFieldType::kUnknown)
+    return true;
+  return false;
+}
+
 void PasswordAccessoryControllerImpl::SavePasswordsForOrigin(
     const std::map<base::string16, const PasswordForm*>& best_matches,
     const url::Origin& origin) {
@@ -176,7 +200,8 @@ void PasswordAccessoryControllerImpl::OnOptionSelected(
     return;
   }
   if (selected_action == autofill::AccessoryAction::GENERATE_PASSWORD_MANUAL) {
-    // TODO(https://crbug.com/835234): Invoke manual generation.
+    OnGenerationRequested(true /* manual */);
+    GetManualFillingController()->Hide();
     return;
   }
   NOTREACHED() << "Unhandled selected action: "
@@ -236,8 +261,17 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
     GetManualFillingController()->ShowWhenKeyboardIsVisible(
         FillingSource::PASSWORD_FALLBACKS);
   } else {
-    GetManualFillingController()->Hide(FillingSource::PASSWORD_FALLBACKS);
+    GetManualFillingController()->DeactivateFillingSource(
+        FillingSource::PASSWORD_FALLBACKS);
   }
+}
+
+void PasswordAccessoryControllerImpl::OnGenerationRequested(bool manual) {
+  PasswordGenerationController* pwd_generation_controller =
+      PasswordGenerationController::GetIfExisting(web_contents_);
+
+  DCHECK(pwd_generation_controller);
+  pwd_generation_controller->OnGenerationRequested(manual);
 }
 
 void PasswordAccessoryControllerImpl::DidNavigateMainFrame() {

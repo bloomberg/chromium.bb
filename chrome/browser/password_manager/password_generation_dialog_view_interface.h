@@ -18,6 +18,9 @@ class PasswordGenerationDialogViewInterface {
   virtual ~PasswordGenerationDialogViewInterface() = default;
 
   // Called to show the dialog. |password| is the generated password.
+  // TODO(crbug.com/835234): Don't pass in |target_frame_driver|.
+  // This is no longer needed since any focus change now hides the dialog,
+  // ensuring that it can't be interacted with if the focus changes.
   virtual void Show(base::string16& password,
                     base::WeakPtr<password_manager::PasswordManagerDriver>
                         target_frame_driver) = 0;

@@ -5345,6 +5345,10 @@ static_library("test_support") {
     sources += [
       "android/download/mock_download_controller.cc",
       "android/download/mock_download_controller.h",
+      "autofill/mock_address_accessory_controller.cc",
+      "autofill/mock_address_accessory_controller.h",
+      "autofill/mock_manual_filling_view.cc",
+      "autofill/mock_manual_filling_view.h",
     ]
     deps += [ "//chrome/android:test_support_jni_headers" ]
   } else {

@@ -34,7 +34,9 @@
 
 using autofill::AccessorySheetData;
 using autofill::FooterCommand;
+using autofill::PasswordForm;
 using autofill::UserInfo;
+using autofill::password_generation::PasswordGenerationUIData;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaRef;
@@ -131,10 +133,10 @@ void ManualFillingViewAndroid::OnOptionSelected(
       static_cast<autofill::AccessoryAction>(selected_action));
 }
 
-void ManualFillingViewAndroid::OnGenerationRequested(
+void ManualFillingViewAndroid::OnAutomaticGenerationRequested(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  controller_->OnGenerationRequested();
+  controller_->OnAutomaticGenerationRequested();
 }
 
 void ManualFillingViewAndroid::OnImageFetched(
@@ -237,11 +239,6 @@ void JNI_ManualFillingComponentBridge_SignalAutoGenerationStatusForTesting(
     jboolean j_available) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
-  if (j_available) {
-    // The added generation button will call back to the generation controller
-    // so we need to make sure one exists.
-    ignore_result(PasswordGenerationController::GetOrCreate(web_contents));
-  }
 
   // Bypass the generation controller when sending this status to the UI to
   // avoid setup overhead, since its logic is currently not needed for tests.

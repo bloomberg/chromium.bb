@@ -561,7 +561,7 @@ void AutofillPopupControllerImpl::ClearState() {
 void AutofillPopupControllerImpl::HideViewAndDie() {
 #if defined(OS_ANDROID)
   ManualFillingController::GetOrCreate(web_contents_)
-      ->Hide(FillingSource::AUTOFILL);
+      ->DeactivateFillingSource(FillingSource::AUTOFILL);
 #endif
 
   if (view_)

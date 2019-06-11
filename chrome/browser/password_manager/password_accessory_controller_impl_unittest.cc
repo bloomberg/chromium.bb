@@ -16,6 +16,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/autofill/mock_manual_filling_controller.h"
+#include "chrome/browser/password_manager/password_generation_controller.h"
+#include "chrome/browser/password_manager/password_generation_controller_impl.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/password_form.h"
@@ -30,6 +32,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 namespace {
+using autofill::AccessoryAction;
 using autofill::AccessorySheetData;
 using autofill::AccessoryTabType;
 using autofill::FillingStatus;
@@ -49,6 +52,29 @@ using FillingSource = ManualFillingController::FillingSource;
 constexpr char kExampleSite[] = "https://example.com";
 constexpr char kExampleDomain[] = "example.com";
 constexpr int kIconSize = 75;  // An example size for favicons (=> 3.5*20px).
+
+class MockPasswordGenerationController
+    : public PasswordGenerationControllerImpl {
+ public:
+  static void CreateForWebContents(content::WebContents* web_contents);
+
+  explicit MockPasswordGenerationController(content::WebContents* web_contents);
+
+  MOCK_METHOD1(OnGenerationRequested, void(bool));
+};
+
+// static
+void MockPasswordGenerationController::CreateForWebContents(
+    content::WebContents* web_contents) {
+  ASSERT_FALSE(FromWebContents(web_contents));
+  web_contents->SetUserData(
+      UserDataKey(),
+      base::WrapUnique(new MockPasswordGenerationController(web_contents)));
+}
+
+MockPasswordGenerationController::MockPasswordGenerationController(
+    content::WebContents* web_contents)
+    : PasswordGenerationControllerImpl(web_contents) {}
 
 // Creates a new map entry in the |first| element of the returned pair. The
 // |second| element holds the PasswordForm that the |first| element points to.
@@ -126,6 +152,7 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ(url::Origin::Create(GURL(kExampleSite)),
               web_contents()->GetFocusedFrame()->GetLastCommittedOrigin());
 
+    MockPasswordGenerationController::CreateForWebContents(web_contents());
     PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
         web_contents(), mock_manual_filling_controller_.AsWeakPtr(),
         favicon_service());
@@ -135,7 +162,6 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
   PasswordAccessoryController* controller() {
     return PasswordAccessoryControllerImpl::FromWebContents(web_contents());
   }
-
 
   favicon::MockFaviconService* favicon_service() {
     return mock_favicon_service_.get();
@@ -173,7 +199,7 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
                            true, false)
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -194,7 +220,7 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
                            password_for_str(no_user_str()), true, false)
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -233,7 +259,7 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
                            false)
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -256,7 +282,7 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
                            true, false)
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -273,7 +299,7 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
           PasswordAccessorySheetDataBuilder(passwords_empty_str(kExampleDomain))
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -310,7 +336,7 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
                            true, false)
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -350,7 +376,7 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
                            true, false)
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -369,7 +395,7 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
                            true, false)
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -392,7 +418,7 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
                            true, false)
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -406,7 +432,7 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
           PasswordAccessorySheetDataBuilder(passwords_empty_str(kExampleDomain))
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kUnfillableElement,
       /*is_manual_generation_available=*/false);
@@ -429,7 +455,7 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
                            true, false)
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -446,7 +472,7 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
                       passwords_empty_str("random.other-site.org"))
                       .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kUnfillableElement,
       /*is_manual_generation_available=*/false);
@@ -459,7 +485,7 @@ TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
       mock_manual_filling_controller_,
       RefreshSuggestionsForField(FocusedFieldType::kFillableUsernameField, _));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -486,7 +512,7 @@ TEST_F(PasswordAccessoryControllerTest, RequestsFaviconsOnceForOneOrigin) {
       mock_manual_filling_controller_,
       RefreshSuggestionsForField(FocusedFieldType::kFillableUsernameField, _));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -533,7 +559,7 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
       mock_manual_filling_controller_,
       RefreshSuggestionsForField(FocusedFieldType::kFillableUsernameField, _));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -568,7 +594,7 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
       mock_manual_filling_controller_,
       RefreshSuggestionsForField(FocusedFieldType::kFillableUsernameField, _));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
@@ -596,7 +622,7 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
       RefreshSuggestionsForField(FocusedFieldType::kFillableUsernameField, _))
       .Times(2);
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField, false);
 
@@ -622,11 +648,19 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   EXPECT_CALL(mock_callback, Run).Times(0);
   controller()->GetFavicon(kIconSize, mock_callback.Get());
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField, false);
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(PasswordAccessoryControllerTest, OnAutomaticGenerationRequested) {
+  MockPasswordGenerationController* mock_pwd_generation_controller =
+      static_cast<MockPasswordGenerationController*>(
+          PasswordGenerationController::GetIfExisting(web_contents()));
+  EXPECT_CALL(*mock_pwd_generation_controller, OnGenerationRequested(false));
+  controller()->OnGenerationRequested(false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, AddsGenerationCommandWhenAvailable) {
@@ -660,8 +694,17 @@ TEST_F(PasswordAccessoryControllerTest, NoGenerationCommandIfNotPasswordField) {
           PasswordAccessorySheetDataBuilder(passwords_empty_str(kExampleDomain))
               .Build()));
   EXPECT_CALL(mock_manual_filling_controller_,
-              Hide(FillingSource::PASSWORD_FALLBACKS));
+              DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/true);
+}
+
+TEST_F(PasswordAccessoryControllerTest, OnManualGenerationRequested) {
+  MockPasswordGenerationController* mock_pwd_generation_controller =
+      static_cast<MockPasswordGenerationController*>(
+          PasswordGenerationController::GetIfExisting(web_contents()));
+  EXPECT_CALL(mock_manual_filling_controller_, Hide());
+  EXPECT_CALL(*mock_pwd_generation_controller, OnGenerationRequested(true));
+  controller()->OnOptionSelected(AccessoryAction::GENERATE_PASSWORD_MANUAL);
 }

@@ -76,6 +76,11 @@ class PasswordAccessoryController
       autofill::mojom::FocusedFieldType focused_field_type,
       bool is_manual_generation_available) = 0;
 
+  // Signals that generation was requested from the accessory. |manual|
+  // indicates whether generation was requested via the manual fallback or from
+  // the automatically provided button.
+  virtual void OnGenerationRequested(bool manual) = 0;
+
   // Reacts to a navigation on the main frame, e.g. by clearing caches.
   virtual void DidNavigateMainFrame() = 0;
 

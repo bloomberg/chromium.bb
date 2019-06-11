@@ -28,6 +28,10 @@ namespace favicon {
 class FaviconService;
 }  // namespace favicon
 
+namespace password_manager {
+class ContentPasswordManagerDriver;
+}  // namespace password_manager
+
 class ManualFillingController;
 
 // Encapsulates the data needed from the password manager backend to
@@ -71,6 +75,7 @@ class PasswordAccessoryControllerImpl
   void RefreshSuggestionsForField(
       autofill::mojom::FocusedFieldType focused_field_type,
       bool is_manual_generation_available) override;
+  void OnGenerationRequested(bool manual) override;
   void DidNavigateMainFrame() override;
   void GetFavicon(
       int desired_size_in_pixel,
@@ -83,6 +88,16 @@ class PasswordAccessoryControllerImpl
       content::WebContents* web_contents,
       base::WeakPtr<ManualFillingController> mf_controller,
       favicon::FaviconService* favicon_service);
+
+  // True if the focus event was sent for the current focused frame or if it is
+  // a blur event and no frame is focused. This check avoids reacting to
+  // obsolete events that arrived in an unexpected order.
+  // TODO(crbug.com/968162): Introduce the concept of active frame to the
+  // accessory controller and move this check in the controller.
+  static bool ShouldAcceptFocusEvent(
+      content::WebContents* web_contents,
+      password_manager::ContentPasswordManagerDriver* driver,
+      autofill::mojom::FocusedFieldType focused_field_type);
 
  private:
   // Data allowing to cache favicons and favicon-related requests.

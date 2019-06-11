@@ -11,9 +11,14 @@
 #include "chrome/browser/password_manager/password_generation_controller.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "ui/gfx/geometry/rect.h"
 
 class ManualFillingController;
 class PasswordGenerationDialogViewInterface;
+
+namespace password_manager {
+class PasswordManagerDriver;
+}  // namespace password_manager
 
 // In its current state, this class is not involved in the editing flow for
 // a generated password.
@@ -27,16 +32,23 @@ class PasswordGenerationControllerImpl
  public:
   using CreateDialogFactory = base::RepeatingCallback<std::unique_ptr<
       PasswordGenerationDialogViewInterface>(PasswordGenerationController*)>;
-
   ~PasswordGenerationControllerImpl() override;
 
   // PasswordGenerationController:
+  base::WeakPtr<password_manager::PasswordManagerDriver> GetActiveFrameDriver()
+      const override;
+  void FocusedInputChanged(
+      autofill::mojom::FocusedFieldType focused_field_type,
+      base::WeakPtr<password_manager::PasswordManagerDriver> driver) override;
   void OnAutomaticGenerationAvailable(
+      const password_manager::PasswordManagerDriver* target_frame_driver,
       const autofill::password_generation::PasswordGenerationUIData& ui_data,
-      const base::WeakPtr<password_manager::PasswordManagerDriver>& driver)
+      gfx::RectF element_bounds_in_screen_space) override;
+  void ShowManualGenerationDialog(
+      const password_manager::PasswordManagerDriver* target_frame_driver,
+      const autofill::password_generation::PasswordGenerationUIData& ui_data)
       override;
-  void OnGenerationElementLostFocus() override;
-  void OnGenerationRequested() override;
+  void OnGenerationRequested(bool manual) override;
   void GeneratedPasswordAccepted(
       const base::string16& password,
       base::WeakPtr<password_manager::PasswordManagerDriver> driver) override;
@@ -51,6 +63,10 @@ class PasswordGenerationControllerImpl
       base::WeakPtr<ManualFillingController> manual_filling_controller,
       CreateDialogFactory create_dialog_callback);
 
+ protected:
+  // Callable in tests.
+  explicit PasswordGenerationControllerImpl(content::WebContents* web_contents);
+
  private:
   // Data including the form and field for which generation was requested,
   // their signatures and the maximum password size.
@@ -58,13 +74,27 @@ class PasswordGenerationControllerImpl
 
   friend class content::WebContentsUserData<PasswordGenerationControllerImpl>;
 
-  explicit PasswordGenerationControllerImpl(content::WebContents* web_contents);
-
   // Constructor that allows to inject a mock or fake view.
   PasswordGenerationControllerImpl(
       content::WebContents* web_contents,
       base::WeakPtr<ManualFillingController> manual_filling_controller,
       CreateDialogFactory create_dialog_callback);
+
+  // Checks if the given PasswordManagerDriver is the same as the one
+  // belonging to the currently considered active frame for generation.
+  // The active frame is the latest focused frame that received a field focus
+  // event.
+  bool IsActiveFrameDriver(
+      const password_manager::PasswordManagerDriver* driver) const;
+
+  // Called to show the generation modal dialog. |manual| - whether the
+  // dialog was shown for a manual or automatic generation flow. This is used
+  // for metrics.
+  void ShowDialog(bool manual);
+
+  // Resets the current active frame driver, as well as the dialog if shown
+  // and the generation element data.
+  void ResetState();
 
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;
@@ -72,8 +102,10 @@ class PasswordGenerationControllerImpl
   // Data for the generation element used to generate the password.
   std::unique_ptr<GenerationElementData> generation_element_data_;
 
-  // Password manager driver for the target frame used for password generation.
-  base::WeakPtr<password_manager::PasswordManagerDriver> target_frame_driver_;
+  // Password manager driver for the currently active frame. This is set
+  // when a password field focus event arrives from the renderer and unset
+  // whenever a focus event for a non-password field is received.
+  base::WeakPtr<password_manager::PasswordManagerDriver> active_frame_driver_;
 
   // The manual filling controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> manual_filling_controller_;

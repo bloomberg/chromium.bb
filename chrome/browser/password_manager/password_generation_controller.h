@@ -8,10 +8,13 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace password_manager {
+class PasswordManagerDriver;
 class PasswordManagerDriver;
 }  // namespace password_manager
 
@@ -22,7 +25,7 @@ class PasswordManagerDriver;
 // it manages the modal dialog used to display the generated password.
 //
 // There is a single instance per WebContents that can be accessed by calling:
-//     PasswordAccessoryController::GetOrCreate(web_contents);
+//     PasswordGenerationController::GetOrCreate(web_contents);
 // On the first call, an instance is attached to |web_contents|, so it can be
 // returned by subsequent calls.
 class PasswordGenerationController {
@@ -50,15 +53,31 @@ class PasswordGenerationController {
   // Methods called by the ChromePasswordManagerClient:
   // --------------------------------------------------
 
+  // Returns the driver associated with the frame that is considered active
+  // for generation.
+  virtual base::WeakPtr<password_manager::PasswordManagerDriver>
+  GetActiveFrameDriver() const = 0;
+
+  // This signals that the focus has moved. |focused_field_type| tells
+  // the generation controller whether the focus moved to a fillable password
+  // field. This event sets/unsets the active frame for generation.
+  virtual void FocusedInputChanged(
+      autofill::mojom::FocusedFieldType focused_field_type,
+      base::WeakPtr<password_manager::PasswordManagerDriver> driver) = 0;
+
   // Notifies the UI that automatic password generation is available.
   // A button should be displayed in the accessory bar.
   virtual void OnAutomaticGenerationAvailable(
+      const password_manager::PasswordManagerDriver* target_frame_driver,
       const autofill::password_generation::PasswordGenerationUIData& ui_data,
-      const base::WeakPtr<password_manager::PasswordManagerDriver>& driver) = 0;
+      gfx::RectF element_bounds_in_screen_space) = 0;
 
-  // Notifies the UI that the generation element lost focus so that it can
-  // hide the generation button if it was shown.
-  virtual void OnGenerationElementLostFocus() = 0;
+  // This is called after the user requested manual generation and the
+  // corresponding setup was done in the renderer.
+  virtual void ShowManualGenerationDialog(
+      const password_manager::PasswordManagerDriver* target_frame_driver,
+      const autofill::password_generation::PasswordGenerationUIData&
+          ui_data) = 0;
 
   // -------------------------
   // Methods called by the UI:
@@ -66,7 +85,9 @@ class PasswordGenerationController {
 
   // Called by the UI code to signal that the user requested password
   // generation. This should prompt a modal dialog with the generated password.
-  virtual void OnGenerationRequested() = 0;
+  // |manual| - whether the requests originates from a an automatic
+  // generation flow or from a manual one.
+  virtual void OnGenerationRequested(bool manual) = 0;
 
   // Called from the modal dialog if the user accepted the generated password.
   // |driver| is used to communicate the message back to the renderer.

@@ -77,7 +77,7 @@ class ManualFillingComponentBridge {
                         ManualFillingMetricsRecorder.recordActionSelected(
                                 AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
                         mManualFillingComponent.dismiss();
-                        nativeOnGenerationRequested(mNativeView);
+                        nativeOnAutomaticGenerationRequested(mNativeView);
                     })};
         } else {
             generationAction = new Action[0];
@@ -180,7 +180,7 @@ class ManualFillingComponentBridge {
             long nativeManualFillingViewAndroid, int tabType, UserInfoField userInfoField);
     private native void nativeOnOptionSelected(
             long nativeManualFillingViewAndroid, int accessoryAction);
-    private native void nativeOnGenerationRequested(long nativeManualFillingViewAndroid);
+    private native void nativeOnAutomaticGenerationRequested(long nativeManualFillingViewAndroid);
 
     private static native void nativeCachePasswordSheetDataForTesting(
             WebContents webContents, String[] userNames, String[] passwords);

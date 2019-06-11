@@ -17,13 +17,16 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/log_manager.h"
@@ -33,6 +36,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -63,14 +67,24 @@
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/autofill/manual_filling_controller_impl.h"
+#include "chrome/browser/autofill/mock_address_accessory_controller.h"
+#include "chrome/browser/autofill/mock_manual_filling_view.h"
+#include "chrome/browser/password_manager/password_accessory_controller_impl.h"
+#include "chrome/browser/password_manager/password_generation_controller.h"
+#endif  // defined(OS_ANDROID)
+
 using autofill::PasswordForm;
+using autofill::mojom::FocusedFieldType;
 using content::BrowserContext;
 using content::WebContents;
 using password_manager::PasswordManagerClient;
 using sessions::GetPasswordStateFromNavigation;
 using sessions::SerializedNavigationEntry;
-using testing::Return;
 using testing::_;
+using testing::NiceMock;
+using testing::Return;
 
 namespace {
 // TODO(crbug.com/474577): Get rid of the mocked client in the client's own
@@ -730,3 +744,111 @@ TEST_F(ChromePasswordManagerClientTest, MissingUIDelegate) {
   client->ShowManualFallbackForSaving(std::move(form_manager), false, false);
   client->HideManualFallbackForSaving();
 }
+
+#if defined(OS_ANDROID)
+class ChromePasswordManagerClientAndroidTest
+    : public ChromePasswordManagerClientTest {
+ protected:
+  std::unique_ptr<password_manager::ContentPasswordManagerDriver>
+  CreateContentPasswordManagerDriver(content::RenderFrameHost* rfh);
+
+ private:
+  autofill::TestAutofillClient test_autofill_client_;
+};
+
+std::unique_ptr<password_manager::ContentPasswordManagerDriver>
+ChromePasswordManagerClientAndroidTest::CreateContentPasswordManagerDriver(
+    content::RenderFrameHost* rfh) {
+  return std::make_unique<password_manager::ContentPasswordManagerDriver>(
+      rfh, GetClient(), &test_autofill_client_);
+}
+
+TEST_F(ChromePasswordManagerClientAndroidTest,
+       FocusedInputChangedNoFrameFillableField) {
+  ASSERT_FALSE(web_contents()->GetFocusedFrame());
+
+  ChromePasswordManagerClient* client = GetClient();
+
+  std::unique_ptr<password_manager::ContentPasswordManagerDriver> driver =
+      CreateContentPasswordManagerDriver(main_rfh());
+  client->FocusedInputChanged(driver.get(),
+                              FocusedFieldType::kFillablePasswordField);
+
+  PasswordGenerationController* pwd_generation_controller =
+      PasswordGenerationController::GetIfExisting(web_contents());
+  EXPECT_FALSE(pwd_generation_controller);
+}
+
+TEST_F(ChromePasswordManagerClientAndroidTest,
+       FocusedInputChangedNoFrameNoField) {
+  std::unique_ptr<password_manager::ContentPasswordManagerDriver> driver =
+      CreateContentPasswordManagerDriver(main_rfh());
+
+  // Simulate that an element was focused before as far as the generation
+  // controller is concerned.
+  PasswordGenerationController* pwd_generation_controller =
+      PasswordGenerationController::GetOrCreate(web_contents());
+  pwd_generation_controller->FocusedInputChanged(
+      FocusedFieldType::kFillablePasswordField, driver.get()->AsWeakPtr());
+
+  ChromePasswordManagerClient* client = GetClient();
+
+  NiceMock<MockAddressAccessoryController> mock_address_controller_;
+  ManualFillingControllerImpl::CreateForWebContentsForTesting(
+      web_contents(),
+      PasswordAccessoryControllerImpl::GetOrCreate(web_contents())->AsWeakPtr(),
+      mock_address_controller_.AsWeakPtr(),
+      std::make_unique<MockManualFillingView>());
+
+  ASSERT_FALSE(web_contents()->GetFocusedFrame());
+  ASSERT_TRUE(pwd_generation_controller->GetActiveFrameDriver());
+  client->FocusedInputChanged(driver.get(), FocusedFieldType::kUnknown);
+
+  // Check that the event was processed by the generation controller and that
+  // the active frame driver was unset.
+  EXPECT_FALSE(pwd_generation_controller->GetActiveFrameDriver());
+}
+
+TEST_F(ChromePasswordManagerClientAndroidTest, FocusedInputChangedWrongFrame) {
+  ChromePasswordManagerClient* client = GetClient();
+
+  // Set up the main frame.
+  NavigateAndCommit(GURL("https://example.com"));
+  FocusWebContentsOnMainFrame();
+
+  content::RenderFrameHost* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
+  std::unique_ptr<password_manager::ContentPasswordManagerDriver> driver =
+      CreateContentPasswordManagerDriver(subframe);
+  client->FocusedInputChanged(driver.get(),
+                              FocusedFieldType::kFillablePasswordField);
+
+  PasswordGenerationController* pwd_generation_controller =
+      PasswordGenerationController::GetIfExisting(web_contents());
+
+  // Check that no generation controller was created, since this event should be
+  // rejected and not passed on to a generation controller.
+  EXPECT_FALSE(pwd_generation_controller);
+}
+
+TEST_F(ChromePasswordManagerClientAndroidTest, FocusedInputChangedGoodFrame) {
+  ChromePasswordManagerClient* client = GetClient();
+
+  NiceMock<MockAddressAccessoryController> mock_address_controller_;
+  ManualFillingControllerImpl::CreateForWebContentsForTesting(
+      web_contents(),
+      PasswordAccessoryControllerImpl::GetOrCreate(web_contents())->AsWeakPtr(),
+      mock_address_controller_.AsWeakPtr(),
+      std::make_unique<MockManualFillingView>());
+
+  std::unique_ptr<password_manager::ContentPasswordManagerDriver> driver =
+      CreateContentPasswordManagerDriver(main_rfh());
+  FocusWebContentsOnMainFrame();
+  client->FocusedInputChanged(driver.get(),
+                              FocusedFieldType::kFillablePasswordField);
+
+  PasswordGenerationController* pwd_generation_controller =
+      PasswordGenerationController::GetIfExisting(web_contents());
+  EXPECT_TRUE(pwd_generation_controller);
+}
+#endif  //  defined(OS_ANDROID)

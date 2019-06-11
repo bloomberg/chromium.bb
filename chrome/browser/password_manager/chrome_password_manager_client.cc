@@ -104,6 +104,7 @@
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/password_accessory_controller_impl.h"
 #include "chrome/browser/password_manager/password_generation_controller.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
@@ -118,6 +119,7 @@
 #endif
 
 using autofill::PasswordForm;
+using autofill::mojom::FocusedFieldType;
 using password_manager::BadMessageReason;
 using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerClientHelper;
@@ -382,13 +384,25 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
 }
 
 void ChromePasswordManagerClient::GeneratePassword() {
-  password_manager::ContentPasswordManagerDriver* driver =
+#if defined(OS_ANDROID)
+  PasswordGenerationController* generation_controller =
+      PasswordGenerationController::GetIfExisting(web_contents());
+  base::WeakPtr<password_manager::PasswordManagerDriver> driver =
+      generation_controller->GetActiveFrameDriver();
+  if (!driver)
+    return;
+  password_manager::ContentPasswordManagerDriver* content_driver =
+      static_cast<password_manager::ContentPasswordManagerDriver*>(
+          driver.get());
+#else
+  password_manager::ContentPasswordManagerDriver* content_driver =
       driver_factory_->GetDriverForFrame(web_contents()->GetFocusedFrame());
+#endif
   // Using unretained pointer is safe because |this| outlives
   // ContentPasswordManagerDriver that holds the connection.
-  driver->GeneratePassword(base::BindOnce(
+  content_driver->GeneratePassword(base::BindOnce(
       &ChromePasswordManagerClient::ShowManualPasswordGenerationPopup,
-      base::Unretained(this), base::AsWeakPtr(driver)));
+      base::Unretained(this), base::AsWeakPtr(content_driver)));
 }
 
 void ChromePasswordManagerClient::NotifyUserAutoSignin(
@@ -707,21 +721,21 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
     return;
 #if defined(OS_ANDROID)
   if (PasswordGenerationController::AllowedForWebContents(web_contents())) {
-      password_manager::PasswordManagerDriver* driver =
-          driver_factory_->GetDriverForFrame(
-              password_generation_driver_bindings_.GetCurrentTargetFrame());
-      DCHECK(driver);
-      password_manager_.SetGenerationElementAndReasonForForm(
-          driver, ui_data.password_form, ui_data.generation_element,
-          false /* is_manually_triggered */);
-      PasswordGenerationController::GetOrCreate(web_contents())
-          ->OnAutomaticGenerationAvailable(ui_data, driver->AsWeakPtr());
+    password_manager::PasswordManagerDriver* driver =
+        driver_factory_->GetDriverForFrame(
+            password_generation_driver_bindings_.GetCurrentTargetFrame());
+    DCHECK(driver);
 
-      gfx::RectF element_bounds_in_screen_space = TransformToRootCoordinates(
-          password_generation_driver_bindings_.GetCurrentTargetFrame(),
-          ui_data.bounds);
-      driver->GetPasswordAutofillManager()->MaybeShowPasswordSuggestions(
-          element_bounds_in_screen_space, ui_data.text_direction);
+    PasswordGenerationController* generation_controller =
+        PasswordGenerationController::GetIfExisting(web_contents());
+    DCHECK(generation_controller);
+
+    gfx::RectF element_bounds_in_screen_space = TransformToRootCoordinates(
+        password_generation_driver_bindings_.GetCurrentTargetFrame(),
+        ui_data.bounds);
+
+    generation_controller->OnAutomaticGenerationAvailable(
+        driver, ui_data, element_bounds_in_screen_space);
   }
 #else
   password_manager::ContentPasswordManagerDriver* driver =
@@ -817,13 +831,8 @@ void ChromePasswordManagerClient::FrameWasScrolled() {
 }
 
 void ChromePasswordManagerClient::GenerationElementLostFocus() {
-#if defined(OS_ANDROID)
-  PasswordGenerationController* generation_controller =
-      PasswordGenerationController::GetIfExisting(web_contents());
-  if (generation_controller) {
-    generation_controller->OnGenerationElementLostFocus();
-  }
-#endif
+  // TODO(crbug.com/968046): Look into removing this since FocusedInputChanged
+  // seems to be a good replacement.
   if (popup_controller_)
     popup_controller_->GenerationElementLostFocus();
 }
@@ -1006,8 +1015,17 @@ void ChromePasswordManagerClient::ShowManualPasswordGenerationPopup(
           BadMessageReason::
               CPMD_BAD_ORIGIN_SHOW_MANUAL_PASSWORD_GENERATION_POPUP))
     return;
+#if defined(OS_ANDROID)
+  PasswordGenerationController* password_generation_controller =
+      PasswordGenerationController::GetIfExisting(web_contents());
+  DCHECK(password_generation_controller);
+
+  password_generation_controller->ShowManualGenerationDialog(driver.get(),
+                                                             ui_data.value());
+#else
   ShowPasswordGenerationPopup(driver.get(), *ui_data,
                               true /* is_manually_triggered */);
+#endif
 }
 
 void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
@@ -1041,12 +1059,25 @@ void ChromePasswordManagerClient::FocusedInputChanged(
     password_manager::PasswordManagerDriver* driver,
     autofill::mojom::FocusedFieldType focused_field_type) {
 #if defined(OS_ANDROID)
-  if (PasswordAccessoryController::AllowedForWebContents(web_contents())) {
+  password_manager::ContentPasswordManagerDriver* content_driver =
+      static_cast<password_manager::ContentPasswordManagerDriver*>(driver);
+  if (!PasswordAccessoryControllerImpl::ShouldAcceptFocusEvent(
+          web_contents(), content_driver, focused_field_type))
+    return;
+
+  if (!PasswordAccessoryController::AllowedForWebContents(web_contents()))
+    return;
+
+  if (web_contents()->GetFocusedFrame()) {
     PasswordAccessoryController::GetOrCreate(web_contents())
         ->RefreshSuggestionsForField(
             focused_field_type,
             password_manager_util::ManualPasswordGenerationEnabled(driver));
   }
+
+  PasswordGenerationController::GetOrCreate(web_contents())
+      ->FocusedInputChanged(focused_field_type,
+                            base::AsWeakPtr(content_driver));
 #endif  // defined(OS_ANDROID)
 }
 

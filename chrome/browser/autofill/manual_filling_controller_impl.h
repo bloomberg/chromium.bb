@@ -19,7 +19,6 @@ class AddressAccessoryController;
 }
 class AccessoryController;
 class PasswordAccessoryController;
-class PasswordGenerationController;
 class TouchToFillController;
 
 // Use ManualFillingController::GetOrCreate to obtain instances of this class.
@@ -36,13 +35,14 @@ class ManualFillingControllerImpl
   void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
   void ShowWhenKeyboardIsVisible(FillingSource source) override;
   void ShowTouchToFillSheet(const autofill::AccessorySheetData& data) override;
-  void Hide(FillingSource source) override;
+  void DeactivateFillingSource(FillingSource source) override;
+  void Hide() override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void OnFillingTriggered(autofill::AccessoryTabType type,
                           const autofill::UserInfo::Field& selection) override;
   void OnOptionSelected(
       autofill::AccessoryAction selected_action) const override;
-  void OnGenerationRequested() override;
+  void OnAutomaticGenerationRequested() const override;
   void GetFavicon(
       int desired_size_in_pixel,
       base::OnceCallback<void(const gfx::Image&)> icon_callback) override;
@@ -58,7 +58,6 @@ class ManualFillingControllerImpl
       content::WebContents* web_contents,
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
-      PasswordGenerationController* pwd_generation_controller_for_testing,
       std::unique_ptr<ManualFillingViewInterface> test_view);
 
 #if defined(UNIT_TEST)
@@ -90,7 +89,6 @@ class ManualFillingControllerImpl
       content::WebContents* web_contents,
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
-      PasswordGenerationController* pwd_generation_controller_for_testing,
       std::unique_ptr<ManualFillingViewInterface> view);
 
   // Returns the controller that is responsible for a tab of given |type|.
@@ -114,11 +112,6 @@ class ManualFillingControllerImpl
 
   // The touch to fill controller object to forward view requests to.
   base::WeakPtr<TouchToFillController> touch_to_fill_controller_;
-
-  // A password generation controller used in tests which receives requests
-  // from the view.
-  PasswordGenerationController* pwd_generation_controller_for_testing_ =
-      nullptr;
 
   // Hold the native instance of the view. Must be last declared and initialized
   // member so the view can be created in the constructor with a fully set up
