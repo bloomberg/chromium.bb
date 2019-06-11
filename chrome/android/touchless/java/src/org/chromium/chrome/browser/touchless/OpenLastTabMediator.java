@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.HistoryProvider;
+import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -120,12 +121,12 @@ class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver, Fo
         boolean willReturnIcon = mIconBridge.getLargeIconForUrl(item.getUrl(),
                 mContext.getResources().getDimensionPixelSize(R.dimen.open_last_tab_icon_size),
                 (icon, fallbackColor, isFallbackColorDefault, iconType) -> {
-                    setAndShowButton(item.getUrl(), icon, fallbackColor);
+                    setAndShowButton(item.getUrl(), icon, fallbackColor, title);
                 });
 
         // False if icon bridge won't call us back.
         if (!willReturnIcon) {
-            setAndShowButton(item.getUrl(), null, R.color.default_icon_color);
+            setAndShowButton(item.getUrl(), null, R.color.default_icon_color, title);
         }
         mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_LOAD_SUCCESS, true);
     }
@@ -136,7 +137,7 @@ class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver, Fo
     @Override
     public void hasOtherFormsOfBrowsingData(boolean hasOtherForms) {}
 
-    private void setAndShowButton(String url, Bitmap icon, int fallbackColor) {
+    private void setAndShowButton(String url, Bitmap icon, int fallbackColor, String title) {
         mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_ON_CLICK_LISTENER, view -> {
             mNativePageHost.loadUrl(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK),
                     /* Explore page is never off the record. */ false);
@@ -147,5 +148,36 @@ class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver, Fo
             icon = mIconGenerator.generateIconForUrl(url);
         }
         mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_FAVICON, icon);
+
+        final Bitmap shortcutIcon = icon;
+        TouchlessContextMenuManager.Delegate delegate =
+                new TouchlessContextMenuManager.EmptyDelegate() {
+                    @Override
+                    public boolean isItemSupported(
+                            @ContextMenuManager.ContextMenuItemId int menuItemId) {
+                        return menuItemId == ContextMenuManager.ContextMenuItemId.ADD_TO_MY_APPS;
+                    }
+
+                    @Override
+                    public String getUrl() {
+                        return url;
+                    }
+
+                    @Override
+                    public String getContextMenuTitle() {
+                        return title;
+                    }
+
+                    @Override
+                    public String getTitle() {
+                        return title;
+                    }
+
+                    @Override
+                    public Bitmap getIconBitmap() {
+                        return shortcutIcon;
+                    }
+                };
+        mModel.set(OpenLastTabProperties.CONTEXT_MENU_DELEGATE, delegate);
     }
 }
