@@ -13,8 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -142,14 +140,6 @@ AutoclickMenuBubbleView::~AutoclickMenuBubbleView() {}
 
 bool AutoclickMenuBubbleView::IsAnchoredToStatusArea() const {
   return false;
-}
-
-void AutoclickMenuBubbleView::MoveToPosition(const gfx::Rect& rect) {
-  ui::ScopedLayerAnimationSettings settings(
-      GetWidget()->GetLayer()->GetAnimator());
-  settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  SetAnchorRect(rect);
 }
 
 const char* AutoclickMenuBubbleView::GetClassName() const {

@@ -16,6 +16,8 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_utils.h"
 
 namespace ash {
@@ -23,6 +25,7 @@ namespace ash {
 namespace {
 // Autoclick menu constants.
 const int kAutoclickMenuWidth = 321;
+const int kAutoclickMenuHeight = 64;
 }  // namespace
 
 AutoclickMenuBubbleController::AutoclickMenuBubbleController() {
@@ -72,18 +75,24 @@ void AutoclickMenuBubbleController::SetPosition(
   gfx::Rect new_bounds;
   switch (new_position) {
     case mojom::AutoclickMenuPosition::kBottomRight:
-      new_bounds = gfx::Rect(work_area.right(), work_area.bottom(), 0, 0);
+      new_bounds = gfx::Rect(work_area.right() - kAutoclickMenuWidth,
+                             work_area.bottom() - kAutoclickMenuHeight,
+                             kAutoclickMenuWidth, kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kBottomLeft:
-      new_bounds = gfx::Rect(work_area.x(), work_area.bottom(), 0, 0);
+      new_bounds =
+          gfx::Rect(work_area.x(), work_area.bottom() - kAutoclickMenuHeight,
+                    kAutoclickMenuWidth, kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kTopLeft:
       // Setting the top to 1 instead of 0 so that the view is drawn on screen.
-      new_bounds = gfx::Rect(work_area.x(), 1, 0, 0);
+      new_bounds = gfx::Rect(work_area.x(), 1, kAutoclickMenuWidth,
+                             kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kTopRight:
       // Setting the top to 1 instead of 0 so that the view is drawn on screen.
-      new_bounds = gfx::Rect(work_area.right(), 1, 0, 0);
+      new_bounds = gfx::Rect(work_area.right() - kAutoclickMenuWidth, 1,
+                             kAutoclickMenuWidth, kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kSystemDefault:
       return;
@@ -95,10 +104,19 @@ void AutoclickMenuBubbleController::SetPosition(
           bubble_widget_->GetNativeWindow()),
       new_bounds,
       CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu);
-  if (bubble_view_->anchor_rect() == resting_bounds)
+
+  // Un-inset the bounds to get the widget's bounds, which includes the drop
+  // shadow.
+  resting_bounds.Inset(-kCollisionWindowWorkAreaInsetsDp,
+                       -kCollisionWindowWorkAreaInsetsDp);
+  if (bubble_widget_->GetWindowBoundsInScreen() == resting_bounds)
     return;
 
-  bubble_view_->MoveToPosition(resting_bounds);
+  ui::ScopedLayerAnimationSettings settings(
+      bubble_widget_->GetLayer()->GetAnimator());
+  settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  bubble_widget_->SetBounds(resting_bounds);
 }
 
 void AutoclickMenuBubbleController::ShowBubble(
@@ -116,7 +134,7 @@ void AutoclickMenuBubbleController::ShowBubble(
   init_params.parent_window = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(), kShellWindowId_AutoclickContainer);
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
-  init_params.insets = gfx::Insets();
+  init_params.insets = gfx::Insets(kCollisionWindowWorkAreaInsetsDp);
   init_params.min_width = kAutoclickMenuWidth;
   init_params.max_width = kAutoclickMenuWidth;
   init_params.corner_radius = kUnifiedTrayCornerRadius;
