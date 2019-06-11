@@ -734,7 +734,6 @@ typedef struct InterModeSearchState {
   SingleInterModeState single_state_modelled[2][SINGLE_INTER_MODE_NUM]
                                             [FWD_REFS];
   int single_state_modelled_cnt[2][SINGLE_INTER_MODE_NUM];
-
   MV_REFERENCE_FRAME single_rd_order[2][SINGLE_INTER_MODE_NUM][FWD_REFS];
 } InterModeSearchState;
 
@@ -12177,12 +12176,13 @@ static void collect_single_states(MACROBLOCK *x,
   // Simple rd
   int64_t simple_rd = search_state->simple_rd[this_mode][0][ref_frame];
   for (int ref_mv_idx = 1; ref_mv_idx < ref_set; ++ref_mv_idx) {
-    int64_t rd = search_state->simple_rd[this_mode][ref_mv_idx][ref_frame];
+    const int64_t rd =
+        search_state->simple_rd[this_mode][ref_mv_idx][ref_frame];
     if (rd < simple_rd) simple_rd = rd;
   }
 
   // Insertion sort of single_state
-  SingleInterModeState this_state_s = { simple_rd, ref_frame, 1 };
+  const SingleInterModeState this_state_s = { simple_rd, ref_frame, 1 };
   SingleInterModeState *state_s = search_state->single_state[dir][mode_offset];
   i = search_state->single_state_cnt[dir][mode_offset];
   for (j = i; j > 0 && state_s[j - 1].rd > this_state_s.rd; --j)
@@ -12193,12 +12193,13 @@ static void collect_single_states(MACROBLOCK *x,
   // Modelled rd
   int64_t modelled_rd = search_state->modelled_rd[this_mode][0][ref_frame];
   for (int ref_mv_idx = 1; ref_mv_idx < ref_set; ++ref_mv_idx) {
-    int64_t rd = search_state->modelled_rd[this_mode][ref_mv_idx][ref_frame];
+    const int64_t rd =
+        search_state->modelled_rd[this_mode][ref_mv_idx][ref_frame];
     if (rd < modelled_rd) modelled_rd = rd;
   }
 
   // Insertion sort of single_state_modelled
-  SingleInterModeState this_state_m = { modelled_rd, ref_frame, 1 };
+  const SingleInterModeState this_state_m = { modelled_rd, ref_frame, 1 };
   SingleInterModeState *state_m =
       search_state->single_state_modelled[dir][mode_offset];
   i = search_state->single_state_modelled_cnt[dir][mode_offset];
@@ -12210,40 +12211,39 @@ static void collect_single_states(MACROBLOCK *x,
 
 static void analyze_single_states(const AV1_COMP *cpi,
                                   InterModeSearchState *search_state) {
+  const int prune_level = cpi->sf.prune_comp_search_by_single_result;
+  assert(prune_level >= 1);
   int i, j, dir, mode;
-  if (cpi->sf.prune_comp_search_by_single_result >= 1) {
-    for (dir = 0; dir < 2; ++dir) {
-      int64_t best_rd;
-      SingleInterModeState(*state)[FWD_REFS];
-      const int prune_factor =
-          cpi->sf.prune_comp_search_by_single_result >= 2 ? 6 : 5;
 
-      // Use the best rd of GLOBALMV or NEWMV to prune the unlikely
-      // reference frames for all the modes (NEARESTMV and NEARMV may not
-      // have same motion vectors). Always keep the best of each mode
-      // because it might form the best possible combination with other mode.
-      state = search_state->single_state[dir];
-      best_rd = AOMMIN(state[INTER_OFFSET(NEWMV)][0].rd,
-                       state[INTER_OFFSET(GLOBALMV)][0].rd);
-      for (mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
-        for (i = 1; i < search_state->single_state_cnt[dir][mode]; ++i) {
-          if (state[mode][i].rd != INT64_MAX &&
-              (state[mode][i].rd >> 3) * prune_factor > best_rd) {
-            state[mode][i].valid = 0;
-          }
+  for (dir = 0; dir < 2; ++dir) {
+    int64_t best_rd;
+    SingleInterModeState(*state)[FWD_REFS];
+    const int prune_factor = prune_level >= 2 ? 6 : 5;
+
+    // Use the best rd of GLOBALMV or NEWMV to prune the unlikely
+    // reference frames for all the modes (NEARESTMV and NEARMV may not
+    // have same motion vectors). Always keep the best of each mode
+    // because it might form the best possible combination with other mode.
+    state = search_state->single_state[dir];
+    best_rd = AOMMIN(state[INTER_OFFSET(NEWMV)][0].rd,
+                     state[INTER_OFFSET(GLOBALMV)][0].rd);
+    for (mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
+      for (i = 1; i < search_state->single_state_cnt[dir][mode]; ++i) {
+        if (state[mode][i].rd != INT64_MAX &&
+            (state[mode][i].rd >> 3) * prune_factor > best_rd) {
+          state[mode][i].valid = 0;
         }
       }
+    }
 
-      state = search_state->single_state_modelled[dir];
-      best_rd = AOMMIN(state[INTER_OFFSET(NEWMV)][0].rd,
-                       state[INTER_OFFSET(GLOBALMV)][0].rd);
-      for (mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
-        for (i = 1; i < search_state->single_state_modelled_cnt[dir][mode];
-             ++i) {
-          if (state[mode][i].rd != INT64_MAX &&
-              (state[mode][i].rd >> 3) * prune_factor > best_rd) {
-            state[mode][i].valid = 0;
-          }
+    state = search_state->single_state_modelled[dir];
+    best_rd = AOMMIN(state[INTER_OFFSET(NEWMV)][0].rd,
+                     state[INTER_OFFSET(GLOBALMV)][0].rd);
+    for (mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
+      for (i = 1; i < search_state->single_state_modelled_cnt[dir][mode]; ++i) {
+        if (state[mode][i].rd != INT64_MAX &&
+            (state[mode][i].rd >> 3) * prune_factor > best_rd) {
+          state[mode][i].valid = 0;
         }
       }
     }
@@ -12262,37 +12262,36 @@ static void analyze_single_states(const AV1_COMP *cpi,
       const int max_candidates = AOMMAX(state_cnt_s, state_cnt_m);
       for (i = 0; i < state_cnt_s; ++i) {
         if (state_s[i].rd == INT64_MAX) break;
-        if (state_s[i].valid)
+        if (state_s[i].valid) {
           search_state->single_rd_order[dir][mode][count++] =
               state_s[i].ref_frame;
+        }
       }
-      if (count < max_candidates) {
-        for (i = 0; i < state_cnt_m; ++i) {
-          if (state_m[i].rd == INT64_MAX) break;
-          if (state_m[i].valid) {
-            int ref_frame = state_m[i].ref_frame;
-            int match = 0;
-            // Check if existing already
-            for (j = 0; j < count; ++j) {
-              if (search_state->single_rd_order[dir][mode][j] == ref_frame) {
-                match = 1;
-                break;
-              }
-            }
-            if (!match) {
-              // Check if this ref_frame is removed in simple rd
-              int valid = 1;
-              for (j = 0; j < state_cnt_s; j++) {
-                if (ref_frame == state_s[j].ref_frame && !state_s[j].valid) {
-                  valid = 0;
-                  break;
-                }
-              }
-              if (valid)
-                search_state->single_rd_order[dir][mode][count++] = ref_frame;
-            }
-            if (count >= max_candidates) break;
+      if (count >= max_candidates) continue;
+
+      for (i = 0; i < state_cnt_m && count < max_candidates; ++i) {
+        if (state_m[i].rd == INT64_MAX) break;
+        if (!state_m[i].valid) continue;
+        const int ref_frame = state_m[i].ref_frame;
+        int match = 0;
+        // Check if existing already
+        for (j = 0; j < count; ++j) {
+          if (search_state->single_rd_order[dir][mode][j] == ref_frame) {
+            match = 1;
+            break;
           }
+        }
+        if (match) continue;
+        // Check if this ref_frame is removed in simple rd
+        int valid = 1;
+        for (j = 0; j < state_cnt_s; ++j) {
+          if (ref_frame == state_s[j].ref_frame) {
+            valid = state_s[j].valid;
+            break;
+          }
+        }
+        if (valid) {
+          search_state->single_rd_order[dir][mode][count++] = ref_frame;
         }
       }
     }
@@ -12307,15 +12306,14 @@ static int compound_skip_get_candidates(
       search_state->single_state[dir][mode_offset];
   const SingleInterModeState *state_modelled =
       search_state->single_state_modelled[dir][mode_offset];
-  int max_candidates = 0;
-  int candidates;
 
+  int max_candidates = 0;
   for (int i = 0; i < FWD_REFS; ++i) {
     if (search_state->single_rd_order[dir][mode_offset][i] == NONE_FRAME) break;
     max_candidates++;
   }
 
-  candidates = max_candidates;
+  int candidates = max_candidates;
   if (cpi->sf.prune_comp_search_by_single_result >= 2) {
     candidates = AOMMIN(2, max_candidates);
   }
@@ -12357,40 +12355,35 @@ static int compound_skip_by_single_states(
 
   const int ref_set = get_drl_refmv_count(x, refs, this_mode);
   for (i = 0; i < 2; ++i) {
-    if (mode[i] == NEARESTMV || mode[i] == NEARMV) {
-      const MV_REFERENCE_FRAME single_refs[2] = { refs[i], NONE_FRAME };
-      int idential = 1;
-      for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ref_mv_idx++) {
-        int_mv single_mv;
-        int_mv comp_mv;
-        get_this_mv(&single_mv, mode[i], 0, ref_mv_idx, single_refs,
-                    x->mbmi_ext);
-        get_this_mv(&comp_mv, this_mode, i, ref_mv_idx, refs, x->mbmi_ext);
-
-        idential &= (single_mv.as_int == comp_mv.as_int);
-        if (!idential) {
-          ref_mv_match[i] = 0;
-          break;
-        }
+    if (!ref_searched[i] || (mode[i] != NEARESTMV && mode[i] != NEARMV))
+      continue;
+    const MV_REFERENCE_FRAME single_refs[2] = { refs[i], NONE_FRAME };
+    for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ref_mv_idx++) {
+      int_mv single_mv;
+      int_mv comp_mv;
+      get_this_mv(&single_mv, mode[i], 0, ref_mv_idx, single_refs, x->mbmi_ext);
+      get_this_mv(&comp_mv, this_mode, i, ref_mv_idx, refs, x->mbmi_ext);
+      if (single_mv.as_int != comp_mv.as_int) {
+        ref_mv_match[i] = 0;
+        break;
       }
     }
   }
 
   for (i = 0; i < 2; ++i) {
-    if (ref_searched[i] && ref_mv_match[i]) {
-      const int candidates =
-          compound_skip_get_candidates(cpi, search_state, mode_dir[i], mode[i]);
-      const MV_REFERENCE_FRAME *ref_order =
-          search_state->single_rd_order[mode_dir[i]][mode_offset[i]];
-      int match = 0;
-      for (j = 0; j < candidates; ++j) {
-        if (refs[i] == ref_order[j]) {
-          match = 1;
-          break;
-        }
+    if (!ref_searched[i] || !ref_mv_match[i]) continue;
+    const int candidates =
+        compound_skip_get_candidates(cpi, search_state, mode_dir[i], mode[i]);
+    const MV_REFERENCE_FRAME *ref_order =
+        search_state->single_rd_order[mode_dir[i]][mode_offset[i]];
+    int match = 0;
+    for (j = 0; j < candidates; ++j) {
+      if (refs[i] == ref_order[j]) {
+        match = 1;
+        break;
       }
-      if (!match) return 1;
     }
+    if (!match) return 1;
   }
 
   return 0;
