@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.touchless.R;
 
 /**
@@ -101,5 +102,9 @@ public class OpenLastTabView extends FrameLayout {
 
     void setAsyncFocusDelegate(Callback<View> asyncFocusDelegate) {
         mAsyncFocusDelegate = asyncFocusDelegate;
+    }
+
+    void setContextMenuDelegate(ContextMenuManager.Delegate delegate) {
+        ContextMenuManager.registerViewForTouchlessContextMenu(mLastTabView, delegate);
     }
 }
