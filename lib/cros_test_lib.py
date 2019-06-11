@@ -27,6 +27,7 @@ import time
 import unittest
 import urllib
 
+from chromite.lib import cache
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cidb
@@ -1138,6 +1139,44 @@ class LocalSqlServerTestCase(TempDirTestCase):
         self._mysqld_runner.__exit__(None, None, None)
     finally:
       self._mysqld_runner = None
+
+
+class FakeSDKCache(object):
+  """Creates a fake SDK Cache."""
+
+  def __init__(self, cache_dir, sdk_version='12225.0.0'):
+    """Creates a fake SDK Cache.
+
+    Args:
+      cache_dir: The top level cache directory to use.
+      sdk_version: The SDK Version.
+    """
+    self.cache_dir = cache_dir
+    # Sets the SDK Version.
+    self.sdk_version = sdk_version
+    os.environ['%SDK_VERSION'] = sdk_version
+    # Defines the path for the fake SDK Cache.
+    self.tarball_cache_path = os.path.join(self.cache_dir, 'chrome-sdk',
+                                           'tarballs')
+    # Creates an SDK TarballCache instance.
+    self.tarball_cache = cache.TarballCache(self.tarball_cache_path)
+
+  def CreateCacheReference(self, board, key):
+    """Creates the Cache Reference.
+
+    Args:
+      board: The board to use.
+      key: The key of the item in the tarball cache.
+
+    Returns:
+      Path to the cache directory.
+    """
+    # Creates the cache key required for accessing the fake SDK cache.
+    cache_key = (board, self.sdk_version, key)
+    # Adds the cache path at the key.
+    cache.CacheReference(self.tarball_cache,
+                         cache_key).Assign(self.tarball_cache_path)
+    return self.tarball_cache.Lookup(cache_key).path
 
 
 class MockTestCase(TestCase):
