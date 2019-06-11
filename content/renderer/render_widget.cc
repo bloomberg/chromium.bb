@@ -1059,13 +1059,10 @@ void RenderWidget::ApplyViewportChanges(
   GetWebWidget()->ApplyViewportChanges(args);
 }
 
-void RenderWidget::RecordWheelAndTouchScrollingCount(
-    bool has_scrolled_by_wheel,
-    bool has_scrolled_by_touch) {
+void RenderWidget::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
   if (!GetWebWidget())
     return;
-  GetWebWidget()->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
-                                                    has_scrolled_by_touch);
+  GetWebWidget()->RecordManipulationTypeCounts(info);
 }
 
 void RenderWidget::SendOverscrollEventFromImplSide(

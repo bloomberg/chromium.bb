@@ -5256,7 +5256,7 @@ crbug.com/898378 [ Mac10.13 ] virtual/scroll_customization/fast/scroll-behavior/
 
 # Sheriff 2018-10-29
 crbug.com/899710 [ Win ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Failure Pass Timeout ]
-crbug.com/766357 [ Win ] virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
+crbug.com/766357 [ Win ] virtual/threaded/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
 
 # Sheriff 2018-10-30
 crbug.com/899222 [ Linux ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]

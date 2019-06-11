@@ -270,7 +270,12 @@ _CONFIG = [
             'cc::PaintHoldingCommitTrigger',
 
             # Scrolling
+            'cc::kManipulationInfoHasPinchZoomed',
+            'cc::kManipulationInfoHasScrolledByPrecisionTouchPad',
+            'cc::kManipulationInfoHasScrolledByTouch',
+            'cc::kManipulationInfoHasScrolledByWheel',
             'cc::MainThreadScrollingReason',
+            'cc::ManipulationInfo',
             'cc::ScrollSnapAlign',
             'cc::ScrollSnapType',
             'cc::ScrollOffsetAnimationCurve',
