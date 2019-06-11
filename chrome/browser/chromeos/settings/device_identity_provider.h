@@ -14,7 +14,7 @@ class DeviceOAuth2TokenService;
 
 // Identity provider implementation backed by DeviceOAuth2TokenService.
 class DeviceIdentityProvider : public invalidation::IdentityProvider,
-                               public OAuth2TokenService::Observer {
+                               public OAuth2TokenServiceObserver {
  public:
   explicit DeviceIdentityProvider(
       chromeos::DeviceOAuth2TokenService* token_service);
@@ -32,7 +32,7 @@ class DeviceIdentityProvider : public invalidation::IdentityProvider,
                              const std::string& access_token) override;
   void SetActiveAccountId(const std::string& account_id) override;
 
-  // OAuth2TokenService::Observer:
+  // OAuth2TokenServiceObserver:
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
 

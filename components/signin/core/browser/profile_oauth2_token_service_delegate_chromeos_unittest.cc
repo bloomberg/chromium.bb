@@ -59,16 +59,18 @@ class AccessTokenConsumer : public OAuth2AccessTokenConsumer {
   DISALLOW_COPY_AND_ASSIGN(AccessTokenConsumer);
 };
 
-class TokenServiceObserver : public OAuth2TokenService::Observer {
+class TestOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
  public:
   // |delegate| is a non-owning pointer to an |OAuth2TokenServiceDelegate| that
   // MUST outlive |this| instance.
-  explicit TokenServiceObserver(OAuth2TokenServiceDelegate* delegate)
+  explicit TestOAuth2TokenServiceObserver(OAuth2TokenServiceDelegate* delegate)
       : delegate_(delegate) {
     delegate_->AddObserver(this);
   }
 
-  ~TokenServiceObserver() override { delegate_->RemoveObserver(this); }
+  ~TestOAuth2TokenServiceObserver() override {
+    delegate_->RemoveObserver(this);
+  }
 
   void StartBatchChanges() {
     EXPECT_FALSE(is_inside_batch_);
@@ -229,7 +231,7 @@ TEST_F(CrOSOAuthDelegateTest, RefreshTokensAreLoadedForNonRegularProfiles) {
       &account_tracker_service_,
       network::TestNetworkConnectionTracker::GetInstance(), &account_manager,
       false /* is_regular_profile */);
-  TokenServiceObserver observer(delegate.get());
+  TestOAuth2TokenServiceObserver observer(delegate.get());
 
   // Test that LoadCredentials works as expected.
   EXPECT_FALSE(observer.refresh_tokens_loaded_);
@@ -276,7 +278,7 @@ TEST_F(CrOSOAuthDelegateTest,
 }
 
 TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnAuthErrorChange) {
-  TokenServiceObserver observer(delegate_.get());
+  TestOAuth2TokenServiceObserver observer(delegate_.get());
   auto error =
       GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR);
 
@@ -287,7 +289,7 @@ TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnAuthErrorChange) {
 }
 
 TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnCredentialsInsertion) {
-  TokenServiceObserver observer(delegate_.get());
+  TestOAuth2TokenServiceObserver observer(delegate_.get());
   delegate_->UpdateCredentials(account_info_.account_id, kGaiaToken);
 
   EXPECT_EQ(1UL, observer.account_ids_.size());
@@ -298,7 +300,7 @@ TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnCredentialsInsertion) {
 
 TEST_F(CrOSOAuthDelegateTest,
        ObserversDoNotSeeCachedErrorsOnCredentialsUpdate) {
-  TokenServiceObserver observer(delegate_.get());
+  TestOAuth2TokenServiceObserver observer(delegate_.get());
   auto error =
       GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR);
   delegate_->UpdateCredentials(account_info_.account_id, kGaiaToken);
@@ -310,7 +312,7 @@ TEST_F(CrOSOAuthDelegateTest,
 }
 
 TEST_F(CrOSOAuthDelegateTest, DummyTokensArePreEmptivelyRejected) {
-  TokenServiceObserver observer(delegate_.get());
+  TestOAuth2TokenServiceObserver observer(delegate_.get());
   delegate_->UpdateCredentials(account_info_.account_id,
                                chromeos::AccountManager::kInvalidToken);
 
@@ -328,7 +330,7 @@ TEST_F(CrOSOAuthDelegateTest, DummyTokensArePreEmptivelyRejected) {
 }
 
 TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnCredentialsUpdate) {
-  TokenServiceObserver observer(delegate_.get());
+  TestOAuth2TokenServiceObserver observer(delegate_.get());
   delegate_->UpdateCredentials(account_info_.account_id, kGaiaToken);
 
   EXPECT_EQ(1UL, observer.account_ids_.size());
@@ -339,7 +341,7 @@ TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnCredentialsUpdate) {
 
 TEST_F(CrOSOAuthDelegateTest,
        ObserversAreNotNotifiedIfCredentialsAreNotUpdated) {
-  TokenServiceObserver observer(delegate_.get());
+  TestOAuth2TokenServiceObserver observer(delegate_.get());
 
   delegate_->UpdateCredentials(account_info_.account_id, kGaiaToken);
   observer.account_ids_.clear();
@@ -352,7 +354,7 @@ TEST_F(CrOSOAuthDelegateTest,
 
 TEST_F(CrOSOAuthDelegateTest,
        BatchChangeObserversAreNotifiedOnCredentialsUpdate) {
-  TokenServiceObserver observer(delegate_.get());
+  TestOAuth2TokenServiceObserver observer(delegate_.get());
   delegate_->UpdateCredentials(account_info_.account_id, kGaiaToken);
 
   EXPECT_EQ(1UL, observer.batch_change_records_.size());
@@ -393,7 +395,7 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
       network::TestNetworkConnectionTracker::GetInstance(), &account_manager,
       true /* is_regular_profile */);
   delegate->LoadCredentials(account1.account_id /* primary_account_id */);
-  TokenServiceObserver observer(delegate.get());
+  TestOAuth2TokenServiceObserver observer(delegate.get());
   // Wait until chromeos::AccountManager is fully initialized.
   task_environment_.RunUntilIdle();
 
@@ -497,7 +499,7 @@ TEST_F(CrOSOAuthDelegateTest, UpdateCredentialsSucceeds) {
 TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnAccountRemoval) {
   delegate_->UpdateCredentials(account_info_.account_id, kGaiaToken);
 
-  TokenServiceObserver observer(delegate_.get());
+  TestOAuth2TokenServiceObserver observer(delegate_.get());
   account_manager_.RemoveAccount(gaia_account_key_);
 
   EXPECT_EQ(1UL, observer.batch_change_records_.size());

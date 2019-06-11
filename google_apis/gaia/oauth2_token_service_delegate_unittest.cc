@@ -21,7 +21,7 @@
 // where refresh tokens are not accessible. This test checks that refresh tokens
 // are not affected on INVALID_TOKENS Multilogin error.
 TEST(OAuth2TokenServiceDelegateTest, InvalidateTokensForMultilogin) {
-  class TokenServiceObserver : public OAuth2TokenService::Observer {
+  class TestOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
    public:
     MOCK_METHOD2(OnAuthErrorChanged,
                  void(const CoreAccountId&, const GoogleServiceAuthError&));
@@ -29,7 +29,7 @@ TEST(OAuth2TokenServiceDelegateTest, InvalidateTokensForMultilogin) {
 
   FakeOAuth2TokenServiceDelegate delegate;
 
-  TokenServiceObserver observer;
+  TestOAuth2TokenServiceObserver observer;
   delegate.AddObserver(&observer);
   // Check that OnAuthErrorChanged is not fired from
   // InvalidateTokensForMultilogin and refresh tokens are not set in error.

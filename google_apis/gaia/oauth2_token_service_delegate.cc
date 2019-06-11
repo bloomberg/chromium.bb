@@ -47,12 +47,12 @@ bool OAuth2TokenServiceDelegate::ValidateAccountId(
 }
 
 void OAuth2TokenServiceDelegate::AddObserver(
-    OAuth2TokenService::Observer* observer) {
+    OAuth2TokenServiceObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
 void OAuth2TokenServiceDelegate::RemoveObserver(
-    OAuth2TokenService::Observer* observer) {
+    OAuth2TokenServiceObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 

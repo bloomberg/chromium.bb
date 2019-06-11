@@ -408,11 +408,11 @@ const OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() const {
   return delegate_.get();
 }
 
-void OAuth2TokenService::AddObserver(Observer* observer) {
+void OAuth2TokenService::AddObserver(OAuth2TokenServiceObserver* observer) {
   delegate_->AddObserver(observer);
 }
 
-void OAuth2TokenService::RemoveObserver(Observer* observer) {
+void OAuth2TokenService::RemoveObserver(OAuth2TokenServiceObserver* observer) {
   delegate_->RemoveObserver(observer);
 }
 

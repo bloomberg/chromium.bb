@@ -45,7 +45,7 @@ namespace chromeos {
 
 namespace {
 
-class MockOAuth2TokenServiceObserver : public OAuth2TokenService::Observer {
+class MockOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
  public:
   MockOAuth2TokenServiceObserver();
   ~MockOAuth2TokenServiceObserver() override;

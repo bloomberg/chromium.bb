@@ -39,7 +39,7 @@ class ImageDecoder;
 class ImageFetcherImpl;
 }  // namespace image_fetcher
 
-class AccountFetcherService : public OAuth2TokenService::Observer {
+class AccountFetcherService : public OAuth2TokenServiceObserver {
  public:
   // Name of the preference that tracks the int64_t representation of the last
   // time the AccountTrackerService was updated.
@@ -91,7 +91,7 @@ class AccountFetcherService : public OAuth2TokenService::Observer {
   void SetIsChildAccount(const std::string& account_id, bool is_child_account);
 #endif
 
-  // OAuth2TokenService::Observer implementation.
+  // OAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;

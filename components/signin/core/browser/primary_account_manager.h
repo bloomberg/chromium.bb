@@ -40,7 +40,7 @@ class PrefService;
 class ProfileOAuth2TokenService;
 class SigninClient;
 
-class PrimaryAccountManager : public OAuth2TokenService::Observer {
+class PrimaryAccountManager : public OAuth2TokenServiceObserver {
  public:
   class Observer {
    public:
@@ -218,7 +218,7 @@ class PrimaryAccountManager : public OAuth2TokenService::Observer {
   // Send all observers |GoogleSignedOut| notifications.
   void FireGoogleSignedOut(const AccountInfo& account_info);
 
-  // OAuth2TokenService::Observer:
+  // OAuth2TokenServiceObserver:
   void OnRefreshTokensLoaded() override;
 #endif
 

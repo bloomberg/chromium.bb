@@ -93,8 +93,8 @@ class OAuth2TokenServiceDelegate {
   bool ValidateAccountId(const std::string& account_id) const;
 
   // Add or remove observers of this token service.
-  void AddObserver(OAuth2TokenService::Observer* observer);
-  void RemoveObserver(OAuth2TokenService::Observer* observer);
+  void AddObserver(OAuth2TokenServiceObserver* observer);
+  void RemoveObserver(OAuth2TokenServiceObserver* observer);
 
   // Returns a pointer to its instance of net::BackoffEntry if it has one, or
   // a nullptr otherwise.
@@ -171,7 +171,7 @@ class OAuth2TokenServiceDelegate {
  private:
   // List of observers to notify when refresh token availability changes.
   // Makes sure list is empty on destruction.
-  base::ObserverList<OAuth2TokenService::Observer, true>::Unchecked
+  base::ObserverList<OAuth2TokenServiceObserver, true>::Unchecked
       observer_list_;
 
   // The state of the load credentials operation.

@@ -40,7 +40,7 @@ class PrefRegistrySimple;
 // Note: requests should be started from the UI thread. To start a
 // request from other thread, please use OAuth2TokenServiceRequest.
 class ProfileOAuth2TokenService : public OAuth2TokenService,
-                                  public OAuth2TokenService::Observer {
+                                  public OAuth2TokenServiceObserver {
  public:
   ProfileOAuth2TokenService(
       PrefService* user_prefs,
@@ -111,7 +111,7 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
  private:
   friend class identity::IdentityManager;
 
-  // OAuth2TokenService::Observer implementation.
+  // OAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;

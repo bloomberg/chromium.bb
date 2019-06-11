@@ -27,7 +27,7 @@ class OAuth2TokenServiceDelegateAndroidForTest
   MOCK_METHOD1(SetAccounts, void(const std::vector<CoreAccountId>&));
 };
 
-class TestObserver : public OAuth2TokenService::Observer {
+class TestObserver : public OAuth2TokenServiceObserver {
  public:
   MOCK_METHOD1(OnRefreshTokenAvailable, void(const CoreAccountId&));
   MOCK_METHOD1(OnRefreshTokenRevoked, void(const CoreAccountId&));

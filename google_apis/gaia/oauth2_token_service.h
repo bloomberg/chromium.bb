@@ -24,6 +24,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
+#include "google_apis/gaia/oauth2_token_service_observer.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -94,37 +95,6 @@ class OAuth2TokenService {
     std::string id_;
   };
 
-  // Classes that want to listen for refresh token availability should
-  // implement this interface and register with the AddObserver() call.
-  class Observer {
-   public:
-    // Called whenever a new login-scoped refresh token is available for
-    // account |account_id|. Once available, access tokens can be retrieved for
-    // this account. This is called during initial startup for each token
-    // loaded (and any time later when, e.g., credentials change). When called,
-    // any pending token request is cancelled and needs to be retried. Such a
-    // pending request can easily occur on Android, where refresh tokens are
-    // held by the OS and are thus often available on startup even before
-    // OnRefreshTokenAvailable() is called.
-    virtual void OnRefreshTokenAvailable(const CoreAccountId& account_id) {}
-    // Called whenever the login-scoped refresh token becomes unavailable for
-    // account |account_id|.
-    virtual void OnRefreshTokenRevoked(const CoreAccountId& account_id) {}
-    // Called after all refresh tokens are loaded during OAuth2TokenService
-    // startup.
-    virtual void OnRefreshTokensLoaded() {}
-    // Sent after a batch of refresh token changes is done.
-    virtual void OnEndBatchChanges() {}
-    // Called when the authentication error state for |account_id| has changed.
-    // Note: It is always called after |OnRefreshTokenAvailable| when refresh
-    // token is updated. It is not called when the refresh token is revoked.
-    virtual void OnAuthErrorChanged(const CoreAccountId& account_id,
-                                    const GoogleServiceAuthError& auth_error) {}
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   // Classes that want to monitor status of access token and access token
   // request should implement this interface and register with the
   // AddDiagnosticsObserver() call.
@@ -165,8 +135,8 @@ class OAuth2TokenService {
   virtual ~OAuth2TokenService();
 
   // Add or remove observers of this token service.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(OAuth2TokenServiceObserver* observer);
+  void RemoveObserver(OAuth2TokenServiceObserver* observer);
 
   // Add or remove observers of this token service.
   void AddDiagnosticsObserver(DiagnosticsObserver* observer);

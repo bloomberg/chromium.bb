@@ -29,7 +29,7 @@ typedef ProfileOAuth2TokenServiceIOSProvider::AccountInfo ProviderAccount;
 class ProfileOAuth2TokenServiceIOSDelegateTest
     : public testing::Test,
       public OAuth2AccessTokenConsumer,
-      public OAuth2TokenService::Observer {
+      public OAuth2TokenServiceObserver {
  public:
   ProfileOAuth2TokenServiceIOSDelegateTest()
       : factory_(NULL),
@@ -75,7 +75,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
     last_access_token_error_ = error;
   }
 
-  // OAuth2TokenService::Observer implementation.
+  // OAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override {
     ++token_available_count_;
   }

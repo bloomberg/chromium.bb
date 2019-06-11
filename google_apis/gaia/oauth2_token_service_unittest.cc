@@ -53,7 +53,7 @@ class RetryingTestingOAuth2TokenServiceConsumer
   std::unique_ptr<OAuth2TokenService::Request> request_;
 };
 
-class FakeOAuth2TokenServiceObserver : public OAuth2TokenService::Observer {
+class FakeOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
  public:
   MOCK_METHOD2(OnAuthErrorChanged,
                void(const CoreAccountId&, const GoogleServiceAuthError&));

@@ -52,7 +52,7 @@ struct CookieParams;
 // ./README.md for detailed documentation.
 class IdentityManager : public PrimaryAccountManager::Observer,
                         public OAuth2TokenService::DiagnosticsObserver,
-                        public OAuth2TokenService::Observer,
+                        public OAuth2TokenServiceObserver,
                         public AccountTrackerService::Observer {
  public:
   class Observer {
@@ -588,7 +588,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   void AuthenticatedAccountSet(const AccountInfo& account_info) override;
   void AuthenticatedAccountCleared() override;
 
-  // OAuth2TokenService::Observer:
+  // OAuth2TokenServiceObserver:
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;

@@ -120,6 +120,7 @@ template("google_apis_tmpl") {
       "gaia/oauth2_token_service.h",
       "gaia/oauth2_token_service_delegate.cc",
       "gaia/oauth2_token_service_delegate.h",
+      "gaia/oauth2_token_service_observer.h",
       "gaia/oauth2_token_service_request.cc",
       "gaia/oauth2_token_service_request.h",
       "gaia/oauth_multilogin_result.cc",

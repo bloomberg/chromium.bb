@@ -25,7 +25,7 @@ namespace identity {
 // Helper class to ease the task of obtaining an OAuth2 access token for a
 // given account.
 // May only be used on the UI thread.
-class AccessTokenFetcher : public OAuth2TokenService::Observer,
+class AccessTokenFetcher : public OAuth2TokenServiceObserver,
                            public OAuth2TokenService::Consumer {
  public:
   // Specifies how this instance should behave:
@@ -103,7 +103,7 @@ class AccessTokenFetcher : public OAuth2TokenService::Observer,
 
   void StartAccessTokenRequest();
 
-  // OAuth2TokenService::Observer implementation.
+  // OAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
 
   // OAuth2TokenService::Consumer implementation.
