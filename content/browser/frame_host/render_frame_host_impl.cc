@@ -6594,25 +6594,18 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     //  same-document navigations.
     is_commit_allowed_to_proceed |= is_same_document_navigation;
 
-    //  3) This was a navigation to a subframe in an MHTML archive.
-    is_commit_allowed_to_proceed |=
-        GetParent() && frame_tree_node_->frame_tree()
-                           ->root()
-                           ->current_frame_host()
-                           ->is_mhtml_document();
-
-    //  4) Transient interstitial page commits will not have a matching
+    //  3) Transient interstitial page commits will not have a matching
     //  NavigationRequest.
     //  TODO(clamy): Enforce having a NavigationRequest for data URLs when
     //  committed interstitials have launched or interstitials create
     //  NavigationRequests.
     is_commit_allowed_to_proceed |= !!delegate_->GetAsInterstitialPage();
 
-    //  5) Error pages implementations in Chrome can commit twice.
+    //  4) Error pages implementations in Chrome can commit twice.
     //  TODO(clamy): Fix this.
     is_commit_allowed_to_proceed |= validated_params->url_is_unreachable;
 
-    //  6) Special case for DOMSerializerBrowsertests which are implemented
+    //  5) Special case for DOMSerializerBrowsertests which are implemented
     //  entirely renderer-side and unlike normal RenderView based tests load
     //  file URLs instead of data URLs.
     //  TODO(clamy): Rework the tests to remove this exception.
