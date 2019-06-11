@@ -88,7 +88,7 @@ class CORE_EXPORT StyleResolver final
       const ComputedStyle* parent_style,
       const ComputedStyle* layout_parent_style);
 
-  scoped_refptr<ComputedStyle> StyleForPage(int page_index);
+  scoped_refptr<const ComputedStyle> StyleForPage(int page_index);
   scoped_refptr<const ComputedStyle> StyleForText(Text*);
 
   static scoped_refptr<ComputedStyle> StyleForViewport(Document&);

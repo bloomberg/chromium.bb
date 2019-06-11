@@ -982,8 +982,8 @@ scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
   return state.TakeStyle();
 }
 
-scoped_refptr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
-  scoped_refptr<ComputedStyle> initial_style =
+scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(int page_index) {
+  scoped_refptr<const ComputedStyle> initial_style =
       InitialStyleForElement(GetDocument());
   StyleResolverState state(GetDocument(), GetDocument().documentElement(),
                            nullptr /* pseudo_element */, initial_style.get(),

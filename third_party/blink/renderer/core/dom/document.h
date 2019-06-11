@@ -529,7 +529,7 @@ class CORE_EXPORT Document : public ContainerNode,
     kRunPostLayoutTasksSynchronously,
   };
   void UpdateStyleAndLayoutForNode(const Node*);
-  scoped_refptr<ComputedStyle> StyleForPage(int page_index);
+  scoped_refptr<const ComputedStyle> StyleForPage(int page_index);
 
   // Ensures that location-based data will be valid for a given node.
   //

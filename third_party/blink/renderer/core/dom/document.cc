@@ -2574,7 +2574,7 @@ void Document::ClearFocusedElementTimerFired(TimerBase*) {
     focused_element_->blur();
 }
 
-scoped_refptr<ComputedStyle> Document::StyleForPage(int page_index) {
+scoped_refptr<const ComputedStyle> Document::StyleForPage(int page_index) {
   UpdateDistributionForUnknownReasons();
   return EnsureStyleResolver().StyleForPage(page_index);
 }
@@ -2620,7 +2620,7 @@ void Document::PageSizeAndMarginsInPixels(int page_index,
                                           int& margin_right,
                                           int& margin_bottom,
                                           int& margin_left) {
-  scoped_refptr<ComputedStyle> style = StyleForPage(page_index);
+  scoped_refptr<const ComputedStyle> style = StyleForPage(page_index);
 
   double width = page_size.Width();
   double height = page_size.Height();
