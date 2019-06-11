@@ -54,7 +54,6 @@ namespace app_runtime = extensions::api::app_runtime;
 
 using content::BrowserThread;
 using extensions::AppRuntimeEventRouter;
-using extensions::api::app_runtime::PlayStoreStatus;
 using extensions::app_file_handler_util::CreateFileEntry;
 using extensions::app_file_handler_util::FileHandlerCanHandleEntry;
 using extensions::app_file_handler_util::FileHandlerForId;
@@ -368,11 +367,9 @@ void LaunchPlatformAppWithCommandLine(content::BrowserContext* context,
                                       const extensions::Extension* app,
                                       const base::CommandLine& command_line,
                                       const base::FilePath& current_directory,
-                                      extensions::AppLaunchSource source,
-                                      PlayStoreStatus play_store_status) {
+                                      extensions::AppLaunchSource source) {
   LaunchPlatformAppWithCommandLineAndLaunchId(context, app, "", command_line,
-                                              current_directory, source,
-                                              play_store_status);
+                                              current_directory, source);
 }
 
 void LaunchPlatformAppWithCommandLineAndLaunchId(
@@ -381,8 +378,7 @@ void LaunchPlatformAppWithCommandLineAndLaunchId(
     const std::string& launch_id,
     const base::CommandLine& command_line,
     const base::FilePath& current_directory,
-    extensions::AppLaunchSource source,
-    PlayStoreStatus play_store_status) {
+    extensions::AppLaunchSource source) {
   // An app with "kiosk_only" should not be installed and launched
   // outside of ChromeOS kiosk mode in the first place. This is a defensive
   // check in case this scenario does occur.
@@ -415,8 +411,6 @@ void LaunchPlatformAppWithCommandLineAndLaunchId(
                        args[0] == about_blank_url)) {
     std::unique_ptr<app_runtime::LaunchData> launch_data =
         std::make_unique<app_runtime::LaunchData>();
-    if (play_store_status != PlayStoreStatus::PLAY_STORE_STATUS_UNKNOWN)
-      launch_data->play_store_status = play_store_status;
     if (!launch_id.empty())
       launch_data->id.reset(new std::string(launch_id));
     AppRuntimeEventRouter::DispatchOnLaunchedEvent(context, app, source,

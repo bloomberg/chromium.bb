@@ -55,16 +55,6 @@ namespace app.runtime {
     new_note
   };
 
-  // Status of the play store.
-  [nodoc] enum PlayStoreStatus {
-    // Indicates that the play store is enabled. It also implies available.
-    enabled,
-    // Indicates that the play store is available but not enabled.
-    available,
-    // Indicates that the play store status is unknown.
-    unknown
-  };
-
   // Optional data that includes action-specific launch information.
   dictionary ActionData {
     ActionType actionType;
@@ -129,9 +119,6 @@ namespace app.runtime {
     // launched with. This is null if the app was not launched with a specific
     // action intent.
     ActionData? actionData;
-
-    // Internal fields used to indicate ARC status on the device.
-    [nodoc] PlayStoreStatus? playStoreStatus;
   };
 
   // This object specifies details and operations to perform on the embedding

@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "extensions/common/api/app_runtime.h"
 #include "extensions/common/constants.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/types/display_constants.h"
@@ -33,7 +32,6 @@ struct AppLaunchParams {
                   extensions::LaunchContainer container,
                   WindowOpenDisposition disposition,
                   extensions::AppLaunchSource source,
-                  bool set_playstore_status = false,
                   int64_t display_id = display::kInvalidDisplayId);
 
   AppLaunchParams(const AppLaunchParams& other);
@@ -77,9 +75,6 @@ struct AppLaunchParams {
   // Record where the app is launched from for tracking purpose.
   // Different app may have their own enumeration of sources.
   extensions::AppLaunchSource source;
-
-  // Status of ARC on this device.
-  extensions::api::app_runtime::PlayStoreStatus play_store_status;
 
   // The id of the display from which the app is launched.
   // display::kInvalidDisplayId means that the display does not exist or is not

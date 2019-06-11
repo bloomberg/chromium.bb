@@ -283,7 +283,7 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   if (CanLaunchViaEvent(extension)) {
     apps::LaunchPlatformAppWithCommandLineAndLaunchId(
         params.profile, extension, params.launch_id, params.command_line,
-        params.current_directory, params.source, params.play_store_status);
+        params.current_directory, params.source);
     return NULL;
   }
 
