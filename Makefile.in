@@ -183,7 +183,8 @@ EXTRA_PROGRAMS = $(am__EXEEXT_1)
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/postfix_evaluator_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux_unittest \
-@DISABLE_PROCESSOR_FALSE@	src/processor/range_map_shrink_down_unittest \
+@DISABLE_PROCESSOR_FALSE@	src/processor/range_map_truncate_lower_unittest \
+@DISABLE_PROCESSOR_FALSE@	src/processor/range_map_truncate_upper_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/range_map_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm_unittest \
@@ -579,7 +580,8 @@ src_third_party_libdisasm_libdisasm_a_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/postfix_evaluator_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/proc_maps_linux_unittest$(EXEEXT) \
-@DISABLE_PROCESSOR_FALSE@	src/processor/range_map_shrink_down_unittest$(EXEEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/range_map_truncate_lower_unittest$(EXEEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/range_map_truncate_upper_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/range_map_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64_unittest$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm_unittest$(EXEEXT) \
@@ -1200,12 +1202,23 @@ src_processor_proc_maps_linux_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
-am__src_processor_range_map_shrink_down_unittest_SOURCES_DIST =  \
-	src/processor/range_map_shrink_down_unittest.cc
-@DISABLE_PROCESSOR_FALSE@am_src_processor_range_map_shrink_down_unittest_OBJECTS = src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.$(OBJEXT)
-src_processor_range_map_shrink_down_unittest_OBJECTS =  \
-	$(am_src_processor_range_map_shrink_down_unittest_OBJECTS)
-@DISABLE_PROCESSOR_FALSE@src_processor_range_map_shrink_down_unittest_DEPENDENCIES =  \
+am__src_processor_range_map_truncate_lower_unittest_SOURCES_DIST =  \
+	src/processor/range_map_truncate_lower_unittest.cc
+@DISABLE_PROCESSOR_FALSE@am_src_processor_range_map_truncate_lower_unittest_OBJECTS = src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.$(OBJEXT)
+src_processor_range_map_truncate_lower_unittest_OBJECTS =  \
+	$(am_src_processor_range_map_truncate_lower_unittest_OBJECTS)
+@DISABLE_PROCESSOR_FALSE@src_processor_range_map_truncate_lower_unittest_DEPENDENCIES =  \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
+@DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
+am__src_processor_range_map_truncate_upper_unittest_SOURCES_DIST =  \
+	src/processor/range_map_truncate_upper_unittest.cc
+@DISABLE_PROCESSOR_FALSE@am_src_processor_range_map_truncate_upper_unittest_OBJECTS = src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.$(OBJEXT)
+src_processor_range_map_truncate_upper_unittest_OBJECTS =  \
+	$(am_src_processor_range_map_truncate_upper_unittest_OBJECTS)
+@DISABLE_PROCESSOR_FALSE@src_processor_range_map_truncate_upper_unittest_DEPENDENCIES =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_2) \
@@ -1615,7 +1628,8 @@ SOURCES = $(src_client_linux_libbreakpad_client_a_SOURCES) \
 	$(src_processor_pathname_stripper_unittest_SOURCES) \
 	$(src_processor_postfix_evaluator_unittest_SOURCES) \
 	$(src_processor_proc_maps_linux_unittest_SOURCES) \
-	$(src_processor_range_map_shrink_down_unittest_SOURCES) \
+	$(src_processor_range_map_truncate_lower_unittest_SOURCES) \
+	$(src_processor_range_map_truncate_upper_unittest_SOURCES) \
 	$(src_processor_range_map_unittest_SOURCES) \
 	$(src_processor_stackwalker_address_list_unittest_SOURCES) \
 	$(src_processor_stackwalker_amd64_unittest_SOURCES) \
@@ -1666,7 +1680,8 @@ DIST_SOURCES =  \
 	$(am__src_processor_pathname_stripper_unittest_SOURCES_DIST) \
 	$(am__src_processor_postfix_evaluator_unittest_SOURCES_DIST) \
 	$(am__src_processor_proc_maps_linux_unittest_SOURCES_DIST) \
-	$(am__src_processor_range_map_shrink_down_unittest_SOURCES_DIST) \
+	$(am__src_processor_range_map_truncate_lower_unittest_SOURCES_DIST) \
+	$(am__src_processor_range_map_truncate_upper_unittest_SOURCES_DIST) \
 	$(am__src_processor_range_map_unittest_SOURCES_DIST) \
 	$(am__src_processor_stackwalker_address_list_unittest_SOURCES_DIST) \
 	$(am__src_processor_stackwalker_amd64_unittest_SOURCES_DIST) \
@@ -2933,16 +2948,28 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
-@DISABLE_PROCESSOR_FALSE@src_processor_range_map_shrink_down_unittest_SOURCES = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/range_map_shrink_down_unittest.cc
+@DISABLE_PROCESSOR_FALSE@src_processor_range_map_truncate_lower_unittest_SOURCES = \
+@DISABLE_PROCESSOR_FALSE@	src/processor/range_map_truncate_lower_unittest.cc
 
-@DISABLE_PROCESSOR_FALSE@src_processor_range_map_shrink_down_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@  src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@src_processor_range_map_truncate_lower_unittest_LDADD = \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) \
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
-@DISABLE_PROCESSOR_FALSE@src_processor_range_map_shrink_down_unittest_CPPFLAGS = \
+@DISABLE_PROCESSOR_FALSE@src_processor_range_map_truncate_lower_unittest_CPPFLAGS = \
+@DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
+
+@DISABLE_PROCESSOR_FALSE@src_processor_range_map_truncate_upper_unittest_SOURCES = \
+@DISABLE_PROCESSOR_FALSE@	src/processor/range_map_truncate_upper_unittest.cc
+
+@DISABLE_PROCESSOR_FALSE@src_processor_range_map_truncate_upper_unittest_LDADD = \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	$(TEST_LIBS) \
+@DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+
+@DISABLE_PROCESSOR_FALSE@src_processor_range_map_truncate_upper_unittest_CPPFLAGS = \
 @DISABLE_PROCESSOR_FALSE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_range_map_unittest_SOURCES = \
@@ -4417,13 +4444,20 @@ src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.$(
 src/processor/proc_maps_linux_unittest$(EXEEXT): $(src_processor_proc_maps_linux_unittest_OBJECTS) $(src_processor_proc_maps_linux_unittest_DEPENDENCIES) $(EXTRA_src_processor_proc_maps_linux_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
 	@rm -f src/processor/proc_maps_linux_unittest$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(src_processor_proc_maps_linux_unittest_OBJECTS) $(src_processor_proc_maps_linux_unittest_LDADD) $(LIBS)
-src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.$(OBJEXT):  \
+src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 
-src/processor/range_map_shrink_down_unittest$(EXEEXT): $(src_processor_range_map_shrink_down_unittest_OBJECTS) $(src_processor_range_map_shrink_down_unittest_DEPENDENCIES) $(EXTRA_src_processor_range_map_shrink_down_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
-	@rm -f src/processor/range_map_shrink_down_unittest$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(src_processor_range_map_shrink_down_unittest_OBJECTS) $(src_processor_range_map_shrink_down_unittest_LDADD) $(LIBS)
+src/processor/range_map_truncate_lower_unittest$(EXEEXT): $(src_processor_range_map_truncate_lower_unittest_OBJECTS) $(src_processor_range_map_truncate_lower_unittest_DEPENDENCIES) $(EXTRA_src_processor_range_map_truncate_lower_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/range_map_truncate_lower_unittest$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(src_processor_range_map_truncate_lower_unittest_OBJECTS) $(src_processor_range_map_truncate_lower_unittest_LDADD) $(LIBS)
+src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+
+src/processor/range_map_truncate_upper_unittest$(EXEEXT): $(src_processor_range_map_truncate_upper_unittest_OBJECTS) $(src_processor_range_map_truncate_upper_unittest_DEPENDENCIES) $(EXTRA_src_processor_range_map_truncate_upper_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
+	@rm -f src/processor/range_map_truncate_upper_unittest$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(src_processor_range_map_truncate_upper_unittest_OBJECTS) $(src_processor_range_map_truncate_upper_unittest_LDADD) $(LIBS)
 src/processor/range_map_unittest.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -5015,7 +5049,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_minidump_unittest-synth_minidump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_stackwalker_address_list_unittest-stackwalker_address_list_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_stackwalker_amd64_unittest-stackwalker_amd64_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_stackwalker_arm64_unittest-stackwalker_arm64_unittest.Po@am__quote@
@@ -6800,19 +6835,33 @@ src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.ob
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_proc_maps_linux_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_proc_maps_linux_unittest-proc_maps_linux_unittest.obj `if test -f 'src/processor/proc_maps_linux_unittest.cc'; then $(CYGPATH_W) 'src/processor/proc_maps_linux_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/proc_maps_linux_unittest.cc'; fi`
 
-src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.o: src/processor/range_map_shrink_down_unittest.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_shrink_down_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.Tpo -c -o src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.o `test -f 'src/processor/range_map_shrink_down_unittest.cc' || echo '$(srcdir)/'`src/processor/range_map_shrink_down_unittest.cc
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.Tpo src/processor/$(DEPDIR)/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/range_map_shrink_down_unittest.cc' object='src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.o' libtool=no @AMDEPBACKSLASH@
+src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.o: src/processor/range_map_truncate_lower_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_truncate_lower_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.Tpo -c -o src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.o `test -f 'src/processor/range_map_truncate_lower_unittest.cc' || echo '$(srcdir)/'`src/processor/range_map_truncate_lower_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.Tpo src/processor/$(DEPDIR)/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/range_map_truncate_lower_unittest.cc' object='src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_shrink_down_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.o `test -f 'src/processor/range_map_shrink_down_unittest.cc' || echo '$(srcdir)/'`src/processor/range_map_shrink_down_unittest.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_truncate_lower_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.o `test -f 'src/processor/range_map_truncate_lower_unittest.cc' || echo '$(srcdir)/'`src/processor/range_map_truncate_lower_unittest.cc
 
-src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.obj: src/processor/range_map_shrink_down_unittest.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_shrink_down_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.Tpo -c -o src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.obj `if test -f 'src/processor/range_map_shrink_down_unittest.cc'; then $(CYGPATH_W) 'src/processor/range_map_shrink_down_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/range_map_shrink_down_unittest.cc'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.Tpo src/processor/$(DEPDIR)/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/range_map_shrink_down_unittest.cc' object='src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.obj' libtool=no @AMDEPBACKSLASH@
+src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.obj: src/processor/range_map_truncate_lower_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_truncate_lower_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.Tpo -c -o src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.obj `if test -f 'src/processor/range_map_truncate_lower_unittest.cc'; then $(CYGPATH_W) 'src/processor/range_map_truncate_lower_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/range_map_truncate_lower_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.Tpo src/processor/$(DEPDIR)/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/range_map_truncate_lower_unittest.cc' object='src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_shrink_down_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_range_map_shrink_down_unittest-range_map_shrink_down_unittest.obj `if test -f 'src/processor/range_map_shrink_down_unittest.cc'; then $(CYGPATH_W) 'src/processor/range_map_shrink_down_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/range_map_shrink_down_unittest.cc'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_truncate_lower_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_range_map_truncate_lower_unittest-range_map_truncate_lower_unittest.obj `if test -f 'src/processor/range_map_truncate_lower_unittest.cc'; then $(CYGPATH_W) 'src/processor/range_map_truncate_lower_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/range_map_truncate_lower_unittest.cc'; fi`
+
+src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.o: src/processor/range_map_truncate_upper_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_truncate_upper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.o -MD -MP -MF src/processor/$(DEPDIR)/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.Tpo -c -o src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.o `test -f 'src/processor/range_map_truncate_upper_unittest.cc' || echo '$(srcdir)/'`src/processor/range_map_truncate_upper_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.Tpo src/processor/$(DEPDIR)/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/range_map_truncate_upper_unittest.cc' object='src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_truncate_upper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.o `test -f 'src/processor/range_map_truncate_upper_unittest.cc' || echo '$(srcdir)/'`src/processor/range_map_truncate_upper_unittest.cc
+
+src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.obj: src/processor/range_map_truncate_upper_unittest.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_truncate_upper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.obj -MD -MP -MF src/processor/$(DEPDIR)/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.Tpo -c -o src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.obj `if test -f 'src/processor/range_map_truncate_upper_unittest.cc'; then $(CYGPATH_W) 'src/processor/range_map_truncate_upper_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/range_map_truncate_upper_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.Tpo src/processor/$(DEPDIR)/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/range_map_truncate_upper_unittest.cc' object='src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_range_map_truncate_upper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_range_map_truncate_upper_unittest-range_map_truncate_upper_unittest.obj `if test -f 'src/processor/range_map_truncate_upper_unittest.cc'; then $(CYGPATH_W) 'src/processor/range_map_truncate_upper_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/range_map_truncate_upper_unittest.cc'; fi`
 
 src/common/src_processor_stackwalker_address_list_unittest-test_assembler.o: src/common/test_assembler.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_stackwalker_address_list_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_processor_stackwalker_address_list_unittest-test_assembler.o -MD -MP -MF src/common/$(DEPDIR)/src_processor_stackwalker_address_list_unittest-test_assembler.Tpo -c -o src/common/src_processor_stackwalker_address_list_unittest-test_assembler.o `test -f 'src/common/test_assembler.cc' || echo '$(srcdir)/'`src/common/test_assembler.cc
@@ -8302,9 +8351,16 @@ src/processor/proc_maps_linux_unittest.log: src/processor/proc_maps_linux_unitte
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-src/processor/range_map_shrink_down_unittest.log: src/processor/range_map_shrink_down_unittest$(EXEEXT)
-	@p='src/processor/range_map_shrink_down_unittest$(EXEEXT)'; \
-	b='src/processor/range_map_shrink_down_unittest'; \
+src/processor/range_map_truncate_lower_unittest.log: src/processor/range_map_truncate_lower_unittest$(EXEEXT)
+	@p='src/processor/range_map_truncate_lower_unittest$(EXEEXT)'; \
+	b='src/processor/range_map_truncate_lower_unittest'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+src/processor/range_map_truncate_upper_unittest.log: src/processor/range_map_truncate_upper_unittest$(EXEEXT)
+	@p='src/processor/range_map_truncate_upper_unittest$(EXEEXT)'; \
+	b='src/processor/range_map_truncate_upper_unittest'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
