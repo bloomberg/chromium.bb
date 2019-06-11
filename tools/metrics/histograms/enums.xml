@@ -33240,6 +33240,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2113705745"
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
+  <int value="-2106960993" label="HarfBuzzPDFSubsetter:disabled"/>
   <int value="-2105133782" label="GesturePropertiesDBusService:enabled"/>
   <int value="-2104950596" label="HandwritingGesture:enabled"/>
   <int value="-2101682955" label="EnableNotificationIndicator:enabled"/>
@@ -35527,6 +35528,7 @@ from previous Chrome versions.
   <int value="1240073971" label="ash-disable-smooth-screen-rotation"/>
   <int value="1242100010" label="AutofillProfileClientValidation:disabled"/>
   <int value="1242632259" label="ContentSuggestionsCategoryOrder:disabled"/>
+  <int value="1243180545" label="HarfBuzzPDFSubsetter:enabled"/>
   <int value="1243890754" label="ForbidSyncXHRInPageDismissal:disabled"/>
   <int value="1245889469" label="enable-surface-worker"/>
   <int value="1247293682" label="topchrome-md"/>

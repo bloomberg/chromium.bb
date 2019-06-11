@@ -180,6 +180,10 @@
 #include "pdf/pdf_features.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING)
+#include "printing/printing_features.h"
+#endif
+
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_switches.h"
 #endif  // USE_OZONE
@@ -2914,6 +2918,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUsePdfCompositorServiceName,
      flag_descriptions::kUsePdfCompositorServiceDescription, kOsAll,
      FEATURE_VALUE_TYPE(printing::features::kUsePdfCompositorServiceForPrint)},
+
+    {"harfbuzz-pdf-subsetter", flag_descriptions::kHarfBuzzPDFSubsetterName,
+     flag_descriptions::kHarfBuzzPDFSubsetterDescription, kOsAll,
+     FEATURE_VALUE_TYPE(printing::features::kHarfBuzzPDFSubsetter)},
 #endif
 
     {"autofill-profile-client-validation",

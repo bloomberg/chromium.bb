@@ -643,6 +643,9 @@ extern const char kHandwritingGestureDescription[];
 extern const char kHardwareMediaKeyHandling[];
 extern const char kHardwareMediaKeyHandlingDescription[];
 
+extern const char kHarfBuzzPDFSubsetterName[];
+extern const char kHarfBuzzPDFSubsetterDescription[];
+
 extern const char kHarfbuzzRendertextName[];
 extern const char kHarfbuzzRendertextDescription[];
 

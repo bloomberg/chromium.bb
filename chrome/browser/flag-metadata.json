@@ -2148,6 +2148,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "harfbuzz-pdf-subsetter",
+    "owners": ["dhoss", "thestig"],
+    "expiry_milestone": 80
+  },
+  {
     "name": "http-auth-committed-interstitials",
     "owners": [ "jdeblasio", "estark" ],
     "expiry_milestone": 77

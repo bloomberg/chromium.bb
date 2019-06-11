@@ -1073,6 +1073,10 @@ const char kHardwareMediaKeyHandlingDescription[] =
     "Enables using media keys to control the active media session. This "
     "requires MediaSessionService to be enabled too";
 
+const char kHarfBuzzPDFSubsetterName[] = "HarfBuzz PDF Subsetter";
+const char kHarfBuzzPDFSubsetterDescription[] =
+    "Changes the PDF subsetter from sftnly to HarfBuzz.";
+
 const char kHideActiveAppsFromShelfName[] =
     "Hide running apps (that are not pinned) from the shelf";
 const char kHideActiveAppsFromShelfDescription[] =
