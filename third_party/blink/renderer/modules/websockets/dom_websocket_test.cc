@@ -50,7 +50,7 @@ class MockWebSocketChannel : public WebSocketChannel {
   ~MockWebSocketChannel() override = default;
 
   MOCK_METHOD2(Connect, bool(const KURL&, const String&));
-  MOCK_METHOD1(Send, void(const CString&));
+  MOCK_METHOD1(Send, void(const std::string&));
   MOCK_METHOD3(Send, void(const DOMArrayBuffer&, unsigned, unsigned));
   MOCK_METHOD1(SendMock, void(BlobDataHandle*));
   void Send(scoped_refptr<BlobDataHandle> handle) override {
@@ -714,7 +714,7 @@ TEST(DOMWebSocketTest, sendStringSuccess) {
     EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(websocket_scope.Channel(), Send(CString("hello")));
+    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("hello")));
   }
   websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
                                    scope.GetExceptionState());
@@ -737,7 +737,7 @@ TEST(DOMWebSocketTest, sendNonLatin1String) {
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(websocket_scope.Channel(),
-                Send(CString("\xe7\x8b\x90\xe0\xa4\x94")));
+                Send(std::string("\xe7\x8b\x90\xe0\xa4\x94")));
   }
   websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
                                    scope.GetExceptionState());
@@ -863,8 +863,8 @@ TEST(DOMWebSocketTest, bufferedAmountUpdated) {
     EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(websocket_scope.Channel(), Send(CString("hello")));
-    EXPECT_CALL(websocket_scope.Channel(), Send(CString("world")));
+    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("hello")));
+    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("world")));
   }
   websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
                                    scope.GetExceptionState());
@@ -893,7 +893,7 @@ TEST(DOMWebSocketTest, bufferedAmountUpdatedBeforeOnMessage) {
     EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(websocket_scope.Channel(), Send(CString("hello")));
+    EXPECT_CALL(websocket_scope.Channel(), Send(std::string("hello")));
   }
   websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
                                    scope.GetExceptionState());

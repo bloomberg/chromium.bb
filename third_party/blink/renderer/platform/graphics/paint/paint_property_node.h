@@ -271,7 +271,7 @@ String PaintPropertyNode<NodeType>::ToTreeString() const {
 template <typename NodeType>
 std::ostream& operator<<(std::ostream& os,
                          const PaintPropertyNode<NodeType>& node) {
-  return os << static_cast<const NodeType&>(node).ToString().Utf8().data();
+  return os << static_cast<const NodeType&>(node).ToString().Utf8();
 }
 
 PLATFORM_EXPORT const char* PaintPropertyChangeTypeToString(

@@ -710,7 +710,7 @@ void InlineTextBox::DumpBox(StringBuilder& string_inlinetextbox) const {
   while (string_inlinetextbox.length() < kLayoutObjectCharacterOffset)
     string_inlinetextbox.Append(' ');
   string_inlinetextbox.AppendFormat("(%d,%d) \"%s\"", Start(), Start() + Len(),
-                                    value.Utf8().data());
+                                    value.Utf8().c_str());
 }
 
 #endif

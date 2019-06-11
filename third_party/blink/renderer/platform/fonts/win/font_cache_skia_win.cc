@@ -197,11 +197,11 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
   }
 
   if (use_skia_font_fallback_) {
-    CString family_name = font_description.Family().Family().Utf8();
+    std::string family_name = font_description.Family().Family().Utf8();
     Bcp47Vector locales =
         GetBcp47LocaleForRequest(font_description, fallback_priority);
     SkTypeface* typeface = font_manager_->matchFamilyStyleCharacter(
-        family_name.data(), font_description.SkiaFontStyle(), locales.data(),
+        family_name.c_str(), font_description.SkiaFontStyle(), locales.data(),
         locales.size(), character);
     if (typeface) {
       SkString skia_family;
@@ -394,11 +394,11 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
   DCHECK_EQ(creation_params.CreationType(), kCreateFontByFamily);
   sk_sp<SkTypeface> typeface;
 
-  CString name;
+  std::string name;
 
   if (alternate_font_name == AlternateFontName::kLocalUniqueFace &&
       RuntimeEnabledFeatures::FontSrcLocalMatchingEnabled()) {
-    typeface = CreateTypefaceFromUniqueName(creation_params, name);
+    typeface = CreateTypefaceFromUniqueName(creation_params);
 
     if (!typeface && sideloaded_fonts_) {
       typeface = FindUniqueFontNameFromSideloadedFonts(creation_params.Family(),

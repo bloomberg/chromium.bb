@@ -78,7 +78,7 @@ static scoped_refptr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
   AudioBusMap::iterator iterator = audio_bus_map.find(subject_name);
   if (iterator == audio_bus_map.end()) {
     scoped_refptr<AudioBus> concatenated_impulse_responses(
-        AudioBus::GetDataResource(subject_name.Utf8().data(),
+        AudioBus::GetDataResource(subject_name.Utf8().c_str(),
                                   kResponseSampleRate));
     DCHECK(concatenated_impulse_responses);
     if (!concatenated_impulse_responses)

@@ -19,7 +19,7 @@ StringUTF8Adaptor::StringUTF8Adaptor(const String& string,
     size_ = string.length();
   } else {
     utf8_buffer_ = string.Utf8(mode);
-    data_ = utf8_buffer_.data();
+    data_ = utf8_buffer_.c_str();
     size_ = utf8_buffer_.length();
   }
 }

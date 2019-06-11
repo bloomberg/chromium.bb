@@ -2046,7 +2046,7 @@ static void DumpAttributeDesc(const Node& node,
 }
 
 std::ostream& operator<<(std::ostream& ostream, const Node& node) {
-  return ostream << node.ToString().Utf8().data();
+  return ostream << node.ToString().Utf8();
 }
 
 std::ostream& operator<<(std::ostream& ostream, const Node* node) {
@@ -2112,7 +2112,7 @@ void Node::PrintNodePathTo(std::ostream& stream) const {
 
     switch (node->getNodeType()) {
       case kElementNode: {
-        stream << "/" << node->nodeName().Utf8().data();
+        stream << "/" << node->nodeName().Utf8();
 
         const auto* element = To<Element>(node);
         const AtomicString& idattr = element->GetIdAttribute();
@@ -2126,12 +2126,12 @@ void Node::PrintNodePathTo(std::ostream& stream) const {
             }
           }
           if (has_id_attr)
-            stream << "[@id=\"" << idattr.Utf8().data()
+            stream << "[@id=\"" << idattr.Utf8()
                    << "\" and position()=" << count << "]";
           else
             stream << "[" << count << "]";
         } else if (has_id_attr) {
-          stream << "[@id=\"" << idattr.Utf8().data() << "\"]";
+          stream << "[@id=\"" << idattr.Utf8() << "\"]";
         }
         break;
       }
@@ -2139,7 +2139,7 @@ void Node::PrintNodePathTo(std::ostream& stream) const {
         stream << "/text()";
         break;
       case kAttributeNode:
-        stream << "/@" << node->nodeName().Utf8().data();
+        stream << "/@" << node->nodeName().Utf8();
         break;
       default:
         break;
@@ -2264,7 +2264,7 @@ static void PrintSubTreeAcrossFrame(const Node* node,
                                     std::ostream& stream) {
   if (node == marked_node)
     stream << "*";
-  stream << indent.Utf8().data() << *node << "\n";
+  stream << indent.Utf8() << *node << "\n";
   if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(node)) {
     PrintSubTreeAcrossFrame(frame_owner_element->contentDocument(), marked_node,
                             indent + "\t", stream);
@@ -3074,7 +3074,7 @@ void showNode(const blink::Node* node) {
 
 void showTree(const blink::Node* node) {
   if (node)
-    LOG(INFO) << "\n" << node->ToTreeStringForThis().Utf8().data();
+    LOG(INFO) << "\n" << node->ToTreeStringForThis().Utf8();
   else
     LOG(INFO) << "Cannot showTree for <null>";
 }

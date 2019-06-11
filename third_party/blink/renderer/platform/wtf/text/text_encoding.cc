@@ -55,16 +55,16 @@ String TextEncoding::Decode(const char* data,
                                      stop_on_error, saw_error);
 }
 
-CString TextEncoding::Encode(const String& string,
-                             UnencodableHandling handling) const {
+std::string TextEncoding::Encode(const String& string,
+                                 UnencodableHandling handling) const {
   if (!name_)
-    return CString();
+    return std::string();
 
   if (string.IsEmpty())
-    return "";
+    return std::string();
 
   std::unique_ptr<TextCodec> text_codec = NewTextCodec(*this);
-  CString encoded_string;
+  std::string encoded_string;
   if (string.Is8Bit())
     encoded_string =
         text_codec->Encode(string.Characters8(), string.length(), handling);

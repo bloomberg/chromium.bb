@@ -63,8 +63,7 @@ StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::file(
 base::FilePath
 StructTraits<network::mojom::DataElementDataView, blink::FormDataElement>::path(
     const blink::FormDataElement& data) {
-  return base::FilePath::FromUTF8Unsafe(
-      std::string(data.filename_.Utf8().data()));
+  return base::FilePath::FromUTF8Unsafe(data.filename_.Utf8());
 }
 
 // static

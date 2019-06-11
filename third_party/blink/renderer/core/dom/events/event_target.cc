@@ -138,7 +138,7 @@ void ReportBlockedEvent(EventTarget& target,
       " ms due to main thread being busy. "
       "Consider marking event handler as 'passive' to make the page more "
       "responsive.",
-      event.type().GetString().Utf8().data(), delayed.InMilliseconds());
+      event.type().GetString().Utf8().c_str(), delayed.InMilliseconds());
   PerformanceMonitor::ReportGenericViolation(
       target.GetExecutionContext(), PerformanceMonitor::kBlockedEvent,
       message_text, delayed, listener->GetSourceLocation(target));
@@ -377,7 +377,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
         "Consider marking event handler as 'passive' to make the page more "
         "responsive. See "
         "https://www.chromestatus.com/feature/5745543795965952",
-        event_type.GetString().Utf8().data());
+        event_type.GetString().Utf8().c_str());
 
     PerformanceMonitor::ReportGenericViolation(
         GetExecutionContext(), PerformanceMonitor::kDiscouragedAPIUse,
@@ -501,7 +501,7 @@ void EventTarget::AddedEventListener(
       String message_text = String::Format(
           "Added synchronous DOM mutation listener to a '%s' event. "
           "Consider using MutationObserver to make the page more responsive.",
-          event_type.GetString().Utf8().data());
+          event_type.GetString().Utf8().c_str());
       PerformanceMonitor::ReportGenericViolation(
           context, PerformanceMonitor::kDiscouragedAPIUse, message_text,
           base::TimeDelta(), nullptr);

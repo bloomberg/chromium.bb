@@ -181,25 +181,25 @@ TEST(KURLTest, Setters) {
     KURL kurl(cases[i].url);
 
     kurl.SetProtocol(cases[i].protocol);
-    EXPECT_STREQ(cases[i].expected_protocol, kurl.GetString().Utf8().data());
+    EXPECT_EQ(cases[i].expected_protocol, kurl.GetString().Utf8());
 
     kurl.SetHost(cases[i].host);
-    EXPECT_STREQ(cases[i].expected_host, kurl.GetString().Utf8().data());
+    EXPECT_EQ(cases[i].expected_host, kurl.GetString().Utf8());
 
     kurl.SetPort(cases[i].port);
-    EXPECT_STREQ(cases[i].expected_port, kurl.GetString().Utf8().data());
+    EXPECT_EQ(cases[i].expected_port, kurl.GetString().Utf8());
 
     kurl.SetUser(cases[i].user);
-    EXPECT_STREQ(cases[i].expected_user, kurl.GetString().Utf8().data());
+    EXPECT_EQ(cases[i].expected_user, kurl.GetString().Utf8());
 
     kurl.SetPass(cases[i].pass);
-    EXPECT_STREQ(cases[i].expected_pass, kurl.GetString().Utf8().data());
+    EXPECT_EQ(cases[i].expected_pass, kurl.GetString().Utf8());
 
     kurl.SetPath(cases[i].path);
-    EXPECT_STREQ(cases[i].expected_path, kurl.GetString().Utf8().data());
+    EXPECT_EQ(cases[i].expected_path, kurl.GetString().Utf8());
 
     kurl.SetQuery(cases[i].query);
-    EXPECT_STREQ(cases[i].expected_query, kurl.GetString().Utf8().data());
+    EXPECT_EQ(cases[i].expected_query, kurl.GetString().Utf8());
 
     // Refs are tested below. On the Safari 3.1 branch, we don't match their
     // KURL since we integrated a fix from their trunk.
@@ -237,13 +237,13 @@ TEST(KURLTest, DecodeURLEscapeSequences) {
     String input(decode_cases[i].input);
     String str =
         DecodeURLEscapeSequences(input, DecodeURLMode::kUTF8OrIsomorphic);
-    EXPECT_STREQ(decode_cases[i].output, str.Utf8().data());
+    EXPECT_EQ(decode_cases[i].output, str.Utf8());
   }
 
   // Our decode should decode %00
   String zero =
       DecodeURLEscapeSequences("%00", DecodeURLMode::kUTF8OrIsomorphic);
-  EXPECT_STRNE("%00", zero.Utf8().data());
+  EXPECT_NE("%00", zero.Utf8());
 
   // Decode UTF-8.
   String decoded = DecodeURLEscapeSequences("%e6%bc%a2%e5%ad%97",
@@ -473,7 +473,7 @@ TEST(KURLTest, ReplaceInvalid) {
 
   EXPECT_FALSE(kurl.IsValid());
   EXPECT_TRUE(kurl.IsEmpty());
-  EXPECT_STREQ("", kurl.GetString().Utf8().data());
+  EXPECT_EQ("", kurl.GetString().Utf8());
 
   kurl.SetProtocol("http");
   // GKURL will say that a URL with just a scheme is invalid, KURL will not.
@@ -870,8 +870,7 @@ TEST(KURLTest, strippedForUseAsReferrer) {
 
   for (size_t i = 0; i < base::size(referrer_cases); i++) {
     const KURL kurl(referrer_cases[i].input);
-    String referrer = kurl.StrippedForUseAsReferrer();
-    EXPECT_STREQ(referrer_cases[i].output, referrer.Utf8().data());
+    EXPECT_EQ(referrer_cases[i].output, kurl.StrippedForUseAsReferrer().Utf8());
   }
 }
 

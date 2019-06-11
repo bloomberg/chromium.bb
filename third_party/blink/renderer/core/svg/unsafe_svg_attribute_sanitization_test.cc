@@ -95,11 +95,11 @@ TEST(UnsafeSVGAttributeSanitizationTest, pasteAnchor_javaScriptHrefIsStripped) {
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
 }
 
 TEST(UnsafeSVGAttributeSanitizationTest,
@@ -116,11 +116,11 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
 }
 
 TEST(UnsafeSVGAttributeSanitizationTest,
@@ -136,11 +136,11 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
 }
 
 TEST(UnsafeSVGAttributeSanitizationTest,
@@ -157,11 +157,11 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
 }
 
 TEST(UnsafeSVGAttributeSanitizationTest,
@@ -177,11 +177,11 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
 }
 
 TEST(
@@ -199,11 +199,11 @@ TEST(
 
   EXPECT_TRUE(sanitized_content.Contains("</a>"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
 }
 
 // Other sanitization integration tests are web tests that use
@@ -226,11 +226,11 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
   EXPECT_TRUE(sanitized_content.Contains("<a href=\"https://www.goo"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
 }
 
 TEST(
@@ -252,11 +252,11 @@ TEST(
 
   EXPECT_TRUE(sanitized_content.Contains("<a xlink:href=\"https://www.goo"))
       << "We should have pasted *something*; the document is: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
   EXPECT_FALSE(sanitized_content.Contains(":alert()"))
       << "The JavaScript URL is unsafe and should have been stripped; "
          "instead: "
-      << sanitized_content.Utf8().data();
+      << sanitized_content.Utf8();
 }
 
 // Unit tests

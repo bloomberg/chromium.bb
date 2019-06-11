@@ -179,8 +179,8 @@ void DisplayItem::PropertiesAsJSON(JSONObject& json) const {
 
 String DisplayItem::Id::ToString() const {
 #if DCHECK_IS_ON()
-  return String::Format("%s:%s:%d", client.ToString().Utf8().data(),
-                        DisplayItem::TypeAsDebugString(type).Utf8().data(),
+  return String::Format("%s:%s:%d", client.ToString().Utf8().c_str(),
+                        DisplayItem::TypeAsDebugString(type).Utf8().c_str(),
                         fragment);
 #else
   return String::Format("%p:%d:%d", &client, static_cast<int>(type), fragment);
@@ -189,19 +189,19 @@ String DisplayItem::Id::ToString() const {
 
 std::ostream& operator<<(std::ostream& os, DisplayItem::Type type) {
 #if DCHECK_IS_ON()
-  return os << DisplayItem::TypeAsDebugString(type).Utf8().data();
+  return os << DisplayItem::TypeAsDebugString(type).Utf8();
 #else
   return os << static_cast<int>(type);
 #endif
 }
 
 std::ostream& operator<<(std::ostream& os, const DisplayItem::Id& id) {
-  return os << id.ToString().Utf8().data();
+  return os << id.ToString().Utf8();
 }
 
 std::ostream& operator<<(std::ostream& os, const DisplayItem& item) {
 #if DCHECK_IS_ON()
-  return os << item.AsDebugString().Utf8().data();
+  return os << item.AsDebugString().Utf8();
 #else
   return os << "{\"id\": " << item.GetId() << "}";
 #endif

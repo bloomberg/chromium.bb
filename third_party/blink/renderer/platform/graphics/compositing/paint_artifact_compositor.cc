@@ -1025,7 +1025,7 @@ void PaintArtifactCompositor::Update(
     if (new_output != s_previous_output) {
       LOG(ERROR) << "PaintArtifactCompositor::Update() done\n"
                  << "Composited layers:\n"
-                 << new_output.Utf8().data();
+                 << new_output.Utf8();
       s_previous_output = new_output;
     }
   }
@@ -1181,8 +1181,7 @@ void PaintArtifactCompositor::ShowDebugData() {
   LOG(ERROR) << LayersAsJSON(kLayerTreeIncludesDebugInfo |
                              kLayerTreeIncludesPaintInvalidations)
                     ->ToPrettyJSONString()
-                    .Utf8()
-                    .data();
+                    .Utf8();
 }
 #endif
 

@@ -52,7 +52,7 @@ class AXSelectionSerializer final {
       return {};
     SerializeSubtree(subtree);
     DCHECK_EQ(tree_level_, 0);
-    return builder_.ToString().Utf8().data();
+    return builder_.ToString().Utf8();
   }
 
  private:
@@ -163,8 +163,7 @@ class AXSelectionSerializer final {
       const auto position = AXPosition::CreatePositionBeforeObject(*child);
       HandleSelection(position);
       ++tree_level_;
-      builder_.Append(
-          String::FromUTF8(std::string(tree_level_ * 2, '+').c_str()));
+      builder_.Append(String::FromUTF8(std::string(tree_level_ * 2, '+')));
       if (position.IsTextPosition()) {
         HandleTextObject(*child);
       } else {
@@ -207,7 +206,7 @@ class AXSelectionDeserializer final {
   // parts of the tree indicated by the selection markers in the snippet.
   const Vector<AXSelection> Deserialize(const std::string& html_snippet,
                                         HTMLElement& element) {
-    element.SetInnerHTMLFromString(String::FromUTF8(html_snippet.c_str()));
+    element.SetInnerHTMLFromString(String::FromUTF8(html_snippet));
     element.GetDocument().View()->UpdateAllLifecyclePhases(
         DocumentLifecycle::LifecycleUpdateReason::kTest);
     AXObject* root = ax_object_cache_->GetOrCreate(&element);
@@ -395,7 +394,7 @@ void AccessibilitySelectionTest::RunSelectionTest(
     const std::string& test_name) const {
   static const std::string separator_line = '\n' + std::string(80, '=') + '\n';
   const String relative_path = String::FromUTF8(kSelectionTestsRelativePath) +
-                               String::FromUTF8(test_name.c_str());
+                               String::FromUTF8(test_name);
   const String test_path = AccessibilityTestDataPath(relative_path);
 
   const String test_file = test_path + String::FromUTF8(kTestFileSuffix);
@@ -406,7 +405,7 @@ void AccessibilitySelectionTest::RunSelectionTest(
             std::back_inserter(test_file_contents));
   ASSERT_FALSE(test_file_contents.empty())
       << "Test file cannot be empty.\n"
-      << test_file.Utf8().data()
+      << test_file.Utf8()
       << "\nDid you forget to add a data dependency to the BUILD file?";
 
   const String ax_file = test_path + String::FromUTF8(kAXTestExpectationSuffix);
@@ -417,7 +416,7 @@ void AccessibilitySelectionTest::RunSelectionTest(
             std::back_inserter(ax_file_contents));
   ASSERT_FALSE(ax_file_contents.empty())
       << "Expectations file cannot be empty.\n"
-      << ax_file.Utf8().data()
+      << ax_file.Utf8()
       << "\nDid you forget to add a data dependency to the BUILD file?";
 
   HTMLElement* body = GetDocument().body();
@@ -430,7 +429,7 @@ void AccessibilitySelectionTest::RunSelectionTest(
   for (auto& ax_selection : ax_selections) {
     ax_selection.Select();
     actual_ax_file_contents += separator_line;
-    actual_ax_file_contents += ax_selection.ToString().Utf8().data();
+    actual_ax_file_contents += ax_selection.ToString().Utf8();
     actual_ax_file_contents += separator_line;
     actual_ax_file_contents += GetCurrentSelectionText();
   }

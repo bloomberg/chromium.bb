@@ -29,8 +29,8 @@ String PaintChunk::ToString() const {
   sb.AppendFormat(
       "PaintChunk(begin=%zu, end=%zu, id=%s cacheable=%d props=(%s) bounds=%s "
       "known_to_be_opaque=%d",
-      begin_index, end_index, id.ToString().Utf8().data(), is_cacheable,
-      properties.ToString().Utf8().data(), bounds.ToString().Utf8().data(),
+      begin_index, end_index, id.ToString().Utf8().c_str(), is_cacheable,
+      properties.ToString().Utf8().c_str(), bounds.ToString().Utf8().c_str(),
       known_to_be_opaque);
   if (hit_test_data) {
     sb.Append(", hit_test_data=");
@@ -41,7 +41,7 @@ String PaintChunk::ToString() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const PaintChunk& chunk) {
-  return os << chunk.ToString().Utf8().data() << "\n";
+  return os << chunk.ToString().Utf8() << "\n";
 }
 
 }  // namespace blink

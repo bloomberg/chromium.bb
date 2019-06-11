@@ -684,12 +684,12 @@ scoped_refptr<XMLParserContext> XMLParserContext::CreateStringParser(
 scoped_refptr<XMLParserContext> XMLParserContext::CreateMemoryParser(
     xmlSAXHandlerPtr handlers,
     void* user_data,
-    const CString& chunk) {
+    const std::string& chunk) {
   InitializeLibXMLIfNecessary();
 
   // appendFragmentSource() checks that the length doesn't overflow an int.
   xmlParserCtxtPtr parser =
-      xmlCreateMemoryParserCtxt(chunk.data(), chunk.length());
+      xmlCreateMemoryParserCtxt(chunk.c_str(), chunk.length());
 
   if (!parser)
     return nullptr;
@@ -1491,7 +1491,7 @@ static void IgnorableWhitespaceHandler(void*, const xmlChar*, int) {
   // http://bugs.webkit.org/show_bug.cgi?id=5792
 }
 
-void XMLDocumentParser::InitializeParserContext(const CString& chunk) {
+void XMLDocumentParser::InitializeParserContext(const std::string& chunk) {
   xmlSAXHandler sax;
   memset(&sax, 0, sizeof(sax));
 
@@ -1525,7 +1525,6 @@ void XMLDocumentParser::InitializeParserContext(const CString& chunk) {
   if (parsing_fragment_) {
     context_ = XMLParserContext::CreateMemoryParser(&sax, this, chunk);
   } else {
-    DCHECK(!chunk.data());
     context_ = XMLParserContext::CreateStringParser(&sax, this);
   }
 }
@@ -1630,7 +1629,7 @@ bool XMLDocumentParser::AppendFragmentSource(const String& chunk) {
   DCHECK(!context_);
   DCHECK(parsing_fragment_);
 
-  CString chunk_as_utf8 = chunk.Utf8();
+  std::string chunk_as_utf8 = chunk.Utf8();
 
   // libxml2 takes an int for a length, and therefore can't handle XML chunks
   // larger than 2 GiB.

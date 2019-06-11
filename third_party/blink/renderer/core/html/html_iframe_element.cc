@@ -300,7 +300,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
           messages->push_back(String::Format(
               "Allow and Sandbox attributes both mention '%s'. Allow will take "
               "precedence.",
-              GetNameForFeature(pair.second).Utf8().data()));
+              GetNameForFeature(pair.second).Utf8().c_str()));
         }
       }
     }

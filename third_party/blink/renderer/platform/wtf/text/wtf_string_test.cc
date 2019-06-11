@@ -140,7 +140,7 @@ TEST(StringTest, ReplaceWithLiteral) {
   test_string = String::FromUTF8("r\xC3\xA9sum\xC3\xA9");
   EXPECT_FALSE(test_string.Is8Bit());
   test_string.Replace('3', "NotFound");
-  EXPECT_STREQ("r\xC3\xA9sum\xC3\xA9", test_string.Utf8().data());
+  EXPECT_EQ("r\xC3\xA9sum\xC3\xA9", test_string.Utf8());
 }
 
 TEST(StringTest, ComparisonOfSameStringVectors) {
@@ -271,7 +271,7 @@ TEST(StringTest, ToUpperLocale) {
     String source = String::FromUTF8(test_data_list[i].source);
     for (size_t j = 0; j < test_data_list[i].locale_list_length; ++j) {
       const char* locale = test_data_list[i].locale_list[j];
-      EXPECT_STREQ(expected, source.UpperUnicode(locale).Utf8().data())
+      EXPECT_EQ(expected, source.UpperUnicode(locale).Utf8())
           << test_data_list[i].source_description << "; locale=" << locale;
     }
   }
@@ -331,7 +331,7 @@ TEST(StringTest, ToLowerLocale) {
     String source = String::FromUTF8(test_data_list[i].source);
     for (size_t j = 0; j < test_data_list[i].locale_list_length; ++j) {
       const char* locale = test_data_list[i].locale_list[j];
-      EXPECT_STREQ(expected, source.LowerUnicode(locale).Utf8().data())
+      EXPECT_EQ(expected, source.LowerUnicode(locale).Utf8())
           << test_data_list[i].source_description << "; locale=" << locale;
     }
   }
@@ -421,9 +421,9 @@ TEST(StringTest, DeprecatedLower) {
   EXPECT_EQ("lin\xE1k", String("lIn\xC1k").DeprecatedLower().Latin1());
 
   // U+212A -> k
-  EXPECT_STREQ(
+  EXPECT_EQ(
       "link",
-      String::FromUTF8("LIN\xE2\x84\xAA").DeprecatedLower().Utf8().data());
+      String::FromUTF8("LIN\xE2\x84\xAA").DeprecatedLower().Utf8());
 }
 
 TEST(StringTest, Ensure16Bit) {

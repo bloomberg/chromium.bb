@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -273,9 +274,8 @@ void ScriptController::ExecuteJavaScriptURL(
   params->url = GetFrame()->GetDocument()->Url();
 
   String result = ToCoreString(v8::Local<v8::String>::Cast(v8_result));
-  WebNavigationParams::FillStaticResponse(
-      params.get(), "text/html", "UTF-8",
-      base::make_span(result.Utf8().data(), result.Utf8().length()));
+  WebNavigationParams::FillStaticResponse(params.get(), "text/html", "UTF-8",
+                                          StringUTF8Adaptor(result));
   GetFrame()->Loader().CommitNavigation(std::move(params), nullptr, true);
 }
 

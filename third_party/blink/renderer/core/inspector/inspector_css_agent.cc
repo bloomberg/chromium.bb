@@ -408,7 +408,7 @@ class InspectorCSSAgent::SetStyleSheetTextAction final
 
   String MergeId() override {
     return String::Format("SetStyleSheetText %s",
-                          style_sheet_->Id().Utf8().data());
+                          style_sheet_->Id().Utf8().c_str());
   }
 
   void Merge(Action* action) override {
@@ -525,7 +525,7 @@ class InspectorCSSAgent::ModifyRuleAction final
 
   String MergeId() override {
     return String::Format("ModifyRuleAction:%d %s:%d", type_,
-                          style_sheet_->Id().Utf8().data(), old_range_.start);
+                          style_sheet_->Id().Utf8().c_str(), old_range_.start);
   }
 
   bool IsNoop() override { return old_text_ == new_text_; }
@@ -579,7 +579,7 @@ class InspectorCSSAgent::SetElementStyleAction final
 
   String MergeId() override {
     return String::Format("SetElementStyleAction:%s",
-                          style_sheet_->Id().Utf8().data());
+                          style_sheet_->Id().Utf8().c_str());
   }
 
   std::unique_ptr<protocol::CSS::CSSStyle> TakeSerializedStyle() override {

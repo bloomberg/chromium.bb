@@ -247,9 +247,9 @@ static const char** XsltParamArrayFromParameterMap(
   unsigned index = 0;
   for (auto& parameter : parameters) {
     parameter_array[index++] =
-        AllocateParameterArray(parameter.key.Utf8().data());
+        AllocateParameterArray(parameter.key.Utf8().c_str());
     parameter_array[index++] =
-        AllocateParameterArray(parameter.value.Utf8().data());
+        AllocateParameterArray(parameter.value.Utf8().c_str());
   }
   parameter_array[index] = nullptr;
 

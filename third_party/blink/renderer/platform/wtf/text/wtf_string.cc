@@ -463,11 +463,11 @@ static inline void PutUTF8Triple(char*& buffer, UChar ch) {
   *buffer++ = static_cast<char>((ch & 0x3F) | 0x80);
 }
 
-CString String::Utf8(UTF8ConversionMode mode) const {
+std::string String::Utf8(UTF8ConversionMode mode) const {
   unsigned length = this->length();
 
   if (!length)
-    return CString("", 0);
+    return std::string();
 
   // Allocate a buffer big enough to hold all the characters
   // (an individual UTF-16 UChar can only expand to 3 UTF-8 bytes).
@@ -480,7 +480,7 @@ CString String::Utf8(UTF8ConversionMode mode) const {
   //    have a good chance of being able to write the string into the
   //    buffer without reallocing (say, 1.5 x length).
   if (length > std::numeric_limits<unsigned>::max() / 3)
-    return CString();
+    return std::string();
   Vector<char, 1024> buffer_vector(length * 3);
 
   char* buffer = buffer_vector.data();
@@ -528,13 +528,13 @@ CString String::Utf8(UTF8ConversionMode mode) const {
       // Only produced from strict conversion.
       if (result == unicode::kSourceIllegal) {
         DCHECK(strict);
-        return CString();
+        return std::string();
       }
 
       // Check for an unconverted high surrogate.
       if (result == unicode::kSourceExhausted) {
         if (strict)
-          return CString();
+          return std::string();
         // This should be one unpaired high surrogate. Treat it the same
         // was as an unpaired high surrogate would have been handled in
         // the middle of a string with non-strict conversion - which is
@@ -550,7 +550,7 @@ CString String::Utf8(UTF8ConversionMode mode) const {
     }
   }
 
-  return CString(buffer_vector.data(), buffer - buffer_vector.data());
+  return std::string(buffer_vector.data(), buffer - buffer_vector.data());
 }
 
 String String::Make8BitFrom16BitSource(const UChar* source, wtf_size_t length) {
@@ -616,6 +616,10 @@ String String::FromUTF8(const CString& s) {
   return FromUTF8(s.data());
 }
 
+String String::FromUTF8(base::StringPiece s) {
+  return FromUTF8(reinterpret_cast<const LChar*>(s.data()), s.size());
+}
+
 String String::FromUTF8WithLatin1Fallback(const LChar* string, size_t size) {
   String utf8 = FromUTF8(string, size);
   if (!utf8)
@@ -624,7 +628,7 @@ String String::FromUTF8WithLatin1Fallback(const LChar* string, size_t size) {
 }
 
 std::ostream& operator<<(std::ostream& out, const String& string) {
-  return out << string.EncodeForDebugging().Utf8().data();
+  return out << string.EncodeForDebugging().Utf8();
 }
 
 #ifndef NDEBUG

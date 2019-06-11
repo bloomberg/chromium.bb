@@ -105,7 +105,7 @@ class StateTracer {
 
   // String will be copied before leaving this function.
   void TraceString(const String& state) {
-    TraceImpl(state.Utf8().data(), true);
+    TraceImpl(state.Utf8().c_str(), true);
   }
 
   // Trace compile-time defined const string, so no copy needed.

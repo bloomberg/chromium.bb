@@ -84,7 +84,7 @@ class CORE_EXPORT FormData final
   // Internal functions.
 
   const WTF::TextEncoding& Encoding() const { return encoding_; }
-  CString Encode(const String& key) const;
+  std::string Encode(const String& key) const;
   class Entry;
   const HeapVector<Member<const Entry>>& Entries() const { return entries_; }
   size_t size() const { return entries_.size(); }

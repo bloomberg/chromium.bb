@@ -239,7 +239,7 @@ void PerformanceMonitor::Did(const probe::CallFunction& probe) {
   String name = user_callback->name ? String(user_callback->name)
                                     : String(user_callback->atomic_name);
   String text = String::Format("'%s' handler took %" PRId64 "ms",
-                               name.Utf8().data(), duration.InMilliseconds());
+                               name.Utf8().c_str(), duration.InMilliseconds());
   InnerReportGenericViolation(probe.context, handler_type, text, duration,
                               SourceLocation::FromFunction(probe.function));
 }
@@ -267,7 +267,7 @@ void PerformanceMonitor::Did(const probe::V8Compile& probe) {
 
   auto sub_task_attribution = std::make_unique<SubTaskAttribution>(
       AtomicString("script-compile"),
-      String::Format("%s(%d, %d)", probe.file_name.Utf8().data(), probe.line,
+      String::Format("%s(%d, %d)", probe.file_name.Utf8().c_str(), probe.line,
                      probe.column),
       v8_compile_start_time_, v8_compile_duration);
   sub_task_attributions_.push_back(std::move(sub_task_attribution));

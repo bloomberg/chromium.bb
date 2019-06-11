@@ -369,7 +369,7 @@ void VerboseLogGraphicsLayerTree(const GraphicsLayer* root) {
   String new_tree = GraphicsLayerTreeAsTextForTesting(root, flags);
   auto it = s_previous_trees.find(root);
   if (it == s_previous_trees.end() || it->value != new_tree) {
-    VLOG(2) << "GraphicsLayer tree:\n" << new_tree.Utf8().data();
+    VLOG(2) << "GraphicsLayer tree:\n" << new_tree.Utf8();
     s_previous_trees.Set(root, new_tree);
     // For simplification, we don't remove deleted GraphicsLayers from the map.
   }
@@ -386,7 +386,7 @@ void showGraphicsLayerTree(const blink::GraphicsLayer* layer) {
   }
 
   String output = blink::GraphicsLayerTreeAsTextForTesting(layer, 0xffffffff);
-  LOG(ERROR) << output.Utf8().data();
+  LOG(ERROR) << output.Utf8();
 }
 
 void showGraphicsLayers(const blink::GraphicsLayer* layer) {
@@ -397,6 +397,6 @@ void showGraphicsLayers(const blink::GraphicsLayer* layer) {
 
   String output = blink::GraphicsLayerTreeAsTextForTesting(
       layer, 0xffffffff & ~blink::kOutputAsLayerTree);
-  LOG(ERROR) << output.Utf8().data();
+  LOG(ERROR) << output.Utf8();
 }
 #endif

@@ -58,7 +58,7 @@ String HitTestData::ToString() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const HitTestData& data) {
-  return os << data.ToString().Utf8().data();
+  return os << data.ToString().Utf8();
 }
 
 }  // namespace blink

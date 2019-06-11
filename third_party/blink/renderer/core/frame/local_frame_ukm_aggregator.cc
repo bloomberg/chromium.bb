@@ -93,7 +93,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     uma_name.Append(uma_postscript);
     if (metric_data.has_uma) {
       absolute_record.uma_counter.reset(new CustomCountHistogram(
-          uma_name.ToString().Utf8().data(), 0, 10000000, 50));
+          uma_name.ToString().Utf8().c_str(), 0, 10000000, 50));
     }
 
     // Percentage records report the ratio of each metric to the primary metric,
@@ -109,7 +109,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
       uma_percentage_name.Append(bucket_substring);
       percentage_record.uma_counters_per_bucket.push_back(
           std::make_unique<CustomCountHistogram>(
-              uma_percentage_name.ToString().Utf8().data(), 0, 10000000, 50));
+              uma_percentage_name.ToString().Utf8().c_str(), 0, 10000000, 50));
     }
   }
 }

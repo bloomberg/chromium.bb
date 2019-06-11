@@ -112,6 +112,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -776,20 +777,18 @@ static void FillStaticResponseIfNeeded(WebNavigationParams* params,
     // - use it here instead of re-reading from the owner.
     // This way we will get rid of extra dependency between starting and
     // committing navigation.
-    CString encoded_srcdoc;
+    String srcdoc;
     HTMLFrameOwnerElement* owner_element = frame->DeprecatedLocalOwner();
     if (!IsHTMLIFrameElement(owner_element) ||
         !owner_element->FastHasAttribute(html_names::kSrcdocAttr)) {
       // Cannot retrieve srcdoc content anymore (perhaps, the attribute was
       // cleared) - load empty instead.
     } else {
-      String srcdoc = owner_element->FastGetAttribute(html_names::kSrcdocAttr);
+      srcdoc = owner_element->FastGetAttribute(html_names::kSrcdocAttr);
       DCHECK(!srcdoc.IsNull());
-      encoded_srcdoc = srcdoc.Utf8();
     }
-    WebNavigationParams::FillStaticResponse(
-        params, "text/html", "UTF-8",
-        base::make_span(encoded_srcdoc.data(), encoded_srcdoc.length()));
+    WebNavigationParams::FillStaticResponse(params, "text/html", "UTF-8",
+                                            StringUTF8Adaptor(srcdoc));
     return;
   }
 

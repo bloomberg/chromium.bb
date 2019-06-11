@@ -35,7 +35,7 @@ class NGInlineNodeForTest : public NGInlineNode {
  public:
   using NGInlineNode::NGInlineNode;
 
-  std::string Text() const { return Data().text_content.Utf8().data(); }
+  std::string Text() const { return Data().text_content.Utf8(); }
   Vector<NGInlineItem>& Items() { return MutableData()->items; }
   static Vector<NGInlineItem>& Items(NGInlineNodeData& data) {
     return data.items;

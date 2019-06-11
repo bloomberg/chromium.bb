@@ -17,7 +17,7 @@ sk_sp<SkTypeface> FontUniqueNameLookupAndroid::MatchUniqueName(
   if (!EnsureMatchingServiceConnected())
     return nullptr;
   base::Optional<FontTableMatcher::MatchResult> match_result =
-      font_table_matcher_->MatchName(font_unique_name.Utf8().data());
+      font_table_matcher_->MatchName(font_unique_name.Utf8().c_str());
   if (!match_result)
     return nullptr;
   return SkTypeface::MakeFromFile(match_result->font_path.c_str(),

@@ -70,7 +70,7 @@ class MODULES_EXPORT WebSocketChannel
   };
 
   virtual bool Connect(const KURL&, const String& protocol) = 0;
-  virtual void Send(const CString&) = 0;
+  virtual void Send(const std::string&) = 0;
   virtual void Send(const DOMArrayBuffer&,
                     unsigned byte_offset,
                     unsigned byte_length) = 0;

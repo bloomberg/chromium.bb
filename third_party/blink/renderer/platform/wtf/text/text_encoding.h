@@ -58,7 +58,7 @@ class WTF_EXPORT TextEncoding final {
                 bool stop_on_error,
                 bool& saw_error) const;
 
-  CString Encode(const String&, UnencodableHandling) const;
+  std::string Encode(const String&, UnencodableHandling) const;
 
   bool IsNonByteBasedEncoding() const;
 

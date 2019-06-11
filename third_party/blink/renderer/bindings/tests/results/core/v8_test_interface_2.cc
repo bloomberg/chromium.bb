@@ -365,12 +365,12 @@ CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void NamedPropertyGetter(const AtomicString& name,
                                 const v8::PropertyCallbackInfo<v8::Value>& info) {
-  const CString& name_in_utf8 = name.Utf8();
+  const std::string& name_in_utf8 = name.Utf8();
   ExceptionState exception_state(
       info.GetIsolate(),
       ExceptionState::kGetterContext,
       "TestInterface2",
-      name_in_utf8.data());
+      name_in_utf8.c_str());
 
   TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
   TestInterfaceEmpty* result = impl->namedItem(name, exception_state);
@@ -383,12 +383,12 @@ static void NamedPropertySetter(
     const AtomicString& name,
     v8::Local<v8::Value> v8_value,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
-  const CString& name_in_utf8 = name.Utf8();
+  const std::string& name_in_utf8 = name.Utf8();
   ExceptionState exception_state(
       info.GetIsolate(),
       ExceptionState::kSetterContext,
       "TestInterface2",
-      name_in_utf8.data());
+      name_in_utf8.c_str());
 
   TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
   TestInterfaceEmpty* property_value = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
@@ -407,12 +407,12 @@ static void NamedPropertySetter(
 
 static void NamedPropertyDeleter(
     const AtomicString& name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
-  const CString& name_in_utf8 = name.Utf8();
+  const std::string& name_in_utf8 = name.Utf8();
   ExceptionState exception_state(
       info.GetIsolate(),
       ExceptionState::kDeletionContext,
       "TestInterface2",
-      name_in_utf8.data());
+      name_in_utf8.c_str());
 
   TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
 
@@ -426,12 +426,12 @@ static void NamedPropertyDeleter(
 
 static void NamedPropertyQuery(
     const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
-  const CString& name_in_utf8 = name.Utf8();
+  const std::string& name_in_utf8 = name.Utf8();
   ExceptionState exception_state(
       info.GetIsolate(),
       ExceptionState::kGetterContext,
       "TestInterface2",
-      name_in_utf8.data());
+      name_in_utf8.c_str());
 
   TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
 

@@ -118,21 +118,18 @@ bool IsCertificateTransparencyRequiredError(int error_code) {
 }
 
 String GenerateAcceptLanguageHeader(const String& lang) {
-  CString cstring(lang.Utf8());
-  std::string string(cstring.data(), cstring.length());
   return WebString::FromUTF8(
-      net::HttpUtil::GenerateAcceptLanguageHeader(string));
+      net::HttpUtil::GenerateAcceptLanguageHeader(lang.Utf8()));
 }
 
 Vector<char> ParseMultipartBoundary(const AtomicString& content_type_header) {
-  CString cstring(content_type_header.Utf8());
-  std::string string(cstring.data(), cstring.length());
+  std::string utf8_string = content_type_header.Utf8();
   std::string mime_type;
   std::string charset;
   bool had_charset = false;
   std::string boundary;
-  net::HttpUtil::ParseContentType(string, &mime_type, &charset, &had_charset,
-                                  &boundary);
+  net::HttpUtil::ParseContentType(utf8_string, &mime_type, &charset,
+                                  &had_charset, &boundary);
   base::TrimString(boundary, " \"", &boundary);
   Vector<char> result;
   result.Append(boundary.data(), boundary.size());

@@ -193,7 +193,7 @@ scoped_refptr<SimpleFontData> FontCache::GetLastResortFallbackFont(
 sk_sp<SkTypeface> FontCache::CreateTypeface(
     const FontDescription& font_description,
     const FontFaceCreationParams& creation_params,
-    CString& name) {
+    std::string& name) {
 #if !defined(OS_WIN) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   // TODO(fuchsia): Revisit this and other font code for Fuchsia.
 
@@ -222,7 +222,7 @@ sk_sp<SkTypeface> FontCache::CreateTypeface(
   // TODO(vmpstr): Deal with paint typeface here.
   if (sideloaded_fonts_) {
     HashMap<String, sk_sp<SkTypeface>, CaseFoldingHash>::iterator
-        sideloaded_font = sideloaded_fonts_->find(name.data());
+        sideloaded_font = sideloaded_fonts_->find(name.c_str());
     if (sideloaded_font != sideloaded_fonts_->end())
       return sideloaded_font->value;
   }
@@ -235,7 +235,7 @@ sk_sp<SkTypeface> FontCache::CreateTypeface(
   // Manager.  On Windows the font manager is always present.
   if (font_manager_) {
     auto tf = sk_sp<SkTypeface>(font_manager_->matchFamilyStyle(
-        name.data(), font_description.SkiaFontStyle()));
+        name.c_str(), font_description.SkiaFontStyle()));
     return tf;
   }
 #endif
@@ -243,7 +243,7 @@ sk_sp<SkTypeface> FontCache::CreateTypeface(
   // FIXME: Use m_fontManager, matchFamilyStyle instead of
   // legacyCreateTypeface on all platforms.
   return SkTypeface_Factory::FromFamilyNameAndFontStyle(
-      name.data(), font_description.SkiaFontStyle());
+      name.c_str(), font_description.SkiaFontStyle());
 }
 
 #if !defined(OS_WIN)
@@ -252,13 +252,13 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
     const FontFaceCreationParams& creation_params,
     float font_size,
     AlternateFontName alternate_name) {
-  CString name;
+  std::string name;
 
   sk_sp<SkTypeface> typeface;
 #if defined(OS_ANDROID) || defined(OS_LINUX)
   if (alternate_name == AlternateFontName::kLocalUniqueFace &&
       RuntimeEnabledFeatures::FontSrcLocalMatchingEnabled()) {
-    typeface = CreateTypefaceFromUniqueName(creation_params, name);
+    typeface = CreateTypefaceFromUniqueName(creation_params);
   } else {
     typeface = CreateTypeface(font_description, creation_params, name);
   }

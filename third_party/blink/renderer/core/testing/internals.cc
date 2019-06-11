@@ -486,7 +486,7 @@ ScriptPromise Internals::getResourcePriority(ScriptState* script_state,
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  KURL resource_url = url_test_helpers::ToKURL(url.Utf8().data());
+  KURL resource_url = url_test_helpers::ToKURL(url.Utf8());
   DCHECK(document);
 
   auto callback = WTF::Bind(&Internals::ResolveResourcePriority,
@@ -513,10 +513,10 @@ String Internals::getResourceHeader(const String& url,
   if (!document)
     return String();
   Resource* resource = document->Fetcher()->AllResources().at(
-      url_test_helpers::ToKURL(url.Utf8().data()));
+      url_test_helpers::ToKURL(url.Utf8()));
   if (!resource)
     return String();
-  return resource->GetResourceRequest().HttpHeaderField(header.Utf8().data());
+  return resource->GetResourceRequest().HttpHeaderField(AtomicString(header));
 }
 
 bool Internals::isValidContentSelect(Element* insertion_point,
@@ -2317,7 +2317,7 @@ String Internals::pageProperty(String property_name,
     return String();
   }
 
-  return PrintContext::PageProperty(GetFrame(), property_name.Utf8().data(),
+  return PrintContext::PageProperty(GetFrame(), property_name.Utf8().c_str(),
                                     page_number);
 }
 

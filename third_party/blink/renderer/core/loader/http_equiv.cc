@@ -211,7 +211,7 @@ void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,
       mojom::ConsoleMessageSource::kSecurity,
       mojom::ConsoleMessageLevel::kError,
       String::Format("Blocked setting the `%s` cookie from a `<meta>` tag.",
-                     content.Utf8().data())));
+                     content.Utf8().c_str())));
 }
 
 }  // namespace blink

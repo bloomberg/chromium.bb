@@ -740,7 +740,7 @@ lime'>
 
   StringBuilder result;
   block->DumpLayoutObject(result, false, 0);
-  EXPECT_THAT(result.ToString().Utf8().data(),
+  EXPECT_THAT(result.ToString().Utf8(),
               MatchesRegex("LayoutN?G?BlockFlow\tDIV id=\"block\" "
                            "style=\"background:\\\\nlime\""));
 

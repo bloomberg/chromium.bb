@@ -66,7 +66,7 @@ BlinkGCMemoryDumpProvider::CreateMemoryAllocatorDumpForCurrentGC(
     const String& absolute_name) {
   // TODO(bashi): Change type name of |absoluteName|.
   return current_process_memory_dump_->CreateAllocatorDump(
-      absolute_name.Utf8().data());
+      absolute_name.Utf8());
 }
 
 void BlinkGCMemoryDumpProvider::ClearProcessDumpForCurrentGC() {

@@ -224,7 +224,7 @@ MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
     WTF::Time parsed_time;
     // Behave like //net and parse time-valued headers with a default time zone
     // of UTC.
-    if (WTF::Time::FromUTCString(mime_parameters_iterator->value.Utf8().data(),
+    if (WTF::Time::FromUTCString(mime_parameters_iterator->value.Utf8().c_str(),
                                  &parsed_time))
       mime_header->date_ = parsed_time;
   }
@@ -363,7 +363,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
     // read the part content till reaching the boundary without CRLF. So the
     // part content may contain CRLF at the end, which will be stripped off
     // later.
-    line_reader_.SetSeparator(end_of_part_boundary.Utf8().data());
+    line_reader_.SetSeparator(end_of_part_boundary.Utf8().c_str());
     if (!line_reader_.NextChunk(content)) {
       DVLOG(1) << "Binary contents requires end of part";
       return nullptr;
@@ -412,7 +412,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
       }
       // Note that we use line.utf8() and not line.ascii() as ascii turns
       // special characters (such as tab, line-feed...) into '?'.
-      content.Append(line.Utf8().data(), line.length());
+      content.Append(line.Utf8().c_str(), line.length());
       if (content_transfer_encoding == MIMEHeader::Encoding::kQuotedPrintable) {
         // The line reader removes the \r\n, but we need them for the content in
         // this case as the QuotedPrintable decoder expects CR-LF terminated

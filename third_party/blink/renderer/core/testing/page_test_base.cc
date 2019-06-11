@@ -105,12 +105,12 @@ void PageTestBase::SetBodyInnerHTML(const String& body_content) {
 }
 
 void PageTestBase::SetBodyContent(const std::string& body_content) {
-  SetBodyInnerHTML(String::FromUTF8(body_content.c_str()));
+  SetBodyInnerHTML(String::FromUTF8(body_content));
 }
 
 void PageTestBase::SetHtmlInnerHTML(const std::string& html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(
-      String::FromUTF8(html_content.c_str()));
+      String::FromUTF8(html_content));
   UpdateAllLifecyclePhasesForTest();
 }
 

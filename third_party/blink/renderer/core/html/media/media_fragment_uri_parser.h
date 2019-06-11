@@ -68,7 +68,7 @@ class MediaFragmentURIParser final {
   TimeFormat time_format_;
   double start_time_;
   double end_time_;
-  Vector<std::pair<CString, CString>> fragments_;
+  Vector<std::pair<std::string, std::string>> fragments_;
 };
 
 }  // namespace blink

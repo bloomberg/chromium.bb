@@ -281,7 +281,7 @@ String FontCache::FirstAvailableOrFirst(const String& families) {
   // only from grd/xtb and all ASCII, and b) at most only a few times per
   // setting change/script.
   return String::FromUTF8(
-      gfx::FontList::FirstAvailableOrFirst(families.Utf8().data()).c_str());
+      gfx::FontList::FirstAvailableOrFirst(families.Utf8().c_str()));
 }
 
 SimpleFontData* FontCache::GetNonRetainedLastResortFallbackFont(
@@ -457,8 +457,7 @@ void FontCache::DumpShapeResultCache(
 }
 
 sk_sp<SkTypeface> FontCache::CreateTypefaceFromUniqueName(
-    const FontFaceCreationParams& creation_params,
-    CString& name) {
+    const FontFaceCreationParams& creation_params) {
   FontUniqueNameLookup* unique_name_lookup =
       FontGlobalContext::Get()->GetFontUniqueNameLookup();
   DCHECK(unique_name_lookup);

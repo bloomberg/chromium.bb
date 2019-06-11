@@ -178,16 +178,14 @@ TEST_F(LocaleWinTest, monthLabels) {
 
   EXPECT_EQ("janvier", MonthLabel(kFrenchFR, kJanuary));
   EXPECT_EQ("juin", MonthLabel(kFrenchFR, kJune));
-  EXPECT_STREQ(
+  EXPECT_EQ(
       "d\xC3\xA9"
       "cembre",
-      MonthLabel(kFrenchFR, kDecember).Utf8().data());
+      MonthLabel(kFrenchFR, kDecember).Utf8());
 
-  EXPECT_STREQ("1\xE6\x9C\x88",
-               MonthLabel(kJapaneseJP, kJanuary).Utf8().data());
-  EXPECT_STREQ("6\xE6\x9C\x88", MonthLabel(kJapaneseJP, kJune).Utf8().data());
-  EXPECT_STREQ("12\xE6\x9C\x88",
-               MonthLabel(kJapaneseJP, kDecember).Utf8().data());
+  EXPECT_EQ("1\xE6\x9C\x88", MonthLabel(kJapaneseJP, kJanuary).Utf8());
+  EXPECT_EQ("6\xE6\x9C\x88", MonthLabel(kJapaneseJP, kJune).Utf8());
+  EXPECT_EQ("12\xE6\x9C\x88", MonthLabel(kJapaneseJP, kDecember).Utf8());
 }
 
 TEST_F(LocaleWinTest, weekDayShortLabels) {
@@ -199,12 +197,9 @@ TEST_F(LocaleWinTest, weekDayShortLabels) {
   EXPECT_EQ("mer.", WeekDayShortLabel(kFrenchFR, kWednesday));
   EXPECT_EQ("sam.", WeekDayShortLabel(kFrenchFR, kSaturday));
 
-  EXPECT_STREQ("\xE6\x97\xA5",
-               WeekDayShortLabel(kJapaneseJP, kSunday).Utf8().data());
-  EXPECT_STREQ("\xE6\xB0\xB4",
-               WeekDayShortLabel(kJapaneseJP, kWednesday).Utf8().data());
-  EXPECT_STREQ("\xE5\x9C\x9F",
-               WeekDayShortLabel(kJapaneseJP, kSaturday).Utf8().data());
+  EXPECT_EQ("\xE6\x97\xA5", WeekDayShortLabel(kJapaneseJP, kSunday).Utf8());
+  EXPECT_EQ("\xE6\xB0\xB4", WeekDayShortLabel(kJapaneseJP, kWednesday).Utf8());
+  EXPECT_EQ("\xE5\x9C\x9F", WeekDayShortLabel(kJapaneseJP, kSaturday).Utf8());
 }
 
 TEST_F(LocaleWinTest, isRTL) {
@@ -226,8 +221,7 @@ TEST_F(LocaleWinTest, monthFormat) {
   //  "MMMM yyyy" on Window 8 or later.
   EXPECT_EQ("MMMM yyyy", MonthFormat(kEnglishUS).Replace(',', ""));
   EXPECT_EQ("MMMM yyyy", MonthFormat(kFrenchFR));
-  EXPECT_STREQ("yyyy\xE5\xB9\xB4M\xE6\x9C\x88",
-               MonthFormat(kJapaneseJP).Utf8().data());
+  EXPECT_EQ("yyyy\xE5\xB9\xB4M\xE6\x9C\x88", MonthFormat(kJapaneseJP).Utf8());
 }
 
 TEST_F(LocaleWinTest, timeFormat) {
@@ -246,10 +240,10 @@ TEST_F(LocaleWinTest, shortMonthLabels) {
   EXPECT_EQ("Jan", ShortMonthLabel(kEnglishUS, 0));
   EXPECT_EQ("Dec", ShortMonthLabel(kEnglishUS, 11));
   EXPECT_EQ("janv.", ShortMonthLabel(kFrenchFR, 0));
-  EXPECT_STREQ(
+  EXPECT_EQ(
       "d\xC3\xA9"
       "c.",
-      ShortMonthLabel(kFrenchFR, 11).Utf8().data());
+      ShortMonthLabel(kFrenchFR, 11).Utf8());
   EXPECT_EQ("1", ShortMonthLabel(kJapaneseJP, 0));
   EXPECT_EQ("12", ShortMonthLabel(kJapaneseJP, 11));
 }
@@ -258,13 +252,11 @@ TEST_F(LocaleWinTest, timeAMPMLabels) {
   EXPECT_EQ("AM", TimeAMPMLabel(kEnglishUS, 0));
   EXPECT_EQ("PM", TimeAMPMLabel(kEnglishUS, 1));
 
-  EXPECT_STREQ("", TimeAMPMLabel(kFrenchFR, 0).Utf8().data());
-  EXPECT_STREQ("", TimeAMPMLabel(kFrenchFR, 1).Utf8().data());
+  EXPECT_EQ("", TimeAMPMLabel(kFrenchFR, 0).Utf8());
+  EXPECT_EQ("", TimeAMPMLabel(kFrenchFR, 1).Utf8());
 
-  EXPECT_STREQ("\xE5\x8D\x88\xE5\x89\x8D",
-               TimeAMPMLabel(kJapaneseJP, 0).Utf8().data());
-  EXPECT_STREQ("\xE5\x8D\x88\xE5\xBE\x8C",
-               TimeAMPMLabel(kJapaneseJP, 1).Utf8().data());
+  EXPECT_EQ("\xE5\x8D\x88\xE5\x89\x8D", TimeAMPMLabel(kJapaneseJP, 0).Utf8());
+  EXPECT_EQ("\xE5\x8D\x88\xE5\xBE\x8C", TimeAMPMLabel(kJapaneseJP, 1).Utf8());
 }
 
 TEST_F(LocaleWinTest, decimalSeparator) {

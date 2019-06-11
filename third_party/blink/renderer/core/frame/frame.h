@@ -206,7 +206,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   const base::UnguessableToken& GetDevToolsFrameToken() const {
     return devtools_frame_token_;
   }
-  const CString& ToTraceValue();
+  const std::string& ToTraceValue();
 
   // TODO(dcheng): temporary for debugging https://crbug.com/838348.
   const base::debug::StackTrace& CreateStackForDebugging() {
@@ -304,7 +304,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;
-  base::Optional<CString> trace_value_;
+  base::Optional<std::string> trace_value_;
 
   base::debug::StackTrace create_stack_;
   base::debug::StackTrace detach_stack_;
@@ -330,8 +330,8 @@ DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Frame)
 // in a TRACE_EVENT_XXX macro. Example:
 //
 // TRACE_EVENT1("category", "event_name", "frame", ToTraceValue(GetFrame()));
-static inline CString ToTraceValue(Frame* frame) {
-  return frame ? frame->ToTraceValue() : CString();
+static inline std::string ToTraceValue(Frame* frame) {
+  return frame ? frame->ToTraceValue() : std::string();
 }
 
 }  // namespace blink

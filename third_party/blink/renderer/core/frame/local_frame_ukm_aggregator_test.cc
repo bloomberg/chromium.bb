@@ -36,19 +36,15 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
   void ResetAggregator() { aggregator_.reset(); }
 
   std::string GetPrimaryMetricName() {
-    return std::string(
-        LocalFrameUkmAggregator::primary_metric_name().Utf8().data());
+    return LocalFrameUkmAggregator::primary_metric_name().Utf8();
   }
 
   std::string GetMetricName(int index) {
-    return std::string(
-        LocalFrameUkmAggregator::metrics_data()[index].name.Utf8().data());
+    return LocalFrameUkmAggregator::metrics_data()[index].name.Utf8();
   }
 
   std::string GetPercentageMetricName(int index) {
-    return std::string(LocalFrameUkmAggregator::metrics_data()[index]
-                           .name.Utf8()
-                           .data()) +
+    return LocalFrameUkmAggregator::metrics_data()[index].name.Utf8() +
            "Percentage";
   }
 

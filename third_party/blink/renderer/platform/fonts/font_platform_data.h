@@ -79,7 +79,7 @@ class PLATFORM_EXPORT FontPlatformData {
                    FontOrientation = FontOrientation::kHorizontal);
   FontPlatformData(const FontPlatformData& src, float text_size);
   FontPlatformData(const sk_sp<SkTypeface>,
-                   const CString& name,
+                   const std::string& name,
                    float text_size,
                    bool synthetic_bold,
                    bool synthetic_italic,
@@ -145,7 +145,7 @@ class PLATFORM_EXPORT FontPlatformData {
 
  private:
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
-  WebFontRenderStyle QuerySystemRenderStyle(const CString& family,
+  WebFontRenderStyle QuerySystemRenderStyle(const std::string& family,
                                             float text_size,
                                             SkFontStyle);
 #endif
@@ -157,7 +157,7 @@ class PLATFORM_EXPORT FontPlatformData {
 
   sk_sp<SkTypeface> typeface_;
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
-  CString family_;
+  std::string family_;
 #endif
 
  public:

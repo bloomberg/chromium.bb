@@ -190,9 +190,9 @@ String ConvertToPrintableCharacters(const String& text) {
   // as:   =?utf-8?Q?encoded_text?=
   // where, "utf-8" is the chosen charset to represent the text and "Q" is the
   // Quoted-Printable format to convert to 7-bit printable ASCII characters.
-  CString utf8_text = text.Utf8();
+  std::string utf8_text = text.Utf8();
   Vector<char> encoded_text;
-  QuotedPrintableEncode(utf8_text.data(), utf8_text.length(),
+  QuotedPrintableEncode(utf8_text.c_str(), utf8_text.length(),
                         true /* is_header */, encoded_text);
   return String(encoded_text.data(), encoded_text.size());
 }
@@ -330,9 +330,9 @@ void MHTMLArchive::GenerateMHTMLHeader(const String& boundary,
   // We use utf8() below instead of ascii() as ascii() replaces CRLFs with ??
   // (we still only have put ASCII characters in it).
   DCHECK(string_builder.ToString().ContainsOnlyASCIIOrEmpty());
-  CString ascii_string = string_builder.ToString().Utf8();
+  std::string utf8_string = string_builder.ToString().Utf8();
 
-  output_buffer.Append(ascii_string.data(), ascii_string.length());
+  output_buffer.Append(utf8_string.c_str(), utf8_string.length());
 }
 
 void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
@@ -381,8 +381,8 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
 
   string_builder.Append("\r\n");
 
-  CString ascii_string = string_builder.ToString().Utf8();
-  output_buffer.Append(ascii_string.data(), ascii_string.length());
+  std::string utf8_string = string_builder.ToString().Utf8();
+  output_buffer.Append(utf8_string.data(), utf8_string.length());
 
   if (!strcmp(content_encoding, kBinary)) {
     for (const auto& span : *resource.data)
@@ -419,8 +419,8 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
 void MHTMLArchive::GenerateMHTMLFooterForTesting(const String& boundary,
                                                  Vector<char>& output_buffer) {
   DCHECK(!boundary.IsEmpty());
-  CString ascii_string = String("\r\n--" + boundary + "--\r\n").Utf8();
-  output_buffer.Append(ascii_string.data(), ascii_string.length());
+  std::string utf8_string = String("\r\n--" + boundary + "--\r\n").Utf8();
+  output_buffer.Append(utf8_string.c_str(), utf8_string.length());
 }
 
 void MHTMLArchive::SetMainResource(ArchiveResource* main_resource) {

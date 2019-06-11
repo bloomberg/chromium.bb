@@ -76,7 +76,7 @@ webrtc::RtpTransceiverInit ToRtpTransceiverInit(
   }
   DCHECK(init->hasStreams());
   for (const auto& stream : init->streams()) {
-    webrtc_init.stream_ids.push_back(stream->id().Utf8().data());
+    webrtc_init.stream_ids.push_back(stream->id().Utf8());
   }
   DCHECK(init->hasSendEncodings());
   for (const auto& encoding : init->sendEncodings()) {

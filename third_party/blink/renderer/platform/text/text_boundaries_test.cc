@@ -45,8 +45,7 @@ std::string MakeResultText(const String& text, int start, int end) {
     builder.Append('|');
   }
   builder.Append(text.Substring(end));
-  const CString result8 = builder.ToString().Utf8();
-  return std::string(result8.data(), result8.length());
+  return builder.ToString().Utf8();
 }
 
 // Returns word boundray with start(^) and end(|) markes from text with

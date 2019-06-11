@@ -219,13 +219,13 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateOpaque(
 scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
     const url::Origin& origin) {
   const url::SchemeHostPort& tuple = origin.GetTupleOrPrecursorTupleIfOpaque();
-  DCHECK(String::FromUTF8(tuple.scheme().c_str()).ContainsOnlyASCIIOrEmpty());
-  DCHECK(String::FromUTF8(tuple.host().c_str()).ContainsOnlyASCIIOrEmpty());
+  DCHECK(String::FromUTF8(tuple.scheme()).ContainsOnlyASCIIOrEmpty());
+  DCHECK(String::FromUTF8(tuple.host()).ContainsOnlyASCIIOrEmpty());
 
   scoped_refptr<SecurityOrigin> tuple_origin;
   if (!tuple.IsInvalid()) {
-    String scheme = String::FromUTF8(tuple.scheme().c_str());
-    String host = String::FromUTF8(tuple.host().c_str());
+    String scheme = String::FromUTF8(tuple.scheme());
+    String host = String::FromUTF8(tuple.host());
     uint16_t port = tuple.port();
 
     // url::Origin is percent encoded and SecurityOrigin is percent decoded.

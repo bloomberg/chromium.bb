@@ -146,8 +146,8 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
 
   return std::make_unique<FontPlatformData>(
       std::move(typeface),
-      CString(),  // family_ doesn't exist on Mac, this avoids conversion from
-                  // NSString which requires including a //base header
+      std::string(),  // family_ doesn't exist on Mac, this avoids conversion
+                      // from NSString which requires including a //base header
       size, synthetic_bold, synthetic_italic, orientation);
 }
 

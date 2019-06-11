@@ -509,7 +509,7 @@ String NGPhysicalFragment::DumpFragmentTree(
 #if DCHECK_IS_ON()
 void NGPhysicalFragment::ShowFragmentTree() const {
   DumpFlags dump_flags = DumpAll;
-  LOG(INFO) << "\n" << DumpFragmentTree(dump_flags).Utf8().data();
+  LOG(INFO) << "\n" << DumpFragmentTree(dump_flags).Utf8();
 }
 #endif
 

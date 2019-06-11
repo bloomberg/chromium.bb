@@ -1168,7 +1168,7 @@ TEST_F(WebViewTest, FinishComposingTextCursorPositionChange) {
       WebRange(), 3, 3);
 
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(3, info.selection_start);
   EXPECT_EQ(3, info.selection_end);
   EXPECT_EQ(0, info.composition_start);
@@ -1186,7 +1186,7 @@ TEST_F(WebViewTest, FinishComposingTextCursorPositionChange) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 3, 3);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helhellolo", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helhellolo", info.value.Utf8());
   EXPECT_EQ(6, info.selection_start);
   EXPECT_EQ(6, info.selection_end);
   EXPECT_EQ(3, info.composition_start);
@@ -1219,7 +1219,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
                                              WebRange(), -5);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
 
-  EXPECT_EQ("helloworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloworld", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1233,7 +1233,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 0, 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1244,7 +1244,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 3, 3);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(8, info.selection_start);
   EXPECT_EQ(8, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1255,7 +1255,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), -2, -2);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(3, info.selection_start);
   EXPECT_EQ(3, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1266,7 +1266,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 5, 5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(10, info.selection_start);
   EXPECT_EQ(10, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1277,7 +1277,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), -5, -5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1288,7 +1288,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 8, 8);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(13, info.selection_start);
   EXPECT_EQ(13, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1299,7 +1299,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), -100, -100);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1310,7 +1310,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 100, 100);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(13, info.selection_start);
   EXPECT_EQ(13, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1333,7 +1333,7 @@ TEST_F(WebViewTest, SetCompositionWithEmptyText) {
                                              WebRange(), 0);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
 
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1342,7 +1342,7 @@ TEST_F(WebViewTest, SetCompositionWithEmptyText) {
   active_input_method_controller->SetComposition(
       WebString::FromUTF8(""), empty_ime_text_spans, WebRange(), 0, 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1351,7 +1351,7 @@ TEST_F(WebViewTest, SetCompositionWithEmptyText) {
   active_input_method_controller->SetComposition(
       WebString::FromUTF8(""), empty_ime_text_spans, WebRange(), -2, -2);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(3, info.selection_start);
   EXPECT_EQ(3, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1374,7 +1374,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("ab", empty_ime_text_spans,
                                              WebRange(), -2);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("ab", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("ab", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1384,7 +1384,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("c", empty_ime_text_spans,
                                              WebRange(), 1);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("cab", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("cab", info.value.Utf8());
   EXPECT_EQ(2, info.selection_start);
   EXPECT_EQ(2, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1394,7 +1394,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("def", empty_ime_text_spans,
                                              WebRange(), -5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("cadefb", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("cadefb", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1404,7 +1404,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("g", empty_ime_text_spans,
                                              WebRange(), 6);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("gcadefb", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("gcadefb", info.value.Utf8());
   EXPECT_EQ(7, info.selection_start);
   EXPECT_EQ(7, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1414,7 +1414,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("hi", empty_ime_text_spans,
                                              WebRange(), -100);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("gcadefbhi", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("gcadefbhi", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1424,7 +1424,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("jk", empty_ime_text_spans,
                                              WebRange(), 100);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("jkgcadefbhi", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("jkgcadefbhi", info.value.Utf8());
   EXPECT_EQ(11, info.selection_start);
   EXPECT_EQ(11, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1445,7 +1445,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->SetComposition(
       WebString::FromUTF8("abc"), empty_ime_text_spans, WebRange(), 0, 0);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("abc", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("abc", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(0, info.composition_start);
@@ -1456,7 +1456,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->CommitText("hello", empty_ime_text_spans,
                                              WebRange(), -2);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(3, info.selection_start);
   EXPECT_EQ(3, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1465,7 +1465,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->SetComposition(
       WebString::FromUTF8("abc"), empty_ime_text_spans, WebRange(), 0, 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helabclo", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helabclo", info.value.Utf8());
   EXPECT_EQ(3, info.selection_start);
   EXPECT_EQ(3, info.selection_end);
   EXPECT_EQ(3, info.composition_start);
@@ -1475,7 +1475,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->CommitText("", empty_ime_text_spans,
                                              WebRange(), 2);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1485,7 +1485,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->CommitText("world", empty_ime_text_spans,
                                              WebRange(), -5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloworld", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1495,7 +1495,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->CommitText("", empty_ime_text_spans,
                                              WebRange(), 5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloworld", info.value.Utf8());
   EXPECT_EQ(10, info.selection_start);
   EXPECT_EQ(10, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1526,7 +1526,7 @@ TEST_F(WebViewTest, FinishCompositionDoesNotRevealSelection) {
   EXPECT_LT(0, offset_height);
 
   WebTextInputInfo info = frame->GetInputMethodController()->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
 
   // Verify that the input field is not scrolled back into the viewport.
   frame->FrameWidget()
@@ -1551,8 +1551,7 @@ TEST_F(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
   frame->SetCompositionFromExistingText(8, 12, empty_ime_text_spans);
 
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz", info.value.Utf8());
   EXPECT_EQ(4, info.selection_start);
   EXPECT_EQ(4, info.selection_end);
   EXPECT_EQ(8, info.composition_start);
@@ -1575,8 +1574,7 @@ TEST_F(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
   EXPECT_EQ(-1, info.composition_end);
-  EXPECT_EQ("0123\n456789abcdefghijklmnopqrstuvwxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123\n456789abcdefghijklmnopqrstuvwxyz", info.value.Utf8());
 }
 
 TEST_F(WebViewTest, ExtendSelectionAndDelete) {
@@ -1590,12 +1588,12 @@ TEST_F(WebViewTest, ExtendSelectionAndDelete) {
   WebInputMethodController* active_input_method_controller =
       frame->GetInputMethodController();
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("01234ijklmnopqrstuvwxyz", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("01234ijklmnopqrstuvwxyz", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   frame->ExtendSelectionAndDelete(10, 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("ijklmnopqrstuvwxyz", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("ijklmnopqrstuvwxyz", info.value.Utf8());
 }
 
 TEST_F(WebViewTest, DeleteSurroundingText) {
@@ -1610,33 +1608,33 @@ TEST_F(WebViewTest, DeleteSurroundingText) {
   frame->SetEditableSelectionOffsets(10, 10);
   frame->DeleteSurroundingText(5, 8);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("01234ijklmnopqrstuvwxyz", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("01234ijklmnopqrstuvwxyz", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
 
   frame->SetEditableSelectionOffsets(5, 10);
   frame->DeleteSurroundingText(3, 5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("01ijklmstuvwxyz", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("01ijklmstuvwxyz", info.value.Utf8());
   EXPECT_EQ(2, info.selection_start);
   EXPECT_EQ(7, info.selection_end);
 
   frame->SetEditableSelectionOffsets(5, 5);
   frame->DeleteSurroundingText(10, 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("lmstuvwxyz", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("lmstuvwxyz", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
 
   frame->DeleteSurroundingText(0, 20);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
 
   frame->DeleteSurroundingText(10, 10);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
 }
@@ -1686,14 +1684,12 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea) {
       WebString::FromUTF8(new_line_text.c_str()), empty_ime_text_spans,
       WebRange(), 0);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz", info.value.Utf8());
 
   frame->SetEditableSelectionOffsets(31, 31);
   frame->SetCompositionFromExistingText(30, 34, ime_text_spans);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz", info.value.Utf8());
   EXPECT_EQ(31, info.selection_start);
   EXPECT_EQ(31, info.selection_end);
   EXPECT_EQ(30, info.composition_start);
@@ -1704,8 +1700,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("0123456789abcdefghijklmnopq\nrsyoloxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123456789abcdefghijklmnopq\nrsyoloxyz", info.value.Utf8());
   EXPECT_EQ(34, info.selection_start);
   EXPECT_EQ(34, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1749,7 +1744,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
       empty_ime_text_spans, WebRange(), 5, 5);
 
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(11, info.selection_start);
   EXPECT_EQ(11, info.selection_end);
   EXPECT_EQ(6, info.composition_start);
@@ -1758,7 +1753,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetEditableSelectionOffsets(6, 6);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(6, info.selection_start);
   EXPECT_EQ(6, info.selection_end);
   EXPECT_EQ(6, info.composition_start);
@@ -1766,7 +1761,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 
   frame->SetEditableSelectionOffsets(8, 8);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(8, info.selection_start);
   EXPECT_EQ(8, info.selection_end);
   EXPECT_EQ(6, info.composition_start);
@@ -1774,7 +1769,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 
   frame->SetEditableSelectionOffsets(11, 11);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(11, info.selection_start);
   EXPECT_EQ(11, info.selection_end);
   EXPECT_EQ(6, info.composition_start);
@@ -1782,7 +1777,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 
   frame->SetEditableSelectionOffsets(6, 11);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(6, info.selection_start);
   EXPECT_EQ(11, info.selection_end);
   EXPECT_EQ(6, info.composition_start);
@@ -1790,7 +1785,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 
   frame->SetEditableSelectionOffsets(2, 2);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(2, info.selection_start);
   EXPECT_EQ(2, info.selection_end);
   // Composition range should be reset by browser process or keyboard apps.
@@ -2944,9 +2939,9 @@ TEST_F(WebViewTest, LongPressSelection) {
 
   EXPECT_TRUE(
       TapElementById(WebInputEvent::kGestureLongPress, onselectstartfalse));
-  EXPECT_EQ("", std::string(frame->SelectionAsText().Utf8().data()));
+  EXPECT_EQ("", frame->SelectionAsText().Utf8());
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target));
-  EXPECT_EQ("testword", std::string(frame->SelectionAsText().Utf8().data()));
+  EXPECT_EQ("testword", frame->SelectionAsText().Utf8());
 }
 
 TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
@@ -2968,13 +2963,12 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
   EXPECT_TRUE(active_input_method_controller->SetComposition(
       "12345", empty_ime_text_spans, WebRange(), 8, 13));
   EXPECT_TRUE(frame->GetFrame()->GetInputMethodController().HasComposition());
-  EXPECT_EQ("", std::string(frame->SelectionAsText().Utf8().data()));
+  EXPECT_EQ("", frame->SelectionAsText().Utf8());
   EXPECT_FALSE(frame->GetFrame()->Selection().IsHandleVisible());
   EXPECT_TRUE(frame->GetFrame()->GetInputMethodController().HasComposition());
 
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target));
-  EXPECT_EQ("testword12345",
-            std::string(frame->SelectionAsText().Utf8().data()));
+  EXPECT_EQ("testword12345", frame->SelectionAsText().Utf8());
   EXPECT_TRUE(frame->GetFrame()->Selection().IsHandleVisible());
   EXPECT_TRUE(frame->GetFrame()->GetInputMethodController().HasComposition());
 
@@ -3111,7 +3105,7 @@ TEST_F(WebViewTest, SelectionOnReadOnlyInput) {
   std::string test_word = "This text should be selected.";
 
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
-  EXPECT_EQ(test_word, std::string(frame->SelectionAsText().Utf8().data()));
+  EXPECT_EQ(test_word, frame->SelectionAsText().Utf8());
 
   WebRange range = web_view->MainFrameImpl()
                        ->GetInputMethodController()
@@ -3533,8 +3527,7 @@ TEST_F(WebViewTest,
   frame->SetCompositionFromExistingText(8, 12, empty_ime_text_spans);
 
   WebTextInputInfo info = frame->GetInputMethodController()->TextInputInfo();
-  EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz", info.value.Utf8());
   EXPECT_EQ(8, info.composition_start);
   EXPECT_EQ(12, info.composition_end);
 

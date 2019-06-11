@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace {
 const char kJsonMimePostfix[] = "+json";
@@ -131,9 +132,9 @@ void setMediaType(NDEFRecordPtr& recordPtr,
 template <>
 struct TypeConverter<Vector<uint8_t>, String> {
   static Vector<uint8_t> Convert(const String& string) {
-    CString utf8String = string.Utf8();
+    StringUTF8Adaptor utf8_string(string);
     Vector<uint8_t> array;
-    array.Append(utf8String.data(), utf8String.length());
+    array.Append(utf8_string.data(), utf8_string.size());
     return array;
   }
 };

@@ -33,7 +33,7 @@ static LayoutTextFragment* FirstLetterPartFor(
 class LayoutSelectionTestBase : public EditingTestBase {
  protected:
   static void PrintText(std::ostream& ostream, const Text& text) {
-    ostream << "'" << text.data().Utf8().data() << "'";
+    ostream << "'" << text.data().Utf8() << "'";
   }
 
   static void PrintLayoutTextInfo(const FrameSelection& selection,
@@ -84,7 +84,7 @@ class LayoutSelectionTestBase : public EditingTestBase {
     if (const Text* text = DynamicTo<Text>(node))
       PrintText(ostream, *text);
     else if (const Element* element = ToElementOrNull(node))
-      ostream << element->tagName().Utf8().data();
+      ostream << element->tagName().Utf8();
     else
       ostream << node;
 
@@ -96,7 +96,7 @@ class LayoutSelectionTestBase : public EditingTestBase {
     PrintLayoutObjectInfo(selection, ostream, layout_object);
     if (LayoutTextFragment* first_letter = FirstLetterPartFor(layout_object)) {
       ostream << std::endl
-              << RepeatString("  ", depth + 1).Utf8().data() << ":first-letter";
+              << RepeatString("  ", depth + 1).Utf8() << ":first-letter";
       PrintLayoutObjectInfo(selection, ostream, first_letter);
     }
   }
@@ -105,14 +105,14 @@ class LayoutSelectionTestBase : public EditingTestBase {
                                    std::ostream& ostream,
                                    const Node& node,
                                    wtf_size_t depth) {
-    ostream << RepeatString("  ", depth).Utf8().data();
+    ostream << RepeatString("  ", depth).Utf8();
     if (IsHTMLStyleElement(node)) {
       ostream << "<style> ";
       return;
     }
     PrintSelectionInfo(selection, ostream, node, depth);
     if (ShadowRoot* shadow_root = node.GetShadowRoot()) {
-      ostream << std::endl << RepeatString("  ", depth + 1).Utf8().data();
+      ostream << std::endl << RepeatString("  ", depth + 1).Utf8();
       ostream << "#shadow-root ";
       for (Node* child = shadow_root->firstChild(); child;
            child = child->nextSibling()) {

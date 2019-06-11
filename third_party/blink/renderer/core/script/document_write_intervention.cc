@@ -34,7 +34,7 @@ void EmitWarningMayBeBlocked(const String& url, Document& document) {
   document.AddConsoleMessage(
       ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                              mojom::ConsoleMessageLevel::kWarning, message));
-  DVLOG(1) << message.Utf8().data();
+  DVLOG(1) << message.Utf8();
 }
 
 void EmitWarningNotBlocked(const String& url, Document& document) {

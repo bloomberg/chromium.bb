@@ -342,7 +342,7 @@ void PageSchedulerImpl::OnNavigation() {
 }
 
 void PageSchedulerImpl::ReportIntervention(const std::string& message) {
-  delegate_->ReportIntervention(String::FromUTF8(message.c_str()));
+  delegate_->ReportIntervention(String::FromUTF8(message));
 }
 
 base::TimeTicks PageSchedulerImpl::EnableVirtualTime() {
@@ -553,7 +553,7 @@ void PageSchedulerImpl::OnThrottlingReported(
       "for more details",
       throttling_duration.InSecondsF());
 
-  delegate_->ReportIntervention(String::FromUTF8(message.c_str()));
+  delegate_->ReportIntervention(String::FromUTF8(message));
 }
 
 void PageSchedulerImpl::UpdateBackgroundSchedulingLifecycleState(

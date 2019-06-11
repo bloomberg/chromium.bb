@@ -3435,7 +3435,7 @@ bool operator>=(const AXObject& first, const AXObject& second) {
 }
 
 std::ostream& operator<<(std::ostream& stream, const AXObject& obj) {
-  return stream << obj.ToString().Utf8().data();
+  return stream << obj.ToString().Utf8();
 }
 
 void AXObject::Trace(blink::Visitor* visitor) {

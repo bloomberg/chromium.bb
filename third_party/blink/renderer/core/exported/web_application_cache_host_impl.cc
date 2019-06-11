@@ -152,7 +152,7 @@ void WebApplicationCacheHostImpl::ProgressEventRaised(const KURL& url,
   // deleted within the script event handler.
   const char kFormatString[] = "Application Cache Progress event (%d of %d) %s";
   String message = String::Format(kFormatString, num_complete, num_total,
-                                  url.GetString().Utf8().data());
+                                  url.GetString().Utf8().c_str());
   LogMessage(mojom::blink::ConsoleMessageLevel::kInfo, message);
   status_ = mojom::blink::AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
   client_->NotifyProgressEventListener(url, num_total, num_complete);
@@ -164,7 +164,7 @@ void WebApplicationCacheHostImpl::ErrorEventRaised(
   // deleted within the script event handler.
   const char kFormatString[] = "Application Cache Error event: %s";
   String full_message =
-      String::Format(kFormatString, details->message.Utf8().data());
+      String::Format(kFormatString, details->message.Utf8().c_str());
   LogMessage(mojom::blink::ConsoleMessageLevel::kError, full_message);
 
   status_ = cache_info_.is_complete

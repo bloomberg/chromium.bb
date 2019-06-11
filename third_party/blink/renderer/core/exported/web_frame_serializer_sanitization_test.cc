@@ -112,7 +112,7 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
     KURL parsed_url(url);
     String file_path("frameserialization/" + file_name);
     RegisterMockedFileURLLoad(parsed_url, file_path, mime_type);
-    frame_test_helpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
+    frame_test_helpers::LoadFrame(MainFrameImpl(), url.Utf8().c_str());
     MainFrameImpl()->GetFrame()->View()->UpdateAllLifecyclePhases(
         DocumentLifecycle::LifecycleUpdateReason::kTest);
   }
@@ -181,7 +181,7 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
                                  const String& file_path,
                                  const String& mime_type = "image/png") {
     url_test_helpers::RegisterMockedURLLoad(
-        url, test::CoreTestDataPath(file_path.Utf8().data()), mime_type);
+        url, test::CoreTestDataPath(file_path.Utf8().c_str()), mime_type);
   }
 
   WebViewImpl* WebView() { return helper_.GetWebView(); }

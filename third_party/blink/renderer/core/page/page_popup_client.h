@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -94,8 +95,8 @@ class CORE_EXPORT PagePopupClient {
 };
 
 inline void PagePopupClient::AddString(const String& str, SharedBuffer* data) {
-  CString str8 = str.Utf8();
-  data->Append(str8.data(), str8.length());
+  StringUTF8Adaptor utf8(str);
+  data->Append(utf8.data(), utf8.size());
 }
 
 }  // namespace blink

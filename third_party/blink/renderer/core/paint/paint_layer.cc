@@ -3543,7 +3543,7 @@ void showLayerTree(const blink::PaintLayer* layer) {
                                    blink::kLayoutAsTextShowLayoutState |
                                    blink::kLayoutAsTextShowPaintProperties,
                                layer);
-    LOG(ERROR) << output.Utf8().data();
+    LOG(ERROR) << output.Utf8();
   }
 }
 

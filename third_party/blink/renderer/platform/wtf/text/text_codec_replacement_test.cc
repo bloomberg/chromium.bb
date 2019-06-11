@@ -52,10 +52,10 @@ TEST(TextCodecReplacement, EncodesToUTF8) {
   // "Kanji" in Chinese characters.
   const UChar kTestCase[] = {0x6F22, 0x5B57};
   wtf_size_t test_case_size = base::size(kTestCase);
-  CString result =
+  std::string result =
       codec->Encode(kTestCase, test_case_size, kEntitiesForUnencodables);
 
-  EXPECT_STREQ("\xE6\xBC\xA2\xE5\xAD\x97", result.data());
+  EXPECT_EQ("\xE6\xBC\xA2\xE5\xAD\x97", result);
 }
 
 }  // namespace

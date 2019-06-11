@@ -135,11 +135,11 @@ PerformanceMark* UserTiming::CreatePerformanceMark(
 
 void UserTiming::AddMarkToPerformanceTimeline(PerformanceMark& mark) {
   if (performance_->timing()) {
-    TRACE_EVENT_COPY_MARK1("blink.user_timing", mark.name().Utf8().data(),
+    TRACE_EVENT_COPY_MARK1("blink.user_timing", mark.name().Utf8().c_str(),
                            "data",
                            performance_->timing()->GetNavigationTracingData());
   } else {
-    TRACE_EVENT_COPY_MARK("blink.user_timing", mark.name().Utf8().data());
+    TRACE_EVENT_COPY_MARK("blink.user_timing", mark.name().Utf8().c_str());
   }
   InsertPerformanceEntry(marks_map_, mark);
   DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,
@@ -228,10 +228,10 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
   WTF::AddFloatToHash(hash, end_time);
 
   TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-      "blink.user_timing", measure_name.Utf8().data(), hash,
+      "blink.user_timing", measure_name.Utf8().c_str(), hash,
       trace_event::ToTraceTimestamp(start_time_monotonic));
   TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-      "blink.user_timing", measure_name.Utf8().data(), hash,
+      "blink.user_timing", measure_name.Utf8().c_str(), hash,
       trace_event::ToTraceTimestamp(end_time_monotonic));
 
   auto* measure = MakeGarbageCollected<PerformanceMeasure>(

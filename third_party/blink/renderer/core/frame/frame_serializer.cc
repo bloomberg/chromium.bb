@@ -279,11 +279,11 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
     String text =
         accumulator.SerializeNodes<EditingStrategy>(document, kIncludeNode);
 
-    CString frame_html =
+    std::string frame_html =
         document.Encoding().Encode(text, WTF::kEntitiesForUnencodables);
     resources_->push_back(SerializedResource(
         url, document.SuggestedMIMEType(),
-        SharedBuffer::Create(frame_html.data(), frame_html.length())));
+        SharedBuffer::Create(frame_html.c_str(), frame_html.length())));
   }
 
   should_collect_problem_metric_ =
@@ -401,11 +401,11 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
     WTF::TextEncoding text_encoding(style_sheet.Contents()->Charset());
     DCHECK(text_encoding.IsValid());
     String text_string = css_text.ToString();
-    CString text = text_encoding.Encode(
+    std::string text = text_encoding.Encode(
         text_string, WTF::kCSSEncodedEntitiesForUnencodables);
     resources_->push_back(
         SerializedResource(url, String("text/css"),
-                           SharedBuffer::Create(text.data(), text.length())));
+                           SharedBuffer::Create(text.c_str(), text.length())));
   }
 
   // Sub resources need to be serialized even if the CSS definition doesn't

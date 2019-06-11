@@ -241,8 +241,7 @@ static void MaybeEncodeTextContent(const String& text_content,
                                    wtf_size_t buffer_size,
                                    String* result,
                                    bool* base64_encoded) {
-  if (!text_content.IsNull() &&
-      !text_content.Utf8(WTF::kStrictUTF8Conversion).IsNull()) {
+  if (!text_content.IsNull()) {
     *result = text_content;
     *base64_encoded = false;
   } else if (buffer_data) {

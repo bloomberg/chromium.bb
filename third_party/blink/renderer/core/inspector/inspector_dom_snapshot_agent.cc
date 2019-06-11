@@ -472,9 +472,9 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
     value->setDocumentURL(InspectorDOMAgent::DocumentURLString(document));
     value->setBaseURL(InspectorDOMAgent::DocumentBaseURLString(document));
     if (document->ContentLanguage())
-      value->setContentLanguage(document->ContentLanguage().Utf8().data());
+      value->setContentLanguage(document->ContentLanguage().Utf8().c_str());
     if (document->EncodingName())
-      value->setDocumentEncoding(document->EncodingName().Utf8().data());
+      value->setDocumentEncoding(document->EncodingName().Utf8().c_str());
     value->setFrameId(IdentifiersFactory::FrameId(document->GetFrame()));
     if (document->View() && document->View()->LayoutViewport()) {
       auto offset = document->View()->LayoutViewport()->GetScrollOffset();

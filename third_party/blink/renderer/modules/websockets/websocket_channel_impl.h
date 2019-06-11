@@ -92,7 +92,7 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
 
   // WebSocketChannel functions.
   bool Connect(const KURL&, const String& protocol) override;
-  void Send(const CString& message) override;
+  void Send(const std::string& message) override;
   void Send(const DOMArrayBuffer&,
             unsigned byte_offset,
             unsigned byte_length) override;

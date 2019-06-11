@@ -82,7 +82,7 @@ WebString WebPepperSocketImpl::Subprotocol() {
 
 bool WebPepperSocketImpl::SendText(const WebString& message) {
   String core_message = message;
-  CString encoded_message = core_message.Utf8();
+  std::string encoded_message = core_message.Utf8();
   size_t size = encoded_message.length();
   buffered_amount_ += size;
   if (is_closing_or_closed_)

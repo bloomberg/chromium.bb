@@ -55,8 +55,10 @@ class XMLParserContext : public RefCounted<XMLParserContext> {
   USING_FAST_MALLOC(XMLParserContext);
 
  public:
-  static scoped_refptr<XMLParserContext>
-  CreateMemoryParser(xmlSAXHandlerPtr, void* user_data, const CString& chunk);
+  static scoped_refptr<XMLParserContext> CreateMemoryParser(
+      xmlSAXHandlerPtr,
+      void* user_data,
+      const std::string& chunk);
   static scoped_refptr<XMLParserContext> CreateStringParser(xmlSAXHandlerPtr,
                                                             void* user_data);
   ~XMLParserContext();
@@ -158,7 +160,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   void EndDocument();
 
  private:
-  void InitializeParserContext(const CString& chunk = CString());
+  void InitializeParserContext(const std::string& chunk = std::string());
 
   void PushCurrentNode(ContainerNode*);
   void PopCurrentNode();

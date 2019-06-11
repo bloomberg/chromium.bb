@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -178,7 +179,7 @@ class Serializer final {
 
   std::string Serialize(const ContainerNode& root) {
     SerializeChildren(root);
-    return builder_.ToString().Utf8().data();
+    return builder_.ToString().Utf8();
   }
 
  private:

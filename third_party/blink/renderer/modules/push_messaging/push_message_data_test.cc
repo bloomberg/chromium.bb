@@ -29,7 +29,7 @@ TEST(PushMessageDataTest, ValidEmptyPayload) {
   PushMessageData* data = PushMessageData::Create(s);
 
   ASSERT_NE(data, nullptr);
-  EXPECT_STREQ("", data->text().Utf8().data());
+  EXPECT_EQ("", data->text().Utf8());
 }
 
 TEST(PushMessageDataTest, NullPayload) {

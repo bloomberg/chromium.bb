@@ -28,7 +28,7 @@ class PasswordCredentialTest : public PageTestBase {
     b.Append("'>");
     b.Append(html);
     b.Append("</form></body></html>");
-    SetHtmlInnerHTML(b.ToString().Utf8().data());
+    SetHtmlInnerHTML(b.ToString().Utf8());
     HTMLFormElement* form = ToHTMLFormElement(GetElementById("theForm"));
     EXPECT_NE(nullptr, form);
     return form;

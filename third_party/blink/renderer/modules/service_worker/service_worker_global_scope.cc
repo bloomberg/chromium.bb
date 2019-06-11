@@ -708,7 +708,7 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
     String message = String::Format(
         "Event handler of '%s' event must be added on the initial evaluation "
         "of worker script.",
-        event_type.Utf8().data());
+        event_type.Utf8().c_str());
     AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kWarning, message));

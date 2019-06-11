@@ -528,12 +528,12 @@ static void NamedPropertyGetter(const AtomicString& name,
 
 static void NamedPropertyQuery(
     const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
-  const CString& name_in_utf8 = name.Utf8();
+  const std::string& name_in_utf8 = name.Utf8();
   ExceptionState exception_state(
       info.GetIsolate(),
       ExceptionState::kGetterContext,
       "TestInterface5",
-      name_in_utf8.data());
+      name_in_utf8.c_str());
 
   TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 

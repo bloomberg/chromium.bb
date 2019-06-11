@@ -859,8 +859,8 @@ bool CSPDirectiveList::AllowTrustedTypePolicy(const String& policy_name) const {
           "Refused to create a TrustedTypePolicy named '%s' because "
           "it violates the following Content Security Policy directive: "
           "\"%s\".",
-          policy_name.Utf8().data(),
-          trusted_types_.Get()->GetText().Utf8().data()),
+          policy_name.Utf8().c_str(),
+          trusted_types_.Get()->GetText().Utf8().c_str()),
       KURL(), RedirectStatus::kNoRedirect);
 
   return DenyIfEnforcingPolicy();

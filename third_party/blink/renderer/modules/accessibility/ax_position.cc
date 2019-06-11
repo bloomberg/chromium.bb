@@ -900,7 +900,7 @@ bool operator>=(const AXPosition& a, const AXPosition& b) {
 }
 
 std::ostream& operator<<(std::ostream& ostream, const AXPosition& position) {
-  return ostream << position.ToString().Utf8().data();
+  return ostream << position.ToString().Utf8();
 }
 
 }  // namespace blink

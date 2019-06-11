@@ -132,7 +132,7 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     }
   }
 
-  return FontPlatformData(std::move(return_typeface), CString(), size,
+  return FontPlatformData(std::move(return_typeface), std::string(), size,
                           bold && !base_typeface_->isBold(),
                           italic && !base_typeface_->isItalic(), orientation);
 }

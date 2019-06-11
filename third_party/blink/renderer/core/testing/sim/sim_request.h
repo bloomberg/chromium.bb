@@ -67,6 +67,9 @@ class SimRequestBase {
 
   void Reset();
 
+  // Internal function to write a chunk of the response body
+  void WriteInternal(base::span<const char>);
+
   // Used by SimNetwork.
   void DidReceiveResponse(WebURLLoaderClient*, const WebURLResponse&);
   void DidFail(const WebURLError&);

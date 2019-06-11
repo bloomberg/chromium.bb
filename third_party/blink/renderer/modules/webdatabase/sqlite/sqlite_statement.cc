@@ -88,7 +88,7 @@ int SQLiteStatement::Prepare() {
   DCHECK(!is_prepared_);
 #endif
 
-  CString query = query_.StripWhiteSpace().Utf8();
+  std::string query = query_.StripWhiteSpace().Utf8();
 
   // Need to pass non-stack |const char*| and |sqlite3_stmt*| to avoid race
   // with Oilpan stack scanning.
@@ -98,13 +98,14 @@ int SQLiteStatement::Prepare() {
   *statement = nullptr;
   int error;
   {
-    SQL_DVLOG(1) << "SQL - prepare - " << query.data();
+    SQL_DVLOG(1) << "SQL - prepare - " << query;
 
     // Pass the length of the string including the null character to
     // sqlite3_prepare_v3(); this lets SQLite avoid an extra string copy.
-    wtf_size_t length_including_null_character = query.length() + 1;
+    wtf_size_t length_including_null_character =
+        static_cast<wtf_size_t>(query.length()) + 1;
 
-    error = sqlite3_prepare_v3(database_.Sqlite3Handle(), query.data(),
+    error = sqlite3_prepare_v3(database_.Sqlite3Handle(), query.c_str(),
                                length_including_null_character,
                                /* prepFlags= */ 0, statement.get(), tail.get());
   }
@@ -112,7 +113,7 @@ int SQLiteStatement::Prepare() {
 
   if (error != SQLITE_OK) {
     SQL_DVLOG(1) << "sqlite3_prepare_v3 failed (" << error << ")\n"
-                 << query.data() << "\n"
+                 << query << "\n"
                  << sqlite3_errmsg(database_.Sqlite3Handle());
   } else if (*tail && **tail) {
     error = SQLITE_ERROR;

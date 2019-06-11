@@ -381,10 +381,8 @@ void VisibleSelectionTemplate<Strategy>::ShowTreeForThis() const {
                    ->ToMarkedTreeString(Start().AnchorNode(), "S",
                                         End().AnchorNode(), "E")
                    .Utf8()
-                   .data()
-            << "start: " << Start().ToAnchorTypeAndOffsetString().Utf8().data()
-            << "\n"
-            << "end: " << End().ToAnchorTypeAndOffsetString().Utf8().data();
+            << "start: " << Start().ToAnchorTypeAndOffsetString().Utf8() << "\n"
+            << "end: " << End().ToAnchorTypeAndOffsetString().Utf8();
 }
 
 #endif

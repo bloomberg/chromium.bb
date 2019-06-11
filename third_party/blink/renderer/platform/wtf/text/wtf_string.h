@@ -169,7 +169,7 @@ class WTF_EXPORT String {
 
   std::string Ascii() const WARN_UNUSED_RESULT;
   std::string Latin1() const WARN_UNUSED_RESULT;
-  CString Utf8(UTF8ConversionMode = kLenientUTF8Conversion) const
+  std::string Utf8(UTF8ConversionMode = kLenientUTF8Conversion) const
       WARN_UNUSED_RESULT;
 
   UChar operator[](unsigned index) const {
@@ -520,6 +520,7 @@ class WTF_EXPORT String {
     return FromUTF8(reinterpret_cast<const LChar*>(s));
   }
   static String FromUTF8(const CString&) WARN_UNUSED_RESULT;
+  static String FromUTF8(base::StringPiece) WARN_UNUSED_RESULT;
 
   // Tries to convert the passed in string to UTF-8, but will fall back to
   // Latin-1 if the string is not valid UTF-8.

@@ -4781,7 +4781,7 @@ void LayoutBlockFlow::ShowLineTreeAndMark(const InlineBox* marked_box1,
     root->DumpLineTreeAndMark(string_blockflow, marked_box1, marked_label1,
                               marked_box2, marked_label2, obj, 1);
   }
-  DLOG(INFO) << "\n" << string_blockflow.ToString().Utf8().data();
+  DLOG(INFO) << "\n" << string_blockflow.ToString().Utf8();
 }
 
 #endif

@@ -93,7 +93,7 @@ GLuint WebGL2ComputeRenderingContextBase::getProgramResourceIndex(
     return 0;
 
   return ContextGL()->GetProgramResourceIndex(
-      ObjectOrZero(program), program_interface, name.Utf8().data());
+      ObjectOrZero(program), program_interface, name.Utf8().c_str());
 }
 
 String WebGL2ComputeRenderingContextBase::getProgramResourceName(
@@ -282,7 +282,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::getProgramResourceLocation(
     return WrapLocation(script_state, -1, program, program_interface);
 
   GLint location = ContextGL()->GetProgramResourceLocation(
-      ObjectOrZero(program), program_interface, name.Utf8().data());
+      ObjectOrZero(program), program_interface, name.Utf8().c_str());
   return WrapLocation(script_state, location, program, program_interface);
 }
 

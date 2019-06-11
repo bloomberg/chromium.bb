@@ -327,9 +327,7 @@ void TouchActionTest::RunTestOnTree(
                  .data()
           << "\"" << std::endl
           << "Document render tree:" << std::endl
-          << ExternalRepresentation(root->GetDocument().GetFrame())
-                 .Utf8()
-                 .data();
+          << ExternalRepresentation(root->GetDocument().GetFrame()).Utf8();
 
       // Now send the touch event and check any touch action result.
       SendTouchEvent(web_view, WebInputEvent::kPointerDown, window_point);

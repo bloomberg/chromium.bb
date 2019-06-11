@@ -603,9 +603,9 @@ static String ExtractWebGLContextCreationError(
                           builder);
   FormatWebGLStatusString(
       "Reset notification strategy",
-      String::Format("0x%04x", info.reset_notification_strategy).Utf8().data(),
+      String::Format("0x%04x", info.reset_notification_strategy).Utf8().c_str(),
       builder);
-  FormatWebGLStatusString("ErrorMessage", info.error_message.Utf8().data(),
+  FormatWebGLStatusString("ErrorMessage", info.error_message.Utf8().c_str(),
                           builder);
   builder.Append('.');
   return builder.ToString();
@@ -1764,7 +1764,7 @@ void WebGLRenderingContextBase::bindAttribLocation(WebGLProgram* program,
     return;
   }
   ContextGL()->BindAttribLocation(ObjectOrZero(program), index,
-                                  name.Utf8().data());
+                                  name.Utf8().c_str());
 }
 
 bool WebGLRenderingContextBase::ValidateAndUpdateBufferBindTarget(
@@ -2893,7 +2893,7 @@ GLint WebGLRenderingContextBase::getAttribLocation(WebGLProgram* program,
     return 0;
   }
   return ContextGL()->GetAttribLocation(ObjectOrZero(program),
-                                        name.Utf8().data());
+                                        name.Utf8().c_str());
 }
 
 bool WebGLRenderingContextBase::ValidateBufferTarget(const char* function_name,
@@ -3727,7 +3727,7 @@ ScriptValue WebGLRenderingContextBase::getUniform(
       }
       // Now need to look this up by name again to find its location
       GLint loc = ContextGL()->GetUniformLocation(
-          ObjectOrZero(program), name_builder.ToString().Utf8().data());
+          ObjectOrZero(program), name_builder.ToString().Utf8().c_str());
       if (loc == location) {
         // Found it. Use the type in the ActiveInfo to determine the return
         // type.
@@ -3966,7 +3966,7 @@ WebGLUniformLocation* WebGLRenderingContextBase::getUniformLocation(
     return nullptr;
   }
   GLint uniform_location = ContextGL()->GetUniformLocation(
-      ObjectOrZero(program), name.Utf8().data());
+      ObjectOrZero(program), name.Utf8().c_str());
   if (uniform_location == -1)
     return nullptr;
   return WebGLUniformLocation::Create(program, uniform_location);

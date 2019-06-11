@@ -160,7 +160,7 @@ std::tuple<int, sqlite3*> SandboxedVfs::OpenDatabase(const String& filename) {
   sqlite3* connection;
   constexpr int open_flags =
       SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_PRIVATECACHE;
-  int status = sqlite3_open_v2(filename.Utf8().data(), &connection, open_flags,
+  int status = sqlite3_open_v2(filename.Utf8().c_str(), &connection, open_flags,
                                kSqliteVfsName);
   if (status != SQLITE_OK) {
     // SQLite creates a connection handle in most cases where open fails.

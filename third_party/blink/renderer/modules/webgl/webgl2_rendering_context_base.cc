@@ -2430,7 +2430,7 @@ GLint WebGL2RenderingContextBase::getFragDataLocation(WebGLProgram* program,
     return -1;
 
   return ContextGL()->GetFragDataLocation(ObjectOrZero(program),
-                                          name.Utf8().data());
+                                          name.Utf8().c_str());
 }
 
 void WebGL2RenderingContextBase::uniform1ui(
@@ -4783,7 +4783,7 @@ GLuint WebGL2RenderingContextBase::getUniformBlockIndex(
     return 0;
 
   return ContextGL()->GetUniformBlockIndex(ObjectOrZero(program),
-                                           uniform_block_name.Utf8().data());
+                                           uniform_block_name.Utf8().c_str());
 }
 
 bool WebGL2RenderingContextBase::ValidateUniformBlockIndex(

@@ -343,7 +343,7 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
   void SendFailure(const mojom::blink::CacheStorageError& error) {
     callback_->sendFailure(ProtocolResponse::Error(
         String::Format("Error requesting responses for cache %s : %s",
-                       params_.cache_name.Utf8().data(),
+                       params_.cache_name.Utf8().c_str(),
                        CacheStorageErrorString(error).data())));
   }
 
@@ -396,7 +396,7 @@ class GetCacheKeysForRequestData {
                 self->callback_->sendFailure(
                     ProtocolResponse::Error(String::Format(
                         "Error requesting requests for cache %s: %s",
-                        params.cache_name.Utf8().data(),
+                        params.cache_name.Utf8().c_str(),
                         CacheStorageErrorString(result->get_status()).data())));
               } else {
                 if (result->get_keys().IsEmpty()) {
@@ -575,7 +575,7 @@ void InspectorCacheStorageAgent::requestEntries(
             if (result->is_status()) {
               callback->sendFailure(ProtocolResponse::Error(String::Format(
                   "Error requesting cache %s: %s",
-                  params.cache_name.Utf8().data(),
+                  params.cache_name.Utf8().c_str(),
                   CacheStorageErrorString(result->get_status()).data())));
             } else {
               auto request = std::make_unique<GetCacheKeysForRequestData>(
@@ -644,7 +644,7 @@ void InspectorCacheStorageAgent::deleteEntry(
              mojom::blink::OpenResultPtr result) {
             if (result->is_status()) {
               callback->sendFailure(ProtocolResponse::Error(String::Format(
-                  "Error requesting cache %s: %s", cache_name.Utf8().data(),
+                  "Error requesting cache %s: %s", cache_name.Utf8().c_str(),
                   CacheStorageErrorString(result->get_status()).data())));
             } else {
               Vector<mojom::blink::BatchOperationPtr> batch_operations;

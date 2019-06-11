@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -94,7 +95,8 @@ scoped_refptr<EncodedFormData> XSSAuditorDelegate::GenerateViolationReport(
   auto report_object = std::make_unique<JSONObject>();
   report_object->SetObject("xss-report", std::move(report_details));
 
-  return EncodedFormData::Create(report_object->ToJSONString().Utf8().data());
+  return EncodedFormData::Create(
+      StringUTF8Adaptor(report_object->ToJSONString()));
 }
 
 void XSSAuditorDelegate::DidBlockScript(const XSSInfo& xss_info) {

@@ -1730,7 +1730,7 @@ std::ostream& operator<<(std::ostream& out, const LayoutObject& object) {
 #else
   info = object.DebugName();
 #endif
-  return out << static_cast<const void*>(&object) << ":" << info.Utf8().data();
+  return out << static_cast<const void*>(&object) << ":" << info.Utf8();
 }
 
 std::ostream& operator<<(std::ostream& out, const LayoutObject* object) {
@@ -1763,7 +1763,7 @@ void LayoutObject::ShowLineTreeForThis() const {
 void LayoutObject::ShowLayoutObject() const {
   StringBuilder string_builder;
   DumpLayoutObject(string_builder, true, kShowTreeCharacterOffset);
-  DLOG(INFO) << "\n" << string_builder.ToString().Utf8().data();
+  DLOG(INFO) << "\n" << string_builder.ToString().Utf8();
 }
 
 void LayoutObject::DumpLayoutObject(StringBuilder& string_builder,
@@ -4119,7 +4119,7 @@ void showLayoutTree(const blink::LayoutObject* object1,
       StringBuilder string_builder;
       root->DumpLayoutTreeAndMark(string_builder, object1, "*", object2, "-",
                                   0);
-      DLOG(INFO) << "\n" << string_builder.ToString().Utf8().data();
+      DLOG(INFO) << "\n" << string_builder.ToString().Utf8();
     }
   } else {
     DLOG(INFO) << "Cannot showLayoutTree. Root is (nil)";

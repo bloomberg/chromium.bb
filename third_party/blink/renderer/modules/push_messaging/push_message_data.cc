@@ -42,10 +42,10 @@ PushMessageData* PushMessageData::Create(
   }
 
   if (message_data.IsUSVString()) {
-    CString encoded_string = UTF8Encoding().Encode(
+    std::string encoded_string = UTF8Encoding().Encode(
         message_data.GetAsUSVString(), WTF::kNoUnencodables);
-    return MakeGarbageCollected<PushMessageData>(encoded_string.data(),
-                                                 encoded_string.length());
+    return MakeGarbageCollected<PushMessageData>(
+        encoded_string.c_str(), static_cast<unsigned>(encoded_string.length()));
   }
 
   DCHECK(message_data.IsNull());

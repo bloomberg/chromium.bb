@@ -75,7 +75,7 @@ class BindingSecurityCounterTest
         which_origin == OriginDisposition::SameOriginDomain
             ? "document.domain = 'example.com';"
             : "",
-        property.Utf8().data(), target_url);
+        property.Utf8().c_str(), target_url);
 
     LoadURL(kMainFrame);
     main.Complete(document);
@@ -119,7 +119,7 @@ class BindingSecurityCounterTest
         which_origin == OriginDisposition::SameOriginDomain
             ? "document.domain = 'example.com';"
             : "",
-        property.Utf8().data(), target_url);
+        property.Utf8().c_str(), target_url);
 
     LoadURL(kMainFrame);
     main.Complete(document);

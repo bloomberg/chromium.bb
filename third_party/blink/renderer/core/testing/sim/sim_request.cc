@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_network.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -65,18 +66,14 @@ void SimRequestBase::StartInternal() {
 }
 
 void SimRequestBase::Write(const String& data) {
-  if (!started_)
-    ServePending();
-  DCHECK(started_);
-  DCHECK(!error_);
-  total_encoded_data_length_ += data.length();
-  if (navigation_body_loader_)
-    navigation_body_loader_->Write(data.Utf8().data(), data.length());
-  else
-    client_->DidReceiveData(data.Utf8().data(), data.length());
+  WriteInternal(StringUTF8Adaptor(data));
 }
 
 void SimRequestBase::Write(const Vector<char>& data) {
+  WriteInternal(data);
+}
+
+void SimRequestBase::WriteInternal(base::span<const char> data) {
   if (!started_)
     ServePending();
   DCHECK(started_);

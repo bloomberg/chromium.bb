@@ -175,12 +175,9 @@ void EphemeralRangeTemplate<Strategy>::ShowTreeForThis() const {
                    ->ToMarkedTreeString(StartPosition().AnchorNode(), "S",
                                         EndPosition().AnchorNode(), "E")
                    .Utf8()
-                   .data()
-            << "start: "
-            << StartPosition().ToAnchorTypeAndOffsetString().Utf8().data()
+            << "start: " << StartPosition().ToAnchorTypeAndOffsetString().Utf8()
             << std::endl
-            << "end: "
-            << EndPosition().ToAnchorTypeAndOffsetString().Utf8().data();
+            << "end: " << EndPosition().ToAnchorTypeAndOffsetString().Utf8();
 }
 
 #endif

@@ -242,11 +242,11 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
       EXPECT_EQ(String::FromUTF8(test.expected), result.referrer)
           << "'" << test.referrer << "' to '" << test.destination
           << "' should have been '" << test.expected << "': was '"
-          << result.referrer.Utf8().data() << "'.";
+          << result.referrer.Utf8() << "'.";
     } else {
       EXPECT_TRUE(result.referrer.IsEmpty())
           << "'" << test.referrer << "' to '" << test.destination
-          << "' should have been empty: was '" << result.referrer.Utf8().data()
+          << "' should have been empty: was '" << result.referrer.Utf8()
           << "'.";
     }
     EXPECT_EQ(test.policy == network::mojom::ReferrerPolicy::kDefault

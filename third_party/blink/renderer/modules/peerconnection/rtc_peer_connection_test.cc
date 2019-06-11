@@ -400,9 +400,8 @@ class RTCPeerConnectionTestWithPlatformTestingPlatformType
 
   std::string GetExceptionMessage(V8TestingScope& scope) {
     ExceptionState& exception_state = scope.GetExceptionState();
-    return exception_state.HadException()
-               ? exception_state.Message().Utf8().data()
-               : "";
+    return exception_state.HadException() ? exception_state.Message().Utf8()
+                                          : "";
   }
 
   void AddStream(V8TestingScope& scope,

@@ -192,7 +192,7 @@ MATCHER_P(KURLEq,
           std::string(negation ? "doesn't equal" : "equals") + " to \"" +
               url_string + "\"") {
   const KURL url(NullURL(), url_string);
-  *result_listener << "where the url is \"" << arg.GetString().Utf8().data()
+  *result_listener << "where the url is \"" << arg.GetString().Utf8().c_str()
                    << "\"";
   return arg == url;
 }

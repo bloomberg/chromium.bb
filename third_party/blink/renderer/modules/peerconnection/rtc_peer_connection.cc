@@ -528,7 +528,7 @@ enum class SdpFormat {
 base::Optional<SdpFormat> DeduceSdpFormat(const String& type,
                                           const String& sdp) {
   std::unique_ptr<webrtc::SessionDescriptionInterface> session_description(
-      webrtc::CreateSessionDescription(type.Utf8().data(), sdp.Utf8().data(),
+      webrtc::CreateSessionDescription(type.Utf8().c_str(), sdp.Utf8().c_str(),
                                        nullptr));
   if (!session_description)
     return base::nullopt;

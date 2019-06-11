@@ -77,7 +77,7 @@ class WebFrameSerializerTest : public testing::Test {
   void RegisterMockedImageURLLoad(const String& url) {
     // Image resources need to be mocked, but irrelevant here what image they
     // map to.
-    RegisterMockedFileURLLoad(url_test_helpers::ToKURL(url.Utf8().data()),
+    RegisterMockedFileURLLoad(url_test_helpers::ToKURL(url.Utf8().c_str()),
                               "frameserialization/awesome.png");
   }
 
@@ -85,7 +85,7 @@ class WebFrameSerializerTest : public testing::Test {
                                  const String& file_path,
                                  const String& mime_type = "image/png") {
     url_test_helpers::RegisterMockedURLLoad(
-        url, test::CoreTestDataPath(file_path.Utf8().data()), mime_type);
+        url, test::CoreTestDataPath(file_path.Utf8().c_str()), mime_type);
   }
 
   class SingleLinkRewritingDelegate
@@ -118,7 +118,7 @@ class WebFrameSerializerTest : public testing::Test {
     KURL parsed_url(url);
     String file_path("frameserialization/" + file_name);
     RegisterMockedFileURLLoad(parsed_url, file_path, "text/html");
-    frame_test_helpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
+    frame_test_helpers::LoadFrame(MainFrameImpl(), url.Utf8().c_str());
     SingleLinkRewritingDelegate delegate(parsed_url, WebString("local"));
     SimpleWebFrameSerializerClient serializer_client;
     WebFrameSerializer::Serialize(MainFrameImpl(), &serializer_client,

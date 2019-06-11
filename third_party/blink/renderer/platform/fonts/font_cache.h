@@ -257,8 +257,7 @@ class PLATFORM_EXPORT FontCache {
       const SimpleFontData* font_data_to_substitute,
       FontFallbackPriority = FontFallbackPriority::kText);
   sk_sp<SkTypeface> CreateTypefaceFromUniqueName(
-      const FontFaceCreationParams& creation_params,
-      CString& name);
+      const FontFaceCreationParams& creation_params);
 
   static Bcp47Vector GetBcp47LocaleForRequest(
       const FontDescription& font_description,
@@ -299,7 +298,7 @@ class PLATFORM_EXPORT FontCache {
 
   sk_sp<SkTypeface> CreateTypeface(const FontDescription&,
                                    const FontFaceCreationParams&,
-                                   CString& name);
+                                   std::string& name);
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
   static AtomicString GetFamilyNameForCharacter(SkFontMgr*,

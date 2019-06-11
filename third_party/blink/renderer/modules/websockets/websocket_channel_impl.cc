@@ -103,7 +103,7 @@ class WebSocketChannelImpl::BlobLoader final
 class WebSocketChannelImpl::Message
     : public GarbageCollectedFinalized<WebSocketChannelImpl::Message> {
  public:
-  explicit Message(const CString&);
+  explicit Message(const std::string&);
   explicit Message(scoped_refptr<BlobDataHandle>);
   explicit Message(DOMArrayBuffer*);
   // For WorkerWebSocketChannel
@@ -115,7 +115,7 @@ class WebSocketChannelImpl::Message
 
   MessageType type;
 
-  CString text;
+  std::string text;
   scoped_refptr<BlobDataHandle> blob_data_handle;
   Member<DOMArrayBuffer> array_buffer;
   std::unique_ptr<Vector<char>> vector_data;
@@ -294,11 +294,11 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
   return Connect(url, protocol, std::move(socket_ptr));
 }
 
-void WebSocketChannelImpl::Send(const CString& message) {
+void WebSocketChannelImpl::Send(const std::string& message) {
   NETWORK_DVLOG(1) << this << " Send(" << message << ") (CString argument)";
   probe::DidSendWebSocketMessage(execution_context_, identifier_,
                                  WebSocketOpCode::kOpCodeText, true,
-                                 message.data(), message.length());
+                                 message.c_str(), message.length());
   messages_.push_back(MakeGarbageCollected<Message>(message));
   ProcessSendQueue();
 }
@@ -415,7 +415,7 @@ void WebSocketChannelImpl::Disconnect() {
   identifier_ = 0;
 }
 
-WebSocketChannelImpl::Message::Message(const CString& text)
+WebSocketChannelImpl::Message::Message(const std::string& text)
     : type(kMessageTypeText), text(text) {}
 
 WebSocketChannelImpl::Message::Message(
@@ -476,7 +476,8 @@ void WebSocketChannelImpl::ProcessSendQueue() {
     switch (message->type) {
       case kMessageTypeText:
         SendInternal(WebSocketHandle::kMessageTypeText, message->text.data(),
-                     message->text.length(), &consumed_buffered_amount);
+                     static_cast<wtf_size_t>(message->text.length()),
+                     &consumed_buffered_amount);
         break;
       case kMessageTypeBlob:
         CHECK(!blob_loader_);

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -50,10 +51,9 @@ class ClipboardTextReader final : public ClipboardReader {
         mojom::ClipboardBuffer::kStandard);
 
     // Encode WTF String to UTF-8, the standard text format for blobs.
-    CString utf_text = plain_text.Utf8();
-
+    StringUTF8Adaptor utf_text(plain_text);
     return Blob::Create(reinterpret_cast<const uint8_t*>(utf_text.data()),
-                        utf_text.length(), kMimeTypeTextPlain);
+                        utf_text.size(), kMimeTypeTextPlain);
   }
 };
 

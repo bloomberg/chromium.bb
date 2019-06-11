@@ -17,9 +17,8 @@ namespace blink {
 
 // Wrapper function defined in WebKit.h
 void LogRuntimeCallStats() {
-  LOG(INFO)
-      << "\n"
-      << RuntimeCallStats::From(MainThreadIsolate())->ToString().Utf8().data();
+  LOG(INFO) << "\n"
+            << RuntimeCallStats::From(MainThreadIsolate())->ToString().Utf8();
 }
 
 namespace {

@@ -109,9 +109,10 @@ scoped_refptr<EncodedFormData> EncodedFormData::Create(const void* data,
   return result;
 }
 
-scoped_refptr<EncodedFormData> EncodedFormData::Create(const CString& string) {
+scoped_refptr<EncodedFormData> EncodedFormData::Create(
+    base::span<const char> string) {
   scoped_refptr<EncodedFormData> result = Create();
-  result->AppendData(string.data(), string.length());
+  result->AppendData(string.data(), string.size());
   return result;
 }
 

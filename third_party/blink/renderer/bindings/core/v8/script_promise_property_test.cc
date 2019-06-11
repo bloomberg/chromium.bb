@@ -220,8 +220,8 @@ class ScriptPromisePropertyNonScriptWrappableResolutionTargetTest
     }
     if (expected != actual) {
       ADD_FAILURE_AT(file, line)
-          << "toV8 returns an incorrect value.\n  Actual: "
-          << actual.Utf8().data() << "\nExpected: " << expected;
+          << "toV8 returns an incorrect value.\n  Actual: " << actual.Utf8()
+          << "\nExpected: " << expected;
       return;
     }
   }

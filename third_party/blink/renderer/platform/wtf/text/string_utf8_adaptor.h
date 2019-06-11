@@ -64,7 +64,7 @@ class WTF_EXPORT StringUTF8Adaptor final {
   }
 
  private:
-  CString utf8_buffer_;
+  std::string utf8_buffer_;
   const char* data_ = nullptr;
   wtf_size_t size_ = 0;
 };

@@ -258,8 +258,8 @@ VTTCue::~VTTCue() = default;
 #ifndef NDEBUG
 String VTTCue::ToString() const {
   return String::Format("%p id=%s interval=%f-->%f cue=%s)", this,
-                        id().Utf8().data(), startTime(), endTime(),
-                        text().Utf8().data());
+                        id().Utf8().c_str(), startTime(), endTime(),
+                        text().Utf8().c_str());
 }
 #endif
 

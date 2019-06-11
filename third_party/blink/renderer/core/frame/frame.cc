@@ -261,10 +261,10 @@ void Frame::UpdateInheritedEffectiveTouchActionIfPossible() {
   }
 }
 
-const CString& Frame::ToTraceValue() {
+const std::string& Frame::ToTraceValue() {
   // token's ToString() is latin1.
   if (!trace_value_)
-    trace_value_ = CString(devtools_frame_token_.ToString().c_str());
+    trace_value_ = devtools_frame_token_.ToString();
   return trace_value_.value();
 }
 

@@ -385,7 +385,7 @@ MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
       base::debug::AllocateCrashKeyString("media_content_type",
                                           base::debug::CrashKeySize::Size256);
   base::debug::ScopedCrashKeyString scoped_crash_key(
-      content_type_crash_key, content_type.Raw().Utf8().data());
+      content_type_crash_key, content_type.Raw().Utf8().c_str());
 
   String type = content_type.GetType().DeprecatedLower();
   // The codecs string is not lower-cased because MP4 values are case sensitive

@@ -27,7 +27,7 @@ CompositorAnimation::CreateWorkletAnimation(
     std::unique_ptr<cc::AnimationOptions> options,
     std::unique_ptr<cc::AnimationEffectTimings> effect_timings) {
   return std::make_unique<CompositorAnimation>(cc::WorkletAnimation::Create(
-      worklet_animation_id, std::string(name.Utf8().data()), playback_rate,
+      worklet_animation_id, name.Utf8(), playback_rate,
       std::move(scroll_timeline), std::move(options),
       std::move(effect_timings)));
 }

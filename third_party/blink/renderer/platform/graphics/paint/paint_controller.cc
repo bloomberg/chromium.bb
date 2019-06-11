@@ -225,11 +225,10 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
         new_display_item_list_);
     if (index != kNotFound) {
       ShowDebugData();
-      NOTREACHED()
-          << "DisplayItem " << display_item.AsDebugString().Utf8().data()
-          << " has duplicated id with previous "
-          << new_display_item_list_[index].AsDebugString().Utf8().data()
-          << " (index=" << index << ")";
+      NOTREACHED() << "DisplayItem " << display_item.AsDebugString().Utf8()
+                   << " has duplicated id with previous "
+                   << new_display_item_list_[index].AsDebugString().Utf8()
+                   << " (index=" << index << ")";
     }
     AddToIndicesByClientMap(display_item.Client(),
                             new_display_item_list_.size() - 1,
@@ -626,11 +625,9 @@ void PaintController::ShowUnderInvalidationError(
                      .get();
   }
   LOG(INFO) << "new record:\n"
-            << (new_record ? RecordAsDebugString(*new_record).Utf8().data()
-                           : "None");
+            << (new_record ? RecordAsDebugString(*new_record).Utf8() : "None");
   LOG(INFO) << "old record:\n"
-            << (old_record ? RecordAsDebugString(*old_record).Utf8().data()
-                           : "None");
+            << (old_record ? RecordAsDebugString(*old_record).Utf8() : "None");
 
   ShowDebugData();
 #else

@@ -64,10 +64,10 @@ void WorkerShadowPage::Initialize(const KURL& script_url) {
 
   // Construct substitute data source. We only need it to have same origin as
   // the worker so the loading checks work correctly.
-  CString content("");
+  std::string content("");
   main_frame_->GetFrame()->Loader().CommitNavigation(
       WebNavigationParams::CreateWithHTMLBuffer(
-          SharedBuffer::Create(content.data(), content.length()), script_url),
+          SharedBuffer::Create(content.c_str(), content.length()), script_url),
       nullptr /* extra_data */);
 }
 

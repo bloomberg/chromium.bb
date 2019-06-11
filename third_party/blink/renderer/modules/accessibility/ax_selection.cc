@@ -441,7 +441,7 @@ bool operator!=(const AXSelection& a, const AXSelection& b) {
 }
 
 std::ostream& operator<<(std::ostream& ostream, const AXSelection& selection) {
-  return ostream << selection.ToString().Utf8().data();
+  return ostream << selection.ToString().Utf8();
 }
 
 }  // namespace blink

@@ -46,7 +46,7 @@ namespace blink {
 // LocalizedDateICU.cpp, and LocalizedNumberICUTest.cpp.
 class PLATFORM_EXPORT LocaleICU : public Locale {
  public:
-  explicit LocaleICU(const char*);
+  explicit LocaleICU(const std::string&);
   ~LocaleICU() override;
 
   const Vector<String>& WeekDayShortLabels() override;
@@ -89,7 +89,7 @@ class PLATFORM_EXPORT LocaleICU : public Locale {
                                                     int32_t size);
   void InitializeDateTimeFormat();
 
-  CString locale_;
+  std::string locale_;
   UNumberFormat* number_format_;
   UDateFormat* short_date_format_;
   bool did_create_decimal_format_;

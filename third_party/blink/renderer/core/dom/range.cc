@@ -1818,7 +1818,6 @@ void showTree(const blink::Range* range) {
                      ->ToMarkedTreeString(range->startContainer(), "S",
                                           range->endContainer(), "E")
                      .Utf8()
-                     .data()
               << "start offset: " << range->startOffset()
               << ", end offset: " << range->endOffset();
   } else {

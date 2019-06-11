@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 static const size_t kMaxByteSizeForHistogram = 100 * 1000 * 1000;
@@ -460,8 +461,6 @@ void DOMWebSocket::ReleaseChannel() {
 
 void DOMWebSocket::send(const String& message,
                         ExceptionState& exception_state) {
-  CString encoded_message = message.Utf8();
-
   NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending String "
                    << message;
   if (state_ == kConnecting) {
@@ -470,6 +469,7 @@ void DOMWebSocket::send(const String& message,
   }
   // No exception is raised if the connection was once established but has
   // subsequently been closed.
+  std::string encoded_message = message.Utf8();
   if (state_ == kClosing || state_ == kClosed) {
     UpdateBufferedAmountAfterClose(encoded_message.length());
     return;
@@ -593,8 +593,8 @@ void DOMWebSocket::CloseInternal(int code,
     }
     // Bindings specify USVString, so unpaired surrogates are already replaced
     // with U+FFFD.
-    CString utf8 = reason.Utf8();
-    if (utf8.length() > kMaxReasonSizeInBytes) {
+    StringUTF8Adaptor utf8(reason);
+    if (utf8.size() > kMaxReasonSizeInBytes) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
           "The message must not be greater than " +
@@ -602,10 +602,10 @@ void DOMWebSocket::CloseInternal(int code,
       return;
     }
     if (!reason.IsEmpty() && !reason.Is8Bit()) {
-      DCHECK_GT(utf8.length(), 0u);
+      DCHECK_GT(utf8.size(), 0u);
       // reason might contain unpaired surrogates. Reconstruct it from
       // utf8.
-      cleansed_reason = String::FromUTF8(utf8.data(), utf8.length());
+      cleansed_reason = String::FromUTF8(utf8.data(), utf8.size());
     }
   }
 

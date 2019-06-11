@@ -710,8 +710,8 @@ void PositionTemplate<Strategy>::ShowTreeForThis() const {
     return;
   }
   LOG(INFO) << "\n"
-            << AnchorNode()->ToTreeStringForThis().Utf8().data()
-            << ToAnchorTypeAndOffsetString().Utf8().data();
+            << AnchorNode()->ToTreeStringForThis().Utf8()
+            << ToAnchorTypeAndOffsetString().Utf8();
 }
 
 template <typename Strategy>
@@ -721,8 +721,8 @@ void PositionTemplate<Strategy>::ShowTreeForThisInFlatTree() const {
     return;
   }
   LOG(INFO) << "\n"
-            << AnchorNode()->ToFlatTreeStringForThis().Utf8().data()
-            << ToAnchorTypeAndOffsetString().Utf8().data();
+            << AnchorNode()->ToFlatTreeStringForThis().Utf8()
+            << ToAnchorTypeAndOffsetString().Utf8();
 }
 
 #endif  // DCHECK_IS_ON()
@@ -733,7 +733,7 @@ static std::ostream& PrintPosition(std::ostream& ostream,
   if (position.IsNull())
     return ostream << "null";
   return ostream << position.AnchorNode() << "@"
-                 << position.ToAnchorTypeAndOffsetString().Utf8().data();
+                 << position.ToAnchorTypeAndOffsetString().Utf8();
 }
 
 std::ostream& operator<<(std::ostream& ostream,

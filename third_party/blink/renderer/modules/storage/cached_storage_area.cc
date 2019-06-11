@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 
@@ -368,12 +369,11 @@ bool CachedStorageArea::OnMemoryDump(
       "site_storage/%s/0x%" PRIXPTR "/cache_size",
       IsSessionStorage() ? "session_storage" : "local_storage",
       reinterpret_cast<uintptr_t>(this));
-  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name.Utf8().data());
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name.Utf8());
   dump->AddScalar(MemoryAllocatorDump::kNameSize,
                   MemoryAllocatorDump::kUnitsBytes, memory_used());
-  pmd->AddSuballocation(
-      dump->guid(),
-      String(WTF::Partitions::kAllocatedObjectPoolName).Utf8().data());
+  pmd->AddSuballocation(dump->guid(),
+                        WTF::Partitions::kAllocatedObjectPoolName);
   return true;
 }
 
@@ -651,10 +651,10 @@ Vector<uint8_t> CachedStorageArea::StringToUint8Vector(
 
       // TODO(dmurph): Figure out how to avoid a copy here.
       // TODO(dmurph): Handle invalid UTF16 better. https://crbug.com/873280.
-      CString utf8 = input.Utf8(
-          WTF::kStrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD);
-      Vector<uint8_t> result(utf8.length());
-      std::memcpy(result.data(), utf8.data(), utf8.length());
+      StringUTF8Adaptor utf8(
+          input, WTF::kStrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD);
+      Vector<uint8_t> result(utf8.size());
+      std::memcpy(result.data(), utf8.data(), utf8.size());
       return result;
     }
     case FormatOption::kLocalStorageDetectFormat: {

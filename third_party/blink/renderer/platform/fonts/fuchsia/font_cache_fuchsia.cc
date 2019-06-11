@@ -50,11 +50,11 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
     const SimpleFontData* font_data_to_substitute,
     FontFallbackPriority fallback_priority) {
   sk_sp<SkFontMgr> font_mgr(SkFontMgr::RefDefault());
-  CString family_name = font_description.Family().Family().Utf8();
+  std::string family_name = font_description.Family().Family().Utf8();
   Bcp47Vector locales =
       GetBcp47LocaleForRequest(font_description, fallback_priority);
   sk_sp<SkTypeface> typeface(font_mgr->matchFamilyStyleCharacter(
-      family_name.data(), font_description.SkiaFontStyle(), locales.data(),
+      family_name.c_str(), font_description.SkiaFontStyle(), locales.data(),
       locales.size(), character));
   if (!typeface)
     return nullptr;
@@ -65,7 +65,7 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
       font_description.IsSyntheticItalic() && !typeface->isItalic();
 
   auto font_data = std::make_unique<FontPlatformData>(
-      std::move(typeface), CString(), font_description.EffectiveFontSize(),
+      std::move(typeface), std::string(), font_description.EffectiveFontSize(),
       synthetic_bold, synthetic_italic, font_description.Orientation());
 
   return FontDataFromFontPlatformData(font_data.get(), kDoNotRetain);

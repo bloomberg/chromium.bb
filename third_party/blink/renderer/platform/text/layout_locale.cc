@@ -214,9 +214,9 @@ AtomicString LayoutLocale::LocaleWithBreakKeyword(
   if (string_.Contains('@'))
     return string_;
 
-  CString utf8_locale = string_.Utf8();
+  std::string utf8_locale = string_.Utf8();
   Vector<char> buffer(utf8_locale.length() + 11, 0);
-  memcpy(buffer.data(), utf8_locale.data(), utf8_locale.length());
+  memcpy(buffer.data(), utf8_locale.c_str(), utf8_locale.length());
 
   const char* keyword_value = nullptr;
   switch (mode) {

@@ -41,7 +41,7 @@ static inline void Append(Vector<char>& buffer, const char* string) {
   buffer.Append(string, static_cast<wtf_size_t>(strlen(string)));
 }
 
-static inline void Append(Vector<char>& buffer, const CString& string) {
+static inline void Append(Vector<char>& buffer, const std::string& string) {
   buffer.Append(string.data(), string.length());
 }
 
@@ -51,7 +51,8 @@ static inline void AppendPercentEncoded(Vector<char>& buffer, unsigned char c) {
   buffer.Append(tmp, sizeof(tmp));
 }
 
-static void AppendQuotedString(Vector<char>& buffer, const CString& string) {
+static void AppendQuotedString(Vector<char>& buffer,
+                               const std::string& string) {
   // Append a string as a quoted value, escaping quotes and line breaks.
   // FIXME: Is it correct to use percent escaping here? Other browsers do not
   // encode these characters yet, so we should test popular servers to find out
@@ -132,8 +133,8 @@ Vector<char> FormDataEncoder::GenerateUniqueBoundaryString() {
 }
 
 void FormDataEncoder::BeginMultiPartHeader(Vector<char>& buffer,
-                                           const CString& boundary,
-                                           const CString& name) {
+                                           const std::string& boundary,
+                                           const std::string& name) {
   AddBoundaryToMultiPartHeader(buffer, boundary);
 
   // FIXME: This loses data irreversibly if the input name includes characters
@@ -144,7 +145,7 @@ void FormDataEncoder::BeginMultiPartHeader(Vector<char>& buffer,
 }
 
 void FormDataEncoder::AddBoundaryToMultiPartHeader(Vector<char>& buffer,
-                                                   const CString& boundary,
+                                                   const std::string& boundary,
                                                    bool is_last_boundary) {
   Append(buffer, "--");
   Append(buffer, boundary);
@@ -204,8 +205,8 @@ void FormDataEncoder::FinishMultiPartHeader(Vector<char>& buffer) {
 
 void FormDataEncoder::AddKeyValuePairAsFormData(
     Vector<char>& buffer,
-    const CString& key,
-    const CString& value,
+    const std::string& key,
+    const std::string& value,
     EncodedFormData::EncodingType encoding_type,
     Mode mode) {
   if (encoding_type == EncodedFormData::kTextPlain) {
@@ -223,7 +224,7 @@ void FormDataEncoder::AddKeyValuePairAsFormData(
 }
 
 void FormDataEncoder::EncodeStringAsFormData(Vector<char>& buffer,
-                                             const CString& string,
+                                             const std::string& string,
                                              Mode mode) {
   // Same safe characters as Netscape for compatibility.
   static const char kSafeCharacters[] = "-._*";

@@ -265,9 +265,8 @@ TEST_F(RTCDataChannelTest, BufferedAmountLow) {
   EXPECT_EQ(4U, channel->bufferedAmount());
   channel->OnBufferedAmountChange(4);
   ASSERT_EQ(1U, channel->scheduled_events_.size());
-  EXPECT_EQ(
-      "bufferedamountlow",
-      std::string(channel->scheduled_events_.back()->type().Utf8().data()));
+  EXPECT_EQ("bufferedamountlow",
+            channel->scheduled_events_.back()->type().Utf8());
 }
 
 TEST_F(RTCDataChannelTest, Open) {
@@ -280,9 +279,7 @@ TEST_F(RTCDataChannelTest, Open) {
       pc.get());
   channel->OnStateChange(webrtc::DataChannelInterface::kOpen);
   ASSERT_EQ(1U, channel->scheduled_events_.size());
-  EXPECT_EQ(
-      "open",
-      std::string(channel->scheduled_events_.back()->type().Utf8().data()));
+  EXPECT_EQ("open", channel->scheduled_events_.back()->type().Utf8());
 }
 
 TEST_F(RTCDataChannelTest, Close) {
@@ -295,9 +292,7 @@ TEST_F(RTCDataChannelTest, Close) {
       pc.get());
   channel->OnStateChange(webrtc::DataChannelInterface::kClosed);
   ASSERT_EQ(1U, channel->scheduled_events_.size());
-  EXPECT_EQ(
-      "close",
-      std::string(channel->scheduled_events_.back()->type().Utf8().data()));
+  EXPECT_EQ("close", channel->scheduled_events_.back()->type().Utf8());
 }
 
 TEST_F(RTCDataChannelTest, Message) {
@@ -312,9 +307,7 @@ TEST_F(RTCDataChannelTest, Message) {
   std::unique_ptr<webrtc::DataBuffer> message(new webrtc::DataBuffer("A"));
   channel->OnMessage(std::move(message));
   ASSERT_EQ(1U, channel->scheduled_events_.size());
-  EXPECT_EQ(
-      "message",
-      std::string(channel->scheduled_events_.back()->type().Utf8().data()));
+  EXPECT_EQ("message", channel->scheduled_events_.back()->type().Utf8());
 }
 
 TEST_F(RTCDataChannelTest, SendAfterContextDestroyed) {

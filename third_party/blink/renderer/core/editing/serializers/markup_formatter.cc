@@ -51,7 +51,7 @@ using namespace html_names;
 
 struct EntityDescription {
   UChar entity;
-  const CString& reference;
+  const std::string& reference;
   EntityMask mask;
 };
 
@@ -71,8 +71,8 @@ static inline void AppendCharactersReplacingEntitiesInternal(
           entity_maps[entity_index].mask & entity_mask) {
         result.Append(text + position_after_last_entity,
                       i - position_after_last_entity);
-        const CString& replacement = entity_maps[entity_index].reference;
-        result.Append(replacement.data(), replacement.length());
+        const std::string& replacement = entity_maps[entity_index].reference;
+        result.Append(replacement.c_str(), replacement.length());
         position_after_last_entity = i + 1;
         break;
       }
@@ -88,14 +88,14 @@ void MarkupFormatter::AppendCharactersReplacingEntities(
     unsigned offset,
     unsigned length,
     EntityMask entity_mask) {
-  DEFINE_STATIC_LOCAL(const CString, amp_reference, ("&amp;"));
-  DEFINE_STATIC_LOCAL(const CString, lt_reference, ("&lt;"));
-  DEFINE_STATIC_LOCAL(const CString, gt_reference, ("&gt;"));
-  DEFINE_STATIC_LOCAL(const CString, quot_reference, ("&quot;"));
-  DEFINE_STATIC_LOCAL(const CString, nbsp_reference, ("&nbsp;"));
-  DEFINE_STATIC_LOCAL(const CString, tab_reference, ("&#9;"));
-  DEFINE_STATIC_LOCAL(const CString, line_feed_reference, ("&#10;"));
-  DEFINE_STATIC_LOCAL(const CString, carriage_return_reference, ("&#13;"));
+  DEFINE_STATIC_LOCAL(const std::string, amp_reference, ("&amp;"));
+  DEFINE_STATIC_LOCAL(const std::string, lt_reference, ("&lt;"));
+  DEFINE_STATIC_LOCAL(const std::string, gt_reference, ("&gt;"));
+  DEFINE_STATIC_LOCAL(const std::string, quot_reference, ("&quot;"));
+  DEFINE_STATIC_LOCAL(const std::string, nbsp_reference, ("&nbsp;"));
+  DEFINE_STATIC_LOCAL(const std::string, tab_reference, ("&#9;"));
+  DEFINE_STATIC_LOCAL(const std::string, line_feed_reference, ("&#10;"));
+  DEFINE_STATIC_LOCAL(const std::string, carriage_return_reference, ("&#13;"));
 
   static const EntityDescription kEntityMaps[] = {
       {'&', amp_reference, kEntityAmp},

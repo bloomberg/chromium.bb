@@ -38,7 +38,7 @@ class NGPhysicalTextFragmentTest : public NGLayoutTest {
   }
 
   static std::string GetText(const NGPhysicalTextFragment& fragment) {
-    return fragment.Text().ToString().Utf8().data();
+    return fragment.Text().ToString().Utf8();
   }
 };
 

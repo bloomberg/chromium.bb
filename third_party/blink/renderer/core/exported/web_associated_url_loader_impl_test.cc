@@ -78,9 +78,9 @@ class WebAssociatedURLLoaderTest : public testing::Test,
                          const WTF::String& filename) {
     WebURLResponse response;
     response.SetMimeType("text/html");
-    KURL url = ToKURL(url_root + filename.Utf8().data());
+    KURL url = ToKURL(url_root + filename.Utf8());
     Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
-        url, response, test::CoreTestDataPath(filename.Utf8().data()));
+        url, response, test::CoreTestDataPath(filename.Utf8().c_str()));
     return url;
   }
 
@@ -97,7 +97,7 @@ class WebAssociatedURLLoaderTest : public testing::Test,
       RegisterMockedUrl(url_root, iframe_support_files[i]);
     }
 
-    frame_test_helpers::LoadFrame(MainFrame(), url.GetString().Utf8().data());
+    frame_test_helpers::LoadFrame(MainFrame(), url.GetString().Utf8().c_str());
 
     Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(url);
   }

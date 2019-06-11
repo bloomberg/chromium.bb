@@ -52,11 +52,11 @@ namespace blink {
 
 namespace {
 
-const CString Utf8BlobUUID(Blob* blob) {
+const std::string Utf8BlobUUID(Blob* blob) {
   return blob->Uuid().Utf8();
 }
 
-const CString Utf8FilePath(Blob* blob) {
+const std::string Utf8FilePath(Blob* blob) {
   return blob->HasBackingFile() ? To<File>(blob)->GetPath().Utf8() : "";
 }
 

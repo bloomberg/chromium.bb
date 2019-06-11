@@ -86,12 +86,12 @@ static void NamedPropertyGetter(const AtomicString& name,
 template <typename T>
 static void NamedPropertyQuery(
     const AtomicString& name, const v8::PropertyCallbackInfo<T>& info) {
-  const CString& name_in_utf8 = name.Utf8();
+  const std::string& name_in_utf8 = name.Utf8();
   ExceptionState exception_state(
       info.GetIsolate(),
       ExceptionState::kGetterContext,
       "TestInheritedLegacyUnenumerableNamedProperties",
-      name_in_utf8.data());
+      name_in_utf8.c_str());
 
   TestInheritedLegacyUnenumerableNamedProperties* impl = V8TestInheritedLegacyUnenumerableNamedProperties::ToImpl(info.Holder());
 

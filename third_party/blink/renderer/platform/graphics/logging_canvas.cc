@@ -745,7 +745,7 @@ String RecordAsDebugString(const PaintRecord& record) {
 }
 
 void ShowPaintRecord(const PaintRecord& record) {
-  DLOG(INFO) << RecordAsDebugString(record).Utf8().data();
+  DLOG(INFO) << RecordAsDebugString(record).Utf8();
 }
 
 std::unique_ptr<JSONArray> SkPictureAsJSON(const SkPicture& picture) {
@@ -759,7 +759,7 @@ String SkPictureAsDebugString(const SkPicture& picture) {
 }
 
 void ShowSkPicture(const SkPicture& picture) {
-  DLOG(INFO) << SkPictureAsDebugString(picture).Utf8().data();
+  DLOG(INFO) << SkPictureAsDebugString(picture).Utf8();
 }
 
 }  // namespace blink

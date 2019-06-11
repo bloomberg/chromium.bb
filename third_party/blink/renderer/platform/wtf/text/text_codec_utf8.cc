@@ -467,8 +467,8 @@ upConvertTo16Bit:
 }
 
 template <typename CharType>
-CString TextCodecUTF8::EncodeCommon(const CharType* characters,
-                                    wtf_size_t length) {
+std::string TextCodecUTF8::EncodeCommon(const CharType* characters,
+                                        wtf_size_t length) {
   // The maximum number of UTF-8 bytes needed per UTF-16 code unit is 3.
   // BMP characters take only one UTF-16 code unit and can take up to 3 bytes
   // (3x).
@@ -490,7 +490,7 @@ CString TextCodecUTF8::EncodeCommon(const CharType* characters,
     U8_APPEND_UNSAFE(bytes.data(), bytes_written, character);
   }
 
-  return CString(reinterpret_cast<char*>(bytes.data()), bytes_written);
+  return std::string(reinterpret_cast<char*>(bytes.data()), bytes_written);
 }
 
 template <typename CharType>
@@ -529,15 +529,15 @@ TextCodec::EncodeIntoResult TextCodecUTF8::EncodeIntoCommon(
   return encode_into_result;
 }
 
-CString TextCodecUTF8::Encode(const UChar* characters,
-                              wtf_size_t length,
-                              UnencodableHandling) {
+std::string TextCodecUTF8::Encode(const UChar* characters,
+                                  wtf_size_t length,
+                                  UnencodableHandling) {
   return EncodeCommon(characters, length);
 }
 
-CString TextCodecUTF8::Encode(const LChar* characters,
-                              wtf_size_t length,
-                              UnencodableHandling) {
+std::string TextCodecUTF8::Encode(const LChar* characters,
+                                  wtf_size_t length,
+                                  UnencodableHandling) {
   return EncodeCommon(characters, length);
 }
 

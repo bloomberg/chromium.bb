@@ -142,10 +142,10 @@ void EventSource::Connect() {
     // encoded as UTF-8.
     // TODO(davidben): This should be captured in the type of
     // setHTTPHeaderField's arguments.
-    CString last_event_id_utf8 = parser_->LastEventId().Utf8();
+    std::string last_event_id_utf8 = parser_->LastEventId().Utf8();
     request.SetHttpHeaderField(
         http_names::kLastEventID,
-        AtomicString(reinterpret_cast<const LChar*>(last_event_id_utf8.data()),
+        AtomicString(reinterpret_cast<const LChar*>(last_event_id_utf8.c_str()),
                      last_event_id_utf8.length()));
   }
 

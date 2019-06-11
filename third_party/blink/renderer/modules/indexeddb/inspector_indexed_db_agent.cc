@@ -903,7 +903,7 @@ class GetMetadata final : public ExecutableWithDatabase<GetMetadataCallback> {
       ExceptionCode ec = exception_state.Code();
       request_callback_->sendFailure(Response::Error(
           String::Format("Could not count entries in object store '%s': %d",
-                         object_store_name_.Utf8().data(), ec)));
+                         object_store_name_.Utf8().c_str(), ec)));
       return;
     }
     GetMetadataListener* listener_get_entries_count =
@@ -1108,7 +1108,7 @@ class ClearObjectStore final
       ExceptionCode ec = exception_state.Code();
       request_callback_->sendFailure(Response::Error(
           String::Format("Could not clear object store '%s': %d",
-                         object_store_name_.Utf8().data(), ec)));
+                         object_store_name_.Utf8().c_str(), ec)));
       return;
     }
     idb_transaction->addEventListener(

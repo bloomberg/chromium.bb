@@ -300,8 +300,8 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetch(
   String message = String::Format(
       "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an "
       "insecure %s '%s'. %s",
-      main_resource_url.ElidedString().Utf8().data(),
-      RequestContextName(request_context), url.ElidedString().Utf8().data(),
+      main_resource_url.ElidedString().Utf8().c_str(),
+      RequestContextName(request_context), url.ElidedString().Utf8().c_str(),
       allowed ? "This content should also be served over HTTPS."
               : "This request has been blocked; the content must be served "
                 "over HTTPS.");
@@ -549,8 +549,8 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutWebSocket(
   String message = String::Format(
       "Mixed Content: The page at '%s' was loaded over HTTPS, but attempted to "
       "connect to the insecure WebSocket endpoint '%s'. %s",
-      main_resource_url.ElidedString().Utf8().data(),
-      url.ElidedString().Utf8().data(),
+      main_resource_url.ElidedString().Utf8().c_str(),
+      url.ElidedString().Utf8().c_str(),
       allowed ? "This endpoint should be available via WSS. Insecure access is "
                 "deprecated."
               : "This request has been blocked; this endpoint must be "
@@ -656,8 +656,8 @@ bool MixedContentChecker::IsMixedFormAction(
         "Mixed Content: The page at '%s' was loaded over a secure connection, "
         "but contains a form that targets an insecure endpoint '%s'. This "
         "endpoint should be made available over a secure connection.",
-        MainResourceUrlForFrame(mixed_frame).ElidedString().Utf8().data(),
-        url.ElidedString().Utf8().data());
+        MainResourceUrlForFrame(mixed_frame).ElidedString().Utf8().c_str(),
+        url.ElidedString().Utf8().c_str());
     frame->GetDocument()->AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                                mojom::ConsoleMessageLevel::kWarning, message));
@@ -774,8 +774,8 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
       "automatically upgraded to HTTPS, For more information see "
       "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
       "autoupgrade-mixed.md",
-      main_resource_url.ElidedString().Utf8().data(),
-      mixed_content_url.ElidedString().Utf8().data());
+      main_resource_url.ElidedString().Utf8().c_str(),
+      mixed_content_url.ElidedString().Utf8().c_str());
   return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                                 mojom::ConsoleMessageLevel::kWarning, message);
 }
@@ -792,8 +792,8 @@ MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
       "information see "
       "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
       "autoupgrade-mixed.md",
-      main_resource_url.ElidedString().Utf8().data(),
-      mixed_content_url.ElidedString().Utf8().data());
+      main_resource_url.ElidedString().Utf8().c_str(),
+      mixed_content_url.ElidedString().Utf8().c_str());
   return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                                 mojom::ConsoleMessageLevel::kWarning, message);
 }

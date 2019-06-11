@@ -226,7 +226,7 @@ void FormData::AppendFromElement(const String& name, const String& value) {
       MakeGarbageCollected<Entry>(Normalize(name), Normalize(value)));
 }
 
-CString FormData::Encode(const String& string) const {
+std::string FormData::Encode(const String& string) const {
   return encoding_.Encode(string, WTF::kEntitiesForUnencodables);
 }
 
@@ -307,8 +307,8 @@ scoped_refptr<EncodedFormData> FormData::EncodeMultiPartFormData() {
                               entry->GetBlob()->GetBlobDataHandle());
       }
     } else {
-      CString encoded_value = Encode(entry->Value());
-      form_data->AppendData(encoded_value.data(), encoded_value.length());
+      std::string encoded_value = Encode(entry->Value());
+      form_data->AppendData(encoded_value.c_str(), encoded_value.length());
     }
     form_data->AppendData("\r\n", 2);
   }
