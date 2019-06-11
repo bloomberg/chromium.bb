@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ws/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
+#include "services/viz/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
 
 #include <utility>
 
@@ -18,7 +18,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/buffer_format_util.h"
 
-namespace ws {
+namespace viz {
 namespace {
 
 void NotifyDestructionOnCorrectThread(
@@ -173,4 +173,4 @@ void ClientGpuMemoryBufferManager::SetDestructionSyncToken(
       sync_token);
 }
 
-}  // namespace ws
+}  // namespace viz

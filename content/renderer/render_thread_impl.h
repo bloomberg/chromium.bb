@@ -105,14 +105,11 @@ class Extension;
 
 namespace viz {
 class BeginFrameSource;
-class RasterContextProvider;
-class SyntheticBeginFrameSource;
-}
-
-namespace ws {
 class ContextProviderCommandBuffer;
 class Gpu;
-}  // namespace ws
+class RasterContextProvider;
+class SyntheticBeginFrameSource;
+}  // namespace viz
 
 namespace content {
 class AecDumpMessageFilter;
@@ -361,7 +358,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
-  scoped_refptr<ws::ContextProviderCommandBuffer>
+  scoped_refptr<viz::ContextProviderCommandBuffer>
   SharedMainThreadContextProvider();
 
   // AudioRendererMixerManager instance which manages renderer side mixer
@@ -627,7 +624,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;
 #endif
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> shared_main_thread_contexts_;
+  scoped_refptr<viz::ContextProviderCommandBuffer> shared_main_thread_contexts_;
 
   base::ObserverList<RenderThreadObserver>::Unchecked observers_;
 
@@ -646,7 +643,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // memory saving mode.
   std::unique_ptr<LowMemoryModeController> low_memory_mode_controller_;
 
-  std::unique_ptr<ws::Gpu> gpu_;
+  std::unique_ptr<viz::Gpu> gpu_;
 
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;

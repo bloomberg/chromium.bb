@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ws/public/cpp/gpu/gpu.h"
+#include "services/viz/public/cpp/gpu/gpu.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ws {
+namespace viz {
 
 namespace {
 
@@ -349,4 +349,4 @@ TEST_F(GpuTest, DestroyGpuWithPendingRequest) {
   EXPECT_EQ(0, counter);
 }
 
-}  // namespace ws
+}  // namespace viz

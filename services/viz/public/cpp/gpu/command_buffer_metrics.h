@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_WS_PUBLIC_CPP_GPU_COMMAND_BUFFER_METRICS_H_
-#define SERVICES_WS_PUBLIC_CPP_GPU_COMMAND_BUFFER_METRICS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_GPU_COMMAND_BUFFER_METRICS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_GPU_COMMAND_BUFFER_METRICS_H_
 
 #include <string>
 
 #include "gpu/command_buffer/common/constants.h"
 
-namespace ws {
+namespace viz {
 namespace command_buffer_metrics {
 
 // A rough classification for what the context is used for. These enum types
@@ -43,6 +43,6 @@ void UmaRecordContextLost(ContextType type,
                           gpu::error::ContextLostReason reason);
 
 }  // namespace command_buffer_metrics
-}  // namespace ws
+}  // namespace viz
 
-#endif  // SERVICES_WS_PUBLIC_CPP_GPU_COMMAND_BUFFER_METRICS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_GPU_COMMAND_BUFFER_METRICS_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_WS_PUBLIC_CPP_GPU_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
-#define SERVICES_WS_PUBLIC_CPP_GPU_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_GPU_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
+#define SERVICES_VIZ_PUBLIC_CPP_GPU_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
 #include <set>
@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
-#include "services/ws/public/mojom/gpu.mojom.h"
+#include "services/viz/public/interfaces/gpu.mojom.h"
 
 namespace base {
 class WaitableEvent;
@@ -24,7 +24,7 @@ namespace gpu {
 class GpuMemoryBufferSupport;
 }
 
-namespace ws {
+namespace viz {
 
 // Implements gpu::GpuMemoryBufferManager based on a given
 // mojom::GpuMemoryBufferFactory
@@ -70,6 +70,6 @@ class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   DISALLOW_COPY_AND_ASSIGN(ClientGpuMemoryBufferManager);
 };
 
-}  // namespace ws
+}  // namespace viz
 
-#endif  // SERVICES_WS_PUBLIC_CPP_GPU_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_GPU_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_

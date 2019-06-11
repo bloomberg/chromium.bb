@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 
 #include <stddef.h>
 
@@ -39,14 +39,14 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/skia_bindings/gles2_implementation_with_grcontext_support.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
-#include "services/ws/public/cpp/gpu/command_buffer_metrics.h"
+#include "services/viz/public/cpp/gpu/command_buffer_metrics.h"
 #include "third_party/skia/include/core/SkTraceMemoryDump.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/trace_util.h"
 
 class SkDiscardableMemory;
 
-namespace ws {
+namespace viz {
 
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     scoped_refptr<gpu::GpuChannelHost> channel,
@@ -283,7 +283,7 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
   }
 
   cache_controller_ =
-      std::make_unique<viz::ContextCacheController>(impl_, task_runner);
+      std::make_unique<ContextCacheController>(impl_, task_runner);
 
   // TODO(crbug.com/868192): SetLostContextCallback should probably work on
   // WebGPU contexts too.
@@ -415,7 +415,7 @@ ContextProviderCommandBuffer::SharedImageInterface() {
   return command_buffer_->channel()->shared_image_interface();
 }
 
-viz::ContextCacheController* ContextProviderCommandBuffer::CacheController() {
+ContextCacheController* ContextProviderCommandBuffer::CacheController() {
   CheckValidThreadOrLockAcquired();
   return cache_controller_.get();
 }
@@ -467,13 +467,12 @@ void ContextProviderCommandBuffer::OnLostContext() {
                                                state.context_lost_reason);
 }
 
-void ContextProviderCommandBuffer::AddObserver(viz::ContextLostObserver* obs) {
+void ContextProviderCommandBuffer::AddObserver(ContextLostObserver* obs) {
   CheckValidThreadOrLockAcquired();
   observers_.AddObserver(obs);
 }
 
-void ContextProviderCommandBuffer::RemoveObserver(
-    viz::ContextLostObserver* obs) {
+void ContextProviderCommandBuffer::RemoveObserver(ContextLostObserver* obs) {
   CheckValidThreadOrLockAcquired();
   observers_.RemoveObserver(obs);
 }
@@ -506,4 +505,4 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
   return true;
 }
 
-}  // namespace ws
+}  // namespace viz

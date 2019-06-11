@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ws/public/cpp/gpu/command_buffer_metrics.h"
+#include "services/viz/public/cpp/gpu/command_buffer_metrics.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
 
-namespace ws {
+namespace viz {
 namespace command_buffer_metrics {
 
 namespace {
 
-void RecordContextLost(ContextType type, viz::ContextLostReason reason) {
+void RecordContextLost(ContextType type, ContextLostReason reason) {
   switch (type) {
     case ContextType::BROWSER_COMPOSITOR:
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.BrowserCompositor", reason);
@@ -100,16 +100,15 @@ std::string ContextTypeToString(ContextType type) {
 }
 
 void UmaRecordContextInitFailed(ContextType type) {
-  RecordContextLost(type, viz::CONTEXT_INIT_FAILED);
+  RecordContextLost(type, CONTEXT_INIT_FAILED);
 }
 
 void UmaRecordContextLost(ContextType type,
                           gpu::error::Error error,
                           gpu::error::ContextLostReason reason) {
-  viz::ContextLostReason converted_reason =
-      viz::GetContextLostReason(error, reason);
+  ContextLostReason converted_reason = GetContextLostReason(error, reason);
   RecordContextLost(type, converted_reason);
 }
 
 }  // namespace command_buffer_metrics
-}  // namespace ws
+}  // namespace viz

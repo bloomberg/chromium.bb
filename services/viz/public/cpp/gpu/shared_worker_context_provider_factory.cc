@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ws/public/cpp/gpu/shared_worker_context_provider_factory.h"
+#include "services/viz/public/cpp/gpu/shared_worker_context_provider_factory.h"
 
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/base/ui_base_features.h"
 
-namespace ws {
+namespace viz {
 namespace {
 
-bool CheckWorkerContextLost(viz::RasterContextProvider* context_provider) {
+bool CheckWorkerContextLost(RasterContextProvider* context_provider) {
   if (!context_provider)
     return false;
 
-  viz::RasterContextProvider::ScopedRasterContextLock lock(context_provider);
+  RasterContextProvider::ScopedRasterContextLock lock(context_provider);
   return lock.RasterInterface()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
@@ -28,7 +28,7 @@ SharedWorkerContextProviderFactory::SharedWorkerContextProviderFactory(
     int32_t stream_id,
     gpu::SchedulingPriority priority,
     const GURL& identifying_url,
-    ws::command_buffer_metrics::ContextType context_type)
+    command_buffer_metrics::ContextType context_type)
     : stream_id_(stream_id),
       priority_(priority),
       identifying_url_(identifying_url),
@@ -68,7 +68,7 @@ gpu::ContextResult SharedWorkerContextProviderFactory::Validate(
   return result;
 }
 
-scoped_refptr<viz::RasterContextProvider>
+scoped_refptr<RasterContextProvider>
 SharedWorkerContextProviderFactory::CreateContextProvider(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -79,7 +79,7 @@ SharedWorkerContextProviderFactory::CreateContextProvider(
     bool support_gles2_interface,
     bool support_raster_interface,
     bool support_grcontext,
-    ws::command_buffer_metrics::ContextType type) {
+    command_buffer_metrics::ContextType type) {
   DCHECK(gpu_channel_host);
 
   gpu::ContextCreationAttribs attributes;
@@ -99,10 +99,10 @@ SharedWorkerContextProviderFactory::CreateContextProvider(
 
   constexpr bool automatic_flushes = false;
 
-  return base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
+  return base::MakeRefCounted<ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), gpu_memory_buffer_manager, stream_id_,
       priority_, surface_handle, identifying_url_, automatic_flushes,
       support_locking, support_grcontext, memory_limits, attributes, type);
 }
 
-}  // namespace ws
+}  // namespace viz

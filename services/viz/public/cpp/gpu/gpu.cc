@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ws/public/cpp/gpu/gpu.h"
+#include "services/viz/public/cpp/gpu/gpu.h"
 
 #include <memory>
 #include <string>
@@ -17,11 +17,11 @@
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
-#include "services/ws/public/mojom/gpu.mojom.h"
+#include "services/viz/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/interfaces/gpu.mojom.h"
 
-namespace ws {
+namespace viz {
 
 // Encapsulates a mojom::GpuPtr object that will be used on the IO thread. This
 // is required because we can't install an error handler on a
@@ -277,7 +277,7 @@ std::unique_ptr<Gpu> Gpu::Create(
   return base::WrapUnique(new Gpu(std::move(gpu_ptr), std::move(task_runner)));
 }
 
-scoped_refptr<ws::ContextProviderCommandBuffer> Gpu::CreateContextProvider(
+scoped_refptr<ContextProviderCommandBuffer> Gpu::CreateContextProvider(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
   int32_t stream_id = 0;
   gpu::SchedulingPriority stream_priority = gpu::SchedulingPriority::kNormal;
@@ -401,4 +401,4 @@ void Gpu::OnEstablishedGpuChannel() {
     std::move(callback).Run(gpu_channel_);
 }
 
-}  // namespace ws
+}  // namespace viz

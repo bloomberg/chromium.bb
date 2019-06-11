@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_WS_PUBLIC_CPP_GPU_CONTEXT_PROVIDER_COMMAND_BUFFER_H_
-#define SERVICES_WS_PUBLIC_CPP_GPU_CONTEXT_PROVIDER_COMMAND_BUFFER_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_GPU_CONTEXT_PROVIDER_COMMAND_BUFFER_H_
+#define SERVICES_VIZ_PUBLIC_CPP_GPU_CONTEXT_PROVIDER_COMMAND_BUFFER_H_
 
 #include <stdint.h>
 
@@ -22,7 +22,7 @@
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "services/ws/public/cpp/gpu/command_buffer_metrics.h"
+#include "services/viz/public/cpp/gpu/command_buffer_metrics.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
 
@@ -53,14 +53,14 @@ namespace skia_bindings {
 class GrContextForGLES2Interface;
 }
 
-namespace ws {
+namespace viz {
 
-// Implementation of viz::ContextProvider that provides a GL implementation
+// Implementation of ContextProvider that provides a GL implementation
 // over command buffer to the GPU process.
 class ContextProviderCommandBuffer
     : public base::RefCountedThreadSafe<ContextProviderCommandBuffer>,
-      public viz::ContextProvider,
-      public viz::RasterContextProvider,
+      public ContextProvider,
+      public RasterContextProvider,
       public base::trace_event::MemoryDumpProvider {
  public:
   ContextProviderCommandBuffer(
@@ -82,7 +82,7 @@ class ContextProviderCommandBuffer
   // on the default framebuffer.
   uint32_t GetCopyTextureInternalFormat();
 
-  // viz::ContextProvider / viz::RasterContextProvider implementation.
+  // ContextProvider / RasterContextProvider implementation.
   void AddRef() const override;
   void Release() const override;
   gpu::ContextResult BindToCurrentThread() override;
@@ -91,12 +91,12 @@ class ContextProviderCommandBuffer
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   gpu::SharedImageInterface* SharedImageInterface() override;
-  viz::ContextCacheController* CacheController() override;
+  ContextCacheController* CacheController() override;
   base::Lock* GetLock() override;
   const gpu::Capabilities& ContextCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
-  void AddObserver(viz::ContextLostObserver* obs) override;
-  void RemoveObserver(viz::ContextLostObserver* obs) override;
+  void AddObserver(ContextLostObserver* obs) override;
+  void RemoveObserver(ContextLostObserver* obs) override;
 
   gpu::webgpu::WebGPUInterface* WebGPUInterface();
 
@@ -161,11 +161,11 @@ class ContextProviderCommandBuffer
   std::unique_ptr<gpu::webgpu::WebGPUInterface> webgpu_interface_;
 
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
-  std::unique_ptr<viz::ContextCacheController> cache_controller_;
+  std::unique_ptr<ContextCacheController> cache_controller_;
 
-  base::ObserverList<viz::ContextLostObserver>::Unchecked observers_;
+  base::ObserverList<ContextLostObserver>::Unchecked observers_;
 };
 
-}  // namespace ws
+}  // namespace viz
 
-#endif  // SERVICES_WS_PUBLIC_CPP_GPU_CONTEXT_PROVIDER_COMMAND_BUFFER_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_GPU_CONTEXT_PROVIDER_COMMAND_BUFFER_H_

@@ -187,8 +187,8 @@ jumbo_source_set("browser") {
     "//services/video_capture/public/uma",
     "//services/viz/privileged/interfaces",
     "//services/viz/public/cpp:manifest",
+    "//services/viz/public/cpp/gpu",
     "//services/viz/public/interfaces",
-    "//services/ws/public/cpp/gpu",
     "//skia",
     "//sql",
     "//storage/browser",
@@ -2608,7 +2608,6 @@ jumbo_source_set("browser") {
 
   if (use_aura) {
     deps += [
-      "//services/ws/public/mojom",
       "//ui/aura",
       "//ui/aura_extra",
       "//ui/strings",

@@ -380,7 +380,6 @@ jumbo_static_library("test_support") {
     "//net:test_support",
     "//services/audio/public/mojom",
     "//services/device/public/mojom",
-    "//services/ws/public/cpp/gpu",
 
     # TODO(jam): remove this by adding a public header for the NetworkContext
     # public testing method.
@@ -389,6 +388,7 @@ jumbo_static_library("test_support") {
     "//services/network/public/mojom",
     "//services/proxy_resolver:lib",
     "//services/service_manager/public/cpp",
+    "//services/viz/public/cpp/gpu",
     "//services/viz/public/interfaces",
     "//skia",
     "//storage/browser",
@@ -1081,7 +1081,7 @@ test("content_browsertests") {
     "//services/video_capture/public/cpp:mocks",
     "//services/video_capture/public/mojom:constants",
     "//services/viz/privileged/interfaces",
-    "//services/ws/public/cpp/gpu",
+    "//services/viz/public/cpp/gpu",
     "//storage/browser",
     "//storage/browser:test_support",
     "//testing/gmock",
