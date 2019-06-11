@@ -40,6 +40,8 @@ component("app_shim") {
     "ns_view_ids.h",
     "ns_view_ids.mm",
     "remote_cocoa_app_shim_export.h",
+    "select_file_dialog_bridge.h",
+    "select_file_dialog_bridge.mm",
     "views_nswindow_delegate.h",
     "views_nswindow_delegate.mm",
     "views_scrollbar_bridge.h",
@@ -60,6 +62,7 @@ component("app_shim") {
     "//ui/base/ime:ime",
     "//ui/events",
     "//ui/gfx",
+    "//ui/strings:ui_strings_grit",
   ]
   libs = [
     "Cocoa.framework",

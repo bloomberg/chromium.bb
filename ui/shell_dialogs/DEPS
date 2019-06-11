@@ -1,7 +1,6 @@
 include_rules = [
   "+jni",
-  "+components/remote_cocoa/browser",
-  "+components/remote_cocoa/common",
+  "+components/remote_cocoa",
   "+mojo/core/embedder",
   "+mojo/public/cpp/bindings",
   "+ui/android/window_android.h",

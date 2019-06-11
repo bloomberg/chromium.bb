@@ -5,14 +5,10 @@
 #ifndef UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_MAC_H_
 #define UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_MAC_H_
 
-#import <Cocoa/Cocoa.h>
-
 #include <list>
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/remote_cocoa/common/select_file_dialog.mojom.h"
@@ -20,74 +16,11 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
 
-@class ExtensionDropdownHandler;
-@class SelectFileDialogDelegate;
-
 namespace ui {
 
 namespace test {
 class SelectFileDialogMacTest;
 }  // namespace test
-
-// TODO(https://crbug.com/913303): Move this structure to
-// components/remote_cocoa. This structure provides a C++ (or mojo) interface
-// for creating a NSSavePanel.
-class SHELL_DIALOGS_EXPORT SavePanelBridge
-    : public remote_cocoa::mojom::SelectFileDialog {
- public:
-  // Callback made from the NSSavePanel's completion block.
-  using PanelEndedCallback =
-      base::OnceCallback<void(bool was_cancelled,
-                              const std::vector<base::FilePath>& files,
-                              int index)>;
-
-  SavePanelBridge(NSWindow* owning_window);
-  ~SavePanelBridge() override;
-
-  // mojom::SelectFileDialog:
-  void Show(remote_cocoa::mojom::SelectFileDialogType type,
-            const base::string16& title,
-            const base::FilePath& default_path,
-            remote_cocoa::mojom::SelectFileTypeInfoPtr file_types,
-            int file_type_index,
-            const base::FilePath::StringType& default_extension,
-            ShowCallback callback) override;
-
-  // Return the most recently created NSSavePanel. There is no guarantee that
-  // this will be a valid pointer.
-  static NSSavePanel* GetLastCreatedNativePanelForTesting();
-
- private:
-  // Sets the accessory view for |dialog_| and sets
-  // |extension_dropdown_handler_|.
-  void SetAccessoryView(remote_cocoa::mojom::SelectFileTypeInfoPtr file_types,
-                        int file_type_index,
-                        const base::FilePath::StringType& default_extension);
-
-  // Called when the panel completes.
-  void OnPanelEnded(bool did_cancel);
-
-  // The callback to make when this dialog ends.
-  ShowCallback show_callback_;
-
-  // Type type of this dialog.
-  remote_cocoa::mojom::SelectFileDialogType type_;
-
-  // The NSSavePanel that |this| tracks.
-  base::scoped_nsobject<NSSavePanel> panel_;
-
-  // The parent window for |panel_|.
-  base::scoped_nsobject<NSWindow> owning_window_;
-
-  // The delegate for |panel|.
-  base::scoped_nsobject<SelectFileDialogDelegate> delegate_;
-
-  // Extension dropdown handler corresponding to this file dialog.
-  base::scoped_nsobject<ExtensionDropdownHandler> extension_dropdown_handler_;
-
-  base::WeakPtrFactory<SavePanelBridge> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(SavePanelBridge);
-};
 
 // Implementation of SelectFileDialog that shows Cocoa dialogs for choosing a
 // file or folder.

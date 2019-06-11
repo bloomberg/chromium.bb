@@ -76,6 +76,7 @@ jumbo_component("shell_dialogs") {
       "AppKit.framework",
     ]
     deps += [
+      "//components/remote_cocoa/app_shim",
       "//components/remote_cocoa/browser",
       "//components/remote_cocoa/common:mojo",
     ]
@@ -106,4 +107,8 @@ test("shell_dialogs_unittests") {
     "//ui/resources:ui_test_pak_data",
     "//ui/strings",
   ]
+
+  if (is_mac) {
+    deps += [ "//components/remote_cocoa/app_shim" ]
+  }
 }

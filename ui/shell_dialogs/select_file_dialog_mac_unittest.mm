@@ -4,8 +4,6 @@
 
 #import "ui/shell_dialogs/select_file_dialog_mac.h"
 
-#include <vector>
-
 #include "base/files/file_util.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -16,6 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/remote_cocoa/app_shim/select_file_dialog_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
@@ -113,7 +112,8 @@ class SelectFileDialogMacTest : public testing::Test,
   // Returns the most recently created NSSavePanel.
   NSSavePanel* GetPanel() const {
     DCHECK_GE(GetActivePanelCount(), 1lu);
-    return SavePanelBridge::GetLastCreatedNativePanelForTesting();
+    return remote_cocoa::SelectFileDialogBridge::
+        GetLastCreatedNativePanelForTesting();
   }
 
   void ResetDialog() {
