@@ -2065,6 +2065,7 @@ void LocalFrameView::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
 }
 
 void LocalFrameView::NotifyResizeObservers() {
+  TRACE_EVENT0("blink,benchmark", "LocalFrameView::NotifyResizeObservers");
   // Controller exists only if ResizeObserver was created.
   if (!GetFrame().GetDocument()->GetResizeObserverController())
     return;
