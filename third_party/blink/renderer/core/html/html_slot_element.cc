@@ -303,14 +303,12 @@ void HTMLSlotElement::DetachLayoutTree(bool performing_reattach) {
 
 void HTMLSlotElement::RebuildDistributedChildrenLayoutTrees(
     WhitespaceAttacher& whitespace_attacher) {
-  if (!SupportsAssignment())
-    return;
-
-  const HeapVector<Member<Node>>& assigned_nodes = AssignedNodes();
+  DCHECK(SupportsAssignment());
 
   // This loop traverses the nodes from right to left for the same reason as the
   // one described in ContainerNode::RebuildChildrenLayoutTrees().
-  for (auto it = assigned_nodes.rbegin(); it != assigned_nodes.rend(); ++it) {
+  for (auto it = flat_tree_children_.rbegin(); it != flat_tree_children_.rend();
+       ++it) {
     RebuildLayoutTreeForChild(*it, whitespace_attacher);
   }
 }
