@@ -287,4 +287,5 @@ js_unit_tests("unit_tests") {
     ":multi_metadata_provider_unittest",
     ":thumbnail_model_unittest",
   ]
+  mocks = [ "metadata_dispatcher_mock_deps.js" ]
 }

@@ -2,25 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// When running this code in unit tests, `importScripts` is not defined, but
-// that doesn't really matter since the dependent file is already included by
-// the build system.
-if (typeof importScripts !== 'undefined') {
-  /**
-   * Protocol + host parts of extension URL.
-   *
-   * The __FILE_NAME suffix is because the same string constant is used in
-   * multiple JS files, and JavaScript doesn't have C's #define mechanism (which
-   * only affects the file its in). Without the suffix, we'd have "constant
-   * FILE_MANAGER_HOST assigned a value more than once" compiler warnings.
-   */
-  const FILE_MANAGER_HOST__EXIF_PARSER =
-      'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
+/**
+ * Protocol + host parts of extension URL.
+ *
+ * The __FILE_NAME suffix is because the same string constant is used in
+ * multiple JS files, and JavaScript doesn't have C's #define mechanism (which
+ * only affects the file its in). Without the suffix, we'd have "constant
+ * FILE_MANAGER_HOST assigned a value more than once" compiler warnings.
+ */
+const FILE_MANAGER_HOST__EXIF_PARSER =
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
 
-  importScripts(
-      FILE_MANAGER_HOST__EXIF_PARSER +
-      '/foreground/js/metadata/exif_constants.js');
-}
+importScripts(
+    FILE_MANAGER_HOST__EXIF_PARSER +
+    '/foreground/js/metadata/exif_constants.js');
+
 
 /** @final */
 class ExifParser extends ImageParser {
