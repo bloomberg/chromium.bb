@@ -2081,7 +2081,6 @@ static_library("test_support") {
     "lock_screen_action/test_lock_screen_action_background_controller.cc",
     "lock_screen_action/test_lock_screen_action_background_controller.h",
     "login/login_screen_test_api.cc",
-    "login/login_screen_test_api.h",
     "metrics/task_switch_time_tracker_test_api.cc",
     "metrics/task_switch_time_tracker_test_api.h",
     "metrics/user_metrics_recorder_test_api.cc",

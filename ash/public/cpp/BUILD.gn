@@ -108,6 +108,7 @@ component("cpp") {
     "login_screen_client.h",
     "login_screen_model.cc",
     "login_screen_model.h",
+    "login_screen_test_api.h",
     "login_types.cc",
     "login_types.h",
     "media_client.h",

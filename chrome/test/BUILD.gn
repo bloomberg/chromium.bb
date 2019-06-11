@@ -263,8 +263,6 @@ static_library("test_support") {
     sources += [
       "../browser/chromeos/accessibility/speech_monitor.cc",
       "../browser/chromeos/accessibility/speech_monitor.h",
-      "../browser/chromeos/login/login_shelf_test_helper.cc",
-      "../browser/chromeos/login/login_shelf_test_helper.h",
       "../browser/chromeos/ownership/fake_owner_settings_service.cc",
       "../browser/chromeos/ownership/fake_owner_settings_service.h",
       "../browser/chromeos/settings/scoped_cros_settings_test_helper.cc",
@@ -2048,8 +2046,6 @@ if (!is_android) {
         "../browser/chromeos/login/test/local_policy_test_server_mixin.h",
         "../browser/chromeos/login/test/login_manager_mixin.cc",
         "../browser/chromeos/login/test/login_manager_mixin.h",
-        "../browser/chromeos/login/test/login_screen_tester.cc",
-        "../browser/chromeos/login/test/login_screen_tester.h",
         "../browser/chromeos/login/test/network_portal_detector_mixin.cc",
         "../browser/chromeos/login/test/network_portal_detector_mixin.h",
         "../browser/chromeos/login/test/offline_gaia_test_mixin.cc",
