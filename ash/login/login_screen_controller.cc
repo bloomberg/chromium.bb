@@ -398,6 +398,10 @@ void LoginScreenController::ShowAccountAccessHelpApp() {
   client_->ShowAccountAccessHelpApp();
 }
 
+void LoginScreenController::ShowLockScreenNotificationSettings() {
+  client_->ShowLockScreenNotificationSettings();
+}
+
 void LoginScreenController::FocusOobeDialog() {
   if (!client_)
     return;

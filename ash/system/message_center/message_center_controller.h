@@ -61,9 +61,6 @@ class ASH_EXPORT MessageCenterController
   void GetArcAppIdByPackageName(const std::string& package_name,
                                 GetAppIdByPackageNameCallback callback);
 
-  // Shows the lock screen notification settings in Chrome OS setting.
-  void ShowLockScreenNotificationSettings();
-
   InactiveUserNotificationBlocker*
   inactive_user_notification_blocker_for_testing() {
     return inactive_user_notification_blocker_.get();

@@ -63,7 +63,4 @@ interface AshMessageCenterClient {
 
   // Gets ARC app id from a given package name.
   GetArcAppIdByPackageName(string package_name) => (string app_id);
-
-  // Show the lockscreen notification setting on the Chrome OS setting.
-  ShowLockScreenNotificationSettings();
 };

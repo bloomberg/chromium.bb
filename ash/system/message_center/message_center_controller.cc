@@ -177,11 +177,6 @@ void MessageCenterController::GetArcAppIdByPackageName(
   client_->GetArcAppIdByPackageName(package_name, std::move(callback));
 }
 
-void MessageCenterController::ShowLockScreenNotificationSettings() {
-  DCHECK(client_.is_bound());
-  client_->ShowLockScreenNotificationSettings();
-}
-
 void MessageCenterController::AddNotifierSettingsListener(
     NotifierSettingsListener* listener) {
   DCHECK(listener);

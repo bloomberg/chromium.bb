@@ -238,11 +238,6 @@ void ChromeAshMessageCenterClient::GetArcAppIdByPackageName(
           ->GetAppIdByPackageName(package_name));
 }
 
-void ChromeAshMessageCenterClient::ShowLockScreenNotificationSettings() {
-  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      ProfileManager::GetActiveUserProfile(), chrome::kLockScreenSubPage);
-}
-
 void ChromeAshMessageCenterClient::OnIconImageUpdated(
     const NotifierId& notifier_id,
     const gfx::ImageSkia& image) {

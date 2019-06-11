@@ -92,6 +92,7 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   void ShowFeedback();
   void ShowResetScreen();
   void ShowAccountAccessHelpApp();
+  void ShowLockScreenNotificationSettings();
   void FocusOobeDialog();
   void NotifyUserActivity();
 
