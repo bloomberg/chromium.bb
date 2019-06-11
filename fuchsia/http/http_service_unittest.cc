@@ -387,16 +387,17 @@ TEST_F(HttpServiceTest, MultipleRequests) {
     url_loaders[i]->Start(
         std::move(request),
         [&requests_done, &run_loop](oldhttp::URLResponse response) {
-          EXPECT_EQ(response.status_code, 200u);
-          if (response.body->is_buffer()) {
-            CheckResponseBuffer(response, "hello");
-          } else {
-            CheckResponseStream(response, "hello");
-          }
           requests_done++;
           if (requests_done == 100) {
             // Last request signals the run_loop to exit.
             run_loop.Quit();
+          }
+
+          ASSERT_EQ(response.status_code, 200u);
+          if (response.body->is_buffer()) {
+            CheckResponseBuffer(response, "hello");
+          } else {
+            CheckResponseStream(response, "hello");
           }
         });
   }
