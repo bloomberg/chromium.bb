@@ -16393,6 +16393,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'policy_atomic_group_definitions': [
     {
+      'id': 1,
       'name': 'Homepage',
       'policies': [
         'HomepageLocation',
@@ -16402,6 +16403,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 2,
       'name': 'RemoteAccess',
       'policies': [
         'RemoteAccessClientFirewallTraversal',
@@ -16427,6 +16429,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 3,
       'name': 'PasswordManager',
       'policies': [
         'PasswordManagerEnabled',
@@ -16434,6 +16437,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 4,
       'name': 'Proxy',
       'policies': [
         'ProxyMode',
@@ -16445,6 +16449,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 5,
       'name': 'Extensions',
       'policies': [
         'ExtensionInstallBlacklist',
@@ -16457,6 +16462,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 6,
       'name': 'RestoreOnStartupGroup',
       'policies': [
         'RestoreOnStartup',
@@ -16464,6 +16470,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 7,
       'name': 'DefaultSearchProvider',
       'policies': [
         'DefaultSearchProviderEnabled',
@@ -16485,6 +16492,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 8,
       'name': 'ImageSettings',
       'policies': [
         'DefaultImagesSetting',
@@ -16493,6 +16501,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 9,
       'name': 'CookiesSettings',
       'policies': [
         'DefaultCookiesSetting',
@@ -16502,6 +16511,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 10,
       'name': 'JavascriptSettings',
       'policies': [
         'DefaultJavaScriptSetting',
@@ -16510,6 +16520,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 11,
       'name': 'PluginsSettings',
       'policies': [
         'DefaultPluginsSetting',
@@ -16518,6 +16529,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 12,
       'name': 'PopupsSettings',
       'policies': [
         'DefaultPopupsSetting',
@@ -16526,6 +16538,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 13,
       'name': 'KeygenSettings',
       'policies': [
         'DefaultKeygenSetting',
@@ -16534,6 +16547,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 14,
       'name': 'NotificationsSettings',
       'policies': [
         'DefaultNotificationsSetting',
@@ -16542,6 +16556,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 15,
       'name': 'WebUsbSettings',
       'policies': [
         'DefaultWebUsbGuardSetting',
@@ -16551,6 +16566,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 16,
       'name': 'NativeMessaging',
       'policies': [
         'NativeMessagingBlacklist',
@@ -16559,6 +16575,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 17,
       'name': 'Drive',
       'policies': [
         'DriveDisabled',
@@ -16566,6 +16583,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 18,
       'name': 'Attestation',
       'policies': [
         'AttestationEnabledForDevice',
@@ -16575,6 +16593,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 19,
       'name': 'ContentPack',
       'policies': [
         'ContentPackDefaultFilteringBehavior',
@@ -16583,6 +16602,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 20,
       'name': 'SupervisedUsers',
       'policies': [
         'SupervisedUsersEnabled',
@@ -16591,6 +16611,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 21,
       'name': 'GoogleCast',
       'policies': [
         'CastReceiverEnabled',
@@ -16598,6 +16619,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 22,
       'name': 'QuickUnlock',
       'policies': [
         'QuickUnlockModeWhitelist',
@@ -16605,6 +16627,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 23,
       'name': 'PinUnlock',
       'policies': [
         'PinUnlockMinimumLength',
@@ -16613,6 +16636,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 24,
       'name': 'SafeBrowsing',
       'policies': [
         'SafeBrowsingEnabled',
@@ -16622,6 +16646,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 25,
       'name': 'PasswordProtection',
       'policies': [
         'PasswordProtectionWarningTrigger',
@@ -16630,6 +16655,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 26,
       'name': 'NetworkFileShares',
       'policies': [
         'NetworkFileSharesAllowed',
@@ -16639,6 +16665,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 27,
       'name': 'ChromeReportingExtension',
       'policies': [
         'ReportVersionData',
@@ -16651,6 +16678,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 28,
       'name': 'BrowserSwitcher',
       'policies': [
         'AlternativeBrowserPath',
@@ -16668,6 +16696,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 29,
       'name': 'PluginVm',
       'policies': [
         'PluginVmAllowed',
@@ -16676,6 +16705,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 30,
       'name': 'DeviceSAML',
       'policies': [
         'DeviceSamlLoginAuthenticationType',
@@ -16683,6 +16713,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 31,
       'name': 'DeviceLoginScreenOrigins',
       'policies': [
         'DeviceLoginScreenIsolateOrigins',
@@ -16690,6 +16721,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 32,
       'name': 'UserAndDeviceReporting',
       'policies': [
         'ReportDeviceVersionInfo',
@@ -16712,6 +16744,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 33,
       'name': 'DeviceWiFi',
       'policies': [
         'DeviceWiFiFastTransitionEnabled',
@@ -16719,6 +16752,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 34,
       'name': 'Kiosk',
       'policies': [
         'DeviceLocalAccounts',
@@ -16729,6 +16763,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ],
     },
     {
+      'id': 35,
       'name': 'DateAndTime',
       'policies': [
         'SystemTimezone',
@@ -16736,6 +16771,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ]
     },
     {
+      'id': 36,
       'name': 'Display',
       'policies': [
         'DeviceDisplayResolution',
@@ -16743,6 +16779,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       ]
     },
     {
+      'id': 37,
       'name': 'ActiveDirectoryManagement',
       'policies': [
         'DeviceMachinePasswordChangeRate',
@@ -16755,5 +16792,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546],
-  'highest_id_currently_used': 568
+  'highest_id_currently_used': 568,
+  'highest_atomic_group_id_currently_used': 37
 }

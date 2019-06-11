@@ -47,8 +47,7 @@ class POLICY_EXPORT PolicyStatisticsCollector {
  protected:
   // protected virtual for mocking.
   virtual void RecordPolicyUse(int id);
-
-  // protected virtual for mocking.
+  virtual void RecordPolicyGroupWithConflicts(int id);
   virtual void RecordPolicyIgnoredByAtomicGroup(int id);
 
  private:
