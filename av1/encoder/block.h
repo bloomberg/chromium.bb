@@ -176,6 +176,17 @@ typedef struct {
   int is_global[2];
 } COMP_RD_STATS;
 
+// Struct for buffers used by compound_type_rd() function.
+// For sizes and alignment of these arrays, refer to
+// alloc_compound_type_rd_buffers() function.
+typedef struct {
+  uint8_t *pred0;
+  uint8_t *pred1;
+  int16_t *residual1;          // src - pred1
+  int16_t *diff10;             // pred1 - pred0
+  uint8_t *tmp_best_mask_buf;  // backup of the best segmentation mask
+} CompoundTypeRdBuffers;
+
 struct inter_modes_info;
 typedef struct macroblock MACROBLOCK;
 struct macroblock {
@@ -252,6 +263,7 @@ struct macroblock {
   uint8_t *left_pred_buf;
 
   PALETTE_BUFFER *palette_buffer;
+  CompoundTypeRdBuffers comp_rd_buffer;
 
   CONV_BUF_TYPE *tmp_conv_dst;
   uint8_t *tmp_obmc_bufs[2];

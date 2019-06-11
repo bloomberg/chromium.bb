@@ -9683,22 +9683,11 @@ static INLINE int get_drl_cost(const MB_MODE_INFO *mbmi,
   return cost;
 }
 
-// Struct for buffers used by compound_type_rd() function.
-// For sizes and alignment of these arrays, refer to
-// alloc_compound_type_rd_buffers() function.
-typedef struct {
-  uint8_t *pred0;
-  uint8_t *pred1;
-  int16_t *residual1;          // src - pred1
-  int16_t *diff10;             // pred1 - pred0
-  uint8_t *tmp_best_mask_buf;  // backup of the best segmentation mask
-} CompoundTypeRdBuffers;
-
 static int compound_type_rd(
     const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_col,
     int mi_row, int_mv *cur_mv, int mode_search_mask, int masked_compound_used,
     const BUFFER_SET *orig_dst, const BUFFER_SET *tmp_dst,
-    CompoundTypeRdBuffers *buffers, int *rate_mv, int64_t *rd,
+    const CompoundTypeRdBuffers *buffers, int *rate_mv, int64_t *rd,
     RD_STATS *rd_stats, int64_t ref_best_rd, int *is_luma_interp_done,
     int64_t rd_thresh) {
   const AV1_COMMON *cm = &cpi->common;
@@ -10210,7 +10199,7 @@ static int64_t handle_inter_mode(
     BLOCK_SIZE bsize, RD_STATS *rd_stats, RD_STATS *rd_stats_y,
     RD_STATS *rd_stats_uv, int *disable_skip, int mi_row, int mi_col,
     HandleInterModeArgs *args, int64_t ref_best_rd, uint8_t *const tmp_buf,
-    CompoundTypeRdBuffers *rd_buffers, int64_t *best_est_rd,
+    const CompoundTypeRdBuffers *rd_buffers, int64_t *best_est_rd,
     const int do_tx_search, InterModesInfo *inter_modes_info) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -12491,35 +12480,6 @@ static int analyze_simple_trans_states(const AV1_COMP *cpi, MACROBLOCK *x) {
   return skip_ref;
 }
 
-static void alloc_compound_type_rd_buffers(AV1_COMMON *const cm,
-                                           CompoundTypeRdBuffers *const bufs) {
-  CHECK_MEM_ERROR(
-      cm, bufs->pred0,
-      (uint8_t *)aom_memalign(16, 2 * MAX_SB_SQUARE * sizeof(*bufs->pred0)));
-  CHECK_MEM_ERROR(
-      cm, bufs->pred1,
-      (uint8_t *)aom_memalign(16, 2 * MAX_SB_SQUARE * sizeof(*bufs->pred1)));
-  CHECK_MEM_ERROR(
-      cm, bufs->residual1,
-      (int16_t *)aom_memalign(32, MAX_SB_SQUARE * sizeof(*bufs->residual1)));
-  CHECK_MEM_ERROR(
-      cm, bufs->diff10,
-      (int16_t *)aom_memalign(32, MAX_SB_SQUARE * sizeof(*bufs->diff10)));
-  CHECK_MEM_ERROR(cm, bufs->tmp_best_mask_buf,
-                  (uint8_t *)aom_malloc(2 * MAX_SB_SQUARE *
-                                        sizeof(*bufs->tmp_best_mask_buf)));
-}
-
-static void release_compound_type_rd_buffers(
-    CompoundTypeRdBuffers *const bufs) {
-  aom_free(bufs->pred0);
-  aom_free(bufs->pred1);
-  aom_free(bufs->residual1);
-  aom_free(bufs->diff10);
-  aom_free(bufs->tmp_best_mask_buf);
-  av1_zero(*bufs);  // Set all pointers to NULL for safety.
-}
-
 #if !CONFIG_REALTIME_ONLY
 // Enables do_tx_search on a per-mode basis.
 static int do_tx_search_mode(int do_tx_search_global, int midx, int adaptive) {
@@ -12650,9 +12610,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   // Temporary buffers used by handle_inter_mode().
   uint8_t *const tmp_buf = get_buf_by_bd(xd, x->tmp_obmc_bufs[0]);
-
-  CompoundTypeRdBuffers rd_buffers;
-  alloc_compound_type_rd_buffers(cm, &rd_buffers);
 
   // The best RD found for the reference frame, among single reference modes.
   // Note that the 0-th element will contain a cut-off that is later used
@@ -12797,7 +12754,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         this_rd = handle_inter_mode(
             cpi, tile_data, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
             &disable_skip, mi_row, mi_col, &args, ref_best_rd, tmp_buf,
-            &rd_buffers, &best_est_rd, do_tx_search, inter_modes_info);
+            &x->comp_rd_buffer, &best_est_rd, do_tx_search, inter_modes_info);
 
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
@@ -12897,8 +12854,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (x->skip && !comp_pred) break;
   }
-
-  release_compound_type_rd_buffers(&rd_buffers);
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, do_tx_search_time);
@@ -13290,9 +13245,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   // Temporary buffers used by handle_inter_mode().
   uint8_t *const tmp_buf = get_buf_by_bd(xd, x->tmp_obmc_bufs[0]);
 
-  CompoundTypeRdBuffers rd_buffers;
-  alloc_compound_type_rd_buffers(cm, &rd_buffers);
-
   for (int midx = 0; midx < MAX_MODES; ++midx) {
     const MODE_DEFINITION *mode_order = &av1_mode_order[midx];
     this_mode = mode_order->mode;
@@ -13444,7 +13396,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         this_rd = handle_inter_mode(
             cpi, tile_data, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
             &disable_skip, mi_row, mi_col, &args, ref_best_rd, tmp_buf,
-            &rd_buffers, &best_est_rd, 0, inter_modes_info);
+            &x->comp_rd_buffer, &best_est_rd, 0, inter_modes_info);
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
         distortion2 = rd_stats.dist;
@@ -13522,8 +13474,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (x->skip && !comp_pred) break;
   }
-
-  release_compound_type_rd_buffers(&rd_buffers);
 
   inter_modes_info_sort(inter_modes_info, inter_modes_info->rd_idx_pair_arr);
   search_state.best_rd = INT64_MAX;

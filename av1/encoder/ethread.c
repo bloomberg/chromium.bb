@@ -454,6 +454,8 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
           cm, thread_data->td->palette_buffer,
           aom_memalign(16, sizeof(*thread_data->td->palette_buffer)));
 
+      av1_alloc_compound_type_rd_buffers(cm, &thread_data->td->comp_rd_buffer);
+
       CHECK_MEM_ERROR(
           cm, thread_data->td->tmp_conv_dst,
           aom_memalign(32, MAX_SB_SIZE * MAX_SB_SIZE *
@@ -572,6 +574,7 @@ static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
 
     if (i > 0) {
       thread_data->td->mb.palette_buffer = thread_data->td->palette_buffer;
+      thread_data->td->mb.comp_rd_buffer = thread_data->td->comp_rd_buffer;
       thread_data->td->mb.tmp_conv_dst = thread_data->td->tmp_conv_dst;
       for (int j = 0; j < 2; ++j) {
         thread_data->td->mb.tmp_obmc_bufs[j] =

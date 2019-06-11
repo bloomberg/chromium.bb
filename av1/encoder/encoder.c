@@ -581,7 +581,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   av1_free_pc_tree(&cpi->td, num_planes);
 
   aom_free(cpi->td.mb.palette_buffer);
-
+  av1_release_compound_type_rd_buffers(&cpi->td.mb.comp_rd_buffer);
   aom_free(cpi->td.mb.tmp_conv_dst);
   for (int j = 0; j < 2; ++j) {
     aom_free(cpi->td.mb.tmp_obmc_bufs[j]);
@@ -2393,6 +2393,34 @@ static void realloc_segmentation_maps(AV1_COMP *cpi) {
                   aom_calloc(cm->mi_rows * cm->mi_cols, 1));
 }
 
+void av1_alloc_compound_type_rd_buffers(AV1_COMMON *const cm,
+                                        CompoundTypeRdBuffers *const bufs) {
+  CHECK_MEM_ERROR(
+      cm, bufs->pred0,
+      (uint8_t *)aom_memalign(16, 2 * MAX_SB_SQUARE * sizeof(*bufs->pred0)));
+  CHECK_MEM_ERROR(
+      cm, bufs->pred1,
+      (uint8_t *)aom_memalign(16, 2 * MAX_SB_SQUARE * sizeof(*bufs->pred1)));
+  CHECK_MEM_ERROR(
+      cm, bufs->residual1,
+      (int16_t *)aom_memalign(32, MAX_SB_SQUARE * sizeof(*bufs->residual1)));
+  CHECK_MEM_ERROR(
+      cm, bufs->diff10,
+      (int16_t *)aom_memalign(32, MAX_SB_SQUARE * sizeof(*bufs->diff10)));
+  CHECK_MEM_ERROR(cm, bufs->tmp_best_mask_buf,
+                  (uint8_t *)aom_malloc(2 * MAX_SB_SQUARE *
+                                        sizeof(*bufs->tmp_best_mask_buf)));
+}
+
+void av1_release_compound_type_rd_buffers(CompoundTypeRdBuffers *const bufs) {
+  aom_free(bufs->pred0);
+  aom_free(bufs->pred1);
+  aom_free(bufs->residual1);
+  aom_free(bufs->diff10);
+  aom_free(bufs->tmp_best_mask_buf);
+  av1_zero(*bufs);  // Set all pointers to NULL for safety.
+}
+
 void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
   SequenceHeader *const seq_params = &cm->seq_params;
@@ -2482,6 +2510,10 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   if (x->palette_buffer == NULL) {
     CHECK_MEM_ERROR(cm, x->palette_buffer,
                     aom_memalign(16, sizeof(*x->palette_buffer)));
+  }
+
+  if (x->comp_rd_buffer.pred0 == NULL) {
+    av1_alloc_compound_type_rd_buffers(cm, &x->comp_rd_buffer);
   }
 
   if (x->tmp_conv_dst == NULL) {
@@ -3093,6 +3125,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     if (t > 0) {
       aom_free(thread_data->td->palette_buffer);
       aom_free(thread_data->td->tmp_conv_dst);
+      av1_release_compound_type_rd_buffers(&thread_data->td->comp_rd_buffer);
       for (int j = 0; j < 2; ++j) {
         aom_free(thread_data->td->tmp_obmc_bufs[j]);
       }
