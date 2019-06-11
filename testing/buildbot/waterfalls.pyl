@@ -3310,7 +3310,7 @@
       },
       'Cast Linux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'cast_shell',
