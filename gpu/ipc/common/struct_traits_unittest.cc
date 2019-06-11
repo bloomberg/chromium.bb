@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/ipc/common/gpu_feature_info.mojom.h"
@@ -82,7 +82,7 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     std::move(callback).Run(prefs);
   }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   mojo::BindingSet<TraitsTestService> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
