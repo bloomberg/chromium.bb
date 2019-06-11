@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -53,7 +54,17 @@ std::string GetListenerId(const EventListenerInfo& details) {
                                        : details.listener_url.host();
 }
 
-void RecordPairingResult(bool success, bt::Transport transport) {
+void RecordPairingDuration(const std::string& histogram_name,
+                           base::TimeDelta pairing_duration) {
+  base::UmaHistogramCustomTimes(histogram_name, pairing_duration,
+                                base::TimeDelta::FromMilliseconds(1) /* min */,
+                                base::TimeDelta::FromSeconds(30) /* max */,
+                                50 /* buckets */);
+}
+
+void RecordPairingResult(bool success,
+                         bt::Transport transport,
+                         int pairing_duration_ms) {
   std::string transport_histogram_name;
   switch (transport) {
     case bt::Transport::TRANSPORT_CLASSIC:
@@ -74,6 +85,17 @@ void RecordPairingResult(bool success, bt::Transport transport) {
   base::UmaHistogramBoolean("Bluetooth.ChromeOS.Pairing.Result", success);
   base::UmaHistogramBoolean(
       "Bluetooth.ChromeOS.Pairing.Result." + transport_histogram_name, success);
+
+  std::string duration_histogram_name_prefix =
+      "Bluetooth.ChromeOS.Pairing.Duration";
+  std::string success_histogram_name = success ? "Success" : "Failure";
+
+  std::string base_histogram_name =
+      duration_histogram_name_prefix + "." + success_histogram_name;
+  RecordPairingDuration(base_histogram_name,
+                        base::TimeDelta::FromMilliseconds(pairing_duration_ms));
+  RecordPairingDuration(base_histogram_name + "." + transport_histogram_name,
+                        base::TimeDelta::FromMilliseconds(pairing_duration_ms));
 }
 
 void RecordPairingTransport(bt::Transport transport) {
@@ -666,7 +688,8 @@ bool BluetoothPrivateRecordPairingFunction::CreateParams() {
 
 void BluetoothPrivateRecordPairingFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  RecordPairingResult(params_->success, params_->transport);
+  RecordPairingResult(params_->success, params_->transport,
+                      params_->pairing_duration_ms);
   RecordPairingTransport(params_->transport);
 }
 
