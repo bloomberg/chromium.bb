@@ -18,6 +18,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import sysroot_lib
+from chromite.lib import toolchain_util
 from chromite.service import artifacts
 
 
@@ -193,6 +194,64 @@ class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['cros_generate_sysroot',
                                 '--board', self.build_target.name])
     # Make sure we
+    self.assertItemsEqual(expected_files, created)
+    for f in created:
+      self.assertExists(f)
+
+class BundleOrderfileGenerationArtifactsTest(
+    cros_test_lib.MockTempDirTestCase):
+  """BundleOrderfileGenerationArtifacts tests."""
+
+  def setUp(self):
+    # Create the build target.
+    self.build_target = build_target_util.BuildTarget('board')
+
+    # Create the chroot.
+    self.chroot_dir = os.path.join(self.tempdir, 'chroot')
+    self.chroot_tmp = os.path.join(self.chroot_dir, 'tmp')
+    osutils.SafeMakedirs(self.chroot_tmp)
+    self.chroot = chroot_lib.Chroot(path=self.chroot_dir)
+
+    # Create the output directory.
+    self.output_dir = os.path.join(self.tempdir, 'output_dir')
+    osutils.SafeMakedirs(self.output_dir)
+
+    # Create a dummy Chrome version
+    self.chrome_version = '%s-1.0.0-r1' % constants.CHROME_PN
+
+  def testSuccess(self):
+    """Test success case."""
+    # Separate tempdir for the method itself.
+    call_tempdir = os.path.join(self.chroot_tmp, 'orderfile_call_tempdir')
+    osutils.SafeMakedirs(call_tempdir)
+    self.PatchObject(osutils.TempDir, '__enter__', return_value=call_tempdir)
+
+    # Set up files in the tempdir since the command isn't being called to
+    # generate anything for it to handle.
+    files = [self.chrome_version+'.orderfile.tar.xz',
+             self.chrome_version+'.nm.tar.xz']
+    expected_files = [os.path.join(self.output_dir, f) for f in files]
+
+    for f in files:
+      osutils.Touch(os.path.join(call_tempdir, f))
+
+    mock_generate = self.PatchObject(
+        toolchain_util, 'GenerateChromeOrderfile',
+        autospec=True)
+
+    created = artifacts.BundleOrderfileGenerationArtifacts(
+        self.chroot, self.build_target, self.chrome_version, self.output_dir)
+
+    # Test the class is called with right arguments
+    mock_generate.assert_called_with(
+        self.build_target.name,
+        call_tempdir,
+        self.chrome_version,
+        self.chroot.path,
+        self.chroot.GetEnterArgs()
+    )
+
+    # Make sure we get all the expected files
     self.assertItemsEqual(expected_files, created)
     for f in created:
       self.assertExists(f)

@@ -310,3 +310,36 @@ def BundleVmFiles(input_proto, output_proto):
   archives = vm_test_stages.ArchiveVMFilesFromImageDir(image_dir, output_dir)
   for archive in archives:
     output_proto.artifacts.add().path = archive
+
+def BundleOrderfileGenerationArtifacts(input_proto, output_proto):
+  """Create tarballs of all the artifacts of orderfile_generate builder.
+
+  Args:
+    input_proto (BundleRequest): The input proto.
+    output_proto (BundleResponse): The output proto.
+  """
+  # Required args.
+  build_target_name = input_proto.build_target.name
+  output_dir = input_proto.output_dir
+  chrome_version = input_proto.chrome_version
+
+  if not build_target_name:
+    cros_build_lib.Die('build_target.name is required.')
+  if not chrome_version:
+    cros_build_lib.Die('chrome_version is required.')
+  if not output_dir:
+    cros_build_lib.Die('output_dir is required.')
+  elif not os.path.isdir(output_dir):
+    cros_build_lib.Die('output_dir does not exist.')
+
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+
+  try:
+    results = artifacts.BundleOrderfileGenerationArtifacts(
+        chroot, input_proto.build_target, chrome_version, output_dir)
+  except artifacts.Error as e:
+    cros_build_lib.Die('Error %s raised in BundleSimpleChromeArtifacts: %s',
+                       type(e), e)
+
+  for file_name in results:
+    output_proto.artifacts.add().path = file_name

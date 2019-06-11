@@ -1096,30 +1096,54 @@ class GenerateOrderfileStage(generic_stages.BoardSpecificBuilderStage,
 
   category = constants.CI_INFRA_STAGE
 
-  ORDERFILE_TAR = 'chrome.orderfile.tar.xz'
-  ORDERFILE_NAME = 'chrome.orderfile.txt'
+  GS_URL = 'gs://chromeos-prebuilt/afdo-job/orderfiles'
 
   def __init__(self, *args, **kwargs):
     super(GenerateOrderfileStage, self).__init__(*args, **kwargs)
     self._upload_queue = multiprocessing.Queue()
 
-  def _GenerateOrderfile(self):
-    """Generate and upload the orderfile for the board."""
-    assert self.archive_path.startswith(self._build_root)
-    chroot_path = os.path.join(self._build_root, 'chroot')
-    orderfile_path = os.path.join(chroot_path, 'build',
-                                  self._current_board, 'opt/google/chrome')
-    orderfile = os.path.join(orderfile_path, self.ORDERFILE_NAME)
-    if not os.path.exists(orderfile):
-      raise Exception('No orderfile generated in the builder.')
+  def _UploadOrderfile(self, tar_path, tar_names):
+    """Upload orderfile tarballs to the gs bucket and build bucket."""
+    gs_context = gs.GSContext()
+    debug = self._run.options.debug_forced
+    for tar_name in tar_names:
+      tar_file = os.path.join(tar_path, tar_name)
+      if not os.path.exists(tar_file):
+        raise Exception('%s does not exist for uploading', tar_file)
 
-    output_path = os.path.join(self._build_root, 'chroot/tmp')
-    target = os.path.join(output_path, self.ORDERFILE_TAR)
-    cros_build_lib.CreateTarball(os.path.relpath(target, orderfile_path),
-                                 cwd=orderfile_path,
-                                 input=[self.ORDERFILE_NAME])
-    orderfile_tarball = os.path.abspath(target)
-    self._upload_queue.put([orderfile_tarball])
+      if debug:
+        logging.info('Debug run: not uploading tarball.')
+        logging.info('If this were not a debug run, would upload %s to %s.',
+                     tar_file, self.GS_URL)
+        continue
+
+      try:
+        if gs_context.Exists(self.GS_URL + '/' + tar_name):
+          logging.info('%s already exists at %s, skip uploading', tar_name,
+                       self.GS_URL)
+        else:
+          logging.info('Uploading tarball %s to %s', tar_file, self.GS_URL)
+          gs_context.CopyInto(tar_file, self.GS_URL, acl='public-read')
+      except:
+        logging.error('Error: Unable to upload tarball %s to %s', tar_file,
+                      self.GS_URL)
+        raise
+
+    # Upload to build bucket too
+    for n in tar_names:
+      self._upload_queue.put([n])
+
+  def _GenerateOrderfile(self):
+    """Generate and upload orderfile artifacts for the board."""
+    assert self.archive_path.startswith(self._build_root)
+    output_path = os.path.abspath(
+        os.path.join(self._build_root, 'chroot', self.archive_path))
+
+    tarballs = commands.GenerateChromeOrderfileArtifacts(self._build_root,
+                                                         self._current_board,
+                                                         output_path)
+    tarball_names = [os.path.basename(f) for f in tarballs]
+    self._UploadOrderfile(output_path, tarball_names)
 
   def PerformStage(self):
     with self.ArtifactUploader(self._upload_queue, archive=False):

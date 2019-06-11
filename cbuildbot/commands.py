@@ -3612,6 +3612,45 @@ def SyncChrome(build_root,
   cmd += [chrome_root]
   retry_util.RunCommandWithRetries(constants.SYNC_RETRIES, cmd, cwd=build_root)
 
+def GenerateChromeOrderfileArtifacts(buildroot, board, output_path):
+  """Generate orderfile artifacts using build_api proto service.
+
+  Args:
+    buildroot: The root directory where the build occurs.
+    board: Board type that was built on this machine.
+    output_path: The directory used to store output artifacts.
+  """
+  cmd = ['build_api',
+         'chromite.api.ArtifactsService/BundleOrderfileGenerationArtifacts']
+  chroot_tmp = os.path.join(buildroot, 'chroot', 'tmp')
+
+  with osutils.TempDir(base_dir=chroot_tmp) as tmpdir:
+    input_proto_file = os.path.join(tmpdir, 'input.json')
+    output_proto_file = os.path.join(tmpdir, 'output.json')
+    cpv = portage_util.PortageqBestVisible(
+        constants.CHROME_CP, cwd=buildroot)
+    chrome_version = '{0}-orderfile-{1}'.format(cpv.package,
+                                                cpv.version)
+
+    with open(input_proto_file, 'w') as f:
+      input_proto = {
+          'chroot': {
+              'path': os.path.join(buildroot, 'chroot'),
+          },
+          'build_target': {
+              'name': board,
+          },
+          'chrome_version': chrome_version,
+          'output_dir': output_path
+      }
+
+      json.dump(input_proto, f)
+
+    cmd += ['--input-json', input_proto_file,
+            '--output-json', output_proto_file]
+    RunBuildScript(buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
+    output = json.loads(osutils.ReadFile(output_proto_file))
+    return [artifact['path'] for artifact in output['artifacts']]
 
 class ChromeSDK(object):
   """Wrapper for the 'cros chrome-sdk' command."""

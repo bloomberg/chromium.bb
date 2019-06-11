@@ -17,6 +17,7 @@ from chromite.lib import autotest_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import toolchain_util
 from chromite.lib import osutils
 
 
@@ -164,6 +165,42 @@ def CreateChromeRoot(chroot, build_target, output_dir):
     except cros_build_lib.RunCommandError as e:
       raise CrosGenerateSysrootError(
           'Error encountered when running cros_generate_sysroot: %s' % e, e)
+
+    files = []
+    for path in osutils.DirectoryIterator(tempdir):
+      if os.path.isfile(path):
+        rel_path = os.path.relpath(path, tempdir)
+        files.append(os.path.join(output_dir, rel_path))
+    osutils.CopyDirContents(tempdir, output_dir, allow_nonempty=True)
+
+    return files
+
+
+def BundleOrderfileGenerationArtifacts(chroot, build_target,
+                                       chrome_version, output_dir):
+  """Generate artifacts for Chrome orderfile.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot in which the sysroot should be built.
+    build_target (build_target_util.BuildTarget): The build target.
+    chrome_version (str): The chrome version used to generate the orderfile.
+      Example: chromeos-chrome-77.0.3823.0_rc-r1
+    output_dir (str): The location outside the chroot where the files should be
+      stored.
+
+  Returns:
+    list[str]: The list of tarballs of artifacts.
+  """
+  chroot_args = chroot.GetEnterArgs()
+  with chroot.tempdir() as tempdir:
+    generate_orderfile = toolchain_util.GenerateChromeOrderfile(
+        build_target.name,
+        tempdir,
+        chrome_version,
+        chroot.path,
+        chroot_args)
+
+    generate_orderfile.Perform()
 
     files = []
     for path in osutils.DirectoryIterator(tempdir):

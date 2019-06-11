@@ -1817,3 +1817,76 @@ class ImageTestCommandsTest(cros_test_lib.RunCommandTestCase):
         ],
         enter_chroot=True,
     )
+
+class GenerateChromeOrderfileArtifactsTests(
+    cros_test_lib.RunCommandTempDirTestCase):
+  """Test GenerateChromeOrderfileArtifacts command."""
+
+  def setUp(self):
+    self.buildroot = os.path.join(self.tempdir, 'buildroot')
+    osutils.SafeMakedirs(self.buildroot)
+    chroot_tmp = os.path.join(self.buildroot, 'chroot', 'tmp')
+    osutils.SafeMakedirs(chroot_tmp)
+    self.board = 'board'
+    self.output_path = os.path.join(self.tempdir, 'output_dir')
+    osutils.SafeMakedirs(self.output_path)
+
+    unused = {
+        'pv': None,
+        'version_no_rev': None,
+        'rev': None,
+        'category': None,
+        'cpv': None,
+        'cp': None,
+        'cpf': None
+    }
+    cpv = portage_util.CPV(
+        version='75.0.3761.0', package='chromeos-chrome', **unused)
+
+    self.PatchObject(portage_util, 'PortageqBestVisible',
+                     return_value=cpv)
+    self.chrome_version = 'chromeos-chrome-orderfile-75.0.3761.0'
+
+  def testRun(self):
+    """Verifies GenerateChromeOrderfileArtifacts calls into build-api."""
+    # Redirect the current tempdir to read/write contents inside it.
+    self.PatchObject(osutils.TempDir, '__enter__',
+                     return_value=self.tempdir)
+
+    input_proto_file = os.path.join(self.tempdir, 'input.json')
+    output_proto_file = os.path.join(self.tempdir, 'output.json')
+
+    # Write dummy outputs to output JSON file
+    with open(output_proto_file, 'w') as f:
+      output_proto = {
+          'artifacts': [
+              {'path': self.chrome_version+'.orderfile.tar.xz'},
+              {'path': self.chrome_version+'.nm.tar.xz'}
+          ]
+      }
+      json.dump(output_proto, f)
+
+    commands.GenerateChromeOrderfileArtifacts(
+        self.buildroot, self.board, self.output_path)
+
+    # Verify the command is called correctly
+    self.assertCommandContains(
+        [
+            os.path.join(self.buildroot, constants.CHROMITE_BIN_SUBDIR,
+                         'build_api'),
+            'chromite.api.ArtifactsService/BundleOrderfileGenerationArtifacts',
+            '--input-json', input_proto_file,
+            '--output-json', output_proto_file
+        ]
+    )
+
+    # Verify the input proto has all the information
+    input_proto = json.loads(osutils.ReadFile(input_proto_file))
+    self.assertEqual(input_proto['chroot']['path'],
+                     os.path.join(self.buildroot, 'chroot'))
+    self.assertEqual(input_proto['build_target']['name'],
+                     self.board)
+    self.assertEqual(input_proto['chrome_version'],
+                     self.chrome_version)
+    self.assertEqual(input_proto['output_dir'],
+                     self.output_path)
