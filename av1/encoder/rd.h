@@ -31,6 +31,10 @@ extern "C" {
   (ROUND_POWER_OF_TWO(((int64_t)(R)) * (RM), AV1_PROB_COST_SHIFT) + \
    ((D) * (1 << RDDIV_BITS)))
 
+#define RDCOST_NEG_R(RM, R, D) \
+  (((D) * (1 << RDDIV_BITS)) - \
+   ROUND_POWER_OF_TWO(((int64_t)(R)) * (RM), AV1_PROB_COST_SHIFT))
+
 #define RDCOST_DBL(RM, R, D)                                       \
   (((((double)(R)) * (RM)) / (double)(1 << AV1_PROB_COST_SHIFT)) + \
    ((double)(D) * (1 << RDDIV_BITS)))
@@ -372,6 +376,22 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
     }
   }
 #endif
+}
+
+static INLINE int64_t av1_calculate_rd_cost(int mult, int rate, int64_t dist) {
+  assert(mult >= 0);
+  if (rate >= 0) {
+    return RDCOST(mult, rate, dist);
+  }
+  return RDCOST_NEG_R(mult, -rate, dist);
+}
+
+static INLINE void av1_rd_cost_update(int mult, RD_STATS *rd_cost) {
+  if (rd_cost->rate < INT_MAX && rd_cost->dist < INT64_MAX) {
+    rd_cost->rdcost = av1_calculate_rd_cost(mult, rd_cost->rate, rd_cost->dist);
+  } else {
+    av1_invalid_rd_stats(rd_cost);
+  }
 }
 
 struct TileInfo;
