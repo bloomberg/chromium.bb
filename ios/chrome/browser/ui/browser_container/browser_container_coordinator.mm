@@ -6,13 +6,19 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
+#import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+@interface BrowserContainerCoordinator ()
+// The overlay container coordinator for OverlayModality::kWebContentArea.
+@property(nonatomic, strong)
+    OverlayContainerCoordinator* webContentAreaOverlayContainerCoordinator;
+@end
+
 @implementation BrowserContainerCoordinator
-@synthesize viewController = _viewController;
 
 #pragma mark - ChromeCoordinator
 
@@ -20,10 +26,17 @@
   DCHECK(self.browserState);
   DCHECK(!_viewController);
   _viewController = [[BrowserContainerViewController alloc] init];
+  self.webContentAreaOverlayContainerCoordinator =
+      [[OverlayContainerCoordinator alloc]
+          initWithBaseViewController:_viewController
+                             browser:self.browser
+                            modality:OverlayModality::kWebContentArea];
+  [self.webContentAreaOverlayContainerCoordinator start];
   [super start];
 }
 
 - (void)stop {
+  [self.webContentAreaOverlayContainerCoordinator stop];
   _viewController = nil;
   [super stop];
 }
