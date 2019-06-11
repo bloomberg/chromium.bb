@@ -67,7 +67,7 @@ std::unique_ptr<views::View> CreateErrorLabelView(
   error_label->SetMultiLine(true);
   error_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  view->AddChildView(error_label.release());
+  view->AddChildView(std::move(error_label));
   return view;
 }
 

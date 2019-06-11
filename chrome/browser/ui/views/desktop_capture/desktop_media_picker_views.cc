@@ -72,9 +72,10 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
       provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL),
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 
-  description_label_->SetMultiLine(true);
-  description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(description_label_);
+  auto description_label = std::make_unique<views::Label>();
+  description_label->SetMultiLine(true);
+  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  description_label_ = AddChildView(std::move(description_label));
 
   std::vector<std::pair<base::string16, std::unique_ptr<View>>> panes;
 

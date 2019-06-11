@@ -301,26 +301,32 @@ class EmptyNotifierView : public views::View {
 NotifierSettingsView::NotifierButton::NotifierButton(
     const mojom::NotifierUiData& notifier_ui_data,
     views::ButtonListener* listener)
-    : views::Button(listener),
-      notifier_id_(notifier_ui_data.notifier_id),
-      icon_view_(new views::ImageView()),
-      name_view_(new views::Label(notifier_ui_data.name)),
-      checkbox_(new views::Checkbox(base::string16(), this /* listener */)) {
-  name_view_->SetAutoColorReadabilityEnabled(false);
-  name_view_->SetEnabledColor(kUnifiedMenuTextColor);
-  name_view_->SetSubpixelRenderingEnabled(false);
+    : views::Button(listener), notifier_id_(notifier_ui_data.notifier_id) {
+  auto icon_view = std::make_unique<views::ImageView>();
+  auto name_view = std::make_unique<views::Label>(notifier_ui_data.name);
+  auto checkbox =
+      std::make_unique<views::Checkbox>(base::string16(), this /* listener */);
+  name_view->SetAutoColorReadabilityEnabled(false);
+  name_view->SetEnabledColor(kUnifiedMenuTextColor);
+  name_view->SetSubpixelRenderingEnabled(false);
   // "Roboto-Regular, 13sp" is specified in the mock.
-  name_view_->SetFontList(
+  name_view->SetFontList(
       gfx::FontList().DeriveWithSizeDelta(kLabelFontSizeDelta));
 
-  checkbox_->SetChecked(notifier_ui_data.enabled);
-  checkbox_->SetFocusBehavior(FocusBehavior::NEVER);
-  checkbox_->SetAccessibleName(notifier_ui_data.name);
+  checkbox->SetChecked(notifier_ui_data.enabled);
+  checkbox->SetFocusBehavior(FocusBehavior::NEVER);
+  checkbox->SetAccessibleName(notifier_ui_data.name);
 
   if (notifier_ui_data.enforced) {
     Button::SetEnabled(false);
-    checkbox_->SetEnabled(false);
+    checkbox->SetEnabled(false);
   }
+
+  // Add the views before the layout is assigned. Because GridChanged() may be
+  // called multiple times, these views should already be child views.
+  checkbox_ = AddChildView(std::move(checkbox));
+  icon_view_ = AddChildView(std::move(icon_view));
+  name_view_ = AddChildView(std::move(name_view));
 
   UpdateIconImage(notifier_ui_data.icon);
 }
@@ -421,25 +427,26 @@ NotifierSettingsView::NotifierSettingsView()
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  header_view_ = new views::View;
-  header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+  auto header_view = std::make_unique<views::View>();
+  header_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, kHeaderViewPadding, 0));
-  header_view_->SetBorder(
+  header_view->SetBorder(
       views::CreateSolidSidedBorder(1, 0, 0, 0, kTopBorderColor));
 
-  views::View* quiet_mode_view = new views::View;
+  auto quiet_mode_view = std::make_unique<views::View>();
 
   auto* quiet_mode_layout =
       quiet_mode_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, kQuietModeViewPadding,
           kQuietModeViewSpacing));
 
-  quiet_mode_icon_ = new views::ImageView();
-  quiet_mode_icon_->SetBorder(views::CreateEmptyBorder(kQuietModeLabelPadding));
-  quiet_mode_view->AddChildView(quiet_mode_icon_);
+  auto quiet_mode_icon = std::make_unique<views::ImageView>();
+  quiet_mode_icon->SetBorder(views::CreateEmptyBorder(kQuietModeLabelPadding));
+  quiet_mode_icon_ = quiet_mode_view->AddChildView(std::move(quiet_mode_icon));
 
-  views::Label* quiet_mode_label = new views::Label(l10n_util::GetStringUTF16(
-      IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
+  auto quiet_mode_label =
+      std::make_unique<views::Label>(l10n_util::GetStringUTF16(
+          IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
   quiet_mode_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   // "Roboto-Regular, 13sp" is specified in the mock.
   quiet_mode_label->SetFontList(
@@ -448,43 +455,44 @@ NotifierSettingsView::NotifierSettingsView()
   quiet_mode_label->SetEnabledColor(kUnifiedMenuTextColor);
   quiet_mode_label->SetSubpixelRenderingEnabled(false);
   quiet_mode_label->SetBorder(views::CreateEmptyBorder(kQuietModeLabelPadding));
-  quiet_mode_view->AddChildView(quiet_mode_label);
-  quiet_mode_layout->SetFlexForView(quiet_mode_label, 1);
+  auto* quiet_mode_label_ptr =
+      quiet_mode_view->AddChildView(std::move(quiet_mode_label));
+  quiet_mode_layout->SetFlexForView(quiet_mode_label_ptr, 1);
 
-  quiet_mode_toggle_ = new views::ToggleButton(this);
-  quiet_mode_toggle_->SetAccessibleName(l10n_util::GetStringUTF16(
+  auto quiet_mode_toggle = std::make_unique<views::ToggleButton>(this);
+  quiet_mode_toggle->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
-  quiet_mode_toggle_->SetBorder(
+  quiet_mode_toggle->SetBorder(
       views::CreateEmptyBorder(kQuietModeTogglePadding));
-  quiet_mode_toggle_->EnableCanvasFlippingForRTLUI(true);
+  quiet_mode_toggle->EnableCanvasFlippingForRTLUI(true);
+  quiet_mode_toggle_ =
+      quiet_mode_view->AddChildView(std::move(quiet_mode_toggle));
   SetQuietModeState(MessageCenter::Get()->IsQuietMode());
-  quiet_mode_view->AddChildView(quiet_mode_toggle_);
-  header_view_->AddChildView(quiet_mode_view);
+  header_view->AddChildView(std::move(quiet_mode_view));
 
-  top_label_ = new views::Label(l10n_util::GetStringUTF16(
+  auto top_label = std::make_unique<views::Label>(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
-  top_label_->SetBorder(views::CreateEmptyBorder(kTopLabelPadding));
+  top_label->SetBorder(views::CreateEmptyBorder(kTopLabelPadding));
   // "Roboto-Medium, 13sp" is specified in the mock.
-  top_label_->SetFontList(gfx::FontList().Derive(
+  top_label->SetFontList(gfx::FontList().Derive(
       kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
-  top_label_->SetAutoColorReadabilityEnabled(false);
-  top_label_->SetEnabledColor(kUnifiedMenuTextColor);
-  top_label_->SetSubpixelRenderingEnabled(false);
-  top_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  top_label_->SetMultiLine(true);
-  header_view_->AddChildView(top_label_);
+  top_label->SetAutoColorReadabilityEnabled(false);
+  top_label->SetEnabledColor(kUnifiedMenuTextColor);
+  top_label->SetSubpixelRenderingEnabled(false);
+  top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  top_label->SetMultiLine(true);
+  top_label_ = header_view->AddChildView(std::move(top_label));
 
-  AddChildView(header_view_);
+  header_view_ = AddChildView(std::move(header_view));
 
-  scroller_ = new views::ScrollView();
-  scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
-  scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
-  scroller_->set_draw_overflow_indicator(false);
-  AddChildView(scroller_);
+  auto scroller = std::make_unique<views::ScrollView>();
+  scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
+  scroller->SetVerticalScrollBar(new views::OverlayScrollBar(false));
+  scroller->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
+  scroller->set_draw_overflow_indicator(false);
+  scroller_ = AddChildView(std::move(scroller));
 
-  no_notifiers_view_ = new EmptyNotifierView();
-  AddChildView(no_notifiers_view_);
+  no_notifiers_view_ = AddChildView(std::make_unique<EmptyNotifierView>());
 
   OnNotifierListUpdated({});
   Shell::Get()->message_center_controller()->AddNotifierSettingsListener(this);

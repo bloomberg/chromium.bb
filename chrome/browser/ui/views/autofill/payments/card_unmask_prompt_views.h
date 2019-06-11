@@ -22,7 +22,6 @@ class WebContents;
 
 namespace views {
 class Checkbox;
-class GridLayout;
 class Label;
 class Link;
 class Textfield;
@@ -88,7 +87,6 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   void SetInputsEnabled(bool enabled);
   void ShowNewCardLink();
   void ClosePrompt();
-  views::GridLayout* ResetOverlayLayout();
 
   CardUnmaskPromptController* controller_;
   content::WebContents* web_contents_;

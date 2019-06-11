@@ -14,12 +14,11 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/webview/webview_export.h"
 #include "ui/views/view.h"
 
 namespace views {
-
-class NativeViewHost;
 
 // Provides a view of a WebContents instance.  WebView can be used standalone,
 // creating and displaying an internally-owned WebContents; or within a full
@@ -178,7 +177,8 @@ class WEBVIEW_EXPORT WebView : public View,
   std::unique_ptr<content::WebContents> CreateWebContents(
       content::BrowserContext* browser_context);
 
-  NativeViewHost* const holder_;
+  NativeViewHost* const holder_ =
+      AddChildView(std::make_unique<NativeViewHost>());
   // Non-NULL if |web_contents()| was created and is owned by this WebView.
   std::unique_ptr<content::WebContents> wc_owner_;
   // When true, WebView auto-embeds fullscreen widgets as a child view.

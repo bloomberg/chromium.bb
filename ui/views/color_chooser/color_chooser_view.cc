@@ -4,6 +4,9 @@
 
 #include "ui/views/color_chooser/color_chooser_view.h"
 
+#include <memory>
+#include <utility>
+
 #include <stdint.h>
 
 #include "base/logging.h"
@@ -369,18 +372,17 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::kVertical, gfx::Insets(kMarginWidth), kMarginWidth));
 
-  View* container = new View();
+  auto container = std::make_unique<View>();
   container->SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::kHorizontal, gfx::Insets(), kMarginWidth));
-  saturation_value_ = new SaturationValueView(this);
-  container->AddChildView(saturation_value_);
-  hue_ = new HueView(this);
-  container->AddChildView(hue_);
-  AddChildView(container);
+  saturation_value_ =
+      container->AddChildView(std::make_unique<SaturationValueView>(this));
+  hue_ = container->AddChildView(std::make_unique<HueView>(this));
+  AddChildView(std::move(container));
 
-  View* container2 = new View();
+  auto container2 = std::make_unique<View>();
   GridLayout* layout = container2->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container2));
+      std::make_unique<views::GridLayout>(container2.get()));
   ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(
       GridLayout::LEADING, GridLayout::FILL, 0, GridLayout::USE_PREF, 0, 0);
@@ -396,7 +398,7 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   layout->AddView(textfield_);
   selected_color_patch_ = new SelectedColorPatchView();
   layout->AddView(selected_color_patch_);
-  AddChildView(container2);
+  AddChildView(std::move(container2));
 
   OnColorChanged(initial_color);
 }

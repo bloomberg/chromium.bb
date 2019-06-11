@@ -346,10 +346,10 @@ void IntentPickerBubbleView::Initialize(bool show_remember_selection) {
       continue;
     }
 #endif  // defined(OS_CHROMEOS)
-    IntentPickerLabelButton* app_button = new IntentPickerLabelButton(
+    auto app_button = std::make_unique<IntentPickerLabelButton>(
         this, &app_info.icon, app_info.launch_name, app_info.display_name);
     app_button->set_tag(i);
-    scrollable_view->AddChildViewAt(app_button, i++);
+    scrollable_view->AddChildViewAt(std::move(app_button), i++);
   }
 
   // We should delete at most one entry, this is the case when Chrome is listed

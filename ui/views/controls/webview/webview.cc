@@ -19,7 +19,6 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
-#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_delegate.h"
 
@@ -50,9 +49,7 @@ WebView::ScopedWebContentsCreatorForTesting::
 // WebView, public:
 
 WebView::WebView(content::BrowserContext* browser_context)
-    : holder_(new NativeViewHost()), browser_context_(browser_context) {
-  AddChildView(holder_);  // Takes ownership of |holder_|.
-}
+    : browser_context_(browser_context) {}
 
 WebView::~WebView() {
   SetWebContents(nullptr);  // Make sure all necessary tear-down takes place.

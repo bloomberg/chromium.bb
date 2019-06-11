@@ -64,58 +64,60 @@ void LabelExample::CreateExampleView(View* container) {
   // A very simple label example, followed by additional helpful examples.
   container->SetLayoutManager(
       std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(), 10));
-  Label* label = new Label(ASCIIToUTF16("Hello world!"));
-  container->AddChildView(label);
+  container->AddChildView(
+      std::make_unique<Label>(ASCIIToUTF16("Hello world!")));
 
   const wchar_t hello_world_hebrew[] =
       L"\x5e9\x5dc\x5d5\x5dd \x5d4\x5e2\x5d5\x5dc\x5dd!";
-  label = new Label(WideToUTF16(hello_world_hebrew));
+  auto label = std::make_unique<Label>(WideToUTF16(hello_world_hebrew));
   label->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  container->AddChildView(label);
+  container->AddChildView(std::move(label));
 
-  label = new Label(WideToUTF16(L"A UTF16 surrogate pair: \x5d0\x5b0"));
+  label = std::make_unique<Label>(
+      WideToUTF16(L"A UTF16 surrogate pair: \x5d0\x5b0"));
   label->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  container->AddChildView(label);
+  container->AddChildView(std::move(label));
 
-  label = new Label(ASCIIToUTF16("A left-aligned blue label."));
+  label = std::make_unique<Label>(ASCIIToUTF16("A left-aligned blue label."));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(SK_ColorBLUE);
-  container->AddChildView(label);
+  container->AddChildView(std::move(label));
 
-  label = new Label(WideToUTF16(L"Password!"));
+  label = std::make_unique<Label>(WideToUTF16(L"Password!"));
   label->SetObscured(true);
-  container->AddChildView(label);
+  container->AddChildView(std::move(label));
 
-  label = new Label(ASCIIToUTF16("A Courier-18 label with shadows."));
+  label =
+      std::make_unique<Label>(ASCIIToUTF16("A Courier-18 label with shadows."));
   label->SetFontList(gfx::FontList("Courier, 18px"));
   gfx::ShadowValues shadows(1,
                             gfx::ShadowValue(gfx::Vector2d(), 1, SK_ColorRED));
   constexpr gfx::ShadowValue shadow(gfx::Vector2d(2, 2), 0, SK_ColorGRAY);
   shadows.push_back(shadow);
   label->SetShadows(shadows);
-  container->AddChildView(label);
+  container->AddChildView(std::move(label));
 
-  label = new ExamplePreferredSizeLabel();
+  label = std::make_unique<ExamplePreferredSizeLabel>();
   label->SetText(ASCIIToUTF16("A long label will elide toward its logical end "
       "if the text's width exceeds the label's available width."));
-  container->AddChildView(label);
+  container->AddChildView(std::move(label));
 
-  label = new ExamplePreferredSizeLabel();
+  label = std::make_unique<ExamplePreferredSizeLabel>();
   label->SetText(ASCIIToUTF16("A multi-line label will wrap onto subsequent "
     "lines if the text's width exceeds the label's available width, which is "
     "helpful for extemely long text used to demonstrate line wrapping."));
   label->SetMultiLine(true);
-  container->AddChildView(label);
+  container->AddChildView(std::move(label));
 
-  label = new Label(ASCIIToUTF16("Label with thick border"));
+  label = std::make_unique<Label>(ASCIIToUTF16("Label with thick border"));
   label->SetBorder(CreateSolidBorder(20, SK_ColorRED));
-  container->AddChildView(label);
+  container->AddChildView(std::move(label));
 
-  label = new Label(
+  label = std::make_unique<Label>(
       ASCIIToUTF16("A multiline label...\n\n...which supports text selection"));
   label->SetSelectable(true);
   label->SetMultiLine(true);
-  container->AddChildView(label);
+  container->AddChildView(std::move(label));
 
   AddCustomLabel(container);
 }

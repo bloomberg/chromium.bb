@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_PAYMENTS_VIEW_UTIL_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_PAYMENTS_VIEW_UTIL_H_
 
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "content/public/browser/web_contents.h"
@@ -35,7 +37,7 @@ class TitleWithIconAndSeparatorView : public views::View {
 };
 
 // Creates and returns a small Textfield intended to be used for CVC entry.
-views::Textfield* CreateCvcTextfield();
+std::unique_ptr<views::Textfield> CreateCvcTextfield();
 
 // Defines a view with legal message. This class handles the legal message
 // parsing and the links clicking events.

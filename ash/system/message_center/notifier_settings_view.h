@@ -79,9 +79,9 @@ class ASH_EXPORT NotifierSettingsView
     void GridChanged();
 
     message_center::NotifierId notifier_id_;
-    views::ImageView* icon_view_;
-    views::Label* name_view_;
-    views::Checkbox* checkbox_;
+    views::ImageView* icon_view_ = nullptr;
+    views::Label* name_view_ = nullptr;
+    views::Checkbox* checkbox_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(NotifierButton);
   };

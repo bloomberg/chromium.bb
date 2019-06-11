@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 
-#include <memory>
-
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -120,8 +118,8 @@ gfx::Size TitleWithIconAndSeparatorView::GetMinimumSize() const {
   return gfx::Size(0, 0);
 }
 
-views::Textfield* CreateCvcTextfield() {
-  views::Textfield* textfield = new views::Textfield();
+std::unique_ptr<views::Textfield> CreateCvcTextfield() {
+  auto textfield = std::make_unique<views::Textfield>();
   textfield->set_placeholder_text(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
   textfield->SetDefaultWidthInChars(8);
