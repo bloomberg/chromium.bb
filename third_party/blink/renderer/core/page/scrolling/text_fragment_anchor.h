@@ -53,8 +53,14 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   Member<LocalFrame> frame_;
 
   bool search_finished_ = false;
+  // Whether the user has scrolled the page.
   bool user_scrolled_ = false;
+  // Indicates that we should scroll into view the first match that we find, set
+  // to true each time the anchor is invoked if the user hasn't scrolled.
   bool first_match_needs_scroll_ = false;
+  // Whether we successfully scrolled into view a match at least once, used for
+  // metrics reporting.
+  bool did_scroll_into_view_ = false;
 
   Member<TextFragmentAnchorMetrics> metrics_;
 

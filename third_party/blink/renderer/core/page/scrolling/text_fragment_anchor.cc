@@ -98,7 +98,7 @@ bool TextFragmentAnchor::Invoke() {
   frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
       DocumentMarker::MarkerTypes::TextMatch());
 
-  if (user_scrolled_)
+  if (user_scrolled_ && !did_scroll_into_view_)
     metrics_->ScrollCancelled();
 
   first_match_needs_scroll_ = !user_scrolled_;
@@ -173,6 +173,7 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
             WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
                                     ScrollAlignment::kAlignCenterIfNeeded,
                                     kProgrammaticScroll));
+    did_scroll_into_view_ = true;
     metrics_->DidScroll();
 
     // We scrolled the text into view if the main document scrolled or the text
