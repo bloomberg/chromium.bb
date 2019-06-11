@@ -48,7 +48,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   aom_codec_ctx_t codec;
   // Set thread count in the range [1, 64].
   const unsigned int threads = (header[0] & 0x3f) + 1;
-  aom_codec_dec_cfg_t cfg = { threads, 0, 0, CONFIG_LOWBITDEPTH };
+  aom_codec_dec_cfg_t cfg = { threads, 0, 0, CONFIG_LOWBITDEPTH, { 1 } };
   if (aom_codec_dec_init(&codec, decoder->codec_interface(), &cfg, 0)) {
     return 0;
   }
