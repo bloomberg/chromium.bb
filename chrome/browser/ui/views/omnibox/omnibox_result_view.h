@@ -88,6 +88,9 @@ class OmniboxResultView : public views::View,
   // Removes the shown |match_| from history, if possible.
   void RemoveSuggestion() const;
 
+  // Call when updating |match_| to possibly fire Accessiblity events.
+  void EmitTextChangedAccessiblityEvent();
+
   // views::View:
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -140,6 +143,9 @@ class OmniboxResultView : public views::View,
 
   // The data this class is built to display (the "Omnibox Result").
   AutocompleteMatch match_;
+
+  // Accessible name (enables to emit certain events).
+  base::string16 accessible_name_;
 
   // For sliding in the keyword search.
   std::unique_ptr<gfx::SlideAnimation> animation_;

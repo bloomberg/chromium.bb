@@ -111,6 +111,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   Invalidate();
   Layout();
+  EmitTextChangedAccessiblityEvent();
 }
 
 void OmniboxResultView::ShowKeyword(bool show_keyword) {
@@ -463,6 +464,18 @@ void OmniboxResultView::ProvideButtonFocusHint() {
 
 void OmniboxResultView::RemoveSuggestion() const {
   popup_contents_view_->model()->TryDeletingLine(model_index_);
+}
+
+void OmniboxResultView::EmitTextChangedAccessiblityEvent() {
+  if (!popup_contents_view_->IsOpen())
+    return;
+
+  base::string16 current_name = AutocompleteMatchType::ToAccessibilityLabel(
+      match_, match_.contents, false);
+  if (accessible_name_ != current_name) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+    accessible_name_ = current_name;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

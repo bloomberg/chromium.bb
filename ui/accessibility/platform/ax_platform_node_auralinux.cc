@@ -3039,8 +3039,6 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
 }
 
 void AXPlatformNodeAuraLinux::OnNameChanged() {
-  std::string name = GetStringAttribute(ax::mojom::StringAttribute::kName);
-
   std::string previous_accessible_name = accessible_name_;
   // Calling atk_object_get_name will update the value of accessible_name_.
   if (!g_strcmp0(atk_object_get_name(atk_object_),
@@ -3127,6 +3125,9 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       break;
     case ax::mojom::Event::kSelectedChildrenChanged:
       OnSelectedChildrenChanged();
+      break;
+    case ax::mojom::Event::kTextChanged:
+      OnNameChanged();
       break;
     case ax::mojom::Event::kTextSelectionChanged:
       OnTextSelectionChanged();

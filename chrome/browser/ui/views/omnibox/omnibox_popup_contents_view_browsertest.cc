@@ -29,6 +29,8 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/accessibility/ax_event_manager.h"
+#include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -80,6 +82,34 @@ class ThemeChangeWaiter {
   content::WindowedNotificationObserver theme_change_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeChangeWaiter);
+};
+
+class TestAXEventObserver : public views::AXEventObserver {
+ public:
+  TestAXEventObserver() { views::AXEventManager::Get()->AddObserver(this); }
+
+  ~TestAXEventObserver() override {
+    views::AXEventManager::Get()->RemoveObserver(this);
+  }
+
+  // views::AXEventObserver:
+  void OnViewEvent(views::View* view, ax::mojom::Event event_type) override {
+    ui::AXNodeData node_data;
+    view->GetAccessibleNodeData(&node_data);
+    if (event_type == ax::mojom::Event::kTextChanged &&
+        node_data.role == ax::mojom::Role::kListBoxOption) {
+      text_changed_on_listboxoption_count_++;
+    }
+  }
+
+  int text_changed_on_listboxoption_count() {
+    return text_changed_on_listboxoption_count_;
+  }
+
+ private:
+  int text_changed_on_listboxoption_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
 
 }  // namespace
@@ -333,4 +363,18 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   omnibox_view()->GetFocusManager()->ClearFocus();
   EXPECT_EQ(color_before_focus, location_bar()->background()->get_color());
   EXPECT_EQ(color_before_focus, omnibox_view()->GetBackgroundColor());
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
+                       EmitTextChangedAccessibilityEvent) {
+  // Set the result to what we want and update.
+  TestAXEventObserver observer;
+  popup_view()->UpdatePopupAppearance();
+  EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 0);
+
+  // Calling it again should emit the event.
+  edit_model()->SetUserText(base::ASCIIToUTF16("bar"));
+  edit_model()->StartAutocomplete(false, false);
+  popup_view()->UpdatePopupAppearance();
+  EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 1);
 }
