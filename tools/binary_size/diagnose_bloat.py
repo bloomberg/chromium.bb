@@ -337,7 +337,6 @@ class _BuildHelper(object):
   def _GenGnCmd(self):
     gn_args = 'is_official_build=true'
     gn_args += ' android_channel="stable"'
-    gn_args += ' enable_chrome_language_splits=true'
     # Variables often become unused when experimenting with macros to reduce
     # size, so don't fail on warnings.
     gn_args += ' treat_warnings_as_errors=false'
