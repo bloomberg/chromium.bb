@@ -521,6 +521,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Bridges C++ WebStateListObserver methods to this BrowserViewController.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+
+  // Presenter for in-product help bubbles.
+  BubblePresenter* _bubblePresenter;
 }
 
 // Activates/deactivates the object. This will enable/disable the ability for
@@ -1128,15 +1131,19 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (BubblePresenter*)bubblePresenter {
-  if (!_bubblePresenter) {
-    _bubblePresenter =
+  if (!_bubblePresenter && self.browserState) {
+    self.bubblePresenter =
         [[BubblePresenter alloc] initWithBrowserState:self.browserState
                                              delegate:self
                                    rootViewController:self];
-    _bubblePresenter.dispatcher = self.dispatcher;
-    self.popupMenuCoordinator.bubblePresenter = _bubblePresenter;
   }
   return _bubblePresenter;
+}
+
+- (void)setBubblePresenter:(BubblePresenter*)bubblePresenter {
+  _bubblePresenter = bubblePresenter;
+  _bubblePresenter.dispatcher = self.dispatcher;
+  self.popupMenuCoordinator.bubblePresenter = _bubblePresenter;
 }
 
 - (BOOL)isNTPActiveForCurrentWebState {
@@ -1456,6 +1463,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.tabStripView = nil;
 
   _browserState = nullptr;
+  self.bubblePresenter = nil;
+
   [self.commandDispatcher stopDispatchingToTarget:self];
   self.commandDispatcher = nil;
 
@@ -1637,11 +1646,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // case, display the Long Press InProductHelp if needed.
     auto completion =
         ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-          // Do not attempt to use the browserState if |-shutdown| was called
-          // during the BVC presentation animation. Attempting to present
-          // bubbles will crash since bubblePresenter requires a valid
-          // BrowserState.
-          if (!_isShutdown)
             [self.bubblePresenter presentLongPressBubbleIfEligible];
         };
 
