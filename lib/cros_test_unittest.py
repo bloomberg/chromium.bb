@@ -24,7 +24,6 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     opts = cros_test.ParseCommandLine([])
     self._tester = cros_test.CrOSTest(opts)
     self._tester._device.board = 'amd64-generic'
-    self._tester._device.qemu_path = '/usr/bin/qemu-system-x86_64'
     self._tester._device.image_path = self.TempFilePath(
         'chromiumos_qemu_image.bin')
     osutils.Touch(self._tester._device.image_path)
@@ -50,3 +49,17 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
         'ssh', '-p', '9222', 'root@localhost', '--',
         '/usr/local/autotest/bin/vm_sanity.py'
     ])
+
+  def testBasicAutotest(self):
+    """Tests a simple autotest call."""
+    self._tester.autotest = ['accessiblity_Sanity']
+    self._tester.Run()
+
+    # Check VM got launched.
+    self.assertCommandContains([self._tester._device.qemu_path, '-enable-kvm'])
+
+    # Checks that autotest is running.
+    self.assertCommandContains([
+        'test_that', '--no-quickmerge', '--ssh_options',
+        '-F /dev/null -i /dev/null',
+        'localhost:9222', 'accessiblity_Sanity'])
