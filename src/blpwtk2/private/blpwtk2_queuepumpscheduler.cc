@@ -37,7 +37,7 @@ const std::string& QueuePumpScheduler::name()
 
 QueuePumpScheduler::QueuePumpScheduler()
 {
-    d_tunables.push_back({"timer-preemption-percent", 75});
+    d_tunables.push_back({"budget", 80});
 }
 
 QueuePumpScheduler::~QueuePumpScheduler()
@@ -46,46 +46,59 @@ QueuePumpScheduler::~QueuePumpScheduler()
 
 void QueuePumpScheduler::isReadyToWork(bool *allowNormalWork, bool *allowIdleWork)
 {
-    // We will unintrusively keep our own message loop pumping without
-    // preempting lower-priority messages.  We do this by first checking
-    // what's on the Windows message queue.
     DWORD queueStatus =
-        HIWORD(::GetQueueStatus(QS_INPUT | QS_SENDMESSAGE | QS_POSTMESSAGE | QS_TIMER | QS_PAINT));
+        HIWORD(::GetQueueStatus(QS_SENDMESSAGE | QS_POSTMESSAGE | QS_TIMER | QS_PAINT));
 
-    if (queueStatus & (QS_INPUT | QS_PAINT)) {
-        // Don't allow chromium to work if there are input or paint messages
-        return;
-    }
-    else if (queueStatus & QS_TIMER) {
-        // Unlike WM_PAINT message (which is based on the display refresh
-        // rate) and input message (which is based on user action), WM_TIMER
-        // messages are added by windows in GetMessage or PeekMessage when the
-        // queue is empty.  If we are always too polite about not inserting
-        // any posted messages to not preempt low priority messages, Windows
-        // would think that we are completely idle and will end up stuffing
-        // the queue with more timer messages. To make sure Windows doesn't
-        // confuse our niceness with idleness, we occasionally preempt the
-        // timer message.
+    if (GetInputState() || queueStatus & (QS_TIMER | QS_PAINT)) {
+        // The input messages are only fetched from the input queue when
+        // GetMessage/PeekMessage does not find any posted messages in the
+        // post message queue. Similarly, paint and timer messages are
+        // synthesized based on a flag in the window only if both the post
+        // message queue and the input message queue are empty.
+        //
+        // Here are some example scenarios that can cause a low priority
+        // message to always be available:
+        //
+        // input message: The user can trigger frequent WM_MOUSEMOVE events
+        //   by moving the mouse cursor over the window.
+        //
+        // paint message: The application calls InvalidateRect on every event
+        //   loop cycle and/or the application does not fully validate the
+        //   damaged rect when processing the WM_PAINT message.
+        //
+        // timer message: SetTimer is called with a period of 10ms or less.
+        //   If the main event loop takes more than 10ms to run a single
+        //   cycle, the timer flag will always be set for the window.
+        //
+        // Since the emptiness of the post message queue causes
+        // GetMessage/PeekMessage to dispatch these low priority messages and
+        // the presence of these low priority messages prevent us from posting
+        // the chrome pump message, it's possible for the thread to enter a
+        // state where the chrome pump message is starved by these low
+        // priority  messages.  For this reason, we only preempt ourselves a
+        // fraction of the time.
+        d_totalBudget += d_tunables[0].second;
 
-        unsigned timerPreemptionPercent = d_tunables[0].second;
-
-        if ((++d_timerCount % 100) < timerPreemptionPercent) {
-            *allowIdleWork = false;
+        if (d_totalBudget >= 100) {
+            d_totalBudget -= 100;
             *allowNormalWork = true;
         }
     }
-    else if (queueStatus & (QS_SENDMESSAGE | QS_POSTMESSAGE)) {
-        // No low priority messages in the queue but we do have some
-        // high-priority messages. We will schedule the pump but we'll
-        // skip idle work.
-        *allowIdleWork = false;
-        *allowNormalWork = true;
-    }
     else {
-        // No messages are in the queue. We schedule the pump and also
-        // do the idle work.
-        *allowIdleWork = true;
+        // Reset the budget for our pump message.  The budget is only meant to
+        // allow preemption of a long chain of low priority messages to allow
+        // chrome to do some work but we don't want to use it to preempt a new
+        // chain of low priority messages.
+        d_totalBudget = 0;
+
+        // Allow chrome to work.
         *allowNormalWork = true;
+
+        if (0 == (queueStatus & (QS_SENDMESSAGE | QS_POSTMESSAGE))) {
+            // No messages are in the queue. We allow chrome to do idle work
+            // as well.
+            *allowIdleWork = true;
+        }
     }
 }
 
