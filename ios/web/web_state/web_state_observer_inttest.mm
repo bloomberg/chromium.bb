@@ -329,11 +329,12 @@ ACTION_P5(VerifyDataFinishedContext,
 // Verifies correctness of |NavigationContext| (|arg1|) for failed navigation
 // passed to |DidFinishNavigation|. Asserts that |NavigationContext| the same as
 // |context|.
-ACTION_P5(VerifyErrorFinishedContext,
+ACTION_P6(VerifyErrorFinishedContext,
           web_state,
           url,
           context,
           nav_id,
+          committed,
           error_code) {
   ASSERT_EQ(*context, arg1);
   EXPECT_EQ(web_state, arg0);
@@ -346,7 +347,7 @@ ACTION_P5(VerifyErrorFinishedContext,
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
-  EXPECT_TRUE((*context)->HasCommitted());
+  EXPECT_EQ(committed, (*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   // The error code will be different on bots and for local runs. Allow both.
@@ -358,8 +359,13 @@ ACTION_P5(VerifyErrorFinishedContext,
   ASSERT_FALSE(web_state->ContentIsHTML());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
-  EXPECT_FALSE(item->GetTimestamp().is_null());
-  EXPECT_EQ(url, item->GetURL());
+  if (committed) {
+    ASSERT_TRUE(item);
+    EXPECT_FALSE(item->GetTimestamp().is_null());
+    EXPECT_EQ(url, item->GetURL());
+  } else {
+    EXPECT_FALSE(item);
+  }
 }
 
 // Verifies correctness of |NavigationContext| (|arg1|) passed to
@@ -1054,6 +1060,7 @@ TEST_P(WebStateObserverTest, FailedNavigation) {
           &nav_id));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyErrorFinishedContext(web_state(), url, &context, &nav_id,
+                                           /*committed=*/true,
                                            NSURLErrorNetworkConnectionLost));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
@@ -1067,6 +1074,44 @@ TEST_P(WebStateObserverTest, FailedNavigation) {
   ASSERT_TRUE(test::WaitForWebViewContainingText(
       web_state(), "The network connection was lost."));
   DCHECK_EQ(item->GetTitle(), base::UTF8ToUTF16(kFailedTitle));
+}
+
+// Tests failed navigation because of invalid URL.
+TEST_P(WebStateObserverTest, InvalidUrlNavigation) {
+  const std::string kBadSuffix = "/..;";
+  GURL url = test_server_->GetURL(kBadSuffix);
+
+  // WebKit rewrites invalid URLs.
+  std::string webkit_rewritten_url_spec = url.spec();
+  webkit_rewritten_url_spec.replace(url.spec().size() - kBadSuffix.size(),
+                                    kBadSuffix.size(), ";/");
+
+  // Perform a navigation to an ivalid url, which will fail.
+  NavigationContext* context = nullptr;
+  int32_t nav_id = 0;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  WebStatePolicyDecider::RequestInfo expected_request_info(
+      // Can't match NavigationContext and determine navigation type
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), GURL(webkit_rewritten_url_spec),
+          ui::PageTransition::PAGE_TRANSITION_TYPED, &context, &nav_id));
+
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyErrorFinishedContext(
+          web_state(), GURL(webkit_rewritten_url_spec), &context, &nav_id,
+          /*committed=*/false, kWebKitErrorCannotShowUrl));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
+  test::LoadUrl(web_state(), url);
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+  EXPECT_EQ("", web_state()->GetVisibleURL());
 }
 
 // Tests failed navigation because URL scheme is not supported by WKWebView.
@@ -1089,6 +1134,7 @@ TEST_P(WebStateObserverTest, WebViewUnsupportedSchemeNavigation) {
           &nav_id));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyErrorFinishedContext(web_state(), url, &context, &nav_id,
+                                           /*committed=*/true,
                                            NSURLErrorUnsupportedURL));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
@@ -1118,6 +1164,7 @@ TEST_P(WebStateObserverTest, WebViewUnsupportedUrlNavigation) {
           &nav_id));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyErrorFinishedContext(web_state(), url, &context, &nav_id,
+                                           /*committed=*/true,
                                            web::kWebKitErrorCannotShowUrl));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,

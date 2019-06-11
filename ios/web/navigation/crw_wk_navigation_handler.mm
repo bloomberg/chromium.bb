@@ -256,7 +256,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   // Invalid URLs should not be loaded.
   if (!requestURL.is_valid()) {
-    decisionHandler(WKNavigationActionPolicyCancel);
     // The HTML5 spec indicates that window.open with an invalid URL should open
     // about:blank.
     BOOL isFirstLoadInOpenedWindow =
@@ -264,13 +263,13 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         !self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();
     BOOL isMainFrame = action.targetFrame.mainFrame;
     if (isFirstLoadInOpenedWindow && isMainFrame) {
+      decisionHandler(WKNavigationActionPolicyCancel);
       GURL aboutBlankURL(url::kAboutBlankURL);
       web::NavigationManager::WebLoadParams loadParams(aboutBlankURL);
       loadParams.referrer = self.currentReferrer;
 
       self.webStateImpl->GetNavigationManager()->LoadURLWithParams(loadParams);
     }
-    return;
   }
 
   // First check if the navigation action should be blocked by the controller
@@ -1786,6 +1785,19 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       }
       self.webStateImpl->SetIsLoading(false);
       return;
+    }
+
+    if (error.code == web::kWebKitErrorCannotShowUrl) {
+      if (!navigationContext->GetUrl().is_valid()) {
+        // It won't be possible to load an error page for invalid URL, because
+        // WKWebView will revert the url to about:blank. Simply discard pending
+        // item and fail the navigation.
+        navigationContext->ReleaseItem();
+        self.webStateImpl->OnNavigationFinished(navigationContext);
+        self.webStateImpl->SetIsLoading(false);
+        self.webStateImpl->OnPageLoaded(navigationContext->GetUrl(), false);
+        return;
+      }
     }
   }
 
