@@ -40,8 +40,6 @@ class CORE_EXPORT SpatialNavigationController
   void OnSpatialNavigationSettingChanged();
   void FocusedNodeChanged(Document*);
 
-  void ResetMojoBindings();
-
   void Trace(blink::Visitor*);
 
  private:
@@ -100,6 +98,7 @@ class CORE_EXPORT SpatialNavigationController
   bool UpdateHasDefaultVideoControls(Element* element);
 
   const mojom::blink::SpatialNavigationHostPtr& GetSpatialNavigationHost();
+  void ResetMojoBindings();
 
   // The currently indicated element or nullptr if no node is indicated by
   // spatial navigation.
