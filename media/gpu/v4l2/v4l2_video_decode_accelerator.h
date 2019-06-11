@@ -47,6 +47,7 @@ class GLFenceEGL;
 namespace media {
 
 class H264Parser;
+class V4L2StatefulWorkaround;
 
 // This class handles video accelerators directly through a V4L2 device exported
 // by the hardware blocks.
@@ -507,6 +508,11 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // For H264 decode, hardware requires that we send it frame-sized chunks.
   // We'll need to parse the stream.
   std::unique_ptr<H264Parser> decoder_h264_parser_;
+
+  // Workaround for V4L2VideoDecodeAccelerator. This is created only if some
+  // workaround is necessary for the V4L2VideoDecodeAccelerator.
+  std::vector<std::unique_ptr<V4L2StatefulWorkaround>> workarounds_;
+
   // Set if the decoder has a pending incomplete frame in an input buffer.
   bool decoder_partial_frame_pending_;
 
