@@ -100,13 +100,16 @@ bool ShippingAddressEditorViewController::ValidateModelAndSave() {
   } else {
     autofill::ServerFieldTypeSet all_fields;
     profile_to_edit_->GetSupportedTypes(&all_fields);
-    // Clear all the address data in |profile_to_edit_|, in anticipation of
-    // adding only the fields present in the editor.  Prefer this method to
-    // copying |profile| into |profile_to_edit_|, because the latter object
-    // needs to retain other properties (use count, use date, guid,
-    // etc.).
-    for (autofill::ServerFieldType type : all_fields)
-      profile_to_edit_->SetRawInfo(type, base::string16());
+    // Clear all the address data in |profile_to_edit_| except the email field,
+    // in anticipation of adding only the fields present in the editor. Prefer
+    // this method to copying |profile| into |profile_to_edit_|, because the
+    // latter object needs to retain other properties (use count, use date,
+    // guid, etc.).
+    for (autofill::ServerFieldType type : all_fields) {
+      if (type != autofill::ServerFieldType::EMAIL_ADDRESS) {
+        profile_to_edit_->SetRawInfo(type, base::string16());
+      }
+    }
 
     bool success = SaveFieldsToProfile(profile_to_edit_,
                                        /*ignore_errors=*/false);
