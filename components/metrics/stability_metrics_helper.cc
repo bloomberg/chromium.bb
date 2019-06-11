@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -336,6 +337,9 @@ void StabilityMetricsHelper::LogRendererHang() {
       app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES;
   UMA_HISTOGRAM_BOOLEAN("ChildProcess.HungRendererInForeground", is_foreground);
 #endif
+  UMA_HISTOGRAM_MEMORY_MB(
+      "ChildProcess.HungRendererAvailableMemoryMB",
+      base::SysInfo::AmountOfAvailablePhysicalMemory() / 1024 / 1024);
   IncrementPrefValue(prefs::kStabilityRendererHangCount);
 }
 
