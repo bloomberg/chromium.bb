@@ -132,6 +132,7 @@ source_set("headers") {
       "//media",
       "//media/capture:capture_base",
       "//media/capture:capture_lib",
+      "//media/mojo/interfaces:interfaces",
     ]
   }
 
