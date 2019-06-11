@@ -11,6 +11,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.native_page.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -48,6 +49,18 @@ class TouchlessActionItemViewHolder extends ActionItem.ViewHolder {
                 ApiCompatibilityUtils.getDrawable(itemView.getResources(), R.drawable.ic_note_add));
         // Image view defaults to GONE.
         mImageView.setVisibility(View.VISIBLE);
+        ContextMenuManager.registerViewForTouchlessContextMenu(
+                mButton, new ContextMenuManager.EmptyDelegate() {
+                    @Override
+                    public String getContextMenuTitle() {
+                        return mButton.getResources().getString(R.string.more_articles);
+                    }
+
+                    @Override
+                    public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
+                        return menuItemId == ContextMenuItemId.LEARN_MORE;
+                    }
+                });
     }
 
     @Override

@@ -85,6 +85,36 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
     }
 
     /**
+     * Empty implementation of Delegate to allow derived classes to only implement methods they
+     * need.
+     */
+    public static class EmptyDelegate implements Delegate {
+        @Override
+        public void openItem(int windowDisposition) {}
+
+        @Override
+        public void removeItem() {}
+
+        @Override
+        public String getUrl() {
+            return null;
+        }
+
+        @Override
+        public String getContextMenuTitle() {
+            return null;
+        }
+
+        @Override
+        public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
+            return false;
+        }
+
+        @Override
+        public void onContextMenuCreated() {}
+    }
+
+    /**
      * Delegate used by the {@link ContextMenuManager} to disable touch events on the outer view
      * while the context menu is open.
      */
