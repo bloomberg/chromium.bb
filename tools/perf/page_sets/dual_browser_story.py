@@ -213,7 +213,8 @@ class MultiBrowserSharedState(story_module.SharedState):
     self.platform.network_controller.Close()
     self._CloseAllBrowsers()
 
-  def DumpStateUponFailure(self, unused_story, unused_results):
+  def DumpStateUponStoryRunFailure(self, results):
+    del results  # Unused.
     if self._browsers:
       for browser_type, browser in self._browsers.iteritems():
         if browser is not None:
