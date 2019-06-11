@@ -21,6 +21,7 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
 #include "base/strings/string_split.h"
@@ -1669,6 +1670,8 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
   // via WritingCompleted.
   put_context->cache_entry.reset(*entry_ptr);
 
+  base::UmaHistogramSparse("ServiceWorkerCache.DiskCacheCreateEntryResult",
+                           std::abs(rv));
   if (rv != net::OK) {
     PutComplete(std::move(put_context), CacheStorageError::kErrorExists);
     return;
