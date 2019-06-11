@@ -8,9 +8,11 @@
 #include <string>
 #include <utility>
 
+#include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/grit/platform_locale_settings.h"
+#include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,7 +33,9 @@ namespace {
 // |letter| into a rounded background of |color|.
 class GeneratedIconImageSource : public gfx::CanvasImageSource {
  public:
-  explicit GeneratedIconImageSource(char letter, SkColor color, int output_size)
+  explicit GeneratedIconImageSource(base::char16 letter,
+                                    SkColor color,
+                                    int output_size)
       : gfx::CanvasImageSource(gfx::Size(output_size, output_size), false),
         letter_(letter),
         color_(color),
@@ -64,13 +68,13 @@ class GeneratedIconImageSource : public gfx::CanvasImageSource {
     // The text rect's size needs to be odd to center the text correctly.
     gfx::Rect text_rect(icon_inset, icon_inset, icon_size + 1, icon_size + 1);
     canvas->DrawStringRectWithFlags(
-        base::string16(1, std::toupper(letter_)),
+        base::string16(1, letter_),
         gfx::FontList(gfx::Font(font_name, font_size)),
         color_utils::GetColorWithMaxContrast(color_), text_rect,
         gfx::Canvas::TEXT_ALIGN_CENTER);
   }
 
-  char letter_;
+  base::char16 letter_;
 
   SkColor color_;
 
@@ -86,7 +90,7 @@ class GeneratedIconImageSource : public gfx::CanvasImageSource {
 void GenerateIcon(std::map<int, BitmapAndSource>* bitmaps,
                   int output_size,
                   SkColor color,
-                  char letter) {
+                  base::char16 letter) {
   // Do nothing if there is already an icon of |output_size|.
   if (bitmaps->count(output_size))
     return;
@@ -98,30 +102,15 @@ void GenerateIcons(std::set<int> generate_sizes,
                    const GURL& app_url,
                    SkColor generated_icon_color,
                    std::map<int, BitmapAndSource>* bitmap_map) {
-  // The letter that will be painted on the generated icon.
-  char icon_letter = ' ';
-  std::string domain_and_registry(
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          app_url,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-
-  // TODO(crbug.com/867311): Decode the app URL or the domain before retrieving
-  // the first character, otherwise we generate an icon with "x" if the domain
-  // or app URL starts with a UTF-8 character.
-  if (!domain_and_registry.empty()) {
-    icon_letter = domain_and_registry[0];
-  } else if (app_url.has_host()) {
-    icon_letter = app_url.host_piece()[0];
-  }
-
   // If no color has been specified, use a dark gray so it will stand out on the
   // black shelf.
   if (generated_icon_color == SK_ColorTRANSPARENT)
     generated_icon_color = SK_ColorDKGRAY;
 
-  for (int size : generate_sizes) {
+  const base::char16 icon_letter = GenerateIconLetterFromUrl(app_url);
+
+  for (int size : generate_sizes)
     GenerateIcon(bitmap_map, size, generated_icon_color, icon_letter);
-  }
 }
 
 }  // namespace
@@ -167,7 +156,7 @@ std::map<int, BitmapAndSource> ConstrainBitmapsToSizes(
   return output_bitmaps;
 }
 
-SkBitmap GenerateBitmap(int output_size, SkColor color, char letter) {
+SkBitmap GenerateBitmap(int output_size, SkColor color, base::char16 letter) {
   gfx::ImageSkia icon_image(
       std::make_unique<GeneratedIconImageSource>(letter, color, output_size),
       gfx::Size(output_size, output_size));
@@ -177,6 +166,28 @@ SkBitmap GenerateBitmap(int output_size, SkColor color, char letter) {
                                     0, 0);
   }
   return dst;
+}
+
+// Returns the letter that will be painted on the generated icon.
+base::char16 GenerateIconLetterFromUrl(const GURL& app_url) {
+  std::string app_url_part = " ";
+  const std::string domain_and_registry =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          app_url,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+  if (!domain_and_registry.empty()) {
+    app_url_part = domain_and_registry;
+  } else if (app_url.has_host()) {
+    app_url_part = app_url.host();
+  }
+
+  // Translate punycode into unicode before retrieving the first letter.
+  const base::string16 string_for_display =
+      url_formatter::IDNToUnicode(app_url_part);
+
+  base::char16 icon_letter = base::i18n::ToUpper(string_for_display)[0];
+  return icon_letter;
 }
 
 std::map<int, BitmapAndSource> ResizeIconsAndGenerateMissing(

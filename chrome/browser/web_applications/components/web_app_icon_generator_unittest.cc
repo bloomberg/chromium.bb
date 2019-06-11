@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace web_app {
@@ -335,6 +336,17 @@ TEST(WebAppIconGeneratorTest, IconsResizedWhenOnlyAGigantorOneIsProvided) {
   // When an enormous icon is provided, each desired icon size should be resized
   // from it, and no icons should be generated.
   TestIconGeneration(icon_size::k512, 0, 3);
+}
+
+TEST(WebAppIconGeneratorTest, GenerateIconLetterFromUrl) {
+  // ASCII:
+  EXPECT_EQ('E', GenerateIconLetterFromUrl(GURL("http://example.com")));
+  // Cyrillic capital letter ZHE for something like https://zhuk.rf:
+  EXPECT_EQ(0x0416,
+            GenerateIconLetterFromUrl(GURL("https://xn--f1ai0a.xn--p1ai/")));
+  // Arabic:
+  EXPECT_EQ(0x0645,
+            GenerateIconLetterFromUrl(GURL("http://xn--mgbh0fb.example/")));
 }
 
 }  // namespace web_app
