@@ -55,7 +55,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
       const std::map<std::string, std::string>& params) override;
 
   // content::NavigableContentsObserver:
-  void DidAutoResizeView(const gfx::Size& new_size) override;
   void DidStopLoading() override;
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
@@ -67,10 +66,16 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
       AssistantVisibility old_visibility,
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
+  void OnUsableWorkAreaChanged(const gfx::Rect& usable_work_area) override;
 
  private:
   void InitLayout();
   void RemoveContents();
+
+  // Updates the size of the web contents by changing its view size to avoid
+  // either being cut or not fully filling the whole container when the usable
+  // work area changed.
+  void UpdateContentSize();
 
   AssistantViewDelegate* const delegate_;
 
@@ -78,6 +83,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
 
   mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
   std::unique_ptr<content::NavigableContents> contents_;
+
+  bool contents_view_initialized_ = false;
 
   base::WeakPtrFactory<AssistantWebView> weak_factory_;
 
