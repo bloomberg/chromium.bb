@@ -276,6 +276,31 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, IsNotCreatedInPopup) {
   EXPECT_FALSE(popup_view->toolbar()->custom_tab_bar());
 }
 
+IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
+                       BackToAppButtonIsNotVisibleInOutOfScopePopups) {
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL& app_url = https_server()->GetURL("app.com", "/ssl/google.html");
+  const GURL& out_of_scope_url = GURL("https://example.com");
+
+  InstallBookmark(app_url);
+
+  BrowserView* app_view = BrowserView::GetBrowserViewForBrowser(app_browser_);
+
+  Browser* popup_browser =
+      OpenPopup(app_view->GetActiveWebContents(), out_of_scope_url);
+
+  // Out of scope, so custom tab bar should be shown.
+  EXPECT_TRUE(popup_browser->app_controller()->ShouldShowToolbar());
+
+  // As the popup was opened out of scope the close button should not be shown.
+  EXPECT_FALSE(BrowserView::GetBrowserViewForBrowser(popup_browser)
+                   ->toolbar()
+                   ->custom_tab_bar()
+                   ->close_button_for_testing()
+                   ->GetVisible());
+}
+
 // Check the custom tab will be used for a Desktop PWA.
 IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, IsUsedForDesktopPWA) {
   ASSERT_TRUE(https_server()->Start());

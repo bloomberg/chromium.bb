@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
@@ -246,13 +247,21 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   last_title_ = title;
   last_location_ = location;
 
-  // Only show the close button if the current URL is not in the application
-  // scope (it doesn't make sense to show a 'back-to-scope' button in scope).
-  close_button_->SetVisible(!extensions::IsSameScope(
-      chrome::FindBrowserWithWebContents(contents)
-          ->app_controller()
-          ->GetAppLaunchURL(),
-      contents->GetVisibleURL(), contents->GetBrowserContext()));
+  web_app::AppBrowserController* app_controller =
+      chrome::FindBrowserWithWebContents(contents)->app_controller();
+  const bool started_in_scope = extensions::IsSameScope(
+      app_controller->GetAppLaunchURL(), app_controller->initial_url(),
+      contents->GetBrowserContext());
+
+  // Only show the 'X' button if the current URL is not in the application
+  // scope (it doesn't make sense to show a 'back-to-scope' button in scope)
+  // and if the window started in scope (this is important for popup windows
+  // which get opened out of scope).
+  close_button_->SetVisible(
+      started_in_scope &&
+      !extensions::IsSameScope(app_controller->GetAppLaunchURL(),
+                               contents->GetVisibleURL(),
+                               contents->GetBrowserContext()));
 
   Layout();
 }
