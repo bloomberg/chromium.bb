@@ -5,7 +5,7 @@
 #include "components/viz/service/display_embedder/software_output_device_win.h"
 
 #include "base/bind.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/windows_version.h"
 #include "components/viz/common/display/use_layered_window.h"
@@ -144,12 +144,12 @@ SkCanvas* SoftwareOutputDeviceWinDirect::BeginPaintDelegated() {
   if (!canvas_) {
     // Share pixel backing with other SoftwareOutputDeviceWinDirect instances.
     // All work happens on the same thread so this is safe.
-    base::SharedMemory* memory =
-        backing_->GetSharedMemory(viewport_pixel_size_);
-    if (memory) {
+    base::UnsafeSharedMemoryRegion* region =
+        backing_->GetSharedMemoryRegion(viewport_pixel_size_);
+    if (region && region->IsValid()) {
       canvas_ = skia::CreatePlatformCanvasWithSharedSection(
           viewport_pixel_size_.width(), viewport_pixel_size_.height(), true,
-          memory->handle().GetHandle(), skia::CRASH_ON_FAILURE);
+          region->GetPlatformHandle(), skia::CRASH_ON_FAILURE);
     }
   }
   return canvas_.get();
@@ -173,8 +173,8 @@ void SoftwareOutputDeviceWinDirect::EndPaintDelegated(
 // SoftwareOutputDevice implementation that uses layered window API to draw
 // indirectly. Since UpdateLayeredWindow() is blocked by the GPU sandbox an
 // implementation of mojom::LayeredWindowUpdater in the browser process handles
-// calling UpdateLayeredWindow. Pixel backing is in SharedMemory so no copying
-// between processes is required.
+// calling UpdateLayeredWindow. Pixel backing is in a SharedMemoryRegion so no
+// copying between processes is required.
 class SoftwareOutputDeviceWinProxy : public SoftwareOutputDeviceWinBase {
  public:
   SoftwareOutputDeviceWinProxy(
@@ -237,8 +237,9 @@ void SoftwareOutputDeviceWinProxy::ResizeDelegated() {
     return;
   }
 
-  base::SharedMemory shm;
-  if (!shm.CreateAnonymous(required_bytes)) {
+  base::UnsafeSharedMemoryRegion region =
+      base::UnsafeSharedMemoryRegion::Create(required_bytes);
+  if (!region.IsValid()) {
     DLOG(ERROR) << "Failed to allocate " << required_bytes << " bytes";
     return;
   }
@@ -246,15 +247,11 @@ void SoftwareOutputDeviceWinProxy::ResizeDelegated() {
   // The SkCanvas maps shared memory on creation and unmaps on destruction.
   canvas_ = skia::CreatePlatformCanvasWithSharedSection(
       viewport_pixel_size_.width(), viewport_pixel_size_.height(), true,
-      shm.handle().GetHandle(), skia::CRASH_ON_FAILURE);
+      region.GetPlatformHandle(), skia::CRASH_ON_FAILURE);
 
-  // Transfer handle ownership to the browser process.
-  mojo::ScopedSharedBufferHandle scoped_handle = mojo::WrapSharedMemoryHandle(
-      shm.TakeHandle(), required_bytes,
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
-
+  // Transfer region ownership to the browser process.
   layered_window_updater_->OnAllocatedSharedMemory(viewport_pixel_size_,
-                                                   std::move(scoped_handle));
+                                                   std::move(region));
 }
 
 SkCanvas* SoftwareOutputDeviceWinProxy::BeginPaintDelegated() {
