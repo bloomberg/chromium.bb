@@ -537,7 +537,7 @@ void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void SynchronousLayerTreeFrameSink::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {}
+    const viz::FrameTimingDetailsMap& timing_details) {}
 
 void SynchronousLayerTreeFrameSink::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
@@ -555,11 +555,12 @@ void SynchronousLayerTreeFrameSink::OnNeedsBeginFrames(
 }
 
 void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
-    const viz::PresentationFeedbackMap& presentation_feedbacks) {
+    const viz::FrameTimingDetailsMap& timing_details) {
   if (!client_)
     return;
-  for (const auto& pair : presentation_feedbacks) {
-    client_->DidPresentCompositorFrame(pair.first, pair.second);
+  for (const auto& pair : timing_details) {
+    client_->DidPresentCompositorFrame(pair.first,
+                                       pair.second.presentation_feedback);
   }
 }
 
