@@ -177,12 +177,6 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
   void GetAnimationOnCompositor(
       Timing& timing,
       StringKeyframeEffectModel& effect,
-      Vector<std::unique_ptr<CompositorKeyframeModel>>& keyframe_models) {
-    GetAnimationOnCompositor(timing, effect, keyframe_models, 1);
-  }
-  void GetAnimationOnCompositor(
-      Timing& timing,
-      StringKeyframeEffectModel& effect,
       Vector<std::unique_ptr<CompositorKeyframeModel>>& keyframe_models,
       double animation_playback_rate) {
     CompositorAnimations::GetAnimationOnCompositor(
