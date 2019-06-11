@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "content/public/browser/web_contents.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -206,6 +208,35 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
   EXPECT_TRUE(WebAppProvider::Get(browser()->profile())
                   ->system_web_app_manager()
                   .IsSystemWebApp(app->id()));
+}
+
+// Check the toolbar is not shown for system web apps for pages on the chrome://
+// scheme but is shown off the chrome:// scheme.
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
+                       ToolbarVisibilityForSystemWebApp) {
+  Browser* app_browser =
+      WaitForSystemAppInstallAndLaunch(SystemAppType::SETTINGS);
+  // In scope, the toolbar should not be visible.
+  EXPECT_FALSE(app_browser->app_controller()->ShouldShowToolbar());
+
+  // Because the first part of the url is on a different origin (settings vs.
+  // foo) a toolbar would normally be shown. However, because settings is a
+  // SystemWebApp and foo is served via chrome:// it is okay not to show the
+  // toolbar.
+  GURL out_of_scope_chrome_page(content::kChromeUIScheme +
+                                std::string("://foo"));
+  content::NavigateToURLBlockUntilNavigationsComplete(
+      app_browser->tab_strip_model()->GetActiveWebContents(),
+      out_of_scope_chrome_page, 1);
+  EXPECT_FALSE(app_browser->app_controller()->ShouldShowToolbar());
+
+  // Even though the url is secure it is not being served over chrome:// so a
+  // toolbar should be shown.
+  GURL off_scheme_page("https://example.com");
+  content::NavigateToURLBlockUntilNavigationsComplete(
+      app_browser->tab_strip_model()->GetActiveWebContents(), off_scheme_page,
+      1);
+  EXPECT_TRUE(app_browser->app_controller()->ShouldShowToolbar());
 }
 
 }  // namespace web_app

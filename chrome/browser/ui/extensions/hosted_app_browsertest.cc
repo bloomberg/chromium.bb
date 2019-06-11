@@ -332,20 +332,6 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
     LaunchApp();
   }
 
-  void SetupSystemAppWithURL(const GURL& app_url) {
-    extensions::TestExtensionDir test_app_dir;
-    test_app_dir.WriteManifest(
-        base::StringPrintf(kAppDotComManifest, app_url.spec().c_str()));
-
-    app_ = InstallExtensionWithSourceAndFlags(
-        test_app_dir.UnpackedPath(), 1,
-        extensions::Manifest::EXTERNAL_COMPONENT,
-        extensions::Extension::FROM_BOOKMARK);
-    ASSERT_TRUE(app_);
-
-    LaunchApp();
-  }
-
   void LaunchApp() {
     // Launch app in a window.
     app_browser_ = LaunchAppBrowser(app_);
@@ -1773,61 +1759,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, AppInfoOpensPageInfo) {
   GetPageInfoDialogCreatedCallbackForTesting().Reset();
 }
 #endif
-
-// Check that the toolbar is shown correctly with a System App.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ShouldShowToolbarForSystemApp) {
-  const GURL app_url(chrome::kChromeUISettingsURL);
-
-  SetupSystemAppWithURL(app_url);
-
-  // Navigate to the app's launch page; the toolbar should be hidden.
-  NavigateAndCheckForToolbar(app_browser_, app_url, false);
-}
-
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(NDEBUG)
-// https://crbug.com/966834. Flaky on Linux/Chrome OS debug bots.
-#define MAYBE_ShouldNotShowToolbarForSystemWebAppInChrome \
-  DISABLED_ShouldNotShowToolbarForSystemWebAppInChrome
-#else
-#define MAYBE_ShouldNotShowToolbarForSystemWebAppInChrome \
-  ShouldNotShowToolbarForSystemWebAppInChrome
-#endif
-// Check the toolbar is not shown for system web apps for pages on the chrome://
-// scheme.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       MAYBE_ShouldNotShowToolbarForSystemWebAppInChrome) {
-  const GURL app_url(chrome::kChromeUISettingsURL);
-
-  SetupSystemAppWithURL(app_url);
-
-  // Navigate to the app's launch page; the toolbar should be hidden.
-  NavigateAndCheckForToolbar(app_browser_, app_url, false);
-
-  // Because the first part of the url is on a different origin (settings vs.
-  // foo) a toolbar would normally be shown. However, because settings is a
-  // SystemWebApp and foo is served via chrome:// it is okay not to show the
-  // toolbar.
-  GURL out_of_scope_chrome_page(app_url.spec() + "://foo");
-  LOG(ERROR) << out_of_scope_chrome_page;
-  NavigateAndCheckForToolbar(app_browser_, out_of_scope_chrome_page, false);
-}
-
-// Check the toolbar is shown for system web apps on pages not on the chrome://
-// scheme. Note: We should never normally get into this scenario.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       ShouldShowToolbarForSystemWebAppOnInternet) {
-  const GURL app_url(chrome::kChromeUISettingsURL);
-
-  SetupSystemAppWithURL(app_url);
-
-  // Navigate to the app's launch page; the toolbar should be hidden.
-  NavigateAndCheckForToolbar(app_browser_, app_url, false);
-
-  // Even though the url is secure it is not being served over chrome:// so a
-  // toolbar should be shown.
-  GURL off_scheme_page("https://example.com");
-  NavigateAndCheckForToolbar(app_browser_, off_scheme_page, true);
-}
 
 // Common app manifest for HostedAppProcessModelTests.
 constexpr const char kHostedAppProcessModelManifest[] =
