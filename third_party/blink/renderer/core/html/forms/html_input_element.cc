@@ -1652,8 +1652,7 @@ bool HTMLInputElement::HasValidDataListOptions() const {
     return false;
   HTMLDataListOptionsCollection* options = data_list->options();
   for (unsigned i = 0; HTMLOptionElement* option = options->Item(i); ++i) {
-    if (!option->value().IsEmpty() && !option->IsDisabledFormControl() &&
-        IsValidValue(option->value()))
+    if (!option->value().IsEmpty() && !option->IsDisabledFormControl())
       return true;
   }
   return false;
@@ -1687,9 +1686,7 @@ HTMLInputElement::FilteredDataListOptions() const {
           option->label().FoldCase().Find(value) == kNotFound)
         continue;
     }
-    // TODO(tkent): Should allow invalid strings. crbug.com/607097.
-    if (option->value().IsEmpty() || option->IsDisabledFormControl() ||
-        !IsValidValue(option->value()))
+    if (option->value().IsEmpty() || option->IsDisabledFormControl())
       continue;
     filtered.push_back(option);
   }
