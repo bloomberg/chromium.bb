@@ -623,6 +623,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
 }
 
 void TestRunnerBindings::LogToStderr(const std::string& output) {
+  TRACE_EVENT1("shell", "TestRunner::LogToStderr", "output", output);
   LOG(ERROR) << output;
 }
 
