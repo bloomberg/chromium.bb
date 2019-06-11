@@ -77,12 +77,6 @@ bool IsSystemLibraryPath(const char* lib_path) {
   return false;
 }
 
-}  // namespace crazy
-
-#ifndef UNIT_TEST
-
-namespace crazy {
-
 FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other) noexcept {
   if (this != &other) {
     if (fd_ != kEmptyFD) {
@@ -93,6 +87,12 @@ FileDescriptor& FileDescriptor::operator=(FileDescriptor&& other) noexcept {
   }
   return *this;
 }
+
+}  // namespace crazy
+
+#ifndef UNIT_TEST
+
+namespace crazy {
 
 ssize_t FileDescriptor::Read(void* buffer, size_t buffer_size) {
   return TEMP_FAILURE_RETRY(::read(fd_, buffer, buffer_size));
