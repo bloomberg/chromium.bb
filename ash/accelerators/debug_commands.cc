@@ -6,9 +6,9 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/toast_data.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"

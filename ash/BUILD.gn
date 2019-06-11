@@ -877,8 +877,6 @@ component("ash") {
     "system/time/time_tray_item_view.h",
     "system/time/time_view.cc",
     "system/time/time_view.h",
-    "system/toast/toast_data.cc",
-    "system/toast/toast_data.h",
     "system/toast/toast_manager.cc",
     "system/toast/toast_manager.h",
     "system/toast/toast_overlay.cc",

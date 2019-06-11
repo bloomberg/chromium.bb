@@ -4,11 +4,11 @@
 
 #include "ash/system/palette/tools/capture_region_mode.h"
 
+#include "ash/public/cpp/toast_data.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_ids.h"
-#include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/utility/screenshot_controller.h"
 #include "base/bind.h"

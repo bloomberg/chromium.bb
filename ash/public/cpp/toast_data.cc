@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/toast/toast_data.h"
+#include "ash/public/cpp/toast_data.h"
 
 #include <utility>
 
