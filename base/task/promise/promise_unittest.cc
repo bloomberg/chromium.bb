@@ -2057,4 +2057,64 @@ TEST_F(PromiseTest, AllVoidContainerMultipleRejectsAfterExecute) {
   mpr4.Reject();
 }
 
+TEST_F(PromiseTest, TakeResolveValueForTesting) {
+  ManualPromiseResolver<void> p1(FROM_HERE);
+
+  Promise<int> p2 =
+      p1.promise().ThenHere(FROM_HERE, BindOnce([]() { return 123; }));
+
+  p1.Resolve();
+
+  EXPECT_EQ(123, p2.TakeResolveValueForTesting());
+}
+
+TEST_F(PromiseTest, TakeResolveValueForTestingMoveOnlyType) {
+  ManualPromiseResolver<void> p1(FROM_HERE);
+
+  Promise<std::unique_ptr<int>> p2 = p1.promise().ThenHere(
+      FROM_HERE, BindOnce([]() { return std::make_unique<int>(123); }));
+
+  p1.Resolve();
+
+  EXPECT_EQ(123, *p2.TakeResolveValueForTesting());
+}
+
+TEST_F(PromiseTest, TakeResolveValueForTestingNotResolved) {
+  ManualPromiseResolver<int, int> p1(FROM_HERE,
+                                     RejectPolicy::kCatchNotRequired);
+
+  p1.Reject(123);
+
+  EXPECT_DCHECK_DEATH({ p1.promise().TakeResolveValueForTesting(); });
+}
+
+TEST_F(PromiseTest, TakeRejectedValueForTesting) {
+  ManualPromiseResolver<void, void> p1(FROM_HERE);
+
+  Promise<int, int> p2 = p1.promise().ThenHere(
+      FROM_HERE, BindOnce([]() { return Resolved<int>(123); }),
+      BindOnce([]() { return Rejected<int>(456); }));
+
+  p1.Reject();
+
+  EXPECT_EQ(456, p2.TakeRejectValueForTesting());
+}
+
+TEST_F(PromiseTest, TakeRejectedValueForTestingMoveOnlyType) {
+  ManualPromiseResolver<void, std::unique_ptr<int>> p1(FROM_HERE);
+
+  p1.Reject(std::make_unique<int>(456));
+
+  EXPECT_EQ(456, *p1.promise().TakeRejectValueForTesting());
+}
+
+TEST_F(PromiseTest, TakeRejectedValueForTestingNotRejected) {
+  ManualPromiseResolver<int, int> p1(FROM_HERE,
+                                     RejectPolicy::kCatchNotRequired);
+
+  p1.Resolve(123);
+
+  EXPECT_DCHECK_DEATH({ p1.promise().TakeRejectValueForTesting(); });
+}
+
 }  // namespace base

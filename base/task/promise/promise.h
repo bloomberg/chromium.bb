@@ -5,6 +5,7 @@
 #ifndef BASE_TASK_PROMISE_PROMISE_H_
 #define BASE_TASK_PROMISE_PROMISE_H_
 
+#include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/promise/all_container_executor.h"
 #include "base/task/promise/all_tuple_executor.h"
@@ -70,6 +71,47 @@ class Promise {
   bool IsCancelledForTesting() const {
     DCHECK(abstract_promise_);
     return abstract_promise_->IsCanceled();
+  }
+
+  // Waits until the promise has settled and if resolved it returns the resolved
+  // value.
+  template <typename T = ResolveType,
+            std::enable_if_t<!std::is_reference<T>::value &&
+                             !std::is_void<T>::value>* = nullptr>
+  T TakeResolveValueForTesting() {
+    static_assert(!std::is_same<NoResolve, T>::value,
+                  "A NoResolve promise can't resolve.");
+    if (!abstract_promise_->IsSettled()) {
+      RunLoop run_loop;
+      FinallyHere(FROM_HERE, run_loop.QuitClosure());
+      run_loop.Run();
+    }
+    DCHECK(abstract_promise_->IsResolved())
+        << "Can't take resolved value, promise wasn't resolved.";
+    return std::move(
+        unique_any_cast<Resolved<T>>(&abstract_promise_->TakeValue().value())
+            ->value);
+  }
+
+  // Waits until the promise has settled and if rejected it returns the rejected
+  // value.
+  template <typename T = RejectType,
+            std::enable_if_t<!std::is_reference<T>::value &&
+                             !std::is_void<T>::value>* = nullptr>
+  T TakeRejectValueForTesting() {
+    static_assert(!std::is_same<NoReject, T>::value,
+                  "A NoReject promise can't reject.");
+    if (!abstract_promise_->IsSettled()) {
+      RunLoop run_loop;
+      FinallyHere(FROM_HERE, run_loop.QuitClosure());
+      run_loop.Run();
+    }
+    abstract_promise_->IgnoreUncaughtCatchForTesting();
+    DCHECK(abstract_promise_->IsRejected())
+        << "Can't take rejected value, promise wasn't rejected.";
+    return std::move(
+        unique_any_cast<Rejected<T>>(&abstract_promise_->TakeValue().value())
+            ->value);
   }
 
   bool IsResolvedForTesting() const {
