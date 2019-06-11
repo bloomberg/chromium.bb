@@ -2126,6 +2126,9 @@ TEST_P(InputRouterImplTest, TouchActionInCallback) {
 }
 
 TEST_P(InputRouterImplTest, TimeoutMonitorStopWithMainThreadTouchAction) {
+  // TODO(crbug.com/953547): enable this when the bug is fixed.
+  if (compositor_touch_action_enabled_)
+    return;
   SetUpForTouchAckTimeoutTest(1, 1);
   OnHasTouchEventHandlers(true);
 
