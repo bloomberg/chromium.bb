@@ -64,6 +64,9 @@ class ThreadTaskRunnerHandle;
 //
 // This is a slightly more sophisticated version of TestSimpleTaskRunner, in
 // that it supports running delayed tasks in the correct temporal order.
+//
+// ATTENTION: Consider using base::test::ScopedTaskEnvironment with a
+// base::test::ScopedTaskEnvironment::MOCK_TIME constructor parameter instead.
 class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
                                public RunLoop::Delegate {
  public:
@@ -84,7 +87,7 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
   //     }
   //
   //     // Mock main task runner.
-  //     base::test::ScopedTaskEnvironment scoped_task_environment_;
+  //     base::MessageLoop message_loop_;
   //     base::ScopedMockTimeMessageLoopTaskRunner main_task_runner_;
   //
   //     // Mock foo task runner.
