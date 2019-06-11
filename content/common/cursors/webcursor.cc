@@ -40,8 +40,14 @@ WebCursor::WebCursor(const CursorInfo& info) : info_(info) {
   ClampHotspot();
 }
 
-WebCursor::WebCursor(const WebCursor& other) : info_(other.info_) {
-  CopyPlatformData(other);
+WebCursor::WebCursor(const WebCursor& other) {
+  CopyAllData(other);
+}
+
+WebCursor& WebCursor::operator=(const WebCursor& other) {
+  CleanupPlatformData();
+  CopyAllData(other);
+  return *this;
 }
 
 bool WebCursor::Deserialize(const base::Pickle* m, base::PickleIterator* iter) {
@@ -96,6 +102,11 @@ bool WebCursor::operator==(const WebCursor& other) const {
 
 bool WebCursor::operator!=(const WebCursor& other) const {
   return !(*this == other);
+}
+
+void WebCursor::CopyAllData(const WebCursor& other) {
+  info_ = other.info_;
+  CopyPlatformData(other);
 }
 
 void WebCursor::ClampHotspot() {
