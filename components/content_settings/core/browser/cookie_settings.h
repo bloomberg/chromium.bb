@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -32,6 +33,12 @@ const char kDummyExtensionScheme[] = ":no-extension-scheme:";
 class CookieSettings : public CookieSettingsBase,
                        public RefcountedKeyedService {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnThirdPartyCookieBlockingChanged(
+        bool block_third_party_cookies) = 0;
+  };
+
   // Creates a new CookieSettings instance.
   // The caller is responsible for ensuring that |extension_scheme| is valid for
   // the whole lifetime of this instance.
@@ -108,12 +115,17 @@ class CookieSettings : public CookieSettingsBase,
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  void AddObserver(Observer* obs) { observers_.AddObserver(obs); }
+
+  void RemoveObserver(const Observer* obs) { observers_.RemoveObserver(obs); }
+
  private:
   ~CookieSettings() override;
 
   void OnCookiePreferencesChanged();
 
   base::ThreadChecker thread_checker_;
+  base::ObserverList<Observer> observers_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   PrefChangeRegistrar pref_change_registrar_;
   const char* extension_scheme_;  // Weak.

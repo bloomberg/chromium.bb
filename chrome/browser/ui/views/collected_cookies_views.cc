@@ -27,12 +27,9 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/content_settings/core/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/notification_details.h"
@@ -505,12 +502,12 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  PrefService* prefs = profile->GetPrefs();
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
 
   // Create the controls that go into the pane.
   blocked_label_ = new views::Label(
       l10n_util::GetStringUTF16(
-          prefs->GetBoolean(prefs::kBlockThirdPartyCookies)
+          cookie_settings->ShouldBlockThirdPartyCookies()
               ? IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED
               : IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL),
       CONTEXT_BODY_TEXT_LARGE);

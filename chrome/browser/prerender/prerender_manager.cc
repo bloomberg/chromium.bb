@@ -31,6 +31,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
@@ -49,8 +50,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/prerender_types.h"
-#include "components/content_settings/core/common/pref_names.h"
-#include "components/prefs/pref_service.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
@@ -749,7 +749,8 @@ void PrerenderManager::MaybePreconnect(Origin origin,
     return;
   }
 
-  if (profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies)) {
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile_);
+  if (cookie_settings->ShouldBlockThirdPartyCookies()) {
     return;
   }
 
@@ -791,7 +792,8 @@ PrerenderManager::AddPrerenderWithPreconnectFallback(
 
   GURL url = url_arg;
 
-  if (profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies)) {
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile_);
+  if (cookie_settings->ShouldBlockThirdPartyCookies()) {
     SkipPrerenderContentsAndMaybePreconnect(
         url, origin, FINAL_STATUS_BLOCK_THIRD_PARTY_COOKIES);
     return nullptr;

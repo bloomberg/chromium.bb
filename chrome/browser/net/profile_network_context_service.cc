@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -28,8 +29,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -96,7 +97,9 @@ void DeleteChannelIDFiles(base::FilePath channel_id_path) {
 }  // namespace
 
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
-    : profile_(profile), proxy_config_monitor_(profile) {
+    : profile_(profile),
+      proxy_config_monitor_(profile),
+      cookie_settings_observer_(this) {
   PrefService* profile_prefs = profile->GetPrefs();
   quic_allowed_.Init(
       prefs::kQuicAllowed, profile_prefs,
@@ -110,11 +113,9 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
       prefs::kEnableReferrers, profile_prefs,
       base::BindRepeating(&ProfileNetworkContextService::UpdateReferrersEnabled,
                           base::Unretained(this)));
-  block_third_party_cookies_.Init(
-      prefs::kBlockThirdPartyCookies, profile_prefs,
-      base::BindRepeating(
-          &ProfileNetworkContextService::UpdateBlockThirdPartyCookies,
-          base::Unretained(this)));
+  cookie_settings_ = CookieSettingsFactory::GetForProfile(profile);
+  cookie_settings_observer_.Add(cookie_settings_.get());
+
   DisableQuicIfNotAllowed();
 
   // Observe content settings so they can be synced to the network service.
@@ -222,7 +223,8 @@ void ProfileNetworkContextService::UpdateAcceptLanguage() {
                     ComputeAcceptLanguage()));
 }
 
-void ProfileNetworkContextService::UpdateBlockThirdPartyCookies() {
+void ProfileNetworkContextService::OnThirdPartyCookieBlockingChanged(
+    bool block_third_party_cookies) {
   content::BrowserContext::ForEachStoragePartition(
       profile_, base::BindRepeating(
                     [](bool block_third_party_cookies,
@@ -230,7 +232,7 @@ void ProfileNetworkContextService::UpdateBlockThirdPartyCookies() {
                       storage_partition->GetCookieManagerForBrowserProcess()
                           ->BlockThirdPartyCookies(block_third_party_cookies);
                     },
-                    block_third_party_cookies_.GetValue()));
+                    block_third_party_cookies));
 }
 
 std::string ProfileNetworkContextService::ComputeAcceptLanguage() const {
@@ -332,7 +334,7 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   network_context_params->cookie_manager_params =
       network::mojom::CookieManagerParams::New();
   network_context_params->cookie_manager_params->block_third_party_cookies =
-      block_third_party_cookies_.GetValue();
+      cookie_settings_->ShouldBlockThirdPartyCookies();
   network_context_params->cookie_manager_params
       ->secure_origin_cookies_allowed_schemes.push_back(
           content::kChromeUIScheme);
