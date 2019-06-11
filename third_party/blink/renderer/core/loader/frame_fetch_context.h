@@ -88,10 +88,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                       WebScopedVirtualTimePauser&,
                       ResourceType) override;
 
-  void RecordLoadingActivity(const ResourceRequest&,
-                             ResourceType,
-                             const AtomicString& fetch_initiator_name) override;
-
   void AddResourceTiming(const ResourceTimingInfo&) override;
   bool AllowImage(bool images_enabled, const KURL&) const override;
 

@@ -16,9 +16,11 @@
 namespace blink {
 
 class KURL;
+class FetchParameters;
 class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
+enum class ResourceType : uint8_t;
 struct FetchInitiatorInfo;
 
 // ResourceLoadObserver is a collection of functions which meet following
@@ -38,6 +40,9 @@ class PLATFORM_EXPORT ResourceLoadObserver
     : public GarbageCollectedFinalized<ResourceLoadObserver> {
  public:
   virtual ~ResourceLoadObserver() = default;
+
+  // Called when ResourceFetcher::RequestResource is called.
+  virtual void DidStartRequest(const FetchParameters&, ResourceType) = 0;
 
   // Called when the request is about to be sent. This is called on initial and
   // every redirect request.

@@ -118,6 +118,7 @@ class ResourceFetcherTest : public testing::Test {
   class TestResourceLoadObserver final : public ResourceLoadObserver {
    public:
     // ResourceLoadObserver implementation.
+    void DidStartRequest(const FetchParameters&, ResourceType) override {}
     void WillSendRequest(uint64_t identifier,
                          const ResourceRequest& request,
                          const ResourceResponse& redirect_response,

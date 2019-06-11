@@ -99,12 +99,6 @@ class PLATFORM_EXPORT FetchContext
                               WebScopedVirtualTimePauser& virtual_time_pauser,
                               ResourceType);
 
-  // Called when a resource load is first requested, which may not be when the
-  // load actually begins.
-  virtual void RecordLoadingActivity(const ResourceRequest&,
-                                     ResourceType,
-                                     const AtomicString& fetch_initiator_name);
-
   virtual void AddResourceTiming(const ResourceTimingInfo&);
   virtual bool AllowImage(bool, const KURL&) const { return false; }
   virtual base::Optional<ResourceRequestBlockedReason> CanRequest(

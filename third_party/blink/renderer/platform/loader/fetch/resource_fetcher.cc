@@ -931,6 +931,11 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     return ResourceForBlockedRequest(
         params, factory, ResourceRequestBlockedReason::kOther, client);
   }
+
+  if (resource_load_observer_) {
+    resource_load_observer_->DidStartRequest(params, factory.GetType());
+  }
+
   // Otherwise, we assume we can send network requests and the fetch client's
   // settings object's origin is non-null.
   DCHECK(properties_->GetFetchClientSettingsObject().GetSecurityOrigin());
@@ -983,12 +988,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   if (blocked_reason) {
     return ResourceForBlockedRequest(params, factory, blocked_reason.value(),
                                      client);
-  }
-
-  if (!params.IsSpeculativePreload()) {
-    // Only log if it's not for speculative preload.
-    Context().RecordLoadingActivity(resource_request, resource_type,
-                                    params.Options().initiator_info.name);
   }
 
   Resource* resource = nullptr;

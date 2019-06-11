@@ -64,7 +64,6 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -1209,20 +1208,6 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
                                     virtual_time_pauser, ResourceType::kRaw);
 
   EXPECT_EQ("hi", request.HttpHeaderField(http_names::kUserAgent));
-}
-
-TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
-  ResourceRequest request(KURL("https://www.example.com/"));
-
-  dummy_page_holder = nullptr;
-
-  GetFetchContext()->RecordLoadingActivity(
-      request, ResourceType::kRaw, fetch_initiator_type_names::kXmlhttprequest);
-  // Should not crash.
-
-  GetFetchContext()->RecordLoadingActivity(
-      request, ResourceType::kRaw, fetch_initiator_type_names::kDocument);
-  // Should not crash.
 }
 
 TEST_F(FrameFetchContextTest, AddResourceTimingWhenDetached) {

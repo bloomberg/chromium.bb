@@ -48,11 +48,6 @@ void FetchContext::PrepareRequest(ResourceRequest&,
                                   WebScopedVirtualTimePauser&,
                                   ResourceType) {}
 
-void FetchContext::RecordLoadingActivity(
-    const ResourceRequest&,
-    ResourceType,
-    const AtomicString& fetch_initiator_name) {}
-
 void FetchContext::AddResourceTiming(const ResourceTimingInfo&) {}
 
 void FetchContext::PopulateResourceRequest(

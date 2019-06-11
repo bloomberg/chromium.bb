@@ -20,9 +20,14 @@
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
@@ -34,6 +39,33 @@ ResourceLoadObserverForFrame::ResourceLoadObserverForFrame(
     : frame_or_imported_document_(frame_or_imported_document),
       fetcher_properties_(fetcher_properties) {}
 ResourceLoadObserverForFrame::~ResourceLoadObserverForFrame() = default;
+
+void ResourceLoadObserverForFrame::DidStartRequest(
+    const FetchParameters& params,
+    ResourceType resource_type) {
+  // TODO(yhirano): Consider removing ResourceLoadObserver::DidStartRequest
+  // completely when we remove V8DOMActivityLogger.
+  DocumentLoader* document_loader =
+      frame_or_imported_document_->GetDocumentLoader();
+  if (document_loader && !document_loader->Archive() &&
+      params.Url().IsValid() && !params.IsSpeculativePreload()) {
+    V8DOMActivityLogger* activity_logger = nullptr;
+    const AtomicString& initiator_name = params.Options().initiator_info.name;
+    if (initiator_name == fetch_initiator_type_names::kXmlhttprequest) {
+      activity_logger = V8DOMActivityLogger::CurrentActivityLogger();
+    } else {
+      activity_logger =
+          V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld();
+    }
+    if (activity_logger) {
+      Vector<String> argv = {
+          Resource::ResourceTypeToString(resource_type, initiator_name),
+          params.Url()};
+      activity_logger->LogEvent("blinkRequestResource", argv.size(),
+                                argv.data());
+    }
+  }
+}
 
 void ResourceLoadObserverForFrame::WillSendRequest(
     uint64_t identifier,

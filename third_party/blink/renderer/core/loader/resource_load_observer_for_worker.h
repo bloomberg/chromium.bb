@@ -25,6 +25,7 @@ class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
   ~ResourceLoadObserverForWorker() override;
 
   // ResourceLoadObserver implementation.
+  void DidStartRequest(const FetchParameters&, ResourceType) override;
   void WillSendRequest(uint64_t identifier,
                        const ResourceRequest&,
                        const ResourceResponse& redirect_response,

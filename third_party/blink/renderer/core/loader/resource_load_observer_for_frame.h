@@ -28,6 +28,7 @@ class CORE_EXPORT ResourceLoadObserverForFrame final
   ~ResourceLoadObserverForFrame() override;
 
   // ResourceLoadObserver implementation.
+  void DidStartRequest(const FetchParameters&, ResourceType) override;
   void WillSendRequest(uint64_t identifier,
                        const ResourceRequest&,
                        const ResourceResponse& redirect_response,

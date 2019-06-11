@@ -88,14 +88,12 @@
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
-#include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
@@ -463,29 +461,6 @@ void FrameFetchContext::PrepareRequest(
   if (!for_redirect && GetDocumentLoader() && !GetDocumentLoader()->Archive() &&
       request.Url().IsValid()) {
     GetDocumentLoader()->GetApplicationCacheHost()->WillStartLoading(request);
-  }
-}
-
-void FrameFetchContext::RecordLoadingActivity(
-    const ResourceRequest& request,
-    ResourceType type,
-    const AtomicString& fetch_initiator_name) {
-  if (GetResourceFetcherProperties().IsDetached() || !GetDocumentLoader() ||
-      GetDocumentLoader()->Archive() || !request.Url().IsValid())
-    return;
-  V8DOMActivityLogger* activity_logger = nullptr;
-  if (fetch_initiator_name == fetch_initiator_type_names::kXmlhttprequest) {
-    activity_logger = V8DOMActivityLogger::CurrentActivityLogger();
-  } else {
-    activity_logger =
-        V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld();
-  }
-
-  if (activity_logger) {
-    Vector<String> argv;
-    argv.push_back(Resource::ResourceTypeToString(type, fetch_initiator_name));
-    argv.push_back(request.Url());
-    activity_logger->LogEvent("blinkRequestResource", argv.size(), argv.data());
   }
 }
 

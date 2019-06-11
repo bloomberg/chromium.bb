@@ -24,6 +24,9 @@ ResourceLoadObserverForWorker::ResourceLoadObserverForWorker(
 
 ResourceLoadObserverForWorker::~ResourceLoadObserverForWorker() = default;
 
+void ResourceLoadObserverForWorker::DidStartRequest(const FetchParameters&,
+                                                    ResourceType) {}
+
 void ResourceLoadObserverForWorker::WillSendRequest(
     uint64_t identifier,
     const ResourceRequest& request,
