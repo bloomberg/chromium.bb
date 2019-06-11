@@ -257,6 +257,8 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
   match.fill_into_edit = shortcut.match_core.fill_into_edit;
   match.destination_url = shortcut.match_core.destination_url;
   DCHECK(match.destination_url.is_valid());
+  match.document_type = static_cast<AutocompleteMatch::DocumentType>(
+      shortcut.match_core.document_type);
   match.contents = shortcut.match_core.contents;
   match.contents_class = AutocompleteMatch::ClassificationsFromString(
       shortcut.match_core.contents_class);

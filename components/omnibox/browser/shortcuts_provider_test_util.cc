@@ -12,23 +12,26 @@
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TestShortcutData::TestShortcutData(std::string guid,
-                                   std::string text,
-                                   std::string fill_into_edit,
-                                   std::string destination_url,
-                                   std::string contents,
-                                   std::string contents_class,
-                                   std::string description,
-                                   std::string description_class,
-                                   ui::PageTransition transition,
-                                   AutocompleteMatch::Type type,
-                                   std::string keyword,
-                                   int days_from_now,
-                                   int number_of_hits) {
+TestShortcutData::TestShortcutData(
+    std::string guid,
+    std::string text,
+    std::string fill_into_edit,
+    std::string destination_url,
+    AutocompleteMatch::DocumentType document_type,
+    std::string contents,
+    std::string contents_class,
+    std::string description,
+    std::string description_class,
+    ui::PageTransition transition,
+    AutocompleteMatch::Type type,
+    std::string keyword,
+    int days_from_now,
+    int number_of_hits) {
   this->guid = guid;
   this->text = text;
   this->fill_into_edit = fill_into_edit;
   this->destination_url = destination_url;
+  this->document_type = document_type;
   this->contents = contents;
   this->contents_class = contents_class;
   this->description = description;
@@ -53,6 +56,7 @@ void PopulateShortcutsBackendWithTestData(
         cur.guid, base::ASCIIToUTF16(cur.text),
         ShortcutsDatabase::Shortcut::MatchCore(
             base::ASCIIToUTF16(cur.fill_into_edit), GURL(cur.destination_url),
+            static_cast<int>(cur.document_type),
             base::ASCIIToUTF16(cur.contents), cur.contents_class,
             base::ASCIIToUTF16(cur.description), cur.description_class,
             cur.transition, cur.type, base::ASCIIToUTF16(cur.keyword)),

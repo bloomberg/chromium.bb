@@ -309,7 +309,8 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
   // Get the favicon for navigational suggestions.
   if (base::FeatureList::IsEnabled(
           omnibox::kUIExperimentShowSuggestionFavicons) &&
-      !AutocompleteMatch::IsSearchType(match.type)) {
+      !AutocompleteMatch::IsSearchType(match.type) &&
+      match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
     // Because the Views UI code calls GetMatchIcon in both the layout and
     // painting code, we may generate multiple OnFaviconFetched callbacks,
     // all run one after another. This seems to be harmless as the callback

@@ -361,6 +361,7 @@ bundle_data("unit_tests_bundle_data") {
   sources = [
     "//components/test/data/omnibox/Shortcuts.no_fill_into_edit.sql",
     "//components/test/data/omnibox/Shortcuts.v0.sql",
+    "//components/test/data/omnibox/Shortcuts.v1.sql",
     "//components/test/data/omnibox/in_memory_url_index_test.sql",
     "//components/test/data/omnibox/in_memory_url_index_test_limited.sql",
     "//components/test/data/omnibox/on_device_head_test_model.bin",
