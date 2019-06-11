@@ -152,6 +152,9 @@ js_unittest("gallery_util_unittest") {
 }
 
 js_library("metadata_worker") {
+  deps = [
+    "../../file_manager/foreground/js/metadata:metadata_dispatcher",
+  ]
 }
 
 js_library("mock_gallery_item") {

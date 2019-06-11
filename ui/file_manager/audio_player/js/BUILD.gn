@@ -50,4 +50,7 @@ js_library("error_util") {
 }
 
 js_library("metadata_worker") {
+  deps = [
+    "../../file_manager/foreground/js/metadata:metadata_dispatcher",
+  ]
 }

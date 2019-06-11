@@ -180,7 +180,12 @@ js_unittest("metadata_cache_set_unittest") {
 
 js_library("metadata_dispatcher") {
   deps = [
+    ":byte_reader",
+    ":exif_parser",
+    ":id3_parser",
+    ":image_parsers",
     ":metadata_parser",
+    ":mpeg_parser",
   ]
   externs_list = [ "../../../../externs/platform.js" ]
 }

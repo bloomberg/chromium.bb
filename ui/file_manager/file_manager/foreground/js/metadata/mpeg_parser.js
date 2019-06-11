@@ -315,5 +315,3 @@ class MpegParser extends MetadataParser {
  * Size of the atom header.
  */
 MpegParser.HEADER_SIZE = 8;
-
-registerParserClass(MpegParser);

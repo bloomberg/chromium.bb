@@ -708,5 +708,3 @@ Id3Parser.v2 = {
     WPUB: 'ID3_PUBLISHERS_OFFICIAL_WEBPAGE'
   }
 };
-
-registerParserClass(Id3Parser);

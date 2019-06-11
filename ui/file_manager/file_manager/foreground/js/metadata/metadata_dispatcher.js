@@ -26,6 +26,20 @@ importScripts(
     FILE_MANAGER_HOST__METADATA_DISPATCHER +
     '/foreground/js/metadata/byte_reader.js');
 
+// Note: update component_extension_resources.grd when adding new parsers.
+importScripts(
+    FILE_MANAGER_HOST__METADATA_DISPATCHER +
+    '/foreground/js/metadata/exif_parser.js');
+importScripts(
+    FILE_MANAGER_HOST__METADATA_DISPATCHER +
+    '/foreground/js/metadata/image_parsers.js');
+importScripts(
+    FILE_MANAGER_HOST__METADATA_DISPATCHER +
+    '/foreground/js/metadata/mpeg_parser.js');
+importScripts(
+    FILE_MANAGER_HOST__METADATA_DISPATCHER +
+    '/foreground/js/metadata/id3_parser.js');
+
 /**
  * Dispatches metadata requests to the correct parser.
  *
@@ -41,8 +55,20 @@ function MetadataDispatcher(port) {
   const patterns = [];
 
   this.parserInstances_ = [];
-  for (let i = 0; i < MetadataDispatcher.parserClasses_.length; i++) {
-    const parserClass = MetadataDispatcher.parserClasses_[i];
+
+  /** @type {!Array<function(new:MetadataParser, !MetadataParserLogger)>} */
+  const parserClasses = [
+    BmpParser,
+    ExifParser,
+    GifParser,
+    IcoParser,
+    Id3Parser,
+    MpegParser,
+    PngParser,
+    WebpParser,
+  ];
+
+  for (const parserClass of parserClasses) {
     const parser = new parserClass(this);
     this.parserInstances_.push(parser);
     patterns.push(parser.urlFilter.source);
@@ -55,12 +81,6 @@ function MetadataDispatcher(port) {
     request: this.request_.bind(this)
   };
 }
-
-/**
- * List of registered parser classes.
- * @private {!Array<function(new:MetadataParser, !MetadataParserLogger)>}
- */
-MetadataDispatcher.parserClasses_ = [];
 
 /**
  * Verbose logging for the dispatcher.
@@ -238,26 +258,3 @@ if (global.constructor.name == 'SharedWorkerGlobalScope') {
   new MetadataDispatcher(global);
 }
 
-/**
- * @param {function(new:MetadataParser, !MetadataParserLogger)} parserClass
- *     Parser constructor function.
- */
-registerParserClass = parserClass => {
-  MetadataDispatcher.parserClasses_.push(parserClass);
-};
-
-// Note: update component_extension_resources.grd when adding new parsers and
-// that these parser scripts imports must be done last, see crbug.com/946959,
-// at least after the definition of registerParserClass above.
-importScripts(
-    FILE_MANAGER_HOST__METADATA_DISPATCHER +
-    '/foreground/js/metadata/exif_parser.js');
-importScripts(
-    FILE_MANAGER_HOST__METADATA_DISPATCHER +
-    '/foreground/js/metadata/image_parsers.js');
-importScripts(
-    FILE_MANAGER_HOST__METADATA_DISPATCHER +
-    '/foreground/js/metadata/mpeg_parser.js');
-importScripts(
-    FILE_MANAGER_HOST__METADATA_DISPATCHER +
-    '/foreground/js/metadata/id3_parser.js');

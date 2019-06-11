@@ -478,5 +478,3 @@ ExifParser.SCALEY = [1, 1, -1, -1, -1, 1, 1, -1];
  * @const {Array<number>}
  */
 ExifParser.ROTATE90 = [0, 0, 0, 0, 1, 1, 1, 1];
-
-registerParserClass(ExifParser);

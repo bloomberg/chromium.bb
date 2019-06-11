@@ -39,12 +39,6 @@ class MetadataParserLogger {
 }
 
 /**
- * @param {function(new:MetadataParser, !MetadataParserLogger)} parserClass
- *     Parser constructor function.
- */
-var registerParserClass = function(parserClass) {};
-
-/**
  * @param {string} url
  * @param {function(!Entry)} successCallback
  * @param {function(!FileError)=} opt_errorCallback

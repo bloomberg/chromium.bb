@@ -81,8 +81,6 @@ class PngParser extends SimpleImageParser {
   }
 }
 
-registerParserClass(PngParser);
-
 /**
  * Parser for the header of bmp files.
  * @final
@@ -112,8 +110,6 @@ class BmpParser extends SimpleImageParser {
   }
 }
 
-registerParserClass(BmpParser);
-
 /**
  * Parser for the header of gif files.
  * @final
@@ -141,8 +137,6 @@ class GifParser extends SimpleImageParser {
     metadata.height = br.readScalar(2);
   }
 }
-
-registerParserClass(GifParser);
 
 /**
  * Parser for the header of webp files.
@@ -215,8 +209,6 @@ class WebpParser extends SimpleImageParser {
   }
 }
 
-registerParserClass(WebpParser);
-
 /**
  * Parser for the header of .ico icon files.
  * @final
@@ -245,5 +237,3 @@ class IcoParser extends SimpleImageParser {
     metadata.height = byteReader.readScalar(1);
   }
 }
-
-registerParserClass(IcoParser);
