@@ -49,9 +49,6 @@ class ManualFillingViewAndroid : public ManualFillingViewInterface {
   void OnOptionSelected(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
                         jint selected_action);
-  void OnAutomaticGenerationRequested(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
 
  private:
   void OnImageFetched(

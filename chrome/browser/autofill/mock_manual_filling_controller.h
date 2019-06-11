@@ -34,7 +34,6 @@ class MockManualFillingController
                     const autofill::UserInfo::Field&));
   MOCK_CONST_METHOD1(OnOptionSelected,
                      void(autofill::AccessoryAction selected_action));
-  MOCK_CONST_METHOD0(OnAutomaticGenerationRequested, void());
   MOCK_CONST_METHOD0(container_view, gfx::NativeView());
 
  private:

@@ -204,8 +204,9 @@ TEST_F(ManualFillingControllerTest, ForwardsAddressManagingToController) {
 }
 
 TEST_F(ManualFillingControllerTest, OnAutomaticGenerationRequested) {
-  EXPECT_CALL(mock_pwd_controller_, OnGenerationRequested(false));
-  controller()->OnAutomaticGenerationRequested();
+  EXPECT_CALL(mock_pwd_controller_,
+              OnOptionSelected(AccessoryAction::GENERATE_PASSWORD_AUTOMATIC));
+  controller()->OnOptionSelected(AccessoryAction::GENERATE_PASSWORD_AUTOMATIC);
 }
 
 TEST_F(ManualFillingControllerTest, OnManualGenerationRequested) {

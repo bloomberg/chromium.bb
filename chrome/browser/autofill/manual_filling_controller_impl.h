@@ -42,7 +42,6 @@ class ManualFillingControllerImpl
                           const autofill::UserInfo::Field& selection) override;
   void OnOptionSelected(
       autofill::AccessoryAction selected_action) const override;
-  void OnAutomaticGenerationRequested() const override;
   void GetFavicon(
       int desired_size_in_pixel,
       base::OnceCallback<void(const gfx::Image&)> icon_callback) override;

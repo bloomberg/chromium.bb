@@ -76,8 +76,8 @@ class ManualFillingComponentBridge {
                             : "Controller has been destroyed but the bridge wasn't cleaned up!";
                         ManualFillingMetricsRecorder.recordActionSelected(
                                 AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
-                        mManualFillingComponent.dismiss();
-                        nativeOnAutomaticGenerationRequested(mNativeView);
+                        nativeOnOptionSelected(
+                                mNativeView, AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
                     })};
         } else {
             generationAction = new Action[0];
@@ -180,7 +180,6 @@ class ManualFillingComponentBridge {
             long nativeManualFillingViewAndroid, int tabType, UserInfoField userInfoField);
     private native void nativeOnOptionSelected(
             long nativeManualFillingViewAndroid, int accessoryAction);
-    private native void nativeOnAutomaticGenerationRequested(long nativeManualFillingViewAndroid);
 
     private static native void nativeCachePasswordSheetDataForTesting(
             WebContents webContents, String[] userNames, String[] passwords);

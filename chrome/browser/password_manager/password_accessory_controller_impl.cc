@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -201,6 +202,12 @@ void PasswordAccessoryControllerImpl::OnOptionSelected(
   }
   if (selected_action == autofill::AccessoryAction::GENERATE_PASSWORD_MANUAL) {
     OnGenerationRequested(true /* manual */);
+    GetManualFillingController()->Hide();
+    return;
+  }
+  if (selected_action ==
+      autofill::AccessoryAction::GENERATE_PASSWORD_AUTOMATIC) {
+    OnGenerationRequested(false /* manual */);
     GetManualFillingController()->Hide();
     return;
   }

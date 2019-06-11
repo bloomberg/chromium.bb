@@ -136,10 +136,6 @@ void ManualFillingControllerImpl::OnOptionSelected(
   GetControllerForAction(selected_action)->OnOptionSelected(selected_action);
 }
 
-void ManualFillingControllerImpl::OnAutomaticGenerationRequested() const {
-  pwd_controller_->OnGenerationRequested(false /* manual */);
-}
-
 void ManualFillingControllerImpl::GetFavicon(
     int desired_size_in_pixel,
     base::OnceCallback<void(const gfx::Image&)> icon_callback) {
@@ -217,6 +213,7 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
   switch (action) {
     case AccessoryAction::GENERATE_PASSWORD_MANUAL:
     case AccessoryAction::MANAGE_PASSWORDS:
+    case AccessoryAction::GENERATE_PASSWORD_AUTOMATIC:
       return pwd_controller_.get();
     case AccessoryAction::MANAGE_ADDRESSES:
       return address_controller_.get();
@@ -224,7 +221,6 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
       // TODO(crbug.com/902425): Return credit card controller.
     case AccessoryAction::AUTOFILL_SUGGESTION:
     case AccessoryAction::COUNT:
-    case AccessoryAction::GENERATE_PASSWORD_AUTOMATIC:
       break;  // Intentional failure;
   }
   NOTREACHED() << "Controller not defined for action: "

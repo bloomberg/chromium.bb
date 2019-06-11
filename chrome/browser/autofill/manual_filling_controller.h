@@ -110,15 +110,6 @@ class ManualFillingController {
   virtual void OnOptionSelected(
       autofill::AccessoryAction selected_action) const = 0;
 
-  // Called by the UI code to signal that the user requested password
-  // generation from the automatically shown button. This should prompt a modal
-  // dialog with the generated password.
-  //
-  // TODO(crbug.com/905669): This controller doesn't need to know about password
-  // generation. Generalize this to forward an action request from the UI to a
-  // type-specific accessory controller.
-  virtual void OnAutomaticGenerationRequested() const = 0;
-
   // Gets an icon for the currently focused frame and passes it to
   // |icon_callback|. The callback is invoked with an image unless an icon for
   // a new origin was called. In the latter case, the callback is dropped.

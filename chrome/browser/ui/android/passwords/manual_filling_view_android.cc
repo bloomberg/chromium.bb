@@ -133,12 +133,6 @@ void ManualFillingViewAndroid::OnOptionSelected(
       static_cast<autofill::AccessoryAction>(selected_action));
 }
 
-void ManualFillingViewAndroid::OnAutomaticGenerationRequested(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  controller_->OnAutomaticGenerationRequested();
-}
-
 void ManualFillingViewAndroid::OnImageFetched(
     const base::android::ScopedJavaGlobalRef<jobject>& j_callback,
     const gfx::Image& image) {
