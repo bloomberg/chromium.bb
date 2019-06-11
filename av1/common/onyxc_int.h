@@ -373,7 +373,7 @@ typedef struct AV1Common {
   int allow_warped_motion;
 
   // MBs, mb_rows/cols is in 16-pixel units; mi_rows/cols is in
-  // MB_MODE_INFO (8-pixel) units.
+  // MB_MODE_INFO (4-pixel) units.
   int MBs;
   int mb_rows, mi_rows;
   int mb_cols, mi_cols;
