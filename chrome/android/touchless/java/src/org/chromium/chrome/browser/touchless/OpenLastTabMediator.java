@@ -41,6 +41,8 @@ import java.util.List;
 class OpenLastTabMediator extends EmptyTabObserver
         implements HistoryProvider.BrowsingHistoryObserver, FocusableComponent {
     private static final String FIRST_LAUNCHED_KEY = "TOUCHLESS_WAS_FIRST_LAUNCHED";
+    private static final String LAST_REMOVED_VISIT_TIMESTAMP_KEY =
+            "TOUCHLESS_LAST_REMOVED_VISIT_TIMESTAMP";
 
     private final Context mContext;
     private final Profile mProfile;
@@ -51,6 +53,10 @@ class OpenLastTabMediator extends EmptyTabObserver
     private BrowsingHistoryBridge mHistoryBridge;
     private final RoundedIconGenerator mIconGenerator;
     private final LargeIconBridge mIconBridge;
+
+    private HistoryItem mHistoryItem;
+    private boolean mPreferencesRead;
+    private long mLastRemovedVisitTimestamp = Long.MIN_VALUE;
 
     OpenLastTabMediator(Context context, Profile profile, NativePageHost nativePageHost,
             PropertyModel model, OpenLastTabView view) {
@@ -67,20 +73,31 @@ class OpenLastTabMediator extends EmptyTabObserver
                 ViewUtils.createDefaultRoundedIconGenerator(mContext.getResources(), false);
         mIconBridge = new LargeIconBridge(mProfile);
 
-        PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
-            // Check if this is a first launch of Chrome.
-            SharedPreferences prefs = mNativePageHost.getActiveTab().getActivity().getPreferences(
-                    Context.MODE_PRIVATE);
-            boolean firstLaunched = prefs.getBoolean(FIRST_LAUNCHED_KEY, true);
-            prefs.edit().putBoolean(FIRST_LAUNCHED_KEY, false).apply();
-            PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
-                mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_FIRST_LAUNCH, firstLaunched);
-            });
-        });
+        readPreferences();
 
         // TODO(wylieb):Investigate adding an item limit to the API.
         // Query the history for everything (no API exists to only query for the most recent).
         refreshHistoryData();
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        return mNativePageHost.getActiveTab().getActivity().getPreferences(Context.MODE_PRIVATE);
+    }
+
+    private void readPreferences() {
+        PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
+            // Check if this is a first launch of Chrome.
+            SharedPreferences prefs = getSharedPreferences();
+            boolean firstLaunched = prefs.getBoolean(FIRST_LAUNCHED_KEY, true);
+            prefs.edit().putBoolean(FIRST_LAUNCHED_KEY, false).apply();
+            mLastRemovedVisitTimestamp =
+                    prefs.getLong(LAST_REMOVED_VISIT_TIMESTAMP_KEY, Long.MIN_VALUE);
+            PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
+                mPreferencesRead = true;
+                mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_FIRST_LAUNCH, firstLaunched);
+                updateModel();
+            });
+        });
     }
 
     void destroy() {
@@ -115,41 +132,55 @@ class OpenLastTabMediator extends EmptyTabObserver
     @Override
     public void onQueryHistoryComplete(List<HistoryItem> items, boolean hasMorePotentialMatches) {
         if (items.size() == 0) {
+            mHistoryItem = null;
+        } else {
+            // First item is most recent.
+            mHistoryItem = items.get(0);
+        }
+        if (mPreferencesRead) {
+            updateModel();
+        }
+    }
+
+    // updateModel is only called after preferences are read. It populates model with data from
+    // mHistoryItem.
+    private void updateModel() {
+        if (mHistoryItem == null || mHistoryItem.getTimestamp() <= mLastRemovedVisitTimestamp) {
             // Consider the case where the history has nothing in it to be a failure.
             mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_LOAD_SUCCESS, false);
             return;
         }
 
-        // First item is most recent.
-        HistoryItem item = items.get(0);
-
-        String title = UrlUtilities.getDomainAndRegistry(item.getUrl(), false);
+        String title = UrlUtilities.getDomainAndRegistry(mHistoryItem.getUrl(), false);
         // Default the timestamp to happening just now. If it happened over a minute ago, calculate
         // and set the relative timestamp string.
         String timestamp = mContext.getResources().getString(R.string.open_last_tab_just_now);
         long now = System.currentTimeMillis();
-        if (now - item.getTimestamp() > MINUTE_IN_MILLIS) {
-            timestamp = getRelativeTimeSpanString(item.getTimestamp(), now, MINUTE_IN_MILLIS)
-                                .toString();
+        if (now - mHistoryItem.getTimestamp() > MINUTE_IN_MILLIS) {
+            timestamp =
+                    getRelativeTimeSpanString(mHistoryItem.getTimestamp(), now, MINUTE_IN_MILLIS)
+                            .toString();
         }
 
         mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_TITLE, title);
         mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_TIMESTAMP, timestamp);
-        boolean willReturnIcon = mIconBridge.getLargeIconForUrl(item.getUrl(),
+        boolean willReturnIcon = mIconBridge.getLargeIconForUrl(mHistoryItem.getUrl(),
                 mContext.getResources().getDimensionPixelSize(R.dimen.open_last_tab_icon_size),
                 (icon, fallbackColor, isFallbackColorDefault, iconType) -> {
-                    setAndShowButton(item.getUrl(), icon, fallbackColor, title);
+                    setAndShowButton(mHistoryItem.getUrl(), icon, fallbackColor, title);
                 });
 
         // False if icon bridge won't call us back.
         if (!willReturnIcon) {
-            setAndShowButton(item.getUrl(), null, R.color.default_icon_color, title);
+            setAndShowButton(mHistoryItem.getUrl(), null, R.color.default_icon_color, title);
         }
         mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_LOAD_SUCCESS, true);
     }
 
     @Override
-    public void onHistoryDeleted() {}
+    public void onHistoryDeleted() {
+        refreshHistoryData();
+    }
 
     @Override
     public void hasOtherFormsOfBrowsingData(boolean hasOtherForms) {}
@@ -172,7 +203,22 @@ class OpenLastTabMediator extends EmptyTabObserver
                     @Override
                     public boolean isItemSupported(
                             @ContextMenuManager.ContextMenuItemId int menuItemId) {
-                        return menuItemId == ContextMenuManager.ContextMenuItemId.ADD_TO_MY_APPS;
+                        return menuItemId == ContextMenuManager.ContextMenuItemId.ADD_TO_MY_APPS
+                                || menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE;
+                    }
+
+                    @Override
+                    public void removeItem() {
+                        mLastRemovedVisitTimestamp = mHistoryItem.getTimestamp();
+                        PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
+                            SharedPreferences prefs = getSharedPreferences();
+                            prefs.edit()
+                                    .putLong(LAST_REMOVED_VISIT_TIMESTAMP_KEY,
+                                            mLastRemovedVisitTimestamp)
+                                    .apply();
+                        });
+                        mHistoryBridge.markItemForRemoval(mHistoryItem);
+                        mHistoryBridge.removeItems();
                     }
 
                     @Override
