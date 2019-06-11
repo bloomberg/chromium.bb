@@ -40,6 +40,8 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
       widget_(widget),
       has_implicit_external_sync_(
           HasEGLExtension("EGL_ARM_implicit_external_sync")),
+      has_image_flush_external_(
+          HasEGLExtension("EGL_EXT_image_flush_external")),
       weak_factory_(this) {
   surface_factory_->RegisterSurface(window_->widget(), this);
   supports_plane_gpu_fences_ = window_->SupportsGpuFences();
@@ -114,9 +116,11 @@ void GbmSurfaceless::SwapBuffersAsync(
     return;
   }
 
-  // TODO(dcastagna): remove glFlush since eglImageFlushExternalEXT called on
-  // the image should be enough (crbug.com/720045).
-  glFlush();
+  if ((!has_image_flush_external_ && !supports_plane_gpu_fences_) ||
+      requires_gl_flush_on_swap_buffers_) {
+    glFlush();
+  }
+
   unsubmitted_frames_.back()->Flush();
 
   PendingFrame* frame = unsubmitted_frames_.back().get();
@@ -193,6 +197,10 @@ EGLConfig GbmSurfaceless::GetConfig() {
 
 void GbmSurfaceless::SetRelyOnImplicitSync() {
   use_egl_fence_sync_ = false;
+}
+
+void GbmSurfaceless::SetForceGlFlushOnSwapBuffers() {
+  requires_gl_flush_on_swap_buffers_ = true;
 }
 
 GbmSurfaceless::~GbmSurfaceless() {

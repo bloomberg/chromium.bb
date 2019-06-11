@@ -3295,6 +3295,18 @@
       "features": [
         "disable_program_caching_for_transform_feedback"
       ]
+    },
+    {
+      "id": 307,
+      "cr_bugs": [833975],
+      "description": "Workaround for broken EGL_IMAGE_EXTERNAL_FLUSH_EXT implementation on NVIDIA",
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "force_gl_flush_on_swap_buffers"
+      ]
     }
   ]
 }

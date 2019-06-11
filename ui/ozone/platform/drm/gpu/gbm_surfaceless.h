@@ -63,6 +63,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
                           PresentationCallback presentation_callback) override;
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
+  void SetForceGlFlushOnSwapBuffers() override;
 
  protected:
   ~GbmSurfaceless() override;
@@ -104,6 +105,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   std::vector<std::unique_ptr<PendingFrame>> unsubmitted_frames_;
   std::unique_ptr<PendingFrame> submitted_frame_;
   const bool has_implicit_external_sync_;
+  const bool has_image_flush_external_;
   bool last_swap_buffers_result_ = true;
   bool supports_plane_gpu_fences_ = false;
   bool use_egl_fence_sync_ = true;
@@ -111,6 +113,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   // Conservatively assume we begin on a device that requires
   // explicit synchronization.
   bool is_on_external_drm_device_ = true;
+  bool requires_gl_flush_on_swap_buffers_ = false;
 
   base::WeakPtrFactory<GbmSurfaceless> weak_factory_;
 
