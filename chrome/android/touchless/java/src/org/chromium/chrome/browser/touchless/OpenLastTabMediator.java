@@ -20,6 +20,9 @@ import org.chromium.chrome.browser.history.HistoryProvider;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -35,7 +38,8 @@ import java.util.List;
  * Mediator used to look for history events and update the model accordingly.
  */
 // TODO(crbug.com/948858): Add unit tests for this behavior.
-class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver, FocusableComponent {
+class OpenLastTabMediator extends EmptyTabObserver
+        implements HistoryProvider.BrowsingHistoryObserver, FocusableComponent {
     private static final String FIRST_LAUNCHED_KEY = "TOUCHLESS_WAS_FIRST_LAUNCHED";
     private static final String LAST_REMOVED_VISIT_TIMESTAMP_KEY =
             "TOUCHLESS_LAST_REMOVED_VISIT_TIMESTAMP";
@@ -56,14 +60,15 @@ class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver, Fo
 
     OpenLastTabMediator(Context context, Profile profile, NativePageHost nativePageHost,
             PropertyModel model, OpenLastTabView view) {
+        mModel = model;
         mContext = context;
         mProfile = profile;
         mNativePageHost = nativePageHost;
 
-        mModel = model;
-
         mHistoryBridge = new BrowsingHistoryBridge(false);
         mHistoryBridge.setObserver(this);
+        mNativePageHost.getActiveTab().addObserver(this);
+
         mIconGenerator =
                 ViewUtils.createDefaultRoundedIconGenerator(mContext.getResources(), false);
         mIconBridge = new LargeIconBridge(mProfile);
@@ -72,7 +77,7 @@ class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver, Fo
 
         // TODO(wylieb):Investigate adding an item limit to the API.
         // Query the history for everything (no API exists to only query for the most recent).
-        mHistoryBridge.queryHistory("");
+        refreshHistoryData();
     }
 
     private SharedPreferences getSharedPreferences() {
@@ -100,6 +105,18 @@ class OpenLastTabMediator implements HistoryProvider.BrowsingHistoryObserver, Fo
             mHistoryBridge.destroy();
             mHistoryBridge = null;
         }
+        mNativePageHost.getActiveTab().removeObserver(this);
+    }
+
+    void refreshHistoryData() {
+        mHistoryBridge.queryHistory("");
+    }
+
+    @Override
+    public void onShown(Tab tab, @TabSelectionType int type) {
+        // Query the history as it may have been cleared while the app was hidden. This could happen
+        // via the Android settings.
+        refreshHistoryData();
     }
 
     @Override
