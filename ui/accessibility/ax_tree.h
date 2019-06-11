@@ -25,6 +25,7 @@ class AXTree;
 class AXTreeObserver;
 struct AXTreeUpdateState;
 class AXLanguageInfoStats;
+struct LanguageSpan;
 
 // AXTree is a live, managed tree of AXNode objects that can receive
 // updates from another AXTreeSource via AXTreeUpdates, and it can be
@@ -149,6 +150,10 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   bool GetTreeUpdateInProgressState() const override;
   void SetTreeUpdateInProgressState(bool set_tree_update_value);
+
+  std::vector<LanguageSpan> GetLanguageAnnotationForStringAttribute(
+      const AXNode& node,
+      ax::mojom::StringAttribute attr) const override;
 
   // Language detection statistics
   std::unique_ptr<AXLanguageInfoStats> language_info_stats;

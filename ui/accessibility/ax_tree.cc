@@ -160,10 +160,14 @@ AXTree::AXTree() {
   initial_state.root_id = -1;
   initial_state.nodes.push_back(root);
   CHECK(Unserialize(initial_state)) << error();
+  DCHECK(!language_info_stats);
+  language_info_stats.reset(new AXLanguageInfoStats());
 }
 
 AXTree::AXTree(const AXTreeUpdate& initial_state) {
   CHECK(Unserialize(initial_state)) << error();
+  DCHECK(!language_info_stats);
+  language_info_stats.reset(new AXLanguageInfoStats());
 }
 
 AXTree::~AXTree() {
@@ -1180,6 +1184,13 @@ bool AXTree::GetTreeUpdateInProgressState() const {
 
 void AXTree::SetTreeUpdateInProgressState(bool set_tree_update_value) {
   tree_update_in_progress_ = set_tree_update_value;
+}
+
+std::vector<LanguageSpan> AXTree::GetLanguageAnnotationForStringAttribute(
+    const AXNode& node,
+    ax::mojom::StringAttribute attr) const {
+  return language_info_stats->GetLanguageAnnotationForStringAttribute(node,
+                                                                      attr);
 }
 
 }  // namespace ui

@@ -710,4 +710,9 @@ AXNode* AXNode::GetOrderedSet() const {
   return result;
 }
 
+std::vector<LanguageSpan> AXNode::GetLanguageAnnotationForStringAttribute(
+    ax::mojom::StringAttribute attr) const {
+  return tree_->GetLanguageAnnotationForStringAttribute(*this, attr);
+}
+
 }  // namespace ui
