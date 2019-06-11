@@ -2,43 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Protocol + host parts of extension URL.
- *
- * The __FILE_NAME suffix is because the same string constant is used in
- * multiple JS files, and JavaScript doesn't have C's #define mechanism (which
- * only affects the file its in). Without the suffix, we'd have "constant
- * FILE_MANAGER_HOST assigned a value more than once" compiler warnings.
- *
- * @type {string}
- * @const
- */
-const FILE_MANAGER_HOST__METADATA_DISPATCHER =
-    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
-
 // All of these scripts could be imported with a single call to importScripts,
 // but then load and compile time errors would all be reported from the same
-// line.
+// line. Note: update component_extension_resources.grd when adding new parsers.
 importScripts(
-    FILE_MANAGER_HOST__METADATA_DISPATCHER +
-    '/foreground/js/metadata/metadata_parser.js');
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/metadata/metadata_parser.js');
 importScripts(
-    FILE_MANAGER_HOST__METADATA_DISPATCHER +
-    '/foreground/js/metadata/byte_reader.js');
-
-// Note: update component_extension_resources.grd when adding new parsers.
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/metadata/byte_reader.js');
 importScripts(
-    FILE_MANAGER_HOST__METADATA_DISPATCHER +
-    '/foreground/js/metadata/exif_parser.js');
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/metadata/exif_parser.js');
 importScripts(
-    FILE_MANAGER_HOST__METADATA_DISPATCHER +
-    '/foreground/js/metadata/image_parsers.js');
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/metadata/image_parsers.js');
 importScripts(
-    FILE_MANAGER_HOST__METADATA_DISPATCHER +
-    '/foreground/js/metadata/mpeg_parser.js');
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/metadata/mpeg_parser.js');
 importScripts(
-    FILE_MANAGER_HOST__METADATA_DISPATCHER +
-    '/foreground/js/metadata/id3_parser.js');
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/metadata/id3_parser.js');
 
 /**
  * Dispatches metadata requests to the correct parser.
@@ -257,4 +235,3 @@ if (global.constructor.name == 'SharedWorkerGlobalScope') {
   // Non-shared worker.
   new MetadataDispatcher(global);
 }
-

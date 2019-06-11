@@ -2,26 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Protocol + host parts of extension URL.
- *
- * The __FILE_NAME suffix is because the same string constant is used in
- * multiple JS files, and JavaScript doesn't have C's #define mechanism (which
- * only affects the file its in). Without the suffix, we'd have "constant
- * FILE_MANAGER_HOST assigned a value more than once" compiler warnings.
- *
- * @type {string}
- * @const
- */
-const FILE_MANAGER_HOST__ID3_PARSER =
-    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
-
 importScripts(
-    FILE_MANAGER_HOST__ID3_PARSER +
-    '/foreground/js/metadata/function_sequence.js');
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/metadata/function_sequence.js');
 importScripts(
-    FILE_MANAGER_HOST__ID3_PARSER +
-    '/foreground/js/metadata/function_parallel.js');
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/metadata/function_parallel.js');
 
 /**
  * ID3 parser.
