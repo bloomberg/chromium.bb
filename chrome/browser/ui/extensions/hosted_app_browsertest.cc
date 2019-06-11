@@ -759,6 +759,28 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarDangerous) {
                              proceed_through_interstitial);
 }
 
+// Check that localhost is not considered insecure.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForLocalhost) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL app_url =
+      embedded_test_server()->GetURL("localhost", "/ssl/google.html");
+  InstallPWA(app_url);
+
+  // Navigate to the app's launch page; the toolbar should be hidden.
+  NavigateAndCheckForToolbar(app_browser_, app_url, false);
+
+  // Navigate out of the app's scope on localhost, the toolbar should be
+  // visible.
+  NavigateAndCheckForToolbar(
+      app_browser_, embedded_test_server()->GetURL("localhost", "/simple.html"),
+      true);
+
+  // Navigate to a different origin; the toolbar should be visible.
+  NavigateAndCheckForToolbar(app_browser_, GURL("https://example.com"), true);
+}
+
 // Check that a subframe on a regular web page can navigate to a URL that
 // redirects to a hosted app.  https://crbug.com/721949.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, SubframeRedirectsToHostedApp) {
