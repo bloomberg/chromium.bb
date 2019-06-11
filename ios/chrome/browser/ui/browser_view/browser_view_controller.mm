@@ -3022,6 +3022,26 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [overlays addObject:sadTabView];
   }
 
+  UIViewController* overlayContainerViewController =
+      self.browserContainerViewController
+          .webContentsOverlayContainerViewController;
+  UIView* presentedOverlayView =
+      overlayContainerViewController.presentedViewController.view;
+  if (presentedOverlayView) {
+    [overlays addObject:presentedOverlayView];
+  }
+
+  UIView* childOverlayView =
+      overlayContainerViewController.childViewControllers.firstObject.view;
+  if (childOverlayView) {
+    DCHECK_EQ(1U, overlayContainerViewController.childViewControllers.count);
+    [overlays addObject:childOverlayView];
+  }
+
+  // The overlay container supports at most one overlay view, either by
+  // presentation or by containment.
+  DCHECK(!presentedOverlayView || !childOverlayView);
+
   return overlays;
 }
 

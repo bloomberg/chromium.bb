@@ -25,13 +25,17 @@
 - (void)start {
   DCHECK(self.browserState);
   DCHECK(!_viewController);
-  _viewController = [[BrowserContainerViewController alloc] init];
+  BrowserContainerViewController* viewController =
+      [[BrowserContainerViewController alloc] init];
   self.webContentAreaOverlayContainerCoordinator =
       [[OverlayContainerCoordinator alloc]
-          initWithBaseViewController:_viewController
+          initWithBaseViewController:viewController
                              browser:self.browser
                             modality:OverlayModality::kWebContentArea];
   [self.webContentAreaOverlayContainerCoordinator start];
+  viewController.webContentsOverlayContainerViewController =
+      self.webContentAreaOverlayContainerCoordinator.viewController;
+  _viewController = viewController;
   [super start];
 }
 
