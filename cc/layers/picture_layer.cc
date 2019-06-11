@@ -82,7 +82,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   }
 
   layer_impl->UpdateRasterSource(recording_source_->CreateRasterSource(),
-                                 &last_updated_invalidation_, nullptr);
+                                 &last_updated_invalidation_, nullptr, nullptr);
   DCHECK(last_updated_invalidation_.IsEmpty());
 }
 

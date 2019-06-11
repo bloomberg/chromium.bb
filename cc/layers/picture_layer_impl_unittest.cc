@@ -31,6 +31,7 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_layer_tree_host_base.h"
+#include "cc/test/test_paint_worklet_input.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 #include "cc/tiles/tiling_set_raster_queue_required.h"
@@ -5534,6 +5535,63 @@ TEST_F(PictureLayerImplTest, AnimatedImages) {
   EXPECT_FALSE(old_pending_layer()->ShouldAnimate(image2.stable_id()));
   EXPECT_TRUE(active_layer()->ShouldAnimate(image1.stable_id()));
   EXPECT_FALSE(active_layer()->ShouldAnimate(image2.stable_id()));
+}
+
+TEST_F(PictureLayerImplTest, PaintWorkletInputs) {
+  gfx::Size layer_bounds(1000, 1000);
+
+  // Set up a raster source with 2 PaintWorkletInputs.
+  auto recording_source = FakeRecordingSource::CreateRecordingSource(
+      gfx::Rect(layer_bounds), layer_bounds);
+  scoped_refptr<TestPaintWorkletInput> input1 =
+      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(100, 100));
+  PaintImage image1 = CreatePaintWorkletPaintImage(input1);
+  scoped_refptr<TestPaintWorkletInput> input2 =
+      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(50, 50));
+  PaintImage image2 = CreatePaintWorkletPaintImage(input2);
+  recording_source->add_draw_image(image1, gfx::Point(100, 100));
+  recording_source->add_draw_image(image2, gfx::Point(500, 500));
+  recording_source->Rerecord();
+  scoped_refptr<RasterSource> raster_source =
+      recording_source->CreateRasterSource();
+
+  // All inputs should be registered on the pending layer.
+  SetupPendingTree(raster_source, gfx::Size(), Region(gfx::Rect(layer_bounds)));
+  EXPECT_EQ(pending_layer()->GetPaintWorkletRecordMapForTesting().size(), 2u);
+  EXPECT_TRUE(
+      pending_layer()->GetPaintWorkletRecordMapForTesting().contains(input1));
+  EXPECT_TRUE(
+      pending_layer()->GetPaintWorkletRecordMapForTesting().contains(input2));
+
+  // Specify a record for one of the inputs.
+  sk_sp<PaintRecord> record1 = sk_make_sp<PaintOpBuffer>();
+  pending_layer()->SetPaintWorkletRecordForTesting(input1, record1);
+
+  // Now activate and make sure the active layer is registered as well, with the
+  // appropriate record.
+  ActivateTree();
+  EXPECT_EQ(active_layer()->GetPaintWorkletRecordMapForTesting().size(), 2u);
+  auto it = active_layer()->GetPaintWorkletRecordMapForTesting().find(input1);
+  ASSERT_NE(it, active_layer()->GetPaintWorkletRecordMapForTesting().end());
+  EXPECT_EQ(it->second, record1);
+  EXPECT_TRUE(
+      active_layer()->GetPaintWorkletRecordMapForTesting().contains(input2));
+
+  // Committing new PaintWorkletInputs (in a new raster source) should replace
+  // the previous ones.
+  recording_source = FakeRecordingSource::CreateRecordingSource(
+      gfx::Rect(layer_bounds), layer_bounds);
+  scoped_refptr<TestPaintWorkletInput> input3 =
+      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(12, 12));
+  PaintImage image3 = CreatePaintWorkletPaintImage(input3);
+  recording_source->add_draw_image(image3, gfx::Point(10, 10));
+  recording_source->Rerecord();
+  raster_source = recording_source->CreateRasterSource();
+
+  SetupPendingTree(raster_source, gfx::Size(), Region(gfx::Rect(layer_bounds)));
+  EXPECT_EQ(pending_layer()->GetPaintWorkletRecordMapForTesting().size(), 1u);
+  EXPECT_TRUE(
+      pending_layer()->GetPaintWorkletRecordMapForTesting().contains(input3));
 }
 
 }  // namespace

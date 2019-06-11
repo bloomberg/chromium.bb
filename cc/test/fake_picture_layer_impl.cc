@@ -100,9 +100,11 @@ void FakePictureLayerImpl::SetRasterSourceOnPending(
   DCHECK(layer_tree_impl()->IsPendingTree());
   Region invalidation_temp = invalidation;
   const PictureLayerTilingSet* pending_set = nullptr;
+  const PaintWorkletRecordMap* pending_paint_worklet_records = nullptr;
   set_gpu_raster_max_texture_size(
       layer_tree_impl()->GetDeviceViewport().size());
-  UpdateRasterSource(raster_source, &invalidation_temp, pending_set);
+  UpdateRasterSource(raster_source, &invalidation_temp, pending_set,
+                     pending_paint_worklet_records);
 }
 
 void FakePictureLayerImpl::CreateAllTiles() {

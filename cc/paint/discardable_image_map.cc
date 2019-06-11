@@ -103,6 +103,9 @@ class DiscardableImageGenerator {
   TakeAnimatedImagesMetadata() {
     return std::move(animated_images_metadata_);
   }
+  std::vector<scoped_refptr<PaintWorkletInput>> TakePaintWorkletInputs() {
+    return std::move(paint_worklet_inputs_);
+  }
 
   void RecordColorHistograms() const {
     if (color_stats_total_image_count_ > 0) {
@@ -354,7 +357,9 @@ class DiscardableImageGenerator {
     SkIRect src_irect;
     src_rect.roundOut(&src_irect);
 
-    if (!paint_image.IsPaintWorklet()) {
+    if (paint_image.IsPaintWorklet()) {
+      paint_worklet_inputs_.push_back(paint_image.paint_worklet_input());
+    } else {
       // Make a note if any image was originally specified in a non-sRGB color
       // space.
       SkColorSpace* source_color_space = paint_image.color_space();
@@ -406,6 +411,7 @@ class DiscardableImageGenerator {
   base::flat_map<PaintImage::Id, DiscardableImageMap::Rects> image_id_to_rects_;
   std::vector<DiscardableImageMap::AnimatedImageMetadata>
       animated_images_metadata_;
+  std::vector<scoped_refptr<PaintWorkletInput>> paint_worklet_inputs_;
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode> decoding_mode_map_;
   bool only_gather_animated_images_ = false;
 
@@ -434,6 +440,7 @@ void DiscardableImageMap::Generate(const PaintOpBuffer* paint_op_buffer,
   generator.RecordColorHistograms();
   image_id_to_rects_ = generator.TakeImageIdToRectsMap();
   animated_images_metadata_ = generator.TakeAnimatedImagesMetadata();
+  paint_worklet_inputs_ = generator.TakePaintWorkletInputs();
   decoding_mode_map_ = generator.TakeDecodingModeMap();
   all_images_are_srgb_ = generator.all_images_are_srgb();
   auto images = generator.TakeImages();

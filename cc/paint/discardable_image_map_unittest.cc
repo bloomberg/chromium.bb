@@ -732,6 +732,33 @@ TEST_F(DiscardableImageMapTest, GathersAnimatedImages) {
   EXPECT_DCHECK_DEATH(images[2]->frame_index());
 }
 
+TEST_F(DiscardableImageMapTest, GathersPaintWorklets) {
+  gfx::Rect visible_rect(1000, 1000);
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+
+  gfx::Size image_size(100, 100);
+  PaintImage static_image = CreateDiscardablePaintImage(image_size);
+  scoped_refptr<TestPaintWorkletInput> input =
+      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(image_size));
+  PaintImage paint_worklet_image = CreatePaintWorkletPaintImage(input);
+
+  PaintFlags flags;
+  content_layer_client.add_draw_image(static_image, gfx::Point(0, 0), flags);
+  content_layer_client.add_draw_image(paint_worklet_image, gfx::Point(100, 100),
+                                      flags);
+
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  display_list->GenerateDiscardableImagesMetadata();
+  const auto& paint_worklet_inputs =
+      display_list->discardable_image_map().paint_worklet_inputs();
+
+  ASSERT_EQ(paint_worklet_inputs.size(), 1u);
+  EXPECT_EQ(paint_worklet_inputs[0], input);
+}
+
 TEST_F(DiscardableImageMapTest, CapturesImagesInPaintRecordShaders) {
   // Create the record to use in the shader.
   auto shader_record = sk_make_sp<PaintOpBuffer>();

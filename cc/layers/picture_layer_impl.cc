@@ -223,8 +223,8 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
             layer_tree_impl()->create_low_res_tiling() ? 2u : 1u);
 
   layer_impl->set_gpu_raster_max_texture_size(gpu_raster_max_texture_size_);
-  layer_impl->UpdateRasterSource(raster_source_, &invalidation_,
-                                 tilings_.get());
+  layer_impl->UpdateRasterSource(raster_source_, &invalidation_, tilings_.get(),
+                                 &paint_worklet_records_);
   DCHECK(invalidation_.IsEmpty());
 
   // After syncing a solid color layer, the active layer has no tilings.
@@ -731,7 +731,8 @@ PictureLayerImpl* PictureLayerImpl::GetPendingOrActiveTwinLayer() const {
 void PictureLayerImpl::UpdateRasterSource(
     scoped_refptr<RasterSource> raster_source,
     Region* new_invalidation,
-    const PictureLayerTilingSet* pending_set) {
+    const PictureLayerTilingSet* pending_set,
+    const PaintWorkletRecordMap* pending_paint_worklet_records) {
   // The bounds and the pile size may differ if the pile wasn't updated (ie.
   // PictureLayer::Update didn't happen). In that case the pile will be empty.
   DCHECK(raster_source->GetSize().IsEmpty() ||
@@ -747,8 +748,15 @@ void PictureLayerImpl::UpdateRasterSource(
 
   // Unregister for all images on the current raster source, if the recording
   // was updated.
-  if (recording_updated)
+  if (recording_updated) {
     UnregisterAnimatedImages();
+
+    // When the display list changes, the set of PaintWorklets may also change.
+    if (pending_paint_worklet_records)
+      paint_worklet_records_ = *pending_paint_worklet_records;
+    else
+      SetPaintWorkletInputs(raster_source->GetPaintWorkletInputs());
+  }
 
   // The |raster_source_| is initially null, so have to check for that for the
   // first frame.
@@ -1722,6 +1730,13 @@ PictureLayerImpl::InvalidateRegionForImages(
   return ImageInvalidationResult::kInvalidated;
 }
 
+void PictureLayerImpl::SetPaintWorkletRecordForTesting(
+    scoped_refptr<PaintWorkletInput> input,
+    sk_sp<PaintRecord> record) {
+  DCHECK(paint_worklet_records_.find(input) != paint_worklet_records_.end());
+  paint_worklet_records_[input] = std::move(record);
+}
+
 void PictureLayerImpl::RegisterAnimatedImages() {
   if (!raster_source_ || !raster_source_->GetDisplayItemList())
     return;
@@ -1748,6 +1763,16 @@ void PictureLayerImpl::UnregisterAnimatedImages() {
                              .animated_images_metadata();
   for (const auto& data : metadata)
     controller->UnregisterAnimationDriver(data.paint_image_id, this);
+}
+
+void PictureLayerImpl::SetPaintWorkletInputs(
+    const std::vector<scoped_refptr<PaintWorkletInput>>& inputs) {
+  PaintWorkletRecordMap new_records;
+  for (const auto& input : inputs) {
+    // Attempt to re-use an existing PaintRecord if possible.
+    new_records[input] = std::move(paint_worklet_records_[input]);
+  }
+  paint_worklet_records_.swap(new_records);
 }
 
 std::unique_ptr<base::DictionaryValue> PictureLayerImpl::LayerAsJson() const {

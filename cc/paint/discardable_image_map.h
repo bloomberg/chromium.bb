@@ -70,6 +70,11 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
   TakeDecodingModeMap();
 
+  const std::vector<scoped_refptr<PaintWorkletInput>>& paint_worklet_inputs()
+      const {
+    return paint_worklet_inputs_;
+  }
+
  private:
   friend class ScopedMetadataGenerator;
   friend class DiscardableImageMapTest;
@@ -86,6 +91,8 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   bool all_images_are_srgb_ = false;
 
   RTree<DrawImage> images_rtree_;
+
+  std::vector<scoped_refptr<PaintWorkletInput>> paint_worklet_inputs_;
 };
 
 }  // namespace cc

@@ -74,9 +74,13 @@ class CC_EXPORT PictureLayerImpl
   void set_gpu_raster_max_texture_size(gfx::Size gpu_raster_max_texture_size) {
     gpu_raster_max_texture_size_ = gpu_raster_max_texture_size;
   }
-  void UpdateRasterSource(scoped_refptr<RasterSource> raster_source,
-                          Region* new_invalidation,
-                          const PictureLayerTilingSet* pending_set);
+  using PaintWorkletRecordMap =
+      base::flat_map<scoped_refptr<PaintWorkletInput>, sk_sp<PaintRecord>>;
+  void UpdateRasterSource(
+      scoped_refptr<RasterSource> raster_source,
+      Region* new_invalidation,
+      const PictureLayerTilingSet* pending_set,
+      const PaintWorkletRecordMap* pending_paint_worklet_records);
   bool UpdateTiles();
   // Returns true if the LCD state changed.
   bool UpdateCanUseLCDTextAfterCommit();
@@ -127,6 +131,13 @@ class CC_EXPORT PictureLayerImpl
 
   const Region& InvalidationForTesting() const { return invalidation_; }
 
+  void SetPaintWorkletRecordForTesting(scoped_refptr<PaintWorkletInput>,
+                                       sk_sp<PaintRecord>);
+
+  const PaintWorkletRecordMap& GetPaintWorkletRecordMapForTesting() const {
+    return paint_worklet_records_;
+  }
+
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl,
                    int id,
@@ -160,6 +171,10 @@ class CC_EXPORT PictureLayerImpl
   void UnregisterAnimatedImages();
 
   std::unique_ptr<base::DictionaryValue> LayerAsJson() const override;
+
+  // Set the collection of PaintWorkletInputs that are part of this layer.
+  void SetPaintWorkletInputs(
+      const std::vector<scoped_refptr<PaintWorkletInput>>& inputs);
 
   PictureLayerImpl* twin_layer_;
 
@@ -209,6 +224,13 @@ class CC_EXPORT PictureLayerImpl
   // of comparing pointers, since objects pointed to are not guaranteed to
   // exist.
   std::vector<PictureLayerTiling*> last_append_quads_tilings_;
+
+  // The set of PaintWorkletInputs that are part of this PictureLayerImpl, and
+  // their painted results (if any). During commit, Blink hands us a set of
+  // PaintWorkletInputs that are part of this layer. These are then painted
+  // asynchronously on a worklet thread, triggered from
+  // |LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation|.
+  PaintWorkletRecordMap paint_worklet_records_;
 };
 
 }  // namespace cc
