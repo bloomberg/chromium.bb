@@ -1551,6 +1551,7 @@ crbug.com/336604 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/layout-algorithm_algo-cross-line-002.html [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/negative-margins-001.html [ Failure ]
+crbug.com/972227 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/overflow-auto-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/order_value.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/overflow-top-left.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-heights-000.html [ Failure ]
