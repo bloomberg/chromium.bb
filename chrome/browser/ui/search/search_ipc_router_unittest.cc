@@ -130,7 +130,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldProcessOptOutOfSearchSuggestions, bool());
   MOCK_METHOD1(ShouldSendSetInputInProgress, bool(bool));
   MOCK_METHOD0(ShouldSendOmniboxFocusChanged, bool());
-  MOCK_METHOD0(ShouldSendMostVisitedItems, bool());
+  MOCK_METHOD0(ShouldSendMostVisitedInfo, bool());
   MOCK_METHOD0(ShouldSendThemeBackgroundInfo, bool());
   MOCK_METHOD0(ShouldProcessThemeChangeMessages, bool());
 };
@@ -766,28 +766,29 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetInputInProgress) {
   GetSearchIPCRouter().SetInputInProgress(true);
 }
 
-TEST_F(SearchIPCRouterTest, SendMostVisitedItemsMsg) {
+TEST_F(SearchIPCRouterTest, SendMostVisitedInfoMsg) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendMostVisitedItems())
+  EXPECT_CALL(*policy, ShouldSendMostVisitedInfo())
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*mock_embedded_search_client(), MostVisitedChanged(_));
-  GetSearchIPCRouter().SendMostVisitedItems(InstantMostVisitedInfo());
+  EXPECT_CALL(*mock_embedded_search_client(), MostVisitedInfoChanged(_));
+  GetSearchIPCRouter().SendMostVisitedInfo(InstantMostVisitedInfo());
 }
 
-TEST_F(SearchIPCRouterTest, DoNotSendMostVisitedItemsMsg) {
+TEST_F(SearchIPCRouterTest, DoNotSendMostVisitedInfoMsg) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendMostVisitedItems())
+  EXPECT_CALL(*policy, ShouldSendMostVisitedInfo())
       .Times(1)
       .WillOnce(Return(false));
 
-  EXPECT_CALL(*mock_embedded_search_client(), MostVisitedChanged(_)).Times(0);
-  GetSearchIPCRouter().SendMostVisitedItems(InstantMostVisitedInfo());
+  EXPECT_CALL(*mock_embedded_search_client(), MostVisitedInfoChanged(_))
+      .Times(0);
+  GetSearchIPCRouter().SendMostVisitedInfo(InstantMostVisitedInfo());
 }
 
 TEST_F(SearchIPCRouterTest, SendThemeBackgroundInfoMsg) {

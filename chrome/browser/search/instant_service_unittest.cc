@@ -32,7 +32,7 @@ namespace {
 class MockInstantServiceObserver : public InstantServiceObserver {
  public:
   MOCK_METHOD1(ThemeInfoChanged, void(const ThemeBackgroundInfo&));
-  MOCK_METHOD1(MostVisitedItemsChanged, void(const InstantMostVisitedInfo&));
+  MOCK_METHOD1(MostVisitedInfoChanged, void(const InstantMostVisitedInfo&));
 };
 
 base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {

@@ -118,7 +118,7 @@ class LocalNTPTest : public InProcessBrowserTest {
     TestInstantServiceObserver mv_observer(instant_service);
     // Make sure the observer knows about the current items. Typically, this
     // gets triggered by navigating to an NTP.
-    instant_service->UpdateMostVisitedItemsInfo();
+    instant_service->UpdateMostVisitedInfo();
     const int numDefaultMVItems =
         kDefaultMostVisitedItemCount +
         (base::FeatureList::IsEnabled(ntp_tiles::kDefaultSearchShortcut) ? 1

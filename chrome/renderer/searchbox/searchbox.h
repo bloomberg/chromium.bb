@@ -195,7 +195,7 @@ class SearchBox : public content::RenderFrameObserver,
   void SetPageSequenceNumber(int page_seq_no) override;
   void FocusChanged(OmniboxFocusState new_focus_state,
                     OmniboxFocusChangeReason reason) override;
-  void MostVisitedChanged(
+  void MostVisitedInfoChanged(
       const InstantMostVisitedInfo& most_visited_info) override;
   void SetInputInProgress(bool input_in_progress) override;
   void ThemeChanged(const ThemeBackgroundInfo& theme_info) override;

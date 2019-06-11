@@ -475,7 +475,7 @@ void SearchBox::DeleteCustomLinkResult(bool success) {
   }
 }
 
-void SearchBox::MostVisitedChanged(
+void SearchBox::MostVisitedInfoChanged(
     const InstantMostVisitedInfo& most_visited_info) {
   has_received_most_visited_ = true;
   items_are_custom_links_ = most_visited_info.items_are_custom_links;

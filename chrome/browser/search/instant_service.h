@@ -123,7 +123,7 @@ class InstantService : public KeyedService,
 
   // Invoked by the InstantController to update most visited items details for
   // NTP.
-  void UpdateMostVisitedItemsInfo();
+  void UpdateMostVisitedInfo();
 
   // Sends the current NTP URL to a renderer process.
   void SendNewTabPageURLToRenderer(content::RenderProcessHost* rph);
@@ -207,7 +207,7 @@ class InstantService : public KeyedService,
           sections) override;
   void OnIconMadeAvailable(const GURL& site_url) override;
 
-  void NotifyAboutMostVisitedItems();
+  void NotifyAboutMostVisitedInfo();
   void NotifyAboutThemeInfo();
 
   // Returns true if this is a Google NTP and the user has chosen to show custom

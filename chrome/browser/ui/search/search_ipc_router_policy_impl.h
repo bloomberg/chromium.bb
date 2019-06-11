@@ -43,7 +43,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) override;
   bool ShouldSendSetInputInProgress(bool is_active_tab) override;
   bool ShouldSendOmniboxFocusChanged() override;
-  bool ShouldSendMostVisitedItems() override;
+  bool ShouldSendMostVisitedInfo() override;
   bool ShouldSendThemeBackgroundInfo() override;
   bool ShouldProcessSetCustomBackgroundURLWithAttributions() override;
   bool ShouldProcessSelectLocalBackgroundImage() override;

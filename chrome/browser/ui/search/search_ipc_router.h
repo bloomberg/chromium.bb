@@ -176,7 +176,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldSendSetInputInProgress(bool is_active_tab) = 0;
     virtual bool ShouldSendOmniboxFocusChanged() = 0;
-    virtual bool ShouldSendMostVisitedItems() = 0;
+    virtual bool ShouldSendMostVisitedInfo() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
     virtual bool ShouldProcessSetCustomBackgroundURLWithAttributions() = 0;
     virtual bool ShouldProcessSelectLocalBackgroundImage() = 0;
@@ -216,7 +216,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
                            OmniboxFocusChangeReason reason);
 
   // Tells the renderer about the most visited items.
-  void SendMostVisitedItems(const InstantMostVisitedInfo& most_visited_info);
+  void SendMostVisitedInfo(const InstantMostVisitedInfo& most_visited_info);
 
   // Tells the renderer about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);

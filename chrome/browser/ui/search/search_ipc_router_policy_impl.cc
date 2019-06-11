@@ -87,7 +87,7 @@ bool SearchIPCRouterPolicyImpl::ShouldSendOmniboxFocusChanged() {
   return !is_incognito_;
 }
 
-bool SearchIPCRouterPolicyImpl::ShouldSendMostVisitedItems() {
+bool SearchIPCRouterPolicyImpl::ShouldSendMostVisitedInfo() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 

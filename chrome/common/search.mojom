@@ -156,7 +156,7 @@ interface EmbeddedSearchClient {
   FocusChanged(OmniboxFocusState new_focus_state,
                OmniboxFocusChangeReason reason);
 
-  MostVisitedChanged(InstantMostVisitedInfo most_visited_info);
+  MostVisitedInfoChanged(InstantMostVisitedInfo most_visited_info);
 
   SetInputInProgress(bool input_in_progress);
 

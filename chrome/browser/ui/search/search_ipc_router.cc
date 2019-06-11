@@ -123,12 +123,12 @@ void SearchIPCRouter::OmniboxFocusChanged(OmniboxFocusState state,
   embedded_search_client()->FocusChanged(state, reason);
 }
 
-void SearchIPCRouter::SendMostVisitedItems(
+void SearchIPCRouter::SendMostVisitedInfo(
     const InstantMostVisitedInfo& most_visited_info) {
-  if (!policy_->ShouldSendMostVisitedItems())
+  if (!policy_->ShouldSendMostVisitedInfo())
     return;
 
-  embedded_search_client()->MostVisitedChanged(most_visited_info);
+  embedded_search_client()->MostVisitedInfoChanged(most_visited_info);
 }
 
 void SearchIPCRouter::SendThemeBackgroundInfo(

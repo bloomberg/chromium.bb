@@ -131,7 +131,7 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   // Overridden from InstantServiceObserver:
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
-  void MostVisitedItemsChanged(
+  void MostVisitedInfoChanged(
       const InstantMostVisitedInfo& most_visited_info) override;
 
   // Overridden from SelectFileDialog::Listener:

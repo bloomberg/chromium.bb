@@ -399,8 +399,8 @@ void InstantService::UpdateBackgroundFromSync() {
   UpdateThemeInfo();
 }
 
-void InstantService::UpdateMostVisitedItemsInfo() {
-  NotifyAboutMostVisitedItems();
+void InstantService::UpdateMostVisitedInfo() {
+  NotifyAboutMostVisitedInfo();
 }
 
 void InstantService::SendNewTabPageURLToRenderer(
@@ -569,14 +569,14 @@ void InstantService::OnURLsAvailable(
   most_visited_info_->items_are_custom_links =
       (most_visited_sites_ && most_visited_sites_->IsCustomLinksInitialized());
 
-  NotifyAboutMostVisitedItems();
+  NotifyAboutMostVisitedInfo();
 }
 
 void InstantService::OnIconMadeAvailable(const GURL& site_url) {}
 
-void InstantService::NotifyAboutMostVisitedItems() {
+void InstantService::NotifyAboutMostVisitedInfo() {
   for (InstantServiceObserver& observer : observers_)
-    observer.MostVisitedItemsChanged(*most_visited_info_);
+    observer.MostVisitedInfoChanged(*most_visited_info_);
 }
 
 void InstantService::NotifyAboutThemeInfo() {
