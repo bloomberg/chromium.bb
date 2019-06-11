@@ -9,6 +9,7 @@ import os
 import argparse
 import sys
 import json
+import tempfile
 import time
 import logging
 
@@ -182,6 +183,9 @@ if __name__ == '__main__':
   parser.add_argument(
       '--chrome', help='Path to chrome binary')
   parser.add_argument(
+      '--output-dir',
+      help='Output directory for misc logs (e.g. wptserve)')
+  parser.add_argument(
       '--isolated-script-test-output',
       help='JSON output file used by swarming')
   parser.add_argument(
@@ -211,6 +215,12 @@ if __name__ == '__main__':
 
   host = Host()
   port = host.port_factory.get()
+  if options.output_dir:
+    port.set_option_default('results_directory', options.output_dir)
+  else:
+    output_dir = tempfile.mkdtemp('webdriver_tests')
+    _log.info('Using a temporary output dir %s', output_dir)
+    port.set_option_default('results_directory', output_dir)
   path_finder = PathFinder(host.filesystem)
 
   # Starts WPT Serve to serve the WPT WebDriver test content.

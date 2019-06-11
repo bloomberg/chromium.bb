@@ -45,8 +45,12 @@ class WPTServe(server_base.ServerBase):
         start_cmd = [self._port_obj.host.executable,
                      '-u', wpt_script, 'serve',
                      '--config', self._config_file,
-                     '--doc_root', path_to_wpt_tests,
-                     '--ws_doc_root', path_to_ws_handlers]
+                     '--doc_root', path_to_wpt_tests]
+
+        # Some users (e.g. run_webdriver_tests.py) do not need WebSocket
+        # handlers, so we only add the flag if the directory exists.
+        if self._port_obj.host.filesystem.exists(path_to_ws_handlers):
+            start_cmd += ['--ws_doc_root', path_to_ws_handlers]
 
         # TODO(burnik): We should stop setting the CWD once WPT can be run without it.
         self._cwd = path_to_wpt_root
