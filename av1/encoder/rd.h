@@ -394,6 +394,20 @@ static INLINE void av1_rd_cost_update(int mult, RD_STATS *rd_cost) {
   }
 }
 
+static INLINE void av1_rd_stats_subtraction(const RD_STATS *const left,
+                                            const RD_STATS *const right,
+                                            RD_STATS *result) {
+  if (left->rate == INT_MAX || right->rate == INT_MAX ||
+      left->dist == INT64_MAX || right->dist == INT64_MAX ||
+      left->rdcost == INT64_MAX || right->rdcost == INT64_MAX) {
+    av1_invalid_rd_stats(result);
+  } else {
+    result->rate = left->rate - right->rate;
+    result->dist = left->dist - right->dist;
+    result->rdcost = left->rdcost - right->rdcost;
+  }
+}
+
 struct TileInfo;
 struct TileDataEnc;
 struct AV1_COMP;
