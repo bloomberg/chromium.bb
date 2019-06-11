@@ -16,9 +16,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_dispatcher_eventhandler.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_dispatcher_eventhandler.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
@@ -63,7 +63,7 @@ struct UserMediaRequest {
 // UserMediaProcessor must be created, called and destroyed on the main render
 // thread. There should be only one UserMediaProcessor per frame.
 class CONTENT_EXPORT UserMediaProcessor
-    : public MediaStreamDispatcherEventHandler {
+    : public blink::MediaStreamDispatcherEventHandler {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
       const blink::mojom::MediaDevicesDispatcherHostPtr&()>;
@@ -108,7 +108,7 @@ class CONTENT_EXPORT UserMediaProcessor
 
   bool HasActiveSources() const;
 
-  // MediaStreamDispatcherEventHandler implementation.
+  // blink::MediaStreamDispatcherEventHandler implementation.
   void OnDeviceStopped(const blink::MediaStreamDevice& device) override;
   void OnDeviceChanged(const blink::MediaStreamDevice& old_device,
                        const blink::MediaStreamDevice& new_device) override;

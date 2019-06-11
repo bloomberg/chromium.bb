@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_DISPATCHER_EVENTHANDLER_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_DISPATCHER_EVENTHANDLER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_DISPATCHER_EVENTHANDLER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_DISPATCHER_EVENTHANDLER_H_
 
 #include <string>
 
-#include "content/common/content_export.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/platform/web_common.h"
 
-namespace content {
+namespace blink {
 
-class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
+// TODO(crbug.com/704136): Move this class out of the Blink exposed API
+// when all users of it have been Onion souped.
+class BLINK_PLATFORM_EXPORT MediaStreamDispatcherEventHandler {
  public:
   // A device has been stopped in the browser process.
   virtual void OnDeviceStopped(const blink::MediaStreamDevice& device) = 0;
@@ -25,6 +27,6 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
   virtual ~MediaStreamDispatcherEventHandler() {}
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_DISPATCHER_EVENTHANDLER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_DISPATCHER_EVENTHANDLER_H_

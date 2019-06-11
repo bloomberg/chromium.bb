@@ -14,7 +14,7 @@
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/media/stream/media_stream_dispatcher_eventhandler.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_dispatcher_eventhandler.h"
 #include "url/origin.h"
 
 namespace content {
@@ -38,7 +38,7 @@ bool RemoveStreamDeviceFromArray(const blink::MediaStreamDevice& device,
 struct MediaStreamDeviceObserver::Stream {
   Stream() {}
   ~Stream() {}
-  base::WeakPtr<MediaStreamDispatcherEventHandler> handler;
+  base::WeakPtr<blink::MediaStreamDispatcherEventHandler> handler;
   blink::MediaStreamDevices audio_devices;
   blink::MediaStreamDevices video_devices;
 };
@@ -150,7 +150,8 @@ void MediaStreamDeviceObserver::AddStream(
     const std::string& label,
     const blink::MediaStreamDevices& audio_devices,
     const blink::MediaStreamDevices& video_devices,
-    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
+    const base::WeakPtr<blink::MediaStreamDispatcherEventHandler>&
+        event_handler) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   Stream stream;
