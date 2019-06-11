@@ -2115,6 +2115,7 @@ jumbo_source_set("unit_tests") {
     "streams/readable_stream_test.cc",
     "streams/stream_promise_resolver_test.cc",
     "streams/test_underlying_source.h",
+    "streams/transferable_streams_test.cc",
     "streams/transform_stream_test.cc",
     "streams/writable_stream_test.cc",
     "style/border_value_test.cc",

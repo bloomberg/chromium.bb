@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream_reader.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
+#include "third_party/blink/renderer/core/streams/transferable_streams.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
@@ -29,13 +30,6 @@
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
-
-struct ReadableStreamNative::PipeOptions {
-  PipeOptions() = default;
-  bool prevent_close = false;
-  bool prevent_abort = false;
-  bool prevent_cancel = false;
-};
 
 // PipeToEngine implements PipeTo(). All standard steps in this class come from
 // https://streams.spec.whatwg.org/#readable-stream-pipe-to
@@ -1394,7 +1388,43 @@ void ReadableStreamNative::LockAndDisturb(ScriptState* script_state,
 void ReadableStreamNative::Serialize(ScriptState* script_state,
                                      MessagePort* port,
                                      ExceptionState& exception_state) {
-  // TODO(ricea): Implement this.
+  if (IsLocked(this)) {
+    exception_state.ThrowTypeError("Cannot transfer a locked stream");
+    return;
+  }
+
+  auto* writable =
+      CreateCrossRealmTransformWritable(script_state, port, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  auto promise = PipeTo(script_state, this, writable, PipeOptions());
+  promise.MarkAsHandled();
+}
+
+ReadableStreamNative* ReadableStreamNative::Deserialize(
+    ScriptState* script_state,
+    MessagePort* port,
+    ExceptionState& exception_state) {
+  // We need to execute JavaScript to call "Then" on v8::Promises. We will not
+  // run author code.
+  v8::Isolate::AllowJavascriptExecutionScope allow_js(
+      script_state->GetIsolate());
+  auto* readable =
+      CreateCrossRealmTransformReadable(script_state, port, exception_state);
+  if (exception_state.HadException()) {
+    return nullptr;
+  }
+  return readable;
+}
+
+ScriptPromise ReadableStreamNative::PipeTo(ScriptState* script_state,
+                                           ReadableStreamNative* readable,
+                                           WritableStreamNative* destination,
+                                           PipeOptions pipe_options) {
+  auto* engine = MakeGarbageCollected<PipeToEngine>(script_state, pipe_options);
+  return engine->Start(readable, destination);
 }
 
 v8::Local<v8::Value> ReadableStreamNative::GetStoredError(
@@ -1407,14 +1437,6 @@ void ReadableStreamNative::Trace(Visitor* visitor) {
   visitor->Trace(reader_);
   visitor->Trace(stored_error_);
   ReadableStream::Trace(visitor);
-}
-
-ScriptPromise ReadableStreamNative::PipeTo(ScriptState* script_state,
-                                           ReadableStreamNative* readable,
-                                           WritableStreamNative* destination,
-                                           PipeOptions pipe_options) {
-  auto* engine = MakeGarbageCollected<PipeToEngine>(script_state, pipe_options);
-  return engine->Start(readable, destination);
 }
 
 //

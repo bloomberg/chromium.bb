@@ -60,11 +60,9 @@ ReadableStream* ReadableStream::CreateWithCountQueueingStrategy(
 ReadableStream* ReadableStream::Deserialize(ScriptState* script_state,
                                             MessagePort* port,
                                             ExceptionState& exception_state) {
-  // TODO(ricea): Implementation serialization for the native implementation.
   if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
-    exception_state.ThrowTypeError(
-        "serialization disabled because StreamsNative feature is enabled");
-    return nullptr;
+    return ReadableStreamNative::Deserialize(script_state, port,
+                                             exception_state);
   }
 
   return ReadableStreamWrapper::Deserialize(script_state, port,
