@@ -100,6 +100,10 @@ class EditableComboboxTest : public ViewsTestBase {
   EditableCombobox* combobox_ = nullptr;
   View* dummy_focusable_view_ = nullptr;
 
+  // We make |combobox_| a child of another View to test different removal
+  // scenarios.
+  View* parent_of_combobox_ = nullptr;
+
   // Listener for our EditableCombobox.
   std::unique_ptr<DummyListener> listener_;
 
@@ -135,15 +139,17 @@ void EditableComboboxTest::InitEditableCombobox(
     const bool filter_on_edit,
     const bool show_on_empty,
     const EditableCombobox::Type type) {
+  parent_of_combobox_ = new View();
+  parent_of_combobox_->SetID(1);
   combobox_ =
       new EditableCombobox(std::make_unique<ui::SimpleComboboxModel>(items),
                            filter_on_edit, show_on_empty, type);
   listener_ = std::make_unique<DummyListener>();
   combobox_->set_listener(listener_.get());
-  combobox_->SetID(1);
+  combobox_->SetID(2);
   dummy_focusable_view_ = new View();
   dummy_focusable_view_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  dummy_focusable_view_->SetID(2);
+  dummy_focusable_view_->SetID(3);
 
   InitWidget();
 }
@@ -154,11 +160,14 @@ void EditableComboboxTest::InitWidget() {
   Widget::InitParams params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = gfx::Rect(0, 0, 1000, 1000);
+  parent_of_combobox_->SetBoundsRect(gfx::Rect(0, 0, 500, 40));
+  combobox_->SetBoundsRect(gfx::Rect(0, 0, 500, 40));
+
   widget_->Init(params);
   View* container = new View();
   widget_->SetContentsView(container);
-  container->AddChildView(combobox_);
-  combobox_->SetBoundsRect(gfx::Rect(0, 0, 500, 40));
+  container->AddChildView(parent_of_combobox_);
+  parent_of_combobox_->AddChildView(combobox_);
   container->AddChildView(dummy_focusable_view_);
   widget_->Show();
 
@@ -254,6 +263,51 @@ TEST_F(EditableComboboxTest, TabMovesToOtherViewAndClosesMenu) {
   EXPECT_TRUE(dummy_focusable_view_->HasFocus());
   WaitForMenuClosureAnimation();
   EXPECT_FALSE(IsMenuOpen());
+}
+
+TEST_F(EditableComboboxTest,
+       ClickOutsideEditableComboboxWithoutLosingFocusClosesMenu) {
+  InitEditableCombobox();
+  combobox_->GetTextfieldForTest()->RequestFocus();
+  EXPECT_TRUE(IsMenuOpen());
+
+  const gfx::Point outside_point(combobox_->x() + combobox_->width() + 1,
+                                 combobox_->y() + 1);
+  PerformClick(widget_, outside_point);
+
+  WaitForMenuClosureAnimation();
+  EXPECT_FALSE(IsMenuOpen());
+  EXPECT_TRUE(combobox_->GetTextfieldForTest()->HasFocus());
+}
+
+TEST_F(EditableComboboxTest, ClickTextfieldDoesntCloseMenu) {
+  InitEditableCombobox();
+  combobox_->GetTextfieldForTest()->RequestFocus();
+  EXPECT_TRUE(IsMenuOpen());
+
+  MenuRunner* menu_runner1 = combobox_->GetMenuRunnerForTest();
+  ClickTextfield();
+  MenuRunner* menu_runner2 = combobox_->GetMenuRunnerForTest();
+  EXPECT_TRUE(IsMenuOpen());
+
+  // Making sure the menu didn't close and reopen (causing a flicker).
+  EXPECT_EQ(menu_runner1, menu_runner2);
+}
+
+TEST_F(EditableComboboxTest, RemovingControlWhileMenuOpenClosesMenu) {
+  InitEditableCombobox();
+  combobox_->GetTextfieldForTest()->RequestFocus();
+  EXPECT_TRUE(IsMenuOpen());
+  parent_of_combobox_->RemoveChildView(combobox_);
+  EXPECT_EQ(nullptr, combobox_->GetMenuRunnerForTest());
+}
+
+TEST_F(EditableComboboxTest, RemovingParentOfControlWhileMenuOpenClosesMenu) {
+  InitEditableCombobox();
+  combobox_->GetTextfieldForTest()->RequestFocus();
+  EXPECT_TRUE(IsMenuOpen());
+  widget_->GetContentsView()->RemoveChildView(parent_of_combobox_);
+  EXPECT_EQ(nullptr, combobox_->GetMenuRunnerForTest());
 }
 
 TEST_F(EditableComboboxTest, LeftOrRightKeysMoveInTextfield) {
