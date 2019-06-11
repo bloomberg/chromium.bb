@@ -590,6 +590,13 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           base::UmaHistogramEnumeration(
               "PasswordManager.ApplySyncChanges.UpdateLoginSyncError",
               update_login_error);
+          // If there are no entries to update, direct the processor to ignore
+          // and move on.
+          if (update_login_error == UpdateLoginError::kNoUpdatedRecords) {
+            change_processor()->UntrackEntityForClientTagHash(
+                entity_change->data().client_tag_hash);
+            continue;
+          }
           if (changes.empty()) {
             metrics_util::LogApplySyncChangesState(
                 metrics_util::ApplySyncChangesState::kApplyUpdateFailed);
