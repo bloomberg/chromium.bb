@@ -341,7 +341,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 
 + (void)startHTTPServer {
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
-  server.StartOrDie();
+  NSString* bundlePath = [NSBundle bundleForClass:[self class]].resourcePath;
+  server.StartOrDie(base::FilePath(base::SysNSStringToUTF8(bundlePath)));
 }
 
 + (NSArray*)flakyTestNames {

@@ -392,6 +392,7 @@ source_set("eg_test_support+eg2") {
     "//components/sync/base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/popup_menu:constants",
+    "//ios/testing:http_server_bundle_data",
     "//ios/testing:nserror_support",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
