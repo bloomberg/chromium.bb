@@ -433,14 +433,6 @@ jumbo_source_set("browser_sources") {
     sources += [ "context_factory.h" ]
   }
 
-  if (use_aura) {
-    sources += [ "gpu_interface_provider_factory.h" ]
-    deps += [
-      "//services/ws/public/cpp/host",
-      "//ui/aura",
-    ]
-  }
-
   if (is_mac) {
     sources += [ "remote_cocoa.h" ]
   }

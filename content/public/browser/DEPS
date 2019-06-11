@@ -10,7 +10,6 @@ include_rules = [
   "+services/network/public/cpp",
   "+services/service_manager/sandbox",
   "+services/video_capture/public/mojom",
-  "+services/ws/public/cpp/host",
   "+services/ws/public/mojom",
 ]
 

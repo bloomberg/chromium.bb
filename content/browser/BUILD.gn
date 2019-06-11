@@ -2608,7 +2608,6 @@ jumbo_source_set("browser") {
 
   if (use_aura) {
     deps += [
-      "//services/ws/public/cpp/host",
       "//services/ws/public/mojom",
       "//ui/aura",
       "//ui/aura_extra",
@@ -2617,8 +2616,6 @@ jumbo_source_set("browser") {
       "//ui/wm/public",
     ]
     sources += [
-      "gpu_interface_provider.cc",
-      "gpu_interface_provider.h",
       "renderer_host/delegated_frame_host_client_aura.cc",
       "renderer_host/delegated_frame_host_client_aura.h",
       "renderer_host/render_widget_host_view_event_handler.cc",
