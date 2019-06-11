@@ -2,26 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Protocol + host parts of extension URL.
- *
- * The __FILE_NAME suffix is because the same string constant is used in
- * multiple JS files, and JavaScript doesn't have C's #define mechanism (which
- * only affects the file its in). Without the suffix, we'd have "constant
- * FILE_MANAGER_HOST assigned a value more than once" compiler warnings.
- *
- * @type {string}
- * @const
- */
-var FILE_MANAGER_HOST__EXIF_PARSER =
-    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
+// When running this code in unit tests, `importScripts` is not defined, but
+// that doesn't really matter since the dependent file is already included by
+// the build system.
+if (typeof importScripts !== 'undefined') {
+  /**
+   * Protocol + host parts of extension URL.
+   *
+   * The __FILE_NAME suffix is because the same string constant is used in
+   * multiple JS files, and JavaScript doesn't have C's #define mechanism (which
+   * only affects the file its in). Without the suffix, we'd have "constant
+   * FILE_MANAGER_HOST assigned a value more than once" compiler warnings.
+   */
+  const FILE_MANAGER_HOST__EXIF_PARSER =
+      'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
 
-importScripts(
-    FILE_MANAGER_HOST__EXIF_PARSER +
-    '/foreground/js/metadata/exif_constants.js');
+  importScripts(
+      FILE_MANAGER_HOST__EXIF_PARSER +
+      '/foreground/js/metadata/exif_constants.js');
+}
 
 /** @final */
-var ExifParser = class extends ImageParser {
+class ExifParser extends ImageParser {
   /**
    * @param {!MetadataParserLogger} parent Parent object.
    */
@@ -202,14 +204,14 @@ var ExifParser = class extends ImageParser {
     let directoryOffset = br.readScalar(4);
 
     // Image directory.
-    this.vlog('Read image directory.');
+    this.vlog('Read image directory');
     br.seek(directoryOffset);
     directoryOffset = this.readDirectory(br, metadata.ifd.image);
     metadata.imageTransform = this.parseOrientation(metadata.ifd.image);
 
     // Thumbnail Directory chained from the end of the image directory.
     if (directoryOffset) {
-      this.vlog('Read thumbnail directory.');
+      this.vlog('Read thumbnail directory');
       br.seek(directoryOffset);
       this.readDirectory(br, metadata.ifd.thumbnail);
       // If no thumbnail orientation is encoded, assume same orientation as
@@ -221,7 +223,7 @@ var ExifParser = class extends ImageParser {
 
     // EXIF Directory may be specified as a tag in the image directory.
     if (Exif.Tag.EXIFDATA in metadata.ifd.image) {
-      this.vlog('Read EXIF directory.');
+      this.vlog('Read EXIF directory');
       directoryOffset = metadata.ifd.image[Exif.Tag.EXIFDATA].value;
       br.seek(directoryOffset);
       metadata.ifd.exif = {};
@@ -230,7 +232,7 @@ var ExifParser = class extends ImageParser {
 
     // GPS Directory may also be linked from the image directory.
     if (Exif.Tag.GPSDATA in metadata.ifd.image) {
-      this.vlog('Read GPS directory.');
+      this.vlog('Read GPS directory');
       directoryOffset = metadata.ifd.image[Exif.Tag.GPSDATA].value;
       br.seek(directoryOffset);
       metadata.ifd.gps = {};
@@ -240,12 +242,12 @@ var ExifParser = class extends ImageParser {
     // Thumbnail may be linked from the image directory.
     if (Exif.Tag.JPG_THUMB_OFFSET in metadata.ifd.thumbnail &&
         Exif.Tag.JPG_THUMB_LENGTH in metadata.ifd.thumbnail) {
-      this.vlog('Read thumbnail image.');
+      this.vlog('Read thumbnail image');
       br.seek(metadata.ifd.thumbnail[Exif.Tag.JPG_THUMB_OFFSET].value);
       metadata.thumbnailURL =
           br.readImage(metadata.ifd.thumbnail[Exif.Tag.JPG_THUMB_LENGTH].value);
     } else {
-      this.vlog('Image has EXIF data, but no JPG thumbnail.');
+      this.vlog('Image has EXIF data, but no JPG thumbnail');
     }
   }
 
@@ -316,7 +318,7 @@ var ExifParser = class extends ImageParser {
         unsafeRead(size, opt_readFunction, opt_signed);
       } catch (ex) {
         self.log(
-            'error reading tag 0x' + tag.id.toString(16) + '/' + tag.format +
+            'Error reading tag 0x' + tag.id.toString(16) + '/' + tag.format +
             ', size ' + tag.componentCount + '*' + size + ' ' +
             (ex.stack || '<no stack>') + ': ' + ex);
         tag.value = null;
@@ -435,8 +437,8 @@ var ExifParser = class extends ImageParser {
         tag.value += '\0';
         tag.componentCount = tag.value.length;
         this.vlog(
-            'Invalid format: 0x' + tag.id.toString(16) + '/' + tag.format +
-            ': Did not end with null character. Null character is appended.');
+            'Appended missing null character at the end of tag 0x' +
+            tag.id.toString(16) + '/' + tag.format);
       }
     }
   }
@@ -459,7 +461,7 @@ var ExifParser = class extends ImageParser {
     }
     return null;
   }
-};
+}
 
 /**
  * Map from the exif orientation value to the horizontal scale value.

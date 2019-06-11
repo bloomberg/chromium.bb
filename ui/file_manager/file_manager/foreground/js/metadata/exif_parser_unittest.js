@@ -3,41 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Parser unittest BUILD rules may cause script(s) under test to load, and call
- * dependent script methods, before the dependent scripts have loaded. Fix this
- * by creating fakes to avoid any undefined call exceptions, then synchronously
- * reload the affected script(s).
- */
-window.addEventListener(
-    'load', /** @type {Function} */ (async () => {
-      // Fake parser importScripts calls.
-      window.importScripts = (script) => {};
-
-      // Fake metadata dispatcher parser registry.
-      window.registerParserClass = (parser) => {};
-
-      // Reload an existing <script> element.
-      let reloadScript = (src) => {
-        let element = document.querySelector('script[src$="' + src + '"]');
-        if (!(element instanceof HTMLScriptElement)) {
-          return Promise.reject('reloading script: ' + src + ' not found');
-        }
-        element.remove();
-        return new Promise((resolve, reject) => {
-          let script = document.createElement('script');
-          script.onload = resolve;
-          script.onerror = reject;
-          document.body.appendChild(script);
-          script.src = element.src;
-        });
-      };
-
-      await Promise.all([
-        reloadScript('exif_parser.js'),
-      ]);
-    }));
-
-/**
  * Creates a directory with specified tag. This method only supports string
  * format tag, which is longer than 4 characters.
  * @param {!TypedArray} bytes Bytes to be written.
