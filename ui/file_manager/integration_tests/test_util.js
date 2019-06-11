@@ -574,11 +574,10 @@ var ENTRIES = {
     typeText: 'PNG image'
   }),
 
-  // An image file without an extension, to confirm that file type detection
-  // using mime types works fine.
   image2: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'image2.png',
+    // No file extension.
     targetPath: 'image2',
     mimeType: 'image/png',
     lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
@@ -609,11 +608,21 @@ var ENTRIES = {
     typeText: 'JPEG image'
   }),
 
-  // An ogg file without a mime type, to confirm that file type detection using
-  // file extensions works fine.
+  exifImage: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'exif.jpg',
+    // No mime type.
+    targetPath: 'exif.jpg',
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'exif.jpg',
+    sizeText: '31 KB',
+    typeText: 'JPEG image'
+  }),
+
   beautiful: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'music.ogg',
+    // No mime type.
     targetPath: 'Beautiful Song.ogg',
     lastModifiedTime: 'Nov 12, 2086, 12:00 PM',
     nameText: 'Beautiful Song.ogg',
@@ -673,10 +682,10 @@ var ENTRIES = {
     typeText: 'Plain text',
   }),
 
-  // Note, no MIME type here, this is used for testing file content sniffing.
   plainText: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'plaintext',
+    // No mime type, no file extension.
     targetPath: 'plaintext',
     lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
     nameText: 'plaintext',
