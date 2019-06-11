@@ -276,6 +276,96 @@ TEST_F(JankTrackerTest, JankWhileScrolled) {
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
 }
 
+TEST_F(JankTrackerTest, FullyClippedVisualRect) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #clip { width: 0px; height: 600px; overflow: hidden; }
+      #j { position: relative; width: 300px; height: 200px; }
+    </style>
+    <div id='clip'><div id='j'></div></div>
+  )HTML");
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: 200px"));
+  UpdateAllLifecyclePhases();
+  EXPECT_FLOAT_EQ(0.0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, PartiallyClippedVisualRect) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #clip { width: 150px; height: 600px; overflow: hidden; }
+      #j { position: relative; width: 300px; height: 200px; }
+    </style>
+    <div id='clip'><div id='j'></div></div>
+  )HTML");
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: 200px"));
+  UpdateAllLifecyclePhases();
+  // (clipped width 150px) * (height 200 + movement 200) / (800 * 600 viewport)
+  EXPECT_FLOAT_EQ(0.125, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, MultiClipVisualRect) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #outer { width: 200px; height: 600px; overflow: hidden; }
+      #inner { width: 300px; height: 150px; overflow: hidden; }
+      #j { position: relative; width: 300px; height: 600px; }
+    </style>
+    <div id='outer'><div id='inner'><div id='j'></div></div></div>
+  )HTML");
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: -200px"));
+  UpdateAllLifecyclePhases();
+  // Note that, while the element moves up 200px, its visibility is
+  // clipped at 0px,150px height, so the additional 200px of vertical
+  // move distance is not included in the score.
+  // (clip width 200) * (clip height 150) / (800 * 600 viewport)
+  EXPECT_FLOAT_EQ(0.0625, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(200.0, GetJankTracker().OverallMaxDistance());
+}
+
+TEST_F(JankTrackerTest, ShiftOutsideViewport) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #j { position: relative; width: 600px; height: 200px; top: 600px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: 800px"));
+  UpdateAllLifecyclePhases();
+  // Since the element moves entirely outside of the viewport, it shouldn't
+  // generate a score.
+  EXPECT_FLOAT_EQ(0.0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, ShiftInToViewport) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #j { position: relative; width: 600px; height: 200px; top: 600px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: 400px"));
+  UpdateAllLifecyclePhases();
+  // The element moves from outside the viewport to within the viewport, which
+  // should generate jank.
+  // (width 600) * (height 0 + move 200) / (800 * 600 viewport)
+  EXPECT_FLOAT_EQ(0.25, GetJankTracker().Score());
+}
+
 class JankTrackerSimTest : public SimTest {};
 
 TEST_F(JankTrackerSimTest, SubframeWeighting) {
