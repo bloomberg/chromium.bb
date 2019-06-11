@@ -1064,7 +1064,7 @@ class MetaBuildWrapper(object):
       pprint.pformat({
         'variables': {
           'command': command,
-          'files': sorted(runtime_deps + extra_files),
+          'files': sorted(set(runtime_deps + extra_files)),
         }
       }) + '\n')
 

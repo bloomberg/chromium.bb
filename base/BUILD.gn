@@ -3020,16 +3020,6 @@ test("base_unittests") {
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-  # Symbols for crashes when running tests on swarming.
-  if (symbol_level > 0) {
-    if (is_win) {
-      data += [ "$root_out_dir/base_unittests.exe.pdb" ]
-    } else if (is_mac) {
-      # TODO(crbug.com/330301): make this conditional on mac_strip_release.
-      # data += [ "$root_out_dir/base_unittests.dSYM/" ]
-    }
-  }
 }
 
 action("build_date") {
