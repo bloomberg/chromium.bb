@@ -222,8 +222,6 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   // worklets.
   if (global_scope_->IsWorkletGlobalScope())
     return;
-  if (!resource_timing_notifier_)
-    return;
   const SecurityOrigin* security_origin = GetResourceFetcherProperties()
                                               .GetFetchClientSettingsObject()
                                               .GetSecurityOrigin();
@@ -244,11 +242,6 @@ void WorkerFetchContext::PopulateResourceRequest(
   SetFirstPartyCookie(out_request);
   if (!out_request.TopFrameOrigin())
     out_request.SetTopFrameOrigin(GetTopFrameOrigin());
-}
-
-FetchContext* WorkerFetchContext::Detach() {
-  resource_timing_notifier_.Clear();
-  return BaseFetchContext::Detach();
 }
 
 void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {
