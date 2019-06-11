@@ -147,6 +147,9 @@ void RecordPageSwitcherSourceByEventType(ui::EventType type,
     case ui::ET_SCROLL_FLING_START:
       source = kFlingAppGrid;
       break;
+    case ui::ET_MOUSE_RELEASED:
+      source = kMouseDrag;
+      break;
     default:
       NOTREACHED();
       return;

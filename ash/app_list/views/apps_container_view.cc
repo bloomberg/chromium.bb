@@ -334,8 +334,9 @@ const char* AppsContainerView::GetClassName() const {
 void AppsContainerView::OnGestureEvent(ui::GestureEvent* event) {
   // Ignore tap/long-press, allow those to pass to the ancestor view.
   if (event->type() == ui::ET_GESTURE_TAP ||
-      event->type() == ui::ET_GESTURE_LONG_PRESS)
+      event->type() == ui::ET_GESTURE_LONG_PRESS) {
     return;
+  }
 
   // Will forward events to |apps_grid_view_| if they occur in the same y-region
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN &&

@@ -70,35 +70,16 @@ bool PaginationController::OnGestureEvent(const ui::GestureEvent& event,
       float scroll = scroll_axis_ == SCROLL_AXIS_HORIZONTAL
                          ? details.scroll_x_hint()
                          : details.scroll_y_hint();
-      if (scroll == 0)
-        return false;
-      pagination_model_->StartScroll();
-      return true;
+      return StartDrag(scroll);
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
       float scroll = scroll_axis_ == SCROLL_AXIS_HORIZONTAL
                          ? details.scroll_x()
                          : details.scroll_y();
-      if (!pagination_model_->IsValidPageRelative(scroll < 0 ? 1 : -1) &&
-          !pagination_model_->has_transition()) {
-        // scroll > 0 means moving contents right or down. That is,
-        // transitioning to the previous page. If scrolling to an invalid page,
-        // ignore the event until movement continues in a valid direction.
-        return true;
-      }
-      int width = scroll_axis_ == SCROLL_AXIS_HORIZONTAL ? bounds.width()
-                                                         : bounds.height();
-      pagination_model_->UpdateScroll(scroll / width);
-      return true;
+      return UpdateDrag(scroll, bounds);
     }
     case ui::ET_GESTURE_SCROLL_END: {
-      const bool cancel_transition =
-          pagination_model_->transition().progress < kFinishTransitionThreshold;
-      pagination_model_->EndScroll(cancel_transition);
-      if (!cancel_transition) {
-        record_metrics_.Run(event.type(), is_tablet_mode_);
-      }
-      return true;
+      return EndDrag(event);
     }
     case ui::ET_SCROLL_FLING_START: {
       float velocity = scroll_axis_ == SCROLL_AXIS_HORIZONTAL
@@ -118,6 +99,56 @@ bool PaginationController::OnGestureEvent(const ui::GestureEvent& event,
     default:
       return false;
   }
+}
+
+void PaginationController::StartMouseDrag(const gfx::Vector2d& offset) {
+  float scroll =
+      scroll_axis_ == SCROLL_AXIS_HORIZONTAL ? offset.x() : offset.y();
+  StartDrag(scroll);
+}
+
+void PaginationController::UpdateMouseDrag(const gfx::Vector2d& offset,
+                                           const gfx::Rect& bounds) {
+  float scroll =
+      scroll_axis_ == SCROLL_AXIS_HORIZONTAL ? offset.x() : offset.y();
+  UpdateDrag(scroll, bounds);
+}
+
+void PaginationController::EndMouseDrag(const ui::MouseEvent& event) {
+  EndDrag(event);
+}
+
+bool PaginationController::StartDrag(float scroll) {
+  if (scroll == 0)
+    return false;
+  pagination_model_->StartScroll();
+  return true;
+}
+
+bool PaginationController::UpdateDrag(float scroll, const gfx::Rect& bounds) {
+  if (!pagination_model_->IsValidPageRelative(scroll < 0 ? 1 : -1) &&
+      !pagination_model_->has_transition()) {
+    // scroll > 0 means moving contents right or down. That is,
+    // transitioning to the previous page. If scrolling to an invalid page,
+    // ignore the event until movement continues in a valid direction.
+    return true;
+  }
+  int width =
+      scroll_axis_ == SCROLL_AXIS_HORIZONTAL ? bounds.width() : bounds.height();
+
+  pagination_model_->UpdateScroll(scroll / width);
+  return true;
+}
+
+bool PaginationController::EndDrag(const ui::LocatedEvent& event) {
+  const bool cancel_transition =
+      pagination_model_->transition().progress < kFinishTransitionThreshold;
+  pagination_model_->EndScroll(cancel_transition);
+
+  if (!cancel_transition)
+    record_metrics_.Run(event.type(), is_tablet_mode_);
+
+  return true;
 }
 
 }  // namespace ash

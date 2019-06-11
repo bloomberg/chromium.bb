@@ -1046,18 +1046,8 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
-  // If |pagination_model_| is empty, don't handle scroll events.
-  if (pagination_model_.total_pages() <= 0)
+  if (!ShouldHandleDragEvent(*event))
     return;
-
-  // If the event is a scroll down in clamshell mode on the first page, don't
-  // let |pagination_controller_| handle it. Unless it occurs in a folder.
-  if (!folder_delegate_ && event->type() == ui::ET_GESTURE_SCROLL_BEGIN &&
-      !contents_view_->app_list_view()->is_tablet_mode() &&
-      pagination_model_.selected_page() == 0 &&
-      event->details().scroll_y_hint() > 0) {
-    return;
-  }
 
   // Scroll begin events should not be passed to ancestor views from apps grid
   // in our current design. This prevents both ignoring horizontal scrolls in
@@ -1068,9 +1058,91 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-bool AppsGridView::OnMousePressed(const ui::MouseEvent& event) {
-  return !contents_view_->app_list_view()->is_tablet_mode() &&
-         event.IsLeftMouseButton() && EventIsBetweenOccupiedTiles(&event);
+void AppsGridView::OnMouseEvent(ui::MouseEvent* event) {
+  if (contents_view_->app_list_view()->is_tablet_mode() ||
+      !event->IsLeftMouseButton()) {
+    return;
+  }
+
+  gfx::Point point_in_screen = event->location();
+  ConvertPointToScreen(this, &point_in_screen);
+
+  switch (event->type()) {
+    case ui::ET_MOUSE_PRESSED:
+      if (!EventIsBetweenOccupiedTiles(event))
+        break;
+      event->SetHandled();
+      mouse_drag_start_point_ = point_in_screen;
+      last_mouse_drag_point_ = point_in_screen;
+      break;
+    case ui::ET_MOUSE_DRAGGED:
+      if (!ShouldHandleDragEvent(*event)) {
+        // We need to send mouse drag/release events to AppListView explicitly
+        // because AppsGridView handles the mouse press event and gets captured.
+        // Then AppListView cannot receive mouse drag/release events implcitly.
+
+        // Send the fabricated mouse press event to AppListView if AppsGridView
+        // is not in mouse drag yet.
+        gfx::Point drag_location_in_app_list;
+        if (!is_in_mouse_drag_) {
+          ui::MouseEvent press_event(
+              *event, static_cast<views::View*>(this),
+              static_cast<views::View*>(contents_view_->app_list_view()),
+              ui::ET_MOUSE_PRESSED, event->flags());
+          contents_view_->app_list_view()->OnMouseEvent(&press_event);
+
+          is_in_mouse_drag_ = true;
+        }
+
+        drag_location_in_app_list = event->location();
+        ConvertPointToTarget(this, contents_view_->app_list_view(),
+                             &drag_location_in_app_list);
+        event->set_location(drag_location_in_app_list);
+        contents_view_->app_list_view()->OnMouseEvent(event);
+        break;
+      }
+      event->SetHandled();
+      if (!is_in_mouse_drag_) {
+        if (abs(point_in_screen.y() - mouse_drag_start_point_.y()) <
+            ash::kMouseDragThreshold) {
+          break;
+        }
+        pagination_controller_->StartMouseDrag(point_in_screen -
+                                               mouse_drag_start_point_);
+        is_in_mouse_drag_ = true;
+      }
+
+      if (!is_in_mouse_drag_)
+        break;
+
+      pagination_controller_->UpdateMouseDrag(
+          point_in_screen - last_mouse_drag_point_, GetContentsBounds());
+      last_mouse_drag_point_ = point_in_screen;
+      break;
+    case ui::ET_MOUSE_RELEASED: {
+      // Calculate |should_handle| before resetting |mouse_drag_start_point_|
+      // because ShouldHandleDragEvent depends on its value.
+      const bool should_handle = ShouldHandleDragEvent(*event);
+
+      is_in_mouse_drag_ = false;
+      mouse_drag_start_point_ = gfx::Point();
+      last_mouse_drag_point_ = gfx::Point();
+
+      if (!should_handle) {
+        gfx::Point drag_location_in_app_list = event->location();
+        ConvertPointToTarget(this, contents_view_->app_list_view(),
+                             &drag_location_in_app_list);
+        event->set_location(drag_location_in_app_list);
+        contents_view_->app_list_view()->OnMouseEvent(event);
+        break;
+      }
+      event->SetHandled();
+      pagination_controller_->EndMouseDrag(*event);
+      break;
+    }
+    default:
+      return;
+  }
 }
 
 bool AppsGridView::EventIsBetweenOccupiedTiles(const ui::LocatedEvent* event) {
@@ -3253,6 +3325,32 @@ void AppsGridView::BeginHideCurrentGhostImageView() {
 
   if (current_ghost_view_)
     current_ghost_view_->FadeOut();
+}
+
+bool AppsGridView::ShouldHandleDragEvent(const ui::LocatedEvent& event) {
+  // If |pagination_model_| is empty, don't handle scroll events.
+  if (pagination_model_.total_pages() <= 0)
+    return false;
+
+  DCHECK(event.IsGestureEvent() || event.IsMouseEvent());
+
+  // If the event is a scroll down in clamshell mode on the first page, don't
+  // let |pagination_controller_| handle it. Unless it occurs in a folder.
+  auto calculate_offset = [this](const ui::LocatedEvent& event) -> int {
+    if (event.IsGestureEvent())
+      return event.AsGestureEvent()->details().scroll_y_hint();
+    gfx::Point screen_location = event.location();
+    ConvertPointToScreen(this, &screen_location);
+    return screen_location.y() - mouse_drag_start_point_.y();
+  };
+  if (!folder_delegate_ &&
+      (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_SCROLL_BEGIN) &&
+      !contents_view_->app_list_view()->is_tablet_mode() &&
+      pagination_model_.selected_page() == 0 && calculate_offset(event) > 0) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace app_list

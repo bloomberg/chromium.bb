@@ -17,6 +17,7 @@
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
@@ -52,6 +53,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_windows.h"
@@ -179,9 +181,6 @@ class PopulatedAppListTest : public AshTestBase,
   ~PopulatedAppListTest() override = default;
 
   void SetUp() override {
-    app_list::AppListView::SetShortAnimationForTesting(true);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
 
     // Make the display big enough to hold the app list.
@@ -203,6 +202,19 @@ class PopulatedAppListTest : public AshTestBase,
     app_list_view_ = new app_list::AppListView(app_list_test_delegate_.get());
     app_list_view_->InitView(false /*is_tablet_mode*/, CurrentContext());
     app_list_view_->Show(false /*is_side_shelf*/, false /*is_tablet_mode*/);
+  }
+
+  void ShowAppListInAppsFullScreen() {
+    // Press the ExpandArrowView and check that the AppListView is in
+    // fullscreen.
+    gfx::Point click_point = app_list_view_->app_list_main_view()
+                                 ->contents_view()
+                                 ->expand_arrow_view()
+                                 ->GetBoundsInScreen()
+                                 .CenterPoint();
+    GetEventGenerator()->GestureTapAt(click_point);
+    EXPECT_EQ(AppListViewState::kFullscreenAllApps,
+              app_list_view_->app_list_state());
   }
 
   void InitializeAppsGrid() {
@@ -227,6 +239,21 @@ class PopulatedAppListTest : public AshTestBase,
   app_list::AppListView* app_list_view_ = nullptr;  // Owned by native widget.
   app_list::AppsGridView* apps_grid_view_ =
       nullptr;  // Owned by |app_list_view_|.
+};
+
+// Subclass of PopuplatedAppListTest which enables the animation and the virtual
+// keyboard.
+class PopulatedAppListWithVKEnabledTest : public PopulatedAppListTest {
+ public:
+  PopulatedAppListWithVKEnabledTest() = default;
+  ~PopulatedAppListWithVKEnabledTest() override = default;
+
+  void SetUp() override {
+    app_list::AppListView::SetShortAnimationForTesting(true);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
+    PopulatedAppListTest::SetUp();
+  }
 };
 
 // Instantiate the Boolean which is used to toggle mouse and touch events in
@@ -280,7 +307,65 @@ TEST_F(AppListPresenterDelegateZeroStateTest, ClickSearchBoxInTabletMode) {
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 }
 
-TEST_F(PopulatedAppListTest, TappingAppsGridClosesVirtualKeyboard) {
+// Verifies that the downward mouse drag on AppsGridView's first page should
+// be handled by AppList.
+TEST_F(PopulatedAppListTest, MouseDragAppsGridViewHandledByAppList) {
+  InitializeAppsGrid();
+  app_list_test_model_->PopulateApps(2);
+  ShowAppListInAppsFullScreen();
+
+  // Calculate the drag start/end points.
+  gfx::Point drag_start_point = apps_grid_view_->GetBoundsInScreen().origin();
+  gfx::Point target_point = GetPrimaryDisplay().bounds().bottom_left();
+  target_point.set_x(drag_start_point.x());
+
+  // Drag AppsGridView downward by mouse. Check the following things:
+  // (1) Mouse events are processed by AppsGridView, including mouse press,
+  // mouse drag and mouse release.
+  // (2) AppList is closed after mouse drag.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(drag_start_point);
+  event_generator->DragMouseTo(target_point);
+  event_generator->ReleaseLeftButton();
+  EXPECT_EQ(AppListViewState::kClosed, app_list_view_->app_list_state());
+}
+
+// Verifies that the upward mouse drag on AppsGridView's first page should
+// be handled by PaginationController.
+TEST_F(PopulatedAppListTest,
+       MouseDragAppsGridViewHandledByPaginationController) {
+  InitializeAppsGrid();
+  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage(0) + 1);
+  EXPECT_EQ(2, apps_grid_view_->pagination_model()->total_pages());
+  ShowAppListInAppsFullScreen();
+
+  // Calculate the drag start/end points. |drag_start_point| is between the
+  // first and the second AppListItem. Because in this test case, we want
+  // AppsGridView to receive mouse events instead of AppListItemView.
+  gfx::Point right_side =
+      apps_grid_view_->GetItemViewAt(0)->GetBoundsInScreen().right_center();
+  gfx::Point left_side =
+      apps_grid_view_->GetItemViewAt(1)->GetBoundsInScreen().left_center();
+  ASSERT_EQ(left_side.y(), right_side.y());
+  gfx::Point drag_start_point((right_side.x() + left_side.x()) / 2,
+                              right_side.y());
+  gfx::Point target_point = GetPrimaryDisplay().bounds().top_right();
+  target_point.set_x(drag_start_point.x());
+
+  // Drag AppsGridView downward by mouse. Checks that PaginationController
+  // records the mouse drag.
+  base::HistogramTester histogram_tester;
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(drag_start_point);
+  event_generator->DragMouseTo(target_point);
+  event_generator->ReleaseLeftButton();
+  histogram_tester.ExpectUniqueSample(
+      app_list::kAppListPageSwitcherSourceHistogramInClamshell,
+      app_list::AppListPageSwitcherSource::kMouseDrag, 1);
+}
+
+TEST_F(PopulatedAppListWithVKEnabledTest,
+       TappingAppsGridClosesVirtualKeyboard) {
   InitializeAppsGrid();
   app_list_test_model_->PopulateApps(2);
   gfx::Point between_apps = GetItemRectOnCurrentPageAt(0, 0).right_center();

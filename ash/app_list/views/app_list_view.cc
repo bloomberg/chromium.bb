@@ -1258,7 +1258,8 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
       if (!is_in_drag_ && event->IsOnlyLeftMouseButton()) {
         // Calculate the mouse drag offset to determine whether AppListView is
         // in drag.
-        gfx::Vector2d drag_distance = event->location() - initial_drag_point_;
+        gfx::Vector2d drag_distance =
+            event->location() - initial_mouse_drag_point_;
         if (abs(drag_distance.y()) < ash::kMouseDragThreshold)
           return;
 

@@ -47,9 +47,21 @@ class ASH_PUBLIC_EXPORT PaginationController {
   // PaginationModel. Returns true if the event was captured.
   bool OnGestureEvent(const ui::GestureEvent& event, const gfx::Rect& bounds);
 
+  // Handles a mouse event in the area represented by the PaginationModel.
+  // |drag_offset| should be in screen coordinates.
+  void StartMouseDrag(const gfx::Vector2d& drag_offset);
+  void UpdateMouseDrag(const gfx::Vector2d& drag_offset,
+                       const gfx::Rect& bounds);
+  void EndMouseDrag(const ui::MouseEvent& event);
+
   void set_is_tablet_mode(bool started) { is_tablet_mode_ = started; }
 
  private:
+  // Drag related functions. Utilized by both gesture drag and mouse drag:
+  bool StartDrag(float scroll);
+  bool UpdateDrag(float scroll, const gfx::Rect& bounds);
+  bool EndDrag(const ui::LocatedEvent& event);
+
   PaginationModel* pagination_model_;  // Not owned.
   ScrollAxis scroll_axis_;
 

@@ -199,7 +199,8 @@ enum AppListPageSwitcherSource {
   kMousePadScroll = 5,
   kDragAppToBorder = 6,
   kMoveAppWithKeyboard = 7,
-  kMaxAppListPageSwitcherSource = 8,
+  kMouseDrag = 8,
+  kMaxAppListPageSwitcherSource = 9,
 };
 
 // The different ways to move an app in app list's apps grid. These values are

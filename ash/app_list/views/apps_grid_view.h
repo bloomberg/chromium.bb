@@ -200,7 +200,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // Returns true if a touch or click lies between two occupied tiles.
   bool EventIsBetweenOccupiedTiles(const ui::LocatedEvent* event);
@@ -665,6 +665,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   void BeginHideCurrentGhostImageView();
 
+  // Indicates whether the drag event (from the gesture or mouse) should be
+  // handled by AppsGridView.
+  bool ShouldHandleDragEvent(const ui::LocatedEvent& event);
+
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.
 
@@ -803,6 +807,18 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Records the presentation time for apps grid dragging.
   std::unique_ptr<ash::PresentationTimeRecorder> presentation_time_recorder_;
+
+  // Indicates whether the AppsGridView is in mouse drag.
+  bool is_in_mouse_drag_ = false;
+
+  // The initial mouse drag location in screen coordinate. Updates when drag
+  // on AppsGridView starts.
+  gfx::Point mouse_drag_start_point_;
+
+  // The last mouse drag location in screen coordinate. Different from
+  // |last_drag_point_|, |last_mouse_drag_point_| is the location of the most
+  // recent drag on AppsGridView instead of the app icon.
+  gfx::Point last_mouse_drag_point_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };
