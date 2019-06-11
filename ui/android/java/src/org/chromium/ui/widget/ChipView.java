@@ -69,6 +69,8 @@ public class ChipView extends LinearLayout {
                 R.styleable.ChipView_primaryTextAppearance, R.style.TextAppearance_ChipText);
         mSecondaryTextAppearanceId = a.getResourceId(
                 R.styleable.ChipView_secondaryTextAppearance, R.style.TextAppearance_ChipText);
+        int verticalInset = a.getDimensionPixelSize(R.styleable.ChipView_verticalInset,
+                getResources().getDimensionPixelSize(R.dimen.chip_bg_vertical_inset));
         a.recycle();
 
         mIcon = new ChromeImageView(getContext());
@@ -85,7 +87,7 @@ public class ChipView extends LinearLayout {
 
         // Reset icon and background:
         mRippleBackgroundHelper = new RippleBackgroundHelper(this, chipColorId, rippleColorId,
-                cornerRadius, R.color.chip_stroke_color, R.dimen.chip_border_width);
+                cornerRadius, R.color.chip_stroke_color, R.dimen.chip_border_width, verticalInset);
         setIcon(INVALID_ICON_ID, false);
     }
 

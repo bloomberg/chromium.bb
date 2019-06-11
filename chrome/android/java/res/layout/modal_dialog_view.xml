@@ -52,7 +52,10 @@
         android:id="@+id/button_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/modal_dialog_control_padding"
+        android:paddingTop="@dimen/modal_dialog_control_vertical_padding"
+        android:paddingBottom="@dimen/modal_dialog_control_vertical_padding"
+        android:paddingStart="@dimen/modal_dialog_control_horizontal_padding"
+        android:paddingEnd="@dimen/modal_dialog_control_horizontal_padding"
         app:stackedMargin="@dimen/button_bar_stacked_margin"
         app:buttonAlignment="end">
 

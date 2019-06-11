@@ -52,8 +52,7 @@ public class AssistantActionsCarouselCoordinator implements AssistantCarouselCoo
         // height of the view. We add the sheet vertical spacing twice as the item decoration will
         // add this space above and below each chip.
         mView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                context.getResources().getDimensionPixelSize(
-                        R.dimen.autofill_assistant_button_height)
+                context.getResources().getDimensionPixelSize(R.dimen.min_touch_target_size)
                         + 2
                                 * context.getResources().getDimensionPixelSize(
                                         org.chromium.chrome.autofill_assistant.R.dimen

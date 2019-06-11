@@ -23,8 +23,8 @@
     </style>
 
     <style name="ButtonCompatBase">
-        <item name="android:minWidth">88dp</item>
-        <item name="android:minHeight">36dp</item>
+        <item name="android:minWidth">@dimen/button_min_width</item>
+        <item name="android:minHeight">@dimen/min_touch_target_size</item>
         <item name="android:paddingStart">20dp</item>
         <item name="android:paddingEnd">20dp</item>
         <item name="android:paddingTop">5dp</item>
@@ -32,6 +32,7 @@
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
         <item name="android:gravity">center_vertical|center_horizontal</item>
+        <item name="verticalInset">@dimen/button_bg_vertical_inset</item>
     </style>
     <style name="FilledButton" parent="ButtonCompatBase" tools:ignore="UnusedResources">
         <item name="android:paddingStart">24dp</item>
@@ -59,11 +60,12 @@
     </style>
 
     <style name="Chip">
-        <item name="android:minHeight">@dimen/chip_default_height</item>
+        <item name="android:minHeight">@dimen/min_touch_target_size</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:orientation">horizontal</item>
         <item name="chipColor">@color/chip_background_color</item>
         <item name="rippleColor">@color/chip_ripple_color</item>
+        <item name="verticalInset">@dimen/chip_bg_vertical_inset</item>
     </style>
     <style name="SuggestionChip" parent="Chip" tools:ignore="UnusedResources">
         <item name="primaryTextAppearance">@style/TextAppearance.ChipText</item>

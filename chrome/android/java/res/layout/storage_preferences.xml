@@ -6,6 +6,7 @@
 <!-- TODO(https://crbug.com/929743): Use standard layout and specify only bottom button here. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_height="match_parent"
     android:layout_width="match_parent">
@@ -44,5 +45,6 @@
         android:paddingTop="16dp"
         android:paddingBottom="16dp"
         android:text="@string/storage_clear_button_title"
+        app:verticalInset="0dp"
         style="@style/TextButton" />
 </LinearLayout>

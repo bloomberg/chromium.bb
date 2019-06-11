@@ -10,7 +10,6 @@
 
     <!-- Page Info Popup Dimensions -->
     <dimen name="page_info_popup_padding_sides">16dp</dimen>
-    <dimen name="page_info_popup_button_height">36dp</dimen>
     <dimen name="page_info_popup_button_padding_sides">8dp</dimen>
     <dimen name="page_info_popup_permission_icon_size">24dp</dimen>
 
@@ -142,9 +141,6 @@
     <!-- Password generation dialog dimensions -->
     <dimen name="password_generation_dialog_padding">24dp</dimen>
 
-    <!-- Minimum height/width for a touchable item -->
-    <dimen name="min_touch_target_size">48dp</dimen>
-
     <!-- Promo dialogs -->
     <dimen name="promo_dialog_illustration_margin">24dp</dimen>
     <dimen name="promo_dialog_illustration_width">150dp</dimen>
@@ -204,7 +200,8 @@
     <dimen name="dialog_max_width">600dp</dimen>
 
     <!-- ModalDialogView dimensions -->
-    <dimen name="modal_dialog_control_padding">8dp</dimen>
+    <dimen name="modal_dialog_control_vertical_padding">2dp</dimen>
+    <dimen name="modal_dialog_control_horizontal_padding">8dp</dimen>
     <dimen name="tab_modal_scrim_vertical_margin">16dp</dimen>
 
     <!-- Tab Strip Dimensions -->
@@ -450,6 +447,7 @@
     <!-- Editor dialog UI -->
     <dimen name="editor_dialog_section_small_spacing">8dp</dimen>
     <dimen name="editor_dialog_section_large_spacing">16dp</dimen>
+    <dimen name="editor_dialog_section_buttons_vertical_padding">10dp</dimen>
     <dimen name="editable_option_section_logo_width">38dp</dimen>
 
     <!-- Payments UI
@@ -468,6 +466,8 @@
     <dimen name="payments_ui_translation">100dp</dimen>
     <dimen name="payments_favicon_size">24dp</dimen>
     <dimen name="payments_handler_window_minimum_height">500dp</dimen>
+    <dimen name="payments_request_bottom_bar_vertical_padding">10dp</dimen>
+    <dimen name="payments_request_bottom_bar_horizontal_padding">16dp</dimen>
 
     <!-- Preferences dimensions
          pref_autofill_field_horizontal_padding exists because TextInputLayouts have an internal
@@ -603,7 +603,8 @@
 
     <!-- History Navigation UI Item -->
     <dimen name="navigation_bubble_border_width">1dp</dimen>
-    <dimen name="navigation_bubble_default_height">32dp</dimen>
+    <dimen name="navigation_bubble_default_height">48dp</dimen>
+    <dimen name="navigation_bubble_bg_vertical_inset">8dp</dimen>
     <dimen name="navigation_bubble_vertical_padding">4dp</dimen>
     <dimen name="navigation_bubble_horizontal_padding">8dp</dimen>
     <dimen name="navigation_bubble_icon_size">20dp</dimen>

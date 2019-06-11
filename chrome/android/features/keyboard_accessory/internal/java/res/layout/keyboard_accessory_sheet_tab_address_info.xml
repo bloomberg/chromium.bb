@@ -12,15 +12,13 @@
     android:paddingStart="@dimen/keyboard_accessory_suggestion_padding"
     android:paddingEnd="@dimen/keyboard_accessory_suggestion_padding"
     android:layout_marginTop="@dimen/keyboard_accessory_sheet_top_margin"
-    android:layout_marginBottom="@dimen/keyboard_accessory_sheet_padding"
+    android:layout_marginBottom="@dimen/keyboard_accessory_sheet_bottom_margin"
     android:orientation="vertical">
 
     <LinearLayout
         android:gravity="center_vertical|start"
         android:fillViewport="true"
         android:layout_height="@dimen/keyboard_accessory_suggestion_height"
-        android:paddingTop="@dimen/keyboard_accessory_sheet_padding"
-        android:paddingBottom="@dimen/keyboard_accessory_sheet_padding"
         android:layout_width="match_parent"
         android:orientation="horizontal">
 
@@ -50,8 +48,6 @@
     <org.chromium.ui.widget.ChipView
         android:id="@+id/company_name"
         android:gravity="center_vertical|start"
-        android:layout_marginTop="@dimen/keyboard_accessory_sheet_padding"
-        android:layout_marginBottom="@dimen/keyboard_accessory_sheet_padding"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/InputChip" />
@@ -59,8 +55,6 @@
     <org.chromium.ui.widget.ChipView
         android:id="@+id/address_home_line_1"
         android:gravity="center_vertical|start"
-        android:layout_marginTop="@dimen/keyboard_accessory_sheet_padding"
-        android:layout_marginBottom="@dimen/keyboard_accessory_sheet_padding"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/InputChip" />
@@ -68,8 +62,6 @@
     <org.chromium.ui.widget.ChipView
         android:id="@+id/address_home_line_2"
         android:gravity="center_vertical|start"
-        android:layout_marginTop="@dimen/keyboard_accessory_sheet_padding"
-        android:layout_marginBottom="@dimen/keyboard_accessory_sheet_padding"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/InputChip" />
@@ -78,8 +70,6 @@
         android:gravity="center_vertical|start"
         android:fillViewport="true"
         android:layout_height="@dimen/keyboard_accessory_suggestion_height"
-        android:paddingTop="@dimen/keyboard_accessory_sheet_padding"
-        android:paddingBottom="@dimen/keyboard_accessory_sheet_padding"
         android:layout_width="match_parent"
         android:orientation="horizontal">
 
@@ -116,8 +106,6 @@
     <org.chromium.ui.widget.ChipView
         android:id="@+id/phone_home_whole_number"
         android:gravity="center_vertical|start"
-        android:layout_marginTop="@dimen/keyboard_accessory_sheet_padding"
-        android:layout_marginBottom="@dimen/keyboard_accessory_sheet_padding"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/InputChip" />
@@ -125,8 +113,6 @@
     <org.chromium.ui.widget.ChipView
         android:id="@+id/email_address"
         android:gravity="center_vertical|start"
-        android:layout_marginTop="@dimen/keyboard_accessory_sheet_padding"
-        android:layout_marginBottom="@dimen/keyboard_accessory_sheet_padding"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/InputChip" />

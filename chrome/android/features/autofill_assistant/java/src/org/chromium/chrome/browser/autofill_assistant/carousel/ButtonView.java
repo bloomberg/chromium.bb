@@ -78,6 +78,9 @@ public class ButtonView extends LinearLayout {
                 org.chromium.chrome.R.style.TextAppearance_ChipText);
         int borderWidth = a.getResourceId(R.styleable.ButtonView_chipBorderWidth,
                 org.chromium.chrome.R.dimen.chip_border_width);
+        int verticalInset = a.getDimensionPixelSize(R.styleable.ButtonView_verticalInset,
+                getResources().getDimensionPixelSize(
+                        org.chromium.ui.R.dimen.chip_bg_vertical_inset));
         a.recycle();
 
         mIcon = new ChromeImageView(getContext());
@@ -94,8 +97,9 @@ public class ButtonView extends LinearLayout {
         setPrimaryTextMargins(4);
 
         // Reset icon and background:
-        mRippleBackgroundHelper = new RippleBackgroundHelper(this, chipColorId, rippleColorId,
-                cornerRadius, org.chromium.chrome.R.color.chip_stroke_color, borderWidth);
+        mRippleBackgroundHelper =
+                new RippleBackgroundHelper(this, chipColorId, rippleColorId, cornerRadius,
+                        org.chromium.chrome.R.color.chip_stroke_color, borderWidth, verticalInset);
         setIcon(INVALID_ICON_ID, false);
     }
 

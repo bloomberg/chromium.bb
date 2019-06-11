@@ -186,7 +186,7 @@
         <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/negative_button"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:paddingStart="@dimen/fre_button_padding"
             android:paddingEnd="@dimen/fre_button_padding"
             style="@style/TextButton" />
@@ -201,7 +201,7 @@
         <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/positive_button"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:paddingStart="@dimen/fre_button_padding"
             android:paddingEnd="@dimen/fre_button_padding"
             style="@style/FilledButton.Flat" />
@@ -209,7 +209,7 @@
         <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/more_button"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:drawableEnd="@drawable/down_arrow"
             android:drawablePadding="8dp"
             android:visibility="gone"

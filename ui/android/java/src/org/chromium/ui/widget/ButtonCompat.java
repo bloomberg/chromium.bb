@@ -35,6 +35,8 @@ import org.chromium.ui.R;
  *
  * Note: To ensure the button's shadow is fully visible, you may need to set
  * android:clipToPadding="false" on the button's parent view.
+ *
+ * See {@link R.styleable#ButtonCompat ButtonCompat Attributes}.
  */
 public class ButtonCompat extends AppCompatButton {
     private RippleBackgroundHelper mRippleBackgroundHelper;
@@ -66,10 +68,13 @@ public class ButtonCompat extends AppCompatButton {
         int rippleColorId = a.getResourceId(
                 R.styleable.ButtonCompat_rippleColor, R.color.filled_button_ripple_color);
         boolean buttonRaised = a.getBoolean(R.styleable.ButtonCompat_buttonRaised, true);
+        int verticalInset = a.getDimensionPixelSize(R.styleable.ButtonCompat_verticalInset,
+                getResources().getDimensionPixelSize(R.dimen.button_bg_vertical_inset));
         a.recycle();
 
         mRippleBackgroundHelper = new RippleBackgroundHelper(this, buttonColorId, rippleColorId,
-                getResources().getDimensionPixelSize(R.dimen.button_compat_corner_radius));
+                getResources().getDimensionPixelSize(R.dimen.button_compat_corner_radius),
+                verticalInset);
         setRaised(buttonRaised);
     }
 

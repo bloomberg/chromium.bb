@@ -7,16 +7,17 @@
     <!-- Autofill keyboard accessory dimensions -->
     <dimen name="keyboard_accessory_bar_item_height">36dp</dimen>
     <dimen name="keyboard_accessory_bar_item_padding">8dp</dimen>
-    <dimen name="keyboard_accessory_half_padding">6dp</dimen>
+    <dimen name="keyboard_accessory_horizontal_padding">6dp</dimen>
     <dimen name="keyboard_accessory_height">48dp</dimen>
     <!--dimen name="keyboard_accessory_height_with_shadow">56dp</dimen-->
     <dimen name="keyboard_accessory_image_top_padding">12dp</dimen>
     <dimen name="keyboard_accessory_shadow">5dp</dimen>
+    <dimen name="keyboard_accessory_chip_vertical_margin">8dp</dimen>
     <!--dimen name="keyboard_accessory_sheet_height">330dp</dimen-->
     <dimen name="keyboard_accessory_sheet_padding">8dp</dimen>
     <dimen name="keyboard_accessory_sheet_top_margin">16dp</dimen>
+    <dimen name="keyboard_accessory_sheet_bottom_margin">8dp</dimen>
     <dimen name="keyboard_accessory_suggestion_padding">16dp</dimen>
-    <dimen name="keyboard_accessory_suggestion_top_bottom_margin">8dp</dimen>
     <dimen name="keyboard_accessory_suggestion_offset">12dp</dimen>
     <dimen name="keyboard_accessory_suggestion_height">48dp</dimen>
     <dimen name="keyboard_accessory_suggestion_icon_size">20dp</dimen>

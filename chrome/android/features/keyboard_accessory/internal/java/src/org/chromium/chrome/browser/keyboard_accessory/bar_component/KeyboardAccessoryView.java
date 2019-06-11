@@ -122,7 +122,8 @@ class KeyboardAccessoryView extends LinearLayout {
         recyclerView.setLayoutManager(
                 new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
-        int pad = getResources().getDimensionPixelSize(R.dimen.keyboard_accessory_half_padding);
+        int pad =
+                getResources().getDimensionPixelSize(R.dimen.keyboard_accessory_horizontal_padding);
         // Create margins between every element.
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
             recyclerView.addItemDecoration(new HorizontalDividerItemDecoration(pad));
