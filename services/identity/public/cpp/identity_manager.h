@@ -136,6 +136,155 @@ class IdentityManager : public PrimaryAccountManager::Observer,
     virtual void OnExtendedAccountInfoRemoved(const AccountInfo& info) {}
   };
 
+  // Methods to register or remove observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // Provides access to the core information of the user's primary account.
+  // Returns an empty struct if no such info is available, either because there
+  // is no primary account yet or because the user signed out.
+  CoreAccountInfo GetPrimaryAccountInfo() const;
+
+  // Provides access to the account ID of the user's primary account. Simple
+  // convenience wrapper over GetPrimaryAccountInfo().account_id.
+  CoreAccountId GetPrimaryAccountId() const;
+
+  // Returns whether the user's primary account is available.
+  bool HasPrimaryAccount() const;
+
+  // Creates an AccessTokenFetcher given the passed-in information.
+  std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
+      const CoreAccountId& account_id,
+      const std::string& oauth_consumer_name,
+      const identity::ScopeSet& scopes,
+      AccessTokenFetcher::TokenCallback callback,
+      AccessTokenFetcher::Mode mode);
+
+  // Creates an AccessTokenFetcher given the passed-in information, allowing
+  // to specify a custom |url_loader_factory| as well.
+  std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
+      const CoreAccountId& account_id,
+      const std::string& oauth_consumer_name,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const identity::ScopeSet& scopes,
+      AccessTokenFetcher::TokenCallback callback,
+      AccessTokenFetcher::Mode mode);
+
+  // Creates an AccessTokenFetcher given the passed-in information, allowing to
+  // specify custom |client_id| and |client_secret| to identify the OAuth client
+  // app.
+  std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForClient(
+      const CoreAccountId& account_id,
+      const std::string& client_id,
+      const std::string& client_secret,
+      const std::string& oauth_consumer_name,
+      const identity::ScopeSet& scopes,
+      AccessTokenFetcher::TokenCallback callback,
+      AccessTokenFetcher::Mode mode);
+
+  // If an entry exists in the cache of access tokens corresponding to the
+  // given information, removes that entry; in this case, the next access token
+  // request for |account_id| and |scopes| will fetch a new token from the
+  // network. Otherwise, is a no-op.
+  void RemoveAccessTokenFromCache(const CoreAccountId& account_id,
+                                  const identity::ScopeSet& scopes,
+                                  const std::string& access_token);
+
+  // Provides the information of all accounts that have refresh tokens.
+  // NOTE: The accounts should not be assumed to be in any particular order; in
+  // particular, they are not guaranteed to be in the order in which the
+  // refresh tokens were added.
+  std::vector<CoreAccountInfo> GetAccountsWithRefreshTokens() const;
+
+  // Same functionality as GetAccountsWithRefreshTokens() but returning the
+  // extended account information.
+  std::vector<AccountInfo> GetExtendedAccountInfoForAccountsWithRefreshToken()
+      const;
+
+  // Returns true if (a) the primary account exists, and (b) a refresh token
+  // exists for the primary account.
+  bool HasPrimaryAccountWithRefreshToken() const;
+
+  // Returns true if a refresh token exists for |account_id|.
+  bool HasAccountWithRefreshToken(const CoreAccountId& account_id) const;
+
+  // Returns true if all refresh tokens have been loaded from disk.
+  bool AreRefreshTokensLoaded() const;
+
+  // Returns true if (a) a refresh token exists for |account_id|, and (b) the
+  // refresh token is in a persistent error state (defined as
+  // GoogleServiceAuthError::IsPersistentError() returning true for the error
+  // returned by GetErrorStateOfRefreshTokenForAccount(account_id)).
+  bool HasAccountWithRefreshTokenInPersistentErrorState(
+      const CoreAccountId& account_id) const;
+
+  // Returns the error state of the refresh token associated with |account_id|.
+  // In particular: Returns GoogleServiceAuthError::AuthErrorNone() if either
+  // (a) no refresh token exists for |account_id|, or (b) the refresh token is
+  // not in a persistent error state. Otherwise, returns the last persistent
+  // error that was detected when using the refresh token.
+  GoogleServiceAuthError GetErrorStateOfRefreshTokenForAccount(
+      const CoreAccountId& account_id) const;
+
+  // Returns extended information for account identified by |account_info|.
+  // The information will be returned if the information is available and
+  // refresh token is available for account.
+  base::Optional<AccountInfo> FindExtendedAccountInfoForAccount(
+      const CoreAccountInfo& account_info) const;
+
+  // Looks up and returns information for account with given |account_id|. If
+  // the account cannot be found, return an empty optional. This is equivalent
+  // to searching on the vector returned by GetAccountsWithRefreshTokens() but
+  // without allocating memory for the vector.
+  base::Optional<AccountInfo>
+  FindAccountInfoForAccountWithRefreshTokenByAccountId(
+      const CoreAccountId& account_id) const;
+
+  // Looks up and returns information for account with given |email_address|. If
+  // the account cannot be found, return an empty optional. This is equivalent
+  // to searching on the vector returned by GetAccountsWithRefreshTokens() but
+  // without allocating memory for the vector.
+  base::Optional<AccountInfo>
+  FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+      const std::string& email_address) const;
+
+  // Looks up and returns information for account with given |gaia_id|. If the
+  // account cannot be found, return an empty optional. This is equivalent to
+  // searching on the vector returned by GetAccountsWithRefreshTokens() but
+  // without allocating memory for the vector.
+  base::Optional<AccountInfo> FindAccountInfoForAccountWithRefreshTokenByGaiaId(
+      const std::string& gaia_id) const;
+
+  // Creates an UbertokenFetcher given the passed-in information, allowing
+  // to specify a custom |url_loader_factory| as well.
+  std::unique_ptr<signin::UbertokenFetcher> CreateUbertokenFetcherForAccount(
+      const CoreAccountId& account_id,
+      signin::UbertokenFetcher::CompletionCallback callback,
+      gaia::GaiaSource source,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      bool bound_to_channel_id = true);
+
+  // Provides the information of all accounts that are present in the Gaia
+  // cookie in the cookie jar, ordered by their order in the cookie.
+  // If the returned accounts are not fresh, an internal update will be
+  // triggered and there will be a subsequent invocation of
+  // IdentityManager::Observer::OnAccountsInCookieJarChanged().
+  AccountsInCookieJarInfo GetAccountsInCookieJar() const;
+
+  // Returns pointer to the object used to change the signed-in state of the
+  // primary account, if supported on the current platform. Otherwise, returns
+  // null.
+  PrimaryAccountMutator* GetPrimaryAccountMutator();
+
+  // Returns pointer to the object used to seed accounts and mutate state of
+  // accounts' refresh tokens, if supported on the current platform. Otherwise,
+  // returns null.
+  AccountsMutator* GetAccountsMutator();
+
+  // Returns pointer to the object used to manipulate the cookies stored and the
+  // accounts associated with them. Guaranteed to be non-null.
+  AccountsCookieMutator* GetAccountsCookieMutator();
+
   // Observer interface for classes that want to monitor status of various
   // requests. Mostly useful in tests and debugging contexts (e.g., WebUI).
   class DiagnosticsObserver {
@@ -177,14 +326,14 @@ class IdentityManager : public PrimaryAccountManager::Observer,
         const std::string& source) {}
   };
 
-  // Possible values for the account ID migration state, needs to be kept in
-  // sync with AccountTrackerService::AccountIdMigrationState.
-  enum AccountIdMigrationState {
-    MIGRATION_NOT_STARTED = 0,
-    MIGRATION_IN_PROGRESS = 1,
-    MIGRATION_DONE = 2,
-    NUM_MIGRATION_STATES
-  };
+  void AddDiagnosticsObserver(DiagnosticsObserver* observer);
+  void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
+
+  //  **************************************************************************
+  //  NOTE: All public methods methods below are either intended to be used only
+  //  by signin code, or are slated for deletion. Most IdentityManager consumers
+  //  should not need to interact with any methods below this line.
+  //  **************************************************************************
 
   IdentityManager(
       std::unique_ptr<AccountTrackerService> account_tracker_service,
@@ -198,136 +347,9 @@ class IdentityManager : public PrimaryAccountManager::Observer,
       std::unique_ptr<DiagnosticsProvider> diagnostics_provider);
   ~IdentityManager() override;
 
-  // Provides access to the core information of the user's primary account.
-  // Returns an empty struct if no such info is available, either because there
-  // is no primary account yet or because the user signed out.
-  CoreAccountInfo GetPrimaryAccountInfo() const;
-
-  // Provides access to the account ID of the user's primary account. Simple
-  // convenience wrapper over GetPrimaryAccountInfo().account_id.
-  CoreAccountId GetPrimaryAccountId() const;
-
-  // Returns whether the user's primary account is available.
-  bool HasPrimaryAccount() const;
-
-  // Provides the information of all accounts that have refresh tokens.
-  // NOTE: The accounts should not be assumed to be in any particular order; in
-  // particular, they are not guaranteed to be in the order in which the
-  // refresh tokens were added.
-  std::vector<CoreAccountInfo> GetAccountsWithRefreshTokens() const;
-
-  // Same functionality as GetAccountsWithRefreshTokens() but returning the
-  // extended account information.
-  std::vector<AccountInfo> GetExtendedAccountInfoForAccountsWithRefreshToken()
-      const;
-
-  // Provides the information of all accounts that are present in the Gaia
-  // cookie in the cookie jar, ordered by their order in the cookie.
-  // If the returned accounts are not fresh, an internal update will be
-  // triggered and there will be a subsequent invocation of
-  // IdentityManager::Observer::OnAccountsInCookieJarChanged().
-  AccountsInCookieJarInfo GetAccountsInCookieJar() const;
-
-  // Returns true if a refresh token exists for |account_id|.
-  bool HasAccountWithRefreshToken(const CoreAccountId& account_id) const;
-
-  // Returns true if (a) a refresh token exists for |account_id|, and (b) the
-  // refresh token is in a persistent error state (defined as
-  // GoogleServiceAuthError::IsPersistentError() returning true for the error
-  // returned by GetErrorStateOfRefreshTokenForAccount(account_id)).
-  bool HasAccountWithRefreshTokenInPersistentErrorState(
-      const CoreAccountId& account_id) const;
-
-  // Returns the error state of the refresh token associated with |account_id|.
-  // In particular: Returns GoogleServiceAuthError::AuthErrorNone() if either
-  // (a) no refresh token exists for |account_id|, or (b) the refresh token is
-  // not in a persistent error state. Otherwise, returns the last persistent
-  // error that was detected when using the refresh token.
-  GoogleServiceAuthError GetErrorStateOfRefreshTokenForAccount(
-      const CoreAccountId& account_id) const;
-
-  // Returns true if (a) the primary account exists, and (b) a refresh token
-  // exists for the primary account.
-  bool HasPrimaryAccountWithRefreshToken() const;
-
-  // Returns true if all refresh tokens have been loaded from disk.
-  bool AreRefreshTokensLoaded() const;
-
-  // Returns extended information for account identified by |account_info|.
-  // The information will be returned if the information is available and
-  // refresh token is available for account.
-  base::Optional<AccountInfo> FindExtendedAccountInfoForAccount(
-      const CoreAccountInfo& account_info) const;
-
-  // Looks up and returns information for account with given |account_id|. If
-  // the account cannot be found, return an empty optional. This is equivalent
-  // to searching on the vector returned by GetAccountsWithRefreshTokens() but
-  // without allocating memory for the vector.
-  base::Optional<AccountInfo>
-  FindAccountInfoForAccountWithRefreshTokenByAccountId(
-      const CoreAccountId& account_id) const;
-
-  // Looks up and returns information for account with given |email_address|. If
-  // the account cannot be found, return an empty optional. This is equivalent
-  // to searching on the vector returned by GetAccountsWithRefreshTokens() but
-  // without allocating memory for the vector.
-  base::Optional<AccountInfo>
-  FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
-      const std::string& email_address) const;
-
-  // Looks up and returns information for account with given |gaia_id|. If the
-  // account cannot be found, return an empty optional. This is equivalent to
-  // searching on the vector returned by GetAccountsWithRefreshTokens() but
-  // without allocating memory for the vector.
-  base::Optional<AccountInfo> FindAccountInfoForAccountWithRefreshTokenByGaiaId(
-      const std::string& gaia_id) const;
-
-  // Creates an AccessTokenFetcher given the passed-in information.
-  std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
-      const CoreAccountId& account_id,
-      const std::string& oauth_consumer_name,
-      const identity::ScopeSet& scopes,
-      AccessTokenFetcher::TokenCallback callback,
-      AccessTokenFetcher::Mode mode);
-
-  // Creates an AccessTokenFetcher given the passed-in information, allowing
-  // to specify a custom |url_loader_factory| as well.
-  std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
-      const CoreAccountId& account_id,
-      const std::string& oauth_consumer_name,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const identity::ScopeSet& scopes,
-      AccessTokenFetcher::TokenCallback callback,
-      AccessTokenFetcher::Mode mode);
-
-  // Creates an AccessTokenFetcher given the passed-in information, allowing to
-  // specify custom |client_id| and |client_secret| to identify the OAuth client
-  // app.
-  std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForClient(
-      const CoreAccountId& account_id,
-      const std::string& client_id,
-      const std::string& client_secret,
-      const std::string& oauth_consumer_name,
-      const identity::ScopeSet& scopes,
-      AccessTokenFetcher::TokenCallback callback,
-      AccessTokenFetcher::Mode mode);
-
-  // If an entry exists in the cache of access tokens corresponding to the
-  // given information, removes that entry; in this case, the next access token
-  // request for |account_id| and |scopes| will fetch a new token from the
-  // network. Otherwise, is a no-op.
-  void RemoveAccessTokenFromCache(const CoreAccountId& account_id,
-                                  const identity::ScopeSet& scopes,
-                                  const std::string& access_token);
-
-  // Creates an UbertokenFetcher given the passed-in information, allowing
-  // to specify a custom |url_loader_factory| as well.
-  std::unique_ptr<signin::UbertokenFetcher> CreateUbertokenFetcherForAccount(
-      const CoreAccountId& account_id,
-      signin::UbertokenFetcher::CompletionCallback callback,
-      gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      bool bound_to_channel_id = true);
+  // Performs initialization that is dependent on the network being
+  // initialized.
+  void OnNetworkInitialized();
 
   // Returns |true| if migration of the account ID from normalized email is
   // supported for the current platform.
@@ -346,25 +368,17 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   CoreAccountId PickAccountIdForAccount(const std::string& gaia,
                                         const std::string& email) const;
 
+  // Possible values for the account ID migration state, needs to be kept in
+  // sync with AccountTrackerService::AccountIdMigrationState.
+  enum AccountIdMigrationState {
+    MIGRATION_NOT_STARTED = 0,
+    MIGRATION_IN_PROGRESS = 1,
+    MIGRATION_DONE = 2,
+    NUM_MIGRATION_STATES
+  };
+
   // Returns the currently saved state for the migration of accounts IDs.
   AccountIdMigrationState GetAccountIdMigrationState() const;
-
-  // Returns pointer to the object used to change the signed-in state of the
-  // primary account, if supported on the current platform. Otherwise, returns
-  // null.
-  PrimaryAccountMutator* GetPrimaryAccountMutator();
-
-  // Returns pointer to the object used to seed accounts and mutate state of
-  // accounts' refresh tokens, if supported on the current platform. Otherwise,
-  // returns null.
-  AccountsMutator* GetAccountsMutator();
-
-  // Returns pointer to the object used to manipulate the cookies stored and the
-  // accounts associated with them. Guaranteed to be non-null.
-  AccountsCookieMutator* GetAccountsCookieMutator();
-
-  // Performs initalization that is dependent on the network being initialized.
-  void OnNetworkInitialized();
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   // Explicitly triggers the loading of accounts in the context of supervised
@@ -442,12 +456,6 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   // was successfully fetched.
   void ForceRefreshOfExtendedAccountInfo(const CoreAccountId& account_id);
 #endif
-
-  // Methods to register or remove observers.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-  void AddDiagnosticsObserver(DiagnosticsObserver* observer);
-  void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
  private:
   // These test helpers need to use some of the private methods below.
