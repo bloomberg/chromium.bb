@@ -1523,7 +1523,7 @@ WallpaperManager.prototype.decorateDailyRefreshItem = function(
     var toggleRippleAnimation = enabled => {
       dailyRefreshItem.classList.toggle('ripple-animation', enabled);
     };
-    toggleRippleAnimation(navigator.online);
+    toggleRippleAnimation(navigator.onLine);
     window.setTimeout(() => {
       toggleRippleAnimation(false);
     }, 360);
