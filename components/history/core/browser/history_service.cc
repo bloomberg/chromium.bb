@@ -710,15 +710,14 @@ void HistoryService::CountUniqueHostsVisitedLastMonth(
 
 // Handle creation of a download by creating an entry in the history service's
 // 'downloads' table.
-void HistoryService::CreateDownload(
-    const DownloadRow& create_info,
-    const HistoryService::DownloadCreateCallback& callback) {
+void HistoryService::CreateDownload(const DownloadRow& create_info,
+                                    DownloadCreateCallback callback) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   PostTaskAndReplyWithResult(backend_task_runner_.get(), FROM_HERE,
-                             base::Bind(&HistoryBackend::CreateDownload,
-                                        history_backend_, create_info),
-                             callback);
+                             base::BindOnce(&HistoryBackend::CreateDownload,
+                                            history_backend_, create_info),
+                             std::move(callback));
 }
 
 void HistoryService::GetNextDownloadId(const DownloadIdCallback& callback) {

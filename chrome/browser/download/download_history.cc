@@ -221,8 +221,8 @@ void DownloadHistory::HistoryAdapter::QueryDownloads(
 
 void DownloadHistory::HistoryAdapter::CreateDownload(
     const history::DownloadRow& info,
-    const history::HistoryService::DownloadCreateCallback& callback) {
-  history_->CreateDownload(info, callback);
+    history::HistoryService::DownloadCreateCallback callback) {
+  history_->CreateDownload(info, std::move(callback));
 }
 
 void DownloadHistory::HistoryAdapter::UpdateDownload(

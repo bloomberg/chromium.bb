@@ -372,14 +372,13 @@ class HistoryService : public KeyedService {
 
   // Implemented by the caller of 'CreateDownload' below, and is called when the
   // history service has created a new entry for a download in the history db.
-  typedef base::Callback<void(bool)> DownloadCreateCallback;
+  using DownloadCreateCallback = base::OnceCallback<void(bool)>;
 
   // Begins a history request to create a new row for a download. 'info'
   // contains all the download's creation state, and 'callback' runs when the
   // history service request is complete. The callback is called on the thread
   // that calls CreateDownload().
-  void CreateDownload(const DownloadRow& info,
-                      const DownloadCreateCallback& callback);
+  void CreateDownload(const DownloadRow& info, DownloadCreateCallback callback);
 
   // Implemented by the caller of 'GetNextDownloadId' below, and is called with
   // the maximum id of all downloads records in the database plus 1.

@@ -71,14 +71,15 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 
   void set_slow_create_download(bool slow) { slow_create_download_ = slow; }
 
-  void CreateDownload(const history::DownloadRow& info,
-                      const history::HistoryService::DownloadCreateCallback&
-                          callback) override {
+  void CreateDownload(
+      const history::DownloadRow& info,
+      history::HistoryService::DownloadCreateCallback callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     create_download_info_ = info;
     // Must not call CreateDownload() again before FinishCreateDownload()!
     DCHECK(create_download_callback_.is_null());
-    create_download_callback_ = base::Bind(callback, !fail_create_download_);
+    create_download_callback_ =
+        base::BindOnce(std::move(callback), !fail_create_download_);
     fail_create_download_ = false;
     if (!slow_create_download_)
       FinishCreateDownload();
@@ -86,8 +87,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 
   void FinishCreateDownload() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    create_download_callback_.Run();
-    create_download_callback_.Reset();
+    std::move(create_download_callback_).Run();
   }
 
   void UpdateDownload(const history::DownloadRow& info,
@@ -170,7 +170,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   bool slow_create_download_ = false;
   bool fail_create_download_ = false;
   bool should_commit_immediately_ = false;
-  base::Closure create_download_callback_;
+  base::OnceClosure create_download_callback_;
   history::DownloadRow update_download_;
   std::unique_ptr<InfoVector> expect_query_downloads_;
   IdSet remove_downloads_;

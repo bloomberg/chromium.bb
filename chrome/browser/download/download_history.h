@@ -40,7 +40,7 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
 
     virtual void CreateDownload(
         const history::DownloadRow& info,
-        const history::HistoryService::DownloadCreateCallback& callback);
+        history::HistoryService::DownloadCreateCallback callback);
 
     virtual void UpdateDownload(const history::DownloadRow& data,
                                 bool should_commit_immediately);
