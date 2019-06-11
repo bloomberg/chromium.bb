@@ -587,8 +587,6 @@ component("ash") {
     "shelf/window_preview.cc",
     "shelf/window_preview.h",
     "shell.cc",
-    "shell_delegate_mash.cc",
-    "shell_delegate_mash.h",
     "shell_init_params.cc",
     "shell_state.cc",
     "shell_state.h",
