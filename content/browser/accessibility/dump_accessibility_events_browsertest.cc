@@ -298,6 +298,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaMenuItemFocus) {
+  RunEventTest(FILE_PATH_LITERAL("aria-menuitem-focus.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaMultilineChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-multiline-changed.html"));
 }

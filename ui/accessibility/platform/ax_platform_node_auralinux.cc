@@ -2959,8 +2959,12 @@ void AXPlatformNodeAuraLinux::OnSelectedChildrenChanged() {
 bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
   if (AXPlatformNodeBase* container = GetSelectionContainer()) {
     ax::mojom::Role role = container->GetData().role;
+
+    // In the browser UI, menus and their descendants emit selection-related
+    // events only, but we also want to emit platform focus-related events,
+    // so we treat selection and focus the same for browser UI.
     if (role == ax::mojom::Role::kMenuBar || role == ax::mojom::Role::kMenu)
-      return true;
+      return !GetDelegate()->IsWebContent();
     if (role == ax::mojom::Role::kListBox &&
         !container->GetData().HasState(ax::mojom::State::kMultiselectable)) {
       return container->GetDelegate()->GetFocus() ==
