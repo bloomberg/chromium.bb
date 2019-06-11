@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/clock.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -47,7 +48,7 @@ class HistoryStatisticsReporter : public history::HistoryServiceObserver {
   PrefService* prefs_;
   base::Clock* clock_;
 
-  std::unique_ptr<base::CancelableTaskTracker> cancelable_task_tracker_;
+  base::CancelableTaskTracker cancelable_task_tracker_;
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
   bool attempted_to_report_once_ = false;

@@ -681,29 +681,29 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
 base::CancelableTaskTracker::TaskId HistoryService::GetHistoryCount(
     const Time& begin_time,
     const Time& end_time,
-    const GetHistoryCountCallback& callback,
+    GetHistoryCountCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
-      base::Bind(&HistoryBackend::GetHistoryCount, history_backend_, begin_time,
-                 end_time),
-      callback);
+      base::BindOnce(&HistoryBackend::GetHistoryCount, history_backend_,
+                     begin_time, end_time),
+      std::move(callback));
 }
 
 void HistoryService::CountUniqueHostsVisitedLastMonth(
-    const GetHistoryCountCallback& callback,
+    GetHistoryCountCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
 
   tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
-      base::BindRepeating(&HistoryBackend::CountUniqueHostsVisitedLastMonth,
-                          history_backend_),
-      callback);
+      base::BindOnce(&HistoryBackend::CountUniqueHostsVisitedLastMonth,
+                     history_backend_),
+      std::move(callback));
 }
 
 // Downloads -------------------------------------------------------------------

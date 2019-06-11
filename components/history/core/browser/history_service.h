@@ -300,16 +300,16 @@ class HistoryService : public KeyedService {
   // [|begin_time|, |end_time|). Each URL is counted only once per day. For
   // determination of the date, timestamps are converted to dates using local
   // time.
-  typedef base::Callback<void(HistoryCountResult)> GetHistoryCountCallback;
+  using GetHistoryCountCallback = base::OnceCallback<void(HistoryCountResult)>;
 
   base::CancelableTaskTracker::TaskId GetHistoryCount(
       const base::Time& begin_time,
       const base::Time& end_time,
-      const GetHistoryCountCallback& callback,
+      GetHistoryCountCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Returns, via a callback, the number of Hosts visited in the last month.
-  void CountUniqueHostsVisitedLastMonth(const GetHistoryCountCallback& callback,
+  void CountUniqueHostsVisitedLastMonth(GetHistoryCountCallback callback,
                                         base::CancelableTaskTracker* tracker);
 
   // Database management operations --------------------------------------------

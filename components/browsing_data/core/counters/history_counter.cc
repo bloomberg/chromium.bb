@@ -68,8 +68,8 @@ void HistoryCounter::Count() {
 
   history_service_->GetHistoryCount(
       GetPeriodStart(), GetPeriodEnd(),
-      base::Bind(&HistoryCounter::OnGetLocalHistoryCount,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HistoryCounter::OnGetLocalHistoryCount,
+                     weak_ptr_factory_.GetWeakPtr()),
       &cancelable_task_tracker_);
 
   // If the history sync is enabled, test if there is at least one synced item.
