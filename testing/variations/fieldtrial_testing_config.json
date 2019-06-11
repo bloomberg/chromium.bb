@@ -3870,25 +3870,6 @@
             ]
         }
     ],
-    "PaymentResponseRetry": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PaymentResponseRetry"
-                    ]
-                }
-            ]
-        }
-    ],
     "PdfIsolation": [
         {
             "platforms": [
