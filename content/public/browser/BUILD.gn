@@ -28,7 +28,6 @@ jumbo_source_set("browser_sources") {
     "android/child_process_importance.h",
     "android/compositor.h",
     "android/compositor_client.h",
-    "android/content_protocol_handler.h",
     "android/devtools_auth.h",
     "android/gpu_video_accelerator_factories_provider.h",
     "android/java_interfaces.h",
