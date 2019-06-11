@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_installer.h"
@@ -88,8 +89,8 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
   info.display = static_cast<blink::WebDisplayMode>(java_display_mode);
   info.orientation =
       static_cast<blink::WebScreenOrientationLockType>(java_orientation);
-  info.theme_color = (int64_t)java_theme_color;
-  info.background_color = (int64_t)java_background_color;
+  info.theme_color = JavaColorToOptionalSkColor(java_theme_color);
+  info.background_color = JavaColorToOptionalSkColor(java_background_color);
   info.best_primary_icon_url =
       GURL(ConvertJavaStringToUTF8(env, java_primary_icon_url));
   info.best_badge_icon_url =
