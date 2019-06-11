@@ -2508,6 +2508,7 @@ void RenderFrameImpl::OnAddMessageToConsole(
 
 void RenderFrameImpl::JavaScriptExecuteRequest(
     const base::string16& javascript,
+    bool wants_result,
     JavaScriptExecuteRequestCallback callback) {
   TRACE_EVENT_INSTANT0("test_tracing", "JavaScriptExecuteRequest",
                        TRACE_EVENT_SCOPE_THREAD);
@@ -2522,11 +2523,15 @@ void RenderFrameImpl::JavaScriptExecuteRequest(
   if (!weak_this)
     return;
 
-  std::move(callback).Run(GetJavaScriptExecutionResult(result));
+  if (wants_result)
+    std::move(callback).Run(GetJavaScriptExecutionResult(result));
+  else
+    std::move(callback).Run({});
 }
 
 void RenderFrameImpl::JavaScriptExecuteRequestForTests(
     const base::string16& javascript,
+    bool wants_result,
     bool has_user_gesture,
     JavaScriptExecuteRequestForTestsCallback callback) {
   TRACE_EVENT_INSTANT0("test_tracing", "JavaScriptExecuteRequestForTests",
@@ -2548,11 +2553,15 @@ void RenderFrameImpl::JavaScriptExecuteRequestForTests(
   if (!weak_this)
     return;
 
-  std::move(callback).Run(GetJavaScriptExecutionResult(result));
+  if (wants_result)
+    std::move(callback).Run(GetJavaScriptExecutionResult(result));
+  else
+    std::move(callback).Run({});
 }
 
 void RenderFrameImpl::JavaScriptExecuteRequestInIsolatedWorld(
     const base::string16& javascript,
+    bool wants_result,
     int32_t world_id,
     JavaScriptExecuteRequestInIsolatedWorldCallback callback) {
   TRACE_EVENT_INSTANT0("test_tracing",
@@ -2571,15 +2580,18 @@ void RenderFrameImpl::JavaScriptExecuteRequestInIsolatedWorld(
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebScriptSource script = WebScriptSource(WebString::FromUTF16(javascript));
   JavaScriptIsolatedWorldRequest* request = new JavaScriptIsolatedWorldRequest(
-      weak_factory_.GetWeakPtr(), std::move(callback));
+      weak_factory_.GetWeakPtr(), wants_result, std::move(callback));
   frame_->RequestExecuteScriptInIsolatedWorld(
       world_id, &script, 1, false, WebLocalFrame::kSynchronous, request);
 }
 
 RenderFrameImpl::JavaScriptIsolatedWorldRequest::JavaScriptIsolatedWorldRequest(
     base::WeakPtr<RenderFrameImpl> render_frame_impl,
+    bool wants_result,
     JavaScriptExecuteRequestInIsolatedWorldCallback callback)
-    : render_frame_impl_(render_frame_impl), callback_(std::move(callback)) {}
+    : render_frame_impl_(render_frame_impl),
+      wants_result_(wants_result),
+      callback_(std::move(callback)) {}
 
 RenderFrameImpl::JavaScriptIsolatedWorldRequest::
     ~JavaScriptIsolatedWorldRequest() {
@@ -2594,7 +2606,7 @@ void RenderFrameImpl::JavaScriptIsolatedWorldRequest::Completed(
   }
 
   base::Value value;
-  if (!result.empty()) {
+  if (!result.empty() && wants_result_) {
     // It's safe to always use the main world context when converting
     // here. V8ValueConverterImpl shouldn't actually care about the
     // context scope, and it switches to v8::Object's creation context
@@ -3101,7 +3113,7 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
-  JavaScriptExecuteRequest(javascript, base::DoNothing());
+  JavaScriptExecuteRequest(javascript, false, base::DoNothing());
 }
 
 void RenderFrameImpl::BindLocalInterface(
