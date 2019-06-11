@@ -155,4 +155,19 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutWrongStrideValue) {
   EXPECT_FALSE(layout.has_value());
 }
 
+// Test GetNumPlanesOfV4L2PixFmt.
+TEST(V4L2DeviceTest, GetNumPlanesOfV4L2PixFmt) {
+  EXPECT_EQ(1u, V4L2Device::GetNumPlanesOfV4L2PixFmt(V4L2_PIX_FMT_NV12));
+  EXPECT_EQ(1u, V4L2Device::GetNumPlanesOfV4L2PixFmt(V4L2_PIX_FMT_YUV420));
+  EXPECT_EQ(1u, V4L2Device::GetNumPlanesOfV4L2PixFmt(V4L2_PIX_FMT_YVU420));
+  EXPECT_EQ(1u, V4L2Device::GetNumPlanesOfV4L2PixFmt(V4L2_PIX_FMT_RGB32));
+
+  EXPECT_EQ(2u, V4L2Device::GetNumPlanesOfV4L2PixFmt(V4L2_PIX_FMT_NV12M));
+  EXPECT_EQ(2u, V4L2Device::GetNumPlanesOfV4L2PixFmt(V4L2_PIX_FMT_MT21C));
+
+  EXPECT_EQ(3u, V4L2Device::GetNumPlanesOfV4L2PixFmt(V4L2_PIX_FMT_YUV420M));
+  EXPECT_EQ(3u, V4L2Device::GetNumPlanesOfV4L2PixFmt(V4L2_PIX_FMT_YVU420M));
+  EXPECT_EQ(3u, V4L2Device::GetNumPlanesOfV4L2PixFmt(V4L2_PIX_FMT_YUV422M));
+}
+
 }  // namespace media

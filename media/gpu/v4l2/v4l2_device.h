@@ -327,7 +327,6 @@ class MEDIA_GPU_EXPORT V4L2Device
  public:
   // Utility format conversion functions
   static VideoPixelFormat V4L2PixFmtToVideoPixelFormat(uint32_t format);
-  static size_t V4L2PixFmtToNumPlanes(uint32_t pix_fmt);
   static uint32_t VideoPixelFormatToV4L2PixFmt(VideoPixelFormat format,
                                                bool single_planar);
   // Returns v4l2 pixel format from |layout|. If there is no corresponding
@@ -364,6 +363,9 @@ class MEDIA_GPU_EXPORT V4L2Device
 
   // Returns whether |pix_fmt| is multi planar.
   static bool IsMultiPlanarV4L2PixFmt(uint32_t pix_fmt);
+
+  // Returns number of planes of |pix_fmt|.
+  static size_t GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt);
 
   enum class Type {
     kDecoder,

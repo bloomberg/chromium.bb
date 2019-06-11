@@ -103,7 +103,6 @@ V4L2Buffer::V4L2Buffer(scoped_refptr<V4L2Device> device,
   v4l2_buffer_.index = buffer_id;
   v4l2_buffer_.type = type;
   v4l2_buffer_.memory = memory;
-
   plane_mappings_.resize(v4l2_buffer_.length);
 }
 
@@ -1027,30 +1026,6 @@ VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
 }
 
 // static
-size_t V4L2Device::V4L2PixFmtToNumPlanes(uint32_t pix_fmt) {
-  switch (pix_fmt) {
-    case V4L2_PIX_FMT_NV12:
-    case V4L2_PIX_FMT_YUV420:
-    case V4L2_PIX_FMT_YVU420:
-    case V4L2_PIX_FMT_RGB32:
-      return 1;
-
-    case V4L2_PIX_FMT_NV12M:
-    case V4L2_PIX_FMT_MT21C:
-      return 2;
-
-    case V4L2_PIX_FMT_YUV420M:
-    case V4L2_PIX_FMT_YVU420M:
-    case V4L2_PIX_FMT_YUV422M:
-      return 3;
-
-    default:
-      LOG(FATAL) << "Add more cases as needed";
-      return 0;
-  }
-}
-
-// static
 uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(const VideoPixelFormat format,
                                                   bool single_planar) {
   switch (format) {
@@ -1537,13 +1512,19 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
 // static
 bool V4L2Device::IsMultiPlanarV4L2PixFmt(uint32_t pix_fmt) {
   constexpr uint32_t kMultiV4L2PixFmts[] = {
-      V4L2_PIX_FMT_NV12M,
-      V4L2_PIX_FMT_MT21C,
-      V4L2_PIX_FMT_YUV420M,
-      V4L2_PIX_FMT_YVU420M,
+      V4L2_PIX_FMT_NV12M,   V4L2_PIX_FMT_MT21C,   V4L2_PIX_FMT_YUV420M,
+      V4L2_PIX_FMT_YVU420M, V4L2_PIX_FMT_YUV422M,
   };
   return std::find(std::cbegin(kMultiV4L2PixFmts), std::cend(kMultiV4L2PixFmts),
                    pix_fmt) != std::cend(kMultiV4L2PixFmts);
+}
+
+// static
+size_t V4L2Device::GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt) {
+  if (IsMultiPlanarV4L2PixFmt(pix_fmt)) {
+    return VideoFrame::NumPlanes(V4L2PixFmtToVideoPixelFormat(pix_fmt));
+  }
+  return 1u;
 }
 
 void V4L2Device::GetSupportedResolution(uint32_t pixelformat,

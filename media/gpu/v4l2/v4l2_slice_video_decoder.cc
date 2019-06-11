@@ -349,7 +349,8 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
 
   // Setup output format.
   uint32_t output_format_fourcc = NegotiateOutputFormat();
-  num_output_planes_ = V4L2Device::V4L2PixFmtToNumPlanes(output_format_fourcc);
+  num_output_planes_ =
+      V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc);
   if (!SetupOutputFormat(output_format_fourcc)) {
     VLOGF(1) << "Failed to setup output format.";
     client_task_runner_->PostTask(FROM_HERE,
