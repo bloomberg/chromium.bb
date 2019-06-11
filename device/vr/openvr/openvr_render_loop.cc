@@ -58,6 +58,13 @@ device::mojom::XRHandedness ConvertToMojoHandedness(
 
 }  // namespace
 
+void OpenVRRenderLoop::InputActiveState::MarkAsInactive() {
+  active = false;
+  primary_input_pressed = false;
+  device_class = vr::TrackedDeviceClass_Invalid;
+  controller_role = vr::TrackedControllerRole_Invalid;
+}
+
 OpenVRRenderLoop::OpenVRRenderLoop() : XRCompositorCommon() {}
 
 OpenVRRenderLoop::~OpenVRRenderLoop() {
@@ -233,12 +240,8 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
     if (!pose.bDeviceIsConnected) {
       // If this was an active controller on the last frame report it as
       // disconnected.
-      if (input_active_state.active) {
-        input_active_state.active = false;
-        input_active_state.primary_input_pressed = false;
-        input_active_state.device_class = vr::TrackedDeviceClass_Invalid;
-        input_active_state.controller_role = vr::TrackedControllerRole_Invalid;
-      }
+      if (input_active_state.active)
+        input_active_state.MarkAsInactive();
       continue;
     }
 
@@ -262,8 +265,10 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
     vr::VRControllerState_t controller_state;
     bool have_state = openvr_->GetSystem()->GetControllerState(
         i, &controller_state, sizeof(vr::VRControllerState_t));
-    if (!have_state)
+    if (!have_state) {
+      input_active_state.MarkAsInactive();
       continue;
+    }
 
     bool pressed = controller_state.ulButtonPressed &
                    vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger);

@@ -570,10 +570,24 @@ EVRCompositorError TestVRCompositor::WaitGetPoses(TrackedDevicePose_t* poses1,
                                                   unsigned int count2) {
   TrackedDevicePose_t pose = g_test_helper.GetPose(true /* presenting pose */);
   for (unsigned int i = 0; i < count1; ++i) {
+    if (i != vr::k_unTrackedDeviceIndex_Hmd) {
+      VRControllerState_t controller_state;
+      pose.bDeviceIsConnected =
+          g_test_helper.GetControllerState(i, &controller_state);
+    } else {
+      pose.bDeviceIsConnected = true;
+    }
     poses1[i] = pose;
   }
 
   for (unsigned int i = 0; i < count2; ++i) {
+    if (i != vr::k_unTrackedDeviceIndex_Hmd) {
+      VRControllerState_t controller_state;
+      pose.bDeviceIsConnected =
+          g_test_helper.GetControllerState(i, &controller_state);
+    } else {
+      pose.bDeviceIsConnected = true;
+    }
     poses2[i] = pose;
   }
 
