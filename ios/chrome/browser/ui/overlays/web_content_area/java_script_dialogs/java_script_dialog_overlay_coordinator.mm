@@ -19,7 +19,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface JavaScriptDialogOverlayCoordinator ()
+@interface JavaScriptDialogOverlayCoordinator () <
+    JavaScriptDialogOverlayMediatorDelegate>
 // Whether the coordinator has been started.
 @property(nonatomic, getter=isStarted) BOOL started;
 // The alert view controller.
@@ -29,6 +30,23 @@
 @end
 
 @implementation JavaScriptDialogOverlayCoordinator
+
+#pragma mark - Accessors
+
+- (void)setMediator:(JavaScriptDialogOverlayMediator*)mediator {
+  if (_mediator == mediator)
+    return;
+  _mediator.delegate = nil;
+  _mediator = mediator;
+  _mediator.delegate = self;
+}
+
+#pragma mark - JavaScriptDialogOverlayMediatorDelegate
+
+- (void)stopDialogForMediator:(JavaScriptDialogOverlayMediator*)mediator {
+  DCHECK_EQ(self.mediator, mediator);
+  [self stopAnimated:YES];
+}
 
 #pragma mark - OverlayCoordinator
 
