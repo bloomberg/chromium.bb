@@ -2428,7 +2428,7 @@ void Content::ApplyValue(StyleResolverState& state,
             g_null_atom,
             To<CSSCustomIdentValue>(function_value->Item(0)).Value(),
             g_null_atom);
-        const AtomicString& attr_value = state.GetElement()->getAttribute(attr);
+        const AtomicString& attr_value = state.GetElement().getAttribute(attr);
         string = attr_value.IsNull() ? g_empty_string : attr_value.GetString();
       } else {
         string = To<CSSStringValue>(*item).Value();
