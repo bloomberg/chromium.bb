@@ -23,8 +23,7 @@ OAuth2TokenServiceDelegate::ScopedBatchChange::~ScopedBatchChange() {
 }
 
 OAuth2TokenServiceDelegate::OAuth2TokenServiceDelegate()
-    : batch_change_depth_(0) {
-}
+    : batch_change_depth_(0) {}
 
 OAuth2TokenServiceDelegate::~OAuth2TokenServiceDelegate() {
 }

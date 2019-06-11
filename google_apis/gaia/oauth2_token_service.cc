@@ -390,14 +390,16 @@ OAuth2TokenService::Consumer::~Consumer() {
 
 OAuth2TokenService::OAuth2TokenService(
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
-    : delegate_(std::move(delegate)) {
+    : delegate_(std::move(delegate)), all_credentials_loaded_(false) {
   DCHECK(delegate_);
+  AddObserver(this);
 }
 
 OAuth2TokenService::~OAuth2TokenService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Release all the pending fetchers.
   pending_fetchers_.clear();
+  RemoveObserver(this);
 }
 
 OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() {
@@ -585,7 +587,14 @@ void OAuth2TokenService::InformConsumerWithCachedTokenResponse(
                      *cache_token_response));
 }
 
+bool OAuth2TokenService::AreAllCredentialsLoaded() const {
+  return all_credentials_loaded_;
+}
+
 std::vector<std::string> OAuth2TokenService::GetAccounts() const {
+  if (!AreAllCredentialsLoaded())
+    return std::vector<std::string>();
+
   return delegate_->GetAccounts();
 }
 
@@ -735,6 +744,11 @@ bool OAuth2TokenService::RemoveCachedTokenResponse(
   }
   return false;
 }
+
+void OAuth2TokenService::OnRefreshTokensLoaded() {
+  all_credentials_loaded_ = true;
+}
+
 void OAuth2TokenService::UpdateAuthError(const CoreAccountId& account_id,
                                          const GoogleServiceAuthError& error) {
   delegate_->UpdateAuthError(account_id, error);

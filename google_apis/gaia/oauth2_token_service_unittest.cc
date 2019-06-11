@@ -149,6 +149,28 @@ TEST_F(OAuth2TokenServiceTest, NoOAuth2RefreshToken) {
   EXPECT_EQ(1, consumer_.number_of_errors_);
 }
 
+TEST_F(OAuth2TokenServiceTest, GetAccounts) {
+  // Accounts should start off empty.
+  auto accounts = oauth2_service_->GetAccounts();
+  EXPECT_TRUE(accounts.empty());
+
+  // Add an account.
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
+
+  // Accounts should still be empty as tokens have not yet been loaded from
+  // disk.
+  accounts = oauth2_service_->GetAccounts();
+  EXPECT_TRUE(accounts.empty());
+
+  // Load tokens from disk.
+  oauth2_service_->GetDelegate()->LoadCredentials("");
+
+  // |account_id_| should now be visible in the accounts.
+  accounts = oauth2_service_->GetAccounts();
+  EXPECT_THAT(accounts, testing::ElementsAre(account_id_));
+}
+
 TEST_F(OAuth2TokenServiceTest, FailureShouldNotRetry) {
   oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
       account_id_, "refreshToken");

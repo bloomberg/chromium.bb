@@ -39,8 +39,7 @@ class PrefRegistrySimple;
 //
 // Note: requests should be started from the UI thread. To start a
 // request from other thread, please use OAuth2TokenServiceRequest.
-class ProfileOAuth2TokenService : public OAuth2TokenService,
-                                  public OAuth2TokenServiceObserver {
+class ProfileOAuth2TokenService : public OAuth2TokenService {
  public:
   ProfileOAuth2TokenService(
       PrefService* user_prefs,
@@ -60,9 +59,6 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // PrimaryAccountManager.
   // For a supervised user, the id comes from SupervisedUserService.
   void LoadCredentials(const std::string& primary_account_id);
-
-  // Returns true iff all credentials have been loaded from disk.
-  bool AreAllCredentialsLoaded();
 
   // Returns true if LoadCredentials finished with no errors.
   bool HasLoadCredentialsFinishedWithNoErrors();
@@ -98,10 +94,6 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
                           const std::string& account_id);
 #endif
 
-  void set_all_credentials_loaded_for_testing(bool loaded) {
-    all_credentials_loaded_ = loaded;
-  }
-
   // Exposes the ability to update auth errors to tests.
   void UpdateAuthErrorForTesting(const std::string& account_id,
                                  const GoogleServiceAuthError& error) {
@@ -121,9 +113,6 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   void RecreateDeviceIdIfNeeded();
 
   PrefService* user_prefs_;
-
-  // Whether all credentials have been loaded.
-  bool all_credentials_loaded_;
 
   signin_metrics::SourceForRefreshTokenOperation update_refresh_token_source_ =
       signin_metrics::SourceForRefreshTokenOperation::kUnknown;

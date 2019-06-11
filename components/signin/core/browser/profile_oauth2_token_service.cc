@@ -61,15 +61,11 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
 ProfileOAuth2TokenService::ProfileOAuth2TokenService(
     PrefService* user_prefs,
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
-    : OAuth2TokenService(std::move(delegate)),
-      user_prefs_(user_prefs),
-      all_credentials_loaded_(false) {
+    : OAuth2TokenService(std::move(delegate)), user_prefs_(user_prefs) {
   DCHECK(user_prefs_);
-  AddObserver(this);
 }
 
 ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
-  RemoveObserver(this);
 }
 
 // static
@@ -96,10 +92,6 @@ void ProfileOAuth2TokenService::LoadCredentials(
   update_refresh_token_source_ =
       SourceForRefreshTokenOperation::kTokenService_LoadCredentials;
   GetDelegate()->LoadCredentials(primary_account_id);
-}
-
-bool ProfileOAuth2TokenService::AreAllCredentialsLoaded() {
-  return all_credentials_loaded_;
 }
 
 void ProfileOAuth2TokenService::UpdateCredentials(
@@ -145,6 +137,8 @@ void ProfileOAuth2TokenService::ExtractCredentials(
 
 void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
     const CoreAccountId& account_id) {
+  OAuth2TokenService::OnRefreshTokenAvailable(account_id);
+
   // Check if the newly-updated token is valid (invalid tokens are inserted when
   // the user signs out on the web with DICE enabled).
   bool is_valid = true;
@@ -170,6 +164,8 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
 
 void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
     const CoreAccountId& account_id) {
+  OAuth2TokenService::OnRefreshTokenRevoked(account_id);
+
   // If this was the last token, recreate the device ID.
   RecreateDeviceIdIfNeeded();
 
@@ -186,12 +182,12 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
+  OAuth2TokenService::OnRefreshTokensLoaded();
+
   DCHECK_NE(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
             GetDelegate()->load_credentials_state());
   DCHECK_NE(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
             GetDelegate()->load_credentials_state());
-
-  all_credentials_loaded_ = true;
 
   // Reset the state for update refresh token operations to Unknown as this
   // was the original state before LoadCredentials was called.

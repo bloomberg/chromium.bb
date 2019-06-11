@@ -240,6 +240,7 @@ class AccountTrackerServiceTest : public testing::Test {
 
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     AccountFetcherService::RegisterPrefs(pref_service_.registry());
+    ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
   }
 
   ~AccountTrackerServiceTest() override {}
@@ -247,6 +248,7 @@ class AccountTrackerServiceTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     CreateAccountTracker(base::FilePath(), /*network_enabled=*/true);
+    fake_oauth2_token_service_.LoadCredentials("");
     observer_.Clear();
   }
 

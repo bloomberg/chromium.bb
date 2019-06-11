@@ -61,7 +61,7 @@ class OAuth2TokenServiceDelegate;
 //
 // The caller of StartRequest() owns the returned request and is responsible to
 // delete the request even once the callback has been invoked.
-class OAuth2TokenService {
+class OAuth2TokenService : public OAuth2TokenServiceObserver {
  public:
   // A set of scopes in OAuth2 authentication.
   typedef std::set<std::string> ScopeSet;
@@ -132,7 +132,7 @@ class OAuth2TokenService {
 
   explicit OAuth2TokenService(
       std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
-  virtual ~OAuth2TokenService();
+  ~OAuth2TokenService() override;
 
   // Add or remove observers of this token service.
   void AddObserver(OAuth2TokenServiceObserver* observer);
@@ -178,6 +178,13 @@ class OAuth2TokenService {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const ScopeSet& scopes,
       Consumer* consumer);
+
+  // Returns true iff all credentials have been loaded from disk.
+  bool AreAllCredentialsLoaded() const;
+
+  void set_all_credentials_loaded_for_testing(bool loaded) {
+    all_credentials_loaded_ = loaded;
+  }
 
   // Lists account IDs of all accounts with a refresh token maintained by this
   // instance.
@@ -260,6 +267,9 @@ class OAuth2TokenService {
 
     SEQUENCE_CHECKER(sequence_checker_);
   };
+
+  // OAuth2TokenServiceObserver:
+  void OnRefreshTokensLoaded() override;
 
   // Implement it in delegates if they want to report errors to the user.
   void UpdateAuthError(const CoreAccountId& account_id,
@@ -397,6 +407,9 @@ class OAuth2TokenService {
 
   // The depth of batch changes.
   int batch_change_depth_;
+
+  // Whether all credentials have been loaded.
+  bool all_credentials_loaded_;
 
   // Maximum number of retries in fetching an OAuth2 access token.
   static int max_fetch_retry_num_;
