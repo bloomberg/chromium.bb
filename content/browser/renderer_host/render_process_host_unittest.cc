@@ -418,7 +418,9 @@ TEST_F(RenderProcessHostUnitTest, DoNotReuseError) {
 
   // Isolate |kUrl1| so we can't get a default SiteInstance for it.
   ChildProcessSecurityPolicyImpl::GetInstance()->AddIsolatedOrigins(
-      {url::Origin::Create(kUrl1)}, browser_context());
+      {url::Origin::Create(kUrl1)},
+      ChildProcessSecurityPolicy::IsolatedOriginSource::TEST,
+      browser_context());
 
   // At first, trying to get a RenderProcessHost with the
   // REUSE_PENDING_OR_COMMITTED_SITE policy should return a new process.

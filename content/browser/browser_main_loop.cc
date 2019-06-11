@@ -849,12 +849,10 @@ int BrowserMainLoop::PreCreateThreads() {
     RenderProcessHost::SetRunRendererInProcess(true);
 #endif
 
-  // Initialize origins that are whitelisted for process isolation.  Must be
-  // done after base::FeatureList is initialized, but before any navigations
-  // can happen.
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  policy->AddIsolatedOrigins(SiteIsolationPolicy::GetIsolatedOrigins());
+  // Initialize origins that require process isolation.  Must be done
+  // after base::FeatureList is initialized, but before any navigations can
+  // happen.
+  SiteIsolationPolicy::ApplyGlobalIsolatedOrigins();
 
   // Record metrics about which site isolation flags have been turned on.
   SiteIsolationPolicy::StartRecordingSiteIsolationFlagUsage();

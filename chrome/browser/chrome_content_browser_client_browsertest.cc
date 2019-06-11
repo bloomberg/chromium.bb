@@ -34,6 +34,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -254,7 +255,7 @@ class SitePerProcessMemoryThresholdBrowserTest : public InProcessBrowserTest {
 
  protected:
   // These are the origins we expect to be returned by
-  // content::SiteIsolationPolicy::GetIsolatedOrigins() even if
+  // content::ChildProcessSecurityPolicy::GetIsolatedOrigins() even if
   // ContentBrowserClient::ShouldDisableSiteIsolation() returns true.
   const std::vector<url::Origin> kExpectedEmbedderOrigins = {
 #if !defined(OS_ANDROID)
@@ -410,9 +411,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
   isolated_origins_feature.InitAndEnableFeatureWithParameters(
       features::kIsolateOrigins, {{features::kIsolateOriginsFieldTrialParamName,
                                    trial_origin.Serialize()}});
+  SiteIsolationPolicy::ApplyGlobalIsolatedOrigins();
 
-  std::vector<url::Origin> isolated_origins =
-      content::SiteIsolationPolicy::GetIsolatedOrigins();
+  auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
+  std::vector<url::Origin> isolated_origins = cpsp->GetIsolatedOrigins();
   EXPECT_EQ(kExpectedTrialOrigins, isolated_origins.size());
 
   // Verify that the expected embedder origins are present even though site
@@ -442,9 +444,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
   isolated_origins_feature.InitAndEnableFeatureWithParameters(
       features::kIsolateOrigins, {{features::kIsolateOriginsFieldTrialParamName,
                                    trial_origin.Serialize()}});
+  SiteIsolationPolicy::ApplyGlobalIsolatedOrigins();
 
-  std::vector<url::Origin> isolated_origins =
-      content::SiteIsolationPolicy::GetIsolatedOrigins();
+  auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
+  std::vector<url::Origin> isolated_origins = cpsp->GetIsolatedOrigins();
   EXPECT_EQ(1u + kExpectedEmbedderOrigins.size(), isolated_origins.size());
   EXPECT_THAT(kExpectedEmbedderOrigins,
               ::testing::IsSubsetOf(isolated_origins));
@@ -463,9 +466,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
   isolated_origins_feature.InitAndEnableFeatureWithParameters(
       features::kIsolateOrigins, {{features::kIsolateOriginsFieldTrialParamName,
                                    trial_origin.Serialize()}});
+  SiteIsolationPolicy::ApplyGlobalIsolatedOrigins();
 
-  std::vector<url::Origin> isolated_origins =
-      content::SiteIsolationPolicy::GetIsolatedOrigins();
+  auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
+  std::vector<url::Origin> isolated_origins = cpsp->GetIsolatedOrigins();
   EXPECT_EQ(kExpectedTrialOrigins + kExpectedEmbedderOrigins.size(),
             isolated_origins.size());
   EXPECT_THAT(kExpectedEmbedderOrigins,

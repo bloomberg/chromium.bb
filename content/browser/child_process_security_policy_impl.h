@@ -102,10 +102,15 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   void GrantSendMidiSysExMessage(int child_id) override;
   bool CanAccessDataForOrigin(int child_id, const GURL& url) override;
   void AddIsolatedOrigins(const std::vector<url::Origin>& origins,
+                          IsolatedOriginSource source,
                           BrowserContext* browser_context = nullptr) override;
   void AddIsolatedOrigins(const std::vector<IsolatedOriginPattern>& patterns,
+                          IsolatedOriginSource source,
                           BrowserContext* browser_context = nullptr) override;
   bool IsGloballyIsolatedOriginForTesting(const url::Origin& origin) override;
+  std::vector<url::Origin> GetIsolatedOrigins(
+      base::Optional<IsolatedOriginSource> source = base::nullopt,
+      BrowserContext* browser_context = nullptr) override;
 
   // Identical to the above method, but takes url::Origin as input.
   bool CanAccessDataForOrigin(int child_id, const url::Origin& origin);
@@ -360,8 +365,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                         BrowsingInstanceId min_browsing_instance_id,
                         BrowserContext* browser_context,
                         ResourceContext* resource_context,
-                        bool isolate_all_subdomains);
-
+                        bool isolate_all_subdomains,
+                        IsolatedOriginSource source);
     // Copyable and movable.
     IsolatedOriginEntry(const IsolatedOriginEntry& other);
     IsolatedOriginEntry& operator=(const IsolatedOriginEntry& other);
@@ -372,10 +377,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     // Allow this class to be used as a key in STL.
     bool operator<(const IsolatedOriginEntry& other) const {
       return std::tie(origin_, min_browsing_instance_id_, browser_context_,
-                      resource_context_, isolate_all_subdomains_) <
+                      resource_context_, isolate_all_subdomains_, source_) <
              std::tie(other.origin_, other.min_browsing_instance_id_,
                       other.browser_context_, other.resource_context_,
-                      other.isolate_all_subdomains_);
+                      other.isolate_all_subdomains_, source_);
     }
 
     bool operator==(const IsolatedOriginEntry& other) const {
@@ -383,7 +388,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
              min_browsing_instance_id_ == other.min_browsing_instance_id_ &&
              browser_context_ == other.browser_context_ &&
              resource_context_ == other.resource_context_ &&
-             isolate_all_subdomains_ == other.isolate_all_subdomains_;
+             isolate_all_subdomains_ == other.isolate_all_subdomains_ &&
+             source_ == other.source_;
     }
 
     // True if this isolated origin applies globally to all profiles.
@@ -405,6 +411,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
     bool isolate_all_subdomains() const { return isolate_all_subdomains_; }
 
+    IsolatedOriginSource source() const { return source_; }
+
    private:
     url::Origin origin_;
     BrowsingInstanceId min_browsing_instance_id_;
@@ -424,9 +432,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     // considered isolated origins.
     bool isolate_all_subdomains_;
 
-    // TODO(alexmos): Track the source of each isolated origin entry, e.g., to
+    // This tracks the source of each isolated origin entry, e.g., to
     // distinguish those that should be displayed to the user from those that
     // should not.  See https://crbug.com/920911.
+    IsolatedOriginSource source_;
   };
 
   // Obtain an instance of ChildProcessSecurityPolicyImpl via GetInstance().

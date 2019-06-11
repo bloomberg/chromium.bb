@@ -77,7 +77,8 @@ class SessionStorageNamespaceImplMojoTest
     security_policy->Add(kTestProcessIdAllOrigins, &browser_context_);
     security_policy->Add(kTestProcessIdOrigin3, &browser_context_);
     security_policy->AddIsolatedOrigins(
-        {test_origin1_, test_origin2_, test_origin3_});
+        {test_origin1_, test_origin2_, test_origin3_},
+        ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
     security_policy->LockToOrigin(IsolationContext(&browser_context_),
                                   kTestProcessIdOrigin1,
                                   test_origin1_.GetURL());

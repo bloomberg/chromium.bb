@@ -435,12 +435,14 @@ ChildProcessSecurityPolicyImpl::IsolatedOriginEntry::IsolatedOriginEntry(
     BrowsingInstanceId min_browsing_instance_id,
     BrowserContext* browser_context,
     ResourceContext* resource_context,
-    bool isolate_all_subdomains)
+    bool isolate_all_subdomains,
+    IsolatedOriginSource source)
     : origin_(origin),
       min_browsing_instance_id_(min_browsing_instance_id),
       browser_context_(browser_context),
       resource_context_(resource_context),
-      isolate_all_subdomains_(isolate_all_subdomains) {
+      isolate_all_subdomains_(isolate_all_subdomains),
+      source_(source) {
   // If there is a BrowserContext, there must also be a ResourceContext
   // associated with this entry.
   DCHECK_EQ(!browser_context, !resource_context);
@@ -1391,6 +1393,7 @@ bool ChildProcessSecurityPolicyImpl::CanSendMidiSysExMessage(int child_id) {
 
 void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
     const std::vector<url::Origin>& origins_to_add,
+    IsolatedOriginSource source,
     BrowserContext* browser_context) {
   std::vector<IsolatedOriginPattern> patterns;
   patterns.reserve(origins_to_add.size());
@@ -1399,11 +1402,12 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
                  [](const url::Origin& o) -> IsolatedOriginPattern {
                    return IsolatedOriginPattern(o);
                  });
-  AddIsolatedOrigins(patterns, browser_context);
+  AddIsolatedOrigins(patterns, source, browser_context);
 }
 
 void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
     const std::vector<IsolatedOriginPattern>& patterns,
+    IsolatedOriginSource source,
     BrowserContext* browser_context) {
   // This can only be called from the UI thread, as it reads state that's only
   // available (and is only safe to be retrieved) on the UI thread, such as
@@ -1466,7 +1470,7 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
           browser_context ? browser_context->GetResourceContext() : nullptr;
       IsolatedOriginEntry entry(
           std::move(origin_to_add), min_browsing_instance_id, browser_context,
-          resource_context, pattern.isolate_all_subdomains());
+          resource_context, pattern.isolate_all_subdomains(), source);
       isolated_origins_[key].emplace_back(std::move(entry));
     }
   }
@@ -1504,6 +1508,33 @@ bool ChildProcessSecurityPolicyImpl::IsGloballyIsolatedOriginForTesting(
   IsolationContext isolation_context(null_browsing_instance_id,
                                      no_browser_context);
   return IsIsolatedOrigin(isolation_context, origin);
+}
+
+std::vector<url::Origin> ChildProcessSecurityPolicyImpl::GetIsolatedOrigins(
+    base::Optional<IsolatedOriginSource> source,
+    BrowserContext* browser_context) {
+  std::vector<url::Origin> origins;
+  base::AutoLock isolated_origins_lock(isolated_origins_lock_);
+  for (const auto& iter : isolated_origins_) {
+    for (const auto& isolated_origin_entry : iter.second) {
+      if (source && source.value() != isolated_origin_entry.source())
+        continue;
+
+      // If browser_context is specified, ensure that the entry matches it.  If
+      // the browser_context is not specified, only consider entries that are
+      // not associated with a profile (i.e., which apply globally to the
+      // entire browser).
+      bool matches_profile =
+          browser_context ? isolated_origin_entry.MatchesProfile(
+                                BrowserOrResourceContext(browser_context))
+                          : isolated_origin_entry.AppliesToAllBrowserContexts();
+      if (!matches_profile)
+        continue;
+
+      origins.push_back(isolated_origin_entry.origin());
+    }
+  }
+  return origins;
 }
 
 bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(

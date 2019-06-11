@@ -994,9 +994,8 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
   // Isolate one of the sites so the both can't be mapped to the default
   // site instance.
   ChildProcessSecurityPolicy::GetInstance()->AddIsolatedOrigins(
-      {
-          url::Origin::Create(kUrl1),
-      },
+      {url::Origin::Create(kUrl1)},
+      ChildProcessSecurityPolicy::IsolatedOriginSource::TEST,
       browser_context());
   contents()->NavigateAndCommit(kUrl1);
   SiteInstance* current_instance = main_test_rfh()->GetSiteInstance();

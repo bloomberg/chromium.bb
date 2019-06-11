@@ -57,9 +57,12 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // opting itself into isolation via a header.
   static bool AreDynamicIsolatedOriginsEnabled();
 
-  // Returns the origins to isolate.  See also AreIsolatedOriginsEnabled.
-  // This list applies globally to the whole browser in all profiles.
-  static std::vector<url::Origin> GetIsolatedOrigins();
+  // Applies isolated origins from all available sources, including the
+  // command-line switch, field trials, enterprise policy, and the embedder.
+  // See also AreIsolatedOriginsEnabled. These origins apply globally to the
+  // whole browser in all profiles.  This should be called once on browser
+  // startup.
+  static void ApplyGlobalIsolatedOrigins();
 
   // Records metrics about which site isolation command-line flags are present,
   // and sets up a timer to keep recording them every 24 hours.  This should be
@@ -73,7 +76,8 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   SiteIsolationPolicy();  // Not instantiable.
 
   // Gets isolated origins from cmdline and/or from field trial param.
-  static std::vector<url::Origin> GetIsolatedOriginsFromEnvironment();
+  static std::vector<url::Origin> GetIsolatedOriginsFromCommandLine();
+  static std::vector<url::Origin> GetIsolatedOriginsFromFieldTrial();
 
   // Records metrics about which site isolation command-line flags are present.
   static void RecordSiteIsolationFlagUsage();

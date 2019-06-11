@@ -193,7 +193,9 @@ void IsolateOriginsForTesting(
   }
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  policy->AddIsolatedOrigins(origins_to_isolate);
+  policy->AddIsolatedOrigins(
+      origins_to_isolate,
+      ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
 
   // Force a BrowsingInstance swap by navigating cross-site (the newly
   // isolated origin only affects *future* BrowsingInstances).

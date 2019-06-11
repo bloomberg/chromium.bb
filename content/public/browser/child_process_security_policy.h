@@ -220,6 +220,26 @@ class ChildProcessSecurityPolicy {
   // whether precursor of opaque origins also matches the process lock).
   virtual bool CanAccessDataForOrigin(int child_id, const GURL& url) = 0;
 
+  // Defines available sources of isolated origins.  This should be specified
+  // when adding isolated origins with the AddIsolatedOrigins() call below.
+  enum class IsolatedOriginSource {
+    // Used for origins that are hardcoded into the browser.
+    BUILT_IN,
+    // Used for origins that are specified from the command line, i.e.
+    // --isolate-origins.
+    COMMAND_LINE,
+    // Used for origins that are configured through field trials.
+    FIELD_TRIAL,
+    // Used for origins defined by an administrator (e.g., via enterprise
+    // policy).
+    POLICY,
+    // Used for origins that are isolated based on user-triggered runtime
+    // heuristics.
+    USER_TRIGGERED,
+    // Used for testing purposes.
+    TEST
+  };
+
   // Add |origins| to the list of origins that require process isolation.  When
   // making process model decisions for such origins, the scheme+host tuple
   // rather than scheme and eTLD+1 will be used.  SiteInstances for these
@@ -253,6 +273,9 @@ class ChildProcessSecurityPolicy {
   // isolated prior to calling this, it is ignored, and its threshold is not
   // updated.
   //
+  // |source| describes the context/reason for adding the new isolated origins;
+  // see comments on IsolatedOriginSource.
+  //
   // If |browser_context| is non-null, the new isolated origins added via this
   // function will apply only within that BrowserContext.  If |browser_context|
   // is null, the new isolated origins will apply globally in *all*
@@ -266,6 +289,7 @@ class ChildProcessSecurityPolicy {
   // ignored.
   virtual void AddIsolatedOrigins(
       const std::vector<url::Origin>& origins,
+      IsolatedOriginSource source,
       BrowserContext* browser_context = nullptr) = 0;
 
   // Semantically identical to the above, but accepts IsolatedOriginPatterns, a
@@ -274,11 +298,28 @@ class ChildProcessSecurityPolicy {
   // to be given their own isolated process.
   virtual void AddIsolatedOrigins(
       const std::vector<IsolatedOriginPattern>& patterns,
+      IsolatedOriginSource source,
       BrowserContext* browser_context = nullptr) = 0;
 
   // Returns true if |origin| is a globally (not per-profile) isolated origin.
   virtual bool IsGloballyIsolatedOriginForTesting(
       const url::Origin& origin) = 0;
+
+  // Returns the set of currently active isolated origins, optionally filtered
+  // by the source of how they were added and/or by BrowserContext.
+  //
+  // If |source| is provided, only origins that were added with the same source
+  // will be returned; if |source| is base::nullopt, origins from all sources
+  // will be returned.
+  //
+  // If |browser_context| is null, only globally applicable origins will be
+  // returned.  If |browser_context| is non-null, only origins that apply
+  // within that particular BrowserContext will be returned (note that this
+  // includes both matching per-profile isolated origins as well as globally
+  // applicable origins which apply to |browser_context| by definition).
+  virtual std::vector<url::Origin> GetIsolatedOrigins(
+      base::Optional<IsolatedOriginSource> source = base::nullopt,
+      BrowserContext* browser_context = nullptr) = 0;
 };
 
 }  // namespace content

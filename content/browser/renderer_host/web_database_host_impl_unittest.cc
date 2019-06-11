@@ -113,7 +113,9 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
       ConstructVfsFileName(incorrect_origin, db_name, suffix);
 
   auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  security_policy->AddIsolatedOrigins({correct_origin, incorrect_origin});
+  security_policy->AddIsolatedOrigins(
+      {correct_origin, incorrect_origin},
+      ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
 
   security_policy->LockToOrigin(IsolationContext(browser_context()),
                                 process_id(), correct_origin.GetURL());
@@ -198,7 +200,9 @@ TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
       ConstructVfsFileName(incorrect_origin, db_name, suffix);
 
   auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  security_policy->AddIsolatedOrigins({correct_origin, incorrect_origin});
+  security_policy->AddIsolatedOrigins(
+      {correct_origin, incorrect_origin},
+      ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
   security_policy->LockToOrigin(IsolationContext(browser_context()),
                                 process_id(), correct_origin.GetURL());
 
