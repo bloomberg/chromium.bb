@@ -120,6 +120,7 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/image_document.h"
@@ -11741,6 +11742,58 @@ TEST_F(WebFrameSimTest, ScrollFocusedIntoViewClipped) {
   // clip element to make sure the input is in view.
   Element* clip = GetDocument().getElementById("clip");
   EXPECT_GT(clip->scrollTop(), 0);
+}
+
+//  This test ensures that we scroll to the correct scale when the focused
+//  element has a selection rather than a carret.
+TEST_F(WebFrameSimTest, ScrollFocusedSelectionIntoView) {
+  UseAndroidSettings();
+  WebView().MainFrameWidget()->Resize(WebSize(400, 600));
+  WebView().EnableFakePageScaleAnimationForTesting(true);
+  WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        ::-webkit-scrollbar {
+          width: 0px;
+          height: 0px;
+        }
+        body, html {
+          margin: 0px;
+          width: 100%;
+          height: 100%;
+        }
+        input {
+          padding: 0;
+          width: 100px;
+          height: 20px;
+        }
+      </style>
+      <input type="text" id="target" value="test">
+  )HTML");
+
+  Compositor().BeginFrame();
+  WebView().AdvanceFocus(false);
+
+  HTMLInputElement* input =
+      ToHTMLInputElement(GetDocument().getElementById("target"));
+  input->select();
+
+  // Simulate the keyboard being shown and resizing the widget. Cause a scroll
+  // into view after.
+  ASSERT_EQ(WebView().FakePageScaleAnimationPageScaleForTesting(), 0.f);
+  WebFrameWidget* widget = WebView().MainFrameImpl()->FrameWidgetImpl();
+  widget->ScrollFocusedEditableElementIntoView();
+
+  // Make sure zoomed in but only up to a legible scale. The bounds are
+  // arbitrary and fuzzy since we don't specifically care to constrain the
+  // amount of zooming (that should be tested elsewhere), we just care that it
+  // zooms but not off to infinity.
+  EXPECT_GT(WebView().FakePageScaleAnimationPageScaleForTesting(), .75f);
+  EXPECT_LT(WebView().FakePageScaleAnimationPageScaleForTesting(), 2.f);
 }
 
 TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {

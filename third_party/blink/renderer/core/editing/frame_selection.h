@@ -202,6 +202,10 @@ class CORE_EXPORT FrameSelection final
   // Note: this updates styles and layout, use cautiously.
   bool ComputeAbsoluteBounds(IntRect& anchor, IntRect& focus) const;
 
+  // Computes the rect we should use when scrolling/zooming a selection into
+  // view.
+  IntRect ComputeRectToScroll(RevealExtentOption);
+
   void DidChangeFocus();
 
   SelectionInDOMTree GetSelectionInDOMTree() const;
@@ -299,8 +303,6 @@ class CORE_EXPORT FrameSelection final
   void FocusedOrActiveStateChanged();
 
   GranularityStrategy* GetGranularityStrategy();
-
-  IntRect ComputeRectToScroll(RevealExtentOption);
 
   void MoveRangeSelectionInternal(const SelectionInDOMTree&, TextGranularity);
 
