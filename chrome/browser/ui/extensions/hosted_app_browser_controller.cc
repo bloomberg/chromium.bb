@@ -325,7 +325,10 @@ void HostedAppBrowserController::OnReceivedInitialURL() {
   if (!browser()->bounds_overridden())
     return;
 
-  DCHECK(chrome::SavedBoundsAreContentBounds(browser()));
+  // The saved bounds will only be wrong if they are content bounds.
+  if (!chrome::SavedBoundsAreContentBounds(browser()))
+    return;
+
   // TODO(crbug.com/964825): Correctly set the window size at creation time.
   // This is currently not possible because the current url is not easily known
   // at popup construction time.

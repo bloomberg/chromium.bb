@@ -33,6 +33,7 @@
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ssl/ssl_browsertest_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -57,6 +58,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/controller_client.h"
+#include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -1169,6 +1171,33 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, PWASizeIsCorrectlyRestored) {
 
   Browser* new_browser = LaunchAppBrowser(app_);
   EXPECT_EQ(new_browser->window()->GetBounds(), bounds);
+}
+
+// Tests that desktop PWAs are reopened at the correct size.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+                       ReopenedPWASizeIsCorrectlyRestored) {
+  ASSERT_TRUE(https_server()->Start());
+
+  InstallSecurePWA();
+
+  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(app_browser_));
+  NavigateToURLAndWait(app_browser_, GetSecureAppURL());
+
+  gfx::Rect bounds = gfx::Rect(10, 10, 500, 500);
+  app_browser_->window()->SetBounds(bounds);
+  app_browser_->window()->Close();
+
+  content::WebContentsAddedObserver new_contents_observer;
+
+  sessions::TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(app_browser_->profile());
+  service->RestoreMostRecentEntry(nullptr);
+
+  content::WebContents* restored_web_contents =
+      new_contents_observer.GetWebContents();
+  Browser* restored_browser =
+      chrome::FindBrowserWithWebContents(restored_web_contents);
+  EXPECT_EQ(restored_browser->window()->GetBounds(), bounds);
 }
 
 // Tests that using window.open to create a popup window out of scope results in
