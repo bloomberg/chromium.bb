@@ -458,8 +458,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   ExpectNavigationChain({first_url, second_url});
 }
 
+// TODO(crbug.com/972929): The test is slow and times out often.
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       NavigationChainAlteredDestructively) {
+                       DISABLED_NavigationChainAlteredDestructively) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(CheckInitialState(0));
 
