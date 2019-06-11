@@ -34,6 +34,7 @@
 #include "media/gpu/image_processor_factory.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
+#include "media/gpu/v4l2/v4l2_stateful_workaround.h"
 #include "media/video/h264_parser.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
@@ -316,6 +317,9 @@ bool V4L2VideoDecodeAccelerator::CheckConfig(const Config& config) {
              << ", caps check failed: 0x" << std::hex << caps.capabilities;
     return false;
   }
+
+  workarounds_ =
+      CreateV4L2StatefulWorkarounds(V4L2Device::Type::kDecoder, config.profile);
 
   output_mode_ = config.output_mode;
 
@@ -980,6 +984,14 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(const uint8_t* data,
                                                       size_t size,
                                                       size_t* endpos) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+
+  for (auto& workaround : workarounds_) {
+    auto result = workaround->Apply(data, size, endpos);
+    if (result == V4L2StatefulWorkaround::Result::NotifyError) {
+      NOTIFY_ERROR(PLATFORM_FAILURE);
+      return false;
+    }
+  }
 
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
     // For H264, we need to feed HW one frame at a time.  This is going to take
@@ -1930,6 +1942,7 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
   output_queue_ = nullptr;
 
   decoder_h264_parser_ = nullptr;
+  workarounds_.clear();
 
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
