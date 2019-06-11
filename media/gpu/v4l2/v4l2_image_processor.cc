@@ -485,7 +485,8 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
   memset(&control, 0, sizeof(control));
   control.id = V4L2_CID_ALPHA_COMPONENT;
   control.value = 255;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_CTRL, &control);
+  if (device_->Ioctl(VIDIOC_S_CTRL, &control) != 0)
+    DVLOGF(4) << "V4L2_CID_ALPHA_COMPONENT is not supported";
 
   struct v4l2_rect visible_rect;
   visible_rect.left = 0;
