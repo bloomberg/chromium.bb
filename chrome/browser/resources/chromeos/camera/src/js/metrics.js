@@ -95,10 +95,12 @@ cca.metrics.launchType_ = function(ackMigrate) {
  * Returns event builder for the metrics type: capture.
  * @param {string} facingMode Camera facing-mode of the capture.
  * @param {number=} length Length of 1 minute buckets for captured video.
+ * @param {number} width The width of the capture resolution.
+ * @param {number} height The height of the capture resolution.
  * @return {analytics.EventBuilder}
  * @private
  */
-cca.metrics.captureType_ = function(facingMode, length) {
+cca.metrics.captureType_ = function(facingMode, length, [width, height]) {
   var condState = (states, cond) => {
     // Return the first existing state among the given states only if there is
     // no gate condition or the condition is met.
@@ -117,6 +119,7 @@ cca.metrics.captureType_ = function(facingMode, length) {
       .dimen(7, condState(['mic'], 'video-mode'))
       .dimen(8, condState(['max-wnd']))
       .dimen(9, condState(['tall']))
+      .dimen(10, `${width}x${height}`)
       .value(length || 0);
 };
 

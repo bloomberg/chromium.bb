@@ -87,7 +87,8 @@ cca.views.Camera = function(model, resolBroker) {
       this.stop_.bind(this), async (blob, isMotionPicture, filename) => {
         if (blob) {
           cca.metrics.log(
-              cca.metrics.Type.CAPTURE, this.facingMode_, blob.mins);
+              cca.metrics.Type.CAPTURE, this.facingMode_, blob.mins,
+              blob.resolution);
           try {
             await this.model_.savePicture(blob, isMotionPicture, filename);
           } catch (e) {

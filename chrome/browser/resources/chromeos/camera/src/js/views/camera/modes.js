@@ -509,6 +509,8 @@ cca.views.camera.Video.prototype.createVideoBlob_ = function() {
       var recordedBlob = new Blob(
           recordedChunks, {type: cca.views.camera.Video.VIDEO_MIMETYPE});
       recordedBlob.mins = this.recordTime_.stop();
+      const {width, height} = this.stream_.getVideoTracks()[0].getSettings();
+      recordedBlob.resolution = [width, height];
       recordedChunks = [];
       if (recordedBlob.size) {
         resolve(recordedBlob);
@@ -600,7 +602,10 @@ cca.views.camera.Photo.prototype.createPhotoBlob_ = async function() {
       imageHeight: caps.imageHeight.max,
     };
   }
-  return await this.imageCapture_.takePhoto(photoSettings);
+  const blob = await this.imageCapture_.takePhoto(photoSettings);
+  const image = await cca.util.blobToImage(blob);
+  blob.resolution = [image.width, image.height];
+  return blob;
 };
 
 /**
@@ -638,29 +643,24 @@ cca.views.camera.Square.prototype = {
 /**
  * Crops out maximum possible centered square from the image blob.
  * @param {Blob} blob
- * @return {Promise<Blob>} Promise with result cropped square image.
+ * @return {Blob} Promise with result cropped square image.
+ * @async
  */
-cca.views.camera.Square.prototype.cropSquare = function(blob) {
-  return new Promise((resolve, reject) => {
-    var img = new Image();
-    img.onload = () => {
-      let side = Math.min(img.width, img.height);
-      let canvas = document.createElement('canvas');
-      canvas.width = side;
-      canvas.height = side;
-      let ctx = canvas.getContext('2d');
-      ctx.drawImage(
-          img, Math.floor((img.width - side) / 2),
-          Math.floor((img.height - side) / 2), side, side, 0, 0, side, side);
-      try {
-        canvas.toBlob(resolve, 'image/jpeg');
-      } catch (e) {
-        reject(e);
-      }
-    };
-    img.onerror = () => reject(new Error('Failed to load unprocessed image'));
-    img.src = URL.createObjectURL(blob);
+cca.views.camera.Square.prototype.cropSquare = async function(blob) {
+  const img = await cca.util.blobToImage(blob);
+  let side = Math.min(img.width, img.height);
+  let canvas = document.createElement('canvas');
+  canvas.width = side;
+  canvas.height = side;
+  let ctx = canvas.getContext('2d');
+  ctx.drawImage(
+      img, Math.floor((img.width - side) / 2),
+      Math.floor((img.height - side) / 2), side, side, 0, 0, side, side);
+  const croppedBlob = await new Promise((resolve) => {
+    canvas.toBlob(resolve, 'image/jpeg');
   });
+  croppedBlob.resolution = blob.resolution;
+  return croppedBlob;
 };
 
 /**
@@ -732,6 +732,8 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
                        'error_msg_take_photo_failed');
       throw e;
     }
+    const image = await cca.util.blobToImage(blob);
+    blob.resolution = [image.width, image.height];
     if (!playSound) {
       playSound = true;
       cca.sound.play('#sound-shutter');
