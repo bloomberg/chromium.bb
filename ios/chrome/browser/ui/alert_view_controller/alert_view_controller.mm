@@ -225,6 +225,7 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
 
   if (self.title.length) {
     UILabel* titleLabel = [[UILabel alloc] init];
+    titleLabel.numberOfLines = 0;
     titleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     titleLabel.adjustsFontForContentSizeCategory = YES;
