@@ -350,9 +350,10 @@ void LoginScreenController::ShowParentAccessButton(bool show) {
 
 void LoginScreenController::ShowParentAccessWidget(
     const AccountId& child_account_id,
-    base::RepeatingCallback<void(bool success)> callback) {
-  parent_access_widget_ =
-      std::make_unique<ash::ParentAccessWidget>(child_account_id, callback);
+    base::RepeatingCallback<void(bool success)> callback,
+    ParentAccessRequestReason reason) {
+  parent_access_widget_ = std::make_unique<ash::ParentAccessWidget>(
+      child_account_id, callback, reason);
 }
 
 void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {
