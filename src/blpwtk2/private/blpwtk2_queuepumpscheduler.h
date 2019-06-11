@@ -35,7 +35,7 @@ namespace blpwtk2 {
 
 class QueuePumpScheduler final : public MainMessagePump::Scheduler {
     std::vector<std::pair<std::string,int>> d_tunables;
-    unsigned int d_timerCount = 0;
+    unsigned int d_totalBudget = 0;
 
   public:
     static const std::string& name();
