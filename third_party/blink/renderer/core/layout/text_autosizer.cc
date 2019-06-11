@@ -569,11 +569,10 @@ bool TextAutosizer::HasLayoutInlineSizeChanged() const {
   return new_inline_size != page_info_.shared_info_.main_frame_layout_width;
 }
 
-void TextAutosizer::UpdatePageInfoInAllFrames() {
-  DCHECK(!document_->GetFrame() || document_->GetFrame()->IsMainFrame());
-
-  for (Frame* frame = document_->GetFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
+// Static.
+void TextAutosizer::UpdatePageInfoInAllFrames(Frame* main_frame) {
+  DCHECK(main_frame && main_frame == main_frame->Tree().Top());
+  for (Frame* frame = main_frame; frame; frame = frame->Tree().TraverseNext()) {
     auto* local_frame = DynamicTo<LocalFrame>(frame);
     if (!local_frame)
       continue;
@@ -586,17 +585,18 @@ void TextAutosizer::UpdatePageInfoInAllFrames() {
       text_autosizer->UpdatePageInfo();
 
       // Share the page information from the local mainframe with remote ones.
+      // TODO(wjmaclean): Refactor this code into a non-static class function
+      // called UpdateWebTextAutosizerPageInfoIfNecessary().
       if (frame->IsMainFrame()) {
+        const PageInfo& page_info = text_autosizer->page_info_;
         const WebTextAutosizerPageInfo& old_page_info =
-            document_->GetPage()->TextAutosizerPageInfo();
-        if (page_info_.shared_info_ != old_page_info) {
-          document_->GetPage()
-              ->GetChromeClient()
-              .DidUpdateTextAutosizerPageInfo(page_info_.shared_info_);
+            document->GetPage()->TextAutosizerPageInfo();
+        if (page_info.shared_info_ != old_page_info) {
+          document->GetPage()->GetChromeClient().DidUpdateTextAutosizerPageInfo(
+              page_info.shared_info_);
           // Remember the RemotePageSettings in the mainframe's renderer so we
           // know when they change.
-          document_->GetPage()->SetTextAutosizePageInfo(
-              page_info_.shared_info_);
+          document->GetPage()->SetTextAutosizePageInfo(page_info.shared_info_);
         }
       }
     }
@@ -619,40 +619,40 @@ void TextAutosizer::UpdatePageInfo() {
     bool horizontal_writing_mode =
         IsHorizontalWritingMode(layout_view->StyleRef().GetWritingMode());
 
-    // FIXME: With out-of-process iframes, the top frame can be remote and
-    // doesn't have sizing information. Just return if this is the case.
     Frame& frame = document_->GetFrame()->Tree().Top();
-    if (frame.IsRemoteFrame())
-      return;
+    if (frame.IsRemoteFrame()) {
+      // When the frame is remote, the local main frame is responsible for
+      // computing shared_info_ and passing them down to the OOPIF renderers.
+      page_info_.shared_info_ = document_->GetPage()->TextAutosizerPageInfo();
+    } else {
+      LocalFrame& main_frame = To<LocalFrame>(frame);
+      IntSize frame_size =
+          document_->GetSettings()->TextAutosizingWindowSizeOverride();
+      if (frame_size.IsEmpty())
+        frame_size = WindowSize();
 
-    LocalFrame& main_frame = To<LocalFrame>(frame);
-    IntSize frame_size =
-        document_->GetSettings()->TextAutosizingWindowSizeOverride();
-    if (frame_size.IsEmpty())
-      frame_size = WindowSize();
+      page_info_.shared_info_.main_frame_width =
+          horizontal_writing_mode ? frame_size.Width() : frame_size.Height();
 
-    page_info_.shared_info_.main_frame_width =
-        horizontal_writing_mode ? frame_size.Width() : frame_size.Height();
+      page_info_.shared_info_.main_frame_layout_width =
+          GetLayoutInlineSize(*document_, *main_frame.View());
 
-    page_info_.shared_info_.main_frame_layout_width =
-        GetLayoutInlineSize(*document_, *main_frame.View());
-
-    // TODO(pdr): Accessibility should be moved out of the text autosizer. See:
-    // crbug.com/645717.
+      // If the page has a meta viewport or @viewport, don't apply the device
+      // scale adjustment.
+      if (!main_frame.GetDocument()
+               ->GetViewportData()
+               .GetViewportDescription()
+               .IsSpecifiedByAuthor()) {
+        page_info_.shared_info_.device_scale_adjustment =
+            document_->GetSettings()->GetDeviceScaleAdjustment();
+      } else {
+        page_info_.shared_info_.device_scale_adjustment = 1.0f;
+      }
+    }
+    // TODO(pdr): Accessibility should be moved out of the text autosizer.
+    // See: crbug.com/645717.
     page_info_.accessibility_font_scale_factor_ =
         document_->GetSettings()->GetAccessibilityFontScaleFactor();
-
-    // If the page has a meta viewport or @viewport, don't apply the device
-    // scale adjustment.
-    if (!main_frame.GetDocument()
-             ->GetViewportData()
-             .GetViewportDescription()
-             .IsSpecifiedByAuthor()) {
-      page_info_.shared_info_.device_scale_adjustment =
-          document_->GetSettings()->GetDeviceScaleAdjustment();
-    } else {
-      page_info_.shared_info_.device_scale_adjustment = 1.0f;
-    }
 
     // TODO(pdr): pageNeedsAutosizing should take into account whether
     // text-size-adjust is used anywhere on the page because that also needs to
@@ -1423,6 +1423,10 @@ TextAutosizer::TableLayoutScope::TableLayoutScope(LayoutTable* table)
 
 TextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
     : main_frame_(page->DeprecatedLocalMainFrame()) {
+  // TODO(wjmaclean): see if we need to try and extend deferred updates to
+  // renderers for remote main frames or not. For now, it's safe to assume
+  // main_frame_ will be local, see WebViewImpl::ResizeViewWhileAnchored().
+  DCHECK(main_frame_);
   if (TextAutosizer* text_autosizer =
           main_frame_->GetDocument()->GetTextAutosizer()) {
     DCHECK(!text_autosizer->update_page_info_deferred_);
@@ -1464,7 +1468,7 @@ TextAutosizer::DeferUpdatePageInfo::~DeferUpdatePageInfo() {
           main_frame_->GetDocument()->GetTextAutosizer()) {
     DCHECK(text_autosizer->update_page_info_deferred_);
     text_autosizer->update_page_info_deferred_ = false;
-    text_autosizer->UpdatePageInfoInAllFrames();
+    TextAutosizer::UpdatePageInfoInAllFrames(main_frame_);
   }
 }
 

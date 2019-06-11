@@ -44,6 +44,7 @@
 namespace blink {
 
 class Document;
+class Frame;
 class IntSize;
 class LayoutBlock;
 class LayoutObject;
@@ -67,9 +68,12 @@ class CORE_EXPORT TextAutosizer final
   static float ComputeAutosizedFontSize(float computed_size,
                                         float multiplier,
                                         float effective_zoom);
+  // Static to allow starting updates from the frame tree root when it's a
+  // remote frame, though this function is called for all main frames, local
+  // or remote.
+  static void UpdatePageInfoInAllFrames(Frame* root_frame);
 
   bool HasLayoutInlineSizeChanged() const;
-  void UpdatePageInfoInAllFrames();
   void UpdatePageInfo();
   void Record(LayoutBlock*);
   void Record(LayoutText*);

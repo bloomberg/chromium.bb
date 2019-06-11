@@ -64,13 +64,6 @@ crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash ]
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 crbug.com/771003 virtual/blink-cors/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
-# Tests temporarily disabled with Site Isolation - known differences in product
-# behavior (either accepted for the long-term, or for the short-term):
-# TODO(lukasza, alexmos): Burn down this list.
-# Text auto-sizing:
-crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure Crash ]
-crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure Crash ]
-
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]

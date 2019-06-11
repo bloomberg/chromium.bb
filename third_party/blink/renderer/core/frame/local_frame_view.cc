@@ -856,7 +856,7 @@ void LocalFrameView::UpdateLayout() {
     if (frame_->IsMainFrame()) {
       if (auto* text_autosizer = frame_->GetDocument()->GetTextAutosizer()) {
         if (text_autosizer->HasLayoutInlineSizeChanged())
-          text_autosizer->UpdatePageInfoInAllFrames();
+          text_autosizer->UpdatePageInfoInAllFrames(frame_);
       }
     }
 
@@ -3511,11 +3511,8 @@ void LocalFrameView::SetLayoutSizeInternal(const IntSize& size) {
     return;
   layout_size_ = size;
 
-  if (frame_->IsMainFrame() && frame_->GetDocument()) {
-    if (TextAutosizer* text_autosizer =
-            frame_->GetDocument()->GetTextAutosizer())
-      text_autosizer->UpdatePageInfoInAllFrames();
-  }
+  if (frame_->IsMainFrame() && frame_->GetDocument())
+    TextAutosizer::UpdatePageInfoInAllFrames(frame_);
 
   SetNeedsLayout();
 }
