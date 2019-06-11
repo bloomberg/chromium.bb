@@ -44358,6 +44358,7 @@ Called by update_net_trust_anchors.py.-->
       label="Remaining download time does not meet the requirement."/>
   <int value="8"
       label="HTTP method or url scheme does not meet the requirement."/>
+  <int value="9" label="Unknown range support from the response header."/>
 </enum>
 
 <enum name="ParentFrameKnown">
