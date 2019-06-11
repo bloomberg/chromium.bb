@@ -1405,6 +1405,11 @@ function injectPromo(promo) {
       ntpApiHandle.logEvent(LOG_TYPE.NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED);
     };
   }
+
+  // The the MV tiles are already loaded show the promo immediately.
+  if (tilesAreLoaded) {
+    promoContainer.classList.add(CLASSES.SHOW_ELEMENT);
+  }
 }
 
 
