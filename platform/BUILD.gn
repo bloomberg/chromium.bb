@@ -14,6 +14,8 @@ source_set("platform") {
     "api/network_interface.h",
     "api/network_runner.h",
     "api/network_waiter.h",
+    "api/scoped_wake_lock.cc",
+    "api/scoped_wake_lock.h",
     "api/socket.h",
     "api/task_runner.h",
     "api/time.h",
@@ -65,6 +67,8 @@ source_set("platform") {
         "posix/event_waiter.cc",
         "posix/network_waiter.cc",
         "posix/network_waiter.h",
+        "posix/scoped_wake_lock.cc",
+        "posix/scoped_wake_lock.h",
         "posix/udp_socket.cc",
         "posix/udp_socket.h",
       ]
