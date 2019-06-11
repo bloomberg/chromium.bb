@@ -1,5 +1,4 @@
 # For build parallelism configs.
-per-file cr-buildbucket.cfg=shinyak@chromium.org
 per-file cr-buildbucket.cfg=sque@chromium.org
 per-file cr-buildbucket.cfg=tikuta@chromium.org
 per-file cr-buildbucket.cfg=ukai@chromium.org
