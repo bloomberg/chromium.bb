@@ -193,7 +193,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns an extension resource object. |relative_path| should be UTF8
   // encoded.
-  ExtensionResource GetResource(const std::string& relative_path) const;
+  ExtensionResource GetResource(base::StringPiece relative_path) const;
 
   // As above, but with |relative_path| following the file system's encoding.
   ExtensionResource GetResource(const base::FilePath& relative_path) const;
