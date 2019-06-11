@@ -684,6 +684,9 @@ bool BluetoothPrivateRecordReconnectionFunction::CreateParams() {
 void BluetoothPrivateRecordReconnectionFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   base::UmaHistogramBoolean(
+      "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result",
+      params_->success);
+  base::UmaHistogramBoolean(
       "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result.Settings",
       params_->success);
 }

@@ -37,6 +37,8 @@ const int kMaximumDevicesShown = 50;
 
 void RecordUserInitiatedReconnectionAttemptResult(bool success) {
   UMA_HISTOGRAM_BOOLEAN(
+      "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result", success);
+  UMA_HISTOGRAM_BOOLEAN(
       "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result.SystemTray",
       success);
 }
