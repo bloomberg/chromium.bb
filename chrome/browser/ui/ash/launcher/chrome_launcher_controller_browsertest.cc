@@ -224,7 +224,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
         service->GetExtensionById(last_loaded_extension_id(), false);
     EXPECT_TRUE(extension);
 
-    OpenApplication(AppLaunchParams(profile(), extension, container,
+    OpenApplication(AppLaunchParams(profile(), extension->id(), container,
                                     disposition, extensions::SOURCE_TEST));
     return extension;
   }
@@ -1176,13 +1176,14 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   const Extension* extension =
       LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
                              WindowOpenDisposition::NEW_WINDOW);
+  ASSERT_TRUE(extension);
 
   // No new browser should get detected, even though one more is running.
   EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
   OpenApplication(AppLaunchParams(
-      profile(), extension, extensions::LAUNCH_CONTAINER_TAB,
+      profile(), extension->id(), extensions::LAUNCH_CONTAINER_TAB,
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
 
   // A new browser should get detected and one more should be running.

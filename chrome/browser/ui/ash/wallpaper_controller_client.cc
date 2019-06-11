@@ -490,7 +490,7 @@ void WallpaperControllerClient::OpenWallpaperPicker() {
     return;
 
   OpenApplication(AppLaunchParams(
-      profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
+      profile, extension->id(), extensions::LAUNCH_CONTAINER_WINDOW,
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
 }
 

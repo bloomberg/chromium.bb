@@ -945,7 +945,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest, PWAsCanViewLaunchParams) {
 
   const extensions::Extension* app = InstallBookmarkApp(web_app_info);
 
-  AppLaunchParams params(browser()->profile(), app,
+  AppLaunchParams params(browser()->profile(), app->id(),
                          extensions::LaunchContainer::LAUNCH_CONTAINER_WINDOW,
                          WindowOpenDisposition::NEW_WINDOW,
                          extensions::AppLaunchSource::SOURCE_FILE_HANDLER);

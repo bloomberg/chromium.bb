@@ -453,7 +453,7 @@ void BookmarkAppExperimentalNavigationThrottle::OpenBookmarkApp(
   content::BrowserContext* browser_context = source->GetBrowserContext();
   Profile* profile = Profile::FromBrowserContext(browser_context);
   AppLaunchParams launch_params(
-      profile, bookmark_app.get(), extensions::LAUNCH_CONTAINER_WINDOW,
+      profile, bookmark_app->id(), extensions::LAUNCH_CONTAINER_WINDOW,
       WindowOpenDisposition::CURRENT_TAB, extensions::SOURCE_URL_HANDLER);
   launch_params.override_url = navigation_handle()->GetURL();
   launch_params.opener = source->GetOpener();
