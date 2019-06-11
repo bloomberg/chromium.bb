@@ -166,6 +166,36 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                                    kOnboardingWelcomeResources[i].value);
     }
 
+#if defined(GOOGLE_CHROME_BUILD)
+    // Load unscaled images.
+    html_source->AddResourcePath("images/module_icons/google_dark.svg",
+                                 IDR_WELCOME_MODULE_ICONS_GOOGLE_DARK);
+    html_source->AddResourcePath("images/module_icons/google_light.svg",
+                                 IDR_WELCOME_MODULE_ICONS_GOOGLE_LIGHT);
+    html_source->AddResourcePath("images/module_icons/set_default_dark.svg",
+                                 IDR_WELCOME_MODULE_ICONS_SET_DEFAULT_DARK);
+    html_source->AddResourcePath("images/module_icons/set_default_light.svg",
+                                 IDR_WELCOME_MODULE_ICONS_SET_DEFAULT_LIGHT);
+    html_source->AddResourcePath("images/module_icons/wallpaper_dark.svg",
+                                 IDR_WELCOME_MODULE_ICONS_WALLPAPER_DARK);
+    html_source->AddResourcePath("images/module_icons/wallpaper_light.svg",
+                                 IDR_WELCOME_MODULE_ICONS_WALLPAPER_LIGHT);
+    html_source->AddResourcePath("images/ntp_thumbnails/art.jpg",
+                                 IDR_WELCOME_NTP_THUMBNAILS_ART);
+    html_source->AddResourcePath("images/ntp_thumbnails/cityscape.jpg",
+                                 IDR_WELCOME_NTP_THUMBNAILS_CITYSCAPE);
+    html_source->AddResourcePath("images/ntp_thumbnails/earth.jpg",
+                                 IDR_WELCOME_NTP_THUMBNAILS_EARTH);
+    html_source->AddResourcePath("images/ntp_thumbnails/geometric_shapes.jpg",
+                                 IDR_WELCOME_NTP_THUMBNAILS_GEOMETRIC_SHAPES);
+    html_source->AddResourcePath("images/ntp_thumbnails/landscape.jpg",
+                                 IDR_WELCOME_NTP_THUMBNAILS_LANDSCAPE);
+    html_source->AddResourcePath("images/set_default_dark.svg",
+                                 IDR_WELCOME_SET_DEFAULT_DARK);
+    html_source->AddResourcePath("images/set_default_light.svg",
+                                 IDR_WELCOME_SET_DEFAULT_LIGHT);
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
     // chrome://welcome
     html_source->SetDefaultResource(
         IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);
