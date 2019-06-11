@@ -5,7 +5,7 @@ variables:
   DEBIAN_VERSION: stretch
   DEBIAN_EXEC: 'bash .gitlab-ci/debian-install.sh'
 
-  DEBIAN_TAG: '2019-03-28.0'
+  DEBIAN_TAG: '2019-06-14.0'
   DEBIAN_CONTAINER_IMAGE: $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$DEBIAN_TAG
 
 
@@ -51,7 +51,7 @@ build-native-meson:
   script:
   - export PATH=~/.local/bin:$PATH
   - cd "$BUILDDIR"
-  - meson --prefix="$PREFIX" -Dsimple-dmabuf-drm=intel -Dwerror=true ..
+  - meson --prefix="$PREFIX" -Dsimple-dmabuf-drm=intel -Dwerror=true -Ddoc=true ..
   - ninja -k0
   - ninja install
   - ninja test
