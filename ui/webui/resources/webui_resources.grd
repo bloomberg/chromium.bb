@@ -161,6 +161,13 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_PROMISE_RESOLVER"
                  file="html/promise_resolver.html" type="chrome_html"
                  compress="gzip" />
+
+      <if expr="chromeos">
+        <structure name="IDR_WEBUI_HTML_CHROMEOS_ONC_MOJO"
+                   file="html/chromeos/onc_mojo.html" type="chrome_html"
+                   compress="gzip" />
+      </if>
+
       <structure name="IDR_WEBUI_HTML_CR"
                  file="html/cr.html" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_HTML_CR_EVENT_TARGET"
@@ -257,6 +264,13 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_PROMISE_RESOLVER"
                  file="js/promise_resolver.js" type="chrome_html"
                  compress="gzip" />
+
+      <if expr="chromeos">
+        <structure name="IDR_WEBUI_JS_CHROMEOS_ONC_MOJO"
+                   file="js/chromeos/onc_mojo.js" type="chrome_html"
+                   compress="gzip" />
+      </if>
+
       <structure name="IDR_WEBUI_JS_CR"
                  file="js/cr.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_EVENT_TARGET"
