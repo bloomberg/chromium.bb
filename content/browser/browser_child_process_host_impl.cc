@@ -568,13 +568,6 @@ void BrowserChildProcessHostImpl::CreateMetricsAllocator() {
       break;
 
     default:
-      // Report new processes. "Custom" ones are renumbered to 1000+ so that
-      // they won't conflict with any standard ones in the future.
-      int process_type = data_.process_type;
-      if (process_type >= PROCESS_TYPE_CONTENT_END)
-        process_type += 1000 - PROCESS_TYPE_CONTENT_END;
-      base::UmaHistogramSparse(
-          "UMA.SubprocessMetricsProvider.UntrackedProcesses", process_type);
       return;
   }
 
