@@ -1519,6 +1519,26 @@ TEST_P(AnimationCompositorAnimationsTest,
 }
 
 TEST_P(AnimationCompositorAnimationsTest,
+       CreateCustomFloatPropertyAnimationWithNonAsciiName) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
+
+  String property_name = "--東京都";
+  RegisterProperty(GetDocument(), property_name, "<number>", "0", false);
+  SetCustomProperty(property_name, "10");
+
+  StringKeyframeEffectModel* effect = CreateKeyframeEffectModel(
+      CreateReplaceOpKeyframe(property_name, "10", 0),
+      CreateReplaceOpKeyframe(property_name, "20", 1.0));
+
+  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+      ConvertToCompositorAnimation(*effect);
+  EXPECT_EQ(compositor_target_property::CSS_CUSTOM_PROPERTY,
+            keyframe_model->TargetProperty());
+  EXPECT_EQ(keyframe_model->GetCustomPropertyNameForTesting(),
+            property_name.Utf8().data());
+}
+
+TEST_P(AnimationCompositorAnimationsTest,
        CreateSimpleCustomFloatPropertyAnimation) {
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
 

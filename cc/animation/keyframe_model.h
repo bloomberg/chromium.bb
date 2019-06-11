@@ -57,11 +57,15 @@ class CC_ANIMATION_EXPORT KeyframeModel {
 
   enum class Phase { BEFORE, ACTIVE, AFTER };
 
+  // The |custom_property_name| has a default value of an empty string,
+  // indicating that the animated property is a native property. When it is an
+  // animated custom property, it should be the property name.
   static std::unique_ptr<KeyframeModel> Create(
       std::unique_ptr<AnimationCurve> curve,
       int keyframe_model_id,
       int group_id,
-      int target_property_id);
+      int target_property_id,
+      const std::string& custom_property_name = "");
 
   std::unique_ptr<KeyframeModel> CreateImplInstance(
       RunState initial_run_state) const;
@@ -177,11 +181,16 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   KeyframeModel::Phase CalculatePhaseForTesting(
       base::TimeDelta local_time) const;
 
+  const std::string& GetCustomPropertyNameForTesting() {
+    return custom_property_name_;
+  }
+
  private:
   KeyframeModel(std::unique_ptr<AnimationCurve> curve,
                 int keyframe_model_id,
                 int group_id,
-                int target_property_id);
+                int target_property_id,
+                const std::string& custom_property_name);
 
   // Return local time for this keyframe model given the absolute monotonic
   // time.
@@ -281,6 +290,10 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   // longer affect any elements, and are deleted.
   bool affects_active_elements_;
   bool affects_pending_elements_;
+
+  // Name of the animated custom property. Empty if it is an animated native
+  // property.
+  std::string custom_property_name_;
 };
 
 }  // namespace cc

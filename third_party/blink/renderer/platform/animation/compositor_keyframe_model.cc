@@ -24,15 +24,16 @@ CompositorKeyframeModel::CompositorKeyframeModel(
     const CompositorAnimationCurve& curve,
     compositor_target_property::Type target_property,
     int keyframe_model_id,
-    int group_id) {
+    int group_id,
+    const AtomicString& custom_property_name) {
   if (!keyframe_model_id)
     keyframe_model_id = AnimationIdProvider::NextKeyframeModelId();
   if (!group_id)
     group_id = AnimationIdProvider::NextGroupId();
 
-  keyframe_model_ =
-      KeyframeModel::Create(curve.CloneToAnimationCurve(), keyframe_model_id,
-                            group_id, target_property);
+  keyframe_model_ = KeyframeModel::Create(
+      curve.CloneToAnimationCurve(), keyframe_model_id, group_id,
+      target_property, custom_property_name.Utf8().data());
 }
 
 CompositorKeyframeModel::~CompositorKeyframeModel() = default;

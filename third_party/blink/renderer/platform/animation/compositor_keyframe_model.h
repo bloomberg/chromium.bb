@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace cc {
 class KeyframeModel;
@@ -32,10 +33,14 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
   using Direction = cc::KeyframeModel::Direction;
   using FillMode = cc::KeyframeModel::FillMode;
 
+  // The |custom_property_name| has a default value of an empty string,
+  // indicating that the animated property is a native property. When it is an
+  // animated custom property, it should be the property name.
   CompositorKeyframeModel(const CompositorAnimationCurve&,
                           compositor_target_property::Type,
                           int keyframe_model_id,
-                          int group_id);
+                          int group_id,
+                          const AtomicString& custom_property_name = "");
   ~CompositorKeyframeModel();
 
   // An id must be unique.
@@ -73,6 +78,10 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
   std::unique_ptr<cc::KeyframeModel> ReleaseCcKeyframeModel();
 
   std::unique_ptr<CompositorFloatAnimationCurve> FloatCurveForTesting() const;
+
+  const std::string& GetCustomPropertyNameForTesting() const {
+    return keyframe_model_->GetCustomPropertyNameForTesting();
+  }
 
  private:
   std::unique_ptr<cc::KeyframeModel> keyframe_model_;

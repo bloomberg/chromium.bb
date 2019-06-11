@@ -649,6 +649,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
   PropertyHandleSet properties = effect.Properties();
   DCHECK(!properties.IsEmpty());
   for (const auto& property : properties) {
+    AtomicString custom_property_name = "";
     // If the animation duration is infinite, it doesn't make sense to scale
     // the keyframe offset, so use a scale of 1.0. This is connected to
     // the known issue of how the Web Animations spec handles infinite
@@ -701,6 +702,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
       }
       case CSSPropertyID::kVariable: {
         DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
+        custom_property_name = property.CustomPropertyName();
         target_property = compositor_target_property::CSS_CUSTOM_PROPERTY;
         // TODO(kevers): Extend support to non-float types.
         auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
@@ -717,7 +719,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
     DCHECK(curve.get());
 
     auto keyframe_model = std::make_unique<CompositorKeyframeModel>(
-        *curve, target_property, 0, group);
+        *curve, target_property, 0, group, std::move(custom_property_name));
 
     if (start_time)
       keyframe_model->SetStartTime(start_time.value());
