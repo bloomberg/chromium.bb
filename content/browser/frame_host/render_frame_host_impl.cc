@@ -1039,6 +1039,9 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
         true /* is_frame_being_destroyed */, approx_renderer_start_time,
         base::TimeTicks::Now());
   }
+
+  if (prefetched_signed_exchange_cache_)
+    prefetched_signed_exchange_cache_->RecordHistograms();
 }
 
 int RenderFrameHostImpl::GetRoutingID() {
@@ -4974,6 +4977,13 @@ void RenderFrameHostImpl::CommitNavigation(
     }
 
     if (factory_bundle_for_prefetch) {
+      if (prefetched_signed_exchange_cache_) {
+        prefetched_signed_exchange_cache_->RecordHistograms();
+        // Reset |prefetched_signed_exchange_cache_|, not to reuse the cached
+        // signed exchange which was prefetched in the previous page.
+        prefetched_signed_exchange_cache_.reset();
+      }
+
       // Also set-up URLLoaderFactory for prefetch using the same loader
       // factories. TODO(kinuko): Consider setting this up only when prefetch
       // is used. Currently we have this here to make sure we have non-racy

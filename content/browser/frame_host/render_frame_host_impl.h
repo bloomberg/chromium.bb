@@ -937,7 +937,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   }
 
   // Returns a PrefetchedSignedExchangeCache which is attached to |this| iff
-  // SignedExchangeSubresourcePrefetch feature is enabled.
+  // SignedExchangeSubresourcePrefetch feature or
+  // SignedExchangePrefetchCacheForNavigations feature is enabled.
   scoped_refptr<PrefetchedSignedExchangeCache>
   EnsurePrefetchedSignedExchangeCache();
 
