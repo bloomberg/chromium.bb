@@ -25,6 +25,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/navigation_policy.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/request_peer.h"
@@ -64,7 +65,7 @@ void CheckSchemeForReferrerPolicy(const network::ResourceRequest& request) {
            net::URLRequest::
                CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE) &&
       request.referrer.SchemeIsCryptographic() &&
-      !request.url.SchemeIsCryptographic()) {
+      !IsOriginSecure(request.url)) {
     LOG(FATAL) << "Trying to send secure referrer for insecure request "
                << "without an appropriate referrer policy.\n"
                << "URL = " << request.url << "\n"
