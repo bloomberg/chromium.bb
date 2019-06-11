@@ -87,8 +87,9 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     undo_button_ids = IDS_CANCEL;
     consent_feature_ = consent_auditor::Feature::CHROME_UNIFIED_CONSENT;
   } else {
-    source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);
-    source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
+    source->SetDefaultResource(IDR_SYNC_DISABLED_CONFIRMATION_HTML);
+    source->AddResourcePath("sync_disabled_confirmation.js",
+                            IDR_SYNC_DISABLED_CONFIRMATION_JS);
     AddStringResource(source, "syncDisabledConfirmationDetails",
                       IDS_SYNC_DISABLED_CONFIRMATION_DETAILS);
 
