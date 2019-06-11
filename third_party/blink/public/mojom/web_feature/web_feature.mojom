@@ -2192,7 +2192,6 @@ enum WebFeature {
   kV8UserActivation_HasBeenActive_AttributeGetter = 2785,
   kV8UserActivation_IsActive_AttributeGetter = 2786,
   kTextEncoderEncodeInto = 2787,
-  kInvalidBasicCardMethodData = 2788,
   kClientHintsUA = 2789,
   kClientHintsUAArch = 2790,
   kClientHintsUAPlatform = 2791,
