@@ -495,10 +495,12 @@ void SkGlyphRunListPainter::drawGlyphRunAsBMPWithPathFallback(
         }
     }
 
-    if (glyphCount > 0) {
-        mapping.mapPoints(fPositions, glyphCount);
-        processMasks(SkSpan<const GlyphAndPos>{fGlyphPos, SkTo<size_t>(glyphCount)}, strike.get());
-    }
+    // Backport: https://skia.googlesource.com/skia/+/937d9674571ecbed94b83bfd9d04f6d097d96c6d%5E%21/#F2
+    // processDeviceMasks must be called even if there are no glyphs to make sure runs
+    // are set correctly.
+    mapping.mapPoints(fPositions, glyphCount);
+    processMasks(SkSpan<const GlyphAndPos>{fGlyphPos, SkTo<size_t>(glyphCount)}, strike.get());
+
     if (!fPaths.empty()) {
         processPaths(SkSpan<const GlyphAndPos>{fPaths});
     }
