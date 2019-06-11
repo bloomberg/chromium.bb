@@ -11,6 +11,9 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -104,8 +107,8 @@ bool MediaStreamAudioSource::ConnectToTrack(
   if (is_stopped_)
     return false;
 
-  track->Start(base::Bind(&MediaStreamAudioSource::StopAudioDeliveryTo,
-                          weak_factory_.GetWeakPtr(), track));
+  track->Start(WTF::Bind(&MediaStreamAudioSource::StopAudioDeliveryTo,
+                         weak_factory_.GetWeakPtr(), WTF::Unretained(track)));
   DVLOG(1) << "Adding MediaStreamAudioTrack@" << track
            << " as a consumer of MediaStreamAudioSource@" << this << '.';
   deliverer_.AddConsumer(track);
@@ -196,16 +199,18 @@ void MediaStreamAudioSource::StopSourceOnError(const std::string& why) {
   VLOG(1) << why;
 
   // Stop source when error occurs.
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WebPlatformMediaStreamSource::StopSource, GetWeakPtr()));
+  PostCrossThreadTask(
+      *task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&WebPlatformMediaStreamSource::StopSource,
+                          GetWeakPtr()));
 }
 
 void MediaStreamAudioSource::SetMutedState(bool muted_state) {
   DVLOG(3) << "MediaStreamAudioSource::SetMutedState state=" << muted_state;
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&WebPlatformMediaStreamSource::SetSourceMuted,
-                                GetWeakPtr(), muted_state));
+  PostCrossThreadTask(
+      *task_runner_, FROM_HERE,
+      WTF::CrossThreadBindOnce(&WebPlatformMediaStreamSource::SetSourceMuted,
+                               GetWeakPtr(), muted_state));
 }
 
 base::SingleThreadTaskRunner* MediaStreamAudioSource::GetTaskRunner() const {

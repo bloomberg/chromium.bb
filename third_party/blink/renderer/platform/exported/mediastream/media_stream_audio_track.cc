@@ -96,12 +96,12 @@ void* MediaStreamAudioTrack::GetClassIdentifier() const {
   return nullptr;
 }
 
-void MediaStreamAudioTrack::Start(const base::Closure& stop_callback) {
+void MediaStreamAudioTrack::Start(base::OnceClosure stop_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!stop_callback.is_null());
   DCHECK(stop_callback_.is_null());
   DVLOG(1) << "Starting MediaStreamAudioTrack@" << this << '.';
-  stop_callback_ = stop_callback;
+  stop_callback_ = std::move(stop_callback);
 }
 
 void MediaStreamAudioTrack::StopAndNotify(base::OnceClosure callback) {

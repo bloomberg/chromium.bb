@@ -81,7 +81,7 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioTrack
   // Called by MediaStreamAudioSource to notify this track that the flow of
   // audio data has started from the source. |stop_callback| is run by Stop()
   // when the source must halt the flow of audio data to this track.
-  void Start(const base::Closure& stop_callback);
+  void Start(base::OnceClosure stop_callback);
 
   // Called by the MediaStreamAudioDeliverer to notify this track of an audio
   // format change. In turn, all WebMediaStreamAudioSinks will be notified
@@ -100,7 +100,7 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioTrack
   THREAD_CHECKER(thread_checker_);
 
   // Callback provided to Start() which is run when the audio flow must halt.
-  base::Closure stop_callback_;
+  base::OnceClosure stop_callback_;
 
   // Manages sinks connected to this track and the audio format and data flow.
   MediaStreamAudioDeliverer<WebMediaStreamAudioSink> deliverer_;
