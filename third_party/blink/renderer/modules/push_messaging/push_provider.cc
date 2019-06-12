@@ -8,9 +8,8 @@
 
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_type_converters.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_utils.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
@@ -19,40 +18,6 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
-
-namespace {
-
-WebPushError::ErrorType PushErrorTypeToWebPushErrorType(
-    mojom::PushErrorType error_type) {
-  WebPushError::ErrorType web_push_error_type;
-  switch (error_type) {
-    case mojom::PushErrorType::ABORT:
-      web_push_error_type = WebPushError::ErrorType::kErrorTypeAbort;
-      break;
-    case mojom::PushErrorType::NETWORK:
-      web_push_error_type = WebPushError::ErrorType::kErrorTypeNetwork;
-      break;
-    case mojom::PushErrorType::NONE:
-      web_push_error_type = WebPushError::ErrorType::kErrorTypeNone;
-      break;
-    case mojom::PushErrorType::NOT_ALLOWED:
-      web_push_error_type = WebPushError::ErrorType::kErrorTypeNotAllowed;
-      break;
-    case mojom::PushErrorType::NOT_FOUND:
-      web_push_error_type = WebPushError::ErrorType::kErrorTypeNotFound;
-      break;
-    case mojom::PushErrorType::NOT_SUPPORTED:
-      web_push_error_type = WebPushError::ErrorType::kErrorTypeNotSupported;
-      break;
-    case mojom::PushErrorType::INVALID_STATE:
-      web_push_error_type = WebPushError::ErrorType::kErrorTypeInvalidState;
-      break;
-  }
-
-  return web_push_error_type;
-}
-
-}  // namespace
 
 // static
 const char PushProvider::kSupplementName[] = "PushProvider";
@@ -122,7 +87,9 @@ void PushProvider::DidSubscribe(
         options->application_server_key, p256dh.value(), auth.value(),
         GetSupplementable()));
   } else {
-    callbacks->OnError(PushRegistrationStatusToWebPushError(status));
+    callbacks->OnError(PushError::CreateException(
+        PushRegistrationStatusToPushErrorType(status),
+        PushRegistrationStatusToString(status)));
   }
 }
 
@@ -147,8 +114,7 @@ void PushProvider::DidUnsubscribe(
   if (error_type == mojom::blink::PushErrorType::NONE) {
     callbacks->OnSuccess(did_unsubscribe);
   } else {
-    callbacks->OnError(WebPushError(PushErrorTypeToWebPushErrorType(error_type),
-                                    WebString(error_message)));
+    callbacks->OnError(PushError::CreateException(error_type, error_message));
   }
 }
 

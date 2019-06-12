@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_provider.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
@@ -103,7 +104,7 @@ ScriptPromise PushSubscription::unsubscribe(ScriptState* script_state) {
       PushProvider::From(service_worker_registration_);
   DCHECK(push_provider);
   push_provider->Unsubscribe(
-      std::make_unique<CallbackPromiseAdapter<bool, PushError>>(resolver));
+      std::make_unique<CallbackPromiseAdapter<bool, DOMException*>>(resolver));
   return promise;
 }
 

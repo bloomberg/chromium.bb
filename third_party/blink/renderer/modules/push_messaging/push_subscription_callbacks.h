@@ -11,19 +11,19 @@
 
 namespace blink {
 
+class DOMException;
 class PushSubscription;
 class ServiceWorkerRegistration;
 class ScriptPromiseResolver;
-struct WebPushError;
 
 // Used from PushProvider, for calls to PushMessaging::Unsubscribe().
-using PushUnsubscribeCallbacks = WebCallbacks<bool, const WebPushError&>;
+using PushUnsubscribeCallbacks = WebCallbacks<bool, DOMException*>;
 
-// This class is an implementation of WebCallbacks<PushSubscription*, const
-// WebPushError&> that will resolve the underlying promise depending on the
+// This class is an implementation of WebCallbacks<PushSubscription*,
+// DOMException*> that will resolve the underlying promise depending on the
 // constructor and will pass it to the PushSubscription.
 class PushSubscriptionCallbacks final
-    : public WebCallbacks<PushSubscription*, const WebPushError&> {
+    : public WebCallbacks<PushSubscription*, DOMException*> {
   USING_FAST_MALLOC(PushSubscriptionCallbacks);
 
  public:
@@ -34,7 +34,7 @@ class PushSubscriptionCallbacks final
 
   // WebCallbacks<S, T> interface.
   void OnSuccess(PushSubscription* push_subscription) override;
-  void OnError(const WebPushError& error) override;
+  void OnError(DOMException* error) override;
 
  private:
   Persistent<ScriptPromiseResolver> resolver_;

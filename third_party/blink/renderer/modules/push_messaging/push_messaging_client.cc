@@ -9,12 +9,12 @@
 
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_type_converters.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_utils.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
@@ -155,7 +155,9 @@ void PushMessagingClient::DidSubscribe(
         options->application_server_key, p256dh.value(), auth.value(),
         service_worker_registration));
   } else {
-    callbacks->OnError(PushRegistrationStatusToWebPushError(status));
+    callbacks->OnError(PushError::CreateException(
+        PushRegistrationStatusToPushErrorType(status),
+        PushRegistrationStatusToString(status)));
   }
 }
 

@@ -7,9 +7,8 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_error.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -35,11 +34,11 @@ void PushSubscriptionCallbacks::OnSuccess(PushSubscription* push_subscription) {
   resolver_->Resolve(push_subscription);
 }
 
-void PushSubscriptionCallbacks::OnError(const WebPushError& error) {
+void PushSubscriptionCallbacks::OnError(DOMException* error) {
   if (!resolver_->GetExecutionContext() ||
       resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  resolver_->Reject(PushError::Take(resolver_.Get(), error));
+  resolver_->Reject(error);
 }
 
 }  // namespace blink
