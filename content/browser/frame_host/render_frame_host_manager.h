@@ -214,7 +214,8 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Return a proxy for this frame in the parent frame's SiteInstance.  Returns
   // nullptr if this is a main frame or if such a proxy does not exist (for
-  // example, if this frame is same-site with its parent).
+  // example, if this frame is same-site with its parent OR if this frame will
+  // be deleted soon and we are just waiting for the frame's unload handler).
   RenderFrameProxyHost* GetProxyToParent();
 
   // If this is a RenderFrameHostManager for a main frame, returns the proxy to
