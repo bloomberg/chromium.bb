@@ -27573,16 +27573,16 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="INVALID_GAIA_CREDENTIALS"/>
   <int value="2" label="USER_NOT_SIGNED_UP"/>
   <int value="3" label="CONNECTION_FAILED"/>
-  <int value="4" label="CAPTCHA_REQUIRED"/>
+  <int value="4" label="CAPTCHA_REQUIRED (deprecated)"/>
   <int value="5" label="ACCOUNT_DELETED"/>
   <int value="6" label="ACCOUNT_DISABLED"/>
   <int value="7" label="SERVICE_UNAVAILABLE"/>
-  <int value="8" label="TWO_FACTOR"/>
+  <int value="8" label="TWO_FACTOR (deprecated)"/>
   <int value="9" label="REQUEST_CANCELED"/>
   <int value="10" label="HOSTED_NOT_ALLOWED (deprecated)"/>
   <int value="11" label="UNEXPECTED_SERVICE_RESPONSE"/>
   <int value="12" label="SERVICE_ERROR"/>
-  <int value="13" label="WEB_LOGIN_REQUIRED"/>
+  <int value="13" label="WEB_LOGIN_REQUIRED (deprecated)"/>
 </enum>
 
 <enum name="GoogleUpdateAfterItemClickedActions">
