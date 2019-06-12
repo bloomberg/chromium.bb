@@ -270,7 +270,7 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
 
     void CopyFromRange(const GlyphDataRange& range) {
       DCHECK_EQ(range.size(), size());
-      if (!range.offsets) {
+      if (!range.offsets || range.size() == 0) {
         storage_.reset();
         return;
       }
