@@ -188,8 +188,6 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chrome/services/noop/public/cpp/utils.h"
-#include "chrome/services/noop/public/mojom/noop.mojom.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
@@ -4989,8 +4987,6 @@ void ChromeContentBrowserClient::WillCreateWebSocket(
 
 void ChromeContentBrowserClient::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
-  chrome::MaybeStartNoopService();
-
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
 

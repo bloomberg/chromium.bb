@@ -16,8 +16,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/services/noop/noop_service.h"
-#include "chrome/services/noop/public/cpp/utils.h"
 #include "components/mirroring/mojom/constants.mojom.h"
 #include "components/mirroring/service/features.h"
 #include "components/mirroring/service/mirroring_service.h"
@@ -252,11 +250,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 
   if (service_name == patch::mojom::kServiceName)
     return std::make_unique<patch::PatchService>(std::move(request));
-
-  if (service_name == chrome::mojom::kNoopServiceName &&
-      chrome::IsNoopServiceEnabled()) {
-    return std::make_unique<chrome::NoopService>(std::move(request));
-  }
 
 #if BUILDFLAG(ENABLE_PRINTING)
   if (service_name == printing::mojom::kServiceName)
