@@ -437,6 +437,11 @@ const base::Feature kManagedGuestSessionNotification{
     "ManagedGuestSessionNotification", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if !defined(OS_ANDROID)
+const base::Feature kOnConnectNative{"OnConnectNative",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables or disables modal permission prompts.
 // TODO(https://crbug.com/935900): Remove this.
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",

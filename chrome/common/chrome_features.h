@@ -287,6 +287,11 @@ extern const base::Feature kManagedGuestSessionNotification;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kModalPermissionPrompts;
 
+#if !defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kOnConnectNative;
+#endif
+
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kNativeNotifications;
