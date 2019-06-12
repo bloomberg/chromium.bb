@@ -3504,7 +3504,7 @@ static const EGLint gl_renderer_alpha_attribs[] = {
  * by EGL.
  *
  * The extension suffix should be the suffix of the platform extension (that
- * specifies a <platform> argument as defined in EGL_EXT_platform_base). For
+ * specifies a platform argument as defined in EGL_EXT_platform_base). For
  * example, passing "foo" will check whether either "EGL_KHR_platform_foo",
  * "EGL_EXT_platform_foo", or "EGL_MESA_platform_foo" is supported.
  *

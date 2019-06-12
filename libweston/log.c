@@ -50,7 +50,7 @@ static log_func_t log_continue_handler = default_log_handler;
  * immediately aborted after the reminder is printed.
  *
  * \param fmt The format string. Ignored.
- * \param va The variadic argument list. Ignored.
+ * \param ap The variadic argument list. Ignored.
  */
 static int
 default_log_handler(const char *fmt, va_list ap)

@@ -582,7 +582,7 @@ weston_pointer_has_focus_resource(struct weston_pointer *pointer)
  * \param pointer The pointer where the button events originates from.
  * \param time The timestamp of the event
  * \param button The button value of the event
- * \param value The state enum value of the event
+ * \param state The state enum value of the event
  *
  * For every resource that is currently in focus, send a wl_pointer.button event
  * with the passed parameters. The focused resources are the wl_pointer
@@ -639,8 +639,7 @@ default_grab_pointer_button(struct weston_pointer_grab *grab,
  *
  * \param pointer The pointer where the axis events originates from.
  * \param time The timestamp of the event
- * \param axis The axis enum value of the event
- * \param value The axis value of the event
+ * \param event The axis value of the event
  *
  * For every resource that is currently in focus, send a wl_pointer.axis event
  * with the passed parameters. The focused resources are the wl_pointer
@@ -2541,8 +2540,8 @@ weston_compositor_set_touch_mode_calib(struct weston_compositor *compositor)
  * \param device The physical device that generated the event.
  * \param time The event timestamp.
  * \param touch_id ID for the touch point of this event (multi-touch).
- * \param double_x X coordinate in compositor global space.
- * \param double_y Y coordinate in compositor global space.
+ * \param x X coordinate in compositor global space.
+ * \param y Y coordinate in compositor global space.
  * \param norm Normalized device X, Y coordinates in calibration space, or NULL.
  * \param touch_type Either WL_TOUCH_DOWN, WL_TOUCH_UP, or WL_TOUCH_MOTION.
  *
@@ -3621,6 +3620,7 @@ weston_seat_get_touch(struct weston_seat *seat)
 
 /** Sets the keyboard focus to the given surface
  *
+ * \param surface the surface to focus on
  * \param seat The seat to query
  */
 WL_EXPORT void

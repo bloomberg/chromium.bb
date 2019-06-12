@@ -272,10 +272,10 @@ weston_log_ctx_compositor_setup(struct weston_compositor *compositor,
 	return 0;
 }
 
-/** Initialize weston_log_context structure
+/** Creates  weston_log_context structure
  *
- * \param compositor The libweston compositor.
- * \return 0 on success, -1 on failure.
+ * \return NULL in case of failure, or a weston_log_context object in case of
+ * success
  *
  * weston_log_context is a singleton for each weston_compositor.
  *
@@ -372,7 +372,7 @@ weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
  *
  * \param log_ctx The weston_log_context where to add.
  * \param name The debug stream/scope name; must not be NULL.
- * \param desc The debug scope description for humans; must not be NULL.
+ * \param description The debug scope description for humans; must not be NULL.
  * \param begin_cb Optional callback when a client subscribes to this scope.
  * \param user_data Optional user data pointer for the callback.
  * \return A valid pointer on success, NULL on failure.
@@ -518,7 +518,7 @@ weston_log_scope_is_enabled(struct weston_log_scope *scope)
 /** Write data into a specific debug stream
  *
  * \param stream The debug stream to write into; must not be NULL.
- * \param data[in] Pointer to the data to write.
+ * \param[in] data Pointer to the data to write.
  * \param len Number of bytes to write.
  *
  * Writes the given data (binary verbatim) into the debug stream.
@@ -627,7 +627,7 @@ weston_debug_stream_complete(struct weston_debug_stream *stream)
  *
  * \param scope The debug scope to write for; may be NULL, in which case
  *              nothing will be written.
- * \param data[in] Pointer to the data to write.
+ * \param[in] data Pointer to the data to write.
  * \param len Number of bytes to write.
  *
  * Writes the given data to all subscribed clients' streams.
@@ -710,8 +710,8 @@ weston_log_scope_printf(struct weston_log_scope *scope,
 
 /** Write debug scope name and current time into string
  *
- * \param scope[in] debug scope; may be NULL
- * \param buf[out] Buffer to store the string.
+ * \param[in] scope debug scope; may be NULL
+ * \param[out] buf Buffer to store the string.
  * \param len Available size in the buffer in bytes.
  * \return \c buf
  *

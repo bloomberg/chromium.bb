@@ -267,7 +267,7 @@ linux_explicit_synchronization_setup(struct weston_compositor *compositor)
  *
  * The error is sent as an INVALID_OBJECT error on the client's wl_display.
  *
- * \param sync The explicit synchronization related resource that is unusable.
+ * \param resource The explicit synchronization related resource that is unusable.
  * \param msg A custom error message attached to the protocol error.
  */
 WL_EXPORT void

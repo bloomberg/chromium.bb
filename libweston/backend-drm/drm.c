@@ -5272,9 +5272,9 @@ edid_parse(struct drm_edid *edid, const uint8_t *data, size_t length)
  *
  * \param head The head whose \c drm_edid to fill in.
  * \param props The DRM connector properties to get the EDID from.
- * \param make[out] The monitor make (PNP ID).
- * \param model[out] The monitor model (name).
- * \param serial_number[out] The monitor serial number.
+ * \param[out] make The monitor make (PNP ID).
+ * \param[out] model The monitor model (name).
+ * \param[out] serial_number The monitor serial number.
  *
  * Each of \c *make, \c *model and \c *serial_number are set only if the
  * information is found in the EDID. The pointers they are set to must not
@@ -5602,12 +5602,11 @@ drm_output_update_modelist_from_heads(struct drm_output *output)
  * Find the most suitable mode to use for initial setup (or reconfiguration on
  * hotplug etc) for a DRM output.
  *
+ * @param backend the DRM backend
  * @param output DRM output to choose mode for
- * @param kind Strategy and preference to use when choosing mode
- * @param width Desired width for this output
- * @param height Desired height for this output
- * @param current_mode Mode currently being displayed on this output
+ * @param mode Strategy and preference to use when choosing mode
  * @param modeline Manually-entered mode (may be NULL)
+ * @param current_mode Mode currently being displayed on this output
  * @returns A mode from the output's mode list, or NULL if none available
  */
 static struct drm_mode *
@@ -6389,7 +6388,7 @@ drm_head_update_info(struct drm_head *head)
  * Given a DRM connector, create a matching drm_head structure and add it
  * to Weston's head list.
  *
- * @param b Weston backend structure
+ * @param backend Weston backend structure
  * @param connector_id DRM connector ID for the head
  * @param drm_device udev device pointer
  * @returns The new head, or NULL on failure.
