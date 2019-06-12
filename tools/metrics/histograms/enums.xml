@@ -31184,6 +31184,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Cancelled item"/>
   <int value="2" label="Reading list item"/>
   <int value="3" label="Bookmark item"/>
+  <int value="4" label="Open in Chrome item"/>
 </enum>
 
 <enum name="iOSSizeClassForReporting">
@@ -38973,6 +38974,7 @@ Called by update_use_counter_css.py.-->
   <int value="12" label="Chrome Today Extension"/>
   <int value="13" label="Chrome Search Extension"/>
   <int value="14" label="Chrome Content Extension"/>
+  <int value="15" label="Chrome Share Extension"/>
 </enum>
 
 <enum name="MobileSessionShutdownType">
