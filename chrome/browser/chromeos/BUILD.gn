@@ -1968,6 +1968,7 @@ source_set("chromeos") {
     "supervision/onboarding_constants.h",
     "supervision/onboarding_controller_impl.cc",
     "supervision/onboarding_controller_impl.h",
+    "supervision/onboarding_delegate.h",
     "supervision/onboarding_flow_model.cc",
     "supervision/onboarding_flow_model.h",
     "supervision/onboarding_logger.cc",
