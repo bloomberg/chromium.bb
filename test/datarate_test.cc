@@ -129,9 +129,9 @@ class DatarateTestLarge
     cfg_.rc_target_bitrate = bitrate_array[GET_PARAM(4)];
     ResetModel();
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-    ASSERT_GE(effective_datarate_, cfg_.rc_target_bitrate * 0.72)
+    ASSERT_GE(effective_datarate_, cfg_.rc_target_bitrate * 0.7)
         << " The datarate for the file is lower than target by too much!";
-    ASSERT_LE(effective_datarate_, cfg_.rc_target_bitrate * 1.25)
+    ASSERT_LE(effective_datarate_, cfg_.rc_target_bitrate * 1.3)
         << " The datarate for the file is greater than target by too much!";
   }
 
