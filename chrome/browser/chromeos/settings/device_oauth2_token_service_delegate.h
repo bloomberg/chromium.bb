@@ -48,7 +48,7 @@ class DeviceOAuth2TokenServiceDelegate
                               const StatusCallback& callback);
 
   // Pull the robot account ID from device policy.
-  std::string GetRobotAccountId() const;
+  CoreAccountId GetRobotAccountId() const;
 
   // Implementation of OAuth2TokenServiceDelegate.
   bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
@@ -101,15 +101,15 @@ class DeviceOAuth2TokenServiceDelegate
   // Invoked by CrosSettings when the robot account ID becomes available.
   void OnServiceAccountIdentityChanged();
 
-  // Returns the refresh token for account_id.
-  std::string GetRefreshToken(const CoreAccountId& account_id) const;
+  // Returns the refresh token for the robot account id.
+  std::string GetRefreshToken() const;
 
   // Handles completion of the system salt input.
   void DidGetSystemSalt(const std::string& system_salt);
 
   // Checks whether |gaia_robot_id| matches the expected account ID indicated in
   // device settings.
-  void CheckRobotAccountId(const std::string& gaia_robot_id);
+  void CheckRobotAccountId(const CoreAccountId& gaia_robot_id);
 
   // Encrypts and saves the refresh token. Should only be called when the system
   // salt is available.
