@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_APPLICATION_CACHE_HOST_CLIENT_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_APPLICATION_CACHE_HOST_CLIENT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_HOST_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_HOST_CLIENT_H_
 
-#include "third_party/blink/public/mojom/appcache/appcache.mojom-shared.h"
-#include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 
 namespace blink {
 
 // This interface is used by the embedder to call into webkit.
-class WebApplicationCacheHostClient {
+// TODO(https://crbug.com/950159): Remove ApplicationCacheHostClient as the
+// communications happen in Blink.
+class ApplicationCacheHostClient {
  public:
   // Called when a different cache, including possibly no cache, is associated
   // with the host.
@@ -46,19 +46,19 @@ class WebApplicationCacheHostClient {
 
   // Called to fire events in the scriptable interface.
   virtual void NotifyEventListener(mojom::AppCacheEventID) = 0;
-  virtual void NotifyProgressEventListener(const WebURL&,
+  virtual void NotifyProgressEventListener(const KURL&,
                                            int num_total,
                                            int num_complete) = 0;
   virtual void NotifyErrorEventListener(mojom::AppCacheErrorReason,
-                                        const WebURL&,
+                                        const KURL&,
                                         int status,
-                                        const WebString& message) = 0;
+                                        const String& message) = 0;
 
  protected:
   // Should not be deleted by the embedder.
-  virtual ~WebApplicationCacheHostClient() = default;
+  virtual ~ApplicationCacheHostClient() = default;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_APPLICATION_CACHE_HOST_CLIENT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_HOST_CLIENT_H_

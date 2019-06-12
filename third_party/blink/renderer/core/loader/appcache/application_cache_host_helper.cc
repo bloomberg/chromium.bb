@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/exported/web_application_cache_host_impl.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_helper.h"
 
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/platform/web_url_response.h"
-#include "third_party/blink/public/web/web_application_cache_host_client.h"
-#include "third_party/blink/public/web/web_frame.h"
-#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_client.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_shared_worker.h"
 
 namespace blink {
 
@@ -27,8 +24,8 @@ const char* const kEventNames[] = {"Checking",    "Error",    "NoUpdate",
                                    "Downloading", "Progress", "UpdateReady",
                                    "Cached",      "Obsolete"};
 
-KURL ClearUrlRef(const WebURL& web_url) {
-  KURL url(web_url);
+KURL ClearUrlRef(const KURL& input_url) {
+  KURL url(input_url);
   if (!url.HasFragmentIdentifier())
     return url;
   url.RemoveFragmentIdentifier();
@@ -36,20 +33,39 @@ KURL ClearUrlRef(const WebURL& web_url) {
 }
 
 mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker(
-    WebLocalFrame* web_frame) {
-  if (!web_frame)
+    LocalFrame* local_frame) {
+  if (!local_frame)
     return nullptr;
-  Frame* frame = WebFrame::ToCoreFrame(*web_frame);
-  if (auto* local_frame = DynamicTo<LocalFrame>(frame))
-    return local_frame->Client()->GetDocumentInterfaceBroker();
-  return nullptr;
+  return local_frame->Client()->GetDocumentInterfaceBroker();
 }
 
 }  // namespace
 
-WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
-    WebLocalFrame* web_frame,
-    WebApplicationCacheHostClient* client,
+ApplicationCacheHostHelper* ApplicationCacheHostHelper::Create(
+    LocalFrame* local_frame,
+    ApplicationCacheHostClient* client,
+    const base::UnguessableToken& appcache_host_id) {
+  WebLocalFrameClient::AppCacheType type =
+      local_frame->Client()->GetAppCacheType();
+  switch (type) {
+    case WebLocalFrameClient::AppCacheType::kAppCacheForFrame:
+      return MakeGarbageCollected<ApplicationCacheHostForFrame>(
+          local_frame, client, appcache_host_id,
+          local_frame->GetTaskRunner(TaskType::kNetworking));
+    case WebLocalFrameClient::AppCacheType::kAppCacheForSharedWorker:
+      return MakeGarbageCollected<ApplicationCacheHostForSharedWorker>(
+          client, appcache_host_id, Thread::Current()->GetTaskRunner());
+    default:
+      break;
+  }
+  return nullptr;
+}
+
+ApplicationCacheHostHelper::ApplicationCacheHostHelper() : binding_(this) {}
+
+ApplicationCacheHostHelper::ApplicationCacheHostHelper(
+    LocalFrame* local_frame,
+    ApplicationCacheHostClient* client,
     const base::UnguessableToken& appcache_host_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : binding_(this),
@@ -70,7 +86,7 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
   binding_.Bind(mojo::MakeRequest(&frontend_ptr, task_runner), task_runner);
 
   mojom::blink::DocumentInterfaceBroker* interface_broker =
-      GetDocumentInterfaceBroker(web_frame);
+      GetDocumentInterfaceBroker(local_frame);
   if (interface_broker) {
     interface_broker->RegisterAppCacheHost(
         mojo::MakeRequest(&backend_host_, std::move(task_runner)),
@@ -94,9 +110,9 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
       std::move(frontend_ptr), host_id_);
 }
 
-WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() = default;
+ApplicationCacheHostHelper::~ApplicationCacheHostHelper() = default;
 
-void WebApplicationCacheHostImpl::CacheSelected(
+void ApplicationCacheHostHelper::CacheSelected(
     mojom::blink::AppCacheInfoPtr info) {
   cache_info_ = *info;
   client_->DidChangeCacheAssociation();
@@ -104,7 +120,7 @@ void WebApplicationCacheHostImpl::CacheSelected(
     std::move(select_cache_for_shared_worker_completion_callback_).Run();
 }
 
-void WebApplicationCacheHostImpl::EventRaised(
+void ApplicationCacheHostHelper::EventRaised(
     mojom::blink::AppCacheEventID event_id) {
   DCHECK_NE(event_id,
             mojom::blink::AppCacheEventID::
@@ -145,9 +161,9 @@ void WebApplicationCacheHostImpl::EventRaised(
   client_->NotifyEventListener(event_id);
 }
 
-void WebApplicationCacheHostImpl::ProgressEventRaised(const KURL& url,
-                                                      int num_total,
-                                                      int num_complete) {
+void ApplicationCacheHostHelper::ProgressEventRaised(const KURL& url,
+                                                     int num_total,
+                                                     int num_complete) {
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
   const char kFormatString[] = "Application Cache Progress event (%d of %d) %s";
@@ -158,7 +174,7 @@ void WebApplicationCacheHostImpl::ProgressEventRaised(const KURL& url,
   client_->NotifyProgressEventListener(url, num_total, num_complete);
 }
 
-void WebApplicationCacheHostImpl::ErrorEventRaised(
+void ApplicationCacheHostHelper::ErrorEventRaised(
     mojom::blink::AppCacheErrorDetailsPtr details) {
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
@@ -175,24 +191,24 @@ void WebApplicationCacheHostImpl::ErrorEventRaised(
     DCHECK_EQ(mojom::blink::AppCacheErrorReason::APPCACHE_RESOURCE_ERROR,
               details->reason);
     client_->NotifyErrorEventListener(details->reason, details->url, 0,
-                                      WebString());
+                                      String());
   } else {
     client_->NotifyErrorEventListener(details->reason, details->url,
                                       details->status, details->message);
   }
 }
 
-void WebApplicationCacheHostImpl::WillStartMainResourceRequest(
-    const WebURL& url,
+void ApplicationCacheHostHelper::WillStartMainResourceRequest(
+    const KURL& url,
     const String& method,
-    const WebApplicationCacheHost* spawning_host) {
+    const ApplicationCacheHostHelper* spawning_host) {
   original_main_resource_url_ = ClearUrlRef(url);
 
   is_get_method_ = (method == kHttpGETMethod);
   DCHECK(method == method.UpperASCII());
 
-  const WebApplicationCacheHostImpl* spawning_host_impl =
-      static_cast<const WebApplicationCacheHostImpl*>(spawning_host);
+  const ApplicationCacheHostHelper* spawning_host_impl =
+      static_cast<const ApplicationCacheHostHelper*>(spawning_host);
   if (spawning_host_impl && (spawning_host_impl != this) &&
       (spawning_host_impl->status_ !=
        mojom::blink::AppCacheStatus::APPCACHE_STATUS_UNCACHED)) {
@@ -200,7 +216,7 @@ void WebApplicationCacheHostImpl::WillStartMainResourceRequest(
   }
 }
 
-void WebApplicationCacheHostImpl::SelectCacheWithoutManifest() {
+void ApplicationCacheHostHelper::SelectCacheWithoutManifest() {
   if (was_select_cache_called_)
     return;
   was_select_cache_called_ = true;
@@ -214,8 +230,8 @@ void WebApplicationCacheHostImpl::SelectCacheWithoutManifest() {
                              KURL());
 }
 
-bool WebApplicationCacheHostImpl::SelectCacheWithManifest(
-    const WebURL& manifest_url) {
+bool ApplicationCacheHostHelper::SelectCacheWithManifest(
+    const KURL& manifest_url) {
   if (was_select_cache_called_)
     return true;
   was_select_cache_called_ = true;
@@ -259,8 +275,8 @@ bool WebApplicationCacheHostImpl::SelectCacheWithManifest(
   return true;
 }
 
-void WebApplicationCacheHostImpl::DidReceiveResponseForMainResource(
-    const WebURLResponse& response) {
+void ApplicationCacheHostHelper::DidReceiveResponseForMainResource(
+    const ResourceResponse& response) {
   document_response_ = response;
   document_url_ = ClearUrlRef(document_response_.CurrentRequestUrl());
   if (document_url_ != original_main_resource_url_)
@@ -274,11 +290,11 @@ void WebApplicationCacheHostImpl::DidReceiveResponseForMainResource(
     is_new_master_entry_ = OLD_ENTRY;
 }
 
-mojom::blink::AppCacheStatus WebApplicationCacheHostImpl::GetStatus() {
+mojom::blink::AppCacheStatus ApplicationCacheHostHelper::GetStatus() {
   return status_;
 }
 
-bool WebApplicationCacheHostImpl::StartUpdate() {
+bool ApplicationCacheHostHelper::StartUpdate() {
   bool result = false;
   backend_host_->StartUpdate(&result);
   if (!result)
@@ -293,7 +309,7 @@ bool WebApplicationCacheHostImpl::StartUpdate() {
   return true;
 }
 
-bool WebApplicationCacheHostImpl::SwapCache() {
+bool ApplicationCacheHostHelper::SwapCache() {
   bool result = false;
   backend_host_->SwapCache(&result);
   if (!result)
@@ -302,8 +318,8 @@ bool WebApplicationCacheHostImpl::SwapCache() {
   return true;
 }
 
-void WebApplicationCacheHostImpl::GetAssociatedCacheInfo(
-    WebApplicationCacheHost::CacheInfo* info) {
+void ApplicationCacheHostHelper::GetAssociatedCacheInfo(
+    ApplicationCacheHostHelper::CacheInfo* info) {
   info->manifest_url = cache_info_.manifest_url;
   if (!cache_info_.is_complete)
     return;
@@ -313,41 +329,33 @@ void WebApplicationCacheHostImpl::GetAssociatedCacheInfo(
   info->padding_sizes = cache_info_.padding_sizes;
 }
 
-const base::UnguessableToken& WebApplicationCacheHostImpl::GetHostID() const {
+const base::UnguessableToken& ApplicationCacheHostHelper::GetHostID() const {
   return host_id_;
 }
 
-void WebApplicationCacheHostImpl::GetResourceList(
-    WebVector<ResourceInfo>* resources) {
+void ApplicationCacheHostHelper::GetResourceList(
+    Vector<mojom::blink::AppCacheResourceInfo>* resources) {
+  DCHECK(resources);
   if (!cache_info_.is_complete)
     return;
   Vector<mojom::blink::AppCacheResourceInfoPtr> boxed_infos;
   backend_host_->GetResourceList(&boxed_infos);
-  Vector<mojom::blink::AppCacheResourceInfo> resource_infos;
   for (auto& b : boxed_infos) {
-    resource_infos.emplace_back(std::move(*b));
+    resources->emplace_back(std::move(*b));
   }
-
-  WebVector<ResourceInfo> web_resources(resource_infos.size());
-  for (size_t i = 0; i < resource_infos.size(); ++i) {
-    web_resources[i].response_size = resource_infos[i].response_size;
-    web_resources[i].padding_size = resource_infos[i].padding_size;
-    web_resources[i].is_master = resource_infos[i].is_master;
-    web_resources[i].is_explicit = resource_infos[i].is_explicit;
-    web_resources[i].is_manifest = resource_infos[i].is_manifest;
-    web_resources[i].is_foreign = resource_infos[i].is_foreign;
-    web_resources[i].is_fallback = resource_infos[i].is_fallback;
-    web_resources[i].url = resource_infos[i].url;
-  }
-  resources->Swap(web_resources);
 }
 
-void WebApplicationCacheHostImpl::SelectCacheForSharedWorker(
+void ApplicationCacheHostHelper::SelectCacheForSharedWorker(
     int64_t app_cache_id,
     base::OnceClosure completion_callback) {
   select_cache_for_shared_worker_completion_callback_ =
       std::move(completion_callback);
   backend_host_->SelectCacheForSharedWorker(app_cache_id);
+}
+
+void ApplicationCacheHostHelper::DetachFromDocumentLoader() {
+  binding_.Close();
+  client_ = nullptr;
 }
 
 }  // namespace blink
