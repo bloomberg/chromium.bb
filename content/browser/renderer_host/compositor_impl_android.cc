@@ -93,6 +93,11 @@ namespace {
 
 static const char* kBrowser = "Browser";
 
+// NOINLINE to make sure crashes use this for magic signature.
+NOINLINE void FatalSurfaceFailure() {
+  LOG(FATAL) << "Fatal surface initialization failure";
+}
+
 gfx::OverlayTransform RotationToDisplayTransform(
     display::Display::Rotation rotation) {
   // Note that the angle provided by |rotation| here is the opposite direction
@@ -352,9 +357,8 @@ class CompositorImpl::AndroidHostDisplayClient : public viz::HostDisplayClient {
   void DidCompleteSwapWithSize(const gfx::Size& pixel_size) override {
     compositor_->DidSwapBuffers(pixel_size);
   }
-  void OnFatalOrSurfaceContextCreationFailure(
-      gpu::ContextResult context_result) override {
-    compositor_->OnFatalOrSurfaceContextCreationFailure(context_result);
+  void OnContextCreationResult(gpu::ContextResult context_result) override {
+    compositor_->OnContextCreationResult(context_result);
   }
   void SetPreferredRefreshRate(float refresh_rate) override {
     if (compositor_->root_window_)
@@ -791,9 +795,17 @@ void CompositorImpl::OnGpuChannelEstablished(
                                          requires_alpha_channel_),
           viz::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
   auto result = context_provider->BindToCurrentThread();
+
+  if (surface_handle != gpu::kNullSurfaceHandle) {
+    // Only use OnContextCreationResult for onscreen contexts, where recovering
+    // from a surface initialization failure is possible by re-creating the
+    // native window.
+    OnContextCreationResult(result);
+  } else if (result == gpu::ContextResult::kFatalFailure) {
+    LOG(FATAL) << "Fatal failure in creating offscreen context";
+  }
+
   if (result != gpu::ContextResult::kSuccess) {
-    if (gpu::IsFatalOrSurfaceFailure(result))
-      OnFatalOrSurfaceContextCreationFailure(result);
     HandlePendingLayerTreeFrameSinkRequest();
     return;
   }
@@ -1100,11 +1112,25 @@ viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() {
   return viz::LocalSurfaceIdAllocation();
 }
 
+void CompositorImpl::OnContextCreationResult(
+    gpu::ContextResult context_result) {
+  if (!gpu::IsFatalOrSurfaceFailure(context_result)) {
+    num_of_consecutive_surface_failures_ = 0u;
+    return;
+  }
+
+  OnFatalOrSurfaceContextCreationFailure(context_result);
+}
+
 void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
     gpu::ContextResult context_result) {
   DCHECK(gpu::IsFatalOrSurfaceFailure(context_result));
   LOG_IF(FATAL, context_result == gpu::ContextResult::kFatalFailure)
       << "Fatal error making Gpu context";
+
+  constexpr size_t kMaxConsecutiveSurfaceFailures = 10u;
+  if (++num_of_consecutive_surface_failures_ > kMaxConsecutiveSurfaceFailures)
+    FatalSurfaceFailure();
 
   if (context_result == gpu::ContextResult::kSurfaceFailure) {
     SetSurface(nullptr, false);

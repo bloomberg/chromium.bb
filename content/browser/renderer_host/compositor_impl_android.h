@@ -202,7 +202,8 @@ class CONTENT_EXPORT CompositorImpl
   // Registers the root frame sink ID.
   void RegisterRootFrameSink();
 
-  // Called when we fail to create the context for the root frame sink.
+  // Called with the result of context creation for the root frame sink.
+  void OnContextCreationResult(gpu::ContextResult context_result);
   void OnFatalOrSurfaceContextCreationFailure(
       gpu::ContextResult context_result);
 
@@ -274,6 +275,8 @@ class CONTENT_EXPORT CompositorImpl
   // Test-only. Called when we are notified of a swap.
   base::RepeatingCallback<void(const gfx::Size&)>
       swap_completed_with_size_for_testing_;
+
+  size_t num_of_consecutive_surface_failures_ = 0u;
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
