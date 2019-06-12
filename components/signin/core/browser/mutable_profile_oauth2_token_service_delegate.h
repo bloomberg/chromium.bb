@@ -82,7 +82,7 @@ class MutableProfileOAuth2TokenServiceDelegate
   bool FixRequestErrorIfPossible() override;
 
   // Returns the account's refresh token used for testing purposes.
-  std::string GetRefreshTokenForTest(const std::string& account_id) const;
+  std::string GetRefreshTokenForTest(const CoreAccountId& account_id) const;
 
  private:
   friend class MutableProfileOAuth2TokenServiceDelegateTest;
@@ -147,7 +147,7 @@ class MutableProfileOAuth2TokenServiceDelegate
       const std::map<std::string, std::string>& db_tokens);
 
   // Updates the in-memory representation of the credentials.
-  void UpdateCredentialsInMemory(const std::string& account_id,
+  void UpdateCredentialsInMemory(const CoreAccountId& account_id,
                                  const std::string& refresh_token);
 
   // Sets refresh token in error.
@@ -156,12 +156,12 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   // Persists credentials for |account_id|. Enables overriding for
   // testing purposes, or other cases, when accessing the DB is not desired.
-  void PersistCredentials(const std::string& account_id,
+  void PersistCredentials(const CoreAccountId& account_id,
                           const std::string& refresh_token);
 
   // Clears credentials persisted for |account_id|. Enables overriding for
   // testing purposes, or other cases, when accessing the DB is not desired.
-  void ClearPersistedCredentials(const std::string& account_id);
+  void ClearPersistedCredentials(const CoreAccountId& account_id);
 
   // Revokes the refresh token on the server.
   void RevokeCredentialsOnServer(const std::string& refresh_token);
@@ -169,11 +169,11 @@ class MutableProfileOAuth2TokenServiceDelegate
   // Cancels any outstanding fetch for tokens from the web database.
   void CancelWebTokenFetch();
 
-  std::string GetRefreshToken(const std::string& account_id) const;
+  std::string GetRefreshToken(const CoreAccountId& account_id) const;
 
   // Creates a new AccountStatus and adds it to the AccountStatusMap.
   // The account must not be already in the map.
-  void AddAccountStatus(const std::string& account_id,
+  void AddAccountStatus(const CoreAccountId& account_id,
                         const std::string& refresh_token,
                         const GoogleServiceAuthError& error);
 
@@ -184,12 +184,12 @@ class MutableProfileOAuth2TokenServiceDelegate
   // Deletes the credential locally and notifies observers through
   // OnRefreshTokenRevoked(). If |revoke_on_server| is true, the token is also
   // revoked on the server.
-  void RevokeCredentialsImpl(const std::string& account_id,
+  void RevokeCredentialsImpl(const CoreAccountId& account_id,
                              bool revoke_on_server);
 
   // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
   // to information about the account.
-  typedef std::map<std::string, AccountStatus> AccountStatusMap;
+  typedef std::map<CoreAccountId, AccountStatus> AccountStatusMap;
   // In memory refresh token store mapping account_id to refresh_token.
   AccountStatusMap refresh_tokens_;
 
@@ -198,7 +198,7 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   // The primary account id of this service's profile during the loading of
   // credentials.  This member is empty otherwise.
-  std::string loading_primary_account_id_;
+  CoreAccountId loading_primary_account_id_;
 
   std::vector<std::unique_ptr<RevokeServerRefreshToken>> server_revokes_;
 
