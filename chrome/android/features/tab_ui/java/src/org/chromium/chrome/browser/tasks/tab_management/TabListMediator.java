@@ -340,6 +340,9 @@ class TabListMediator {
                         instanceof TabGroupModelFilter) {
             mTabGroupObserver = new TabGroupModelFilter.Observer() {
                 @Override
+                public void didMergeTabToGroup(Tab movedTab, int selectedTabIdInGroup) {}
+
+                @Override
                 public void didMoveWithinGroup(
                         Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {
                     int curPosition = mModel.indexFromId(movedTab.getId());
