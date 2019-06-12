@@ -159,26 +159,6 @@ void av1_cnn_predict_img_highbd(uint16_t **dgd, int width, int height,
                                 const CNN_THREAD_DATA *thread_data,
                                 int bit_depth, float **output, int out_stride);
 
-// Restoration functions from input image buffer
-// These internally call av1_cnn_predict_img() / av1_cnn_predict_img_highbd().
-void av1_restore_cnn_img(uint8_t *dgd, int width, int height, int stride,
-                         const CNN_CONFIG *cnn_config,
-                         const CNN_THREAD_DATA *thread_data);
-void av1_restore_cnn_img_highbd(uint16_t *dgd, int width, int height,
-                                int stride, const CNN_CONFIG *cnn_config,
-                                const CNN_THREAD_DATA *thread_data,
-                                int bit_depth);
-
-// Restoration functions that work on current frame buffer in AV1_COMMON
-// directly for convenience.
-void av1_restore_cnn_plane(struct AV1Common *cm, const CNN_CONFIG *cnn_config,
-                           int plane, const CNN_THREAD_DATA *thread_data);
-void av1_restore_cnn_plane_part(struct AV1Common *cm,
-                                const CNN_CONFIG *cnn_config,
-                                const CNN_THREAD_DATA *thread_data, int plane,
-                                int start_x, int start_y, int width,
-                                int height);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif
