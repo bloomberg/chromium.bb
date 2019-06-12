@@ -168,6 +168,11 @@
   ]];
 
   [self setUpConstraints];
+
+  // Make sure that the trait collection is taken into account.
+  if (@available(iOS 13, *)) {
+    [self updateLayoutForPreviousTraitCollection:nil];
+  }
 }
 
 - (void)addFakeOmniboxTarget {
@@ -192,14 +197,7 @@
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  if (IsRegularXRegularSizeClass(self)) {
-    self.backgroundColor =
-        self.buttonFactory.toolbarConfiguration.backgroundColor;
-    self.blur.alpha = 0;
-  } else {
-    self.backgroundColor = [UIColor clearColor];
-    self.blur.alpha = 1;
-  }
+  [self updateLayoutForPreviousTraitCollection:previousTraitCollection];
 }
 
 #pragma mark - Setup
@@ -463,6 +461,20 @@
 
 - (ToolbarButton*)omniboxButton {
   return nil;
+}
+
+#pragma mark - Private
+
+- (void)updateLayoutForPreviousTraitCollection:
+    (UITraitCollection*)previousTraitCollection {
+  if (IsRegularXRegularSizeClass(self)) {
+    self.backgroundColor =
+        self.buttonFactory.toolbarConfiguration.backgroundColor;
+    self.blur.alpha = 0;
+  } else {
+    self.backgroundColor = [UIColor clearColor];
+    self.blur.alpha = 1;
+  }
 }
 
 @end
