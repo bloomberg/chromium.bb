@@ -2124,7 +2124,13 @@ void AppListView::UpdateAppListBackgroundYPosition() {
       transform.Translate(
           0, -kAppListBackgroundRadius * (app_list_transition_progress - 1));
     }
-  } else if (is_fullscreen()) {
+  } else if (is_fullscreen() ||
+             (app_list_state_ == ash::AppListViewState::kHalf &&
+              GetBoundsInScreen().y() == 0)) {
+    // AppListView::Layout may be called after OnWindowBoundsChanged. It may
+    // reset the transform of |app_list_background_shield_|. So hide the rounded
+    // corners when AppListView is in Half state and its bottom is on the
+    // display edge.
     transform.Translate(0, -kAppListBackgroundRadius);
   }
   app_list_background_shield_->SetTransform(transform);
