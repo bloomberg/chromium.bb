@@ -2127,6 +2127,7 @@ if (!is_android) {
         "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
+        "../browser/extensions/api/settings_private/settings_private_browsertest_chromeos.cc",
         "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
         "../browser/extensions/chromeos_component_extensions_browsertest.cc",
         "../browser/notifications/notification_platform_bridge_chromeos_browsertest.cc",
