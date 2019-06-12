@@ -23631,6 +23631,7 @@ Called by update_net_error_codes.py.-->
   <int value="2918" label="UnsizedMediaPolicy"/>
   <int value="2919" label="ScrollByPrecisionTouchPad"/>
   <int value="2920" label="PinchZoom"/>
+  <int value="2921" label="BuiltInModuleSwitchImported"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

@@ -75,7 +75,10 @@ void ModulatorImplBase::BuiltInModuleUseCount(
   DCHECK(BuiltInModuleEnabled(module));
   switch (module) {
     case layered_api::Module::kBlank:
+      break;
     case layered_api::Module::kElementsSwitch:
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kBuiltInModuleSwitchImported);
       break;
     case layered_api::Module::kVirtualScroller:
       UseCounter::Count(GetExecutionContext(),
