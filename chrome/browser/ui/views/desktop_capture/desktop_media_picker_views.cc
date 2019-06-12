@@ -118,7 +118,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         screen_scroll_view->ClipHeightTo(
             kGenericScreenStyle.item_size.height(),
             kGenericScreenStyle.item_size.height() * 2);
-        screen_scroll_view->set_hide_horizontal_scrollbar(true);
+        screen_scroll_view->SetHideHorizontalScrollBar(true);
 
         panes.push_back(
             std::make_pair(screen_title_text, std::move(screen_scroll_view)));
@@ -149,7 +149,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
         window_scroll_view->ClipHeightTo(kWindowStyle.item_size.height(),
                                          kWindowStyle.item_size.height() * 2);
-        window_scroll_view->set_hide_horizontal_scrollbar(true);
+        window_scroll_view->SetHideHorizontalScrollBar(true);
 
         panes.push_back(
             std::make_pair(window_title_text, std::move(window_scroll_view)));

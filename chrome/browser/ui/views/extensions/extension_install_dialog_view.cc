@@ -535,7 +535,7 @@ void ExtensionInstallDialogView::CreateContents() {
   }
 
   scroll_view_ = new views::ScrollView();
-  scroll_view_->set_hide_horizontal_scrollbar(true);
+  scroll_view_->SetHideHorizontalScrollBar(true);
   scroll_view_->SetContents(std::move(extension_info_container));
   scroll_view_->ClipHeightTo(
       0, provider->GetDistanceMetric(
