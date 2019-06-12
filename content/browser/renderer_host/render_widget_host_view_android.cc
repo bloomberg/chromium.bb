@@ -121,10 +121,8 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLongpressDragSelection);
   config.hide_active_handle =
-      base::FeatureList::IsEnabled(
-          content::android::kEnhancedSelectionInsertionHandle) &&
       base::android::BuildInfo::GetInstance()->sdk_int() >=
-          base::android::SDK_VERSION_P;
+      base::android::SDK_VERSION_P;
   return std::make_unique<ui::TouchSelectionController>(client, config);
 }
 
