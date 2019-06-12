@@ -108,15 +108,29 @@ struct V4L2SliceVideoDecoder::OutputRequest {
   // The surface to be outputted.
   scoped_refptr<V4L2DecodeSurface> surface;
 
-  explicit OutputRequest(scoped_refptr<V4L2DecodeSurface> s)
-      : type(kSurface), surface(std::move(s)) {}
-  explicit OutputRequest(OutputRequestType t) : type(t) {
-    DCHECK_NE(t, kSurface);
+  static OutputRequest Surface(scoped_refptr<V4L2DecodeSurface> s) {
+    return OutputRequest(std::move(s));
+  }
+
+  static OutputRequest FlushFence() { return OutputRequest(kFlushFence); }
+
+  static OutputRequest ChangeResolutionFence() {
+    return OutputRequest(kChangeResolutionFence);
   }
 
   bool IsReady() const {
     return (type != OutputRequestType::kSurface) || surface->decoded();
   }
+
+  // Allow move, but not copy.
+  OutputRequest(OutputRequest&&) = default;
+
+ private:
+  explicit OutputRequest(scoped_refptr<V4L2DecodeSurface> s)
+      : type(kSurface), surface(std::move(s)) {}
+  explicit OutputRequest(OutputRequestType t) : type(t) {}
+
+  DISALLOW_COPY_AND_ASSIGN(OutputRequest);
 };
 
 // static
@@ -551,8 +565,7 @@ void V4L2SliceVideoDecoder::PumpDecodeTask() {
         DVLOGF(3) << "Need to change resolution. Pause decoding.";
         SetState(State::kPause);
 
-        output_request_queue_.push(std::make_unique<OutputRequest>(
-            OutputRequest::kChangeResolutionFence));
+        output_request_queue_.push(OutputRequest::ChangeResolutionFence());
         PumpOutputSurfaces();
         return;
 
@@ -584,8 +597,7 @@ void V4L2SliceVideoDecoder::PumpDecodeTask() {
           DCHECK(!flush_cb_);
           flush_cb_ = std::move(current_decode_request_->decode_cb);
 
-          output_request_queue_.push(
-              std::make_unique<OutputRequest>(OutputRequest::kFlushFence));
+          output_request_queue_.push(OutputRequest::FlushFence());
           PumpOutputSurfaces();
           current_decode_request_ = base::nullopt;
           return;
@@ -626,15 +638,14 @@ void V4L2SliceVideoDecoder::PumpOutputSurfaces() {
 
   bool resume_decode = false;
   while (!output_request_queue_.empty()) {
-    if (!output_request_queue_.front()->IsReady()) {
+    if (!output_request_queue_.front().IsReady()) {
       DVLOGF(3) << "The first surface is not ready yet.";
       break;
     }
 
-    std::unique_ptr<OutputRequest> request =
-        std::move(output_request_queue_.front());
+    OutputRequest request = std::move(output_request_queue_.front());
     output_request_queue_.pop();
-    switch (request->type) {
+    switch (request.type) {
       case OutputRequest::kFlushFence:
         DCHECK(output_request_queue_.empty());
         DVLOGF(2) << "Flush finished.";
@@ -652,7 +663,7 @@ void V4L2SliceVideoDecoder::PumpOutputSurfaces() {
         break;
 
       case OutputRequest::kSurface:
-        scoped_refptr<V4L2DecodeSurface> surface = std::move(request->surface);
+        scoped_refptr<V4L2DecodeSurface> surface = std::move(request.surface);
         auto surface_it = output_record_map_.find(surface->output_record());
         DCHECK(surface_it != output_record_map_.end());
         OutputRecord* output_record = surface_it->second.get();
@@ -879,7 +890,7 @@ void V4L2SliceVideoDecoder::SurfaceReady(
   // TODO(akahuang): Update visible_rect at the output frame.
   dec_surface->SetVisibleRect(visible_rect);
 
-  output_request_queue_.push(std::make_unique<OutputRequest>(dec_surface));
+  output_request_queue_.push(OutputRequest::Surface(std::move(dec_surface)));
   PumpOutputSurfaces();
 }
 

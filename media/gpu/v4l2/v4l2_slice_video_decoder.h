@@ -228,7 +228,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // The decode request which is currently processed.
   base::Optional<DecodeRequest> current_decode_request_;
   // Queue of pending output request.
-  base::queue<std::unique_ptr<OutputRequest>> output_request_queue_;
+  base::queue<OutputRequest> output_request_queue_;
 
   // The number of planes, which is the number of DMA-buf fds we enqueue into
   // the V4L2 device.
