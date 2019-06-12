@@ -53,6 +53,7 @@ const CLASSES = {
   GRID_REORDER: 'grid-reorder',
   GRID_TILE: 'grid-tile',
   GRID_TILE_CONTAINER: 'grid-tile-container',
+  HIDE: 'hide',        // Applied when the tiles are hidden by the user.
   REORDER: 'reorder',  // Applied to the tile being moved while reordering.
   // Applied while we are reordering. Disables hover styling.
   REORDERING: 'reordering',
@@ -868,6 +869,9 @@ function handleCommand(data) {
  * @param {!Object} info Data received in the message.
  */
 function showTiles(info) {
+  document.body.classList.toggle(
+      CLASSES.HIDE, !chrome.embeddedSearch.newTabPage.areShortcutsVisible);
+
   utils.setPlatformClass(document.body);
   countLoad();
 }
