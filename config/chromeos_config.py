@@ -2160,6 +2160,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'romer',
       'sarien',
       'samus',
+      'samus-kernelnext',
       'scarlet',
       'sentry',
       'sludge',
@@ -2204,7 +2205,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
       'kumo',
-      'samus-kernelnext',
       'kefka-kernelnext',
       'zork',
   ])
