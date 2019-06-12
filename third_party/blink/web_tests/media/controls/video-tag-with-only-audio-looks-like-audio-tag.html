@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html>
 <title>Test video tag with only audio looks like audio tag</title>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="../../media-controls.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../media-controls.js"></script>
 <video id="with-video" controls preload=metadata>
-  <source src="../../content/60_sec_video.webm" />
+  <source src="../content/60_sec_video.webm" />
 </video>
 <video id="with-audio" controls preload=metadata>
-  <source src="../../content/test.oga" />
+  <source src="../content/test.oga" />
 </video>
 <script>
 async_test(t => {
   let videoWithVideo = document.getElementById('with-video');
   let videoWithAudio = document.getElementById('with-audio');
-  const videoURL = '../../content/60_sec_video.webm';
-  const audioURL = '../../content/test.oga';
+  const videoURL = '../content/60_sec_video.webm';
+  const audioURL = '../content/test.oga';
   let completedTests = 0;
 
   videoWithVideo.onloadedmetadata = t.step_func(() => {

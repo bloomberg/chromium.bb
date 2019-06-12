@@ -4825,19 +4825,19 @@ crbug.com/667560 http/tests/devtools/elements/styles-4/inline-style-sourcemap.js
 
 # Double tap on modern media controls is a bit more complicated on Mac but
 # since we are not targeting Mac yet we can come back and fix this later.
-crbug.com/783154 [ Mac ] media/controls/modern/doubletap-to-jump-backwards.html [ Skip ]
-crbug.com/783154 [ Mac ] media/controls/modern/doubletap-to-jump-forwards.html [ Skip ]
-crbug.com/783154 [ Mac ] media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Skip ]
-crbug.com/783154 [ Mac ] media/controls/modern/doubletap-on-play-button.html [ Skip ]
-crbug.com/783154 [ Mac ] media/controls/modern/doubletap-to-toggle-fullscreen.html [ Skip ]
+crbug.com/783154 [ Mac ] media/controls/doubletap-to-jump-backwards.html [ Skip ]
+crbug.com/783154 [ Mac ] media/controls/doubletap-to-jump-forwards.html [ Skip ]
+crbug.com/783154 [ Mac ] media/controls/doubletap-to-jump-forwards-too-short.html [ Skip ]
+crbug.com/783154 [ Mac ] media/controls/doubletap-on-play-button.html [ Skip ]
+crbug.com/783154 [ Mac ] media/controls/doubletap-to-toggle-fullscreen.html [ Skip ]
 crbug.com/783154 [ Mac ] media/controls/click-anywhere-to-play-pause.html [ Skip ]
 
 # Seen flaky on Linux, suppressing on Windows as well
-crbug.com/831720 [ Win ] media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
-crbug.com/831720 [ Linux ] media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
-crbug.com/831720 [ Mac ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
-crbug.com/831720 [ Win ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
-crbug.com/831720 [ Linux ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
+crbug.com/831720 [ Win ] media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
+crbug.com/831720 [ Linux ] media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
+crbug.com/831720 [ Mac ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
+crbug.com/831720 [ Win ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
+crbug.com/831720 [ Linux ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
 
 crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Failure ]
 
@@ -4847,7 +4847,7 @@ crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/aut
 crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
 
 # Does not work on Mac
-crbug.com/793771 [ Mac ] media/controls/modern/scrubbing.html [ Skip ]
+crbug.com/793771 [ Mac ] media/controls/scrubbing.html [ Skip ]
 crbug.com/916902 [ Mac ] virtual/fractional_scrolling/fast/scrolling/overflow-scrollability.html [ Skip ]
 
 # Different paths may have different anti-aliasing pixels 2018-02-21
