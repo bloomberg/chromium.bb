@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.send_tab_to_self;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareClickResult;
 import org.chromium.chrome.browser.share.ShareActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
@@ -25,6 +26,8 @@ public class SendTabToSelfShareActivity extends ShareActivity {
             return;
         }
 
+        SendTabToSelfShareClickResult.recordClickResult(
+                SendTabToSelfShareClickResult.ClickType.SHOW_DEVICE_LIST);
         triggeringActivity.getBottomSheetController().requestShowContent(
                 createBottomSheetContent(triggeringActivity, entry), true);
         // TODO(crbug.com/968246): Remove the need to call this explicitly and instead have it
@@ -38,6 +41,12 @@ public class SendTabToSelfShareActivity extends ShareActivity {
     }
 
     public static boolean featureIsAvailable(Tab currentTab) {
-        return SendTabToSelfAndroidBridge.isFeatureAvailable(currentTab.getWebContents());
+        boolean shouldShow =
+                SendTabToSelfAndroidBridge.isFeatureAvailable(currentTab.getWebContents());
+        if (shouldShow) {
+            SendTabToSelfShareClickResult.recordClickResult(
+                    SendTabToSelfShareClickResult.ClickType.SHOW_ITEM);
+        }
+        return shouldShow;
     }
 }

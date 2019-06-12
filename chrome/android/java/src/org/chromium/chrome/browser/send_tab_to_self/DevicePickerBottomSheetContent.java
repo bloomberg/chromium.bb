@@ -14,8 +14,10 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareClickResult;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
@@ -44,6 +46,13 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
 
         createToolbarView();
         createContentView();
+        recordNumberOfDevicesDisplayed();
+    }
+
+    private void recordNumberOfDevicesDisplayed() {
+        // This histogram is used across multiple platforms and should be
+        // kept consistent.
+        RecordHistogram.recordCount100Histogram("SendTabToSelf.DeviceCount", mAdapter.getCount());
     }
 
     private void createToolbarView() {
@@ -127,6 +136,8 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        SendTabToSelfShareClickResult.recordClickResult(
+                SendTabToSelfShareClickResult.ClickType.CLICK_ITEM);
         TargetDeviceInfo targetDeviceInfo = mAdapter.getItem(position);
 
         Tab tab = mActivity.getActivityTabProvider().get();
