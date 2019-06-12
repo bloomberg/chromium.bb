@@ -344,7 +344,7 @@ typedef enum BrailleDots {
 } BrailleDots;
 
 /**
- * A sentinel, also used in liblouisutdml
+ * A sentinel, used in liblouisutdml
  */
 #define LOU_ENDSEGMENT 0xffff
 
