@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.util;
 
 import android.graphics.Bitmap;
 import android.os.Looper;
@@ -14,6 +14,7 @@ import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeApplication;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;

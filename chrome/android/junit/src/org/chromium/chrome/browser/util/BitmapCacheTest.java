@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.util;
 
 import android.graphics.Bitmap;
 
@@ -16,7 +16,7 @@ import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
- * Unit tests for {@link org.chromium.chrome.browser.BitmapCache}.
+ * Unit tests for {@link BitmapCache}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
