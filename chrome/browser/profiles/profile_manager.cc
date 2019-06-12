@@ -240,14 +240,14 @@ void ProfileSizeTask(const base::FilePath& path, int enabled_app_count) {
 // Schedule a profile for deletion if it isn't already scheduled.
 // Returns whether the profile has been newly scheduled.
 bool ScheduleProfileDirectoryForDeletion(const base::FilePath& path) {
-  if (ContainsKey(ProfilesToDelete(), path))
+  if (base::Contains(ProfilesToDelete(), path))
     return false;
   ProfilesToDelete()[path] = ProfileDeletionStage::SCHEDULING;
   return true;
 }
 
 void MarkProfileDirectoryForDeletion(const base::FilePath& path) {
-  DCHECK(!ContainsKey(ProfilesToDelete(), path) ||
+  DCHECK(!base::Contains(ProfilesToDelete(), path) ||
          ProfilesToDelete()[path] == ProfileDeletionStage::SCHEDULING);
   ProfilesToDelete()[path] = ProfileDeletionStage::MARKED;
   // Remember that this profile was deleted and files should have been deleted
@@ -260,7 +260,7 @@ void MarkProfileDirectoryForDeletion(const base::FilePath& path) {
 // Cancel a scheduling deletion, so ScheduleProfileDirectoryForDeletion can be
 // called again successfully.
 void CancelProfileDeletion(const base::FilePath& path) {
-  DCHECK(!ContainsKey(ProfilesToDelete(), path) ||
+  DCHECK(!base::Contains(ProfilesToDelete(), path) ||
          ProfilesToDelete()[path] == ProfileDeletionStage::SCHEDULING);
   ProfilesToDelete().erase(path);
   ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::DELETE_PROFILE_ABORTED);

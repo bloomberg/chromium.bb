@@ -80,7 +80,7 @@ void DbusPropertiesInterface::OnGetAllProperties(
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
 
-  if (base::ContainsKey(properties_, interface)) {
+  if (base::Contains(properties_, interface)) {
     dbus::MessageWriter array_writer(nullptr);
     dbus::MessageWriter dict_entry_writer(nullptr);
     writer.OpenArray("{sv}", &array_writer);
@@ -112,8 +112,8 @@ void DbusPropertiesInterface::OnGetProperty(
   std::string interface;
   std::string property_name;
   if (!reader.PopString(&interface) || !reader.PopString(&property_name) ||
-      !base::ContainsKey(properties_, interface) ||
-      !base::ContainsKey(properties_[interface], property_name)) {
+      !base::Contains(properties_, interface) ||
+      !base::Contains(properties_[interface], property_name)) {
     response_sender.Run(nullptr);
     return;
   }

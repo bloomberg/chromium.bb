@@ -3317,7 +3317,7 @@ bool GroupsAreContiguous(
     // |seen_groups| tells us which.
     if (group_per_tab[tab_index].has_value() &&
         group_per_tab[tab_index] != last_seen_group) {
-      if (base::ContainsKey(seen_groups, group_per_tab[tab_index].value()))
+      if (base::Contains(seen_groups, group_per_tab[tab_index].value()))
         return false;
       seen_groups.insert(group_per_tab[tab_index].value());
     }
@@ -3346,7 +3346,7 @@ std::string PrintGroupsToString(
       continue;
     }
 
-    if (!base::ContainsKey(group_to_output, cur.value()))
+    if (!base::Contains(group_to_output, cur.value()))
       group_to_output[cur.value()] = next_group++;
 
     result += base::NumberToString(group_to_output[cur.value()]) + " ";

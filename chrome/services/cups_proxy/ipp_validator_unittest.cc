@@ -39,7 +39,7 @@ class FakeServiceDelegate
   }
 
   base::Optional<Printer> GetPrinter(const std::string& id) override {
-    if (!base::ContainsKey(known_printers_, id)) {
+    if (!base::Contains(known_printers_, id)) {
       return base::nullopt;
     }
 

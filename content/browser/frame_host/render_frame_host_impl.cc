@@ -3409,7 +3409,7 @@ void RenderFrameHostImpl::OnEnterFullscreen(
        node = node->parent()) {
     SiteInstance* parent_site_instance =
         node->parent()->current_frame_host()->GetSiteInstance();
-    if (ContainsKey(notified_instances, parent_site_instance))
+    if (base::Contains(notified_instances, parent_site_instance))
       continue;
 
     RenderFrameProxyHost* child_proxy =
