@@ -82,7 +82,7 @@ void DeviceOAuth2TokenServiceDelegate::SetAndSaveRefreshToken(
 }
 
 bool DeviceOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   auto accounts = GetAccounts();
   return std::find(accounts.begin(), accounts.end(), account_id) !=
          accounts.end();
@@ -149,7 +149,7 @@ void DeviceOAuth2TokenServiceDelegate::OnNetworkError(int response_code) {
 }
 
 std::string DeviceOAuth2TokenServiceDelegate::GetRefreshToken(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   switch (state_) {
     case STATE_LOADING:
     case STATE_NO_TOKEN:
@@ -177,7 +177,7 @@ DeviceOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
 
 OAuth2AccessTokenFetcher*
 DeviceOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   std::string refresh_token = GetRefreshToken(account_id);

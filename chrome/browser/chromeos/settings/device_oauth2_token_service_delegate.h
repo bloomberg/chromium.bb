@@ -51,13 +51,13 @@ class DeviceOAuth2TokenServiceDelegate
   std::string GetRobotAccountId() const;
 
   // Implementation of OAuth2TokenServiceDelegate.
-  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
 
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
@@ -102,7 +102,7 @@ class DeviceOAuth2TokenServiceDelegate
   void OnServiceAccountIdentityChanged();
 
   // Returns the refresh token for account_id.
-  std::string GetRefreshToken(const std::string& account_id) const;
+  std::string GetRefreshToken(const CoreAccountId& account_id) const;
 
   // Handles completion of the system salt input.
   void DidGetSystemSalt(const std::string& system_salt);

@@ -47,30 +47,30 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   // Overridden from OAuth2TokenServiceDelegate.
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
   // Updates the internal cache of the result from the most-recently-completed
   // auth request (used for reporting errors to the user).
-  void UpdateAuthError(const std::string& account_id,
+  void UpdateAuthError(const CoreAccountId& account_id,
                        const GoogleServiceAuthError& error) override;
 
   std::string GetTokenForMultilogin(
-      const std::string& account_id) const override;
-  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+      const CoreAccountId& account_id) const override;
+  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
   GoogleServiceAuthError GetAuthError(
-      const std::string& account_id) const override;
+      const CoreAccountId& account_id) const override;
   std::vector<std::string> GetAccounts() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
-  void LoadCredentials(const std::string& primary_account_id) override;
-  void UpdateCredentials(const std::string& account_id,
+  void LoadCredentials(const CoreAccountId& primary_account_id) override;
+  void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& refresh_token) override;
   void RevokeAllCredentials() override;
-  void RevokeCredentials(const std::string& account_id) override;
+  void RevokeCredentials(const CoreAccountId& account_id) override;
   void ExtractCredentials(OAuth2TokenService* to_service,
-                          const std::string& account_id) override;
+                          const CoreAccountId& account_id) override;
   void Shutdown() override;
 
   // Overridden from NetworkConnectionTracker::NetworkConnectionObserver.
@@ -151,7 +151,8 @@ class MutableProfileOAuth2TokenServiceDelegate
                                  const std::string& refresh_token);
 
   // Sets refresh token in error.
-  void InvalidateTokenForMultilogin(const std::string& failed_account) override;
+  void InvalidateTokenForMultilogin(
+      const CoreAccountId& failed_account) override;
 
   // Persists credentials for |account_id|. Enables overriding for
   // testing purposes, or other cases, when accessing the DB is not desired.

@@ -169,7 +169,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::Shutdown() {
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
-    const std::string& primary_account_id) {
+    const CoreAccountId& primary_account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DCHECK_EQ(LOAD_CREDENTIALS_NOT_STARTED, load_credentials_state());
@@ -193,7 +193,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials(
-    const std::string& primary_account_id) {
+    const CoreAccountId& primary_account_id) {
   DCHECK(!primary_account_id.empty());
   DCHECK(primary_account_id_.empty() ||
          primary_account_id_ == primary_account_id);
@@ -250,7 +250,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::UpdateCredentials(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& refresh_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
   NOTREACHED() << "Unexpected call to UpdateCredentials when using shared "
@@ -271,12 +271,12 @@ void ProfileOAuth2TokenServiceIOSDelegate::RevokeAllCredentials() {
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::AddAccountFromSystem(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   AddOrUpdateAccount(account_id);
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::ReloadAccountsFromSystem(
-    const std::string& primary_account_id) {
+    const CoreAccountId& primary_account_id) {
   if (primary_account_id.empty())
     return;
 
@@ -285,7 +285,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadAccountsFromSystem(
 
 OAuth2AccessTokenFetcher*
 ProfileOAuth2TokenServiceIOSDelegate::CreateAccessTokenFetcher(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   AccountInfo account_info =
@@ -302,21 +302,21 @@ std::vector<std::string> ProfileOAuth2TokenServiceIOSDelegate::GetAccounts() {
 }
 
 bool ProfileOAuth2TokenServiceIOSDelegate::RefreshTokenIsAvailable(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return accounts_.count(account_id) > 0;
 }
 
 GoogleServiceAuthError ProfileOAuth2TokenServiceIOSDelegate::GetAuthError(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   auto it = accounts_.find(account_id);
   return (it == accounts_.end()) ? GoogleServiceAuthError::AuthErrorNone()
                                  : it->second.last_auth_error;
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

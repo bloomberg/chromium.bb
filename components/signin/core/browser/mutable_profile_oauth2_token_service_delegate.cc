@@ -374,7 +374,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(
 
 OAuth2AccessTokenFetcher*
 MutableProfileOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   ValidateAccountId(account_id);
@@ -397,14 +397,14 @@ MutableProfileOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
 }
 
 GoogleServiceAuthError MutableProfileOAuth2TokenServiceDelegate::GetAuthError(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   auto it = refresh_tokens_.find(account_id);
   return (it == refresh_tokens_.end()) ? GoogleServiceAuthError::AuthErrorNone()
                                        : it->second.last_auth_error;
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::UpdateAuthError(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   VLOG(1) << "MutablePO2TS::UpdateAuthError. Error: " << error.state()
           << " account_id=" << account_id;
@@ -436,7 +436,7 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateAuthError(
 }
 
 std::string MutableProfileOAuth2TokenServiceDelegate::GetTokenForMultilogin(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   auto iter = refresh_tokens_.find(account_id);
   if (iter == refresh_tokens_.end() ||
       iter->second.last_auth_error != GoogleServiceAuthError::AuthErrorNone()) {
@@ -448,7 +448,7 @@ std::string MutableProfileOAuth2TokenServiceDelegate::GetTokenForMultilogin(
 }
 
 bool MutableProfileOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   VLOG(1) << "MutablePO2TS::RefreshTokenIsAvailable";
   return !GetRefreshToken(account_id).empty();
 }
@@ -484,14 +484,14 @@ MutableProfileOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::InvalidateTokenForMultilogin(
-    const std::string& failed_account) {
+    const CoreAccountId& failed_account) {
   UpdateAuthError(
       failed_account,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
-    const std::string& primary_account_id) {
+    const CoreAccountId& primary_account_id) {
   if (load_credentials_state() == LOAD_CREDENTIALS_IN_PROGRESS) {
     VLOG(1) << "Load credentials operation already in progress";
     return;
@@ -528,8 +528,9 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
   // If |account_id| is an email address, then canonicalize it. This is needed
   // to support legacy account IDs, and will not be needed after switching to
   // gaia IDs.
-  if (primary_account_id.find('@') != std::string::npos) {
-    loading_primary_account_id_ = gaia::CanonicalizeEmail(primary_account_id);
+  if (primary_account_id.id.find('@') != std::string::npos) {
+    loading_primary_account_id_ =
+        gaia::CanonicalizeEmail(primary_account_id.id);
   } else {
     loading_primary_account_id_ = primary_account_id;
   }
@@ -731,7 +732,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& refresh_token) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!account_id.empty());
@@ -841,7 +842,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentials(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   RevokeCredentialsImpl(account_id, /*revoke_on_server=*/true);
 }
 
@@ -878,7 +879,7 @@ void MutableProfileOAuth2TokenServiceDelegate::CancelWebTokenFetch() {
 
 void MutableProfileOAuth2TokenServiceDelegate::ExtractCredentials(
     OAuth2TokenService* to_service,
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   static_cast<ProfileOAuth2TokenService*>(to_service)
       ->UpdateCredentials(account_id, GetRefreshToken(account_id),
                           signin_metrics::SourceForRefreshTokenOperation::
