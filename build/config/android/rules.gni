@@ -889,8 +889,6 @@ if (enable_java_templates) {
   #     merged into apks that directly or indirectly depend on this target.
   #   android_manifest_dep: Target that generates AndroidManifest (if applicable)
   #   custom_package: java package for generated .java files.
-  #   v14_skip: If true, don't run v14 resource generator on this. Defaults to
-  #     false. (see build/android/gyp/generate_v14_compatible_resources.py)
   #   shared_resources: If true make a resource package that can be loaded by a
   #     different application at runtime to access the package's resources.
   #   r_text_file: (optional) path to pre-generated R.txt to be used when
@@ -914,6 +912,9 @@ if (enable_java_templates) {
     forward_variables_from(invoker, [ "testonly" ])
 
     _base_path = "$target_gen_dir/$target_name"
+    if (defined(invoker.v14_skip)) {
+      not_needed(invoker, [ "v14_skip" ])
+    }
 
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
@@ -977,7 +978,6 @@ if (enable_java_templates) {
                                "generated_resource_dirs",
                                "generated_resource_files",
                                "resource_dirs",
-                               "v14_skip",
                                "strip_drawables",
                              ])
       deps = _deps
@@ -4063,7 +4063,6 @@ if (enable_java_templates) {
         if (!_strip_resources && _scanned_files.has_r_text_file) {
           r_text_file = "${_output_path}/R.txt"
         }
-        v14_skip = true
       }
     } else if (defined(invoker.strip_drawables)) {
       not_needed(invoker, [ "strip_drawables" ])
