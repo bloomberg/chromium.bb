@@ -1162,7 +1162,7 @@ chrome_common_shared_library("libchrome") {
 
   # Include appropriate factories for native feature modules if necessary.
   if (enable_vr) {
-    if (modularize_vr_native) {
+    if (use_native_modules && modularize_vr_native) {
       deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
     } else {
       deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
@@ -1420,7 +1420,7 @@ template("libmonochrome_apk_or_bundle_tmpl") {
 
     # Include appropriate factories for native feature modules if necessary.
     if (enable_vr) {
-      if (modularize_vr_native) {
+      if (use_native_modules && modularize_vr_native) {
         deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
       } else {
         deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
