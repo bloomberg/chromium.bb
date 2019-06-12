@@ -745,56 +745,6 @@
   };
 
   /**
-   * Tests opening Quick View on an JPEG image that has EXIF displays the EXIF
-   * information in the QuickView Metadata Box.
-   */
-  testcase.openQuickViewImageExif = async () => {
-    const caller = getCaller();
-
-    /**
-     * The <webview> resides in the <files-safe-media type="image"> shadow DOM,
-     * which is a child of the #quick-view shadow DOM.
-     */
-    const webView =
-        ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
-
-    // Open Files app on Downloads containing ENTRIES.exifImage.
-    const appId = await setupAndWaitUntilReady(
-        RootPath.DOWNLOADS, [ENTRIES.exifImage], []);
-
-    // Open the file in Quick View.
-    await openQuickView(appId, ENTRIES.exifImage.nameText);
-
-    // Wait for the Quick View <webview> to load and display its content.
-    function checkWebViewImageLoaded(elements) {
-      let haveElements = Array.isArray(elements) && elements.length === 1;
-      if (haveElements) {
-        haveElements = elements[0].styles.display.includes('block');
-      }
-      if (!haveElements || elements[0].attributes.loaded !== '') {
-        return pending(caller, 'Waiting for <webview> to load.');
-      }
-      return;
-    }
-    await repeatUntil(async () => {
-      return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
-          'deepQueryAllElements', appId, [webView, ['display']]));
-    });
-
-    // Check: the correct mimeType should be displayed.
-    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
-    chrome.test.assertEq('image/jpeg', mimeType);
-
-    // Check: the correct image EXIF metadata should be displayed.
-    const size = await getQuickViewMetadataBoxField(appId, 'Dimensions');
-    chrome.test.assertEq('378 x 272', size);
-    const model = await getQuickViewMetadataBoxField(appId, 'Device model');
-    chrome.test.assertEq(model, 'FinePix S5000');
-    const film = await getQuickViewMetadataBoxField(appId, 'Device settings');
-    chrome.test.assertEq('f/2.8 0.004 5.7mm ISO200', film);
-  };
-
-  /**
    * Tests opening Quick View containing a video.
    */
   testcase.openQuickViewVideo = async () => {
