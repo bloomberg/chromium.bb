@@ -70,7 +70,6 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
               'desc': '''This policy does stuff.'''
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {
             'message_string_id': {
@@ -173,8 +172,6 @@ class PolicyTemplatesJsonUnittest(unittest.TestCase):
         'type': 'object',
       },
     },
-  ],
-  'policy_atomic_group_definitions': [
   ],
   'messages': {
       'message_string_id': {

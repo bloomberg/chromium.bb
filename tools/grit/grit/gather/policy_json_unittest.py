@@ -25,11 +25,7 @@ class PolicyJsonUnittest(unittest.TestCase):
     return expected
 
   def testEmpty(self):
-    original = """{
-      'policy_definitions': [],
-      'policy_atomic_group_definitions': [],
-      'messages': {}
-      }"""
+    original = "{'policy_definitions': [], 'messages': {}}"
     gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 0)
@@ -50,7 +46,6 @@ class PolicyJsonUnittest(unittest.TestCase):
         "      'label': 'nothing special 3',"
         "    },"
         "  ],"
-        "  'policy_atomic_group_definitions': [],"
         "  'messages': {"
         "    'msg_identifier': {"
         "      'text': 'nothing special 3',"
@@ -78,7 +73,6 @@ class PolicyJsonUnittest(unittest.TestCase):
         "      ]"
         "    },"
         "  ],"
-        "  'policy_atomic_group_definitions': [],"
         "  'messages': {}"
         "}")
     gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
@@ -108,7 +102,6 @@ class PolicyJsonUnittest(unittest.TestCase):
                 "      'caption': 'nothing special',"
                 "    },"
                 "  ],"
-                "  'policy_atomic_group_definitions': [],"
                 "  'messages': {}"
                 "}")
     gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
@@ -131,7 +124,6 @@ class PolicyJsonUnittest(unittest.TestCase):
                 "      },"
                 "    },"
                 "  ],"
-                "  'policy_atomic_group_definitions': [],"
                 "  'messages': {}"
                 "}")
     gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
@@ -154,7 +146,6 @@ class PolicyJsonUnittest(unittest.TestCase):
                 "      },"
                 "    },"
                 "  ],"
-                "  'policy_atomic_group_definitions': [],"
                 "  'messages': {}"
                 "}")
     gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
@@ -178,7 +169,6 @@ class PolicyJsonUnittest(unittest.TestCase):
         "      ]"
         "    }"
         "  ],"
-        "  'policy_atomic_group_definitions': [],"
         "  'messages': {}"
         "}")
     gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
@@ -200,7 +190,6 @@ class PolicyJsonUnittest(unittest.TestCase):
         "      'caption': 'nothing special',"
         "    }"
         "  ],"
-        "  'policy_atomic_group_definitions': [],"
         "  'messages': {}"
         "}")
     gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
@@ -212,7 +201,6 @@ class PolicyJsonUnittest(unittest.TestCase):
   def testEscapingAndLineBreaks(self):
     original = """{
         'policy_definitions': [],
-        'policy_atomic_group_definitions': [],
         'messages': {
           'msg1': {
             # The following line will contain two backslash characters when it
@@ -262,7 +250,6 @@ with a newline?''',
                 <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
           },
         ],
-        'policy_atomic_group_definitions': [],
         'messages': {}
 }"""
     gatherer = policy_json.PolicyJson(StringIO.StringIO(original))

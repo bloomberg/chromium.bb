@@ -62,7 +62,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     policy_json = '''
         {
           "policy_definitions": [],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
@@ -75,7 +74,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     policy_json = '''
         {
           "policy_definitions": [],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
@@ -100,7 +98,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": True
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
@@ -130,7 +127,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": True
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
@@ -160,7 +156,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": "hello, world!"
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
@@ -186,7 +181,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": 15
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
@@ -216,7 +210,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": 1
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
@@ -248,7 +241,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": "one"
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
@@ -274,7 +266,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": ["foo", "bar"]
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
@@ -306,7 +297,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": ["one", "two"]
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
@@ -342,7 +332,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": ''' + str(example) + '''
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": %s,
         }''' % MESSAGES
@@ -375,7 +364,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": %s
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": %s,
         }''' % (str(example), MESSAGES)
@@ -404,7 +392,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": ["a"]
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
@@ -441,7 +428,6 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "example_value": "c"
             },
           ],
-          "policy_atomic_group_definitions": [],
           "placeholders": [],
           "messages": {},
         }'''
