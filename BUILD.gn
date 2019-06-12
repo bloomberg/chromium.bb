@@ -11,6 +11,7 @@ group("all") {
     ":system_api-biod-protos",
     ":system_api-bootlockbox-protos",
     ":system_api-chaps-protos",
+    ":system_api-chunneld-protos",
     ":system_api-cryptohome-goprotos",
     ":system_api-cryptohome-protos",
     ":system_api-dlcservice-protos",
@@ -354,6 +355,15 @@ proto_library("system_api-u2f-protos") {
   proto_out_dir = "include/u2f/proto_bindings"
   sources = [
     "${proto_in_dir}/interface.proto",
+  ]
+  standalone = true
+}
+
+proto_library("system_api-chunneld-protos") {
+  proto_in_dir = "dbus/chunneld"
+  proto_out_dir = "include/chunneld/proto_bindings"
+  sources = [
+    "${proto_in_dir}/chunneld_service.proto",
   ]
   standalone = true
 }
