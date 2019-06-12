@@ -142,16 +142,14 @@ class ExamplesWindowContents : public WidgetDelegateView,
                                public ComboboxListener {
  public:
   ExamplesWindowContents(base::OnceClosure on_close, ExampleVector examples)
-      : example_shown_(new View),
-        status_label_(new Label),
-        on_close_(std::move(on_close)) {
+      : on_close_(std::move(on_close)) {
     auto combobox_model = std::make_unique<ComboboxModelExampleList>();
     combobox_model_ = combobox_model.get();
     combobox_model_->SetExamples(std::move(examples));
-    combobox_ = new Combobox(std::move(combobox_model));
+    auto combobox = std::make_unique<Combobox>(std::move(combobox_model));
 
     instance_ = this;
-    combobox_->set_listener(this);
+    combobox->set_listener(this);
 
     SetBackground(CreateThemedSolidBackground(
         this, ui::NativeTheme::kColorId_DialogBackground));
@@ -164,17 +162,18 @@ class ExamplesWindowContents : public WidgetDelegateView,
     column_set->AddPaddingColumn(0, 5);
     layout->AddPaddingRow(0, 5);
     layout->StartRow(0 /* no expand */, 0);
-    layout->AddView(combobox_);
+    combobox_ = layout->AddView(std::move(combobox));
 
     if (combobox_model_->GetItemCount() > 0) {
       layout->StartRow(1, 0);
-      example_shown_->SetLayoutManager(std::make_unique<FillLayout>());
-      example_shown_->AddChildView(combobox_model_->GetItemViewAt(0));
-      layout->AddView(example_shown_);
+      auto example_shown = std::make_unique<View>();
+      example_shown->SetLayoutManager(std::make_unique<FillLayout>());
+      example_shown->AddChildView(combobox_model_->GetItemViewAt(0));
+      example_shown_ = layout->AddView(std::move(example_shown));
     }
 
     layout->StartRow(0 /* no expand */, 0);
-    layout->AddView(status_label_);
+    status_label_ = layout->AddView(std::make_unique<Label>());
     layout->AddPaddingRow(0, 5);
   }
 
@@ -223,8 +222,8 @@ class ExamplesWindowContents : public WidgetDelegateView,
   }
 
   static ExamplesWindowContents* instance_;
-  View* example_shown_;
-  Label* status_label_;
+  View* example_shown_ = nullptr;
+  Label* status_label_ = nullptr;
   base::OnceClosure on_close_;
   Combobox* combobox_ = nullptr;
   // Owned by |combobox_|.

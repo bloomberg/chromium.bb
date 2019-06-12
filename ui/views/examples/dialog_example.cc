@@ -160,10 +160,9 @@ void DialogExample::CreateExampleView(View* container) {
   AddCheckbox(layout, &has_extra_button_);
 
   StartRowWithLabel(layout, "Modal Type");
-  mode_ = new Combobox(&mode_model_);
+  mode_ = layout->AddView(std::make_unique<Combobox>(&mode_model_));
   mode_->set_listener(this);
   mode_->SetSelectedIndex(ui::MODAL_TYPE_CHILD);
-  layout->AddView(mode_);
 
   StartRowWithLabel(layout, "Bubble");
   AddCheckbox(layout, &bubble_);
@@ -177,11 +176,8 @@ void DialogExample::CreateExampleView(View* container) {
       kFixed, kButtonsColumnId, kFixed,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
-  // TODO(crbug.com/943560): Avoid this release().
-  show_ =
-      MdTextButton::CreateSecondaryUiButton(this, base::ASCIIToUTF16("Show"))
-          .release();
-  layout->AddView(show_);
+  show_ = layout->AddView(
+      MdTextButton::CreateSecondaryUiButton(this, base::ASCIIToUTF16("Show")));
 }
 
 void DialogExample::StartRowWithLabel(GridLayout* layout, const char* label) {
@@ -190,7 +186,7 @@ void DialogExample::StartRowWithLabel(GridLayout* layout, const char* label) {
                               kFixedVerticalResize,
                               views::LayoutProvider::Get()->GetDistanceMetric(
                                   views::DISTANCE_RELATED_CONTROL_VERTICAL));
-  layout->AddView(new Label(base::ASCIIToUTF16(label)));
+  layout->AddView(std::make_unique<Label>(base::ASCIIToUTF16(label)));
 }
 
 void DialogExample::StartTextfieldRow(GridLayout* layout,
@@ -198,18 +194,16 @@ void DialogExample::StartTextfieldRow(GridLayout* layout,
                                       const char* label,
                                       const char* value) {
   StartRowWithLabel(layout, label);
-  Textfield* textfield = new Textfield();
-  layout->AddView(textfield);
+  auto textfield = std::make_unique<Textfield>();
   textfield->set_controller(this);
   textfield->SetText(base::ASCIIToUTF16(value));
-  *member = textfield;
+  *member = layout->AddView(std::move(textfield));
 }
 
 void DialogExample::AddCheckbox(GridLayout* layout, Checkbox** member) {
-  Checkbox* checkbox = new Checkbox(base::string16(), this);
+  auto checkbox = std::make_unique<Checkbox>(base::string16(), this);
   checkbox->SetChecked(true);
-  layout->AddView(checkbox);
-  *member = checkbox;
+  *member = layout->AddView(std::move(checkbox));
 }
 
 ui::ModalType DialogExample::GetModalType() const {
