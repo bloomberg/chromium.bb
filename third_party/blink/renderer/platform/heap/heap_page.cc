@@ -105,6 +105,11 @@ void HeapObjectHeader::Finalize(Address object, size_t object_size) {
   ASAN_RETIRE_CONTAINER_ANNOTATION(object, object_size);
 }
 
+bool HeapObjectHeader::HasFinalizer() const {
+  const GCInfo* gc_info = GCInfoTable::Get().GCInfoFromIndex(GcInfoIndex());
+  return gc_info->finalize;
+}
+
 BaseArena::BaseArena(ThreadState* state, int index)
     : thread_state_(state), index_(index) {}
 
@@ -255,22 +260,18 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
   CHECK(GetThreadState()->IsSweepingInProgress());
 
   // lazySweepPages() can be called recursively if finalizers invoked in
-  // page->sweep() allocate memory and the allocation triggers
+  // page->Sweep() allocate memory and the allocation triggers
   // lazySweepPages(). This check prevents the sweeping from being executed
   // recursively.
   if (GetThreadState()->SweepForbidden())
     return nullptr;
 
-  Address result = nullptr;
-  {
-    ThreadHeapStatsCollector::Scope stats_scope(
-        GetThreadState()->Heap().stats_collector(),
-        ThreadHeapStatsCollector::kLazySweepOnAllocation);
-    ThreadState::SweepForbiddenScope sweep_forbidden(GetThreadState());
-    ScriptForbiddenScope script_forbidden;
-    result = LazySweepPages(allocation_size, gc_info_index);
-  }
-  return result;
+  ThreadHeapStatsCollector::Scope stats_scope(
+      GetThreadState()->Heap().stats_collector(),
+      ThreadHeapStatsCollector::kLazySweepOnAllocation);
+  ThreadState::SweepForbiddenScope sweep_forbidden(GetThreadState());
+  ScriptForbiddenScope script_forbidden;
+  return LazySweepPages(allocation_size, gc_info_index);
 }
 
 void BaseArena::SweepUnsweptPage(BasePage* page) {
@@ -1304,7 +1305,7 @@ bool NormalPage::Sweep() {
   for (Address header_address = start_of_gap; header_address < PayloadEnd();) {
     HeapObjectHeader* header =
         reinterpret_cast<HeapObjectHeader*>(header_address);
-    size_t size = header->size();
+    const size_t size = header->size();
     DCHECK_GT(size, 0u);
     DCHECK_LT(size, BlinkPagePayloadSize());
 
@@ -1313,9 +1314,8 @@ bool NormalPage::Sweep() {
       // invariant that memory on the free list is zero filled.
       // The rest of the memory is already on the free list and is
       // therefore already zero filled.
-      SET_MEMORY_INACCESSIBLE(header_address, size < sizeof(FreeListEntry)
-                                                  ? size
-                                                  : sizeof(FreeListEntry));
+      SET_MEMORY_INACCESSIBLE(header_address,
+                              std::min(size, sizeof(FreeListEntry)));
       CHECK_MEMORY_INACCESSIBLE(header_address, size);
       header_address += size;
       continue;

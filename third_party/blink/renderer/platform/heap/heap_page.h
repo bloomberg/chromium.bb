@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_PAGE_H_
 
 #include <stdint.h>
+
 #include "base/bits.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
@@ -239,6 +240,9 @@ class PLATFORM_EXPORT HeapObjectHeader {
   Address PayloadEnd();
 
   void Finalize(Address, size_t);
+
+  // Returns true if object has finalizer.
+  bool HasFinalizer() const;
 
   // Returns true if magic number is valid.
   bool IsValid() const;
