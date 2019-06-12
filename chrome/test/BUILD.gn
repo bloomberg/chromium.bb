@@ -4373,6 +4373,12 @@ test("unit_tests") {
     deps += [ "//chrome/browser/ui/libgtkui" ]
   }
 
+  if (is_desktop_linux && use_dbus) {
+    sources += [
+      "../browser/ui/views/status_icons/success_barrier_callback_unittest.cc",
+    ]
+  }
+
   if (enable_service_discovery) {
     sources += [
       "../browser/devtools/device/cast_device_provider_unittest.cc",

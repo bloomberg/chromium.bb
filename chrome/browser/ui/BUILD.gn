@@ -2382,10 +2382,17 @@ jumbo_split_static_library("ui") {
 
     if (use_dbus) {
       sources += [
+        "views/status_icons/dbus_properties_interface.cc",
+        "views/status_icons/dbus_properties_interface.h",
+        "views/status_icons/dbus_types.cc",
+        "views/status_icons/dbus_types.h",
         "views/status_icons/status_icon_linux_dbus.cc",
         "views/status_icons/status_icon_linux_dbus.h",
+        "views/status_icons/success_barrier_callback.cc",
+        "views/status_icons/success_barrier_callback.h",
       ]
       defines += [ "USE_DBUS" ]
+      deps += [ "//components/dbus:dbus_thread_linux" ]
     }
 
     if (use_x11) {
