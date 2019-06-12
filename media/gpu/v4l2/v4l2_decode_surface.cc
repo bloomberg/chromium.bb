@@ -13,7 +13,7 @@ namespace media {
 
 V4L2DecodeSurface::V4L2DecodeSurface(int input_record,
                                      int output_record,
-                                     ReleaseCB release_cb)
+                                     base::OnceClosure release_cb)
     : input_record_(input_record),
       output_record_(output_record),
       decoded_(false),
