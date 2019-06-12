@@ -113,10 +113,21 @@ void IndexedDBOriginState::AbortAllTransactions(bool compact) {
     auto it = databases_.find(origin);
     if (it == databases_.end())
       continue;
-    for (IndexedDBConnection* connection : it->second->connections()) {
-      connection->FinishAllTransactions(
-          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 "Aborting all transactions for the origin."));
+
+    // Calling FinishAllTransactions can destruct the IndexedDBConnection &
+    // modify the IndexedDBDatabase::connection() list. To prevent UAFs, start
+    // by taking a WeakPtr of all connections, and then iterate that list.
+    std::vector<base::WeakPtr<IndexedDBConnection>> weak_connections;
+    weak_connections.reserve(it->second->connections().size());
+    for (IndexedDBConnection* connection : it->second->connections())
+      weak_connections.push_back(connection->GetWeakPtr());
+
+    for (base::WeakPtr<IndexedDBConnection> connection : weak_connections) {
+      if (connection) {
+        connection->FinishAllTransactions(IndexedDBDatabaseError(
+            blink::kWebIDBDatabaseExceptionUnknownError,
+            "Aborting all transactions for the origin."));
+      }
     }
   }
   if (compact)
