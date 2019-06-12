@@ -69,11 +69,11 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
     GoogleServiceAuthError error;
   };
 
-  void IssueRefreshTokenForUser(const std::string& account_id,
+  void IssueRefreshTokenForUser(const CoreAccountId& account_id,
                                 const std::string& token);
 
   // Maps account ids to info.
-  std::map<std::string, std::unique_ptr<AccountInfo>> refresh_tokens_;
+  std::map<CoreAccountId, std::unique_ptr<AccountInfo>> refresh_tokens_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;

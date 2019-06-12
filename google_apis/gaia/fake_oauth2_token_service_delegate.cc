@@ -99,7 +99,7 @@ void FakeOAuth2TokenServiceDelegate::UpdateCredentials(
 }
 
 void FakeOAuth2TokenServiceDelegate::IssueRefreshTokenForUser(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& token) {
   ScopedBatchChange batch(this);
   if (token.empty()) {
