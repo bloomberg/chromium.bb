@@ -703,6 +703,7 @@ junit_binary("chrome_junit_tests") {
 }
 
 process_version("chrome_version_constants") {
+  process_only = true
   template_file = "java/ChromeVersionConstants.java.version"
   sources = [
     branding_file_path,
@@ -1065,6 +1066,7 @@ android_resources("chrome_public_apk_resources") {
 version_resource_dir = "$target_gen_dir/templates/chrome_version_xml/res"
 verson_resource_file = "$version_resource_dir/values/strings.xml"
 process_version("version_xml") {
+  process_only = true
   template_file = "java/version_strings.xml.template"
   sources = [
     "//chrome/VERSION",
