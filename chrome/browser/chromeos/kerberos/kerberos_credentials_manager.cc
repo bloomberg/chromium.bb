@@ -499,6 +499,7 @@ kerberos::ErrorType KerberosCredentialsManager::SetActiveAccount(
   // Kerberos credentials.
   active_principal_name_ = principal_name;
   GetKerberosFiles();
+  NotifyAccountsChanged();
   return kerberos::ERROR_NONE;
 }
 

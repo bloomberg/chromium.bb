@@ -1741,6 +1741,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"kerberosAccountsListHeader", IDS_SETTINGS_KERBEROS_ACCOUNTS_LIST_HEADER},
     {"kerberosAccountsAddAccountLabel",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_ADD_ACCOUNT_LABEL},
+    {"kerberosAccountsSetAsActiveAccountLabel",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_SET_AS_ACTIVE_ACCOUNT_LABEL},
     {"kerberosAccountsRemoveAccountLabel",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL},
     {"kerberosAccountsSignedIn", IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_IN},

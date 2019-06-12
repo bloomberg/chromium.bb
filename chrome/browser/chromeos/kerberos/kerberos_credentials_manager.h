@@ -110,6 +110,9 @@ class KerberosCredentialsManager final {
   // Sets the currently active account.
   kerberos::ErrorType SetActiveAccount(std::string principal_name);
 
+  // Returns the currently active account or an empty string if there is none.
+  const std::string& GetActiveAccount() { return active_principal_name_; }
+
  private:
   friend class KerberosAddAccountRunner;
 
