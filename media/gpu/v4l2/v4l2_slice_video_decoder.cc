@@ -33,18 +33,15 @@ constexpr size_t kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p;
 constexpr size_t kNumInputBuffers = 16;
 constexpr size_t kNumInputPlanes = 1;
 
-// If the driver does not accept as many fds as we received from the client,
-// we have to check if the additional fds are actually duplicated fds pointing
-// to previous planes; if so, close the duplicates and return only the original
-// fd(s). If not, return an empty list.
-std::vector<base::ScopedFD> ExtractAdditionalDmabuf(
-    scoped_refptr<VideoFrame> frame,
-    size_t target_num_fds) {
+// Checks an underlying video frame buffer of |frame| is valid for VIDIOC_DQBUF
+// that requires |target_num_fds| fds.
+bool IsValidFrameForQueueDMABuf(const VideoFrame* frame,
+                                size_t target_num_fds) {
   DCHECK(frame);
   if (frame->DmabufFds().size() < target_num_fds) {
     VLOGF(1) << "The count of dmabuf fds (" << frame->DmabufFds().size()
              << ") are not enough, needs " << target_num_fds << " fds.";
-    return std::vector<base::ScopedFD>();
+    return false;
   }
 
   const std::vector<VideoFrameLayout::Plane>& planes = frame->layout().planes();
@@ -54,14 +51,11 @@ std::vector<base::ScopedFD> ExtractAdditionalDmabuf(
     // a new plane.
     if (planes[i].offset == 0) {
       VLOGF(1) << "Additional dmabuf fds point to a new buffer.";
-      return std::vector<base::ScopedFD>();
+      return false;
     }
   }
 
-  std::vector<base::ScopedFD> dmabuf_fds = DuplicateFDs(frame->DmabufFds());
-  if (dmabuf_fds.size() > target_num_fds)
-    dmabuf_fds.erase(dmabuf_fds.begin() + target_num_fds, dmabuf_fds.end());
-  return dmabuf_fds;
+  return true;
 }
 
 }  // namespace
@@ -857,13 +851,13 @@ void V4L2SliceVideoDecoder::DecodeSurface(
   auto surface_it = output_record_map_.find(dec_surface->output_record());
   DCHECK(surface_it != output_record_map_.end());
   OutputRecord* output_record = surface_it->second.get();
-  std::vector<base::ScopedFD> dmabuf_fds =
-      ExtractAdditionalDmabuf(output_record->frame, num_output_planes_);
-  if (dmabuf_fds.empty()) {
+  if (!IsValidFrameForQueueDMABuf(output_record->frame.get(),
+                                  num_output_planes_)) {
     SetState(State::kError);
     return;
   }
-  if (!std::move(output_record->output_buf).QueueDMABuf(dmabuf_fds)) {
+  if (!std::move(output_record->output_buf)
+           .QueueDMABuf(output_record->frame->DmabufFds())) {
     SetState(State::kError);
     return;
   }
