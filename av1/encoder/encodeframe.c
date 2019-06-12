@@ -638,6 +638,8 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
   // Set error per bit for current rdmult
   set_error_per_bit(x, x->rdmult);
 
+  av1_rd_cost_update(x->rdmult, &best_rd);
+
   // Find best coding mode & reconstruct the MB so it is available
   // as a predictor for MBs that follow in the SB
   if (frame_is_intra_only(cm)) {
@@ -2156,10 +2158,11 @@ static int rd_try_subblock(AV1_COMP *const cpi, ThreadData *td,
                            PICK_MODE_CONTEXT *this_ctx) {
   MACROBLOCK *const x = &td->mb;
 
+  av1_rd_cost_update(x->rdmult, &best_rdcost);
   if (cpi->sf.adaptive_motion_search) load_pred_mv(x, prev_ctx);
 
   RD_STATS rdcost_remaining;
-  av1_rd_stats_subtraction(&best_rdcost, sum_rdc, &rdcost_remaining);
+  av1_rd_stats_subtraction(x->rdmult, &best_rdcost, sum_rdc, &rdcost_remaining);
   RD_STATS this_rdc;
   pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc, partition,
                 subsize, this_ctx, rdcost_remaining, PICK_MODE_RD);
@@ -2169,7 +2172,7 @@ static int rd_try_subblock(AV1_COMP *const cpi, ThreadData *td,
   } else {
     sum_rdc->rate += this_rdc.rate;
     sum_rdc->dist += this_rdc.dist;
-    sum_rdc->rdcost += this_rdc.rdcost;
+    av1_rd_cost_update(x->rdmult, sum_rdc);
   }
 
   if (sum_rdc->rdcost >= best_rdcost.rdcost) return 0;
@@ -2211,6 +2214,7 @@ static bool rd_test_partition3(AV1_COMP *const cpi, ThreadData *td,
                        *best_rdc, &sum_rdc, partition, &ctxs[1], &ctxs[2]))
     return false;
 
+  av1_rd_cost_update(x->rdmult, &sum_rdc);
   if (sum_rdc.rdcost >= best_rdc->rdcost) return false;
   sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
   if (sum_rdc.rdcost >= best_rdc->rdcost) return false;
@@ -2366,6 +2370,8 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
 
   set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
 
+  av1_rd_cost_update(x->rdmult, &best_rdc);
+
   if (bsize == BLOCK_16X16 && cpi->vaq_refresh)
     x->mb_energy = av1_log_block_var(cpi, x, bsize);
 
@@ -2480,10 +2486,11 @@ BEGIN_PARTITION_SEARCH:
     }
     RD_STATS partition_rdcost;
     av1_init_rd_stats(&partition_rdcost);
-    partition_rdcost.dist = pt_cost;
-    partition_rdcost.rdcost = RDCOST(x->rdmult, pt_cost, 0);
+    partition_rdcost.rate = pt_cost;
+    av1_rd_cost_update(x->rdmult, &partition_rdcost);
     RD_STATS best_remain_rdcost;
-    av1_rd_stats_subtraction(&best_rdc, &partition_rdcost, &best_remain_rdcost);
+    av1_rd_stats_subtraction(x->rdmult, &best_rdc, &partition_rdcost,
+                             &best_remain_rdcost);
 #if CONFIG_COLLECT_PARTITION_STATS
     if (best_remain_rdcost >= 0) {
       partition_attempts[PARTITION_NONE] += 1;
@@ -2493,6 +2500,7 @@ BEGIN_PARTITION_SEARCH:
 #endif
     pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc, PARTITION_NONE,
                   bsize, ctx_none, best_remain_rdcost, PICK_MODE_RD);
+    av1_rd_cost_update(x->rdmult, &this_rdc);
 #if CONFIG_COLLECT_PARTITION_STATS
     if (partition_timer_on) {
       aom_usec_timer_mark(&partition_timer);
@@ -2604,10 +2612,8 @@ BEGIN_PARTITION_SEARCH:
       int64_t *p_split_rd = &split_rd[idx];
 
       RD_STATS best_remain_rdcost;
-      av1_init_rd_stats(&best_remain_rdcost);
-      best_remain_rdcost.rdcost = best_rdc.rdcost == INT64_MAX
-                                      ? INT64_MAX
-                                      : (best_rdc.rdcost - sum_rdc.rdcost);
+      av1_rd_stats_subtraction(x->rdmult, &best_rdc, &sum_rdc,
+                               &best_remain_rdcost);
 
       if (!rd_pick_partition(cpi, td, tile_data, tp, mi_row + y_idx,
                              mi_col + x_idx, subsize, max_sq_part, min_sq_part,
@@ -2619,7 +2625,7 @@ BEGIN_PARTITION_SEARCH:
 
       sum_rdc.rate += this_rdc.rate;
       sum_rdc.dist += this_rdc.dist;
-      sum_rdc.rdcost += this_rdc.rdcost;
+      av1_rd_cost_update(x->rdmult, &sum_rdc);
       if (idx <= 1 && (bsize <= BLOCK_8X8 ||
                        pc_tree->split[idx]->partitioning == PARTITION_NONE)) {
         const MB_MODE_INFO *const mbmi = &pc_tree->split[idx]->none.mic;
@@ -2696,7 +2702,8 @@ BEGIN_PARTITION_SEARCH:
     sum_rdc.rate = partition_cost[PARTITION_HORZ];
     sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
     RD_STATS best_remain_rdcost;
-    av1_rd_stats_subtraction(&best_rdc, &sum_rdc, &best_remain_rdcost);
+    av1_rd_stats_subtraction(x->rdmult, &best_rdc, &sum_rdc,
+                             &best_remain_rdcost);
 #if CONFIG_COLLECT_PARTITION_STATS
     if (best_remain_rdcost >= 0) {
       partition_attempts[PARTITION_HORZ] += 1;
@@ -2707,13 +2714,14 @@ BEGIN_PARTITION_SEARCH:
     pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc, PARTITION_HORZ,
                   subsize, &pc_tree->horizontal[0], best_remain_rdcost,
                   PICK_MODE_RD);
+    av1_rd_cost_update(x->rdmult, &this_rdc);
 
     if (this_rdc.rate == INT_MAX) {
       sum_rdc.rdcost = INT64_MAX;
     } else {
       sum_rdc.rate += this_rdc.rate;
       sum_rdc.dist += this_rdc.dist;
-      sum_rdc.rdcost += this_rdc.rdcost;
+      av1_rd_cost_update(x->rdmult, &sum_rdc);
     }
     horz_rd[0] = this_rdc.rdcost;
 
@@ -2737,11 +2745,13 @@ BEGIN_PARTITION_SEARCH:
             av1_extract_interp_filter(ctx_h->mic.interp_filters, 0);
       }
 
-      av1_rd_stats_subtraction(&best_rdc, &sum_rdc, &best_remain_rdcost);
+      av1_rd_stats_subtraction(x->rdmult, &best_rdc, &sum_rdc,
+                               &best_remain_rdcost);
 
       pick_sb_modes(cpi, tile_data, x, mi_row + mi_step, mi_col, &this_rdc,
                     PARTITION_HORZ, subsize, &pc_tree->horizontal[1],
                     best_remain_rdcost, PICK_MODE_RD);
+      av1_rd_cost_update(x->rdmult, &this_rdc);
       horz_rd[1] = this_rdc.rdcost;
 
       if (this_rdc.rate == INT_MAX) {
@@ -2749,7 +2759,7 @@ BEGIN_PARTITION_SEARCH:
       } else {
         sum_rdc.rate += this_rdc.rate;
         sum_rdc.dist += this_rdc.dist;
-        sum_rdc.rdcost += this_rdc.rdcost;
+        av1_rd_cost_update(x->rdmult, &sum_rdc);
       }
     }
 #if CONFIG_COLLECT_PARTITION_STATS
@@ -2791,7 +2801,8 @@ BEGIN_PARTITION_SEARCH:
     sum_rdc.rate = partition_cost[PARTITION_VERT];
     sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
     RD_STATS best_remain_rdcost;
-    av1_rd_stats_subtraction(&best_rdc, &sum_rdc, &best_remain_rdcost);
+    av1_rd_stats_subtraction(x->rdmult, &best_rdc, &sum_rdc,
+                             &best_remain_rdcost);
 #if CONFIG_COLLECT_PARTITION_STATS
     if (best_remain_rdcost >= 0) {
       partition_attempts[PARTITION_VERT] += 1;
@@ -2802,13 +2813,14 @@ BEGIN_PARTITION_SEARCH:
     pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc, PARTITION_VERT,
                   subsize, &pc_tree->vertical[0], best_remain_rdcost,
                   PICK_MODE_RD);
+    av1_rd_cost_update(x->rdmult, &this_rdc);
 
     if (this_rdc.rate == INT_MAX) {
       sum_rdc.rdcost = INT64_MAX;
     } else {
       sum_rdc.rate += this_rdc.rate;
       sum_rdc.dist += this_rdc.dist;
-      sum_rdc.rdcost += this_rdc.rdcost;
+      av1_rd_cost_update(x->rdmult, &sum_rdc);
     }
     vert_rd[0] = this_rdc.rdcost;
     if (sum_rdc.rdcost < best_rdc.rdcost && has_cols) {
@@ -2831,10 +2843,12 @@ BEGIN_PARTITION_SEARCH:
             av1_extract_interp_filter(ctx_none->mic.interp_filters, 0);
       }
 
-      av1_rd_stats_subtraction(&best_rdc, &sum_rdc, &best_remain_rdcost);
+      av1_rd_stats_subtraction(x->rdmult, &best_rdc, &sum_rdc,
+                               &best_remain_rdcost);
       pick_sb_modes(cpi, tile_data, x, mi_row, mi_col + mi_step, &this_rdc,
                     PARTITION_VERT, subsize, &pc_tree->vertical[1],
                     best_remain_rdcost, PICK_MODE_RD);
+      av1_rd_cost_update(x->rdmult, &this_rdc);
       vert_rd[1] = this_rdc.rdcost;
 
       if (this_rdc.rate == INT_MAX) {
@@ -2842,7 +2856,7 @@ BEGIN_PARTITION_SEARCH:
       } else {
         sum_rdc.rate += this_rdc.rate;
         sum_rdc.dist += this_rdc.dist;
-        sum_rdc.rdcost += this_rdc.rdcost;
+        av1_rd_cost_update(x->rdmult, &sum_rdc);
       }
     }
 #if CONFIG_COLLECT_PARTITION_STATS
@@ -2854,13 +2868,11 @@ BEGIN_PARTITION_SEARCH:
     }
 #endif
 
+    av1_rd_cost_update(x->rdmult, &sum_rdc);
     if (sum_rdc.rdcost < best_rdc.rdcost) {
-      sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
-      if (sum_rdc.rdcost < best_rdc.rdcost) {
-        best_rdc = sum_rdc;
-        found_best_partition = true;
-        pc_tree->partitioning = PARTITION_VERT;
-      }
+      best_rdc = sum_rdc;
+      found_best_partition = true;
+      pc_tree->partitioning = PARTITION_VERT;
     }
 
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
@@ -3237,13 +3249,11 @@ BEGIN_PARTITION_SEARCH:
       ctx_prev = ctx_this;
     }
 
+    av1_rd_cost_update(x->rdmult, &sum_rdc);
     if (sum_rdc.rdcost < best_rdc.rdcost) {
-      sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
-      if (sum_rdc.rdcost < best_rdc.rdcost) {
-        best_rdc = sum_rdc;
-        found_best_partition = true;
-        pc_tree->partitioning = PARTITION_HORZ_4;
-      }
+      best_rdc = sum_rdc;
+      found_best_partition = true;
+      pc_tree->partitioning = PARTITION_HORZ_4;
     }
 
 #if CONFIG_COLLECT_PARTITION_STATS
@@ -3293,13 +3303,11 @@ BEGIN_PARTITION_SEARCH:
       ctx_prev = ctx_this;
     }
 
+    av1_rd_cost_update(x->rdmult, &sum_rdc);
     if (sum_rdc.rdcost < best_rdc.rdcost) {
-      sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
-      if (sum_rdc.rdcost < best_rdc.rdcost) {
-        best_rdc = sum_rdc;
-        found_best_partition = true;
-        pc_tree->partitioning = PARTITION_VERT_4;
-      }
+      best_rdc = sum_rdc;
+      found_best_partition = true;
+      pc_tree->partitioning = PARTITION_VERT_4;
     }
 #if CONFIG_COLLECT_PARTITION_STATS
     if (partition_timer_on) {

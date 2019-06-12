@@ -387,14 +387,16 @@ static INLINE int64_t av1_calculate_rd_cost(int mult, int rate, int64_t dist) {
 }
 
 static INLINE void av1_rd_cost_update(int mult, RD_STATS *rd_cost) {
-  if (rd_cost->rate < INT_MAX && rd_cost->dist < INT64_MAX) {
+  if (rd_cost->rate < INT_MAX && rd_cost->dist < INT64_MAX &&
+      rd_cost->rdcost < INT64_MAX) {
     rd_cost->rdcost = av1_calculate_rd_cost(mult, rd_cost->rate, rd_cost->dist);
   } else {
     av1_invalid_rd_stats(rd_cost);
   }
 }
 
-static INLINE void av1_rd_stats_subtraction(const RD_STATS *const left,
+static INLINE void av1_rd_stats_subtraction(int mult,
+                                            const RD_STATS *const left,
                                             const RD_STATS *const right,
                                             RD_STATS *result) {
   if (left->rate == INT_MAX || right->rate == INT_MAX ||
@@ -404,7 +406,7 @@ static INLINE void av1_rd_stats_subtraction(const RD_STATS *const left,
   } else {
     result->rate = left->rate - right->rate;
     result->dist = left->dist - right->dist;
-    result->rdcost = left->rdcost - right->rdcost;
+    result->rdcost = av1_calculate_rd_cost(mult, result->rate, result->dist);
   }
 }
 
