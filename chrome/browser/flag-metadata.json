@@ -935,7 +935,7 @@
   },
   {
     "name": "enable-chrome-duet-labels",
-    "owners": [ "amaralp" ],
+    "owners": [ "mdjones" ],
     "expiry_milestone": 79
   },
   {
