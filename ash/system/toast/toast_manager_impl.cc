@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/toast/toast_manager.h"
+#include "ash/system/toast/toast_manager_impl.h"
 
 #include <algorithm>
 
@@ -21,13 +21,13 @@ const int32_t kMinimumDurationMs = 200;
 
 }  // anonymous namespace
 
-ToastManager::ToastManager()
+ToastManagerImpl::ToastManagerImpl()
     : locked_(Shell::Get()->session_controller()->IsScreenLocked()),
       weak_ptr_factory_(this) {}
 
-ToastManager::~ToastManager() = default;
+ToastManagerImpl::~ToastManagerImpl() = default;
 
-void ToastManager::Show(const ToastData& data) {
+void ToastManagerImpl::Show(const ToastData& data) {
   const std::string& id = data.id;
   DCHECK(!id.empty());
 
@@ -50,7 +50,7 @@ void ToastManager::Show(const ToastData& data) {
     ShowLatest();
 }
 
-void ToastManager::Cancel(const std::string& id) {
+void ToastManagerImpl::Cancel(const std::string& id) {
   if (current_toast_data_ && current_toast_data_->id == id) {
     overlay_->Show(false);
     return;
@@ -63,7 +63,7 @@ void ToastManager::Cancel(const std::string& id) {
     queue_.erase(cancelled_toast);
 }
 
-void ToastManager::OnClosed() {
+void ToastManagerImpl::OnClosed() {
   overlay_.reset();
   current_toast_data_.reset();
 
@@ -74,7 +74,7 @@ void ToastManager::OnClosed() {
     ShowLatest();
 }
 
-void ToastManager::ShowLatest() {
+void ToastManagerImpl::ShowLatest() {
   DCHECK(!overlay_);
   DCHECK(!current_toast_data_);
 
@@ -101,18 +101,19 @@ void ToastManager::ShowLatest() {
         std::max(current_toast_data_->duration_ms, kMinimumDurationMs);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&ToastManager::OnDurationPassed,
+        base::BindOnce(&ToastManagerImpl::OnDurationPassed,
                        weak_ptr_factory_.GetWeakPtr(), serial_),
         base::TimeDelta::FromMilliseconds(duration_ms));
   }
 }
 
-void ToastManager::OnDurationPassed(int toast_number) {
+void ToastManagerImpl::OnDurationPassed(int toast_number) {
   if (overlay_ && serial_ == toast_number)
     overlay_->Show(false);
 }
 
-void ToastManager::OnSessionStateChanged(session_manager::SessionState state) {
+void ToastManagerImpl::OnSessionStateChanged(
+    session_manager::SessionState state) {
   const bool locked = state != session_manager::SessionState::ACTIVE;
 
   if ((locked != locked_) && current_toast_data_) {

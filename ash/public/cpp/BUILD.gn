@@ -172,6 +172,8 @@ component("cpp") {
     "tablet_mode_toggle_observer.h",
     "toast_data.cc",
     "toast_data.h",
+    "toast_manager.cc",
+    "toast_manager.h",
     "touch_uma.cc",
     "touch_uma.h",
     "update_types.h",

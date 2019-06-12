@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TOAST_TOAST_MANAGER_H_
-#define ASH_SYSTEM_TOAST_TOAST_MANAGER_H_
+#ifndef ASH_SYSTEM_TOAST_TOAST_MANAGER_IMPL_H_
+#define ASH_SYSTEM_TOAST_TOAST_MANAGER_IMPL_H_
 
 #include <memory>
 #include <string>
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/toast_data.h"
+#include "ash/public/cpp/toast_manager.h"
 #include "ash/session/session_observer.h"
 #include "ash/system/toast/toast_overlay.h"
 #include "base/containers/circular_deque.h"
@@ -18,15 +19,15 @@
 namespace ash {
 
 // Class managing toast requests.
-class ASH_EXPORT ToastManager : public ToastOverlay::Delegate,
-                                public SessionObserver {
+class ASH_EXPORT ToastManagerImpl : public ToastManager,
+                                    public ToastOverlay::Delegate,
+                                    public SessionObserver {
  public:
-  ToastManager();
-  ~ToastManager() override;
+  ToastManagerImpl();
+  ~ToastManagerImpl() override;
 
-  // Show a toast. If there are queued toasts, succeeding toasts are queued as
-  // well, and are shown one by one.
-  void Show(const ToastData& data);
+  // ToastManager overrides:
+  void Show(const ToastData& data) override;
 
   void Cancel(const std::string& id);
 
@@ -37,7 +38,7 @@ class ASH_EXPORT ToastManager : public ToastOverlay::Delegate,
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
  private:
-  friend class ToastManagerTest;
+  friend class ToastManagerImplTest;
 
   void ShowLatest();
   void OnDurationPassed(int toast_number);
@@ -55,11 +56,11 @@ class ASH_EXPORT ToastManager : public ToastOverlay::Delegate,
   std::unique_ptr<ToastOverlay> overlay_;
 
   ScopedSessionObserver scoped_session_observer_{this};
-  base::WeakPtrFactory<ToastManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ToastManagerImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ToastManager);
+  DISALLOW_COPY_AND_ASSIGN(ToastManagerImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TOAST_TOAST_MANAGER_H_
+#endif  // ASH_SYSTEM_TOAST_TOAST_MANAGER_IMPL_H_
