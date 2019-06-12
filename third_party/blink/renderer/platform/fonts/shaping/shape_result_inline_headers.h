@@ -142,7 +142,7 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
   unsigned NumGraphemes(unsigned start, unsigned end) const;
 
   // For memory reporting.
-  size_t ByteSize() const { return sizeof(this) + glyph_data_.ByteSize(); }
+  size_t ByteSize() const { return sizeof(*this) + glyph_data_.ByteSize(); }
 
   // Represents a range of HarfBuzzRunGlyphData. |begin| and |end| follow the
   // iterator pattern; i.e., |begin| is lower or equal to |end| in the address
