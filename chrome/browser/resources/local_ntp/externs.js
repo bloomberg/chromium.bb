@@ -205,6 +205,11 @@ window.chrome.embeddedSearch.newTabPage.isCustomLinks;
 window.chrome.embeddedSearch.newTabPage.isInputInProgress;
 
 /**
+ * @return {boolean} isUsingMostVisited
+ */
+window.chrome.embeddedSearch.newTabPage.isUsingMostVisited;
+
+/**
  * @param {number} event
  */
 window.chrome.embeddedSearch.newTabPage.logEvent;
@@ -282,6 +287,11 @@ window.chrome.embeddedSearch.newTabPage.setBackgroundURLWithAttributions;
  * @return {Object} theme_background_info
  */
 window.chrome.embeddedSearch.newTabPage.themeBackgroundInfo;
+
+/**
+ * No params.
+ */
+window.chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks;
 
 /**
  * No params.
