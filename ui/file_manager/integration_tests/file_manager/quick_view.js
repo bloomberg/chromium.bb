@@ -5,17 +5,21 @@
 
 (() => {
   /**
-   * Waits for QuickView element to be closed.
+   * Waits for Quick View dialog to be closed.
+   *
    * @param {string} appId Files app windowId.
    */
   async function waitQuickViewClose(appId) {
     const caller = getCaller();
+
     function checkQuickViewElementsDisplayNone(elements) {
       chrome.test.assertTrue(Array.isArray(elements));
       if (elements.length > 0 && elements[0].styles.display !== 'none') {
         return pending(caller, 'Waiting for Quick View to close.');
       }
     }
+
+    // Check: the Quick View dialog should not be shown.
     await repeatUntil(async () => {
       const elements = ['#quick-view', '#dialog:not([open])'];
       return checkQuickViewElementsDisplayNone(
@@ -53,7 +57,7 @@
         !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space),
         'fakeKeyDown failed');
 
-    // Check: the Quick View element should be shown.
+    // Check: the Quick View dialog should be shown.
     await repeatUntil(async () => {
       const elements = ['#quick-view', '#dialog[open]'];
       return checkQuickViewElementsDisplayBlock(
@@ -76,8 +80,39 @@
             'fakeMouseClick', appId, [panelElements]),
         'fakeMouseClick failed');
 
-    // Check: the Quick View element should not be shown.
+    // Check: the Quick View dialog should not be shown.
     await waitQuickViewClose(appId);
+  }
+
+  /**
+   * Assuming that Quick View is currently open per openQuickView above, return
+   * the text shown in the QuickView Metadata Box field |name|.
+   *
+   * @param {string} appId Files app windowId.
+   * @param {string} name QuickView Metadata Box field name.
+   *
+   * @return {string} text Text value in the field name.
+   */
+  async function getQuickViewMetadataBoxField(appId, name) {
+    /**
+     * The <files-metadata-box> element resides is #quick-view shadow DOM as a
+     * child of the #dialog element.
+     */
+    let quickViewQuery = ['#quick-view', '#dialog[open] files-metadata-box'];
+
+    /**
+     * The <files-metadata-entry key="name"> element resides in the shadow DOM
+     * of the <files-metadata-box>.
+     */
+    quickViewQuery.push(`files-metadata-entry[key="${name}"]`);
+
+    /**
+     * It has a #value div child in its shadow DOM containing the field value.
+     */
+    quickViewQuery.push('#value div:not([hidden])');
+
+    const element = await remoteCall.waitForElement(appId, quickViewQuery);
+    return element.text;
   }
 
   /**
@@ -118,16 +153,9 @@
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.hello.nameText);
 
-    // Check that the correct mime type is displayed.
-    const mimeTypeSelector = [
-      '#quick-view',
-      '#metadata-box',
-      'files-metadata-entry[key="Type"]',
-      '#value div',
-    ];
-    chrome.test.assertEq(
-        'text/plain',
-        (await remoteCall.waitForElement(appId, mimeTypeSelector)).text);
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('text/plain', mimeType);
   };
 
   /**
