@@ -220,6 +220,18 @@ customize.hideCustomLinkNotification = null;
 customize.richerPicker_selectedOption = null;
 
 /**
+ * The currently selected option in the Colors menu.
+ * @type {?Element}
+ */
+customize.selectedColorTile = null;
+
+/**
+ * Whether tiles for Colors menu already loaded.
+ * @type {boolean}
+ */
+customize.colorMenuLoaded = false;
+
+/**
  * Sets the visibility of the settings menu and individual options depending on
  * their respective features.
  */
@@ -376,14 +388,55 @@ customize.setBackground = function(
 };
 
 /**
- * Create a tile for a Chrome Backgrounds collection.
+ * Creates a tile for the customization menu with a title.
+ * @param {string} id The id for the new element.
+ * @param {string} imageUrl The background image url for the new element.
+ * @param {string} name The name for the title of the new element.
+ * @param {Object} dataset The dataset for the new element.
+ * @param {?Function} onClickInteraction Function for onclick interaction.
+ * @param {?Function} onKeyInteraction Function for onkeydown interaction.
  */
-customize.createChromeBackgroundTile = function(data) {
+customize.createTileWithTitle = function(
+    id, imageUrl, name, dataset, onClickInteraction, onKeyInteraction) {
+  const tile = customize.createTile(
+      id, imageUrl, dataset, onClickInteraction, onKeyInteraction);
+  customize.fadeInImageTile(tile, imageUrl, null);
+
+  const title = document.createElement('div');
+  title.classList.add(customize.CLASSES.COLLECTION_TITLE);
+  title.textContent = name;
+  tile.appendChild(title);
+
+  const tileBackground = document.createElement('div');
+  tileBackground.classList.add(customize.CLASSES.COLLECTION_TILE_BG);
+  tileBackground.appendChild(tile);
+  return tileBackground;
+};
+
+/**
+ * Create a tile for customization menu.
+ * @param {string} id The id for the new element.
+ * @param {string} imageUrl The background image url for the new element.
+ * @param {Object} dataset The dataset for the new element.
+ * @param {?Function} onClickInteraction Function for onclick interaction.
+ * @param {?Function} onKeyInteraction Function for onkeydown interaction.
+ */
+customize.createTile = function(
+    id, imageUrl, dataset, onClickInteraction, onKeyInteraction) {
   const tile = document.createElement('div');
-  tile.style.backgroundImage = 'url(' + data.previewImageUrl + ')';
-  tile.dataset.id = data.collectionId;
-  tile.dataset.name = data.collectionName;
-  customize.fadeInImageTile(tile, data.previewImageUrl, null);
+  tile.id = id;
+  tile.classList.add(customize.CLASSES.COLLECTION_TILE);
+  tile.style.backgroundImage = 'url(' + imageUrl + ')';
+  for (const key in dataset) {
+    tile.dataset[key] = dataset[key];
+  }
+  tile.tabIndex = -1;
+
+  // Accessibility support for screen readers.
+  tile.setAttribute('role', 'button');
+
+  tile.onclick = onClickInteraction;
+  tile.onkeydown = onKeyInteraction;
   return tile;
 };
 
@@ -472,111 +525,102 @@ customize.showCollectionSelectionDialog = function(collectionsSource) {
     menu.classList.remove(customize.CLASSES.IMAGE_DIALOG);
   }
 
+  const tileOnClickInteraction = function(event) {
+    let tile = event.target;
+    if (tile.classList.contains(customize.CLASSES.COLLECTION_TITLE)) {
+      tile = tile.parentNode;
+    }
+
+    // Load images for selected collection.
+    const imgElement = $('ntp-images-loader');
+    if (imgElement) {
+      imgElement.parentNode.removeChild(imgElement);
+    }
+    const imgScript = document.createElement('script');
+    imgScript.id = 'ntp-images-loader';
+    imgScript.src = 'chrome-search://local-ntp/ntp-background-images.js?' +
+        'collection_id=' + tile.dataset.id;
+    ntpApiHandle.logEvent(
+        customize.BACKGROUND_CUSTOMIZATION_LOG_TYPE
+            .NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_COLLECTION);
+
+    document.body.appendChild(imgScript);
+
+    imgScript.onload = function() {
+      // Verify that the individual image data was successfully loaded.
+      const imageDataLoaded =
+          (collImg.length > 0 && collImg[0].collectionId == tile.dataset.id);
+
+      // Dependent upon the success of the load, populate the image selection
+      // dialog or close the current dialog.
+      if (imageDataLoaded) {
+        $(customize.IDS.BACKGROUNDS_MENU)
+            .classList.toggle(customize.CLASSES.MENU_SHOWN, false);
+        $(customize.IDS.BACKGROUNDS_IMAGE_MENU)
+            .classList.toggle(customize.CLASSES.MENU_SHOWN, true);
+
+        // In the RP the upload or default tile may be selected.
+        if (configData.richerPicker) {
+          customize.richerPicker_deselectTile(customize.selectedTile);
+        } else {
+          customize.resetSelectionDialog();
+        }
+        customize.showImageSelectionDialog(tile.dataset.name);
+      } else {
+        customize.handleError(collImgErrors);
+      }
+    };
+  };
+
+  const tileOnKeyDownInteraction = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER) {
+      event.preventDefault();
+      event.stopPropagation();
+      tileOnClickInteraction(event);
+    } else if (
+        event.keyCode === customize.KEYCODES.LEFT ||
+        event.keyCode === customize.KEYCODES.UP ||
+        event.keyCode === customize.KEYCODES.RIGHT ||
+        event.keyCode === customize.KEYCODES.DOWN) {
+      // Handle arrow key navigation.
+      event.preventDefault();
+      event.stopPropagation();
+
+      let target = null;
+      if (event.keyCode === customize.KEYCODES.LEFT) {
+        target = customize.getNextTile(
+            document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
+            event.currentTarget.dataset.tileNum);
+      } else if (event.keyCode === customize.KEYCODES.UP) {
+        target =
+            customize.getNextTile(0, -1, event.currentTarget.dataset.tileNum);
+      } else if (event.keyCode === customize.KEYCODES.RIGHT) {
+        target = customize.getNextTile(
+            document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
+            event.currentTarget.dataset.tileNum);
+      } else if (event.keyCode === customize.KEYCODES.DOWN) {
+        target =
+            customize.getNextTile(0, 1, event.currentTarget.dataset.tileNum);
+      }
+      if (target) {
+        target.focus();
+      } else {
+        event.currentTarget.focus();
+      }
+    }
+  };
+
   // Create dialog tiles.
   for (let i = 0; i < coll.length; ++i) {
-    const tileBackground = document.createElement('div');
-    tileBackground.classList.add(customize.CLASSES.COLLECTION_TILE_BG);
-    const tile = customize.createChromeBackgroundTile(coll[i]);
-    tile.classList.add(customize.CLASSES.COLLECTION_TILE);
-    tile.id = 'coll_tile_' + i;
-    tile.dataset.tile_num = i;
-    tile.tabIndex = -1;
-    // Accessibility support for screen readers.
-    tile.setAttribute('role', 'button');
+    const id = coll[i].collectionId;
+    const name = coll[i].collectionName;
+    const imageUrl = coll[i].previewImageUrl;
+    const dataset = {'id': id, 'name': name, 'tileNum': i};
 
-    const title = document.createElement('div');
-    title.classList.add(customize.CLASSES.COLLECTION_TITLE);
-    title.textContent = tile.dataset.name;
-
-    const tileInteraction = function(event) {
-      let tile = event.target;
-      if (tile.classList.contains(customize.CLASSES.COLLECTION_TITLE)) {
-        tile = tile.parentNode;
-      }
-
-      // Load images for selected collection.
-      const imgElement = $('ntp-images-loader');
-      if (imgElement) {
-        imgElement.parentNode.removeChild(imgElement);
-      }
-      const imgScript = document.createElement('script');
-      imgScript.id = 'ntp-images-loader';
-      imgScript.src = 'chrome-search://local-ntp/ntp-background-images.js?' +
-          'collection_id=' + tile.dataset.id;
-      ntpApiHandle.logEvent(
-          customize.BACKGROUND_CUSTOMIZATION_LOG_TYPE
-              .NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_COLLECTION);
-
-      document.body.appendChild(imgScript);
-
-      imgScript.onload = function() {
-        // Verify that the individual image data was successfully loaded.
-        const imageDataLoaded =
-            (collImg.length > 0 && collImg[0].collectionId == tile.dataset.id);
-
-        // Dependent upon the success of the load, populate the image selection
-        // dialog or close the current dialog.
-        if (imageDataLoaded) {
-          $(customize.IDS.BACKGROUNDS_MENU)
-              .classList.toggle(customize.CLASSES.MENU_SHOWN, false);
-          $(customize.IDS.BACKGROUNDS_IMAGE_MENU)
-              .classList.toggle(customize.CLASSES.MENU_SHOWN, true);
-
-          // In the RP the upload or default tile may be selected.
-          if (configData.richerPicker) {
-            customize.richerPicker_deselectTile(customize.selectedTile);
-          } else {
-            customize.resetSelectionDialog();
-          }
-          customize.showImageSelectionDialog(tile.dataset.name);
-        } else {
-          customize.handleError(collImgErrors);
-        }
-      };
-    };
-
-    tile.onclick = tileInteraction;
-    tile.onkeydown = function(event) {
-      if (event.keyCode === customize.KEYCODES.ENTER) {
-        event.preventDefault();
-        event.stopPropagation();
-        tileInteraction(event);
-      } else if (
-          event.keyCode === customize.KEYCODES.LEFT ||
-          event.keyCode === customize.KEYCODES.UP ||
-          event.keyCode === customize.KEYCODES.RIGHT ||
-          event.keyCode === customize.KEYCODES.DOWN) {
-        // Handle arrow key navigation.
-        event.preventDefault();
-        event.stopPropagation();
-
-        let target = null;
-        if (event.keyCode === customize.KEYCODES.LEFT) {
-          target = customize.getNextTile(
-              document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
-              event.currentTarget.dataset.tile_num);
-        } else if (event.keyCode === customize.KEYCODES.UP) {
-          target = customize.getNextTile(
-              0, -1, event.currentTarget.dataset.tile_num);
-        } else if (event.keyCode === customize.KEYCODES.RIGHT) {
-          target = customize.getNextTile(
-              document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
-              event.currentTarget.dataset.tile_num);
-        } else if (event.keyCode === customize.KEYCODES.DOWN) {
-          target =
-              customize.getNextTile(0, 1, event.currentTarget.dataset.tile_num);
-        }
-        if (target) {
-          target.focus();
-        } else {
-          event.currentTarget.focus();
-        }
-      }
-    };
-
-    tile.appendChild(title);
-    tileBackground.appendChild(tile);
-    tileContainer.appendChild(tileBackground);
+    const tile = customize.createTileWithTitle(
+        'coll_tile_' + i, imageUrl, name, dataset, tileOnClickInteraction,
+        tileOnKeyDownInteraction);
+    tileContainer.appendChild(tile);
   }
 
   $(customize.IDS.TILES).focus();
@@ -701,40 +745,122 @@ customize.showImageSelectionDialog = function(dialogTitle) {
     menu.classList.add(customize.CLASSES.IMAGE_DIALOG);
   }
 
+  const tileInteraction = function(tile) {
+    if (customize.selectedTile) {
+      if (configData.richerPicker) {
+        const id = customize.selectedTile.id;
+        customize.richerPicker_deselectTile(customize.selectedTile);
+        if (id === tile.id) {
+          return;
+        }
+      } else {
+        customize.removeSelectedState(customize.selectedTile);
+        if (customize.selectedTile.id === tile.id) {
+          customize.unselectTile();
+          return;
+        }
+      }
+    }
+
+    if (configData.richerPicker) {
+      customize.richerPicker_selectTile(tile);
+    } else {
+      customize.applySelectedState(tile);
+      customize.selectedTile = tile;
+    }
+
+    $(customize.IDS.DONE).tabIndex = 0;
+
+    // Turn toggle off when an image is selected.
+    $(customize.IDS.DONE).disabled = false;
+    ntpApiHandle.logEvent(customize.BACKGROUND_CUSTOMIZATION_LOG_TYPE
+                              .NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_IMAGE);
+  };
+
+  const tileOnClickInteraction = function(event) {
+    const clickCount = event.detail;
+    // Control + option + space will fire the onclick event with 0 clickCount.
+    if (clickCount <= 1) {
+      tileInteraction(event.currentTarget);
+    } else if (
+        clickCount === 2 && customize.selectedTile === event.currentTarget) {
+      customize.setBackground(
+          event.currentTarget.dataset.url,
+          event.currentTarget.dataset.attributionLine1,
+          event.currentTarget.dataset.attributionLine2,
+          event.currentTarget.dataset.attributionActionUrl);
+    }
+  };
+
+  const tileOnKeyDownInteraction = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER) {
+      event.preventDefault();
+      event.stopPropagation();
+      tileInteraction(event.currentTarget);
+    } else if (
+        event.keyCode === customize.KEYCODES.LEFT ||
+        event.keyCode === customize.KEYCODES.UP ||
+        event.keyCode === customize.KEYCODES.RIGHT ||
+        event.keyCode === customize.KEYCODES.DOWN) {
+      // Handle arrow key navigation.
+      event.preventDefault();
+      event.stopPropagation();
+
+      let target = null;
+      if (event.keyCode == customize.KEYCODES.LEFT) {
+        target = customize.getNextTile(
+            document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
+            event.currentTarget.dataset.tileNum);
+      } else if (event.keyCode == customize.KEYCODES.UP) {
+        target =
+            customize.getNextTile(0, -1, event.currentTarget.dataset.tileNum);
+      } else if (event.keyCode == customize.KEYCODES.RIGHT) {
+        target = customize.getNextTile(
+            document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
+            event.currentTarget.dataset.tileNum);
+      } else if (event.keyCode == customize.KEYCODES.DOWN) {
+        target =
+            customize.getNextTile(0, 1, event.currentTarget.dataset.tileNum);
+      }
+      if (target) {
+        target.focus();
+      } else {
+        event.currentTarget.focus();
+      }
+    }
+  };
+
   const preLoadTiles = [];
   const postLoadTiles = [];
 
   for (let i = 0; i < collImg.length; ++i) {
-    const tileBackground = document.createElement('div');
-    tileBackground.classList.add(customize.CLASSES.COLLECTION_TILE_BG);
-    const tile = document.createElement('div');
-    tile.classList.add(customize.CLASSES.COLLECTION_TILE);
-    // Accessibility support for screen readers.
-    tile.setAttribute('role', 'button');
+    const dataset = {};
 
     // TODO(crbug.com/854028): Remove this hardcoded check when wallpaper
     // previews are supported.
     if (collImg[i].collectionId === 'solidcolors') {
-      tile.dataset.attributionLine1 = '';
-      tile.dataset.attributionLine2 = '';
-      tile.dataset.attributionActionUrl = '';
+      dataset.attributionLine1 = '';
+      dataset.attributionLine2 = '';
+      dataset.attributionActionUrl = '';
     } else {
-      tile.dataset.attributionLine1 =
+      dataset.attributionLine1 =
           (collImg[i].attributions[0] !== undefined ?
                collImg[i].attributions[0] :
                '');
-      tile.dataset.attributionLine2 =
+      dataset.attributionLine2 =
           (collImg[i].attributions[1] !== undefined ?
                collImg[i].attributions[1] :
                '');
-      tile.dataset.attributionActionUrl = collImg[i].attributionActionUrl;
+      dataset.attributionActionUrl = collImg[i].attributionActionUrl;
     }
-    tile.setAttribute('aria-label', collImg[i].attributions[0]);
-    tile.dataset.url = collImg[i].imageUrl;
+    dataset.url = collImg[i].imageUrl;
+    dataset.tileNum = i;
 
-    tile.id = 'img_tile_' + i;
-    tile.dataset.tile_num = i;
-    tile.tabIndex = -1;
+    const tile = customize.createTile(
+        'img_tile_' + i, collImg[i].imageUrl, dataset, tileOnClickInteraction,
+        tileOnKeyDownInteraction);
+
+    tile.setAttribute('aria-label', collImg[i].attributions[0]);
 
     // Load the first |ROWS_TO_PRELOAD| rows of tiles.
     if (i < firstNTile) {
@@ -743,90 +869,8 @@ customize.showImageSelectionDialog = function(dialogTitle) {
       postLoadTiles.push(tile);
     }
 
-    const tileInteraction = function(tile) {
-      if (customize.selectedTile) {
-        if (configData.richerPicker) {
-          const id = customize.selectedTile.id;
-          customize.richerPicker_deselectTile(customize.selectedTile);
-          if (id === tile.id) {
-            return;
-          }
-        } else {
-          customize.removeSelectedState(customize.selectedTile);
-          if (customize.selectedTile.id === tile.id) {
-            customize.unselectTile();
-            return;
-          }
-        }
-      }
-
-      if (configData.richerPicker) {
-        customize.richerPicker_selectTile(tile);
-      } else {
-        customize.applySelectedState(tile);
-        customize.selectedTile = tile;
-      }
-
-      $(customize.IDS.DONE).tabIndex = 0;
-
-      // Turn toggle off when an image is selected.
-      $(customize.IDS.DONE).disabled = false;
-      ntpApiHandle.logEvent(customize.BACKGROUND_CUSTOMIZATION_LOG_TYPE
-                                .NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_IMAGE);
-    };
-
-    tile.onclick = function(event) {
-      const clickCount = event.detail;
-      // Control + option + space will fire the onclick event with 0 clickCount.
-      if (clickCount <= 1) {
-        tileInteraction(event.currentTarget);
-      } else if (
-          clickCount === 2 && customize.selectedTile === event.currentTarget) {
-        customize.setBackground(
-            event.currentTarget.dataset.url,
-            event.currentTarget.dataset.attributionLine1,
-            event.currentTarget.dataset.attributionLine2,
-            event.currentTarget.dataset.attributionActionUrl);
-      }
-    };
-    tile.onkeydown = function(event) {
-      if (event.keyCode === customize.KEYCODES.ENTER) {
-        event.preventDefault();
-        event.stopPropagation();
-        tileInteraction(event.currentTarget);
-      } else if (
-          event.keyCode === customize.KEYCODES.LEFT ||
-          event.keyCode === customize.KEYCODES.UP ||
-          event.keyCode === customize.KEYCODES.RIGHT ||
-          event.keyCode === customize.KEYCODES.DOWN) {
-        // Handle arrow key navigation.
-        event.preventDefault();
-        event.stopPropagation();
-
-        let target = null;
-        if (event.keyCode == customize.KEYCODES.LEFT) {
-          target = customize.getNextTile(
-              document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
-              event.currentTarget.dataset.tile_num);
-        } else if (event.keyCode == customize.KEYCODES.UP) {
-          target = customize.getNextTile(
-              0, -1, event.currentTarget.dataset.tile_num);
-        } else if (event.keyCode == customize.KEYCODES.RIGHT) {
-          target = customize.getNextTile(
-              document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
-              event.currentTarget.dataset.tile_num);
-        } else if (event.keyCode == customize.KEYCODES.DOWN) {
-          target =
-              customize.getNextTile(0, 1, event.currentTarget.dataset.tile_num);
-        }
-        if (target) {
-          target.focus();
-        } else {
-          event.currentTarget.focus();
-        }
-      }
-    };
-
+    const tileBackground = document.createElement('div');
+    tileBackground.classList.add(customize.CLASSES.COLLECTION_TILE_BG);
     tileBackground.appendChild(tile);
     tileContainer.appendChild(tileBackground);
   }
@@ -854,17 +898,17 @@ customize.showImageSelectionDialog = function(dialogTitle) {
  * loading.
  */
 customize.loadTile = function(tile, imageData, countLoad) {
-  if (imageData[tile.dataset.tile_num].collectionId === 'solidcolors') {
+  if (imageData[tile.dataset.tileNum].collectionId === 'solidcolors') {
     tile.style.backgroundImage = [
       customize.CUSTOM_BACKGROUND_OVERLAY,
-      'url(' + imageData[tile.dataset.tile_num].thumbnailImageUrl + ')'
+      'url(' + imageData[tile.dataset.tileNum].thumbnailImageUrl + ')'
     ].join(',').trim();
   } else {
     tile.style.backgroundImage =
-        'url(' + imageData[tile.dataset.tile_num].thumbnailImageUrl + ')';
+        'url(' + imageData[tile.dataset.tileNum].thumbnailImageUrl + ')';
   }
   customize.fadeInImageTile(
-      tile, imageData[tile.dataset.tile_num].thumbnailImageUrl, countLoad);
+      tile, imageData[tile.dataset.tileNum].thumbnailImageUrl, countLoad);
 };
 
 /**
@@ -1018,6 +1062,7 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
     if (configData.richerPicker) {
       customize.richerPicker_setCustomizationMenuToDefaultState();
       customize.loadChromeBackgrounds();
+      customize.loadColorTiles();
       $(customize.IDS.CUSTOMIZATION_MENU).showModal();
     } else {
       editDialog.showModal();
@@ -1467,6 +1512,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     customize.richerPicker_resetCustomizationMenu();
     customize.richerPicker_selectMenuOption(
         $(customize.IDS.COLORS_BUTTON), $(customize.IDS.COLORS_MENU));
+    ntpApiHandle.getColorsInfo();
   };
 };
 
@@ -1497,4 +1543,40 @@ customize.handleError = function(errors) {
 
   // Generic error when we can't tell what went wrong.
   customize.showErrorNotification(unavailableString);
+};
+
+/**
+ * Handles color tile selection.
+ * @param {Object} event The event attributes for the interaction.
+ */
+customize.colorTileInteraction = function(event) {
+  if (customize.selectedColorTile) {
+    customize.richerPicker_deselectTile(customize.selectedColorTile);
+  }
+  customize.richerPicker_selectTile(event.target);
+  customize.selectedColorTile = event.target;
+  ntpApiHandle.applyAutogeneratedTheme(event.target.dataset.color.split(','));
+};
+
+/**
+ * Loads tiles for colors menu.
+ */
+customize.loadColorTiles = function() {
+  if (customize.colorMenuLoaded) {
+    return;
+  }
+
+  const colorsColl = ntpApiHandle.getColorsInfo();
+  for (let i = 0; i < colorsColl.length; ++i) {
+    const id = 'color_' + i;
+    const imageUrl = colorsColl[i].icon;
+    const name = colorsColl[i].label;
+    const dataset = {'color': colorsColl[i].color};
+
+    const tile = customize.createTileWithTitle(
+        id, imageUrl, name, dataset, customize.colorTileInteraction,
+        customize.colorTileInteraction);
+    $(customize.IDS.COLORS_MENU).appendChild(tile);
+  }
+  customize.colorMenuLoaded = true;
 };
