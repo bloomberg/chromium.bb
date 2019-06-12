@@ -59,14 +59,12 @@ class DialogExample::Delegate : public virtual DialogType {
     return parent_->title_->text();
   }
 
-  // TODO(crbug.com/961660): CreateExtraView should return std::unique_ptr<View>
-  // DialogDelegate:
-  View* CreateExtraView() override {
+  std::unique_ptr<View> CreateExtraView() override {
     if (!parent_->has_extra_button_->GetChecked())
       return nullptr;
     auto view = MdTextButton::CreateSecondaryUiButton(
         nullptr, parent_->extra_button_label_->text());
-    return view.release();
+    return view;
   }
 
   bool Cancel() override { return parent_->AllowDialogClose(false); }
