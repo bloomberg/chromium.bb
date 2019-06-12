@@ -30,9 +30,7 @@ SecureHash& SecureHash::operator=(const SecureHash& other) {
 SecureHash::SecureHash(SecureHash&& other) = default;
 SecureHash& SecureHash::operator=(SecureHash&& other) = default;
 
-SecureHash::~SecureHash() {
-  OPENSSL_cleanse(ctx_.get(), sizeof(ctx_.get()));
-}
+SecureHash::~SecureHash() = default;
 
 void SecureHash::Update(const uint8_t* input, size_t len) {
   EVP_DigestUpdate(ctx_.get(), input, len);
