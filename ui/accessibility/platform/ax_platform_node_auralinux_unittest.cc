@@ -1024,6 +1024,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextGetText) {
   verify_text(nullptr, -1, -1);
   verify_text(nullptr, 5, 2);
   verify_text(nullptr, 10, 20);
+
+  g_object_unref(root_obj);
 }
 
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
