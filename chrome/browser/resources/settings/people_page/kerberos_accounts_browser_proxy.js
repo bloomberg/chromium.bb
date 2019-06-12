@@ -15,6 +15,7 @@ cr.exportPath('settings');
  *   principalName: string,
  *   isSignedIn: boolean,
  *   isActive: boolean,
+ *   hasRememberedPassword: boolean,
  *   pic: string,
  * }}
  */
@@ -61,9 +62,10 @@ cr.define('settings', function() {
      * Attempts to add a new (or update an existing) Kerberos account.
      * @param {string} principalName Kerberos principal (user@realm.com).
      * @param {string} password Account password.
+     * @param {boolean} rememberPassword Whether to store the password.
      * @return {!Promise<!settings.KerberosErrorType>}
      */
-    addAccount(principalName, password) {}
+    addAccount(principalName, password, rememberPassword) {}
 
     /**
      * Removes |account| from the set of Kerberos accounts.
@@ -89,8 +91,9 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    addAccount(principalName, password) {
-      return cr.sendWithPromise('addKerberosAccount', principalName, password);
+    addAccount(principalName, password, rememberPassword) {
+      return cr.sendWithPromise(
+          'addKerberosAccount', principalName, password, rememberPassword);
     }
 
     /** @override */

@@ -1750,6 +1750,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"kerberosAccountsReauthenticationLabel",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_REAUTHENTICATION_LABEL},
     {"addKerberosAccount", IDS_SETTINGS_ADD_KERBEROS_ACCOUNT},
+    {"addKerberosAccountRememberPassword",
+     IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REMEMBER_PASSWORD},
     {"kerberosUsername", IDS_SETTINGS_KERBEROS_USERNAME},
     {"kerberosPassword", IDS_SETTINGS_KERBEROS_PASSWORD},
     {"kerberosErrorNetworkProblem",

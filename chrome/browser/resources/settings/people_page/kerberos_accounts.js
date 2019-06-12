@@ -31,16 +31,10 @@ Polymer({
     },
 
     /**
-     * The targeted account for menu operations.
+     * The targeted account for menu and other operations.
      * @private {?settings.KerberosAccount}
      */
-    actionMenuAccount_: Object,
-
-    /** @private */
-    addAccountPresetUsername_: {
-      type: String,
-      value: '',
-    },
+    selectedAccount_: Object,
 
     /** @private */
     showAddAccountDialog_: Boolean,
@@ -76,7 +70,7 @@ Polymer({
    * @private
    */
   onAddAccountClick_: function(event) {
-    this.addAccountPresetUsername_ = '';
+    this.selectedAccount_ = null;
     this.showAddAccountDialog_ = true;
   },
 
@@ -85,7 +79,7 @@ Polymer({
    * @private
    */
   onReauthenticationClick_: function(event) {
-    this.addAccountPresetUsername_ = event.model.item.principalName;
+    this.selectedAccount_ = event.model.item;
     this.showAddAccountDialog_ = true;
   },
 
@@ -110,7 +104,7 @@ Polymer({
    * @private
    */
   onAccountActionsMenuButtonClick_: function(event) {
-    this.actionMenuAccount_ = event.model.item;
+    this.selectedAccount_ = event.model.item;
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(event.target);
   },
@@ -121,26 +115,26 @@ Polymer({
    */
   closeActionMenu_: function() {
     this.$$('cr-action-menu').close();
-    this.actionMenuAccount_ = null;
+    this.selectedAccount_ = null;
   },
 
   /**
-   * Removes |this.actionMenuAccount_|.
+   * Removes |this.selectedAccount_|.
    * @private
    */
   onRemoveAccountClick_: function() {
     this.browserProxy_.removeAccount(
-        /** @type {!settings.KerberosAccount} */ (this.actionMenuAccount_));
+        /** @type {!settings.KerberosAccount} */ (this.selectedAccount_));
     this.closeActionMenu_();
   },
 
   /**
-   * Sets |this.actionMenuAccount_| as active Kerberos account.
+   * Sets |this.selectedAccount_| as active Kerberos account.
    * @private
    */
   onSetAsActiveAccountClick_: function() {
     this.browserProxy_.setAsActiveAccount(
-        /** @type {!settings.KerberosAccount} */ (this.actionMenuAccount_));
+        /** @type {!settings.KerberosAccount} */ (this.selectedAccount_));
     this.closeActionMenu_();
   },
 

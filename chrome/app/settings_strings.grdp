@@ -1671,6 +1671,9 @@
     <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT" desc="In Add Kerberos Accounts dialog, the title of the dialog.">
       Add Kerberos Account
     </message>
+    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REMEMBER_PASSWORD" desc="In Add Kerberos Accounts dialog, label of the checkbox to remember the password.">
+      Remember password
+    </message>
     <message name="IDS_SETTINGS_KERBEROS_USERNAME" desc="Title for the input that lets users specify their username for a Kerberos account.">
       Username
     </message>

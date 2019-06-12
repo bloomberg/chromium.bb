@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -37,14 +38,18 @@
         </div>
         <div id="credentials">
           <cr-input id="username" label="$i18n{kerberosUsername}"
-              value="{{username}}" invalid="[[showError_(usernameErrorText_)]]"
+              value="{{username_}}" invalid="[[showError_(usernameErrorText_)]]"
               error-message="[[usernameErrorText_]]">
           </cr-input>
           <cr-input id="password" type="password"
               label="$i18n{kerberosPassword}" value="{{password_}}"
               invalid="[[showError_(passwordErrorText_)]]"
-              error-message="[[passwordErrorText_]]">
+              error-message="[[passwordErrorText_]]"
+              on-input="onPasswordInput_">
           </cr-input>
+          <cr-checkbox id="rememberPassword" checked="{{rememberPassword_}}">
+            $i18n{addKerberosAccountRememberPassword}
+          </cr-checkbox>
         </div>
       </div>
       <div slot="button-container">

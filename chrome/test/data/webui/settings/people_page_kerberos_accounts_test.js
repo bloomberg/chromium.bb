@@ -5,6 +5,24 @@
 'use strict';
 
 cr.define('settings_people_page_kerberos_accounts', function() {
+  // List of fake accounts.
+  const testAccounts = [
+    {
+      principalName: 'user@REALM',
+      isSignedIn: true,
+      isActive: true,
+      hasRememberedPassword: false,
+      pic: 'pic',
+    },
+    {
+      principalName: 'user2@REALM2',
+      isSignedIn: false,
+      isActive: false,
+      hasRememberedPassword: true,
+      pic: 'pic2',
+    }
+  ];
+
   /** @implements {settings.KerberosAccountsBrowserProxy} */
   class TestKerberosAccountsBrowserProxy extends TestBrowserProxy {
     constructor() {
@@ -22,26 +40,13 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     /** @override */
     getAccounts() {
       this.methodCalled('getAccounts');
-
-      return Promise.resolve([
-        {
-          principalName: 'user@REALM',
-          isSignedIn: true,
-          isActive: true,
-          pic: 'pic',
-        },
-        {
-          principalName: 'user2@REALM2',
-          isSignedIn: false,
-          isActive: false,
-          pic: 'pic2',
-        }
-      ]);
+      return Promise.resolve(testAccounts);
     }
 
     /** @override */
-    addAccount(principalName, password) {
-      this.methodCalled('addAccount', [principalName, password]);
+    addAccount(principalName, password, rememberPassword) {
+      this.methodCalled(
+          'addAccount', [principalName, password, rememberPassword]);
       return Promise.resolve(this.addAccountError);
     }
 
@@ -116,7 +121,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       Polymer.dom.flush();
       const addDialog = kerberosAccounts.$$('kerberos-add-account-dialog');
       assertTrue(!!addDialog);
-      assertEquals('', addDialog.username);
+      assertEquals('', addDialog.$.username.value);
     });
 
     test('ReauthenticateAccount', function() {
@@ -137,7 +142,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
         // username.
         const addDialog = kerberosAccounts.$$('kerberos-add-account-dialog');
         assertTrue(!!addDialog);
-        assertEquals('user2@REALM2', addDialog.username);
+        assertEquals(testAccounts[1].principalName, addDialog.$.username.value);
       });
     });
 
@@ -146,7 +151,8 @@ cr.define('settings_people_page_kerberos_accounts', function() {
         Polymer.dom.flush();
         clickMoreActions(Account.FIRST, MoreActions.REMOVE_ACCOUNT);
         return browserProxy.whenCalled('removeAccount').then((account) => {
-          assertEquals('user@REALM', account.principalName);
+          assertEquals(
+              testAccounts[Account.FIRST].principalName, account.principalName);
         });
       });
     });
@@ -165,7 +171,9 @@ cr.define('settings_people_page_kerberos_accounts', function() {
             return browserProxy.whenCalled('setAsActiveAccount');
           })
           .then((account) => {
-            assertEquals('user2@REALM2', account.principalName);
+            assertEquals(
+                testAccounts[Account.SECOND].principalName,
+                account.principalName);
           });
     });
   });
@@ -227,9 +235,31 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     // dialog is appended to the document.
     test('UsernameFieldDisabledIfPreset', function() {
       const newDialog = document.createElement('kerberos-add-account-dialog');
-      newDialog.username = 'user';
+      newDialog.presetAccount = testAccounts[0];
       document.body.appendChild(newDialog);
-      assertTrue(newDialog.$.username.disabled);
+      assertTrue(newDialog.$.username.readonly);
+    });
+
+    // The password input field is empty and 'Remember password' is not preset
+    // if |hasRememberedPassword| is false.
+    test('PasswordNotPresetIfHasRememberedPasswordIsFalse', function() {
+      const newDialog = document.createElement('kerberos-add-account-dialog');
+      assertFalse(testAccounts[0].hasRememberedPassword);
+      newDialog.presetAccount = testAccounts[0];
+      document.body.appendChild(newDialog);
+      assertEquals('', newDialog.$.password.value);
+      assertFalse(newDialog.$.rememberPassword.checked);
+    });
+
+    // The password input field is not empty and 'Remember password' is preset
+    // if |hasRememberedPassword| is true.
+    test('PasswordPresetIfHasRememberedPasswordIsTrue', function() {
+      const newDialog = document.createElement('kerberos-add-account-dialog');
+      assertTrue(testAccounts[1].hasRememberedPassword);
+      newDialog.presetAccount = testAccounts[1];
+      document.body.appendChild(newDialog);
+      assertNotEquals('', newDialog.$.password.value);
+      assertTrue(newDialog.$.rememberPassword.checked);
     });
 
     // By clicking the "Add account", the username and password values are
@@ -254,6 +284,36 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       assertTrue(addButton.disabled);
       return browserProxy.whenCalled('addAccount').then(function(args) {
         assertFalse(addButton.disabled);
+      });
+    });
+
+    // If the account has hasRememberedPassword == true and the user just clicks
+    // the 'Add' button, an empty password is submitted.
+    test('SubmitsEmptyPasswordIfRememberedPasswordIsUsed', function() {
+      const newDialog = document.createElement('kerberos-add-account-dialog');
+      // Note: testAccounts[1].hasRememberedPassword == true.
+      newDialog.presetAccount = testAccounts[1];
+      document.body.appendChild(newDialog);
+      newDialog.$$('.action-button').click();
+      return browserProxy.whenCalled('addAccount').then(function(args) {
+        assertEquals('', args[1]);  // password
+        assertTrue(args[2]);        // remember password
+      });
+    });
+
+    // If the account has hasRememberedPassword == true and the user changes the
+    // password before clicking 'Add' button, the changed password is submitted.
+    test('SubmitsChangedPasswordIfRememberedPasswordIsChanged', function() {
+      const newDialog = document.createElement('kerberos-add-account-dialog');
+      // Note: testAccounts[1].hasRememberedPassword == true.
+      newDialog.presetAccount = testAccounts[1];
+      document.body.appendChild(newDialog);
+      newDialog.$.password.inputElement.value = 'some edit';
+      newDialog.$.password.dispatchEvent(new CustomEvent('input'));
+      newDialog.$$('.action-button').click();
+      return browserProxy.whenCalled('addAccount').then(function(args) {
+        assertNotEquals('', args[1]);  // password
+        assertTrue(args[2]);           // remember password
       });
     });
 

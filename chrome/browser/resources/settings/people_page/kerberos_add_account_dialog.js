@@ -13,7 +13,15 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
-    username: {
+    /**
+     * If set, some fields are preset from this account (like username or
+     * whether to remember the password).
+     * @type {?settings.KerberosAccount}
+     */
+    presetAccount: Object,
+
+    /** @private */
+    username_: {
       type: String,
       value: '',
     },
@@ -22,6 +30,12 @@ Polymer({
     password_: {
       type: String,
       value: '',
+    },
+
+    /** @private */
+    rememberPassword_: {
+      type: Boolean,
+      value: false,
     },
 
     /** @private */
@@ -55,15 +69,31 @@ Polymer({
   /** @private {!settings.KerberosErrorType} */
   lastError_: settings.KerberosErrorType.kNone,
 
+  /** @private {boolean} */
+  useRememberedPassword_: false,
+
   /** @override */
   attached: function() {
     this.$.dialog.showModal();
 
-    // If a non-empty username is preset, make the UI read-only.
-    // Note: At least the focus() part needs to be after showModal.
-    if (this.username) {
-      this.$.username.disabled = true;
+    if (this.presetAccount) {
+      // Preset username and make UI read-only.
+      // Note: At least the focus() part needs to be after showModal.
+      this.username_ = this.presetAccount.principalName;
+      this.$.username.readonly = true;
       this.$.password.focus();
+
+      if (this.presetAccount.hasRememberedPassword) {
+        // The daemon knows the user's password, so prefill the password field
+        // with some string (Chrome does not know the actual password for
+        // security reasons). If the user does not change it, an empty password
+        // is sent to the daemon, which is interpreted as "use remembered
+        // password". Also, keep remembering the password by default.
+        const FAKE_PASSWORD = 'xxxxxxxx';
+        this.password_ = FAKE_PASSWORD;
+        this.rememberPassword_ = true;
+        this.useRememberedPassword_ = true;
+      }
     }
   },
 
@@ -77,8 +107,11 @@ Polymer({
     this.inProgress_ = true;
     this.updateErrorMessages_(settings.KerberosErrorType.kNone);
 
+    // An empty password triggers the Kerberos daemon to use the remembered one.
+    const passwordToSubmit = this.useRememberedPassword_ ? '' : this.password_;
+
     settings.KerberosAccountsBrowserProxyImpl.getInstance()
-        .addAccount(this.username, this.password_)
+        .addAccount(this.username_, passwordToSubmit, this.rememberPassword_)
         .then(error => {
           this.inProgress_ = false;
 
@@ -91,6 +124,13 @@ Polymer({
           // Triggers the UI to update error messages.
           this.updateErrorMessages_(error);
         });
+  },
+
+  /** @private */
+  onPasswordInput_: function() {
+    // On first input, don't reuse the remembered password, but submit the
+    // changed one.
+    this.useRememberedPassword_ = false;
   },
 
   /**
