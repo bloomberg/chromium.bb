@@ -48,8 +48,7 @@ VulkanInstance::~VulkanInstance() {
 
 bool VulkanInstance::Initialize(
     const std::vector<const char*>& required_extensions,
-    const std::vector<const char*>& required_layers,
-    bool using_swiftshader) {
+    const std::vector<const char*>& required_layers) {
   DCHECK(!vk_instance_);
 
   VulkanFunctionPointers* vulkan_function_pointers =
@@ -241,9 +240,7 @@ bool VulkanInstance::Initialize(
         reinterpret_cast<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>(
             vkGetInstanceProcAddr(
                 vk_instance_, "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
-    // TODO(samans): Remove |using_swiftshader| once Swiftshader supports this
-    // method. https://crbug.com/swiftshader/129
-    if (!vkGetPhysicalDeviceXlibPresentationSupportKHR && !using_swiftshader)
+    if (!vkGetPhysicalDeviceXlibPresentationSupportKHR)
       return false;
 #endif
 
