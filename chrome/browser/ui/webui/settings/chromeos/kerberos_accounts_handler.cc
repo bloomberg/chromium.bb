@@ -19,16 +19,6 @@
 namespace chromeos {
 namespace settings {
 
-namespace {
-
-KerberosCredentialsManager::ResultCallback EmptyResultCallback() {
-  return base::BindOnce([](kerberos::ErrorType error) {
-    // Do nothing.
-  });
-}
-
-}  // namespace
-
 KerberosAccountsHandler::KerberosAccountsHandler()
     : credentials_manager_observer_(this), weak_factory_(this) {}
 
@@ -107,7 +97,8 @@ void KerberosAccountsHandler::HandleAddKerberosAccount(
   CHECK(args->GetString(2, &password));
 
   KerberosCredentialsManager::Get().AddAccountAndAuthenticate(
-      std::move(principal_name), password,
+      std::move(principal_name), false /* is_managed */, password,
+      false /* remember_password */, base::nullopt /* krb5_conf */,
       base::BindOnce(&KerberosAccountsHandler::OnAddAccountAndAuthenticate,
                      weak_factory_.GetWeakPtr(), callback_id));
 }
@@ -130,8 +121,8 @@ void KerberosAccountsHandler::HandleRemoveKerberosAccount(
   // is called when an account is removed, which calls RefreshUI(). Thus, it's
   // fine to pass an EmptyResultCallback() in here and not something that calls
   // RefreshUI().
-  KerberosCredentialsManager::Get().RemoveAccount(principal_name,
-                                                  EmptyResultCallback());
+  KerberosCredentialsManager::Get().RemoveAccount(
+      principal_name, KerberosCredentialsManager::EmptyResultCallback());
 }
 
 void KerberosAccountsHandler::OnJavascriptAllowed() {

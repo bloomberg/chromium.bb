@@ -127,12 +127,15 @@ void BrowserProcessPlatformPart::ShutdownCrosComponentManager() {
 
 void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
     const Profile* primary_profile) {
-  // KerberosCredentialsManager implicitly depends on the primary user/profile
-  // since a sub-component needs the USER_DIR.
+  DCHECK(primary_profile);
+  const user_manager::User* primary_user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(primary_profile);
+  DCHECK(primary_user);
+
   DCHECK(!kerberos_credentials_manager_);
   kerberos_credentials_manager_ =
       std::make_unique<chromeos::KerberosCredentialsManager>(
-          g_browser_process->local_state());
+          g_browser_process->local_state(), primary_user);
 }
 
 void BrowserProcessPlatformPart::ShutdownPrimaryProfileServices() {
