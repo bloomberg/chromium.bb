@@ -540,13 +540,12 @@ void NormalPageArena::VerifyMarking() {
 bool NormalPageArena::IsConsistentForGC() {
   // A thread heap is consistent for sweeping if none of the pages to be swept
   // contain a freelist block or the current allocation point.
-  for (size_t i = 0; i < kBlinkPageSizeLog2; ++i) {
-    for (FreeListEntry* free_list_entry = free_list_.free_lists_[i];
-         free_list_entry; free_list_entry = free_list_entry->Next()) {
-      if (PagesToBeSweptContains(free_list_entry->GetAddress()))
-        return false;
-    }
-  }
+  FreeListEntry* entry = free_list_.FindEntry([this](FreeListEntry* entry) {
+    return PagesToBeSweptContains(entry->GetAddress());
+  });
+  if (entry)
+    return false;
+
   if (HasCurrentAllocationArea()) {
     if (PagesToBeSweptContains(CurrentAllocationPoint()))
       return false;
@@ -752,6 +751,18 @@ bool NormalPageArena::ShrinkObject(HeapObjectHeader* header, size_t new_size) {
   return false;
 }
 
+Address NormalPageArena::AllocateFromFreeList(size_t allocation_size,
+                                              size_t gc_info_index) {
+  FreeListEntry* entry = free_list_.Allocate(allocation_size);
+  if (!entry)
+    return nullptr;
+
+  SetAllocationPoint(entry->GetAddress(), entry->size());
+  DCHECK(HasCurrentAllocationArea());
+  DCHECK_GE(RemainingAllocationSize(), allocation_size);
+  return AllocateObject(allocation_size, gc_info_index);
+}
+
 Address NormalPageArena::LazySweepPages(size_t allocation_size,
                                         size_t gc_info_index) {
   DCHECK(!HasCurrentAllocationArea());
@@ -869,38 +880,6 @@ Address NormalPageArena::OutOfLineAllocateImpl(size_t allocation_size,
   return result;
 }
 
-Address NormalPageArena::AllocateFromFreeList(size_t allocation_size,
-                                              size_t gc_info_index) {
-  // Try reusing a block from the largest bin. The underlying reasoning
-  // being that we want to amortize this slow allocation call by carving
-  // off as a large a free block as possible in one go; a block that will
-  // service this block and let following allocations be serviced quickly
-  // by bump allocation.
-  size_t bucket_size = static_cast<size_t>(1)
-                       << free_list_.biggest_free_list_index_;
-  int index = free_list_.biggest_free_list_index_;
-  for (; index > 0; --index, bucket_size >>= 1) {
-    FreeListEntry* entry = free_list_.free_lists_[index];
-    if (allocation_size > bucket_size) {
-      // Final bucket candidate; check initial entry if it is able
-      // to service this allocation. Do not perform a linear scan,
-      // as it is considered too costly.
-      if (!entry || entry->size() < allocation_size)
-        break;
-    }
-    if (entry) {
-      entry->Unlink(&free_list_.free_lists_[index]);
-      SetAllocationPoint(entry->GetAddress(), entry->size());
-      DCHECK(HasCurrentAllocationArea());
-      DCHECK_GE(RemainingAllocationSize(), allocation_size);
-      free_list_.biggest_free_list_index_ = index;
-      return AllocateObject(allocation_size, gc_info_index);
-    }
-  }
-  free_list_.biggest_free_list_index_ = index;
-  return nullptr;
-}
-
 LargeObjectArena::LargeObjectArena(ThreadState* state, int index)
     : BaseArena(state, index) {}
 
@@ -1014,7 +993,7 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
 
 FreeList::FreeList() : biggest_free_list_index_(0) {}
 
-void FreeList::AddToFreeList(Address address, size_t size) {
+void FreeList::Add(Address address, size_t size) {
   DCHECK_LT(size, BlinkPagePayloadSize());
   // The free list entries are only pointer aligned (but when we allocate
   // from them we are 8 byte aligned due to the header size).
@@ -1073,10 +1052,72 @@ void FreeList::AddToFreeList(Address address, size_t size) {
 #endif
   ASAN_POISON_MEMORY_REGION(address, size);
 
-  int index = BucketIndexForSize(size);
-  entry->Link(&free_lists_[index]);
-  if (index > biggest_free_list_index_)
+  const int index = BucketIndexForSize(size);
+  entry->Link(&free_list_heads_[index]);
+  if (index > biggest_free_list_index_) {
     biggest_free_list_index_ = index;
+  }
+  if (!entry->Next()) {
+    free_list_tails_[index] = entry;
+  }
+}
+
+void FreeList::MoveFrom(FreeList* other) {
+  const size_t expected_size = FreeListSize() + other->FreeListSize();
+
+  // Newly created entries get added to the head.
+  for (size_t index = 0; index < kBlinkPageSizeLog2; ++index) {
+    FreeListEntry* other_tail = other->free_list_tails_[index];
+    FreeListEntry*& this_head = this->free_list_heads_[index];
+    if (other_tail) {
+      other_tail->Append(this_head);
+      if (!this_head) {
+        this->free_list_tails_[index] = other_tail;
+      }
+      this_head = other->free_list_heads_[index];
+      other->free_list_heads_[index] = nullptr;
+      other->free_list_tails_[index] = nullptr;
+    }
+  }
+
+  biggest_free_list_index_ =
+      std::max(biggest_free_list_index_, other->biggest_free_list_index_);
+  other->biggest_free_list_index_ = 0;
+
+  DCHECK_EQ(expected_size, FreeListSize());
+  DCHECK(other->IsEmpty());
+}
+
+FreeListEntry* FreeList::Allocate(size_t allocation_size) {
+  // Try reusing a block from the largest bin. The underlying reasoning
+  // being that we want to amortize this slow allocation call by carving
+  // off as a large a free block as possible in one go; a block that will
+  // service this block and let following allocations be serviced quickly
+  // by bump allocation.
+  size_t bucket_size = static_cast<size_t>(1) << biggest_free_list_index_;
+  int index = biggest_free_list_index_;
+  for (; index > 0; --index, bucket_size >>= 1) {
+    DCHECK(IsConsistent(index));
+    FreeListEntry* entry = free_list_heads_[index];
+    if (allocation_size > bucket_size) {
+      // Final bucket candidate; check initial entry if it is able
+      // to service this allocation. Do not perform a linear scan,
+      // as it is considered too costly.
+      if (!entry || entry->size() < allocation_size)
+        break;
+    }
+    if (entry) {
+      if (!entry->Next()) {
+        DCHECK_EQ(entry, free_list_tails_[index]);
+        free_list_tails_[index] = nullptr;
+      }
+      entry->Unlink(&free_list_heads_[index]);
+      biggest_free_list_index_ = index;
+      return entry;
+    }
+  }
+  biggest_free_list_index_ = index;
+  return nullptr;
 }
 
 #if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
@@ -1117,7 +1158,7 @@ void NOINLINE FreeList::CheckFreedMemoryIsZapped(Address address, size_t size) {
 size_t FreeList::FreeListSize() const {
   size_t free_size = 0;
   for (unsigned i = 0; i < kBlinkPageSizeLog2; ++i) {
-    FreeListEntry* entry = free_lists_[i];
+    FreeListEntry* entry = free_list_heads_[i];
     while (entry) {
       free_size += entry->size();
       entry = entry->Next();
@@ -1127,7 +1168,7 @@ size_t FreeList::FreeListSize() const {
   if (free_size) {
     LOG_HEAP_FREELIST_VERBOSE() << "FreeList(" << this << "): " << free_size;
     for (unsigned i = 0; i < kBlinkPageSizeLog2; ++i) {
-      FreeListEntry* entry = free_lists_[i];
+      FreeListEntry* entry = free_list_heads_[i];
       size_t bucket = 0;
       size_t count = 0;
       while (entry) {
@@ -1148,8 +1189,22 @@ size_t FreeList::FreeListSize() const {
 
 void FreeList::Clear() {
   biggest_free_list_index_ = 0;
-  for (size_t i = 0; i < kBlinkPageSizeLog2; ++i)
-    free_lists_[i] = nullptr;
+  for (size_t i = 0; i < kBlinkPageSizeLog2; ++i) {
+    free_list_heads_[i] = nullptr;
+    free_list_tails_[i] = nullptr;
+  }
+}
+
+bool FreeList::IsEmpty() const {
+  if (biggest_free_list_index_)
+    return false;
+  for (size_t i = 0; i < kBlinkPageSizeLog2; ++i) {
+    if (free_list_heads_[i]) {
+      DCHECK(free_list_tails_[i]);
+      return false;
+    }
+  }
+  return true;
 }
 
 int FreeList::BucketIndexForSize(size_t size) {
@@ -1167,7 +1222,8 @@ bool FreeList::TakeSnapshot(const String& dump_base_name) {
   for (size_t i = 0; i < kBlinkPageSizeLog2; ++i) {
     size_t entry_count = 0;
     size_t free_size = 0;
-    for (FreeListEntry* entry = free_lists_[i]; entry; entry = entry->Next()) {
+    for (FreeListEntry* entry = free_list_heads_[i]; entry;
+         entry = entry->Next()) {
       ++entry_count;
       free_size += entry->size();
     }
