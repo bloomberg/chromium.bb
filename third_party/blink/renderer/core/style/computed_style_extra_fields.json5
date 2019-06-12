@@ -620,14 +620,6 @@
       field_group: "*",
     },
     {
-      name: "VisitedLinkTextDecorationColor",
-      field_template: "external",
-      type_name: "StyleColor",
-      field_group: "*",
-      default_value: "StyleColor::CurrentColor()",
-      computed_style_custom_functions: ["getter", "setter"],
-    },
-    {
       name: "VisitedLinkOutlineColor",
       field_template: "external",
       type_name: "StyleColor",

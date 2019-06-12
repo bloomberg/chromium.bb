@@ -266,8 +266,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.StrokeWidth() == b.StrokeWidth();
     case CSSPropertyID::kTextDecorationColor:
       return a.TextDecorationColor() == b.TextDecorationColor() &&
-             a.VisitedLinkTextDecorationColor() ==
-                 b.VisitedLinkTextDecorationColor();
+             a.InternalVisitedTextDecorationColor() ==
+                 b.InternalVisitedTextDecorationColor();
     case CSSPropertyID::kTextDecorationSkipInk:
       return a.TextDecorationSkipInk() == b.TextDecorationSkipInk();
     case CSSPropertyID::kTextIndent:

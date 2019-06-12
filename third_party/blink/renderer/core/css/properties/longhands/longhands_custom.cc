@@ -179,6 +179,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_border_right_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_border_top_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_color.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_decoration_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_emphasis_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_fill_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_stroke_color.h"
@@ -3744,6 +3745,14 @@ const blink::Color InternalVisitedBorderBottomColor::ColorIncludingFallback(
       style.InternalVisitedColor());
 }
 
+const blink::Color InternalVisitedTextDecorationColor::ColorIncludingFallback(
+    bool visited_link,
+    const ComputedStyle& style) const {
+  DCHECK(visited_link);
+  return style.DecorationColorIncludingFallback(visited_link)
+      .Resolve(style.InternalVisitedColor());
+}
+
 const blink::Color InternalVisitedTextEmphasisColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
@@ -6235,10 +6244,9 @@ const CSSValue* TextDecorationColor::ParseSingleValue(
 const blink::Color TextDecorationColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result = style.DecorationColorIncludingFallback(visited_link);
-  if (!result.IsCurrentColor())
-    return result.GetColor();
-  return visited_link ? style.InternalVisitedColor() : style.GetColor();
+  DCHECK(!visited_link);
+  return style.DecorationColorIncludingFallback(visited_link)
+      .Resolve(style.GetColor());
 }
 
 const CSSValue* TextDecorationColor::CSSValueFromComputedStyleInternal(

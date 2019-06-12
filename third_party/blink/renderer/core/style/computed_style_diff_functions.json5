@@ -414,7 +414,7 @@
         name: "UpdatePropertySpecificDifferencesTextDecorationOrColor",
         fields_to_diff: ["color", "-internal-visited-color", "text-decoration-line",
                 "text-decoration-style", "text-decoration-color",
-                "VisitedLinkTextDecorationColor", "TextEmphasisFill",
+                "-internal-visited-text-decoration-color", "TextEmphasisFill",
                 "text-underline-position", "text-decoration-skip-ink", "AppliedTextDecorations"],
         methods_to_diff: [
           {

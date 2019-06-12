@@ -107,6 +107,7 @@ class InternalVisitedBorderLeftColor;
 class InternalVisitedBorderRightColor;
 class InternalVisitedBorderTopColor;
 class InternalVisitedColor;
+class InternalVisitedTextDecorationColor;
 class InternalVisitedTextEmphasisColor;
 class InternalVisitedTextFillColor;
 class InternalVisitedTextStrokeColor;
@@ -204,6 +205,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::InternalVisitedBorderRightColor;
   friend class css_longhand::InternalVisitedBorderTopColor;
   friend class css_longhand::InternalVisitedColor;
+  friend class css_longhand::InternalVisitedTextDecorationColor;
   friend class css_longhand::InternalVisitedTextEmphasisColor;
   friend class css_longhand::InternalVisitedTextFillColor;
   friend class css_longhand::InternalVisitedTextStrokeColor;
@@ -2384,8 +2386,8 @@ class ComputedStyle : public ComputedStyleBase,
   void SetVisitedLinkColumnRuleColor(const StyleColor& v) {
     SetVisitedLinkColumnRuleColorInternal(v);
   }
-  void SetVisitedLinkTextDecorationColor(const StyleColor& v) {
-    SetVisitedLinkTextDecorationColorInternal(v);
+  void SetInternalVisitedTextDecorationColor(const StyleColor& v) {
+    SetInternalVisitedTextDecorationColorInternal(v);
   }
   void SetInternalVisitedTextEmphasisColor(const StyleColor& color) {
     SetInternalVisitedTextEmphasisColorInternal(color.Resolve(Color()));
@@ -2566,8 +2568,8 @@ class ComputedStyle : public ComputedStyleBase,
   StyleColor VisitedLinkColumnRuleColor() const {
     return VisitedLinkColumnRuleColorInternal();
   }
-  StyleColor VisitedLinkTextDecorationColor() const {
-    return VisitedLinkTextDecorationColorInternal();
+  StyleColor InternalVisitedTextDecorationColor() const {
+    return InternalVisitedTextDecorationColorInternal();
   }
   StyleColor InternalVisitedTextEmphasisColor() const {
     return InternalVisitedTextEmphasisColorIsCurrentColorInternal()

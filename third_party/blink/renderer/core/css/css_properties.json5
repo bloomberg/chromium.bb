@@ -3162,7 +3162,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color",
+      style_builder_template: "color_only",
       valid_for_visited_link: true,
     },
     {
@@ -5260,6 +5260,19 @@
         resolver: "block-end",
         physical_group: "visited-border-color",
       },
+    },
+    {
+      name: "-internal-visited-text-decoration-color",
+      visited_property_for: "text-decoration-color",
+      property_methods: ["ColorIncludingFallback"],
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
+      default_value: "StyleColor::CurrentColor()",
+      type_name: "StyleColor",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
     },
     {
       name: "-internal-visited-text-emphasis-color",

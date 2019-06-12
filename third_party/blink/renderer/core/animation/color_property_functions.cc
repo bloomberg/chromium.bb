@@ -100,7 +100,7 @@ OptionalStyleColor ColorPropertyFunctions::GetVisitedColor(
     case CSSPropertyID::kWebkitTapHighlightColor:
       return style.TapHighlightColor();
     case CSSPropertyID::kTextDecorationColor:
-      return style.VisitedLinkTextDecorationColor();
+      return style.InternalVisitedTextDecorationColor();
     default:
       NOTREACHED();
       return nullptr;
@@ -195,7 +195,7 @@ void ColorPropertyFunctions::SetVisitedColor(const CSSProperty& property,
       style.SetStopColor(color);
       return;
     case CSSPropertyID::kTextDecorationColor:
-      style.SetVisitedLinkTextDecorationColor(color);
+      style.SetInternalVisitedTextDecorationColor(color);
       return;
     case CSSPropertyID::kColumnRuleColor:
       style.SetVisitedLinkColumnRuleColor(color);
