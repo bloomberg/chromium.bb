@@ -794,7 +794,7 @@ gchar* GetText(AtkText* atk_text, gint start_offset, gint end_offset) {
   base::string16 text = obj->GetHypertext();
 
   start_offset = obj->UnicodeToUTF16OffsetInText(start_offset);
-  if (start_offset < 0)
+  if (start_offset < 0 || start_offset >= static_cast<int>(text.size()))
     return nullptr;
 
   if (end_offset < 0) {
