@@ -941,12 +941,6 @@ static INLINE CFL_ALLOWED_TYPE store_cfl_required_rdo(const AV1_COMMON *cm,
   return is_cfl_allowed(xd);
 }
 
-// constants for prune 1 and prune 2 decision boundaries
-#define FAST_EXT_TX_CORR_MID 0.0
-#define FAST_EXT_TX_EDST_MID 0.1
-#define FAST_EXT_TX_CORR_MARGIN 0.5
-#define FAST_EXT_TX_EDST_MARGIN 0.3
-
 static int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                            RD_STATS *rd_stats, BLOCK_SIZE bsize,
                            int64_t ref_best_rd, FAST_TX_SEARCH_MODE ftxs_mode);
