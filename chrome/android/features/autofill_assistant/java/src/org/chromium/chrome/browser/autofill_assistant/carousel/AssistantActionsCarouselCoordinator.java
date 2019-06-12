@@ -50,13 +50,18 @@ public class AssistantActionsCarouselCoordinator implements AssistantCarouselCoo
 
         // TODO(crbug.com/806868): WRAP_CONTENT height should work instead of setting the exact
         // height of the view. We add the sheet vertical spacing twice as the item decoration will
-        // add this space above and below each chip.
+        // add this space above and below each chip, and remove the vertical inset added to all
+        // ButtonView's.
         mView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 context.getResources().getDimensionPixelSize(R.dimen.min_touch_target_size)
                         + 2
                                 * context.getResources().getDimensionPixelSize(
                                         org.chromium.chrome.autofill_assistant.R.dimen
-                                                .autofill_assistant_bottombar_vertical_spacing)));
+                                                .autofill_assistant_bottombar_vertical_spacing)
+                        - 2
+                                * context.getResources().getDimensionPixelSize(
+                                        org.chromium.chrome.autofill_assistant.R.dimen
+                                                .autofill_assistant_button_bg_vertical_inset)));
 
         mView.setAdapter(new RecyclerViewAdapter<>(
                 new SimpleRecyclerViewMcp<>(model.getChipsModel(),
