@@ -86,11 +86,11 @@ OptionalStyleColor ColorPropertyFunctions::GetVisitedColor(
     case CSSPropertyID::kColumnRuleColor:
       return style.VisitedLinkColumnRuleColor();
     case CSSPropertyID::kWebkitTextEmphasisColor:
-      return style.VisitedLinkTextEmphasisColor();
+      return style.InternalVisitedTextEmphasisColor();
     case CSSPropertyID::kWebkitTextFillColor:
-      return style.VisitedLinkTextFillColor();
+      return style.InternalVisitedTextFillColor();
     case CSSPropertyID::kWebkitTextStrokeColor:
-      return style.VisitedLinkTextStrokeColor();
+      return style.InternalVisitedTextStrokeColor();
     case CSSPropertyID::kFloodColor:
       return style.FloodColor();
     case CSSPropertyID::kLightingColor:
@@ -201,7 +201,7 @@ void ColorPropertyFunctions::SetVisitedColor(const CSSProperty& property,
       style.SetVisitedLinkColumnRuleColor(color);
       return;
     case CSSPropertyID::kWebkitTextStrokeColor:
-      style.SetVisitedLinkTextStrokeColor(color);
+      style.SetInternalVisitedTextStrokeColor(color);
       return;
     default:
       NOTREACHED();

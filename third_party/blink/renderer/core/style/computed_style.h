@@ -107,6 +107,9 @@ class InternalVisitedBorderLeftColor;
 class InternalVisitedBorderRightColor;
 class InternalVisitedBorderTopColor;
 class InternalVisitedColor;
+class InternalVisitedTextEmphasisColor;
+class InternalVisitedTextFillColor;
+class InternalVisitedTextStrokeColor;
 class LightingColor;
 class OutlineColor;
 class StopColor;
@@ -201,6 +204,9 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::InternalVisitedBorderRightColor;
   friend class css_longhand::InternalVisitedBorderTopColor;
   friend class css_longhand::InternalVisitedColor;
+  friend class css_longhand::InternalVisitedTextEmphasisColor;
+  friend class css_longhand::InternalVisitedTextFillColor;
+  friend class css_longhand::InternalVisitedTextStrokeColor;
   friend class css_longhand::LightingColor;
   friend class css_longhand::OutlineColor;
   friend class css_longhand::StopColor;
@@ -2381,18 +2387,20 @@ class ComputedStyle : public ComputedStyleBase,
   void SetVisitedLinkTextDecorationColor(const StyleColor& v) {
     SetVisitedLinkTextDecorationColorInternal(v);
   }
-  void SetVisitedLinkTextEmphasisColor(const StyleColor& color) {
-    SetVisitedLinkTextEmphasisColorInternal(color.Resolve(Color()));
-    SetVisitedLinkTextEmphasisColorIsCurrentColorInternal(
+  void SetInternalVisitedTextEmphasisColor(const StyleColor& color) {
+    SetInternalVisitedTextEmphasisColorInternal(color.Resolve(Color()));
+    SetInternalVisitedTextEmphasisColorIsCurrentColorInternal(
         color.IsCurrentColor());
   }
-  void SetVisitedLinkTextFillColor(const StyleColor& color) {
-    SetVisitedLinkTextFillColorInternal(color.Resolve(Color()));
-    SetVisitedLinkTextFillColorIsCurrentColorInternal(color.IsCurrentColor());
+  void SetInternalVisitedTextFillColor(const StyleColor& color) {
+    SetInternalVisitedTextFillColorInternal(color.Resolve(Color()));
+    SetInternalVisitedTextFillColorIsCurrentColorInternal(
+        color.IsCurrentColor());
   }
-  void SetVisitedLinkTextStrokeColor(const StyleColor& color) {
-    SetVisitedLinkTextStrokeColorInternal(color.Resolve(Color()));
-    SetVisitedLinkTextStrokeColorIsCurrentColorInternal(color.IsCurrentColor());
+  void SetInternalVisitedTextStrokeColor(const StyleColor& color) {
+    SetInternalVisitedTextStrokeColorInternal(color.Resolve(Color()));
+    SetInternalVisitedTextStrokeColorIsCurrentColorInternal(
+        color.IsCurrentColor());
   }
   void SetVisitedLinkCaretColor(const StyleAutoColor& color) {
     SetVisitedLinkCaretColorInternal(color.Resolve(Color()));
@@ -2561,20 +2569,20 @@ class ComputedStyle : public ComputedStyleBase,
   StyleColor VisitedLinkTextDecorationColor() const {
     return VisitedLinkTextDecorationColorInternal();
   }
-  StyleColor VisitedLinkTextEmphasisColor() const {
-    return VisitedLinkTextEmphasisColorIsCurrentColorInternal()
+  StyleColor InternalVisitedTextEmphasisColor() const {
+    return InternalVisitedTextEmphasisColorIsCurrentColorInternal()
                ? StyleColor::CurrentColor()
-               : StyleColor(VisitedLinkTextEmphasisColorInternal());
+               : StyleColor(InternalVisitedTextEmphasisColorInternal());
   }
-  StyleColor VisitedLinkTextFillColor() const {
-    return VisitedLinkTextFillColorIsCurrentColorInternal()
+  StyleColor InternalVisitedTextFillColor() const {
+    return InternalVisitedTextFillColorIsCurrentColorInternal()
                ? StyleColor::CurrentColor()
-               : StyleColor(VisitedLinkTextFillColorInternal());
+               : StyleColor(InternalVisitedTextFillColorInternal());
   }
-  StyleColor VisitedLinkTextStrokeColor() const {
-    return VisitedLinkTextStrokeColorIsCurrentColorInternal()
+  StyleColor InternalVisitedTextStrokeColor() const {
+    return InternalVisitedTextStrokeColorIsCurrentColorInternal()
                ? StyleColor::CurrentColor()
-               : StyleColor(VisitedLinkTextStrokeColorInternal());
+               : StyleColor(InternalVisitedTextStrokeColorInternal());
   }
 
   StyleColor DecorationColorIncludingFallback(bool visited_link) const;

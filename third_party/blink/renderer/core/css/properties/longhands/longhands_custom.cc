@@ -179,6 +179,9 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_border_right_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_border_top_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_color.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_emphasis_color.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_fill_color.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_stroke_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/isolation.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/justify_content.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/justify_items.h"
@@ -3738,6 +3741,30 @@ const blink::Color InternalVisitedBorderBottomColor::ColorIncludingFallback(
     const ComputedStyle& style) const {
   DCHECK(visited_link);
   return style.InternalVisitedBorderBottomColor().Resolve(
+      style.InternalVisitedColor());
+}
+
+const blink::Color InternalVisitedTextEmphasisColor::ColorIncludingFallback(
+    bool visited_link,
+    const ComputedStyle& style) const {
+  DCHECK(visited_link);
+  return style.InternalVisitedTextEmphasisColor().Resolve(
+      style.InternalVisitedColor());
+}
+
+const blink::Color InternalVisitedTextFillColor::ColorIncludingFallback(
+    bool visited_link,
+    const ComputedStyle& style) const {
+  DCHECK(visited_link);
+  return style.InternalVisitedTextFillColor().Resolve(
+      style.InternalVisitedColor());
+}
+
+const blink::Color InternalVisitedTextStrokeColor::ColorIncludingFallback(
+    bool visited_link,
+    const ComputedStyle& style) const {
+  DCHECK(visited_link);
+  return style.InternalVisitedTextStrokeColor().Resolve(
       style.InternalVisitedColor());
 }
 
@@ -7701,11 +7728,8 @@ const CSSValue* WebkitTextEmphasisColor::ParseSingleValue(
 const blink::Color WebkitTextEmphasisColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result = visited_link ? style.VisitedLinkTextEmphasisColor()
-                                   : style.TextEmphasisColor();
-  if (!result.IsCurrentColor())
-    return result.GetColor();
-  return visited_link ? style.InternalVisitedColor() : style.GetColor();
+  DCHECK(!visited_link);
+  return style.TextEmphasisColor().Resolve(style.GetColor());
 }
 
 const CSSValue* WebkitTextEmphasisColor::CSSValueFromComputedStyleInternal(
@@ -7932,11 +7956,8 @@ const CSSValue* WebkitTextFillColor::ParseSingleValue(
 const blink::Color WebkitTextFillColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result =
-      visited_link ? style.VisitedLinkTextFillColor() : style.TextFillColor();
-  if (!result.IsCurrentColor())
-    return result.GetColor();
-  return visited_link ? style.InternalVisitedColor() : style.GetColor();
+  DCHECK(!visited_link);
+  return style.TextFillColor().Resolve(style.GetColor());
 }
 
 const CSSValue* WebkitTextFillColor::CSSValueFromComputedStyleInternal(
@@ -7985,11 +8006,8 @@ const CSSValue* WebkitTextStrokeColor::ParseSingleValue(
 const blink::Color WebkitTextStrokeColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result = visited_link ? style.VisitedLinkTextStrokeColor()
-                                   : style.TextStrokeColor();
-  if (!result.IsCurrentColor())
-    return result.GetColor();
-  return visited_link ? style.InternalVisitedColor() : style.GetColor();
+  DCHECK(!visited_link);
+  return style.TextStrokeColor().Resolve(style.GetColor());
 }
 
 const CSSValue* WebkitTextStrokeColor::CSSValueFromComputedStyleInternal(

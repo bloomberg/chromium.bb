@@ -333,7 +333,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
              a.PerspectiveOriginY() == b.PerspectiveOriginY();
     case CSSPropertyID::kWebkitTextStrokeColor:
       return a.TextStrokeColor() == b.TextStrokeColor() &&
-             a.VisitedLinkTextStrokeColor() == b.VisitedLinkTextStrokeColor();
+             a.InternalVisitedTextStrokeColor() ==
+                 b.InternalVisitedTextStrokeColor();
     case CSSPropertyID::kTransform:
       return a.Transform() == b.Transform();
     case CSSPropertyID::kTranslate:

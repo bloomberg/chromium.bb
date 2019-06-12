@@ -1260,6 +1260,9 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
     case CSSPropertyID::kInternalVisitedBorderRightColor:
     case CSSPropertyID::kInternalVisitedBorderTopColor:
     case CSSPropertyID::kInternalVisitedColor:
+    case CSSPropertyID::kInternalVisitedTextEmphasisColor:
+    case CSSPropertyID::kInternalVisitedTextFillColor:
+    case CSSPropertyID::kInternalVisitedTextStrokeColor:
     case CSSPropertyID::kInvalid:
       NOTREACHED();
       return 0;

@@ -434,16 +434,16 @@
             field_dependencies: ["-webkit-text-emphasis-color"]
           },
           {
-            method: "VisitedLinkTextFillColor()",
-            field_dependencies: ["VisitedLinkTextFillColor"]
+            method: "InternalVisitedTextFillColor()",
+            field_dependencies: ["-internal-visited-text-fill-color"]
           },
           {
-            method: "VisitedLinkTextStrokeColor()",
-            field_dependencies: ["VisitedLinkTextStrokeColor"]
+            method: "InternalVisitedTextStrokeColor()",
+            field_dependencies: ["-internal-visited-text-stroke-color"]
           },
           {
-            method: "VisitedLinkTextEmphasisColor()",
-            field_dependencies: ["VisitedLinkTextEmphasisColor"]
+            method: "InternalVisitedTextEmphasisColor()",
+            field_dependencies: ["-internal-visited-text-emphasis-color"]
           },
           {
             method: "CaretColor()",
