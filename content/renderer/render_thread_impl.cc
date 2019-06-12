@@ -761,6 +761,9 @@ void RenderThreadImpl::Init() {
 
   AddFilter(aec_dump_message_filter_.get());
 
+  unfreezable_message_filter_ = new UnfreezableMessageFilter(this);
+  AddFilter(unfreezable_message_filter_.get());
+
   audio_input_ipc_factory_.emplace(main_thread_runner(), GetIOTaskRunner());
 
   audio_output_ipc_factory_.emplace(GetIOTaskRunner());
@@ -1065,6 +1068,9 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
     return;
 
   GetChannel()->AddListenerTaskRunner(
+      routing_id, frame->GetTaskRunner(blink::TaskType::kInternalFreezableIPC));
+
+  unfreezable_message_filter_->AddListenerUnfreezableTaskRunner(
       routing_id,
       frame->GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
 
@@ -2436,5 +2442,47 @@ void RenderThreadImpl::SetRenderingColorSpace(
       factories->SetRenderingColorSpace(color_space);
   }
 }
+
+RenderThreadImpl::UnfreezableMessageFilter::UnfreezableMessageFilter(
+    RenderThreadImpl* render_thread_impl)
+    : render_thread_impl_(render_thread_impl) {}
+
+// Called on the I/O thread.
+bool RenderThreadImpl::UnfreezableMessageFilter::OnMessageReceived(
+    const IPC::Message& message) {
+  if ((IPC_MESSAGE_CLASS(message) == UnfreezableFrameMsgStart)) {
+    return GetUnfreezableTaskRunner(message.routing_id())
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(
+                       base::IgnoreResult(&RenderThreadImpl::OnMessageReceived),
+                       base::Unretained(render_thread_impl_), message));
+  }
+  return false;
+}
+
+// Called on the listener thread.
+void RenderThreadImpl::UnfreezableMessageFilter::
+    AddListenerUnfreezableTaskRunner(
+        int32_t routing_id,
+        scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner) {
+  DCHECK(unfreezable_task_runner);
+  base::AutoLock lock(unfreezable_task_runners_lock_);
+  DCHECK(!base::Contains(unfreezable_task_runners_, routing_id));
+  unfreezable_task_runners_.emplace(routing_id,
+                                    std::move(unfreezable_task_runner));
+}
+
+// Called on the I/O thread.
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderThreadImpl::UnfreezableMessageFilter::GetUnfreezableTaskRunner(
+    int32_t routing_id) {
+  base::AutoLock lock(unfreezable_task_runners_lock_);
+  auto it = unfreezable_task_runners_.find(routing_id);
+  if (it != unfreezable_task_runners_.end())
+    return it->second;
+  return base::ThreadTaskRunnerHandle::Get();
+}
+
+RenderThreadImpl::UnfreezableMessageFilter::~UnfreezableMessageFilter() {}
 
 }  // namespace content
