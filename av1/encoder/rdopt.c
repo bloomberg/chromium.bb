@@ -7984,6 +7984,18 @@ static INLINE int clamp_and_check_mv(int_mv *out_mv, int_mv in_mv,
   return !mv_check_bounds(&x->mv_limits, &out_mv->as_mv);
 }
 
+// To use single newmv directly for compound modes, need to clamp the mv to the
+// valid mv range. Without this, encoder would generate out of range mv, and
+// this is seen in 8k encoding.
+static INLINE void clamp_mv_in_range(MACROBLOCK *const x, int_mv *mv,
+                                     int ref_idx) {
+  const int_mv ref_mv = av1_get_ref_mv(x, ref_idx);
+  int minc, maxc, minr, maxr;
+  set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr,
+                             &ref_mv.as_mv);
+  clamp_mv(&mv->as_mv, minc, maxc, minr, maxr);
+}
+
 static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                             const BLOCK_SIZE bsize, int_mv *cur_mv,
                             const int mi_row, const int mi_col,
@@ -8001,11 +8013,22 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
   (void)args;
 
   if (is_comp_pred) {
-    if (this_mode == NEW_NEWMV) {
-      cur_mv[0].as_int = args->single_newmv[ref_mv_idx][refs[0]].as_int;
-      cur_mv[1].as_int = args->single_newmv[ref_mv_idx][refs[1]].as_int;
+    const int valid_mv0 = args->single_newmv_valid[ref_mv_idx][refs[0]];
+    const int valid_mv1 = args->single_newmv_valid[ref_mv_idx][refs[1]];
 
-      if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
+    if (this_mode == NEW_NEWMV) {
+      if (valid_mv0) {
+        cur_mv[0].as_int = args->single_newmv[ref_mv_idx][refs[0]].as_int;
+        clamp_mv_in_range(x, &cur_mv[0], 0);
+      }
+      if (valid_mv1) {
+        cur_mv[1].as_int = args->single_newmv[ref_mv_idx][refs[1]].as_int;
+        clamp_mv_in_range(x, &cur_mv[1], 1);
+      }
+
+      // aomenc1
+      if (cpi->sf.comp_inter_joint_search_thresh <= bsize || !valid_mv0 ||
+          !valid_mv1) {
         joint_motion_search(cpi, x, bsize, cur_mv, mi_row, mi_col, NULL, NULL,
                             0, rate_mv, 0);
       } else {
@@ -8018,8 +8041,13 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
         }
       }
     } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
-      cur_mv[1].as_int = args->single_newmv[ref_mv_idx][refs[1]].as_int;
-      if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
+      if (valid_mv1) {
+        cur_mv[1].as_int = args->single_newmv[ref_mv_idx][refs[1]].as_int;
+        clamp_mv_in_range(x, &cur_mv[1], 1);
+      }
+
+      // aomenc2
+      if (cpi->sf.comp_inter_joint_search_thresh <= bsize || !valid_mv1) {
         compound_single_motion_search_interinter(
             cpi, x, bsize, cur_mv, mi_row, mi_col, NULL, 0, rate_mv, 0, 1);
       } else {
@@ -8030,8 +8058,13 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
     } else {
       assert(this_mode == NEW_NEARESTMV || this_mode == NEW_NEARMV);
-      cur_mv[0].as_int = args->single_newmv[ref_mv_idx][refs[0]].as_int;
-      if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
+      if (valid_mv0) {
+        cur_mv[0].as_int = args->single_newmv[ref_mv_idx][refs[0]].as_int;
+        clamp_mv_in_range(x, &cur_mv[0], 0);
+      }
+
+      // aomenc3
+      if (cpi->sf.comp_inter_joint_search_thresh <= bsize || !valid_mv0) {
         compound_single_motion_search_interinter(
             cpi, x, bsize, cur_mv, mi_row, mi_col, NULL, 0, rate_mv, 0, 0);
       } else {
@@ -10349,7 +10382,8 @@ static int64_t handle_inter_mode(
             int this_rate_mv = 0;
             for (i = 0; i < ref_mv_idx; ++i) {
               // Check if the motion search result same as previous results
-              if (cur_mv[0].as_int == args->single_newmv[i][refs[0]].as_int) {
+              if (cur_mv[0].as_int == args->single_newmv[i][refs[0]].as_int &&
+                  args->single_newmv_valid[i][refs[0]]) {
                 // If the compared mode has no valid rd, it is unlikely this
                 // mode will be the best mode
                 if (mode_info[i].rd == INT64_MAX) {
