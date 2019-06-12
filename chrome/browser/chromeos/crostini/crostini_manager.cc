@@ -576,6 +576,14 @@ CrostiniManager::CrostiniManager(Profile* profile)
 }
 
 CrostiniManager::~CrostiniManager() {
+  RemoveDBusObservers();
+}
+
+void CrostiniManager::RemoveDBusObservers() {
+  if (dbus_observers_removed_) {
+    return;
+  }
+  dbus_observers_removed_ = true;
   GetCiceroneClient()->RemoveObserver(this);
   GetConciergeClient()->RemoveContainerObserver(this);
 }
@@ -1366,6 +1374,10 @@ void CrostiniManager::RemoveInstallerViewStatusObserver(
 bool CrostiniManager::HasInstallerViewStatusObserver(
     InstallerViewStatusObserver* observer) {
   return installer_view_status_observers_.HasObserver(observer);
+}
+
+void CrostiniManager::OnDBusShuttingDownForTesting() {
+  RemoveDBusObservers();
 }
 
 void CrostiniManager::AttachUsbDevice(const std::string& vm_name,
