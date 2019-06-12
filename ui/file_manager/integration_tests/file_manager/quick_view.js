@@ -95,8 +95,8 @@
    */
   async function getQuickViewMetadataBoxField(appId, name) {
     /**
-     * The <files-metadata-box> element resides is #quick-view shadow DOM as a
-     * child of the #dialog element.
+     * The <files-metadata-box> element resides in the #quick-view shadow DOM
+     * as a child of the #dialog element.
      */
     let quickViewQuery = ['#quick-view', '#dialog[open] files-metadata-box'];
 
@@ -109,7 +109,7 @@
     /**
      * It has a #value div child in its shadow DOM containing the field value.
      */
-    quickViewQuery.push('#value div:not([hidden])');
+    quickViewQuery.push('#value > div:not([hidden])');
 
     const element = await remoteCall.waitForElement(appId, quickViewQuery);
     return element.text;
@@ -371,6 +371,10 @@
       return checkWebViewTextLoaded(await remoteCall.callRemoteTestUtil(
           'deepQueryAllElements', appId, [webView, ['display']]));
     });
+
+    // Check: the correct mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('text/plain', mimeType);
   };
 
   /**
