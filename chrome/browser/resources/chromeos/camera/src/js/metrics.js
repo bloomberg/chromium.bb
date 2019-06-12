@@ -93,7 +93,7 @@ cca.metrics.launchType_ = function(ackMigrate) {
 
 /**
  * Returns event builder for the metrics type: capture.
- * @param {string} facingMode Camera facing-mode of the capture.
+ * @param {?string} facingMode Camera facing-mode of the capture.
  * @param {number=} length Length of 1 minute buckets for captured video.
  * @param {number} width The width of the capture resolution.
  * @param {number} height The height of the capture resolution.
@@ -115,7 +115,7 @@ cca.metrics.captureType_ = function(facingMode, length, [width, height]) {
   return cca.metrics.base_.category('capture')
       .action(/^(\w*)/.exec(condState(
           ['video-mode', 'photo-mode', 'square-mode', 'portrait-mode']))[0])
-      .label(facingMode)
+      .label(facingMode || '(not set)')
       .dimen(3, condState(['sound']))
       .dimen(4, condState(['mirror']))
       .dimen(5, condState(['_3x3', '_4x4', 'golden'], 'grid'))
