@@ -5258,8 +5258,6 @@ static_library("test_support") {
     "media/webrtc/fake_desktop_media_picker_factory.h",
     "net/dns_probe_test_util.cc",
     "net/dns_probe_test_util.h",
-    "net/url_request_mock_util.cc",
-    "net/url_request_mock_util.h",
     "notifications/metrics/mock_notification_metrics_logger.cc",
     "notifications/metrics/mock_notification_metrics_logger.h",
     "notifications/notification_display_service_tester.cc",
