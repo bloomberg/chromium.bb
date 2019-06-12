@@ -348,12 +348,6 @@ extern const char kEnableDataReductionProxyServerExperimentDescription[];
 extern const char kEnableDesktopPWAsName[];
 extern const char kEnableDesktopPWAsDescription[];
 
-extern const char kEnableDesktopPWAsLinkCapturingName[];
-extern const char kEnableDesktopPWAsLinkCapturingDescription[];
-
-extern const char kDesktopPWAsStayInWindowName[];
-extern const char kDesktopPWAsStayInWindowDescription[];
-
 extern const char kDesktopPWAsOmniboxInstallName[];
 extern const char kDesktopPWAsOmniboxInstallDescription[];
 

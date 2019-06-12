@@ -549,19 +549,6 @@ const char kEnableDesktopPWAsDescription[] =
     "Experimental windowing and install banner treatment for Progressive Web "
     "Apps on desktop platforms. Implies #enable-experimental-app-banners.";
 
-const char kEnableDesktopPWAsLinkCapturingName[] =
-    "Desktop PWAs Link Capturing";
-const char kEnableDesktopPWAsLinkCapturingDescription[] =
-    "Experimentally enable link capturing for Desktop PWAs. Navigations to "
-    "URLs that are in-scope of Desktop PWAs will open in a window. Requires "
-    "#enable-desktop-pwas.";
-
-const char kDesktopPWAsStayInWindowName[] =
-    "Desktop PWAs out-of-scope links open in the app window";
-const char kDesktopPWAsStayInWindowDescription[] =
-    "Links to sites in a different scope will open inside the PWA window as "
-    "opposed to in the browser.";
-
 const char kDesktopPWAsOmniboxInstallName[] =
     "Desktop PWAs installable from the omnibox";
 const char kDesktopPWAsOmniboxInstallDescription[] =

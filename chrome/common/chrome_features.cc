@@ -223,14 +223,6 @@ const base::Feature kWilcoDtc{"WilcoDtc", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kDesktopCaptureTabSharingInfobar{
     "DesktopCaptureTabSharingInfobar", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables Desktop PWAs capturing links.
-const base::Feature kDesktopPWAsLinkCapturing{
-    "DesktopPWAsLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Determines whether in scope requests are always opened in the same window.
-const base::Feature kDesktopPWAsStayInWindow{"DesktopPWAsStayInWindow",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables new Desktop PWAs implementation that does not use
 // extensions.
 const base::Feature kDesktopPWAsWithoutExtensions{

@@ -1568,7 +1568,6 @@ if (!is_android) {
         "../browser/extensions/bookmark_app_helper_browsertest.cc",
         "../browser/extensions/bookmark_app_navigation_browsertest.cc",
         "../browser/extensions/bookmark_app_navigation_browsertest.h",
-        "../browser/extensions/bookmark_app_navigation_throttle_browsertest.cc",
         "../browser/extensions/chrome_app_api_browsertest.cc",
         "../browser/extensions/chrome_test_extension_loader_browsertest.cc",
         "../browser/extensions/chrome_theme_url_browsertest.cc",

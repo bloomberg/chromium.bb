@@ -130,12 +130,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopCaptureTabSharingInfobar;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopPWAsLinkCapturing;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopPWAsStayInWindow;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsWithoutExtensions;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
