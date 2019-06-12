@@ -55,15 +55,18 @@ bool ModulatorImplBase::BuiltInModuleInfraEnabled() const {
 bool ModulatorImplBase::BuiltInModuleEnabled(
     blink::layered_api::Module module) const {
   DCHECK(BuiltInModuleInfraEnabled());
+  if (RuntimeEnabledFeatures::BuiltInModuleAllEnabled())
+    return true;
   switch (module) {
     case blink::layered_api::Module::kBlank:
       return true;
     case blink::layered_api::Module::kVirtualScroller:
-      return RuntimeEnabledFeatures::BuiltInModuleAllEnabled();
+      return false;
     case blink::layered_api::Module::kKvStorage:
-      return RuntimeEnabledFeatures::BuiltInModuleAllEnabled() ||
-             RuntimeEnabledFeatures::BuiltInModuleKvStorageEnabled(
-                 GetExecutionContext());
+      return RuntimeEnabledFeatures::BuiltInModuleKvStorageEnabled(
+          GetExecutionContext());
+    case blink::layered_api::Module::kElementsSwitch:
+      return RuntimeEnabledFeatures::BuiltInModuleSwitchElementEnabled();
   }
 }
 
@@ -73,6 +76,7 @@ void ModulatorImplBase::BuiltInModuleUseCount(
   DCHECK(BuiltInModuleEnabled(module));
   switch (module) {
     case blink::layered_api::Module::kBlank:
+    case blink::layered_api::Module::kElementsSwitch:
       break;
     case blink::layered_api::Module::kVirtualScroller:
       UseCounter::Count(GetExecutionContext(),
