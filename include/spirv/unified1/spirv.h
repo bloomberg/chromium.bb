@@ -637,6 +637,7 @@ typedef enum SpvMemorySemanticsShift_ {
     SpvMemorySemanticsOutputMemoryKHRShift = 12,
     SpvMemorySemanticsMakeAvailableKHRShift = 13,
     SpvMemorySemanticsMakeVisibleKHRShift = 14,
+    SpvMemorySemanticsVolatileShift = 15,
     SpvMemorySemanticsMax = 0x7fffffff,
 } SpvMemorySemanticsShift;
 
@@ -655,6 +656,7 @@ typedef enum SpvMemorySemanticsMask_ {
     SpvMemorySemanticsOutputMemoryKHRMask = 0x00001000,
     SpvMemorySemanticsMakeAvailableKHRMask = 0x00002000,
     SpvMemorySemanticsMakeVisibleKHRMask = 0x00004000,
+    SpvMemorySemanticsVolatileMask = 0x00008000,
 } SpvMemorySemanticsMask;
 
 typedef enum SpvMemoryAccessShift_ {
