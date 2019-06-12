@@ -93,18 +93,6 @@ struct V4L2SliceVideoDecoder::OutputRecord {
       : frame(std::move(f)), output_buf(std::move(buf)) {}
 };
 
-struct V4L2SliceVideoDecoder::DecodeRequest {
-  // The decode buffer passed from Decode().
-  scoped_refptr<DecoderBuffer> buffer;
-  // The callback function passed from Decode().
-  DecodeCB decode_cb;
-  // The identifier for the decoder buffer.
-  int32_t bitstream_id;
-
-  DecodeRequest(scoped_refptr<DecoderBuffer> buf, DecodeCB cb, int32_t id)
-      : buffer(std::move(buf)), decode_cb(std::move(cb)), bitstream_id(id) {}
-};
-
 struct V4L2SliceVideoDecoder::OutputRequest {
   enum OutputRequestType {
     // The surface to be outputted.
@@ -519,13 +507,13 @@ void V4L2SliceVideoDecoder::ClearPendingRequests(DecodeStatus status) {
   // Clear current_decode_request_ and decode_request_queue_.
   if (current_decode_request_) {
     RunDecodeCB(std::move(current_decode_request_->decode_cb), status);
-    current_decode_request_ = nullptr;
+    current_decode_request_ = base::nullopt;
   }
 
   while (!decode_request_queue_.empty()) {
     auto request = std::move(decode_request_queue_.front());
     decode_request_queue_.pop();
-    RunDecodeCB(std::move(request->decode_cb), status);
+    RunDecodeCB(std::move(request.decode_cb), status);
   }
 }
 
@@ -535,14 +523,12 @@ void V4L2SliceVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   decoder_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &V4L2SliceVideoDecoder::EnqueueDecodeTask, weak_this_,
-          std::make_unique<DecodeRequest>(
-              std::move(buffer), std::move(decode_cb), GetNextBitstreamId())));
+      base::BindOnce(&V4L2SliceVideoDecoder::EnqueueDecodeTask, weak_this_,
+                     DecodeRequest(std::move(buffer), std::move(decode_cb),
+                                   GetNextBitstreamId())));
 }
 
-void V4L2SliceVideoDecoder::EnqueueDecodeTask(
-    std::unique_ptr<DecodeRequest> request) {
+void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_ == State::kDecoding || state_ == State::kPause);
 
@@ -576,7 +562,7 @@ void V4L2SliceVideoDecoder::PumpDecodeTask() {
           DCHECK(current_decode_request_->decode_cb);
           RunDecodeCB(std::move(current_decode_request_->decode_cb),
                       DecodeStatus::OK);
-          current_decode_request_ = nullptr;
+          current_decode_request_ = base::nullopt;
         }
 
         // Process next decodee request.
@@ -601,7 +587,7 @@ void V4L2SliceVideoDecoder::PumpDecodeTask() {
           output_request_queue_.push(
               std::make_unique<OutputRequest>(OutputRequest::kFlushFence));
           PumpOutputSurfaces();
-          current_decode_request_ = nullptr;
+          current_decode_request_ = base::nullopt;
           return;
         }
 

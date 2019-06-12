@@ -85,7 +85,24 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Record for the V4L2 output buffer.
   struct OutputRecord;
   // Request for decoding buffer. Every Decode() call generates 1 DecodeRequest.
-  struct DecodeRequest;
+  struct DecodeRequest {
+    // The decode buffer passed from Decode().
+    scoped_refptr<DecoderBuffer> buffer;
+    // The callback function passed from Decode().
+    DecodeCB decode_cb;
+    // The identifier for the decoder buffer.
+    int32_t bitstream_id;
+
+    DecodeRequest(scoped_refptr<DecoderBuffer> buf, DecodeCB cb, int32_t id)
+        : buffer(std::move(buf)), decode_cb(std::move(cb)), bitstream_id(id) {}
+
+    // Allow move, but not copy
+    DecodeRequest(DecodeRequest&&) = default;
+    DecodeRequest& operator=(DecodeRequest&&) = default;
+
+    DISALLOW_COPY_AND_ASSIGN(DecodeRequest);
+  };
+
   // Request for displaying the surface or calling the decode callback.
   struct OutputRequest;
 
@@ -125,7 +142,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
 
   // Enqueue |request| to the pending decode request queue, and try to decode
   // from the queue.
-  void EnqueueDecodeTask(std::unique_ptr<DecodeRequest> request);
+  void EnqueueDecodeTask(DecodeRequest request);
   // Try to decode buffer from the pending decode request queue.
   // This method stops decoding when:
   // - Run out of surface
@@ -204,12 +221,12 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   std::map<size_t, std::unique_ptr<OutputRecord>> output_record_map_;
 
   // Queue of pending decode request.
-  base::queue<std::unique_ptr<DecodeRequest>> decode_request_queue_;
+  base::queue<DecodeRequest> decode_request_queue_;
   // Surfaces enqueued to V4L2 device. Since we are stateless, they are
   // guaranteed to be proceeded in FIFO order.
   base::queue<scoped_refptr<V4L2DecodeSurface>> surfaces_at_device_;
   // The decode request which is currently processed.
-  std::unique_ptr<DecodeRequest> current_decode_request_;
+  base::Optional<DecodeRequest> current_decode_request_;
   // Queue of pending output request.
   base::queue<std::unique_ptr<OutputRequest>> output_request_queue_;
 
