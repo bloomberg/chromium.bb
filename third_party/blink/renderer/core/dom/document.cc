@@ -2229,15 +2229,12 @@ void Document::UpdateStyleAndLayoutTree() {
     return;
 
 #if DCHECK_IS_ON()
-  if (RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled()) {
-    int assigned_nodes_in_slot_count = 0;
-    int nodes_which_have_assigned_slot_count = 0;
-    FlatTreeTraversal::AssertFlatTreeNodeDataUpdated(
-        *this, assigned_nodes_in_slot_count,
-        nodes_which_have_assigned_slot_count);
-    DCHECK_EQ(assigned_nodes_in_slot_count,
-              nodes_which_have_assigned_slot_count);
-  }
+  int assigned_nodes_in_slot_count = 0;
+  int nodes_which_have_assigned_slot_count = 0;
+  FlatTreeTraversal::AssertFlatTreeNodeDataUpdated(
+      *this, assigned_nodes_in_slot_count,
+      nodes_which_have_assigned_slot_count);
+  DCHECK_EQ(assigned_nodes_in_slot_count, nodes_which_have_assigned_slot_count);
 #endif
 
   // Entering here from inside layout, paint etc. would be catastrophic since

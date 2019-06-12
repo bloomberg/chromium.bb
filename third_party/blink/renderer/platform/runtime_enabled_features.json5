@@ -568,10 +568,6 @@
       status: "experimental",
     },
     {
-      name: "FastFlatTreeTraversal",
-      status: "stable",
-    },
-    {
       name: "FastMobileScrolling",
       status: {"Android": "stable"},
     },
