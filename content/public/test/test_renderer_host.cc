@@ -49,7 +49,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
-#include "ui/aura/test/aura_test_utils.h"
 #include "ui/wm/core/default_activation_client.h"
 #endif
 
@@ -132,9 +131,6 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   if (base::ThreadTaskRunnerHandle::IsSet())
     ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 #endif  // OS_MACOSX
-#if defined(USE_AURA)
-  input_device_client_ = aura::test::CreateTestInputDeviceManager();
-#endif
 }
 
 RenderViewHostTestEnabler::~RenderViewHostTestEnabler() {

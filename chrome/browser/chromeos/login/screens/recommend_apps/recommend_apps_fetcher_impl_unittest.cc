@@ -33,11 +33,10 @@
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
-#include "ui/aura/test/aura_test_utils.h"
 #include "ui/display/display.h"
 #include "ui/display/test/test_screen.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/touchscreen_device.h"
 
 namespace chromeos {
 
@@ -229,8 +228,6 @@ class RecommendAppsFetcherImplTest : public testing::Test {
   ~RecommendAppsFetcherImplTest() override = default;
 
   void SetUp() override {
-    input_device_manager_ = aura::test::CreateTestInputDeviceManager();
-
     display::Screen::SetScreenInstance(&test_screen_);
     display::Display::SetInternalDisplayId(
         test_screen_.GetPrimaryDisplay().id());
@@ -256,7 +253,6 @@ class RecommendAppsFetcherImplTest : public testing::Test {
     recommend_apps_fetcher_.reset();
     cros_display_config_.reset();
     display::Screen::SetScreenInstance(nullptr);
-    input_device_manager_.reset();
     input_device_client_test_api_.SetKeyboardDevices({});
     input_device_client_test_api_.SetTouchscreenDevices({});
   }
@@ -352,8 +348,6 @@ class RecommendAppsFetcherImplTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 
   service_manager::TestConnectorFactory connector_factory_;
-
-  std::unique_ptr<ui::InputDeviceManager> input_device_manager_;
 
   std::unique_ptr<base::RunLoop> request_waiter_;
 };
