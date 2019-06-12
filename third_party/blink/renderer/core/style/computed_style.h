@@ -102,6 +102,10 @@ class ColumnRuleColor;
 class Fill;
 class FloodColor;
 class InternalVisitedBackgroundColor;
+class InternalVisitedBorderBottomColor;
+class InternalVisitedBorderLeftColor;
+class InternalVisitedBorderRightColor;
+class InternalVisitedBorderTopColor;
 class LightingColor;
 class OutlineColor;
 class StopColor;
@@ -191,6 +195,10 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::Fill;
   friend class css_longhand::FloodColor;
   friend class css_longhand::InternalVisitedBackgroundColor;
+  friend class css_longhand::InternalVisitedBorderBottomColor;
+  friend class css_longhand::InternalVisitedBorderLeftColor;
+  friend class css_longhand::InternalVisitedBorderRightColor;
+  friend class css_longhand::InternalVisitedBorderTopColor;
   friend class css_longhand::LightingColor;
   friend class css_longhand::OutlineColor;
   friend class css_longhand::StopColor;
@@ -2347,17 +2355,17 @@ class ComputedStyle : public ComputedStyleBase,
   void SetInternalVisitedBackgroundColor(const StyleColor& v) {
     SetInternalVisitedBackgroundColorInternal(v);
   }
-  void SetVisitedLinkBorderLeftColor(const StyleColor& v) {
-    SetVisitedLinkBorderLeftColorInternal(v);
+  void SetInternalVisitedBorderLeftColor(const StyleColor& v) {
+    SetInternalVisitedBorderLeftColorInternal(v);
   }
-  void SetVisitedLinkBorderRightColor(const StyleColor& v) {
-    SetVisitedLinkBorderRightColorInternal(v);
+  void SetInternalVisitedBorderRightColor(const StyleColor& v) {
+    SetInternalVisitedBorderRightColorInternal(v);
   }
-  void SetVisitedLinkBorderBottomColor(const StyleColor& v) {
-    SetVisitedLinkBorderBottomColorInternal(v);
+  void SetInternalVisitedBorderBottomColor(const StyleColor& v) {
+    SetInternalVisitedBorderBottomColorInternal(v);
   }
-  void SetVisitedLinkBorderTopColor(const StyleColor& v) {
-    SetVisitedLinkBorderTopColorInternal(v);
+  void SetInternalVisitedBorderTopColor(const StyleColor& v) {
+    SetInternalVisitedBorderTopColorInternal(v);
   }
   void SetVisitedLinkOutlineColor(const StyleColor& v) {
     SetVisitedLinkOutlineColorInternal(v);
@@ -2498,39 +2506,40 @@ class ComputedStyle : public ComputedStyleBase,
   StyleColor InternalVisitedBackgroundColor() const {
     return InternalVisitedBackgroundColorInternal();
   }
-  StyleColor VisitedLinkBorderLeftColor() const {
-    return VisitedLinkBorderLeftColorInternal();
+  StyleColor InternalVisitedBorderLeftColor() const {
+    return InternalVisitedBorderLeftColorInternal();
   }
-  bool VisitedLinkBorderLeftColorHasNotChanged(
+  bool InternalVisitedBorderLeftColorHasNotChanged(
       const ComputedStyle& other) const {
-    return (VisitedLinkBorderLeftColor() ==
-                other.VisitedLinkBorderLeftColor() ||
+    return (InternalVisitedBorderLeftColor() ==
+                other.InternalVisitedBorderLeftColor() ||
             !BorderLeftWidth());
   }
-  StyleColor VisitedLinkBorderRightColor() const {
-    return VisitedLinkBorderRightColorInternal();
+  StyleColor InternalVisitedBorderRightColor() const {
+    return InternalVisitedBorderRightColorInternal();
   }
-  bool VisitedLinkBorderRightColorHasNotChanged(
+  bool InternalVisitedBorderRightColorHasNotChanged(
       const ComputedStyle& other) const {
-    return (VisitedLinkBorderRightColor() ==
-                other.VisitedLinkBorderRightColor() ||
+    return (InternalVisitedBorderRightColor() ==
+                other.InternalVisitedBorderRightColor() ||
             !BorderRightWidth());
   }
-  StyleColor VisitedLinkBorderBottomColor() const {
-    return VisitedLinkBorderBottomColorInternal();
+  StyleColor InternalVisitedBorderBottomColor() const {
+    return InternalVisitedBorderBottomColorInternal();
   }
-  bool VisitedLinkBorderBottomColorHasNotChanged(
+  bool InternalVisitedBorderBottomColorHasNotChanged(
       const ComputedStyle& other) const {
-    return (VisitedLinkBorderBottomColor() ==
-                other.VisitedLinkBorderBottomColor() ||
+    return (InternalVisitedBorderBottomColor() ==
+                other.InternalVisitedBorderBottomColor() ||
             !BorderBottomWidth());
   }
-  StyleColor VisitedLinkBorderTopColor() const {
-    return VisitedLinkBorderTopColorInternal();
+  StyleColor InternalVisitedBorderTopColor() const {
+    return InternalVisitedBorderTopColorInternal();
   }
-  bool VisitedLinkBorderTopColorHasNotChanged(
+  bool InternalVisitedBorderTopColorHasNotChanged(
       const ComputedStyle& other) const {
-    return (VisitedLinkBorderTopColor() == other.VisitedLinkBorderTopColor() ||
+    return (InternalVisitedBorderTopColor() ==
+                other.InternalVisitedBorderTopColor() ||
             !BorderTopWidth());
   }
   StyleColor VisitedLinkOutlineColor() const {

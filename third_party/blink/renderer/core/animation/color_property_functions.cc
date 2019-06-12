@@ -66,13 +66,13 @@ OptionalStyleColor ColorPropertyFunctions::GetVisitedColor(
     case CSSPropertyID::kBackgroundColor:
       return style.InternalVisitedBackgroundColor();
     case CSSPropertyID::kBorderLeftColor:
-      return style.VisitedLinkBorderLeftColor();
+      return style.InternalVisitedBorderLeftColor();
     case CSSPropertyID::kBorderRightColor:
-      return style.VisitedLinkBorderRightColor();
+      return style.InternalVisitedBorderRightColor();
     case CSSPropertyID::kBorderTopColor:
-      return style.VisitedLinkBorderTopColor();
+      return style.InternalVisitedBorderTopColor();
     case CSSPropertyID::kBorderBottomColor:
-      return style.VisitedLinkBorderBottomColor();
+      return style.InternalVisitedBorderBottomColor();
     case CSSPropertyID::kCaretColor:
       // TODO(rego): "auto" value for caret-color should not interpolate
       // (http://crbug.com/676295).
@@ -166,16 +166,16 @@ void ColorPropertyFunctions::SetVisitedColor(const CSSProperty& property,
       style.SetInternalVisitedBackgroundColor(color);
       return;
     case CSSPropertyID::kBorderBottomColor:
-      style.SetVisitedLinkBorderBottomColor(color);
+      style.SetInternalVisitedBorderBottomColor(color);
       return;
     case CSSPropertyID::kBorderLeftColor:
-      style.SetVisitedLinkBorderLeftColor(color);
+      style.SetInternalVisitedBorderLeftColor(color);
       return;
     case CSSPropertyID::kBorderRightColor:
-      style.SetVisitedLinkBorderRightColor(color);
+      style.SetInternalVisitedBorderRightColor(color);
       return;
     case CSSPropertyID::kBorderTopColor:
-      style.SetVisitedLinkBorderTopColor(color);
+      style.SetInternalVisitedBorderTopColor(color);
       return;
     case CSSPropertyID::kCaretColor:
       return style.SetVisitedLinkCaretColor(color);

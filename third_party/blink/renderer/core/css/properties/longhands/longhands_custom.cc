@@ -174,6 +174,10 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/inset_inline_end.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/inset_inline_start.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_background_color.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_border_bottom_color.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_border_left_color.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_border_right_color.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_border_top_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/isolation.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/justify_content.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/justify_items.h"
@@ -1079,10 +1083,9 @@ const CSSValue* BorderBottomColor::ParseSingleValue(
 const blink::Color BorderBottomColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result = visited_link ? style.VisitedLinkBorderBottomColor()
-                                   : style.BorderBottomColor();
-  EBorderStyle border_style = style.BorderBottomStyle();
-  return ComputedStyleUtils::BorderSideColor(style, result, border_style,
+  DCHECK(!visited_link);
+  return ComputedStyleUtils::BorderSideColor(style, style.BorderBottomColor(),
+                                             style.BorderBottomStyle(),
                                              visited_link);
 }
 
@@ -1343,11 +1346,9 @@ const CSSValue* BorderLeftColor::ParseSingleValue(
 const blink::Color BorderLeftColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result = visited_link ? style.VisitedLinkBorderLeftColor()
-                                   : style.BorderLeftColor();
-  EBorderStyle border_style = style.BorderLeftStyle();
-  return ComputedStyleUtils::BorderSideColor(style, result, border_style,
-                                             visited_link);
+  DCHECK(!visited_link);
+  return ComputedStyleUtils::BorderSideColor(
+      style, style.BorderLeftColor(), style.BorderLeftStyle(), visited_link);
 }
 
 const CSSValue* BorderLeftColor::CSSValueFromComputedStyleInternal(
@@ -1398,11 +1399,9 @@ const CSSValue* BorderRightColor::ParseSingleValue(
 const blink::Color BorderRightColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result = visited_link ? style.VisitedLinkBorderRightColor()
-                                   : style.BorderRightColor();
-  EBorderStyle border_style = style.BorderRightStyle();
-  return ComputedStyleUtils::BorderSideColor(style, result, border_style,
-                                             visited_link);
+  DCHECK(!visited_link);
+  return ComputedStyleUtils::BorderSideColor(
+      style, style.BorderRightColor(), style.BorderRightStyle(), visited_link);
 }
 
 const CSSValue* BorderRightColor::CSSValueFromComputedStyleInternal(
@@ -1453,11 +1452,9 @@ const CSSValue* BorderTopColor::ParseSingleValue(
 const blink::Color BorderTopColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result =
-      visited_link ? style.VisitedLinkBorderTopColor() : style.BorderTopColor();
-  EBorderStyle border_style = style.BorderTopStyle();
-  return ComputedStyleUtils::BorderSideColor(style, result, border_style,
-                                             visited_link);
+  DCHECK(!visited_link);
+  return ComputedStyleUtils::BorderSideColor(
+      style, style.BorderTopColor(), style.BorderTopStyle(), visited_link);
 }
 
 const CSSValue* BorderTopColor::CSSValueFromComputedStyleInternal(
@@ -3706,6 +3703,38 @@ const blink::Color InternalVisitedBackgroundColor::ColorIncludingFallback(
     return style.BackgroundColor().Resolve(style.GetColor());
 
   return color;
+}
+
+const blink::Color InternalVisitedBorderLeftColor::ColorIncludingFallback(
+    bool visited_link,
+    const ComputedStyle& style) const {
+  DCHECK(visited_link);
+  return style.InternalVisitedBorderLeftColor().Resolve(
+      style.VisitedLinkColor());
+}
+
+const blink::Color InternalVisitedBorderTopColor::ColorIncludingFallback(
+    bool visited_link,
+    const ComputedStyle& style) const {
+  DCHECK(visited_link);
+  return style.InternalVisitedBorderTopColor().Resolve(
+      style.VisitedLinkColor());
+}
+
+const blink::Color InternalVisitedBorderRightColor::ColorIncludingFallback(
+    bool visited_link,
+    const ComputedStyle& style) const {
+  DCHECK(visited_link);
+  return style.InternalVisitedBorderRightColor().Resolve(
+      style.VisitedLinkColor());
+}
+
+const blink::Color InternalVisitedBorderBottomColor::ColorIncludingFallback(
+    bool visited_link,
+    const ComputedStyle& style) const {
+  DCHECK(visited_link);
+  return style.InternalVisitedBorderBottomColor().Resolve(
+      style.VisitedLinkColor());
 }
 
 const CSSValue* Isolation::CSSValueFromComputedStyleInternal(

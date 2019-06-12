@@ -288,20 +288,20 @@
             field_dependencies: ["outline-width", "outline-color", "OutlineColorIsCurrentColor", "outline-offset", "outline-style", "OutlineStyleIsAuto"]
           },
           {
-            predicate: "a.VisitedLinkBorderLeftColorHasNotChanged(b)",
-            field_dependencies: ["VisitedLinkBorderLeftColor"]
+            predicate: "a.InternalVisitedBorderLeftColorHasNotChanged(b)",
+            field_dependencies: ["-internal-visited-border-left-color"]
           },
           {
-            predicate: "a.VisitedLinkBorderRightColorHasNotChanged(b)",
-            field_dependencies: ["VisitedLinkBorderRightColor"]
+            predicate: "a.InternalVisitedBorderRightColorHasNotChanged(b)",
+            field_dependencies: ["-internal-visited-border-right-color"]
           },
           {
-            predicate: "a.VisitedLinkBorderBottomColorHasNotChanged(b)",
-            field_dependencies: ["VisitedLinkBorderBottomColor"]
+            predicate: "a.InternalVisitedBorderBottomColorHasNotChanged(b)",
+            field_dependencies: ["-internal-visited-border-bottom-color"]
           },
           {
-            predicate: "a.VisitedLinkBorderTopColorHasNotChanged(b)",
-            field_dependencies: ["VisitedLinkBorderTopColor"]
+            predicate: "a.InternalVisitedBorderTopColorHasNotChanged(b)",
+            field_dependencies: ["-internal-visited-border-top-color"]
           },
           {
             predicate: "a.VisitedLinkOutlineColorHasNotChanged(b)",
