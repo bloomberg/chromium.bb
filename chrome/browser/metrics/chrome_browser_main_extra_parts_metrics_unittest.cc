@@ -16,7 +16,7 @@
 #include "ui/gfx/geometry/size.h"
 
 #if defined(USE_OZONE) || defined(USE_X11)
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #endif
 
 namespace {
@@ -33,7 +33,7 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 
  protected:
 #if defined(USE_OZONE) || defined(USE_X11)
-  ws::InputDeviceClientTestApi input_device_client_test_api_;
+  ui::DeviceDataManagerTestApi device_data_manager_test_api_;
 #endif
 
  private:
@@ -88,7 +88,7 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
        VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart) {
   base::HistogramTester histogram_tester;
 
-  input_device_client_test_api_.OnDeviceListsComplete();
+  device_data_manager_test_api_.OnDeviceListsComplete();
 
   ChromeBrowserMainExtraPartsMetrics test_target;
 
@@ -105,7 +105,7 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
   ChromeBrowserMainExtraPartsMetrics test_target;
 
   test_target.PostBrowserStart();
-  input_device_client_test_api_.NotifyObserversDeviceListsComplete();
+  device_data_manager_test_api_.NotifyObserversDeviceListsComplete();
   histogram_tester.ExpectTotalCount(
       kTouchEventFeatureDetectionEnabledHistogramName, 1);
 }
@@ -118,8 +118,8 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
   ChromeBrowserMainExtraPartsMetrics test_target;
 
   test_target.PostBrowserStart();
-  input_device_client_test_api_.NotifyObserversDeviceListsComplete();
-  input_device_client_test_api_.NotifyObserversDeviceListsComplete();
+  device_data_manager_test_api_.NotifyObserversDeviceListsComplete();
+  device_data_manager_test_api_.NotifyObserversDeviceListsComplete();
   histogram_tester.ExpectTotalCount(
       kTouchEventFeatureDetectionEnabledHistogramName, 1);
 }

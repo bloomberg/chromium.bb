@@ -1345,7 +1345,7 @@ if (!is_android) {
         "//services/preferences/public/cpp",
         "//services/preferences/public/mojom",
         "//services/service_manager/public/cpp",
-        "//services/ws/public/cpp/input_devices:test_support",
+        "//ui/events/devices:test_support",
         "//url",
       ]
     }
@@ -3932,7 +3932,7 @@ test("unit_tests") {
   }
 
   if (use_x11 || use_ozone) {
-    deps += [ "//services/ws/public/cpp/input_devices:test_support" ]
+    deps += [ "//ui/events/devices:test_support" ]
   }
 
   if (enable_background_contents) {

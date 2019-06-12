@@ -2837,7 +2837,6 @@ source_set("unit_tests") {
     "//services/device/public/cpp:test_support",
     "//services/identity/public/cpp:test_support",
     "//services/service_manager/public/cpp/test:test_support",
-    "//services/ws/public/cpp/input_devices:test_support",
     "//skia",
     "//storage/browser:test_support",
     "//testing/gmock",
@@ -2851,6 +2850,7 @@ source_set("unit_tests") {
     "//ui/base/ime/init",
     "//ui/chromeos/resources",
     "//ui/display:test_support",
+    "//ui/events/devices:test_support",
     "//ui/shell_dialogs",
   ]
   data = [

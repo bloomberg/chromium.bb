@@ -15,8 +15,8 @@
 #include "base/observer_list.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "content/public/test/test_web_ui.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 
 namespace chromeos {
@@ -40,7 +40,7 @@ class KeyboardHandlerTest : public testing::Test {
     handler_.AllowJavascriptForTesting();
 
     // Make sure that we start out without any keyboards reported.
-    input_device_client_test_api_.SetKeyboardDevices({});
+    device_data_manager_test_api_.SetKeyboardDevices({});
   }
 
  protected:
@@ -160,7 +160,7 @@ class KeyboardHandlerTest : public testing::Test {
     return has_assistant_key;
   }
 
-  ws::InputDeviceClientTestApi input_device_client_test_api_;
+  ui::DeviceDataManagerTestApi device_data_manager_test_api_;
   content::TestWebUI web_ui_;
   TestKeyboardHandler handler_;
   KeyboardHandler::TestAPI handler_test_api_;
@@ -195,7 +195,7 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // An internal keyboard shouldn't change the defaults.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       chromeos::switches::kHasChromeOSKeyboard);
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"}});
   handler_test_api_.Initialize();
   EXPECT_TRUE(HasInternalSearchKey());
@@ -206,7 +206,7 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
 
   // Simulate an external keyboard being connected. We should assume there's a
   // Caps Lock and Meta keys now.
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"},
       {2, ui::INPUT_DEVICE_USB, "external keyboard"}});
   EXPECT_TRUE(HasInternalSearchKey());
@@ -217,7 +217,7 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
 
   // Simulate an external Apple keyboard being connected. Now users can remap
   // the command key.
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"},
       {3, ui::INPUT_DEVICE_USB, "Apple Inc. Apple Keyboard"}});
   EXPECT_TRUE(HasInternalSearchKey());
@@ -228,7 +228,7 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
 
   // Simulate two external keyboards (Apple and non-Apple) are connected at the
   // same time.
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {2, ui::INPUT_DEVICE_USB, "external keyboard"},
       {3, ui::INPUT_DEVICE_USB, "Apple Inc. Apple Keyboard"}});
   EXPECT_FALSE(HasInternalSearchKey());
@@ -241,7 +241,7 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // device names. Those should also be detected as external keyboards, and
   // should show the capslock and external meta remapping.
   // https://crbug.com/834594.
-  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+  device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {4, ui::INPUT_DEVICE_USB, "Topre Corporation Realforce 87"}});
   EXPECT_FALSE(HasInternalSearchKey());
   EXPECT_TRUE(HasCapsLock());
@@ -250,7 +250,7 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   EXPECT_FALSE(HasAssistantKey());
 
   // Disconnect the external keyboard and check that the key goes away.
-  input_device_client_test_api_.SetKeyboardDevices({});
+  device_data_manager_test_api_.SetKeyboardDevices({});
   EXPECT_FALSE(HasInternalSearchKey());
   EXPECT_FALSE(HasCapsLock());
   EXPECT_FALSE(HasExternalMetaKey());

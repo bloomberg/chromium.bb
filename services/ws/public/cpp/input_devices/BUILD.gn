@@ -30,24 +30,6 @@ source_set("input_devices") {
   }
 }
 
-source_set("test_support") {
-  sources = [
-    "input_device_client_test_api.cc",
-    "input_device_client_test_api.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/service_manager/public/cpp",
-    "//ui/events/devices",
-  ]
-
-  public_deps = [
-    ":input_devices",
-    "//services/ws/public/mojom/input_devices",
-  ]
-}
-
 if (is_chromeos) {
   source_set("input_device_controller") {
     sources = [

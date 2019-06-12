@@ -36,7 +36,6 @@
 #include "content/test/test_web_contents.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/events/devices/input_device_manager.h"
 
 #if defined(OS_ANDROID)
 #include "ui/android/dummy_screen_android.h"
