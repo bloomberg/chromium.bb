@@ -763,8 +763,10 @@
       status: "experimental",
     },
     {
+      // Launched by default. TODO(mythria): cleanup virtual tests and
+      // other hooks in blink.
       name: "IsolatedCodeCache",
-      status: "experimental",
+      status: "stable",
     },
     {
       // If enabled, CSP checks use the isolated world CSP when in an isolated
