@@ -99,8 +99,9 @@ class BorderTopColor;
 class CaretColor;
 class Color;
 class ColumnRuleColor;
-class FloodColor;
 class Fill;
+class FloodColor;
+class InternalVisitedBackgroundColor;
 class LightingColor;
 class OutlineColor;
 class StopColor;
@@ -187,8 +188,9 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::CaretColor;
   friend class css_longhand::Color;
   friend class css_longhand::ColumnRuleColor;
-  friend class css_longhand::FloodColor;
   friend class css_longhand::Fill;
+  friend class css_longhand::FloodColor;
+  friend class css_longhand::InternalVisitedBackgroundColor;
   friend class css_longhand::LightingColor;
   friend class css_longhand::OutlineColor;
   friend class css_longhand::StopColor;
@@ -2295,7 +2297,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool HasBackgroundRelatedColorReferencingCurrentColor() const {
     if (BackgroundColor().IsCurrentColor() ||
-        VisitedLinkBackgroundColor().IsCurrentColor())
+        InternalVisitedBackgroundColor().IsCurrentColor())
       return true;
     if (!BoxShadow())
       return false;
@@ -2342,8 +2344,8 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
  private:
-  void SetVisitedLinkBackgroundColor(const StyleColor& v) {
-    SetVisitedLinkBackgroundColorInternal(v);
+  void SetInternalVisitedBackgroundColor(const StyleColor& v) {
+    SetInternalVisitedBackgroundColorInternal(v);
   }
   void SetVisitedLinkBorderLeftColor(const StyleColor& v) {
     SetVisitedLinkBorderLeftColorInternal(v);
@@ -2493,8 +2495,8 @@ class ComputedStyle : public ComputedStyleBase,
       return StyleAutoColor::AutoColor();
     return StyleAutoColor(VisitedLinkCaretColorInternal());
   }
-  StyleColor VisitedLinkBackgroundColor() const {
-    return VisitedLinkBackgroundColorInternal();
+  StyleColor InternalVisitedBackgroundColor() const {
+    return InternalVisitedBackgroundColorInternal();
   }
   StyleColor VisitedLinkBorderLeftColor() const {
     return VisitedLinkBorderLeftColorInternal();

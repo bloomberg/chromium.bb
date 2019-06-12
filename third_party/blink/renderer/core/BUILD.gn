@@ -698,6 +698,8 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/inset_block_start.h",
     "$blink_core_output_dir/css/properties/longhands/inset_inline_end.h",
     "$blink_core_output_dir/css/properties/longhands/inset_inline_start.h",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_background_color.cc",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_background_color.h",
     "$blink_core_output_dir/css/properties/longhands/isolation.h",
     "$blink_core_output_dir/css/properties/longhands/justify_content.h",
     "$blink_core_output_dir/css/properties/longhands/justify_items.h",

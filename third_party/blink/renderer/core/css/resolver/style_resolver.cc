@@ -1522,6 +1522,12 @@ inline void ApplyProperty<kResolveVariables>(
   StyleBuilder::ApplyProperty(ref.GetProperty(), state, reference.Value());
 }
 
+static bool WillApplyToVisitedLink(StyleResolverState& state,
+                                   const CSSProperty& property) {
+  return state.ApplyPropertyToVisitedLinkStyle() &&
+         (property.IsValidForVisitedLink() || property.GetVisitedProperty());
+}
+
 template <CSSPropertyPriority priority,
           StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
 void StyleResolver::ApplyProperties(StyleResolverState& state,
@@ -1565,8 +1571,7 @@ void StyleResolver::ApplyProperties(StyleResolverState& state,
       // inherited properties to be cached.
       DCHECK(!current.Value().IsInheritedValue() ||
              (!state.ApplyPropertyToRegularStyle() &&
-              (!state.ApplyPropertyToVisitedLinkStyle() ||
-               !current.Property().IsValidForVisitedLink())));
+              !WillApplyToVisitedLink(state, current.Property())));
       continue;
     }
 

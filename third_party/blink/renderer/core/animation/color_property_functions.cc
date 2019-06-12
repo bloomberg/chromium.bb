@@ -64,7 +64,7 @@ OptionalStyleColor ColorPropertyFunctions::GetVisitedColor(
     const ComputedStyle& style) {
   switch (property.PropertyID()) {
     case CSSPropertyID::kBackgroundColor:
-      return style.VisitedLinkBackgroundColor();
+      return style.InternalVisitedBackgroundColor();
     case CSSPropertyID::kBorderLeftColor:
       return style.VisitedLinkBorderLeftColor();
     case CSSPropertyID::kBorderRightColor:
@@ -163,7 +163,7 @@ void ColorPropertyFunctions::SetVisitedColor(const CSSProperty& property,
                                              const Color& color) {
   switch (property.PropertyID()) {
     case CSSPropertyID::kBackgroundColor:
-      style.SetVisitedLinkBackgroundColor(color);
+      style.SetInternalVisitedBackgroundColor(color);
       return;
     case CSSPropertyID::kBorderBottomColor:
       style.SetVisitedLinkBorderBottomColor(color);

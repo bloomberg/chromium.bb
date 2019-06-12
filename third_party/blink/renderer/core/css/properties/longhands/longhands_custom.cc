@@ -173,6 +173,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/inset_block_start.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/inset_inline_end.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/inset_inline_start.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_background_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/isolation.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/justify_content.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/justify_items.h"
@@ -837,24 +838,8 @@ const CSSValue* BackgroundColor::ParseSingleValue(
 const blink::Color BackgroundColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor style_color = visited_link ? style.VisitedLinkBackgroundColor()
-                                        : style.BackgroundColor();
-  blink::Color result =
-      visited_link ? style.VisitedLinkColor() : style.GetColor();
-  if (!style_color.IsCurrentColor())
-    result = style_color.GetColor();
-
-  // FIXME: Technically someone could explicitly specify the color transparent,
-  // but for now we'll just assume that if the background color is transparent
-  // that it wasn't set. Note that it's weird that we're returning unvisited
-  // info for a visited link, but given our restriction that the alpha values
-  // have to match, it makes more sense to return the unvisited background color
-  // if specified than it does to return black. This behavior matches what
-  // Firefox 4 does as well.
-  if (visited_link && result == blink::Color::kTransparent)
-    return ColorIncludingFallback(false, style);
-
-  return result;
+  DCHECK(!visited_link);
+  return style.BackgroundColor().Resolve(style.GetColor());
 }
 
 const CSSValue* BackgroundColor::CSSValueFromComputedStyleInternal(
@@ -863,10 +848,13 @@ const CSSValue* BackgroundColor::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
-  return allow_visited_style ? cssvalue::CSSColorValue::Create(
-                                   style.VisitedDependentColor(*this).Rgb())
-                             : ComputedStyleUtils::CurrentColorOrValidColor(
-                                   style, style.BackgroundColor());
+  if (allow_visited_style) {
+    return cssvalue::CSSColorValue::Create(
+        style.VisitedDependentColor(*this).Rgb());
+  }
+
+  return ComputedStyleUtils::CurrentColorOrValidColor(style,
+                                                      style.BackgroundColor());
 }
 
 const CSSValue* BackgroundImage::ParseSingleValue(
@@ -3697,6 +3685,27 @@ const CSSValue* InsetInlineStart::ParseSingleValue(
   return css_parsing_utils::ConsumeMarginOrOffset(
       range, context.Mode(),
       css_property_parser_helpers::UnitlessQuirk::kForbid);
+}
+
+const blink::Color InternalVisitedBackgroundColor::ColorIncludingFallback(
+    bool visited_link,
+    const ComputedStyle& style) const {
+  DCHECK(visited_link);
+
+  blink::Color color =
+      style.InternalVisitedBackgroundColor().Resolve(style.VisitedLinkColor());
+
+  // TODO: Technically someone could explicitly specify the color
+  // transparent, but for now we'll just assume that if the background color
+  // is transparent that it wasn't set. Note that it's weird that we're
+  // returning unvisited info for a visited link, but given our restriction
+  // that the alpha values have to match, it makes more sense to return the
+  // unvisited background color if specified than it does to return black.
+  // This behavior matches what Firefox 4 does as well.
+  if (color == blink::Color::kTransparent)
+    return style.BackgroundColor().Resolve(style.GetColor());
+
+  return color;
 }
 
 const CSSValue* Isolation::CSSValueFromComputedStyleInternal(

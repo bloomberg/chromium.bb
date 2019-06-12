@@ -61,6 +61,11 @@
         "background_layer",
         "border_image",
         "color",
+        // The "color" template takes into account ApplyPropertyToRegularStyle
+        // and ApplyPropertyToVisitedStyle, whereas "color_only" unconditionally
+        // applies to the regular style.
+        // TODO(andruud): Remove those flags and rename this to just "color".
+        "color_only",
         "counter",
         "empty",
         "grid",
@@ -72,6 +77,7 @@
         "mask_layer",
         "svg_paint",
         "transition",
+        "visited_color",
       ],
     },
 
@@ -373,6 +379,20 @@
     layout_dependent: {
       default: false,
       valid_type: "bool",
+    },
+
+    // - visited_property_for: "other-property"
+    // CSS properties that are allowed in :visited selectors each have an
+    // internal "companion" property with the visited value. For privacy reasons
+    // CSSOM APIs must return computed values as if links aren't visited, but
+    // for rendering purposes we need the value with the :visited rules applied.
+    //
+    // This means that the regular property (e.g. background-color) represents
+    // the value as seen by CSSOM, and the -internal-visited counterpart (e.g.
+    // -internal-visited-background-color) represents the same property as seen
+    // by painting.
+    visited_property_for: {
+      valid_type: "str",
     },
 
     // - valid_for_visited_link
@@ -968,7 +988,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color",
+      style_builder_template: "color_only",
       style_builder_template_args: {
         initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
       },
@@ -5119,6 +5139,24 @@
       name: "-webkit-text-stroke",
       longhands: ["-webkit-text-stroke-width", "-webkit-text-stroke-color"],
       property_methods: ["ParseShorthand"],
+    },
+
+    // Visited properties.
+    {
+      name: "-internal-visited-background-color",
+      visited_property_for: "background-color",
+      property_methods: ["ColorIncludingFallback"],
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
+      default_value: "StyleColor(Color::kTransparent)",
+      type_name: "StyleColor",
+      computed_style_custom_functions: ["getter", "setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
+      style_builder_template_args: {
+        initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
+      },
     },
 
     // Aliases; these map to the same CSSPropertyID

@@ -2048,13 +2048,24 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
 
 Color ComputedStyle::VisitedDependentColor(
     const CSSProperty& color_property) const {
+  DCHECK(!color_property.IsVisited());
+
   Color unvisited_color =
       To<Longhand>(color_property).ColorIncludingFallback(false, *this);
   if (InsideLink() != EInsideLink::kInsideVisitedLink)
     return unvisited_color;
 
+  // Properties that provide a GetVisitedProperty() must use the
+  // ColorIncludingFallback function on that property.
+  //
+  // TODO(andruud): Simplify this when all properties support
+  // GetVisitedProperty.
+  const CSSProperty* visited_property = &color_property;
+  if (const CSSProperty* visited = color_property.GetVisitedProperty())
+    visited_property = visited;
+
   Color visited_color =
-      To<Longhand>(color_property).ColorIncludingFallback(true, *this);
+      To<Longhand>(*visited_property).ColorIncludingFallback(true, *this);
 
   // Take the alpha from the unvisited color, but get the RGB values from the
   // visited color.

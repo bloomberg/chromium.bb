@@ -262,8 +262,8 @@
             field_dependencies: ["InsideLink"]
           },
           {
-            method: "VisitedLinkBackgroundColor()",
-            field_dependencies: ["VisitedLinkBackgroundColor"]
+            method: "InternalVisitedBackgroundColor()",
+            field_dependencies: ["-internal-visited-background-color"]
           },
           {
             method: "Resize()",

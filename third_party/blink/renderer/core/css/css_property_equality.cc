@@ -70,7 +70,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
   switch (property.GetCSSProperty().PropertyID()) {
     case CSSPropertyID::kBackgroundColor:
       return a.BackgroundColor() == b.BackgroundColor() &&
-             a.VisitedLinkBackgroundColor() == b.VisitedLinkBackgroundColor();
+             a.InternalVisitedBackgroundColor() ==
+                 b.InternalVisitedBackgroundColor();
     case CSSPropertyID::kBackgroundImage:
       return FillLayersEqual<CSSPropertyID::kBackgroundImage>(
           a.BackgroundLayers(), b.BackgroundLayers());
