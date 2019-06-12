@@ -1410,7 +1410,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 // any device. To limit the effect of (2), custom large scrolling steps are
 // added to the usual scrolling actions.
 - (void)testManyPasswords {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // TODO(crbug.com/906551): Enable the test on iPad once the bug is fixed.
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad.");
   }
@@ -1517,7 +1517,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       assertWithMatcher:grey_accessibilityTrait(
                             UIAccessibilityTraitNotEnabled)];
 
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Tap outside the activity view to dismiss it, because it is not
     // accompanied by a "Cancel" button on iPad.
     [[EarlGrey selectElementWithMatcher:
