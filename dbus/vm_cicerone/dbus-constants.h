@@ -37,6 +37,9 @@ const char kCancelExportLxdContainerMethod[] = "CancelExportLxdContainer";
 const char kCancelImportLxdContainerMethod[] = "CancelImportLxdContainer";
 const char kApplyAnsiblePlaybookMethod[] = "ApplyAnsiblePlaybook";
 
+// Methods to be called from chunneld.
+const char kConnectChunnelMethod[] = "ConnectChunnel";
+
 // Methods to be called from debugd.
 const char kGetDebugInformationMethod[] = "GetDebugInformation";
 

@@ -1202,3 +1202,44 @@ message ApplyAnsiblePlaybookProgressSignal {
   // Contains a textual reason for the failure in case of a FAILED status.
   string failure_details = 5;
 }
+
+// Request for a container to create a tunnel to a prepared port on the host.
+message ConnectChunnelRequest {
+  // Name of the VM to tunnel traffic to.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Name of the container to tunnel traffic to.
+  // Target vsock port to forward traffic from. This port must be listening
+  // and ready to accept a connection from the chunnel client.
+  uint32 chunneld_port = 4;
+
+  // Target TCPv4 port to forward traffic to. Chunnel in the guest will connect
+  // to localhost:target_tcp4_port.
+  uint32 target_tcp4_port = 5;
+}
+
+// Response to ConnectChunnelRequest.
+message ConnectChunnelResponse {
+  enum Status {
+    // The result is unknown.
+    UNKNOWN = 0;
+
+    // Chunnel was successfully launched in the container.
+    SUCCESS = 1;
+
+    // One or more steps failed and chunnel could not be connected.
+    FAILED = 2;
+  }
+
+  // Status of the request.
+  Status status = 1;
+
+  // If status is FAILED, contains the reason the request failed.
+  string failure_reason = 2;
+}
