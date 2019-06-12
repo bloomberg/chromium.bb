@@ -311,7 +311,7 @@ bool AXNodeData::GetIntAttribute(ax::mojom::IntAttribute attribute,
                                  int* value) const {
   auto iter = FindInVectorOfPairs(attribute, int_attributes);
   if (iter != int_attributes.end()) {
-    *value = int{iter->second};
+    *value = iter->second;
     return true;
   }
 

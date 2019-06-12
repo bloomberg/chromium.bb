@@ -1434,57 +1434,55 @@ bool BrowserAccessibility::IsTable() const {
   return node()->IsTable();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableRowCount() const {
+int32_t BrowserAccessibility::GetTableRowCount() const {
   return node()->GetTableRowCount();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableColCount() const {
+int32_t BrowserAccessibility::GetTableColCount() const {
   return node()->GetTableColCount();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableAriaColCount() const {
+base::Optional<int32_t> BrowserAccessibility::GetTableAriaColCount() const {
   return node()->GetTableAriaColCount();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableAriaRowCount() const {
+base::Optional<int32_t> BrowserAccessibility::GetTableAriaRowCount() const {
   return node()->GetTableAriaRowCount();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableCellCount() const {
+int32_t BrowserAccessibility::GetTableCellCount() const {
   return node()->GetTableCellCount();
 }
 
-std::vector<int32_t> BrowserAccessibility::GetColHeaderNodeIds() const {
+const std::vector<int32_t> BrowserAccessibility::GetColHeaderNodeIds() const {
   std::vector<int32_t> result;
   node()->GetTableCellColHeaderNodeIds(&result);
   return result;
 }
 
-std::vector<int32_t> BrowserAccessibility::GetColHeaderNodeIds(
-    int col_index) const {
+const std::vector<int32_t> BrowserAccessibility::GetColHeaderNodeIds(
+    int32_t col_index) const {
   std::vector<int32_t> result;
   node()->GetTableColHeaderNodeIds(col_index, &result);
   return result;
 }
 
-std::vector<int32_t> BrowserAccessibility::GetRowHeaderNodeIds() const {
+const std::vector<int32_t> BrowserAccessibility::GetRowHeaderNodeIds() const {
   std::vector<int32_t> result;
   node()->GetTableCellRowHeaderNodeIds(&result);
   return result;
 }
 
-std::vector<int32_t> BrowserAccessibility::GetRowHeaderNodeIds(
-    int row_index) const {
+const std::vector<int32_t> BrowserAccessibility::GetRowHeaderNodeIds(
+    int32_t row_index) const {
   std::vector<int32_t> result;
   node()->GetTableRowHeaderNodeIds(row_index, &result);
   return result;
 }
 
-ui::AXPlatformNode* BrowserAccessibility::GetTableCaption() const {
-  ui::AXNode* caption = node()->GetTableCaption();
-  if (caption)
-    return const_cast<BrowserAccessibility*>(this)->GetFromNodeID(
-        caption->id());
+ui::AXPlatformNode* BrowserAccessibility::GetTableCaption() {
+  if (ui::AXNode* caption = node()->GetTableCaption())
+    return GetFromNodeID(caption->id());
 
   return nullptr;
 }
@@ -1493,7 +1491,7 @@ bool BrowserAccessibility::IsTableRow() const {
   return node()->IsTableRow();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableRowRowIndex() const {
+int32_t BrowserAccessibility::GetTableRowRowIndex() const {
   return node()->GetTableRowRowIndex();
 }
 
@@ -1501,48 +1499,48 @@ bool BrowserAccessibility::IsTableCellOrHeader() const {
   return node()->IsTableCellOrHeader();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableCellColIndex() const {
+int32_t BrowserAccessibility::GetTableCellColIndex() const {
   return node()->GetTableCellColIndex();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableCellRowIndex() const {
+int32_t BrowserAccessibility::GetTableCellRowIndex() const {
   return node()->GetTableCellRowIndex();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableCellColSpan() const {
+int32_t BrowserAccessibility::GetTableCellColSpan() const {
   return node()->GetTableCellColSpan();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableCellRowSpan() const {
+int32_t BrowserAccessibility::GetTableCellRowSpan() const {
   return node()->GetTableCellRowSpan();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableCellAriaColIndex() const {
+int32_t BrowserAccessibility::GetTableCellAriaColIndex() const {
   return node()->GetTableCellAriaColIndex();
 }
 
-base::Optional<int> BrowserAccessibility::GetTableCellAriaRowIndex() const {
+int32_t BrowserAccessibility::GetTableCellAriaRowIndex() const {
   return node()->GetTableCellAriaRowIndex();
 }
 
-base::Optional<int32_t> BrowserAccessibility::GetCellId(int row_index,
-                                                        int col_index) const {
+int32_t BrowserAccessibility::GetCellId(int32_t row_index,
+                                        int32_t col_index) const {
   ui::AXNode* cell = node()->GetTableCellFromCoords(row_index, col_index);
-  if (!cell)
-    return base::nullopt;
-  return cell->id();
+  if (cell)
+    return cell->id();
+
+  return -1;
 }
 
-base::Optional<int> BrowserAccessibility::GetTableCellIndex() const {
+int32_t BrowserAccessibility::GetTableCellIndex() const {
   return node()->GetTableCellIndex();
 }
 
-base::Optional<int32_t> BrowserAccessibility::CellIndexToId(
-    int cell_index) const {
+int32_t BrowserAccessibility::CellIndexToId(int32_t cell_index) const {
   ui::AXNode* cell = node()->GetTableCellFromIndex(cell_index);
-  if (!cell)
-    return base::nullopt;
-  return cell->id();
+  if (cell)
+    return cell->id();
+  return -1;
 }
 
 bool BrowserAccessibility::IsCellOrHeaderOfARIATable() const {
@@ -1685,11 +1683,11 @@ bool BrowserAccessibility::IsOrderedSet() const {
   return node()->IsOrderedSet();
 }
 
-base::Optional<int> BrowserAccessibility::GetPosInSet() const {
+int32_t BrowserAccessibility::GetPosInSet() const {
   return node()->GetPosInSet();
 }
 
-base::Optional<int> BrowserAccessibility::GetSetSize() const {
+int32_t BrowserAccessibility::GetSetSize() const {
   return node()->GetSetSize();
 }
 

@@ -450,13 +450,14 @@ void AccessibilityTreeFormatterAuraLinux::AddTableCellProperties(
     n_row_headers = row_headers->len;
     g_ptr_array_unref(row_headers);
   } else {
-    row = node->GetTableRow().value_or(0);
-    col = node->GetTableColumn().value_or(0);
-    row_span = node->GetTableRowSpan().value_or(0);
-    col_span = node->GetTableColumnSpan().value_or(0);
+    row = node->GetTableRow();
+    col = node->GetTableColumn();
+    row_span = node->GetTableRowSpan();
+    col_span = node->GetTableColumnSpan();
     if (role == ATK_ROLE_TABLE_CELL) {
-      n_column_headers = node->GetDelegate()->GetColHeaderNodeIds(col).size();
-      n_row_headers = node->GetDelegate()->GetRowHeaderNodeIds(row).size();
+      auto* delegate = node->GetTable()->GetDelegate();
+      n_column_headers = delegate->GetColHeaderNodeIds(col).size();
+      n_row_headers = delegate->GetRowHeaderNodeIds(row).size();
     }
   }
 

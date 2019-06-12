@@ -896,10 +896,10 @@ void AutomationInternalCustomBindings::AddRoutes() {
 
         if (attribute == ax::mojom::IntAttribute::kPosInSet &&
             node->GetPosInSet()) {
-          attr_value = *node->GetPosInSet();
+          attr_value = node->GetPosInSet();
         } else if (attribute == ax::mojom::IntAttribute::kSetSize &&
                    node->GetSetSize()) {
-          attr_value = *node->GetSetSize();
+          attr_value = node->GetSetSize();
         } else if (!node->data().GetIntAttribute(attribute, &attr_value)) {
           return;
         }
@@ -1355,17 +1355,13 @@ void AutomationInternalCustomBindings::AddRoutes() {
   RouteNodeIDFunction(
       "GetTableCellColumnIndex",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
-         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        if (node->GetTableCellColIndex())
-          result.Set(*node->GetTableCellColIndex());
-      });
+         AutomationAXTreeWrapper* tree_wrapper,
+         ui::AXNode* node) { result.Set(node->GetTableCellColIndex()); });
   RouteNodeIDFunction(
       "GetTableCellRowIndex",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
-         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        if (node->GetTableCellRowIndex())
-          result.Set(*node->GetTableCellRowIndex());
-      });
+         AutomationAXTreeWrapper* tree_wrapper,
+         ui::AXNode* node) { result.Set(node->GetTableCellRowIndex()); });
 }
 
 void AutomationInternalCustomBindings::Invalidate() {

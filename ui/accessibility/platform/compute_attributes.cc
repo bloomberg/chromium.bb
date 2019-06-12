@@ -61,25 +61,30 @@ base::Optional<int32_t> GetTableAttribute(
   }
 }
 
-base::Optional<int> GetOrderedSetItemAttribute(
+base::Optional<int32_t> GetOrderedSetItemAttribute(
     const ui::AXPlatformNodeDelegate* delegate,
     ax::mojom::IntAttribute attribute) {
+  int value = 0;
   switch (attribute) {
     case ax::mojom::IntAttribute::kPosInSet:
-      return delegate->GetPosInSet();
+      value = delegate->GetPosInSet();
+      return value;
     case ax::mojom::IntAttribute::kSetSize:
-      return delegate->GetSetSize();
+      value = delegate->GetSetSize();
+      return value;
     default:
       return base::nullopt;
   }
 }
 
-base::Optional<int> GetOrderedSetAttribute(
+base::Optional<int32_t> GetOrderedSetAttribute(
     const ui::AXPlatformNodeDelegate* delegate,
     ax::mojom::IntAttribute attribute) {
+  int value = 0;
   switch (attribute) {
     case ax::mojom::IntAttribute::kSetSize:
-      return delegate->GetSetSize();
+      value = delegate->GetSetSize();
+      return value;
     default:
       return base::nullopt;
   }
