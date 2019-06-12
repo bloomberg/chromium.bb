@@ -620,9 +620,9 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           if (changes.empty()) {
             metrics_util::LogApplySyncChangesState(
                 metrics_util::ApplySyncChangesState::kApplyDeleteFailed);
-            return syncer::ModelError(
-                FROM_HERE,
-                "Failed to delete an entry from the password store.");
+            // TODO(mamir): Revisit this after checking UMA to decide if this
+            // relaxation is crucial or not.
+            continue;
           }
           DCHECK_EQ(1U, changes.size());
           DCHECK_EQ(changes[0].primary_key(), primary_key);
