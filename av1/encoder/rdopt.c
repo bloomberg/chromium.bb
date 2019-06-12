@@ -11694,36 +11694,32 @@ static bool mask_says_skip(const mode_skip_mask_t *mode_skip_mask,
 
 static int inter_mode_compatible_skip(const AV1_COMP *cpi, const MACROBLOCK *x,
                                       BLOCK_SIZE bsize, int mode_index) {
-  const AV1_COMMON *const cm = &cpi->common;
-  const struct segmentation *const seg = &cm->seg;
   const MV_REFERENCE_FRAME *ref_frame = av1_mode_order[mode_index].ref_frame;
-  const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
-  const CurrentFrame *const current_frame = &cm->current_frame;
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const unsigned char segment_id = mbmi->segment_id;
   const int comp_pred = ref_frame[1] > INTRA_FRAME;
-
   if (comp_pred) {
+    if (!is_comp_ref_allowed(bsize)) return 1;
+    if (!(cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame[1]])) {
+      return 1;
+    }
+
+    const AV1_COMMON *const cm = &cpi->common;
     if (frame_is_intra_only(cm)) return 1;
 
+    const CurrentFrame *const current_frame = &cm->current_frame;
     if (current_frame->reference_mode == SINGLE_REFERENCE) return 1;
 
-    // Skip compound inter modes if ARF is not available.
-    if (!(cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame[1]]))
-      return 1;
-
+    const struct segmentation *const seg = &cm->seg;
+    const unsigned char segment_id = x->e_mbd.mi[0]->segment_id;
     // Do not allow compound prediction if the segment level reference frame
     // feature is in use as in this case there can only be one reference.
     if (segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) return 1;
-
-    if (!is_comp_ref_allowed(bsize)) return 1;
   }
 
   if (ref_frame[0] > INTRA_FRAME && ref_frame[1] == INTRA_FRAME) {
     // Mode must be compatible
-    if (!is_interintra_allowed_mode(this_mode)) return 1;
     if (!is_interintra_allowed_bsize(bsize)) return 1;
+    const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
+    if (!is_interintra_allowed_mode(this_mode)) return 1;
   }
 
   return 0;
@@ -12614,6 +12610,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                        INT64_MAX, INT64_MAX, INT64_MAX,
                                        INT64_MAX, INT64_MAX };
   for (int midx = 0; midx < MAX_MODES; ++midx) {
+    if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
+
     const int do_tx_search = do_tx_search_mode(
         do_tx_search_global, midx, sf->inter_mode_rd_model_estimation_adaptive);
     const MODE_DEFINITION *mode_order = &av1_mode_order[midx];
@@ -12651,8 +12649,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
-
-    if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
 
     const int ret = inter_mode_search_order_independent_skip(
         cpi, x, &mode_skip_mask, &search_state, skip_ref_frame_mask);
