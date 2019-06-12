@@ -18,6 +18,10 @@ const char kAcceleratedVideoDecodeName[] = "Hardware-accelerated video decode";
 const char kAcceleratedVideoDecodeDescription[] =
     "Hardware-accelerated video decode where available.";
 
+const char kAcceleratedVideoEncodeName[] = "Hardware-accelerated video encode";
+const char kAcceleratedVideoEncodeDescription[] =
+    "Hardware-accelerated video encode where available.";
+
 const char kAllowInsecureLocalhostName[] =
     "Allow invalid certificates for resources loaded from localhost.";
 const char kAllowInsecureLocalhostDescription[] =

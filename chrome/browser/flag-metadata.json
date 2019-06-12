@@ -568,6 +568,13 @@
     "expiry_milestone": -1
   },
   {
+    "name": "disable-accelerated-video-encode",
+    "owners": [ "chromeos-video-eng@google.com" ],
+    // This flag does not expire because it allows users to disable HW video
+    // encoding for debugging purpose and temporary workaround for some issues.
+    "expiry_milestone": -1
+  },
+  {
     "name": "disable-best-effort-tasks",
     "owners": [ "catan-team@chromium.org" ],
     "expiry_milestone": 75

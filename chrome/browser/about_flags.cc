@@ -1423,6 +1423,13 @@ const FeatureEntry kFeatureEntries[] = {
         kOsMac | kOsWin | kOsCrOS | kOsAndroid,
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
     },
+    {
+        "disable-accelerated-video-encode",
+        flag_descriptions::kAcceleratedVideoEncodeName,
+        flag_descriptions::kAcceleratedVideoEncodeDescription,
+        kOsMac | kOsWin | kOsCrOS | kOsAndroid,
+        SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoEncode),
+    },
     {"enable-history-favicons-google-server-query",
      flag_descriptions::kEnableHistoryFaviconsGoogleServerQueryName,
      flag_descriptions::kEnableHistoryFaviconsGoogleServerQueryDescription,

@@ -45,6 +45,9 @@ extern const char kAccelerated2dCanvasDescription[];
 extern const char kAcceleratedVideoDecodeName[];
 extern const char kAcceleratedVideoDecodeDescription[];
 
+extern const char kAcceleratedVideoEncodeName[];
+extern const char kAcceleratedVideoEncodeDescription[];
+
 extern const char kAllowInsecureLocalhostName[];
 extern const char kAllowInsecureLocalhostDescription[];
 
