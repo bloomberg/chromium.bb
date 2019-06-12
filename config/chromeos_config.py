@@ -4162,31 +4162,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.AddWithoutTemplate(
-      'chromiumos-sdk-overhaul-testing',
-      site_config.templates.full,
-      site_config.templates.no_hwtest_builder,
-      # The amd64-host has to be last as that is when the toolchains
-      # are bundled up for inclusion in the sdk.
-      boards=[
-          'arm-generic', 'amd64-generic'
-      ],
-      display_label=config_lib.DISPLAY_LABEL_UTILITY,
-      build_type=constants.CHROOT_BUILDER_TYPE,
-      builder_class_name='sdk_builders.ChrootSdkBuilder',
-      use_sdk=False,
-      self_bootstrap=True,
-      # Do not update SDK version and upload prebuilts to gs://chromiumos-sdk.
-      debug=True,
-      prebuilts=constants.PUBLIC,
-      build_timeout=18 * 60 * 60,
-      description='Rebuild the SDK using previously built SDK for '
-                  'bootstrapping',
-      doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
-          'TOC-Continuous',
-      schedule='with 30m interval',
-  )
-
-  site_config.AddWithoutTemplate(
       'config-updater',
       site_config.templates.internal,
       site_config.templates.no_hwtest_builder,

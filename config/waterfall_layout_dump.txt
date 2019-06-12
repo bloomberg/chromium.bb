@@ -693,7 +693,6 @@
 == utility ==
   chromeos-infra-go
   chromiumos-sdk
-  chromiumos-sdk-overhaul-testing
   config-updater
   luci-scheduler-updater
 
@@ -1345,7 +1344,6 @@
   chromeos-infra-puppet-pre-cq
   chromeos-infra-unittests-pre-cq
   chromite-pre-cq
-  chromiumos-sdk-overhaul-testing-tryjob
   chromiumos-sdk-tryjob
   clapper-chrome-pfq-tryjob
   clapper-chromium-pfq-tryjob
