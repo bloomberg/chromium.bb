@@ -276,7 +276,7 @@ check_targets = [
   "//extensions/common/*",
   "//extensions/components/javascript_dialog_extensions_client",
   "//extensions/components/native_app_window",
-  "//extensions/renderer:unit_tests",
+  "//extensions/renderer/*",
   "//extensions/shell/*",
   "//extensions/strings/*",
   "//fuchsia/*",
