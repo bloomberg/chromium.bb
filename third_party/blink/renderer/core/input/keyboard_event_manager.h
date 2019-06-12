@@ -56,6 +56,7 @@ class CORE_EXPORT KeyboardEventManager
   void DefaultTabEventHandler(KeyboardEvent*);
   void DefaultEscapeEventHandler(KeyboardEvent*);
   void DefaultEnterEventHandler(KeyboardEvent*);
+  void DefaultImeSubmitHandler(KeyboardEvent*);
   void DefaultArrowEventHandler(KeyboardEvent*, Node*);
   bool DefaultSpatNavBackEventHandler(KeyboardEvent*);
 

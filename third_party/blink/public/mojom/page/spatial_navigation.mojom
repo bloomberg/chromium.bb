@@ -11,6 +11,8 @@ struct SpatialNavigationState {
   bool can_exit_focus;
   // True if Spatial Navigation has a target that can be selected.
   bool can_select_element;
+  // True if the currently focused element is a form element.
+  bool is_form_focused;
   // True if the currently focused element is a form element, and there is a
   // next form element available to move to.
   bool has_next_form_element;

@@ -1160,9 +1160,12 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
     if (form_element->formOwner() != form_owner ||
         form_element->IsDisabledOrReadOnly())
       continue;
-    // Focusless spatial navigation supports all form types.
+    // Focusless spatial navigation supports all form types. However, submit
+    // buttons are explicitly excluded as moving to them isn't necessary - the
+    // IME should just submit instead.
     if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled() &&
-        page_->GetSettings().GetSpatialNavigationEnabled()) {
+        page_->GetSettings().GetSpatialNavigationEnabled() &&
+        !form_element->CanBeSuccessfulSubmitButton()) {
       return next_element;
     }
     LayoutObject* layout = next_element->GetLayoutObject();
