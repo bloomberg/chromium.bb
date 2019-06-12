@@ -57928,6 +57928,10 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UserSelectableSyncType">
+  <obsolete>
+    Deprecated 10/2018; use SyncModelTypes instead. Note that this does NOT
+    correspond to the UserSelectableType enum in C++!
+  </obsolete>
   <int value="0" label="Bookmarks"/>
   <int value="1" label="Preferences"/>
   <int value="2" label="Passwords"/>
