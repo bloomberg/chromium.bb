@@ -44,6 +44,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/browser/browser_process_sub_thread.h"
@@ -950,6 +951,9 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
         ForceInProcessNetworkService(true);
       }
     }
+
+    discardable_shared_memory_manager_ =
+        std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
     // PowerMonitor is needed in reduced mode but is eventually passed on to
     // BrowserMainLoop.

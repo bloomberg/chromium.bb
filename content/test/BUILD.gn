@@ -526,6 +526,7 @@ jumbo_static_library("test_support") {
     ]
 
     deps += [
+      "//components/discardable_memory/service",
       "//media/capture/video/android:android",
       "//ui/android",
       "//ui/android:test_support",
