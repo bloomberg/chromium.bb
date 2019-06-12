@@ -1071,6 +1071,11 @@ html[darkmode=true] #colors-menu .bg-sel-tile-title {
   background-color: rgba(var(--GB900-rgb), .08);
 }
 
+html[darkmode=true] #backgrounds-default.selected,
+html[darkmode=true] #backgrounds-image-menu .bg-sel-tile-bg.selected {
+  background-color: rgba(var(--GB200-rgb), .5);
+}
+
 #backgrounds-upload.bg-sel-tile-bg {
   background-color: white;
   border: 1px solid rgb(var(--GG300-rgb));
@@ -1171,13 +1176,13 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-circle {
 #customization-menu .bg-sel-tile .selected-check {
   height: 24px;
   left: initial;
-  right: 0;
-  top: 0;
+  right: 9px;
+  top: 7px;
   width: 24px;
 }
 
 html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
-  left: 0;
+  left: 9px;
   right: initial;
 }
 
@@ -1331,13 +1336,14 @@ html[dir=rtl] .sh-option-image .selected-circle {
 }
 
 .sh-option-image .selected-check {
-  left: -2px;
-  top: -2px;
+  left: initial;
+  right: 32px;
+  top: 6px;
 }
 
 html[dir=rtl] .sh-option-image .selected-check {
-  left: 0;
-  right: -2px;
+  left: 32px;
+  right: initial;
 }
 
 .sh-option-title {

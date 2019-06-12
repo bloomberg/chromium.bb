@@ -645,8 +645,8 @@ customize.richerPicker_selectTile = function(tile) {
   const selectedCheck = document.createElement('div');
   selectedCircle.classList.add(customize.CLASSES.SELECTED_CIRCLE);
   selectedCheck.classList.add(customize.CLASSES.SELECTED_CHECK);
-  selectedCircle.appendChild(selectedCheck);
   tile.appendChild(selectedCircle);
+  tile.appendChild(selectedCheck);
 };
 
 /**
