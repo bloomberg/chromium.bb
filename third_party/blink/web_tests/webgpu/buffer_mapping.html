@@ -26,7 +26,7 @@ promise_test(async t => {
       usage: GPUBufferUsage.TRANSFER_DST | GPUBufferUsage.MAP_READ,
     });
 
-    const commandEncoder = device.createCommandEncoder({});
+    const commandEncoder = device.createCommandEncoder();
     commandEncoder.copyBufferToBuffer(buffer, 0, readback, 0, size);
     queue.submit([commandEncoder.finish()]);
 

@@ -23,7 +23,7 @@
     [CallWith=ScriptState] GPURenderPipeline createRenderPipeline(GPURenderPipelineDescriptor descriptor);
     GPUComputePipeline createComputePipeline(GPUComputePipelineDescriptor descriptor);
 
-    GPUCommandEncoder createCommandEncoder(GPUCommandEncoderDescriptor descriptor);
+    GPUCommandEncoder createCommandEncoder(optional GPUCommandEncoderDescriptor descriptor);
 
     GPUQueue getQueue();
 };
