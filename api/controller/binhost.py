@@ -90,7 +90,7 @@ def PrepareBinhostUploads(input_proto, output_proto):
   if not gs.PathIsGs(uri):
     raise ValueError('Upload URI %s must be Google Storage.' % uri)
 
-  package_index_paths = [f.path for f in input_proto.package_index_files]
+  package_index_paths = [f.path.path for f in input_proto.package_index_files]
 
   parsed_uri = urlparse.urlparse(uri)
   upload_uri = gs.GetGsURL(parsed_uri.netloc)
