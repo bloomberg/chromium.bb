@@ -712,6 +712,8 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/internal_visited_border_right_color.h",
     "$blink_core_output_dir/css/properties/longhands/internal_visited_border_top_color.cc",
     "$blink_core_output_dir/css/properties/longhands/internal_visited_border_top_color.h",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_color.cc",
+    "$blink_core_output_dir/css/properties/longhands/internal_visited_color.h",
     "$blink_core_output_dir/css/properties/longhands/isolation.h",
     "$blink_core_output_dir/css/properties/longhands/justify_content.h",
     "$blink_core_output_dir/css/properties/longhands/justify_items.h",

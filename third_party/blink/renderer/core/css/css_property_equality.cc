@@ -137,7 +137,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.Clip() == b.Clip();
     case CSSPropertyID::kColor:
       return a.GetColor() == b.GetColor() &&
-             a.VisitedLinkColor() == b.VisitedLinkColor();
+             a.InternalVisitedColor() == b.InternalVisitedColor();
     case CSSPropertyID::kFill: {
       const SVGComputedStyle& a_svg = a.SvgStyle();
       const SVGComputedStyle& b_svg = b.SvgStyle();

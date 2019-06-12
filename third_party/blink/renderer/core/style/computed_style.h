@@ -106,6 +106,7 @@ class InternalVisitedBorderBottomColor;
 class InternalVisitedBorderLeftColor;
 class InternalVisitedBorderRightColor;
 class InternalVisitedBorderTopColor;
+class InternalVisitedColor;
 class LightingColor;
 class OutlineColor;
 class StopColor;
@@ -199,6 +200,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::InternalVisitedBorderLeftColor;
   friend class css_longhand::InternalVisitedBorderRightColor;
   friend class css_longhand::InternalVisitedBorderTopColor;
+  friend class css_longhand::InternalVisitedColor;
   friend class css_longhand::LightingColor;
   friend class css_longhand::OutlineColor;
   friend class css_longhand::StopColor;
@@ -2352,6 +2354,9 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
  private:
+  void SetInternalVisitedColor(const Color& v) {
+    SetInternalVisitedColorInternal(v);
+  }
   void SetInternalVisitedBackgroundColor(const StyleColor& v) {
     SetInternalVisitedBackgroundColorInternal(v);
   }
@@ -2496,6 +2501,7 @@ class ComputedStyle : public ComputedStyleBase,
                ? StyleColor::CurrentColor()
                : StyleColor(TextStrokeColorInternal());
   }
+  Color InternalVisitedColor() const { return InternalVisitedColorInternal(); }
   StyleAutoColor VisitedLinkCaretColor() const {
     if (VisitedLinkCaretColorIsCurrentColorInternal())
       return StyleAutoColor::CurrentColor();

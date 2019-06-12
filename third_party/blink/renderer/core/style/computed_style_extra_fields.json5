@@ -277,13 +277,6 @@
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
-      name: "VisitedLinkColor",
-      inherited: true,
-      field_template: "<color>",
-      field_group: "inherited",
-      default_value: "Color::kBlack",
-    },
-    {
       name: "TextAutosizingMultiplier",
       inherited: true,
       field_template: "primitive",

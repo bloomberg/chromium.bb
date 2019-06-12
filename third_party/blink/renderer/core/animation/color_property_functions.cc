@@ -80,7 +80,7 @@ OptionalStyleColor ColorPropertyFunctions::GetVisitedColor(
         return StyleColor::CurrentColor();
       return style.VisitedLinkCaretColor().ToStyleColor();
     case CSSPropertyID::kColor:
-      return style.VisitedLinkColor();
+      return style.InternalVisitedColor();
     case CSSPropertyID::kOutlineColor:
       return style.VisitedLinkOutlineColor();
     case CSSPropertyID::kColumnRuleColor:
@@ -180,7 +180,7 @@ void ColorPropertyFunctions::SetVisitedColor(const CSSProperty& property,
     case CSSPropertyID::kCaretColor:
       return style.SetVisitedLinkCaretColor(color);
     case CSSPropertyID::kColor:
-      style.SetVisitedLinkColor(color);
+      style.SetInternalVisitedColor(color);
       return;
     case CSSPropertyID::kFloodColor:
       style.SetFloodColor(color);

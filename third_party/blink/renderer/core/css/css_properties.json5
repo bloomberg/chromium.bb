@@ -5144,6 +5144,24 @@
 
     // Visited properties.
     {
+      name: "-internal-visited-color",
+      visited_property_for: "color",
+      property_methods: ["ColorIncludingFallback"],
+      inherited: true,
+      field_group: "inherited",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/platform/graphics/color.h"],
+      default_value: "Color::kBlack",
+      type_name: "Color",
+      computed_style_custom_functions: ["getter", "setter"],
+      style_builder_custom_functions: ['value'],
+      style_builder_template: "visited_color",
+      style_builder_template_args: {
+        initial_color: "ComputedStyleInitialValues::InitialColor",
+      },
+      priority: "High",
+    },
+    {
       name: "-internal-visited-background-color",
       visited_property_for: "background-color",
       property_methods: ["ColorIncludingFallback"],
