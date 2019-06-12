@@ -48,6 +48,7 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
   // decoding into this surface is finished. The callback is reset afterwards,
   // so it needs to be set again before each decode operation.
   void SetDecodeDoneCallback(base::OnceClosure done_cb);
+  void SetReleaseCallback(base::OnceClosure release_cb);
 
   // Update the passed v4l2_ext_controls structure to add the request or
   // config store information.

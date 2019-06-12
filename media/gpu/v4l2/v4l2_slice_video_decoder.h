@@ -157,7 +157,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Setup the format of V4L2 output buffer, and allocate new buffer set.
   bool ChangeResolution();
   // Callback which is called when V4L2 surface is destroyed.
-  void ReuseOutputBuffer(int index);
+  void ReuseOutputBuffer(V4L2ReadableBufferRef buffer);
 
   // Start streaming V4L2 input and output queues. Attempt to start
   // |device_poll_thread_| before starting streaming.

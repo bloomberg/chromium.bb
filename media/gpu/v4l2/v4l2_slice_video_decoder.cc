@@ -78,10 +78,6 @@ struct V4L2SliceVideoDecoder::OutputRecord {
   // the time the surface is created, until the buffer is enqueued into V4L2
   // device.
   V4L2WritableBufferRef output_buf;
-  // The buffer dequeued from V4L2 output queue. The value is valid from the
-  // time the output buffer is dequeued from V4L2 device, until the surface is
-  // released.
-  V4L2ReadableBufferRef decoded_output_buf;
 
   OutputRecord(scoped_refptr<VideoFrame> f, V4L2WritableBufferRef buf)
       : frame(std::move(f)), output_buf(std::move(buf)) {}
@@ -785,17 +781,15 @@ scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecoder::CreateSurface() {
       std::make_unique<OutputRecord>(std::move(frame), std::move(output_buf))));
 
   return scoped_refptr<V4L2DecodeSurface>(new V4L2ConfigStoreDecodeSurface(
-      input_record_id, output_record_id,
-      base::BindOnce(&V4L2SliceVideoDecoder::ReuseOutputBuffer, weak_this_,
-                     output_record_id)));
+      input_record_id, output_record_id, base::DoNothing()));
 }
 
-void V4L2SliceVideoDecoder::ReuseOutputBuffer(int index) {
+void V4L2SliceVideoDecoder::ReuseOutputBuffer(V4L2ReadableBufferRef buffer) {
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
-  DVLOGF(3) << "Reuse output surface #" << index;
+  DVLOGF(3) << "Reuse output surface #" << buffer->BufferId();
 
   // Release the VideoFrame and V4L2 output buffer in the output record.
-  output_record_map_.erase(index);
+  output_record_map_.erase(buffer->BufferId());
 
   // Resume decoding in case of ran out of surface.
   if (state_ == State::kDecoding) {
@@ -1014,9 +1008,15 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask() {
 
     surface->SetDecoded();
 
-    auto output_it = output_record_map_.find(dequeued_buffer->BufferId());
-    DCHECK(output_it != output_record_map_.end());
-    output_it->second->decoded_output_buf = std::move(dequeued_buffer);
+    // Keep a reference to the V4L2 buffer until the buffer is reused. The
+    // reason for this is that the config store uses V4L2 buffer IDs to
+    // reference frames, therefore we cannot reuse the same V4L2 buffer ID for
+    // another decode operation until all references to that frame are gone.
+    // Request API does not have this limitation, so we can probably remove this
+    // after config store is gone.
+    surface->SetReleaseCallback(
+        base::BindOnce(&V4L2SliceVideoDecoder::ReuseOutputBuffer, weak_this_,
+                       std::move(dequeued_buffer)));
 
     PumpOutputSurfaces();
   }

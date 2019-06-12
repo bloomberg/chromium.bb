@@ -65,6 +65,12 @@ void V4L2DecodeSurface::SetDecodeDoneCallback(base::OnceClosure done_cb) {
   done_cb_ = std::move(done_cb);
 }
 
+void V4L2DecodeSurface::SetReleaseCallback(base::OnceClosure release_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  release_cb_ = std::move(release_cb);
+}
+
 std::string V4L2DecodeSurface::ToString() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
