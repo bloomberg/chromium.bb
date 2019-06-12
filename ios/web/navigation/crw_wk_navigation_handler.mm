@@ -311,11 +311,15 @@ using web::wk_navigation_util::IsWKInternalUrl;
   } else {
     if (action.targetFrame.mainFrame) {
       [self.pendingNavigationInfo setCancelled:YES];
-      // Discard the pending item to ensure that the current URL is not
-      // different from what is displayed on the view. Discard only happens
-      // if the last item was not a native view, to avoid ugly animation of
-      // inserting the webview.
-      [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
+      if (!web::features::StorePendingItemInContext() ||
+          self.navigationManagerImpl->GetPendingItemIndex() == -1) {
+        // Discard the new pending item to ensure that the current URL is not
+        // different from what is displayed on the view. Discard only happens
+        // if the last item was not a native view, to avoid ugly animation of
+        // inserting the webview. There is no need to reset pending item index
+        // for a different pending back-forward navigation.
+        [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
+      }
 
       web::NavigationContextImpl* context =
           [self contextForPendingMainFrameNavigationWithURL:requestURL];
