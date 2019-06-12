@@ -22,7 +22,6 @@ enum class PushRegistrationStatus;
 }  // namespace mojom
 
 class KURL;
-struct Manifest;
 
 class PushMessagingClient final
     : public GarbageCollectedFinalized<PushMessagingClient>,
@@ -51,8 +50,8 @@ class PushMessagingClient final
                       mojom::blink::PushSubscriptionOptionsPtr options,
                       bool user_gesture,
                       std::unique_ptr<WebPushSubscriptionCallbacks> callbacks,
-                      const WebURL& manifest_url,
-                      const Manifest& manifest);
+                      const KURL& manifest_url,
+                      mojom::blink::ManifestPtr manifest);
 
   void DoSubscribe(int64_t service_worker_registration_id,
                    mojom::blink::PushSubscriptionOptionsPtr options,

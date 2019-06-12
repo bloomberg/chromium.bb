@@ -730,9 +730,7 @@ _CONFIG = [
     {
         'paths': ['third_party/blink/renderer/modules/manifest/'],
         'allowed': [
-            # TODO(https://crbug.com/704441) : Added temporarily.
-            'base::.+',
-
+            'base::NullableString16',
             'net::ParseMimeTypeWithoutParameter',
         ],
     }

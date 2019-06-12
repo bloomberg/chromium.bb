@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-shared.h"
@@ -21,6 +20,7 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -82,11 +82,11 @@ void PushMessagingClient::DidGetManifest(
     mojom::blink::PushSubscriptionOptionsPtr options,
     bool user_gesture,
     std::unique_ptr<WebPushSubscriptionCallbacks> callbacks,
-    const WebURL& manifest_url,
-    const Manifest& manifest) {
+    const KURL& manifest_url,
+    mojom::blink::ManifestPtr manifest) {
   // Get the application_server_key from the manifest since it wasn't provided
   // by the caller.
-  if (manifest.IsEmpty()) {
+  if (manifest == mojom::blink::Manifest::New()) {
     DidSubscribe(
         std::move(callbacks),
         mojom::blink::PushRegistrationStatus::MANIFEST_EMPTY_OR_MISSING,
@@ -94,12 +94,11 @@ void PushMessagingClient::DidGetManifest(
     return;
   }
 
-  if (!manifest.gcm_sender_id.is_null()) {
-    std::string gcm_sender_id_as_utf8_string =
-        WebString::FromUTF16(manifest.gcm_sender_id.string()).Utf8();
-    WTF::Vector<uint8_t> application_server_key;
-    application_server_key.AppendRange(gcm_sender_id_as_utf8_string.begin(),
-                                       gcm_sender_id_as_utf8_string.end());
+  if (!manifest->gcm_sender_id.IsNull()) {
+    StringUTF8Adaptor gcm_sender_id_as_utf8_string(manifest->gcm_sender_id);
+    Vector<uint8_t> application_server_key;
+    application_server_key.Append(gcm_sender_id_as_utf8_string.data(),
+                                  gcm_sender_id_as_utf8_string.size());
     options->application_server_key = std::move(application_server_key);
   }
 
