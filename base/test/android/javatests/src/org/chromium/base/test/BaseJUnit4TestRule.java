@@ -36,12 +36,17 @@ class BaseJUnit4TestRule implements TestRule {
 
                 InMemorySharedPreferencesContext context =
                         BaseChromiumAndroidJUnitRunner.sInMemorySharedPreferencesContext;
-                // Reset Application context in case any tests have replaced it.
-                ContextUtils.initApplicationContextForTests(context);
-                // Ensure all tests start with empty (InMemory)SharedPreferences.
-                context.clearSharedPreferences();
-                // Delete any files that leak state between tests.
-                clearDataDirectory(context);
+                if (context != null) {
+                    // Reset Application context in case any tests have replaced it.
+                    ContextUtils.initApplicationContextForTests(context);
+                    // Ensure all tests start with empty (InMemory)SharedPreferences.
+                    context.clearSharedPreferences();
+                    // Delete any files that leak state between tests.
+                    clearDataDirectory(context);
+                } else {
+                    // Delete any files that leak state between tests.
+                    clearDataDirectory(InstrumentationRegistry.getTargetContext());
+                }
 
                 base.evaluate();
 
