@@ -6,8 +6,7 @@
 
 #include <utility>
 
-#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
-#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-shared.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -84,13 +83,13 @@ void PushProvider::GetInterface(mojom::blink::PushMessagingRequest request) {
 }
 
 void PushProvider::Subscribe(
-    const WebPushSubscriptionOptions& options,
+    PushSubscriptionOptions* options,
     bool user_gesture,
     std::unique_ptr<PushSubscriptionCallbacks> callbacks) {
   DCHECK(callbacks);
 
   mojom::blink::PushSubscriptionOptionsPtr content_options_ptr =
-      mojom::blink::PushSubscriptionOptions::From(&options);
+      mojom::blink::PushSubscriptionOptions::From(options);
 
   push_messaging_manager_->Subscribe(
       GetSupplementable()->RegistrationId(), std::move(content_options_ptr),

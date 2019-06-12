@@ -15,16 +15,15 @@ namespace blink {
 class DOMArrayBuffer;
 class ExceptionState;
 class PushSubscriptionOptionsInit;
-struct WebPushSubscriptionOptions;
 
 class PushSubscriptionOptions final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Converts developer-provided dictionary to WebPushSubscriptionOptions.
+  // Converts developer-provided dictionary to PushSubscriptionOptions.
   // Throws if applicationServerKey is invalid.
-  MODULES_EXPORT static WebPushSubscriptionOptions ToWeb(
-      const PushSubscriptionOptionsInit* options,
+  static MODULES_EXPORT PushSubscriptionOptions* FromOptionsInit(
+      const PushSubscriptionOptionsInit* options_init,
       ExceptionState& exception_state);
 
   static PushSubscriptionOptions* Create(

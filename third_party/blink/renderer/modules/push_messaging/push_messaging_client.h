@@ -22,8 +22,8 @@ enum class PushRegistrationStatus;
 }  // namespace mojom
 
 class KURL;
+class PushSubscriptionOptions;
 class ServiceWorkerRegistration;
-struct WebPushSubscriptionOptions;
 
 class PushMessagingClient final
     : public GarbageCollectedFinalized<PushMessagingClient>,
@@ -39,7 +39,7 @@ class PushMessagingClient final
   static PushMessagingClient* From(LocalFrame* frame);
 
   void Subscribe(ServiceWorkerRegistration* service_worker_registration,
-                 const WebPushSubscriptionOptions& options,
+                 PushSubscriptionOptions* options,
                  bool user_gesture,
                  std::unique_ptr<PushSubscriptionCallbacks> callbacks);
 

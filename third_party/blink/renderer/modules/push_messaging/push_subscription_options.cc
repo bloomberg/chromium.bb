@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
 
-#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -19,12 +18,13 @@ namespace {
 
 const int kMaxApplicationServerKeyLength = 255;
 
-std::string BufferSourceToString(
+Vector<uint8_t> BufferSourceToVector(
     const ArrayBufferOrArrayBufferViewOrString& application_server_key,
     ExceptionState& exception_state) {
   char* input;
   int length;
   Vector<char> decoded_application_server_key;
+  Vector<uint8_t> result;
 
   // Convert the input array into a string of bytes.
   if (application_server_key.IsArrayBuffer()) {
@@ -45,13 +45,13 @@ std::string BufferSourceToString(
           DOMExceptionCode::kInvalidCharacterError,
           "The provided applicationServerKey is not encoded as base64url "
           "without padding.");
-      return std::string();
+      return result;
     }
     input = reinterpret_cast<char*>(decoded_application_server_key.data());
     length = decoded_application_server_key.size();
   } else {
     NOTREACHED();
-    return std::string();
+    return result;
   }
 
   // Check the validity of the sender info. It must either be a 65-byte
@@ -63,28 +63,31 @@ std::string BufferSourceToString(
       (std::find_if_not(input, input + length, &WTF::IsASCIIDigit<char>) ==
        input + length);
 
-  if (is_vapid || is_sender_id)
-    return std::string(input, length);
+  if (is_vapid || is_sender_id) {
+    result.Append(input, length);
+  } else {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "The provided applicationServerKey is not valid.");
+  }
 
-  exception_state.ThrowDOMException(
-      DOMExceptionCode::kInvalidAccessError,
-      "The provided applicationServerKey is not valid.");
-  return std::string();
+  return result;
 }
 
 }  // namespace
 
 // static
-WebPushSubscriptionOptions PushSubscriptionOptions::ToWeb(
-    const PushSubscriptionOptionsInit* options,
+PushSubscriptionOptions* PushSubscriptionOptions::FromOptionsInit(
+    const PushSubscriptionOptionsInit* options_init,
     ExceptionState& exception_state) {
-  WebPushSubscriptionOptions web_options;
-  web_options.user_visible_only = options->userVisibleOnly();
-  if (options->hasApplicationServerKey()) {
-    web_options.application_server_key =
-        BufferSourceToString(options->applicationServerKey(), exception_state);
+  Vector<uint8_t> application_server_key;
+  if (options_init->hasApplicationServerKey()) {
+    application_server_key.AppendVector(BufferSourceToVector(
+        options_init->applicationServerKey(), exception_state));
   }
-  return web_options;
+
+  return MakeGarbageCollected<PushSubscriptionOptions>(
+      options_init->userVisibleOnly(), application_server_key);
 }
 
 PushSubscriptionOptions::PushSubscriptionOptions(

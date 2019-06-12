@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
@@ -57,17 +56,17 @@ mojom::blink::PushMessaging* PushMessagingClient::GetService() {
 
 void PushMessagingClient::Subscribe(
     ServiceWorkerRegistration* service_worker_registration,
-    const WebPushSubscriptionOptions& options,
+    PushSubscriptionOptions* options,
     bool user_gesture,
     std::unique_ptr<PushSubscriptionCallbacks> callbacks) {
   DCHECK(callbacks);
 
   mojom::blink::PushSubscriptionOptionsPtr options_ptr =
-      mojom::blink::PushSubscriptionOptions::From(&options);
+      mojom::blink::PushSubscriptionOptions::From(options);
 
   // If a developer provided an application server key in |options|, skip
   // fetching the manifest.
-  if (options.application_server_key.empty()) {
+  if (!options->applicationServerKey()->ByteLength()) {
     ManifestManager* manifest_manager =
         ManifestManager::From(*GetSupplementable());
     manifest_manager->RequestManifest(
