@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_content.h"
 
 #include <algorithm>
 #include <cmath>
@@ -16,7 +16,7 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
-namespace content {
+namespace blink {
 
 const int kMinScreenCastDimension = 1;
 // Use kMaxDimension/2 as maximum to ensure selected resolutions have area less
@@ -52,7 +52,6 @@ constexpr double kMinScreenCastAspectRatio =
 constexpr double kMaxScreenCastAspectRatio =
     static_cast<double>(kMaxScreenCastDimension) /
     static_cast<double>(kMinScreenCastDimension);
-
 
 class VideoContentCaptureCandidates {
  public:
@@ -407,4 +406,4 @@ VideoCaptureSettings SelectSettingsVideoContentCapture(
                                     stream_type, screen_width, screen_height);
 }
 
-}  // namespace content
+}  // namespace blink

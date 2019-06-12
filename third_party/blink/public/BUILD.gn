@@ -371,6 +371,7 @@ source_set("blink_headers") {
     "web/modules/autofill/web_form_element_observer.h",
     "web/modules/mediastream/media_stream_constraints_util.h",
     "web/modules/mediastream/media_stream_constraints_util_sets.h",
+    "web/modules/mediastream/media_stream_constraints_util_video_content.h",
     "web/modules/mediastream/media_stream_constraints_util_video_device.h",
     "web/modules/mediastream/media_stream_video_capturer_source.h",
     "web/modules/mediastream/media_stream_video_renderer_sink.h",
