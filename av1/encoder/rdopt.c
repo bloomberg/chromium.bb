@@ -10589,42 +10589,17 @@ static int64_t handle_inter_mode(
                                       0, av1_num_planes(cm) - 1);
       }
 
-      if (cpi->sf.second_loop_comp_fast_tx_search && comp_loop_idx == 1) {
-        // TODO(chengchen): this speed feature introduces big loss.
-        // Need better estimation of rate distortion.
-        int dummy_rate;
-        int64_t dummy_dist;
-        int plane_rate[MAX_MB_PLANE] = { 0 };
-        int64_t plane_sse[MAX_MB_PLANE] = { 0 };
-        int64_t plane_dist[MAX_MB_PLANE] = { 0 };
-
-        model_rd_sb_fn[MODELRD_TYPE_DIST_WTD_COMPOUND](
-            cpi, bsize, x, xd, 0, num_planes - 1, mi_row, mi_col, &dummy_rate,
-            &dummy_dist, &skip_txfm_sb, &skip_sse_sb, plane_rate, plane_sse,
-            plane_dist);
-
-        rd_stats->rate += rs;
-        rd_stats->rate += plane_rate[0] + plane_rate[1] + plane_rate[2];
-        rd_stats_y->rate = plane_rate[0];
-        rd_stats_uv->rate = plane_rate[1] + plane_rate[2];
-        rd_stats->sse = plane_sse[0] + plane_sse[1] + plane_sse[2];
-        rd_stats_y->sse = plane_sse[0];
-        rd_stats_uv->sse = plane_sse[1] + plane_sse[2];
-        rd_stats->dist = plane_dist[0] + plane_dist[1] + plane_dist[2];
-        rd_stats_y->dist = plane_dist[0];
-        rd_stats_uv->dist = plane_dist[1] + plane_dist[2];
-      } else {
 #if CONFIG_COLLECT_COMPONENT_TIMING
-        start_timing(cpi, motion_mode_rd_time);
+      start_timing(cpi, motion_mode_rd_time);
 #endif
-        ret_val = motion_mode_rd(cpi, tile_data, x, bsize, rd_stats, rd_stats_y,
-                                 rd_stats_uv, disable_skip, mi_row, mi_col,
-                                 args, ref_best_rd, refs, &rate_mv, &orig_dst,
-                                 best_est_rd, do_tx_search, inter_modes_info);
+      ret_val = motion_mode_rd(cpi, tile_data, x, bsize, rd_stats, rd_stats_y,
+                               rd_stats_uv, disable_skip, mi_row, mi_col, args,
+                               ref_best_rd, refs, &rate_mv, &orig_dst,
+                               best_est_rd, do_tx_search, inter_modes_info);
 #if CONFIG_COLLECT_COMPONENT_TIMING
-        end_timing(cpi, motion_mode_rd_time);
+      end_timing(cpi, motion_mode_rd_time);
 #endif
-      }
+
       mode_info[ref_mv_idx].mv.as_int = mbmi->mv[0].as_int;
       mode_info[ref_mv_idx].rate_mv = rate_mv;
       if (ret_val != INT64_MAX) {

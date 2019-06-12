@@ -716,7 +716,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->use_mb_rd_hash = 1;
   sf->optimize_b_precheck = 0;
   sf->two_loop_comp_search = 1;
-  sf->second_loop_comp_fast_tx_search = 0;
   sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_ENABLED;
   sf->reuse_inter_intra_mode = 0;
   sf->intra_angle_estimation = 0;
