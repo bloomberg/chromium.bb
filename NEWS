@@ -1,5 +1,30 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 3.11.0 (2019-09-02)
+
+For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/21?closed=1][the list of closed
+issues]].
+
+** New features
+** Bug fixes
+** Braille table improvements
+** Other changes
+** Deprecation notice
+None
+
+** Backwards incompatible changes
+None
+
+** New, renamed or removed tables
+*** New
+- None
+
+*** Renamed
+- None
+
+*** Removed
+- None
+
 * Noteworthy changes in release 3.10.0 (2019-06-03)
 This release comes across as quiet, containing just the usual
 assortment of braille table improvements, cleanups, bug fixes and the
