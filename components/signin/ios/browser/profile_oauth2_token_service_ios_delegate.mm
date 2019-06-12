@@ -266,7 +266,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::RevokeAllCredentials() {
     RemoveAccount(accountStatus.first);
 
   DCHECK_EQ(0u, accounts_.size());
-  primary_account_id_.clear();
+  primary_account_id_ = CoreAccountId();
   ClearExcludedSecondaryAccounts();
 }
 
@@ -341,7 +341,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
 // Clear the authentication error state and notify all observers that a new
 // refresh token is available so that they request new access tokens.
 void ProfileOAuth2TokenServiceIOSDelegate::AddOrUpdateAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Account must have been seeded before attempting to add it.
@@ -363,7 +363,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::AddOrUpdateAccount(
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::RemoveAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!account_id.empty());
 
