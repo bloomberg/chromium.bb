@@ -58,6 +58,9 @@ const char kProductName[] = "ProductName";
 const char kStorageDevicePath[] = "StorageDevicePath";
 const char kFileSystemType[] = "FileSystemType";
 
+// Format options.
+const char kFormatLabelOption[] = "Label";
+
 // Enum values.
 // DeviceMediaType enum values are reported through UMA.
 // All values but DEVICE_MEDIA_NUM_VALUES should not be changed or removed.
@@ -83,6 +86,9 @@ enum FormatErrorType {
   FORMAT_ERROR_FORMAT_PROGRAM_NOT_FOUND = 6,
   FORMAT_ERROR_FORMAT_PROGRAM_FAILED = 7,
   FORMAT_ERROR_DEVICE_NOT_ALLOWED = 8,
+  FORMAT_ERROR_INVALID_OPTIONS = 9,
+  FORMAT_ERROR_LONG_NAME = 10,
+  FORMAT_ERROR_INVALID_CHARACTER = 11,
 };
 
 // TODO(benchan): After both Chrome and cros-disks use these enum values,
