@@ -459,6 +459,7 @@ typedef enum SpvDecoration_ {
     SpvDecorationHlslCounterBufferGOOGLE = 5634,
     SpvDecorationHlslSemanticGOOGLE = 5635,
     SpvDecorationUserSemantic = 5635,
+    SpvDecorationUserTypeGOOGLE = 5636,
     SpvDecorationMax = 0x7fffffff,
 } SpvDecoration;
 
