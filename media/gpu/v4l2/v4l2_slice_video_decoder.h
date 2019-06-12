@@ -202,12 +202,12 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   std::map<size_t, std::unique_ptr<InputRecord>> input_record_map_;
   // Mapping from output_record() of surface to its OutputRecord.
   std::map<size_t, std::unique_ptr<OutputRecord>> output_record_map_;
-  // Surfaces enqueued to V4L2 device, mapping from the output_record() of the
-  // surface.
-  std::map<size_t, scoped_refptr<V4L2DecodeSurface>> surfaces_at_device_;
 
   // Queue of pending decode request.
   base::queue<std::unique_ptr<DecodeRequest>> decode_request_queue_;
+  // Surfaces enqueued to V4L2 device. Since we are stateless, they are
+  // guaranteed to be proceeded in FIFO order.
+  base::queue<scoped_refptr<V4L2DecodeSurface>> surfaces_at_device_;
   // The decode request which is currently processed.
   std::unique_ptr<DecodeRequest> current_decode_request_;
   // Queue of pending output request.

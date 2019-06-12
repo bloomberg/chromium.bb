@@ -870,14 +870,14 @@ void V4L2SliceVideoDecoder::DecodeSurface(
     SetState(State::kError);
     return;
   }
-  surfaces_at_device_.insert(
-      std::make_pair(dec_surface->output_record(), dec_surface));
 
   if (!dec_surface->Submit()) {
     VLOGF(1) << "Error while submitting frame for decoding!";
     SetState(State::kError);
     return;
   }
+
+  surfaces_at_device_.push(std::move(dec_surface));
 
   SchedulePollTaskIfNeeded();
 }
@@ -950,7 +950,8 @@ bool V4L2SliceVideoDecoder::StopStreamV4L2Queue() {
   if (output_queue_->IsStreaming())
     output_queue_->Streamoff();
   output_record_map_.clear();
-  surfaces_at_device_.clear();
+  while (!surfaces_at_device_.empty())
+    surfaces_at_device_.pop();
 
   return true;
 }
@@ -1014,10 +1015,13 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask() {
       break;
 
     // Mark the output buffer decoded, and try to output surface.
-    auto surface_it = surfaces_at_device_.find(dequeued_buffer->BufferId());
-    DCHECK(surface_it != surfaces_at_device_.end());
-    surface_it->second->SetDecoded();
-    surfaces_at_device_.erase(surface_it);
+    DCHECK(!surfaces_at_device_.empty());
+    auto surface = std::move(surfaces_at_device_.front());
+    DCHECK_EQ(static_cast<size_t>(surface->output_record()),
+              dequeued_buffer->BufferId());
+    surfaces_at_device_.pop();
+
+    surface->SetDecoded();
 
     auto output_it = output_record_map_.find(dequeued_buffer->BufferId());
     DCHECK(output_it != output_record_map_.end());
