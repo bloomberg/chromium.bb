@@ -430,8 +430,6 @@ jumbo_static_library("extensions") {
     "bookmark_app_extension_util.h",
     "bookmark_app_helper.cc",
     "bookmark_app_helper.h",
-    "bookmark_app_navigation_throttle_utils.cc",
-    "bookmark_app_navigation_throttle_utils.h",
     "browser_context_keyed_service_factories.cc",
     "browser_context_keyed_service_factories.h",
     "browser_extension_window_controller.cc",
