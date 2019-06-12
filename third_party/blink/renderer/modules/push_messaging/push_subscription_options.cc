@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
 
 #include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -89,11 +88,12 @@ WebPushSubscriptionOptions PushSubscriptionOptions::ToWeb(
 }
 
 PushSubscriptionOptions::PushSubscriptionOptions(
-    const WebPushSubscriptionOptions& options)
-    : user_visible_only_(options.user_visible_only),
+    bool user_visible_only,
+    const Vector<uint8_t>& application_server_key)
+    : user_visible_only_(user_visible_only),
       application_server_key_(DOMArrayBuffer::Create(
-          options.application_server_key.data(),
-          SafeCast<unsigned>(options.application_server_key.length()))) {}
+          application_server_key.data(),
+          SafeCast<unsigned>(application_server_key.size()))) {}
 
 void PushSubscriptionOptions::Trace(blink::Visitor* visitor) {
   visitor->Trace(application_server_key_);

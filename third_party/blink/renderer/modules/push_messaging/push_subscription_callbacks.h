@@ -6,21 +6,24 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_SUBSCRIPTION_CALLBACKS_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
+class PushSubscription;
 class ServiceWorkerRegistration;
 class ScriptPromiseResolver;
 struct WebPushError;
-struct WebPushSubscription;
 
-// This class is an implementation of WebPushSubscriptionCallbacks that will
-// resolve the underlying promise depending on the result passed to the
-// callback. It takes a ServiceWorkerRegistration in its constructor and will
-// pass it to the PushSubscription.
-class PushSubscriptionCallbacks final : public WebPushSubscriptionCallbacks {
+// Used from PushProvider, for calls to PushMessaging::Unsubscribe().
+using PushUnsubscribeCallbacks = WebCallbacks<bool, const WebPushError&>;
+
+// This class is an implementation of WebCallbacks<PushSubscription*, const
+// WebPushError&> that will resolve the underlying promise depending on the
+// constructor and will pass it to the PushSubscription.
+class PushSubscriptionCallbacks final
+    : public WebCallbacks<PushSubscription*, const WebPushError&> {
   USING_FAST_MALLOC(PushSubscriptionCallbacks);
 
  public:
@@ -29,9 +32,8 @@ class PushSubscriptionCallbacks final : public WebPushSubscriptionCallbacks {
       ServiceWorkerRegistration* service_worker_registration);
   ~PushSubscriptionCallbacks() override;
 
-  // WebPushSubscriptionCallbacks interface.
-  void OnSuccess(
-      std::unique_ptr<WebPushSubscription> web_push_subscription) override;
+  // WebCallbacks<S, T> interface.
+  void OnSuccess(PushSubscription* push_subscription) override;
   void OnError(const WebPushError& error) override;
 
  private:

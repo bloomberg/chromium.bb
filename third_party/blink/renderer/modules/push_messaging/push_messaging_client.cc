@@ -9,15 +9,18 @@
 
 #include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
-#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-shared.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_type_converters.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_utils.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -53,10 +56,10 @@ mojom::blink::PushMessaging* PushMessagingClient::GetService() {
 }
 
 void PushMessagingClient::Subscribe(
-    int64_t service_worker_registration_id,
+    ServiceWorkerRegistration* service_worker_registration,
     const WebPushSubscriptionOptions& options,
     bool user_gesture,
-    std::unique_ptr<WebPushSubscriptionCallbacks> callbacks) {
+    std::unique_ptr<PushSubscriptionCallbacks> callbacks) {
   DCHECK(callbacks);
 
   mojom::blink::PushSubscriptionOptionsPtr options_ptr =
@@ -69,26 +72,26 @@ void PushMessagingClient::Subscribe(
         ManifestManager::From(*GetSupplementable());
     manifest_manager->RequestManifest(
         WTF::Bind(&PushMessagingClient::DidGetManifest, WrapPersistent(this),
-                  service_worker_registration_id, std::move(options_ptr),
-                  user_gesture, std::move(callbacks)));
+                  WrapPersistent(service_worker_registration),
+                  std::move(options_ptr), user_gesture, std::move(callbacks)));
   } else {
-    DoSubscribe(service_worker_registration_id, std::move(options_ptr),
+    DoSubscribe(service_worker_registration, std::move(options_ptr),
                 user_gesture, std::move(callbacks));
   }
 }
 
 void PushMessagingClient::DidGetManifest(
-    int64_t service_worker_registration_id,
+    ServiceWorkerRegistration* service_worker_registration,
     mojom::blink::PushSubscriptionOptionsPtr options,
     bool user_gesture,
-    std::unique_ptr<WebPushSubscriptionCallbacks> callbacks,
+    std::unique_ptr<PushSubscriptionCallbacks> callbacks,
     const KURL& manifest_url,
     mojom::blink::ManifestPtr manifest) {
   // Get the application_server_key from the manifest since it wasn't provided
   // by the caller.
   if (manifest == mojom::blink::Manifest::New()) {
     DidSubscribe(
-        std::move(callbacks),
+        service_worker_registration, std::move(callbacks),
         mojom::blink::PushRegistrationStatus::MANIFEST_EMPTY_OR_MISSING,
         base::nullopt, nullptr, base::nullopt, base::nullopt);
     return;
@@ -102,32 +105,35 @@ void PushMessagingClient::DidGetManifest(
     options->application_server_key = std::move(application_server_key);
   }
 
-  DoSubscribe(service_worker_registration_id, std::move(options), user_gesture,
+  DoSubscribe(service_worker_registration, std::move(options), user_gesture,
               std::move(callbacks));
 }
 
 void PushMessagingClient::DoSubscribe(
-    int64_t service_worker_registration_id,
+    ServiceWorkerRegistration* service_worker_registration,
     mojom::blink::PushSubscriptionOptionsPtr options,
     bool user_gesture,
-    std::unique_ptr<WebPushSubscriptionCallbacks> callbacks) {
+    std::unique_ptr<PushSubscriptionCallbacks> callbacks) {
   DCHECK(callbacks);
 
   if (options->application_server_key.IsEmpty()) {
-    DidSubscribe(std::move(callbacks),
+    DidSubscribe(service_worker_registration, std::move(callbacks),
                  mojom::blink::PushRegistrationStatus::NO_SENDER_ID,
                  base::nullopt, nullptr, base::nullopt, base::nullopt);
     return;
   }
 
   GetService()->Subscribe(
-      service_worker_registration_id, std::move(options), user_gesture,
+      service_worker_registration->RegistrationId(), std::move(options),
+      user_gesture,
       WTF::Bind(&PushMessagingClient::DidSubscribe, WrapPersistent(this),
+                WrapPersistent(service_worker_registration),
                 std::move(callbacks)));
 }
 
 void PushMessagingClient::DidSubscribe(
-    std::unique_ptr<WebPushSubscriptionCallbacks> callbacks,
+    ServiceWorkerRegistration* service_worker_registration,
+    std::unique_ptr<PushSubscriptionCallbacks> callbacks,
     mojom::blink::PushRegistrationStatus status,
     const base::Optional<KURL>& endpoint,
     mojom::blink::PushSubscriptionOptionsPtr options,
@@ -145,12 +151,10 @@ void PushMessagingClient::DidSubscribe(
     DCHECK(p256dh);
     DCHECK(auth);
 
-    WebPushSubscriptionOptions web_options =
-        mojo::ConvertTo<WebPushSubscriptionOptions>(std::move(options));
-    callbacks->OnSuccess(std::make_unique<WebPushSubscription>(
-        endpoint.value(), web_options.user_visible_only,
-        WebString::FromLatin1(web_options.application_server_key),
-        p256dh.value(), auth.value()));
+    callbacks->OnSuccess(PushSubscription::Create(
+        endpoint.value(), options->user_visible_only,
+        options->application_server_key, p256dh.value(), auth.value(),
+        service_worker_registration));
   } else {
     callbacks->OnError(PushRegistrationStatusToWebPushError(status));
   }

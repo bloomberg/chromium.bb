@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -27,11 +28,15 @@ class PushSubscriptionOptions final : public ScriptWrappable {
       ExceptionState& exception_state);
 
   static PushSubscriptionOptions* Create(
-      const WebPushSubscriptionOptions& options) {
-    return MakeGarbageCollected<PushSubscriptionOptions>(options);
+      bool user_visible_only,
+      const WTF::Vector<uint8_t>& application_server_key) {
+    return MakeGarbageCollected<PushSubscriptionOptions>(
+        user_visible_only, application_server_key);
   }
 
-  explicit PushSubscriptionOptions(const WebPushSubscriptionOptions& options);
+  explicit PushSubscriptionOptions(
+      bool user_visible_only,
+      const WTF::Vector<uint8_t>& application_server_key);
 
   bool userVisibleOnly() const { return user_visible_only_; }
 

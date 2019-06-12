@@ -86,7 +86,7 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
     DCHECK(messaging_client);
 
     messaging_client->Subscribe(
-        registration_->RegistrationId(), web_options,
+        registration_, web_options,
         LocalFrame::HasTransientUserActivation(frame,
                                                true /* check_if_main_thread */),
         std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));

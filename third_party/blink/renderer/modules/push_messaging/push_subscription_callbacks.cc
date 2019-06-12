@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
@@ -27,15 +27,12 @@ PushSubscriptionCallbacks::PushSubscriptionCallbacks(
 
 PushSubscriptionCallbacks::~PushSubscriptionCallbacks() = default;
 
-void PushSubscriptionCallbacks::OnSuccess(
-    std::unique_ptr<WebPushSubscription> web_push_subscription) {
+void PushSubscriptionCallbacks::OnSuccess(PushSubscription* push_subscription) {
   if (!resolver_->GetExecutionContext() ||
       resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
 
-  resolver_->Resolve(PushSubscription::Take(
-      resolver_.Get(), base::WrapUnique(web_push_subscription.release()),
-      service_worker_registration_));
+  resolver_->Resolve(push_subscription);
 }
 
 void PushSubscriptionCallbacks::OnError(const WebPushError& error) {

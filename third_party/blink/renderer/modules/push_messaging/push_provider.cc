@@ -14,6 +14,8 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_type_converters.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_utils.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -84,7 +86,7 @@ void PushProvider::GetInterface(mojom::blink::PushMessagingRequest request) {
 void PushProvider::Subscribe(
     const WebPushSubscriptionOptions& options,
     bool user_gesture,
-    std::unique_ptr<WebPushSubscriptionCallbacks> callbacks) {
+    std::unique_ptr<PushSubscriptionCallbacks> callbacks) {
   DCHECK(callbacks);
 
   mojom::blink::PushSubscriptionOptionsPtr content_options_ptr =
@@ -98,7 +100,7 @@ void PushProvider::Subscribe(
 }
 
 void PushProvider::DidSubscribe(
-    std::unique_ptr<WebPushSubscriptionCallbacks> callbacks,
+    std::unique_ptr<PushSubscriptionCallbacks> callbacks,
     mojom::blink::PushRegistrationStatus status,
     const base::Optional<KURL>& endpoint,
     mojom::blink::PushSubscriptionOptionsPtr options,
@@ -116,19 +118,17 @@ void PushProvider::DidSubscribe(
     DCHECK(p256dh);
     DCHECK(auth);
 
-    WebPushSubscriptionOptions content_options =
-        mojo::ConvertTo<WebPushSubscriptionOptions>(std::move(options));
-    callbacks->OnSuccess(std::make_unique<WebPushSubscription>(
-        endpoint.value(), content_options.user_visible_only,
-        WebString::FromLatin1(content_options.application_server_key),
-        p256dh.value(), auth.value()));
+    callbacks->OnSuccess(PushSubscription::Create(
+        endpoint.value(), options->user_visible_only,
+        options->application_server_key, p256dh.value(), auth.value(),
+        GetSupplementable()));
   } else {
     callbacks->OnError(PushRegistrationStatusToWebPushError(status));
   }
 }
 
 void PushProvider::Unsubscribe(
-    std::unique_ptr<WebPushUnsubscribeCallbacks> callbacks) {
+    std::unique_ptr<PushUnsubscribeCallbacks> callbacks) {
   DCHECK(callbacks);
 
   push_messaging_manager_->Unsubscribe(
@@ -138,7 +138,7 @@ void PushProvider::Unsubscribe(
 }
 
 void PushProvider::DidUnsubscribe(
-    std::unique_ptr<WebPushUnsubscribeCallbacks> callbacks,
+    std::unique_ptr<PushUnsubscribeCallbacks> callbacks,
     mojom::blink::PushErrorType error_type,
     bool did_unsubscribe,
     const WTF::String& error_message) {
@@ -154,7 +154,7 @@ void PushProvider::DidUnsubscribe(
 }
 
 void PushProvider::GetSubscription(
-    std::unique_ptr<WebPushSubscriptionCallbacks> callbacks) {
+    std::unique_ptr<PushSubscriptionCallbacks> callbacks) {
   DCHECK(callbacks);
 
   push_messaging_manager_->GetSubscription(
@@ -164,7 +164,7 @@ void PushProvider::GetSubscription(
 }
 
 void PushProvider::DidGetSubscription(
-    std::unique_ptr<WebPushSubscriptionCallbacks> callbacks,
+    std::unique_ptr<PushSubscriptionCallbacks> callbacks,
     mojom::blink::PushGetRegistrationStatus status,
     const base::Optional<KURL>& endpoint,
     mojom::blink::PushSubscriptionOptionsPtr options,
@@ -178,12 +178,10 @@ void PushProvider::DidGetSubscription(
     DCHECK(p256dh);
     DCHECK(auth);
 
-    WebPushSubscriptionOptions content_options =
-        mojo::ConvertTo<WebPushSubscriptionOptions>(std::move(options));
-    callbacks->OnSuccess(std::make_unique<WebPushSubscription>(
-        endpoint.value(), content_options.user_visible_only,
-        WebString::FromLatin1(content_options.application_server_key),
-        p256dh.value(), auth.value()));
+    callbacks->OnSuccess(PushSubscription::Create(
+        endpoint.value(), options->user_visible_only,
+        options->application_server_key, p256dh.value(), auth.value(),
+        GetSupplementable()));
   } else {
     // We are only expecting an error if we can't find a registration.
     callbacks->OnSuccess(nullptr);
