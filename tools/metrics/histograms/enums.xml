@@ -3941,6 +3941,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AutofillProfileSyncChangeOrigin">
+  <obsolete>
+    Deprecated in M77. The corresponding histogram has been deprecated.
+  </obsolete>
   <int value="0" label="Change in a local profile"/>
   <int value="1"
       label="Change in a converted local profile (that still equals to a
