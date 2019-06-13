@@ -974,7 +974,7 @@ class TestInput(cros_test_lib.MockOutputTestCase):
     m = self.PatchObject(cros_build_lib, 'GetInput')
 
     m.return_value = '2'
-    ret = cros_build_lib.GetChoice('title', xrange(3))
+    ret = cros_build_lib.GetChoice('title', range(3))
     self.assertEqual(ret, 2)
 
   def testGetChoiceWindow(self):
@@ -1619,7 +1619,7 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
   def testSuccessWithTooManyFiles(self):
     """Test a tarfile creation with -T /dev/stdin."""
     num_inputs = cros_build_lib._THRESHOLD_TO_USE_T_FOR_TAR + 1
-    inputs = ['input%s' % x for x in xrange(num_inputs)]
+    inputs = ['input%s' % x for x in range(num_inputs)]
     largeInputDir = os.path.join(self.tempdir, 'largeinputs')
     for i in inputs:
       osutils.WriteFile(os.path.join(largeInputDir, i), i, makedirs=True)

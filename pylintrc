@@ -76,6 +76,7 @@ enable=
     unichr-builtin,
     unpacking-in-except,
     using-cmp-argument,
+    xrange-builtin,
 
 
 # Disable the message, report, category or checker with the given id(s). You

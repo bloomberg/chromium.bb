@@ -1256,7 +1256,7 @@ class UnmockedGSContextTest(cros_test_lib.TempDirTestCase):
     with gs.TemporaryURL('testIncrement') as url:
       counter = ctx.Counter(url)
       self.assertEqual(0, counter.Get())
-      for i in xrange(1, 4):
+      for i in range(1, 4):
         self.assertEqual(i, counter.Increment())
         self.assertEqual(i, counter.Get())
 

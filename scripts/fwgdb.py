@@ -168,7 +168,7 @@ def GdbChecksum(message):
 def TestConnection(fd):
   """Return True iff there is a resposive GDB stub on the other end of 'fd'."""
   cmd = 'vUnknownCommand'
-  for _ in xrange(3):
+  for _ in range(3):
     os.write(fd, '$%s#%s\n' % (cmd, GdbChecksum(cmd)))
     reply = ReadAll(fd)
     if '+$#00' in reply:

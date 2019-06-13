@@ -193,9 +193,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
     # Break out the asserts to be per item to make debugging easier
     self.assertEqual(len(expectedResults), len(actualResults))
-    for i in xrange(len(expectedResults)):
+    for i, (xname, xresult) in enumerate(expectedResults):
       entry = actualResults[i]
-      xname, xresult = expectedResults[i]
 
       if entry.result not in results_lib.Results.NON_FAILURE_TYPES:
         self.assertTrue(isinstance(entry.result, BaseException))
@@ -411,7 +410,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     actualLines = results.getvalue().split('\n')
 
     # Break out the asserts to be per item to make debugging easier
-    for i in xrange(min(len(actualLines), len(expectedLines))):
+    for i in range(min(len(actualLines), len(expectedLines))):
       self.assertEqual(expectedLines[i], actualLines[i])
     self.assertEqual(len(expectedLines), len(actualLines))
 
@@ -464,7 +463,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     actualLines = results.getvalue().split('\n')
 
     # Break out the asserts to be per item to make debugging easier
-    for i in xrange(min(len(actualLines), len(expectedLines))):
+    for i in range(min(len(actualLines), len(expectedLines))):
       self.assertEqual(expectedLines[i], actualLines[i])
     self.assertEqual(len(expectedLines), len(actualLines))
 
@@ -492,8 +491,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     actualLines = results.getvalue().split('\n')
 
     # Break out the asserts to be per item to make debugging easier
-    for i in xrange(len(expectedLines)):
-      self.assertEqual(expectedLines[i], actualLines[i])
+    for expectedLine, actualLine in zip(expectedLines, actualLines):
+      self.assertEqual(expectedLine, actualLine)
     self.assertEqual(len(expectedLines), len(actualLines))
 
   def testSaveCompletedStages(self):

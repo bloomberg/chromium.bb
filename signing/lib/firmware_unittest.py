@@ -517,7 +517,7 @@ class TestWriteSignerNotes(cros_test_lib.RunCommandTempDirTestCase):
     recovery_key = keys.KeyPair('recovery_key', self.tempdir)
     root_keys = {
         'loem%d' % idx: keys.KeyPair('root_key.loem%d' % idx, self.tempdir)
-        for idx in xrange(1, 4)}
+        for idx in range(1, 4)}
 
     lines = ['[loem]'] + ['%d = loem%d' % (int(loem[4:]), int(loem[4:]))
                           for loem in sorted(root_keys.keys())]

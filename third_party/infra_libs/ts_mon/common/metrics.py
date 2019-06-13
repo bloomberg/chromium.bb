@@ -478,7 +478,7 @@ class _DistributionMetricBase(Metric):
     # either end.
     pb.bucket_count.extend(
         value.buckets.get(i, 0) for i in
-        xrange(0, value.bucketer.total_buckets))
+        range(0, value.bucketer.total_buckets))
 
     pb.count = value.count
     pb.mean = float(value.sum) / max(value.count, 1)

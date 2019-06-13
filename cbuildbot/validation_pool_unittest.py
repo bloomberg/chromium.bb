@@ -245,7 +245,7 @@ class TestSubmitChange(_Base):
     """Submit one change to gerrit, stuck on SUBMITTED."""
     # The query will be retried 1 more time than query timeout.
     results = ['SUBMITTED' for _i in
-               xrange(validation_pool.SUBMITTED_WAIT_TIMEOUT + 1)]
+               range(validation_pool.SUBMITTED_WAIT_TIMEOUT + 1)]
     self.assertTrue(self._TestSubmitChange(results))
 
   def testSubmitChangeSubmittedToMerged(self):
@@ -1143,7 +1143,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
 
   @classmethod
   def _GetTestData(cls):
-    ids = [cros_patch.MakeChangeId() for _ in xrange(3)]
+    ids = [cros_patch.MakeChangeId() for _ in range(3)]
     changes = [cls._GetCrosInternalPatch(GetTestJson(ids[0]))]
     non_os = [cls._GetCrosPatch(GetTestJson(ids[1]))]
     conflicting = [cls._GetCrosInternalPatch(GetTestJson(ids[2]))]

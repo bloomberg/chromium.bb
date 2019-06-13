@@ -529,7 +529,7 @@ class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
 
   def addSignedImage(self, build, key='mp'):
     images = []
-    for i in xrange(len(self.signedResults)):
+    for i in range(len(self.signedResults)):
       if build == self.signedResults[i][0]:
         images = self.signedResults[i][1]
         self.signedResults.pop(i)
@@ -542,7 +542,7 @@ class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
     return image
 
   def addTestImage(self, build):
-    for i in xrange(len(self.testResults)):
+    for i in range(len(self.testResults)):
       if build == self.testResults[i][0]:
         self.testResults.pop(i)
         break

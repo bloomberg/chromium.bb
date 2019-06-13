@@ -36,7 +36,7 @@ def GetColor(index):
     # Generate a color by splicing the bits to generate high contrast colors
     index -= len(BASE_COLORS) - 1
     chars = [0] * 3
-    for bit in xrange(0, 24):
+    for bit in range(0, 24):
       chars[bit % 3] |= ((index >> bit) & 0x1) << (7-bit/3)
     return "#%02x%02x%02x" % tuple(chars)
 
@@ -110,7 +110,7 @@ def BuildDependencyGraph(pkg, input_deps, version_map, divergent_set):
   outer_subgraph = graph.AddNewSubgraph('source')
 
   emitted = set()
-  for i in xrange(0, len(input_deps)):
+  for i in range(0, len(input_deps)):
     try:
       pkg_name = version_map[pkg][i]
     except KeyError:

@@ -293,9 +293,9 @@ def ParseFileContents(filename, content):
   # determined.
   if first_dt is None:
     first_dt = Now()
-  for i in xrange(len(logs)):
-    if logs[i].date is None:
-      logs[i].date = first_dt
+  for log in logs:
+    if log.date is None:
+      log.date = first_dt
 
   return logs
 

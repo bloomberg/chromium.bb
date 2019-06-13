@@ -281,7 +281,7 @@ class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
 
       # Since the queue is unordered, need to handle arg2 specially.
       result_arg2s = set()
-      for _ in xrange(3):
+      for _ in range(3):
         result = results.get()
         self.assertEquals(result[0], 'arg1')
         result_arg2s.add(result[1])
@@ -338,7 +338,7 @@ class TestRunParallelSteps(cros_test_lib.TestCase):
       return ret_value
 
     ret_value = ''
-    for _ in xrange(10000):
+    for _ in range(10000):
       ret_value += 'This will be repeated many times.\n'
 
     return_values = parallel.RunParallelSteps([f1], return_values=True)

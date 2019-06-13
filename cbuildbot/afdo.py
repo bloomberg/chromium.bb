@@ -1062,7 +1062,7 @@ def CWPProfileToVersionTuple(url):
   """
   fn_mat = (
       CWP_CHROME_PROFILE_NAME_PATTERN % tuple(
-          r'([0-9]+)' for _ in xrange(0, 4)))
+          r'([0-9]+)' for _ in range(0, 4)))
   fn_mat.replace('.', '\\.')
   return map(int, re.match(fn_mat, os.path.basename(url)).groups())
 

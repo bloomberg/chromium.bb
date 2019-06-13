@@ -288,7 +288,7 @@ class GSCounter(object):
       The new counter value. None if value could not be set.
     """
     generation, _ = self.ctx.GetGeneration(self.path)
-    for _ in xrange(self.ctx.retries + 1):
+    for _ in range(self.ctx.retries + 1):
       try:
         value = default_value if generation == 0 else operation(self.Get())
         self.ctx.Copy('-', self.path, input=str(value), version=generation)

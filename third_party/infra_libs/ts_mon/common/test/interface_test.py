@@ -153,7 +153,7 @@ class GlobalsTest(unittest.TestCase):
     fake_metric.populate_data_set.side_effect = populate_data_set
     interface.register(fake_metric)
 
-    for i in xrange(501):
+    for i in range(501):
       interface.state.store.set('fake', ('field', i), None, 123)
 
     interface.flush()
@@ -180,7 +180,7 @@ class GlobalsTest(unittest.TestCase):
         [metrics.IntegerField('field')])
     interface.register(counter)
 
-    for i in xrange(interface.METRICS_DATA_LENGTH_LIMIT + 1):
+    for i in range(interface.METRICS_DATA_LENGTH_LIMIT + 1):
       counter.increment_by(i, {'field': i})
 
     interface.flush()
@@ -245,7 +245,7 @@ class GlobalsTest(unittest.TestCase):
       delayed_metric.increment_by(1)
     interface.state.global_monitor.send.side_effect = send
 
-    for i in xrange(1001):
+    for i in range(1001):
       interface.state.store.set('fake', (i,), None, 123)
 
     # Shouldn't raise an exception.

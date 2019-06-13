@@ -397,7 +397,7 @@ class SDKFetcher(object):
     version_base = int(version.split('.')[0])
     version_base_min = version_base - self.VERSIONS_TO_CONSIDER
 
-    for v in xrange(version_base - 1, version_base_min, -1):
+    for v in range(version_base - 1, version_base_min, -1):
       version_file = '%s/LATEST-%d.0.0' % (self.gs_base, v)
       logging.info('Trying: %s', version_file)
       full_version = self._GetFullVersionFromStorage(version_file)

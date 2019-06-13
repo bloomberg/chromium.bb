@@ -171,7 +171,7 @@ class WithRetry(object):
       fname = getattr(func, '__qualname__',
                       getattr(func, '__name__', '<nameless>'))
       exc_info = None
-      for attempt in xrange(self._max_retry + 1):
+      for attempt in range(self._max_retry + 1):
         if attempt:
           self._retry_delay.Sleep(attempt)
 

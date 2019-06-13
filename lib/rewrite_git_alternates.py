@@ -204,7 +204,7 @@ def WalkReferences(repo_root, max_depth=5, suppress=()):
   original_root = repo_root
   seen = set(os.path.abspath(x) for x in suppress)
 
-  for _x in xrange(0, max_depth):
+  for _x in range(0, max_depth):
     repo_root = os.path.abspath(repo_root)
 
     if repo_root in seen:

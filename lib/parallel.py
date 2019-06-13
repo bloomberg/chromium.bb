@@ -754,7 +754,7 @@ def BackgroundTaskRunner(task, *args, **kwargs):
       try:
         yield queue
       finally:
-        for _ in xrange(processes):
+        for _ in range(processes):
           queue.put(_AllTasksComplete())
 
 

@@ -324,7 +324,7 @@ class MoblabVm(object):
     # resources. We attempt to create a bridge device a few times. Once we get a
     # hold of that, we base all other system global constants off of that to not
     # step our other moblabvms' toes.
-    for _ in xrange(5):
+    for _ in range(5):
       try:
         port, bridge_name = _TryCreateBridgeDevice()
         break

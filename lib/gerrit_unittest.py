@@ -70,7 +70,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     project = self.createProject('test001')
     clone_path = self.cloneProject(project)
     (head_sha1, head_changeid) = self.createCommit(clone_path)
-    for idx in xrange(3):
+    for idx in range(3):
       cros_build_lib.RunCommand(
           ['git', 'checkout', head_sha1], cwd=clone_path, quiet=True)
       self.createCommit(clone_path, filename='test-file-%d.txt' % idx)
@@ -127,10 +127,10 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     """Verifies that we can query the tip-of-tree commit in a git repository."""
     project = self.createProject('test004')
     clone_path = self.cloneProject(project)
-    for _ in xrange(5):
+    for _ in range(5):
       (master_sha1, _) = self.createCommit(clone_path)
     self.pushBranch(clone_path, 'master')
-    for _ in xrange(5):
+    for _ in range(5):
       (testbranch_sha1, _) = self.createCommit(clone_path)
     self.pushBranch(clone_path, 'testbranch')
     helper = self._GetHelper()

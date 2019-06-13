@@ -686,7 +686,7 @@ class DepGraphGenerator(object):
           if dep in unresolved:
             idx = unresolved.index(dep)
             mycycle = unresolved[idx:] + [dep]
-            for i in xrange(len(mycycle) - 1):
+            for i in range(len(mycycle) - 1):
               pkg1, pkg2 = mycycle[i], mycycle[i+1]
               cycles.setdefault(pkg1, {}).setdefault(pkg2, mycycle)
           elif not pkg_cycles or dep not in pkg_cycles:
@@ -744,7 +744,7 @@ class DepGraphGenerator(object):
       print("Breaking %s -> %s (%s)" % (dep, basedep, depinfo))
 
       # Show cycle.
-      for i in xrange(len(mycycle) - 1):
+      for i in range(len(mycycle) - 1):
         pkg1, pkg2 = mycycle[i], mycycle[i+1]
         needs = deps_map[pkg1]["needs"]
         depinfo = needs.get(pkg2, "deleted")
@@ -1724,7 +1724,7 @@ class EmergeQueue(object):
       return
 
     # Start the fetchers.
-    for _ in xrange(min(self._fetch_procs, len(self._fetch_ready))):
+    for _ in range(min(self._fetch_procs, len(self._fetch_ready))):
       state = self._fetch_ready.get()
       self._fetch_jobs[state.target] = None
       self._fetch_queue.put(state)
@@ -1761,7 +1761,7 @@ class EmergeQueue(object):
             print("Deadlock! Circular dependencies!")
           sys.exit(1)
 
-      for _ in xrange(12):
+      for _ in range(12):
         try:
           job = self._job_queue.get(timeout=5)
           break

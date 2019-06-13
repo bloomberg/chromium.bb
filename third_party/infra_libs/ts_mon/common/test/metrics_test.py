@@ -72,7 +72,7 @@ class MetricTest(TestBase):
     self.assertEquals(m, m)
 
   def test_init_too_many_fields(self):
-    fields = [metrics.StringField('field%d' % i) for i in xrange(8)]
+    fields = [metrics.StringField('field%d' % i) for i in range(8)]
     with self.assertRaises(errors.MonitoringTooManyFieldsError) as e:
       metrics.Metric('test', 'test', fields)
     self.assertEquals(e.exception.metric, 'test')

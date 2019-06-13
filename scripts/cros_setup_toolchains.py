@@ -1165,10 +1165,10 @@ def _ProcessSysrootWrappers(_target, output_dir, srcpath):
     if contents[0] == '#!/usr/bin/python2 -S':
       contents[0] = '#!/usr/bin/env python2'
 
-    for num in xrange(len(contents)):
-      if '@CCACHE_DEFAULT@' in contents[num]:
-        assert 'True' in contents[num]
-        contents[num] = contents[num].replace('True', 'False')
+    for num, line in enumerate(contents):
+      if '@CCACHE_DEFAULT@' in line:
+        assert 'True' in line
+        contents[num] = line.replace('True', 'False')
         break
     # Can't update the wrapper in place since it's a hardlink to a file in /.
     os.unlink(sysroot_wrapper)

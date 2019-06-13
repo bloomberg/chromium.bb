@@ -296,7 +296,7 @@ I am the first commit.
     return git1, git2, patch
 
   def MakeChangeId(self, how_many=1):
-    l = [cros_patch.MakeChangeId() for _ in xrange(how_many)]
+    l = [cros_patch.MakeChangeId() for _ in range(how_many)]
     if how_many == 1:
       return l[0]
     return l
@@ -1441,7 +1441,7 @@ class MockPatchFactory(object):
       always_use_list: Whether to use a list for a single item list.
       **kwargs: Keyword arguments for self.MockPatch.
     """
-    patches = [self.MockPatch(**kwargs) for _ in xrange(how_many)]
+    patches = [self.MockPatch(**kwargs) for _ in range(how_many)]
     if self.patch_mock:
       for i, patch in enumerate(patches):
         self.patch_mock.SetGerritDependencies(patch, patches[:i + 1])

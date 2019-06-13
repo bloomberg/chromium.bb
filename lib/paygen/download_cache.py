@@ -313,7 +313,7 @@ class DownloadCache(object):
     cache_file = self._UriToCacheFile(uri)
 
     # We keep trying until we succeed, or throw an exception.
-    for _ in xrange(FETCH_RETRY_COUNT):
+    for _ in range(FETCH_RETRY_COUNT):
       with self._PurgeLock(shared=True, blocking=True):
         # Attempt to download the file, if needed.
         self._FetchIntoCache(uri, cache_file, fetch_func)

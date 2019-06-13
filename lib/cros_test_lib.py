@@ -416,7 +416,7 @@ class TruthTable(object):
       # produce a valid truth table, but going backward through
       # columns will produce the traditional truth table ordering.
       # For 2-dimensional example: F,F then F,T then T,F then T,T.
-      for col in xrange(self.dimension - 1, -1, -1):
+      for col in range(self.dimension - 1, -1, -1):
         line_values.append(bool(inputs_index / pow(2, col) % 2))
 
       return tuple(line_values)
@@ -1582,7 +1582,7 @@ class ProgressBarTestCase(MockOutputTestCase):
   def AssertProgressBarAllEvents(self, num_events):
     """Check that the progress bar generates expected events."""
     skipped = 0
-    for i in xrange(num_events):
+    for i in range(num_events):
       try:
         self.AssertOutputContainsLine('%d%%' % (i * 100 / num_events))
       except AssertionError:

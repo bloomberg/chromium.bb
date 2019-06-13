@@ -192,7 +192,7 @@ class ProgressBarOperationTest(cros_test_lib.MockTestCase,
     """Test that ParallelEmergeOperation.ParseOutput's progress bar updates."""
     def func(queue):
       print('Total: 2 packages.')
-      for _ in xrange(2):
+      for _ in range(2):
         queue.get()
         print('Completed ')
 

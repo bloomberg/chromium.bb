@@ -196,15 +196,15 @@ def ListContains(small, big, strict=False):
     strict: If True, all items in list must be adjacent.
   """
   if strict:
-    for i in xrange(len(big) - len(small) + 1):
+    for i in range(len(big) - len(small) + 1):
       if _RecursiveCompare(small, big[i:i + len(small)]):
         return True
     return False
   else:
     j = 0
-    for i in xrange(len(small)):
-      for j in xrange(j, len(big)):
-        if _RecursiveCompare(small[i], big[j]):
+    for s in small:
+      for j in range(j, len(big)):
+        if _RecursiveCompare(s, big[j]):
           j += 1
           break
       else:
