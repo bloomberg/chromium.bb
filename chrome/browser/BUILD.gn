@@ -486,6 +486,8 @@ jumbo_split_static_library("browser") {
     "external_protocol/external_protocol_observer.h",
     "favicon/chrome_favicon_client.cc",
     "favicon/chrome_favicon_client.h",
+    "favicon/favicon_request_handler_factory.cc",
+    "favicon/favicon_request_handler_factory.h",
     "favicon/favicon_service_factory.cc",
     "favicon/favicon_service_factory.h",
     "favicon/favicon_utils.cc",
