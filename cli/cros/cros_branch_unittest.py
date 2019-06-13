@@ -1095,6 +1095,14 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
             '\nNew branch will be named factory-1.2.B. Continue? (yes/No)? ')])
     self.assertFalse(self.create.call_count)
 
+  def testCreateDoesNotConfirmGeneratedBranchNameWithYesFlag(self):
+    """Tests --yes flag (which skips the name confirmation prompt)."""
+    self.get_input = self.PatchObject(cros_build_lib, 'GetInput')
+    self.RunCommandMock(['create', '--version', '1.2.0', '--factory',
+                         '--yes'])
+    self.assertEqual(self.get_input.call_args_list, [])
+    self.assertEqual(self.create.call_count, 1)
+
   def testCreateReleaseCommandParses(self):
     """Test `cros branch create` parses with '--release' flag."""
     self.RunCommandMock(['create', '--version', '1.2.0', '--release'])

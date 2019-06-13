@@ -776,6 +776,11 @@ Delete Examples:
         help='Optional descriptor for this branch. Typically, this is a build '
              'target or a device, depending on the nature of the branch. Used '
              'to generate the branch name. Cannot be used with --custom.')
+    name_group.add_argument(
+        '--yes',
+        dest='yes',
+        action='store_true',
+        help='If set, disables the boolean prompt confirming the branch name.')
 
     manifest_group = create_parser.add_argument_group(
         'Manifest options', description='Which manifest should be branched?')
@@ -886,9 +891,10 @@ Delete Examples:
       branch = Branch(checkout, self.options.name)
 
     # Finally, double check the name with the user.
-    proceed = cros_build_lib.BooleanPrompt(
+    proceed = self.options.yes or cros_build_lib.BooleanPrompt(
         prompt='New branch will be named %s. Continue?' % branch.name,
         default=False)
+
     if proceed:
       branch.Create(push=self.options.push, force=self.options.force)
       logging.notice('Successfully created branch %s.', branch.name)
