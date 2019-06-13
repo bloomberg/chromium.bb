@@ -7,20 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/task/post_task.h"
 #include "components/guest_view/browser/guest_view_manager.h"
-#include "components/network_session_configurator/common/network_switches.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
-#include "extensions/browser/extension_protocols.h"
-#include "extensions/common/constants.h"
-#include "extensions/shell/browser/shell_browser_main_parts.h"
-#include "extensions/shell/browser/shell_extension_system.h"
-#include "extensions/shell/browser/shell_network_delegate.h"
 #include "extensions/shell/browser/shell_special_storage_policy.h"
-#include "extensions/shell/browser/shell_url_request_context_getter.h"
 
 namespace extensions {
 
