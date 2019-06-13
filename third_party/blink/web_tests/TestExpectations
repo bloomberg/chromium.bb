@@ -2844,7 +2844,7 @@ crbug.com/626703 [ Retina ] external/wpt/html/cross-origin/anonymous.tentative.h
 crbug.com/626703 [ Win10 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
 crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-011.html [ Failure ]
-crbug.com/626703 external/wpt/svg/text/reftests/text-xml-space-001.svg [ Failure ]
+crbug.com/699040 external/wpt/svg/text/reftests/text-xml-space-001.svg [ Failure ]
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-011.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/abspos/hypothetical-box-dynamic.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/clone-nowrap-intrinsic-size-bidi.html [ Failure ]
