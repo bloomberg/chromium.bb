@@ -206,6 +206,38 @@ constexpr uint8_t kLabelDirect = 0x00;
 constexpr uint8_t kLabelTermination = 0x00;
 constexpr uint16_t kLabelOffsetMask = 0x3FFF;
 
+constexpr bool IsTerminationLabel(uint8_t label) {
+  return label == kLabelTermination;
+}
+
+constexpr bool IsDirectLabel(uint8_t label) {
+  return (label & kLabelMask) == kLabelDirect;
+}
+
+constexpr bool IsPointerLabel(uint8_t label) {
+  return (label & kLabelMask) == kLabelPointer;
+}
+
+constexpr uint8_t GetDirectLabelLength(uint8_t label) {
+  return label & ~kLabelMask;
+}
+
+constexpr uint16_t GetPointerLabelOffset(uint16_t label) {
+  return label & kLabelOffsetMask;
+}
+
+constexpr bool IsValidPointerLabelOffset(size_t offset) {
+  return offset <= kLabelOffsetMask;
+}
+
+constexpr uint16_t MakePointerLabel(uint16_t offset) {
+  return (uint16_t(kLabelPointer) << 8) | (offset & kLabelOffsetMask);
+}
+
+constexpr uint16_t MakeDirectLabel(uint8_t length) {
+  return (length & ~kLabelMask) | kLabelDirect;
+}
+
 // ============================================================================
 // Record Fields
 // ============================================================================
@@ -258,6 +290,10 @@ constexpr uint16_t kTypeAAAA = 28;
 constexpr uint16_t kTypeSRV = 33;
 constexpr uint16_t kTypeNSEC = 47;
 constexpr uint16_t kTypeANY = 255;  // Only allowed for QTYPE
+
+constexpr uint16_t kSupportedRdataTypes[] = {
+    kTypeA, kTypePTR, kTypeTXT, kTypeAAAA, kTypeSRV,
+};
 
 // DNS CLASS masks and values.
 constexpr uint16_t kClassMask = 0x7FFF;

@@ -7,8 +7,12 @@ import("//build_overrides/build.gni")
 source_set("mdns") {
   sources = [
     "mdns/mdns_constants.h",
-    "mdns/mdns_parsing.cc",
-    "mdns/mdns_parsing.h",
+    "mdns/mdns_reader.cc",
+    "mdns/mdns_reader.h",
+    "mdns/mdns_records.cc",
+    "mdns/mdns_records.h",
+    "mdns/mdns_writer.cc",
+    "mdns/mdns_writer.h",
   ]
 
   deps = [
@@ -24,7 +28,9 @@ source_set("mdns_unittests") {
   testonly = true
 
   sources = [
-    "mdns/mdns_parsing_unittest.cc",
+    "mdns/mdns_reader_unittest.cc",
+    "mdns/mdns_records_unittest.cc",
+    "mdns/mdns_writer_unittest.cc",
   ]
 
   deps = [
