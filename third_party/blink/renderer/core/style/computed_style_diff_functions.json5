@@ -450,8 +450,8 @@
             field_dependencies: ["caret-color"]
           },
           {
-            method: "VisitedLinkCaretColor()",
-            field_dependencies: ["VisitedLinkCaretColor"]
+            method: "InternalVisitedCaretColor()",
+            field_dependencies: ["-internal-visited-caret-color"]
           },
         ]
     },

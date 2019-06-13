@@ -106,6 +106,7 @@ class InternalVisitedBorderBottomColor;
 class InternalVisitedBorderLeftColor;
 class InternalVisitedBorderRightColor;
 class InternalVisitedBorderTopColor;
+class InternalVisitedCaretColor;
 class InternalVisitedColor;
 class InternalVisitedTextDecorationColor;
 class InternalVisitedTextEmphasisColor;
@@ -204,6 +205,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::InternalVisitedBorderLeftColor;
   friend class css_longhand::InternalVisitedBorderRightColor;
   friend class css_longhand::InternalVisitedBorderTopColor;
+  friend class css_longhand::InternalVisitedCaretColor;
   friend class css_longhand::InternalVisitedColor;
   friend class css_longhand::InternalVisitedTextDecorationColor;
   friend class css_longhand::InternalVisitedTextEmphasisColor;
@@ -2404,10 +2406,10 @@ class ComputedStyle : public ComputedStyleBase,
     SetInternalVisitedTextStrokeColorIsCurrentColorInternal(
         color.IsCurrentColor());
   }
-  void SetVisitedLinkCaretColor(const StyleAutoColor& color) {
-    SetVisitedLinkCaretColorInternal(color.Resolve(Color()));
-    SetVisitedLinkCaretColorIsCurrentColorInternal(color.IsCurrentColor());
-    SetVisitedLinkCaretColorIsAutoInternal(color.IsAutoColor());
+  void SetInternalVisitedCaretColor(const StyleAutoColor& color) {
+    SetInternalVisitedCaretColorInternal(color.Resolve(Color()));
+    SetInternalVisitedCaretColorIsCurrentColorInternal(color.IsCurrentColor());
+    SetInternalVisitedCaretColorIsAutoInternal(color.IsAutoColor());
   }
 
   static bool IsDisplayBlockContainer(EDisplay display) {
@@ -2512,12 +2514,12 @@ class ComputedStyle : public ComputedStyleBase,
                : StyleColor(TextStrokeColorInternal());
   }
   Color InternalVisitedColor() const { return InternalVisitedColorInternal(); }
-  StyleAutoColor VisitedLinkCaretColor() const {
-    if (VisitedLinkCaretColorIsCurrentColorInternal())
+  StyleAutoColor InternalVisitedCaretColor() const {
+    if (InternalVisitedCaretColorIsCurrentColorInternal())
       return StyleAutoColor::CurrentColor();
-    if (VisitedLinkCaretColorIsAutoInternal())
+    if (InternalVisitedCaretColorIsAutoInternal())
       return StyleAutoColor::AutoColor();
-    return StyleAutoColor(VisitedLinkCaretColorInternal());
+    return StyleAutoColor(InternalVisitedCaretColorInternal());
   }
   StyleColor InternalVisitedBackgroundColor() const {
     return InternalVisitedBackgroundColorInternal();

@@ -76,9 +76,9 @@ OptionalStyleColor ColorPropertyFunctions::GetVisitedColor(
     case CSSPropertyID::kCaretColor:
       // TODO(rego): "auto" value for caret-color should not interpolate
       // (http://crbug.com/676295).
-      if (style.VisitedLinkCaretColor().IsAutoColor())
+      if (style.InternalVisitedCaretColor().IsAutoColor())
         return StyleColor::CurrentColor();
-      return style.VisitedLinkCaretColor().ToStyleColor();
+      return style.InternalVisitedCaretColor().ToStyleColor();
     case CSSPropertyID::kColor:
       return style.InternalVisitedColor();
     case CSSPropertyID::kOutlineColor:
@@ -178,7 +178,7 @@ void ColorPropertyFunctions::SetVisitedColor(const CSSProperty& property,
       style.SetInternalVisitedBorderTopColor(color);
       return;
     case CSSPropertyID::kCaretColor:
-      return style.SetVisitedLinkCaretColor(color);
+      return style.SetInternalVisitedCaretColor(color);
     case CSSPropertyID::kColor:
       style.SetInternalVisitedColor(color);
       return;

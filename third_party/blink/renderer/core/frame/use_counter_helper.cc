@@ -1259,6 +1259,7 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
     case CSSPropertyID::kInternalVisitedBorderLeftColor:
     case CSSPropertyID::kInternalVisitedBorderRightColor:
     case CSSPropertyID::kInternalVisitedBorderTopColor:
+    case CSSPropertyID::kInternalVisitedCaretColor:
     case CSSPropertyID::kInternalVisitedColor:
     case CSSPropertyID::kInternalVisitedTextDecorationColor:
     case CSSPropertyID::kInternalVisitedTextEmphasisColor:

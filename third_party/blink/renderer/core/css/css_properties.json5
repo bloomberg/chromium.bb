@@ -5162,6 +5162,23 @@
       priority: "High",
     },
     {
+      name: "-internal-visited-caret-color",
+      visited_property_for: "caret-color",
+      property_methods: ["ColorIncludingFallback"],
+      inherited: true,
+      field_group: "*",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/platform/graphics/color.h"],
+      default_value: "Color()",
+      type_name: "Color",
+      converter: "ConvertStyleAutoColor",
+      computed_style_custom_functions: ["getter", "setter"],
+      style_builder_template: "visited_color",
+      style_builder_template_args: {
+        initial_color: "StyleAutoColor::AutoColor",
+      },
+    },
+    {
       name: "-internal-visited-background-color",
       visited_property_for: "background-color",
       property_methods: ["ColorIncludingFallback"],
