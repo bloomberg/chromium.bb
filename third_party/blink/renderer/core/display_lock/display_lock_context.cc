@@ -208,8 +208,15 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
       layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
           layout_invalidation_reason::kDisplayLock);
       is_horizontal_writing_mode_ = layout_object->IsHorizontalWritingMode();
+      // GraphicsLayer collection would normally skip layers if paint is blocked
+      // by display-locking (see: CollectDrawableLayersForLayerListRecursively
+      // in LocalFrameView). However, if we don't trigger this collection, then
+      // we might use the cached result instead. In order to ensure we skip the
+      // newly locked layers, we need to set |need_graphics_layer_collection_|
+      // before marking the layer for repaint.
+      needs_graphics_layer_collection_ = true;
+      MarkPaintLayerNeedsRepaint();
     }
-    MarkPaintLayerNeedsRepaint();
     ScheduleAnimation();
     // TODO(vmpstr): This needs to be set after invalidation above, since we
     // want the object to layout once. After the changes to separate self and
