@@ -340,7 +340,7 @@ typedef enum BrailleDots {
 	LOU_DOT_13 = 0X1000, /** virtual dot D */
 	LOU_DOT_14 = 0X2000, /** virtual dot E */
 	LOU_DOT_15 = 0X4000, /** virtual dot F */
-	LOU_DOT_16 = 0X8000  /** virtual dot 0 */
+	LOU_DOT_NONE = 0X8000
 } BrailleDots;
 
 /**

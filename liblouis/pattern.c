@@ -40,7 +40,7 @@ findCharOrDots(widechar c, int m) {
 	/* Look up character or dot pattern in the appropriate
 	 * table. */
 	static TranslationTableCharacter noChar = { 0, 0, 0, CTC_Space, 32, 32, 32 };
-	static TranslationTableCharacter noDots = { 0, 0, 0, CTC_Space, LOU_DOT_16, LOU_DOT_16, LOU_DOT_16 };
+	static TranslationTableCharacter noDots = { 0, 0, 0, CTC_Space, LOU_DOT_NONE, LOU_DOT_NONE, LOU_DOT_NONE };
 	TranslationTableCharacter *notFound;
 	TranslationTableCharacter *character;
 	TranslationTableOffset bucket;
