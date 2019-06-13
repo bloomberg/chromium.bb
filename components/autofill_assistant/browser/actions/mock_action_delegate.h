@@ -161,12 +161,22 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(SetProgressVisible, void(bool visible));
   MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));
   MOCK_METHOD1(SetResizeViewport, void(bool resize_viewport));
+  MOCK_METHOD0(GetResizeViewport, bool());
   MOCK_METHOD1(SetPeekMode,
                void(ConfigureBottomSheetProto::PeekMode peek_mode));
+  MOCK_METHOD0(GetPeekMode, ConfigureBottomSheetProto::PeekMode());
   MOCK_METHOD2(
       SetForm,
       bool(std::unique_ptr<FormProto> form,
            base::RepeatingCallback<void(const FormProto::Result*)> callback));
+
+  void WaitForWindowHeightChange(
+      base::OnceCallback<void(const ClientStatus&)> callback) {
+    OnWaitForWindowHeightChange(callback);
+  }
+
+  MOCK_METHOD1(OnWaitForWindowHeightChange,
+               void(base::OnceCallback<void(const ClientStatus&)>& callback));
 
   const ClientSettings& GetSettings() override { return client_settings_; }
 

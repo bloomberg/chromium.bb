@@ -186,6 +186,10 @@ class WebController {
                             bool strict,
                             base::OnceCallback<void(bool)> callback);
 
+  // Calls the callback once the main document window has been resized.
+  virtual void WaitForWindowHeightChange(
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
  private:
   friend class WebControllerBrowserTest;
 
@@ -290,6 +294,9 @@ class WebController {
   void OnFindElementForCheck(base::OnceCallback<void(bool)> callback,
                              const ClientStatus& status,
                              std::unique_ptr<FindElementResult> result);
+  void OnWaitForWindowHeightChange(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      std::unique_ptr<runtime::EvaluateResult> result);
 
   // Find the element given by |selector|. If multiple elements match
   // |selector| and if |strict_mode| is false, return the first one that is

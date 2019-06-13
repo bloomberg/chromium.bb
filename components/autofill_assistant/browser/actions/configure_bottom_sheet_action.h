@@ -6,6 +6,8 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_CONFIGURE_BOTTOM_SHEET_ACTION_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
@@ -21,6 +23,12 @@ class ConfigureBottomSheetAction : public Action {
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
 
+  void OnWindowHeightChange(const ClientStatus& status);
+  void OnTimeout();
+
+  ProcessActionCallback callback_;
+  base::OneShotTimer timer_;
+  base::WeakPtrFactory<ConfigureBottomSheetAction> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ConfigureBottomSheetAction);
 };
 

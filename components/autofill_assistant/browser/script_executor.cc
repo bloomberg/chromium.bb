@@ -456,9 +456,22 @@ void ScriptExecutor::SetResizeViewport(bool resize_viewport) {
   delegate_->SetResizeViewport(resize_viewport);
 }
 
+bool ScriptExecutor::GetResizeViewport() {
+  return delegate_->GetResizeViewport();
+}
+
 void ScriptExecutor::SetPeekMode(
     ConfigureBottomSheetProto::PeekMode peek_mode) {
   delegate_->SetPeekMode(peek_mode);
+}
+
+ConfigureBottomSheetProto::PeekMode ScriptExecutor::GetPeekMode() {
+  return delegate_->GetPeekMode();
+}
+
+void ScriptExecutor::WaitForWindowHeightChange(
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  delegate_->GetWebController()->WaitForWindowHeightChange(std::move(callback));
 }
 
 const ClientSettings& ScriptExecutor::GetSettings() {

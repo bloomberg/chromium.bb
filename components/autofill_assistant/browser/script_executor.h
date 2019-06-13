@@ -179,7 +179,11 @@ class ScriptExecutor : public ActionDelegate,
   void SetProgress(int progress) override;
   void SetProgressVisible(bool visible) override;
   void SetResizeViewport(bool resize_viewport) override;
+  bool GetResizeViewport() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
+  ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
+  void WaitForWindowHeightChange(
+      base::OnceCallback<void(const ClientStatus&)> callback) override;
   const ClientSettings& GetSettings() override;
   bool SetForm(std::unique_ptr<FormProto> form,
                base::RepeatingCallback<void(const FormProto::Result*)> callback)

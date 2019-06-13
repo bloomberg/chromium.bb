@@ -23,6 +23,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill_assistant/browser/client_settings.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -196,6 +197,26 @@ const char* const kClickElement =
     R"(function (selector) {
       selector.click();
     })";
+
+// Javascript code that returns a promise that will succeed once the main
+// document window has changed height.
+//
+// This ignores width changes, to filter out resizes caused by changes to the
+// screen orientation.
+const char* const kWaitForWindowHeightChange = R"(
+new Promise((fulfill, reject) => {
+  var lastWidth = window.innerWidth;
+  var handler = function(event) {
+    if (window.innerWidth != lastWidth) {
+      lastWidth = window.innerWidth;
+      return
+    }
+    window.removeEventListener('resize', handler)
+    fulfill(true)
+  }
+  window.addEventListener('resize', handler)
+})
+)";
 
 bool ConvertPseudoType(const PseudoType pseudo_type,
                        dom::PseudoType* pseudo_type_output) {
@@ -1147,6 +1168,24 @@ void WebController::OnFindElementForCheck(
            !status.ok() && status.proto_status() != ELEMENT_RESOLUTION_FAILED)
       << __func__ << ": " << status;
   std::move(callback).Run(status.ok());
+}
+
+void WebController::WaitForWindowHeightChange(
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  devtools_client_->GetRuntime()->Evaluate(
+      runtime::EvaluateParams::Builder()
+          .SetExpression(kWaitForWindowHeightChange)
+          .SetAwaitPromise(true)
+          .Build(),
+      base::BindOnce(&WebController::OnWaitForWindowHeightChange,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnWaitForWindowHeightChange(
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    std::unique_ptr<runtime::EvaluateResult> result) {
+  std::move(callback).Run(
+      CheckJavaScriptResult(result.get(), __FILE__, __LINE__));
 }
 
 void WebController::FindElement(const Selector& selector,

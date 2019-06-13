@@ -246,8 +246,18 @@ class ActionDelegate {
   // Set whether the viewport should be resized.
   virtual void SetResizeViewport(bool resize_viewport) = 0;
 
+  // Checks whether the viewport should be resized.
+  virtual bool GetResizeViewport() = 0;
+
   // Set the peek mode.
   virtual void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
+
+  // Checks the current peek mode.
+  virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
+
+  // Calls the callback once the main document window has been resized.
+  virtual void WaitForWindowHeightChange(
+      base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Returns the current client settings.
   virtual const ClientSettings& GetSettings() = 0;

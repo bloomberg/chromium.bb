@@ -1231,6 +1231,10 @@ message ConfigureBottomSheetProto {
   // resize_viewport is true or was set to true by a previous actions, the
   // viewport will be resized to match the new peek height.
   optional PeekMode peek_mode = 2;
+
+  // Maximum time to wait for the window to resize before continuing with the
+  // script. If 0 or unset, the action doesn't wait.
+  optional int32 resize_timeout_ms = 3;
 }
 
 // Allow scripts to display a form with multiple inputs.
