@@ -412,6 +412,44 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     std::move(done_callback).Run();
   }
 
+  // Scroll an element into view that's within a container element. This
+  // requires scrolling the container, then the window, to get the element to
+  // the desired y position.
+  void TestScrollIntoView(int initial_window_scroll_y,
+                          int initial_container_scroll_y) {
+    EXPECT_TRUE(content::ExecJs(
+        shell(), base::StringPrintf(
+                     R"(window.scrollTo(0, %d);
+           let container = document.querySelector("#scroll_container");
+           container.scrollTo(0, %d);)",
+                     initial_window_scroll_y, initial_container_scroll_y)));
+
+    Selector selector;
+    selector.selectors.emplace_back("#scroll_item_5");
+
+    FocusElement(selector);
+    base::ListValue eval_result = content::EvalJs(shell(), R"(
+      let item = document.querySelector("#scroll_item_5");
+      let itemRect = item.getBoundingClientRect();
+      let container = document.querySelector("#scroll_container");
+      let containerRect = container.getBoundingClientRect();
+      [itemRect.top, itemRect.bottom, window.innerHeight,
+           containerRect.top, containerRect.bottom])")
+                                      .ExtractList();
+    double top = eval_result.GetList()[0].GetDouble();
+    double bottom = eval_result.GetList()[1].GetDouble();
+    double window_height = eval_result.GetList()[2].GetDouble();
+    double container_top = eval_result.GetList()[3].GetDouble();
+    double container_bottom = eval_result.GetList()[4].GetDouble();
+
+    // Element is at the desired position. (top is relative to the viewport)
+    EXPECT_NEAR(top, window_height * 0.25, 0.5);
+
+    // Element is within the visible portion of its container.
+    EXPECT_GT(bottom, container_top);
+    EXPECT_LT(top, container_bottom);
+  }
+
  protected:
   std::unique_ptr<WebController> web_controller_;
 
@@ -814,47 +852,28 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#focus");
 
-  // The element is not visible initially.
-  const std::string checkNotVisibleScript = R"(
-      let iframe = document.querySelector("#iframe");
-      let div = iframe.contentDocument.querySelector("#focus");
-      let iframeRect = iframe.getBoundingClientRect();
-      let divRect = div.getBoundingClientRect();
-      iframeRect.y + divRect.y > window.innerHeight;
-  )";
-  EXPECT_EQ(true, content::EvalJs(shell(), checkNotVisibleScript));
-  FocusElement(selector);
-
-  // Verify that the scroll moved the div in the iframe into view.
   const std::string checkVisibleScript = R"(
-    const scrollTimeoutMs = 500;
-    var timer = null;
-
-    function check() {
       let iframe = document.querySelector("#iframe");
       let div = iframe.contentDocument.querySelector("#focus");
       let iframeRect = iframe.getBoundingClientRect();
       let divRect = div.getBoundingClientRect();
-      return iframeRect.y + divRect.y < window.innerHeight;
-    }
-    function onScrollDone() {
-      window.removeEventListener("scroll", onScroll);
-      domAutomationController.send(check());
-    }
-    function onScroll(e) {
-      if (timer != null) {
-        clearTimeout(timer);
-      }
-      timer = setTimeout(onScrollDone, scrollTimeoutMs);
-    }
-    if (check()) {
-      // Scrolling finished before this script started. Just return the result.
-      domAutomationController.send(true);
-    } else {
-      window.addEventListener("scroll", onScroll);
-    }
+      iframeRect.y + divRect.y < window.innerHeight;
   )";
-  EXPECT_EQ(true, content::EvalJsWithManualReply(shell(), checkVisibleScript));
+  EXPECT_EQ(false, content::EvalJs(shell(), checkVisibleScript));
+  FocusElement(selector);
+  EXPECT_EQ(true, content::EvalJs(shell(), checkVisibleScript));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       FocusElementWithScrollIntoViewNeeded) {
+  TestScrollIntoView(/* initial_window_scroll_y= */ 0,
+                     /* initial_container_scroll_y=*/0);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       FocusElementWithScrollIntoViewNotNeeded) {
+  TestScrollIntoView(/* initial_window_scroll_y= */ 0,
+                     /* initial_container_scroll_y=*/200);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
