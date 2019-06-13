@@ -442,7 +442,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
         Log.d(TAG, "Checking if account has policy management enabled");
         // This will call back to onPolicyFetchedBeforeSignIn.
-        SigninManagerJni.get().fetchAndApplyCloudPolicy(
+        mDelegate.fetchAndApplyCloudPolicy(
                 this, mNativeSigninManagerAndroid, mSignInState.mAccount.name);
     }
 

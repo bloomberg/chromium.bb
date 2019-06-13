@@ -30,10 +30,20 @@ public interface SigninManagerDelegate {
     public boolean isGooglePlayServicesPresent(Context context);
 
     /**
+     * Interact with the UserPolicySigninService to retrieve the user policy.
+     * @param signinManager a reference on SigninManager used for the native calls
+     * @param nativeSigninManagerAndroid a reference on the native SigninManager used for native
+     *                                   calls
+     * @param username (email) of the user signing in.
+     */
+    public void fetchAndApplyCloudPolicy(
+            @JCaller SigninManager signinManager, long nativeSigninManagerAndroid, String username);
+
+    /**
      * Perform the required cloud policy cleanup when a signin is aborted.
      * @param signinManager a reference on SigninManager used for the native calls
      * @param nativeSigninManagerAndroid a reference on the native SigninManager used for native
-     * calls
+     *                                   calls
      */
     public void stopApplyingCloudPolicy(
             @JCaller SigninManager signinManager, long nativeSigninManagerAndroid);
@@ -49,7 +59,7 @@ public interface SigninManagerDelegate {
      * account and profile data associated with the previous signin and aborts sync.
      * @param signinManager a reference on SigninManager used for the native calls
      * @param nativeSigninManagerAndroid a reference on the native SigninManager used for native
-     * calls
+     *                                   calls
      * @param isManaged if the account is managed, which triggers a different cleanup flow
      * @param wipeDataCallback to be called once profile data cleanup is complete
      */
