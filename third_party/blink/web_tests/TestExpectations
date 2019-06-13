@@ -5734,7 +5734,6 @@ crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-4/undo-add
 
 # Sheriff 2019-05-06
 crbug.com/959372 [ Win ] external/wpt/import-maps/fallback.sub.tentative.html [ Pass Timeout ]
-crbug.com/959129 [ Win Linux ] http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 
 # Sheriff 2019-05-07
 crbug.com/960443 [ Mac10.10 Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure Pass ]
@@ -5859,6 +5858,7 @@ crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html
 crbug.com/973726 [ Mac ] fast/css/large-list-of-rules-crash.html [ Pass Timeout ]
 crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
 crbug.com/937546 [ Win7 ] virtual/blink-cors/http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
+crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 
 # Flaky on Linux
 crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-duration.html [ Pass Failure ]
