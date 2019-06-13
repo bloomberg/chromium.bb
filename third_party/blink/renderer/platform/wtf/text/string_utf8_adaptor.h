@@ -56,12 +56,6 @@ class WTF_EXPORT StringUTF8Adaptor final {
     return base::StringPiece(data_, size_);
   }
 
-  std::string AsStdString() {
-    // TODO(dcheng): it might be nice to store a std::string and avoid the
-    // double conversion...
-    return std::string(data_, size_);
-  }
-
  private:
   std::string utf8_buffer_;
   const char* data_ = nullptr;

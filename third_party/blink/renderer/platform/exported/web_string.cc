@@ -79,9 +79,7 @@ const WebUChar* WebString::Data16() const {
 }
 
 std::string WebString::Utf8(UTF8ConversionMode mode) const {
-  StringUTF8Adaptor utf8(impl_.get(),
-                         static_cast<WTF::UTF8ConversionMode>(mode));
-  return utf8.AsStdString();
+  return String(impl_).Utf8(static_cast<WTF::UTF8ConversionMode>(mode));
 }
 
 WebString WebString::FromUTF8(const char* data, size_t length) {

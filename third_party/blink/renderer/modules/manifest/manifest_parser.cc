@@ -25,8 +25,7 @@ namespace {
 bool IsValidMimeType(const String& mime_type) {
   if (mime_type.StartsWith('.'))
     return true;
-  return net::ParseMimeTypeWithoutParameter(
-      StringUTF8Adaptor(mime_type).AsStdString(), nullptr, nullptr);
+  return net::ParseMimeTypeWithoutParameter(mime_type.Utf8(), nullptr, nullptr);
 }
 
 bool VerifyFiles(const Vector<mojom::blink::ManifestFileFilterPtr>& files) {
@@ -246,8 +245,7 @@ WebDisplayMode ManifestParser::ParseDisplay(const JSONObject* object) {
   if (!display.has_value())
     return kWebDisplayModeUndefined;
 
-  WebDisplayMode display_enum =
-      WebDisplayModeFromString(StringUTF8Adaptor(*display).AsStdString());
+  WebDisplayMode display_enum = WebDisplayModeFromString(display->Utf8());
   if (display_enum == kWebDisplayModeUndefined)
     AddErrorInfo("unknown 'display' value ignored.");
   return display_enum;
@@ -261,8 +259,7 @@ WebScreenOrientationLockType ManifestParser::ParseOrientation(
     return kWebScreenOrientationLockDefault;
 
   WebScreenOrientationLockType orientation_enum =
-      WebScreenOrientationLockTypeFromString(
-          StringUTF8Adaptor(*orientation).AsStdString());
+      WebScreenOrientationLockTypeFromString(orientation->Utf8());
   if (orientation_enum == kWebScreenOrientationLockDefault)
     AddErrorInfo("unknown 'orientation' value ignored.");
   return orientation_enum;
