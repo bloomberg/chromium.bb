@@ -494,6 +494,21 @@ This file contains the strings for ash.
       <message name="IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION" desc="The tooltip text for a menu option for automatic clicks menu that results in the menu changing position on the screen. The menu will toggle through several pre-set positions.">
         Toggle menu position
       </message>
+      <message name="IDS_ASH_AUTOCLICK_SCROLL_UP" desc="The tooltip text for the automatic clicks menu option that results in the active area being scrolled up.">
+        Scroll up
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_SCROLL_DOWN" desc="The tooltip text for the automatic clicks menu option that results in the active area being scrolled down.">
+        Scroll down
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_SCROLL_LEFT" desc="The tooltip text for the automatic clicks menu option that results in the active area being scrolled left.">
+        Scroll left
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_SCROLL_RIGHT" desc="The tooltip text for the automatic clicks menu option that results in the active area being scrolled right.">
+        Scroll right
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_SCROLL_CLOSE" desc="The tooltip text for the automatic clicks menu option that results in the scrolling menu being closed.">
+        Close
+      </message>
       <message name="IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_TITLE" desc="The title for the modal dialog shown when the user disables automatic clicks, to confirm they meant to disable the feature.">
         Turn off automatic clicks
       </message>
