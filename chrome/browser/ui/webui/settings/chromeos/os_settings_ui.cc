@@ -38,9 +38,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/os_settings_resources.h"
 #include "chrome/grit/os_settings_resources_map.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -51,7 +53,7 @@ namespace chromeos {
 namespace settings {
 
 OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
-    : content::WebUIController(web_ui) {
+    : ui::MojoWebUIController(web_ui, /*enable_chrome_send =*/true) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIOSSettingsHost);
@@ -147,14 +149,24 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source);
+
+  AddHandlerToRegistry(base::BindRepeating(&OSSettingsUI::BindCrosNetworkConfig,
+                                           base::Unretained(this)));
 }
 
-OSSettingsUI::~OSSettingsUI() {}
+OSSettingsUI::~OSSettingsUI() = default;
 
 void OSSettingsUI::AddSettingsPageUIHandler(
     std::unique_ptr<content::WebUIMessageHandler> handler) {
   DCHECK(handler);
   web_ui()->AddMessageHandler(std::move(handler));
+}
+
+void OSSettingsUI::BindCrosNetworkConfig(
+    network_config::mojom::CrosNetworkConfigRequest request) {
+  content::BrowserContext::GetConnectorFor(
+      web_ui()->GetWebContents()->GetBrowserContext())
+      ->BindInterface(network_config::mojom::kServiceName, std::move(request));
 }
 
 }  // namespace settings
