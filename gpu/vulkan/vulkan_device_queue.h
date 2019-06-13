@@ -85,6 +85,10 @@ class VULKAN_EXPORT VulkanDeviceQueue {
     return enabled_device_features_2_;
   }
 
+  const VkPhysicalDeviceFeatures& enabled_device_features() const {
+    return enabled_device_features_2_.features;
+  }
+
  private:
   gfx::ExtensionSet enabled_extensions_;
   VkPhysicalDevice vk_physical_device_ = VK_NULL_HANDLE;
