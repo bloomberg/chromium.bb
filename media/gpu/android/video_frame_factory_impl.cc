@@ -318,7 +318,7 @@ scoped_refptr<TextureOwner> GpuVideoFrameFactory::Initialize(
     ContextStateResultUMA(result);
     return nullptr;
   }
-  return TextureOwner::Create(TextureOwner::CreateTexture(shared_context.get()),
+  return TextureOwner::Create(TextureOwner::CreateTexture(shared_context),
                               GetTextureOwnerMode(overlay_mode));
 }
 
