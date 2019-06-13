@@ -160,7 +160,7 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
   // - out of flow fragments whose css container is inline box.
   // TODO(layout-dev) Transfroms also need to be applied to compute overflow
   // correctly. NG is not yet transform-aware. crbug.com/855965
-  if (!physical_fragment->Children().IsEmpty()) {
+  if (!physical_fragment->Children().empty()) {
     for (const auto& child : physical_fragment->Children()) {
       PhysicalRect child_scrollable_overflow;
       if (child->IsOutOfFlowPositioned()) {

@@ -120,7 +120,7 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
 }
 
 const NGPhysicalFragment* NGPhysicalLineBoxFragment::FirstLogicalLeaf() const {
-  if (Children().IsEmpty())
+  if (Children().empty())
     return nullptr;
   // TODO(xiaochengh): This isn't correct for mixed Bidi. Fix it. Besides, we
   // should compute and store it during layout.
@@ -130,7 +130,7 @@ const NGPhysicalFragment* NGPhysicalLineBoxFragment::FirstLogicalLeaf() const {
              DynamicTo<NGPhysicalContainerFragment>(runner)) {
     if (runner->IsBlockFormattingContextRoot())
       break;
-    if (runner_as_container->Children().IsEmpty())
+    if (runner_as_container->Children().empty())
       break;
     runner = direction == TextDirection::kLtr
                  ? runner_as_container->Children().front().get()
@@ -141,7 +141,7 @@ const NGPhysicalFragment* NGPhysicalLineBoxFragment::FirstLogicalLeaf() const {
 }
 
 const NGPhysicalFragment* NGPhysicalLineBoxFragment::LastLogicalLeaf() const {
-  if (Children().IsEmpty())
+  if (Children().empty())
     return nullptr;
   // TODO(xiaochengh): This isn't correct for mixed Bidi. Fix it. Besides, we
   // should compute and store it during layout.
@@ -151,7 +151,7 @@ const NGPhysicalFragment* NGPhysicalLineBoxFragment::LastLogicalLeaf() const {
              DynamicTo<NGPhysicalContainerFragment>(runner)) {
     if (runner->IsBlockFormattingContextRoot())
       break;
-    if (runner_as_container->Children().IsEmpty())
+    if (runner_as_container->Children().empty())
       break;
     runner = direction == TextDirection::kLtr
                  ? runner_as_container->Children().back().get()

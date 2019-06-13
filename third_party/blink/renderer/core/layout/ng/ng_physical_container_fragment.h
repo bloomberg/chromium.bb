@@ -20,37 +20,13 @@ enum class NGOutlineType;
 
 class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
  public:
-  class ChildLinkListBase {
+  // Same as |base::span<const NGLink>|, except that each |NGLink| has the
+  // latest generation of post-layout. See
+  // |NGPhysicalFragment::UpdatedFragment()| for more details.
+  class PostLayoutChildLinkList {
    public:
-    ChildLinkListBase(wtf_size_t count, const NGLink* buffer)
+    PostLayoutChildLinkList(wtf_size_t count, const NGLink* buffer)
         : count_(count), buffer_(buffer) {}
-
-    wtf_size_t size() const { return count_; }
-    bool IsEmpty() const { return count_ == 0; }
-
-   protected:
-    wtf_size_t count_;
-    const NGLink* buffer_;
-  };
-
-  class ChildLinkList : public ChildLinkListBase {
-   public:
-    using ChildLinkListBase::ChildLinkListBase;
-
-    const NGLink& operator[](wtf_size_t idx) const { return buffer_[idx]; }
-    const NGLink& front() const { return buffer_[0]; }
-    const NGLink& back() const { return buffer_[count_ - 1]; }
-
-    const NGLink* begin() const { return buffer_; }
-    const NGLink* end() const { return begin() + count_; }
-  };
-
-  // Same as |ChildLinkList|, except that each |NGLink| has the latest
-  // generation of post-layout. See |NGPhysicalFragment::UpdatedFragment()| for
-  // more details.
-  class PostLayoutChildLinkList : public ChildLinkListBase {
-   public:
-    using ChildLinkListBase::ChildLinkListBase;
 
     class ConstIterator {
       STACK_ALLOCATED();
@@ -95,6 +71,13 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     }
     const NGLink front() const { return (*this)[0]; }
     const NGLink back() const { return (*this)[count_ - 1]; }
+
+    wtf_size_t size() const { return count_; }
+    bool empty() const { return count_ == 0; }
+
+   private:
+    wtf_size_t count_;
+    const NGLink* buffer_;
   };
 
   ~NGPhysicalContainerFragment();
@@ -104,8 +87,8 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
   // Note, children in this collection maybe old generations. Items in this
   // collection are safe, but their children (grandchildren of |this|) maybe
   // from deleted nodes or LayoutObjects. Also see |PostLayoutChildren()|.
-  ChildLinkList Children() const {
-    return ChildLinkList(num_children_, buffer_);
+  base::span<const NGLink> Children() const {
+    return base::make_span(buffer_, num_children_);
   }
 
   // Similar to |Children()| but all children are the latest generation of
