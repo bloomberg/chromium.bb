@@ -199,6 +199,7 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/network_service_test_helper.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/signed_exchange_browser_test_helper.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -2650,19 +2651,23 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   }
 
   // Test policy-installed extensions are reloaded when killed.
-  BackgroundContentsService::
-      SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(0);
-  content::WindowedNotificationObserver extension_crashed_observer(
-      extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-      content::NotificationService::AllSources());
-  extensions::TestExtensionRegistryObserver extension_loaded_observer(
-      extensions::ExtensionRegistry::Get(browser()->profile()), kGoodCrxId);
-  extensions::ExtensionHost* extension_host =
-      extensions::ProcessManager::Get(browser()->profile())
-          ->GetBackgroundHostForExtension(kGoodCrxId);
-  extension_host->render_process_host()->Shutdown(content::RESULT_CODE_KILLED);
-  extension_crashed_observer.Wait();
-  extension_loaded_observer.WaitForExtensionLoaded();
+  {
+    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    BackgroundContentsService::
+        SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(0);
+    content::WindowedNotificationObserver extension_crashed_observer(
+        extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+        content::NotificationService::AllSources());
+    extensions::TestExtensionRegistryObserver extension_loaded_observer(
+        extensions::ExtensionRegistry::Get(browser()->profile()), kGoodCrxId);
+    extensions::ExtensionHost* extension_host =
+        extensions::ProcessManager::Get(browser()->profile())
+            ->GetBackgroundHostForExtension(kGoodCrxId);
+    extension_host->render_process_host()->Shutdown(
+        content::RESULT_CODE_KILLED);
+    extension_crashed_observer.Wait();
+    extension_loaded_observer.WaitForExtensionLoaded();
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest,
