@@ -39,13 +39,12 @@
 #include "amdgpu_internal.h"
 #include "util_math.h"
 
-static void amdgpu_close_kms_handle(amdgpu_device_handle dev,
-				     uint32_t handle)
+static int amdgpu_close_kms_handle(int fd, uint32_t handle)
 {
 	struct drm_gem_close args = {};
 
 	args.handle = handle;
-	drmIoctl(dev->fd, DRM_IOCTL_GEM_CLOSE, &args);
+	return drmIoctl(fd, DRM_IOCTL_GEM_CLOSE, &args);
 }
 
 static int amdgpu_bo_create(amdgpu_device_handle dev,
@@ -93,7 +92,7 @@ drm_public int amdgpu_bo_alloc(amdgpu_device_handle dev,
 	r = amdgpu_bo_create(dev, alloc_buffer->alloc_size, args.out.handle,
 			     buf_handle);
 	if (r) {
-		amdgpu_close_kms_handle(dev, args.out.handle);
+		amdgpu_close_kms_handle(dev->fd, args.out.handle);
 		goto out;
 	}
 
@@ -214,11 +213,8 @@ static int amdgpu_bo_export_flink(amdgpu_bo_handle bo)
 
 	bo->flink_name = flink.name;
 
-	if (bo->dev->flink_fd != bo->dev->fd) {
-		struct drm_gem_close args = {};
-		args.handle = handle;
-		drmIoctl(bo->dev->flink_fd, DRM_IOCTL_GEM_CLOSE, &args);
-	}
+	if (bo->dev->flink_fd != bo->dev->fd)
+		amdgpu_close_kms_handle(bo->dev->flink_fd, handle);
 
 	pthread_mutex_lock(&bo->dev->bo_table_mutex);
 	r = handle_table_insert(&bo->dev->bo_flink_names, bo->flink_name, bo);
@@ -261,7 +257,6 @@ drm_public int amdgpu_bo_import(amdgpu_device_handle dev,
 		     struct amdgpu_bo_import_result *output)
 {
 	struct drm_gem_open open_arg = {};
-	struct drm_gem_close close_arg = {};
 	struct amdgpu_bo *bo = NULL;
 	uint32_t handle = 0, flink_name = 0;
 	uint64_t alloc_size = 0;
@@ -345,12 +340,12 @@ drm_public int amdgpu_bo_import(amdgpu_device_handle dev,
 			close(dma_fd);
 			if (r)
 				goto free_bo_handle;
-			close_arg.handle = open_arg.handle;
-			r = drmIoctl(dev->flink_fd, DRM_IOCTL_GEM_CLOSE,
-				     &close_arg);
+			r = amdgpu_close_kms_handle(dev->flink_fd,
+						    open_arg.handle);
 			if (r)
 				goto free_bo_handle;
 		}
+		open_arg.handle = 0;
 		break;
 
 	case amdgpu_bo_handle_type_dma_buf_fd:
@@ -388,14 +383,13 @@ drm_public int amdgpu_bo_import(amdgpu_device_handle dev,
 remove_handle:
 	handle_table_remove(&dev->bo_handles, bo->handle);
 free_bo_handle:
-	if (flink_name && !close_arg.handle && open_arg.handle) {
-		close_arg.handle = open_arg.handle;
-		drmIoctl(dev->flink_fd, DRM_IOCTL_GEM_CLOSE, &close_arg);
-	}
+	if (flink_name && open_arg.handle)
+		amdgpu_close_kms_handle(dev->flink_fd, open_arg.handle);
+
 	if (bo)
 		amdgpu_bo_free(bo);
 	else
-		amdgpu_close_kms_handle(dev, handle);
+		amdgpu_close_kms_handle(dev->fd, handle);
 unlock:
 	pthread_mutex_unlock(&dev->bo_table_mutex);
 	return r;
@@ -424,12 +418,13 @@ drm_public int amdgpu_bo_free(amdgpu_bo_handle buf_handle)
 			amdgpu_bo_cpu_unmap(bo);
 		}
 
-		amdgpu_close_kms_handle(dev, bo->handle);
+		amdgpu_close_kms_handle(dev->fd, bo->handle);
 		pthread_mutex_destroy(&bo->cpu_access_mutex);
 		free(bo);
 	}
 
 	pthread_mutex_unlock(&dev->bo_table_mutex);
+
 	return 0;
 }
 
@@ -604,7 +599,7 @@ drm_public int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 
 	r = amdgpu_bo_create(dev, size, args.handle, buf_handle);
 	if (r) {
-		amdgpu_close_kms_handle(dev, args.handle);
+		amdgpu_close_kms_handle(dev->fd, args.handle);
 		goto out;
 	}
 
