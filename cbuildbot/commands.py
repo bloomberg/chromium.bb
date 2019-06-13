@@ -2052,7 +2052,7 @@ def ExtractDependencies(buildroot, packages, board=None, useflags=None,
 
 
 def ExtractBuildDepsGraph(buildroot, board):
-  """Extrace the build deps graph for |board| using build_api proto service.
+  """Extract the build deps graph for |board| using build_api proto service.
 
   Args:
     buildroot: The root directory where the build occurs.
@@ -2072,8 +2072,7 @@ def ExtractBuildDepsGraph(buildroot, board):
       json.dump(input_proto, f)
     cmd += ['--input-json', path_util.ToChrootPath(input_proto_file),
             '--output-json', path_util.ToChrootPath(output_proto_file)]
-    RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True,
-                   redirect_stdout=True)
+    RunBuildScript(buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
     output = json.loads(osutils.ReadFile(output_proto_file))
     return output['depGraph']
 
