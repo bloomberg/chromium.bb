@@ -287,6 +287,13 @@ message CreateDiskImageRequest {
 
   // The storage location for the disk image.
   StorageLocation storage_location = 5;
+
+  // Size of the source media associated with this image.
+  uint64 source_size = 6;
+
+  // Parameters to pass to Plugin VM helper to facilitate creating
+  // new image.
+  repeated string params = 7;
 }
 
 // Response to a CreateDiskImageRequest.
@@ -300,6 +307,9 @@ message CreateDiskImageResponse {
 
   // The failure reason if the disk image could not be created or doesn't exist.
   string failure_reason = 3;
+
+  // Command identifier if status is DISK_STATUS_IN_PROGRESS.
+  string command_uuid = 4;
 }
 
 // Request to concierge to destroy a disk image.
