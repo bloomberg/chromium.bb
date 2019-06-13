@@ -37,7 +37,6 @@ void KerberosAccountsHandler::RegisterMessages() {
       "removeKerberosAccount",
       base::BindRepeating(&KerberosAccountsHandler::HandleRemoveKerberosAccount,
                           weak_factory_.GetWeakPtr()));
-
   web_ui()->RegisterMessageCallback(
       "setAsActiveKerberosAccount",
       base::BindRepeating(
@@ -77,7 +76,7 @@ void KerberosAccountsHandler::OnListAccounts(
 
     base::DictionaryValue account_dict;
     account_dict.SetString("principalName", account.principal_name());
-    account_dict.SetString("krb5conf", account.krb5conf());
+    account_dict.SetString("config", account.krb5conf());
     account_dict.SetBoolean("isSignedIn", account.tgt_validity_seconds() > 0);
     account_dict.SetBoolean("isActive",
                             account.principal_name() == active_principal);
@@ -98,15 +97,17 @@ void KerberosAccountsHandler::HandleAddKerberosAccount(
   //   - Prevent account changes when Kerberos is disabled.
   //   - Remove all accounts when Kerberos is disabled.
 
-  CHECK_EQ(4U, args->GetSize());
+  CHECK_EQ(6U, args->GetSize());
   const std::string& callback_id = args->GetList()[0].GetString();
   const std::string& principal_name = args->GetList()[1].GetString();
   const std::string& password = args->GetList()[2].GetString();
   const bool remember_password = args->GetList()[3].GetBool();
+  const std::string& config = args->GetList()[4].GetString();
+  const bool allow_existing = args->GetList()[5].GetBool();
 
   KerberosCredentialsManager::Get().AddAccountAndAuthenticate(
       std::move(principal_name), false /* is_managed */, password,
-      remember_password, base::nullopt /* krb5_conf */,
+      remember_password, config, allow_existing,
       base::BindOnce(&KerberosAccountsHandler::OnAddAccountAndAuthenticate,
                      weak_factory_.GetWeakPtr(), callback_id));
 }

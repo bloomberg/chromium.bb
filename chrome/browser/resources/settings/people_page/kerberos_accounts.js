@@ -86,11 +86,11 @@ Polymer({
   /** @private */
   onAddAccountDialogClosed_: function() {
     this.showAddAccountDialog_ = false;
+    // In case it was opened by the 'Refresh now' action menu.
+    this.closeActionMenu_();
   },
 
-  /**
-   * @private
-   */
+  /** @private */
   refreshAccounts_: function() {
     this.browserProxy_.getAccounts().then(accounts => {
       this.accounts_ = accounts;
@@ -136,6 +136,14 @@ Polymer({
     this.browserProxy_.setAsActiveAccount(
         /** @type {!settings.KerberosAccount} */ (this.selectedAccount_));
     this.closeActionMenu_();
+  },
+
+  /**
+   * Opens the reauth dialog for |this.selectedAccount_|.
+   * @private
+   */
+  onRefreshNowClick_: function() {
+    this.showAddAccountDialog_ = true;
   },
 
   /**

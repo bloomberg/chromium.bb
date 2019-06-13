@@ -13,6 +13,7 @@ cr.exportPath('settings');
  * Information for a Chrome OS Kerberos account.
  * @typedef {{
  *   principalName: string,
+ *   config: string,
  *   isSignedIn: boolean,
  *   isActive: boolean,
  *   hasRememberedPassword: boolean,
@@ -63,9 +64,12 @@ cr.define('settings', function() {
      * @param {string} principalName Kerberos principal (user@realm.com).
      * @param {string} password Account password.
      * @param {boolean} rememberPassword Whether to store the password.
+     * @param {string} config Kerberos configuration.
+     * @param {boolean} allowExisting Whether existing accounts may be updated.
      * @return {!Promise<!settings.KerberosErrorType>}
      */
-    addAccount(principalName, password, rememberPassword) {}
+    addAccount(
+        principalName, password, rememberPassword, config, allowExisting) {}
 
     /**
      * Removes |account| from the set of Kerberos accounts.
@@ -91,9 +95,11 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    addAccount(principalName, password, rememberPassword) {
+    addAccount(
+        principalName, password, rememberPassword, config, allowExisting) {
       return cr.sendWithPromise(
-          'addKerberosAccount', principalName, password, rememberPassword);
+          'addKerberosAccount', principalName, password, rememberPassword,
+          config, allowExisting);
     }
 
     /** @override */
