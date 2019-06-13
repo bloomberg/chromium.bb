@@ -488,20 +488,21 @@ device_paused(struct launcher_logind *wl, DBusMessage *m)
 	if (!strcmp(type, "pause"))
 		launcher_logind_pause_device_complete(wl, major, minor);
 
-	if (wl->sync_drm && major == DRM_MAJOR)
-		launcher_logind_set_active(wl, false);
+	if (wl->sync_drm && wl->compositor->backend->device_changed)
+		wl->compositor->backend->device_changed(wl->compositor,
+							makedev(major,minor),
+							false);
 }
 
 static void
 device_resumed(struct launcher_logind *wl, DBusMessage *m)
 {
 	bool r;
-	uint32_t major;
+	uint32_t major, minor;
 
 	r = dbus_message_get_args(m, NULL,
 				  DBUS_TYPE_UINT32, &major,
-				  /*DBUS_TYPE_UINT32, &minor,
-				  DBUS_TYPE_UNIX_FD, &fd,*/
+				  DBUS_TYPE_UINT32, &minor,
 				  DBUS_TYPE_INVALID);
 	if (!r) {
 		weston_log("logind: cannot parse ResumeDevice dbus signal\n");
@@ -514,8 +515,10 @@ device_resumed(struct launcher_logind *wl, DBusMessage *m)
 	 * there is no need for us to handle this event for evdev. For DRM, we
 	 * notify the compositor to wake up. */
 
-	if (wl->sync_drm && major == DRM_MAJOR)
-		launcher_logind_set_active(wl, true);
+	if (wl->sync_drm && wl->compositor->backend->device_changed)
+		wl->compositor->backend->device_changed(wl->compositor,
+							makedev(major,minor),
+							true);
 }
 
 static DBusHandlerResult

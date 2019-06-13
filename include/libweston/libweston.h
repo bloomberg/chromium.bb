@@ -1034,6 +1034,19 @@ struct weston_backend {
 	struct weston_output *
 	(*create_output)(struct weston_compositor *compositor,
 			 const char *name);
+
+	/** Notify of device addition/removal
+	 *
+	 * @param compositor The compositor.
+	 * @param device The device that has changed.
+	 * @param added Where it was added (or removed)
+	 *
+	 * Called when a device has been added/removed from the session.
+	 * The backend can decide what to do based on whether it is a
+	 * device that it is controlling or not.
+	 */
+	void (*device_changed)(struct weston_compositor *compositor,
+			       dev_t device, bool added);
 };
 
 /** Callback for saving calibration

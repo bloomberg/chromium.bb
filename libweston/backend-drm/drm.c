@@ -310,6 +310,7 @@ struct drm_backend {
 		int id;
 		int fd;
 		char *filename;
+		dev_t devnum;
 	} drm;
 	struct gbm_device *gbm;
 	struct wl_listener session_listener;
@@ -6840,6 +6841,30 @@ session_notify(struct wl_listener *listener, void *data)
 	}
 }
 
+
+/**
+ * Handle KMS GPU being added/removed
+ *
+ * If the device being added/removed is the KMS device, we activate/deactivate
+ * the compositor session.
+ *
+ * @param compositor The compositor instance.
+ * @param device The device being added/removed.
+ * @param added Whether the device is being added (or removed)
+ */
+static void
+drm_device_changed(struct weston_compositor *compositor,
+		dev_t device, bool added)
+{
+	struct drm_backend *b = to_drm_backend(compositor);
+
+	if (b->drm.fd < 0 || b->drm.devnum != device)
+		return;
+
+	compositor->session_active = added;
+	wl_signal_emit(&compositor->session_signal, compositor);
+}
+
 /**
  * Determines whether or not a device is capable of modesetting. If successful,
  * sets b->drm.fd and b->drm.filename to the opened device.
@@ -6849,6 +6874,7 @@ drm_device_is_kms(struct drm_backend *b, struct udev_device *device)
 {
 	const char *filename = udev_device_get_devnode(device);
 	const char *sysnum = udev_device_get_sysnum(device);
+	dev_t devnum = udev_device_get_devnum(device);
 	drmModeRes *res;
 	int id = -1, fd;
 
@@ -6883,6 +6909,7 @@ drm_device_is_kms(struct drm_backend *b, struct udev_device *device)
 	b->drm.fd = fd;
 	b->drm.id = id;
 	b->drm.filename = strdup(filename);
+	b->drm.devnum = devnum;
 
 	drmModeFreeResources(res);
 
@@ -7558,6 +7585,7 @@ drm_backend_create(struct weston_compositor *compositor,
 	b->base.repaint_flush = drm_repaint_flush;
 	b->base.repaint_cancel = drm_repaint_cancel;
 	b->base.create_output = drm_output_create;
+	b->base.device_changed = drm_device_changed;
 
 	weston_setup_vt_switch_bindings(compositor);
 
