@@ -2044,6 +2044,10 @@ void Browser::OnExtensionUnloaded(content::BrowserContext* browser_context,
       }
     }
   }
+
+  // If an extension page was active, the toolbar may need to be updated to hide
+  // the extension name in the location icon.
+  UpdateToolbar(/*should_restore_state=*/false);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
