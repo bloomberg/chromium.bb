@@ -2645,6 +2645,18 @@
       'blink_python_tests': {},
     },
 
+    'fieldtrial_browser_tests': {
+      'no_fieldtrial_browser_tests': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'test': 'browser_tests',
+      },
+    },
+
     'fuchsia_gtests': {
       'angle_unittests': {},
       'base_unittests': {},

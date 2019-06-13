@@ -21413,6 +21413,30 @@
       }
     ]
   },
+  "linux-fieldtrial-rel": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--disable-field-trial-config"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "no_fieldtrial_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "shards": 10
+        },
+        "test": "browser_tests"
+      }
+    ]
+  },
   "linux-tcmalloc-rel": {
     "gtest_tests": [
       {

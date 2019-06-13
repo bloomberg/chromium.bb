@@ -1823,6 +1823,14 @@
           'isolated_scripts': 'chromium_code_coverage_isolated_scripts_and_fuzzers',
         }
       },
+      'linux-fieldtrial-rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'fieldtrial_browser_tests',
+        },
+      },
       'linux-tcmalloc-rel': {
         'mixins': [
           'linux-trusty',
