@@ -8,6 +8,7 @@
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -83,6 +84,8 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
 
   ~NGPhysicalContainerFragment();
 
+  NGBreakToken* BreakToken() const { return break_token_.get(); }
+
   // Returns the children of |this|.
   //
   // Note, children in this collection maybe old generations. Items in this
@@ -150,6 +153,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
 
   static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
 
+  scoped_refptr<NGBreakToken> break_token_;
   const std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
       oof_positioned_descendants_;
 
