@@ -5,6 +5,7 @@
 #ifndef NGPhysicalContainerFragment_h
 #define NGPhysicalContainerFragment_h
 
+#include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
@@ -113,9 +114,18 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     return depends_on_percentage_block_size_;
   }
 
-  const Vector<NGOutOfFlowPositionedDescendant>&
-  OutOfFlowPositionedDescendants() const {
-    return oof_positioned_descendants_;
+  bool HasOutOfFlowPositionedDescendants() const {
+    DCHECK(!oof_positioned_descendants_ ||
+           !oof_positioned_descendants_->IsEmpty());
+    return oof_positioned_descendants_.get();
+  }
+
+  base::span<NGOutOfFlowPositionedDescendant> OutOfFlowPositionedDescendants()
+      const {
+    if (!HasOutOfFlowPositionedDescendants())
+      return base::span<NGOutOfFlowPositionedDescendant>();
+    return {oof_positioned_descendants_->data(),
+            oof_positioned_descendants_->size()};
   }
 
  protected:
@@ -140,7 +150,8 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
 
   static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
 
-  Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
+  const std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
+      oof_positioned_descendants_;
 
   // Because flexible arrays need to be the last member in a class, the actual
   // storage is in the subclass and we just keep a pointer to it here.
