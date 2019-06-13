@@ -57,6 +57,17 @@ void GetPaymentInformationAction::InternalProcessAction(
       get_payment_information.ask_for_payment();
   payment_options->confirm_button_text =
       get_payment_information.confirm_button_text();
+  switch (get_payment_information.terms_and_conditions_state()) {
+    case GetPaymentInformationProto::NOT_SELECTED:
+      payment_options->initial_terms_and_conditions = NOT_SELECTED;
+      break;
+    case GetPaymentInformationProto::ACCEPTED:
+      payment_options->initial_terms_and_conditions = ACCEPTED;
+      break;
+    case GetPaymentInformationProto::REVIEW_REQUIRED:
+      payment_options->initial_terms_and_conditions = REQUIRES_REVIEW;
+      break;
+  }
 
   payment_options->callback =
       base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,

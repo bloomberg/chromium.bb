@@ -1142,6 +1142,8 @@ void Controller::SetPaymentRequestOptions(
     payment_request_info_ = std::make_unique<PaymentInformation>();
 
     // TODO(crbug.com/806868): set initial state according to proto.
+    payment_request_info_->terms_and_conditions =
+        options->initial_terms_and_conditions;
   }
 
   payment_request_options_ = std::move(options);
