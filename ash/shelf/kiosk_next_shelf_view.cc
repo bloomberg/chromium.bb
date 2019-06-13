@@ -90,9 +90,12 @@ class KioskNextHomeButton : public AppListButton {
 };
 
 bool IsTabletModeEnabled() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  // This check is needed, because tablet mode controller is destroyed before
+  // shelf widget. See https://crbug.com/967149 for more details.
+  return Shell::Get()->tablet_mode_controller() &&
+         Shell::Get()
+             ->tablet_mode_controller()
+             ->IsTabletModeWindowManagerEnabled();
 }
 
 }  // namespace
