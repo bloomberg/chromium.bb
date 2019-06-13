@@ -687,6 +687,11 @@ void av1_init_level_info(AV1_COMP *cpi) {
     level_stats->tile_width_is_valid = 1;
     level_stats->min_cr = 1e8;
 
+    FrameWindowBuffer *const frame_window_buffer =
+        &this_level_info->frame_window_buffer;
+    frame_window_buffer->num = 0;
+    frame_window_buffer->start = 0;
+
     const AV1_COMMON *const cm = &cpi->common;
     const int upscaled_width = cm->superres_upscaled_width;
     const int height = cm->height;
@@ -1026,14 +1031,6 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
   const int show_frame = cm->show_frame;
   const int show_existing_frame = cm->show_existing_frame;
 
-  // Store info. of current frame into FrameWindowBuffer.
-  FrameWindowBuffer *const buffer = &cpi->frame_window_buffer;
-  store_frame_record(ts_start, ts_end, size, luma_pic_size, frame_header_count,
-                     tiles, show_frame, show_existing_frame, buffer);
-  // Count the number of frames encoded in the past 1 second.
-  const int encoded_frames_in_last_second =
-      show_frame ? count_frames(buffer, TICKS_PER_SEC) : 0;
-
   int max_tile_size;
   int min_cropped_tile_width;
   int min_cropped_tile_height;
@@ -1093,7 +1090,15 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
     level_spec->max_tile_cols = AOMMAX(level_spec->max_tile_cols, tile_cols);
     level_spec->max_tiles = AOMMAX(level_spec->max_tiles, tiles);
 
+    // Store info. of current frame into FrameWindowBuffer.
+    FrameWindowBuffer *const buffer = &level_info->frame_window_buffer;
+    store_frame_record(ts_start, ts_end, size, luma_pic_size,
+                       frame_header_count, tiles, show_frame,
+                       show_existing_frame, buffer);
     if (show_frame) {
+      // Count the number of frames encoded in the past 1 second.
+      const int encoded_frames_in_last_second =
+          show_frame ? count_frames(buffer, TICKS_PER_SEC) : 0;
       scan_past_frames(buffer, encoded_frames_in_last_second, level_spec,
                        level_stats);
     }

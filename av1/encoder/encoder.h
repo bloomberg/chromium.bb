@@ -1017,7 +1017,6 @@ typedef struct AV1_COMP {
   AV1LevelInfo *level_info[MAX_NUM_OPERATING_POINTS];
   // Count the number of OBU_FRAME and OBU_FRAME_HEADER for level calculation.
   int frame_header_count;
-  FrameWindowBuffer frame_window_buffer;
 
   // whether any no-zero delta_q was actually used
   int deltaq_used;

@@ -150,6 +150,7 @@ typedef struct {
 typedef struct {
   AV1LevelStats level_stats;
   AV1LevelSpec level_spec;
+  FrameWindowBuffer frame_window_buffer;
   DECODER_MODEL decoder_models[SEQ_LEVELS];
 } AV1LevelInfo;
 
