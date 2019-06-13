@@ -35,8 +35,14 @@ class Chromium(config_util.Config):
         solution['custom_deps'].update({
             'src/third_party/adobe/flash/binaries/ppapi/linux': None,
             'src/third_party/adobe/flash/binaries/ppapi/linux_x64': None,
+            'src/third_party/adobe/flash/binaries/ppapi/mac_64': None,
+            'src/third_party/adobe/flash/binaries/ppapi/win': None,
+            'src/third_party/adobe/flash/binaries/ppapi/win_x64': None,
             'src/third_party/adobe/flash/symbols/ppapi/linux': None,
             'src/third_party/adobe/flash/symbols/ppapi/linux_x64': None,
+            'src/third_party/adobe/flash/symbols/ppapi/mac_64': None,
+            'src/third_party/adobe/flash/symbols/ppapi/win': None,
+            'src/third_party/adobe/flash/symbols/ppapi/win_x64': None,
         })
     spec = {
       'solutions': [solution],
