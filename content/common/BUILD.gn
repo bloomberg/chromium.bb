@@ -503,6 +503,7 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//components/services/leveldb/public/interfaces",
+    "//components/tracing/common:interfaces",
     "//content/public/common:interfaces",
     "//content/public/common:resource_type_bindings",
     "//ipc:mojom_constants",

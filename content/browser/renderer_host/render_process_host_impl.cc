@@ -1743,7 +1743,8 @@ bool RenderProcessHostImpl::Init() {
 
     // In single process mode, browser-side tracing and memory will cover the
     // whole process including renderers.
-    BackgroundTracingManagerImpl::ActivateForProcess(this);
+    BackgroundTracingManagerImpl::ActivateForProcess(
+        GetID(), child_control_interface_.get());
 
     fast_shutdown_started_ = false;
   }
