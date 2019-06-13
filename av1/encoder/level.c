@@ -748,8 +748,8 @@ static void get_temporal_parallel_params(int scalability_mode_idc,
 static TARGET_LEVEL_FAIL_ID check_level_constraints(
     const AV1LevelInfo *const level_info, AV1_LEVEL level, int tier,
     int is_still_picture, BITSTREAM_PROFILE profile) {
-  const DECODER_MODEL_STATUS decoder_model_status =
-      level_info->decoder_models[level].status;
+  const DECODER_MODEL *const decoder_model = &level_info->decoder_models[level];
+  const DECODER_MODEL_STATUS decoder_model_status = decoder_model->status;
   if (decoder_model_status != DECODER_MODEL_OK &&
       decoder_model_status != DECODER_MODEL_DISABLED) {
     return DECODER_MODEL_FAIL;
@@ -790,11 +790,15 @@ static TARGET_LEVEL_FAIL_ID check_level_constraints(
       break;
     }
 
-    if (level_spec->max_display_rate > target_level_spec->max_display_rate) {
+    if (decoder_model->max_display_rate >
+        (double)target_level_spec->max_display_rate) {
       fail_id = DISPLAY_RATE_TOO_HIGH;
       break;
     }
 
+    // TODO(huisu): we are not using max decode rate calculated by the decoder
+    // model because the model in resource availability mode always returns
+    // MaxDecodeRate(as in the level definitions) as the max decode rate.
     if (level_spec->max_decode_rate > target_level_spec->max_decode_rate) {
       fail_id = DECODE_RATE_TOO_HIGH;
       break;
@@ -1008,6 +1012,9 @@ static void scan_past_frames(const FrameWindowBuffer *const buffer,
   }
   level_spec->max_header_rate =
       AOMMAX(level_spec->max_header_rate, frame_headers);
+  // TODO(huisu): we can now compute max display rate with the decoder model, so
+  // these couple of lines can be removed. Keep them here for a while for
+  // debugging purpose.
   level_spec->max_display_rate =
       AOMMAX(level_spec->max_display_rate, display_samples);
   level_spec->max_decode_rate =
