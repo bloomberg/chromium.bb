@@ -81,6 +81,9 @@ extern const char kUseMessagesStagingUrlDescription[];
 extern const char kEnableMessagesWebPushName[];
 extern const char kEnableMessagesWebPushDescription[];
 
+extern const char kAndroidPictureInPictureAPIName[];
+extern const char kAndroidPictureInPictureAPIDescription[];
+
 extern const char kAndroidSiteSettingsUIRefreshName[];
 extern const char kAndroidSiteSettingsUIRefreshDescription[];
 

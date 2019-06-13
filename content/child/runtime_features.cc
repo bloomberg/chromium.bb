@@ -409,6 +409,11 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnablePictureInPicture(
       base::FeatureList::IsEnabled(media::kPictureInPicture));
 
+#if defined(OS_ANDROID)
+  WebRuntimeFeatures::EnablePictureInPictureAPI(
+      base::FeatureList::IsEnabled(media::kPictureInPictureAPI));
+#endif
+
   WebRuntimeFeatures::EnableCacheInlineScriptCode(
       base::FeatureList::IsEnabled(features::kCacheInlineScriptCode));
 

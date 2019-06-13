@@ -1944,6 +1944,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOnTheFlyMhtmlHashComputationName,
      flag_descriptions::kOnTheFlyMhtmlHashComputationDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOnTheFlyMhtmlHashComputationFeature)},
+    {"android-picture-in-picture-api",
+     flag_descriptions::kAndroidPictureInPictureAPIName,
+     flag_descriptions::kAndroidPictureInPictureAPIDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(media::kPictureInPictureAPI)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,

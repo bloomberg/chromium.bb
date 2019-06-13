@@ -92,6 +92,11 @@ const char kEnableMessagesWebPushDescription[] =
     "Use web push for background notificatons in Chrome OS integration "
     "with Android Messages for Web";
 
+const char kAndroidPictureInPictureAPIName[] =
+    "Picture-in-Picture Web API for Android";
+const char kAndroidPictureInPictureAPIDescription[] =
+    "Enable Picture-in-Picture Web API for Android";
+
 const char kAndroidSiteSettingsUIRefreshName[] =
     "Android Site Settings UI changes.";
 const char kAndroidSiteSettingsUIRefreshDescription[] =

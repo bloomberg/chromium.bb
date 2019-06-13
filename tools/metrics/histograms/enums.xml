@@ -33799,6 +33799,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1408869905"
       label="AutofillEnforceMinRequiredFieldsForQuery:disabled"/>
   <int value="-1408288176" label="enable-account-consistency"/>
+  <int value="-1405349891" label="PictureInPictureAPI:enabled"/>
   <int value="-1405048637" label="OfflinePagesResourceBasedSnapshot:enabled"/>
   <int value="-1399753480" label="disable-harfbuzz-rendertext"/>
   <int value="-1399419572" label="enable-app-list"/>
@@ -33897,6 +33898,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1281465357" label="MacV2GPUSandbox:disabled"/>
   <int value="-1278796760" label="QueryInOmnibox:enabled"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
+  <int value="-1276579737" label="PictureInPictureAPI:disabled"/>
   <int value="-1272593346" label="NewTabLoadingAnimation:disabled"/>
   <int value="-1271563519" label="enable-appcontainer"/>
   <int value="-1269962982" label="SyncUSSPasswords:disabled"/>
