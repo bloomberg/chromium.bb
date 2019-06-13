@@ -79,7 +79,7 @@ TEST_P(LevelTest, TestTargetLevelApi) {
   for (int operating_point = 0; operating_point <= 32; ++operating_point) {
     for (int level = 0; level <= 32; ++level) {
       const int target_level = operating_point * 100 + level;
-      if ((level >= 0 && level <= 23) || level == 31 || operating_point > 31) {
+      if ((level >= 0 && level <= 24) || level == 31 || operating_point > 31) {
         EXPECT_EQ(AOM_CODEC_OK,
                   aom_codec_control(&enc, AV1E_SET_TARGET_SEQ_LEVEL_IDX,
                                     target_level));

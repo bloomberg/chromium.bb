@@ -506,8 +506,10 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, tx_size_search_method, 0, 2);
 
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
-    if (!is_valid_seq_level_idx(extra_cfg->target_seq_level_idx[i]))
+    const int level_idx = extra_cfg->target_seq_level_idx[i];
+    if (!is_valid_seq_level_idx(level_idx) && level_idx != SEQ_LEVELS) {
       ERROR("Target sequence level index is invalid");
+    }
   }
 
   return AOM_CODEC_OK;

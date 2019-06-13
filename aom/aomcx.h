@@ -518,8 +518,8 @@ enum aome_enc_control_id {
    * 4 digits).
    *   AB: OP index.
    *   xy: Target level index for the OP. Can be values 0~23(corresponding to
-   *   level 2.0 ~ 7.3) or 31(maximum level parameter, no level-based
-   *   constraints).
+   *   level 2.0 ~ 7.3) or 24(keep level stats only for level monitoring) or
+   *   31(maximum level parameter, no level-based constraints).
    * E.g. "0" means target level index 0 for the 0th OP;
    *      "111" means target level index 11 for the 1st OP;
    *      "1021" means target level index 21 for the 10th OP.

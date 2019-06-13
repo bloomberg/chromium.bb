@@ -2444,7 +2444,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
          sizeof(cpi->target_seq_level_idx));
   cpi->keep_level_stats = 0;
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
-    if (cpi->target_seq_level_idx[i] < SEQ_LEVELS) {
+    if (cpi->target_seq_level_idx[i] <= SEQ_LEVELS) {
       cpi->keep_level_stats |= 1u << i;
       if (!cpi->level_info[i]) {
         CHECK_MEM_ERROR(cm, cpi->level_info[i],
