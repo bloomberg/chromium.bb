@@ -716,8 +716,11 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
 
   DCHECK(output_device_);
   gfx::SwapResponse response;
-  if (capabilities().supports_post_sub_buffer && frame.sub_buffer_rect) {
-    DCHECK(!frame.sub_buffer_rect->IsEmpty());
+  if (frame.sub_buffer_rect && frame.sub_buffer_rect->IsEmpty()) {
+    // TODO(https://crbug.com/898680): Maybe do something for overlays here.
+    // This codepath was added in https://codereview.chromium.org/1489153002
+    // to support updating overlays without changing the framebuffer contents.
+  } else if (capabilities().supports_post_sub_buffer && frame.sub_buffer_rect) {
     if (!capabilities().flipped_output_surface)
       frame.sub_buffer_rect->set_y(size_.height() - frame.sub_buffer_rect->y() -
                                    frame.sub_buffer_rect->height());
