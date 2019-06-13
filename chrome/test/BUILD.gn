@@ -6190,6 +6190,14 @@ if (is_win) {
         "//tools/skia_goldctl/goldctl",
       ]
     }
+    if (!is_mac) {
+      data += [
+        "$root_out_dir/locales/",
+        "$root_out_dir/chrome_100_percent.pak",
+        "$root_out_dir/chrome_200_percent.pak",
+        "$root_out_dir/resources.pak",
+      ]
+    }
   }
 }
 
