@@ -51,23 +51,41 @@ CommandUtil.getCommandEntry = (fileManager, element) => {
  * @return {!Array<!Entry>} Entries of the found node.
  */
 CommandUtil.getCommandEntries = (fileManager, element) => {
+  // DirectoryItem has "entry" attribute.
   if (element && element.entry) {
-    // DirectoryItem has "entry" attribute.
     return [element.entry];
-  } else if (element.selectedItem && element.selectedItem.entry) {
-    // DirectoryTree has the selected item.
+  }
+
+  // DirectoryTree has the selected item.
+  if (element.selectedItem && element.selectedItem.entry) {
     return [element.selectedItem.entry];
-  } else if (element.selectedItems && element.selectedItems.length) {
-    // File list (cr.ui.List).
+  }
+
+  // File list (cr.ui.List).
+  if (element.selectedItems && element.selectedItems.length) {
     const entries = element.selectedItems;
     // Check if it is Entry or not by checking for toURL().
     return entries.filter(entry => ('toURL' in entry));
-  } else if (fileManager.ui.actionbar.contains(/** @type {Node} */ (element))) {
-    // Commands in the action bar can only act in the currently selected files.
-    return fileManager.getSelection().entries;
-  } else {
-    return [];
   }
+
+  // Commands in the action bar can only act in the currently selected files.
+  if (fileManager.ui.actionbar.contains(/** @type {Node} */ (element))) {
+    return fileManager.getSelection().entries;
+  }
+
+  // Context Menu: redirect to the element the context menu is displayed for.
+  if (element.contextElement) {
+    return CommandUtil.getCommandEntries(fileManager, element.contextElement);
+  }
+
+  // Context Menu Item: redirect to the element the context menu is displayed
+  // for.
+  if (element.parentElement.contextElement) {
+    return CommandUtil.getCommandEntries(
+        fileManager, element.parentElement.contextElement);
+  }
+
+  return [];
 };
 
 /**
@@ -346,6 +364,9 @@ class CommandHandler {
      */
     this.commands_ = {};
 
+    /** @private {?Element} */
+    this.lastFocusedElement_ = null;
+
     // Decorate command tags in the document.
     const commands = fileManager.document.querySelectorAll('command');
     for (let i = 0; i < commands.length; i++) {
@@ -359,10 +380,32 @@ class CommandHandler {
     fileManager.document.addEventListener(
         'canExecute', this.onCanExecute_.bind(this));
 
+    cr.ui.contextMenuHandler.addEventListener(
+        'show', this.onContextMenuShow_.bind(this));
+    cr.ui.contextMenuHandler.addEventListener(
+        'hide', this.onContextMenuHide_.bind(this));
+
     chrome.commandLinePrivate.hasSwitch(
         'disable-zip-archiver-packer', disabled => {
           CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = !disabled;
         });
+  }
+
+  /** @param {!Event} event */
+  onContextMenuShow_(event) {
+    this.lastFocusedElement_ = document.activeElement;
+    const menu = event.menu;
+    // Set focus asynchronously to give time for menu "show" event to finish and
+    // have all items set up before focusing.
+    setTimeout(() => menu.focusSelectedItem(), 0);
+  }
+
+  /** @param {!Event} event */
+  onContextMenuHide_(event) {
+    if (this.lastFocusedElement_) {
+      this.lastFocusedElement_.focus();
+      this.lastFocusedElement_ = null;
+    }
   }
 
   /**
