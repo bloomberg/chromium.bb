@@ -1383,21 +1383,26 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
     aom_get_frame_buffer_cb_fn_t cb = pool->get_fb_cb;
     void *cb_priv = pool->cb_priv;
 
+    lock_buffer_pool(pool);
     // Realloc with callback does not release the frame buffer - release first.
-    if (release_fb_cb(cb_priv, fb))
+    if (release_fb_cb(cb_priv, fb)) {
+      unlock_buffer_pool(pool);
       aom_internal_error(
           &cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to free current frame buffer before superres upscaling");
-
+    }
     // aom_realloc_frame_buffer() leaves config data for frame_to_show intact
     if (aom_realloc_frame_buffer(
             frame_to_show, cm->superres_upscaled_width,
             cm->superres_upscaled_height, seq_params->subsampling_x,
             seq_params->subsampling_y, seq_params->use_highbitdepth,
-            AOM_BORDER_IN_PIXELS, cm->byte_alignment, fb, cb, cb_priv))
+            AOM_BORDER_IN_PIXELS, cm->byte_alignment, fb, cb, cb_priv)) {
+      unlock_buffer_pool(pool);
       aom_internal_error(
           &cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to allocate current frame buffer for superres upscaling");
+    }
+    unlock_buffer_pool(pool);
   } else {
     // Make a copy of the config data for frame_to_show in copy_buffer
     copy_buffer_config(frame_to_show, &copy_buffer);

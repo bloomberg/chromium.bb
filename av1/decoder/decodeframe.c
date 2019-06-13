@@ -5284,9 +5284,7 @@ static void superres_post_decode(AV1Decoder *pbi) {
   if (!av1_superres_scaled(cm)) return;
   assert(!cm->all_lossless);
 
-  lock_buffer_pool(pool);
   av1_superres_upscale(cm, pool);
-  unlock_buffer_pool(pool);
 }
 
 uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
