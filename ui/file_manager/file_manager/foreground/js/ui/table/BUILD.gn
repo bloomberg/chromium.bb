@@ -6,37 +6,47 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_library("table_column") {
   deps = [
-    "../..:event_target",
-    "../../..:cr",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr:event_target",
+  ]
+}
+
+js_library("table") {
+  deps = [
+    ":table_column_model",
+    ":table_header",
+    ":table_list",
+    "//ui/webui/resources/js/cr/ui:list",
+    "//ui/webui/resources/js/cr/ui:list_single_selection_model",
   ]
 }
 
 js_library("table_column_model") {
   deps = [
     ":table_column",
-    "../../..:cr",
+    "//ui/webui/resources/js:cr",
   ]
 }
 
 js_library("table_header") {
   deps = [
     ":table_splitter",
-    "../../..:cr",
+    "//ui/webui/resources/js:cr",
   ]
 }
 
 js_library("table_list") {
   deps = [
     ":table_column_model",
-    "..:list",
-    "../../..:cr",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr/ui:list",
   ]
 }
 
 js_library("table_splitter") {
   deps = [
     ":table_column_model",
-    "..:splitter",
-    "../../..:cr",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr/ui:splitter",
   ]
 }
