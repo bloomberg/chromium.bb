@@ -3653,13 +3653,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUseImprovedLabelDisambiguation)},
 
-#if defined(OS_CHROMEOS)
-    {"ash-notification-stacking-bar-redesign",
-     flag_descriptions::kAshNotificationStackingBarRedesignName,
-     flag_descriptions::kAshNotificationStackingBarRedesignDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kNotificationStackingBarRedesign)},
-#endif  // OS_CHROMEOS
-
 #if defined(OS_ANDROID)
     {"cct-target-translate-language",
      flag_descriptions::kCCTTargetTranslateLanguageName,
