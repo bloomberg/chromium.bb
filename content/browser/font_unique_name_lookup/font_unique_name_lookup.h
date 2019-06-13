@@ -16,10 +16,6 @@
 
 #include <string>
 
-namespace blink {
-class FontUniqueNameTable;
-}
-
 namespace content {
 
 // Scans a set of font files for the full font name and postscript name
@@ -100,15 +96,6 @@ class CONTENT_EXPORT FontUniqueNameLookup {
   base::FilePath TableCacheFilePathForTesting() { return TableCacheFilePath(); }
 
  private:
-  // Scan the font file at |font_file_path| and given |ttc_index| and extract
-  // full font name and postscript name from the font and store it into the
-  // font_index_entry protobuf object.
-  void IndexFile(blink::FontUniqueNameTable* font_table,
-                 const std::string& font_file_path,
-                 uint32_t ttc_index);
-  // For a TrueType font collection, determine how many font faces are
-  // available in a file.
-  int32_t NumberOfFacesInFontFile(const std::string& font_filename) const;
 
   // If an Android build fingerprint override is set through
   // SetAndroidBuildFingerprint() return that, otherwise return the actual
@@ -122,10 +109,9 @@ class CONTENT_EXPORT FontUniqueNameLookup {
 
   base::FilePath TableCacheFilePath();
 
-  base::FilePath cache_directory_;
-  FT_Library ft_library_;
   base::MappedReadOnlyRegion proto_storage_;
 
+  base::FilePath cache_directory_;
   std::string android_build_fingerprint_for_testing_ = "";
   std::vector<std::string> font_file_paths_for_testing_ =
       std::vector<std::string>();
