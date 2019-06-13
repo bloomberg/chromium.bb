@@ -1177,11 +1177,6 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
 
   LayoutBox* const layout_box = ToLayoutBox(fragment.GetMutableLayoutObject());
 
-  // The |accumulated_offset| parameter of legacy hit testing functions doesn't
-  // include the object itself's offset.
-  const PhysicalOffset fallback_accumulated_offset =
-      physical_offset - layout_box->PhysicalLocation();
-
   // https://www.w3.org/TR/CSS22/zindex.html#painting-order
   // Hit test all phases of inline blocks, inline tables, replaced elements and
   // non-positioned floats as if they created their own stacking contexts.
@@ -1189,9 +1184,9 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
       fragment.IsAtomicInline() || fragment.IsFloating();
   return should_hit_test_all_phases
              ? layout_box->HitTestAllPhases(result, hit_test_location,
-                                            fallback_accumulated_offset)
+                                            physical_offset)
              : layout_box->NodeAtPoint(result, hit_test_location,
-                                       fallback_accumulated_offset, action);
+                                       physical_offset, action);
 }
 
 bool NGBoxFragmentPainter::HitTestChildren(

@@ -1331,7 +1331,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Passing |flipped_blocks_container| causes flipped-block flipping w.r.t.
   // that container, or LocationContainer() otherwise.
   PhysicalOffset PhysicalLocation(
-      const LayoutBox* flipped_blocks_container = nullptr) const;
+      const LayoutBox* flipped_blocks_container = nullptr) const {
+    return PhysicalLocationInternal(flipped_blocks_container
+                                        ? flipped_blocks_container
+                                        : LocationContainer());
+  }
 
   // Convert a local rect in this box's blocks direction into parent's blocks
   // direction, for parent to accumulate layout or visual overflow.
@@ -1776,6 +1780,17 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const LayoutBox* box_for_flipping) const final {
     DCHECK(!box_for_flipping || box_for_flipping == this);
     return FlipForWritingMode(position, width);
+  }
+
+  PhysicalOffset PhysicalLocationInternal(
+      const LayoutBox* container_box) const {
+    DCHECK_EQ(container_box, LocationContainer());
+    if (LIKELY(!container_box || !container_box->HasFlippedBlocksWritingMode()))
+      return PhysicalOffset(Location());
+
+    return PhysicalOffset(
+        container_box->Size().Width() - Size().Width() - Location().X(),
+        Location().Y());
   }
 
   // The CSS border box rect for this box.

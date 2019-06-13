@@ -298,8 +298,10 @@ bool LayoutFlexibleBox::HitTestChildren(
     if (child->HasSelfPaintingLayer())
       continue;
 
-    bool child_hit =
-        child->HitTestAllPhases(result, hit_test_location, scrolled_offset);
+    PhysicalOffset child_accumulated_offset =
+        scrolled_offset + child->PhysicalLocation(this);
+    bool child_hit = child->HitTestAllPhases(result, hit_test_location,
+                                             child_accumulated_offset);
     if (child_hit) {
       UpdateHitTestResult(result,
                           hit_test_location.Point() - accumulated_offset);

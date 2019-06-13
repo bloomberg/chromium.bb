@@ -145,6 +145,10 @@ bool LayoutTextControlSingleLine::NodeAtPoint(
                                       accumulated_offset, hit_test_action))
     return false;
 
+  const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();
+  if (stop_node && stop_node->NodeForHitTest() == result.InnerNode())
+    return true;
+
   // Say that we hit the inner text element if
   //  - we hit a node inside the inner text element,
   //  - we hit the <input> element (e.g. we're over the border or padding), or
@@ -153,19 +157,18 @@ bool LayoutTextControlSingleLine::NodeAtPoint(
   if (result.InnerNode()->IsDescendantOf(InnerEditorElement()) ||
       result.InnerNode() == GetNode() ||
       (container && container == result.InnerNode())) {
-    PhysicalOffset point_in_parent = hit_test_location.Point();
+    PhysicalOffset inner_editor_accumulated_offset = accumulated_offset;
     if (container && EditingViewPortElement()) {
       if (EditingViewPortElement()->GetLayoutBox()) {
-        point_in_parent -=
+        inner_editor_accumulated_offset +=
             EditingViewPortElement()->GetLayoutBox()->PhysicalLocation();
       }
-      if (container->GetLayoutBox())
-        point_in_parent -= container->GetLayoutBox()->PhysicalLocation();
+      if (container->GetLayoutBox()) {
+        inner_editor_accumulated_offset +=
+            container->GetLayoutBox()->PhysicalLocation();
+      }
     }
-    const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();
-    if (!stop_node || stop_node->NodeForHitTest() != result.InnerNode()) {
-      HitInnerEditorElement(result, point_in_parent, accumulated_offset);
-    }
+    HitInnerEditorElement(result, hit_test_location, accumulated_offset);
   }
   return true;
 }

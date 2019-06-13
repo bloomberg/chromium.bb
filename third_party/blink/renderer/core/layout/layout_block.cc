@@ -1251,17 +1251,19 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
         (may_contain_rendered_legend && child->IsRenderedLegend()))
       continue;
 
+    PhysicalOffset child_accumulated_offset =
+        scrolled_offset + child->PhysicalLocation(this);
     bool did_hit;
     if (child->IsFloating()) {
       if (hit_test_action != kHitTestFloat || !IsLayoutNGObject())
         continue;
       // Hit-test the floats in regular tree order if this is LayoutNG. Only
       // legacy layout uses the FloatingObjects list.
-      did_hit =
-          child->HitTestAllPhases(result, hit_test_location, scrolled_offset);
+      did_hit = child->HitTestAllPhases(result, hit_test_location,
+                                        child_accumulated_offset);
     } else {
-      did_hit = child->NodeAtPoint(result, hit_test_location, scrolled_offset,
-                                   child_hit_test);
+      did_hit = child->NodeAtPoint(result, hit_test_location,
+                                   child_accumulated_offset, child_hit_test);
     }
     if (did_hit) {
       UpdateHitTestResult(result,

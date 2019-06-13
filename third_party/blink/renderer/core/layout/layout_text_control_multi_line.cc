@@ -45,14 +45,13 @@ bool LayoutTextControlMultiLine::NodeAtPoint(
                                       accumulated_offset, hit_test_action))
     return false;
 
+  const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();
+  if (stop_node && stop_node->NodeForHitTest() == result.InnerNode())
+    return true;
+
   if (result.InnerNode() == GetNode() ||
-      result.InnerNode() == InnerEditorElement()) {
-    const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();
-    if (!stop_node || stop_node->NodeForHitTest() != result.InnerNode()) {
-      HitInnerEditorElement(result, hit_test_location.Point(),
-                            accumulated_offset);
-    }
-  }
+      result.InnerNode() == InnerEditorElement())
+    HitInnerEditorElement(result, hit_test_location, accumulated_offset);
 
   return true;
 }

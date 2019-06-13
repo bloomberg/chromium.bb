@@ -4235,14 +4235,16 @@ bool LayoutBlockFlow::HitTestFloats(HitTestResult& result,
     if (floating_object.ShouldPaint() &&
         // TODO(wangxianzhu): Should this be a DCHECK?
         !floating_object.GetLayoutObject()->HasSelfPaintingLayer()) {
-      PhysicalOffset child_point = accumulated_offset;
-      child_point +=
+      PhysicalOffset child_accumulated_offset = accumulated_offset;
+      child_accumulated_offset +=
           PhysicalOffset(XPositionForFloatIncludingMargin(floating_object),
                          YPositionForFloatIncludingMargin(floating_object));
-      child_point -= floating_object.GetLayoutObject()->PhysicalLocation();
       if (floating_object.GetLayoutObject()->HitTestAllPhases(
-              result, hit_test_location, child_point)) {
-        UpdateHitTestResult(result, hit_test_location.Point() - child_point);
+              result, hit_test_location, child_accumulated_offset)) {
+        PhysicalOffset result_offset =
+            child_accumulated_offset -
+            floating_object.GetLayoutObject()->PhysicalLocation();
+        UpdateHitTestResult(result, hit_test_location.Point() - result_offset);
         return true;
       }
     }

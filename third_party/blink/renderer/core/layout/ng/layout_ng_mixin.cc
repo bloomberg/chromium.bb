@@ -290,24 +290,23 @@ bool LayoutNGMixin<Base>::NodeAtPoint(HitTestResult& result,
                                         accumulated_offset, action);
   }
 
-  const PhysicalOffset physical_offset =
-      accumulated_offset + Base::PhysicalLocation();
   if (!this->IsEffectiveRootScroller()) {
     // Check if we need to do anything at all.
     // If we have clipping, then we can't have any spillout.
     PhysicalRect overflow_box = Base::HasOverflowClip()
                                     ? Base::PhysicalBorderBoxRect()
                                     : Base::PhysicalVisualOverflowRect();
-    overflow_box.Move(physical_offset);
+    overflow_box.Move(accumulated_offset);
     if (!hit_test_location.Intersects(overflow_box))
       return false;
   }
   if (Base::IsInSelfHitTestingPhase(action) && Base::HasOverflowClip() &&
-      Base::HitTestOverflowControl(result, hit_test_location, physical_offset))
+      Base::HitTestOverflowControl(result, hit_test_location,
+                                   accumulated_offset))
     return true;
 
   return NGBoxFragmentPainter(*paint_fragment)
-      .NodeAtPoint(result, hit_test_location, physical_offset, action);
+      .NodeAtPoint(result, hit_test_location, accumulated_offset, action);
 }
 
 template <typename Base>

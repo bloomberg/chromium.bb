@@ -191,12 +191,10 @@ bool LayoutEmbeddedContent::NodeAtPoint(
 
     if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
         child_layout_view) {
-      PhysicalOffset adjusted_location =
-          accumulated_offset + PhysicalLocation();
       PhysicalOffset content_offset(BorderLeft() + PaddingLeft(),
                                     BorderTop() + PaddingTop());
       HitTestLocation new_hit_test_location(
-          hit_test_location, -adjusted_location - content_offset);
+          hit_test_location, -accumulated_offset - content_offset);
       HitTestRequest new_hit_test_request(
           result.GetHitTestRequest().GetType() |
               HitTestRequest::kChildFrameHitTest,

@@ -1441,11 +1441,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   CompositingState GetCompositingState() const;
   virtual CompositingReasons AdditionalCompositingReasons() const;
 
-  // |accumulated_offset| is accumulated physical offset from the same origin
-  // as |hit_test_location|, not including the offset of the current object.
-  // The caller just ensures |hit_test_location| and |accumulated_offset|
-  // are in the same coordinate space. The implementation should not assume any
-  // specific coordinate space of them.
+  // |accumulated_offset| is accumulated physical offset of this object from
+  // the same origin as |hit_test_location|. The caller just ensures that
+  // |hit_test_location| and |accumulated_offset| are in the same coordinate
+  // space that is transform-compatible with this object (i.e. we can add 2d
+  // local offset to it without considering transforms). The implementation
+  // should not assume any specific coordinate space of them. The local offset
+  // of |hit_test_location| in this object can be calculated by
+  // |hit_test_location.Point() - accumulated_offset|.
   virtual bool HitTestAllPhases(HitTestResult&,
                                 const HitTestLocation& hit_test_location,
                                 const PhysicalOffset& accumulated_offset,
@@ -1456,7 +1459,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // node be consistent between point- and list-based hit test results.
   virtual Node* NodeForHitTest() const;
   virtual void UpdateHitTestResult(HitTestResult&, const PhysicalOffset&) const;
-  // See HitTestAllPhases for explanation of |hit_test_location| and
+  // See HitTestAllPhases() for explanation of |hit_test_location| and
   // |accumulated_offset|.
   virtual bool NodeAtPoint(HitTestResult&,
                            const HitTestLocation& hit_test_location,

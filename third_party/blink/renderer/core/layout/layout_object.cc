@@ -3342,8 +3342,8 @@ void LayoutObject::UpdateHitTestResult(HitTestResult& result,
 }
 
 bool LayoutObject::NodeAtPoint(HitTestResult&,
-                               const HitTestLocation& /*locationInContainer*/,
-                               const PhysicalOffset& /*accumulatedOffset*/,
+                               const HitTestLocation&,
+                               const PhysicalOffset&,
                                HitTestAction) {
   return false;
 }
