@@ -165,24 +165,14 @@ void NavigateToURLAndWait(Browser* browser,
     // Need a second TestNavigationObserver; the above one is spent.
     content::TestNavigationObserver observer(
         web_contents, content::MessageLoopRunner::QuitMode::DEFERRED);
-    if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-      security_interstitials::SecurityInterstitialTabHelper* helper =
-          security_interstitials::SecurityInterstitialTabHelper::
-              FromWebContents(
-                  browser->tab_strip_model()->GetActiveWebContents());
-      ASSERT_TRUE(
-          helper &&
-          helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
-      std::string javascript =
-          "window.certificateErrorPageController.proceed();";
-      ASSERT_TRUE(content::ExecuteScript(web_contents, javascript));
-    } else {
-      content::InterstitialPage* interstitial =
-          web_contents->GetInterstitialPage();
-      ASSERT_TRUE(interstitial);
-      interstitial->GetDelegateForTesting()->CommandReceived(
-          base::NumberToString(security_interstitials::CMD_PROCEED));
-    }
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            browser->tab_strip_model()->GetActiveWebContents());
+    ASSERT_TRUE(
+        helper &&
+        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
+    std::string javascript = "window.certificateErrorPageController.proceed();";
+    ASSERT_TRUE(content::ExecuteScript(web_contents, javascript));
     observer.Wait();
   }
 }
@@ -707,78 +697,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForAppWithoutWWW) {
   NavigateAndCheckForToolbar(
       app_browser_, https_server()->GetURL("www.foo.com", "/simple.html"),
       true);
-}
-
-// Checks that the toolbar is shown for an HTTPS app with an invalid
-// certificate, if the user has previously proceeded through the interstitial.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarDangerous) {
-  // If DesktopPWAWindowing and CommittedInterstitials are enabled, we will
-  // never load a dangerous app. Opening dangerous apps will always show an
-  // interstitial and proceeding through it will redirect the navigation to a
-  // tab.
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials))
-    return;
-
-  ASSERT_TRUE(https_server()->Start());
-
-  const GURL app_url = https_server()->GetURL("app.com", "/simple.html");
-  ui_test_utils::UrlLoadObserver url_observer(
-      app_url, content::NotificationService::AllSources());
-  SetupAppWithURL(app_url);
-  url_observer.Wait();
-  cert_verifier()->set_default_result(net::ERR_CERT_DATE_INVALID);
-
-  // Proceeding through an interstitial results in the navigation being
-  // redirected to a regular tab. So we need to open the app again. Proceed
-  // through the interstitial once.
-  NavigateToURLAndWait(app_browser_, app_url,
-                       /*proceed_through_interstitial=*/true);
-  ASSERT_NE(app_browser_, chrome::FindLastActive());
-
-  app_browser_ = LaunchAppBrowser(app_);
-  NavigateToURLAndWait(app_browser_, app_url,
-                       /*proceed_through_interstitial=*/false);
-
-  // There should be no interstitial shown because we previously proceeded
-  // through it.
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-    security_interstitials::SecurityInterstitialTabHelper* helper =
-        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-            browser()->tab_strip_model()->GetActiveWebContents());
-    ASSERT_FALSE(
-        helper &&
-        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
-  } else {
-    ASSERT_FALSE(app_browser_->tab_strip_model()
-                     ->GetActiveWebContents()
-                     ->GetInterstitialPage());
-  }
-
-  bool proceed_through_interstitial = false;
-  NavigateAndCheckForToolbar(app_browser_, app_url, true,
-                             proceed_through_interstitial);
-}
-
-// Check that localhost is not considered insecure.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForLocalhost) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  ASSERT_TRUE(https_server()->Start());
-
-  const GURL app_url =
-      embedded_test_server()->GetURL("localhost", "/ssl/google.html");
-  InstallPWA(app_url);
-
-  // Navigate to the app's launch page; the toolbar should be hidden.
-  NavigateAndCheckForToolbar(app_browser_, app_url, false);
-
-  // Navigate out of the app's scope on localhost, the toolbar should be
-  // visible.
-  NavigateAndCheckForToolbar(
-      app_browser_, embedded_test_server()->GetURL("localhost", "/simple.html"),
-      true);
-
-  // Navigate to a different origin; the toolbar should be visible.
-  NavigateAndCheckForToolbar(app_browser_, GURL("https://example.com"), true);
 }
 
 // Check that a subframe on a regular web page can navigate to a URL that
