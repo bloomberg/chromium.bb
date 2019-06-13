@@ -2011,7 +2011,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_ar_core',
-              'version': 'version:1.8.0-cr0',
+              'version': '4_5y1Cw_L1MHu3UedmkavqbZ7H7sYPBTdpcAOJQvlXkC',
           },
       ],
       'condition': 'checkout_android',

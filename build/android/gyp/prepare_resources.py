@@ -224,6 +224,8 @@ def _OnStaleMd5(options):
         if options.shared_resources:
           rjava_build_options.GenerateOnResourcesLoaded()
 
+        # Not passing in custom_root_package_name or parent to keep
+        # file names unique.
         resource_utils.CreateRJavaFiles(
             build.srcjar_dir, package, r_txt_path, options.extra_res_packages,
             options.extra_r_text_files, rjava_build_options, options.srcjar_out)

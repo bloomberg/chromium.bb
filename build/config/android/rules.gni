@@ -2032,7 +2032,6 @@ if (enable_java_templates) {
   #     target.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
-
     assert(defined(invoker.final_apk_path) || defined(invoker.name))
     assert(defined(invoker.android_manifest))
     _gen_dir = "$target_gen_dir/$target_name"
@@ -2640,6 +2639,18 @@ if (enable_java_templates) {
     }
 
     _java_target = "${_template_name}__java"
+
+    # Included special group to bypass looking for __java__build_config file
+    # for base module. Build config for base_module does not include the __java
+    # (eg. monochrome_public_bundle__base_bundle_module__build_config)
+    # and thus, this workaround skips looking for one.
+    if (defined(invoker.base_module_target)) {
+      group("${_template_name}__group") {
+        deps = [
+          "${invoker.base_module_target}__java",
+        ]
+      }
+    }
     java_library_impl(_java_target) {
       forward_variables_from(invoker,
                              [
@@ -2665,6 +2676,12 @@ if (enable_java_templates) {
         type = "android_app_bundle_module"
         res_size_info_path = _res_size_info_path
         is_base_module = _is_base_module
+
+        if (!is_base_module) {
+          if (defined(invoker.base_module_target)) {
+            _deps += [ ":${_template_name}__group" ]
+          }
+        }
       } else {
         type = "android_apk"
       }
