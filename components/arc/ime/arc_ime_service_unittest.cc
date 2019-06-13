@@ -141,6 +141,10 @@ class FakeArcWindowDelegate : public ArcImeService::ArcWindowDelegate {
     return window ? test_input_method_ : nullptr;
   }
 
+  bool IsImeBlocked(aura::Window* window) const override {
+    return ime_blocked_;
+  }
+
   std::unique_ptr<aura::Window> CreateFakeArcWindow() {
     const int id = next_id_++;
     arc_window_id_.insert(id);
@@ -154,11 +158,14 @@ class FakeArcWindowDelegate : public ArcImeService::ArcWindowDelegate {
         &dummy_delegate_, id, gfx::Rect(), nullptr));
   }
 
+  void set_ime_blocked(bool ime_blocked) { ime_blocked_ = ime_blocked; }
+
  private:
   aura::test::TestWindowDelegate dummy_delegate_;
   int next_id_;
   std::set<int> arc_window_id_;
   ui::InputMethod* test_input_method_;
+  bool ime_blocked_ = false;
 };
 
 }  // namespace
@@ -270,6 +277,11 @@ TEST_F(ArcImeServiceTest, InsertChar) {
   // When the bridge is accepting text inputs, forward the event.
   instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, true,
                                     mojom::TEXT_INPUT_FLAG_NONE);
+  instance_->InsertChar(ui::KeyEvent('a', ui::VKEY_A, ui::DomCode::NONE, 0));
+  EXPECT_EQ(1, fake_arc_ime_bridge_->count_send_insert_text());
+
+  // When IME is blocked, the event is not forwarded.
+  fake_window_delegate_->set_ime_blocked(true);
   instance_->InsertChar(ui::KeyEvent('a', ui::VKEY_A, ui::DomCode::NONE, 0));
   EXPECT_EQ(1, fake_arc_ime_bridge_->count_send_insert_text());
 }

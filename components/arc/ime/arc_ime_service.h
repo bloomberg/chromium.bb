@@ -64,6 +64,7 @@ class ArcImeService : public KeyedService,
     virtual void UnregisterFocusObserver() = 0;
     virtual ui::InputMethod* GetInputMethodForWindow(
         aura::Window* window) const = 0;
+    virtual bool IsImeBlocked(aura::Window* window) const = 0;
   };
 
   // Injects the custom IPC bridge object for testing purpose only.
@@ -80,6 +81,9 @@ class ArcImeService : public KeyedService,
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   // Overridden from aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,
@@ -177,6 +181,10 @@ class ArcImeService : public KeyedService,
   gfx::Range text_range_;
   base::string16 text_in_range_;
   gfx::Range selection_range_;
+
+  // Return value of IsImeBlocked() last time OnWindowPropertyChanged() is
+  // called. It might not be the latest blocking state.
+  bool last_ime_blocked_ = false;
 
   aura::Window* focused_arc_window_ = nullptr;
 
