@@ -38,6 +38,7 @@ class PLATFORM_EXPORT GraphicsContext3DUtils {
                             GLenum&,
                             const sk_sp<SkImage>&,
                             GLenum filter);
+  void RegisterMailbox(GrTexture*, const gpu::Mailbox&);
   void RemoveCachedMailbox(GrTexture*);
 
   bool Accelerated2DCanvasFeatureEnabled();
