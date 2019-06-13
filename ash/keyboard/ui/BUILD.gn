@@ -149,6 +149,7 @@ test("keyboard_unittests") {
     "container_full_width_behavior_unittest.cc",
     "keyboard_controller_unittest.cc",
     "keyboard_event_handler_unittest.cc",
+    "keyboard_ui_model_unittest.cc",
     "keyboard_ukm_recorder_unittest.cc",
     "keyboard_util_unittest.cc",
     "notification_manager_unittest.cc",

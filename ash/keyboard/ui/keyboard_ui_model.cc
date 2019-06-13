@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 
 namespace keyboard {
@@ -50,14 +49,10 @@ bool IsAllowedStateTransition(KeyboardUIState from, KeyboardUIState to) {
 void RecordStateTransition(KeyboardUIState prev, KeyboardUIState next) {
   const bool valid_transition = IsAllowedStateTransition(prev, next);
 
-  // Emit UMA
-  const int transition_record =
-      (valid_transition ? 1 : -1) *
-      (static_cast<int>(prev) * 1000 + static_cast<int>(next));
+  // Use negative hash values to indicate invalid transitions.
+  const int hash = GetStateTransitionHash(prev, next);
   base::UmaHistogramSparse("VirtualKeyboard.ControllerStateTransition",
-                           transition_record);
-  UMA_HISTOGRAM_BOOLEAN("VirtualKeyboard.ControllerStateTransitionIsValid",
-                        valid_transition);
+                           valid_transition ? hash : -hash);
 
   DCHECK(valid_transition) << "State: " << StateToStr(prev) << " -> "
                            << StateToStr(next) << " Unexpected transition";
@@ -80,6 +75,12 @@ std::string StateToStr(KeyboardUIState state) {
     case KeyboardUIState::kHidden:
       return "HIDDEN";
   }
+}
+
+int GetStateTransitionHash(KeyboardUIState prev, KeyboardUIState next) {
+  // The hashes correspond to the KeyboardControllerStateTransition entry in
+  // tools/metrics/enums.xml.
+  return static_cast<int>(prev) * 1000 + static_cast<int>(next);
 }
 
 KeyboardUIModel::KeyboardUIModel() = default;

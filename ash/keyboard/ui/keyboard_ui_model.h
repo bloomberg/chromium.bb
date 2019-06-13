@@ -38,6 +38,10 @@ enum class KeyboardUIState {
 // Returns the string representation of a keyboard UI state.
 std::string StateToStr(KeyboardUIState state);
 
+// Returns a unique hash of a state transition, used for histograms.
+KEYBOARD_EXPORT int GetStateTransitionHash(KeyboardUIState prev,
+                                           KeyboardUIState next);
+
 // Model for the virtual keyboard UI.
 class KEYBOARD_EXPORT KeyboardUIModel {
  public:
