@@ -1269,7 +1269,6 @@ component("ash") {
     "//services/device/public/mojom",
     "//services/media_session/public/mojom",
     "//services/service_manager/public/cpp",
-    "//services/ws/public/cpp/input_devices",
     "//skia",
     "//ui/aura",
     "//ui/events",
@@ -1360,8 +1359,6 @@ component("ash") {
     "//services/data_decoder/public/cpp",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
-    "//services/ws/public/cpp/input_devices:input_device_controller",
-    "//services/ws/public/mojom/input_devices",
 
     # TODO(msw): Remove this; ash should not depend on blink/webkit.
     "//third_party/blink/public:blink_headers",
@@ -1386,7 +1383,6 @@ component("ash") {
     "//ui/events:events_base",
     "//ui/events:gesture_detection",
     "//ui/events/devices",
-    "//ui/events/devices/mojo",
     "//ui/events/ozone:events_ozone",
     "//ui/message_center",
     "//ui/native_theme",
@@ -2207,7 +2203,6 @@ static_library("test_support") {
     "//components/viz/test:test_support",
     "//device/bluetooth",
     "//services/device/public/mojom",
-    "//services/ws/public/cpp/input_devices",
     "//skia",
     "//testing/gtest",
     "//ui/accessibility",

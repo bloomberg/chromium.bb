@@ -93,7 +93,6 @@ include_rules = [
   "+services/video_capture/public",
   "+services/viz/public",
   "+services/viz/privileged",
-  "+services/ws/public",
   "+skia/ext",
   "+third_party/boringssl/src/include",
   "+third_party/crashpad",
