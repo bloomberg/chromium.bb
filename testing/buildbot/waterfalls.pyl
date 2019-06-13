@@ -1759,7 +1759,7 @@
       },
       'linux-blink-rel-dummy': {
         'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'isolated_scripts': 'chromium_web_tests_and_wpt_webdriver_isolated_scripts',
         },
         'swarming': {
           'dimension_sets': [
@@ -1767,7 +1767,6 @@
               'os': 'Ubuntu-14.04',
             },
           ],
-          'shards': 20,
         },
       },
       'linux-chromeos-code-coverage': {
