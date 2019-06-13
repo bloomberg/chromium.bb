@@ -11747,28 +11747,34 @@ static int fetch_picked_ref_frames_mask(const MACROBLOCK *const x,
 // Case 3: return 2, means skip compound only, but still try single motion modes
 static int inter_mode_search_order_independent_skip(
     const AV1_COMP *cpi, const MACROBLOCK *x, mode_skip_mask_t *mode_skip_mask,
-    InterModeSearchState *search_state, int skip_ref_frame_mask) {
-  const SPEED_FEATURES *const sf = &cpi->sf;
-  const AV1_COMMON *const cm = &cpi->common;
-  const OrderHintInfo *const order_hint_info = &cm->seq_params.order_hint_info;
-  const CurrentFrame *const current_frame = &cm->current_frame;
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const MV_REFERENCE_FRAME *ref_frame = mbmi->ref_frame;
-  const PREDICTION_MODE this_mode = mbmi->mode;
-  const int comp_pred = ref_frame[1] > INTRA_FRAME;
-  int skip_motion_mode = 0;
-
-  if (mask_says_skip(mode_skip_mask, ref_frame, this_mode)) {
+    InterModeSearchState *search_state, int skip_ref_frame_mask,
+    PREDICTION_MODE mode, const MV_REFERENCE_FRAME *ref_frame) {
+  if (mask_says_skip(mode_skip_mask, ref_frame, mode)) {
     return 1;
   }
 
+  // This is only used in motion vector unit test.
+  if (cpi->oxcf.motion_vector_unit_test && ref_frame[0] == INTRA_FRAME)
+    return 1;
+
+  const AV1_COMMON *const cm = &cpi->common;
+  if (skip_repeated_mv(cm, x, mode, ref_frame, search_state)) {
+    return 1;
+  }
+
+  const int comp_pred = ref_frame[1] > INTRA_FRAME;
+  if (!cpi->oxcf.enable_onesided_comp && comp_pred && cpi->all_one_sided_refs) {
+    return 1;
+  }
+
+  const MB_MODE_INFO *const mbmi = x->e_mbd.mi[0];
   // If no valid mode has been found so far in PARTITION_NONE when finding a
   // valid partition is required, do not skip mode.
   if (search_state->best_rd == INT64_MAX && mbmi->partition == PARTITION_NONE &&
       x->must_find_valid_partition)
     return 0;
 
+  int skip_motion_mode = 0;
   if (mbmi->partition != PARTITION_NONE && mbmi->partition != PARTITION_SPLIT) {
     const int ref_type = av1_ref_frame_type(ref_frame);
     int skip_ref = skip_ref_frame_mask & (1 << ref_type);
@@ -11778,29 +11784,25 @@ static int inter_mode_search_order_independent_skip(
       // If current single ref mode is marked skip, we need to check if it will
       // be used in compound ref modes.
       for (int r = ALTREF_FRAME + 1; r < MODE_CTX_REF_FRAMES; ++r) {
-        if (!(skip_ref_frame_mask & (1 << r))) {
-          const MV_REFERENCE_FRAME *rf = ref_frame_map[r - REF_FRAMES];
-          if (rf[0] == ref_type || rf[1] == ref_type) {
-            // Found a not skipped compound ref mode which contains current
-            // single ref. So this single ref can't be skipped completly
-            // Just skip it's motion mode search, still try it's simple
-            // transition mode.
-            skip_motion_mode = 1;
-            skip_ref = 0;
-            break;
-          }
+        if (skip_ref_frame_mask & (1 << r)) continue;
+        const MV_REFERENCE_FRAME *rf = ref_frame_map[r - REF_FRAMES];
+        if (rf[0] == ref_type || rf[1] == ref_type) {
+          // Found a not skipped compound ref mode which contains current
+          // single ref. So this single ref can't be skipped completly
+          // Just skip it's motion mode search, still try it's simple
+          // transition mode.
+          skip_motion_mode = 1;
+          skip_ref = 0;
+          break;
         }
       }
     }
     if (skip_ref) return 1;
   }
 
-  // This is only used in motion vector unit test.
-  if (cpi->oxcf.motion_vector_unit_test && ref_frame[0] == INTRA_FRAME)
-    return 1;
-
+  const SPEED_FEATURES *const sf = &cpi->sf;
   if (ref_frame[0] == INTRA_FRAME) {
-    if (this_mode != DC_PRED) {
+    if (mode != DC_PRED) {
       // Disable intra modes other than DC_PRED for blocks with low variance
       // Threshold for intra skipping based on source variance
       // TODO(debargha): Specialize the threshold for super block sizes
@@ -11812,6 +11814,45 @@ static int inter_mode_search_order_independent_skip(
   }
 
   if (sf->selective_ref_frame) {
+    const OrderHintInfo *const order_hint_info =
+        &cm->seq_params.order_hint_info;
+    const CurrentFrame *const current_frame = &cm->current_frame;
+    if (sf->selective_ref_frame >= 2 ||
+        (sf->selective_ref_frame == 1 && comp_pred)) {
+      if (ref_frame[0] == LAST3_FRAME || ref_frame[1] == LAST3_FRAME) {
+        if (get_relative_dist(
+                order_hint_info,
+                cm->cur_frame->ref_order_hints[LAST3_FRAME - LAST_FRAME],
+                cm->cur_frame->ref_order_hints[GOLDEN_FRAME - LAST_FRAME]) <= 0)
+          return 1;
+      }
+      if (ref_frame[0] == LAST2_FRAME || ref_frame[1] == LAST2_FRAME) {
+        if (get_relative_dist(
+                order_hint_info,
+                cm->cur_frame->ref_order_hints[LAST2_FRAME - LAST_FRAME],
+                cm->cur_frame->ref_order_hints[GOLDEN_FRAME - LAST_FRAME]) <= 0)
+          return 1;
+      }
+    }
+
+    // One-sided compound is used only when all reference frames are one-sided.
+    if (sf->selective_ref_frame >= 2 && comp_pred && !cpi->all_one_sided_refs) {
+      unsigned int ref_offsets[2];
+      for (int i = 0; i < 2; ++i) {
+        const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame[i]);
+        assert(buf != NULL);
+        ref_offsets[i] = buf->order_hint;
+      }
+      const int ref0_dist = get_relative_dist(order_hint_info, ref_offsets[0],
+                                              current_frame->order_hint);
+      const int ref1_dist = get_relative_dist(order_hint_info, ref_offsets[1],
+                                              current_frame->order_hint);
+      if ((ref0_dist <= 0 && ref1_dist <= 0) ||
+          (ref0_dist > 0 && ref1_dist > 0)) {
+        return 1;
+      }
+    }
+
     if (sf->selective_ref_frame >= 3) {
       if (ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME)
         if (get_relative_dist(
@@ -11827,87 +11868,32 @@ static int inter_mode_search_order_independent_skip(
           return 1;
     }
 
-    if (sf->selective_ref_frame >= 2 ||
-        (sf->selective_ref_frame == 1 && comp_pred)) {
-      if (ref_frame[0] == LAST3_FRAME || ref_frame[1] == LAST3_FRAME)
-        if (get_relative_dist(
-                order_hint_info,
-                cm->cur_frame->ref_order_hints[LAST3_FRAME - LAST_FRAME],
-                cm->cur_frame->ref_order_hints[GOLDEN_FRAME - LAST_FRAME]) <= 0)
-          return 1;
-      if (ref_frame[0] == LAST2_FRAME || ref_frame[1] == LAST2_FRAME)
-        if (get_relative_dist(
-                order_hint_info,
-                cm->cur_frame->ref_order_hints[LAST2_FRAME - LAST_FRAME],
-                cm->cur_frame->ref_order_hints[GOLDEN_FRAME - LAST_FRAME]) <= 0)
-          return 1;
-    }
-  }
-
-  // One-sided compound is used only when all reference frames are one-sided.
-  if ((sf->selective_ref_frame >= 2) && comp_pred && !cpi->all_one_sided_refs) {
-    unsigned int ref_offsets[2];
-    for (int i = 0; i < 2; ++i) {
-      const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame[i]);
-      assert(buf != NULL);
-      ref_offsets[i] = buf->order_hint;
-    }
-    if ((get_relative_dist(order_hint_info, ref_offsets[0],
-                           current_frame->order_hint) <= 0 &&
-         get_relative_dist(order_hint_info, ref_offsets[1],
-                           current_frame->order_hint) <= 0) ||
-        (get_relative_dist(order_hint_info, ref_offsets[0],
-                           current_frame->order_hint) > 0 &&
-         get_relative_dist(order_hint_info, ref_offsets[1],
-                           current_frame->order_hint) > 0))
-      return 1;
-  }
-
-  if (sf->selective_ref_frame >= 4 && comp_pred) {
-    // Check if one of the reference is ALTREF2_FRAME and BWDREF_FRAME is a
-    // valid reference.
-    if ((ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME) &&
-        (cpi->ref_frame_flags & av1_ref_frame_flag_list[BWDREF_FRAME])) {
-      // Check if both ALTREF2_FRAME and BWDREF_FRAME are future references.
-      if ((get_relative_dist(
-               order_hint_info,
-               cm->cur_frame->ref_order_hints[ALTREF2_FRAME - LAST_FRAME],
-               current_frame->order_hint) > 0) &&
-          (get_relative_dist(
-               order_hint_info,
-               cm->cur_frame->ref_order_hints[BWDREF_FRAME - LAST_FRAME],
-               current_frame->order_hint) > 0)) {
-        // Drop ALTREF2_FRAME as a reference if BWDREF_FRAME is a closer
-        // reference to the current frame than ALTREF2_FRAME
-        if (get_relative_dist(
-                order_hint_info,
-                cm->cur_frame->ref_order_hints[ALTREF2_FRAME - LAST_FRAME],
-                cm->cur_frame->ref_order_hints[BWDREF_FRAME - LAST_FRAME]) >=
-            0) {
-          const RefCntBuffer *const buf_arf2 =
-              get_ref_frame_buf(cm, ALTREF2_FRAME);
-          assert(buf_arf2 != NULL);
-          const RefCntBuffer *const buf_bwd =
-              get_ref_frame_buf(cm, BWDREF_FRAME);
-          assert(buf_bwd != NULL);
-          (void)buf_arf2;
-          (void)buf_bwd;
+    if (sf->selective_ref_frame >= 4 && comp_pred) {
+      // Check if one of the reference is ALTREF2_FRAME and BWDREF_FRAME is a
+      // valid reference.
+      if ((ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME) &&
+          (cpi->ref_frame_flags & av1_ref_frame_flag_list[BWDREF_FRAME])) {
+        // Check if both ALTREF2_FRAME and BWDREF_FRAME are future references.
+        const int arf2_dist = get_relative_dist(
+            order_hint_info,
+            cm->cur_frame->ref_order_hints[ALTREF2_FRAME - LAST_FRAME],
+            current_frame->order_hint);
+        const int bwd_dist = get_relative_dist(
+            order_hint_info,
+            cm->cur_frame->ref_order_hints[BWDREF_FRAME - LAST_FRAME],
+            current_frame->order_hint);
+        if (arf2_dist > 0 && bwd_dist > 0 && bwd_dist <= arf2_dist) {
+          // Drop ALTREF2_FRAME as a reference if BWDREF_FRAME is a closer
+          // reference to the current frame than ALTREF2_FRAME
+          assert(get_ref_frame_buf(cm, ALTREF2_FRAME) != NULL);
+          assert(get_ref_frame_buf(cm, BWDREF_FRAME) != NULL);
           return 1;
         }
       }
     }
   }
 
-  if (skip_repeated_mv(cm, x, this_mode, ref_frame, search_state)) {
-    return 1;
-  }
-  if (skip_motion_mode) {
-    return 2;
-  }
-
-  if (!cpi->oxcf.enable_onesided_comp && comp_pred && cpi->all_one_sided_refs) {
-    return 1;
-  }
+  if (skip_motion_mode) return 2;
 
   return 0;
 }
@@ -12613,10 +12599,16 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   for (int midx = 0; midx < MAX_MODES; ++midx) {
     if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
 
-    const int do_tx_search = do_tx_search_mode(
-        do_tx_search_global, midx, sf->inter_mode_rd_model_estimation_adaptive);
     const MODE_DEFINITION *mode_order = &av1_mode_order[midx];
     this_mode = mode_order->mode;
+    const int ret = inter_mode_search_order_independent_skip(
+        cpi, x, &mode_skip_mask, &search_state, skip_ref_frame_mask, this_mode,
+        mode_order->ref_frame);
+    if (ret == 1) continue;
+    args.skip_motion_mode = (ret == 2);
+
+    const int do_tx_search = do_tx_search_mode(
+        do_tx_search_global, midx, sf->inter_mode_rd_model_estimation_adaptive);
     const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
     const MV_REFERENCE_FRAME second_ref_frame = mode_order->ref_frame[1];
     const int comp_pred = second_ref_frame > INTRA_FRAME;
@@ -12650,11 +12642,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
-
-    const int ret = inter_mode_search_order_independent_skip(
-        cpi, x, &mode_skip_mask, &search_state, skip_ref_frame_mask);
-    if (ret == 1) continue;
-    args.skip_motion_mode = (ret == 2);
 
     if (sf->drop_ref && comp_pred) {
       if (sf_check_is_drop_ref(mode_order, &search_state)) {
@@ -13239,8 +13226,16 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   uint8_t *const tmp_buf = get_buf_by_bd(xd, x->tmp_obmc_bufs[0]);
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
+    if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
+
     const MODE_DEFINITION *mode_order = &av1_mode_order[midx];
     this_mode = mode_order->mode;
+    const int ret = inter_mode_search_order_independent_skip(
+        cpi, x, &mode_skip_mask, &search_state, skip_ref_frame_mask, this_mode,
+        mode_order->ref_frame);
+    if (ret == 1) continue;
+    args.skip_motion_mode = (ret == 2);
+
     const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
     const MV_REFERENCE_FRAME second_ref_frame = mode_order->ref_frame[1];
     const int comp_pred = second_ref_frame > INTRA_FRAME;
@@ -13291,13 +13286,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
-
-    if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
-
-    const int ret = inter_mode_search_order_independent_skip(
-        cpi, x, &mode_skip_mask, &search_state, skip_ref_frame_mask);
-    if (ret == 1) continue;
-    args.skip_motion_mode = (ret == 2);
 
     if (sf->drop_ref && comp_pred) {
       if (sf_check_is_drop_ref(mode_order, &search_state)) {
