@@ -47511,6 +47511,7 @@ Called by update_net_trust_anchors.py.-->
       label="Exceeded maximum number of navigation restarts or a redirect
              loop was detected"/>
   <int value="10" label="(DEPRECATED IN M74) Disallowed by PreviewsState"/>
+  <int value="11" label="The chrome-proxy header is invalid"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">
