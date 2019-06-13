@@ -5,6 +5,7 @@
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/vulkan/buildflags.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_instance.h"
@@ -32,6 +33,14 @@ GrVkGetProc make_unified_getter(const PFN_vkGetInstanceProcAddr& iproc,
     }
     return iproc(instance, proc_name);
   };
+}
+
+VulkanInProcessContextProvider::VulkanInProcessContextProvider(
+    gpu::VulkanImplementation* vulkan_implementation)
+    : vulkan_implementation_(vulkan_implementation) {}
+
+VulkanInProcessContextProvider::~VulkanInProcessContextProvider() {
+  Destroy();
 }
 
 bool VulkanInProcessContextProvider::Initialize() {
@@ -89,8 +98,19 @@ bool VulkanInProcessContextProvider::Initialize() {
 }
 
 void VulkanInProcessContextProvider::Destroy() {
-  if (gr_context_)
+  if (device_queue_) {
+    // Destroy |fence_helper| will wait idle on the device queue, and then run
+    // all enqueued cleanup tasks.
+    auto* fence_helper = device_queue_->GetFenceHelper();
+    fence_helper->Destroy();
+  }
+
+  if (gr_context_) {
+    // releaseResourcesAndAbandonContext() will wait on GPU to finish all works,
+    // execute pending flush done callbacks and release all resources.
+    gr_context_->releaseResourcesAndAbandonContext();
     gr_context_.reset();
+  }
 
   if (device_queue_) {
     device_queue_->Destroy();
@@ -124,14 +144,6 @@ void VulkanInProcessContextProvider::EnqueueSecondaryCBSemaphores(
 void VulkanInProcessContextProvider::EnqueueSecondaryCBPostSubmitTask(
     base::OnceClosure closure) {
   NOTREACHED();
-}
-
-VulkanInProcessContextProvider::VulkanInProcessContextProvider(
-    gpu::VulkanImplementation* vulkan_implementation)
-    : vulkan_implementation_(vulkan_implementation) {}
-
-VulkanInProcessContextProvider::~VulkanInProcessContextProvider() {
-  Destroy();
 }
 
 }  // namespace viz
