@@ -1557,6 +1557,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tabmodel/document/AsyncTabCreationParams.java",
   "java/src/org/chromium/chrome/browser/tabmodel/document/TabDelegate.java",
   "java/src/org/chromium/chrome/browser/tab_activity_glue/ActivityTabWebContentsDelegateAndroid.java",
+  "java/src/org/chromium/chrome/browser/tab_activity_glue/TabDelegateFactoryImpl.java",
   "java/src/org/chromium/chrome/browser/tasks/ReturnToChromeExperimentsUtil.java",
   "java/src/org/chromium/chrome/browser/tasks/EngagementTimeUtil.java",
   "java/src/org/chromium/chrome/browser/tasks/JourneyManager.java",

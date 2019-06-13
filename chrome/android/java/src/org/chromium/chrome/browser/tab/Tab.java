@@ -865,11 +865,11 @@ public class Tab
 
             if (tabState != null) restoreFieldsFromState(tabState);
 
-            mDelegateFactory = delegateFactory;
             initializeNative();
 
             RevenueStats.getInstance().tabCreated(this);
 
+            mDelegateFactory = delegateFactory;
             mDelegateFactory.createBrowserControlsState(this);
 
             // If there is a frozen WebContents state or a pending lazy load, don't create a new

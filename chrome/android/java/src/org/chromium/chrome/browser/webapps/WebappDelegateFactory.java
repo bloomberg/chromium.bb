@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
+import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 
@@ -27,7 +28,7 @@ import org.chromium.webapk.lib.client.WebApkNavigationClient;
  * A {@link TabDelegateFactory} class to be used in all {@link Tab} instances owned by a
  * {@link SingleTabActivity}.
  */
-public class WebappDelegateFactory extends TabDelegateFactory {
+public class WebappDelegateFactory extends TabDelegateFactoryImpl {
     private static class WebappWebContentsDelegateAndroid
             extends ActivityTabWebContentsDelegateAndroid {
         private final WebappActivity mActivity;
@@ -92,6 +93,7 @@ public class WebappDelegateFactory extends TabDelegateFactory {
     private final WebappActivity mActivity;
 
     public WebappDelegateFactory(WebappActivity activity) {
+        super(activity);
         mActivity = activity;
     }
 

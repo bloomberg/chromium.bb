@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -114,7 +115,7 @@ public abstract class SingleTabActivity extends ChromeActivity {
      * @return {@link TabDelegateFactory} to be used while creating the associated {@link Tab}.
      */
     protected TabDelegateFactory createTabDelegateFactory() {
-        return new TabDelegateFactory();
+        return new TabDelegateFactoryImpl(this);
     }
 
     /**

@@ -123,6 +123,7 @@ import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
 import org.chromium.chrome.browser.tabbed_mode.TabbedAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -448,7 +449,11 @@ public class ChromeTabbedActivity
         }
     }
 
-    private class TabbedModeTabDelegateFactory extends TabDelegateFactory {
+    private class TabbedModeTabDelegateFactory extends TabDelegateFactoryImpl {
+        private TabbedModeTabDelegateFactory() {
+            super(ChromeTabbedActivity.this);
+        }
+
         @Override
         public void createBrowserControlsState(Tab tab) {
             TabBrowserControlsState.create(tab,

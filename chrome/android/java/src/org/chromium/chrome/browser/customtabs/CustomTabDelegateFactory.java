@@ -50,7 +50,7 @@ import javax.inject.Inject;
  * by a {@link CustomTabActivity}.
  */
 @ActivityScope
-public class CustomTabDelegateFactory extends TabDelegateFactory {
+public class CustomTabDelegateFactory implements TabDelegateFactory {
     /**
      * A custom external navigation delegate that forbids the intent picker from showing up.
      */
