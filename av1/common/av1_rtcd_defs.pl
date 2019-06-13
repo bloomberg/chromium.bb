@@ -36,7 +36,14 @@ struct yv12_buffer_config;
 struct NN_CONFIG;
 typedef struct NN_CONFIG NN_CONFIG;
 
-enum { NONE, RELU, SOFTSIGN } UENUM1BYTE(ACTIVATION);
+enum { NONE, RELU, SOFTSIGN, SIGMOID } UENUM1BYTE(ACTIVATION);
+#if CONFIG_NN_V2
+enum { SOFTMAX_CROSS_ENTROPY } UENUM1BYTE(LOSS);
+struct NN_CONFIG_V2;
+typedef struct NN_CONFIG_V2 NN_CONFIG_V2;
+struct FC_LAYER;
+typedef struct FC_LAYER FC_LAYER;
+#endif  // CONFIG_NN_V2
 
 struct CNN_CONFIG;
 typedef struct CNN_CONFIG CNN_CONFIG;

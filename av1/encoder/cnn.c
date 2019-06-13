@@ -290,7 +290,10 @@ activation_fn get_activation(ACTIVATION layer_activation) {
     case NONE: return identity;
     case RELU: return relu;
     case SOFTSIGN: return softsign;
-    default: assert(0 && "Unknown padding type"); return NULL;
+    case SIGMOID:
+      assert(0 && "Sigmoid has not been supported in CNN.");  // TO DO
+      return NULL;
+    default: assert(0 && "Unknown activation type"); return NULL;
   }
 }
 

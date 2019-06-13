@@ -1646,8 +1646,13 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   if (tx_set_type != EXT_TX_SET_ALL16 &&
       tx_set_type != EXT_TX_SET_DTT9_IDTX_1DDCT)
     return 0;
+#if CONFIG_NN_V2
+  NN_CONFIG_V2 *nn_config_hor = av1_tx_type_nnconfig_map_hor[tx_size];
+  NN_CONFIG_V2 *nn_config_ver = av1_tx_type_nnconfig_map_ver[tx_size];
+#else
   const NN_CONFIG *nn_config_hor = av1_tx_type_nnconfig_map_hor[tx_size];
   const NN_CONFIG *nn_config_ver = av1_tx_type_nnconfig_map_ver[tx_size];
+#endif
   if (!nn_config_hor || !nn_config_ver) return 0;  // Model not established yet.
 
   aom_clear_system_state();
@@ -1669,8 +1674,14 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   av1_get_horver_correlation_full(diff, diff_stride, bw, bh,
                                   &hfeatures[hfeatures_num - 1],
                                   &vfeatures[vfeatures_num - 1]);
+  aom_clear_system_state();
+#if CONFIG_NN_V2
+  av1_nn_predict_v2(hfeatures, nn_config_hor, hscores);
+  av1_nn_predict_v2(vfeatures, nn_config_ver, vscores);
+#else
   av1_nn_predict(hfeatures, nn_config_hor, hscores);
   av1_nn_predict(vfeatures, nn_config_ver, vscores);
+#endif
   aom_clear_system_state();
 
   float score_2D_average = 0.0f;
