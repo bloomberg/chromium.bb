@@ -157,7 +157,7 @@ bool BookmarkBubbleView::GetExtraViewPadding(int* padding) {
   return true;
 }
 
-views::View* BookmarkBubbleView::CreateFootnoteView() {
+std::unique_ptr<views::View> BookmarkBubbleView::CreateFootnoteView() {
 #if defined(OS_CHROMEOS)
   // ChromeOS does not show the signin promo.
   return nullptr;
@@ -174,12 +174,11 @@ views::View* BookmarkBubbleView::CreateFootnoteView() {
       IDS_BOOKMARK_DICE_PROMO_SYNC_MESSAGE;
   params.dice_signin_button_prominent = false;
 
-  footnote_view_ =
-      CreateBubbleSyncPromoView(
-          profile_, delegate_.get(),
-          signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE, params)
-          .release();
-  return footnote_view_;
+  auto footnote_view = CreateBubbleSyncPromoView(
+      profile_, delegate_.get(),
+      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE, params);
+  footnote_view_ = footnote_view.get();
+  return footnote_view;
 #endif
 }
 
