@@ -3040,6 +3040,8 @@ jumbo_split_static_library("browser") {
       "memory/swap_thrashing_monitor_delegate.h",
       "memory/swap_thrashing_monitor_delegate_win.cc",
       "memory/swap_thrashing_monitor_delegate_win.h",
+      "metrics/desktop_platform_features_metrics_provider.cc",
+      "metrics/desktop_platform_features_metrics_provider.h",
       "metrics/desktop_session_duration/audible_contents_tracker.cc",
       "metrics/desktop_session_duration/audible_contents_tracker.h",
       "metrics/desktop_session_duration/chrome_visibility_observer.cc",

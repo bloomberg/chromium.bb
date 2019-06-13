@@ -11692,6 +11692,12 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Safe Browsing returns SAFE"/>
 </enum>
 
+<enum name="DarkModeStatus">
+  <int value="0" label="Unavailable"/>
+  <int value="1" label="Light"/>
+  <int value="2" label="Dark"/>
+</enum>
+
 <enum name="DarkResumeScanRetryResult">
   <int value="0" label="Not Connected"/>
   <int value="1" label="Connected"/>
