@@ -2836,6 +2836,9 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.h
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-002.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
+crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
+crbug.com/626703 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/html/cross-origin/anonymous.tentative.html [ Crash ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Crash ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
