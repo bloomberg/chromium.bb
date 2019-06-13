@@ -654,7 +654,8 @@
                     "ImageMemory": 11,
                     "OutputMemoryKHR": 12,
                     "MakeAvailableKHR": 13,
-                    "MakeVisibleKHR": 14
+                    "MakeVisibleKHR": 14,
+                    "Volatile": 15
                 }
             },
             {

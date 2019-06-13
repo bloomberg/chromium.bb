@@ -6120,6 +6120,12 @@
           "value" : "0x4000",
           "capabilities" : [ "VulkanMemoryModelKHR" ],
           "version" : "None"
+        },
+        {
+          "enumerant" : "Volatile",
+          "value" : "0x8000",
+          "capabilities" : [ "VulkanMemoryModelKHR" ],
+          "version" : "None"
         }
       ]
     },
