@@ -242,6 +242,7 @@ class GomaLogUploader(object):
         purpose, because datetime.date is unpatchable. In real use case,
         this must be None.
       dry_run: If True, no actual upload. This is for testing purpose.
+      cbb_config_name: Name of cbb_config.
     """
     self._goma_log_dir = goma_log_dir
     logging.info('Goma log directory is: %s', self._goma_log_dir)
@@ -269,10 +270,10 @@ class GomaLogUploader(object):
     ])
     if is_luci:
       # TODO(yyanagisawa): will adjust to valid value if needed.
-      builder_info['builder_id'] =collections.OrderedDict([
-          ("project", "chromeos"),
-          ("builder", "Prod"),
-          ("bucket", "general"),
+      builder_info['builder_id'] = collections.OrderedDict([
+          ('project', 'chromeos'),
+          ('builder', 'Prod'),
+          ('bucket', 'general'),
       ])
     builder_info_json = json.dumps(builder_info)
     logging.info('BuilderInfo: %s', builder_info_json)

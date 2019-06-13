@@ -129,10 +129,10 @@ class TestGomaLogUploader(cros_test_lib.MockTempDirTestCase):
         ('is_luci', True),
         ('cbb_config_name', 'test_config'),
     ])
-    builderinfo['builder_id'] =collections.OrderedDict([
-        ("project", "chromeos"),
-        ("builder", "Prod"),
-        ("bucket", "general"),
+    builderinfo['builder_id'] = collections.OrderedDict([
+        ('project', 'chromeos'),
+        ('builder', 'Prod'),
+        ('bucket', 'general'),
     ])
 
     expect_builderinfo = json.dumps(builderinfo)
