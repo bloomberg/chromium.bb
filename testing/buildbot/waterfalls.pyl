@@ -601,6 +601,7 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
+          'mac_10.14',
         ],
         'test_suites': {
           'isolated_scripts': 'chrome_sizes',
