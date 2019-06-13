@@ -333,9 +333,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("imageOpenDownloads"),
                       TestCase("imageOpenDrive").DisableDriveFs(),
                       TestCase("imageOpenDrive").EnableDriveFs(),
-                      TestCase("imageOpenGalleryOpenDownloads"),
+                      TestCase("imageOpenGalleryOpenDownloads")
+#if 0  // Flaky. crbug.com/973795
+                      ,
                       TestCase("imageOpenGalleryOpenDrive").DisableDriveFs(),
-                      TestCase("imageOpenGalleryOpenDrive").EnableDriveFs()));
+                      TestCase("imageOpenGalleryOpenDrive").EnableDriveFs()
+#endif
+                          ));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenSniffedFiles, /* open_sniffed_files.js */
