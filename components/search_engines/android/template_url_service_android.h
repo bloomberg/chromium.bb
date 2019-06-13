@@ -2,35 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_ANDROID_H_
-#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_ANDROID_H_
+#ifndef COMPONENTS_SEARCH_ENGINES_ANDROID_TEMPLATE_URL_SERVICE_ANDROID_H_
+#define COMPONENTS_SEARCH_ENGINES_ANDROID_TEMPLATE_URL_SERVICE_ANDROID_H_
 
 #include <memory>
 
-#include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
-
-class TemplateURL;
-
 
 // Android wrapper of the TemplateUrlService which provides access from the Java
 // layer. Note that on Android, there's only a single profile, and therefore
 // a single instance of this wrapper.
 class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
  public:
-  TemplateUrlServiceAndroid(JNIEnv* env, jobject obj);
+  explicit TemplateUrlServiceAndroid(TemplateURLService* template_url_service);
+  ~TemplateUrlServiceAndroid() override;
 
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
   void Load(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void SetUserSelectedDefaultSearchProvider(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jkeyword);
-  jboolean IsLoaded(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj) const;
+  jboolean IsLoaded(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj) const;
   jboolean IsDefaultSearchManaged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -38,9 +35,6 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
   jboolean IsDefaultSearchEngineGoogle(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  jboolean DoesDefaultSearchEngineHaveLogo(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
   jboolean IsSearchResultsPageFromDefaultSearchProvider(
@@ -55,11 +49,6 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jquery);
-  base::android::ScopedJavaLocalRef<jstring> ReplaceSearchTermsInUrl(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& jquery,
-      const base::android::JavaParamRef<jstring>& jcurrent_url);
   base::android::ScopedJavaLocalRef<jstring> GetUrlForContextualSearchQuery(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -75,10 +64,6 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jkeyword);
-  base::android::ScopedJavaLocalRef<jstring> ExtractSearchTermsFromUrl(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& jurl);
 
   // Adds a custom search engine, sets |jkeyword| as its short_name and keyword,
   // and sets its date_created as |age_in_days| days before the current time.
@@ -108,14 +93,12 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       const base::android::JavaParamRef<jobject>& obj);
 
  private:
-  ~TemplateUrlServiceAndroid() override;
-
   void OnTemplateURLServiceLoaded();
 
   // TemplateUrlServiceObserver:
   void OnTemplateURLServiceChanged() override;
 
-  JavaObjectWeakGlobalRef weak_java_obj_;
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   // Pointer to the TemplateUrlService for the main profile.
   TemplateURLService* template_url_service_;
@@ -125,4 +108,4 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
   DISALLOW_COPY_AND_ASSIGN(TemplateUrlServiceAndroid);
 };
 
-#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_ANDROID_H_
+#endif  // COMPONENTS_SEARCH_ENGINES_ANDROID_TEMPLATE_URL_SERVICE_ANDROID_H_

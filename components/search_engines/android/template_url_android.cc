@@ -1,8 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/template_url_android.h"
+#include "components/search_engines/android/template_url_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -25,9 +25,8 @@ ScopedJavaLocalRef<jstring> JNI_TemplateUrl_GetShortName(
                                                  template_url->short_name());
 }
 
-ScopedJavaLocalRef<jstring> JNI_TemplateUrl_GetKeyword(
-    JNIEnv* env,
-    jlong template_url_ptr) {
+ScopedJavaLocalRef<jstring> JNI_TemplateUrl_GetKeyword(JNIEnv* env,
+                                                       jlong template_url_ptr) {
   TemplateURL* template_url = ToTemplateURL(template_url_ptr);
   return base::android::ConvertUTF16ToJavaString(env, template_url->keyword());
 }
@@ -40,14 +39,12 @@ jboolean JNI_TemplateUrl_IsPrepopulatedOrCreatedByPolicy(
          template_url->created_by_policy();
 }
 
-jlong JNI_TemplateUrl_GetLastVisitedTime(JNIEnv* env,
-                                         jlong template_url_ptr) {
+jlong JNI_TemplateUrl_GetLastVisitedTime(JNIEnv* env, jlong template_url_ptr) {
   TemplateURL* template_url = ToTemplateURL(template_url_ptr);
   return template_url->last_visited().ToJavaTime();
 }
 
-jint JNI_TemplateUrl_GetPrepopulatedId(JNIEnv* env,
-                                       jlong template_url_ptr) {
+jint JNI_TemplateUrl_GetPrepopulatedId(JNIEnv* env, jlong template_url_ptr) {
   TemplateURL* template_url = ToTemplateURL(template_url_ptr);
   return template_url->prepopulate_id();
 }
