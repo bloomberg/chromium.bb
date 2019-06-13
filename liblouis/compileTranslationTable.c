@@ -431,7 +431,7 @@ widechar EXPORT_CALL
 _lou_getDotsForChar(widechar c) {
 	CharOrDots *cdPtr = getCharOrDots(c, 0, gTable);
 	if (cdPtr) return cdPtr->found;
-	return LOU_DOT_NONE;
+	return LOU_DOTS;
 }
 
 widechar EXPORT_CALL
@@ -1210,7 +1210,7 @@ parseDots(FileInfo *nested, CharsString *cells, const CharsString *token) {
 				compileError(nested, "missing cell specification.");
 				return 0;
 			}
-			cells->chars[cellCount++] = cell | LOU_DOT_NONE;
+			cells->chars[cellCount++] = cell | LOU_DOTS;
 			cell = 0;
 			start = index + 1;
 			break;
@@ -1225,7 +1225,7 @@ parseDots(FileInfo *nested, CharsString *cells, const CharsString *token) {
 		compileError(nested, "missing cell specification.");
 		return 0;
 	}
-	cells->chars[cellCount++] = cell | LOU_DOT_NONE; /* last cell */
+	cells->chars[cellCount++] = cell | LOU_DOTS; /* last cell */
 	cells->length = cellCount;
 	return 1;
 }

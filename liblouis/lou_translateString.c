@@ -148,7 +148,7 @@ findCharOrDots(widechar c, int m, const TranslationTableHeader *table) {
 	/* Look up character or dot pattern in the appropriate
 	 * table. */
 	static TranslationTableCharacter noChar = { 0, 0, 0, CTC_Space, 32, 32, 32 };
-	static TranslationTableCharacter noDots = { 0, 0, 0, CTC_Space, LOU_DOT_NONE, LOU_DOT_NONE, LOU_DOT_NONE };
+	static TranslationTableCharacter noDots = { 0, 0, 0, CTC_Space, LOU_DOTS, LOU_DOTS, LOU_DOTS };
 	TranslationTableCharacter *notFound;
 	TranslationTableCharacter *character;
 	TranslationTableOffset bucket;
@@ -3705,8 +3705,8 @@ lou_dotsToChar(
 	if (table == NULL || length <= 0) return 0;
 	for (k = 0; k < length; k++) {
 		dots = inbuf[k];
-		if (!(dots & LOU_DOT_NONE) && (dots & 0xff00) == 0x2800) /* Unicode braille */
-			dots = (dots & 0x00ff) | LOU_DOT_NONE;
+		if (!(dots & LOU_DOTS) && (dots & 0xff00) == 0x2800) /* Unicode braille */
+			dots = (dots & 0x00ff) | LOU_DOTS;
 		outbuf[k] = _lou_getCharFromDots(dots);
 	}
 	return 1;

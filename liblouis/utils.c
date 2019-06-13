@@ -190,7 +190,7 @@ _lou_showDots(widechar const *dots, int length) {
 					(bufPos < (MAXSTRING - 1)))
 				scratchBuf[bufPos++] = dotMapping[mappingPos].value;
 		}
-		if ((dots[dotsPos] == LOU_DOT_NONE) && (bufPos < (MAXSTRING - 1)))
+		if ((dots[dotsPos] == LOU_DOTS) && (bufPos < (MAXSTRING - 1)))
 			scratchBuf[bufPos++] = '0';
 		if ((dotsPos != length - 1) && (bufPos < (MAXSTRING - 1)))
 			scratchBuf[bufPos++] = '-';
