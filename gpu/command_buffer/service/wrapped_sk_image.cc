@@ -17,7 +17,6 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
-#include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
@@ -48,7 +47,7 @@ class WrappedSkImage : public SharedImageBacking {
 
   void Destroy() override {
     DCHECK(backend_texture_.isValid());
-    DeleteGrBackendTexture(context_state_, &backend_texture_);
+    context_state_->gr_context()->deleteBackendTexture(backend_texture_);
   }
 
   bool IsCleared() const override { return cleared_; }
