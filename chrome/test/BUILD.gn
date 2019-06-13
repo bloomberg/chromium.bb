@@ -682,6 +682,7 @@ if (!is_android) {
 
     # Runtime dependencies
     data_deps = [
+      "//chrome/browser/resources/media/mei_preload:component",
       "//ppapi:ppapi_tests",
       "//ppapi:power_saver_test_plugin",
       "//remoting/webapp:browser_test_resources",
@@ -2496,10 +2497,6 @@ if (!is_android) {
 
     if (is_chromeos || (is_linux && use_dbus)) {
       sources += [ "../browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc" ]
-    }
-
-    if (!is_mac) {
-      data_deps += [ "//chrome/browser/resources/media/mei_preload:component" ]
     }
 
     if (toolkit_views && !is_chromeos) {
