@@ -359,24 +359,10 @@ class CommandHandler {
     fileManager.document.addEventListener(
         'canExecute', this.onCanExecute_.bind(this));
 
-    // TODO(lucmult): Try to remove this event listener to avoid flickering.
-    selectionHandler.addEventListener(
-        FileSelectionHandler.EventType.CHANGE_THROTTLED,
-        this.updateAvailability.bind(this));
-
     chrome.commandLinePrivate.hasSwitch(
         'disable-zip-archiver-packer', disabled => {
           CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = !disabled;
         });
-  }
-
-  /**
-   * Updates the availability of all commands.
-   */
-  updateAvailability() {
-    for (const id in this.commands_) {
-      this.commands_[id].canExecuteChange();
-    }
   }
 
   /**
@@ -1481,7 +1467,6 @@ CommandHandler.COMMANDS_['toggle-pinned'] = new class extends Command {
         });
   }
 
-
   /** @override */
   canExecute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
@@ -1591,6 +1576,7 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends Command {
 CommandHandler.COMMANDS_['share'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const actionsController = fileManager.actionsController;
 
     fileManager.actionsController.getActionsForEntries(entries).then(
         (/** ?ActionsModel */ actionsModel) => {
@@ -1600,7 +1586,7 @@ CommandHandler.COMMANDS_['share'] = new class extends Command {
           const action =
               actionsModel.getAction(ActionsModel.CommonActionId.SHARE);
           if (action) {
-            action.execute();
+            actionsController.executeAction(action);
           }
         });
   }
@@ -1650,6 +1636,7 @@ CommandHandler.COMMANDS_['share'] = new class extends Command {
 CommandHandler.COMMANDS_['manage-in-drive'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const actionsController = fileManager.actionsController;
 
     fileManager.actionsController.getActionsForEntries(entries).then(
         (/** ?ActionsModel */ actionsModel) => {
@@ -1659,7 +1646,7 @@ CommandHandler.COMMANDS_['manage-in-drive'] = new class extends Command {
           const action = actionsModel.getAction(
               ActionsModel.InternalActionId.MANAGE_IN_DRIVE);
           if (action) {
-            action.execute();
+            actionsController.executeAction(action);
           }
         });
   }
@@ -1945,6 +1932,8 @@ CommandHandler.COMMANDS_['manage-plugin-vm-sharing'] =
 CommandHandler.COMMANDS_['create-folder-shortcut'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const actionsController = fileManager.actionsController;
+
     fileManager.actionsController.getActionsForEntries(entries).then(
         (/** ?ActionsModel */ actionsModel) => {
           if (!actionsModel) {
@@ -1953,7 +1942,7 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = new class extends Command {
           const action = actionsModel.getAction(
               ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT);
           if (action) {
-            action.execute();
+            actionsController.executeAction(action);
           }
         });
   }
@@ -2005,6 +1994,7 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = new class extends Command {
 CommandHandler.COMMANDS_['remove-folder-shortcut'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const actionsController = fileManager.actionsController;
 
     fileManager.actionsController.getActionsForEntries(entries).then(
         (/** ?ActionsModel */ actionsModel) => {
@@ -2014,7 +2004,7 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = new class extends Command {
           const action = actionsModel.getAction(
               ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT);
           if (action) {
-            action.execute();
+            actionsController.executeAction(action);
           }
         });
   }
