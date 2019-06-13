@@ -87,8 +87,8 @@ bool VulkanInProcessContextProvider::Initialize() {
                      instance_extensions.size(), instance_extensions.data(),
                      device_extensions.size(), device_extensions.data());
   backend_context.fVkExtensions = &gr_extensions;
-
-  backend_context.fDeviceFeatures = &device_queue_->enabled_device_features();
+  backend_context.fDeviceFeatures2 =
+      &device_queue_->enabled_device_features_2();
   backend_context.fGetProc = get_proc;
 
   gr_context_ = GrContext::MakeVulkan(backend_context);
