@@ -46,10 +46,18 @@ const char* const kAutofillAssistantCookieValue = "true";
 const char* const kGetBoundingClientRectAsList =
     R"(function(node) {
       const r = node.getBoundingClientRect();
-      const v = window.visualViewport;
-      return [r.left, r.top, r.right, r.bottom,
-              v.offsetLeft, v.offsetTop, v.width, v.height];
+      return [window.scrollX + r.left,
+              window.scrollY + r.top,
+              window.scrollX + r.right,
+              window.scrollY + r.bottom];
     })";
+
+const char* const kGetVisualViewport =
+    R"({ const v = window.visualViewport;
+         [v.pageLeft,
+          v.pageTop,
+          v.width,
+          v.height] })";
 
 const char* const kScrollIntoViewScript =
     R"(function(node) {
@@ -1739,6 +1747,47 @@ void WebController::GetOuterHtml(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void WebController::GetVisualViewport(
+    base::OnceCallback<void(bool, const RectF&)> callback) {
+  devtools_client_->GetRuntime()->Evaluate(
+      runtime::EvaluateParams::Builder()
+          .SetExpression(std::string(kGetVisualViewport))
+          .SetReturnByValue(true)
+          .Build(),
+      base::BindOnce(&WebController::OnGetVisualViewport,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnGetVisualViewport(
+    base::OnceCallback<void(bool, const RectF&)> callback,
+    std::unique_ptr<runtime::EvaluateResult> result) {
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  if (!status.ok() || !result->GetResult()->HasValue() ||
+      !result->GetResult()->GetValue()->is_list() ||
+      result->GetResult()->GetValue()->GetList().size() != 4u) {
+    DVLOG(1) << __func__ << " Failed to get visual viewport: " << status;
+    RectF empty;
+    std::move(callback).Run(false, empty);
+    return;
+  }
+  const auto& list = result->GetResult()->GetValue()->GetList();
+  // Value::GetDouble() is safe to call without checking the value type; it'll
+  // return 0.0 if the value has the wrong type.
+
+  float left = static_cast<float>(list[0].GetDouble());
+  float top = static_cast<float>(list[1].GetDouble());
+  float width = static_cast<float>(list[2].GetDouble());
+  float height = static_cast<float>(list[3].GetDouble());
+
+  RectF rect;
+  rect.left = left;
+  rect.top = top;
+  rect.right = left + width;
+  rect.bottom = top + height;
+
+  std::move(callback).Run(true, rect);
+}
+
 void WebController::GetElementPosition(
     const Selector& selector,
     base::OnceCallback<void(bool, const RectF&)> callback) {
@@ -1776,9 +1825,10 @@ void WebController::OnGetElementPositionResult(
     base::OnceCallback<void(bool, const RectF&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
-  if (!status.ok() || !result->GetResult()->GetValue() ||
+  if (!status.ok() || !result->GetResult()->HasValue() ||
       !result->GetResult()->GetValue()->is_list() ||
-      result->GetResult()->GetValue()->GetList().size() != 8u) {
+      result->GetResult()->GetValue()->GetList().size() != 4u) {
+    DVLOG(2) << __func__ << " Failed to get element position: " << status;
     RectF empty;
     std::move(callback).Run(false, empty);
     return;
@@ -1787,22 +1837,11 @@ void WebController::OnGetElementPositionResult(
   // Value::GetDouble() is safe to call without checking the value type; it'll
   // return 0.0 if the value has the wrong type.
 
-  // getBoundingClientRect returns coordinates in the layout viewport. They need
-  // to be transformed into coordinates in the visual viewport, between 0 and 1.
-  float left_layout = static_cast<float>(list[0].GetDouble());
-  float top_layout = static_cast<float>(list[1].GetDouble());
-  float right_layout = static_cast<float>(list[2].GetDouble());
-  float bottom_layout = static_cast<float>(list[3].GetDouble());
-  float visual_left_offset = static_cast<float>(list[4].GetDouble());
-  float visual_top_offset = static_cast<float>(list[5].GetDouble());
-  float visual_w = static_cast<float>(list[6].GetDouble());
-  float visual_h = static_cast<float>(list[7].GetDouble());
-
   RectF rect;
-  rect.left = (left_layout - visual_left_offset) / visual_w;
-  rect.top = (top_layout - visual_top_offset) / visual_h;
-  rect.right = (right_layout - visual_left_offset) / visual_w;
-  rect.bottom = (bottom_layout - visual_top_offset) / visual_h;
+  rect.left = static_cast<float>(list[0].GetDouble());
+  rect.top = static_cast<float>(list[1].GetDouble());
+  rect.right = static_cast<float>(list[2].GetDouble());
+  rect.bottom = static_cast<float>(list[3].GetDouble());
 
   std::move(callback).Run(true, rect);
 }

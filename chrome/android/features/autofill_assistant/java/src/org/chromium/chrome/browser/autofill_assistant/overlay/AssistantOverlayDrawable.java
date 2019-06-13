@@ -29,9 +29,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
-import org.chromium.content_public.browser.GestureListenerManager;
-import org.chromium.content_public.browser.GestureStateListener;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.lang.annotation.Retention;
@@ -49,8 +46,8 @@ import java.util.List;
  * <p>While scrolling, it keeps track of the current scrolling offset and avoids drawing on top of
  * the top bar which is can be, during animations, just drawn on top of the compositor.
  */
-class AssistantOverlayDrawable extends Drawable
-        implements FullscreenListener, GestureStateListener, CompositorViewResizer.Observer {
+class AssistantOverlayDrawable
+        extends Drawable implements FullscreenListener, CompositorViewResizer.Observer {
     private static final int FADE_DURATION_MS = 250;
 
     /** Default background color and alpha. */
@@ -83,7 +80,18 @@ class AssistantOverlayDrawable extends Drawable
     /** When in partial mode, don't draw on {@link #mTransparentArea}. */
     private boolean mPartial;
 
-    private List<Box> mTransparentArea = new ArrayList<>();
+    /**
+     * Coordinates of the visual viewport within the page, if known, in CSS pixels relative to the
+     * origin of the page.
+     *
+     * The visual viewport includes the portion of the page that is really visible, excluding any
+     * area not fully visible because of the current zoom value.
+     *
+     * Only relevant in partial mode, when the transparent area is non-empty.
+     */
+    private final RectF mVisualViewport = new RectF();
+
+    private final List<Box> mTransparentArea = new ArrayList<>();
 
     /** Padding added between the element area and the grayed-out area. */
     private final float mPaddingPx;
@@ -93,32 +101,6 @@ class AssistantOverlayDrawable extends Drawable
 
     /** A single RectF instance used for drawing, to avoid creating many instances when drawing. */
     private final RectF mDrawRect = new RectF();
-
-    /** True while the browser is scrolling. */
-    private boolean mBrowserScrolling;
-
-    /**
-     * Scrolling offset to use while scrolling right after scrolling.
-     *
-     * <p>This value shifts the transparent area by that many pixels while scrolling.
-     */
-    private int mBrowserScrollOffsetY;
-
-    /**
-     * Offset reported at the beginning of a scroll.
-     *
-     * <p>This is used to interpret the offsets reported by subsequent calls to {@link
-     * #onScrollOffsetOrExtentChanged} or {@link #onScrollEnded}.
-     */
-    private int mInitialBrowserScrollOffsetY;
-
-    /**
-     * Current offset that applies on mTransparentArea.
-     *
-     * <p>This value shifts the transparent area by that many pixels after the end of a scroll and
-     * before the next update, which resets this value.
-     */
-    private int mOffsetY;
 
     /**
      * Current top margin of this view.
@@ -137,7 +119,6 @@ class AssistantOverlayDrawable extends Drawable
     private int mMarginBottom;
 
     private AssistantOverlayDelegate mDelegate;
-    private GestureListenerManager mGestureListenerManager;
 
     AssistantOverlayDrawable(Context context, ChromeFullscreenManager fullscreenManager,
             CompositorViewResizer viewResizer) {
@@ -203,19 +184,7 @@ class AssistantOverlayDrawable extends Drawable
         mDelegate = delegate;
     }
 
-    void setWebContents(@Nullable WebContents webContents) {
-        if (mGestureListenerManager != null) {
-            mGestureListenerManager.removeListener(this);
-            mGestureListenerManager = null;
-        }
-        if (webContents != null) {
-            mGestureListenerManager = GestureListenerManager.fromWebContents(webContents);
-            mGestureListenerManager.addListener(this);
-        }
-    }
-
     void destroy() {
-        setWebContents(null);
         mFullscreenManager.removeListener(this);
         mViewResizer.removeObserver(this);
         mDelegate = null;
@@ -239,6 +208,11 @@ class AssistantOverlayDrawable extends Drawable
             }
         }
         mPartial = partial;
+        invalidateSelf();
+    }
+
+    void setVisualViewport(RectF visualViewport) {
+        mVisualViewport.set(visualViewport);
         invalidateSelf();
     }
 
@@ -276,9 +250,6 @@ class AssistantOverlayDrawable extends Drawable
             }
         }
 
-        mOffsetY = 0;
-        mInitialBrowserScrollOffsetY += mBrowserScrollOffsetY;
-        mBrowserScrollOffsetY = 0;
         invalidateSelf();
     }
 
@@ -310,8 +281,14 @@ class AssistantOverlayDrawable extends Drawable
 
         canvas.drawPaint(mBackground);
 
+        if (mVisualViewport.isEmpty()) return;
+
+        // Ratio of to use to convert zoomed CSS pixels, to physical pixels. Aspect ratio is
+        // conserved, so width and height are always converted with the same value. Using width
+        // here, since viewport width always corresponds to the overlay width.
+        float cssPixelsToPhysical = ((float) width) / ((float) mVisualViewport.width());
+
         int yTop = (int) mFullscreenManager.getContentOffset();
-        int height = yBottom - yTop;
         for (Box box : mTransparentArea) {
             RectF rect = box.getRectToDraw();
             if (rect.isEmpty() || (!mPartial && box.mAnimationType != AnimationType.FADE_IN)) {
@@ -322,12 +299,13 @@ class AssistantOverlayDrawable extends Drawable
             int fillAlpha = (int) (mBackgroundAlpha * (1f - box.getVisibility()));
             mBoxFill.setAlpha(fillAlpha);
 
-            mDrawRect.left = rect.left * width - mPaddingPx;
+            mDrawRect.left = (rect.left - mVisualViewport.left) * cssPixelsToPhysical - mPaddingPx;
             mDrawRect.top =
-                    yTop + rect.top * height - mPaddingPx - mBrowserScrollOffsetY - mOffsetY;
-            mDrawRect.right = rect.right * width + mPaddingPx;
+                    yTop + (rect.top - mVisualViewport.top) * cssPixelsToPhysical - mPaddingPx;
+            mDrawRect.right =
+                    (rect.right - mVisualViewport.left) * cssPixelsToPhysical + mPaddingPx;
             mDrawRect.bottom =
-                    yTop + rect.bottom * height + mPaddingPx - mBrowserScrollOffsetY - mOffsetY;
+                    yTop + (rect.bottom - mVisualViewport.top) * cssPixelsToPhysical + mPaddingPx;
             if (mDrawRect.left <= 0 && mDrawRect.right >= width) {
                 // Rounded corners look strange in the case where the rectangle takes exactly the
                 // width of the screen.
@@ -362,48 +340,14 @@ class AssistantOverlayDrawable extends Drawable
 
     @Override
     public void onUpdateViewportSize() {
+        askForTouchableAreaUpdate();
         invalidateSelf();
     }
 
     @Override
     public void onHeightChanged(int height) {
-        invalidateSelf();
-    }
-
-    /** Called at the beginning of a scroll gesture triggered by the browser. */
-    @Override
-    public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
-        mBrowserScrolling = true;
-        mInitialBrowserScrollOffsetY = scrollOffsetY;
-        mBrowserScrollOffsetY = 0;
-        invalidateSelf();
-    }
-
-    /** Called during a scroll gesture triggered by the browser. */
-    @Override
-    public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {
-        if (!mBrowserScrolling) {
-            // onScrollOffsetOrExtentChanged will be called alone, without onScrollStarted during a
-            // Javascript-initiated scroll.
-            askForTouchableAreaUpdate();
-            return;
-        }
-        mBrowserScrollOffsetY = scrollOffsetY - mInitialBrowserScrollOffsetY;
-        invalidateSelf();
         askForTouchableAreaUpdate();
-    }
-
-    /** Called at the end of a scroll gesture triggered by the browser. */
-    @Override
-    public void onScrollEnded(int scrollOffsetY, int scrollExtentY) {
-        if (!mBrowserScrolling) {
-            return;
-        }
-        mOffsetY += (scrollOffsetY - mInitialBrowserScrollOffsetY);
-        mBrowserScrollOffsetY = 0;
-        mBrowserScrolling = false;
         invalidateSelf();
-        askForTouchableAreaUpdate();
     }
 
     private void askForTouchableAreaUpdate() {

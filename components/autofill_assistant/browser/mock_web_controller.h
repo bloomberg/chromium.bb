@@ -63,6 +63,13 @@ class MockWebController : public WebController {
       void(const Selector& selector,
            base::OnceCallback<void(bool, const std::string&)>& callback));
 
+  void GetVisualViewport(
+      base::OnceCallback<void(bool, const RectF&)> callback) override {
+    OnGetVisualViewport(callback);
+  }
+  MOCK_METHOD1(OnGetVisualViewport,
+               void(base::OnceCallback<void(bool, const RectF&)>& callback));
+
   void GetElementPosition(
       const Selector& selector,
       base::OnceCallback<void(bool, const RectF&)> callback) override {

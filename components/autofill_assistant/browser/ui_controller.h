@@ -76,10 +76,16 @@ class UiController {
   // Updates the area of the visible viewport that is accessible when the
   // overlay state is OverlayState::PARTIAL.
   //
+  // |visual_viewport| contains the position and size of the visual viewport in
+  // the layout viewport. It might be empty if not known or the touchable area
+  // is empty.
+  //
   // |rectangles| contains one element per configured rectangles, though these
-  // can correspond to empty rectangles. Coordinates are relative to the width
-  // or height of the visible viewport, as a number between 0 and 1.
-  virtual void OnTouchableAreaChanged(const std::vector<RectF>& rectangles);
+  // can correspond to empty rectangles.
+  //
+  // All rectangles are expressed in absolute CSS coordinates.
+  virtual void OnTouchableAreaChanged(const RectF& visual_viewport,
+                                      const std::vector<RectF>& rectangles);
 
   // Called when the viewport resize flag has changed.
   virtual void OnResizeViewportChanged(bool resize_viewport);

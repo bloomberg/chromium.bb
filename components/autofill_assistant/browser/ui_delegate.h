@@ -109,11 +109,15 @@ class UiDelegate {
   //
   // At the end of this call, |rectangles| contains one element per configured
   // rectangles, though these can correspond to empty rectangles. Coordinates
-  // are relative to the width or height of the visible viewport, as a number
-  // between 0 and 1.
+  // absolute CSS coordinates.
   //
   // Note that the vector is not cleared before rectangles are added.
   virtual void GetTouchableArea(std::vector<RectF>* rectangles) const = 0;
+
+  // Returns the current size of the visual viewport. May be empty if unknown.
+  //
+  // The rectangle is expressed in absolute CSS coordinates.
+  virtual void GetVisualViewport(RectF* viewport) const = 0;
 
   // Reports a fatal error to Autofill Assistant, which should then stop.
   virtual void OnFatalError(const std::string& error_message,

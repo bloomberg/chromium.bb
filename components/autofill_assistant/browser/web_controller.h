@@ -153,13 +153,18 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback);
 
+  // Gets the visual viewport coordinates and size.
+  //
+  // The rectangle is expressed in absolute CSS coordinates.
+  virtual void GetVisualViewport(
+      base::OnceCallback<void(bool, const RectF&)> callback);
+
   // Gets the position of the element identified by the selector.
   //
   // If unsuccessful, the callback gets (false, 0, 0, 0, 0).
   //
   // If successful, the callback gets (true, left, top, right, bottom), with
-  // coordinates expressed as numbers between 0 and 1, relative to the width or
-  // height of the visible viewport.
+  // coordinates expressed in absolute CSS coordinates.
   virtual void GetElementPosition(
       const Selector& selector,
       base::OnceCallback<void(bool, const RectF&)> callback);
@@ -400,6 +405,9 @@ class WebController {
       base::OnceCallback<void(bool, const RectF&)> callback,
       const ClientStatus& status,
       std::unique_ptr<FindElementResult> result);
+  void OnGetVisualViewport(
+      base::OnceCallback<void(bool, const RectF&)> callback,
+      std::unique_ptr<runtime::EvaluateResult> result);
   void OnGetElementPositionResult(
       base::OnceCallback<void(bool, const RectF&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);

@@ -785,7 +785,7 @@ void Controller::OnScriptSelected(const std::string& script_path) {
 }
 
 void Controller::UpdateTouchableArea() {
-  touchable_element_area()->UpdatePositions();
+  touchable_element_area()->Update();
 }
 
 void Controller::OnUserInteractionInsideTouchableArea() {
@@ -945,6 +945,11 @@ void Controller::UpdatePaymentRequestActions() {
 void Controller::GetTouchableArea(std::vector<RectF>* area) const {
   if (touchable_element_area_)
     touchable_element_area_->GetRectangles(area);
+}
+
+void Controller::GetVisualViewport(RectF* visual_viewport) const {
+  if (touchable_element_area_)
+    touchable_element_area_->GetVisualViewport(visual_viewport);
 }
 
 void Controller::OnFatalError(const std::string& error_message,
@@ -1120,8 +1125,9 @@ bool Controller::IsCookieExperimentEnabled() const {
          iter->second == "1";
 }
 
-void Controller::OnTouchableAreaChanged(const std::vector<RectF>& areas) {
-  GetUiController()->OnTouchableAreaChanged(areas);
+void Controller::OnTouchableAreaChanged(const RectF& visual_viewport,
+                                        const std::vector<RectF>& areas) {
+  GetUiController()->OnTouchableAreaChanged(visual_viewport, areas);
 }
 
 void Controller::SetPaymentRequestOptions(
