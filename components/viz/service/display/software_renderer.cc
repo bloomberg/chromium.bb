@@ -738,18 +738,6 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
       contents_device_transform, QuadVertexRect()));
 
-  if (ShouldApplyBackdropFilters(backdrop_filters)) {
-    SkMatrix matrix;
-    // |filters_scale| is the ratio of render pass physical pixels to root layer
-    // layer space, including content-to-target-space scale and device pixel
-    // ratio.
-    matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
-    // |backdrop_rect| is now expanded for pixel moving backdrop_filters, offset
-    // by any backdrop-filter drop-shadow offset. Note that scale is not applied
-    // to the backdrop_rect itself, only the sigma or x/y offset of filters.
-    backdrop_rect = backdrop_filters->MapRectReverse(backdrop_rect, matrix);
-  }
-
   if (regular_filters) {
     DCHECK(!regular_filters->IsEmpty());
     // If we have regular filters, grab an extra one-pixel border around the
