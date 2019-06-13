@@ -1124,7 +1124,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
           if (mbmi->use_wedge_interintra) {
             aom_write_symbol(w, mbmi->interintra_wedge_index,
                              ec_ctx->wedge_idx_cdf[bsize], 16);
-            assert(mbmi->interintra_wedge_sign == 0);
           }
         }
       }

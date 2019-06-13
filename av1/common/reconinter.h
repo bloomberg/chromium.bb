@@ -323,8 +323,8 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 void av1_init_wedge_masks();
 
-static INLINE const uint8_t *av1_get_contiguous_soft_mask(int wedge_index,
-                                                          int wedge_sign,
+static INLINE const uint8_t *av1_get_contiguous_soft_mask(int8_t wedge_index,
+                                                          int8_t wedge_sign,
                                                           BLOCK_SIZE sb_type) {
   return av1_wedge_params_lookup[sb_type].masks[wedge_sign][wedge_index];
 }

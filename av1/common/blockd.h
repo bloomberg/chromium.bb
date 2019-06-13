@@ -37,6 +37,8 @@ extern "C" {
 
 #define MAX_DIFFWTD_MASK_BITS 1
 
+#define INTERINTRA_WEDGE_SIGN 0
+
 // DIFFWTD_MASK_TYPES should not surpass 1 << MAX_DIFFWTD_MASK_BITS
 enum {
   DIFFWTD_38 = 0,
@@ -199,8 +201,8 @@ typedef struct RD_STATS {
 // sent together in functions related to interinter compound modes
 typedef struct {
   uint8_t *seg_mask;
-  int wedge_index;
-  int wedge_sign;
+  int8_t wedge_index;
+  int8_t wedge_sign;
   DIFFWTD_MASK_TYPE mask_type;
   COMPOUND_TYPE type;
 } INTERINTER_COMPOUND_DATA;
@@ -218,8 +220,7 @@ typedef struct MB_MODE_INFO {
   // Only for INTER blocks
   InterpFilters interp_filters;
   // TODO(debargha): Consolidate these flags
-  int interintra_wedge_index;
-  int interintra_wedge_sign;
+
   int current_qindex;
   int delta_lf_from_base;
   int delta_lf[FRAME_LF_COUNT];
@@ -254,6 +255,7 @@ typedef struct MB_MODE_INFO {
   TX_SIZE tx_size;
   int8_t segment_id;
   int8_t seg_id_predicted;  // valid only when temporal_update is enabled
+  int8_t interintra_wedge_index;
   uint8_t use_intrabc;
   // The actual prediction angle is the base angle + (angle_delta * step).
   int8_t angle_delta[PLANE_TYPES];
