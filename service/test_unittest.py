@@ -170,7 +170,8 @@ class CreateMoblabVmTest(MoblabVmTestCase):
     self.assertEqual(vms.workspace, self.tempdir)
     self.assertEqual(
         self.mock_vm_create.call_args_list,
-        [mock.call(self.image_dir, create_vm_images=False)])
+        [mock.call(self.image_dir, dut_image_dir=self.image_dir,
+                   create_vm_images=False)])
 
 
 class PrepareMoblabVmImageCacheTest(MoblabVmTestCase):

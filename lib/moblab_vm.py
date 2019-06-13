@@ -243,11 +243,11 @@ class MoblabVm(object):
   @contextlib.contextmanager
   def RunVmsContext(self):
     """A context manager to start the VM and guarantee it is stopped."""
-    self.Start()
     try:
+      self.Start()
       yield
     finally:
-      self.Stop()
+      self.Destroy()
 
   @contextlib.contextmanager
   def MountedMoblabDiskContext(self):

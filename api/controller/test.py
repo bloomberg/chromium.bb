@@ -152,11 +152,18 @@ def MoblabVmTest(input_proto, _output_proto):
   # Autotest and Moblab depend on the builder path, so we must read it from
   # the image.
   image_file = os.path.join(image_payload_dir, constants.TEST_IMAGE_BIN)
-  with image_lib.LoopbackPartitions(image_file) as image_mount:
-    lsb_release_file = os.path.join(image_mount.destination,
-                                    constants.LSB_RELEASE_PATH.strip('/'))
-    lsb_release_kvs = cros_build_lib.LoadKeyValueFile(lsb_release_file)
-    builder = lsb_release_kvs.get(cros_set_lsb_release.LSB_KEY_BUILDER_PATH)
+  with osutils.TempDir() as mount_dir:
+    with image_lib.LoopbackPartitions(image_file, destination=mount_dir) as lp:
+      # The file we want is /etc/lsb-release, which lives in the ROOT-A
+      # disk partition.
+      partition_paths = lp.Mount([constants.PART_ROOT_A])
+      assert len(partition_paths) == 1, (
+          'expected one partition path, got: %r' % partition_paths)
+      partition_path = partition_paths[0]
+      lsb_release_file = os.path.join(partition_path,
+                                      constants.LSB_RELEASE_PATH.strip('/'))
+      lsb_release_kvs = cros_build_lib.LoadKeyValueFile(lsb_release_file)
+      builder = lsb_release_kvs.get(cros_set_lsb_release.LSB_KEY_BUILDER_PATH)
 
   if not builder:
     cros_build_lib.Die('Image did not contain key %s in %s',

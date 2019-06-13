@@ -226,7 +226,7 @@ class MoblabVmTestTest(cros_test_lib.MockTestCase):
     @contextlib.contextmanager
     def MockLoopbackPartitions(*_args, **_kwargs):
       mount = mock.MagicMock()
-      mount.destination = self.image_mount_dir
+      mount.Mount.return_value = [self.image_mount_dir]
       yield mount
     self.PatchObject(image_lib, 'LoopbackPartitions', MockLoopbackPartitions)
 

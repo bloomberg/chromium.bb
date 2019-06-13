@@ -134,7 +134,7 @@ def CreateMoblabVm(workspace_dir, image_dir):
     MoblabVm: The resulting VM.
   """
   vms = moblab_vm.MoblabVm(workspace_dir)
-  vms.Create(image_dir, create_vm_images=False)
+  vms.Create(image_dir, dut_image_dir=image_dir, create_vm_images=False)
   return vms
 
 
@@ -158,7 +158,7 @@ def PrepareMoblabVmImageCache(vms, builder, payload_dirs):
     image_cache_dir = os.path.join(image_cache_root, builder)
     osutils.SafeMakedirsNonRoot(image_cache_dir)
     for payload_dir in payload_dirs:
-      osutils.CopyDirContents(payload_dir, image_cache_dir)
+      osutils.CopyDirContents(payload_dir, image_cache_dir, allow_nonempty=True)
 
   image_cache_rel_dir = image_cache_dir[len(disk_dir):].strip('/')
   return os.path.join('/', 'mnt/moblab', image_cache_rel_dir)
