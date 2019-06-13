@@ -233,9 +233,7 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
     chrome_sdk_run_mock.assert_called_with(
         ['bash', '-c', 'gn gen out_%s/Release --args="$GN_ARGS"' % self.BOARD],
         run_args=self.log_output_args)
-    chrome_sdk_ninja_mock.assert_called_with(
-        targets=['chrome', 'nacl_helper'],
-        run_args=self.log_output_args)
+    chrome_sdk_ninja_mock.assert_called_with(run_args=self.log_output_args)
 
   def testBuildNoArchive(self):
     gsync_mock = self.PatchObject(simple_chrome_builder.SimpleChromeBuilder,
@@ -267,9 +265,7 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
     chrome_sdk_run_mock.assert_called_with(
         ['bash', '-c', 'gn gen out_%s/Release --args="$GN_ARGS"' % self.BOARD],
         run_args=self.log_output_args)
-    chrome_sdk_ninja_mock.assert_called_with(
-        targets=['chrome', 'nacl_helper'],
-        run_args=self.log_output_args)
+    chrome_sdk_ninja_mock.assert_called_with(run_args=self.log_output_args)
 
   def testDeploy(self):
     chrome_sdk_run_mock = self.PatchObject(commands.ChromeSDK, 'Run')
