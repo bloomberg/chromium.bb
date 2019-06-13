@@ -257,6 +257,9 @@ Bug(none) virtual/display-lock/inspector-protocol/css/css-get-platform-fonts-dis
 crbug.com/926276 virtual/display-lock/wpt_internal/display-lock/lock-after-append/nested-update.html [ Timeout ]
 crbug.com/926276 virtual/display-lock/wpt_internal/display-lock/lock-after-append/nested-update-and-commit.html [ Timeout ]
 crbug.com/955533 virtual/display-lock/wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
+crbug.com/973555 virtual/display-lock/wpt_internal/display-lock/paint/hit-testing-001.html [ Failure Crash ]
+crbug.com/973555 virtual/display-lock/wpt_internal/display-lock/paint/hit-testing-002.html [ Failure Crash ]
+crbug.com/973555 virtual/display-lock/wpt_internal/display-lock/paint/hit-testing-003.html [ Failure Crash ]
 
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
