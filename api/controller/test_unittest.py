@@ -11,6 +11,7 @@ import contextlib
 import mock
 
 from chromite.api import controller
+from chromite.api.controller import controller_util
 from chromite.api.controller import test as test_controller
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.gen.chromite.api import test_pb2
@@ -199,6 +200,7 @@ class MoblabVmTestTest(cros_test_lib.MockTestCase):
 
   def _Input(self):
     return test_pb2.MoblabVmTestRequest(
+        chroot=common_pb2.Chroot(path='path/to/chroot'),
         image_payload=self._Payload(self.image_payload_dir),
         cache_payloads=[self._Payload(self.autotest_payload_dir)])
 
@@ -208,6 +210,8 @@ class MoblabVmTestTest(cros_test_lib.MockTestCase):
     self.builder = 'moblab-generic-vm/R12-3.4.5-67.890'
     self.image_cache_dir = '/mnt/moblab/cache'
     self.image_mount_dir = '/mnt/image'
+
+    self.PatchObject(controller_util, 'ParseChroot')
 
     self.mock_create_moblab_vms = self.PatchObject(
         test_service, 'CreateMoblabVm')
@@ -245,7 +249,8 @@ class MoblabVmTestTest(cros_test_lib.MockTestCase):
         [mock.call(mock.ANY, self.builder, [self.autotest_payload_dir])])
     self.assertEqual(
         self.mock_run_moblab_vm_tests.call_args_list,
-        [mock.call(mock.ANY, self.builder, self.image_cache_dir, mock.ANY)])
+        [mock.call(mock.ANY, mock.ANY, self.builder, self.image_cache_dir,
+                   mock.ANY)])
     self.assertEqual(
         self.mock_validate_moblab_vm_tests.call_args_list,
         [mock.call(mock.ANY)])

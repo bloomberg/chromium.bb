@@ -164,10 +164,11 @@ def PrepareMoblabVmImageCache(vms, builder, payload_dirs):
   return os.path.join('/', 'mnt/moblab', image_cache_rel_dir)
 
 
-def RunMoblabVmTest(vms, builder, image_cache_dir, results_dir):
+def RunMoblabVmTest(chroot, vms, builder, image_cache_dir, results_dir):
   """Run Moblab VM tests.
 
   Args:
+    chroot (chroot_lib.Chroot): The chroot in which to run tests.
     builder (str): The builder path, used to find artifacts on GS.
     vms (MoblabVm): The Moblab VMs to test.
     image_cache_dir (str): Path to artifacts cache.
@@ -193,7 +194,10 @@ def RunMoblabVmTest(vms, builder, image_cache_dir, results_dir):
             'localhost:%s' % vms.moblab_ssh_port,
             'moblab_DummyServerNoSspSuite',
             '--args', ' '.join(test_args),
-        ])
+        ],
+        enter_chroot=True,
+        chroot_args=chroot.get_enter_args(),
+    )
 
 
 def ValidateMoblabVmTest(results_dir):

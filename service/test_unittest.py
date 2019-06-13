@@ -156,6 +156,7 @@ class MoblabVmTestCase(cros_test_lib.RunCommandTempDirTestCase):
     self.payload_dir = self.MockDirectory('files/payload')
     self.results_dir = self.MockDirectory('results')
     self.vms = moblab_vm.MoblabVm(self.tempdir)
+    self.chroot = chroot_lib.Chroot(path=self.tempdir)
 
 
 class CreateMoblabVmTest(MoblabVmTestCase):
@@ -214,8 +215,8 @@ class RunMoblabVmTestTest(MoblabVmTestCase):
 
   def testBasic(self):
     """RunMoblabVmTest calls test_that with correct args."""
-    test.RunMoblabVmTest(self.vms, self.builder, self.image_cache_dir,
-                         self.results_dir)
+    test.RunMoblabVmTest(self.chroot, self.vms, self.builder,
+                         self.image_cache_dir, self.results_dir)
     self.assertCommandContains([
         'test_that', '--no-quickmerge',
         '--results_dir', self.results_dir,
@@ -228,7 +229,7 @@ class RunMoblabVmTestTest(MoblabVmTestCase):
         'clear_devserver_cache=False '
         'image_storage_server="%s"' % (self.builder,
                                        self.image_cache_dir + '/'),
-    ])
+    ], enter_chroot=True, chroot_args=self.chroot.get_enter_args())
 
 
 class ValidateMoblabVmTestTest(MoblabVmTestCase):

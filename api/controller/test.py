@@ -145,6 +145,7 @@ def VmTest(input_proto, _output_proto):
 
 def MoblabVmTest(input_proto, _output_proto):
   """Run Moblab VM tests."""
+  chroot = controller_util.ParseChroot(input_proto.chroot)
   image_payload_dir = input_proto.image_payload.path.path
   cache_payload_dirs = [cp.path.path for cp in input_proto.cache_payloads]
 
@@ -163,8 +164,8 @@ def MoblabVmTest(input_proto, _output_proto):
                        constants.LSB_RELEASE_PATH)
 
   # Now we can run the tests.
-  with osutils.TempDir() as workspace_dir, osutils.TempDir() as results_dir:
+  with chroot.tempdir() as workspace_dir, chroot.tempdir() as results_dir:
     vms = test.CreateMoblabVm(workspace_dir, image_payload_dir)
     cache_dir = test.PrepareMoblabVmImageCache(vms, builder, cache_payload_dirs)
-    test.RunMoblabVmTest(vms, builder, cache_dir, results_dir)
+    test.RunMoblabVmTest(chroot, vms, builder, cache_dir, results_dir)
     test.ValidateMoblabVmTest(results_dir)
