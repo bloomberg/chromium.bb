@@ -92,7 +92,7 @@ MediaSessionUserAction MediaSessionActionToUserAction(
     case media_session::mojom::MediaSessionAction::kSkipAd:
       return MediaSessionUserAction::SkipAd;
     case media_session::mojom::MediaSessionAction::kStop:
-      break;
+      return MediaSessionUserAction::Stop;
   }
   NOTREACHED();
   return MediaSessionUserAction::Play;
@@ -431,8 +431,14 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
   DCHECK(!HasPepper());
 
   if (suspend_type == SuspendType::kUI) {
-    MediaSessionUmaHelper::RecordMediaSessionUserAction(
-        MediaSessionUmaHelper::MediaSessionUserAction::StopDefault, focused_);
+    // If the site has registered an action handle for stop then we should
+    // notify the site but continue stopping the media session.
+    if (ShouldRouteAction(media_session::mojom::MediaSessionAction::kStop)) {
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kStop);
+    } else {
+      MediaSessionUmaHelper::RecordMediaSessionUserAction(
+          MediaSessionUmaHelper::MediaSessionUserAction::StopDefault, focused_);
+    }
   }
 
   // TODO(mlamouri): merge the logic between UI and SYSTEM.
