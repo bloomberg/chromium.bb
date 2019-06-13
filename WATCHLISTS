@@ -1232,10 +1232,6 @@
                   '|chromeos/services/secure_channel/'\
                   '|ui/webui/resources/cr_components/chromeos/multidevice_setup/'
     },
-    'mus': {
-      'filepath': 'services/ws/'\
-                  '|mojo/gpu/',
-    },
     'nacl': {
       'filepath': 'chrome/nacl/|chrome/test/nacl/|'\
         'chrome/browser/nacl_host/|chrome/common/nacl|'\
@@ -2423,7 +2419,6 @@
                     'jordynass+watch-multidevice@chromium.org',
                     'khorimoto+watch-multidevice@chromium.org',
                     'nohle+watch-multidevice@chromium.org'],
-    'mus': ['rjkroege@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['binji+watch@chromium.org',
                           'sbc@chromium.org'],
