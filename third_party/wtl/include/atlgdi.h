@@ -28,7 +28,9 @@
 #endif // _INC_WINDOWSX
 
 // required libraries
-#pragma comment(lib, "msimg32.lib")
+#if !defined(_ATL_NO_MSIMG)
+  #pragma comment(lib, "msimg32.lib")
+#endif
 #if !defined(_ATL_NO_OPENGL)
   #pragma comment(lib, "opengl32.lib")
 #endif
@@ -2162,6 +2164,7 @@ public:
 		return ::SetPixelV(m_hDC, point.x, point.y, crColor);
 	}
 
+#if !defined(_ATL_NO_MSIMG)
 	BOOL TransparentBlt(int x, int y, int nWidth, int nHeight, HDC hSrcDC, int xSrc, int ySrc, int nSrcWidth, int nSrcHeight, UINT crTransparent)
 	{
 		ATLASSERT(m_hDC != NULL);
@@ -2204,6 +2207,7 @@ public:
 		ATLASSERT(m_hDC != NULL);
 		return ::AlphaBlend(m_hDC, x, y, nWidth, nHeight, hSrcDC, xSrc, ySrc, nSrcWidth, nSrcHeight, bf);
 	}
+#endif //  !defined(_ATL_NO_MSIMG)
 
 // Extra bitmap functions
 	// Helper function for painting a disabled toolbar or menu bitmap
@@ -2326,13 +2330,12 @@ public:
 		return ::TextOut(m_hDC, x, y, lpszString, nCount);
 	}
 
-	BOOL ExtTextOut(int x, int y, UINT nOptions, LPCRECT lpRect, LPCTSTR lpszString, int nCount = -1, LPINT lpDxWidths = NULL)
+	BOOL ExtTextOut(int x, int y, UINT nOptions, LPCRECT lpRect, LPCTSTR lpszString, UINT nCount = -1, LPINT lpDxWidths = NULL)
 	{
 		ATLASSERT(m_hDC != NULL);
 		if(nCount == -1)
 			nCount = lstrlen(lpszString);
-		ATLASSERT((nCount >= 0) && (nCount <= 8192));
-		return ::ExtTextOut(m_hDC, x, y, nOptions, lpRect, lpszString, (UINT)nCount, lpDxWidths);
+		return ::ExtTextOut(m_hDC, x, y, nOptions, lpRect, lpszString, nCount, lpDxWidths);
 	}
 
 	SIZE TabbedTextOut(int x, int y, LPCTSTR lpszString, int nCount = -1, int nTabPositions = 0, LPINT lpnTabStopPositions = NULL, int nTabOrigin = 0)
@@ -3437,6 +3440,6 @@ public:
 	}
 };
 
-} // namespace WTL
+}  // namespace WTL
 
 #endif // __ATLGDI_H__
