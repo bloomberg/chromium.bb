@@ -74,6 +74,15 @@ const base::Feature kDefaultPassthroughCommandDecoder{
 const base::Feature kDirectCompositionUnderlays{
     "DirectCompositionUnderlays", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Use ThreadPriority::DISPLAY for GPU main, viz compositor and IO threads.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
+const base::Feature kGpuUseDisplayThreadPriority{
+    "GpuUseDisplayThreadPriority", base::FEATURE_ENABLED_BY_DEFAULT};
+#else
+const base::Feature kGpuUseDisplayThreadPriority{
+    "GpuUseDisplayThreadPriority", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Allow GPU watchdog to keep waiting for ackowledgement if one is already
 // issued from the monitored thread.
 const base::Feature kGpuWatchdogNoTerminationAwaitingAcknowledge{

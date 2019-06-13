@@ -29,6 +29,8 @@ GPU_EXPORT extern const base::Feature kDefaultPassthroughCommandDecoder;
 
 GPU_EXPORT extern const base::Feature kDirectCompositionUnderlays;
 
+GPU_EXPORT extern const base::Feature kGpuUseDisplayThreadPriority;
+
 GPU_EXPORT extern const base::Feature
     kGpuWatchdogNoTerminationAwaitingAcknowledge;
 
