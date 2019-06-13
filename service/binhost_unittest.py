@@ -216,7 +216,7 @@ MTIME: %d
                       makedirs=True)
     osutils.WriteFile(os.path.join(self.root, 'package/prebuilt_b.tbz2'), 'b')
 
-    actual = binhost.GetPrebuiltsFiles(self.root, [old_binhost])
+    actual = binhost.GetPrebuiltsFiles(self.root, [old_package_index])
     expected = ['package/prebuilt_b.tbz2']
     self.assertEqual(expected, actual)
 

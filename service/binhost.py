@@ -136,8 +136,13 @@ def GetPrebuiltsFiles(prebuilts_root, package_index_paths):
   Returns:
     List of paths to all prebuilt archives, relative to the root.
   """
+  indexes = []
+  for package_index_path in package_index_paths:
+    index = binpkg.PackageIndex()
+    index.ReadFilePath(package_index_path)
+    indexes.append(index)
+
   package_index = binpkg.GrabLocalPackageIndex(prebuilts_root)
-  indexes = [binpkg.GrabLocalPackageIndex(p) for p in package_index_paths]
   packages = package_index.ResolveDuplicateUploads(indexes)
 
   prebuilt_paths = []

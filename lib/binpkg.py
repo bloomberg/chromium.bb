@@ -185,6 +185,16 @@ class PackageIndex(object):
     self._ReadHeader(pkgfile)
     self._ReadBody(pkgfile)
 
+  def ReadFilePath(self, pkgfile_path):
+    """Read the packages file path.
+
+    Args:
+      pkgfile_path (str): The path to the file.
+    """
+    f = file(pkgfile_path)
+    self.Read(f)
+    f.close()
+
   def RemoveFilteredPackages(self, filter_fn):
     """Remove packages which match filter_fn.
 
