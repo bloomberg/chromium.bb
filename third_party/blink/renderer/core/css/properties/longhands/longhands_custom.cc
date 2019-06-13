@@ -180,6 +180,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_border_top_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_caret_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_color.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_outline_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_decoration_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_emphasis_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_fill_color.h"
@@ -3740,6 +3741,14 @@ const blink::Color InternalVisitedBorderBottomColor::ColorIncludingFallback(
       style.InternalVisitedColor());
 }
 
+const blink::Color InternalVisitedOutlineColor::ColorIncludingFallback(
+    bool visited_link,
+    const ComputedStyle& style) const {
+  DCHECK(visited_link);
+  return style.InternalVisitedOutlineColor().Resolve(
+      style.InternalVisitedColor());
+}
+
 const blink::Color InternalVisitedTextDecorationColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
@@ -4614,11 +4623,8 @@ const CSSValue* OutlineColor::ParseSingleValue(
 const blink::Color OutlineColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result =
-      visited_link ? style.VisitedLinkOutlineColor() : style.OutlineColor();
-  if (!result.IsCurrentColor())
-    return result.GetColor();
-  return visited_link ? style.InternalVisitedColor() : style.GetColor();
+  DCHECK(!visited_link);
+  return style.OutlineColor().Resolve(style.GetColor());
 }
 
 const CSSValue* OutlineColor::CSSValueFromComputedStyleInternal(

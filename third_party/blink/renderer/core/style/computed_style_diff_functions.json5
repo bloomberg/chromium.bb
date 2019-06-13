@@ -304,8 +304,8 @@
             field_dependencies: ["-internal-visited-border-top-color"]
           },
           {
-            predicate: "a.VisitedLinkOutlineColorHasNotChanged(b)",
-            field_dependencies: ["VisitedLinkOutlineColor"]
+            predicate: "a.InternalVisitedOutlineColorHasNotChanged(b)",
+            field_dependencies: ["-internal-visited-outline-color"]
           },
         ]
     },

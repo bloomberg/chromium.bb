@@ -108,6 +108,7 @@ class InternalVisitedBorderRightColor;
 class InternalVisitedBorderTopColor;
 class InternalVisitedCaretColor;
 class InternalVisitedColor;
+class InternalVisitedOutlineColor;
 class InternalVisitedTextDecorationColor;
 class InternalVisitedTextEmphasisColor;
 class InternalVisitedTextFillColor;
@@ -207,6 +208,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::InternalVisitedBorderTopColor;
   friend class css_longhand::InternalVisitedCaretColor;
   friend class css_longhand::InternalVisitedColor;
+  friend class css_longhand::InternalVisitedOutlineColor;
   friend class css_longhand::InternalVisitedTextDecorationColor;
   friend class css_longhand::InternalVisitedTextEmphasisColor;
   friend class css_longhand::InternalVisitedTextFillColor;
@@ -2382,8 +2384,8 @@ class ComputedStyle : public ComputedStyleBase,
   void SetInternalVisitedBorderTopColor(const StyleColor& v) {
     SetInternalVisitedBorderTopColorInternal(v);
   }
-  void SetVisitedLinkOutlineColor(const StyleColor& v) {
-    SetVisitedLinkOutlineColorInternal(v);
+  void SetInternalVisitedOutlineColor(const StyleColor& v) {
+    SetInternalVisitedOutlineColorInternal(v);
   }
   void SetVisitedLinkColumnRuleColor(const StyleColor& v) {
     SetVisitedLinkColumnRuleColorInternal(v);
@@ -2560,11 +2562,13 @@ class ComputedStyle : public ComputedStyleBase,
                 other.InternalVisitedBorderTopColor() ||
             !BorderTopWidth());
   }
-  StyleColor VisitedLinkOutlineColor() const {
-    return VisitedLinkOutlineColorInternal();
+  StyleColor InternalVisitedOutlineColor() const {
+    return InternalVisitedOutlineColorInternal();
   }
-  bool VisitedLinkOutlineColorHasNotChanged(const ComputedStyle& other) const {
-    return (VisitedLinkOutlineColor() == other.VisitedLinkOutlineColor() ||
+  bool InternalVisitedOutlineColorHasNotChanged(
+      const ComputedStyle& other) const {
+    return (InternalVisitedOutlineColor() ==
+                other.InternalVisitedOutlineColor() ||
             !OutlineWidth());
   }
   StyleColor VisitedLinkColumnRuleColor() const {

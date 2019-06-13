@@ -222,7 +222,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.Orphans() == b.Orphans();
     case CSSPropertyID::kOutlineColor:
       return a.OutlineColor() == b.OutlineColor() &&
-             a.VisitedLinkOutlineColor() == b.VisitedLinkOutlineColor();
+             a.InternalVisitedOutlineColor() == b.InternalVisitedOutlineColor();
     case CSSPropertyID::kOutlineOffset:
       return a.OutlineOffset() == b.OutlineOffset();
     case CSSPropertyID::kOutlineWidth:

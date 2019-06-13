@@ -82,7 +82,7 @@ OptionalStyleColor ColorPropertyFunctions::GetVisitedColor(
     case CSSPropertyID::kColor:
       return style.InternalVisitedColor();
     case CSSPropertyID::kOutlineColor:
-      return style.VisitedLinkOutlineColor();
+      return style.InternalVisitedOutlineColor();
     case CSSPropertyID::kColumnRuleColor:
       return style.VisitedLinkColumnRuleColor();
     case CSSPropertyID::kWebkitTextEmphasisColor:
@@ -189,7 +189,7 @@ void ColorPropertyFunctions::SetVisitedColor(const CSSProperty& property,
       style.SetLightingColor(color);
       return;
     case CSSPropertyID::kOutlineColor:
-      style.SetVisitedLinkOutlineColor(color);
+      style.SetInternalVisitedOutlineColor(color);
       return;
     case CSSPropertyID::kStopColor:
       style.SetStopColor(color);
