@@ -293,7 +293,6 @@ void OfflinePageURLLoader::OnReceiveResponse(
   }
 
   response_head.mime_type = "multipart/related";
-  response_head.charset = "utf-8";
   response_head.content_length = file_size;
 
   client_->OnReceiveResponse(response_head);
