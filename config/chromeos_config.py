@@ -2154,7 +2154,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'octopus',
       'panther',
       'peppy',
-      'poppy',
       'quawks',
       'rammus',
       'reef',

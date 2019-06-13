@@ -112,7 +112,6 @@
     octopus-paladin
     panther-paladin
     peppy-paladin
-    poppy-paladin
     quawks-paladin
     rammus-paladin
     reef-paladin
@@ -485,7 +484,6 @@
     orco-postsubmit
     panther-postsubmit
     peppy-postsubmit
-    poppy-postsubmit
     pyro-postsubmit
     quawks-postsubmit
     rammus-postsubmit
@@ -2704,7 +2702,6 @@
     octopus-paladin-tryjob
     panther-paladin-tryjob
     peppy-paladin-tryjob
-    poppy-paladin-tryjob
     quawks-paladin-tryjob
     rammus-paladin-tryjob
     reef-paladin-tryjob
@@ -2829,7 +2826,6 @@
     orco-postsubmit-tryjob
     panther-postsubmit-tryjob
     peppy-postsubmit-tryjob
-    poppy-postsubmit-tryjob
     pyro-postsubmit-tryjob
     quawks-postsubmit-tryjob
     rammus-postsubmit-tryjob
