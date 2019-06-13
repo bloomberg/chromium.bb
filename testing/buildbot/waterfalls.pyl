@@ -3072,8 +3072,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
+          'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_gold_telemetry_tests',
         },
       },
       'Win10 FYI Exp Release (Intel HD 630)': {
