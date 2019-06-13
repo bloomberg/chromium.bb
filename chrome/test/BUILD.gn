@@ -469,7 +469,6 @@ if (is_android) {
       ":test_support_ui_android",
       "//chrome:chrome_android_core",
       "//chrome/android:app_hooks_java",
-      "//chrome/android:chrome_java",
 
       # TODO(crbug.com/961849): This is needed for ShellManager which is what
       # the ChromeBrowserTestsActivity is using to build the java UI. It's
@@ -513,24 +512,23 @@ if (is_android) {
 
   android_assets("android_browsertests_assets") {
     testonly = true
+    disable_compression = true
     sources = []
     deps = []
 
     # These are grit() rules so they are in $root_gen_dir.
-    deps += [
-      "//chrome/android:chrome_apk_paks",
-      "//components/resources",
-    ]
-    sources += [
-      "$root_gen_dir/chrome/android/chrome_apk_paks/chrome_100_percent.pak",
-      "$root_gen_dir/chrome/android/chrome_apk_paks/locales/en-US.pak",
-      "$root_gen_dir/chrome/android/chrome_apk_paks/resources.pak",
-      "$root_gen_dir/components/components_resources.pak",
-    ]
+    deps += [ "//components/resources" ]
+    sources += [ "$root_gen_dir/components/components_resources.pak" ]
 
     # These are repack() rules so they are in $root_out_dir.
     deps += [ "//chrome:browser_tests_pak" ]
     sources += [ "$root_out_dir/browser_tests.pak" ]
+
+    # These are assets rules so we can just depend on them.
+    deps += [
+      "//chrome/android:chrome_apk_pak_assets",
+      "//third_party/icu:icu_assets",
+    ]
 
     if (use_v8_context_snapshot) {
       deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
@@ -542,10 +540,10 @@ if (is_android) {
   android_library("android_browsertests_java") {
     testonly = true
     deps = [
-      ":android_browsertests_java_resources",
       "//base:base_java",
       "//base:base_java_test_support",
-      "//chrome/android:chrome_java",
+      "//chrome/android:chrome_all_java",
+      "//content/public/android:content_java",
       "//content/public/test/android:android_test_message_pump_support_java",
       "//content/shell/android:content_shell_browsertests_java",
       "//testing/android/native_test:native_test_java",
@@ -554,12 +552,6 @@ if (is_android) {
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsActivity.java",
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsApplication.java",
     ]
-  }
-
-  android_resources("android_browsertests_java_resources") {
-    testonly = true
-    resource_dirs = [ "//chrome/test/android/browsertests_apk/res" ]
-    custom_package = "org.chromium.android_browsertests_apk"
   }
 
   jinja_template("android_browsertests_manifest") {
