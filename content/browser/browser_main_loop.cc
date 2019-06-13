@@ -108,6 +108,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/swap_metrics_driver.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -975,6 +976,10 @@ int BrowserMainLoop::CreateThreads() {
 }
 
 int BrowserMainLoop::PostCreateThreads() {
+  tracing_controller_ = std::make_unique<content::TracingControllerImpl>();
+  content::BackgroundTracingManagerImpl::GetInstance()
+      ->AddMetadataGeneratorFunction();
+
   if (parts_) {
     TRACE_EVENT0("startup", "BrowserMainLoop::PostCreateThreads");
     parts_->PostCreateThreads();
@@ -1318,9 +1323,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   {
     TRACE_EVENT0("startup", "BrowserThreadsStarted::Subsystem:GamepadService");
     device::GamepadService::GetInstance()->StartUp(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone());
+        GetSystemConnector()->Clone());
   }
 
 #if defined(OS_WIN)
@@ -1448,8 +1451,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
         now_playing::RemoteCommandCenterDelegate::Create();
 #endif
     media_keys_listener_manager_ =
-        std::make_unique<MediaKeysListenerManagerImpl>(
-            content::ServiceManagerConnection::GetForProcess()->GetConnector());
+        std::make_unique<MediaKeysListenerManagerImpl>(GetSystemConnector());
   }
 
 #if defined(OS_MACOSX)
@@ -1560,16 +1562,10 @@ void BrowserMainLoop::InitializeMojo() {
   // know they're running in the same process as the service.
   content::NavigableContentsView::SetClientRunningInServiceProcess();
 
-  tracing_controller_ = std::make_unique<content::TracingControllerImpl>();
-  content::BackgroundTracingManagerImpl::GetInstance()
-      ->AddMetadataGeneratorFunction();
-
   // Registers the browser process as a memory-instrumentation client, so
   // that data for the browser process will be available in memory dumps.
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
   memory_instrumentation::ClientProcessImpl::Config config(
-      connector, resource_coordinator::mojom::kServiceName,
+      GetSystemConnector(), resource_coordinator::mojom::kServiceName,
       memory_instrumentation::mojom::ProcessType::BROWSER);
   memory_instrumentation::ClientProcessImpl::CreateInstance(config);
 
@@ -1579,11 +1575,6 @@ void BrowserMainLoop::InitializeMojo() {
   // We can only do this after starting the main message loop to avoid calling
   // MessagePumpForUI::ScheduleWork() before MessagePumpForUI::Start().
   TracingControllerImpl::GetInstance()->StartStartupTracingIfNeeded();
-
-  if (parts_) {
-    parts_->ServiceManagerConnectionStarted(
-        ServiceManagerConnection::GetForProcess());
-  }
 
 #if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
   mojo::BeginRandomMojoDelays();
@@ -1629,22 +1620,17 @@ void BrowserMainLoop::InitializeAudio() {
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::BindOnce([]() {
           TRACE_EVENT0("audio", "Starting audio service");
-          ServiceManagerConnection* connection =
-              content::ServiceManagerConnection::GetForProcess();
-          if (connection) {
+          auto* connector = GetSystemConnector();
+          if (connector) {
             // The browser is not shutting down: |connection| would be null
             // otherwise.
-            connection->GetConnector()->WarmService(
-                service_manager::ServiceFilter::ByName(
-                    audio::mojom::kServiceName));
+            connector->WarmService(service_manager::ServiceFilter::ByName(
+                audio::mojom::kServiceName));
           }
         }));
   }
 
-  audio_system_ = audio::CreateAudioSystem(
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->Clone());
+  audio_system_ = audio::CreateAudioSystem(GetSystemConnector()->Clone());
   CHECK(audio_system_);
 }
 

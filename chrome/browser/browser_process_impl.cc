@@ -1143,6 +1143,8 @@ void BrowserProcessImpl::PreCreateThreads(
       extensions::kExtensionScheme, true);
 #endif
 
+  battery_metrics_ = std::make_unique<BatteryMetrics>();
+
   secure_origin_prefs_observer_ =
       std::make_unique<SecureOriginPrefsObserver>(local_state());
   site_isolation_prefs_observer_ =
@@ -1172,12 +1174,6 @@ void BrowserProcessImpl::PreCreateThreads(
   if (!SystemNetworkContextManager::GetInstance())
     SystemNetworkContextManager::CreateInstance(local_state());
   io_thread_ = std::make_unique<IOThread>(net_log_.get());
-}
-
-void BrowserProcessImpl::ServiceManagerConnectionStarted(
-    content::ServiceManagerConnection* connection) {
-  // This uses the service manager so it must happen after it's started.
-  battery_metrics_ = std::make_unique<BatteryMetrics>();
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {

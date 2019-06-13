@@ -109,11 +109,6 @@ class BrowserProcessImpl : public BrowserProcess,
   // Called before the browser threads are created.
   void PreCreateThreads(const base::CommandLine& command_line);
 
-  // Called after the browser threads are created, and service manager is set
-  // up.
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection);
-
   // Called after the threads have been created but before the message loops
   // starts running. Allows the browser process to do any initialization that
   // requires all threads running.
