@@ -155,8 +155,10 @@ void CorsURLLoader::FollowRedirect(
     return;
   }
 
-  for (const auto& name : removed_headers)
+  for (const auto& name : removed_headers) {
     request_.headers.RemoveHeader(name);
+    request_.cors_exempt_headers.RemoveHeader(name);
+  }
   request_.headers.MergeFrom(modified_headers);
 
   const std::string original_method = std::move(request_.method);
