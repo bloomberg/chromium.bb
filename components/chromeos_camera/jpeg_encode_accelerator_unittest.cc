@@ -587,10 +587,9 @@ void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
       encoder_->GetMaxCodedBufferSize(test_image->visible_size);
   PrepareMemory(bitstream_buffer_id);
 
-  base::SharedMemoryHandle dup_handle =
-      base::SharedMemoryHandle(hw_out_shm_->handle());
+  // media::BitstreamBuffer will duplicate hw_out_shm_->handle().
   encoded_buffer_ =
-      media::BitstreamBuffer(bitstream_buffer_id, dup_handle,
+      media::BitstreamBuffer(bitstream_buffer_id, hw_out_shm_->handle(),
                              false /* read_only */, test_image->output_size);
   scoped_refptr<media::VideoFrame> input_frame_ =
       media::VideoFrame::WrapExternalSharedMemory(

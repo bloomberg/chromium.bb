@@ -208,16 +208,19 @@ void MojoMjpegDecodeAcceleratorService::DecodeWithFD(
     return;
   }
 
-  base::UnguessableToken guid = base::UnguessableToken::Create();
-  base::SharedMemoryHandle input_shm_handle(
-      base::FileDescriptor(input_fd, true), input_buffer_size, guid);
-  base::SharedMemoryHandle output_shm_handle(
-      base::FileDescriptor(output_fd, true), output_buffer_size, guid);
-
-  media::BitstreamBuffer in_buffer(buffer_id, input_shm_handle,
-                                   false /* read_only */, input_buffer_size);
+  base::subtle::PlatformSharedMemoryRegion input_shm_region =
+      base::subtle::PlatformSharedMemoryRegion::Take(
+          base::subtle::ScopedFDPair(base::ScopedFD(input_fd),
+                                     base::ScopedFD()),
+          base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+          input_buffer_size, base::UnguessableToken::Create());
+  media::BitstreamBuffer in_buffer(buffer_id, std::move(input_shm_region),
+                                   input_buffer_size);
   gfx::Size coded_size(coded_size_width, coded_size_height);
 
+  base::SharedMemoryHandle output_shm_handle(
+      base::FileDescriptor(output_fd, true), output_buffer_size,
+      base::UnguessableToken::Create());
   mojo::ScopedSharedBufferHandle output_scoped_handle =
       mojo::WrapSharedMemoryHandle(
           output_shm_handle, output_buffer_size,
