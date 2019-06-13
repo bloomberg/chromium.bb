@@ -47,6 +47,7 @@ NSString* const kLanguageEntryTwoLabelsTemplate = @"%@, %@";
 NSString* const kEnglishLabel = @"English";
 NSString* const kTurkishLabel = @"Turkish";
 NSString* const kTurkishNativeLabel = @"Türkçe";
+NSString* const kAragoneseLabel = @"Aragonese";
 NSString* const kNeverTranslateLabel = @"Never Translate";
 NSString* const kOfferToTranslateLabel = @"Offer to Translate";
 
@@ -130,6 +131,22 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
              : grey_not(grey_accessibilityTrait(UIAccessibilityTraitSelected));
 }
 
+// Matcher for the delete button for a language entry in the Language Settings's
+// main page.
+id<GREYMatcher> LanguageEntryDeleteButton() {
+  return grey_allOf(grey_accessibilityLabel(@"Delete"),
+                    grey_sufficientlyVisible(), nil);
+}
+
+// Matcher for the nav bar's edit button.
+id<GREYMatcher> NavigationBarEditButton() {
+  return grey_allOf(
+      ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON),
+      grey_kindOfClass([UIButton class]),
+      grey_ancestor(grey_kindOfClass([UINavigationBar class])),
+      grey_sufficientlyVisible(), nil);
+}
+
 }  // namespace
 
 @interface LanguageSettingsTestCase : ChromeTestCase
@@ -165,9 +182,22 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
 }
 
 - (void)tearDown {
-  // Go back to the general Settings menu and close it.
+  // Keep navigating back while a Language Settings subpage is displaying.
+  NSError* error = nil;
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
+      assertWithMatcher:grey_notNil()
+                  error:&error];
+  while (!error) {
+    [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+        performAction:grey_tap()];
+
+    error = nil;
+    [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+  }
+
+  // Close the general Settings menu.
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 
@@ -206,10 +236,6 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
   [[EarlGrey selectElementWithMatcher:LanguageDetailsTableView()]
       assertWithMatcher:grey_notNil()];
   VerifyAccessibilityForCurrentScreen();
-
-  // Navigate back.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
 }
 
 // Tests that the Translate Switch enables/disables Translate and the UI gets
@@ -359,10 +385,11 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
 
   // Verify both options are enabled and "Never Translate" is selected.
   [[EarlGrey selectElementWithMatcher:NeverTranslateButton()]
-      assertWithMatcher:grey_allOf(grey_enabled(), ElementIsSelected(YES),
-                                   nil)];
+      assertWithMatcher:grey_allOf(grey_userInteractionEnabled(),
+                                   ElementIsSelected(YES), nil)];
   [[EarlGrey selectElementWithMatcher:OfferToTranslateButton()]
-      assertWithMatcher:grey_allOf(grey_enabled(), ElementIsSelected(NO), nil)];
+      assertWithMatcher:grey_allOf(grey_userInteractionEnabled(),
+                                   ElementIsSelected(NO), nil)];
 
   // Tap the "Offer to Translate" button.
   [[EarlGrey selectElementWithMatcher:OfferToTranslateButton()]
@@ -389,10 +416,11 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
 
   // Verify both options are enabled and "Offer to Translate" is selected.
   [[EarlGrey selectElementWithMatcher:NeverTranslateButton()]
-      assertWithMatcher:grey_allOf(grey_enabled(), ElementIsSelected(NO), nil)];
+      assertWithMatcher:grey_allOf(grey_userInteractionEnabled(),
+                                   ElementIsSelected(NO), nil)];
   [[EarlGrey selectElementWithMatcher:OfferToTranslateButton()]
-      assertWithMatcher:grey_allOf(grey_enabled(), ElementIsSelected(YES),
-                                   nil)];
+      assertWithMatcher:grey_allOf(grey_userInteractionEnabled(),
+                                   ElementIsSelected(YES), nil)];
 
   // Tap the "Never Translate" button.
   [[EarlGrey selectElementWithMatcher:NeverTranslateButton()]
@@ -402,7 +430,7 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
   [[EarlGrey selectElementWithMatcher:LanguageSettingsTableView()]
       assertWithMatcher:grey_notNil()];
 
-  // Verify "Turkish" is blocked.
+  // Verify "Turkish" is Translate-blocked.
   languageEntryLabel = [NSString
       stringWithFormat:kLanguageEntryThreeLabelsTemplate, kTurkishLabel,
                        kTurkishNativeLabel, kNeverTranslateLabel];
@@ -412,6 +440,174 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
   // Verify the prefs are up-to-date.
   GREYAssertTrue(translatePrefs_->IsBlockedLanguage("tr"),
                  @"Turkish is expected to be Translate-blocked");
+}
+
+// Tests that the target language cannot be unblocked.
+- (void)testUnblockTargetLanguage {
+  [ChromeEarlGreyUI openSettingsMenu];
+
+  // Add "Turkish" to the list of accept languages.
+  translatePrefs_->AddToLanguageList("tr", /*force_blocked=*/false);
+  // Verify the prefs are up-to-date.
+  GREYAssertTrue(translatePrefs_->IsBlockedLanguage("tr"),
+                 @"Turkish is expected to be Translate-blocked");
+
+  // Make "Turkish" the target language.
+  translatePrefs_->SetRecentTargetLanguage("tr");
+
+  // Go to the Language Settings page.
+  [ChromeEarlGreyUI tapSettingsMenuButton:LanguageSettingsButton()];
+
+  // Go to the "Turkish" Language Details page.
+  NSString* languageEntryLabel = [NSString
+      stringWithFormat:kLanguageEntryThreeLabelsTemplate, kTurkishLabel,
+                       kTurkishNativeLabel, kNeverTranslateLabel];
+  [[EarlGrey selectElementWithMatcher:LanguageEntry(languageEntryLabel)]
+      performAction:grey_tap()];
+
+  // Verify the "Never Translate" option is enabled and selected while
+  // "Offer to Translate" is disabled and unselected.
+  [[EarlGrey selectElementWithMatcher:NeverTranslateButton()]
+      assertWithMatcher:grey_allOf(grey_userInteractionEnabled(),
+                                   ElementIsSelected(YES), nil)];
+  [[EarlGrey selectElementWithMatcher:OfferToTranslateButton()]
+      assertWithMatcher:grey_allOf(grey_not(grey_userInteractionEnabled()),
+                                   ElementIsSelected(NO), nil)];
+}
+
+// Tests that the last Translate-blocked language cannot be unblocked.
+- (void)testUnblockLastBlockedLanguage {
+  [ChromeEarlGreyUI openSettingsMenu];
+
+  // Make sure "Turkish" is the target language and not "en".
+  translatePrefs_->SetRecentTargetLanguage("tr");
+
+  // Go to the Language Settings page.
+  [ChromeEarlGreyUI tapSettingsMenuButton:LanguageSettingsButton()];
+
+  // Go to the "Turkish" Language Details page.
+  NSString* languageEntryLabel = [NSString
+      stringWithFormat:kLanguageEntryThreeLabelsTemplate, kEnglishLabel,
+                       kEnglishLabel, kNeverTranslateLabel];
+  [[EarlGrey selectElementWithMatcher:LanguageEntry(languageEntryLabel)]
+      performAction:grey_tap()];
+
+  // Verify the "Never Translate" option is enabled and selected while
+  // "Offer to Translate" is disabled and unselected.
+  [[EarlGrey selectElementWithMatcher:NeverTranslateButton()]
+      assertWithMatcher:grey_allOf(grey_userInteractionEnabled(),
+                                   ElementIsSelected(YES), nil)];
+  [[EarlGrey selectElementWithMatcher:OfferToTranslateButton()]
+      assertWithMatcher:grey_allOf(grey_not(grey_userInteractionEnabled()),
+                                   ElementIsSelected(NO), nil)];
+}
+
+// Tests that an unsupported language cannot be unblocked.
+- (void)testUnblockUnsupportedLanguage {
+  [ChromeEarlGreyUI openSettingsMenu];
+
+  // Add "Aragonese" to the list of accept languages.
+  translatePrefs_->AddToLanguageList("an", /*force_blocked=*/false);
+  // Verify the prefs are up-to-date.
+  GREYAssertTrue(translatePrefs_->IsBlockedLanguage("an"),
+                 @"Aragonese is expected to be Translate-blocked");
+
+  // Go to the Language Settings page.
+  [ChromeEarlGreyUI tapSettingsMenuButton:LanguageSettingsButton()];
+
+  // Go to the "Aragonese" Language Details page.
+  NSString* languageEntryLabel = [NSString
+      stringWithFormat:kLanguageEntryThreeLabelsTemplate, kAragoneseLabel,
+                       kAragoneseLabel, kNeverTranslateLabel];
+  [[EarlGrey selectElementWithMatcher:LanguageEntry(languageEntryLabel)]
+      performAction:grey_tap()];
+
+  // Verify the "Never Translate" option is enabled and selected while
+  // "Offer to Translate" is disabled and unselected.
+  [[EarlGrey selectElementWithMatcher:NeverTranslateButton()]
+      assertWithMatcher:grey_allOf(grey_userInteractionEnabled(),
+                                   ElementIsSelected(YES), nil)];
+  [[EarlGrey selectElementWithMatcher:OfferToTranslateButton()]
+      assertWithMatcher:grey_allOf(grey_not(grey_userInteractionEnabled()),
+                                   ElementIsSelected(NO), nil)];
+}
+
+// Tests that the Add Language button as well as the Translate switch are
+// disabled in edit mode.
+- (void)testEditMode {
+  [ChromeEarlGreyUI openSettingsMenu];
+
+  // Go to the Language Settings page.
+  [ChromeEarlGreyUI tapSettingsMenuButton:LanguageSettingsButton()];
+
+  // Switch on edit mode.
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
+      performAction:grey_tap()];
+
+  // Verify that the Add Language button is disabled.
+  [[EarlGrey selectElementWithMatcher:AddLanguageButton()]
+      assertWithMatcher:grey_not(grey_userInteractionEnabled())];
+
+  // Verify that the Translate switch is on and disabled.
+  [[EarlGrey
+      selectElementWithMatcher:SettingsSwitchCell(
+                                   kTranslateSwitchAccessibilityIdentifier, YES,
+                                   NO)] assertWithMatcher:grey_notNil()];
+}
+
+// Tests that languages, except the last one, can be deleted from the list of
+// accept languages.
+- (void)testDeleteLanguage {
+  [ChromeEarlGreyUI openSettingsMenu];
+
+  // Add "Turkish" to the list of accept languages.
+  translatePrefs_->AddToLanguageList("tr", /*force_blocked=*/false);
+  // Verify the prefs are up-to-date.
+  GREYAssertTrue(translatePrefs_->IsBlockedLanguage("tr"),
+                 @"Turkish is expected to be Translate-blocked");
+
+  // Go to the Language Settings page.
+  [ChromeEarlGreyUI tapSettingsMenuButton:LanguageSettingsButton()];
+
+  // Swipe left on the "English" language entry.
+  NSString* englishLanguageEntryLabel = [NSString
+      stringWithFormat:kLanguageEntryThreeLabelsTemplate, kEnglishLabel,
+                       kEnglishLabel, kNeverTranslateLabel];
+  id swipeAction = grey_swipeFastInDirection(kGREYDirectionLeft);
+  [[EarlGrey selectElementWithMatcher:LanguageEntry(englishLanguageEntryLabel)]
+      performAction:swipeAction];
+
+  // Verify that a delete button is visible.
+  [[EarlGrey selectElementWithMatcher:LanguageEntryDeleteButton()]
+      assertWithMatcher:grey_notNil()];
+
+  // Swipe left on the "Turkish" language entry.
+  NSString* turkishLanguageEntryLabel = [NSString
+      stringWithFormat:kLanguageEntryThreeLabelsTemplate, kTurkishLabel,
+                       kTurkishNativeLabel, kNeverTranslateLabel];
+  [[EarlGrey selectElementWithMatcher:LanguageEntry(turkishLanguageEntryLabel)]
+      performAction:swipeAction];
+
+  // Verify that a delete button is visible and tap it.
+  [[EarlGrey selectElementWithMatcher:LanguageEntryDeleteButton()]
+      performAction:grey_tap()];
+
+  // Verify that the "Turkish" language entry does not exist anymore.
+  [[EarlGrey selectElementWithMatcher:LanguageEntry(turkishLanguageEntryLabel)]
+      assertWithMatcher:grey_nil()];
+
+  // Verify the prefs are up-to-date.
+  ios::ChromeBrowserState* browserState = GetOriginalBrowserState();
+  GREYAssertEqual("en", browserState->GetPrefs()->GetString(kAcceptLanguages),
+                  @"Unexpected value for kAcceptLanguages pref");
+
+  // Swipe left on the "English" language entry.
+  [[EarlGrey selectElementWithMatcher:LanguageEntry(englishLanguageEntryLabel)]
+      performAction:swipeAction];
+
+  // Verify that a delete button is not visible.
+  [[EarlGrey selectElementWithMatcher:LanguageEntryDeleteButton()]
+      assertWithMatcher:grey_nil()];
 }
 
 @end
