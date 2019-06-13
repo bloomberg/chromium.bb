@@ -5854,6 +5854,8 @@ crbug.com/972516 [ Win ] netinfo/gc-unused-listeners.html [ Pass Failure ]
 # Sheriff 2019-06-13
 crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html [ Failure ]
 crbug.com/973726 [ Mac ] fast/css/large-list-of-rules-crash.html [ Pass Timeout ]
+crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
+crbug.com/937546 [ Win7 ] virtual/blink-cors/http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
 
 # Flaky on Linux
 crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-duration.html [ Pass Failure ]
