@@ -585,7 +585,7 @@ def CleanTargets(targets, root='/'):
 
   # Cleaning doesn't care about consistency and rebuilding package.* files.
   packages = []
-  for pkg, vers in unmergemap.iteritems():
+  for pkg, vers in unmergemap.items():
     packages.extend('=%s-%s' % (pkg, ver) for ver in vers if ver != '9999')
 
   if packages:
@@ -1036,7 +1036,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
         link = sym_paths[elf]
         GeneratePathWrapper(output_dir, link, elf)
 
-    for lib, lib_data in e['libs'].iteritems():
+    for lib, lib_data in e['libs'].items():
       if lib in donelibs:
         continue
 

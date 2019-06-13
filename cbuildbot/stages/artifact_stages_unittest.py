@@ -133,7 +133,7 @@ class UploadPrebuiltsStageTest(
     self.RunStage()
     public_prefix = [self.cmd] + (public_args or [])
     private_prefix = [self.cmd] + (private_args or [])
-    for board, public in board_map.iteritems():
+    for board, public in board_map.items():
       if public or public_args:
         public_cmd = public_prefix + ['--slave-board', board]
         self.assertCommandContains(public_cmd, expected=public)

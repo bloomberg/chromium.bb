@@ -288,7 +288,7 @@ class BuildConfig(AttrDict):
     result = BuildConfig(self)
 
     # Here is where we handle all values that need deepcopy instead of shallow.
-    for k, v in result.iteritems():
+    for k, v in result.items():
       if v is not None:
         if k == 'child_configs':
           result[k] = [x.deepcopy() for x in v]
@@ -318,7 +318,7 @@ class BuildConfig(AttrDict):
     inherits.append(kwargs)
 
     for update_config in inherits:
-      for name, value in update_config.iteritems():
+      for name, value in update_config.items():
         if callable(value):
           # If we are applying to a fixed value, we resolve to a fixed value.
           # Otherwise, we save off a callable to apply later, perhaps with
@@ -1357,7 +1357,7 @@ class SiteConfig(dict):
     """Return an iterable of all boards in the SiteConfig."""
     return set(
         itertools.chain.from_iterable(
-            x.boards for x in self.itervalues() if x.boards))
+            x.boards for x in self.values() if x.boards))
 
   def FindFullConfigsForBoard(self, board=None):
     """Returns full builder configs for a board.
@@ -1372,7 +1372,7 @@ class SiteConfig(dict):
     ext_cfgs = []
     int_cfgs = []
 
-    for name, c in self.iteritems():
+    for name, c in self.items():
       if c['boards'] and (board is None or board in c['boards']):
         if name.endswith('-%s' % CONFIG_TYPE_RELEASE) and c['internal']:
           int_cfgs.append(c.deepcopy())
@@ -1430,7 +1430,7 @@ class SiteConfig(dict):
     if important_only:
       # Remove unimportant configs from the result.
       slave_name_config_map = {
-          k: v for k, v in slave_name_config_map.iteritems() if v.important
+          k: v for k, v in slave_name_config_map.items() if v.important
       }
 
     return slave_name_config_map
@@ -1637,7 +1637,7 @@ class SiteConfig(dict):
       defaults['_template'] = None
 
     result = {}
-    for k, v in config.iteritems():
+    for k, v in config.items():
       if defaults.get(k) != v:
         if k == 'child_configs':
           result['child_configs'] = [
@@ -1661,7 +1661,7 @@ class SiteConfig(dict):
 
     # All templates used. We ignore child configs since they
     # should exist at top level.
-    used = set(c.get('_template', None) for c in self.itervalues())
+    used = set(c.get('_template', None) for c in self.values())
     used.discard(None)
 
     result = {}
@@ -1672,7 +1672,7 @@ class SiteConfig(dict):
       # Recover the '_template' value which is filtered out by derive.
       expanded['_template'] = name
       # Hide anything that matches the default.
-      save = {k: v for k, v in expanded.iteritems() if defaults.get(k) != v}
+      save = {k: v for k, v in expanded.items() if defaults.get(k) != v}
       result[name] = save
 
     return result
@@ -1684,7 +1684,7 @@ class SiteConfig(dict):
     config_dict = {}
     config_dict['_default'] = default
     config_dict['_templates'] = self._MarshalTemplates()
-    for k, v in self.iteritems():
+    for k, v in self.items():
       config_dict[k] = self._MarshalBuildConfig(k, v)
 
     return PrettyJsonDict(config_dict)
@@ -1951,14 +1951,14 @@ def LoadConfigFromString(json_string):
   _DeserializeTestConfigs(defaults)
 
   templates = config_dict.pop('_templates', {})
-  for t in templates.itervalues():
+  for t in templates.values():
     _DeserializeTestConfigs(t)
 
   defaultBuildConfig = BuildConfig(**defaults)
 
   builds = {
       n: _CreateBuildConfig(n, defaultBuildConfig, v, templates)
-      for n, v in config_dict.iteritems()
+      for n, v in config_dict.items()
   }
 
   # config is the struct that holds the complete cbuildbot config.

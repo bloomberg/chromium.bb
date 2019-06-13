@@ -76,7 +76,7 @@ class BuildSummary(object):
       ValueError: |raw_json| is not valid JSON.
     """
     new_state = json.loads(raw_json)
-    for key, val in new_state.iteritems():
+    for key, val in new_state.items():
       if key in self._PERSIST_ATTRIBUTES:
         setattr(self, key, val)
       else:

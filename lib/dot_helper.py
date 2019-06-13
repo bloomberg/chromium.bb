@@ -53,7 +53,7 @@ class Subgraph(object):
     """Generates the code for all the nodes."""
     lines = []
     for node in self._nodes:
-      tags = ['%s="%s"' % (k, v) for (k, v) in node['tags'].iteritems()]
+      tags = ['%s="%s"' % (k, v) for (k, v) in node['tags'].items()]
       lines.append('"%s" [%s];' % (node['id'], ', '.join(tags)))
     return lines
 

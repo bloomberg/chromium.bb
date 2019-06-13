@@ -26,7 +26,7 @@ def AugmentDepGraphProtoFromJsonMap(json_map, graph):
   """
   graph.build_target.name = json_map['target_board']
 
-  for data in json_map['package_deps'].itervalues():
+  for data in json_map['package_deps'].values():
     package_dep_info = graph.package_deps.add()
     package_info = package_dep_info.package_info
     package_info.package_name = data['name']

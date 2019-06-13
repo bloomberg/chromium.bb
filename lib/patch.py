@@ -454,7 +454,7 @@ class PatchCache(object):
         self._dict.pop(alias, None)
 
   def __iter__(self):
-    return iter(set(self._dict.itervalues()))
+    return iter(set(self._dict.values()))
 
   def __getitem__(self, key):
     """If the given key exists, return the Change, else None."""
@@ -1408,7 +1408,7 @@ class GitRepoPatch(PatchQuery):
       inflight: Whether we currently have patches applied to this repository.
     """
     ebuilds = [path for (path, mtype) in
-               self.GetDiffStatus(git_repo).iteritems()
+               self.GetDiffStatus(git_repo).items()
                if mtype == 'D' and path.endswith('.ebuild')]
 
     conflicts = self._FindMissingFiles(git_repo, 'HEAD', ebuilds)
@@ -1937,7 +1937,7 @@ class GerritPatch(GerritFetchOnlyPatch):
       current_revision_info = change.get('revisions', {}).get(current_revision)
       if current_revision_info:
         approvals = []
-        for label, label_data in change['labels'].iteritems():
+        for label, label_data in change['labels'].items():
           # Skip unknown labels.
           if label not in constants.GERRIT_ON_BORG_LABELS:
             continue
@@ -2054,7 +2054,7 @@ class GerritPatch(GerritFetchOnlyPatch):
     returns boolean telling if all flag requirements are met.
     """
     return all(self.HasApproval(field, value)
-               for field, value in flags.iteritems())
+               for field, value in flags.items())
 
   def IsPrivate(self):
     """Return whether this CL is currently marked Private."""

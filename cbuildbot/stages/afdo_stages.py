@@ -147,7 +147,7 @@ class AFDOUpdateChromeEbuildStage(generic_stages.BuilderStage):
     board = self._boards[0] if self._boards else None
     profiles = {}
 
-    for source, getter in afdo.PROFILE_SOURCES.iteritems():
+    for source, getter in afdo.PROFILE_SOURCES.items():
       profile = getter(cpv, source, buildroot, gs_context)
       if not profile:
         raise afdo.MissingAFDOData(

@@ -49,6 +49,7 @@ enable=
     deprecated-string-function,
     deprecated-types-field,
     dict-items-not-iterating,
+    dict-iter-method,
     dict-keys-not-iterating,
     dict-values-not-iterating,
     dict-view-method,

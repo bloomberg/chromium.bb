@@ -116,9 +116,9 @@ def MakeFunctionalTests():
     def tearDown(self):
       """Reset the damage done by lint_autotest.register(...)"""
       self.context.__exit__(None, None, None)
-      for cls, old_dict in self.old_state.iteritems():
+      for cls, old_dict in self.old_state.items():
         # .__dict__ is not writeable. Copy over k,v pairs.
-        for k, v in old_dict.iteritems():
+        for k, v in old_dict.items():
           # Some attributes are not writeable. Only fix the ones that changed.
           if cls.__dict__[k] is not v:
             setattr(cls, k, v)

@@ -117,7 +117,7 @@ def FilterToolchains(targets, key, value):
     dict where all targets whose metadata |key| does not match |value|
     have been deleted
   """
-  return dict((k, v) for k, v in targets.iteritems() if v[key] == value)
+  return dict((k, v) for k, v in targets.items() if v[key] == value)
 
 
 def GetSdkURL(for_gsutil=False, suburl=''):

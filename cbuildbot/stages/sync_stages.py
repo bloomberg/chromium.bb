@@ -137,7 +137,7 @@ class PatchChangesStage(generic_stages.BuilderStage):
         continue
       conflicts.setdefault(change.id, []).append(change)
 
-    duplicates = [x for x in conflicts.itervalues() if len(x) > 1]
+    duplicates = [x for x in conflicts.values() if len(x) > 1]
     if not duplicates:
       return changes
 
@@ -1650,7 +1650,7 @@ class PreCQLauncherStage(SyncStage):
       current_time: datetime.datetime timestamp giving current database time.
     """
     config_progress = progress_map[change]
-    for config, progress in config_progress.iteritems():
+    for config, progress in config_progress.items():
       # Note: only "INFLIGHT" status has the timeout.
       if (progress.status != constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT or
           not self._HasTimedOut(progress.timestamp, current_time,
@@ -1743,8 +1743,8 @@ class PreCQLauncherStage(SyncStage):
     if not self.buildbucket_client:
       return
 
-    for change, config_map in progress_map.iteritems():
-      for config, progress in config_map.iteritems():
+    for change, config_map in progress_map.items():
+      for config, progress in config_map.items():
         if progress.status != constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED:
           continue
         if progress.buildbucket_id is None:
@@ -1950,7 +1950,7 @@ class PreCQLauncherStage(SyncStage):
     # ready or commit ready, before launching.
     launchable_progress_map = {
         k: v
-        for k, v in progress_map.iteritems()
+        for k, v in progress_map.items()
         if k.HasReadyFlag() or status_map[k] != constants.CL_STATUS_FAILED
     }
 
@@ -1964,7 +1964,7 @@ class PreCQLauncherStage(SyncStage):
         pool, launchable_progress_map):
       launches.setdefault(frozenset(plan), []).append(config)
 
-    for plan, configs in launches.iteritems():
+    for plan, configs in launches.items():
       if launch_count >= launch_count_limit:
         logging.info(
             'Hit or exceeded maximum launch count of %s this cycle, '
@@ -2000,7 +2000,7 @@ class PreCQLauncherStage(SyncStage):
     }
     status_map = {c: v[0] for c, v in status_and_timestamp_map.items()}
 
-    status_str_map = {c.PatchLink(): s for c, s in status_map.iteritems()}
+    status_str_map = {c.PatchLink(): s for c, s in status_map.items()}
     logging.info('Processing status_map: %s', pprint.pformat(status_str_map))
 
     return action_history, status_and_timestamp_map, status_map
@@ -2146,7 +2146,7 @@ class PreCQLauncherStage(SyncStage):
     status_counts = {}
     for count_bin in itertools.product((True, False), POSSIBLE_STATUSES):
       status_counts[count_bin] = 0
-    for c, status in status_map.iteritems():
+    for c, status in status_map.items():
       count_bin = (c.IsMergeable(), status)
       status_counts[count_bin] += 1
     for (is_mergable, status), count in sorted(status_counts.items()):

@@ -319,7 +319,7 @@ class BuildbucketV2(object):
           'metadata_url': None,
           'deadline': None,
       }
-      for _, status_name in CIDB_TO_BB_PROPERTIES_MAP.iteritems():
+      for _, status_name in CIDB_TO_BB_PROPERTIES_MAP.items():
         status_shell[status_name] = None
       return status_shell
 
@@ -330,7 +330,7 @@ class BuildbucketV2(object):
 
     if build_with_properties.output.HasField('properties'):
       build_properties = build_with_properties.output.properties
-      for property_name, status_name in CIDB_TO_BB_PROPERTIES_MAP.iteritems():
+      for property_name, status_name in CIDB_TO_BB_PROPERTIES_MAP.items():
         if (property_name in build_properties and
             build_properties[property_name] is not "None"):
           build_status[status_name] = str(build_properties[property_name])
@@ -347,7 +347,7 @@ class BuildbucketV2(object):
           'metadata_url': None,
           'deadline': None,
       })
-      for _, status_name in CIDB_TO_BB_PROPERTIES_MAP.iteritems():
+      for _, status_name in CIDB_TO_BB_PROPERTIES_MAP.items():
         build_status[status_name] = None
       return build_status
 

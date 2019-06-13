@@ -74,7 +74,7 @@ class CmdToStrTest(cros_test_lib.TestCase):
 
   def _testData(self, functor, tests, check_type=True):
     """Process a dict of test data."""
-    for test_output, test_input in tests.iteritems():
+    for test_output, test_input in tests.items():
       result = functor(test_input)
       self._assertEqual(functor.__name__, test_input, test_output, result)
 

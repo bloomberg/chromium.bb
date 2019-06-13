@@ -173,7 +173,7 @@ def ApplyHealthCheckAttributes(obj):
     The same object with default attribute values set if they were not
     already defined.
   """
-  for attr, default in HEALTH_CHECK_DEFAULT_ATTRIBUTES.iteritems():
+  for attr, default in HEALTH_CHECK_DEFAULT_ATTRIBUTES.items():
     if not hasattr(obj, attr):
       setattr(obj, attr, default)
 
@@ -278,11 +278,11 @@ class CheckFileManager(object):
     Args:
       force: Ignore the health check interval and execute the health checks.
     """
-    for service, healthchecks in self.service_checks.iteritems():
+    for service, healthchecks in self.service_checks.items():
       # Set default result dictionary if this is a new service.
       self.service_check_results.setdefault(service, {})
 
-      for hcname, (_mtime, healthcheck) in healthchecks.iteritems():
+      for hcname, (_mtime, healthcheck) in healthchecks.items():
         # Update if the record is stale or non-existent.
         etime = time.time()
         _, exec_time, status = self.service_check_results[service].get(
@@ -307,11 +307,11 @@ class CheckFileManager(object):
 
   def ConsolidateServiceStates(self):
     """Consolidate health check results and determine service health states."""
-    for service, results in self.service_check_results.iteritems():
+    for service, results in self.service_check_results.items():
       self.service_states.setdefault(service, {})
 
       quasi_or_unhealthy_checks = []
-      for (_exec_status, _exec_stime, hcstatus) in results.itervalues():
+      for (_exec_status, _exec_stime, hcstatus) in results.values():
         if not isHealthcheckHealthy(hcstatus):
           quasi_or_unhealthy_checks.append(hcstatus)
 

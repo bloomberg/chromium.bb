@@ -209,7 +209,7 @@ class DepTracker(object):
     # First iteration over all the files in root searching for symlinks and
     # non-regular files.
     parseelf_args = []
-    for rel_path, file_data in self._files.iteritems():
+    for rel_path, file_data in self._files.items():
       if rel_path in self._symlinks or rel_path in self._hardlinks:
         continue
 
@@ -223,7 +223,7 @@ class DepTracker(object):
     elfs = dict(x for x in self._imap(ParseELFWithArgs, parseelf_args)
                 if not x is None)
 
-    for rel_path, elf in elfs.iteritems():
+    for rel_path, elf in elfs.items():
       file_data = self._files[rel_path]
       # Fill in the ftype if not set yet. We complete this value at this point
       # to avoid re-parsing the ELF file later.
@@ -245,7 +245,7 @@ class DepTracker(object):
 
   def ComputeFileTypes(self):
     """Computes all the missing file type for the files in the root."""
-    for rel_path, file_data in self._files.iteritems():
+    for rel_path, file_data in self._files.items():
       if 'ftype' in file_data:
         continue
       ftype = self._file_type_decoder.GetType(rel_path)

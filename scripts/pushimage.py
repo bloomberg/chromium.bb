@@ -239,7 +239,7 @@ class InputInsns(object):
     for sect, fields in zip(('insns', 'general'), (sect_insns, sect_general)):
       if not config.has_section(sect):
         config.add_section(sect)
-      for k, v in fields.iteritems():
+      for k, v in fields.items():
         config.set(sect, k, v)
 
     # Now prune the alternative sections.

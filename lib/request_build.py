@@ -144,7 +144,7 @@ class RequestBuild(object):
     # properties because JSON does not distnguish integers and floats, so
     # nothing guarantees that 0 won't turn into 0.0.
     # Recipe expects it to be a string anyway.
-    tags = {k: str(v) for k, v in tags.iteritems() if v}
+    tags = {k: str(v) for k, v in tags.items() if v}
 
     # All tags should also be listed as properties.
     properties = tags.copy()

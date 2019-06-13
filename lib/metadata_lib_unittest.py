@@ -82,7 +82,7 @@ class MetadataTest(cros_test_lib.TestCase):
     metadata = metadata_lib.CBuildbotMetadata(multiprocess_manager=m)
 
     with parallel.BackgroundTaskRunner(metadata.UpdateKeyDictWithDict) as q:
-      for k, v in expected_dict.iteritems():
+      for k, v in expected_dict.items():
         q.put(['my_dict', {k: v}])
 
     self.assertEqual(expected_dict, metadata.GetDict()['my_dict'])
@@ -177,9 +177,9 @@ class MetadataTest(cros_test_lib.TestCase):
 
     # Write each per board key-value pair to metadata in a separate process.
     with parallel.BackgroundTaskRunner(metadata.UpdateBoardDictWithDict) as q:
-      for board, board_dict in extra_per_board_dict.iteritems():
+      for board, board_dict in extra_per_board_dict.items():
         expected_dict.setdefault(board, {}).update(board_dict)
-        for k, v in board_dict.iteritems():
+        for k, v in board_dict.items():
           q.put([board, {k: v}])
 
     self.assertEqual(expected_dict, metadata.GetDict()['board-metadata'])

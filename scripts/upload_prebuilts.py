@@ -163,7 +163,7 @@ def RevGitFile(filename, data, dryrun=False):
 
   try:
     git.CreatePushBranch(prebuilt_branch, cwd)
-    for key, value in data.iteritems():
+    for key, value in data.items():
       UpdateLocalFile(filename, value, key)
     git.RunGit(cwd, ['add', filename])
     git.RunGit(cwd, ['commit', '-m', description])
@@ -234,7 +234,7 @@ def RemoteUpload(gs_context, acl, files, pool=10):
     Return a set of tuple arguments of the failed uploads
   """
   upload = functools.partial(_GsUpload, gs_context, acl)
-  tasks = [[key, value] for key, value in files.iteritems()]
+  tasks = [[key, value] for key, value in files.items()]
   parallel.RunTasksInProcessPool(upload, tasks, pool)
 
 

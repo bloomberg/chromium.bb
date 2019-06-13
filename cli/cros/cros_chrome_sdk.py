@@ -594,7 +594,7 @@ class SDKFetcher(object):
     version_base = self._GetVersionGSBase(version)
     fetch_urls.update((t, os.path.join(version_base, t)) for t in components)
     try:
-      for key, url in fetch_urls.iteritems():
+      for key, url in fetch_urls.items():
         cache_key = self._GetCacheKeyForComponent(version, key)
         ref = self.tarball_cache.Lookup(cache_key)
         key_map[key] = ref
@@ -622,7 +622,7 @@ class SDKFetcher(object):
       yield self.SDKContext(ctx_version, target_tc, key_map)
     finally:
       # TODO(rcui): Move to using cros_build_lib.ContextManagerStack()
-      cros_build_lib.SafeRun([ref.Release for ref in key_map.itervalues()])
+      cros_build_lib.SafeRun(ref.Release for ref in key_map.values())
 
 
 class GomaError(Exception):
@@ -1246,7 +1246,7 @@ class ChromeSDKCommand(command.CliCommand):
           '[[ -e ~/.bashrc && $- == *i* ]] && . ~/.bashrc\n',
       ]
 
-      for key, value in env.iteritems():
+      for key, value in env.items():
         contents.append("export %s='%s'\n" % (key, value))
       contents.append('. "%s"\n' % user_rc)
 

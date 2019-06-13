@@ -454,7 +454,7 @@ def FetchTarballs(binhost_urls, pkgdir):
       fetches[cpv] = uri
 
   with parallel.BackgroundTaskRunner(_DownloadURLs) as queue:
-    for category, urls in categories.iteritems():
+    for category, urls in categories.items():
       category_dir = os.path.join(pkgdir, category)
       if not os.path.exists(category_dir):
         os.makedirs(category_dir)

@@ -2947,7 +2947,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config, boards_dict, ge_build_config)
 
   _chrome_boards = frozenset(
-      board for board, config in internal_board_configs.iteritems()
+      board for board, config in internal_board_configs.items()
       if config.get('sync_chrome', True))
 
 
@@ -3199,7 +3199,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       site_config, boards_dict, ge_build_config)
 
   _chrome_boards = frozenset(
-      board for board, config in internal_board_configs.iteritems()
+      board for board, config in internal_board_configs.items()
       if config.get('sync_chrome', True))
 
   _chromium_pfq_important_boards = frozenset([
@@ -4143,10 +4143,10 @@ def ApplyCustomOverrides(site_config):
     overwritten_configs[board+'-llvm-next-toolchain'] = \
       overwritten_configs[board+'-llvm-toolchain']
 
-  for config_name, overrides  in overwritten_configs.iteritems():
+  for config_name, overrides  in overwritten_configs.items():
     # TODO: Turn this assert into a unittest.
     # config = site_config[config_name]
-    # for k, v in overrides.iteritems():
+    # for k, v in overrides.items():
     #   assert config[k] != v, ('Unnecessary override: %s: %s' %
     #                           (config_name, k))
     site_config[config_name].apply(**overrides)
@@ -4382,7 +4382,7 @@ def TryjobMirrors(site_config):
 
   tryjob_configs = {}
 
-  for build_name, config in site_config.iteritems():
+  for build_name, config in site_config.items():
     # Don't mirror builds that are already tryjob safe.
     if config_lib.isTryjobConfig(config):
       config.apply(hw_tests_override=None, vm_tests_override=None)
@@ -4445,7 +4445,7 @@ def TryjobMirrors(site_config):
     # Save off the new config so we can insert into site_config.
     tryjob_configs[tryjob_name] = tryjob_config
 
-  for tryjob_name, tryjob_config in tryjob_configs.iteritems():
+  for tryjob_name, tryjob_config in tryjob_configs.items():
     site_config[tryjob_name] = tryjob_config
 
 

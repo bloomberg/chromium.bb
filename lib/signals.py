@@ -104,7 +104,7 @@ def DeferSignals(*args):
     yield
 
   finally:
-    for signum, original in handlers.iteritems():
+    for signum, original in handlers.items():
       signal.signal(signum, original)
 
     for signum, frame in received:
@@ -130,7 +130,7 @@ def StrSignal(sig_num):
 
   # Probe the module looking for matching signal constant.
   sig_names = []
-  for name, num in signal.__dict__.iteritems():
+  for name, num in signal.__dict__.items():
     if name.startswith('SIG') and num == sig_num:
       sig_names.append(name)
   if sig_names:

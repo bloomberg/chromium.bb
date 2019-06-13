@@ -71,7 +71,7 @@ Turn something like this (the parallel_emerge DepsTree format):
   """
   if pkgtable is None:
     pkgtable = {}
-  for cpv, record in deptree.iteritems():
+  for cpv, record in deptree.items():
     if cpv not in pkgtable:
       split = portage_util.SplitCPV(cpv)
       pkgtable[cpv] = {'deps': [],
@@ -250,7 +250,7 @@ def FilterObsoleteDeps(package_deps):
     None since this method mutates |package_deps| directly.
   """
   obsolete_package_deps = []
-  for k, v in package_deps.iteritems():
+  for k, v in package_deps.items():
     if v['action'] in ('merge', 'nomerge'):
       continue
     elif v['action'] == 'uninstall':

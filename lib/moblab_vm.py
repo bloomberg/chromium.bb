@@ -303,7 +303,7 @@ class MoblabVm(object):
 
   def _ConfigRelativePathsToAbsolute(self, config_data, workspace_dir):
     """Converts all the relative paths loaded from config to absolute paths."""
-    for key, relpath in config_data.iteritems():
+    for key, relpath in config_data.items():
       if key not in _CONFIG_RELATIVE_PATH_KEYS:
         continue
       config_data[key] = os.path.realpath(os.path.join(workspace_dir, relpath))
@@ -311,7 +311,7 @@ class MoblabVm(object):
   def _ConfigAbsolutePathsToRelative(self, config_data, workspace_dir):
     """Converts all absolute paths to relative paths for persisting on disk."""
     workspace_dir = os.path.realpath(workspace_dir)
-    for key, abspath in config_data.iteritems():
+    for key, abspath in config_data.items():
       if key not in _CONFIG_RELATIVE_PATH_KEYS:
         continue
       abspath = os.path.realpath(abspath)

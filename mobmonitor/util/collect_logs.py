@@ -41,7 +41,7 @@ def collect_logs():
   os.chmod(tempdir, 0o777)
 
   try:
-    for name, path in LOG_DIRS.iteritems():
+    for name, path in LOG_DIRS.items():
       if not os.path.exists(path):
         continue
       if os.path.isdir(path):

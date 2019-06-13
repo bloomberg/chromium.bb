@@ -286,7 +286,7 @@ class AllConfigsTestCase(generic_stages_unittest.AbstractStageTestCase,
 
     with parallel.BackgroundTaskRunner(task) as queue:
       # Test every build config on an waterfall, that builds something.
-      for bot_id, cfg in site_config.iteritems():
+      for bot_id, cfg in site_config.items():
         if not cfg.boards or cfg.boards[0] not in boards:
           continue
 

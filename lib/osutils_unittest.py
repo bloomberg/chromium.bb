@@ -343,7 +343,7 @@ class TestEmptyDir(cros_test_lib.TempDirTestCase):
     osutils.EmptyDir(self.tempdir, exclude=iter(excludes))
 
     # Verify that the results are what we expect.
-    for f, expected in files.iteritems():
+    for f, expected in files.items():
       f = os.path.join(self.tempdir, f)
       self.assertEqual(os.path.exists(f), expected, 'Unexpected: %s' % f)
     self.assertExists(os.path.join(self.tempdir, 'keepdir'))
@@ -599,7 +599,7 @@ class IteratePathParentsTest(cros_test_lib.TestCase):
         'path/to': None,
         '': None,
     }
-    for p, e in vectors.iteritems():
+    for p, e in vectors.items():
       self._RunForPath(p, e)
 
 

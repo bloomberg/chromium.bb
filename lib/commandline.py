@@ -781,9 +781,9 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
 
   def _SetupTypes(self):
     """Register types with ArgumentParser."""
-    for t, check_f in VALID_TYPES.iteritems():
+    for t, check_f in VALID_TYPES.items():
       self.register('type', t, check_f)
-    for a, class_a in VALID_ACTIONS.iteritems():
+    for a, class_a in VALID_ACTIONS.items():
       self.register('action', a, class_a)
 
   def _RegisterActions(self):

@@ -526,7 +526,7 @@ def _ProxySimSetup(options):
     for mod, so in apache_modules:
       for f in glob.glob(os.path.join(g, so)):
         module_dirs.setdefault(os.path.dirname(f), []).append(so)
-  for apache_module_path, modules_found in module_dirs.iteritems():
+  for apache_module_path, modules_found in module_dirs.items():
     if len(modules_found) == len(apache_modules):
       break
   else:

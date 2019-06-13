@@ -195,7 +195,7 @@ def ParseArguments(argv):
     parser.error('cannot specify --wifi-ssid and --use-ethernet together')
 
   if opts.generic:
-    for opt, val in _GENERIC_FLAGS.iteritems():
+    for opt, val in _GENERIC_FLAGS.items():
       setattr(opts, 'x_' + opt.replace('-', '_'), val)
 
   opts.Freeze()

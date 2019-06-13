@@ -259,7 +259,7 @@ class SDKPackageToolchainOverlaysStageTest(
     all_toolchain_combos = set()
     for board in self._run.site_config.GetBoards():
       try:
-        toolchains = set(toolchain.GetToolchainsForBoard(board).iterkeys())
+        toolchains = set(toolchain.GetToolchainsForBoard(board).keys())
         if toolchains.issubset(sdk_toolchains):
           all_toolchain_combos.add('-'.join(sorted(toolchains)))
       except portage_util.MissingOverlayError:
@@ -280,7 +280,7 @@ class SDKPackageToolchainOverlaysStageTest(
       self.assertEqual(1, len(tmp_files))
       board = tmp_files[0][:-len('.tmp')]
       board_toolchains = '-'.join(
-          sorted(toolchain.GetToolchainsForBoard(board).iterkeys()))
+          sorted(toolchain.GetToolchainsForBoard(board).keys()))
       self.assertEqual(toolchains, board_toolchains)
 
 

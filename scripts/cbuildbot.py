@@ -909,7 +909,7 @@ def main(argv):
     if options.mock_slave_status is not None:
       with open(options.mock_slave_status, 'r') as f:
         mock_statuses = pickle.load(f)
-        for key, value in mock_statuses.iteritems():
+        for key, value in mock_statuses.items():
           mock_statuses[key] = builder_status_lib.BuilderStatus(**value)
       stack.Add(_ObjectMethodPatcher,
                 completion_stages.MasterSlaveSyncCompletionStage,

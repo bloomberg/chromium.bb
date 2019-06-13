@@ -309,7 +309,7 @@ def SudoRunCommand(cmd, user='root', preserve_env=False, **kwargs):
     if var not in extra_env and var in os.environ:
       extra_env[var] = os.environ[var]
 
-  sudo_cmd.extend('%s=%s' % (k, v) for k, v in extra_env.iteritems())
+  sudo_cmd.extend('%s=%s' % (k, v) for k, v in extra_env.items())
 
   # Finally, block people from passing options to sudo.
   sudo_cmd.append('--')
@@ -581,7 +581,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       wrapper += chroot_args
 
     if extra_env:
-      wrapper.extend('%s=%s' % (k, v) for k, v in extra_env.iteritems())
+      wrapper.extend('%s=%s' % (k, v) for k, v in extra_env.items())
 
     cmd = wrapper + ['--'] + cmd
 

@@ -254,7 +254,7 @@ class StackedSetup(type):
     # Modify all test* methods to time out after TEST_CASE_TIMEOUT seconds.
     timeout = scope.get('TEST_CASE_TIMEOUT', StackedSetup.TEST_CASE_TIMEOUT)
     if timeout is not None:
-      for name, func in scope.iteritems():
+      for name, func in scope.items():
         if name.startswith('test') and hasattr(func, '__call__'):
           wrapper = timeout_util.TimeoutDecorator(timeout)
           scope[name] = wrapper(func)
@@ -614,7 +614,7 @@ class TestCase(unittest.TestCase):
       if exact_kls:
         self.assertEqual(e.__class__, exception)
       bad = []
-      for attr, required in check_attrs.iteritems():
+      for attr, required in check_attrs.items():
         self.assertTrue(hasattr(e, attr),
                         msg='%s lacks attr %s' % (e, attr))
         value = getattr(e, attr)
@@ -1290,7 +1290,7 @@ class GerritTestCase(MockTempDirTestCase):
     needed = [self.gerrit_instance.git_host, self.gerrit_instance.gerrit_host]
     candidates = collections.defaultdict(list)
     src_netrc = netrc.netrc(src)
-    for host, v in src_netrc.hosts.iteritems():
+    for host, v in src_netrc.hosts.items():
       dot = host.find('.')
       if dot < 0:
         continue
@@ -1378,7 +1378,7 @@ class GerritTestCase(MockTempDirTestCase):
         }
     }
 
-    for k in self.patched_params.iterkeys():
+    for k in self.patched_params.keys():
       self.saved_params[k] = site_params.get(k)
 
     site_params.update(self.patched_params)

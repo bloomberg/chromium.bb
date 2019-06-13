@@ -104,7 +104,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
 
     # Iterate through override and update HWTestConfig attributes.
     if override_hw_test_config:
-      for key, val in override_hw_test_config.iteritems():
+      for key, val in override_hw_test_config.items():
         for hw_test in build_config.hw_tests:
           setattr(hw_test, key, val)
 

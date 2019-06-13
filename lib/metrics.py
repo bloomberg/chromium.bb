@@ -207,7 +207,7 @@ class FieldSpecAdapter(object):
       return None
 
     return [FieldSpecAdapter.FIELD_CLASSES[type(v)](field)
-            for (field, v) in sorted(fields.iteritems())]
+            for (field, v) in sorted(fields.items())]
 
 
 def _OptionalFieldSpec(fn):
@@ -731,7 +731,7 @@ class RuntimeBreakdownTimer(object):
         description=self._description)
     outer_timer.add(self._total_time_s, fields=self._fields)
 
-    for name, percent in self._GetStepBreakdowns().iteritems():
+    for name, percent in self._GetStepBreakdowns().items():
       step_metric = PercentageDistribution(
           '%s/breakdown/%s' % (self._name, name),
           num_buckets=self.PERCENT_BUCKET_COUNT,
@@ -804,7 +804,7 @@ class RuntimeBreakdownTimer(object):
 
     Must be called after |_RecordTotalTime|.
     """
-    breakdown_percentages = sum(self._GetStepBreakdowns().itervalues())
+    breakdown_percentages = sum(self._GetStepBreakdowns().values())
     return max(0, 100 - breakdown_percentages)
 
   def _GetBucketingLoss(self):

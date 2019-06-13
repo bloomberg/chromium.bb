@@ -288,10 +288,10 @@ class GetBuildExtraEnvTest(cros_test_lib.TestCase):
   def testUseAndFeaturesNotClobbered(self):
     """Tests that values of certain environment variables are appended to."""
     vars_and_values = {'FEATURES': 'foo', 'USE': 'bar'}
-    for var, value in vars_and_values.iteritems():
+    for var, value in vars_and_values.items():
       os.environ[var] = value
     extra_env = cros_fuzz.GetBuildExtraEnv(cros_fuzz.BuildType.COVERAGE)
-    for var, value in vars_and_values.iteritems():
+    for var, value in vars_and_values.items():
       self.assertIn(value, extra_env[var])
 
   def testCoverageBuild(self):

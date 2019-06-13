@@ -522,7 +522,7 @@ def GetSharedLibraries(binary_path):
   shared_libraries = []
   elf_dict = lddtree.ParseELF(
       binary_path.chroot, root=SysrootPath.path_to_sysroot)
-  for shared_library in elf_dict['libs'].itervalues():
+  for shared_library in elf_dict['libs'].values():
     shared_library_path = shared_library['path']
 
     if shared_library_path in shared_libraries:
@@ -912,7 +912,7 @@ class DeviceManager(object):
     """
     self.CleanUp()
     osutils.SafeMakedirsNonRoot(self.dev_path_chroot)
-    for device, mknod_params in self.DEVICE_MKNOD_PARAMS.iteritems():
+    for device, mknod_params in self.DEVICE_MKNOD_PARAMS.items():
       device_path = self._GetDevicePath(device)
       self._MakeCharDevice(device_path, *mknod_params)
 

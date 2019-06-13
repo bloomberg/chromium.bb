@@ -40,14 +40,14 @@ def main(argv):
   #  {Display Label: [build_config]}
 
   labeled_builds = {}
-  for config in site_config.itervalues():
+  for config in site_config.values():
     if config.schedule:
       labeled_builds.setdefault(config.display_label, []).append(config)
 
-  for label in sorted(labeled_builds.iterkeys()):
+  for label in sorted(labeled_builds.keys()):
     displayConfigs(label, labeled_builds[label])
 
   # Force the tryjob section to be last.
   displayConfigs('tryjob',
-                 [c for c in site_config.itervalues()
+                 [c for c in site_config.values()
                   if config_lib.isTryjobConfig(c)])

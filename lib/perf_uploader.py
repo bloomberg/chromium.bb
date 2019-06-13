@@ -213,7 +213,7 @@ def _ComputeAvgStddev(perf_data):
       _AggregateIterations(), except each "value" is now a single value, not
       a list of values.
   """
-  for perf in perf_data.itervalues():
+  for perf in perf_data.values():
     perf['value'], perf['stddev'] = _MeanAndStddev(perf['value'])
   return perf_data
 
@@ -283,7 +283,7 @@ def _FormatForUpload(perf_data, platform_name, presentation_info, revision=None,
     platform_prefix = _DEFAULT_PLATFORM_PREFIX
 
   dash_entries = []
-  for (desc, graph), data in perf_data.iteritems():
+  for (desc, graph), data in perf_data.items():
     # Each perf metric is named by a path that encodes the test name,
     # a graph name (if specified), and a description.  This must be defined
     # according to rules set by the Chrome team, as implemented in:

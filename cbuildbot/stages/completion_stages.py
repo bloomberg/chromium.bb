@@ -259,7 +259,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
             ts_mon.StringField('master_config'),
             ts_mon.StringField('slave_config')
         ])
-    for slave_config, is_important in importance.iteritems():
+    for slave_config, is_important in importance.items():
       m.set(
           is_important,
           fields={

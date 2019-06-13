@@ -920,14 +920,14 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
 
   def testDuplicates(self):
     """Verify that no duplicate overlays are returned."""
-    for d in self.overlays.itervalues():
-      for overlays in d.itervalues():
+    for d in self.overlays.values():
+      for overlays in d.values():
         self.assertEqual(len(overlays), len(set(overlays)))
 
   def testOverlaysExist(self):
     """Verify that all overlays returned actually exist on disk."""
-    for d in self.overlays.itervalues():
-      for overlays in d.itervalues():
+    for d in self.overlays.values():
+      for overlays in d.values():
         self.assertTrue(all(os.path.isdir(x) for x in overlays))
 
   def testPrivatePublicOverlayTypes(self):
@@ -945,7 +945,7 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
 
   def testNoOverlayType(self):
     """If we specify overlay_type=None, no results should be returned."""
-    self.assertTrue(all(d[None] == [] for d in self.overlays.itervalues()))
+    self.assertTrue(all(d[None] == [] for d in self.overlays.values()))
 
   def testNonExistentBoard(self):
     """Test what happens when a non-existent board is supplied.
@@ -1187,7 +1187,7 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     self.assertEqual(cp, split_cpv.cp)
     self.assertEqual('%s-%s' % (cp, ver), split_cpv.cpv)
     self.assertEqual('%s-%s-%s' % (cp, ver, rev), split_cpv.cpf)
-    for k, v in split_pv._asdict().iteritems():
+    for k, v in split_pv._asdict().items():
       self.assertEquals(getattr(split_cpv, k), v)
 
     # Test 2: No category, valid pvr.
@@ -1290,7 +1290,7 @@ class PortageDBTest(cros_test_lib.TempDirTestCase):
     self.fake_chroot = os.path.join(self.build_root, 'chroot/build/amd64-host')
     fake_pkgdb_path = os.path.join(self.fake_chroot, 'var/db/pkg')
     os.makedirs(fake_pkgdb_path)
-    for cat, pkgs in self.fake_pkgdb.iteritems():
+    for cat, pkgs in self.fake_pkgdb.items():
       catpath = os.path.join(fake_pkgdb_path, cat)
       if cat == 'invalid':
         # Invalid category is a file. Should not be delved into.

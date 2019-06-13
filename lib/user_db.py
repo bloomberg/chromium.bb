@@ -248,7 +248,7 @@ class UserDB(object):
         return
 
       self._users[user.user] = user
-      new_users = sorted(self._users.itervalues(), key=lambda u: u.uid)
+      new_users = sorted(self._users.values(), key=lambda u: u.uid)
       contents = '\n'.join([UserToEntry(u) for u in new_users])
       osutils.WriteFile(self._user_db_file, contents, atomic=True, sudo=True)
       print('Added user "%s" to %s:' % (user.user, self._user_db_file))
@@ -288,7 +288,7 @@ class UserDB(object):
         return
 
       self._groups[group.group] = group
-      new_groups = sorted(self._groups.itervalues(), key=lambda g: g.gid)
+      new_groups = sorted(self._groups.values(), key=lambda g: g.gid)
       contents = '\n'.join([GroupToEntry(g) for g in new_groups])
       osutils.WriteFile(self._group_db_file, contents, atomic=True, sudo=True)
       print('Added group "%s" to %s:' % (group.group, self._group_db_file))

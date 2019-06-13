@@ -1819,7 +1819,7 @@ def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
   # Asserting the directory name of the ebuild matches the package name.
   mismatches = []
   ret = dict(zip(packages_list, ebuilds_results))
-  for full_package_name, ebuild_path in ret.iteritems():
+  for full_package_name, ebuild_path in ret.items():
     cpv = SplitCPV(full_package_name, strict=False)
     path_category, path_package_name, _ = SplitEbuildPath(ebuild_path)
     if not ((cpv.category is None or path_category == cpv.category) and

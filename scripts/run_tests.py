@@ -222,7 +222,7 @@ def SortTests(tests, jobs=1, timing_cache_file=None):
 
   # Sort the cached list of tests from slowest to fastest.
   sorted_tests = [test for (test, _timing) in
-                  sorted(cache.iteritems(), key=lambda x: x[1], reverse=True)]
+                  sorted(cache.items(), key=lambda x: x[1], reverse=True)]
   # Then extract the tests from the cache list that we care about -- remember
   # that the cache could be stale and contain tests that no longer exist, or
   # the user only wants to run a subset of tests.

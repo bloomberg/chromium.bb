@@ -234,7 +234,7 @@ class BuildRowController(object):
         self._JoinBuildTableClActionTable(build_entries, claction_entries))
     # Convert times seconds -> minutes.
     return {k: v / 60.0
-            for k, v in claction_history.GetPatchHandlingTimes().iteritems()}
+            for k, v in claction_history.GetPatchHandlingTimes().items()}
 
   def _JoinBuildTableClActionTable(self, build_entries, claction_entries):
     """Perform the join operation in python.

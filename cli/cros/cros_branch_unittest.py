@@ -970,7 +970,7 @@ class StandardBranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
         'firmware-3.B': FirmwareBranch,
         'stabilize-3.B': StabilizeBranch,
     }
-    for branch_name, branch_type in branch_names.iteritems():
+    for branch_name, branch_type in branch_names.items():
       self.assertEqual(branch_type(self.checkout).name, branch_name)
 
   def testGenerateNameWithBranchVersion(self):
@@ -982,7 +982,7 @@ class StandardBranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
         'firmware-3.4.B': FirmwareBranch,
         'stabilize-3.4.B': StabilizeBranch,
     }
-    for branch_name, cls in branch_names.iteritems():
+    for branch_name, cls in branch_names.items():
       self.assertEqual(cls(self.checkout).name, branch_name)
 
   def testGenerateNameWithDescriptor(self):
@@ -994,7 +994,7 @@ class StandardBranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
         'firmware-board-3.4.B': FirmwareBranch,
         'stabilize-board-3.4.B': StabilizeBranch,
     }
-    for branch_name, cls in branch_names.iteritems():
+    for branch_name, cls in branch_names.items():
       self.assertEqual(cls(self.checkout, 'board').name, branch_name)
 
 
@@ -1300,7 +1300,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
       Path to the created manifest project.
     """
     repo_path = self.CreateTempDir(remote, self.NameFor(project))
-    for filename, xml in files.iteritems():
+    for filename, xml in files.items():
       manifest_path = os.path.join(repo_path, filename)
       self.ParseManifest(xml).Write(manifest_path)
     self.CommitRemoteProject(repo_path, 'Add manifest files.')

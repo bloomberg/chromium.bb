@@ -111,7 +111,7 @@ class ToolchainList(object):
     for toolchain in toolchains:
       targets.setdefault(toolchain.target, dict())
       existing_overrides = targets[toolchain.target]
-      for key, value in toolchain.setting_overrides.iteritems():
+      for key, value in toolchain.setting_overrides.items():
         if key in existing_overrides and existing_overrides[key] != value:
           raise MismatchedToolchainConfigsError(
               'For toolchain %s, found %s to be set to both %r and %r.' %
@@ -119,7 +119,7 @@ class ToolchainList(object):
         existing_overrides[key] = value
 
     # Now that we've merged all the setting overrides, apply them to defaults.
-    for target in targets.iterkeys():
+    for target in targets.keys():
       settings = {
           'sdk': True,
           'crossdev': '',

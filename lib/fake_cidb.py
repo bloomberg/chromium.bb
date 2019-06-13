@@ -518,7 +518,7 @@ class FakeCIDBConnection(object):
     stage_failures = []
     for build_id in build_ids:
       b_dict = self.buildTable[build_id]
-      bs_table = {k: v for k, v in self.buildStageTable.iteritems()
+      bs_table = {k: v for k, v in self.buildStageTable.items()
                   if v['build_id'] == build_id}
 
       for f_dict in self.failureTable.values():
@@ -685,7 +685,7 @@ class FakeCIDBConnection(object):
       actions_by_cl.setdefault(k, []).append(action)
     flakes = {}
     ignored_flake_build_configs = set(['pre-cq-launcher'])
-    for _cl, actions in actions_by_cl.iteritems():
+    for _cl, actions in actions_by_cl.items():
       has_precq_success = any(
           c2['action'] == 'pre_cq_fully_verified'
           for c2 in actions)

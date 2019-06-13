@@ -147,7 +147,7 @@ class GconvModules(object):
         if deps['libs'][lib]['path']:
           libdeps[lib] = libdeps.get(lib, set()).union([module])
 
-    used_libdeps = set(lib for lib, deps in libdeps.iteritems()
+    used_libdeps = set(lib for lib, deps in libdeps.items()
                        if deps.intersection(used_modules))
     unused_libdeps = set(libdeps).difference(used_libdeps)
 

@@ -431,7 +431,7 @@ class Manifest(object):
 
   def _FinalizeAllProjectData(self):
     """Rewrite projects mixing defaults in and adding our attributes."""
-    for path_data in self.checkouts_by_path.itervalues():
+    for path_data in self.checkouts_by_path.values():
       self._FinalizeProjectData(path_data)
 
   def _FinalizeProjectData(self, attrs):
@@ -690,9 +690,9 @@ class ManifestCheckout(Manifest):
   def _FinalizeAllProjectData(self):
     """Rewrite projects mixing defaults in and adding our attributes."""
     Manifest._FinalizeAllProjectData(self)
-    for key, value in self.checkouts_by_path.iteritems():
+    for key, value in self.checkouts_by_path.items():
       self.checkouts_by_path[key] = ProjectCheckout(value)
-    for key, value in self.checkouts_by_name.iteritems():
+    for key, value in self.checkouts_by_name.items():
       self.checkouts_by_name[key] = \
           [ProjectCheckout(x) for x in value]
 

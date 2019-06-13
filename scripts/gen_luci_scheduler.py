@@ -88,7 +88,7 @@ def genSchedulerJob(build_config):
   }
 
   # Filter out tags with no value set.
-  tags = {k: v for k, v in tags.iteritems() if v}
+  tags = {k: v for k, v in tags.items() if v}
 
 
   tag_lines = ['    tags: "%s:%s"' % (k, tags[k])

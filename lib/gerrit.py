@@ -385,7 +385,7 @@ class GerritHelper(object):
         logging.info('Would have added message "%s" to change "%s".', msg,
                      change)
       if labels:
-        for key, val in labels.iteritems():
+        for key, val in labels.items():
           logging.info('Would have set label "%s" to "%s" for change "%s".',
                        key, val, change)
       return

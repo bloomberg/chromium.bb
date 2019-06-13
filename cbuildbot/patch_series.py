@@ -202,7 +202,7 @@ class HelperPool(object):
     return helper
 
   def __iter__(self):
-    for helper in self.pool.itervalues():
+    for helper in self.pool.values():
       if helper:
         yield helper
 

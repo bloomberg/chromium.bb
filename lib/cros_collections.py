@@ -119,7 +119,7 @@ def InvertDictionary(origin_dict):
     An inverted dict mapping each key to a set of its values.
   """
   new_dict = {}
-  for origin_key, origin_values in origin_dict.iteritems():
+  for origin_key, origin_values in origin_dict.items():
     for origin_value in origin_values:
       new_dict.setdefault(origin_value, set()).add(origin_key)
 

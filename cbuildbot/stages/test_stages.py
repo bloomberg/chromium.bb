@@ -184,7 +184,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       return
 
     results = []
-    for test_name, value in json_dump_dict.get('tests', dict()).iteritems():
+    for test_name, value in json_dump_dict.get('tests', dict()).items():
       status = value.get('status')
       result = constants.HWTEST_STATUS_OTHER
       if status == 'GOOD':
@@ -449,7 +449,7 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
       return
 
     chrome_ver = self._run.DetermineChromeVersion()
-    for test_name, perf_values in perf_entries.iteritems():
+    for test_name, perf_values in perf_entries.items():
       self._UploadPerfValues(
           perf_values,
           platform_name,

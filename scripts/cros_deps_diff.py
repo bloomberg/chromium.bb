@@ -75,7 +75,7 @@ def GetVersionMap(input_deps):
   version_map = {}
   i = 0
   for deps_map in input_deps:
-    for full_name, dep in deps_map.iteritems():
+    for full_name, dep in deps_map.items():
       pkg = UnversionedName(dep)
       entry = version_map.setdefault(pkg, {})
       entry[i] = full_name
@@ -90,7 +90,7 @@ def GetDivergentSet(version_map, count):
   dependency graphs (or missing version altogether).
   """
   divergent_set = set()
-  for pkg, value in version_map.iteritems():
+  for pkg, value in version_map.items():
     if len(value.keys()) != count or len(set(value.values())) > 1:
       # The package doesn't exist for at least one ot the input, or there are
       # more than 2 versions.

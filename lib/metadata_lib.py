@@ -356,7 +356,7 @@ class CBuildbotMetadata(object):
                         'to report. Will not add slave status to metadata.')
 
       metadata['slave_targets'] = {}
-      for builder, status in statuses.iteritems():
+      for builder, status in statuses.items():
         metadata['slave_targets'][builder] = status.AsFlatDict()
 
     return metadata
@@ -424,7 +424,7 @@ class BuildData(object):
       message = self.slaves[slave]['reason']
       mapping[message] = mapping.get(message, []) + [slave]
 
-    for message, slaves in mapping.iteritems():
+    for message, slaves in mapping.items():
       if len(slaves) >= 6:
         # Do not print all the names when there are more than 6 (an
         # arbitrary number) builders.
@@ -442,9 +442,9 @@ class BuildData(object):
     slaves = self.slaves
     if with_urls:
       return [(name, slave['dashboard_url'])
-              for name, slave in slaves.iteritems() if _Failed(slave)]
+              for name, slave in slaves.items() if _Failed(slave)]
     else:
-      return [name for name, slave in slaves.iteritems() if _Failed(slave)]
+      return [name for name, slave in slaves.items() if _Failed(slave)]
 
     return []
 

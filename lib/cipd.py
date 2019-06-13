@@ -218,7 +218,7 @@ def CreatePackage(cipd_path, package, in_dir, tags, refs,
       '-name', package,
       '-in', in_dir,
   ]
-  for key, value in tags.iteritems():
+  for key, value in tags.items():
     args.extend(['-tag', '%s:%s' % (key, value)])
   for ref in refs:
     args.extend(['-ref', ref])
@@ -257,7 +257,7 @@ def RegisterPackage(cipd_path, package_file, tags, refs, cred_path=None):
     cred_path: The path of the service account credentials.
   """
   args = [cipd_path, 'pkg-register', package_file]
-  for key, value in tags.iteritems():
+  for key, value in tags.items():
     args.extend(['-tag', '%s:%s' % (key, value)])
   for ref in refs:
     args.extend(['-ref', ref])

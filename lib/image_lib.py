@@ -379,7 +379,7 @@ def SecurityTest(board=None, image=None, baselines=None, vboot_hash=None):
     with osutils.TempDir() as tempdir:
       config = SecurityTestConfig(image, baselines, vboot_hash, tempdir)
       failures = sum(config.RunCheck(check, with_config)
-                     for check, with_config in _SECURITY_CHECKS.iteritems())
+                     for check, with_config in _SECURITY_CHECKS.items())
 
     if failures:
       logging.error('%s tests failed', failures)

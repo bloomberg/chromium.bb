@@ -985,7 +985,7 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
   def EvaluateTemplate(template, env):
     """Expand a template with vars like {{foo}} using a dict of expansions."""
     # TODO switch to stock python templates.
-    for key, val in env.iteritems():
+    for key, val in env.items():
       template = template.replace('{{%s}}' % key, val)
     return template
 

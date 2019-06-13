@@ -48,7 +48,7 @@ class NormalizeRefTest(cros_test_lib.TestCase):
         ref argument.
       tests: Dict of test inputs to expected test outputs.
     """
-    for test_input, test_output in tests.iteritems():
+    for test_input, test_output in tests.items():
       result = functor(test_input)
       msg = ('Expected %s to translate %r to %r, but got %r.' %
              (functor.__name__, test_input, test_output, result))

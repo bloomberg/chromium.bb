@@ -415,7 +415,7 @@ class SymbolsTest(image_test_lib.ImageTestCase):
     ])
 
     failures = []
-    for full_name, imported in importeds.iteritems():
+    for full_name, imported in importeds.items():
       file_name = os.path.basename(full_name)
       if file_name in excluded_files:
         continue
@@ -603,7 +603,7 @@ class UserGroupTest(image_test_lib.ImageTestCase):
                                                  basename))
 
     success = True
-    for entry, details in actual_entries.iteritems():
+    for entry, details in actual_entries.items():
       if entry not in expected_entries:
         is_valid = validate_func(details)
         if not is_valid:

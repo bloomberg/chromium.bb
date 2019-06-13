@@ -159,7 +159,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
     # Get all active slave build configs.
     slave_config_map = self._GetSlaveConfigMap(important_only)
-    for slave_config_name, slave_config in sorted(slave_config_map.iteritems()):
+    for slave_config_name, slave_config in sorted(slave_config_map.items()):
       try:
         buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
             slave_config_name,

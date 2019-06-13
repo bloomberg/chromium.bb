@@ -1152,7 +1152,7 @@ IMAGE_TYPE_TO_NAME = {
     IMAGE_TYPE_RECOVERY: RECOVERY_IMAGE_BIN,
     IMAGE_TYPE_TEST: TEST_IMAGE_BIN,
 }
-IMAGE_NAME_TO_TYPE = dict((v, k) for k, v in IMAGE_TYPE_TO_NAME.iteritems())
+IMAGE_NAME_TO_TYPE = dict((v, k) for k, v in IMAGE_TYPE_TO_NAME.items())
 
 METADATA_JSON = 'metadata.json'
 PARTIAL_METADATA_JSON = 'partial-metadata.json'

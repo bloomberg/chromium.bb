@@ -213,7 +213,7 @@ masters = %(masters)s
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_layout)
 
     # Write out the files declared above.
-    for lic in self.licenses.itervalues():
+    for lic in self.licenses.values():
       osutils.WriteFile(os.path.join(self.tempdir, lic['dir']), lic['contents'])
 
     for overlay in overlays:
@@ -223,7 +223,7 @@ masters = %(masters)s
                               'layout.conf')
       osutils.WriteFile(file_loc, content)
 
-    for name, ebuild in self.ebuilds.iteritems():
+    for name, ebuild in self.ebuilds.items():
       content = ebuild_template % {'license': ebuild['license']}
       self.ebuilds[name]['content'] = content
       osutils.WriteFile(os.path.join(self.tempdir, ebuild['dir']), content)
@@ -252,7 +252,7 @@ masters = %(masters)s
                       'FTL', buildroot=self.tempdir)
 
     # Checking each license type is the expected.
-    for name, lic in self.licenses.iteritems():
+    for name, lic in self.licenses.items():
       if lic.get('skip_test', False):
         continue
 
@@ -273,7 +273,7 @@ masters = %(masters)s
     self.assertRaises(AssertionError, licenses_lib.Licensing.ReadSharedLicense,
                       'FTL', buildroot=self.tempdir)
 
-    for name, lic in self.licenses.iteritems():
+    for name, lic in self.licenses.items():
       if lic.get('skip_test', False):
         continue
 

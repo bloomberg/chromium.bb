@@ -321,8 +321,8 @@ print(json.dumps(pkg_info))
     # Add approximate forward dependencies.
     if process_rdeps:
       logging.debug('Populating forward dependencies...')
-      for cp, cp_slots in db.iteritems():
-        for slot, pkg_info in cp_slots.iteritems():
+      for cp, cp_slots in db.items():
+        for slot, pkg_info in cp_slots.items():
           pkg_info.rdeps.update(self._ProcessDepStr(pkg_info.rdeps_raw,
                                                     installed_db, avail_db))
           logging.debug(' %s (%s) processed rdeps: %s',
@@ -333,14 +333,14 @@ print(json.dumps(pkg_info))
     # Add approximate reverse dependencies (optional).
     if process_rev_rdeps:
       logging.debug('Populating reverse dependencies...')
-      for cp, cp_slots in db.iteritems():
-        for slot, pkg_info in cp_slots.iteritems():
+      for cp, cp_slots in db.items():
+        for slot, pkg_info in cp_slots.items():
           for rdep_cp, rdep_slot in pkg_info.rdeps:
             to_slots = db.get(rdep_cp)
             if not to_slots:
               continue
 
-            for to_slot, to_pkg_info in to_slots.iteritems():
+            for to_slot, to_pkg_info in to_slots.items():
               if rdep_slot and to_slot != rdep_slot:
                 continue
               logging.debug(' %s (%s) added as rev rdep for %s (%s)',
@@ -437,7 +437,7 @@ print(json.dumps(pkg_info))
     attrs = portage_util.SplitCPV(cpv_pattern, strict=False)
     cp_pattern = os.path.join(attrs.category or '*', attrs.package or '*')
     matches = []
-    for cp, cp_slots in self.binpkgs_db.iteritems():
+    for cp, cp_slots in self.binpkgs_db.items():
       if not fnmatch.fnmatchcase(cp, cp_pattern):
         continue
 
@@ -447,7 +447,7 @@ print(json.dumps(pkg_info))
         matches.append((cp, None))
       else:
         cpv_pattern = '%s-%s' % (cp, attrs.version)
-        for slot, pkg_info in cp_slots.iteritems():
+        for slot, pkg_info in cp_slots.items():
           if fnmatch.fnmatchcase(pkg_info.cpv, cpv_pattern):
             matches.append((cp, slot))
 
@@ -579,7 +579,7 @@ print(json.dumps(pkg_info))
                     ' (slot: %s)' % required_slot if required_slot else '',
                     ' (optional)' if optional else '')
       num_processed = 0
-      for slot, pkg_info in cp_slots.iteritems():
+      for slot, pkg_info in cp_slots.items():
         if required_slot and slot != required_slot:
           continue
 
@@ -655,10 +655,10 @@ print(json.dumps(pkg_info))
 
   def _EnqInstalledPkgs(self):
     """Enqueues all available binary packages that are already installed."""
-    for cp, cp_slots in self.binpkgs_db.iteritems():
+    for cp, cp_slots in self.binpkgs_db.items():
       target_cp_slots = self.target_db.get(cp)
       if target_cp_slots:
-        for slot in cp_slots.iterkeys():
+        for slot in cp_slots.keys():
           if slot in target_cp_slots:
             self._EnqDep((cp, slot), True, False)
 
@@ -709,7 +709,7 @@ print(json.dumps(pkg_info))
 
     num_updates = 0
     listed_installs = []
-    for cpv, _, listed, update in installs.itervalues():
+    for cpv, _, listed, update in installs.values():
       if listed:
         listed_installs.append(cpv)
       if update:

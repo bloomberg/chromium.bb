@@ -662,7 +662,7 @@ class SiteConfigTest(cros_test_lib.TestCase):
 
     # This for loop is to make differences easier to find/read.
     self.longMessage = True
-    for name in site_config.iterkeys():
+    for name in site_config.keys():
       self.assertDictEqual(loaded[name], site_config[name], name)
 
     # This includes templates and the default build config.

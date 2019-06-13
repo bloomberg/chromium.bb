@@ -72,7 +72,7 @@ def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
   """
   gs_context = gs.GSContext()
   subpaths_dict = {}
-  for build, (target, _) in targets.iteritems():
+  for build, (target, _) in targets.items():
     build_dir = '%s-%s' % (build_branch, target)
     build_id_path = os.path.join(bucket_url, build_dir, build_id)
 
@@ -125,7 +125,7 @@ def GetLatestBuild(bucket_url, build_branch, targets):
   gs_context = gs.GSContext()
   common_build_ids = None
   # Find builds for each target.
-  for target, _ in targets.itervalues():
+  for target, _ in targets.values():
     build_dir = '-'.join((build_branch, target))
     base_path = os.path.join(bucket_url, build_dir)
     build_ids = []
@@ -323,7 +323,7 @@ def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
     acls: ACLs dictionary for each build to copy.
   """
   gs_context = gs.GSContext()
-  for build, subpath in subpaths.iteritems():
+  for build, subpath in subpaths.items():
     target, pattern = targets[build]
     build_dir = '%s-%s' % (build_branch, target)
     android_dir = os.path.join(android_bucket_url, build_dir, build_id, subpath)
@@ -527,7 +527,7 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild,
     new_ebuild_path = os.path.join(package_dir, '%s.ebuild' % pf)
 
   variables = {'BASE_URL': arc_bucket_url}
-  for build, (target, _) in build_targets.iteritems():
+  for build, (target, _) in build_targets.items():
     variables[build + '_TARGET'] = '%s-%s' % (build_branch, target)
 
   portage_util.EBuild.MarkAsStable(

@@ -473,7 +473,7 @@ def EnsureVmTestsOnVmTestBoards(site_config, boards_dict, _gs_build_config):
     boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  for c in site_config.itervalues():
+  for c in site_config.values():
     if set(c['boards']).intersection(set(boards_dict['no_vmtest_boards'])):
       c.apply(site_config.templates.no_vmtest_builder)
       if c.child_configs:
@@ -640,10 +640,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       }
   }
 
-  for config_name, overrides in overwritten_configs.iteritems():
+  for config_name, overrides in overwritten_configs.items():
     # TODO: Turn this assert into a unittest.
     # config = site_config[config_name]
-    # for k, v in overrides.iteritems():
+    # for k, v in overrides.items():
     #   assert config[k] != v, ('Unnecessary override: %s: %s' %
     #                           (config_name, k))
     site_config[config_name].apply(**overrides)
@@ -700,7 +700,7 @@ def PostsubmitBuilders(site_config):
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
   """
-  for config in site_config.itervalues():
+  for config in site_config.values():
     if config.name.endswith('postsubmit'):
       config.apply(
           site_config.templates.no_vmtest_builder,
@@ -1003,7 +1003,7 @@ def ApplyConfig(site_config, boards_dict, ge_build_config):
   """
 
   # Insert default HwTests for tryjobs.
-  for build in site_config.itervalues():
+  for build in site_config.values():
     InsertHwTestsOverrideDefaults(build)
 
   IncrementalBuilders(site_config)

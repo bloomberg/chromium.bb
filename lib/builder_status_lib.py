@@ -52,7 +52,7 @@ def CancelBuilds(buildbucket_ids, buildbucket_client,
         buildbucket_ids,
         dryrun=debug)
     result_map = buildbucket_lib.GetResultMap(cancel_results)
-    for buildbucket_id, result in result_map.iteritems():
+    for buildbucket_id, result in result_map.items():
       #Check for error messages
       if buildbucket_lib.GetNestedAttr(result, ['error']):
         # TODO(nxia): Get build url and log url in the warnings.
@@ -343,7 +343,7 @@ class SlaveBuilderStatus(object):
       self-destruction.
     """
     return set(build_config
-               for build_config, cidb_info in cidb_info_dict.iteritems()
+               for build_config, cidb_info in cidb_info_dict.items()
                if BuilderStatusManager.AbortedBySelfDestruction(
                    self.buildstore, cidb_info.buildbucket_id,
                    self.master_build_identifier))
@@ -487,7 +487,7 @@ class SlaveBuilderStatus(object):
       return {}
 
     all_buildbucket_info_dict = {}
-    for build_config, build_info in scheduled_buildbucket_info_dict.iteritems():
+    for build_config, build_info in scheduled_buildbucket_info_dict.items():
       buildbucket_id = build_info.buildbucket_id
       retry = build_info.retry
       created_ts = build_info.created_ts
@@ -659,7 +659,7 @@ class BuilderStatusesFetcher(object):
 
     important_statuses = {}
     experimental_statuses = {}
-    for k, v in statuses.iteritems():
+    for k, v in statuses.items():
       if k in experimental_builders:
         experimental_statuses[k] = v
       else:
@@ -677,7 +677,7 @@ class BuilderStatusesFetcher(object):
     Returns:
       A set of failed build config names.
     """
-    return set(builder for builder, status in statuses.iteritems()
+    return set(builder for builder, status in statuses.items()
                if status.Failed())
 
   @staticmethod
@@ -690,7 +690,7 @@ class BuilderStatusesFetcher(object):
     Returns:
       A set of inflight build config names.
     """
-    return set(builder for builder, status in statuses.iteritems()
+    return set(builder for builder, status in statuses.items()
                if status.Inflight())
 
   @staticmethod
@@ -703,5 +703,5 @@ class BuilderStatusesFetcher(object):
     Returns:
       A set of missing build config names.
     """
-    return set(builder for builder, status in statuses.iteritems()
+    return set(builder for builder, status in statuses.items()
                if status.Missing())

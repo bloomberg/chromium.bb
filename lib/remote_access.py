@@ -1036,7 +1036,7 @@ class RemoteDevice(object):
 
       new_cmd = []
       flat_vars = ['%s=%s' % (k, cros_build_lib.ShellQuote(v))
-                   for k, v in extra_env.iteritems()]
+                   for k, v in extra_env.items()]
 
       # If the vars are too large for the command line, do it indirectly.
       # We pick 32k somewhat arbitrarily -- the kernel should accept this

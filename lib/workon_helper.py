@@ -321,7 +321,7 @@ class WorkonHelper(object):
           atoms_to_ebuilds[atom] = ebuild_path
 
     ebuilds = []
-    for atom, ebuild in atoms_to_ebuilds.iteritems():
+    for atom, ebuild in atoms_to_ebuilds.items():
       if ebuild is None:
         raise WorkonError('Could not find ebuild for atom %s' % atom)
       ebuilds.append(ebuild)

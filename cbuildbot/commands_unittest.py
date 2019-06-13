@@ -1549,7 +1549,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     self.assertEquals(set(parsed.keys()), set(test_content.keys()))
 
     # Verify the math.
-    for filename, content in test_content.iteritems():
+    for filename, content in test_content.items():
       entry = parsed[filename]
       size = len(content)
       sha1 = base64.b64encode(hashlib.sha1(content).digest())

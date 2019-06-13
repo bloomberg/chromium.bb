@@ -247,7 +247,7 @@ class CategorizeChanges(object):
       with at least one group in |groups|.
     """
     results = set()
-    for project, checkout_list in manifest.checkouts_by_name.iteritems():
+    for project, checkout_list in manifest.checkouts_by_name.items():
       for checkout in checkout_list:
         if any(x in checkout['groups'] for x in groups):
           branch = git.StripRefs(checkout['tracking_branch'])
@@ -607,7 +607,7 @@ class CalculateSuspects(object):
     fully_verified = dict()
 
     all_tested_changes = set()
-    for tested_changes in changes_by_config.itervalues():
+    for tested_changes in changes_by_config.values():
       all_tested_changes.update(tested_changes)
 
     untested_changes = changes - all_tested_changes
@@ -630,7 +630,7 @@ class CalculateSuspects(object):
       # this change will be considered as fully verified.
       verified = True
       verified_reasons = set()
-      relevant_configs = [k for k, v in changes_by_config.iteritems() if
+      relevant_configs = [k for k, v in changes_by_config.items() if
                           change in v]
       passed_in_history_slaves = passed_in_history_slaves_by_change.get(
           change, set())
@@ -731,10 +731,10 @@ class SuspectChanges(dict):
                         len(args))
 
       other = dict(args[0])
-      for key, value in other.iteritems():
+      for key, value in other.items():
         if key not in self or value < self[key]:
           self[key] = value
 
-      for key, value in kwargs.iteritems():
+      for key, value in kwargs.items():
         if key not in self or value < self[key]:
           self[key] = value

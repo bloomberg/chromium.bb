@@ -52,7 +52,7 @@ def GenerateOsRelease(root, default_params=None):
                                                  filepath)).strip('\n')
 
   if default_params:
-    for key, value in default_params.iteritems():
+    for key, value in default_params.items():
       mapping.setdefault(key, value)
 
   osrelease_content = '\n'.join([k + '=' + mapping[k] for k in mapping])

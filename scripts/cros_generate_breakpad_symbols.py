@@ -258,7 +258,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
 
   bg_errors = multiprocessing.Value('i')
   if file_filter:
-    files_not_found = [x for x, found in file_filter.iteritems() if not found]
+    files_not_found = [x for x, found in file_filter.items() if not found]
     bg_errors.value += len(files_not_found)
     if files_not_found:
       logging.error('Failed to find requested files: %s', files_not_found)

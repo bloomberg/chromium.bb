@@ -317,7 +317,7 @@ def _WorkOnPush(options, overlay_tracking_branch, git_project_overlays):
       its overlays.
   """
   inputs = [[options, overlays_per_project, overlay_tracking_branch]
-            for overlays_per_project in git_project_overlays.itervalues()]
+            for overlays_per_project in git_project_overlays.values()]
   parallel.RunTasksInProcessPool(_PushOverlays, inputs)
 
 
@@ -363,7 +363,7 @@ def _WorkOnCommit(options, overlays, overlay_tracking_branch,
 
     inputs = [[options, manifest, overlays_per_project, overlay_tracking_branch,
                overlay_ebuilds, revved_packages, new_package_atoms]
-              for overlays_per_project in git_project_overlays.itervalues()]
+              for overlays_per_project in git_project_overlays.values()]
     parallel.RunTasksInProcessPool(_CommitOverlays, inputs)
 
     chroot_path = os.path.join(options.buildroot, constants.DEFAULT_CHROOT_DIR)

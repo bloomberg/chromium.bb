@@ -34,7 +34,7 @@ def GetOptions(my_commands):
 
   if my_commands:
     subparsers = parser.add_subparsers(title='Subcommands')
-    for cmd_name in sorted(my_commands.iterkeys()):
+    for cmd_name in sorted(my_commands.keys()):
       class_def = my_commands[cmd_name]
       epilog = getattr(class_def, 'EPILOG', None)
       sub_parser = subparsers.add_parser(

@@ -73,7 +73,7 @@ def _UpdateAlternatesDir(alternates_root, reference_maps, projects):
   for project in projects:
     alt_path = os.path.join(alternates_root, project)
     paths = []
-    for k, v in reference_maps.iteritems():
+    for k, v in reference_maps.items():
       if is_mirror[k]:
         # The layout when the reference is a repo mirror (--mirror).
         suffix = os.path.join(project, 'objects')

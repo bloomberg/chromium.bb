@@ -1078,7 +1078,7 @@ class ValidationPool(object):
 
     # Map the changes in by_repo_cls to their submission reasons.
     by_repo = dict()
-    for repo, cls in by_repo_cls.iteritems():
+    for repo, cls in by_repo_cls.items():
       by_repo[repo] = {cl:verified_cls[cl] for cl in cls}
 
     submitted_locals, local_submission_errors = self.SubmitLocalChanges(
@@ -1089,7 +1089,7 @@ class ValidationPool(object):
     errors.update(reapply_errors)
     errors.update(local_submission_errors)
     errors.update(remote_errors)
-    for patch, error in errors.iteritems():
+    for patch, error in errors.items():
       logging.error("Could not submit %s, error: %s", patch, error)
       logging.PrintBuildbotLink(
           "Could not submit %s, error: %s" % (patch, error), patch.url)
@@ -1152,7 +1152,7 @@ class ValidationPool(object):
     """
     merged_errors = {}
     submitted = set()
-    for repo, verified_cls in by_repo.iteritems():
+    for repo, verified_cls in by_repo.items():
       changes, errors = self._SubmitRepo(repo, verified_cls)
       submitted |= set(changes)
       merged_errors.update(errors)

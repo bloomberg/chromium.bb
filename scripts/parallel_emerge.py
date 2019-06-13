@@ -631,7 +631,7 @@ class DepGraphGenerator(object):
         ReverseTree(packages[pkg]["deps"])
 
         # Add dependencies to this package.
-        for dep, dep_item in packages[pkg]["deps"].iteritems():
+        for dep, dep_item in packages[pkg]["deps"].items():
           # We only need to enforce strict ordering of dependencies if the
           # dependency is a blocker, or is a buildtime or runtime dependency.
           # (I.e., ignored, optional, and runtime_post dependencies don't
@@ -766,8 +766,8 @@ class DepGraphGenerator(object):
       start = time.time()
       cycles = FindCycles()
       while cycles:
-        for dep, mycycles in cycles.iteritems():
-          for basedep, mycycle in mycycles.iteritems():
+        for dep, mycycles in cycles.items():
+          for basedep, mycycle in mycycles.items():
             if deps_info[basedep]["idx"] >= deps_info[dep]["idx"]:
               if "--quiet" not in emerge.opts:
                 PrintCycleBreak(basedep, dep, mycycle)
@@ -829,7 +829,7 @@ class DepGraphGenerator(object):
     deps_map = copy.deepcopy(deps_map)
     install_plan = []
     plan = set()
-    for target, info in deps_map.iteritems():
+    for target, info in deps_map.items():
       if not info["needs"] and target not in plan:
         for item in InstallPlanAtNode(target, deps_map):
           plan.add(item)
@@ -1438,8 +1438,8 @@ class EmergeQueue(object):
 
     # Schedule our jobs.
     self._state_map.update(
-        (pkg, TargetState(pkg, data)) for pkg, data in deps_map.iteritems())
-    self._fetch_ready.multi_put(self._state_map.itervalues())
+        (pkg, TargetState(pkg, data)) for pkg, data in deps_map.items())
+    self._fetch_ready.multi_put(self._state_map.values())
 
   def _SetupSession(self):
     """Set up a session so we can easily terminate all children."""
@@ -1519,7 +1519,7 @@ class EmergeQueue(object):
       signal.signal(signal.SIGTERM, KillHandler)
 
       # Print our current job status
-      for job in self._build_jobs.itervalues():
+      for job in self._build_jobs.values():
         if job:
           self._print_queue.put(JobPrinter(job, unlink=True))
 
@@ -1602,7 +1602,7 @@ class EmergeQueue(object):
     else:
       interval = 60 * 60
       notify_interval = 60 * 2
-    for job in self._build_jobs.itervalues():
+    for job in self._build_jobs.values():
       if job:
         last_timestamp = max(job.start_timestamp, job.last_output_timestamp)
         if last_timestamp + interval < current_time:
@@ -1750,11 +1750,11 @@ class EmergeQueue(object):
           # Tell the user why we're exiting.
           if self._failed_count:
             print('Packages failed:\n\t%s' %
-                  '\n\t'.join(self._failed_count.iterkeys()))
+                  '\n\t'.join(self._failed_count.keys()))
             status_file = os.environ.get("PARALLEL_EMERGE_STATUS_FILE")
             if status_file:
               failed_pkgs = set(portage.versions.cpv_getkey(x)
-                                for x in self._failed_count.iterkeys())
+                                for x in self._failed_count.keys())
               with open(status_file, "a") as f:
                 f.write("%s\n" % " ".join(failed_pkgs))
           else:
@@ -1876,7 +1876,7 @@ class EmergeQueue(object):
       self._Print("WARNING: The following packages failed once or more,")
       self._Print("but succeeded upon retry. This might indicate incorrect")
       self._Print("dependencies.")
-      for pkg in self._failed_count.iterkeys():
+      for pkg in self._failed_count.keys():
         self._Print("  %s" % pkg)
       self._Print("@@@STEP_WARNINGS@@@")
       self._Print("")

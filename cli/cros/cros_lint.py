@@ -414,13 +414,13 @@ run other checks (e.g. pyflakes, etc.)
                                    self.options.output, self.options.debug)
 
     # Special case one file as it's common -- faster to avoid parallel startup.
-    if sum([len(x) for _, x in linter_map.iteritems()]) == 1:
+    if sum([len(x) for _, x in linter_map.items()]) == 1:
       linter, files = linter_map.items()[0]
       dispatcher(linter, files[0])
     else:
       # Run the linter in parallel on the files.
       with parallel.BackgroundTaskRunner(dispatcher) as q:
-        for linter, files in linter_map.iteritems():
+        for linter, files in linter_map.items():
           for path in files:
             q.put([linter, path])
 

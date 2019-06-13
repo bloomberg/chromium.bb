@@ -152,7 +152,7 @@ def _collect_fs_inode_info(mountpoint):
 
 def _collect_disk_io_info():
   try:
-    disk_counters = psutil.disk_io_counters(perdisk=True).iteritems()
+    disk_counters = psutil.disk_io_counters(perdisk=True).items()
   except RuntimeError as ex:
     if "couldn't find any physical disk" in str(ex):
       # Disk performance counters aren't enabled on Windows.

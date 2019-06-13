@@ -107,7 +107,7 @@ def BuildspecUsesDepsGit(rev):
   threshold = _DEPS_GIT_TRANSITION_MAP.get(milestone)
   if threshold:
     return rev <= threshold
-  return all(milestone < k for k in _DEPS_GIT_TRANSITION_MAP.iterkeys())
+  return all(milestone < k for k in _DEPS_GIT_TRANSITION_MAP.keys())
 
 
 def _GetGclientURLs(internal, rev):

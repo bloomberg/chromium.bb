@@ -428,7 +428,7 @@ def GenerateReleaseProfileMergePlan(gs_context, milestones):
 
   planned_merges = {
       version: (cwp_profiles[version], benchmark_profile)
-      for version, benchmark_profile in benchmark_profiles.iteritems()
+      for version, benchmark_profile in benchmark_profiles.items()
       if version in cwp_profiles
   }
   skipped = sorted(set(milestones) - set(planned_merges))
@@ -463,7 +463,7 @@ def ExecuteReleaseProfileMergePlan(gs_context, buildroot, merge_plan):
     cros_build_lib.UncompressFile(temp_path, local_path)
 
   merge_results = {}
-  for version, (cwp_profile, benchmark_profile) in merge_plan.iteritems():
+  for version, (cwp_profile, benchmark_profile) in merge_plan.items():
     chroot_benchmark_path, benchmark_path = path_pair('benchmark.afdo')
     copy_profile(benchmark_profile, benchmark_path)
 
@@ -505,7 +505,7 @@ def UploadReleaseProfiles(gs_context, run_id, merge_plan, merge_results):
     # run_id is truly unique, this should never make a difference.
     gs_context.Copy(local_path, remote_path, acl='public-read', version=0)
 
-  for version, profile in merge_results.iteritems():
+  for version, profile in merge_results.items():
     suffix = os.path.splitext(profile)[1]
     assert suffix != '.afdo', 'All profiles should be compressed.'
     output_path = os.path.join(gs_url_base,
@@ -719,7 +719,7 @@ def PatchChromeEbuildAFDOFile(ebuild_file, profiles):
         else:  # line without markers, just copy it.
           modified.write(line)
 
-  for source, found in markers.iteritems():
+  for source, found in markers.items():
     if not found:
       raise MissingAFDOMarkers('Chrome ebuild file does not have appropriate '
                                'AFDO markers for source %s' % source)

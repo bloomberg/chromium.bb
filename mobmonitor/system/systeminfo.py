@@ -360,7 +360,7 @@ class Disk(SystemInfoStorage):
     sizes = {}
 
     # Collect diskby information.
-    for prop, diskdir in SYSTEMFILE_DEV_DISKBY.iteritems():
+    for prop, diskdir in SYSTEMFILE_DEV_DISKBY.items():
       cmd = ['find', diskdir, '-lname', '*%s' % devicefilter]
       cmd_result = cros_build_lib.RunCommand(cmd, log_output=True)
 
@@ -390,7 +390,7 @@ class Disk(SystemInfoStorage):
 
     return [RESOURCE_BLOCKDEVICE(device, sizes[device], ids[device],
                                  labels[device])
-            for device in ids.iterkeys()]
+            for device in ids.keys()]
 
 
 class Cpu(SystemInfoStorage):
@@ -431,7 +431,7 @@ class Cpu(SystemInfoStorage):
           continue
         cpudesc = dict(itertools.izip(CPU_ATTRS, line.split()))
         idle, nonidle = (0, 0)
-        for attr, value in cpudesc.iteritems():
+        for attr, value in cpudesc.items():
           if attr in CPU_IDLE_ATTRS:
             idle += int(value)
           if attr in CPU_NONIDLE_ATTRS:

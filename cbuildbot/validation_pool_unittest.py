@@ -87,7 +87,7 @@ class MockManifest(object):
 
   def __init__(self, path, **kwargs):
     self.root = path
-    for key, attr in kwargs.iteritems():
+    for key, attr in kwargs.items():
       setattr(self, key, attr)
 
 
@@ -755,7 +755,7 @@ class TestCoreLogic(_Base):
   def _UpdatedDependencyMap(self, dependency_map):
     pool = self.MakePool()
 
-    directs = dict((k, set(v)) for (k, v) in dependency_map.iteritems())
+    directs = dict((k, set(v)) for (k, v) in dependency_map.items())
 
     keys = dependency_map.keys()
     for change in keys:
