@@ -40,14 +40,10 @@ public class UrlUtilities {
                     ContentUrlConstants.ABOUT_SCHEME);
 
     // Patterns used in validateIntentUrl.
-    private static final Pattern DNS_HOSTNAME_PATTERN =
-            Pattern.compile("^[\\w\\.-]*$");
-    private static final Pattern JAVA_PACKAGE_NAME_PATTERN =
-            Pattern.compile("^[\\w\\.-]*$");
-    private static final Pattern ANDROID_COMPONENT_NAME_PATTERN =
-            Pattern.compile("^[\\w\\./-]*$");
-    private static final Pattern URL_SCHEME_PATTERN =
-            Pattern.compile("^[a-zA-Z]+$");
+    private static final Pattern DNS_HOSTNAME_PATTERN = Pattern.compile("^[\\w\\.-]*$");
+    private static final Pattern JAVA_PACKAGE_NAME_PATTERN = Pattern.compile("^[\\w\\.-]*$");
+    private static final Pattern ANDROID_COMPONENT_NAME_PATTERN = Pattern.compile("^[\\w\\./-]*$");
+    private static final Pattern URL_SCHEME_PATTERN = Pattern.compile("^[a-zA-Z]+$");
 
     private static final String TEL_URL_PREFIX = "tel:";
 
@@ -144,8 +140,8 @@ public class UrlUtilities {
      * @param includePrivateRegistries Whether or not to consider private registries.
      * @return True iff the two URIs belong to the same domain or host.
      */
-    public static boolean sameDomainOrHost(String primaryUrl, String secondaryUrl,
-            boolean includePrivateRegistries) {
+    public static boolean sameDomainOrHost(
+            String primaryUrl, String secondaryUrl, boolean includePrivateRegistries) {
         return nativeSameDomainOrHost(primaryUrl, secondaryUrl, includePrivateRegistries);
     }
 
@@ -266,8 +262,7 @@ public class UrlUtilities {
 
         // Now lex and parse the correctly-encoded fragment.
         String[] parts = fragment.split(";");
-        if (parts.length < 3
-                || !parts[0].equals("Intent")
+        if (parts.length < 3 || !parts[0].equals("Intent")
                 || !parts[parts.length - 1].equals("end")) {
             Log.d(TAG, "Invalid fragment (not enough parts, lacking Intent, or lacking end)");
             return false;
@@ -363,10 +358,10 @@ public class UrlUtilities {
     private static native boolean nativeIsDownloadable(String url);
     private static native boolean nativeIsValidForIntentFallbackNavigation(String url);
     private static native boolean nativeIsAcceptedScheme(String url);
-    private static native boolean nativeSameDomainOrHost(String primaryUrl, String secondaryUrl,
-            boolean includePrivateRegistries);
-    private static native String nativeGetDomainAndRegistry(String url,
-            boolean includePrivateRegistries);
+    private static native boolean nativeSameDomainOrHost(
+            String primaryUrl, String secondaryUrl, boolean includePrivateRegistries);
+    private static native String nativeGetDomainAndRegistry(
+            String url, boolean includePrivateRegistries);
     /** Returns whether the given URL uses the Google.com domain. */
     public static native boolean nativeIsGoogleDomainUrl(String url, boolean allowNonStandardPort);
     /** Returns whether the given URL is a Google.com domain or sub-domain. */

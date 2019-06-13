@@ -8,7 +8,6 @@ package org.chromium.chrome.browser.util;
  * Contains various math utilities used throughout Chrome Mobile.
  */
 public class MathUtils {
-
     /** A minimum difference to use when comparing floats for equality. */
     public static final float EPSILON = 0.001f;
 
@@ -116,16 +115,14 @@ public class MathUtils {
      * @param targetHeight The target height
      * @return The scale factor applied to dimensions
      */
-    public static float scaleToFitTargetSize(
-            int [] dimensions, int targetWidth, int targetHeight) {
+    public static float scaleToFitTargetSize(int[] dimensions, int targetWidth, int targetHeight) {
         if (dimensions.length < 2 || dimensions[0] <= 0 || dimensions[1] <= 0) {
             throw new IllegalArgumentException(
                     "Expected dimensions to have length >= 2 && dimensions[0] > 0 && "
                     + "dimensions[1] > 0");
         }
-        float scale = Math.max(
-                (float) targetWidth / dimensions[0],
-                (float) targetHeight / dimensions[1]);
+        float scale =
+                Math.max((float) targetWidth / dimensions[0], (float) targetHeight / dimensions[1]);
         dimensions[0] = (int) (dimensions[0] * scale);
         dimensions[1] = (int) (dimensions[1] * scale);
         return scale;

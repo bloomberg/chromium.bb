@@ -14,7 +14,6 @@ import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeApplication;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -82,8 +81,8 @@ public class BitmapCache {
      *
      * This constructor must be called on UI thread.
      *
-     * @param referencePool The discardable reference pool. See
-     *                      {@link ChromeApplication#getReferencePool}.
+     * @param referencePool The discardable reference pool. Typically this should be the
+     *                      {@link DiscardableReferencePool} for the application.
      * @param size The capacity of the cache in bytes.
      */
     public BitmapCache(DiscardableReferencePool referencePool, int size) {

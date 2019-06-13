@@ -168,6 +168,7 @@ android_library("test_java") {
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_test_util_java",
+    "//chrome/lib/image_fetcher/public/android:java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",

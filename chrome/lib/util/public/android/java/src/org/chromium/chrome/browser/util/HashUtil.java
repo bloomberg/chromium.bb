@@ -18,8 +18,7 @@ import java.util.Formatter;
 public final class HashUtil {
     private static final String TAG = "HashUtil";
 
-    private HashUtil() {
-    }
+    private HashUtil() {}
 
     public static class Params {
         private final String mText;

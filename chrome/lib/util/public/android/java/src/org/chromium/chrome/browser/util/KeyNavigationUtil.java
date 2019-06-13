@@ -10,12 +10,10 @@ import android.view.KeyEvent;
  * This is a helper class to handle navigation related checks for key events.
  */
 public class KeyNavigationUtil {
-
     /**
      * This is a helper class with no instance.
      */
-    private KeyNavigationUtil() {
-    }
+    private KeyNavigationUtil() {}
 
     /**
      * Checks whether the given event is any of DPAD down or NUMPAD down.
@@ -23,8 +21,10 @@ public class KeyNavigationUtil {
      * @return Whether the event should be processed as a navigation down.
      */
     public static boolean isGoDown(KeyEvent event) {
-        return isActionDown(event) && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN
-                || (!event.isNumLockOn() && event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_2));
+        return isActionDown(event)
+                && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN
+                        || (!event.isNumLockOn()
+                                && event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_2));
     }
 
     /**
@@ -33,8 +33,10 @@ public class KeyNavigationUtil {
      * @return Whether the event should be processed as a navigation up.
      */
     public static boolean isGoUp(KeyEvent event) {
-        return isActionDown(event) && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP
-                || (!event.isNumLockOn() && event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_8));
+        return isActionDown(event)
+                && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP
+                        || (!event.isNumLockOn()
+                                && event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_8));
     }
 
     /**
@@ -43,8 +45,10 @@ public class KeyNavigationUtil {
      * @return Whether the event should be processed as a navigation right.
      */
     public static boolean isGoRight(KeyEvent event) {
-        return isActionDown(event) && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT
-                || (!event.isNumLockOn() && event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_6));
+        return isActionDown(event)
+                && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT
+                        || (!event.isNumLockOn()
+                                && event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_6));
     }
 
     /**
@@ -62,8 +66,9 @@ public class KeyNavigationUtil {
      * @return Whether the event should be processed as ENTER.
      */
     public static boolean isEnter(KeyEvent event) {
-        return isActionUp(event) && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER
-                || event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_ENTER);
+        return isActionUp(event)
+                && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER
+                        || event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_ENTER);
     }
 
     /**
