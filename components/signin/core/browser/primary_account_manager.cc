@@ -10,11 +10,8 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/ref_counted.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
@@ -22,11 +19,9 @@
 #include "components/signin/core/browser/primary_account_policy_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/signin_switches.h"
-#include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_urls.h"
 
 PrimaryAccountManager::PrimaryAccountManager(
     SigninClient* client,

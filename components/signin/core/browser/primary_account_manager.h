@@ -22,24 +22,22 @@
 #include <string>
 
 #include "base/callback_list.h"
-#include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
+struct AccountInfo;
 class AccountTrackerService;
 class PrefRegistrySimple;
 class PrefService;
 class PrimaryAccountPolicyManager;
 class ProfileOAuth2TokenService;
-class SigninClient;
+
+namespace signin_metrics {
+enum ProfileSignout;
+enum class SignoutDelete;
+}  // namespace signin_metrics
 
 class PrimaryAccountManager : public OAuth2TokenServiceObserver {
  public:
