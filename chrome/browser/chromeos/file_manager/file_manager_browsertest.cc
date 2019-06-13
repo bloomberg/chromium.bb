@@ -298,7 +298,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileSearchCaseInsensitive"),
         TestCase("fileSearchNotFound"),
         TestCase("fileDisplayDownloadsWithBlockedFileTaskRunner"),
-        TestCase("fileDisplayCheckSelectWithFakeItemSelected")));
+        TestCase("fileDisplayCheckSelectWithFakeItemSelected"),
+        TestCase("fileDisplayCheckReadOnlyIconOnFakeDirectory"),
+        TestCase("fileDisplayCheckNoReadOnlyIconOnDownloads")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenVideoFiles, /* open_video_files.js */
