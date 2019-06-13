@@ -25047,6 +25047,14 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="optional"/>
 </enum>
 
+<enum name="FontScanningResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="FT_New_Face from file failed"/>
+  <int value="2" label="Zero name table entries"/>
+  <int value="3" label="Unable to retrieve name table entry"/>
+  <int value="4" label="Name string is invalid unicode"/>
+</enum>
+
 <enum name="FormDataDeserializationStatus">
   <int value="0" label="Login database success"/>
   <int value="1" label="Login database failure"/>
