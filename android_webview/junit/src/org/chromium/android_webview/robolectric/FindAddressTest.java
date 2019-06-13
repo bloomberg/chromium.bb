@@ -2,23 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.test;
+package org.chromium.android_webview.robolectric;
 
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 import org.chromium.android_webview.FindAddress;
 import org.chromium.base.test.util.Feature;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.regex.MatchResult;
 
 /**
  * Tests for FindAddress implementation.
  */
-@RunWith(AwJUnit4ClassRunner.class)
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class FindAddressTest {
     private void assertExpectedMatch(MatchResult match, String exptectedMatch) {
         Assert.assertNotNull(match);

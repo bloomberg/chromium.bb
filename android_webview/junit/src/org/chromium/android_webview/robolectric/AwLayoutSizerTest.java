@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.test;
-
-import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
+package org.chromium.android_webview.robolectric;
 
 import android.support.test.filters.SmallTest;
 import android.view.View;
@@ -13,15 +11,14 @@ import android.view.View.MeasureSpec;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 import org.chromium.android_webview.AwLayoutSizer;
 import org.chromium.base.test.util.Feature;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
-/**
- * Unittests for the AwLayoutSizer class.
- */
-@RunWith(AwJUnit4ClassRunner.class)
-@OnlyRunIn(SINGLE_PROCESS)
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class AwLayoutSizerTest {
     static class LayoutSizerDelegate implements AwLayoutSizer.Delegate {
         public int requestLayoutCallCount;
@@ -468,8 +465,7 @@ public class AwLayoutSizerTest {
 
         Assert.assertFalse(delegate.forceZeroHeight);
 
-        layoutSizer.onMeasure(
-                MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
+        layoutSizer.onMeasure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
         layoutSizer.onSizeChanged(AT_MOST_MEASURE_SIZE, AT_MOST_MEASURE_SIZE, 0, 0);
         Assert.assertFalse(delegate.forceZeroHeight);
