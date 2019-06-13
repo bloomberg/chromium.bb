@@ -332,6 +332,8 @@ class ClientControlledShellSurface
   // TODO(oshima): Remove this once all boards are migrated to P or above.
   bool server_reparent_window_ = false;
 
+  bool ignore_bounds_change_request_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };
 
