@@ -5,9 +5,11 @@
 #ifndef ASH_PUBLIC_CPP_KEYBOARD_KEYBOARD_CONTROLLER_H_
 #define ASH_PUBLIC_CPP_KEYBOARD_KEYBOARD_CONTROLLER_H_
 
+#include <set>
+#include <vector>
+
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/keyboard/keyboard_config.h"
-#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/keyboard/keyboard_types.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
@@ -27,14 +29,6 @@ enum class HideReason {
 
 class ASH_PUBLIC_EXPORT KeyboardController {
  public:
-  using GetKeyboardConfigCallback =
-      base::OnceCallback<void(const keyboard::KeyboardConfig&)>;
-  using IsKeyboardEnabledCallback = base::OnceCallback<void(bool)>;
-  using GetEnableFlagsCallback = base::OnceCallback<void(
-      const std::vector<keyboard::KeyboardEnableFlag>&)>;
-  using IsKeyboardVisibleCallback = base::OnceCallback<void(bool)>;
-  using SetContainerTypeCallback = base::OnceCallback<void(bool)>;
-
   static KeyboardController* Get();
 
   // Sets the global KeyboardController instance to |this|.
@@ -46,13 +40,13 @@ class ASH_PUBLIC_EXPORT KeyboardController {
   virtual void KeyboardContentsLoaded(const gfx::Size& size) = 0;
 
   // Retrieves the current keyboard configuration.
-  virtual void GetKeyboardConfig(GetKeyboardConfigCallback callback) = 0;
+  virtual keyboard::KeyboardConfig GetKeyboardConfig() = 0;
 
   // Sets the current keyboard configuration.
   virtual void SetKeyboardConfig(const keyboard::KeyboardConfig& config) = 0;
 
   // Returns whether the virtual keyboard has been enabled.
-  virtual void IsKeyboardEnabled(IsKeyboardVisibleCallback callback) = 0;
+  virtual bool IsKeyboardEnabled() = 0;
 
   // Sets the provided keyboard enable flag. If the computed enabled state
   // changes, enables or disables the keyboard to match the new state.
@@ -63,7 +57,7 @@ class ASH_PUBLIC_EXPORT KeyboardController {
   virtual void ClearEnableFlag(keyboard::KeyboardEnableFlag flag) = 0;
 
   // Gets the current set of keyboard enable flags.
-  virtual void GetEnableFlags(GetEnableFlagsCallback callback) = 0;
+  virtual const std::set<keyboard::KeyboardEnableFlag>& GetEnableFlags() = 0;
 
   // Reloads the virtual keyboard if it is enabled and the URL has changed, e.g.
   // the focus has switched from one type of field to another.
@@ -75,7 +69,7 @@ class ASH_PUBLIC_EXPORT KeyboardController {
   virtual void RebuildKeyboardIfEnabled() = 0;
 
   // Returns whether the virtual keyboard is visible.
-  virtual void IsKeyboardVisible(IsKeyboardVisibleCallback callback) = 0;
+  virtual bool IsKeyboardVisible() = 0;
 
   // Shows the virtual keyboard on the current display if it is enabled.
   virtual void ShowKeyboard() = 0;
@@ -86,6 +80,7 @@ class ASH_PUBLIC_EXPORT KeyboardController {
   // Sets the keyboard container type. If non empty, |target_bounds| provides
   // the container size. Returns whether the transition succeeded once the
   // container type changes (or fails to change).
+  using SetContainerTypeCallback = base::OnceCallback<void(bool)>;
   virtual void SetContainerType(keyboard::ContainerType container_type,
                                 const base::Optional<gfx::Rect>& target_bounds,
                                 SetContainerTypeCallback callback) = 0;

@@ -93,9 +93,9 @@ class ChromeKeyboardControllerClient
   // Sets the new keyboard configuration and updates the cached config.
   void SetKeyboardConfig(const keyboard::KeyboardConfig& config);
 
-  // Invokes |callback| with the current enabled state. Call this after
-  // Set/ClearEnableFlag to get the updated enabled state.
-  void GetKeyboardEnabled(base::OnceCallback<void(bool)> callback);
+  // Returns the current enabled state. Call this after Set/ClearEnableFlag to
+  // get the updated enabled state.
+  bool GetKeyboardEnabled();
 
   // Sets/clears the privided keyboard enable state.
   void SetEnableFlag(const keyboard::KeyboardEnableFlag& flag);
@@ -144,7 +144,7 @@ class ChromeKeyboardControllerClient
 
   // ash::KeyboardControllerObserver:
   void OnKeyboardEnableFlagsChanged(
-      const std::vector<keyboard::KeyboardEnableFlag>& flags) override;
+      const std::set<keyboard::KeyboardEnableFlag>& flags) override;
   void OnKeyboardEnabledChanged(bool enabled) override;
   void OnKeyboardConfigChanged(const keyboard::KeyboardConfig& config) override;
   void OnKeyboardVisibilityChanged(bool visible) override;

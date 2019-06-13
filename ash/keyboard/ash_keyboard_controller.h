@@ -6,6 +6,8 @@
 #define ASH_KEYBOARD_ASH_KEYBOARD_CONTROLLER_H_
 
 #include <memory>
+#include <set>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
@@ -56,16 +58,16 @@ class ASH_EXPORT AshKeyboardController : public KeyboardController,
 
   // ash::KeyboardController:
   void KeyboardContentsLoaded(const gfx::Size& size) override;
-  void GetKeyboardConfig(GetKeyboardConfigCallback callback) override;
+  keyboard::KeyboardConfig GetKeyboardConfig() override;
   void SetKeyboardConfig(
       const keyboard::KeyboardConfig& keyboard_config) override;
-  void IsKeyboardEnabled(IsKeyboardEnabledCallback callback) override;
+  bool IsKeyboardEnabled() override;
   void SetEnableFlag(keyboard::KeyboardEnableFlag flag) override;
   void ClearEnableFlag(keyboard::KeyboardEnableFlag flag) override;
-  void GetEnableFlags(GetEnableFlagsCallback callback) override;
+  const std::set<keyboard::KeyboardEnableFlag>& GetEnableFlags() override;
   void ReloadKeyboardIfNeeded() override;
   void RebuildKeyboardIfEnabled() override;
-  void IsKeyboardVisible(IsKeyboardVisibleCallback callback) override;
+  bool IsKeyboardVisible() override;
   void ShowKeyboard() override;
   void HideKeyboard(HideReason reason) override;
   void SetContainerType(keyboard::ContainerType container_type,
@@ -100,7 +102,7 @@ class ASH_EXPORT AshKeyboardController : public KeyboardController,
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& screen_bounds) override;
   void OnKeyboardOccludedBoundsChanged(const gfx::Rect& screen_bounds) override;
   void OnKeyboardEnableFlagsChanged(
-      const std::vector<keyboard::KeyboardEnableFlag>& flags) override;
+      const std::set<keyboard::KeyboardEnableFlag>& flags) override;
   void OnKeyboardEnabledChanged(bool is_enabled) override;
 
   SessionControllerImpl* session_controller_;  // unowned

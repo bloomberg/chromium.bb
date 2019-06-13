@@ -393,7 +393,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // keyboard is loaded.
   void MarkKeyboardLoadFinished();
 
-  void EnableFlagChanged();
+  // Called when the enable flags change. Notifies observers of the change.
+  void EnableFlagsChanged();
 
   std::unique_ptr<KeyboardUIFactory> ui_factory_;
   std::unique_ptr<KeyboardUI> ui_;

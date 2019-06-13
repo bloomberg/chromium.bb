@@ -5,7 +5,7 @@
 #ifndef ASH_PUBLIC_CPP_KEYBOARD_KEYBOARD_CONTROLLER_OBSERVER_H_
 #define ASH_PUBLIC_CPP_KEYBOARD_KEYBOARD_CONTROLLER_OBSERVER_H_
 
-#include <vector>
+#include <set>
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/keyboard/keyboard_config.h"
@@ -36,7 +36,7 @@ class ASH_PUBLIC_EXPORT KeyboardControllerObserver {
  public:
   // Called when a keyboard enable flag changes.
   virtual void OnKeyboardEnableFlagsChanged(
-      const std::vector<keyboard::KeyboardEnableFlag>& flags) {}
+      const std::set<keyboard::KeyboardEnableFlag>& flags) {}
 
   // Called when the keyboard is enabled or disabled. If ReloadKeyboard() is
   // called or other code enables the keyboard while already enabled, this will

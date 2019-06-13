@@ -203,7 +203,7 @@ void KeyboardController::Initialize(
 
 void KeyboardController::Shutdown() {
   keyboard_enable_flags_.clear();
-  EnableFlagChanged();
+  EnableFlagsChanged();
 
   DCHECK(!IsKeyboardEnableRequested());
   DisableKeyboard();
@@ -437,7 +437,7 @@ void KeyboardController::SetEnableFlag(KeyboardEnableFlag flag) {
       break;
   }
 
-  EnableFlagChanged();
+  EnableFlagsChanged();
 
   UpdateKeyboardAsRequestedBy(flag);
 }
@@ -447,7 +447,7 @@ void KeyboardController::ClearEnableFlag(KeyboardEnableFlag flag) {
     return;
 
   keyboard_enable_flags_.erase(flag);
-  EnableFlagChanged();
+  EnableFlagsChanged();
 
   UpdateKeyboardAsRequestedBy(flag);
 }
@@ -1122,11 +1122,9 @@ void KeyboardController::MarkKeyboardLoadFinished() {
   keyboard_load_time_logged_ = true;
 }
 
-void KeyboardController::EnableFlagChanged() {
-  std::vector<keyboard::KeyboardEnableFlag> flags(
-      keyboard_enable_flags_.begin(), keyboard_enable_flags_.end());
+void KeyboardController::EnableFlagsChanged() {
   for (auto& observer : observer_list_)
-    observer.OnKeyboardEnableFlagsChanged(flags);
+    observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
 }
 
 }  // namespace keyboard
