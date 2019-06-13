@@ -44,8 +44,6 @@ TEST_F(ColorPanelCocoaTest, ClearTargetOnEnd) {
     // Release the ColorPanelCocoa.
     color_chooser_mac->End();
   }
-  // Confirm the ColorPanelCocoa is no longer the NSColorPanel's target
-  EXPECT_EQ([nscolor_panel __target], nil);
 }
 
 TEST_F(ColorPanelCocoaTest, SetColor) {

@@ -11,29 +11,28 @@
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/web_contents.h"
 
-class ColorChooserMac;
-
-// A Listener class to act as a event target for NSColorPanel and send
-// the results to the C++ class, ColorChooserMac.
-@interface ColorPanelCocoa : NSObject {
+// A singleton listener class to act as a event target for NSColorPanel and
+// send the results to the C++ class, ColorChooserMac.
+@interface ColorPanelListener : NSObject {
  @protected
   // We don't call DidChooseColor if the change wasn't caused by the user
   // interacting with the panel.
   BOOL nonUserChange_;
- @private
-  ColorChooserMac* chooser_;  // weak, owns this
 }
-
-- (id)initWithChooser:(ColorChooserMac*)chooser;
-
+// Called from NSNotificationCenter.
 - (void)windowWillClose:(NSNotification*)notification;
 
 // Called from NSColorPanel.
 - (void)didChooseColor:(NSColorPanel*)panel;
 
+// The singleton instance.
++ (ColorPanelListener*)instance;
+
+// Show the NSColorPanel.
+- (void)showColorPanel;
+
 // Sets color to the NSColorPanel as a non user change.
 - (void)setColor:(NSColor*)color;
-
 @end
 
 class ColorChooserMac : public content::ColorChooser {
@@ -45,7 +44,7 @@ class ColorChooserMac : public content::ColorChooser {
   static ColorChooserMac* Open(content::WebContents* web_contents,
                                SkColor initial_color);
 
-  // Called from ColorPanelCocoa.
+  // Called from ColorPanelListener.
   void DidChooseColorInColorPanel(SkColor color);
   void DidCloseColorPanel();
 
@@ -60,12 +59,9 @@ class ColorChooserMac : public content::ColorChooser {
 
   ~ColorChooserMac() override;
 
-  static ColorChooserMac* current_color_chooser_;
-
   // The web contents invoking the color chooser.  No ownership because it will
   // outlive this class.
   content::WebContents* web_contents_;
-  base::scoped_nsobject<ColorPanelCocoa> panel_;
 
   DISALLOW_COPY_AND_ASSIGN(ColorChooserMac);
 };
