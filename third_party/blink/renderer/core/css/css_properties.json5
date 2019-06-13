@@ -3626,7 +3626,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color",
+      style_builder_template: "color_only",
       valid_for_visited_link: true,
     },
     {
@@ -5177,6 +5177,19 @@
       style_builder_template_args: {
         initial_color: "StyleAutoColor::AutoColor",
       },
+    },
+    {
+      name: "-internal-visited-column-rule-color",
+      visited_property_for: "column-rule-color",
+      property_methods: ["ColorIncludingFallback"],
+      field_group: "*->multi-col",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
+      default_value: "StyleColor::CurrentColor()",
+      type_name: "StyleColor",
+      computed_style_custom_functions: ["getter","setter"],
+      converter: "ConvertStyleColor",
+      style_builder_template: "visited_color",
     },
     {
       name: "-internal-visited-background-color",

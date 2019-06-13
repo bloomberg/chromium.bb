@@ -2015,8 +2015,8 @@ void ComputedStyle::ClearMultiCol() {
       ComputedStyleInitialValues::InitialColumnRuleColor());
   SetColumnRuleColorIsCurrentColor(
       ComputedStyleInitialValues::InitialColumnRuleColorIsCurrentColor());
-  SetVisitedLinkColumnRuleColorInternal(
-      ComputedStyleInitialValues::InitialVisitedLinkColumnRuleColor());
+  SetInternalVisitedColumnRuleColorInternal(
+      ComputedStyleInitialValues::InitialInternalVisitedColumnRuleColor());
   SetColumnCountInternal(ComputedStyleInitialValues::InitialColumnCount());
   SetHasAutoColumnCountInternal(
       ComputedStyleInitialValues::InitialHasAutoColumnCount());

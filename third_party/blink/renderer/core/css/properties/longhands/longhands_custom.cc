@@ -180,6 +180,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_border_top_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_caret_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_color.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_column_rule_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_outline_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_decoration_color.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/internal_visited_text_emphasis_color.h"
@@ -2042,11 +2043,8 @@ const CSSValue* ColumnRuleColor::ParseSingleValue(
 const blink::Color ColumnRuleColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result = visited_link ? style.VisitedLinkColumnRuleColor()
-                                   : style.ColumnRuleColor();
-  if (!result.IsCurrentColor())
-    return result.GetColor();
-  return visited_link ? style.InternalVisitedColor() : style.GetColor();
+  DCHECK(!visited_link);
+  return style.ColumnRuleColor().Resolve(style.GetColor());
 }
 
 const CSSValue* ColumnRuleColor::CSSValueFromComputedStyleInternal(
@@ -3738,6 +3736,14 @@ const blink::Color InternalVisitedBorderBottomColor::ColorIncludingFallback(
     const ComputedStyle& style) const {
   DCHECK(visited_link);
   return style.InternalVisitedBorderBottomColor().Resolve(
+      style.InternalVisitedColor());
+}
+
+const blink::Color InternalVisitedColumnRuleColor::ColorIncludingFallback(
+    bool visited_link,
+    const ComputedStyle& style) const {
+  DCHECK(visited_link);
+  return style.InternalVisitedColumnRuleColor().Resolve(
       style.InternalVisitedColor());
 }
 

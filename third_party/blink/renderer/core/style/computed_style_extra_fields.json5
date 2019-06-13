@@ -784,15 +784,6 @@
       field_group: "*->multi-col",
     },
     {
-      name: "VisitedLinkColumnRuleColor",
-      field_template: "external",
-      type_name: "StyleColor",
-      field_group: "*->multi-col",
-      default_value: "StyleColor::CurrentColor()",
-      include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
-      computed_style_custom_functions: ["getter", "setter"],
-    },
-    {
       name: "HasAutoColumnWidth",
       field_template: "primitive",
       type_name: "bool",
