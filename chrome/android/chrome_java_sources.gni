@@ -1205,6 +1205,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/ButtonPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ButtonPreferenceCompat.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeBaseCheckBoxPreference.java",
+  "java/src/org/chromium/chrome/browser/preferences/ChromeBaseCheckBoxPreferenceCompat.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeBaseListPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeBaseListPreferenceCompat.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeBasePreference.java",
