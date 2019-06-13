@@ -33,7 +33,46 @@ load-plugins=chromite.cli.cros.lint
 # multiple times.
 # R9301: logging is deprecated. Use "from chromite.lib import cros_logging as
 # logging" to import chromite/lib/cros_logging
-enable=cros-logging-import
+enable=
+    cros-logging-import
+    apply-builtin,
+    backtick,
+    bad-python3-import,
+    buffer-builtin,
+    coerce-builtin,
+    coerce-method,
+    delslice-method,
+    deprecated-itertools-function,
+    deprecated-str-translate-call,
+    deprecated-string-function,
+    deprecated-types-field,
+    dict-items-not-iterating,
+    dict-keys-not-iterating,
+    dict-values-not-iterating,
+    dict-view-method,
+    div-method,
+    exception-message-attribute,
+    getslice-method,
+    hex-method,
+    idiv-method,
+    import-star-module-level,
+    indexing-exception,
+    intern-builtin,
+    invalid-str-codec,
+    next-method-defined,
+    oct-method,
+    old-raise-syntax,
+    parameter-unpacking,
+    print-statement,
+    raising-string,
+    rdiv-method,
+    reload-builtin,
+    setslice-method,
+    sys-max-int,
+    unichr-builtin,
+    unpacking-in-except,
+    using-cmp-argument,
+
 
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifiers separated by comma (,) or put this
