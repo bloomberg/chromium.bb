@@ -6135,6 +6135,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Opted-in"/>
 </enum>
 
+<enum name="BooleanOptedOut">
+  <int value="0" label="Not opted-out"/>
+  <int value="1" label="Opted-out"/>
+</enum>
+
 <enum name="BooleanOptionConditionsChanged">
   <int value="0" label="Conditions unchanged"/>
   <int value="1" label="Conditions changed"/>

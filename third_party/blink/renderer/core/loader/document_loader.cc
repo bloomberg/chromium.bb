@@ -1603,10 +1603,14 @@ void DocumentLoader::InstallNewDocument(
   document->Fetcher()->SetStaleWhileRevalidateEnabled(
       stale_while_revalidate_enabled);
 
-  if (EqualIgnoringASCIICase(response_.HttpHeaderField("mixed-content"),
-                             "noupgrade")) {
+  bool opted_out_mixed_autoupgrade = EqualIgnoringASCIICase(
+      response_.HttpHeaderField("mixed-content"), "noupgrade");
+
+  if (opted_out_mixed_autoupgrade) {
     document->SetMixedAutoupgradeOptOut(true);
   }
+  UMA_HISTOGRAM_BOOLEAN("MixedAutoupgrade.Navigation.OptedOut",
+                        opted_out_mixed_autoupgrade);
 
   // If stale while revalidate is enabled via Origin Trials count it as such.
   if (stale_while_revalidate_enabled &&
