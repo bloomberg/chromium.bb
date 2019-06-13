@@ -961,6 +961,10 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
            "chips.";
     app_list::RecordSearchResultOpenTypeHistogram(
         launched_from, app_list::ASSISTANT_OMNIBOX_RESULT, IsTabletMode());
+    if (!GetLastQueryLength()) {
+      app_list::RecordZeroStateSuggestionOpenTypeHistogram(
+          app_list::ASSISTANT_OMNIBOX_RESULT);
+    }
     Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
         AssistantEntryPoint::kLauncherSearchResult);
     Shell::Get()->assistant_controller()->OpenUrl(
