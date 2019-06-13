@@ -57,9 +57,19 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/strings/string_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/common/app.mojom.h"
+#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/session/arc_bridge_service.h"
+#endif
 
 namespace extensions {
 
@@ -203,6 +213,20 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
   std::vector<web_app::BitmapAndSource> downloaded_bitmaps_;
 };
 
+#if defined(OS_CHROMEOS)
+const char kChromeOsPlayPlatform[] = "chromeos_play";
+const char kPlayIntentPrefix[] =
+    "https://play.google.com/store/apps/details?id=";
+
+std::string ExtractQueryValueForName(const GURL& url, const std::string& name) {
+  for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
+    if (it.GetKey() == name)
+      return it.GetValue();
+  }
+  return std::string();
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 BookmarkAppHelper::BookmarkAppHelper(
@@ -311,6 +335,11 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
   if (!data.manifest->icons.empty() ||
       contents_->GetVisibleURL().SchemeIs(content::kChromeUIScheme))
     web_app_icon_downloader_->SkipPageFavicons();
+
+  // If we tried to check for an intent to the Play Store, wait for the async
+  // reply.
+  if (DidCheckForIntentToPlayStore(*data.manifest))
+    return;
 
   web_app_icon_downloader_->Start();
 }
@@ -485,6 +514,78 @@ void BookmarkAppHelper::OnShortcutCreationCompleted(
   }
 
   callback_.Run(extension, web_app_info_);
+}
+
+bool BookmarkAppHelper::DidCheckForIntentToPlayStore(
+    const blink::Manifest& manifest) {
+#if defined(OS_CHROMEOS)
+  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
+    return false;
+
+  if (for_installable_site_ != web_app::ForInstallableSite::kYes)
+    return false;
+
+  for (const auto& application : manifest.related_applications) {
+    std::string id = base::UTF16ToUTF8(application.id.string());
+    if (!base::EqualsASCII(application.platform.string(),
+                           kChromeOsPlayPlatform)) {
+      continue;
+    }
+
+    std::string id_from_app_url =
+        ExtractQueryValueForName(application.url, "id");
+
+    if (id.empty()) {
+      if (id_from_app_url.empty())
+        continue;
+      id = id_from_app_url;
+    }
+
+    // Attach the referrer value.
+    std::string referrer =
+        ExtractQueryValueForName(application.url, "referrer");
+    if (!referrer.empty())
+      referrer = "&referrer=" + referrer;
+
+    std::string intent = kPlayIntentPrefix + id + referrer;
+
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    if (arc_service_manager) {
+      auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+          arc_service_manager->arc_bridge_service()->app(), IsInstallable);
+      if (instance) {
+        instance->IsInstallable(
+            id,
+            base::BindOnce(&BookmarkAppHelper::OnDidCheckForIntentToPlayStore,
+                           weak_factory_.GetWeakPtr(), intent));
+        return true;
+      }
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
+  return false;
+}
+
+void BookmarkAppHelper::OnDidCheckForIntentToPlayStore(
+    const std::string& intent,
+    bool should_intent_to_store) {
+#if defined(OS_CHROMEOS)
+  if (should_intent_to_store) {
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    if (arc_service_manager) {
+      auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+          arc_service_manager->arc_bridge_service()->intent_helper(),
+          HandleUrl);
+      if (instance) {
+        instance->HandleUrl(intent, arc::kPlayStorePackage);
+        callback_.Run(nullptr, web_app_info_);
+        return;
+      }
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  web_app_icon_downloader_->Start();
 }
 
 void BookmarkAppHelper::Observe(int type,

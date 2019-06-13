@@ -29,6 +29,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAddToHomescreenMessaging;
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kApkWebAppInstalls;
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_MACOSX)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppleScriptExecuteJavaScriptMenuItem;

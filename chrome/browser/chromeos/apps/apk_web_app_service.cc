@@ -7,12 +7,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/session/connection_holder.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -124,6 +126,9 @@ void ApkWebAppService::Shutdown() {
 
 void ApkWebAppService::OnPackageInstalled(
     const arc::mojom::ArcPackageInfo& package_info) {
+  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
+    return;
+
   // This method is called when a) new packages are installed, and b) existing
   // packages are updated. In (b), there are two cases to handle: the package
   // could previously have been an Android app and has now become a web app, and
@@ -192,6 +197,9 @@ void ApkWebAppService::OnPackageRemoved(const std::string& package_name,
   // will trigger the uninstallation of the web app. Similarly, this method
   // removes the associated web_app_id before triggering uninstallation, so
   // OnExtensionUninstalled() will do nothing.
+  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
+    return;
+
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
                                         kWebAppToApkDictPref);
 
@@ -217,6 +225,9 @@ void ApkWebAppService::OnPackageRemoved(const std::string& package_name,
 }
 
 void ApkWebAppService::OnPackageListInitialRefreshed() {
+  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
+    return;
+
   // Scan through the list of apps to see if any were uninstalled while ARC
   // wasn't running.
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
@@ -259,6 +270,9 @@ void ApkWebAppService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
+  if (!base::FeatureList::IsEnabled(features::kApkWebAppInstalls))
+    return;
+
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
                                         kWebAppToApkDictPref);
 

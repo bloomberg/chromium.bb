@@ -28,6 +28,10 @@ class InstallableManager;
 class Profile;
 class SkBitmap;
 
+namespace blink {
+struct Manifest;
+}
+
 namespace content {
 class WebContents;
 }  // namespace content
@@ -162,6 +166,17 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // Called when shortcut creation is complete.
   void OnShortcutCreationCompleted(const std::string& extension_id,
                                    bool shortcut_created);
+
+  void MaybeStartIconDownload();
+
+  // Returns true if we dispatched an asynchronous check for whether an intent
+  // to the Play Store should be made, and false otherwise.
+  bool DidCheckForIntentToPlayStore(const blink::Manifest& manifest);
+
+  // Called when the asynchronous check for whether an intent to the Play Store
+  // should be made returns.
+  void OnDidCheckForIntentToPlayStore(const std::string& intent,
+                                      bool should_intent_to_store);
 
   // Overridden from content::NotificationObserver:
   void Observe(int type,
