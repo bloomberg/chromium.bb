@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/android/synchronous_compositor_proxy.h"
+#include "content/renderer/input/synchronous_compositor_proxy.h"
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
