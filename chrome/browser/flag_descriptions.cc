@@ -3188,6 +3188,11 @@ const char kSchedulerConfigurationDescription[] =
 const char kSchedulerConfigurationConservative[] = "Conservative";
 const char kSchedulerConfigurationPerformance[] = "Performance";
 
+const char kShowBluetoothDeviceBatteryName[] = "Show Bluetooth device battery";
+const char kShowBluetoothDeviceBatteryDescription[] =
+    "Enables showing the battery level of connected and supported Bluetooth "
+    "devices in the System Tray and Settings UI.";
+
 const char kShowTapsName[] = "Show taps";
 const char kShowTapsDescription[] =
     "Draws a circle at each touch point, which makes touch points more obvious "

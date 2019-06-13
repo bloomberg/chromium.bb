@@ -35667,6 +35667,7 @@ from previous Chrome versions.
   <int value="1367529437" label="NTPAssetDownloadSuggestions:enabled"/>
   <int value="1367671275" label="enable-proximity-auth-proximity-detection"/>
   <int value="1369449914" label="SysInternals:disabled"/>
+  <int value="1370797930" label="ShowBluetoothDeviceBattery:enabled"/>
   <int value="1371092708" label="disable-desktop-capture-picker-old-ui"/>
   <int value="1371907429" label="enable-wallet-card-import"/>
   <int value="1372680885" label="enable-mtp-write-support"/>
@@ -36123,6 +36124,7 @@ from previous Chrome versions.
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2047981703" label="IntentPicker:enabled"/>
+  <int value="2051403297" label="ShowBluetoothDeviceBattery:disabled"/>
   <int value="2056572020" label="EnableUsernameCorrection:disabled"/>
   <int value="2058148069" label="UseMessagesStagingUrl:enabled"/>
   <int value="2058283872" label="CCTModuleCache:disabled"/>

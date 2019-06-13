@@ -1910,6 +1910,9 @@ extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
 extern const char kSchedulerConfigurationPerformance[];
 
+extern const char kShowBluetoothDeviceBatteryName[];
+extern const char kShowBluetoothDeviceBatteryDescription[];
+
 extern const char kShowTapsName[];
 extern const char kShowTapsDescription[];
 
