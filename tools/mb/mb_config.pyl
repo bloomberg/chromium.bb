@@ -222,7 +222,6 @@
       'Linux x64 Goma Latest Client LocalOutputCache': 'release_bot',
 
       'mac-hermetic-upgrade-rel': 'release_bot',
-      'Chromium Mac 10.13': 'release_bot',
 
       'Mac Builder (dbg) Goma Canary (clobber)': 'debug_bot',
       'Mac Builder (dbg) Goma Canary': 'debug_bot',

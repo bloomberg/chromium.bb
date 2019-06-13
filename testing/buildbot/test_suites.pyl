@@ -4594,16 +4594,6 @@
       'telemetry_perf_unittests_isolated_scripts',
     ],
 
-    # chromium_mac_gtests + additional suites.
-    'chromium_mac_fyi_gtests': [
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
-      'mac_specific_chromium_gtests',
-      'non_android_chromium_gtests',
-      'non_android_and_cast_and_chromeos_chromium_gtests',
-      'non_linux_chromium_gtests',
-    ],
-
     'chromium_mac_gtests': [
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
