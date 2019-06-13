@@ -142,8 +142,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       const SVGComputedStyle& a_svg = a.SvgStyle();
       const SVGComputedStyle& b_svg = b.SvgStyle();
       return a_svg.FillPaint().EqualTypeOrColor(b_svg.FillPaint()) &&
-             a_svg.VisitedLinkFillPaint().EqualTypeOrColor(
-                 b_svg.VisitedLinkFillPaint());
+             a_svg.InternalVisitedFillPaint().EqualTypeOrColor(
+                 b_svg.InternalVisitedFillPaint());
     }
     case CSSPropertyID::kFillOpacity:
       return a.FillOpacity() == b.FillOpacity();
@@ -251,8 +251,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       const SVGComputedStyle& a_svg = a.SvgStyle();
       const SVGComputedStyle& b_svg = b.SvgStyle();
       return a_svg.StrokePaint().EqualTypeOrColor(b_svg.StrokePaint()) &&
-             a_svg.VisitedLinkStrokePaint().EqualTypeOrColor(
-                 b_svg.VisitedLinkStrokePaint());
+             a_svg.InternalVisitedStrokePaint().EqualTypeOrColor(
+                 b_svg.InternalVisitedStrokePaint());
     }
     case CSSPropertyID::kStrokeDasharray:
       return a.StrokeDashArray() == b.StrokeDashArray();

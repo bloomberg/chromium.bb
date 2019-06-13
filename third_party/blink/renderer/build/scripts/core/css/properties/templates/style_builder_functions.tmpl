@@ -253,31 +253,6 @@ To<Longhand>(resolved_property).{{apply_call}};
   for (auto& listValue : To<CSSValueList>(value))
     data.{{vector}}.push_back(CSSToStyleMap::MapAnimation{{attribute}}(*listValue));
     {% endcall %}
-  {% elif property.style_builder_template == 'svg_paint' %}
-    {% set paint_type = property.style_builder_template_args['paint_type'] %}
-    {% set visited_link_setter = 'SetVisitedLink' + paint_type %}
-    {% call(property) apply_initial(property, header) %}
-  if (state.ApplyPropertyToRegularStyle())
-    {{set_value(property)}}(SVGComputedStyle::Initial{{paint_type}}());
-  if (state.ApplyPropertyToVisitedLinkStyle())
-    state.Style()->AccessSVGStyle().{{visited_link_setter}}(SVGComputedStyle::Initial{{paint_type}}());
-    {% endcall %}
-
-    {% call(property) apply_inherit(property, header) %}
-  const SVGComputedStyle& parent_svg_style = state.ParentStyle()->SvgStyle();
-  if (state.ApplyPropertyToRegularStyle())
-    {{set_value(property)}}(parent_svg_style.{{paint_type}}());
-  if (state.ApplyPropertyToVisitedLinkStyle())
-    state.Style()->AccessSVGStyle().{{visited_link_setter}}(parent_svg_style.{{paint_type}}());
-    {% endcall %}
-
-    {% call(property) apply_value(property, header) %}
-  SVGPaint paint = StyleBuilderConverter::{{property.converter}}(state, value);
-  if (state.ApplyPropertyToRegularStyle())
-    {{set_value(property)}}(paint);
-  if (state.ApplyPropertyToVisitedLinkStyle())
-    state.Style()->AccessSVGStyle().{{visited_link_setter}}(paint);
-    {% endcall %}
   {% elif property.style_builder_template in ['background_layer', 'mask_layer'] %}
     {% set layer_type = 'Background' if property.style_builder_template == 'background_layer' else 'Mask' %}
     {% set fill_type = property.style_builder_template_args['fill_type'] %}
