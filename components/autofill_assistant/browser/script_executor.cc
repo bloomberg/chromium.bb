@@ -314,9 +314,12 @@ void ScriptExecutor::HighlightElement(
 
 void ScriptExecutor::FocusElement(
     const Selector& selector,
+    const TopPadding& top_padding,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   last_focused_element_selector_ = selector;
-  delegate_->GetWebController()->FocusElement(selector, std::move(callback));
+  last_focused_element_top_padding_ = top_padding;
+  delegate_->GetWebController()->FocusElement(selector, top_padding,
+                                              std::move(callback));
 }
 
 void ScriptExecutor::SetTouchableElementArea(
@@ -886,7 +889,8 @@ void ScriptExecutor::WaitForDomOperation::RestorePreInterruptScroll() {
 
   if (!main_script_->last_focused_element_selector_.empty()) {
     delegate_->GetWebController()->FocusElement(
-        main_script_->last_focused_element_selector_, base::DoNothing());
+        main_script_->last_focused_element_selector_,
+        main_script_->last_focused_element_top_padding_, base::DoNothing());
   }
 }
 

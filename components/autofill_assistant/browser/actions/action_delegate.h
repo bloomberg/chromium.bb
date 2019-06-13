@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/selector.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
@@ -129,9 +130,11 @@ class ActionDelegate {
       const std::string& selected_option,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
-  // Focus on the element given by |selector|.
+  // Focus on element given by |selector|. |top_padding| specifies the padding
+  // between focused element and the top.
   virtual void FocusElement(
       const Selector& selector,
+      const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Sets selector of areas that can be manipulated:

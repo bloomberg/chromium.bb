@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -37,11 +38,13 @@ class MockWebController : public WebController {
 
   void FocusElement(
       const Selector& selector,
+      const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback) override {
-    OnFocusElement(selector, callback);
+    OnFocusElement(selector, top_padding, callback);
   }
-  MOCK_METHOD2(OnFocusElement,
+  MOCK_METHOD3(OnFocusElement,
                void(const Selector& selector,
+                    const TopPadding& top_padding,
                     base::OnceCallback<void(const ClientStatus&)>& callback));
 
   void ElementCheck(const Selector& selector,

@@ -34,16 +34,35 @@ void FocusElementAction::InternalProcessAction(ActionDelegate* delegate,
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
+
+  // Default value of 25%. This value should always be overriden
+  // by backend.
+  TopPadding top_padding{0.25, TopPadding::Unit::RATIO};
+  switch (focus_element.top_padding().top_padding_case()) {
+    case FocusElementProto::TopPadding::kPixels:
+      top_padding = TopPadding(focus_element.top_padding().pixels(),
+                               TopPadding::Unit::PIXELS);
+      break;
+    case FocusElementProto::TopPadding::kRatio:
+      top_padding = TopPadding(focus_element.top_padding().ratio(),
+                               TopPadding::Unit::RATIO);
+      break;
+    case FocusElementProto::TopPadding::TOP_PADDING_NOT_SET:
+      // Default value set before switch.
+      break;
+  }
+
   delegate->ShortWaitForElement(
       selector,
       base::BindOnce(&FocusElementAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector));
+                     std::move(callback), selector, top_padding));
 }
 
 void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
                                           ProcessActionCallback callback,
                                           const Selector& selector,
+                                          const TopPadding& top_padding,
                                           bool element_found) {
   if (!element_found) {
     UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
@@ -52,7 +71,7 @@ void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
   }
 
   delegate->FocusElement(
-      selector,
+      selector, top_padding,
       base::BindOnce(&FocusElementAction::OnFocusElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));

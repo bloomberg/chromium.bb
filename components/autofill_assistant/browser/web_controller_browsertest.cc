@@ -4,10 +4,12 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/strcat.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -149,10 +151,10 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     }
   }
 
-  void FocusElement(const Selector& selector) {
+  void FocusElement(const Selector& selector, const TopPadding top_padding) {
     base::RunLoop run_loop;
     web_controller_->FocusElement(
-        selector,
+        selector, top_padding,
         base::BindOnce(&WebControllerBrowserTest::OnFocusElement,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -420,7 +422,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     Selector selector;
     selector.selectors.emplace_back("#scroll_item_5");
 
-    FocusElement(selector);
+    TopPadding top_padding{0.25, TopPadding::Unit::RATIO};
+    FocusElement(selector, top_padding);
     base::ListValue eval_result = content::EvalJs(shell(), R"(
       let item = document.querySelector("#scroll_item_5");
       let itemRect = item.getBoundingClientRect();
@@ -853,7 +856,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
       iframeRect.y + divRect.y < window.innerHeight;
   )";
   EXPECT_EQ(false, content::EvalJs(shell(), checkVisibleScript));
-  FocusElement(selector);
+  TopPadding top_padding;
+  FocusElement(selector, top_padding);
   EXPECT_EQ(true, content::EvalJs(shell(), checkVisibleScript));
 }
 
@@ -867,6 +871,68 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
                        FocusElementWithScrollIntoViewNotNeeded) {
   TestScrollIntoView(/* initial_window_scroll_y= */ 0,
                      /* initial_container_scroll_y=*/200);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       FocusElement_WithPaddingInPixels) {
+  Selector selector;
+  selector.selectors.emplace_back("#scroll-me");
+
+  const std::string checkScrollDifferentThanTargetScript = R"(
+      window.scrollTo(0, 0);
+      let scrollTarget = document.querySelector("#scroll-me");
+      let scrollTargetRect = scrollTarget.getBoundingClientRect();
+      scrollTargetRect.y > 360;
+  )";
+
+  EXPECT_EQ(true,
+            content::EvalJs(shell(), checkScrollDifferentThanTargetScript));
+
+  // Scroll 360px from the top.
+  TopPadding top_padding{/* value= */ 360, TopPadding::Unit::PIXELS};
+  FocusElement(selector, top_padding);
+
+  double eval_result = content::EvalJs(shell(), R"(
+      let scrollTarget = document.querySelector("#scroll-me");
+      let scrollTargetRect = scrollTarget.getBoundingClientRect();
+      scrollTargetRect.top;
+  )")
+                           .ExtractDouble();
+
+  EXPECT_NEAR(360, eval_result, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       FocusElement_WithPaddingInRatio) {
+  Selector selector;
+  selector.selectors.emplace_back("#scroll-me");
+
+  const std::string checkScrollDifferentThanTargetScript = R"(
+      window.scrollTo(0, 0);
+      let scrollTarget = document.querySelector("#scroll-me");
+      let scrollTargetRect = scrollTarget.getBoundingClientRect();
+      let targetScrollY = window.innerHeight * 0.7;
+      scrollTargetRect.y > targetScrollY;
+  )";
+
+  EXPECT_EQ(true,
+            content::EvalJs(shell(), checkScrollDifferentThanTargetScript));
+
+  // Scroll 70% from the top.
+  TopPadding top_padding{/* value= */ 0.7, TopPadding::Unit::RATIO};
+  FocusElement(selector, top_padding);
+
+  base::ListValue eval_result = content::EvalJs(shell(), R"(
+      let scrollTarget = document.querySelector("#scroll-me");
+      let scrollTargetRect = scrollTarget.getBoundingClientRect();
+      [scrollTargetRect.top, window.innerHeight]
+  )")
+                                    .ExtractList();
+
+  double top = eval_result.GetList()[0].GetDouble();
+  double window_inner_height = eval_result.GetList()[1].GetDouble();
+
+  EXPECT_NEAR(top, window_inner_height * 0.7, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
