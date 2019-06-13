@@ -61,11 +61,6 @@
         "background_layer",
         "border_image",
         "color",
-        // The "color" template takes into account ApplyPropertyToRegularStyle
-        // and ApplyPropertyToVisitedStyle, whereas "color_only" unconditionally
-        // applies to the regular style.
-        // TODO(andruud): Remove those flags and rename this to just "color".
-        "color_only",
         "counter",
         "empty",
         "grid",
@@ -994,7 +989,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       style_builder_template_args: {
         initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
       },
@@ -1090,7 +1085,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -1216,7 +1211,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -1259,7 +1254,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -1302,7 +1297,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -2417,7 +2412,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -3163,7 +3158,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -3627,7 +3622,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -3946,7 +3941,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -3977,7 +3972,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
@@ -4002,7 +3997,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
-      style_builder_template: "color_only",
+      style_builder_template: "color",
       valid_for_visited_link: true,
     },
     {
