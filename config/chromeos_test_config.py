@@ -61,8 +61,8 @@ class HWTestList(object):
     installer_kwargs = kwargs.copy()
     # Force au suite to run first.
     installer_kwargs['priority'] = constants.HWTEST_CQ_PRIORITY
-    installer_kwargs['blocking'] = True
-    installer_kwargs['async'] = False
+    installer_kwargs['blocking'] = False
+    installer_kwargs['async'] = True
 
     async_kwargs = kwargs.copy()
     async_kwargs['priority'] = constants.HWTEST_POST_BUILD_PRIORITY
