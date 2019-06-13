@@ -282,7 +282,10 @@ void DelegatedFrameHost::EmbedSurface(
   if (seen_first_activation_)
     frame_evictor_->OnNewSurfaceEmbedded();
 #else
-  frame_evictor_->OnNewSurfaceEmbedded();
+  // Ignore empty frames. Extensions often create empty background page frames
+  // which shouldn't count against the saved frames.
+  if (!new_dip_size.IsEmpty())
+    frame_evictor_->OnNewSurfaceEmbedded();
 #endif
 
   if (!primary_surface_id ||
