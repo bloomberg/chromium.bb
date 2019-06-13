@@ -974,9 +974,12 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 #endif
   }
 
-  if (should_start_service_manager_only)
+  if (should_start_service_manager_only) {
+    DVLOG(0) << "Chrome is running in ServiceManager only mode.";
     return -1;
+  }
 
+  DVLOG(0) << "Chrome is running in full browser mode.";
   is_browser_main_loop_started_ = true;
   startup_data_ = std::make_unique<StartupDataImpl>();
   startup_data_->thread = std::move(service_manager_thread_);
