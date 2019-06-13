@@ -40,7 +40,10 @@ def main():
       required=True)
   parser.add_argument(
       '--build-dir',
-      help='The build directory, relative to the source directory.',
+      help='The build directory, relative to the source directory. Jumbo '
+           'builds aren\'t supported but you can create a non-jumbo build '
+           'config just for this script and keep using jumbo in your regular '
+           'builds.',
       required=True)
 
   options = parser.parse_args()
