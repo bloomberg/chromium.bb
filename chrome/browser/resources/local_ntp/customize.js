@@ -67,6 +67,13 @@ customize.KEYCODES = {
 };
 
 /**
+ * Array for keycodes corresponding to arrow keys.
+ * @type Array
+ * @const
+ */
+customize.arrowKeys = [/*Left*/ 37, /*Up*/ 38, /*Right*/ 39, /*Down*/ 40];
+
+/**
  * Enum for HTML element ids.
  * @enum {string}
  * @const
@@ -617,11 +624,7 @@ customize.showCollectionSelectionDialog = function(collectionsSource) {
         return;
       }
       tileOnClickInteraction(event);
-    } else if (
-        event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
@@ -845,11 +848,7 @@ customize.showImageSelectionDialog = function(dialogTitle) {
       event.preventDefault();
       event.stopPropagation();
       tileInteraction(event.currentTarget);
-    } else if (
-        event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
@@ -1176,11 +1175,7 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
     } else if (event.keyCode === customize.KEYCODES.TAB) {
       // If keyboard navigation is attempted, remove mouse-only mode.
       editDialog.classList.remove(customize.CLASSES.MOUSE_NAV);
-    } else if (
-        event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
       event.preventDefault();
       editDialog.classList.remove(customize.CLASSES.MOUSE_NAV);
     }
@@ -1479,10 +1474,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
 
   // On any arrow key event in the tiles area, focus the first tile.
   $(customize.IDS.TILES).onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       event.preventDefault();
       if ($(customize.IDS.MENU)
               .classList.contains(customize.CLASSES.COLLECTION_DIALOG)) {
@@ -1494,19 +1486,13 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   $(customize.IDS.BACKGROUNDS_MENU).onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).focus();
     }
   };
 
   $(customize.IDS.BACKGROUNDS_IMAGE_MENU).onkeydown = function(event) {
-    if (event.keyCode === customize.KEYCODES.LEFT ||
-        event.keyCode === customize.KEYCODES.UP ||
-        event.keyCode === customize.KEYCODES.RIGHT ||
-        event.keyCode === customize.KEYCODES.DOWN) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
       $('img_tile_0').focus();
     }
   };
