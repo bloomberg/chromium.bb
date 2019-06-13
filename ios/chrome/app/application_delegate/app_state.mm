@@ -54,7 +54,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
-#include "ios/web/public/web_task_traits.h"
+#include "ios/web/public/thread/web_task_traits.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 

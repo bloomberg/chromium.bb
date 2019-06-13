@@ -190,6 +190,7 @@
 #import "ios/web/public/deprecated/crw_native_content_holder.h"
 #import "ios/web/public/deprecated/crw_native_content_provider.h"
 #include "ios/web/public/navigation_item.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
