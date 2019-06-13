@@ -1012,25 +1012,21 @@ void SkiaOutputSurfaceImplOnGpu::CreateFallbackImage(ImageContext* context) {
       BitsPerPixel(context->resource_format))
     return;
 
-  auto image_info =
-      SkImageInfo::Make(context->size.width(), context->size.height(),
-                        color_type, kOpaque_SkAlphaType);
-  auto surface = SkSurface::MakeRenderTarget(
-      gr_context(), SkBudgeted::kNo, image_info, 0 /* sampleCount */,
-      kTopLeft_GrSurfaceOrigin, nullptr /* surfaceProps */);
-  if (!surface)
-    return;
-
-  auto* canvas = surface->getCanvas();
+  context->fallback_texture =
+      context_state_->gr_context()->createBackendTexture(
+          context->size.width(), context->size.height(), color_type,
 #if DCHECK_IS_ON()
-  canvas->clear(SK_ColorRED);
+          SkColors::kRed,
 #else
-  canvas->clear(SK_ColorWHITE);
+          SkColors::kWhite,
 #endif
-  context->fallback_image = surface->makeImageSnapshot();
-  auto gr_texture = context->fallback_image->getBackendTexture(
-      false /* flushPendingGrContextIO */);
-  context->promise_image_texture = SkPromiseImageTexture::Make(gr_texture);
+          GrMipMapped::kNo, GrRenderable::kYes);
+  if (!context->fallback_texture.isValid()) {
+    DLOG(ERROR) << "Could not create backend texture.";
+    return;
+  }
+  context->promise_image_texture =
+      SkPromiseImageTexture::Make(context->fallback_texture);
 }
 
 void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
@@ -1185,12 +1181,18 @@ SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
   return gr_context()->threadSafeProxy();
 }
 
-void SkiaOutputSurfaceImplOnGpu::ReleaseSkImages(
+void SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts(
     std::vector<std::unique_ptr<ImageContext>> image_contexts) {
   DCHECK(!image_contexts.empty());
   // The window could be destroyed already, and the MakeCurrent will fail with
   // an destroyed window, so MakeCurrent without requiring the fbo0.
   MakeCurrent(false /* need_fbo0 */);
+
+  for (const auto& image_context : image_contexts) {
+    if (image_context->fallback_texture.isValid())
+      gpu::DeleteGrBackendTexture(context_state_.get(),
+                                  &image_context->fallback_texture);
+  }
 }
 
 void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
