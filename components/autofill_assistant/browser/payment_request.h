@@ -53,6 +53,7 @@ struct PaymentRequestOptions {
   bool request_payer_phone = false;
   bool request_shipping = false;
   bool request_payment_method = false;
+  bool request_terms_and_conditions = true;
   std::vector<std::string> supported_basic_card_networks;
   std::string default_email;
   std::string confirm_button_text;

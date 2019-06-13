@@ -57,6 +57,8 @@ public class AssistantPaymentRequestModel extends PropertyModel {
             new WritableBooleanPropertyKey();
     public static final WritableBooleanPropertyKey REQUEST_PAYMENT =
             new WritableBooleanPropertyKey();
+    public static final WritableBooleanPropertyKey REQUEST_TERMS_AND_CONDITIONS =
+            new WritableBooleanPropertyKey();
 
     public static final WritableObjectPropertyKey<List<PersonalDataManager.AutofillProfile>>
             AVAILABLE_PROFILES = new WritableObjectPropertyKey<>();
@@ -78,8 +80,9 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     public AssistantPaymentRequestModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD, CONTACT_DETAILS,
                 TERMS_STATUS, REQUEST_NAME, REQUEST_EMAIL, REQUEST_PHONE, REQUEST_SHIPPING_ADDRESS,
-                REQUEST_PAYMENT, AVAILABLE_PROFILES, AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                SUPPORTED_BASIC_CARD_NETWORKS, SUPPORTED_PAYMENT_METHODS, EXPANDED_SECTION);
+                REQUEST_PAYMENT, REQUEST_TERMS_AND_CONDITIONS, AVAILABLE_PROFILES,
+                AVAILABLE_AUTOFILL_PAYMENT_METHODS, SUPPORTED_BASIC_CARD_NETWORKS,
+                SUPPORTED_PAYMENT_METHODS, EXPANDED_SECTION);
     }
 
     @CalledByNative
@@ -105,6 +108,11 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     @CalledByNative
     private void setRequestPayment(boolean requestPayment) {
         set(REQUEST_PAYMENT, requestPayment);
+    }
+
+    @CalledByNative
+    private void setRequestTermsAndConditions(boolean requestTermsAndConditions) {
+        set(REQUEST_TERMS_AND_CONDITIONS, requestTermsAndConditions);
     }
 
     @CalledByNative

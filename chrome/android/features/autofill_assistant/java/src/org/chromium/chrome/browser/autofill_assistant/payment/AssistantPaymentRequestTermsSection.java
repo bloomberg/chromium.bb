@@ -97,6 +97,10 @@ public class AssistantPaymentRequestTermsSection {
         mListener = listener;
     }
 
+    public void setTermsListVisible(boolean visible) {
+        mTermsList.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
     View getView() {
         return mView;
     }

@@ -36,6 +36,8 @@ void GetPaymentInformationAction::InternalProcessAction(
       proto_.get_payment_information();
 
   auto payment_options = std::make_unique<PaymentRequestOptions>();
+  payment_options->request_terms_and_conditions =
+      get_payment_information.request_terms_and_conditions();
   if (get_payment_information.has_contact_details()) {
     auto contact_details = get_payment_information.contact_details();
     payment_options->request_payer_email =
