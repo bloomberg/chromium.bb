@@ -449,7 +449,6 @@ class InitSDKStage(generic_stages.BuilderStage):
           buildroot=self._build_root,
           replace=replace,
           use_sdk=use_sdk,
-          self_bootstrap=self._run.config.self_bootstrap,
           chrome_root=self._run.options.chrome_root,
           extra_env=self._portage_extra_env,
           use_image=self._run.config.chroot_use_image,

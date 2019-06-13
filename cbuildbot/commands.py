@@ -201,7 +201,6 @@ def WipeOldOutput(buildroot):
 def MakeChroot(buildroot,
                replace,
                use_sdk,
-               self_bootstrap=False,
                chrome_root=None,
                extra_env=None,
                use_image=False,
@@ -214,8 +213,6 @@ def MakeChroot(buildroot,
     cmd.append('--create')
   else:
     cmd.append('--bootstrap')
-    if self_bootstrap:
-      cmd.append('--self-bootstrap')
 
   if replace:
     cmd.append('--replace')

@@ -4151,7 +4151,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=constants.CHROOT_BUILDER_TYPE,
       builder_class_name='sdk_builders.ChrootSdkBuilder',
       use_sdk=False,
-      self_bootstrap=True,
       prebuilts=constants.PUBLIC,
       build_timeout=18 * 60 * 60,
       description='Build the SDK and all the cross-compilers',

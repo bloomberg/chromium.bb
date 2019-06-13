@@ -94,13 +94,6 @@ def GetArchStageTarballs(version):
   ]
 
 
-def GetStage3Urls(version):
-  return [
-      toolchain.GetSdkURL(suburl='stage3-amd64-%s.tar.%s' % (version, ext))
-      for ext in COMPRESSION_PREFERENCE
-  ]
-
-
 def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
   """Fetches a tarball given by url, and place it in |storage_dir|.
 
@@ -725,12 +718,6 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
       help='Use sdk tarball located at this url. Use file:// '
       'for local files.')
   parser.add_argument(
-      '--self-bootstrap',
-      dest='self_bootstrap',
-      action='store_true',
-      default=False,
-      help=('Use previously build sdk for bootstrapping.'))
-  parser.add_argument(
       '--sdk-version',
       help=('Use this sdk version.  For prebuilt, current is %r'
             ', for bootstrapping it is %r.' % (sdk_latest_version,
@@ -862,8 +849,13 @@ def main(argv):
       os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
       ignore_missing=True)
   sdk_latest_version = conf.get('SDK_LATEST_VERSION', '<unknown>')
-  bootstrap_latest_version = conf.get('BOOTSTRAP_LATEST_VERSION', '<unknown>')
   bootstrap_frozen_version = conf.get('BOOTSTRAP_FROZEN_VERSION', '<unknown>')
+
+  # Use latest SDK for bootstrapping if requested. Use a frozen version of SDK
+  # for bootstrapping if BOOTSTRAP_FROZEN_VERSION is set.
+  bootstrap_latest_version = (
+      sdk_latest_version
+      if bootstrap_frozen_version == '<unknown>' else bootstrap_frozen_version)
   parser, commands = _CreateParser(sdk_latest_version, bootstrap_latest_version)
   options = parser.parse_args(argv)
   chroot_command = options.commands
@@ -881,13 +873,6 @@ def main(argv):
   if options.proxy_sim:
     _ReportMissing(osutils.FindMissingBinaries(PROXY_NEEDED_TOOLS))
   missing_image_tools = osutils.FindMissingBinaries(IMAGE_NEEDED_TOOLS)
-
-  # Use latest SDK for bootstrapping if requested. Use a frozen version of SDK
-  # for bootstrapping if BOOTSTRAP_FROZEN_VERSION is set.
-  if options.self_bootstrap:
-    bootstrap_latest_version = (
-        sdk_latest_version if bootstrap_frozen_version == '<unknown>' else
-        bootstrap_frozen_version)
 
   if (sdk_latest_version == '<unknown>' or
       bootstrap_latest_version == '<unknown>'):
@@ -1112,10 +1097,6 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
   if options.download:
     if options.sdk_url:
       urls = [options.sdk_url]
-    elif options.bootstrap:
-      urls = GetStage3Urls(sdk_version)
-      if options.self_bootstrap:
-        urls = GetArchStageTarballs(sdk_version)
     else:
       urls = GetArchStageTarballs(sdk_version)
 

@@ -1054,10 +1054,6 @@ def DefaultSettings():
       # Use SDK as opposed to building the chroot from source.
       use_sdk=True,
 
-      # Bootstrap from previous SDK instead of Gentoo stage3 when building
-      # chroot from source (only applicable with use_sdk=False).
-      self_bootstrap=False,
-
       # The description string to print out for config when user runs --list.
       description=None,
 
