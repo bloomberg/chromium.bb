@@ -5842,3 +5842,4 @@ crbug.com/972516 [ Win ] netinfo/gc-unused-listeners.html [ Pass Failure ]
 
 # Sheriff 2019-06-13
 crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html [ Failure ]
+crbug.com/973726 [ Mac ] fast/css/large-list-of-rules-crash.html [ Pass Timeout ]
