@@ -47,13 +47,6 @@ WTF_EXPORT void Base64Encode(const Vector<char>&,
 WTF_EXPORT void Base64Encode(const std::string&,
                              Vector<char>&,
                              Base64EncodePolicy = kBase64DoNotInsertLFs);
-WTF_EXPORT String Base64Encode(const char*,
-                               unsigned,
-                               Base64EncodePolicy = kBase64DoNotInsertLFs);
-WTF_EXPORT String Base64Encode(const Vector<char>&,
-                               Base64EncodePolicy = kBase64DoNotInsertLFs);
-WTF_EXPORT String Base64Encode(const Vector<unsigned char>&,
-                               Base64EncodePolicy = kBase64DoNotInsertLFs);
 WTF_EXPORT String Base64Encode(base::span<const uint8_t>,
                                Base64EncodePolicy = kBase64DoNotInsertLFs);
 
@@ -103,22 +96,6 @@ inline void Base64Encode(const std::string& in,
                          Vector<char>& out,
                          Base64EncodePolicy policy) {
   Base64Encode(in.c_str(), static_cast<unsigned>(in.length()), out, policy);
-}
-
-inline String Base64Encode(const Vector<char>& in, Base64EncodePolicy policy) {
-  return Base64Encode(in.data(), in.size(), policy);
-}
-
-inline String Base64Encode(const Vector<unsigned char>& in,
-                           Base64EncodePolicy policy) {
-  return Base64Encode(reinterpret_cast<const char*>(in.data()), in.size(),
-                      policy);
-}
-
-inline String Base64Encode(base::span<const uint8_t> in,
-                           Base64EncodePolicy policy) {
-  return Base64Encode(reinterpret_cast<const char*>(in.data()),
-                      static_cast<unsigned>(in.size()), policy);
 }
 
 }  // namespace WTF
