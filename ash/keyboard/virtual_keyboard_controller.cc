@@ -26,8 +26,8 @@
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 
 namespace ash {
@@ -66,7 +66,7 @@ VirtualKeyboardController::VirtualKeyboardController()
       ignore_external_keyboard_(false) {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
   UpdateDevices();
 
   // Set callback to show the emoji panel
@@ -90,7 +90,7 @@ VirtualKeyboardController::~VirtualKeyboardController() {
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   if (Shell::Get()->session_controller())
     Shell::Get()->session_controller()->RemoveObserver(this);
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 
   // Reset the emoji panel callback
   ui::SetShowEmojiKeyboardCallback(base::DoNothing());
@@ -159,8 +159,8 @@ aura::Window* VirtualKeyboardController::GetContainerForDefaultDisplay() {
 }
 
 void VirtualKeyboardController::UpdateDevices() {
-  ui::InputDeviceManager* device_data_manager =
-      ui::InputDeviceManager::GetInstance();
+  ui::DeviceDataManager* device_data_manager =
+      ui::DeviceDataManager::GetInstance();
 
   // Checks for touchscreens.
   has_touchscreen_ = device_data_manager->GetTouchscreenDevices().size() > 0;

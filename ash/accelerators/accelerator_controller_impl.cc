@@ -92,8 +92,8 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/input_device_manager.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 
@@ -1963,7 +1963,7 @@ bool AcceleratorControllerImpl::IsInternalKeyboardOrUncategorizedDevice(
     return false;
 
   for (const ui::InputDevice& keyboard :
-       ui::InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
     if (keyboard.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL &&
         keyboard.id == source_device_id) {
       return true;
@@ -1971,7 +1971,7 @@ bool AcceleratorControllerImpl::IsInternalKeyboardOrUncategorizedDevice(
   }
 
   for (const ui::InputDevice& uncategorized_device :
-       ui::InputDeviceManager::GetInstance()->GetUncategorizedDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetUncategorizedDevices()) {
     if (uncategorized_device.id == source_device_id &&
         uncategorized_device.type ==
             ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
