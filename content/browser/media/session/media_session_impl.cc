@@ -25,6 +25,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/favicon_url.h"
 #include "media/base/media_content_type.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -216,6 +217,40 @@ void MediaSessionImpl::OnWebContentsLostFocus(RenderWidgetHost*) {
 
 void MediaSessionImpl::TitleWasSet(NavigationEntry* entry) {
   RebuildAndNotifyMetadataChanged();
+}
+
+void MediaSessionImpl::DidUpdateFaviconURL(
+    const std::vector<FaviconURL>& candidates) {
+  std::vector<media_session::MediaImage> icons;
+
+  for (auto& icon : candidates) {
+    if (icon.icon_sizes.empty() || !icon.icon_url.is_valid())
+      continue;
+
+    // We only want either favicons or the touch icons. There is another type of
+    // touch icon which is "precomposed". This means it might have rounded
+    // corners, etc. but it is not predictable so we cannot show them in the UI.
+    if (icon.icon_type != FaviconURL::IconType::kFavicon &&
+        icon.icon_type != FaviconURL::IconType::kTouchIcon) {
+      continue;
+    }
+
+    media_session::MediaImage image;
+    image.src = icon.icon_url;
+    image.sizes = icon.icon_sizes;
+    icons.push_back(image);
+  }
+
+  auto it = images_.find(MediaSessionImageType::kSourceIcon);
+  if (it != images_.end() && it->second == icons)
+    return;
+
+  images_.insert_or_assign(MediaSessionImageType::kSourceIcon, icons);
+
+  observers_.ForAllPtrs(
+      [this](media_session::mojom::MediaSessionObserver* observer) {
+        observer->MediaSessionImagesChanged(this->images_);
+      });
 }
 
 bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
