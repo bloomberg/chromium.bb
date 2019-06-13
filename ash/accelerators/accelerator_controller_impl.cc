@@ -679,7 +679,7 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Search_Space"));
   } else if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_A) {
     // Search+A shortcut is disabled on device with an assistant key.
-    if (ui::DeviceUsesKeyboardLayout2())
+    if (ui::DeviceKeyboardHasAssistantKey())
       return;
 
     base::RecordAction(
@@ -705,7 +705,7 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
           l10n_util::GetStringUTF16(
               IDS_ASH_VOICE_INTERACTION_LOCALE_UNSUPPORTED_TOAST_MESSAGE));
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY:
+    case mojom::AssistantAllowedState::DISALLOWED_BY_POLICY:
       // Show a toast if voice interaction is disabled due to enterprise policy.
       ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
@@ -725,12 +725,24 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED:
     case mojom::AssistantAllowedState::DISALLOWED_BY_FLAG:
+      ShowToast(kVoiceInteractionErrorToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_VOICE_INTERACTION_DISABLED_MESSAGE));
+      return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER:
+      // supervised user is deprecated, wait for the code clean up.
+      NOTREACHED();
+      return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO:
+      ShowToast(kVoiceInteractionErrorToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_VOICE_INTERACTION_DISABLED_IN_GUEST_MESSAGE));
+      return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE:
-      // TODO(xiaohuic): show a specific toast.
+      ShowToast(kVoiceInteractionErrorToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_VOICE_INTERACTION_DISABLED_BY_ACCOUNT_MESSAGE));
       return;
     case mojom::AssistantAllowedState::ALLOWED:
       // Nothing need to do if allowed.

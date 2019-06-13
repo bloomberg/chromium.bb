@@ -68,8 +68,7 @@ TEST_F(MetalayerToolTest, PaletteMenuState) {
       mojom::VoiceInteractionState::RUNNING};
   const mojom::AssistantAllowedState kAllowedStates[] = {
       mojom::AssistantAllowedState::ALLOWED,
-      mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED,
-      mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY,
+      mojom::AssistantAllowedState::DISALLOWED_BY_POLICY,
       mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE,
       mojom::AssistantAllowedState::DISALLOWED_BY_FLAG,
       mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER,
