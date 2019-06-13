@@ -168,12 +168,6 @@ fuchsia_package("web_engine") {
     "lib/libswiftshader_libEGL.so",
     "lib/libswiftshader_libGLESv2.so",
   ]
-  if (!is_debug) {
-    excluded_files += [
-      "lib/libVkLayer_core_validation.so",
-      "lib/libVkLayer_parameter_validation.so",
-    ]
-  }
 }
 
 fuchsia_package_runner("web_engine_runner") {
