@@ -41,6 +41,7 @@
 #include "ui/accessibility/ax_language_info.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_text_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -779,6 +780,22 @@ void AutomationInternalCustomBindings::AddRoutes() {
         response.Set("treeId", tree_wrapper->tree_id().ToString());
         response.Set("nodeIds", child_ids);
         result.Set(response.Build());
+      });
+  RouteNodeIDFunction(
+      "GetWordStartOffsets",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        std::vector<int> word_starts = ui::GetWordStartOffsets(
+            node->GetString16Attribute(ax::mojom::StringAttribute::kName));
+        result.Set(gin::ConvertToV8(isolate, word_starts));
+      });
+  RouteNodeIDFunction(
+      "GetWordEndOffsets",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        std::vector<int> word_ends = ui::GetWordEndOffsets(
+            node->GetString16Attribute(ax::mojom::StringAttribute::kName));
+        result.Set(gin::ConvertToV8(isolate, word_ends));
       });
 
   // Bindings that take a Tree ID and Node ID and string attribute name
