@@ -45,5 +45,5 @@ public interface TabDelegateFactory {
      * Creates the {@link BrowserControlsVisibilityDelegate} the tab will be initialized with.
      * @param tab The associated {@link Tab}.
      */
-    void createBrowserControlsState(Tab tab);
+    BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab);
 }

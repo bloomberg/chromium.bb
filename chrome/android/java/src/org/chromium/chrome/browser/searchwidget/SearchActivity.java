@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
+import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -213,7 +214,10 @@ public class SearchActivity extends AsyncInitializationActivity
             }
 
             @Override
-            public void createBrowserControlsState(Tab tab) {}
+            public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(
+                    Tab tab) {
+                return null;
+            }
         };
         mTab.initialize(
                 WebContentsFactory.createWebContents(false, false), factory, false, null, false);

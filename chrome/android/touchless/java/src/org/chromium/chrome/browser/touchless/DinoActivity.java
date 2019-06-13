@@ -91,6 +91,12 @@ public class DinoActivity extends SingleTabActivity {
     }
 
     @Override
+    protected TabDelegateFactory createTabDelegateFactory() {
+        return new NoBrowserControlsTabDelegateFactory(
+                getFullscreenManager().getBrowserVisibilityDelegate());
+    }
+
+    @Override
     protected TabState restoreTabState(Bundle savedInstanceState, int tabId) {
         return null;
     }

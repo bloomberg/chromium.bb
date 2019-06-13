@@ -8,8 +8,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
+import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
@@ -47,7 +47,7 @@ public class TabDelegateFactoryImpl implements TabDelegateFactory {
     }
 
     @Override
-    public void createBrowserControlsState(Tab tab) {
-        TabBrowserControlsState.create(tab, new TabStateBrowserControlsVisibilityDelegate(tab));
+    public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
+        return new TabStateBrowserControlsVisibilityDelegate(tab);
     }
 }
