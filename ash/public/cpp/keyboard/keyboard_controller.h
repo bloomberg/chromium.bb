@@ -7,11 +7,14 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/keyboard/keyboard_config.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/keyboard/keyboard_types.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
+
+class KeyboardControllerObserver;
 
 enum class HideReason {
   // Hide requested by an explicit user action.
@@ -20,49 +23,6 @@ enum class HideReason {
   // Hide requested due to a system event (e.g. because it would interfere with
   // a menu or other on screen UI).
   kSystem,
-};
-
-class KeyboardControllerObserver {
- public:
-  virtual ~KeyboardControllerObserver() {}
-
-  // Called when a keyboard enable flag changes.
-  virtual void OnKeyboardEnableFlagsChanged(
-      const std::vector<keyboard::KeyboardEnableFlag>& flags) = 0;
-
-  // Called when the keyboard is enabled or disabled. If ReloadKeyboard() is
-  // called or other code enables the keyboard while already enabled, this will
-  // be called twice, once when the keyboard is disabled and again when it is
-  // re-enabled.
-  virtual void OnKeyboardEnabledChanged(bool is_enabled) = 0;
-
-  // Called when the virtual keyboard configuration changes.
-  virtual void OnKeyboardConfigChanged(
-      const keyboard::KeyboardConfig& config) = 0;
-
-  // Called when the visibility of the virtual keyboard changes, e.g. an input
-  // field is focused or blurred, or the user hides the keyboard.
-  virtual void OnKeyboardVisibilityChanged(bool visible) = 0;
-
-  // Called when the keyboard bounds change. |screen_bounds| is in screen
-  // coordinates.
-  virtual void OnKeyboardVisibleBoundsChanged(
-      const gfx::Rect& screen_bounds) = 0;
-
-  // Called when the keyboard occluded bounds change. |screen_bounds| is in
-  // screen coordinates.
-  virtual void OnKeyboardOccludedBoundsChanged(
-      const gfx::Rect& screen_bounds) = 0;
-
-  // Signals a request to load the keyboard contents. If the contents are
-  // already loaded, requests a reload. Once the contents have loaded,
-  // KeyboardController.KeyboardContentsLoaded is expected to be called by the
-  // client implementation.
-  virtual void OnLoadKeyboardContentsRequested() = 0;
-
-  // Called when the UI has been destroyed so that the client can reset the
-  // embedded contents and handle.
-  virtual void OnKeyboardUIDestroyed() = 0;
 };
 
 class ASH_PUBLIC_EXPORT KeyboardController {

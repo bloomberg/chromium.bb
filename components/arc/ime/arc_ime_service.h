@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/arc/ime/arc_ime_bridge.h"
@@ -42,7 +42,7 @@ class ArcImeService : public KeyedService,
                       public aura::EnvObserver,
                       public aura::WindowObserver,
                       public aura::client::FocusChangeObserver,
-                      public keyboard::KeyboardControllerObserver,
+                      public ash::KeyboardControllerObserver,
                       public ui::TextInputClient {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -101,9 +101,9 @@ class ArcImeService : public KeyedService,
       bool is_screen_coordinates) override;
   void RequestHideIme() override;
 
-  // Overridden from keyboard::KeyboardControllerObserver.
+  // Overridden from ash::KeyboardControllerObserver.
   void OnKeyboardAppearanceChanged(
-      const keyboard::KeyboardStateDescriptor& state) override;
+      const ash::KeyboardStateDescriptor& state) override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;

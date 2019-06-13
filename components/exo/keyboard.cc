@@ -341,7 +341,7 @@ void Keyboard::OnSurfaceFocused(Surface* gained_focus) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// keyboard::KeyboardControllerObserver overrides:
+// ash::KeyboardControllerObserver overrides:
 
 void Keyboard::OnKeyboardEnabledChanged(bool enabled) {
   if (device_configuration_delegate_) {

@@ -174,8 +174,7 @@ void AshKeyboardController::SetDraggableArea(const gfx::Rect& bounds) {
   keyboard_controller_->SetDraggableArea(bounds);
 }
 
-void AshKeyboardController::AddObserver(
-    ash::KeyboardControllerObserver* observer) {
+void AshKeyboardController::AddObserver(KeyboardControllerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
@@ -211,13 +210,13 @@ void AshKeyboardController::OnRootWindowClosing(aura::Window* root_window) {
   }
 }
 
-void AshKeyboardController::OnKeyboardConfigChanged() {
-  KeyboardConfig config = keyboard_controller_->keyboard_config();
+void AshKeyboardController::OnKeyboardConfigChanged(
+    const keyboard::KeyboardConfig& config) {
   for (auto& observer : observers_)
     observer.OnKeyboardConfigChanged(config);
 }
 
-void AshKeyboardController::OnKeyboardVisibilityStateChanged(bool is_visible) {
+void AshKeyboardController::OnKeyboardVisibilityChanged(bool is_visible) {
   for (auto& observer : observers_)
     observer.OnKeyboardVisibilityChanged(is_visible);
 }
@@ -227,7 +226,7 @@ void AshKeyboardController::OnKeyboardVisibleBoundsChanged(
   SendOnKeyboardVisibleBoundsChanged(screen_bounds);
 }
 
-void AshKeyboardController::OnKeyboardWorkspaceOccludedBoundsChanged(
+void AshKeyboardController::OnKeyboardOccludedBoundsChanged(
     const gfx::Rect& screen_bounds) {
   DVLOG(1) << "OnKeyboardOccludedBoundsChanged: " << screen_bounds.ToString();
   for (auto& observer : observers_)
@@ -235,12 +234,9 @@ void AshKeyboardController::OnKeyboardWorkspaceOccludedBoundsChanged(
 }
 
 void AshKeyboardController::OnKeyboardEnableFlagsChanged(
-    const std::set<keyboard::KeyboardEnableFlag>& keyboard_enable_flags) {
-  std::vector<keyboard::KeyboardEnableFlag> flags(keyboard_enable_flags.begin(),
-                                                  keyboard_enable_flags.end());
-  for (auto& observer : observers_) {
+    const std::vector<keyboard::KeyboardEnableFlag>& flags) {
+  for (auto& observer : observers_)
     observer.OnKeyboardEnableFlagsChanged(flags);
-  }
 }
 
 void AshKeyboardController::OnKeyboardEnabledChanged(bool is_enabled) {

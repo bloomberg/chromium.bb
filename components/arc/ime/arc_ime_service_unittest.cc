@@ -358,8 +358,8 @@ TEST_F(ArcImeServiceTest, OnKeyboardAppearanceChanged) {
   EXPECT_FALSE(fake_arc_ime_bridge_->last_keyboard_availability());
 
   const gfx::Rect keyboard_bounds(0, 480, 1200, 320);
-  keyboard::KeyboardStateDescriptor desc{true, keyboard_bounds, keyboard_bounds,
-                                         keyboard_bounds};
+  ash::KeyboardStateDescriptor desc{true, keyboard_bounds, keyboard_bounds,
+                                    keyboard_bounds};
   instance_->OnKeyboardAppearanceChanged(desc);
   EXPECT_EQ(keyboard_bounds, fake_arc_ime_bridge_->last_keyboard_bounds());
   EXPECT_TRUE(fake_arc_ime_bridge_->last_keyboard_availability());
