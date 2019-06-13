@@ -8,34 +8,13 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
+#include "components/remote_cocoa/common/color_panel.mojom.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
-// A singleton listener class to act as a event target for NSColorPanel and
-// send the results to the C++ class, ColorChooserMac.
-@interface ColorPanelListener : NSObject {
- @protected
-  // We don't call DidChooseColor if the change wasn't caused by the user
-  // interacting with the panel.
-  BOOL nonUserChange_;
-}
-// Called from NSNotificationCenter.
-- (void)windowWillClose:(NSNotification*)notification;
-
-// Called from NSColorPanel.
-- (void)didChooseColor:(NSColorPanel*)panel;
-
-// The singleton instance.
-+ (ColorPanelListener*)instance;
-
-// Show the NSColorPanel.
-- (void)showColorPanel;
-
-// Sets color to the NSColorPanel as a non user change.
-- (void)setColor:(NSColor*)color;
-@end
-
-class ColorChooserMac : public content::ColorChooser {
+class ColorChooserMac : public content::ColorChooser,
+                        public remote_cocoa::mojom::ColorPanelHost {
  public:
   // Returns a ColorChooserMac instance owned by the ColorChooserMac class -
   // call End() when done to free it. Each call to Open() returns a new
@@ -44,17 +23,15 @@ class ColorChooserMac : public content::ColorChooser {
   static ColorChooserMac* Open(content::WebContents* web_contents,
                                SkColor initial_color);
 
-  // Called from ColorPanelListener.
-  void DidChooseColorInColorPanel(SkColor color);
-  void DidCloseColorPanel();
-
-  // Set the color programmatically.
+  // content::ColorChooser.
   void SetSelectedColor(SkColor color) override;
-
-  // Call when done with the ColorChooserMac.
   void End() override;
 
  private:
+  // remote_cocoa::mojom::ColorPanelHost.
+  void DidChooseColorInColorPanel(SkColor color) override;
+  void DidCloseColorPanel() override;
+
   ColorChooserMac(content::WebContents* tab, SkColor initial_color);
 
   ~ColorChooserMac() override;
@@ -63,6 +40,8 @@ class ColorChooserMac : public content::ColorChooser {
   // outlive this class.
   content::WebContents* web_contents_;
 
+  remote_cocoa::mojom::ColorPanelPtr mojo_panel_ptr_;
+  mojo::Binding<remote_cocoa::mojom::ColorPanelHost> mojo_host_binding_;
   DISALLOW_COPY_AND_ASSIGN(ColorChooserMac);
 };
 

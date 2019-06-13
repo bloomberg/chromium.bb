@@ -6,6 +6,11 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/color_chooser.h"
+#include "components/remote_cocoa/app_shim/color_panel_bridge.h"
+#include "components/remote_cocoa/browser/application_host.h"
+#include "components/remote_cocoa/browser/window.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace {
@@ -27,10 +32,20 @@ ColorChooserMac* ColorChooserMac::Open(content::WebContents* web_contents,
 
 ColorChooserMac::ColorChooserMac(content::WebContents* web_contents,
                                  SkColor initial_color)
-    : web_contents_(web_contents) {
-  ColorPanelListener* listener = [ColorPanelListener instance];
-  [listener setColor:skia::SkColorToDeviceNSColor(initial_color)];
-  [listener showColorPanel];
+    : web_contents_(web_contents), mojo_host_binding_(this) {
+  remote_cocoa::mojom::ColorPanelHostPtr mojo_host_ptr;
+  mojo_host_binding_.Bind(mojo::MakeRequest(&mojo_host_ptr));
+  auto* application_host = remote_cocoa::ApplicationHost::GetForNativeView(
+      web_contents ? web_contents->GetNativeView() : gfx::NativeView());
+  if (application_host) {
+    application_host->GetApplication()->ShowColorPanel(
+        mojo::MakeRequest(&mojo_panel_ptr_), std::move(mojo_host_ptr));
+  } else {
+    mojo::MakeStrongBinding(std::make_unique<remote_cocoa::ColorPanelBridge>(
+                                std::move(mojo_host_ptr)),
+                            mojo::MakeRequest(&mojo_panel_ptr_));
+  }
+  mojo_panel_ptr_->Show(initial_color);
 }
 
 ColorChooserMac::~ColorChooserMac() {
@@ -58,93 +73,12 @@ void ColorChooserMac::End() {
 }
 
 void ColorChooserMac::SetSelectedColor(SkColor color) {
-  ColorPanelListener* listener = [ColorPanelListener instance];
-  [listener setColor:skia::SkColorToDeviceNSColor(color)];
-}
-
-@implementation ColorPanelListener
-
-- (id)init {
-  if ((self = [super init])) {
-    NSColorPanel* panel = [NSColorPanel sharedColorPanel];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(windowWillClose:)
-               name:NSWindowWillCloseNotification
-             object:panel];
-  }
-  return self;
-}
-
-- (void)dealloc {
-  // This object is never freed.
-  NOTREACHED();
-  [super dealloc];
-}
-
-- (void)windowWillClose:(NSNotification*)notification {
-  if (g_current_color_chooser)
-    g_current_color_chooser->DidCloseColorPanel();
-  nonUserChange_ = NO;
-}
-
-- (void)didChooseColor:(NSColorPanel*)panel {
-  if (nonUserChange_) {
-    nonUserChange_ = NO;
-    return;
-  }
-  nonUserChange_ = NO;
-  NSColor* color = [panel color];
-  if ([[color colorSpaceName] isEqualToString:NSNamedColorSpace]) {
-    color = [color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-    // Some colors in "Developer" palette in "Color Palettes" tab can't be
-    // converted to RGB. We just ignore such colors.
-    // TODO(tkent): We should notice the rejection to users.
-    if (!color)
-      return;
-  }
-  SkColor skColor = 0;
-  if ([color colorSpace] == [NSColorSpace genericRGBColorSpace]) {
-    // genericRGB -> deviceRGB conversion isn't ignorable.  We'd like to use RGB
-    // values shown in NSColorPanel UI.
-    CGFloat red, green, blue, alpha;
-    [color getRed:&red green:&green blue:&blue alpha:&alpha];
-    skColor = SkColorSetARGB(
-        SkScalarRoundToInt(255.0 * alpha), SkScalarRoundToInt(255.0 * red),
-        SkScalarRoundToInt(255.0 * green), SkScalarRoundToInt(255.0 * blue));
-  } else {
-    skColor = skia::NSDeviceColorToSkColor(
-        [[panel color] colorUsingColorSpaceName:NSDeviceRGBColorSpace]);
-  }
-  if (g_current_color_chooser)
-    g_current_color_chooser->DidChooseColorInColorPanel(skColor);
-}
-
-+ (ColorPanelListener*)instance {
-  static ColorPanelListener* listener = [[ColorPanelListener alloc] init];
-  return listener;
-}
-
-- (void)showColorPanel {
-  NSColorPanel* panel = [NSColorPanel sharedColorPanel];
-  [panel setShowsAlpha:NO];
-  [panel setTarget:self];
-  [panel setAction:@selector(didChooseColor:)];
-  [panel makeKeyAndOrderFront:nil];
-}
-
-- (void)setColor:(NSColor*)color {
-  nonUserChange_ = YES;
-  [[NSColorPanel sharedColorPanel] setColor:color];
+  mojo_panel_ptr_->SetSelectedColor(color);
 }
 
 namespace chrome {
-
 content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
                                         SkColor initial_color) {
   return ColorChooserMac::Open(web_contents, initial_color);
 }
-
 }  // namepace chrome
-
-@end
