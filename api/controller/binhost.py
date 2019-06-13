@@ -99,9 +99,9 @@ def PrepareBinhostUploads(input_proto, output_proto):
   # Read all packages and update the index. The index must be uploaded to the
   # binhost for Portage to use it, so include it in upload_targets.
   uploads_dir = binhost.GetPrebuiltsRoot(chroot, sysroot, build_target)
-  upload_targets = binhost.GetPrebuiltsFiles(uploads_dir, package_index_paths)
   index_path = binhost.UpdatePackageIndex(uploads_dir, upload_uri, upload_path,
                                           sudo=True)
+  upload_targets = binhost.GetPrebuiltsFiles(uploads_dir, package_index_paths)
   assert index_path.startswith(uploads_dir), (
       'expected index_path to start with uploads_dir')
   upload_targets.append(index_path[len(uploads_dir):])
