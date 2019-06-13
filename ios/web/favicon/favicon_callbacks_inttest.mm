@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
-#include "ios/web/public/favicon_url.h"
+#include "ios/web/public/favicon/favicon_url.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/favicon_url.h"
+#include "ios/web/public/favicon/favicon_url.h"
 
 namespace web {
 
@@ -15,7 +15,6 @@ FaviconURL::FaviconURL(const GURL& url,
 
 FaviconURL::FaviconURL(const FaviconURL& other) = default;
 
-FaviconURL::~FaviconURL() {
-}
+FaviconURL::~FaviconURL() {}
 
-} // namespace web
+}  // namespace web

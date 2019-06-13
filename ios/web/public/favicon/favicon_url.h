@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_FAVICON_URL_H_
-#define IOS_WEB_PUBLIC_FAVICON_URL_H_
+#ifndef IOS_WEB_PUBLIC_FAVICON_FAVICON_URL_H_
+#define IOS_WEB_PUBLIC_FAVICON_FAVICON_URL_H_
 
 #include <vector>
 
@@ -41,6 +41,6 @@ struct FaviconURL {
   std::vector<gfx::Size> icon_sizes;
 };
 
-} // namespace web
+}  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_FAVICON_URL_H_
+#endif  // IOS_WEB_PUBLIC_FAVICON_FAVICON_URL_H_
