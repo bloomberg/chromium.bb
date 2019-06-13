@@ -38,6 +38,8 @@
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service.h"
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service_factory.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -170,6 +172,13 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   }
   _applicationInBackground = YES;
 
+  ios::ChromeBrowserState* browserState =
+      _browserLauncher.interfaceProvider.mainInterface.browserState;
+  if (browserState) {
+    AuthenticationServiceFactory::GetForBrowserState(browserState)
+        ->OnApplicationDidEnterBackground();
+  }
+
   breakpad_helper::SetCurrentlyInBackground(true);
 
   if ([_browserLauncher browserInitializationStage] <
@@ -275,6 +284,12 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     return;
 
   _applicationInBackground = NO;
+  ios::ChromeBrowserState* browserState =
+      _browserLauncher.interfaceProvider.mainInterface.browserState;
+  if (browserState) {
+    AuthenticationServiceFactory::GetForBrowserState(browserState)
+        ->OnApplicationWillEnterForeground();
+  }
 
   [_incognitoBlocker removeFromSuperview];
   _incognitoBlocker = nil;

@@ -936,6 +936,7 @@ TEST_F(AppStateTest, applicationDidEnterBackgroundStageBackground) {
   BrowserInitializationStageType stage = INITIALIZATION_STAGE_BACKGROUND;
 
   [[[browserLauncher stub] andReturnValue:@(stage)] browserInitializationStage];
+  [[[browserLauncher stub] andReturn:nil] interfaceProvider];
 
   ASSERT_EQ(NSUInteger(0), [window subviews].count);
 
