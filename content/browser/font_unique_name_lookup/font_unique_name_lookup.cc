@@ -43,6 +43,30 @@ enum class FontScanningResult {
   kMaxValue = kNameInvalidUnicode
 };
 
+void LogUMAFontScanningResult(FontScanningResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Blink.Fonts.AndroidFontScanningResult", result);
+}
+
+void LogUMAPersistSuccess(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningPersistToFileSuccess",
+                        success);
+}
+
+void LogUMALoadFromFileSuccess(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningLoadFromFileSuccess",
+                        success);
+}
+
+void LogUMAFontScanningUpdateNeeded(bool update_needed) {
+  UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningUpdateNeeded",
+                        update_needed);
+}
+
+void LogUMAFontScanningDuration(base::TimeDelta duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Blink.Fonts.AndroidFontScanningTableBuildTime",
+                             duration);
+}
+
 bool SfntNameIsEnglish(const FT_SfntName& sfnt_name) {
   if (sfnt_name.platform_id == TT_PLATFORM_MICROSOFT)
     return sfnt_name.language_id == TT_MS_LANGID_ENGLISH_UNITED_STATES;
@@ -107,14 +131,12 @@ void IndexFile(FT_Library ft_library,
                uint32_t ttc_index) {
   ScopedFtFace face(ft_library, font_file_path.c_str(), ttc_index);
   if (!face.IsValid()) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.Fonts.AndroidFontScanningResult",
-                              FontScanningResult::kFtNewFaceFailed);
+    LogUMAFontScanningResult(FontScanningResult::kFtNewFaceFailed);
     return;
   }
 
   if (!FT_Get_Sfnt_Name_Count(face.get())) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.Fonts.AndroidFontScanningResult",
-                              FontScanningResult::kZeroNameTableEntries);
+    LogUMAFontScanningResult(FontScanningResult::kZeroNameTableEntries);
     return;
   }
 
@@ -128,8 +150,7 @@ void IndexFile(FT_Library ft_library,
   for (size_t i = 0; i < FT_Get_Sfnt_Name_Count(face.get()); ++i) {
     FT_SfntName sfnt_name;
     if (FT_Get_Sfnt_Name(face.get(), i, &sfnt_name) != 0) {
-      UMA_HISTOGRAM_ENUMERATION("Blink.Fonts.AndroidFontScanningResult",
-                                FontScanningResult::kUnableToRetriveNameEntry);
+      LogUMAFontScanningResult(FontScanningResult::kUnableToRetriveNameEntry);
       return;
     }
 
@@ -158,9 +179,7 @@ void IndexFile(FT_Library ft_library,
         reinterpret_cast<char*>(sfnt_name.string), sfnt_name.string_len,
         codepage_name.c_str());
     if (sfnt_name_unicode.isBogus()) {
-      UMA_HISTOGRAM_ENUMERATION("Blink.Fonts.AndroidFontScanningResult",
-                                FontScanningResult::kNameInvalidUnicode);
-
+      LogUMAFontScanningResult(FontScanningResult::kNameInvalidUnicode);
       return;
     }
     // Firefox performs case insensitive matching for src: local().
@@ -172,8 +191,7 @@ void IndexFile(FT_Library ft_library,
     name_mapping->set_font_name(blink::IcuFoldCase(sfnt_name_string));
     name_mapping->set_font_index(added_font_index);
   }
-  UMA_HISTOGRAM_ENUMERATION("Blink.Fonts.AndroidFontScanningResult",
-                            FontScanningResult::kSuccess);
+  LogUMAFontScanningResult(FontScanningResult::kSuccess);
 }
 
 int32_t NumberOfFacesInFontFile(FT_Library ft_library,
@@ -248,8 +266,8 @@ bool FontUniqueNameLookup::UpdateTableIfNeeded() {
                                  proto_storage_.mapping.size()) ||
       font_table.stored_for_platform_version_identifier() !=
           GetAndroidBuildFingerprint();
-  UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningUpdateNeeded",
-                        update_needed);
+
+  LogUMAFontScanningUpdateNeeded(update_needed);
   if (update_needed)
     UpdateTable();
   return update_needed;
@@ -286,8 +304,7 @@ bool FontUniqueNameLookup::UpdateTable() {
   }
 
   base::TimeDelta duration = base::TimeTicks::Now() - update_table_start_time;
-  UMA_HISTOGRAM_MEDIUM_TIMES("Blink.Fonts.AndroidFontScanningTableBuildTime",
-                             duration);
+  LogUMAFontScanningDuration(duration);
 
   return true;
 }
@@ -299,15 +316,13 @@ bool FontUniqueNameLookup::LoadFromFile() {
       TableCacheFilePath(),
       base::File::FLAG_OPEN | base::File::Flags::FLAG_READ);
   if (!table_cache_file.IsValid()) {
-    UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningLoadFromFileSuccess",
-                          false);
+    LogUMALoadFromFileSuccess(false);
     return false;
   }
   proto_storage_ =
       base::ReadOnlySharedMemoryRegion::Create(table_cache_file.GetLength());
   if (!proto_storage_.IsValid() || !proto_storage_.mapping.size()) {
-    UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningLoadFromFileSuccess",
-                          false);
+    LogUMALoadFromFileSuccess(false);
     return false;
   }
   int read_result = table_cache_file.Read(
@@ -317,8 +332,7 @@ bool FontUniqueNameLookup::LoadFromFile() {
   // a font table from the cached file.
   if (read_result <= 0) {
     proto_storage_ = base::MappedReadOnlyRegion();
-    UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningLoadFromFileSuccess",
-                          false);
+    LogUMALoadFromFileSuccess(false);
     return false;
   }
 
@@ -326,12 +340,10 @@ bool FontUniqueNameLookup::LoadFromFile() {
   if (!font_table.ParseFromArray(proto_storage_.mapping.memory(),
                                  proto_storage_.mapping.size())) {
     proto_storage_ = base::MappedReadOnlyRegion();
-    UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningLoadFromFileSuccess",
-                          false);
+    LogUMALoadFromFileSuccess(false);
     return false;
   }
-  UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningLoadFromFileSuccess",
-                        true);
+  LogUMALoadFromFileSuccess(true);
   return true;
 }
 
@@ -341,8 +353,7 @@ bool FontUniqueNameLookup::PersistToFile() {
       TableCacheFilePath(),
       base::File::FLAG_CREATE_ALWAYS | base::File::Flags::FLAG_WRITE);
   if (!table_cache_file.IsValid()) {
-    UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningPersistToFileSuccess",
-                          false);
+    LogUMAPersistSuccess(false);
     return false;
   }
   if (table_cache_file.Write(
@@ -350,12 +361,10 @@ bool FontUniqueNameLookup::PersistToFile() {
           proto_storage_.mapping.size()) == -1) {
     table_cache_file.SetLength(0);
     proto_storage_ = base::MappedReadOnlyRegion();
-    UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningPersistToFileSuccess",
-                          false);
+    LogUMAPersistSuccess(false);
     return false;
   }
-  UMA_HISTOGRAM_BOOLEAN("Blink.Fonts.AndroidFontScanningPersistToFileSuccess",
-                        true);
+  LogUMAPersistSuccess(true);
   return true;
 }
 
