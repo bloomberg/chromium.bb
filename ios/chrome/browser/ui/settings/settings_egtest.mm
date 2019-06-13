@@ -173,8 +173,20 @@ id<GREYMatcher> BandwidthSettingsButton() {
 
   // Before returning, make sure that the top of the Clear Browsing Data
   // settings screen is visible to match the state at the start of the method.
+  // TODO(crbug.com/973708): On iOS 13 the settings menu appears as a card that
+  // can be dismissed with a downward swipe.  This make it difficult to use a
+  // gesture to return to the top of the Clear Browsing Data screen, so scroll
+  // programatically instead. Remove this custom action if we switch back to a
+  // fullscreen presentation.
+  GREYPerformBlock scrollToTopBlock =
+      ^BOOL(id element, __strong NSError** error) {
+        UIScrollView* view = base::mac::ObjCCastStrict<UIScrollView>(element);
+        view.contentOffset = CGPointZero;
+        return YES;
+      };
   [[EarlGrey selectElementWithMatcher:ClearBrowsingDataView()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
+      performAction:[GREYActionBlock actionWithName:@"Scroll to top"
+                                       performBlock:scrollToTopBlock]];
 }
 
 // From the NTP, clears the cookies and site data via the UI.
