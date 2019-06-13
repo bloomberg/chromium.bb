@@ -1030,8 +1030,13 @@ html[darkmode=true] #menu-footer {
   width: 144px;
 }
 
+#backgrounds-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus,
 #backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus,
 #colors-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus {
+  outline: none;
+}
+
+.using-mouse-nav .bg-sel-tile:focus {
   outline: none;
 }
 
@@ -1140,6 +1145,14 @@ html[darkmode=true] #menu-back {
 
 html[dir=rtl] #menu-back {
   transform: scaleX(-1);
+}
+
+#backgrounds-upload-wrapper {
+  display: inline-block;
+  left: 0;
+  opacity: 1;
+  position: relative;
+  top: 0;
 }
 
 #backgrounds-upload-icon {
