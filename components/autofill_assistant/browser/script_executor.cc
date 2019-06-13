@@ -104,7 +104,7 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
 
   DVLOG(2) << "GetActions for " << delegate_->GetCurrentURL().host();
   delegate_->GetService()->GetActions(
-      script_path_, delegate_->GetCurrentURL(), delegate_->GetTriggerContext(),
+      script_path_, delegate_->GetDeeplinkURL(), delegate_->GetTriggerContext(),
       last_global_payload_, last_script_payload_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));

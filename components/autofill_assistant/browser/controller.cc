@@ -70,7 +70,11 @@ const GURL& Controller::GetCurrentURL() {
   if (!last_committed.is_empty())
     return last_committed;
 
-  return initial_url_;
+  return deeplink_url_;
+}
+
+const GURL& Controller::GetDeeplinkURL() {
+  return deeplink_url_;
 }
 
 Service* Controller::GetService() {
@@ -690,7 +694,7 @@ void Controller::OnGetCookie(bool has_cookie) {
     return;
   }
   GetWebController()->SetCookie(
-      initial_url_.host(),
+      deeplink_url_.host(),
       base::BindOnce(&Controller::OnSetCookie,
                      // WebController is owned by Controller.
                      base::Unretained(this)));
@@ -706,7 +710,7 @@ void Controller::FinishStart() {
   if (allow_autostart_) {
     SetStatusMessage(
         l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
-                                  base::UTF8ToUTF16(initial_url_.host())));
+                                  base::UTF8ToUTF16(deeplink_url_.host())));
     SetProgress(kAutostartInitialProgress);
   }
   GetOrCheckScripts();
@@ -741,7 +745,7 @@ bool Controller::NeedsUI() const {
          state_ != AutofillAssistantState::STOPPED;
 }
 
-void Controller::Start(const GURL& initial_url,
+void Controller::Start(const GURL& deeplink_url,
                        std::unique_ptr<TriggerContext> trigger_context) {
   if (state_ != AutofillAssistantState::INACTIVE) {
     NOTREACHED();
@@ -749,7 +753,7 @@ void Controller::Start(const GURL& initial_url,
   }
   trigger_context_ = std::move(trigger_context);
   InitFromParameters();
-  initial_url_ = initial_url;
+  deeplink_url_ = deeplink_url;
   EnterState(AutofillAssistantState::STARTING);
   client_->ShowUI();
   if (IsCookieExperimentEnabled()) {

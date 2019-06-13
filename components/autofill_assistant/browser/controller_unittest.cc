@@ -934,4 +934,16 @@ TEST_F(ControllerTest, WaitForNavigationActionStartWithinTimeout) {
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
 }
 
+TEST_F(ControllerTest, InitialDataUrlDoesNotChange) {
+  const std::string deeplink_url("http://initialurl.com/path");
+  Start(deeplink_url);
+  EXPECT_THAT(controller_->GetDeeplinkURL(), deeplink_url);
+  EXPECT_THAT(controller_->GetCurrentURL(), deeplink_url);
+
+  const std::string navigate_url("http://navigateurl.com/path");
+  SimulateNavigateToUrl(GURL(navigate_url));
+  EXPECT_THAT(controller_->GetDeeplinkURL().spec(), deeplink_url);
+  EXPECT_THAT(controller_->GetCurrentURL().spec(), navigate_url);
+}
+
 }  // namespace autofill_assistant
