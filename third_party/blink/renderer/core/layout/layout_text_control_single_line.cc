@@ -138,10 +138,10 @@ void LayoutTextControlSingleLine::UpdateLayout() {
 
 bool LayoutTextControlSingleLine::NodeAtPoint(
     HitTestResult& result,
-    const HitTestLocation& location_in_container,
+    const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction hit_test_action) {
-  if (!LayoutTextControl::NodeAtPoint(result, location_in_container,
+  if (!LayoutTextControl::NodeAtPoint(result, hit_test_location,
                                       accumulated_offset, hit_test_action))
     return false;
 
@@ -153,7 +153,7 @@ bool LayoutTextControlSingleLine::NodeAtPoint(
   if (result.InnerNode()->IsDescendantOf(InnerEditorElement()) ||
       result.InnerNode() == GetNode() ||
       (container && container == result.InnerNode())) {
-    PhysicalOffset point_in_parent = location_in_container.Point();
+    PhysicalOffset point_in_parent = hit_test_location.Point();
     if (container && EditingViewPortElement()) {
       if (EditingViewPortElement()->GetLayoutBox()) {
         point_in_parent -=

@@ -3288,32 +3288,31 @@ CompositingReasons LayoutObject::AdditionalCompositingReasons() const {
   return CompositingReason::kNone;
 }
 
-bool LayoutObject::HitTestAllPhases(
-    HitTestResult& result,
-    const HitTestLocation& location_in_container,
-    const PhysicalOffset& accumulated_offset,
-    HitTestFilter hit_test_filter) {
+bool LayoutObject::HitTestAllPhases(HitTestResult& result,
+                                    const HitTestLocation& hit_test_location,
+                                    const PhysicalOffset& accumulated_offset,
+                                    HitTestFilter hit_test_filter) {
   bool inside = false;
   if (hit_test_filter != kHitTestSelf) {
     // First test the foreground layer (lines and inlines).
-    inside = NodeAtPoint(result, location_in_container, accumulated_offset,
+    inside = NodeAtPoint(result, hit_test_location, accumulated_offset,
                          kHitTestForeground);
 
     // Test floats next.
     if (!inside)
-      inside = NodeAtPoint(result, location_in_container, accumulated_offset,
+      inside = NodeAtPoint(result, hit_test_location, accumulated_offset,
                            kHitTestFloat);
 
     // Finally test to see if the mouse is in the background (within a child
     // block's background).
     if (!inside)
-      inside = NodeAtPoint(result, location_in_container, accumulated_offset,
+      inside = NodeAtPoint(result, hit_test_location, accumulated_offset,
                            kHitTestChildBlockBackgrounds);
   }
 
   // See if the mouse is inside us but not any of our descendants
   if (hit_test_filter != kHitTestDescendants && !inside)
-    inside = NodeAtPoint(result, location_in_container, accumulated_offset,
+    inside = NodeAtPoint(result, hit_test_location, accumulated_offset,
                          kHitTestBlockBackground);
 
   return inside;

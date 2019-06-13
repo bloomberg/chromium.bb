@@ -1614,7 +1614,7 @@ PhysicalRect LayoutTable::OverflowClipRect(
 }
 
 bool LayoutTable::NodeAtPoint(HitTestResult& result,
-                              const HitTestLocation& location_in_container,
+                              const HitTestLocation& hit_test_location,
                               const PhysicalOffset& accumulated_offset,
                               HitTestAction action) {
   PhysicalOffset adjusted_location = accumulated_offset + PhysicalLocation();
@@ -1623,15 +1623,15 @@ bool LayoutTable::NodeAtPoint(HitTestResult& result,
   bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
   if (!skip_children &&
       (!HasOverflowClip() ||
-       location_in_container.Intersects(OverflowClipRect(adjusted_location)))) {
+       hit_test_location.Intersects(OverflowClipRect(adjusted_location)))) {
     for (LayoutObject* child = LastChild(); child;
          child = child->PreviousSibling()) {
       if (child->IsBox() && !ToLayoutBox(child)->HasSelfPaintingLayer() &&
           (child->IsTableSection() || child->IsTableCaption())) {
-        if (child->NodeAtPoint(result, location_in_container, adjusted_location,
+        if (child->NodeAtPoint(result, hit_test_location, adjusted_location,
                                action)) {
-          UpdateHitTestResult(
-              result, location_in_container.Point() - adjusted_location);
+          UpdateHitTestResult(result,
+                              hit_test_location.Point() - adjusted_location);
           return true;
         }
       }
@@ -1643,10 +1643,9 @@ bool LayoutTable::NodeAtPoint(HitTestResult& result,
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
       (action == kHitTestBlockBackground ||
        action == kHitTestChildBlockBackground) &&
-      location_in_container.Intersects(bounds_rect)) {
-    UpdateHitTestResult(result,
-                        location_in_container.Point() - adjusted_location);
-    if (result.AddNodeToListBasedTestResult(GetNode(), location_in_container,
+      hit_test_location.Intersects(bounds_rect)) {
+    UpdateHitTestResult(result, hit_test_location.Point() - adjusted_location);
+    if (result.AddNodeToListBasedTestResult(GetNode(), hit_test_location,
                                             bounds_rect) == kStopHitTesting)
       return true;
   }

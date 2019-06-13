@@ -227,7 +227,7 @@ void LayoutTableRow::UpdateLayout() {
 
 // Hit Testing
 bool LayoutTableRow::NodeAtPoint(HitTestResult& result,
-                                 const HitTestLocation& location_in_container,
+                                 const HitTestLocation& hit_test_location,
                                  const PhysicalOffset& accumulated_offset,
                                  HitTestAction action) {
   // Table rows cannot ever be hit tested.  Effectively they do not exist.
@@ -238,10 +238,10 @@ bool LayoutTableRow::NodeAtPoint(HitTestResult& result,
     // ever implement a table-specific hit-test method (which we should do for
     // performance reasons anyway), then we can remove this check.
     if (!cell->HasSelfPaintingLayer()) {
-      if (cell->NodeAtPoint(result, location_in_container, accumulated_offset,
+      if (cell->NodeAtPoint(result, hit_test_location, accumulated_offset,
                             action)) {
         UpdateHitTestResult(result,
-                            location_in_container.Point() - accumulated_offset);
+                            hit_test_location.Point() - accumulated_offset);
         return true;
       }
     }

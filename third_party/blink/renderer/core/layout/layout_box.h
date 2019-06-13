@@ -768,11 +768,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   bool HitTestAllPhases(HitTestResult&,
-                        const HitTestLocation& location_in_container,
+                        const HitTestLocation&,
                         const PhysicalOffset& accumulated_offset,
                         HitTestFilter = kHitTestAll) final;
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
+                   const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
@@ -1461,7 +1461,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void ClearCustomLayoutChild();
 
   bool HitTestClippedOutByBorder(
-      const HitTestLocation& location_in_container,
+      const HitTestLocation&,
       const PhysicalOffset& border_box_location) const;
 
   // Returns true if the box intersects the viewport visible to the user.
@@ -1614,7 +1614,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return false;
   }
   virtual bool HitTestChildren(HitTestResult&,
-                               const HitTestLocation& location_in_container,
+                               const HitTestLocation&,
                                const PhysicalOffset& accumulated_offset,
                                HitTestAction);
 

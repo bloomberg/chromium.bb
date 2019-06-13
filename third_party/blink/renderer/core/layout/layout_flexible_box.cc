@@ -283,7 +283,7 @@ void LayoutFlexibleBox::RemoveChild(LayoutObject* child) {
 
 bool LayoutFlexibleBox::HitTestChildren(
     HitTestResult& result,
-    const HitTestLocation& location_in_container,
+    const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction hit_test_action) {
   if (hit_test_action != kHitTestForeground)
@@ -299,10 +299,10 @@ bool LayoutFlexibleBox::HitTestChildren(
       continue;
 
     bool child_hit =
-        child->HitTestAllPhases(result, location_in_container, scrolled_offset);
+        child->HitTestAllPhases(result, hit_test_location, scrolled_offset);
     if (child_hit) {
       UpdateHitTestResult(result,
-                          location_in_container.Point() - accumulated_offset);
+                          hit_test_location.Point() - accumulated_offset);
       return true;
     }
   }

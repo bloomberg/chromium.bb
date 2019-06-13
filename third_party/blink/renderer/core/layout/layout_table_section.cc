@@ -1786,11 +1786,10 @@ void LayoutTableSection::SplitEffectiveColumn(unsigned pos, unsigned first) {
 }
 
 // Hit Testing
-bool LayoutTableSection::NodeAtPoint(
-    HitTestResult& result,
-    const HitTestLocation& location_in_container,
-    const PhysicalOffset& accumulated_offset,
-    HitTestAction action) {
+bool LayoutTableSection::NodeAtPoint(HitTestResult& result,
+                                     const HitTestLocation& hit_test_location,
+                                     const PhysicalOffset& accumulated_offset,
+                                     HitTestAction action) {
   // If we have no children then we have nothing to do.
   if (!FirstRow())
     return false;
@@ -1800,7 +1799,7 @@ bool LayoutTableSection::NodeAtPoint(
   PhysicalOffset adjusted_location = accumulated_offset + PhysicalLocation();
 
   if (HasOverflowClip() &&
-      !location_in_container.Intersects(OverflowClipRect(adjusted_location)))
+      !hit_test_location.Intersects(OverflowClipRect(adjusted_location)))
     return false;
 
   if (HasVisuallyOverflowingCell()) {
@@ -1810,10 +1809,10 @@ bool LayoutTableSection::NodeAtPoint(
       // ever implement a table-specific hit-test method (which we should do for
       // performance reasons anyway), then we can remove this check.
       if (!row->HasSelfPaintingLayer()) {
-        if (row->NodeAtPoint(result, location_in_container, adjusted_location,
+        if (row->NodeAtPoint(result, hit_test_location, adjusted_location,
                              action)) {
-          UpdateHitTestResult(
-              result, location_in_container.Point() - adjusted_location);
+          UpdateHitTestResult(result,
+                              hit_test_location.Point() - adjusted_location);
           return true;
         }
       }
@@ -1823,7 +1822,7 @@ bool LayoutTableSection::NodeAtPoint(
 
   RecalcCellsIfNeeded();
 
-  PhysicalRect hit_test_rect = location_in_container.BoundingBox();
+  PhysicalRect hit_test_rect = hit_test_location.BoundingBox();
   hit_test_rect.Move(-adjusted_location);
 
   LayoutRect table_aligned_rect =
@@ -1847,9 +1846,9 @@ bool LayoutTableSection::NodeAtPoint(
         --i;
         LayoutTableCell* cell = grid_cell.Cells()[i];
         if (static_cast<LayoutObject*>(cell)->NodeAtPoint(
-                result, location_in_container, adjusted_location, action)) {
-          UpdateHitTestResult(
-              result, location_in_container.Point() - adjusted_location);
+                result, hit_test_location, adjusted_location, action)) {
+          UpdateHitTestResult(result,
+                              hit_test_location.Point() - adjusted_location);
           return true;
         }
       }

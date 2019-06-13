@@ -38,10 +38,10 @@ LayoutTextControlMultiLine::~LayoutTextControlMultiLine() = default;
 
 bool LayoutTextControlMultiLine::NodeAtPoint(
     HitTestResult& result,
-    const HitTestLocation& location_in_container,
+    const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction hit_test_action) {
-  if (!LayoutTextControl::NodeAtPoint(result, location_in_container,
+  if (!LayoutTextControl::NodeAtPoint(result, hit_test_location,
                                       accumulated_offset, hit_test_action))
     return false;
 
@@ -49,7 +49,7 @@ bool LayoutTextControlMultiLine::NodeAtPoint(
       result.InnerNode() == InnerEditorElement()) {
     const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();
     if (!stop_node || stop_node->NodeForHitTest() != result.InnerNode()) {
-      HitInnerEditorElement(result, location_in_container.Point(),
+      HitInnerEditorElement(result, hit_test_location.Point(),
                             accumulated_offset);
     }
   }
