@@ -36,6 +36,7 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 }  // namespace
 
 // Controls whether to enable Chrome OS Account Manager.
+// Rollout controlled by Finch.
 const base::Feature kAccountManager{"ChromeOSAccountManager",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 

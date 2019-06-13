@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/os_settings_resources.h"
 #include "chrome/grit/os_settings_resources_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -134,6 +136,11 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
 #endif
 
   ::settings::AddLocalizedStrings(html_source, profile);
+
+  auto plural_string_handler = std::make_unique<PluralStringHandler>();
+  plural_string_handler->AddLocalizedString("profileLabel",
+                                            IDS_OS_SETTINGS_PROFILE_LABEL);
+  web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   DarkModeHandler::Initialize(web_ui, html_source);
   ManagedUIHandler::Initialize(web_ui, html_source);
