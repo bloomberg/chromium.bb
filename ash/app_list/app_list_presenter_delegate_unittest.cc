@@ -1676,6 +1676,31 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   GetAppListTestHelper()->CheckVisibility(false);
 }
 
+// Test that the AppListView opacity is reset after it is hidden during the
+// overview mode animation.
+TEST_F(AppListPresenterDelegateHomeLauncherTest,
+       LauncherShowsAfterOverviewMode) {
+  // Show the AppList in clamshell mode.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Enable overview mode.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+
+  // Test that the AppListView is transparent.
+  DCHECK_EQ(0.0f, GetAppListView()->GetWidget()->GetLayer()->opacity());
+
+  // Disable overview mode.
+  overview_controller->ToggleOverview();
+
+  // Show the launcher, test that the opacity is restored.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  DCHECK_EQ(1.0f, GetAppListView()->GetWidget()->GetLayer()->opacity());
+}
+
 // Tests the app list opacity in overview mode.
 TEST_F(AppListPresenterDelegateHomeLauncherTest, OpacityInOverviewMode) {
   // Show app list in tablet mode.

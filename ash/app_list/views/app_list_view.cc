@@ -649,7 +649,9 @@ void AppListView::InitChildWidget() {
 void AppListView::Show(bool is_side_shelf, bool is_tablet_mode) {
   if (!time_shown_.has_value())
     time_shown_ = base::Time::Now();
-
+  // The opacity of the AppListView may have been manipulated by overview mode,
+  // so reset it before it is shown.
+  GetWidget()->GetLayer()->SetOpacity(1.0f);
   is_side_shelf_ = is_side_shelf;
 
   app_list_main_view_->contents_view()->ResetForShow();
