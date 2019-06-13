@@ -44,7 +44,7 @@ namespace {
 // Labels used to identify language entries.
 NSString* const kLanguageEntryThreeLabelsTemplate = @"%@, %@, %@";
 NSString* const kLanguageEntryTwoLabelsTemplate = @"%@, %@";
-NSString* const kEnglishLabel = @"English (United States)";
+NSString* const kEnglishLabel = @"English";
 NSString* const kTurkishLabel = @"Turkish";
 NSString* const kTurkishNativeLabel = @"Türkçe";
 NSString* const kNeverTranslateLabel = @"Never Translate";
@@ -52,23 +52,18 @@ NSString* const kOfferToTranslateLabel = @"Offer to Translate";
 
 // Matcher for the Language Settings's main page table view.
 id<GREYMatcher> LanguageSettingsTableView() {
-  return grey_allOf(
-      grey_accessibilityID(kLanguageSettingsTableViewAccessibilityIdentifier),
-      grey_sufficientlyVisible(), nil);
+  return grey_accessibilityID(
+      kLanguageSettingsTableViewAccessibilityIdentifier);
 }
 
 // Matcher for the Language Settings's Add Language page table view.
 id<GREYMatcher> AddLanguageTableView() {
-  return grey_allOf(
-      grey_accessibilityID(kAddLanguageTableViewAccessibilityIdentifier),
-      grey_sufficientlyVisible(), nil);
+  return grey_accessibilityID(kAddLanguageTableViewAccessibilityIdentifier);
 }
 
 // Matcher for the Language Settings's Language Details page table view.
 id<GREYMatcher> LanguageDetailsTableView() {
-  return grey_allOf(
-      grey_accessibilityID(kLanguageDetailsTableViewAccessibilityIdentifier),
-      grey_sufficientlyVisible(), nil);
+  return grey_accessibilityID(kLanguageDetailsTableViewAccessibilityIdentifier);
 }
 
 // Matcher for the Language Settings's general Settings menu entry.
@@ -83,15 +78,6 @@ id<GREYMatcher> AddLanguageButton() {
   return grey_allOf(ButtonWithAccessibilityLabelId(
                         IDS_IOS_LANGUAGE_SETTINGS_ADD_LANGUAGE_BUTTON_TITLE),
                     grey_sufficientlyVisible(), nil);
-}
-
-// Matcher for the nav bar's back button to the Language Settings's main page.
-id<GREYMatcher> NavigationBarLanguageSettingsButton() {
-  return grey_allOf(
-      ButtonWithAccessibilityLabelId(IDS_IOS_LANGUAGE_SETTINGS_TITLE),
-      grey_kindOfClass([UIButton class]),
-      grey_ancestor(grey_kindOfClass([UINavigationBar class])),
-      grey_sufficientlyVisible(), nil);
 }
 
 // Matcher for the search bar.
@@ -169,13 +155,13 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
   // Make sure Translate is enabled.
   SetBooleanUserPref(browserState, prefs::kOfferTranslateEnabled, YES);
 
-  // Make sure "en-US" is the only accept language.
+  // Make sure "en" is the only accept language.
   std::vector<std::string> languages;
   translatePrefs_->GetLanguageList(&languages);
   for (const auto& language : languages) {
     translatePrefs_->RemoveFromLanguageList(language);
   }
-  translatePrefs_->AddToLanguageList("en-US", /*force_blocked=*/false);
+  translatePrefs_->AddToLanguageList("en", /*force_blocked=*/false);
 }
 
 - (void)tearDown {
@@ -208,7 +194,7 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
   VerifyAccessibilityForCurrentScreen();
 
   // Navigate back.
-  [[EarlGrey selectElementWithMatcher:NavigationBarLanguageSettingsButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
 
   // Test accessibility on the Language Details page.
@@ -346,7 +332,7 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
 
   // Verify the prefs are up-to-date.
   ios::ChromeBrowserState* browserState = GetOriginalBrowserState();
-  GREYAssertEqual("en-US,tr",
+  GREYAssertEqual("en,tr",
                   browserState->GetPrefs()->GetString(kAcceptLanguages),
                   @"Unexpected value for kAcceptLanguages pref");
 }
