@@ -227,6 +227,15 @@ class CorsURLLoaderTest : public testing::Test {
                                 base::nullopt /*new_url*/);
   }
 
+  void AddHostHeaderAndFollowRedirect() {
+    DCHECK(url_loader_);
+    net::HttpRequestHeaders modified_headers;
+    modified_headers.SetHeader(net::HttpRequestHeaders::kHost, "bar.test");
+    url_loader_->FollowRedirect({},  // removed_headers
+                                modified_headers,
+                                base::nullopt);  // new_url
+  }
+
   const ResourceRequest& GetRequest() const {
     DCHECK(test_url_loader_factory_);
     return test_url_loader_factory_->request();
@@ -1582,6 +1591,49 @@ TEST(CorsURLLoaderTaintingTest, CalculateResponseTainting) {
             CorsURLLoader::CalculateResponseTainting(
                 same_origin_url, FetchRequestMode::kNavigate, origin, false,
                 true, &origin_access_list));
+}
+
+TEST_F(CorsURLLoaderTest, RequestWithHostHeaderFails) {
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.allow_credentials = false;
+  request.method = net::HttpRequestHeaders::kGetMethod;
+  request.url = GURL("https://foo.test/path");
+  request.request_initiator = url::Origin::Create(GURL("https://foo.test"));
+  request.headers.SetHeader(net::HttpRequestHeaders::kHost, "bar.test");
+  CreateLoaderAndStart(request);
+
+  RunUntilComplete();
+
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+}
+
+TEST_F(CorsURLLoaderTest, SetHostHeaderOnRedirectFails) {
+  CreateLoaderAndStart(GURL("http://foo.test/"), GURL("http://foo.test/path"),
+                       mojom::FetchRequestMode::kCors);
+
+  NotifyLoaderClientOnReceiveRedirect(
+      CreateRedirectInfo(301, "GET", GURL("https://redirect.test/")));
+  RunUntilRedirectReceived();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_TRUE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_FALSE(client().has_received_completion());
+
+  ClearHasReceivedRedirect();
+  // This should cause the request to fail.
+  AddHostHeaderAndFollowRedirect();
+
+  RunUntilComplete();
+
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
 }
 
 }  // namespace

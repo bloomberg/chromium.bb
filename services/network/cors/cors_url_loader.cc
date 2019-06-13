@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/preflight_controller.h"
+#include "services/network/loader_util.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "url/url_util.h"
@@ -160,6 +161,11 @@ void CorsURLLoader::FollowRedirect(
     request_.cors_exempt_headers.RemoveHeader(name);
   }
   request_.headers.MergeFrom(modified_headers);
+
+  if (!AreRequestHeadersSafe(request_.headers)) {
+    HandleComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+    return;
+  }
 
   const std::string original_method = std::move(request_.method);
   request_.url = redirect_info_.new_url;
