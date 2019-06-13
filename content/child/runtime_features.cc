@@ -533,6 +533,9 @@ void SetIndividualRuntimeFeatures(
           features::kPauseExecutionContextOnBackgroundFreeze)) {
     WebRuntimeFeatures::EnablePauseExecutionContextOnBackgroundFreeze(false);
   }
+
+  WebRuntimeFeatures::EnableConsolidatedMovementXY(
+      base::FeatureList::IsEnabled(features::kConsolidatedMovementXY));
 }
 
 }  // namespace
