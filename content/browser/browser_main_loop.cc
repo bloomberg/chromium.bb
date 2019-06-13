@@ -88,7 +88,6 @@
 #include "content/browser/scheduler/responsiveness/watcher.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor_device_source.h"
-#include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_task_runner.h"
@@ -135,6 +134,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/audio/public/cpp/audio_system_factory.h"
 #include "services/audio/public/mojom/constants.mojom.h"
+#include "services/audio/service.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
@@ -176,7 +176,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/memory/memory_pressure_monitor_mac.h"
-#include "content/browser/mach_broker_mac.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -564,8 +563,10 @@ void BrowserMainLoop::Init() {
         static_cast<StartupDataImpl*>(parameters_.startup_data);
     // This is always invoked before |io_thread_| is initialized (i.e. never
     // resets it).
-    io_thread_ = std::move(startup_data->thread);
-    service_manager_context_ = startup_data->service_manager_context;
+    io_thread_ = std::move(startup_data->ipc_thread);
+    mojo_ipc_support_ = std::move(startup_data->mojo_ipc_support);
+    service_manager_shutdown_closure_ =
+        std::move(startup_data->service_manager_shutdown_closure);
     power_monitor_ = std::move(startup_data->power_monitor);
   }
 
@@ -1111,9 +1112,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     BrowserGpuChannelHostFactory::instance()->CloseChannel();
 
   // Shutdown the Service Manager and IPC.
-  if (service_manager_context_)
-    service_manager_context_->ShutDown();
-  owned_service_manager_context_.reset();
+  if (service_manager_shutdown_closure_)
+    std::move(service_manager_shutdown_closure_).Run();
   mojo_ipc_support_.reset();
 
   if (save_file_manager_)
@@ -1553,20 +1553,6 @@ void BrowserMainLoop::InitializeMojo() {
     mojo::SyncCallRestrictions::DisallowSyncCall();
   }
 
-  mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-      mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
-
-  if (!service_manager_context_) {
-    owned_service_manager_context_ =
-        std::make_unique<ServiceManagerContext>(io_thread_->task_runner());
-    service_manager_context_ = owned_service_manager_context_.get();
-  }
-  ServiceManagerContext::StartBrowserConnection();
-
-#if defined(OS_MACOSX)
-  mojo::core::SetMachPortProvider(MachBroker::GetInstance());
-#endif  // defined(OS_MACOSX)
   GetContentClient()->OnServiceManagerConnected(
       ServiceManagerConnection::GetForProcess());
 
@@ -1632,7 +1618,7 @@ void BrowserMainLoop::InitializeAudio() {
 
     TRACE_EVENT_INSTANT0("startup", "Starting Audio service task runner",
                          TRACE_EVENT_SCOPE_THREAD);
-    ServiceManagerContext::GetAudioServiceRunner()->StartWithTaskRunner(
+    audio::Service::GetInProcessTaskRunner()->StartWithTaskRunner(
         audio_manager_->GetTaskRunner());
   }
 
