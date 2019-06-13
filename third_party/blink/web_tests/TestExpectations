@@ -5854,3 +5854,12 @@ crbug.com/972516 [ Win ] netinfo/gc-unused-listeners.html [ Pass Failure ]
 # Sheriff 2019-06-13
 crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html [ Failure ]
 crbug.com/973726 [ Mac ] fast/css/large-list-of-rules-crash.html [ Pass Timeout ]
+
+# Flaky on Linux
+crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-duration.html [ Pass Failure ]
+crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-middle.html [ Pass Failure ]
+crbug.com/973769 [ Linux ] media/controls/controls-cast-do-not-fade-out.html [ Pass Timeout ]
+crbug.com/973769 [ Linux ] media/video-pause-immediately.html [ Pass Failure ]
+crbug.com/973769 [ Linux ] media/video-played-ranges-1.html [ Pass Failure ]
+crbug.com/973769 [ Linux ] media/video-played-reset.html [ Pass Failure ]
+crbug.com/973769 [ Linux ] media/W3C/audio/events/event_timeupdate_manual.html [ Pass Failure ]
