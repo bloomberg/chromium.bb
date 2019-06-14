@@ -31,6 +31,7 @@ const char kDetachUsbDeviceMethod[] = "DetachUsbDevice";
 const char kListUsbDeviceMethod[] = "ListUsbDevices";
 const char kStartPluginVmMethod[] = "StartPluginVm";
 const char kGetDnsSettingsMethod[] = "GetDnsSettings";
+const char kStartArcVmMethod[] = "StartArcVm";
 
 const char kContainerStartupFailedSignal[] = "ContainerStartupFailed";
 const char kDiskImageProgressSignal[] = "DiskImageProgress";

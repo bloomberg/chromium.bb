@@ -142,6 +142,24 @@ message StartPluginVmRequest {
   bytes host_mac_address = 6;
 }
 
+// Information that must be included with every StartArcVm request.
+message StartArcVmRequest {
+  // The VM that should be started.
+  VirtualMachineSpec vm = 1;
+
+  // Any additional disks that should be mounted inside the VM.
+  repeated DiskImage disks = 2;
+
+  // An identifier for this VM.
+  string name = 3;
+
+  // The cryptohome id of the owner of this VM.
+  string owner_id = 4;
+
+  // Parameters to pass to the ARCVM's init process.
+  repeated string params = 5;
+}
+
 enum VmStatus {
   // Unknown status.
   VM_STATUS_UNKNOWN = 0;
