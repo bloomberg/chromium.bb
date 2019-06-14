@@ -525,8 +525,6 @@ component("ash") {
     "shelf/back_button.h",
     "shelf/default_shelf_view.cc",
     "shelf/default_shelf_view.h",
-    "shelf/home_button_delegate.cc",
-    "shelf/home_button_delegate.h",
     "shelf/ink_drop_button_listener.h",
     "shelf/kiosk_next_shelf_view.cc",
     "shelf/kiosk_next_shelf_view.h",

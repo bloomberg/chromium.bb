@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/back_button.h"
@@ -84,6 +85,12 @@ class KioskNextHomeButton : public AppListButton {
     return std::make_unique<views::FloodFillInkDropRipple>(
         size(), gfx::Insets(), GetInkDropCenterBasedOnLastEvent(),
         GetInkDropBaseColor(), ink_drop_visible_opacity());
+  }
+
+  void OnPressed(app_list::AppListShowSource show_source,
+                 base::TimeTicks time_stamp) override {
+    Shell::Get()->home_screen_controller()->GoHome(
+        shelf_view()->GetDisplayId());
   }
 
   DISALLOW_COPY_AND_ASSIGN(KioskNextHomeButton);

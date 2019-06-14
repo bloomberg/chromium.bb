@@ -242,7 +242,7 @@ class FadeInAnimationDelegate : public gfx::AnimationDelegate {
 };
 
 // Returns the id of the display on which |view| is shown.
-int64_t GetDisplayIdForView(View* view) {
+int64_t GetDisplayIdForView(const View* view) {
   aura::Window* window = view->GetWidget()->GetNativeWindow();
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
 }
@@ -610,6 +610,16 @@ void ShelfView::ButtonPressed(views::Button* sender,
     return;
   }
 
+  if (sender == GetAppListButton()) {
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
+    const app_list::AppListShowSource show_source =
+        event.IsShiftDown() ? app_list::kShelfButtonFullscreen
+                            : app_list::kShelfButton;
+    GetAppListButton()->OnPressed(show_source, event.time_stamp());
+    return;
+  }
+
   // None of the checks in ShouldEventActivateButton() affects overflow button.
   // So, it is safe to be checked after handling overflow button.
   if (!ShouldEventActivateButton(sender, event)) {
@@ -867,6 +877,10 @@ void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
         ->set_default_last_focusable_child(reverse);
     Shell::Get()->focus_cycler()->FocusWidget(status_area_widget);
   }
+}
+
+int64_t ShelfView::GetDisplayId() const {
+  return GetDisplayIdForView(this);
 }
 
 // static

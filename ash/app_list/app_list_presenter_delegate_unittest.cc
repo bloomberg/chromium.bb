@@ -1388,13 +1388,9 @@ class AppListPresenterDelegateHomeLauncherTest
   }
 
   void PressAppListButton() {
-    std::unique_ptr<ui::Event> event = std::make_unique<ui::MouseEvent>(
-        ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), base::TimeTicks(),
-        ui::EF_NONE, 0);
-    ShelfModel::Get()
-        ->GetShelfItemDelegate(ShelfID(kAppListId))
-        ->ItemSelected(std::move(event), GetPrimaryDisplayId(),
-                       LAUNCH_FROM_UNKNOWN, base::DoNothing());
+    Shell::Get()->app_list_controller()->OnAppListButtonPressed(
+        GetPrimaryDisplayId(), app_list::AppListShowSource::kShelfButton,
+        base::TimeTicks());
     GetAppListTestHelper()->WaitUntilIdle();
   }
 

@@ -22,6 +22,7 @@
 #include "ash/display/display_move_window_util.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/focus_cycler.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
@@ -42,7 +43,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/home_button_delegate.h"
+#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -544,11 +545,10 @@ void HandleToggleAppList(const ui::Accelerator& accelerator,
   if (accelerator.key_code() == ui::VKEY_LWIN)
     base::RecordAction(UserMetricsAction("Accel_Search_LWin"));
 
-  HomeButtonDelegate::PerformHomeButtonAction(
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(Shell::GetRootWindowForNewWindows())
-          .id(),
-      show_source, accelerator.time_stamp());
+  Shelf::ForWindow(Shell::GetRootWindowForNewWindows())
+      ->shelf_widget()
+      ->GetAppListButton()
+      ->OnPressed(show_source, accelerator.time_stamp());
 }
 
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {

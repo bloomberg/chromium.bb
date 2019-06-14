@@ -285,6 +285,9 @@ class ASH_EXPORT ShelfView : public views::View,
   void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
                                                         bool reverse);
 
+  // Returns the ID of the display where this view is shown.
+  int64_t GetDisplayId() const;
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();
