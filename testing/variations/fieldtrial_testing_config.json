@@ -563,6 +563,22 @@
         },
         {
             "platforms": [
+                "android",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "AudioServiceStreams",
+                    "enable_features": [
+                        "AudioServiceAudioStreams"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AudioServiceSandboxApmLinux": [
+        {
+            "platforms": [
                 "linux"
             ],
             "experiments": [
@@ -575,20 +591,6 @@
                         "AudioServiceOutOfProcessKillAtHang",
                         "AudioServiceSandbox",
                         "WebRtcApmInAudioService"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "android",
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "AudioServiceStreams",
-                    "enable_features": [
-                        "AudioServiceAudioStreams"
                     ]
                 }
             ]
