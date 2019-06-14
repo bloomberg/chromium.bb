@@ -180,6 +180,18 @@ static const int kInvalidNextPreviousFlagsValue = -1;
 static const char* kOOPIF = "OOPIF";
 static const char* kRenderer = "Renderer";
 
+#if defined(OS_ANDROID)
+// With 32 bit pixels, this would mean less than 400kb per buffer. Much less
+// than required for, say, nHD.
+static const int kSmallScreenPixelThreshold = 1e5;
+bool IsSmallScreen(const gfx::Size& size) {
+  int area = 0;
+  if (!size.GetCheckedArea().AssignIfValid(&area))
+    return false;
+  return area < kSmallScreenPixelThreshold;
+}
+#endif
+
 class WebWidgetLockTarget : public content::MouseLockDispatcher::LockTarget {
  public:
   explicit WebWidgetLockTarget(blink::WebWidget* webwidget)
@@ -3019,7 +3031,8 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
 #if defined(OS_ANDROID)
   bool using_synchronous_compositor =
       compositor_deps->UsingSynchronousCompositing();
-  bool using_low_memory_policy = base::SysInfo::IsLowEndDevice();
+  bool using_low_memory_policy =
+      base::SysInfo::IsLowEndDevice() && !IsSmallScreen(screen_size);
 
   settings.use_stream_video_draw_quad = true;
   settings.using_synchronous_renderer_compositor = using_synchronous_compositor;
