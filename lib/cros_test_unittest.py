@@ -10,6 +10,8 @@ from __future__ import print_function
 import mock
 import os
 
+from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -143,3 +145,61 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
         '-ephemeraldevserver=false', '-keyfile', '/tmp/.ssh/testing_rsa',
         '-extrauseflags=tast_vm', 'localhost:9222', 'ui.ChromeLogin'
     ])
+
+  def testAutotestWithArgs(self):
+    """Tests an autotest call with attributes."""
+    self._tester.autotest = ['accessibility_Sanity']
+    self._tester.results_dir = 'test_results'
+    self._tester._device.private_key = '.ssh/testing_rsa'
+    self._tester._device.log_level = 'debug'
+    self._tester._device.ssh_port = None
+    self._tester._device.device = '100.90.29.199'
+    self._tester.test_that_args = ['--test_that-args',
+                                   '--whitelist-chrome-crashes']
+
+    cwd = os.path.join('/mnt/host/source',
+                       os.path.relpath(os.getcwd(), constants.SOURCE_ROOT))
+    test_results_dir = os.path.join(cwd, 'test_results')
+    testing_rsa_dir = os.path.join(cwd, '.ssh/testing_rsa')
+
+    self._tester._RunAutotest()
+
+    self.assertCommandCalled(
+        ['test_that', '--board', 'amd64-generic', '--results_dir',
+         test_results_dir, '--ssh_private_key', testing_rsa_dir, '--debug',
+         '--whitelist-chrome-crashes', '--no-quickmerge', '--ssh_options',
+         '-F /dev/null -i /dev/null', '100.90.29.199', 'accessibility_Sanity'],
+        enter_chroot=not cros_build_lib.IsInsideChroot())
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
+  def testInsideChrootAutotest(self, check_inside_chroot_mock):
+    """Tests running an autotest from within the chroot."""
+    # Checks that mock version has been called.
+    check_inside_chroot_mock.assert_called()
+
+    self._tester.autotest = ['accessiblity_Sanity']
+    self._tester.results_dir = '/mnt/host/source/test_results'
+    self._tester._device.private_key = '/mnt/host/source/.ssh/testing_rsa'
+
+    self._tester._RunAutotest()
+
+    self.assertCommandContains([
+        '--results_dir', '/mnt/host/source/test_results',
+        '--ssh_private_key', '/mnt/host/source/.ssh/testing_rsa'])
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideChrootAutotest(self, check_inside_chroot_mock):
+    """Tests running an autotest from outside the chroot."""
+    # Checks that mock version has been called.
+    check_inside_chroot_mock.assert_called()
+
+    self._tester.autotest = ['accessibility_Sanity']
+    # Capture the run command. This is necessary beacuse the mock doesn't
+    # capture the cros_sdk wrapper.
+    with cros_build_lib.OutputCapturer() as output:
+      self._tester._RunAutotest()
+    # Check that we enter the chroot before running test_that.
+    self.assertIn(
+        'cros_sdk -- test_that --board amd64-generic --no-quickmerge'
+        ' --ssh_options \'-F /dev/null -i /dev/null\' localhost:9222'
+        ' accessibility_Sanity', output.GetStderr())
