@@ -1125,7 +1125,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   content::WebContentsAddedObserver new_contents_observer;
 
   sessions::TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(app_browser_->profile());
+      TabRestoreServiceFactory::GetForProfile(profile());
   service->RestoreMostRecentEntry(nullptr);
 
   content::WebContents* restored_web_contents =
