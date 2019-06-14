@@ -24,6 +24,11 @@ namespace extensions {
 SettingsPrivateEventRouter::SettingsPrivateEventRouter(
     content::BrowserContext* context)
     : context_(context), listening_(false), weak_ptr_factory_(this) {
+  Profile* profile = Profile::FromBrowserContext(context_);
+  prefs_util_ = std::make_unique<PrefsUtil>(profile);
+  user_prefs_registrar_.Init(profile->GetPrefs());
+  local_state_registrar_.Init(g_browser_process->local_state());
+
   // Register with the event router so we know when renderers are listening to
   // our events. We first check and see if there *is* an event router, because
   // some unit tests try to create all context services, but don't initialize
@@ -34,11 +39,6 @@ SettingsPrivateEventRouter::SettingsPrivateEventRouter(
         this, api::settings_private::OnPrefsChanged::kEventName);
     StartOrStopListeningForPrefsChanges();
   }
-
-  Profile* profile = Profile::FromBrowserContext(context_);
-  prefs_util_.reset(new PrefsUtil(profile));
-  user_prefs_registrar_.Init(profile->GetPrefs());
-  local_state_registrar_.Init(g_browser_process->local_state());
 }
 
 SettingsPrivateEventRouter::~SettingsPrivateEventRouter() {
@@ -98,6 +98,7 @@ PrefChangeRegistrar* SettingsPrivateEventRouter::FindRegistrarForPref(
 }
 
 void SettingsPrivateEventRouter::StartOrStopListeningForPrefsChanges() {
+  DCHECK(prefs_util_);
   EventRouter* event_router = EventRouter::Get(context_);
   bool should_listen = event_router->HasEventListener(
       api::settings_private::OnPrefsChanged::kEventName);
