@@ -1,4 +1,4 @@
-import { ICase, TestGroup } from './test_group.js';
+import { TestGroup } from './test_group.js';
 
 interface IGroupDesc {
     path: string;
@@ -16,35 +16,13 @@ interface ITestNode {
     description: string;
 }
 
-interface IEntry {
+export interface IEntry {
     suite: string;
     path: string;
 }
 
 interface IPendingEntry extends IEntry {
     node: Promise<ITestNode>;
-}
-
-function encodeSelectively(s: string) {
-    let ret = encodeURIComponent(s);
-    ret = ret.replace(/%20/g, '+');
-    ret = ret.replace(/%22/g, '"');
-    ret = ret.replace(/%2C/g, ',');
-    ret = ret.replace(/%2F/g, '/');
-    ret = ret.replace(/%3A/g, ':');
-    ret = ret.replace(/%7B/g, '{');
-    ret = ret.replace(/%7D/g, '}');
-    return ret;
-}
-
-export function makeQueryString(entry: IEntry, testcase: ICase): string {
-    let s = entry.suite + ':';
-    s += entry.path + ':';
-    s += testcase.name + ':';
-    if (testcase.params) {
-        s += JSON.stringify(testcase.params);
-    }
-    return '?q=' + encodeSelectively(s);
 }
 
 function* concatAndDedup(lists: IPendingEntry[][]): Iterator<IPendingEntry> {
@@ -106,9 +84,8 @@ class ListingFetcher {
 
 // TODO: Unit test this.
 
-export async function loadTests(outDir: string, query: string):
+export async function loadTests(outDir: string, filters: string[]):
         Promise<Iterator<IPendingEntry>> {
-    const filters = new URLSearchParams(query).getAll('q');
     const fetcher = new ListingFetcher();
 
     // Each filter is of one of these forms (urlencoded):
