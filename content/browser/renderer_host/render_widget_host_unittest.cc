@@ -274,6 +274,9 @@ class FakeRenderFrameMetadataObserver
       mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
   ~FakeRenderFrameMetadataObserver() override {}
 
+#if defined(OS_ANDROID)
+  void ReportAllRootScrollsForAccessibility(bool enabled) override {}
+#endif
   void ReportAllFrameSubmissionsForTesting(bool enabled) override {}
 
  private:
