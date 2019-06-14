@@ -2847,7 +2847,7 @@
             # TODO(kbr): figure out how to use mixins for these.
             {
               'gpu': '8086:0a2e',
-              'os': 'Mac-10.12.6',
+              'os': 'Mac-10.13.6',
             },
             {
               'gpu': '1002:6821',
