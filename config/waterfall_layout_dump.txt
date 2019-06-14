@@ -560,7 +560,6 @@
     candy-release
     capri-release
     caroline-arc64-release
-    caroline-arcnext-release
     caroline-ndktranslation-release
     caroline-release
     caroline-userdebug-release
@@ -2895,7 +2894,6 @@
     candy-release-tryjob
     capri-release-tryjob
     caroline-arc64-release-tryjob
-    caroline-arcnext-release-tryjob
     caroline-ndktranslation-release-tryjob
     caroline-release-tryjob
     caroline-userdebug-release-tryjob
