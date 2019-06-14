@@ -69,7 +69,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
         mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(
                 activity, params, params.getUrl(), params.isImage());
 
-        ModelListAdapter adapter = new ModelListAdapter(activity) {
+        ModelListAdapter adapter = new ModelListAdapter() {
             @Override
             public boolean areAllItemsEnabled() {
                 return false;
