@@ -54,6 +54,7 @@
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
 #import "ios/web/js_messaging/web_frame_impl.h"
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
+#import "ios/web/navigation/crw_js_navigation_handler.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
 #import "ios/web/navigation/crw_pending_navigation_info.h"
 #import "ios/web/navigation/crw_web_view_navigation_observer.h"
@@ -184,6 +185,7 @@ GURL URLEscapedForHistory(const GURL& url) {
                                 CRWWebControllerContainerViewDelegate,
                                 CRWWebViewNavigationObserverDelegate,
                                 CRWWebRequestControllerDelegate,
+                                CRWJSNavigationHandlerDelegate,
                                 CRWWebViewScrollViewProxyObserver,
                                 CRWWKNavigationHandlerDelegate,
                                 CRWWKUIHandlerDelegate,
@@ -220,9 +222,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   // Set to YES on window.history.willChangeState message. To NO on
   // window.history.didPushState or window.history.didReplaceState.
   BOOL _changingHistoryState;
-  // Set to YES when a hashchange event is manually dispatched for same-document
-  // history navigations.
-  BOOL _dispatchingSameDocumentHashChangeEvent;
 
   // Updates SSLStatus for current navigation item.
   CRWSSLStatusUpdater* _SSLStatusUpdater;
@@ -239,6 +238,8 @@ GURL URLEscapedForHistory(const GURL& url) {
 // The WKNavigationDelegate handler class.
 @property(nonatomic, readonly, strong)
     CRWWKNavigationHandler* navigationHandler;
+@property(nonatomic, readonly, strong)
+    CRWJSNavigationHandler* JSNavigationHandler;
 // The WKUIDelegate handler class.
 @property(nonatomic, readonly, strong) CRWWKUIHandler* UIHandler;
 
@@ -430,6 +431,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _navigationHandler = [[CRWWKNavigationHandler alloc] init];
     _navigationHandler.delegate = self;
     _requestController.navigationHandler = _navigationHandler;
+
+    _JSNavigationHandler =
+        [[CRWJSNavigationHandler alloc] initWithDelegate:self];
 
     _UIHandler = [[CRWWKUIHandler alloc] init];
     _UIHandler.delegate = self;
@@ -723,6 +727,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   _SSLStatusUpdater = nil;
   [self.UIHandler close];
+  [self.JSNavigationHandler close];
 
   self.swipeRecognizerProvider = nil;
   [self.legacyNativeController close];
@@ -1605,7 +1610,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // be reset when resonding to the hashchange message.  Note that resetting the
   // flag in the completion block below is too early, as that block is called
   // before hashchange event listeners have a chance to fire.
-  _dispatchingSameDocumentHashChangeEvent = shouldDispatchHashchange;
+  self.JSNavigationHandler.dispatchingSameDocumentHashChangeEvent =
+      shouldDispatchHashchange;
   // Inject the JavaScript to update the state on the browser side.
   [self injectHTML5HistoryScriptWithHashChange:shouldDispatchHashchange
                         sameDocumentNavigation:sameDocumentNavigation];
@@ -1831,8 +1837,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     (*handlers)["document.favicons"] =
         @selector(handleDocumentFaviconsMessage:context:);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
-    (*handlers)["window.hashchange"] =
-        @selector(handleWindowHashChangeMessage:context:);
     (*handlers)["window.history.back"] =
         @selector(handleWindowHistoryBackMessage:context:);
     (*handlers)["window.history.willChangeState"] =
@@ -2031,25 +2035,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
   DLOG(ERROR) << "JavaScript error: " << errorMessage
               << " URL:" << [self currentURL].spec();
-  return YES;
-}
-
-// Handles 'window.hashchange' message.
-- (BOOL)handleWindowHashChangeMessage:(base::DictionaryValue*)message
-                              context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-  // Record that the current NavigationItem was created by a hash change, but
-  // ignore hashchange events that are manually dispatched for same-document
-  // navigations.
-  if (_dispatchingSameDocumentHashChangeEvent) {
-    _dispatchingSameDocumentHashChangeEvent = NO;
-  } else {
-    web::NavigationItemImpl* item = self.currentNavItem;
-    DCHECK(item);
-    item->SetIsCreatedFromHashChange(true);
-  }
-
   return YES;
 }
 
@@ -3223,6 +3208,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
           web::features::kDisconnectScrollProxyDuringRestore)) {
     [_containerView disconnectScrollProxy];
   }
+}
+
+#pragma mark - CRWJSNavigationHandlerDelegate
+
+- (web::WebStateImpl*)webStateImplForJSNavigationHandler:
+    (CRWJSNavigationHandler*)navigationHandler {
+  return self.webStateImpl;
 }
 
 #pragma mark - Testing-Only Methods

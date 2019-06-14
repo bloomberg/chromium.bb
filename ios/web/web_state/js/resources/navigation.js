@@ -110,7 +110,7 @@ window.addEventListener('hashchange', function(evt) {
     'favicons': __gCrWeb.common.getFavicons()
   });
 
-  __gCrWeb.message.invokeOnHost({'command': 'window.hashchange'});
+  __gCrWeb.message.invokeOnHost({'command': 'navigation.hashchange'});
 });
 
 /** Flush the message queue. */
