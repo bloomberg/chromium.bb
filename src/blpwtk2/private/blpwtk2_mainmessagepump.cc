@@ -259,10 +259,7 @@ void MainMessagePump::doWork()
 
     for (unsigned int i=0; i<maxPumpCount; ++i) {
         resetWorkState();
-        ::SendMessageW(message_window_.hwnd(),
-                       kMsgHaveWork,
-                       reinterpret_cast<WPARAM>(this),
-                       0);
+        MessagePumpForUI::HandleWorkMessage();
 
         if (!work_scheduled_) {
             // Break out of the loop if no more work is scheduled.

@@ -154,6 +154,7 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* obseerver);
+  void HandleWorkMessage();
 
  protected:
   bool DoIdleWork();
@@ -168,7 +169,6 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
       UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result);
   void DoRunLoop() override;
   void WaitForWork(Delegate::NextWorkInfo next_work_info);
-  void HandleWorkMessage();
   void HandleTimerMessage();
   void ScheduleNativeTimer(Delegate::NextWorkInfo next_work_info);
   void KillNativeTimer();
