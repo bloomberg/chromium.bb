@@ -346,7 +346,9 @@ const CGFloat kTopAndBottomPadding = 8.0;
     if (widthInsets != self.shortcutsViewEdgeConstraint.constant) {
       self.shortcutsViewEdgeConstraint.constant = widthInsets;
       // If the insets have changed, the collection view (and thus the table
-      // view) may have changed heights.
+      // view) may have changed heights. This could happen due to dynamic type
+      // changing the height of the collection view. It is also necessary for
+      // the first load.
       [self.shortcutsViewController.collectionView layoutIfNeeded];
       [self.tableView reloadData];
     }
