@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All rights reserved.
+# Copyright 2013 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -26,20 +26,31 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 {
   'includes': [
-    '../../build/common.gypi',
+    '../../../build/common.gypi',
   ],
   'targets': [
     {
-      'target_name': 'build_all',
-      'type': 'none',
+      'target_name': 'converter_exe',
+      'type': 'executable',
+      'sources': [
+        'converter.cc',
+        'escaping.cc',
+        'escaping.h',
+        'http_client.h',
+        'http_download.cc',
+        'http_download.h',
+        'tokenizer.cc',
+        'tokenizer.h',
+        'winhttp_client.cc',
+        'winhttp_client.h',
+        'wininet_client.cc',
+        'wininet_client.h',
+      ],
       'dependencies': [
-        './converter/ms_symbol_server_converter.gyp:*',
-        './converter_exe/converter.gyp:*',
-        './dump_syms/dump_syms.gyp:*',
-        './symupload/symupload.gyp:*',
+        '../../../common/windows/common_windows.gyp:common_windows_lib',
+        '../converter/ms_symbol_server_converter.gyp:ms_symbol_server_converter',
       ],
     },
   ],
