@@ -272,6 +272,7 @@ nohwqual_boards = (lakitu_boards | lassen_boards | loonix_boards
                    | dustbuster_boards)
 
 norootfs_verification_boards = frozenset([
+    'kumo',
 ])
 
 base_layout_boards = lakitu_boards | termina_boards
