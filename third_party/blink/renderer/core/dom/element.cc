@@ -3532,11 +3532,26 @@ bool Element::SupportsSpatialNavigationFocus() const {
   // events).
   if (!IsSpatialNavigationEnabled(GetDocument().GetFrame()))
     return false;
+
+  if (!GetLayoutObject())
+    return false;
+
   if (HasEventListeners(event_type_names::kClick) ||
       HasEventListeners(event_type_names::kKeydown) ||
       HasEventListeners(event_type_names::kKeypress) ||
       HasEventListeners(event_type_names::kKeyup))
     return true;
+
+  // Some web apps use click-handlers to react on clicks within rects that are
+  // styled with {cursor: pointer}. Such rects *look* clickable so they probably
+  // are. Here we make Hand-trees' tip, the first (biggest) node with {cursor:
+  // pointer}, navigable because users shouldn't need to navigate through every
+  // sub element that inherit this CSS.
+  if (GetComputedStyle()->Cursor() == ECursor::kPointer &&
+      ParentComputedStyle()->Cursor() != ECursor::kPointer) {
+    return true;
+  }
+
   if (!IsSVGElement())
     return false;
   return (HasEventListeners(event_type_names::kFocus) ||
