@@ -297,7 +297,6 @@
     /** @override */
     ready: function() {
       this.initializeLoginScreen('SupervisionOnboardingScreen', {
-        commonScreenSize: true,
         resetAllowed: true,
       });
     },
