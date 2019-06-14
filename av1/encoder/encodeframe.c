@@ -1991,6 +1991,8 @@ static void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
   const BLOCK_SIZE subsize = get_partition_subsize(bsize, partition);
   RD_STATS dummy_cost;
   av1_invalid_rd_stats(&dummy_cost);
+  RD_STATS invalid_rd;
+  av1_invalid_rd_stats(&invalid_rd);
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
@@ -2005,7 +2007,7 @@ static void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
   switch (partition) {
     case PARTITION_NONE:
       pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &dummy_cost,
-                    PARTITION_NONE, bsize, &pc_tree->none, dummy_cost,
+                    PARTITION_NONE, bsize, &pc_tree->none, invalid_rd,
                     sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
                                                  : PICK_MODE_NONRD);
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, 0, bsize, partition,
@@ -2013,7 +2015,7 @@ static void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
       break;
     case PARTITION_VERT:
       pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &dummy_cost,
-                    PARTITION_VERT, subsize, &pc_tree->vertical[0], dummy_cost,
+                    PARTITION_VERT, subsize, &pc_tree->vertical[0], invalid_rd,
                     sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
                                                  : PICK_MODE_NONRD);
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, 0, subsize,
@@ -2021,7 +2023,7 @@ static void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
       if (mi_col + hbs < cm->mi_cols && bsize > BLOCK_8X8) {
         pick_sb_modes(cpi, tile_data, x, mi_row, mi_col + hbs, &dummy_cost,
                       PARTITION_VERT, subsize, &pc_tree->vertical[1],
-                      dummy_cost,
+                      invalid_rd,
                       sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
                                                    : PICK_MODE_NONRD);
         encode_b(cpi, tile_data, td, tp, mi_row, mi_col + hbs, 0, subsize,
@@ -2031,7 +2033,7 @@ static void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
     case PARTITION_HORZ:
       pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &dummy_cost,
                     PARTITION_HORZ, subsize, &pc_tree->horizontal[0],
-                    dummy_cost,
+                    invalid_rd,
                     sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
                                                  : PICK_MODE_NONRD);
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, 0, subsize,
@@ -2040,7 +2042,7 @@ static void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
       if (mi_row + hbs < cm->mi_rows && bsize > BLOCK_8X8) {
         pick_sb_modes(cpi, tile_data, x, mi_row + hbs, mi_col, &dummy_cost,
                       PARTITION_HORZ, subsize, &pc_tree->horizontal[1],
-                      dummy_cost,
+                      invalid_rd,
                       sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
                                                    : PICK_MODE_NONRD);
         encode_b(cpi, tile_data, td, tp, mi_row + hbs, mi_col, 0, subsize,
