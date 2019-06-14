@@ -388,11 +388,13 @@ DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
 void IdentityManager::LegacySetPrimaryAccount(
     const std::string& gaia_id,
     const std::string& email_address) {
-  primary_account_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
-
-  // TODO(https://crbug.com/944012): Unify the firing of this observer
-  // notification between ChromeOS and other platforms.
-  FireOnPrimaryAccountSetNotification(primary_account_.value());
+  // On ChromeOS the primary account is not guaranteed to be present in
+  // AccountTrackerService when it is set, but PrimaryAccountManager::SignIn()
+  // requires that it be so.
+  // TODO(https://crbug.com/967602): Eliminate the need to seed the account
+  // here.
+  account_tracker_service_->SeedAccountInfo(gaia_id, email_address);
+  primary_account_manager_->SignIn(email_address);
 }
 #endif
 
@@ -492,15 +494,10 @@ AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
   return account_info;
 }
 
-void IdentityManager::FireOnPrimaryAccountSetNotification(
-    const CoreAccountInfo& primary_account_info) {
-  for (auto& observer : observer_list_) {
-    observer.OnPrimaryAccountSet(primary_account_info);
-  }
-}
-
 void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
-  FireOnPrimaryAccountSetNotification(account_info);
+  for (auto& observer : observer_list_) {
+    observer.OnPrimaryAccountSet(account_info);
+  }
 }
 
 void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
