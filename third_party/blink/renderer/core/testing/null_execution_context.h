@@ -68,6 +68,8 @@ class NullExecutionContext
   void CountUse(mojom::WebFeature) override {}
   void CountDeprecation(mojom::WebFeature) override {}
 
+  void SetSandboxFlags(WebSandboxFlags flags) { sandbox_flags_ = flags; }
+
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;
 
