@@ -51,9 +51,13 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
   // succeeds.
   bool Init();
 
-  // Gets camera info for the given |device_id|. Returns null CameraInfoPtr on
-  // error.
-  cros::mojom::CameraInfoPtr GetCameraInfo(const std::string& device_id);
+  // Actively request camera static metadata for given |device_id|.
+  void GetCameraInfo(const std::string& device_id);
+
+  // Callback when receiving |camera_info| that contains camera static metadata.
+  void OnGotCameraInfo(const std::string& device_id,
+                       int32_t result,
+                       cros::mojom::CameraInfoPtr camera_info);
 
   const scoped_refptr<base::SingleThreadTaskRunner>
       task_runner_for_screen_observer_;

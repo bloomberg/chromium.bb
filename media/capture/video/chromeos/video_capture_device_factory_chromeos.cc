@@ -26,11 +26,10 @@ VideoCaptureDeviceFactoryChromeOS::VideoCaptureDeviceFactoryChromeOS(
       camera_hal_ipc_thread_("CameraHalIpcThread"),
       initialized_(Init()),
       weak_ptr_factory_(this) {
-  auto get_camera_info =
+  auto callback =
       base::BindRepeating(&VideoCaptureDeviceFactoryChromeOS::GetCameraInfo,
                           base::Unretained(this));
-  reprocess_manager_ =
-      std::make_unique<ReprocessManager>(std::move(get_camera_info));
+  reprocess_manager_ = std::make_unique<ReprocessManager>(std::move(callback));
   cros_image_capture_ =
       std::make_unique<CrosImageCaptureImpl>(reprocess_manager_.get());
 }
@@ -98,12 +97,23 @@ bool VideoCaptureDeviceFactoryChromeOS::Init() {
   return true;
 }
 
-cros::mojom::CameraInfoPtr VideoCaptureDeviceFactoryChromeOS::GetCameraInfo(
+void VideoCaptureDeviceFactoryChromeOS::GetCameraInfo(
     const std::string& device_id) {
   if (!initialized_) {
-    return {};
+    return;
   }
-  return camera_hal_delegate_->GetCameraInfoFromDeviceId(device_id);
+  camera_hal_delegate_->GetCameraInfo(
+      std::stoi(device_id),
+      BindToCurrentLoop(
+          base::BindOnce(&VideoCaptureDeviceFactoryChromeOS::OnGotCameraInfo,
+                         weak_ptr_factory_.GetWeakPtr(), device_id)));
+}
+
+void VideoCaptureDeviceFactoryChromeOS::OnGotCameraInfo(
+    const std::string& device_id,
+    int32_t result,
+    cros::mojom::CameraInfoPtr camera_info) {
+  reprocess_manager_->UpdateCameraInfo(device_id, std::move(camera_info));
 }
 
 void VideoCaptureDeviceFactoryChromeOS::BindCrosImageCaptureRequest(

@@ -163,6 +163,7 @@ CameraDeviceDelegate::CameraDeviceDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
     ReprocessManager* reprocess_manager)
     : device_descriptor_(device_descriptor),
+      camera_id_(std::stoi(device_descriptor.device_id)),
       camera_hal_delegate_(std::move(camera_hal_delegate)),
       ipc_task_runner_(std::move(ipc_task_runner)),
       reprocess_manager_(reprocess_manager),
@@ -179,41 +180,10 @@ void CameraDeviceDelegate::AllocateAndStart(
   device_context_ = device_context;
   device_context_->SetState(CameraDeviceContext::State::kStarting);
 
-  auto camera_info = camera_hal_delegate_->GetCameraInfoFromDeviceId(
-      device_descriptor_.device_id);
-  if (camera_info.is_null()) {
-    device_context_->SetErrorState(
-        media::VideoCaptureError::kCrosHalV3DeviceDelegateFailedToGetCameraInfo,
-        FROM_HERE, "Failed to get camera info");
-    return;
-  }
-
-  SortCameraMetadata(&camera_info->static_camera_characteristics);
-  static_metadata_ = std::move(camera_info->static_camera_characteristics);
-
-  auto sensor_orientation = GetMetadataEntryAsSpan<int32_t>(
-      static_metadata_,
-      cros::mojom::CameraMetadataTag::ANDROID_SENSOR_ORIENTATION);
-  if (sensor_orientation.empty()) {
-    device_context_->SetErrorState(
-        media::VideoCaptureError::
-            kCrosHalV3DeviceDelegateMissingSensorOrientationInfo,
-        FROM_HERE, "Camera is missing required sensor orientation info");
-    return;
-  }
-  device_context_->SetSensorOrientation(sensor_orientation[0]);
-
-  // |device_ops_| is bound after the MakeRequest call.
-  cros::mojom::Camera3DeviceOpsRequest device_ops_request =
-      mojo::MakeRequest(&device_ops_);
-  device_ops_.set_connection_error_handler(base::BindOnce(
-      &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
-  camera_hal_delegate_->OpenDevice(
-      camera_hal_delegate_->GetCameraIdFromDeviceId(
-          device_descriptor_.device_id),
-      std::move(device_ops_request),
-      BindToCurrentLoop(
-          base::BindOnce(&CameraDeviceDelegate::OnOpenedDevice, GetWeakPtr())));
+  // We need to get the static camera metadata of the camera device first.
+  camera_hal_delegate_->GetCameraInfo(
+      camera_id_, BindToCurrentLoop(base::BindOnce(
+                      &CameraDeviceDelegate::OnGotCameraInfo, GetWeakPtr())));
 }
 
 void CameraDeviceDelegate::StopAndDeAllocate(
@@ -439,6 +409,56 @@ void CameraDeviceDelegate::ResetMojoInterface() {
   device_ops_.reset();
   camera_3a_controller_.reset();
   request_manager_.reset();
+}
+
+void CameraDeviceDelegate::OnGotCameraInfo(
+    int32_t result,
+    cros::mojom::CameraInfoPtr camera_info) {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+
+  if (device_context_->GetState() != CameraDeviceContext::State::kStarting) {
+    DCHECK_EQ(device_context_->GetState(),
+              CameraDeviceContext::State::kStopping);
+    OnClosed(0);
+    return;
+  }
+
+  if (result) {
+    device_context_->SetErrorState(
+        media::VideoCaptureError::kCrosHalV3DeviceDelegateFailedToGetCameraInfo,
+        FROM_HERE, "Failed to get camera info");
+    return;
+  }
+
+  reprocess_manager_->UpdateCameraInfo(device_descriptor_.device_id,
+                                       camera_info);
+  SortCameraMetadata(&camera_info->static_camera_characteristics);
+  static_metadata_ = std::move(camera_info->static_camera_characteristics);
+
+  const cros::mojom::CameraMetadataEntryPtr* sensor_orientation =
+      GetMetadataEntry(
+          static_metadata_,
+          cros::mojom::CameraMetadataTag::ANDROID_SENSOR_ORIENTATION);
+  if (sensor_orientation) {
+    device_context_->SetSensorOrientation(
+        *reinterpret_cast<int32_t*>((*sensor_orientation)->data.data()));
+  } else {
+    device_context_->SetErrorState(
+        media::VideoCaptureError::
+            kCrosHalV3DeviceDelegateMissingSensorOrientationInfo,
+        FROM_HERE, "Camera is missing required sensor orientation info");
+    return;
+  }
+
+  // |device_ops_| is bound after the MakeRequest call.
+  cros::mojom::Camera3DeviceOpsRequest device_ops_request =
+      mojo::MakeRequest(&device_ops_);
+  device_ops_.set_connection_error_handler(base::BindOnce(
+      &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
+  camera_hal_delegate_->OpenDevice(
+      camera_id_, std::move(device_ops_request),
+      BindToCurrentLoop(
+          base::BindOnce(&CameraDeviceDelegate::OnOpenedDevice, GetWeakPtr())));
 }
 
 void CameraDeviceDelegate::OnOpenedDevice(int32_t result) {

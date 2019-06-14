@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 #include "media/capture/video/chromeos/mock_camera_module.h"
+#include "base/bind.h"
 
 #include <memory>
 #include <utility>
-
-#include "base/bind.h"
 
 namespace media {
 namespace unittest_internal {
@@ -67,20 +66,6 @@ void MockCameraModule::GetVendorTagOps(
   std::move(callback).Run();
 }
 
-void MockCameraModule::NotifyCameraDeviceChange(
-    int camera_id,
-    cros::mojom::CameraDeviceStatus status) {
-  mock_module_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MockCameraModule::NotifyCameraDeviceChangeOnThread,
-                            base::Unretained(this), camera_id, status));
-}
-
-void MockCameraModule::NotifyCameraDeviceChangeOnThread(
-    int camera_id,
-    cros::mojom::CameraDeviceStatus status) {
-  callbacks_->CameraDeviceStatusChange(camera_id, status);
-}
-
 cros::mojom::CameraModulePtrInfo MockCameraModule::GetInterfacePtrInfo() {
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -96,9 +81,6 @@ cros::mojom::CameraModulePtrInfo MockCameraModule::GetInterfacePtrInfo() {
 void MockCameraModule::CloseBindingOnThread() {
   if (binding_.is_bound()) {
     binding_.Close();
-  }
-  if (callbacks_.is_bound()) {
-    callbacks_.reset();
   }
 }
 

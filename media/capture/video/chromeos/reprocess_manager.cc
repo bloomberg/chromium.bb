@@ -44,11 +44,10 @@ int ReprocessManager::GetReprocessReturnCode(
   return kReprocessSuccess;
 }
 
-ReprocessManager::ReprocessManager(CameraInfoGetter get_camera_info)
+ReprocessManager::ReprocessManager(UpdateCameraInfoCallback callback)
     : sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskPriority::USER_VISIBLE})),
-      impl(std::make_unique<ReprocessManager::ReprocessManagerImpl>(
-          std::move(get_camera_info))) {}
+      impl(new ReprocessManager::ReprocessManagerImpl(std::move(callback))) {}
 
 ReprocessManager::~ReprocessManager() {
   sequenced_task_runner_->DeleteSoon(FROM_HERE, std::move(impl));
@@ -96,9 +95,19 @@ void ReprocessManager::GetCameraInfo(const std::string& device_id,
                      std::move(callback)));
 }
 
+void ReprocessManager::UpdateCameraInfo(
+    const std::string& device_id,
+    const cros::mojom::CameraInfoPtr& camera_info) {
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ReprocessManager::ReprocessManagerImpl::UpdateCameraInfo,
+                     base::Unretained(impl.get()), device_id,
+                     camera_info.Clone()));
+}
+
 ReprocessManager::ReprocessManagerImpl::ReprocessManagerImpl(
-    CameraInfoGetter get_camera_info)
-    : get_camera_info_(std::move(get_camera_info)) {}
+    UpdateCameraInfoCallback callback)
+    : update_camera_info_callback_(std::move(callback)) {}
 
 ReprocessManager::ReprocessManagerImpl::~ReprocessManagerImpl() = default;
 
@@ -156,7 +165,24 @@ void ReprocessManager::ReprocessManagerImpl::FlushReprocessOptions(
 void ReprocessManager::ReprocessManagerImpl::GetCameraInfo(
     const std::string& device_id,
     GetCameraInfoCallback callback) {
-  std::move(callback).Run(get_camera_info_.Run(device_id));
+  if (camera_info_map_[device_id]) {
+    std::move(callback).Run(camera_info_map_[device_id].Clone());
+  } else {
+    get_camera_info_callback_queue_map_[device_id].push(std::move(callback));
+    update_camera_info_callback_.Run(device_id);
+  }
+}
+
+void ReprocessManager::ReprocessManagerImpl::UpdateCameraInfo(
+    const std::string& device_id,
+    cros::mojom::CameraInfoPtr camera_info) {
+  camera_info_map_[device_id] = std::move(camera_info);
+
+  auto& callback_queue = get_camera_info_callback_queue_map_[device_id];
+  while (!callback_queue.empty()) {
+    std::move(callback_queue.front()).Run(camera_info_map_[device_id].Clone());
+    callback_queue.pop();
+  }
 }
 
 }  // namespace media
