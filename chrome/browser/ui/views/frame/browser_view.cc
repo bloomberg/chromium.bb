@@ -2609,11 +2609,11 @@ void BrowserView::InitViews() {
   immersive_mode_controller_->Init(this);
   immersive_mode_controller_->AddObserver(this);
 
-  auto browser_view_layout = std::make_unique<BrowserViewLayout>();
-  browser_view_layout->Init(
-      new BrowserViewLayoutDelegateImpl(this), browser(), this, top_container_,
-      tab_strip_region_view_, tabstrip_, toolbar_, infobar_container_,
-      contents_container_, immersive_mode_controller_.get());
+  auto browser_view_layout = std::make_unique<BrowserViewLayout>(
+      std::make_unique<BrowserViewLayoutDelegateImpl>(this), browser(), this,
+      top_container_, tab_strip_region_view_, tabstrip_, toolbar_,
+      infobar_container_, contents_container_,
+      immersive_mode_controller_.get());
   SetLayoutManager(std::move(browser_view_layout));
 
   EnsureFocusOrder();
