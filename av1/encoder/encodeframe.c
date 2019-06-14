@@ -3603,12 +3603,14 @@ static void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
     for (int j = 0; j < AOMMIN(mib_size, cm->mi_rows - mi_row); j++) {
       for (int k = 0; k < AOMMIN(mib_size, cm->mi_cols - mi_col); k++) {
         cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)].delta_lf_from_base =
-            clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
+            (int8_t)clamp(delta_lf_from_base, -MAX_LOOP_FILTER,
+                          MAX_LOOP_FILTER);
         const int frame_lf_count =
             av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
           cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)].delta_lf[lf_id] =
-              clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
+              (int8_t)clamp(delta_lf_from_base, -MAX_LOOP_FILTER,
+                            MAX_LOOP_FILTER);
         }
       }
     }

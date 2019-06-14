@@ -222,8 +222,6 @@ typedef struct MB_MODE_INFO {
   // TODO(debargha): Consolidate these flags
 
   int current_qindex;
-  int delta_lf_from_base;
-  int delta_lf[FRAME_LF_COUNT];
 #if CONFIG_RD_DEBUG
   RD_STATS rd_stats;
   int mi_row;
@@ -253,6 +251,8 @@ typedef struct MB_MODE_INFO {
   int8_t skip_mode;
   uint8_t inter_tx_size[INTER_TX_SIZE_BUF_LEN];
   TX_SIZE tx_size;
+  int8_t delta_lf_from_base;
+  int8_t delta_lf[FRAME_LF_COUNT];
   int8_t segment_id;
   int8_t seg_id_predicted;  // valid only when temporal_update is enabled
   int8_t interintra_wedge_index;
@@ -556,7 +556,7 @@ typedef struct macroblockd {
   // filtering level) and code the delta between previous superblock's delta
   // lf and current delta lf. It is equivalent to the delta between previous
   // superblock's actual lf and current lf.
-  int delta_lf_from_base;
+  int8_t delta_lf_from_base;
   // For this experiment, we have four frame filter levels for different plane
   // and direction. So, to support the per superblock update, we need to add
   // a few more params as below.
@@ -570,7 +570,7 @@ typedef struct macroblockd {
   // SEG_LVL_ALT_LF_Y_H = 2;
   // SEG_LVL_ALT_LF_U   = 3;
   // SEG_LVL_ALT_LF_V   = 4;
-  int delta_lf[FRAME_LF_COUNT];
+  int8_t delta_lf[FRAME_LF_COUNT];
   int cdef_preset[4];
 
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
