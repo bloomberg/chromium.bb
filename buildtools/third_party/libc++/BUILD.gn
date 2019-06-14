@@ -55,6 +55,7 @@ target(_libcxx_target_type, "libc++") {
     "trunk/src/algorithm.cpp",
     "trunk/src/any.cpp",
     "trunk/src/bind.cpp",
+    "trunk/src/charconv.cpp",
     "trunk/src/chrono.cpp",
     "trunk/src/condition_variable.cpp",
     "trunk/src/debug.cpp",
