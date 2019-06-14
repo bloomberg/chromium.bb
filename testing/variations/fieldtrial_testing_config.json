@@ -1852,6 +1852,24 @@
             ]
         }
     ],
+    "DisableInitialMostVisitedFadeIn": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DisableInitialMostVisitedFadeIn"
+                    ]
+                }
+            ]
+        }
+    ],
     "DownloadHomeMoreButton": [
         {
             "platforms": [
