@@ -301,21 +301,12 @@ const extensions::Extension* AppShimInteractiveTest::InstallAppWithShim(
 
 namespace apps {
 
-// Shims require static libraries http://crbug.com/386024.
-#if defined(COMPONENT_BUILD)
-#define MAYBE_Launch DISABLED_Launch
-#define MAYBE_HostedAppLaunch DISABLED_HostedAppLaunch
-#define MAYBE_ShowWindow DISABLED_ShowWindow
-#define MAYBE_RebuildShim DISABLED_RebuildShim
-#else
 #define MAYBE_Launch DISABLED_Launch  // http://crbug.com/913490
 #define MAYBE_HostedAppLaunch DISABLED_HostedAppLaunch
-#define MAYBE_ShowWindow ShowWindow
 // http://crbug.com/517744 HostedAppLaunch fails with open as tab for apps
 // http://crbug.com/509774 this test is flaky so is disabled even in the
 // static build.
 #define MAYBE_RebuildShim DISABLED_RebuildShim
-#endif
 
 IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_HostedAppLaunch) {
   const extensions::Extension* app = InstallAppWithShim(APP_TYPE_HOSTED, "");
@@ -466,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
 
 // Test that the shim's lifetime depends on the visibility of windows. I.e. the
 // shim is only active when there are visible windows.
-IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_ShowWindow) {
+IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, ShowWindow) {
   const extensions::Extension* app =
       InstallAppWithShim(APP_TYPE_PACKAGED, "hidden");
   NSString* bundle_id = GetBundleID(shim_path_);
