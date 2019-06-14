@@ -2816,7 +2816,7 @@ HTMLSlotElement* Node::AssignedSlot() const {
   // in executing RecalcAssignment(), however, unfortunately,
   // that could happen as follows:
   //
-  // 1. RecalsAssignment() can detach a node
+  // 1. RecalcAssignment() can detach a node
   // 2. Then, DetachLayoutTree() may use FlatTreeTraversal via the hook of
   // AXObjectCacheImpl::ChildrenChanged().
   //
