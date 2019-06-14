@@ -35,6 +35,8 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
   virtual HRESULT STDMETHODCALLTYPE
   SetGlsEmailAddress(const std::string& email) = 0;
   virtual HRESULT STDMETHODCALLTYPE
+  SetGlsGaiaPassword(const std::string& gaia_password) = 0;
+  virtual HRESULT STDMETHODCALLTYPE
   SetGaiaIdOverride(const std::string& gaia_id,
                     bool ignore_expected_gaia_id) = 0;
   virtual HRESULT STDMETHODCALLTYPE WaitForGls() = 0;
@@ -70,6 +72,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   // ITestCredential.
   IFACEMETHODIMP SetDefaultExitCode(UiExitCodes default_exit_code) override;
   IFACEMETHODIMP SetGlsEmailAddress(const std::string& email) override;
+  IFACEMETHODIMP SetGlsGaiaPassword(const std::string& gaia_password) override;
   IFACEMETHODIMP SetGaiaIdOverride(const std::string& gaia_id,
                                    bool ignore_expected_gaia_id) override;
   IFACEMETHODIMP WaitForGls() override;
@@ -112,6 +115,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
 
   UiExitCodes default_exit_code_ = kUiecSuccess;
   std::string gls_email_;
+  std::string gaia_password_;
   std::string gaia_id_override_;
   base::WaitableEvent gls_done_;
   base::win::ScopedHandle process_continue_event_;
@@ -140,6 +144,13 @@ HRESULT CTestCredentialBase<T>::SetDefaultExitCode(
 template <class T>
 HRESULT CTestCredentialBase<T>::SetGlsEmailAddress(const std::string& email) {
   gls_email_ = email;
+  return S_OK;
+}
+
+template <class T>
+HRESULT CTestCredentialBase<T>::SetGlsGaiaPassword(
+    const std::string& gaia_password) {
+  gaia_password_ = gaia_password;
   return S_OK;
 }
 
@@ -223,8 +234,8 @@ template <class T>
 HRESULT CTestCredentialBase<T>::GetBaseGlsCommandline(
     base::CommandLine* command_line) {
   return GlsRunnerTestBase::GetFakeGlsCommandline(
-      default_exit_code_, gls_email_, gaia_id_override_, start_gls_event_name_,
-      ignore_expected_gaia_id_, command_line);
+      default_exit_code_, gls_email_, gaia_id_override_, gaia_password_,
+      start_gls_event_name_, ignore_expected_gaia_id_, command_line);
 }
 
 template <class T>

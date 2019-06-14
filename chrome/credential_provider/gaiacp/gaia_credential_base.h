@@ -268,6 +268,8 @@ class ATL_NO_VTABLE CGaiaCredentialBase
                                BSTR* sid,
                                BSTR* error_text);
 
+  HRESULT RecoverWindowsPasswordIfPossible(base::string16* recovered_password);
+
   CComPtr<ICredentialProviderCredentialEvents> events_;
   CComPtr<IGaiaCredentialProvider> provider_;
 
