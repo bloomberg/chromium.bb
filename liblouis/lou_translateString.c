@@ -2623,7 +2623,8 @@ resolveEmphasisPassages(EmphasisInfo *buffer, const EmphRuleNumber emphRule,
 			if (wordBuffer[i] & WORD_CHAR) {
 				in_word = 1;
 				/* only whole emphasized words can be part of a passage (in case of caps,
-				 * this also includes words without letters) */
+				 * this also includes words without letters, but only if the next word
+				 * with letters is a whole word) */
 				if (wordBuffer[i] & WORD_WHOLE) {
 					if (!in_pass) {
 						in_pass = 1;
@@ -2885,6 +2886,7 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 		formtype *typebuf, unsigned int *wordBuffer, EmphasisInfo *emphasisBuffer,
 		int haveEmphasis) {
 	/* Relies on the order of typeforms emph_1..emph_10. */
+	int last_space = -1; /* position of the last encountered space */
 	int caps_start = -1; /* position of the first uppercase after which no lowercase was
 							encountered */
 	int last_caps = -1;  /* position of the first space following the last encountered
@@ -2892,6 +2894,8 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 	int caps_cnt = 0; /* whether or not the last encountered letter was an uppercase and
 						 happened in the current word */
 	int emph_start[10] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+	int caps_phrase_enabled = table->emphRules[capsRule][begWordOffset] &&
+			table->emphRules[capsRule][lenPhraseOffset];
 	int i, j;
 
 	// initialize static variable emphClasses
@@ -2903,9 +2907,12 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 		/* WORD_CHAR means character is not a space */
 		if (!checkAttr(input->chars[i], CTC_Space, 0, table)) {
 			wordBuffer[i] |= WORD_CHAR;
-		} else if (caps_cnt > 0) {
-			last_caps = i;
-			caps_cnt = 0;
+		} else {
+			last_space = i;
+			if (caps_cnt) {
+				last_caps = i;
+				caps_cnt = 0;
+			}
 		}
 
 		/* if character is uppercase, caps begins or continues */
@@ -2921,9 +2928,21 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 			if (checkAttr(input->chars[i], CTC_Letter, 0, table) &&
 					checkAttr(input->chars[i], CTC_LowerCase, 0, table)) {
 				emphasisBuffer[caps_start].begin |= capsEmphClass;
-				if (caps_cnt > 0)
+				if (caps_cnt) {
+					/* a passage can not end on a word without uppercase letters, so if
+					 * caps did not start inside the current word, end it after the last
+					 * word that contained a uppercase, and start over from the beginning
+					 * of the current word */
+					if (caps_phrase_enabled && caps_start < last_space) {
+						emphasisBuffer[last_caps].end |= capsEmphClass;
+						caps_start = -1;
+						last_caps = -1;
+						caps_cnt = 0;
+						i = last_space;
+						continue;
+					}
 					emphasisBuffer[i].end |= capsEmphClass;
-				else
+				} else
 					emphasisBuffer[last_caps].end |= capsEmphClass;
 				caps_start = -1;
 				last_caps = -1;
@@ -2947,7 +2966,7 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 	/* clean up input->length */
 	if (caps_start >= 0) {
 		emphasisBuffer[caps_start].begin |= capsEmphClass;
-		if (caps_cnt > 0)
+		if (caps_cnt)
 			emphasisBuffer[input->length].end |= capsEmphClass;
 		else
 			emphasisBuffer[last_caps].end |= capsEmphClass;
