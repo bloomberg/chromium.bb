@@ -817,8 +817,9 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 	int result = 0;
 	char **table = tables;
 	while (*table) {
+		int r;
 		if (hyphenation == HYPHENATION_ON || hyphenation == HYPHENATION_BRAILLE) {
-			result |= check_hyphenation(
+			r = check_hyphenation(
 					*table, word, translation, hyphenation == HYPHENATION_BRAILLE);
 		} else {
 			// FIXME: Note that the typeform array was constructed using the
@@ -826,22 +827,30 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 			// means that if we are testing multiple tables at the same time
 			// they must have the same mapping (i.e. the emphasis classes
 			// must be defined in the same order).
-			result |= check(*table, word, translation, .typeform = typeform, .mode = mode,
+			r = check(*table, word, translation, .typeform = typeform, .mode = mode,
 					.expected_inputPos = inPos, .expected_outputPos = outPos,
 					.cursorPos = cursorPos, .expected_cursorPos = cursorOutPos,
 					.max_outlen = maxOutputLen, .real_inlen = realInputLen,
 					.direction = direction, .diagnostics = !xfail);
 		}
+		if (xfail != r) errors++;
+		if (xfail || r != 0) {
+			if (description) fprintf(stderr, "%s\n", description);
+			error_at_line(0, 0, file_name, event.start_mark.line + 1,
+					(xfail ? (r == 0 ? "Unexpected Pass" : "Expected Failure")
+						   : "Failure"));
+			// on error print the table name, as it isn't always clear
+			// which table we are testing. In checkyaml for example you
+			// can define a test for multiple tables.
+			fprintf(stderr, "Table: %s\n", *table);
+			// add an empty line after each error
+			fprintf(stderr, "\n");
+		}
+		result |= r;
 		table++;
-	}
-	if (xfail != result) {
-		if (description) fprintf(stderr, "%s\n", description);
-		error_at_line(0, 0, file_name, event.start_mark.line + 1,
-				(xfail ? "Unexpected Pass" : "Failure"));
-		errors++;
+		count++;
 	}
 	yaml_event_delete(&event);
-	count++;
 
 	free(description);
 	free(word);
