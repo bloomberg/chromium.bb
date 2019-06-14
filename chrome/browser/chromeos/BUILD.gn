@@ -2028,6 +2028,8 @@ source_set("chromeos") {
     "tpm_firmware_update.h",
     "tpm_firmware_update_notification.cc",
     "tpm_firmware_update_notification.h",
+    "u2f_notification.cc",
+    "u2f_notification.h",
     "ui/echo_dialog_listener.h",
     "ui/echo_dialog_view.cc",
     "ui/echo_dialog_view.h",
