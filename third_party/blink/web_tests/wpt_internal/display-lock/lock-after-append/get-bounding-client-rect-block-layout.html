@@ -1,0 +1,44 @@
+<!doctype HTML>
+<html>
+<meta charset="utf8">
+<title>Display Locking: getBoundingClientRect on block layout</title>
+<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<style>
+div {
+  contain: style layout;
+}
+</style>
+<body>
+<script>
+const BODY_WIDTH = document.body.getBoundingClientRect().width;
+const ACQUIRE_WIDTH = 33;
+const ACQUIRE_HEIGHT = 44;
+
+async_test(async(t) => {
+  let container = document.createElement("div");
+  document.body.appendChild(container);
+  await container.displayLock.acquire({ timeout: Infinity, size: [ACQUIRE_WIDTH, ACQUIRE_HEIGHT] });
+  let rect = container.getBoundingClientRect();
+
+  t.step(() => assert_equals(rect.width, BODY_WIDTH,
+    "Locked element uses width from body"));
+  t.step(() => assert_equals(rect.height, ACQUIRE_HEIGHT,
+    "Locked element uses height from acquire()"));
+
+  await container.displayLock.acquire({ timeout: Infinity, size: [55, 66] });
+  rect = container.getBoundingClientRect();
+  t.step(() => assert_equals(rect.width, BODY_WIDTH,
+    "After re-acquire, locked element still uses width from body"));
+  t.step(() => assert_equals(rect.height, 66,
+    "After re-acquire, locked element uses height from the last acquire()"));
+  t.done();
+}, "getBoundingClientRect with re-acquire");
+
+</script>
+</body>
+</html>

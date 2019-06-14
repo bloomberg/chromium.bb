@@ -181,12 +181,12 @@ class CORE_EXPORT DisplayLockContext final
   }
 
   LayoutUnit GetLockedContentLogicalWidth() const {
-    return is_horizontal_writing_mode_ ? locked_content_logical_size_->Width()
-                                       : locked_content_logical_size_->Height();
+    return is_horizontal_writing_mode_ ? locked_content_logical_size_.Width()
+                                       : locked_content_logical_size_.Height();
   }
   LayoutUnit GetLockedContentLogicalHeight() const {
-    return is_horizontal_writing_mode_ ? locked_content_logical_size_->Height()
-                                       : locked_content_logical_size_->Width();
+    return is_horizontal_writing_mode_ ? locked_content_logical_size_.Height()
+                                       : locked_content_logical_size_.Width();
   }
 
  private:
@@ -309,7 +309,7 @@ class CORE_EXPORT DisplayLockContext final
   HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
   StateChangeHelper state_;
-  base::Optional<LayoutSize> locked_content_logical_size_;
+  LayoutSize locked_content_logical_size_;
 
   bool update_forced_ = false;
   bool activatable_ = false;
