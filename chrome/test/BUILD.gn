@@ -2101,6 +2101,8 @@ if (!is_android) {
         "../browser/chromeos/policy/power_policy_browsertest.cc",
         "../browser/chromeos/policy/restore_on_startup_browsertest_chromeos.cc",
         "../browser/chromeos/policy/signin_profile_extensions_policy_browsertest.cc",
+        "../browser/chromeos/policy/signin_profile_extensions_policy_test_base.cc",
+        "../browser/chromeos/policy/signin_profile_extensions_policy_test_base.h",
         "../browser/chromeos/policy/site_isolation_flag_handling_browsertest.cc",
         "../browser/chromeos/policy/status_collector/child_status_collector_browsertest.cc",
         "../browser/chromeos/policy/status_collector/device_status_collector_browsertest.cc",
