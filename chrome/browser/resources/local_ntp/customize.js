@@ -154,16 +154,6 @@ customize.CLASSES = {
 };
 
 /**
- * Enum for background sources.
- * @enum {number}
- * @const
- */
-customize.SOURCES = {
-  NONE: -1,
-  CHROME_BACKGROUNDS: 0,
-};
-
-/**
  * Enum for background option menu entries, in the order they appear in the UI.
  * @enum {number}
  * @const
@@ -199,12 +189,6 @@ customize.selectedTile = null;
  * @const
  */
 customize.ROWS_TO_PRELOAD = 3;
-
-/* Type of collection that is being browsed, needed in order
- * to return from the image dialog.
- * @type {number}
- */
-customize.dialogCollectionsSource = customize.SOURCES.NONE;
 
 /*
  * Called when the error notification should be shown.
@@ -376,7 +360,6 @@ customize.richerPicker_resetImageMenu = function(showMenu) {
  */
 customize.closeCollectionDialog = function(menu) {
   menu.close();
-  customize.dialogCollectionsSource = customize.SOURCES.NONE;
   customize.resetSelectionDialog();
 };
 
@@ -535,10 +518,8 @@ customize.getNextTile = function(deltaX, deltaY, currentElem) {
 
 /**
  * Show dialog for selecting a Chrome background.
- * @param {number} collectionsSource The enum value of the source to fetch
- *              collection data from.
  */
-customize.showCollectionSelectionDialog = function(collectionsSource) {
+customize.showCollectionSelectionDialog = function() {
   const tileContainer = configData.richerPicker ?
       $(customize.IDS.BACKGROUNDS_MENU) :
       $(customize.IDS.TILES);
@@ -548,14 +529,6 @@ customize.showCollectionSelectionDialog = function(collectionsSource) {
   customize.builtTiles = true;
   const menu = configData.richerPicker ? $(customize.IDS.CUSTOMIZATION_MENU) :
                                          $(customize.IDS.MENU);
-  if (collectionsSource != customize.SOURCES.CHROME_BACKGROUNDS) {
-    console.log(
-        'showCollectionSelectionDialog() called with invalid source=' +
-        collectionsSource);
-    return;
-  }
-  customize.dialogCollectionsSource = collectionsSource;
-
   if (!menu.open) {
     menu.showModal();
   }
@@ -992,8 +965,7 @@ customize.loadChromeBackgrounds = function() {
       'collection_type=background';
   collScript.onload = function() {
     if (configData.richerPicker) {
-      customize.showCollectionSelectionDialog(
-          customize.SOURCES.CHROME_BACKGROUNDS);
+      customize.showCollectionSelectionDialog();
     }
   };
   document.body.appendChild(collScript);
@@ -1344,8 +1316,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     $('ntp-collection-loader').onload = function() {
       editDialog.close();
       if (typeof coll != 'undefined' && coll.length > 0) {
-        customize.showCollectionSelectionDialog(
-            customize.SOURCES.CHROME_BACKGROUNDS);
+        customize.showCollectionSelectionDialog();
       } else {
         customize.handleError(collErrors);
       }
@@ -1392,8 +1363,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
         customize.resetSelectionDialog();
       } else {
         customize.resetSelectionDialog();
-        customize.showCollectionSelectionDialog(
-            customize.dialogCollectionsSource);
+        customize.showCollectionSelectionDialog();
       }
     }
 
@@ -1413,7 +1383,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       customize.richerPicker_resetImageMenu(true);
     }
     customize.resetSelectionDialog();
-    customize.showCollectionSelectionDialog(customize.dialogCollectionsSource);
+    customize.showCollectionSelectionDialog();
   };
   $(customize.IDS.BACK_CIRCLE).onclick = backInteraction;
   $(customize.IDS.MENU_BACK_CIRCLE).onclick = backInteraction;
