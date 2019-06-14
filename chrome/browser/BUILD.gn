@@ -607,8 +607,6 @@ jumbo_split_static_library("browser") {
     "invalidation/deprecated_profile_invalidation_provider_factory.h",
     "invalidation/profile_invalidation_provider_factory.cc",
     "invalidation/profile_invalidation_provider_factory.h",
-    "io_thread.cc",
-    "io_thread.h",
     "language/language_model_manager_factory.cc",
     "language/language_model_manager_factory.h",
     "language/translate_frame_binder.cc",

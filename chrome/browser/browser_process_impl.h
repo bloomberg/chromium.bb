@@ -136,7 +136,6 @@ class BrowserProcessImpl : public BrowserProcess,
       override;
   metrics::MetricsService* metrics_service() override;
   rappor::RapporServiceImpl* rappor_service() override;
-  IOThread* io_thread() override;
   // TODO(qinmin): Remove this method as callers can retrieve the global
   // instance from SystemNetworkContextManager directly.
   SystemNetworkContextManager* system_network_context_manager() override;
@@ -245,8 +244,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   std::unique_ptr<metrics_services_manager::MetricsServicesManager>
       metrics_services_manager_;
-
-  std::unique_ptr<IOThread> io_thread_;
 
   bool created_watchdog_thread_ = false;
   std::unique_ptr<WatchDogThread> watchdog_thread_;
