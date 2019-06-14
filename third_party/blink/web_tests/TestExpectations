@@ -5801,6 +5801,7 @@ crbug.com/943636 html5lib/generated/run-tests18-data.html [ Pass Failure ]
 crbug.com/943636 html5lib/generated/run-tests18-write.html [ Pass Failure ]
 crbug.com/943636 html5lib/generated/run-tests7-data.html [ Pass Failure ]
 crbug.com/943636 html5lib/generated/run-tests7-write.html [ Pass Failure ]
+crbug.com/966932 http/tests/devtools/a11y-axe-core/elements/main-tool-test.js [ Timeout Pass ]
 crbug.com/943636 http/tests/devtools/console/console-eval-object-literal.js [ Pass Failure ]
 crbug.com/943636 http/tests/devtools/console/console-link-to-snippet.js [ Pass Failure ]
 crbug.com/943636 http/tests/devtools/console/console-log-eval-syntax-error.js [ Pass Failure ]
@@ -5817,9 +5818,6 @@ crbug.com/943636 virtual/mouseevent_fractional/fast/events/attribute-listener-de
 crbug.com/943636 virtual/mouseevent_fractional/fast/events/set-attribute-listener-window-onerror-crash.html [ Pass Failure ]
 crbug.com/943636 virtual/mouseevent_fractional/fast/events/window-onerror-05.html [ Pass Failure ]
 crbug.com/943636 virtual/omt-worker-fetch/fast/workers/worker-onerror-01.html [ Pass Failure ]
-
-# Sheriff 2019-05-24
-crbug.com/966932 [ Linux ] http/tests/devtools/a11y-axe-core/elements/main-tool-test.js [ Timeout Pass ]
 
 # Sheriff 2019-05-27
 crbug.com/942411 [ Win ] http/tests/devtools/network/network-search.js [ Pass Timeout ]
