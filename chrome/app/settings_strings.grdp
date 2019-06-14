@@ -1062,6 +1062,9 @@
     <message name="IDS_SETTINGS_BLUETOOTH_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is already connected.">
       Connected
     </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECTED_WITH_BATTERY" desc="In Bluetooth device list, this label is shown below a device which is already connected and has a known battery percentage.">
+      Connected, <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% battery
+    </message>
     <message name="IDS_SETTINGS_BLUETOOTH_NOT_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is not connected.">
       Not connected
     </message>

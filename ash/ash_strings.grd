@@ -341,6 +341,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_LABEL" desc="The sub-header label to notify that one bluetooth device is connected.">
         Connected
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_WITH_BATTERY_LABEL" desc="The label used when a bluetooth device is connected and the battery percentage is available.">
+        Connected, <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% battery
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_BATTERY_PERCENTAGE_LABEL" desc="The label used to show the battery percentage when a bluetooth device is connected.">
+        <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% battery
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_LABEL" desc="The header label to notify that multiple bluetooth devices are connected.">
         Devices
       </message>
