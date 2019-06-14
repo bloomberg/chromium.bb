@@ -156,8 +156,7 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
   // WebSocketHandleClient functions.
   void DidConnect(WebSocketHandle*,
                   const String& selected_protocol,
-                  const String& extensions,
-                  uint64_t receive_quota_threshold) override;
+                  const String& extensions) override;
   void DidStartOpeningHandshake(
       WebSocketHandle*,
       network::mojom::blink::WebSocketHandshakeRequestPtr) override;
@@ -220,7 +219,7 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
 
   scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 
-  base::Optional<uint64_t> receive_quota_threshold_;
+  static const uint64_t kReceivedDataSizeForFlowControlHighWaterMark = 1 << 15;
 };
 
 std::ostream& operator<<(std::ostream&, const WebSocketChannelImpl*);

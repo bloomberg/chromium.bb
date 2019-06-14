@@ -164,17 +164,15 @@ void WebSocketHandleImpl::OnFinishOpeningHandshake(
   client_->DidFinishOpeningHandshake(this, std::move(response));
 }
 
-void WebSocketHandleImpl::OnAddChannelResponse(
-    const String& protocol,
-    const String& extensions,
-    uint64_t receive_quota_threshold) {
+void WebSocketHandleImpl::OnAddChannelResponse(const String& protocol,
+                                               const String& extensions) {
   NETWORK_DVLOG(1) << this << " OnAddChannelResponse(" << protocol << ", "
-                   << extensions << ", " << receive_quota_threshold << ")";
+                   << extensions << ")";
 
   if (!client_)
     return;
 
-  client_->DidConnect(this, protocol, extensions, receive_quota_threshold);
+  client_->DidConnect(this, protocol, extensions);
   // |this| can be deleted here.
 }
 

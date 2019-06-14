@@ -521,9 +521,8 @@ void WebSocketChannelImpl::ProcessSendQueue() {
 }
 
 void WebSocketChannelImpl::AddReceiveFlowControlIfNecessary() {
-  DCHECK(receive_quota_threshold_.has_value());
-  if (!handle_ ||
-      received_data_size_for_flow_control_ < receive_quota_threshold_.value()) {
+  if (!handle_ || received_data_size_for_flow_control_ <
+                      kReceivedDataSizeForFlowControlHighWaterMark) {
     return;
   }
   handle_->AddReceiveFlowControlQuota(received_data_size_for_flow_control_);
@@ -531,10 +530,10 @@ void WebSocketChannelImpl::AddReceiveFlowControlIfNecessary() {
 }
 
 void WebSocketChannelImpl::InitialReceiveFlowControl() {
-  DCHECK(receive_quota_threshold_.has_value());
   DCHECK_EQ(received_data_size_for_flow_control_, 0u);
   DCHECK(handle_);
-  handle_->AddReceiveFlowControlQuota(receive_quota_threshold_.value() * 2);
+  handle_->AddReceiveFlowControlQuota(
+      kReceivedDataSizeForFlowControlHighWaterMark * 2);
 }
 
 void WebSocketChannelImpl::AbortAsyncOperations() {
@@ -549,7 +548,6 @@ void WebSocketChannelImpl::HandleDidClose(bool was_clean,
                                           const String& reason) {
   handshake_throttle_.reset();
   handle_.reset();
-  receive_quota_threshold_.reset();
   AbortAsyncOperations();
   if (!client_) {
     return;
@@ -564,17 +562,14 @@ void WebSocketChannelImpl::HandleDidClose(bool was_clean,
 
 void WebSocketChannelImpl::DidConnect(WebSocketHandle* handle,
                                       const String& selected_protocol,
-                                      const String& extensions,
-                                      uint64_t receive_quota_threshold) {
+                                      const String& extensions) {
   NETWORK_DVLOG(1) << this << " DidConnect(" << handle << ", "
                    << String(selected_protocol) << ", " << String(extensions)
-                   << ", " << receive_quota_threshold << ")";
+                   << ")";
 
   DCHECK(handle_);
   DCHECK_EQ(handle, handle_.get());
   DCHECK(client_);
-
-  receive_quota_threshold_ = receive_quota_threshold;
 
   if (!throttle_passed_) {
     connect_info_ =

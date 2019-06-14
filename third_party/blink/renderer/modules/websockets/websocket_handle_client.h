@@ -42,8 +42,7 @@ class WebSocketHandleClient {
   // Called when the handle is opened.
   virtual void DidConnect(WebSocketHandle*,
                           const String& selected_protocol,
-                          const String& extensions,
-                          uint64_t receive_quota_threshold) = 0;
+                          const String& extensions) = 0;
 
   // Called when the browser starts the opening handshake.
   // This notification can be omitted when the inspector is not active.
