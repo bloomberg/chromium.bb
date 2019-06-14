@@ -174,6 +174,7 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       current_overscroll_params_(nullptr),
       has_ongoing_compositor_scroll_or_pinch_(false),
       is_first_gesture_scroll_update_(false),
+      last_injected_gesture_was_begin_(false),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       snap_fling_controller_(std::make_unique<cc::SnapFlingController>(this)),
       compositor_touch_action_enabled_(
@@ -311,15 +312,10 @@ void InputHandlerProxy::DispatchSingleInputEvent(
 
   current_overscroll_params_.reset();
 
-  blink::WebGestureEvent::Type type = event_with_callback->event().GetType();
-  if (type == blink::WebGestureEvent::kGestureScrollUpdate) {
-    EnsureScrollUpdateLatencyComponent(
-        &monitored_latency_info, event_with_callback->event().TimeStamp());
-  }
-
   InputHandlerProxy::EventDisposition disposition = RouteToTypeSpecificHandler(
       event_with_callback->event(), original_latency_info);
 
+  blink::WebGestureEvent::Type type = event_with_callback->event().GetType();
   switch (type) {
     case blink::WebGestureEvent::kGestureScrollBegin:
       is_first_gesture_scroll_update_ = true;
@@ -363,32 +359,6 @@ void InputHandlerProxy::DispatchSingleInputEvent(
   // Will run callback for every original events.
   event_with_callback->RunCallbacks(disposition, monitored_latency_info,
                                     std::move(current_overscroll_params_));
-}
-
-// Scroll updates injected from within the renderer process will not have a
-// scroll update component, since those are added to the latency info
-// in the browser process before being dispatched to the renderer.
-void InputHandlerProxy::EnsureScrollUpdateLatencyComponent(
-    LatencyInfo* monitored_latency_info,
-    base::TimeTicks original_timestamp) {
-  // Currently we only expect LatencyInfo's of type SCROLLBAR to get into
-  // this state, but there are a few exceptions (i.e. GestureScrollUpdates
-  // that are coalesced with GesturePinchUpdates via
-  // CompositorThreadEventQueue::Queue/CoalesceScrollAndPinch).
-  // TODO(dlibby): Update that codepath and turn this into a DCHECK when there
-  // is a missing scroll update component.
-  if (monitored_latency_info->source_event_type() !=
-      ui::SourceEventType::SCROLLBAR)
-    return;
-
-  // Add a scroll update component to the latency info if one doesn't exist,
-  // based on whether or not this is the first scroll update we've seen in a
-  // gesture sequence.
-  monitored_latency_info->AddLatencyNumberWithTimestamp(
-      (is_first_gesture_scroll_update_)
-          ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
-          : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-      original_timestamp, 1);
 }
 
 void InputHandlerProxy::DispatchQueuedInputEvents() {
@@ -435,6 +405,24 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
   // when the gesture is handled.
   DCHECK(!scrollbar_latency_info.FindLatency(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT, nullptr));
+
+  if (type == WebInputEvent::Type::kGestureScrollBegin) {
+    last_injected_gesture_was_begin_ = true;
+  } else {
+    if (type == WebInputEvent::Type::kGestureScrollUpdate) {
+      // For injected GSUs, add a scroll update component to the latency info
+      // so that it is properly classified as a scroll. If the last injected
+      // gesture was a GSB, then this GSU is the first scroll update - mark
+      // the LatencyInfo as such.
+      scrollbar_latency_info.AddLatencyNumberWithTimestamp(
+          (last_injected_gesture_was_begin_)
+              ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
+              : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          original_timestamp, 1);
+    }
+
+    last_injected_gesture_was_begin_ = false;
+  }
 
   std::unique_ptr<EventWithCallback> gesture_event_with_callback_update =
       std::make_unique<EventWithCallback>(
