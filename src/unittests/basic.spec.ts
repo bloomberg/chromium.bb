@@ -9,16 +9,16 @@ import {
 
 export const group = new TestGroup();
 
-group.test('test sync', DefaultFixture, (t) => {
+group.test('test/sync', DefaultFixture, (t) => {
 });
 
-group.test('test async', DefaultFixture, async (t) => {
+group.test('test/async', DefaultFixture, async (t) => {
 });
 
-group.testp('testp sync', {}, DefaultFixture, (t) => {
+group.testp('testp/sync', {}, DefaultFixture, (t) => {
   t.log(JSON.stringify(t.params));
 });
 
-group.testp('testp async', {}, DefaultFixture, async (t) => {
+group.testp('testp/async', {}, DefaultFixture, async (t) => {
   t.log(JSON.stringify(t.params));
 });

@@ -30,20 +30,20 @@ group.test('options', ParamsTest, (t) => {
 
 // TODO: somehow "subgroup" the combine tests
 
-group.test('combine, none', ParamsTest, (t) => {
+group.test('combine/none', ParamsTest, (t) => {
   t.expectSpecEqual(
     pcombine([]),
     []);
 });
 
-group.test('combine, zeroes and ones', ParamsTest, (t) => {
+group.test('combine/zeroes and ones', ParamsTest, (t) => {
   t.expectSpecEqual(pcombine([[], []]), []);
   t.expectSpecEqual(pcombine([[], [{}]]), []);
   t.expectSpecEqual(pcombine([[{}], []]), []);
   t.expectSpecEqual(pcombine([[{}], [{}]]), [{}]);
 });
 
-group.test('combine, mixed', ParamsTest, (t) => {
+group.test('combine/mixed', ParamsTest, (t) => {
   t.expectSpecEqual(
     pcombine([ poptions('x', [1, 2]), poptions('y', ['a', 'b']), [{p: 4}, {q: 5}], [{}] ]),
     [

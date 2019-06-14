@@ -62,7 +62,7 @@ const listing = [];
 const modules = {};
 for (const spec of specFiles) {
   const file = (typeof spec === "string") ? spec : spec.path;
-  const f = file.substring(specDir.length - 1);
+  const f = file.substring(specDir.length);
   if (f.endsWith(specSuffix)) {
     const mod = require("./" + file);
     const testPath = f.substring(0, f.length - specSuffix.length);
