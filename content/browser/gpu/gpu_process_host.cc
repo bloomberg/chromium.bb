@@ -202,6 +202,8 @@ static const char* const kSwitchNames[] = {
     service_manager::switches::kDisableGpuLpac,
     service_manager::switches::kEnableGpuAppContainer,
 #endif  // defined(OS_WIN)
+    switches::kEnableANGLEFeatures,
+    switches::kDisableANGLEFeatures,
     switches::kDisableBreakpad,
     switches::kDisableGpuRasterization,
     switches::kDisableGLExtensions,
