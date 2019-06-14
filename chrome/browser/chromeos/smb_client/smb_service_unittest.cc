@@ -35,6 +35,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::AllOf;
+using ::testing::Field;
 using ::testing::Invoke;
 using ::testing::WithArg;
 
@@ -58,13 +60,10 @@ class MockSmbProviderClient : public chromeos::FakeSmbProviderClient {
   MockSmbProviderClient()
       : FakeSmbProviderClient(true /* should_run_synchronously */) {}
 
-  MOCK_METHOD7(Mount,
+  MOCK_METHOD4(Mount,
                void(const base::FilePath& share_path,
-                    bool ntlm_enabled,
-                    const std::string& workgroup,
-                    const std::string& username,
+                    const MountOptions& options,
                     base::ScopedFD password_fd,
-                    bool skip_connect,
                     SmbProviderClient::MountCallback callback));
   MOCK_METHOD2(SetupKerberos,
                void(const std::string& account_id,
@@ -197,9 +196,11 @@ TEST_F(SmbServiceTest, Remount) {
   registry_->RememberFileSystem(file_system_info, {});
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*mock_client_, Mount(base::FilePath(kMountPath), _, "", "", _,
-                                   true /* skip_connect */, _))
-      .WillOnce(WithArg<6>(
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(base::FilePath(kMountPath),
+            Field(&SmbProviderClient::MountOptions::skip_connect, true), _, _))
+      .WillOnce(WithArg<3>(
           Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
             std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
             run_loop.Quit();
@@ -233,10 +234,16 @@ TEST_F(SmbServiceTest, Remount_ActiveDirectory) {
             base::ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE, base::BindOnce(std::move(callback), true));
           })));
-  EXPECT_CALL(*mock_client_,
-              Mount(base::FilePath(kMountPath), _, kTestDomain, "ad-test-user",
-                    _, true /* skip_connect */, _))
-      .WillOnce(WithArg<6>(
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(
+          base::FilePath(kMountPath),
+          AllOf(
+              Field(&SmbProviderClient::MountOptions::username, "ad-test-user"),
+              Field(&SmbProviderClient::MountOptions::workgroup, kTestDomain),
+              Field(&SmbProviderClient::MountOptions::skip_connect, true)),
+          _, _))
+      .WillOnce(WithArg<3>(
           Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
             std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
             run_loop.Quit();
@@ -263,9 +270,15 @@ TEST_F(SmbServiceTest, Remount_SavedUser) {
   registry_->RememberFileSystem(file_system_info, {});
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*mock_client_, Mount(base::FilePath(kMountPath), _, kTestDomain,
-                                   kTestUser, _, true /* skip_connect */, _))
-      .WillOnce(WithArg<6>(
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(
+          base::FilePath(kMountPath),
+          AllOf(Field(&SmbProviderClient::MountOptions::username, kTestUser),
+                Field(&SmbProviderClient::MountOptions::workgroup, kTestDomain),
+                Field(&SmbProviderClient::MountOptions::skip_connect, true)),
+          _, _))
+      .WillOnce(WithArg<3>(
           Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
             std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
             run_loop.Quit();
@@ -293,9 +306,14 @@ TEST_F(SmbServiceTest, Remount_SavedInvalidUser) {
   registry_->RememberFileSystem(file_system_info, {});
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*mock_client_, Mount(base::FilePath(kMountPath), _, "", "", _,
-                                   true /* skip_connect */, _))
-      .WillOnce(WithArg<6>(
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(base::FilePath(kMountPath),
+            AllOf(Field(&SmbProviderClient::MountOptions::username, ""),
+                  Field(&SmbProviderClient::MountOptions::workgroup, ""),
+                  Field(&SmbProviderClient::MountOptions::skip_connect, true)),
+            _, _))
+      .WillOnce(WithArg<3>(
           Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
             std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
             run_loop.Quit();
@@ -319,9 +337,14 @@ TEST_F(SmbServiceTest, Premount) {
                             *parsed_shares);
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*mock_client_, Mount(base::FilePath(kPremountPath), _, "", "", _,
-                                   true /* skip_connect */, _))
-      .WillOnce(WithArg<6>(
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(base::FilePath(kPremountPath),
+            AllOf(Field(&SmbProviderClient::MountOptions::username, ""),
+                  Field(&SmbProviderClient::MountOptions::workgroup, ""),
+                  Field(&SmbProviderClient::MountOptions::skip_connect, true)),
+            _, _))
+      .WillOnce(WithArg<3>(
           Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
             std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
             run_loop.Quit();
