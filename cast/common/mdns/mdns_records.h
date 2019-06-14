@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
+#include "absl/types/variant.h"
 #include "cast/common/mdns/mdns_constants.h"
 #include "osp_base/ip_address.h"
 
@@ -68,7 +69,8 @@ std::ostream& operator<<(std::ostream& stream, const DomainName& domain_name);
 class RawRecordRdata {
  public:
   RawRecordRdata() = default;
-  RawRecordRdata(uint16_t type, std::vector<uint8_t> rdata);
+  explicit RawRecordRdata(std::vector<uint8_t> rdata);
+  RawRecordRdata(const uint8_t* begin, size_t size);
   RawRecordRdata(const RawRecordRdata& other) = default;
   RawRecordRdata(RawRecordRdata&& other) noexcept = default;
   ~RawRecordRdata() = default;
@@ -80,12 +82,10 @@ class RawRecordRdata {
   bool operator!=(const RawRecordRdata& rhs) const;
 
   size_t max_wire_size() const { return rdata_.size(); }
-  uint16_t type() const { return type_; };
   uint16_t size() const { return rdata_.size(); }
   const uint8_t* data() const { return rdata_.data(); }
 
  private:
-  uint16_t type_ = 0;
   std::vector<uint8_t> rdata_;
 };
 
@@ -215,6 +215,55 @@ class TxtRecordRdata {
 
  private:
   std::vector<std::string> texts_;
+};
+
+using Rdata = absl::variant<RawRecordRdata,
+                            SrvRecordRdata,
+                            ARecordRdata,
+                            AAAARecordRdata,
+                            PtrRecordRdata,
+                            TxtRecordRdata>;
+
+// Resource record top level format (http://www.ietf.org/rfc/rfc1035.txt):
+// name: the name of the node to which this resource record pertains.
+// type: 2 bytes network-order RR TYPE code.
+// class: 2 bytes network-order RR CLASS code.
+// ttl: 4 bytes network-order cache time interval.
+// rdata:  RDATA describing the resource.  The format of this information varies
+// according to the TYPE and CLASS of the resource record.
+class MdnsRecord {
+ public:
+  MdnsRecord() = default;
+  MdnsRecord(DomainName name,
+             uint16_t type,
+             uint16_t record_class,
+             uint32_t ttl,
+             Rdata rdata);
+  MdnsRecord(const MdnsRecord& other) = default;
+  MdnsRecord(MdnsRecord&& other) noexcept = default;
+  ~MdnsRecord() = default;
+
+  MdnsRecord& operator=(const MdnsRecord& other) = default;
+  MdnsRecord& operator=(MdnsRecord&& other) noexcept = default;
+
+  bool operator==(const MdnsRecord& other) const;
+  bool operator!=(const MdnsRecord& other) const;
+
+  size_t max_wire_size() const;
+  const DomainName& name() const { return name_; }
+  uint16_t type() const { return type_; }
+  uint16_t record_class() const { return record_class_; }
+  uint32_t ttl() const { return ttl_; }
+  const Rdata& rdata() const { return rdata_; }
+
+ private:
+  DomainName name_;
+  uint16_t type_ = 0;
+  uint16_t record_class_ = 0;
+  uint32_t ttl_ = 0;
+  // Default-constructed Rdata contains default-constructed RawRecordRdata
+  // as it is the first alternative type and it is default-constructible.
+  Rdata rdata_;
 };
 
 }  // namespace mdns

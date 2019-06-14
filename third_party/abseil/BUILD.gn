@@ -72,9 +72,12 @@ if (build_with_chromium) {
       "src/absl/strings/substitute.h",
       "src/absl/types/bad_optional_access.cc",
       "src/absl/types/bad_optional_access.h",
+      "src/absl/types/bad_variant_access.cc",
+      "src/absl/types/bad_variant_access.h",
       "src/absl/types/optional.cc",
       "src/absl/types/optional.h",
       "src/absl/types/span.h",
+      "src/absl/types/variant.h",
     ]
 
     configs -= [ "//build/config:symbol_visibility_hidden" ]

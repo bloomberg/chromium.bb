@@ -6,6 +6,7 @@
 
 #include "cast/common/mdns/mdns_reader.h"
 #include "cast/common/mdns/mdns_writer.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/network_interface.h"
 
@@ -270,6 +271,237 @@ TEST(MdnsRdataTest, IsEqual) {
   ARecordRdata a_rdata(parse_result.value());
   ARecordRdata a_rdata_2(parse_result.value());
   EXPECT_EQ(a_rdata, a_rdata_2);
+}
+
+TEST(MdnsRecordTest, CopyAndAssign) {
+  DomainName ptr_name;
+  ptr_name.PushLabel("testing");
+  ptr_name.PushLabel("local");
+  PtrRecordRdata rdata(std::move(ptr_name));
+
+  DomainName name;
+  name.PushLabel("hostname");
+  name.PushLabel("local");
+  MdnsRecord record(std::move(name), kTypePTR, kClassIN | kCacheFlushBit, 120,
+                    std::move(rdata));
+
+  MdnsRecord record_copy(record);
+  EXPECT_EQ(record.name(), record_copy.name());
+  EXPECT_EQ(record.type(), record_copy.type());
+  EXPECT_EQ(record.record_class(), record_copy.record_class());
+  EXPECT_EQ(record.ttl(), record_copy.ttl());
+  EXPECT_EQ(record.rdata(), record_copy.rdata());
+  EXPECT_EQ(record, record_copy);
+
+  MdnsRecord record_assign;
+  record_assign = record;
+  EXPECT_EQ(record.name(), record_assign.name());
+  EXPECT_EQ(record.type(), record_assign.type());
+  EXPECT_EQ(record.record_class(), record_copy.record_class());
+  EXPECT_EQ(record.ttl(), record_assign.ttl());
+  EXPECT_EQ(record.rdata(), record_copy.rdata());
+  EXPECT_EQ(record, record_assign);
+}
+
+TEST(MdnsRecordTest, ReadARecord) {
+  // clang-format off
+  const uint8_t kTestRecord[] = {
+      0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      0x00, 0x01,              // TYPE = A (1)
+      0x80, 0x01,              // CLASS = IN (1) | CACHE_FLUSH_BIT
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x04,              // RDLENGTH = 4 bytes
+      0x08, 0x08, 0x08, 0x08,  // RDATA = 8.8.8.8
+  };
+  // clang-format on
+  MdnsReader reader(kTestRecord, sizeof(kTestRecord));
+  MdnsRecord record;
+  EXPECT_TRUE(reader.ReadMdnsRecord(&record));
+  EXPECT_EQ(reader.remaining(), UINT64_C(0));
+
+  EXPECT_EQ(record.name().ToString(), "testing.local");
+  EXPECT_EQ(record.type(), kTypeA);
+  EXPECT_EQ(record.record_class(), kClassIN | kCacheFlushBit);
+  EXPECT_EQ(record.ttl(), UINT32_C(120));
+  ARecordRdata a_rdata(IPAddress{8, 8, 8, 8});
+  EXPECT_EQ(record.rdata(), Rdata(a_rdata));
+}
+
+TEST(MdnsRecordTest, ReadUnknownRecordType) {
+  // clang-format off
+  const uint8_t kTestRecord[] = {
+      0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      0x00, 0x05,              // TYPE = CNAME (5)
+      0x80, 0x01,              // CLASS = IN (1) | CACHE_FLUSH_BIT
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x08,              // RDLENGTH = 8 bytes
+      0x05, 'c', 'n', 'a', 'm', 'e', 0xc0, 0x00,
+  };
+  const uint8_t kCnameRdata[] = {
+      0x05, 'c', 'n', 'a', 'm', 'e', 0xc0, 0x00,
+  };
+  // clang-format on
+  MdnsReader reader(kTestRecord, sizeof(kTestRecord));
+  MdnsRecord record;
+  EXPECT_TRUE(reader.ReadMdnsRecord(&record));
+  EXPECT_EQ(reader.remaining(), UINT64_C(0));
+
+  EXPECT_EQ(record.name().ToString(), "testing.local");
+  EXPECT_EQ(record.type(), kTypeCNAME);
+  EXPECT_EQ(record.record_class(), kClassIN | kCacheFlushBit);
+  EXPECT_EQ(record.ttl(), UINT32_C(120));
+  RawRecordRdata raw_rdata(kCnameRdata, sizeof(kCnameRdata));
+  EXPECT_EQ(record.rdata(), Rdata(raw_rdata));
+}
+
+TEST(MdnsRecordTest, ReadCompressedNames) {
+  // clang-format off
+  const uint8_t kTestRecord[] = {
+      // First message
+      0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      0x00, 0x0c,              // TYPE = PTR (12)
+      0x00, 0x01,              // CLASS = IN (1)
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x06,              // RDLENGTH = 6 bytes
+      0x03, 'p',  't',  'r',
+      0xc0, 0x00,              // Domain name label pointer to byte 0
+      // Second message
+      0x03, 'o', 'n', 'e',
+      0x03, 't', 'w', 'o',
+      0xc0, 0x00,              // Domain name label pointer to byte 0
+      0x00, 0x01,              // TYPE = A (1)
+      0x80, 0x01,              // CLASS = IN (1) | CACHE_FLUSH_BIT
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x04,              // RDLENGTH = 4 bytes
+      0x08, 0x08, 0x08, 0x08,  // RDATA = 8.8.8.8
+  };
+  // clang-format on
+  MdnsReader reader(kTestRecord, sizeof(kTestRecord));
+
+  MdnsRecord record;
+  EXPECT_TRUE(reader.ReadMdnsRecord(&record));
+
+  EXPECT_EQ(record.name().ToString(), "testing.local");
+  EXPECT_EQ(record.type(), kTypePTR);
+  EXPECT_EQ(record.record_class(), kClassIN);
+  EXPECT_EQ(record.ttl(), UINT32_C(120));
+  DomainName ptr_name;
+  ptr_name.PushLabel("ptr");
+  ptr_name.PushLabel("testing");
+  ptr_name.PushLabel("local");
+  PtrRecordRdata ptr_rdata(std::move(ptr_name));
+  EXPECT_EQ(record.rdata(), Rdata(ptr_rdata));
+
+  EXPECT_TRUE(reader.ReadMdnsRecord(&record));
+  EXPECT_EQ(reader.remaining(), UINT64_C(0));
+
+  EXPECT_EQ(record.name().ToString(), "one.two.testing.local");
+  EXPECT_EQ(record.type(), kTypeA);
+  EXPECT_EQ(record.record_class(), kClassIN | kCacheFlushBit);
+  EXPECT_EQ(record.ttl(), UINT32_C(120));
+  ARecordRdata a_rdata(IPAddress{8, 8, 8, 8});
+  EXPECT_EQ(record.rdata(), Rdata(a_rdata));
+}
+
+TEST(MdnsRecordTest, FailToReadMissingRdata) {
+  // clang-format off
+  const uint8_t kTestRecord[] = {
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      0x00, 0x01,              // TYPE = A (1)
+      0x00, 0x01,              // CLASS = IN (1)
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x04,              // RDLENGTH = 4 bytes
+                               // Missing RDATA
+  };
+  // clang-format on
+  MdnsReader reader(kTestRecord, sizeof(kTestRecord));
+  MdnsRecord record;
+  EXPECT_FALSE(reader.ReadMdnsRecord(&record));
+}
+
+TEST(MdnsRecordTest, FailToReadInvalidHostName) {
+  // clang-format off
+  const uint8_t kTestRecord[] = {
+      // Invalid NAME: length byte too short
+      0x03, 'i', 'n', 'v', 'a', 'l', 'i', 'd',
+      0x00,
+      0x00, 0x01,              // TYPE = A (1)
+      0x00, 0x01,              // CLASS = IN (1)
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x04,              // RDLENGTH = 4 bytes
+      0x08, 0x08, 0x08, 0x08,  // RDATA = 8.8.8.8
+  };
+  // clang-format on
+  MdnsReader reader(kTestRecord, sizeof(kTestRecord));
+  MdnsRecord record;
+  EXPECT_FALSE(reader.ReadMdnsRecord(&record));
+}
+
+TEST(MdnsRecordTest, WriteARecord) {
+  // clang-format off
+  const uint8_t kExpectedResult[] = {
+      0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      0x00, 0x01,              // TYPE = A (1)
+      0x80, 0x01,              // CLASS = IN (1) | CACHE_FLUSH_BIT
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x04,              // RDLENGTH = 4 bytes
+      0xac, 0x00, 0x00, 0x01,  // 172.0.0.1
+  };
+  // clang-format on
+  DomainName name;
+  name.PushLabel("testing");
+  name.PushLabel("local");
+  ARecordRdata a_rdata(IPAddress{172,0,0,1});
+  MdnsRecord record(std::move(name), kTypeA, kClassIN | kCacheFlushBit, 120,
+                    std::move(a_rdata));
+
+  std::vector<uint8_t> buffer(sizeof(kExpectedResult));
+  MdnsWriter writer(buffer.data(), buffer.size());
+  EXPECT_TRUE(writer.WriteMdnsRecord(record));
+  EXPECT_EQ(writer.remaining(), UINT64_C(0));
+  EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedResult));
+}
+
+TEST(MdnsRecordTest, WritePtrRecord) {
+  // clang-format off
+  const uint8_t kExpectedResult[] = {
+      0x08, '_', 's', 'e', 'r', 'v', 'i', 'c', 'e',
+      0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      0x00, 0x0c,              // TYPE = PTR (12)
+      0x00, 0x01,              // CLASS = IN (1)
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x02,              // RDLENGTH = 2 bytes
+      0xc0, 0x09,              // Domain name label pointer to byte
+  };
+  // clang-format on
+  DomainName name;
+  name.PushLabel("_service");
+  name.PushLabel("testing");
+  name.PushLabel("local");
+
+  DomainName ptr_name;
+  ptr_name.PushLabel("testing");
+  ptr_name.PushLabel("local");
+  PtrRecordRdata ptr_rdata(std::move(ptr_name));
+
+  MdnsRecord record(std::move(name), kTypePTR, kClassIN, 120, std::move(ptr_rdata));
+
+  std::vector<uint8_t> buffer(sizeof(kExpectedResult));
+  MdnsWriter writer(buffer.data(), buffer.size());
+  EXPECT_TRUE(writer.WriteMdnsRecord(record));
+  EXPECT_EQ(writer.remaining(), UINT64_C(0));
+  EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedResult));
 }
 
 }  // namespace mdns

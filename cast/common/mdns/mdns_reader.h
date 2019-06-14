@@ -27,9 +27,14 @@ class MdnsReader : public openscreen::BigEndianReader {
   bool ReadAAAARecordRdata(AAAARecordRdata* out);
   bool ReadPtrRecordRdata(PtrRecordRdata* out);
   bool ReadTxtRecordRdata(TxtRecordRdata* out);
+  // This method reads a DNS resource record with its RDATA.
+  // The correct type of RDATA to be read is determined by the type
+  // specified in the record.
+  bool ReadMdnsRecord(MdnsRecord* out);
 
 private:
   bool ReadIPAddress(IPAddress::Version version, IPAddress* out);
+  bool ReadRdata(uint16_t type, Rdata* out);
 };
 
 }  // namespace mdns

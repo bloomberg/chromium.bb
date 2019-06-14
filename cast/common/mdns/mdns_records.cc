@@ -67,18 +67,17 @@ std::ostream& operator<<(std::ostream& stream, const DomainName& domain_name) {
   return stream << domain_name.ToString();
 }
 
-RawRecordRdata::RawRecordRdata(uint16_t type, std::vector<uint8_t> rdata)
-    : type_(type), rdata_(std::move(rdata)) {
+RawRecordRdata::RawRecordRdata(std::vector<uint8_t> rdata)
+    : rdata_(std::move(rdata)) {
   // Ensure RDATA length does not exceed the maximum allowed.
-  OSP_DCHECK(rdata.size() <= std::numeric_limits<uint16_t>::max());
-  // Ensure known RDATA types never generate raw record instance.
-  OSP_DCHECK(std::none_of(std::begin(kSupportedRdataTypes),
-                          std::end(kSupportedRdataTypes),
-                          [type](uint16_t entry) { return entry == type; }));
+  OSP_DCHECK(rdata_.size() <= std::numeric_limits<uint16_t>::max());
 }
 
+RawRecordRdata::RawRecordRdata(const uint8_t* begin, size_t size)
+    : RawRecordRdata(std::vector<uint8_t>(begin, begin + size)) {}
+
 bool RawRecordRdata::operator==(const RawRecordRdata& rhs) const {
-  return (type_ == rhs.type_) && (rdata_ == rhs.rdata_);
+  return rdata_ == rhs.rdata_;
 }
 
 bool RawRecordRdata::operator!=(const RawRecordRdata& rhs) const {
@@ -169,6 +168,43 @@ size_t TxtRecordRdata::max_wire_size() const {
   }
   // We will always return at least 1 NULL byte.
   return total_size ? total_size : 1;
+}
+
+MdnsRecord::MdnsRecord(DomainName name,
+                       uint16_t type,
+                       uint16_t record_class,
+                       uint32_t ttl,
+                       Rdata rdata)
+    : name_(std::move(name)),
+      type_(type),
+      record_class_(record_class),
+      ttl_(ttl),
+      rdata_(std::move(rdata)) {
+  OSP_DCHECK(!name_.empty());
+  OSP_DCHECK(
+      (type == kTypeSRV && absl::holds_alternative<SrvRecordRdata>(rdata_)) ||
+      (type == kTypeA && absl::holds_alternative<ARecordRdata>(rdata_)) ||
+      (type == kTypeAAAA && absl::holds_alternative<AAAARecordRdata>(rdata_)) ||
+      (type == kTypePTR && absl::holds_alternative<PtrRecordRdata>(rdata_)) ||
+      (type == kTypeTXT && absl::holds_alternative<TxtRecordRdata>(rdata_)) ||
+      absl::holds_alternative<RawRecordRdata>(rdata_));
+}
+
+bool MdnsRecord::operator==(const MdnsRecord& rhs) const {
+  return type_ == rhs.type_ && record_class_ == rhs.record_class_ &&
+         ttl_ == rhs.ttl_ && name_ == rhs.name_ && rdata_ == rhs.rdata_;
+}
+
+bool MdnsRecord::operator!=(const MdnsRecord& rhs) const {
+  return !(*this == rhs);
+}
+
+size_t MdnsRecord::max_wire_size() const {
+  auto wire_size_visitor = [](auto&& arg) {
+    return arg.max_wire_size();
+  };
+  return name_.max_wire_size() + sizeof(type_) + sizeof(record_class_) +
+         sizeof(ttl_) + absl::visit(wire_size_visitor, rdata_);
 }
 
 }  // namespace mdns

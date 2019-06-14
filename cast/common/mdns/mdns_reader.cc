@@ -94,7 +94,7 @@ bool MdnsReader::ReadRawRecordRdata(RawRecordRdata* out) {
   if (Read<uint16_t>(&record_length)) {
     std::vector<uint8_t> buffer(record_length);
     if (ReadBytes(buffer.size(), buffer.data())) {
-      *out = RawRecordRdata(0, std::move(buffer));
+      *out = RawRecordRdata(std::move(buffer));
       cursor.Commit();
       return true;
     }
@@ -188,7 +188,26 @@ bool MdnsReader::ReadTxtRecordRdata(TxtRecordRdata* out) {
   return false;
 }
 
-bool MdnsReader::ReadIPAddress(IPAddress::Version version, IPAddress* out){
+bool MdnsReader::ReadMdnsRecord(MdnsRecord* out) {
+  OSP_DCHECK(out);
+  Cursor cursor(this);
+  DomainName name;
+  uint16_t type;
+  uint16_t record_class;
+  uint32_t ttl;
+  Rdata rdata;
+  if (ReadDomainName(&name) && Read<uint16_t>(&type) &&
+      Read<uint16_t>(&record_class) && Read<uint32_t>(&ttl) &&
+      ReadRdata(type, &rdata)) {
+    *out =
+        MdnsRecord(std::move(name), type, record_class, ttl, std::move(rdata));
+    cursor.Commit();
+    return true;
+  }
+  return false;
+}
+
+bool MdnsReader::ReadIPAddress(IPAddress::Version version, IPAddress* out) {
   size_t ipaddress_size = (version == IPAddress::Version::kV6)
                               ? IPAddress::kV6Size
                               : IPAddress::kV4Size;
@@ -198,6 +217,59 @@ bool MdnsReader::ReadIPAddress(IPAddress::Version version, IPAddress* out){
     return true;
   }
   return false;
+}
+
+bool MdnsReader::ReadRdata(uint16_t type, Rdata* out) {
+  switch (type) {
+    case kTypeSRV: {
+      SrvRecordRdata srv_rdata;
+      if (ReadSrvRecordRdata(&srv_rdata)) {
+        *out = std::move(srv_rdata);
+        return true;
+      }
+      return false;
+    }
+    case kTypeA: {
+      ARecordRdata a_rdata;
+      if (ReadARecordRdata(&a_rdata)) {
+        *out = std::move(a_rdata);
+        return true;
+      }
+      return false;
+    }
+    case kTypeAAAA: {
+      AAAARecordRdata aaaa_rdata;
+      if (ReadAAAARecordRdata(&aaaa_rdata)) {
+        *out = std::move(aaaa_rdata);
+        return true;
+      }
+      return false;
+    }
+    case kTypePTR: {
+      PtrRecordRdata ptr_rdata;
+      if (ReadPtrRecordRdata(&ptr_rdata)) {
+        *out = std::move(ptr_rdata);
+        return true;
+      }
+      return false;
+    }
+    case kTypeTXT: {
+      TxtRecordRdata txt_rdata;
+      if (ReadTxtRecordRdata(&txt_rdata)) {
+        *out = std::move(txt_rdata);
+        return true;
+      }
+      return false;
+    }
+    default: {
+      RawRecordRdata raw_rdata;
+      if (ReadRawRecordRdata(&raw_rdata)) {
+        *out = std::move(raw_rdata);
+        return true;
+      }
+      return false;
+    }
+  }
 }
 
 }  // namespace mdns

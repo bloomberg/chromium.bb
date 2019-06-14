@@ -137,6 +137,7 @@ include_rules = [
     '+absl/strings/substitute.h',
     '+absl/types/optional.h',
     '+absl/types/span.h',
+    '+absl/types/variant.h',
 
     # Test framework includes.
     "-third_party/googletest",
