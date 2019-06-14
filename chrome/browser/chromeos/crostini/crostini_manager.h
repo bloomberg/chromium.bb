@@ -212,6 +212,12 @@ class InstallerViewStatusObserver : public base::CheckedObserver {
   virtual void OnCrostiniInstallerViewStatusChanged(bool open) = 0;
 };
 
+class VmShutdownObserver : public base::CheckedObserver {
+ public:
+  // Called when the given VM has shutdown.
+  virtual void OnVmShutdown(const std::string& vm_name) = 0;
+};
+
 // CrostiniManager is a singleton which is used to check arguments for
 // ConciergeClient and CiceroneClient. ConciergeClient is dedicated to
 // communication with the Concierge service, CiceroneClient is dedicated to
@@ -594,6 +600,10 @@ class CrostiniManager : public KeyedService,
   void RemoveImportContainerProgressObserver(
       ImportContainerProgressObserver* observer);
 
+  // Add/remove vm shutdown observers.
+  void AddVmShutdownObserver(VmShutdownObserver* observer);
+  void RemoveVmShutdownObserver(VmShutdownObserver* observer);
+
   // ConciergeClient::Observer:
   void OnContainerStartupFailed(
       const vm_tools::concierge::ContainerStartedSignal& signal) override;
@@ -916,6 +926,8 @@ class CrostiniManager : public KeyedService,
       export_container_progress_observers_;
   base::ObserverList<ImportContainerProgressObserver>::Unchecked
       import_container_progress_observers_;
+
+  base::ObserverList<VmShutdownObserver> vm_shutdown_observers_;
 
   // Restarts by <vm_name, container_name>. Only one restarter flow is actually
   // running for a given container, other restarters will just have their

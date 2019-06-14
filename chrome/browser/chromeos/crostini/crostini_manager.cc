@@ -1719,6 +1719,13 @@ void CrostiniManager::RemoveImportContainerProgressObserver(
   import_container_progress_observers_.RemoveObserver(observer);
 }
 
+void CrostiniManager::AddVmShutdownObserver(VmShutdownObserver* observer) {
+  vm_shutdown_observers_.AddObserver(observer);
+}
+void CrostiniManager::RemoveVmShutdownObserver(VmShutdownObserver* observer) {
+  vm_shutdown_observers_.RemoveObserver(observer);
+}
+
 void CrostiniManager::OnCreateDiskImage(
     CreateDiskImageCallback callback,
     base::Optional<vm_tools::concierge::CreateDiskImageResponse> reply) {
@@ -1883,6 +1890,11 @@ void CrostiniManager::OnStopVm(
       return;
     }
   }
+  // Notify observers
+  for (auto& observer : vm_shutdown_observers_) {
+    observer.OnVmShutdown(vm_name);
+  }
+
   // Remove from running_vms_, and other vm-keyed state.
   running_vms_.erase(vm_name);
   running_containers_.erase(vm_name);
