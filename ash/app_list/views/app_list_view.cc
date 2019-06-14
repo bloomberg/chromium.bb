@@ -1881,15 +1881,8 @@ void AppListView::OnWindowBoundsChanged(aura::Window* window,
                                         ui::PropertyChangeReason reason) {
   DCHECK_EQ(GetWidget()->GetNativeView(), window);
 
-  // When the virtual keyboard shows, the AppListView is moved upward to avoid
-  // the overlapping area with the virtual keyboard. As a result, its bottom
-  // side may be on the display edge. Stop showing the rounded corners under
-  // this circumstance.
-  const bool hide_rounded_corners =
-      app_list_state_ == ash::AppListViewState::kHalf && new_bounds.y() == 0;
-
   gfx::Transform transform;
-  if (hide_rounded_corners)
+  if (ShouldHideRoundedCorners(new_bounds))
     transform.Translate(0, -kAppListBackgroundRadius);
 
   app_list_background_shield_->SetTransform(transform);
@@ -2130,13 +2123,10 @@ void AppListView::UpdateAppListBackgroundYPosition() {
       transform.Translate(
           0, -kAppListBackgroundRadius * (app_list_transition_progress - 1));
     }
-  } else if (is_fullscreen() ||
-             (app_list_state_ == ash::AppListViewState::kHalf &&
-              GetBoundsInScreen().y() == 0)) {
+  } else if (is_fullscreen() || ShouldHideRoundedCorners(GetBoundsInScreen())) {
     // AppListView::Layout may be called after OnWindowBoundsChanged. It may
     // reset the transform of |app_list_background_shield_|. So hide the rounded
-    // corners when AppListView is in Half state and its bottom is on the
-    // display edge.
+    // corners here when ShouldHideRoundedCorners returns true.
     transform.Translate(0, -kAppListBackgroundRadius);
   }
   app_list_background_shield_->SetTransform(transform);
@@ -2163,6 +2153,16 @@ bool AppListView::ShouldUpdateChildViewsDuringAnimation(
 
   return GetWidget()->GetNativeView()->bounds().origin().y() >
          GetPreferredWidgetYForState(target_state);
+}
+
+bool AppListView::ShouldHideRoundedCorners(const gfx::Rect& bounds) const {
+  // When the virtual keyboard shows, the AppListView is moved upward to avoid
+  // the overlapping area with the virtual keyboard. As a result, its bottom
+  // side may be on the display edge. Stop showing the rounded corners under
+  // this circumstance.
+  return (app_list_state_ == ash::AppListViewState::kPeeking ||
+          app_list_state_ == ash::AppListViewState::kHalf) &&
+         bounds.y() == 0;
 }
 
 void AppListView::OnStateTransitionAnimationCompleted() {
