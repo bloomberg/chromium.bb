@@ -100,6 +100,13 @@
 
         <script>
           let pages = [
+            { title: 'Barebones', category: 'Basics',
+              path: 'xr-barebones.html',
+              description: 'Extremely simple use of WebXR with no library dependencies. Doesn\'t render anything exciting.' },
+
+            { tag: 'hr' },
+            { tag: 'br' },
+
             { title: 'XR Presentation', category: 'Basics',
               path: 'xr-presentation.html',
               description: 'Demonstrates how to present a simple WebGL scene to a XRDevice.' },
@@ -154,22 +161,17 @@
             { title: 'Spectator Mode', category: 'Advanced Techniques',
               path: 'spectator-mode.html',
               description: 'Demonstrates rendering a 3rd person view of the scene to an external monitor.' },
-
-            { tag: 'hr' },
-            { tag: 'br' },
-
-            { title: 'Barebones', category: 'WIN32_LEAN_AND_MEAN',
-              path: 'xr-barebones.html',
-              description: 'Extremely simple use of WebXR with no library dependencies. Doesn\'t render anything exciting.' },
           ];
 
           let mainElement = document.getElementById("main");
 
           // Append an element for every item in the pages list.
+          let tag_count = 0;
           for (var i = 0; i < pages.length; ++i) {
             var page = pages[i];
 
             if (page.tag) {
+              tag_count++;
               mainElement.appendChild(document.createElement(page.tag));
               continue;
             }
@@ -177,7 +179,7 @@
             let article = document.createElement('article');
 
             let title = document.createElement('h3');
-            title.setAttribute('data-index', i + 1);
+            title.setAttribute('data-index', i + 1 - tag_count);
 
             let titleLink = document.createElement('a');
             titleLink.href = page.path;
