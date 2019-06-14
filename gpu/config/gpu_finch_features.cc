@@ -89,6 +89,10 @@ const base::Feature kGpuWatchdogNoTerminationAwaitingAcknowledge{
     "GpuWatchdogNoTerminationAwaitingAcknowledge",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Gpu watchdog V2 to simplify the logic and reduce GPU hangs
+const base::Feature kGpuWatchdogV2{"GpuWatchdogV2",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_MACOSX)
 // Enable use of Metal for OOP rasterization.
 const base::Feature kMetal{"Metal", base::FEATURE_DISABLED_BY_DEFAULT};
