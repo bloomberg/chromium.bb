@@ -1196,6 +1196,58 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InScopePWAPopupsHaveCorrectSize) {
   EXPECT_EQ(size, popup_browser->window()->GetContentsSize());
 }
 
+// Tests that app windows are correctly restored.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, RestoreAppWindow) {
+  ASSERT_TRUE(https_server()->Start());
+
+  InstallSecurePWA();
+  ASSERT_TRUE(app_browser_->is_app());
+  app_browser_->window()->Close();
+
+  content::WebContentsAddedObserver new_contents_observer;
+
+  sessions::TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(profile());
+  service->RestoreMostRecentEntry(nullptr);
+
+  content::WebContents* restored_web_contents =
+      new_contents_observer.GetWebContents();
+  Browser* restored_browser =
+      chrome::FindBrowserWithWebContents(restored_web_contents);
+
+  EXPECT_TRUE(restored_browser->is_app());
+}
+
+// Tests that app windows are restored in a tab if the app is uninstalled.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+                       RestoreAppWindowForUninstalledApp) {
+  ASSERT_TRUE(https_server()->Start());
+
+  InstallSecurePWA();
+  ASSERT_TRUE(app_browser_->is_app());
+  ASSERT_FALSE(app_browser_->is_type_tabbed());
+  app_browser_->window()->Close();
+
+  extensions::TestExtensionRegistryObserver test_observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()), app_->id());
+  UninstallExtension(app_->id());
+  test_observer.WaitForExtensionUninstalled();
+
+  content::WebContentsAddedObserver new_contents_observer;
+
+  sessions::TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(profile());
+  service->RestoreMostRecentEntry(nullptr);
+
+  content::WebContents* restored_web_contents =
+      new_contents_observer.GetWebContents();
+  Browser* restored_browser =
+      chrome::FindBrowserWithWebContents(restored_web_contents);
+
+  EXPECT_FALSE(restored_browser->is_app());
+  EXPECT_TRUE(restored_browser->is_type_tabbed());
+}
+
 // Test navigating to an out of scope url on the same origin causes the url
 // to be shown to the user.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
