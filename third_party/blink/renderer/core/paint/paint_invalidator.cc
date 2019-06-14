@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
@@ -270,6 +271,13 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
          fragment_data.PaintOffset());
 
   fragment_data.SetVisualRect(ComputeVisualRect(object, context));
+
+  object.GetFrameView()->GetJankTracker().NotifyObjectPrePaint(
+      object,
+      PropertyTreeState(*context.tree_builder_context_->current.transform,
+                        *context.tree_builder_context_->current.clip,
+                        *context.tree_builder_context_->current_effect),
+      context.old_visual_rect, fragment_data.VisualRect());
 }
 
 void PaintInvalidator::UpdateEmptyVisualRectFlag(

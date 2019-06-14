@@ -1316,7 +1316,7 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
 
     LocalFrameView* frame_view = layout_object.View()->GetFrameView();
     frame_view->GetJankTracker().NotifyCompositedLayerMoved(
-        OwningLayer(), FloatRect(old_position, FloatSize(old_size)),
+        layout_object, FloatRect(old_position, FloatSize(old_size)),
         FloatRect(new_position, FloatSize(new_size)));
   }
   graphics_layer_->SetOffsetFromLayoutObject(

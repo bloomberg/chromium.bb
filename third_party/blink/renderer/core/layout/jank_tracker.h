@@ -17,7 +17,7 @@ namespace blink {
 class IntRect;
 class LayoutObject;
 class LocalFrameView;
-class PaintLayer;
+class PropertyTreeState;
 class TracedValue;
 class WebInputEvent;
 
@@ -30,9 +30,10 @@ class CORE_EXPORT JankTracker {
   JankTracker(LocalFrameView*);
   ~JankTracker() {}
   void NotifyObjectPrePaint(const LayoutObject& object,
+                            const PropertyTreeState& property_tree_state,
                             const IntRect& old_visual_rect,
-                            const PaintLayer& painting_layer);
-  void NotifyCompositedLayerMoved(const PaintLayer&,
+                            const IntRect& new_visual_rect);
+  void NotifyCompositedLayerMoved(const LayoutObject& object,
                                   FloatRect old_layer_rect,
                                   FloatRect new_layer_rect);
   void NotifyPrePaintFinished();
@@ -48,7 +49,7 @@ class CORE_EXPORT JankTracker {
 
  private:
   void AccumulateJank(const LayoutObject&,
-                      const PaintLayer&,
+                      const PropertyTreeState&,
                       FloatRect old_rect,
                       FloatRect new_rect);
   void TimerFired(TimerBase*) {}

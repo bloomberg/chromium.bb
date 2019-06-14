@@ -391,10 +391,6 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     ToLayoutBoxModelObject(object).Layer()->SetNeedsRepaint();
 
   CompositingLayerPropertyUpdater::Update(object);
-
-  object.GetFrameView()->GetJankTracker().NotifyObjectPrePaint(
-      object, paint_invalidator_context.old_visual_rect,
-      *paint_invalidator_context.painting_layer);
 }
 
 void PrePaintTreeWalk::Walk(const LayoutObject& object) {

@@ -366,6 +366,32 @@ TEST_F(JankTrackerTest, ShiftInToViewport) {
   EXPECT_FLOAT_EQ(0.25, GetJankTracker().Score());
 }
 
+TEST_F(JankTrackerTest, ClipWithoutPaintLayer) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 200px; height: 500px; }
+      #space { height: 1000px; margin-bottom: -500px; }
+      #j { width: 150px; height: 150px; background: yellow; }
+    </style>
+    <div id='scroller'>
+      <div id='space'></div>
+      <div id='j'></div>
+    </div>
+  )HTML");
+
+  // Increase j's top margin by 100px. Since j is clipped by the scroller, this
+  // should not generate jank. However, due to the issue in crbug/971639, this
+  // case was erroneously reported as janking, before that bug was fixed. This
+  // test ensures we do not regress this behavior.
+  GetDocument().getElementById("j")->setAttribute(
+      html_names::kStyleAttr, AtomicString("margin-top: 100px"));
+
+  UpdateAllLifecyclePhases();
+  // Make sure no jank score is reported, since the element that moved is fully
+  // clipped by the scroller.
+  EXPECT_FLOAT_EQ(0.0, GetJankTracker().Score());
+}
+
 class JankTrackerSimTest : public SimTest {};
 
 TEST_F(JankTrackerSimTest, SubframeWeighting) {
