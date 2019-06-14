@@ -116,7 +116,7 @@ LRESULT CALLBACK MainMessagePump::windowProcedure(NativeView window_handle,
         DWORD scheduleTime = pump->d_scheduleTime;
         DWORD currentTime = ::GetTickCount();
         if (pump->d_minTimer < currentTime - scheduleTime) {
-            pump->d_skipIdleWork = true;
+            pump->d_allowIdleWork = false;
             pump->schedulePumpIfNecessary();
         }
     }
@@ -187,7 +187,7 @@ LRESULT CALLBACK MainMessagePump::windowProcedureHook(int code,
 
         if (0 != scheduleTime &&
             pump->d_maxTimer < currentTime - scheduleTime) {
-            pump->d_skipIdleWork = true;
+            pump->d_allowIdleWork = false;
             pump->schedulePumpIfNecessary();
         }
     }
@@ -281,7 +281,7 @@ void MainMessagePump::doWork()
         }
     }
     else {
-        d_skipIdleWork = false;
+        d_allowIdleWork = true;
     }
 
     unsigned int endTime1 = ::GetTickCount();
@@ -360,7 +360,7 @@ MainMessagePump::MainMessagePump()
     , d_isPumped(0)
     , d_needRepost(0)
     , d_scheduleTime(0)
-    , d_skipIdleWork(false)
+    , d_allowIdleWork(true)
     , d_windowProcedureHook(0)
     , d_messageFilter(0)
     , d_minTimer(USER_TIMER_MINIMUM)
@@ -523,14 +523,13 @@ void MainMessagePump::postHandleMessage(const MSG& msg)
 
     if (has_work && 0 == wasPumped) {
         bool allowNormalWork = false;
-        bool allowIdleWork = false;
-        d_scheduler->isReadyToWork(&allowNormalWork, &allowIdleWork);
+        d_scheduler->isReadyToWork(&allowNormalWork, &d_allowIdleWork);
+
+        // Normal work must be allowed if idle work is allowed.  The scheduler
+        // is at fault if it ever allows idle work but not normal work.
+        DCHECK(!d_allowIdleWork || allowNormalWork);
 
         if (allowNormalWork) {
-            if (!allowIdleWork) {
-                d_skipIdleWork = true;
-            }
-
             schedulePump();
         }
     }
@@ -611,7 +610,7 @@ void MainMessagePump::ScheduleWork()
         // it.  Given that the peek operation is not very cheap, we only do it
         // in postHandleMessage().  For all other times, we assume a non-idle
         // state.
-        d_skipIdleWork = true;
+        d_allowIdleWork = false;
         schedulePump();
     }
 }

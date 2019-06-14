@@ -63,7 +63,7 @@ class MainMessagePump final : public base::MessagePumpForUI {
     LONG d_isPumped;
     LONG d_needRepost;
     DWORD d_scheduleTime;
-    bool d_skipIdleWork;
+    bool d_allowIdleWork;
     HHOOK d_windowProcedureHook;
     HHOOK d_messageFilter;
     unsigned int d_minTimer;
