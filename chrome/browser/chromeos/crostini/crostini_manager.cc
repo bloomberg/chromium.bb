@@ -2615,6 +2615,12 @@ void CrostiniManager::OnImportLxdContainerProgress(
       call_original_callback = true;
       result = CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE;
       break;
+    case vm_tools::cicerone::ImportLxdContainerProgressSignal::FAILED_SPACE:
+      call_observers = true;
+      status = ImportContainerProgressStatus::FAILURE_SPACE;
+      call_original_callback = true;
+      result = CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_SPACE;
+      break;
     default:
       call_original_callback = true;
       result = CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED;
@@ -2628,7 +2634,8 @@ void CrostiniManager::OnImportLxdContainerProgress(
       observer.OnImportContainerProgress(
           signal.vm_name(), signal.container_name(), status,
           signal.progress_percent(), signal.progress_speed(),
-          signal.architecture_device(), signal.architecture_container());
+          signal.architecture_device(), signal.architecture_container(),
+          signal.available_space(), signal.min_required_space());
     }
   }
 

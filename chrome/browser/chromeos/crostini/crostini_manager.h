@@ -72,6 +72,7 @@ enum class CrostiniResult {
   CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED,
   CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE,
   NOT_ALLOWED,
+  CONTAINER_EXPORT_IMPORT_FAILED_SPACE,
 };
 
 enum class InstallLinuxPackageProgressStatus {
@@ -102,6 +103,7 @@ enum class ImportContainerProgressStatus {
   UPLOAD,
   UNPACK,
   FAILURE_ARCHITECTURE,
+  FAILURE_SPACE,
 };
 
 struct VmInfo {
@@ -199,7 +201,9 @@ class ImportContainerProgressObserver {
       int progress_percent,
       uint64_t progress_speed,
       const std::string& architecture_device,
-      const std::string& architecture_container) = 0;
+      const std::string& architecture_container,
+      uint64_t available_space,
+      uint64_t minimum_required_space) = 0;
 };
 
 class InstallerViewStatusObserver : public base::CheckedObserver {
