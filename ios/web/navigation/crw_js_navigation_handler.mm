@@ -44,6 +44,9 @@ const char kCommandPrefix[] = "navigation";
           if (*command == "navigation.hashchange") {
             [weakSelf handleWindowHashChangeInFrame:senderFrame];
             return true;
+          } else if (*command == "navigation.willChangeState") {
+            [weakSelf handleWindowWillChangeStateInFrame:senderFrame];
+            return true;
           }
           return false;
         };
@@ -68,7 +71,7 @@ const char kCommandPrefix[] = "navigation";
   return &(self.webStateImpl->GetNavigationManagerImpl());
 }
 
-// Handles the window.hashchange event emitted from |senderFrame|.
+// Handles the navigation.hashchange event emitted from |senderFrame|.
 - (void)handleWindowHashChangeInFrame:(web::WebFrame*)senderFrame {
   if (!senderFrame->IsMainFrame())
     return;
@@ -82,6 +85,13 @@ const char kCommandPrefix[] = "navigation";
     web::NavigationItemImpl* item =
         self.navigationManagerImpl->GetCurrentItemImpl();
     item->SetIsCreatedFromHashChange(true);
+  }
+}
+
+// Handles the navigation.willChangeState message sent from |senderFrame|.
+- (void)handleWindowWillChangeStateInFrame:(web::WebFrame*)senderFrame {
+  if (senderFrame->IsMainFrame()) {
+    self.changingHistoryState = YES;
   }
 }
 

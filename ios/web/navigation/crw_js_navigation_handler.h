@@ -31,6 +31,10 @@ class WebStateImpl;
 // history navigations.
 @property(nonatomic, assign) BOOL dispatchingSameDocumentHashChangeEvent;
 
+// Whether the web page is currently performing window.history.pushState or
+// window.history.replaceState.
+@property(nonatomic, assign) BOOL changingHistoryState;
+
 // Instructs this handler to stop handling js navigation messages.
 - (void)close;
 

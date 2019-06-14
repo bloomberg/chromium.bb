@@ -217,11 +217,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   BOOL _webUsageEnabled;
   // Default URL (about:blank).
   GURL _defaultURL;
-  // Whether the web page is currently performing window.history.pushState or
-  // window.history.replaceState
-  // Set to YES on window.history.willChangeState message. To NO on
-  // window.history.didPushState or window.history.didReplaceState.
-  BOOL _changingHistoryState;
 
   // Updates SSLStatus for current navigation item.
   CRWSSLStatusUpdater* _SSLStatusUpdater;
@@ -1839,8 +1834,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
     (*handlers)["window.history.back"] =
         @selector(handleWindowHistoryBackMessage:context:);
-    (*handlers)["window.history.willChangeState"] =
-        @selector(handleWindowHistoryWillChangeStateMessage:context:);
     (*handlers)["window.history.didPushState"] =
         @selector(handleWindowHistoryDidPushStateMessage:context:);
     (*handlers)["window.history.didReplaceState"] =
@@ -2072,22 +2065,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return NO;
 }
 
-// Handles 'window.history.willChangeState' message.
-- (BOOL)handleWindowHistoryWillChangeStateMessage:(base::DictionaryValue*)unused
-                                          context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-  _changingHistoryState = YES;
-  return YES;
-}
-
 // Handles 'window.history.didPushState' message.
 - (BOOL)handleWindowHistoryDidPushStateMessage:(base::DictionaryValue*)message
                                        context:(NSDictionary*)context {
   if (![context[kIsMainFrame] boolValue])
     return NO;
-  DCHECK(_changingHistoryState);
-  _changingHistoryState = NO;
+  DCHECK(self.JSNavigationHandler.changingHistoryState);
+  self.JSNavigationHandler.changingHistoryState = NO;
 
   // If there is a pending entry, a new navigation has been registered but
   // hasn't begun loading.  Since the pushState message is coming from the
@@ -2166,8 +2150,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                                           context:(NSDictionary*)context {
   if (![context[kIsMainFrame] boolValue])
     return NO;
-  DCHECK(_changingHistoryState);
-  _changingHistoryState = NO;
+  DCHECK(self.JSNavigationHandler.changingHistoryState);
+  self.JSNavigationHandler.changingHistoryState = NO;
 
   std::string pageURL;
   std::string baseURL;
@@ -2981,7 +2965,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // |newNavigationContext| only exists if this method has to create a new
   // context object.
   std::unique_ptr<web::NavigationContextImpl> newNavigationContext;
-  if (!_changingHistoryState) {
+  if (!self.JSNavigationHandler.changingHistoryState) {
     if ([self.navigationHandler
             contextForPendingMainFrameNavigationWithURL:newURL]) {
       // NavigationManager::LoadURLWithParams() was called with URL that has
@@ -3014,7 +2998,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   [self setDocumentURL:newURL context:newNavigationContext.get()];
 
-  if (!_changingHistoryState) {
+  if (!self.JSNavigationHandler.changingHistoryState) {
     // Pass either newly created context (if it exists) or context that already
     // existed before.
     web::NavigationContextImpl* navigationContext = newNavigationContext.get();
