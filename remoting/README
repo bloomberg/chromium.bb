@@ -11,7 +11,7 @@ This plugin sends motion jpeg images to a client via RTP using gstreamer, and
 so requires gstreamer-1.0. This plugin starts sending images immediately when
 weston is run, and keeps sending them until weston shuts down. The image stream
 can be received by any appropriately configured RTP client, but a sample
-gstreamer RTP client script can be found at doc/remoting-client-receive.bash.
+gstreamer RTP client script can be found at doc/scripts/remoting-client-receive.bash.
 
 Script usage:
 	remoting-client-receive.bash <PORT NUMBER>
