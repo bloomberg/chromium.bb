@@ -369,8 +369,7 @@ customize.closeCollectionDialog = function(menu) {
 customize.setBackground = function(
     url, attributionLine1, attributionLine2, attributionActionUrl) {
   if (configData.richerPicker) {
-    $(customize.IDS.CUSTOMIZATION_MENU).close();
-    customize.richerPicker_resetImageMenu(false);
+    customize.richerPicker_closeCustomizationMenu();
   } else {
     customize.closeCollectionDialog($(customize.IDS.MENU));
   }
@@ -1047,11 +1046,19 @@ customize.richerPicker_resetCustomizationMenu = function() {
 };
 
 /**
+ * Close customization menu.
+ */
+customize.richerPicker_closeCustomizationMenu = function() {
+  $(customize.IDS.CUSTOMIZATION_MENU).close();
+  customize.richerPicker_resetCustomizationMenu();
+};
+
+/**
  * Initialize the settings menu, custom backgrounds dialogs, and custom
  * links menu items. Set the text and event handlers for the various
  * elements.
- * @param {!Function} showErrorNotification Called when the error notification
- *                    should be displayed.
+ * @param {!Function} showErrorNotification Called when the error
+ *                    notification should be displayed.
  * @param {!Function} hideCustomLinkNotification Called when the custom link
  *                    notification should be hidden.
  */
@@ -1091,8 +1098,11 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
   };
 
   $(customize.IDS.MENU_CANCEL).onclick = function(event) {
-    $(customize.IDS.CUSTOMIZATION_MENU).close();
-    customize.richerPicker_resetCustomizationMenu();
+    if (customize.richerPicker_selectedOption ==
+        $(customize.IDS.COLORS_BUTTON)) {
+      customize.colorsCancel();
+    }
+    customize.richerPicker_closeCustomizationMenu();
   };
 
 
@@ -1428,11 +1438,18 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     if (done.disabled) {
       return;
     }
-    customize.setBackground(
-        customize.selectedTile.dataset.url,
-        customize.selectedTile.dataset.attributionLine1,
-        customize.selectedTile.dataset.attributionLine2,
-        customize.selectedTile.dataset.attributionActionUrl);
+
+    if (customize.richerPicker_selectedOption ==
+        $(customize.IDS.COLORS_BUTTON)) {
+      customize.colorsDone();
+      customize.richerPicker_closeCustomizationMenu();
+    } else {
+      customize.setBackground(
+          customize.selectedTile.dataset.url,
+          customize.selectedTile.dataset.attributionLine1,
+          customize.selectedTile.dataset.attributionLine2,
+          customize.selectedTile.dataset.attributionActionUrl);
+    }
   };
   $(customize.IDS.DONE).onclick = doneInteraction;
   $(customize.IDS.MENU_DONE).onclick = doneInteraction;
@@ -1611,4 +1628,20 @@ customize.loadColorTiles = function() {
     $(customize.IDS.COLORS_MENU).appendChild(tile);
   }
   customize.colorMenuLoaded = true;
+};
+
+/**
+ * Handles 'Done' button interaction when Colors is the current option in the
+ * customization menu.
+ */
+customize.colorsDone = function() {
+  ntpApiHandle.confirmThemeChanges();
+};
+
+/**
+ * Handles 'Cancel' button interaction when Colors is the current option in the
+ * customization menu.
+ */
+customize.colorsCancel = function() {
+  ntpApiHandle.revertThemeChanges();
 };

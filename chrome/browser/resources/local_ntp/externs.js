@@ -180,6 +180,11 @@ window.chrome.embeddedSearch.newTabPage.blacklistSearchSuggestion;
 window.chrome.embeddedSearch.newTabPage.blacklistSearchSuggestionWithHash;
 
 /**
+ * No params.
+ */
+window.chrome.embeddedSearch.newTabPage.confirmThemeChanges;
+
+/**
  * @param {number} rid
  */
 window.chrome.embeddedSearch.newTabPage.deleteMostVisitedItem;
@@ -262,6 +267,11 @@ window.chrome.embeddedSearch.newTabPage.reorderCustomLink;
  * No params.
  */
 window.chrome.embeddedSearch.newTabPage.resetCustomLinks;
+
+/**
+ * No params.
+ */
+window.chrome.embeddedSearch.newTabPage.revertThemeChanges;
 
 /**
  * @param {number} task_version
