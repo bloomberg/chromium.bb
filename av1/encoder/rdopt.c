@@ -12351,8 +12351,9 @@ static int compound_skip_by_single_states(
 
   const int ref_set = get_drl_refmv_count(x, refs, this_mode);
   for (i = 0; i < 2; ++i) {
-    if (!ref_searched[i] || (mode[i] != NEARESTMV && mode[i] != NEARMV))
+    if (!ref_searched[i] || (mode[i] != NEARESTMV && mode[i] != NEARMV)) {
       continue;
+    }
     const MV_REFERENCE_FRAME single_refs[2] = { refs[i], NONE_FRAME };
     for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ref_mv_idx++) {
       int_mv single_mv;
