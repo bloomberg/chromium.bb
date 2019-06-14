@@ -1264,7 +1264,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // for controls outside of forms as well.
   void DidAssociateFormControl(Element*);
 
-  void AddConsoleMessage(ConsoleMessage*) final;
+  void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
 
   LocalDOMWindow* ExecutingWindow() const final;
   LocalFrame* ExecutingFrame();

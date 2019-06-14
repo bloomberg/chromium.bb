@@ -6852,20 +6852,22 @@ ResizeObserverController& Document::EnsureResizeObserverController() {
 static void RunAddConsoleMessageTask(mojom::ConsoleMessageSource source,
                                      mojom::ConsoleMessageLevel level,
                                      const String& message,
-                                     ExecutionContext* context) {
+                                     ExecutionContext* context,
+                                     bool discard_duplicates) {
   ConsoleMessage* console_message =
       ConsoleMessage::Create(source, level, message);
-  context->AddConsoleMessage(console_message);
+  context->AddConsoleMessage(console_message, discard_duplicates);
 }
 
-void Document::AddConsoleMessage(ConsoleMessage* console_message) {
+void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
+                                     bool discard_duplicates) {
   if (!IsContextThread()) {
     PostCrossThreadTask(
         *GetTaskRunner(TaskType::kInternalInspector), FROM_HERE,
-        CrossThreadBindOnce(&RunAddConsoleMessageTask,
-                            console_message->Source(), console_message->Level(),
-                            console_message->Message(),
-                            WrapCrossThreadPersistent(this)));
+        CrossThreadBindOnce(
+            &RunAddConsoleMessageTask, console_message->Source(),
+            console_message->Level(), console_message->Message(),
+            WrapCrossThreadPersistent(this), discard_duplicates));
     return;
   }
 
@@ -6894,7 +6896,7 @@ void Document::AddConsoleMessage(ConsoleMessage* console_message) {
     console_message->SetNodes(frame_, std::move(nodes));
   }
 
-  frame_->Console().AddMessage(console_message);
+  frame_->Console().AddMessage(console_message, discard_duplicates);
 }
 
 void Document::TasksWerePaused() {

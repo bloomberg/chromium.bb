@@ -2568,8 +2568,9 @@ void RenderFrameImpl::OnSaveImageAt(int x, int y) {
 
 void RenderFrameImpl::OnAddMessageToConsole(
     blink::mojom::ConsoleMessageLevel level,
-    const std::string& message) {
-  AddMessageToConsole(level, message);
+    const std::string& message,
+    bool discard_duplicates) {
+  AddMessageToConsoleImpl(level, message, discard_duplicates);
 }
 
 void RenderFrameImpl::JavaScriptExecuteRequest(
@@ -3237,8 +3238,7 @@ double RenderFrameImpl::GetZoomLevel() {
 void RenderFrameImpl::AddMessageToConsole(
     blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {
-  blink::WebConsoleMessage wcm(level, WebString::FromUTF8(message));
-  frame_->AddMessageToConsole(wcm);
+  AddMessageToConsoleImpl(level, message, false /* discard_duplicates */);
 }
 
 void RenderFrameImpl::SetPreviewsState(PreviewsState previews_state) {
@@ -7653,6 +7653,14 @@ void RenderFrameImpl::TransferUserActivationFrom(
 
     GetFrameHost()->TransferUserActivationFrom(source_routing_id);
   }
+}
+
+void RenderFrameImpl::AddMessageToConsoleImpl(
+    blink::mojom::ConsoleMessageLevel level,
+    const std::string& message,
+    bool discard_duplicates) {
+  blink::WebConsoleMessage wcm(level, WebString::FromUTF8(message));
+  frame_->AddMessageToConsole(wcm, discard_duplicates);
 }
 
 }  // namespace content

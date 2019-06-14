@@ -53,9 +53,9 @@ class CORE_EXPORT FrameConsole final
  public:
   explicit FrameConsole(LocalFrame&);
 
-  void AddMessage(ConsoleMessage*);
+  void AddMessage(ConsoleMessage*, bool discard_duplicates = false);
 
-  bool AddMessageToStorage(ConsoleMessage*);
+  bool AddMessageToStorage(ConsoleMessage*, bool discard_duplicates = false);
   void ReportMessageToClient(mojom::ConsoleMessageSource,
                              mojom::ConsoleMessageLevel,
                              const String& message,

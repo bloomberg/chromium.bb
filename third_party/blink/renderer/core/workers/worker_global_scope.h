@@ -128,7 +128,7 @@ class CORE_EXPORT WorkerGlobalScope
   DOMTimerCoordinator* Timers() final { return &timers_; }
   SecurityContext& GetSecurityContext() final { return *this; }
   const SecurityContext& GetSecurityContext() const final { return *this; }
-  void AddConsoleMessage(ConsoleMessage*) final;
+  void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
   bool IsSecureContext(String& error_message) const override;
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
 

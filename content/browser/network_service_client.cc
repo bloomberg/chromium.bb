@@ -481,7 +481,7 @@ void DeprecateSameSiteCookies(int process_id,
       samesite_treated_as_lax_cookies = true;
 
       if (emit_messages) {
-        frame->AddMessageToConsole(
+        root_frame_host->AddUniqueMessageToConsole(
             blink::mojom::ConsoleMessageLevel::kWarning,
             "[Deprecation] A cookie associated with a cross-site resource at " +
                 cookie_url +
@@ -499,7 +499,7 @@ void DeprecateSameSiteCookies(int process_id,
       samesite_none_insecure_cookies = true;
 
       if (emit_messages) {
-        frame->AddMessageToConsole(
+        root_frame_host->AddUniqueMessageToConsole(
             blink::mojom::ConsoleMessageLevel::kWarning,
             "[Deprecation] A cookie associated with a resource at " +
                 cookie_url +

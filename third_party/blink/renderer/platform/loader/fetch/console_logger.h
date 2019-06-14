@@ -21,9 +21,18 @@ class PLATFORM_EXPORT ConsoleLogger : public GarbageCollectedMixin {
   ConsoleLogger() = default;
   virtual ~ConsoleLogger() = default;
 
-  virtual void AddConsoleMessage(mojom::ConsoleMessageSource,
-                                 mojom::ConsoleMessageLevel,
-                                 const String& message) = 0;
+  void AddConsoleMessage(mojom::ConsoleMessageSource source,
+                         mojom::ConsoleMessageLevel level,
+                         const String& message,
+                         bool discard_duplicates = false) {
+    AddConsoleMessageImpl(source, level, message, discard_duplicates);
+  }
+
+ private:
+  virtual void AddConsoleMessageImpl(mojom::ConsoleMessageSource,
+                                     mojom::ConsoleMessageLevel,
+                                     const String& message,
+                                     bool discard_duplicates) = 0;
 };
 
 // A ConsoleLogger subclass which has Detach() method. An instance of
@@ -42,21 +51,23 @@ class PLATFORM_EXPORT DetachableConsoleLogger final
   // be no-op.
   void Detach() { logger_ = nullptr; }
 
-  void AddConsoleMessage(mojom::ConsoleMessageSource source,
-                         mojom::ConsoleMessageLevel level,
-                         const String& message) override {
-    if (!logger_) {
-      return;
-    }
-    logger_->AddConsoleMessage(source, level, message);
-  }
-
   void Trace(Visitor* visitor) override {
     visitor->Trace(logger_);
     ConsoleLogger::Trace(visitor);
   }
 
   Member<ConsoleLogger> logger_;
+
+ private:
+  void AddConsoleMessageImpl(mojom::ConsoleMessageSource source,
+                             mojom::ConsoleMessageLevel level,
+                             const String& message,
+                             bool discard_duplicates) override {
+    if (!logger_) {
+      return;
+    }
+    logger_->AddConsoleMessage(source, level, message, discard_duplicates);
+  }
 };
 
 }  // namespace blink
