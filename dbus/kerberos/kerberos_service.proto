@@ -88,6 +88,9 @@ message Account {
   // Whether there's a password stored on disk for this account.
   optional bool password_was_remembered = 6;
 
+  // Whether the account uses the Chrome OS login password for authentication.
+  optional bool use_login_password = 7;
+
   // TODO(https://crbug.com/952239): Set additional properties.
 }
 
@@ -153,6 +156,10 @@ message AcquireKerberosTgtRequest {
   // Whether the daemon should remember the password (passed separately in a
   // file descriptor).
   optional bool remember_password = 2;
+
+  // Whether to use the Chrome OS login password for authentication. The
+  // password file descriptor (passed as D-Bus param) is ignored in this case.
+  optional bool use_login_password = 3;
 }
 
 message AcquireKerberosTgtResponse {
