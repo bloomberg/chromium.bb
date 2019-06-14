@@ -399,6 +399,9 @@ extern const char kBuiltInModuleKvStorageDescription[];
 extern const char kEnableBlinkGenPropertyTreesName[];
 extern const char kEnableBlinkGenPropertyTreesDescription[];
 
+extern const char kEnableCSSBackdropFilterName[];
+extern const char kEnableCSSBackdropFilterDescription[];
+
 extern const char kEnableDisplayLockingName[];
 extern const char kEnableDisplayLockingDescription[];
 

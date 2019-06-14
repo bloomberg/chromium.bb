@@ -245,6 +245,11 @@ void SetIndividualRuntimeFeatures(
           enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnableFeatureFromString(
+      "CSSBackdropFilter",
+      base::FeatureList::IsEnabled(blink::features::kCSSBackdropFilter) ||
+          enable_experimental_web_platform_features);
+
+  WebRuntimeFeatures::EnableFeatureFromString(
       "FastBorderRadius",
       base::FeatureList::IsEnabled(blink::features::kFastBorderRadius) ||
           enable_experimental_web_platform_features);

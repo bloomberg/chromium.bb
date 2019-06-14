@@ -33427,6 +33427,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1937077699" label="http-form-warning"/>
   <int value="-1934661084" label="ForceUnifiedConsentBump:disabled"/>
   <int value="-1933425042" label="OfflinePreviews:enabled"/>
+  <int value="-1932609987" label="CSSBackdropFilter:disabled"/>
   <int value="-1932379839"
       label="OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains:enabled"/>
   <int value="-1930720286" label="nacl-debug-mask"/>
@@ -34392,6 +34393,7 @@ from previous Chrome versions.
   <int value="-557742250" label="ContentSuggestionsCategories:disabled"/>
   <int value="-548082154" label="protect-sync-credential:disabled"/>
   <int value="-547301855" label="SyncPseudoUSSSupervisedUsers:enabled"/>
+  <int value="-544629557" label="CSSBackdropFilter:enabled"/>
   <int value="-541611402" label="OfflinePagesPrefetching:enabled"/>
   <int value="-540150399" label="TapVisualizerApp:enabled"/>
   <int value="-539105193" label="SendTabToSelfBroadcast:disabled"/>
