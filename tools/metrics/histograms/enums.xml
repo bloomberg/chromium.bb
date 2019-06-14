@@ -54906,6 +54906,18 @@ would be helpful to identify which type is being sent.
   <int value="12" label="Play install"/>
 </enum>
 
+<enum name="SuggestionIconOrFaviconType">
+  <summary>Type of icon shown beside omnibox suggestion.</summary>
+  <int value="0" label="Invalid (unknown type)"/>
+  <int value="1" label="Bookmark"/>
+  <int value="2" label="History"/>
+  <int value="3" label="Globe"/>
+  <int value="4" label="Magnifying Glass"/>
+  <int value="5" label="Voice"/>
+  <int value="6" label="Calculator"/>
+  <int value="7" label="Favicon"/>
+</enum>
+
 <enum name="SuggestionsResponseState">
   <int value="0" label="Empty response received from the server."/>
   <int value="1" label="Invalid response received from the server."/>
