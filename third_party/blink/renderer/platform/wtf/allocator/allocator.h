@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_ALLOCATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_ALLOCATOR_H_
 
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -14,7 +14,7 @@ namespace WTF {
 namespace internal {
 // A dummy class used in following macros.
 class __thisIsHereToForceASemicolonAfterThisMacro;
-}
+}  // namespace internal
 
 // Classes that contain references to garbage-collected objects but aren't
 // themselves garbaged allocated, have some extra macros available which
@@ -69,7 +69,7 @@ class __thisIsHereToForceASemicolonAfterThisMacro;
 
 #define STACK_ALLOCATED()                                       \
  public:                                                        \
-  using IsStackAllocatedTypeMarker[[maybe_unused]] = int;       \
+  using IsStackAllocatedTypeMarker [[maybe_unused]] = int;      \
                                                                 \
  private:                                                       \
   ANNOTATE_STACK_ALLOCATED void* operator new(size_t) = delete; \

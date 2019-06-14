@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WTF_SCOPED_MOCK_CLOCK_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WTF_SCOPED_MOCK_CLOCK_H_
 
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace WTF {
