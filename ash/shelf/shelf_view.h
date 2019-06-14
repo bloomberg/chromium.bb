@@ -380,6 +380,7 @@ class ASH_EXPORT ShelfView : public views::View,
   // Sets the bounds of each view to its ideal bounds.
   void LayoutToIdealBounds();
 
+  void LayoutBackAndHomeButtons();
   void LayoutOverflowButton() const;
 
   // Returns the index of the last view whose max primary axis coordinate is

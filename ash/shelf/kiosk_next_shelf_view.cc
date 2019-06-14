@@ -151,12 +151,12 @@ void KioskNextShelfView::CalculateIdealBounds() {
   int x = total_shelf_width / 2 - kKioskNextShelfControlWidthDp -
           control_buttons_spacing / 2;
   int y = (kShelfSize - kKioskNextShelfControlHeightDp) / 2;
-  for (int i = 0; i < view_model()->view_size(); ++i) {
-    view_model()->set_ideal_bounds(
-        i, gfx::Rect(x, y, kKioskNextShelfControlWidthDp,
-                     kKioskNextShelfControlHeightDp));
-    x += (kKioskNextShelfControlWidthDp + control_buttons_spacing);
-  }
+
+  GetBackButton()->set_ideal_bounds(gfx::Rect(
+      x, y, kKioskNextShelfControlWidthDp, kKioskNextShelfControlHeightDp));
+  x += (kKioskNextShelfControlWidthDp + control_buttons_spacing);
+  GetAppListButton()->set_ideal_bounds(gfx::Rect(
+      x, y, kKioskNextShelfControlWidthDp, kKioskNextShelfControlHeightDp));
 }
 
 std::unique_ptr<BackButton> KioskNextShelfView::CreateBackButton() {
