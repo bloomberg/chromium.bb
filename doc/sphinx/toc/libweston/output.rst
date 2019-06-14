@@ -8,3 +8,9 @@ already enabled.
 
 The reverse operation, :func:`weston_output_disable`, should be used when there's
 a need to reconfigure the output or it will be destroyed.
+
+Output API
+----------
+
+.. doxygengroup:: output
+   :content-only:

@@ -16,3 +16,9 @@ driving a :type:`weston_head`. :type:`weston_head` should be initialized using
 A :type:`weston_head` must be attached/detached from a :type:`weston_output`.
 To that purpose you can use :func:`weston_output_attach_head`, respectively
 :func:`weston_head_detach`.
+
+Head API
+--------
+
+.. doxygengroup:: head
+   :content-only:
