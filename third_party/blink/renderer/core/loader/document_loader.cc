@@ -1576,7 +1576,7 @@ void DocumentLoader::InstallNewDocument(
   if (GetFrameLoader().StateMachine()->CommittedFirstRealDocumentLoad()) {
     if (document->GetSettings()
             ->GetForceTouchEventFeatureDetectionForInspector()) {
-      OriginTrialContext::FromOrCreate(document)->AddFeature(
+      document->GetOriginTrialContext()->AddFeature(
           OriginTrialFeature::kTouchEventFeatureDetection);
     }
 
@@ -1587,7 +1587,7 @@ void DocumentLoader::InstallNewDocument(
     if (origin.scheme() == "chrome-extension" &&
         origin.DomainIs("jcgeabjmjgoblfofpppfkcoakmfobdko") &&
         origin.port() == 0) {
-      OriginTrialContext::FromOrCreate(document)->AddFeature(
+      document->GetOriginTrialContext()->AddFeature(
           OriginTrialFeature::kAutoPictureInPicture);
     }
 #endif
