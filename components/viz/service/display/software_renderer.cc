@@ -803,14 +803,12 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
       (unclipped_rect.top_right() - backdrop_rect.top_right()) +
       (backdrop_rect.bottom_left() - unclipped_rect.bottom_left());
 
-  // Update the backdrop filter to include "regular" filters and opacity.
-  cc::FilterOperations backdrop_filters_plus_effects = *backdrop_filters;
-  if (regular_filters) {
-    for (const auto& filter_op : regular_filters->operations())
-      backdrop_filters_plus_effects.Append(filter_op);
-  }
+  // Update the backdrop filter to include opacity.
+  cc::FilterOperations backdrop_filters_plus_opacity = *backdrop_filters;
+  DCHECK(!regular_filters)
+      << "Filters should always be in a separate Effect node";
   if (quad->shared_quad_state->opacity < 1.0) {
-    backdrop_filters_plus_effects.Append(
+    backdrop_filters_plus_opacity.Append(
         cc::FilterOperation::CreateOpacityFilter(
             quad->shared_quad_state->opacity));
   }
@@ -819,7 +817,7 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
       gfx::Rect(0, 0, backdrop_bitmap.width(), backdrop_bitmap.height());
   sk_sp<SkImageFilter> filter =
       cc::RenderSurfaceFilters::BuildImageFilter(
-          backdrop_filters_plus_effects,
+          backdrop_filters_plus_opacity,
           gfx::SizeF(bitmap_rect.width(), bitmap_rect.height()),
           clipping_offset)
           ->cached_sk_filter_;

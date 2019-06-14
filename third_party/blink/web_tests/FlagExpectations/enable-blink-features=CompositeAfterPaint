@@ -396,7 +396,6 @@ crbug.com/923429 css3/filters/backdrop-filter-basic-blur.html [ Timeout Failure 
 crbug.com/923429 css3/filters/backdrop-filter-browser-zoom.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-border-radius.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-clip-rect-zoom.html [ Failure ]
-crbug.com/923429 css3/filters/backdrop-filter-plus-filter.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-rendering.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-transform.html [ Failure ]

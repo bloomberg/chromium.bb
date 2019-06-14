@@ -843,21 +843,19 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
       (params->background_rect.top_right() - unclipped_rect.top_right()) +
       (params->background_rect.bottom_left() - unclipped_rect.bottom_left());
 
-  // Update the backdrop filter to include "regular" filters and opacity.
-  cc::FilterOperations backdrop_filters_plus_effects =
+  // Update the backdrop filter to include opacity.
+  cc::FilterOperations backdrop_filters_plus_opacity =
       *params->backdrop_filters;
-  if (params->filters) {
-    for (const auto& filter_op : params->filters->operations())
-      backdrop_filters_plus_effects.Append(filter_op);
-  }
+  DCHECK(!params->filters)
+      << "Filters should always be in a separate Effect node";
   if (quad->shared_quad_state->opacity < 1.0) {
-    backdrop_filters_plus_effects.Append(
+    backdrop_filters_plus_opacity.Append(
         cc::FilterOperation::CreateOpacityFilter(
             quad->shared_quad_state->opacity));
   }
 
   auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      backdrop_filters_plus_effects, gfx::SizeF(params->background_rect.size()),
+      backdrop_filters_plus_opacity, gfx::SizeF(params->background_rect.size()),
       gfx::Vector2dF(clipping_offset));
 
   // TODO(senorblanco): background filters should be moved to the
