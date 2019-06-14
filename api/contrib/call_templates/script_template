@@ -14,7 +14,7 @@ fi;
 
 echo "" > ${OUTPUT}
 echo "Running " ${ENDPOINT}
-$(build_api "${ENDPOINT}" --input-json "${INPUT}" --output-json "${OUTPUT}")
+../../../bin/build_api "${ENDPOINT}" --input-json "${INPUT}" --output-json "${OUTPUT}"
 RESULT=$?
 
 echo "Completed ${ENDPOINT}"

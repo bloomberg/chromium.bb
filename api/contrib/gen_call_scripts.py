@@ -52,14 +52,6 @@ def _get_services():
   router = build_api.Router()
   build_api.RegisterServices(router)
 
-  # Some test cases.
-  # return [
-  #     'chromite.api.SomeService/Method',
-  #     'chromite.api.OtherService/Get',
-  #     'chromite.api.SomeHTTPService/Get',
-  #     'chromite.api.HTTPSomeService/Get',
-  #     'chromite.api.SomeHTTPSomeService/Get',
-  # ]
   return router.ListMethods()
 
 
@@ -88,7 +80,7 @@ def get_services():
 def write_script(filename, service, method):
   contents = SCRIPT_TEMPLATE % {'SERVICE': service, 'METHOD': method}
   script_path = os.path.join(OUTPUT_PATH, filename)
-  osutils.WriteFile(script_path, contents)
+  osutils.WriteFile(script_path, contents, makedirs=True)
   os.chmod(script_path, 0o755)
 
 
@@ -103,7 +95,7 @@ def write_scripts():
       example_input = os.path.join(EXAMPLES_PATH,
                                    '%s_example_input.json' % filename)
       input_file = os.path.join(OUTPUT_PATH, '%s_input.json' % filename)
-      if os.path.exists(input_file):
+      if os.path.exists(input_file) and osutils.ReadFile(input_file) != '{}':
         logging.info('%s exists, skipping.', input_file)
       elif os.path.exists(example_input):
         logging.info('Example %s exists, copying.', example_input)
