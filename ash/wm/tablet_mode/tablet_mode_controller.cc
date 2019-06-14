@@ -967,6 +967,7 @@ void TabletModeController::TakeScreenshot(
       viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
       screenshot_taken_callback_.callback());
   screenshot_request->set_area(request_bounds);
+  screenshot_request->set_result_selection(request_bounds);
   screenshot_window->layer()->RequestCopyOfOutput(
       std::move(screenshot_request));
 
