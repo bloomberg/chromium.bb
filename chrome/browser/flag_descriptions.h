@@ -1629,12 +1629,6 @@ extern const char kUseWinrtMidiApiDescription[];
 extern const char kImmersiveFullscreenName[];
 extern const char kImmersiveFullscreenDescription[];
 
-extern const char kHostedAppsInWindowsName[];
-extern const char kHostedAppsInWindowsDescription[];
-
-extern const char kCreateAppWindowsInAppShimProcessName[];
-extern const char kCreateAppWindowsInAppShimProcessDescription[];
-
 extern const char kEnableCustomMacPaperSizesName[];
 extern const char kEnableCustomMacPaperSizesDescription[];
 
@@ -1643,9 +1637,6 @@ extern const char kMacTouchBarDescription[];
 
 extern const char kMacV2GPUSandboxName[];
 extern const char kMacV2GPUSandboxDescription[];
-
-extern const char kMacViewsNativeAppWindowsName[];
-extern const char kMacViewsNativeAppWindowsDescription[];
 
 extern const char kMacViewsTaskManagerName[];
 extern const char kMacViewsTaskManagerDescription[];

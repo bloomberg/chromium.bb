@@ -2753,18 +2753,6 @@ const char kImmersiveFullscreenName[] = "Immersive Fullscreen Toolbar";
 const char kImmersiveFullscreenDescription[] =
     "Automatically hide and show the toolbar in fullscreen.";
 
-const char kHostedAppsInWindowsName[] =
-    "Allow hosted apps to be opened in windows";
-const char kHostedAppsInWindowsDescription[] =
-    "Allows hosted apps to be opened in windows instead of being limited to "
-    "tabs.";
-
-const char kCreateAppWindowsInAppShimProcessName[] =
-    "Create native windows in the app process";
-const char kCreateAppWindowsInAppShimProcessDescription[] =
-    "Create native windows the app shim process, instead of of the browser "
-    "process.";
-
 const char kEnableCustomMacPaperSizesName[] = "Enable custom paper sizes";
 const char kEnableCustomMacPaperSizesDescription[] =
     "Allow use of custom paper sizes in Print Preview.";
@@ -2775,10 +2763,6 @@ const char kMacTouchBarDescription[] = "Control the use of the Touch Bar.";
 const char kMacV2GPUSandboxName[] = "Mac V2 GPU Sandbox";
 const char kMacV2GPUSandboxDescription[] =
     "Controls whether the GPU process on macOS uses the V1 or V2 sandbox.";
-
-const char kMacViewsNativeAppWindowsName[] = "Toolkit-Views App Windows.";
-const char kMacViewsNativeAppWindowsDescription[] =
-    "Controls whether to use Toolkit-Views based Chrome App windows.";
 
 const char kMacViewsTaskManagerName[] = "Toolkit-Views Task Manager.";
 const char kMacViewsTaskManagerDescription[] =
