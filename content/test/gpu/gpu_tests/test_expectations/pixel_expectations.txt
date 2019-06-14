@@ -174,6 +174,7 @@ crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * 
 
 # Failing on Nexus 5
 crbug.com/957714 [ android qualcomm-adreno-(tm)-330 ] Pixel_Canvas2DRedBox [ Failure ]
+crbug.com/900706 [ android qualcomm-adreno-(tm)-330 ] Pixel_CanvasLowLatency2D [ Failure ]
 
 # Failing on Pixel 2 FYI.
 crbug.com/966069 [ android qualcomm-adreno-(tm)-540 ] Pixel_CanvasLowLatency2D [ Failure ]
