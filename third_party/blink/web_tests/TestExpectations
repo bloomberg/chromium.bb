@@ -5858,6 +5858,10 @@ crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-over
 crbug.com/937546 [ Win7 ] virtual/blink-cors/http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
 crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 
+# Sheriff 2019-06-14
+crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/null.tentative.html [ Failure ]
+crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/usecredentials.tentative.html [ Failure ]
+
 # Flaky on Linux
 crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-duration.html [ Pass Failure ]
 crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-middle.html [ Pass Failure ]
