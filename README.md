@@ -242,18 +242,22 @@ user visible API changes, thus should be not considered part of the API version.
 
 All new symbols should be guarded by the macro like the example given below:
 
+~~~~
 #if REQUIRE_LIBWESTON_API_VERSION >= 0x0101
 
 bool
 weston_ham_sandwich(void);
 
 #endif
+~~~~
 
 In order to use the said symbol, the one will have a similar code in their
 configure.ac:
 
+~~~~
 PKG_CHECK_MODULES(LIBWESTON, [libweston-1 >= 1.1])
 AC_DEFINE(REQUIRE_LIBWESTON_API_VERSION, [0x0101])
+~~~~
 
 If the user is _not_ interested in forward compatibility, they can use 0xffff
 or similar high value. Yet doing so is not recommended.
