@@ -69,7 +69,7 @@ create_file_excl(const char *fname)
  * \param path File path
  * \param prefix File name prefix.
  * \param suffix File name suffix.
- * \param name_out[out] Buffer for the resulting file name.
+ * \param[out] name_out Buffer for the resulting file name.
  * \param name_len Number of bytes usable in name_out.
  * \return stdio FILE pointer, or NULL on failure.
  *

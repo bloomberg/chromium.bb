@@ -123,7 +123,7 @@ extern "C" {
  *     expanded[i] = small[4];
  * @endcode
  *
- * @param condition Expression to check for truth
+ * @param cond Expression to check for truth
  * @param msg Message to print on failure
  */
 #ifndef static_assert

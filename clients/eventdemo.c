@@ -193,10 +193,11 @@ keyboard_focus_handler(struct window *window,
 /**
  * \brief CALLBACK function, Wayland informs about key event
  * \param window window
+ * \param input input
+ * \param time time
  * \param key keycode
  * \param unicode associated character
  * \param state pressed or released
- * \param modifiers modifiers: ctrl, alt, meta etc.
  * \param data user data associated to the window
  */
 static void
@@ -351,8 +352,8 @@ axis_discrete_handler(struct widget *widget, struct input *input,
  * \param time time the event happened
  * \param x absolute x position
  * \param y absolute y position
- * \param sx x position relative to the window
- * \param sy y position relative to the window
+ * \param x x position relative to the window
+ * \param y y position relative to the window
  * \param data user data associated to the window
  *
  * Demonstrates the use of different cursors

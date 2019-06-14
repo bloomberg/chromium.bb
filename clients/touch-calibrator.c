@@ -108,8 +108,8 @@ struct poly {
  * cancel, multiple touch-downs) needs to undo the current sample and
  * possibly show user feedback "wrong".
  *
- * <STATE>
- * - <triggers>: <actions>
+ * \<STATE\>
+ * - \<triggers\>: \<actions\>
  *
  * IDLE
  * - touch down: sample, -> DOWN
