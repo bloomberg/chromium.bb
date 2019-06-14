@@ -39,7 +39,8 @@ class SetupBoardRunConfig(object):
 
   def __init__(self, set_default=False, force=False, usepkg=True, jobs=None,
                regen_configs=False, quiet=False, update_toolchain=True,
-               upgrade_chroot=True, init_board_pkgs=True, local_build=False):
+               upgrade_chroot=True, init_board_pkgs=True, local_build=False,
+               use_parallel_binhost=False):
     """Initialize method.
 
     Args:
@@ -53,6 +54,7 @@ class SetupBoardRunConfig(object):
       upgrade_chroot (bool): Upgrade the chroot before building?
       init_board_pkgs (bool): Emerging packages to sysroot?
       local_build (bool): Bootstrap only from local packages?
+      use_parallel_binhost (bool): Use the parallel postsubmit binhost?
     """
     self.set_default = set_default
     self.force = force
@@ -64,6 +66,7 @@ class SetupBoardRunConfig(object):
     self.update_chroot = upgrade_chroot
     self.init_board_pkgs = init_board_pkgs
     self.local_build = local_build
+    self.use_parallel_binhost = use_parallel_binhost
 
   def GetUpdateChrootArgs(self):
     """Create a list containing the relevant update_chroot arguments.
@@ -240,7 +243,8 @@ def Create(target, run_configs, accept_licenses):
   # Refresh the workon symlinks to compensate for crbug.com/679831.
   logging.info('Setting up portage in the sysroot.')
   _InstallPortageConfigs(sysroot, target, accept_licenses,
-                         run_configs.local_build)
+                         run_configs.local_build,
+                         run_configs.use_parallel_binhost)
 
   # Developer Experience Step: Set default board (if requested) to allow
   # running later commands without needing to pass the --board argument.
@@ -336,7 +340,8 @@ def _InstallConfigs(sysroot, target):
   sysroot.InstallMakeConfUser()
 
 
-def _InstallPortageConfigs(sysroot, target, accept_licenses, local_build):
+def _InstallPortageConfigs(sysroot, target, accept_licenses, local_build,
+                           use_parallel_binhost):
   """Install portage wrappers and configurations.
 
   Dependencies: make.conf.board_setup (InstallConfigs).
@@ -349,13 +354,15 @@ def _InstallPortageConfigs(sysroot, target, accept_licenses, local_build):
       in the sysroot.
     accept_licenses (str): Additional accepted licenses as a string.
     local_build (bool): If the build is a local only build.
+    use_parallel_binhost (bool): Whether to use the parallel postsubmit binhost.
   """
   sysroot.CreateAllWrappers(friendly_name=target.name)
   _ChooseProfile(target, sysroot)
   _RefreshWorkonSymlinks(target.name, sysroot)
   # Must be done after the profile is chosen or binhosts may be incomplete.
   sysroot.InstallMakeConfBoard(accepted_licenses=accept_licenses,
-                               local_only=local_build)
+                               local_only=local_build,
+                               use_parallel=use_parallel_binhost)
 
 
 def _InstallToolchain(sysroot, target, local_init=True):

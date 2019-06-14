@@ -377,12 +377,14 @@ class Sysroot(object):
     config_file = _GetMakeConfGenericPath()
     osutils.SafeSymlink(config_file, self._Path(_MAKE_CONF), sudo=True)
 
-  def InstallMakeConfBoard(self, accepted_licenses=None, local_only=False):
+  def InstallMakeConfBoard(self, accepted_licenses=None, local_only=False,
+                           use_parallel=False):
     """Make sure the make.conf.board file exists and is up to date.
 
     Args:
       accepted_licenses (str): Any additional accepted licenses.
       local_only (bool): Whether prebuilts can be fetched from remote sources.
+      use_parallel (bool): Whether to use the parallel postsubmit binhosts.
     """
     board_conf = self.GenerateBoardMakeConf(accepted_licenses=accepted_licenses)
     make_conf_path = self._Path(_MAKE_CONF_BOARD)
@@ -391,7 +393,8 @@ class Sysroot(object):
     # Once make.conf.board has been generated, generate the binhost config.
     # We need to do this in two steps as the binhost generation step needs
     # portageq to be available.
-    binhost_conf = self.GenerateBinhostConf(local_only=local_only)
+    binhost_conf = self.GenerateBinhostConf(local_only=local_only,
+                                            use_parallel=use_parallel)
     osutils.WriteFile(make_conf_path, '%s\n%s\n' % (board_conf, binhost_conf),
                       sudo=True)
 
@@ -519,11 +522,12 @@ class Sysroot(object):
 
     return '\n'.join(config)
 
-  def GenerateBinhostConf(self, local_only=False):
+  def GenerateBinhostConf(self, local_only=False, use_parallel=False):
     """Returns the binhost configuration.
 
     Args:
       local_only (bool): If True, use binary packages from local boards only.
+      use_parallel (bool): Whether to use the parallel postsubmit binhost.
 
     Returns:
       str - The config contents.
@@ -573,7 +577,7 @@ source %s
 PORTAGE_BINHOST="$PORTAGE_BINHOST $POSTSUBMIT_BINHOST"
 """ % postsubmit_binhost_internal)
 
-    if parallel_postsubmit_binhost:
+    if parallel_postsubmit_binhost and use_parallel:
       config.append("""
 # PARALLEL_POSTSUBMIT_BINHOST is populated by the Parallel CQ postsubmit
 # builders. If the same package is provided by both the parallel postsubmit and
@@ -583,7 +587,7 @@ source %s
 PORTAGE_BINHOST="$PORTAGE_BINHOST $PARALLEL_POSTSUBMIT_BINHOST"
 """ % parallel_postsubmit_binhost)
 
-    if parallel_postsubmit_binhost_internal:
+    if parallel_postsubmit_binhost_internal and use_parallel:
       config.append("""
 # The internal PARALLEL_POSTSUBMIT_BINHOST is populated by the internal Parallel
 # CQ postsubmit builders. It takes priority over the public parallel postsubmit
