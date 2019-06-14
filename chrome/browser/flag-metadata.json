@@ -1059,8 +1059,8 @@
   },
   {
     "name": "enable-experimental-accessibility-switch-access",
-    "owners": [ "anastasi@google.com", "dmazzoni", "dtseng" ],
-    "expiry_milestone": 76
+    "owners": [ "anastasi@google.com", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-experimental-accessibility-autoclick",
