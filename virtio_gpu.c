@@ -39,7 +39,7 @@ struct virtio_gpu_priv {
 	int has_3d;
 };
 
-static uint32_t translate_format(uint32_t drm_fourcc, uint32_t plane)
+static uint32_t translate_format(uint32_t drm_fourcc)
 {
 	switch (drm_fourcc) {
 	case DRM_FORMAT_XRGB8888:
@@ -88,7 +88,8 @@ static inline void handle_flag(uint64_t *flag, uint64_t check_flag, uint32_t *bi
 
 static uint32_t use_flags_to_bind(uint64_t use_flags)
 {
-	uint32_t bind = 0;
+	/* In crosvm, VIRGL_BIND_SHARED means minigbm will allocate, not virglrenderer. */
+	uint32_t bind = VIRGL_BIND_SHARED;
 
 	handle_flag(&use_flags, BO_USE_TEXTURE, &bind, VIRGL_BIND_SAMPLER_VIEW);
 	handle_flag(&use_flags, BO_USE_RENDERING, &bind, VIRGL_BIND_RENDER_TARGET);
@@ -97,6 +98,7 @@ static uint32_t use_flags_to_bind(uint64_t use_flags)
 	if (use_flags) {
 		drv_log("Unhandled bo use flag: %llx\n", (unsigned long long)use_flags);
 	}
+
 	return bind;
 }
 
@@ -104,66 +106,44 @@ static int virtio_virgl_bo_create(struct bo *bo, uint32_t width, uint32_t height
 				  uint64_t use_flags)
 {
 	int ret;
-	ssize_t plane;
-	ssize_t num_planes = drv_num_planes_from_format(format);
-	uint32_t stride0;
-	uint32_t bind = use_flags_to_bind(use_flags);
+	uint32_t stride;
+	struct drm_virtgpu_resource_create res_create;
 
-	for (plane = 0; plane < num_planes; plane++) {
-		uint32_t stride = drv_stride_from_format(format, width, plane);
-		uint32_t size = drv_size_from_format(format, stride, height, plane);
-		uint32_t res_format = translate_format(format, plane);
-		struct drm_virtgpu_resource_create res_create;
+	stride = drv_stride_from_format(format, width, 0);
+	drv_bo_from_format(bo, stride, height, format);
 
-		memset(&res_create, 0, sizeof(res_create));
-		size = ALIGN(size, PAGE_SIZE);
-		/*
-		 * Setting the target is intended to ensure this resource gets bound as a 2D
-		 * texture in the host renderer's GL state. All of these resource properties are
-		 * sent unchanged by the kernel to the host, which in turn sends them unchanged to
-		 * virglrenderer. When virglrenderer makes a resource, it will convert the target
-		 * enum to the equivalent one in GL and then bind the resource to that target.
-		 */
-		res_create.target = PIPE_TEXTURE_2D;
-		res_create.format = res_format;
-		res_create.bind = bind;
-		res_create.width = width;
-		res_create.height = height;
-		res_create.depth = 1;
-		res_create.array_size = 1;
-		res_create.last_level = 0;
-		res_create.nr_samples = 0;
-		res_create.stride = stride;
-		res_create.size = size;
+	/*
+	 * Setting the target is intended to ensure this resource gets bound as a 2D
+	 * texture in the host renderer's GL state. All of these resource properties are
+	 * sent unchanged by the kernel to the host, which in turn sends them unchanged to
+	 * virglrenderer. When virglrenderer makes a resource, it will convert the target
+	 * enum to the equivalent one in GL and then bind the resource to that target.
+	 */
+	memset(&res_create, 0, sizeof(res_create));
 
-		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_RESOURCE_CREATE, &res_create);
-		if (ret) {
-			drv_log("DRM_IOCTL_VIRTGPU_RESOURCE_CREATE failed with %s\n",
-				strerror(errno));
-			ret = -errno;
-			goto fail;
-		}
+	res_create.target = PIPE_TEXTURE_2D;
+	res_create.format = translate_format(format);
+	res_create.bind = use_flags_to_bind(use_flags);
+	res_create.width = width;
+	res_create.height = height;
 
-		bo->handles[plane].u32 = res_create.bo_handle;
+	/* For virgl 3D */
+	res_create.depth = 1;
+	res_create.array_size = 1;
+	res_create.last_level = 0;
+	res_create.nr_samples = 0;
+
+	res_create.size = ALIGN(bo->total_size, PAGE_SIZE); // PAGE_SIZE = 0x1000
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_RESOURCE_CREATE, &res_create);
+	if (ret) {
+		drv_log("DRM_IOCTL_VIRTGPU_RESOURCE_CREATE failed with %s\n", strerror(errno));
+		return ret;
 	}
 
-	stride0 = drv_stride_from_format(format, width, 0);
-	drv_bo_from_format(bo, stride0, height, format);
-
-	for (plane = 0; plane < num_planes; plane++)
-		bo->offsets[plane] = 0;
+	for (uint32_t plane = 0; plane < bo->num_planes; plane++)
+		bo->handles[plane].u32 = res_create.bo_handle;
 
 	return 0;
-
-fail:
-	for (plane--; plane >= 0; plane--) {
-		struct drm_gem_close gem_close;
-		memset(&gem_close, 0, sizeof(gem_close));
-		gem_close.handle = bo->handles[plane].u32;
-		drmIoctl(bo->drv->fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
-	}
-
-	return ret;
 }
 
 static void *virtio_virgl_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
