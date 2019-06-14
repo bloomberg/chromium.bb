@@ -737,7 +737,6 @@ Zanim pozwolisz stronie na dostęp, upewnij się, że możesz jej zaufać.</tran
 <translation id="2120297377148151361">Aktywność i interakcje</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Wyłącz wyciszenie karty}few{Wyłącz wyciszenie kart}many{Wyłącz wyciszenie kart}other{Wyłącz wyciszenie kart}}</translation>
 <translation id="2121825465123208577">Zmień rozmiar</translation>
-<translation id="2122305276694332719">Automatyczne łączenie się z ukrytą siecią pozwala innym widzieć Twoje urządzenie wraz z niektórymi ustawieniami sieci. Nie zalecamy korzystania z tej funkcji.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Ocena <ph name="AVERAGE_RATING" /> od jednego użytkownika.}few{Ocena <ph name="AVERAGE_RATING" /> od # użytkowników.}many{Ocena <ph name="AVERAGE_RATING" /> od # użytkowników.}other{Ocena <ph name="AVERAGE_RATING" /> od # użytkownika.}}</translation>
 <translation id="2126167708562367080">Synchronizację wyłączył administrator.</translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>

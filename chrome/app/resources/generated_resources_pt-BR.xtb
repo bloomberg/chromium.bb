@@ -737,7 +737,6 @@ Confirme se esse site é confiável antes de conceder acesso.</translation>
 <translation id="2120297377148151361">Atividade e interações</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Ativar som da guia}one{Ativar som da guia}other{Ativar som das guias}}</translation>
 <translation id="2121825465123208577">Redimensionar</translation>
-<translation id="2122305276694332719">A conexão automática a uma rede oculta não é recomendada porque permite que outras pessoas vejam seu dispositivo e algumas configurações de rede.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Classificação de <ph name="AVERAGE_RATING" /> feita por um usuário.}one{Classificação de <ph name="AVERAGE_RATING" /> feita por # usuário.}other{Classificação de <ph name="AVERAGE_RATING" /> feita por # usuários.}}</translation>
 <translation id="2126167708562367080">A sincronização foi desativada pelo administrador.</translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>

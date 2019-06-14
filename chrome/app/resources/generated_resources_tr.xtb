@@ -737,7 +737,6 @@ Erişime izin vermeden önce bu siteye güvendiğinizden emin olun.</translation
 <translation id="2120297377148151361">Etkinlik ve etkileşimler</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Sekmenin Sesini Aç}other{Sekmelerin Sesini Aç}}</translation>
 <translation id="2121825465123208577">Yeniden Boyutlandır</translation>
-<translation id="2122305276694332719">Gizli bir ağa otomatik olarak bağlanmak başkalarının cihazınızı ve bazı ağ ayarlarını görmesine olanak sağladığından önerilmez.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Bir kullanıcıdan <ph name="AVERAGE_RATING" /> puan aldı.}other{# kullanıcıdan <ph name="AVERAGE_RATING" /> puan aldı.}}</translation>
 <translation id="2126167708562367080">Senkronizasyon, yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>

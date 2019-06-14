@@ -533,7 +533,7 @@
 <translation id="1781771911845953849">Akaunti na usawazishaji</translation>
 <translation id="1782196717298160133">Inatafuta simu yako</translation>
 <translation id="1784849162047402014">Kifaa hakina nafasi ya hifadhi ya kutosha</translation>
-<translation id="1790194216133135334">Tuma kiungo kwa <ph name="DEVICE_NAME" /></translation>
+<translation id="1790194216133135334">Tuma kiungo kwenye <ph name="DEVICE_NAME" /></translation>
 <translation id="1792619191750875668">Mwonekano mpana</translation>
 <translation id="1794791083288629568">Tuma maoni ili utusaidie kutatua tatizo hili.</translation>
 <translation id="1795214765651529549">Tumia ya Kawaida</translation>
@@ -734,7 +734,6 @@
 <translation id="2120297377148151361">Shughuli na ushirikiano</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Rejesha Sauti ya Kichupo}other{Rejesha Sauti ya Vichupo}}</translation>
 <translation id="2121825465123208577">Badilisha ukubwa</translation>
-<translation id="2122305276694332719">Hatua ya kuunganisha kiotomatiki kwenye mtandao uliofichwa huruhusu watu wengine kuona kifaa chako na baadhi ya mipangilio ya mtandao, na hali hii haipendekezwi.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Imekadiriwa <ph name="AVERAGE_RATING" /> na mtumiaji mmoja.}other{Imekadiriwa <ph name="AVERAGE_RATING" /> na watumiaji #.}}</translation>
 <translation id="2126167708562367080">Usawazishaji umezimwa na msimamizi wako.</translation>
 <translation id="2127372758936585790">Chaja ya nguvu ya chini</translation>
@@ -875,7 +874,7 @@
 <translation id="230927227160767054">Ukarasa huu anataka kusakinisha kishikizi cha huduma.</translation>
 <translation id="2309620859903500144">Tovuti hii imezuiliwa ili isifikie vitambuzi vya mwangaza au mwendo.</translation>
 <translation id="2315414688463285945">Hitilafu imetokea wakati wa kuweka mipangilio ya faili za Linux. Tafadhali jaribu tena.</translation>
-<translation id="2315587498123194634">Tuma Kiungo kwa <ph name="DEVICE_NAME" /></translation>
+<translation id="2315587498123194634">Tuma Kiungo kwenye <ph name="DEVICE_NAME" /></translation>
 <translation id="2316129865977710310">Hapana, asante</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% imekamilika</translation>
 <translation id="2318143611928805047">Ukubwa wa karatasi</translation>

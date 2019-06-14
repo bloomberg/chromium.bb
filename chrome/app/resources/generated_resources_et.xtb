@@ -737,7 +737,6 @@ Enne juurdepääsu andmist veenduge, et usaldaksite seda saiti.</translation>
 <translation id="2120297377148151361">Tegevused ja interaktsioonid</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Tühista vahelehe vaigistus}other{Tühista vahelehtede vaigistus}}</translation>
 <translation id="2121825465123208577">Muuda suurust</translation>
-<translation id="2122305276694332719">Automaatne ühendamine peidetud võrguga võimaldab teistel näha teie seadet ja teatud võrguseadeid, seepärast ei soovita me seda kasutada.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Hinnang <ph name="AVERAGE_RATING" /> ühelt kasutajalt.}other{Hinnang <ph name="AVERAGE_RATING" /> # kasutajalt.}}</translation>
 <translation id="2126167708562367080">Administraator on sünkroonimise keelanud.</translation>
 <translation id="2127372758936585790">Väikese energiakuluga laadija</translation>

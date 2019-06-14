@@ -737,7 +737,6 @@ Skôr ako povolíte prístup, skontrolujte, či ide o dôveryhodný web.</trans
 <translation id="2120297377148151361">Aktivity a interakcie</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Zapnúť zvuk karty}few{Zapnúť zvuk kariet}many{Zapnúť zvuk kariet}other{Zapnúť zvuk kariet}}</translation>
 <translation id="2121825465123208577">Zmeniť veľkosť</translation>
-<translation id="2122305276694332719">Automatické pripájanie k skrytej sieti umožňuje ostatným zobraziť si vaše zariadenie a niektoré nastavenia sietí, a preto sa neodporúča.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Hodnotenie <ph name="AVERAGE_RATING" /> od jedného používateľa.}few{Hodnotenie <ph name="AVERAGE_RATING" /> od # používateľov.}many{Hodnotenie <ph name="AVERAGE_RATING" /> od # používateľa.}other{Hodnotenie <ph name="AVERAGE_RATING" /> od # používateľov.}}</translation>
 <translation id="2126167708562367080">Synchronizácia je zakázaná správcom.</translation>
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>

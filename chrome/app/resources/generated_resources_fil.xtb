@@ -737,7 +737,6 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago mo payagan ang pag-access.</t
 <translation id="2120297377148151361">Aktibidad at mga pakikipag-ugnayan</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{I-unmute ang Tab}one{I-unmute ang Mga Tab}other{I-unmute ang Mga Tab}}</translation>
 <translation id="2121825465123208577">Baguhin ang laki</translation>
-<translation id="2122305276694332719">Ang awtomatikong pagkonekta sa nakatagong network ay nagbibigay-daan sa ibang tao na makita ang iyong device at ibang setting ng network, at hindi ito inirerekomenda.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Na-rate ng <ph name="AVERAGE_RATING" /> ng isang user.}one{Na-rate ng <ph name="AVERAGE_RATING" /> ng # user.}other{Na-rate ng <ph name="AVERAGE_RATING" /> ng # na user.}}</translation>
 <translation id="2126167708562367080">Na-disable ng iyong administrator ang pag-sync.</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
@@ -2346,7 +2345,7 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago mo payagan ang pag-access.</t
 <translation id="4558426062282641716">Hiniling ang pahintulot sa awtomatikong paglulunsad</translation>
 <translation id="4558491878126948419">Makatanggap ng mga tip sa <ph name="DEVICE_TYPE" /> at update tungkol sa mga produkto ng Google at magbahagi ng feedback. Mag-unsubscribe anumang oras.</translation>
 <translation id="4559617833001311418">Ina-access ng site na ito ang iyong sensor ng paggalaw o liwanag.</translation>
-<translation id="4561098487691395071">O kaya, tukuyin ang iyong PPD ng iyong printer</translation>
+<translation id="4561098487691395071">O kaya, tukuyin ang PPD ng iyong printer</translation>
 <translation id="4562155214028662640">Magdagdag ng Fingerprint</translation>
 <translation id="4563880231729913339">Daliri 3</translation>
 <translation id="4565377596337484307">Itago ang password</translation>

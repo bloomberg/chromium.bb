@@ -734,7 +734,6 @@
 <translation id="2120297377148151361">活动和互动行为</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{将这个标签页取消静音}other{将这些标签页取消静音}}</translation>
 <translation id="2121825465123208577">调整大小</translation>
-<translation id="2122305276694332719">自动连接至隐藏的网络会导致其他人能查看您的设备和一些网络设置，因此我们建议不要这样做。</translation>
 <translation id="2124930039827422115">{1,plural, =1{已有一位用户给出了 <ph name="AVERAGE_RATING" /> 的评分。}other{已有 # 位用户给出评分，平均评分为 <ph name="AVERAGE_RATING" />。}}</translation>
 <translation id="2126167708562367080">您的管理员已停用同步。</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
@@ -1609,7 +1608,7 @@
 <translation id="3450157232394774192">闲置状态占用率</translation>
 <translation id="3453612417627951340">需要获得授权</translation>
 <translation id="3454157711543303649">激活已完成</translation>
-<translation id="3454213325559396544">这是此 <ph name="DEVICE_TYPE" /> 所能收到的最后一次自动的软件和安全更新。要想接收未来的更新，请升级至较新的型号。</translation>
+<translation id="3454213325559396544">这是最后一次为此 <ph name="DEVICE_TYPE" /> 提供自动的软件和安全更新。要想接收以后的更新，请升级至较新的型号。</translation>
 <translation id="345693547134384690">在新标签页中打开图片(&amp;I)</translation>
 <translation id="3457500881955698515">您的公司或组织要求立刻更新此设备</translation>
 <translation id="3459509316159669723">打印</translation>

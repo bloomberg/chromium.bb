@@ -737,7 +737,6 @@ Assegura't que confies en aquest lloc web abans de donar-li accés.</translation
 <translation id="2120297377148151361">Activitat i interaccions</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Activa el so de la pestanya}other{Activa el so de les pestanyes}}</translation>
 <translation id="2121825465123208577">Canvia la mida</translation>
-<translation id="2122305276694332719">La connexió automàtica a una xarxa amagada permet que altres usuaris puguin veure el teu dispositiu i algunes opcions de configuració de la xarxa. Per tant, no és recomanable.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Puntuació mitjana d'1 usuari: <ph name="AVERAGE_RATING" />}other{Puntuació mitjana de # usuaris: <ph name="AVERAGE_RATING" />}}</translation>
 <translation id="2126167708562367080">L'administrador ha desactivat la sincronització.</translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>

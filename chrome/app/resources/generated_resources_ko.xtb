@@ -737,7 +737,6 @@
 <translation id="2120297377148151361">활동 및 상호작용</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{탭 숨기기 취소}other{탭 숨기기 취소}}</translation>
 <translation id="2121825465123208577">크기 조정</translation>
-<translation id="2122305276694332719">숨겨진 네트워크에 자동 연결하면 다른 사용자가 내 기기 및 일부 네트워크 설정을 볼 수 있으므로 권장되지 않습니다.</translation>
 <translation id="2124930039827422115">{1,plural, =1{1명의 사용자가 별표 <ph name="AVERAGE_RATING" />개로 평가했습니다.}other{#명의 사용자가 별표 <ph name="AVERAGE_RATING" />개로 평가했습니다.}}</translation>
 <translation id="2126167708562367080">관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="2127372758936585790">저출력 충전기</translation>

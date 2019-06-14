@@ -734,7 +734,6 @@
 <translation id="2120297377148151361">Interacciones y actividad</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Activar sonido de la pestaña}other{Activar sonido de las pestañas}}</translation>
 <translation id="2121825465123208577">Ajustar tamaño</translation>
-<translation id="2122305276694332719">Si permites que tu dispositivo se conecte a una red oculta de forma automática, otras personas podrán ver tu dispositivo y algunas opciones de configuración de red, lo cual no es recomendable.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Calificación de <ph name="AVERAGE_RATING" /> de un usuario}other{Calificación de <ph name="AVERAGE_RATING" /> de # usuarios}}</translation>
 <translation id="2126167708562367080">Tu administrador inhabilitó la sincronización.</translation>
 <translation id="2127372758936585790">Carga lenta</translation>

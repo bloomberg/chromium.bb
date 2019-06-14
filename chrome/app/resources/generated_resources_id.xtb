@@ -737,7 +737,6 @@ Pastikan Anda memercayai situs ini sebelum mengizinkan akses.</translation>
 <translation id="2120297377148151361">Aktivitas dan interaksi</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Aktifkan Notifikasi Tab}other{Aktifkan Notifikasi Beberapa Tab}}</translation>
 <translation id="2121825465123208577">Ubah ukuran</translation>
-<translation id="2122305276694332719">Menghubungkan ke jaringan tersembunyi secara otomatis akan memungkinkan orang lain melihat perangkat Anda dan beberapa setelan jaringan, sehingga tindakan ini tidak direkomendasikan.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Diberi nilai <ph name="AVERAGE_RATING" /> oleh satu pengguna.}other{Diberi nilai <ph name="AVERAGE_RATING" /> oleh # pengguna.}}</translation>
 <translation id="2126167708562367080">Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
@@ -1614,7 +1613,7 @@ Pastikan Anda memercayai situs ini sebelum mengizinkan akses.</translation>
 <translation id="3450157232394774192">Persentase Pemakaian Status Menganggur</translation>
 <translation id="3453612417627951340">Memerlukan otorisasi</translation>
 <translation id="3454157711543303649">Aktivasi selesai</translation>
-<translation id="3454213325559396544">Ini adalah update keamanan dan software terakhir untuk <ph name="DEVICE_TYPE" /> ini. Untuk mendapatkan update mendatang, upgrade ke model yang lebih baru.</translation>
+<translation id="3454213325559396544">Ini adalah update otomatis keamanan dan software terakhir untuk <ph name="DEVICE_TYPE" /> ini. Untuk mendapatkan update mendatang, upgrade ke model yang lebih baru.</translation>
 <translation id="345693547134384690">Buka gambar d&amp;i tab baru</translation>
 <translation id="3457500881955698515">Perusahaan atau organisasi Anda meminta agar perangkat ini segera diupdate</translation>
 <translation id="3459509316159669723">Pencetakan</translation>

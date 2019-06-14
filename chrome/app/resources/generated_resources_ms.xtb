@@ -737,7 +737,6 @@ Pastikan anda mempercayai tapak ini sebelum anda membenarkan akses.</translation
 <translation id="2120297377148151361">Aktiviti dan interaksi</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Nyahredam Tab}other{Nyahredam Tab}}</translation>
 <translation id="2121825465123208577">Ubah saiz</translation>
-<translation id="2122305276694332719">Tindakan menyambung secara automatik ke rangkaian tersembunyi akan membolehkan orang lain melihat peranti anda dan sesetengah tetapan rangkaian, maka tindakan ini tidak disyorkan.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Dinilai <ph name="AVERAGE_RATING" /> oleh seorang pengguna.}other{Dinilai <ph name="AVERAGE_RATING" /> oleh # pengguna.}}</translation>
 <translation id="2126167708562367080">Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="2127372758936585790">Pengecas berkuasa rendah</translation>
@@ -1495,7 +1494,7 @@ Pastikan anda mempercayai tapak ini sebelum anda membenarkan akses.</translation
 <translation id="327147043223061465">Lihat semua kuki dan data tapak</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> ingin menyambung</translation>
 <translation id="3274763671541996799">Anda telah menggunakan skrin penuh.</translation>
-<translation id="3275778809241512831">Kunci keselamatan dalaman tidak selamat pada masa ini Sila alih keluar kunci tersebut daripada mana-mana perkhidmatan yang menggunakan kunci itu. Untuk menyelesaikan isu ini, sila tetapkan semula kunci keselamatan.</translation>
+<translation id="3275778809241512831">Kunci keselamatan dalaman tidak selamat pada masa ini. Sila alih keluar kunci tersebut daripada mana-mana perkhidmatan yang menggunakan kunci itu. Untuk menyelesaikan isu ini, sila tetapkan semula kunci keselamatan.</translation>
 <translation id="3275778913554317645">Buka sebagai tetingkap</translation>
 <translation id="3278001907972365362">Akaun Google anda memerlukan perhatian</translation>
 <translation id="3279230909244266691">Proses ini mungkin mengambil masa beberapa minit. Memulakan mesin maya.</translation>
@@ -1617,7 +1616,7 @@ Pastikan anda mempercayai tapak ini sebelum anda membenarkan akses.</translation
 <translation id="3450157232394774192">Peratusan Penggunaan Keadaan Melahu</translation>
 <translation id="3453612417627951340">Memerlukan kebenaran</translation>
 <translation id="3454157711543303649">Pengaktifan lengkap</translation>
-<translation id="3454213325559396544">Ini ialah kemas kini perisian dan keselamatan yang terakhir untuk <ph name="DEVICE_TYPE" /> ini. Untuk mendapatkan kemas kini masa hadapan, tingkatkan kepada model yang lebih baharu.</translation>
+<translation id="3454213325559396544">Ini ialah kemas kini perisian dan keselamatan yang terakhir untuk <ph name="DEVICE_TYPE" /> ini. Untuk mendapatkan kemas kini pada masa akan datang, tingkatkan kepada model yang lebih baharu.</translation>
 <translation id="345693547134384690">Buka &amp;imej dalam tab baharu</translation>
 <translation id="3457500881955698515">Syarikat atau organisasi anda menghendaki peranti ini dikemas kini sekarang juga</translation>
 <translation id="3459509316159669723">Mencetak</translation>

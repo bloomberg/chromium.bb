@@ -737,7 +737,6 @@
 <translation id="2120297377148151361">活動與互動行為</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{開啟分頁音訊}other{開啟多個分頁的音訊}}</translation>
 <translation id="2121825465123208577">調整大小</translation>
-<translation id="2122305276694332719">自動連線至隱藏網路會讓其他人可以查看你的裝置和部分網路設定，建議你不要啟用這項設定。</translation>
 <translation id="2124930039827422115">{1,plural, =1{平均評分：<ph name="AVERAGE_RATING" /> (評分人數：1)。}other{平均評分：<ph name="AVERAGE_RATING" /> (評分人數：#)。}}</translation>
 <translation id="2126167708562367080">你的管理員停用了同步功能。</translation>
 <translation id="2127372758936585790">低功率充電器</translation>

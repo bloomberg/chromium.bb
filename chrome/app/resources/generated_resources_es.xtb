@@ -737,7 +737,6 @@ Antes de permitirle el acceso, asegúrate de que el sitio web sea de confianza.<
 <translation id="2120297377148151361">Actividad e interacciones</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Activar sonido de pestaña}other{Activar sonido de pestañas}}</translation>
 <translation id="2121825465123208577">Modificar tamaño</translation>
-<translation id="2122305276694332719">Conectarse automáticamente a una red oculta permite que otros usuarios vean tu dispositivo y parte de tu configuración de red, por lo que no es recomendable.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Valorada con un <ph name="AVERAGE_RATING" /> por 1 usuario.}other{Valorada con un <ph name="AVERAGE_RATING" /> por # usuarios.}}</translation>
 <translation id="2126167708562367080">El administrador ha inhabilitado la sincronización.</translation>
 <translation id="2127372758936585790">Carga lenta</translation>
@@ -3008,7 +3007,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5600706100022181951">Para descargar la actualización se necesitan <ph name="UPDATE_SIZE_MB" /> MB de datos móviles. ¿Quieres continuar?</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5602765853043467355">Borrar marcadores, historial, contraseñas, etc. de este dispositivo</translation>
-<translation id="5605623530403479164">Otros motores de búsqueda</translation>
+<translation id="5605623530403479164">Otros buscadores</translation>
 <translation id="5605758115928394442">Se ha enviado una notificación a tu teléfono para confirmar que eres tú.</translation>
 <translation id="5608580678041221894">Toca las siguientes teclas para ajustar o mover la zona para recortar</translation>
 <translation id="5609231933459083978">Parece que la aplicación no es válida.</translation>

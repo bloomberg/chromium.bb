@@ -734,7 +734,6 @@ Det er vigtigt, at du har tillid til websitet, før du giver adgang.</translatio
 <translation id="2120297377148151361">Aktivitet og interaktioner</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Slå fanens lyd til}one{Slå fanens lyd til}other{Slå fanernes lyd til}}</translation>
 <translation id="2121825465123208577">Tilpas størrelse</translation>
-<translation id="2122305276694332719">Vi anbefaler, at du ikke tillader automatisk forbindelse til skjulte netværk, da det gør det muligt for andre at se din enhed og visse netværksindstillinger.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Én bruger gav bedømmelsen <ph name="AVERAGE_RATING" />.}one{# bruger gav bedømmelsen <ph name="AVERAGE_RATING" />.}other{# brugere gav bedømmelsen <ph name="AVERAGE_RATING" />.}}</translation>
 <translation id="2126167708562367080">Din administrator har deaktiveret synkronisering.</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
