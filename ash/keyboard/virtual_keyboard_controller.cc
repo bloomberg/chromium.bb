@@ -13,12 +13,10 @@
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -47,14 +45,6 @@ void ResetVirtualKeyboard() {
   // down. See https://crbug.com/875456.
   Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
       chromeos::input_method::mojom::ImeKeyset::kNone);
-}
-
-bool HasTouchableDisplay() {
-  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
-    if (display.touch_support() == display::Display::TouchSupport::AVAILABLE)
-      return true;
-  }
-  return false;
 }
 
 }  // namespace
@@ -118,44 +108,6 @@ void VirtualKeyboardController::OnInputDeviceConfigurationChanged(
 void VirtualKeyboardController::ToggleIgnoreExternalKeyboard() {
   ignore_external_keyboard_ = !ignore_external_keyboard_;
   UpdateKeyboardEnabled();
-}
-
-aura::Window* VirtualKeyboardController::GetContainerForDisplay(
-    const display::Display& display) {
-  DCHECK(display.is_valid());
-
-  RootWindowController* controller =
-      Shell::Get()->GetRootWindowControllerWithDisplayId(display.id());
-  aura::Window* container =
-      controller->GetContainer(kShellWindowId_VirtualKeyboardContainer);
-  DCHECK(container);
-  return container;
-}
-
-aura::Window* VirtualKeyboardController::GetContainerForDefaultDisplay() {
-  const display::Screen* screen = display::Screen::GetScreen();
-
-  if (wm::GetFocusedWindow()) {
-    // Return the focused display if that display has touch capability or no
-    // other display has touch capability.
-    const display::Display focused_display =
-        screen->GetDisplayNearestWindow(wm::GetFocusedWindow());
-    if (focused_display.is_valid() &&
-        (focused_display.touch_support() ==
-             display::Display::TouchSupport::AVAILABLE ||
-         !HasTouchableDisplay())) {
-      return GetContainerForDisplay(focused_display);
-    }
-  }
-
-  // Otherwise, get the first touchable display.
-  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
-    if (display.touch_support() == display::Display::TouchSupport::AVAILABLE)
-      return GetContainerForDisplay(display);
-  }
-
-  // If there are no touchable displays, then just return the primary display.
-  return GetContainerForDisplay(screen->GetPrimaryDisplay());
 }
 
 void VirtualKeyboardController::UpdateDevices() {
