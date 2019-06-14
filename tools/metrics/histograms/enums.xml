@@ -19717,6 +19717,7 @@ Called by update_net_error_codes.py.-->
   <int value="1342" label="LOGINSCREENUI_CLOSE"/>
   <int value="1343" label="DECLARATIVENETREQUEST_GETMATCHEDRULES"/>
   <int value="1344" label="DECLARATIVENETREQUEST_SETACTIONCOUNTASBADGETEXT"/>
+  <int value="1345" label="BLUETOOTHPRIVATE_RECORDDEVICESELECTION"/>
 </enum>
 
 <enum name="ExtensionIconState">
