@@ -189,7 +189,8 @@ class AssistantServiceTest : public testing::Test {
     service_->SetAssistantManagerForTesting(std::move(fake_assistant_manager));
 
     GetPlatform()->Init(fake_assistant_client_.CreateInterfacePtrAndBind(),
-                        fake_device_actions_.CreateInterfacePtrAndBind());
+                        fake_device_actions_.CreateInterfacePtrAndBind(),
+                        /*is_test=*/true);
     platform_.FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
