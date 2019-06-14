@@ -224,6 +224,7 @@ message ShowVmResponse {
   VmErrorCode error = 1;
 }
 
+// Signals change of state for a VM.
 message VmStateChangedSignal {
   // The owner of the VM.
   string owner_id = 1;
@@ -239,4 +240,32 @@ message VmStateChangedSignal {
 
   // Previous VM state.
   VmState vm_state_prev = 5;
+}
+
+// State of hypervisor agent in a VM.
+enum VmToolsState {
+    VM_TOOLS_STATE_UNKNOWN = 0;
+
+    VM_TOOLS_STATE_POSSIBLY_INSTALLED = 1;
+    VM_TOOLS_STATE_NOT_INSTALLED = 2;
+    VM_TOOLS_STATE_INSTALLED = 3;
+    VM_TOOLS_STATE_OUTDATED = 4;
+};
+
+// Signals change of state of hypervisor agent in a VM.
+message VmiToolsStateChangedSignal {
+  // The owner of the VM.
+  string owner_id = 1;
+
+  // VM name.
+  string vm_name = 2;
+
+  // VM uuid.
+  string vm_uuid = 3;
+
+  // Current state.
+  VmToolsState vm_tools_state = 4;
+
+  // Version of the agent software.
+  string vm_tools_version = 5;
 }
