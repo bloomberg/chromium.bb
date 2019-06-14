@@ -15,6 +15,7 @@
 #include "ash/public/cpp/wallpaper_user_info.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
 #include "base/macros.h"
@@ -448,7 +449,7 @@ void MultiUserWindowManagerImpl::SetWindowVisibility(
     aura::Window* window,
     bool visible,
     base::TimeDelta animation_time) {
-  if (window->IsVisible() == visible)
+  if (desks_util::BelongsToActiveDesk(window) && window->IsVisible() == visible)
     return;
 
   // Hiding a system modal dialog should not be allowed. Instead we switch to
