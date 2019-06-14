@@ -197,7 +197,12 @@ LRESULT CALLBACK MainMessagePump::windowProcedureHook(int code,
 
 void MainMessagePump::schedulePumpIfNecessary()
 {
-    if (work_scheduled_) {
+    // Store the atomic<bool> into a local variable. This helps us to see a
+    // snapshot of the variable during debugging in case another thread
+    // changes the value.
+    bool work_scheduled = work_scheduled_;
+
+    if (work_scheduled) {
         schedulePump();
     }
 }
@@ -249,6 +254,7 @@ void MainMessagePump::doWork()
     // by sending a synchronous message to the same window message handler.
 
     unsigned int maxPumpCount;
+    bool work_scheduled = false;
 
     if (!d_isInsideModalLoop) {
         maxPumpCount = 1;
@@ -261,13 +267,17 @@ void MainMessagePump::doWork()
         resetWorkState();
         MessagePumpForUI::HandleWorkMessage();
 
-        if (!work_scheduled_) {
+        // Store the atomic<bool> into a local variable. This helps us to see a
+        // snapshot of the variable during debugging in case another thread
+        // changes the value.
+        work_scheduled = work_scheduled_;
+        if (!work_scheduled) {
             // Break out of the loop if no more work is scheduled.
             break;
         }
     }
 
-    if (!d_skipIdleWork) {
+    if (!work_scheduled && d_allowIdleWork) {
         unsigned int startTime2 = ::GetTickCount();
         MessagePumpForUI::DoIdleWork();
         unsigned int endTime2 = ::GetTickCount();
@@ -457,7 +467,11 @@ void MainMessagePump::flush()
     // loop.
 
     for (int i=0; i<255; ++i) {
-        if (work_scheduled_) {
+        // Store the atomic<bool> into a local variable. This helps us to see a
+        // snapshot of the variable during debugging in case another thread
+        // changes the value.
+        bool work_scheduled = work_scheduled_;
+        if (work_scheduled) {
             // This call to schedulePump() is not strictly required but it
             // helps to keep the data members in the expected state.   The
             // side effect of calling schedulePump() is the setting of the
@@ -515,10 +529,10 @@ void MainMessagePump::postHandleMessage(const MSG& msg)
         modalLoop(false);
     }
 
-    bool has_work = work_scheduled_;
+    bool work_scheduled = work_scheduled_;
     LONG wasPumped = d_isPumped;
 
-    if (has_work && 0 == wasPumped) {
+    if (work_scheduled && 0 == wasPumped) {
         bool allowNormalWork = false;
         d_scheduler->isReadyToWork(&allowNormalWork, &d_allowIdleWork);
 
