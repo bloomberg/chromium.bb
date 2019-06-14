@@ -268,6 +268,9 @@ class CrOSTest(object):
       remote_data_dir = os.path.join(
           tast_cache_dir, 'tast-remote-tests-cros', 'usr', 'share', 'tast',
           'data')
+      private_key = (self._device.private_key or
+                     self._device.remote.GetAgent().private_key)
+      assert private_key, 'ssh private key not found.'
       cmd += [
           '-remoterunner=%s' % remote_runner_path,
           '-remotebundledir=%s' % remote_bundle_dir,
@@ -275,9 +278,8 @@ class CrOSTest(object):
           # The dev server has trouble downloading assets from Google Storage
           # from outside the chroot.
           '-ephemeraldevserver=false',
+          '-keyfile', private_key,
       ]
-      if self._device.private_key:
-        cmd += ['-keyfile', self._device.private_key]
     if self.test_timeout > 0:
       cmd += ['-timeout=%d' % self.test_timeout]
     if self._device.is_vm:
