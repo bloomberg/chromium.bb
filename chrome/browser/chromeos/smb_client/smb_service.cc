@@ -592,6 +592,19 @@ void SmbService::CompleteSetup(
                           base::Unretained(this))));
   RestoreMounts();
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+
+  if (setup_complete_callback_) {
+    std::move(setup_complete_callback_).Run();
+  }
+}
+
+void SmbService::OnSetupCompleteForTesting(base::OnceClosure callback) {
+  DCHECK(!setup_complete_callback_);
+  if (temp_file_manager_) {
+    std::move(callback).Run();
+    return;
+  }
+  setup_complete_callback_ = std::move(callback);
 }
 
 void SmbService::FireMountCallback(MountResponse callback,

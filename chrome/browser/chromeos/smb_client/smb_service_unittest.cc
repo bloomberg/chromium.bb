@@ -10,9 +10,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
@@ -181,6 +183,58 @@ TEST_F(SmbServiceTest, InvalidSsoUrls) {
   ExpectInvalidSsoUrl("smb://192.168.1.1/foo");
   ExpectInvalidSsoUrl("smb://[0:0:0:0:0:0:0:1]/foo");
   ExpectInvalidSsoUrl("smb://[::1]/foo");
+}
+
+TEST_F(SmbServiceTest, Mount) {
+  CreateFspRegistry(profile_);
+  {
+    CreateService(profile_);
+    base::RunLoop run_loop;
+    smb_service_->OnSetupCompleteForTesting(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+  {
+    // Share gathering needs to complete at least once before a share can be
+    // mounted.
+    base::RunLoop run_loop;
+    smb_service_->GatherSharesInNetwork(
+        base::DoNothing(),
+        base::BindLambdaForTesting(
+            [&run_loop](const std::vector<SmbUrl>& shares_gathered, bool done) {
+              if (done) {
+                run_loop.Quit();
+              }
+            }));
+    run_loop.Run();
+  }
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(base::FilePath(kMountPath),
+            AllOf(Field(&SmbProviderClient::MountOptions::username, kTestUser),
+                  Field(&SmbProviderClient::MountOptions::workgroup, ""),
+                  Field(&SmbProviderClient::MountOptions::ntlm_enabled, true),
+                  Field(&SmbProviderClient::MountOptions::skip_connect, false)),
+            _, _))
+      .WillOnce(
+          WithArg<3>(Invoke([](SmbProviderClient::MountCallback callback) {
+            std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
+          })));
+
+  smb_service_->Mount(
+      {}, base::FilePath(kSharePath), kTestUser, "password",
+      false /* use_chromad_kerberos */,
+      false /* should_open_file_manager_after_mount */,
+      base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
+        EXPECT_EQ(SmbMountResult::SUCCESS, result);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  // Because the mock is potentially leaked, expectations needs to be manually
+  // verified.
+  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(mock_client_));
 }
 
 TEST_F(SmbServiceTest, Remount) {
