@@ -428,9 +428,6 @@ class TestingProfile : public Profile {
   std::unique_ptr<net::CookieStore, content::BrowserThread::DeleteOnIOThread>
       extensions_cookie_store_;
 
-  // Holds a dummy network context request to avoid triggering connection error
-  // handler.
-  network::mojom::NetworkContextRequest network_context_request_;
   std::unique_ptr<network::mojom::NetworkContext> network_context_;
   mojo::BindingSet<network::mojom::NetworkContext> network_context_bindings_;
 
