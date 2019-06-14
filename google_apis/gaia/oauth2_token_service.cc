@@ -597,9 +597,9 @@ bool OAuth2TokenService::AreAllCredentialsLoaded() const {
   return all_credentials_loaded_;
 }
 
-std::vector<std::string> OAuth2TokenService::GetAccounts() const {
+std::vector<CoreAccountId> OAuth2TokenService::GetAccounts() const {
   if (!AreAllCredentialsLoaded())
-    return std::vector<std::string>();
+    return std::vector<CoreAccountId>();
 
   return delegate_->GetAccounts();
 }

@@ -207,7 +207,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // Note: For each account returned by |GetAccounts|, |RefreshTokenIsAvailable|
   // will return true.
   // Note: If tokens have not been fully loaded yet, an empty list is returned.
-  std::vector<std::string> GetAccounts() const;
+  std::vector<CoreAccountId> GetAccounts() const;
 
   // Returns true if a refresh token exists for |account_id|. If false, calls to
   // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.

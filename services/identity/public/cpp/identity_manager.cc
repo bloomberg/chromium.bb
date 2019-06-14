@@ -183,15 +183,14 @@ void IdentityManager::RemoveAccessTokenFromCache(
 
 std::vector<CoreAccountInfo> IdentityManager::GetAccountsWithRefreshTokens()
     const {
-  std::vector<std::string> account_ids_with_tokens =
+  std::vector<CoreAccountId> account_ids_with_tokens =
       token_service_->GetAccounts();
 
   std::vector<CoreAccountInfo> accounts;
   accounts.reserve(account_ids_with_tokens.size());
 
-  for (const std::string& account_id : account_ids_with_tokens) {
-    accounts.push_back(
-        GetAccountInfoForAccountWithRefreshToken(CoreAccountId(account_id)));
+  for (const CoreAccountId& account_id : account_ids_with_tokens) {
+    accounts.push_back(GetAccountInfoForAccountWithRefreshToken(account_id));
   }
 
   return accounts;
@@ -199,15 +198,14 @@ std::vector<CoreAccountInfo> IdentityManager::GetAccountsWithRefreshTokens()
 
 std::vector<AccountInfo>
 IdentityManager::GetExtendedAccountInfoForAccountsWithRefreshToken() const {
-  std::vector<std::string> account_ids_with_tokens =
+  std::vector<CoreAccountId> account_ids_with_tokens =
       token_service_->GetAccounts();
 
   std::vector<AccountInfo> accounts;
   accounts.reserve(account_ids_with_tokens.size());
 
-  for (const std::string& account_id : account_ids_with_tokens) {
-    accounts.push_back(
-        GetAccountInfoForAccountWithRefreshToken(CoreAccountId(account_id)));
+  for (const CoreAccountId& account_id : account_ids_with_tokens) {
+    accounts.push_back(GetAccountInfoForAccountWithRefreshToken(account_id));
   }
 
   return accounts;

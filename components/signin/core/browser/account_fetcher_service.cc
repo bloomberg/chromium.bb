@@ -137,10 +137,8 @@ void AccountFetcherService::EnableAccountRemovalForTest() {
 }
 
 void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
-  std::vector<std::string> accounts = token_service_->GetAccounts();
-  for (std::vector<std::string>::const_iterator it = accounts.begin();
-       it != accounts.end(); ++it) {
-    RefreshAccountInfo(*it, only_fetch_if_invalid);
+  for (const auto& account : token_service_->GetAccounts()) {
+    RefreshAccountInfo(account, only_fetch_if_invalid);
   }
 }
 
@@ -152,9 +150,9 @@ void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
 #if defined(OS_ANDROID)
 void AccountFetcherService::UpdateChildInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::vector<std::string> accounts = token_service_->GetAccounts();
+  std::vector<CoreAccountId> accounts = token_service_->GetAccounts();
   if (accounts.size() == 1) {
-    const std::string& candidate = accounts[0];
+    const CoreAccountId& candidate = accounts[0];
     if (candidate == child_request_account_id_)
       return;
     if (!child_request_account_id_.empty())
