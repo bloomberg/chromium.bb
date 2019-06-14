@@ -2162,7 +2162,7 @@
         'browser_config': 'debug',
         'os_type': 'mac',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
@@ -2261,7 +2261,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_mac_gtests',
@@ -2555,7 +2555,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
@@ -2795,7 +2795,7 @@
         'os_type': 'mac',
         'browser_config': 'debug',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_debug_gtests',
@@ -2866,7 +2866,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
@@ -2931,7 +2931,7 @@
       'Mac FYI dEQP Release Intel': {
         'os_type': 'mac',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_mac_gtests',
@@ -2992,7 +2992,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_optional_gtests',
@@ -4254,7 +4254,7 @@
         'browser_config': 'release',
         'os_type': 'mac',
         'mixins': [
-          'mac_mini_intel_gpu_10.12',
+          'mac_mini_intel_gpu',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
