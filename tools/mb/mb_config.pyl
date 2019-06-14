@@ -724,7 +724,6 @@
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
       'linux-coverage-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-dcheck-off-rel': 'release_trybot_dcheck_off',
-      'linux-goma-rbe-staging-rel': 'gpu_tests_release_trybot_no_symbols',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
       'linux-jumbo-rel': 'jumbo_large_chunks_release_bot_compile_only',
       'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot',
@@ -1556,10 +1555,6 @@
 
     'gpu_tests_release_trybot_resource_whitelisting': [
       'gpu_tests', 'release_trybot', 'resource_whitelisting',
-    ],
-
-    'gpu_tests_release_trybot_no_symbols': [
-      'gpu_tests', 'release_trybot', 'no_symbols',
     ],
 
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange': [
