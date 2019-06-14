@@ -2059,8 +2059,7 @@ def ExtractBuildDepsGraph(buildroot, board):
     board: Board type that was built on this machine.
   """
   cmd = ['build_api', 'chromite.api.DependencyService/GetBuildDependencyGraph']
-  chroot_tmp = path_util.FromChrootPath('/tmp')
-  with osutils.TempDir(base_dir=chroot_tmp) as tmpdir:
+  with osutils.TempDir() as tmpdir:
     input_proto_file = os.path.join(tmpdir, 'input.json')
     output_proto_file = os.path.join(tmpdir, 'output.json')
     with open(input_proto_file, 'w') as f:
@@ -2070,8 +2069,8 @@ def ExtractBuildDepsGraph(buildroot, board):
           },
       }
       json.dump(input_proto, f)
-    cmd += ['--input-json', path_util.ToChrootPath(input_proto_file),
-            '--output-json', path_util.ToChrootPath(output_proto_file)]
+    cmd += ['--input-json', input_proto_file,
+            '--output-json', output_proto_file]
     RunBuildScript(buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
     output = json.loads(osutils.ReadFile(output_proto_file))
     return output['depGraph']
