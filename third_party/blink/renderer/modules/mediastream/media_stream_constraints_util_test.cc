@@ -4,13 +4,13 @@
 
 #include <string>
 
-#include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_constraint_factory.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -20,10 +20,10 @@ constexpr double kSourceAspectRatio =
     static_cast<double>(kSourceWidth) / static_cast<double>(kSourceHeight);
 constexpr double kSourceFrameRate = 100.0;
 
-blink::VideoTrackAdapterSettings SelectTrackSettings(
-    const blink::WebMediaTrackConstraintSet& basic_constraint_set,
-    const blink::media_constraints::ResolutionSet& resolution_set,
-    const blink::media_constraints::NumericRangeSet<double>& frame_rate_set,
+VideoTrackAdapterSettings SelectTrackSettings(
+    const WebMediaTrackConstraintSet& basic_constraint_set,
+    const media_constraints::ResolutionSet& resolution_set,
+    const media_constraints::NumericRangeSet<double>& frame_rate_set,
     bool enable_rescale = true) {
   media::VideoCaptureFormat source_format(
       gfx::Size(kSourceWidth, kSourceHeight), kSourceFrameRate,
@@ -37,8 +37,8 @@ blink::VideoTrackAdapterSettings SelectTrackSettings(
 
 class MediaStreamConstraintsUtilTest : public testing::Test {
  protected:
-  using DoubleRangeSet = blink::media_constraints::NumericRangeSet<double>;
-  using ResolutionSet = blink::media_constraints::ResolutionSet;
+  using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
+  using ResolutionSet = media_constraints::ResolutionSet;
 };
 
 TEST_F(MediaStreamConstraintsUtilTest, BooleanConstraints) {
@@ -49,15 +49,15 @@ TEST_F(MediaStreamConstraintsUtilTest, BooleanConstraints) {
   // Mandatory constraints.
   constraint_factory.basic().echo_cancellation.SetExact(true);
   constraint_factory.basic().goog_echo_cancellation.SetExact(false);
-  blink::WebMediaConstraints constraints =
+  WebMediaConstraints constraints =
       constraint_factory.CreateWebMediaConstraints();
   bool value_true = false;
   bool value_false = false;
   EXPECT_TRUE(GetConstraintValueAsBoolean(
-      constraints, &blink::WebMediaTrackConstraintSet::echo_cancellation,
+      constraints, &WebMediaTrackConstraintSet::echo_cancellation,
       &value_true));
   EXPECT_TRUE(GetConstraintValueAsBoolean(
-      constraints, &blink::WebMediaTrackConstraintSet::goog_echo_cancellation,
+      constraints, &WebMediaTrackConstraintSet::goog_echo_cancellation,
       &value_false));
   EXPECT_TRUE(value_true);
   EXPECT_FALSE(value_false);
@@ -68,10 +68,10 @@ TEST_F(MediaStreamConstraintsUtilTest, BooleanConstraints) {
   constraint_factory.AddAdvanced().goog_echo_cancellation.SetExact(true);
   constraints = constraint_factory.CreateWebMediaConstraints();
   EXPECT_TRUE(GetConstraintValueAsBoolean(
-      constraints, &blink::WebMediaTrackConstraintSet::echo_cancellation,
+      constraints, &WebMediaTrackConstraintSet::echo_cancellation,
       &value_false));
   EXPECT_TRUE(GetConstraintValueAsBoolean(
-      constraints, &blink::WebMediaTrackConstraintSet::goog_echo_cancellation,
+      constraints, &WebMediaTrackConstraintSet::goog_echo_cancellation,
       &value_true));
   EXPECT_TRUE(value_true);
   EXPECT_FALSE(value_false);
@@ -82,7 +82,7 @@ TEST_F(MediaStreamConstraintsUtilTest, BooleanConstraints) {
   constraint_factory.basic().echo_cancellation.SetExact(true);
   constraints = constraint_factory.CreateWebMediaConstraints();
   EXPECT_TRUE(GetConstraintValueAsBoolean(
-      constraints, &blink::WebMediaTrackConstraintSet::echo_cancellation,
+      constraints, &WebMediaTrackConstraintSet::echo_cancellation,
       &value_true));
   EXPECT_TRUE(value_true);
 }
@@ -92,14 +92,14 @@ TEST_F(MediaStreamConstraintsUtilTest, DoubleConstraints) {
   const double test_value = 0.01f;
 
   constraint_factory.basic().aspect_ratio.SetExact(test_value);
-  blink::WebMediaConstraints constraints =
+  WebMediaConstraints constraints =
       constraint_factory.CreateWebMediaConstraints();
 
   double value;
   EXPECT_FALSE(GetConstraintValueAsDouble(
-      constraints, &blink::WebMediaTrackConstraintSet::frame_rate, &value));
+      constraints, &WebMediaTrackConstraintSet::frame_rate, &value));
   EXPECT_TRUE(GetConstraintValueAsDouble(
-      constraints, &blink::WebMediaTrackConstraintSet::aspect_ratio, &value));
+      constraints, &WebMediaTrackConstraintSet::aspect_ratio, &value));
   EXPECT_EQ(test_value, value);
 }
 
@@ -108,20 +108,20 @@ TEST_F(MediaStreamConstraintsUtilTest, IntConstraints) {
   const int test_value = 327;
 
   constraint_factory.basic().width.SetExact(test_value);
-  blink::WebMediaConstraints constraints =
+  WebMediaConstraints constraints =
       constraint_factory.CreateWebMediaConstraints();
 
   int value;
   EXPECT_TRUE(GetConstraintValueAsInteger(
-      constraints, &blink::WebMediaTrackConstraintSet::width, &value));
+      constraints, &WebMediaTrackConstraintSet::width, &value));
   EXPECT_EQ(test_value, value);
 
   // An exact value should also be reflected as min and max.
   EXPECT_TRUE(GetConstraintMaxAsInteger(
-      constraints, &blink::WebMediaTrackConstraintSet::width, &value));
+      constraints, &WebMediaTrackConstraintSet::width, &value));
   EXPECT_EQ(test_value, value);
   EXPECT_TRUE(GetConstraintMinAsInteger(
-      constraints, &blink::WebMediaTrackConstraintSet::width, &value));
+      constraints, &WebMediaTrackConstraintSet::width, &value));
   EXPECT_EQ(test_value, value);
 }
 
@@ -723,4 +723,4 @@ TEST_F(MediaStreamConstraintsUtilTest,
   }
 }
 
-}  // namespace content
+}  // namespace blink

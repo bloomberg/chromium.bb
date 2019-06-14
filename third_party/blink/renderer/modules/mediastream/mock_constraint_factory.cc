@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/public/web/modules/mediastream/mock_constraint_factory.h"
+
 #include <stddef.h>
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 
-namespace content {
+namespace blink {
 
 MockConstraintFactory::MockConstraintFactory() {}
 
 MockConstraintFactory::~MockConstraintFactory() {}
 
-blink::WebMediaTrackConstraintSet& MockConstraintFactory::AddAdvanced() {
+WebMediaTrackConstraintSet& MockConstraintFactory::AddAdvanced() {
   advanced_.emplace_back();
   return advanced_.back();
 }
 
-blink::WebMediaConstraints MockConstraintFactory::CreateWebMediaConstraints()
-    const {
-  blink::WebMediaConstraints constraints;
+WebMediaConstraints MockConstraintFactory::CreateWebMediaConstraints() const {
+  WebMediaConstraints constraints;
   constraints.Initialize(basic_, advanced_);
   return constraints;
 }
@@ -44,8 +44,8 @@ void MockConstraintFactory::DisableAecAudioConstraints() {
 }
 
 void MockConstraintFactory::Reset() {
-  basic_ = blink::WebMediaTrackConstraintSet();
+  basic_ = WebMediaTrackConstraintSet();
   advanced_.clear();
 }
 
-}  // namespace content
+}  // namespace blink
