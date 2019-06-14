@@ -128,7 +128,6 @@ external/wpt/server-side.md [ Skip ]
 external/wpt/svg-aam [ Skip ]
 external/wpt/svg/import [ Skip ]
 external/wpt/wai-aria [ Skip ]
-external/wpt/webdriver [ Skip ]
 external/wpt/webgl [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the
