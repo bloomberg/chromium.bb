@@ -34929,6 +34929,7 @@ from previous Chrome versions.
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="280644887" label="mash"/>
   <int value="282636212" label="VideoPlayerNativeControls:disabled"/>
+  <int value="283182071" label="SecurityInterstitialsDarkMode:enabled"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
   <int value="287932297" label="AutofillSettingsCardTypeSplit:enabled"/>
   <int value="288012253" label="CrostiniFiles:enabled"/>
@@ -36102,6 +36103,7 @@ from previous Chrome versions.
   <int value="2004604350" label="AutofillGetPaymentsIdentityFromSync:enabled"/>
   <int value="2004651603" label="NativeFileSystemAPI:disabled"/>
   <int value="2004829262" label="enable-webgl-draft-extensions"/>
+  <int value="2005245012" label="SecurityInterstitialsDarkMode:disabled"/>
   <int value="2005614493" label="tab-management-experiment-type-dill"/>
   <int value="2006413281"
       label="ContextualSuggestionsAlternateCardLayout:enabled"/>

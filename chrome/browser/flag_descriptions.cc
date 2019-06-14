@@ -1584,6 +1584,12 @@ const char kScrollableTabStripDescription[] =
     "Allows users to access tabs by scrolling when they no longer fit in the "
     "tabstrip.";
 
+const char kSecurityInterstitialsDarkModeName[] =
+    "Security interstitials dark mode";
+const char kSecurityInterstitialsDarkModeDescription[] =
+    "Allows security intersitials to take on a dark theme when the OS is "
+    "switched to dark mode.";
+
 const char kSendTabToSelfName[] = "Send tab to self";
 const char kSendTabToSelfDescription[] =
     "Allows users to receive tabs from other synced devices, in order to "

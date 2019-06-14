@@ -2665,6 +2665,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "security-interstitials-dark-mode",
+    "owners": ["estark"],
+    "expiry_milestone": 79
+  },
+  {
     "name": "session-restore-prioritizes-background-use-cases",
     "owners": [ "chrisha" ],
     "expiry_milestone": 76

@@ -84,6 +84,7 @@
 #include "components/previews/core/previews_switches.h"
 #include "components/printing/browser/features.h"
 #include "components/safe_browsing/features.h"
+#include "components/security_interstitials/core/features.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/send_tab_to_self/features.h"
@@ -3916,6 +3917,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"ev-details-in-page-info", flag_descriptions::kEvDetailsInPageInfoName,
      flag_descriptions::kEvDetailsInPageInfoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kEvDetailsInPageInfo)},
+
+    {"security-interstitials-dark-mode",
+     flag_descriptions::kSecurityInterstitialsDarkModeName,
+     flag_descriptions::kSecurityInterstitialsDarkModeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         security_interstitials::kSecurityInterstitialsDarkMode)},
 
     {"enable-autofill-credit-card-upload-feedback",
      flag_descriptions::kEnableAutofillCreditCardUploadFeedbackName,
