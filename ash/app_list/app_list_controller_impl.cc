@@ -1420,6 +1420,11 @@ void AppListControllerImpl::Shutdown() {
 void AppListControllerImpl::NotifyHomeLauncherAnimationTransition(
     AnimationTrigger trigger,
     bool launcher_will_show) {
+  // The AppListView may not exist if this is happening after tablet mode
+  // has started, but before the view is created.
+  if (!presenter_.GetView())
+    return;
+
   presenter_.GetView()->OnTabletModeAnimationTransitionNotified(
       CalculateAnimationTransitionForMetrics(trigger, launcher_will_show));
 }
