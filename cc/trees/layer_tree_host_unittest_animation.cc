@@ -399,7 +399,8 @@ class LayerTreeHostAnimationTestAddKeyframeModelWithTimingFunction
   scoped_refptr<FakePictureLayer> picture_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
+// Flaky, see crbug.com/974193
+SINGLE_THREAD_TEST_F(
     LayerTreeHostAnimationTestAddKeyframeModelWithTimingFunction);
 
 // Ensures that main thread animations have their start times synchronized with
