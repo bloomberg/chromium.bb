@@ -11032,6 +11032,7 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
                rd_cost->dist);
     // Account for non-skip mode rate in total rd stats
     rd_cost->rate += x->skip_mode_cost[skip_mode_ctx][0];
+    av1_rd_cost_update(x->rdmult, rd_cost);
   }
 
   if (skip_mode_rd_stats.rdcost <= best_intra_inter_mode_cost &&
