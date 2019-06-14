@@ -95,6 +95,7 @@ customize.IDS = {
   COLORS_DEFAULT: 'colors-default',
   COLORS_MENU: 'colors-menu',
   CUSTOMIZATION_MENU: 'customization-menu',
+  CUSTOM_BG: 'custom-bg',
   CUSTOM_LINKS_RESTORE_DEFAULT: 'custom-links-restore-default',
   CUSTOM_LINKS_RESTORE_DEFAULT_TEXT: 'custom-links-restore-default-text',
   DEFAULT_WALLPAPERS: 'edit-bg-default-wallpapers',
@@ -223,6 +224,12 @@ customize.selectedColorTile = null;
  * @type {boolean}
  */
 customize.colorMenuLoaded = false;
+
+/**
+ * The original NTP background. Used to restore from image previews.
+ * @type {string}
+ */
+customize.originalBackground = '';
 
 /**
  * Sets the visibility of the settings menu and individual options depending on
@@ -651,8 +658,32 @@ customize.showCollectionSelectionDialog = function() {
 };
 
 /**
- * Apply styling to a selected tile in the richer picker and enable the done
- * button.
+ * Preview an image as a custom backgrounds.
+ * @param {!Element} tile The tile that was selected.
+ */
+customize.richerPicker_previewImage = function(tile) {
+  customize.originalBackground =
+      $(customize.IDS.CUSTOM_BG).style.backgroundImage;
+
+  // TODO(crbug/971853): add browertests for previews.
+  // Set preview images at 720p by replacing the params in the url.
+  const re = /w\d+\-h\d+/;
+  $(customize.IDS.CUSTOM_BG).style.backgroundImage =
+      tile.style.backgroundImage.replace(re, 'w1280-h720');
+};
+
+/**
+ * Remove a preview image of a custom backgrounds.
+ * @param {!Element} tile The tile that was deselected.
+ */
+customize.richerPicker_unpreviewImage = function(tile) {
+  $(customize.IDS.CUSTOM_BG).style.backgroundImage =
+      customize.originalBackground;
+};
+
+/**
+ * Apply styling to a selected tile in the richer picker and enable the
+ * done button.
  * @param {?Element} tile The tile to apply styling to.
  */
 customize.richerPicker_selectTile = function(tile) {
@@ -671,6 +702,8 @@ customize.richerPicker_selectTile = function(tile) {
   selectedCheck.classList.add(customize.CLASSES.SELECTED_CHECK);
   tile.appendChild(selectedCircle);
   tile.appendChild(selectedCheck);
+
+  customize.richerPicker_previewImage(tile);
 };
 
 /**
@@ -696,6 +729,8 @@ customize.richerPicker_deselectTile = function(tile) {
       --i;
     }
   }
+
+  customize.richerPicker_unpreviewImage(tile);
 };
 
 /**
