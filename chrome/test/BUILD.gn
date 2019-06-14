@@ -2187,7 +2187,6 @@ if (!is_android) {
         "base/interactive_test_utils_aura.h",
         "base/interactive_test_utils_common_views.cc",
         "base/interactive_test_utils_views.cc",
-        "data/chromeos/service_login.html",
       ]
       if (enable_cros_assistant) {
         sources +=
