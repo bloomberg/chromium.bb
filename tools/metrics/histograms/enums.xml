@@ -34774,6 +34774,7 @@ from previous Chrome versions.
   <int value="5654819" label="CrostiniGpuSupport:disabled"/>
   <int value="7444737" label="NTPSuggestionsStandaloneUI:disabled"/>
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
+  <int value="8891567" label="CaptionSettings:enabled"/>
   <int value="10458238" label="disable-print-preview-simplify"/>
   <int value="11698808" label="enable-dom-distiller-button-animation"/>
   <int value="15614295" label="Portals:enabled"/>
@@ -35817,6 +35818,7 @@ from previous Chrome versions.
   <int value="1597880096" label="FocusMode:disabled"/>
   <int value="1600850069" label="MobileIdentityConsistency:disabled"/>
   <int value="1600926040" label="TranslateCompactUI:enabled"/>
+  <int value="1603578716" label="CaptionSettings:disabled"/>
   <int value="1605398303" label="MacSystemMediaPermissionsInfoUI:enabled"/>
   <int value="1605611615" label="enable-webrtc-srtp-aes-gcm"/>
   <int value="1611522475" label="AutofillPrimaryInfoStyleExperiment:disabled"/>

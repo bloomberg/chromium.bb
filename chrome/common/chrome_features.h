@@ -84,6 +84,9 @@ extern const base::Feature kBrowserHangFixesExperiment;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kBundledConnectionHelpFeature;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kCaptionSettings;
+
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCertDualVerificationTrialFeature;
