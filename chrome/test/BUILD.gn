@@ -3467,6 +3467,7 @@ test("unit_tests") {
       "../browser/download/download_commands_unittest.cc",
       "../browser/download/download_shelf_unittest.cc",
       "../browser/enterprise_reporting/profile_report_generator_unittest.cc",
+      "../browser/enterprise_reporting/report_generator_unittest.cc",
       "../browser/enterprise_reporting/report_scheduler_unittest.cc",
       "../browser/enterprise_reporting/report_uploader_unittest.cc",
       "../browser/enterprise_reporting/request_timer_unittest.cc",
