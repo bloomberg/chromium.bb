@@ -235,7 +235,7 @@ void BookmarkBubbleView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   bookmark_contents_view_ = new views::View();
   views::GridLayout* layout = bookmark_contents_view_->SetLayoutManager(
-      std::make_unique<views::GridLayout>(bookmark_contents_view_));
+      std::make_unique<views::GridLayout>());
 
   constexpr int kColumnId = 0;
   ConfigureTextfieldStack(layout, kColumnId);

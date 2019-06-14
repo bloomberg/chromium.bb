@@ -242,7 +242,7 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
         CreatePasswordViewButton(this, are_passwords_revealed_).release();
 
     views::GridLayout* layout =
-        SetLayoutManager(std::make_unique<views::GridLayout>(this));
+        SetLayoutManager(std::make_unique<views::GridLayout>());
 
     BuildCredentialRows(layout, username_dropdown_, password_dropdown_,
                         password_view_button_);

@@ -51,7 +51,7 @@ namespace {
 
 static views::GridLayout* ResetOverlayLayout(views::View* overlay) {
   views::GridLayout* overlay_layout =
-      overlay->SetLayoutManager(std::make_unique<views::GridLayout>(overlay));
+      overlay->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = overlay_layout->AddColumnSet(0);
   // The throbber's checkmark is 18dp.
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
