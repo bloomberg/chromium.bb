@@ -103,6 +103,9 @@ class StorageHandler
   // Callback to update the UI about the size of browsing data.
   void OnGetBrowsingDataSize(bool is_site_data, int64_t size);
 
+  // Requests updating the flag that hides the Android size UI.
+  void UpdateAndroidRunning();
+
   // Requests updating the space size used by Android apps and cache.
   void UpdateAndroidSize();
 
