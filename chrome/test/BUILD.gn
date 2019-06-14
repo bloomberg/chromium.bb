@@ -2194,6 +2194,7 @@ if (!is_android) {
       }
       if (enable_kiosk_next) {
         sources += [
+          "../browser/chromeos/kiosk_next/kiosk_next_browser_factory_browsertest.cc",
           "../browser/chromeos/kiosk_next_home/kiosk_next_home_browsertest.cc",
           "../browser/ui/ash/kiosk_next_shell_client_browsertest.cc",
         ]
