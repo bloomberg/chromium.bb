@@ -386,6 +386,8 @@ def force_local_third_party():
   _THIRD_PARTY_FIXED = True
   src = os.path.abspath(zip_package.get_main_script_path())
   root = os.path.dirname(src)
+  sys.path.insert(0, os.path.join(
+      root, 'third_party', 'httplib2', 'python%d' % sys.version_info.major))
   sys.path.insert(0, os.path.join(root, 'third_party', 'pyasn1'))
   sys.path.insert(0, os.path.join(root, 'third_party', 'rsa'))
   sys.path.insert(0, os.path.join(root, 'third_party'))
