@@ -442,9 +442,9 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
   }
 }
 
-static void highbd_warp_plane(WarpedMotionParams *wm, const uint8_t *const ref8,
+static void highbd_warp_plane(WarpedMotionParams *wm, const uint16_t *const ref,
                               int width, int height, int stride,
-                              const uint8_t *const pred8, int p_col, int p_row,
+                              uint16_t *const pred, int p_col, int p_row,
                               int p_width, int p_height, int p_stride,
                               int subsampling_x, int subsampling_y, int bd,
                               ConvolveParams *conv_params) {
@@ -459,8 +459,6 @@ static void highbd_warp_plane(WarpedMotionParams *wm, const uint8_t *const ref8,
   const int16_t gamma = wm->gamma;
   const int16_t delta = wm->delta;
 
-  const uint16_t *const ref = CONVERT_TO_SHORTPTR(ref8);
-  uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
   av1_highbd_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
                          p_width, p_height, p_stride, subsampling_x,
                          subsampling_y, bd, conv_params, alpha, beta, gamma,
@@ -510,8 +508,8 @@ static int64_t highbd_segmented_frame_error(
 }
 
 static int64_t highbd_warp_error(
-    WarpedMotionParams *wm, const uint8_t *const ref8, int width, int height,
-    int stride, const uint8_t *const dst8, int p_col, int p_row, int p_width,
+    WarpedMotionParams *wm, const uint16_t *const ref, int width, int height,
+    int stride, const uint16_t *const dst, int p_col, int p_row, int p_width,
     int p_height, int p_stride, int subsampling_x, int subsampling_y, int bd,
     int64_t best_error, uint8_t *segment_map, int segment_map_stride) {
   int64_t gm_sumerr = 0;
@@ -532,13 +530,12 @@ static int64_t highbd_warp_error(
       // when p_width and p_height are not multiples of WARP_ERROR_BLOCK
       const int warp_w = AOMMIN(error_bsize_w, p_col + p_width - j);
       const int warp_h = AOMMIN(error_bsize_h, p_row + p_height - i);
-      highbd_warp_plane(wm, ref8, width, height, stride,
-                        CONVERT_TO_BYTEPTR(tmp), j, i, warp_w, warp_h,
-                        WARP_ERROR_BLOCK, subsampling_x, subsampling_y, bd,
-                        &conv_params);
-      gm_sumerr += av1_calc_highbd_frame_error(
-          tmp, WARP_ERROR_BLOCK, CONVERT_TO_SHORTPTR(dst8) + j + i * p_stride,
-          warp_w, warp_h, p_stride, bd);
+      highbd_warp_plane(wm, ref, width, height, stride, tmp, j, i, warp_w,
+                        warp_h, WARP_ERROR_BLOCK, subsampling_x, subsampling_y,
+                        bd, &conv_params);
+      gm_sumerr += av1_calc_highbd_frame_error(tmp, WARP_ERROR_BLOCK,
+                                               dst + j + i * p_stride, warp_w,
+                                               warp_h, p_stride, bd);
       if (gm_sumerr > best_error) return gm_sumerr;
     }
   }
@@ -890,7 +887,8 @@ int64_t av1_warp_error(WarpedMotionParams *wm, int use_hbd, int bd,
   if (wm->wmtype <= AFFINE)
     if (!av1_get_shear_params(wm)) return 1;
   if (use_hbd)
-    return highbd_warp_error(wm, ref, width, height, stride, dst, p_col, p_row,
+    return highbd_warp_error(wm, CONVERT_TO_SHORTPTR(ref), width, height,
+                             stride, CONVERT_TO_SHORTPTR(dst), p_col, p_row,
                              p_width, p_height, p_stride, subsampling_x,
                              subsampling_y, bd, best_error, segment_map,
                              segment_map_stride);
@@ -905,9 +903,10 @@ void av1_warp_plane(WarpedMotionParams *wm, int use_hbd, int bd,
                     int p_height, int p_stride, int subsampling_x,
                     int subsampling_y, ConvolveParams *conv_params) {
   if (use_hbd)
-    highbd_warp_plane(wm, ref, width, height, stride, pred, p_col, p_row,
-                      p_width, p_height, p_stride, subsampling_x, subsampling_y,
-                      bd, conv_params);
+    highbd_warp_plane(wm, CONVERT_TO_SHORTPTR(ref), width, height, stride,
+                      CONVERT_TO_SHORTPTR(pred), p_col, p_row, p_width,
+                      p_height, p_stride, subsampling_x, subsampling_y, bd,
+                      conv_params);
   else
     warp_plane(wm, ref, width, height, stride, pred, p_col, p_row, p_width,
                p_height, p_stride, subsampling_x, subsampling_y, conv_params);
