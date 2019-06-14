@@ -5598,7 +5598,7 @@ crbug.com/945085 [ Mac10.13 ] printing/composited-thead-tfoot-repeat.html [ Fail
 # Sheriff 2019-03-25
 crbug.com/944025 http/tests/preload/meta-viewport-device-width-link-headers.html [ Pass Failure ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
-crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
+crbug.com/945665 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure Timeout ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
 crbug.com/945665 [ Win7 ] http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.js  [ Failure Pass ]
 crbug.com/945665 http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
