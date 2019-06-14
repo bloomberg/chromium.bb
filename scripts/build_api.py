@@ -185,7 +185,7 @@ class Router(object):
       MethodNotFoundError when the method cannot be retrieved from the module.
     """
     try:
-      input_json = osutils.ReadFile(input_path)
+      input_json = osutils.ReadFile(input_path).strip()
     except IOError as e:
       raise InvalidInputFileError('Unable to read input file: %s' % e.message)
 

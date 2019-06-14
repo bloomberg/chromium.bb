@@ -93,7 +93,7 @@ def PrepareBinhostUploads(input_proto, output_proto):
   package_index_paths = [f.path.path for f in input_proto.package_index_files]
 
   parsed_uri = urlparse.urlparse(uri)
-  upload_uri = gs.GetGsURL(parsed_uri.netloc)
+  upload_uri = gs.GetGsURL(parsed_uri.netloc, for_gsutil=True).rstrip('/')
   upload_path = parsed_uri.path.lstrip('/')
 
   # Read all packages and update the index. The index must be uploaded to the

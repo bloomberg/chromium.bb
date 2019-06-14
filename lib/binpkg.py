@@ -264,7 +264,7 @@ class PackageIndex(object):
       path_prefix: Path prefix to use for all current packages in the file.
         This will be added to the beginning of the path for every package.
     """
-    self.header['URI'] = base_uri
+    self.header['URI'] = base_uri.rstrip('/')
     for pkg in self.packages:
       path = pkg['CPV'] + '.tbz2'
       pkg['PATH'] = '%s/%s' % (path_prefix.rstrip('/'), path)
