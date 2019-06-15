@@ -2090,6 +2090,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_boards = _separate_boards | _unified_board_names
   # List of paladin boards where the regular paladin config is important.
   _paladin_important_boards = frozenset([
+      'amd64-generic',
       'arm-generic',
       'arm64-generic',
       'atlas',
@@ -2211,7 +2212,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
-      'amd64-generic', # forced failure testing FindIt integration crbug/904155
       'moblab-generic-vm', # contact: alevkoy@, crbug/960998
   ])
 

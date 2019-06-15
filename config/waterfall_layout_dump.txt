@@ -399,6 +399,7 @@
 
 == postsubmit ==
   master-postsubmit
+    amd64-generic-postsubmit
     arkham-postsubmit
     arm-generic-postsubmit
     arm64-generic-postsubmit
@@ -2740,6 +2741,7 @@
     kevin-pi-android-pfq-tryjob
     reef-pi-android-pfq-tryjob
   master-postsubmit-tryjob
+    amd64-generic-postsubmit-tryjob
     arkham-postsubmit-tryjob
     arm-generic-postsubmit-tryjob
     arm64-generic-postsubmit-tryjob
