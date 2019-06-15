@@ -575,6 +575,7 @@
     eve-arcnext-release
     eve-arcvm-release
     eve-arm64-release
+    eve-campfire-release
     eve-kvm-release
     eve-release
     eve-swap-release
@@ -1517,6 +1518,18 @@
   eve-arm64-release-tryjob
   eve-arm64-tot-chromium-pfq-informational-tryjob
   eve-arm64-unittest-stress
+  eve-campfire-chromium-pfq-tryjob
+  eve-campfire-compile-only-pre-cq
+  eve-campfire-full-tryjob
+  eve-campfire-llvm-next-toolchain-tryjob
+  eve-campfire-llvm-toolchain-tryjob
+  eve-campfire-no-vmtest-pre-cq
+  eve-campfire-paladin-tryjob
+  eve-campfire-postsubmit-tryjob
+  eve-campfire-pre-cq
+  eve-campfire-release-tryjob
+  eve-campfire-tot-chromium-pfq-informational-tryjob
+  eve-campfire-unittest-stress
   eve-chrome-pfq-tryjob
   eve-chromium-pfq-tryjob
   eve-compile-only-pre-cq
@@ -2887,6 +2900,7 @@
     eve-arcnext-release-tryjob
     eve-arcvm-release-tryjob
     eve-arm64-release-tryjob
+    eve-campfire-release-tryjob
     eve-kvm-release-tryjob
     eve-release-tryjob
     eve-swap-release-tryjob
