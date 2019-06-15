@@ -512,7 +512,7 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
     texture_->SetLevelInfo(GL_TEXTURE_2D, 0, internal_format, size().width(),
                            size().height(), 1, 0, gl_format, gl_type,
                            cleared_rect);
-    texture_->SetImmutable(true);
+    texture_->SetImmutable(true, true);
 
     api->glBindTextureFn(GL_TEXTURE_2D, old_texture_binding);
   }
