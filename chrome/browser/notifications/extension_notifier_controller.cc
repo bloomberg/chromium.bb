@@ -4,7 +4,6 @@
 
 #include "chrome/browser/notifications/extension_notifier_controller.h"
 
-#include "ash/public/cpp/notifier_metadata.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
@@ -23,9 +22,9 @@ ExtensionNotifierController::ExtensionNotifierController(Observer* observer)
 
 ExtensionNotifierController::~ExtensionNotifierController() {}
 
-std::vector<ash::NotifierMetadata> ExtensionNotifierController::GetNotifierList(
-    Profile* profile) {
-  std::vector<ash::NotifierMetadata> notifiers;
+std::vector<ash::mojom::NotifierUiDataPtr>
+ExtensionNotifierController::GetNotifierList(Profile* profile) {
+  std::vector<ash::mojom::NotifierUiDataPtr> ui_data;
   const extensions::ExtensionSet& extension_set =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   // The extension icon size has to be 32x32 at least to load bigger icons if
@@ -54,14 +53,14 @@ std::vector<ash::NotifierMetadata> ExtensionNotifierController::GetNotifierList(
         message_center::NotifierType::APPLICATION, extension->id());
     NotifierStateTracker* const notifier_state_tracker =
         NotifierStateTrackerFactory::GetForProfile(profile);
-    notifiers.emplace_back(
+    ui_data.push_back(ash::mojom::NotifierUiData::New(
         notifier_id, base::UTF8ToUTF16(extension->name()),
         notifier_state_tracker->IsNotifierEnabled(notifier_id),
-        false /* enforced */, gfx::ImageSkia());
+        false /* enforced */, gfx::ImageSkia()));
     app_icon_loader_->FetchImage(extension->id());
   }
 
-  return notifiers;
+  return ui_data;
 }
 
 void ExtensionNotifierController::SetNotifierEnabled(

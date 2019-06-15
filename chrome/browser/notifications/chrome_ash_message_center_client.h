@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_CHROME_ASH_MESSAGE_CENTER_CLIENT_H_
 #define CHROME_BROWSER_NOTIFICATIONS_CHROME_ASH_MESSAGE_CENTER_CLIENT_H_
 
-#include "ash/public/cpp/notifier_settings_controller.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_platform_bridge_chromeos.h"
@@ -20,8 +19,7 @@
 // and handles interactions with those notifications, plus it keeps track of
 // NotifierControllers to provide notifier settings information to Ash (visible
 // in NotifierSettingsView).
-class ChromeAshMessageCenterClient : public ash::NotifierSettingsController,
-                                     public ash::mojom::AshMessageCenterClient,
+class ChromeAshMessageCenterClient : public ash::mojom::AshMessageCenterClient,
                                      public NotifierController::Observer,
                                      public content::NotificationObserver {
  public:
@@ -33,16 +31,10 @@ class ChromeAshMessageCenterClient : public ash::NotifierSettingsController,
   void Display(const message_center::Notification& notification);
   void Close(const std::string& notification_id);
 
-  // ash::NotifierSettingsController:
-  void GetNotifiers() override;
+  // ash::mojom::AshMessageCenterClient:
   void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
                           bool enabled) override;
-  void AddNotifierSettingsObserver(
-      ash::NotifierSettingsObserver* observer) override;
-  void RemoveNotifierSettingsObserver(
-      ash::NotifierSettingsObserver* observer) override;
-
-  // ash::mojom::AshMessageCenterClient:
+  void GetNotifierList(GetNotifierListCallback callback) override;
   void GetArcAppIdByPackageName(
       const std::string& package_name,
       GetArcAppIdByPackageNameCallback callback) override;
@@ -57,6 +49,9 @@ class ChromeAshMessageCenterClient : public ash::NotifierSettingsController,
   static void FlushForTesting();
 
  private:
+  void RespondWithNotifierList(Profile* profile,
+                               GetNotifierListCallback callback) const;
+
   // content::NotificationObserver override.
   void Observe(int type,
                const content::NotificationSource& source,
@@ -68,11 +63,10 @@ class ChromeAshMessageCenterClient : public ash::NotifierSettingsController,
   std::map<message_center::NotifierType, std::unique_ptr<NotifierController>>
       sources_;
 
-  base::ObserverList<ash::NotifierSettingsObserver> notifier_observers_;
-
   ash::mojom::AshMessageCenterControllerPtr controller_;
   mojo::AssociatedBinding<ash::mojom::AshMessageCenterClient> binding_;
   content::NotificationRegistrar registrar_;
+  GetNotifierListCallback deferred_notifier_list_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAshMessageCenterClient);
 };

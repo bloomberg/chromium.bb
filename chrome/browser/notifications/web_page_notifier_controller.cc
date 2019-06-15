@@ -4,7 +4,6 @@
 
 #include "chrome/browser/notifications/web_page_notifier_controller.h"
 
-#include "ash/public/cpp/notifier_metadata.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -22,9 +21,9 @@ WebPageNotifierController::WebPageNotifierController(Observer* observer)
 
 WebPageNotifierController::~WebPageNotifierController() {}
 
-std::vector<ash::NotifierMetadata> WebPageNotifierController::GetNotifierList(
-    Profile* profile) {
-  std::vector<ash::NotifierMetadata> notifiers;
+std::vector<ash::mojom::NotifierUiDataPtr>
+WebPageNotifierController::GetNotifierList(Profile* profile) {
+  std::vector<ash::mojom::NotifierUiDataPtr> notifiers;
 
   ContentSettingsForOneType settings;
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
@@ -53,11 +52,11 @@ std::vector<ash::NotifierMetadata> WebPageNotifierController::GetNotifierList(
     content_settings::SettingInfo info;
     HostContentSettingsMapFactory::GetForProfile(profile)->GetWebsiteSetting(
         url, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(), &info);
-    notifiers.emplace_back(
+    notifiers.push_back(ash::mojom::NotifierUiData::New(
         notifier_id, name,
         notifier_state_tracker->IsNotifierEnabled(notifier_id),
         info.source == content_settings::SETTING_SOURCE_POLICY,
-        gfx::ImageSkia());
+        gfx::ImageSkia()));
     patterns_[url_pattern] = iter->primary_pattern;
     // Note that favicon service obtains the favicon from history. This means
     // that it will fail to obtain the image if there are no history data for

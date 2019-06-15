@@ -7,8 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/notifier_metadata.h"
-#include "ash/public/cpp/notifier_settings_observer.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -30,39 +28,25 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
 namespace {
 
-class ChromeAshMessageCenterClientTest : public testing::Test,
-                                         public ash::NotifierSettingsObserver {
+class ChromeAshMessageCenterClientTest : public testing::Test {
  protected:
   ChromeAshMessageCenterClientTest()
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   ~ChromeAshMessageCenterClientTest() override {}
 
-  // testing::Test:
   void SetUp() override {
     ASSERT_TRUE(testing_profile_manager_.SetUp());
 
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
-
-    message_center::MessageCenter::Initialize();
   }
 
-  void TearDown() override {
-    client_.reset();
-    message_center::MessageCenter::Shutdown();
-  }
-
-  // ash::NotifierSettingsObserver:
-  void OnNotifiersUpdated(
-      const std::vector<ash::NotifierMetadata>& notifiers) override {
-    notifiers_ = notifiers;
-  }
+  void TearDown() override { client_.reset(); }
 
   TestingProfile* CreateProfile(const std::string& name) {
     TestingProfile* profile =
@@ -85,7 +69,6 @@ class ChromeAshMessageCenterClientTest : public testing::Test,
 
   void CreateClient() {
     client_.reset(new ChromeAshMessageCenterClient(nullptr));
-    client_->AddNotifierSettingsObserver(this);
   }
 
   ChromeAshMessageCenterClient* message_center_client() {
@@ -93,14 +76,22 @@ class ChromeAshMessageCenterClientTest : public testing::Test,
   }
 
  protected:
-  void RefreshNotifierList() { message_center_client()->GetNotifiers(); }
+  void RefreshNotifierList() {
+    message_center_client()->GetNotifierList(
+        base::BindOnce(&ChromeAshMessageCenterClientTest::SetNotifierUiData,
+                       base::Unretained(this)));
+  }
 
-  std::vector<ash::NotifierMetadata> notifiers_;
+  std::vector<ash::mojom::NotifierUiDataPtr> notifiers_;
 
  private:
   chromeos::FakeChromeUserManager* GetFakeUserManager() {
     return static_cast<chromeos::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
+  }
+
+  void SetNotifierUiData(std::vector<ash::mojom::NotifierUiDataPtr> notifiers) {
+    notifiers_ = std::move(notifiers);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -224,8 +215,8 @@ TEST_F(ChromeAshMessageCenterClientTest, NotifierSortOrder) {
 
   RefreshNotifierList();
   ASSERT_EQ(2u, notifiers_.size());
-  EXPECT_EQ(kBarId, notifiers_[0].notifier_id.id);
-  EXPECT_EQ(kFooId, notifiers_[1].notifier_id.id);
+  EXPECT_EQ(kBarId, notifiers_[0]->notifier_id.id);
+  EXPECT_EQ(kFooId, notifiers_[1]->notifier_id.id);
 }
 
 TEST_F(ChromeAshMessageCenterClientTest, SetWebPageNotifierEnabled) {

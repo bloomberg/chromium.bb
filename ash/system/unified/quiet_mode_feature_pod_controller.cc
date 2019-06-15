@@ -4,8 +4,6 @@
 
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 
-#include "ash/public/cpp/notifier_metadata.h"
-#include "ash/public/cpp/notifier_settings_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -28,7 +26,8 @@ QuietModeFeaturePodController::QuietModeFeaturePodController(
 }
 
 QuietModeFeaturePodController::~QuietModeFeaturePodController() {
-  NotifierSettingsController::Get()->RemoveNotifierSettingsObserver(this);
+  Shell::Get()->message_center_controller()->RemoveNotifierSettingsListener(
+      this);
   MessageCenter::Get()->RemoveObserver(this);
 }
 
@@ -44,8 +43,13 @@ FeaturePodButton* QuietModeFeaturePodController::CreateButton() {
   button_->SetIconTooltip(l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_NOTIFICATIONS_TOGGLE_TOOLTIP));
   button_->ShowDetailedViewArrow();
-  NotifierSettingsController::Get()->AddNotifierSettingsObserver(this);
   OnQuietModeChanged(MessageCenter::Get()->IsQuietMode());
+
+  if (button_->GetVisible()) {
+    Shell::Get()->message_center_controller()->AddNotifierSettingsListener(
+        this);
+    Shell::Get()->message_center_controller()->RequestNotifierSettingsUpdate();
+  }
   return button_;
 }
 
@@ -71,6 +75,20 @@ SystemTrayItemUmaType QuietModeFeaturePodController::GetUmaType() const {
 }
 
 void QuietModeFeaturePodController::OnQuietModeChanged(bool in_quiet_mode) {
+  Update();
+}
+
+void QuietModeFeaturePodController::OnNotifierListUpdated(
+    const std::vector<mojom::NotifierUiDataPtr>& ui_data) {
+  Update();
+}
+
+void QuietModeFeaturePodController::UpdateNotifierIcon(
+    const message_center::NotifierId& notifier_id,
+    const gfx::ImageSkia& icon) {}
+
+void QuietModeFeaturePodController::Update() {
+  bool in_quiet_mode = MessageCenter::Get()->IsQuietMode();
   button_->SetToggled(in_quiet_mode);
 
   if (in_quiet_mode) {
@@ -78,22 +96,11 @@ void QuietModeFeaturePodController::OnQuietModeChanged(bool in_quiet_mode) {
         IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_SUBLABEL));
     button_->SetLabelTooltip(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_NOTIFICATIONS_SETTINGS_DO_NOT_DISTURB_TOOLTIP));
-  } else if (button_->GetVisible()) {
-    NotifierSettingsController::Get()->GetNotifiers();
-  }
-}
-
-void QuietModeFeaturePodController::OnNotifiersUpdated(
-    const std::vector<NotifierMetadata>& notifiers) {
-  if (MessageCenter::Get()->IsQuietMode())
     return;
-
-  int disabled_count = 0;
-  for (const NotifierMetadata& notifier : notifiers) {
-    if (!notifier.enabled)
-      ++disabled_count;
   }
 
+  int disabled_count =
+      Shell::Get()->message_center_controller()->disabled_notifier_count();
   if (disabled_count > 0) {
     button_->SetSubLabel(l10n_util::GetPluralStringFUTF16(
         IDS_ASH_STATUS_TRAY_NOTIFICATIONS_OFF_FOR_APPS_SUBLABEL,

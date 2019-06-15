@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "ash/public/cpp/notifier_metadata.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -53,21 +52,21 @@ ArcApplicationNotifierController::~ArcApplicationNotifierController() {
   StopObserving();
 }
 
-std::vector<ash::NotifierMetadata>
+std::vector<ash::mojom::NotifierUiDataPtr>
 ArcApplicationNotifierController::GetNotifierList(Profile* profile) {
   // In Guest mode, it can be called but there's no ARC apps to return.
   if (profile->IsOffTheRecord())
-    return std::vector<ash::NotifierMetadata>();
+    return std::vector<ash::mojom::NotifierUiDataPtr>();
 
   package_to_app_ids_.clear();
   icons_.clear();
   StopObserving();
 
   ArcAppListPrefs* const app_list = ArcAppListPrefs::Get(profile);
-  std::vector<ash::NotifierMetadata> notifiers;
+  std::vector<ash::mojom::NotifierUiDataPtr> results;
   // The app list can be null in unit tests.
   if (!app_list)
-    return notifiers;
+    return results;
   const std::vector<std::string>& app_ids = app_list->GetAppIds();
 
   last_profile_ = profile;
@@ -97,13 +96,14 @@ ArcApplicationNotifierController::GetNotifierList(Profile* profile) {
     package_to_app_ids_.insert(std::make_pair(app->package_name, app_id));
     message_center::NotifierId notifier_id(
         message_center::NotifierType::ARC_APPLICATION, app_id);
-    notifiers.emplace_back(notifier_id, base::UTF8ToUTF16(app->name),
-                           app->notifications_enabled, false /* enforced */,
-                           icon->image_skia());
+    auto ui_data = ash::mojom::NotifierUiData::New(
+        notifier_id, base::UTF8ToUTF16(app->name), app->notifications_enabled,
+        false /* enforced */, icon->image_skia());
     icons_.push_back(std::move(icon));
+    results.push_back(std::move(ui_data));
   }
 
-  return notifiers;
+  return results;
 }
 
 void ArcApplicationNotifierController::SetNotifierEnabled(
