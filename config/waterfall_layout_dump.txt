@@ -65,7 +65,6 @@
     edgar-paladin
     elm-paladin
     eve-arcnext-paladin
-    eve-campfire-paladin
     eve-paladin
     falco-full-compile-paladin
     falco-paladin
@@ -284,7 +283,6 @@
   firmware-edgar-7287.167.B-firmwarebranch
   firmware-enguarde-5216.201.B-firmwarebranch
   firmware-eve-9584.B-firmwarebranch
-  firmware-eve-campfire-9584.131.B-firmwarebranch
   firmware-expresso-5216.223.B-firmwarebranch
   firmware-falco_peppy-4389.B-firmwarebranch
   firmware-fizz-10139.94.B-firmwarebranch
@@ -432,7 +430,6 @@
     elm-postsubmit
     enguarde-postsubmit
     eve-arcnext-postsubmit
-    eve-campfire-postsubmit
     eve-postsubmit
     expresso-postsubmit
     falco-postsubmit
@@ -578,7 +575,6 @@
     eve-arcnext-release
     eve-arcvm-release
     eve-arm64-release
-    eve-campfire-release
     eve-kvm-release
     eve-release
     eve-swap-release
@@ -1521,24 +1517,6 @@
   eve-arm64-release-tryjob
   eve-arm64-tot-chromium-pfq-informational-tryjob
   eve-arm64-unittest-stress
-  eve-campfire-chrome-pfq-tryjob
-  eve-campfire-chromium-pfq-tryjob
-  eve-campfire-compile-only-pre-cq
-  eve-campfire-full-tryjob
-  eve-campfire-llvm-next-toolchain-tryjob
-  eve-campfire-llvm-toolchain-tryjob
-  eve-campfire-no-vmtest-pre-cq
-  eve-campfire-paladin-tryjob
-  eve-campfire-payloads-tryjob
-  eve-campfire-postsubmit-tryjob
-  eve-campfire-pre-cq
-  eve-campfire-release-afdo-generate-tryjob
-  eve-campfire-release-afdo-tryjob
-  eve-campfire-release-afdo-use-tryjob
-  eve-campfire-release-tryjob
-  eve-campfire-tot-chrome-pfq-informational-tryjob
-  eve-campfire-tot-chromium-pfq-informational-tryjob
-  eve-campfire-unittest-stress
   eve-chrome-pfq-tryjob
   eve-chromium-pfq-tryjob
   eve-compile-only-pre-cq
@@ -1792,7 +1770,6 @@
   firmware-edgar-7287.167.B-firmwarebranch-tryjob
   firmware-enguarde-5216.201.B-firmwarebranch-tryjob
   firmware-eve-9584.B-firmwarebranch-tryjob
-  firmware-eve-campfire-9584.131.B-firmwarebranch-tryjob
   firmware-expresso-5216.223.B-firmwarebranch-tryjob
   firmware-falco_peppy-4389.B-firmwarebranch-tryjob
   firmware-fizz-10139.94.B-firmwarebranch-tryjob
@@ -2655,7 +2632,6 @@
     edgar-paladin-tryjob
     elm-paladin-tryjob
     eve-arcnext-paladin-tryjob
-    eve-campfire-paladin-tryjob
     eve-paladin-tryjob
     falco-full-compile-paladin-tryjob
     falco-paladin-tryjob
@@ -2774,7 +2750,6 @@
     elm-postsubmit-tryjob
     enguarde-postsubmit-tryjob
     eve-arcnext-postsubmit-tryjob
-    eve-campfire-postsubmit-tryjob
     eve-postsubmit-tryjob
     expresso-postsubmit-tryjob
     falco-postsubmit-tryjob
@@ -2912,7 +2887,6 @@
     eve-arcnext-release-tryjob
     eve-arcvm-release-tryjob
     eve-arm64-release-tryjob
-    eve-campfire-release-tryjob
     eve-kvm-release-tryjob
     eve-release-tryjob
     eve-swap-release-tryjob
