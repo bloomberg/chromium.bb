@@ -44,6 +44,7 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
   SetStartGlsEventName(const base::string16& event_name) = 0;
   virtual BSTR STDMETHODCALLTYPE GetFinalUsername() = 0;
   virtual std::string STDMETHODCALLTYPE GetFinalEmail() = 0;
+  virtual bool STDMETHODCALLTYPE IsAuthenticationResultsEmpty() = 0;
   virtual BSTR STDMETHODCALLTYPE GetErrorText() = 0;
   virtual bool STDMETHODCALLTYPE AreCredentialsValid() = 0;
   virtual bool STDMETHODCALLTYPE CanAttemptWindowsLogon() = 0;
@@ -80,6 +81,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
       const base::string16& event_name) override;
   BSTR STDMETHODCALLTYPE GetFinalUsername() override;
   std::string STDMETHODCALLTYPE GetFinalEmail() override;
+  bool STDMETHODCALLTYPE IsAuthenticationResultsEmpty() override;
   BSTR STDMETHODCALLTYPE GetErrorText() override;
   bool STDMETHODCALLTYPE AreCredentialsValid() override;
   bool STDMETHODCALLTYPE CanAttemptWindowsLogon() override;
@@ -183,6 +185,13 @@ HRESULT CTestCredentialBase<T>::SetStartGlsEventName(
 template <class T>
 BSTR CTestCredentialBase<T>::GetFinalUsername() {
   return this->get_username();
+}
+
+template <class T>
+bool CTestCredentialBase<T>::IsAuthenticationResultsEmpty() {
+  auto& results = this->get_authentication_results();
+
+  return !results || (results->is_dict() && results->DictEmpty());
 }
 
 template <class T>

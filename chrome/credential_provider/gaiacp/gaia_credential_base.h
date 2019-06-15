@@ -288,6 +288,10 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   bool needs_windows_password_ = false;
   bool request_force_password_change_ = false;
 
+  // Boolean to indicate if we should wait for ReportResult() prior to clearing
+  // internal state.
+  bool wait_for_report_result_ = false;
+
   // The password entered into the FID_CURRENT_PASSWORD_FIELD to update the
   // Windows password with the gaia password.
   CComBSTR current_windows_password_;

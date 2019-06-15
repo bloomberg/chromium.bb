@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <windows.h>
+
+#include <sddl.h>  // For ConvertSidToStringSid()
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
@@ -89,6 +93,62 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
 
   // New user should be created.
   EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+}
+
+// This test emulates the scenario where SetDeselected is triggered by the
+// Windows Login UI process after GetSerialization prior to invocation of
+// ReportResult. Note: This currently happens only for OtherUser credential
+// workflow.
+TEST_F(GcpGaiaCredentialBaseTest,
+       GetSerialization_SetDeselectedBeforeReportResult) {
+  // Create provider and start logon.
+  CComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  // Make sure a "foo" user was created.
+  PSID sid;
+  EXPECT_EQ(S_OK, fake_os_user_manager()->GetUserSID(
+                      OSUserManager::GetLocalDomain().c_str(), kDefaultUsername,
+                      &sid));
+
+  // New user should be created.
+  EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  // Finishing logon process should trigger credential changed and trigger
+  // GetSerialization.
+  ASSERT_EQ(S_OK, FinishLogonProcessWithCred(true, true, 0, cred));
+
+  // Trigger SetDeselected prior to ReportResult is invoked.
+  cred->SetDeselected();
+
+  // Verify that the authentication results dictionary is not empty.
+  ASSERT_FALSE(test->IsAuthenticationResultsEmpty());
+
+  // Trigger ReportResult and verify that the authentication results are saved
+  // into registry and ResetInternalState is triggered.
+  ReportLogonProcessResult(cred);
+
+  // Verify that the registry entry for the user was created.
+  wchar_t gaia_id[256];
+  ULONG length = base::size(gaia_id);
+  wchar_t* sidstr = nullptr;
+  ::ConvertSidToStringSid(sid, &sidstr);
+  ::LocalFree(sid);
+
+  HRESULT gaia_id_hr = GetUserProperty(sidstr, kUserId, gaia_id, &length);
+  ASSERT_EQ(S_OK, gaia_id_hr);
+  ASSERT_TRUE(gaia_id[0]);
+
+  // Verify that the authentication results dictionary is now empty.
+  ASSERT_TRUE(test->IsAuthenticationResultsEmpty());
 }
 
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Abort) {

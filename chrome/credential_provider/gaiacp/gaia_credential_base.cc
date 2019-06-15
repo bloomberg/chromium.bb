@@ -632,6 +632,7 @@ void CGaiaCredentialBase::ResetInternalState() {
   LOGFN(INFO);
   username_.Empty();
   domain_.Empty();
+  wait_for_report_result_ = false;
 
   SecurelyClearBuffer((BSTR)password_, password_.ByteLength());
   password_.Empty();
@@ -940,14 +941,22 @@ HRESULT CGaiaCredentialBase::SetSelected(BOOL* auto_login) {
 HRESULT CGaiaCredentialBase::SetDeselected(void) {
   LOGFN(INFO);
 
-  // Cancel logon so that the next time this credential is clicked everything
-  // has to be re-entered by the user. This prevents a Windows password
-  // entered into the password field by the user from being persisted too
-  // long. The behaviour is similar to that of the normal windows password
-  // text box. Whenever a different user is selected and then the original
-  // credential is selected again, the password is cleared.
-  ResetInternalState();
-
+  // This check is trying to handle the scenario when GetSerialization finishes
+  // with cpgsr set as CPGSR_RETURN_CREDENTIAL_FINISHED which indicates that
+  // the windows autologon is ready to go. In this case ideally ReportResult
+  // should be invoked by the windows login UI process prior to SetDeselected.
+  // But for OtherUserCredential scenario, SetDeselected is being invoked
+  // prior to ReportResult which is leading to clearing of the internalstate
+  // prior to saving the account user info in ReportResult.
+  if (!wait_for_report_result_) {
+    // Cancel logon so that the next time this credential is clicked everything
+    // has to be re-entered by the user. This prevents a Windows password
+    // entered into the password field by the user from being persisted too
+    // long. The behaviour is similar to that of the normal windows password
+    // text box. Whenever a different user is selected and then the original
+    // credential is selected again, the password is cleared.
+    ResetInternalState();
+  }
   return S_OK;
 }
 
@@ -1174,6 +1183,13 @@ HRESULT CGaiaCredentialBase::GetSerialization(
   // sign in of the account so we can re-enable token updates.
   if (submit_button_enabled)
     token_update_locker_.reset();
+
+  // If cpgsr is CPGSR_RETURN_CREDENTIAL_FINISHED and the status is S_OK, then
+  // report result would be invoked. So we shouldn't be resetting the internal
+  // state prior to report result getting triggered.
+  if (*cpgsr == CPGSR_RETURN_CREDENTIAL_FINISHED && hr == S_OK) {
+    wait_for_report_result_ = true;
+  }
 
   // Otherwise, keep the ui disabled forever now. ReportResult will eventually
   // be called on success or failure and the reset of the state of the
