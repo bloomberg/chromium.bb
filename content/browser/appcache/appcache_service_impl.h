@@ -53,12 +53,12 @@ class AppCacheStorage;
 class CONTENT_EXPORT AppCacheStorageReference
     : public base::RefCounted<AppCacheStorageReference> {
  public:
+  explicit AppCacheStorageReference(std::unique_ptr<AppCacheStorage> storage);
+
   AppCacheStorage* storage() const { return storage_.get(); }
 
  private:
-  friend class AppCacheServiceImpl;
   friend class base::RefCounted<AppCacheStorageReference>;
-  explicit AppCacheStorageReference(std::unique_ptr<AppCacheStorage> storage);
   ~AppCacheStorageReference();
 
   std::unique_ptr<AppCacheStorage> storage_;
