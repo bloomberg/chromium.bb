@@ -34,10 +34,6 @@
 
 namespace content {
 
-AppCacheInfoCollection::AppCacheInfoCollection() = default;
-
-AppCacheInfoCollection::~AppCacheInfoCollection() = default;
-
 // AsyncHelper -------
 
 class AppCacheServiceImpl::AsyncHelper : public AppCacheStorage::Delegate {
