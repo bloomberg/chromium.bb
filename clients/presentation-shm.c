@@ -43,6 +43,7 @@
 #include "shared/timespec-util.h"
 #include "shared/os-compatibility.h"
 #include "presentation-time-client-protocol.h"
+#include "xdg-shell-client-protocol.h"
 
 enum run_mode {
 	RUN_MODE_FEEDBACK,
@@ -66,7 +67,7 @@ struct display {
 	struct wl_display *display;
 	struct wl_registry *registry;
 	struct wl_compositor *compositor;
-	struct wl_shell *shell;
+	struct xdg_wm_base *wm_base;
 
 	struct wl_shm *shm;
 	uint32_t formats;
@@ -99,7 +100,9 @@ struct window {
 	int width, height;
 	enum run_mode mode;
 	struct wl_surface *surface;
-	struct wl_shell_surface *shell_surface;
+	struct xdg_surface *xdg_surface;
+	struct xdg_toplevel *xdg_toplevel;
+	uint32_t configure_serial;
 
 	struct buffer *buffers;
 	int num_buffers;
@@ -181,27 +184,48 @@ create_shm_buffers(struct display *display, struct buffer **buffers,
 }
 
 static void
-handle_ping(void *data, struct wl_shell_surface *shell_surface,
-							uint32_t serial)
+xdg_wm_base_handle_ping(void *data, struct xdg_wm_base *xdg_wm_base,
+			uint32_t serial)
 {
-	wl_shell_surface_pong(shell_surface, serial);
+	xdg_wm_base_pong(xdg_wm_base, serial);
+}
+
+static const struct xdg_wm_base_listener xdg_wm_base_listener = {
+	.ping = xdg_wm_base_handle_ping,
+};
+
+static void
+xdg_surface_handle_configure(void *data, struct xdg_surface *xdg_surface,
+			     uint32_t serial)
+{
+	struct window *window = data;
+
+	window->configure_serial = serial;
+}
+
+static const struct xdg_surface_listener xdg_surface_listener = {
+	.configure = xdg_surface_handle_configure,
+};
+
+
+static void
+xdg_toplevel_handle_configure(void *data, struct xdg_toplevel *xdg_toplevel,
+			      int32_t width, int32_t height,
+			      struct wl_array *states)
+{
+	/* noop */
 }
 
 static void
-handle_configure(void *data, struct wl_shell_surface *shell_surface,
-		 uint32_t edges, int32_t width, int32_t height)
+xdg_toplevel_handle_close(void *data, struct xdg_toplevel *xdg_toplevel)
 {
+	fprintf(stderr, "presentation-shm exiting\n");
+	exit(0);
 }
 
-static void
-handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
-{
-}
-
-static const struct wl_shell_surface_listener shell_surface_listener = {
-	handle_ping,
-	handle_configure,
-	handle_popup_done
+static const struct xdg_toplevel_listener xdg_toplevel_listener = {
+	.configure = xdg_toplevel_handle_configure,
+	.close = xdg_toplevel_handle_close,
 };
 
 static struct window *
@@ -228,16 +252,30 @@ create_window(struct display *display, int width, int height,
 	window->width = width;
 	window->height = height;
 	window->surface = wl_compositor_create_surface(display->compositor);
-	window->shell_surface = wl_shell_get_shell_surface(display->shell,
-							   window->surface);
+	window->xdg_surface = xdg_wm_base_get_xdg_surface(display->wm_base,
+							  window->surface);
 
-	if (window->shell_surface)
-		wl_shell_surface_add_listener(window->shell_surface,
-					      &shell_surface_listener, window);
+	if (!window->xdg_surface)
+		return NULL;
 
-	wl_shell_surface_set_title(window->shell_surface, title);
+	window->xdg_toplevel = xdg_surface_get_toplevel(window->xdg_surface);
 
-	wl_shell_surface_set_toplevel(window->shell_surface);
+	if (!window->xdg_toplevel)
+		return NULL;
+
+	xdg_wm_base_add_listener(display->wm_base, &xdg_wm_base_listener,
+				 NULL);
+	xdg_surface_add_listener(window->xdg_surface, &xdg_surface_listener,
+				 window);
+	xdg_toplevel_add_listener(window->xdg_toplevel, &xdg_toplevel_listener,
+				  window);
+
+	xdg_toplevel_set_title(window->xdg_toplevel, title);
+	xdg_toplevel_set_min_size(window->xdg_toplevel, width, height);
+	xdg_toplevel_set_max_size(window->xdg_toplevel, width, height);
+
+	wl_surface_commit(window->surface);
+	wl_display_roundtrip(window->display->display);
 
 	window->num_buffers = 60;
 	window->refresh_nsec = NSEC_PER_SEC / 60; /* 60 Hz guess */
@@ -277,7 +315,7 @@ destroy_window(struct window *window)
 	if (window->callback)
 		wl_callback_destroy(window->callback);
 
-	wl_shell_surface_destroy(window->shell_surface);
+	xdg_surface_destroy(window->xdg_surface);
 	wl_surface_destroy(window->surface);
 
 	for (i = 0; i < window->num_buffers; i++)
@@ -522,6 +560,12 @@ window_commit_next(struct window *window)
 	buffer = window_next_buffer(window);
 	assert(buffer);
 
+	if (window->configure_serial) {
+		xdg_surface_ack_configure(window->xdg_surface,
+					  window->configure_serial);
+		window->configure_serial = 0;
+	}
+
 	wl_surface_attach(window->surface, buffer->buffer, 0, 0);
 	wl_surface_damage(window->surface, 0, 0, window->width, window->height);
 	wl_surface_commit(window->surface);
@@ -718,9 +762,10 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		d->compositor =
 			wl_registry_bind(registry,
 					 name, &wl_compositor_interface, 1);
-	} else if (strcmp(interface, "wl_shell") == 0) {
-		d->shell = wl_registry_bind(registry,
-					    name, &wl_shell_interface, 1);
+	} else if (strcmp(interface, "xdg_wm_base") == 0) {
+		d->wm_base =
+			wl_registry_bind(registry, name,
+					 &xdg_wm_base_interface, version);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_registry_bind(registry,
 					  name, &wl_shm_interface, 1);
@@ -806,8 +851,8 @@ destroy_display(struct display *display)
 	if (display->shm)
 		wl_shm_destroy(display->shm);
 
-	if (display->shell)
-		wl_shell_destroy(display->shell);
+	if (display->wm_base)
+		xdg_wm_base_destroy(display->wm_base);
 
 	if (display->compositor)
 		wl_compositor_destroy(display->compositor);
