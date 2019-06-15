@@ -16,6 +16,9 @@
 
 namespace blink {
 
+// To avoid symbol collisions in jumbo builds.
+namespace media_stream_constraints_util_video_content_test {
+
 namespace {
 
 const double kDefaultScreenCastAspectRatio =
@@ -2203,4 +2206,5 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   }
 }
 
+}  // namespace media_stream_constraints_util_video_content_test
 }  // namespace blink
