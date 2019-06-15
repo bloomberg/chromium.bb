@@ -196,12 +196,12 @@ class MockAppCacheStorage : public AppCacheStorage {
     simulated_found_network_namespace_ = network_namespace;
   }
 
-  void SimulateGetAllInfo(AppCacheInfoCollection* info) {
-    simulated_appcache_info_ = info;
+  void SimulateGetAllInfo(scoped_refptr<AppCacheInfoCollection> info) {
+    simulated_appcache_info_ = std::move(info);
   }
 
-  void SimulateResponseReader(AppCacheResponseReader* reader) {
-    simulated_reader_.reset(reader);
+  void SimulateResponseReader(std::unique_ptr<AppCacheResponseReader> reader) {
+    simulated_reader_ = std::move(reader);
   }
 
   StoredCacheMap stored_caches_;

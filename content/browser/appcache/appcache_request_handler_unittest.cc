@@ -910,8 +910,7 @@ class AppCacheRequestHandlerTest
       url_request_ = empty_context_->CreateRequest(
           url, net::DEFAULT_PRIORITY, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
 
-      std::unique_ptr<AppCacheRequest> request =
-          AppCacheURLRequest::Create(url_request_.get());
+      auto request = std::make_unique<AppCacheURLRequest>(url_request_.get());
       request_ = request.get();
       handler_ =
           host->CreateRequestHandler(std::move(request), resource_type, false);
@@ -920,8 +919,8 @@ class AppCacheRequestHandlerTest
       network::ResourceRequest resource_request;
       resource_request.url = url;
       resource_request.method = "GET";
-      std::unique_ptr<AppCacheRequest> request =
-          AppCacheURLLoaderRequest::Create(resource_request);
+      auto request =
+          std::make_unique<AppCacheURLLoaderRequest>(resource_request);
       request_ = request.get();
       handler_ =
           host->CreateRequestHandler(std::move(request), resource_type, false);
