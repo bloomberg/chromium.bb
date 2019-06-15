@@ -74,6 +74,12 @@ Polymer({
     },
 
     /** @private {boolean} */
+    firstLoad_: {
+      type: Boolean,
+      value: true,
+    },
+
+    /** @private {boolean} */
     isInAppKioskMode_: {
       type: Boolean,
       value: false,
@@ -158,6 +164,11 @@ Polymer({
     // Expand the settings if the user has requested them expanded or if more
     // settings is not displayed (i.e. less than 6 total settings available).
     return this.settingsExpandedByUser_ || !this.shouldShowMoreSettings_;
+  },
+
+  /** @private */
+  onPrintButtonFocused_: function() {
+    this.firstLoad_ = false;
   },
 
   onStateChanged_: function() {

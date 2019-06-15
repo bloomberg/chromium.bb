@@ -97,15 +97,16 @@
     <template is="dom-if" if="[[!newPrintPreviewLayout]]">
       <print-preview-header id="header" destination="[[destination]]"
           cloud-print-error-message="[[cloudPrintErrorMessage]]"
-          error="[[error]]" state="[[state]]"
-          settings="[[settings]]" managed="[[controlsManaged]]">
+          error="[[error]]" first-load="[[firstLoad_]]" state="[[state]]"
+          settings="[[settings]]" managed="[[controlsManaged]]"
+          on-print-button-focused="onPrintButtonFocused_">
       </print-preview-header>
     </template>
     <div id="container" show-bottom-shadow$="[[newPrintPreviewLayout]]">
       <print-preview-destination-settings id="destinationSettings"
           cloud-print-interface="[[cloudPrintInterface]]" dark="[[dark_]]"
           destination="{{destination}}" destination-state="{{destinationState}}"
-          error="{{error}}" settings="[[settings]]"
+          error="{{error}}" first-load="[[firstLoad_]]" settings="[[settings]]"
           state="[[state]]" app-kiosk-mode="[[isInAppKioskMode_]]"
           disabled="[[controlsDisabled_]]"
           available class="settings-section">
@@ -202,7 +203,8 @@
     </div>
     <template is="dom-if" if="[[newPrintPreviewLayout]]">
       <print-preview-button-strip destination="[[destination]]"
-          state="[[state]]">
+          state="[[state]]" first-load="[[firstLoad_]]"
+          on-print-button-focused="onPrintButtonFocused_">
       </print-preview-button-strip>
     </template>
   </template>
