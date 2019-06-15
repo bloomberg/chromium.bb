@@ -386,7 +386,8 @@ Framebuffer::Framebuffer(FramebufferManager* manager, GLuint service_id)
       draw_buffer_bound_mask_(0u),
       adjusted_draw_buffer_bound_mask_(0u),
       last_color_attachment_id_(-1),
-      read_buffer_(GL_COLOR_ATTACHMENT0) {
+      read_buffer_(GL_COLOR_ATTACHMENT0),
+      flip_y_(false) {
   manager->StartTracking(this);
   DCHECK_GT(manager->max_draw_buffers_, 0u);
   draw_buffers_.reset(new GLenum[manager->max_draw_buffers_]);
