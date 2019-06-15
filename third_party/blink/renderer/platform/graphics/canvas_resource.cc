@@ -673,11 +673,13 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
     base::WeakPtr<CanvasResourceProvider> provider,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
-    bool is_overlay_candidate)
+    bool is_overlay_candidate,
+    bool is_origin_top_left)
     : CanvasResource(std::move(provider), filter_quality, color_params),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       is_overlay_candidate_(is_overlay_candidate),
-      size_(size) {
+      size_(size),
+      is_origin_top_left_(is_origin_top_left) {
   if (!context_provider_wrapper_)
     return;
 
@@ -715,11 +717,12 @@ scoped_refptr<CanvasResourceSharedImage> CanvasResourceSharedImage::Create(
     base::WeakPtr<CanvasResourceProvider> provider,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
-    bool is_overlay_candidate) {
+    bool is_overlay_candidate,
+    bool is_origin_top_left) {
   TRACE_EVENT0("blink", "CanvasResourceSharedImage::Create");
   auto resource = base::AdoptRef(new CanvasResourceSharedImage(
       size, std::move(context_provider_wrapper), std::move(provider),
-      filter_quality, color_params, is_overlay_candidate));
+      filter_quality, color_params, is_overlay_candidate, is_origin_top_left));
   return resource->IsValid() ? resource : nullptr;
 }
 
@@ -797,7 +800,7 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
   scoped_refptr<StaticBitmapImage> image =
       AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
           shared_image_mailbox_, GetSyncToken(), 0, ContextProviderWrapper(),
-          Size(), std::move(release_callback));
+          Size(), is_origin_top_left_, std::move(release_callback));
   DCHECK(image);
   return image;
 }

@@ -48,6 +48,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
       IntSize mailbox_size,
+      bool is_origin_top_left,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback = nullptr);
 
   bool CurrentFrameKnownToBeOpaque() override;
@@ -112,6 +113,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
       IntSize mailbox_size,
+      bool is_origin_top_left,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   void CreateImageFromMailboxIfNeeded();

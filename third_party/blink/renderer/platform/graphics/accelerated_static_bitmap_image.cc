@@ -42,10 +42,11 @@ AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
     IntSize mailbox_size,
+    bool is_origin_top_left,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size, std::move(release_callback)));
+      mailbox_size, is_origin_top_left, std::move(release_callback)));
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
@@ -65,12 +66,13 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
     IntSize mailbox_size,
+    bool is_origin_top_left,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback)
     : paint_image_content_id_(cc::PaintImage::GetNextContentId()),
       release_callback_(std::move(release_callback)) {
   texture_holder_ = std::make_unique<MailboxTextureHolder>(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size);
+      mailbox_size, is_origin_top_left);
 }
 
 namespace {

@@ -684,7 +684,7 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage(
 
   return AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
       buffer->mailbox, buffer->produce_sync_token, texture_id,
-      drawing_buffer_->ContextProviderWeakPtr(), size_);
+      drawing_buffer_->ContextProviderWeakPtr(), size_, false);
 }
 
 void XRWebGLDrawingBuffer::MailboxReleased(
@@ -737,7 +737,7 @@ void XRWebGLDrawingBuffer::MailboxReleasedToMirror(
   scoped_refptr<StaticBitmapImage> image =
       AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
           color_buffer->mailbox, color_buffer->produce_sync_token, texture_id,
-          drawing_buffer_->ContextProviderWeakPtr(), color_buffer->size);
+          drawing_buffer_->ContextProviderWeakPtr(), color_buffer->size, false);
 
   mirror_client_->OnMirrorImageAvailable(std::move(image),
                                          std::move(release_callback));

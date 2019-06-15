@@ -13,18 +13,28 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
+namespace {
+bool IsSkImageOriginTopLeft(sk_sp<SkImage> image) {
+  GrSurfaceOrigin origin;
+  image->getBackendTexture(false, &origin);
+  return origin == kTopLeft_GrSurfaceOrigin;
+}
+}  // namespace
+
 namespace blink {
 
 SkiaTextureHolder::SkiaTextureHolder(
     sk_sp<SkImage> image,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper)
-    : TextureHolder(std::move(context_provider_wrapper)),
+    : TextureHolder(std::move(context_provider_wrapper),
+                    IsSkImageOriginTopLeft(image)),
       image_(std::move(image)) {}
 
 SkiaTextureHolder::SkiaTextureHolder(
     std::unique_ptr<TextureHolder> texture_holder)
-    : TextureHolder(SharedGpuContext::ContextProviderWrapper()) {
+    : TextureHolder(SharedGpuContext::ContextProviderWrapper(),
+                    texture_holder->IsOriginTopLeft()) {
   DCHECK(texture_holder->IsMailboxTextureHolder());
   const gpu::Mailbox mailbox = texture_holder->GetMailbox();
   const gpu::SyncToken sync_token = texture_holder->GetSyncToken();
@@ -63,9 +73,12 @@ SkiaTextureHolder::SkiaTextureHolder(
   }
   GrBackendTexture backend_texture(mailbox_size.Width(), mailbox_size.Height(),
                                    GrMipMapped::kNo, texture_info);
+
+  GrSurfaceOrigin origin = IsOriginTopLeft() ? kTopLeft_GrSurfaceOrigin
+                                             : kBottomLeft_GrSurfaceOrigin;
+
   image_ = SkImage::MakeFromAdoptedTexture(shared_gr_context, backend_texture,
-                                           kBottomLeft_GrSurfaceOrigin,
-                                           kN32_SkColorType);
+                                           origin, kN32_SkColorType);
 }
 
 SkiaTextureHolder::~SkiaTextureHolder() {

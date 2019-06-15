@@ -315,7 +315,8 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
       base::WeakPtr<CanvasResourceProvider>,
       SkFilterQuality,
       const CanvasColorParams&,
-      bool is_overlay_candidate);
+      bool is_overlay_candidate,
+      bool is_origin_top_left);
   ~CanvasResourceSharedImage() override;
 
   bool IsRecycleable() const final { return true; }
@@ -361,7 +362,8 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
                             base::WeakPtr<CanvasResourceProvider>,
                             SkFilterQuality,
                             const CanvasColorParams&,
-                            bool is_overlay_candidate);
+                            bool is_overlay_candidate,
+                            bool is_origin_top_left);
 
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   gpu::Mailbox shared_image_mailbox_;
@@ -371,6 +373,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   GLuint texture_id_ = 0u;
   bool is_overlay_candidate_ = false;
   IntSize size_;
+  bool is_origin_top_left_ = false;
 
   bool is_origin_clean_ = true;
 };
