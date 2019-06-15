@@ -449,7 +449,7 @@ class InitSDKStage(generic_stages.BuilderStage):
           buildroot=self._build_root,
           replace=replace,
           use_sdk=use_sdk,
-          self_bootstrap = self._run.config.self_bootstrap,
+          self_bootstrap=self._run.config.self_bootstrap,
           chrome_root=self._run.options.chrome_root,
           extra_env=self._portage_extra_env,
           use_image=self._run.config.chroot_use_image,
@@ -593,12 +593,12 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     """Records all packages that may affect the board to BuilderRun."""
     packages = set()
     try:
-      deps = commands.ExtractBuildDepsGraph(
-          self._build_root, self._current_board)
+      deps = commands.ExtractBuildDepsGraph(self._build_root,
+                                            self._current_board)
       for package_dep in deps['packageDeps']:
         info = package_dep['packageInfo']
-        packages.add('%s/%s-%s' % (
-            info['category'], info['packageName'], info['version']))
+        packages.add('%s/%s-%s' % (info['category'], info['packageName'],
+                                   info['version']))
 
     except Exception:
       # Dependency extraction may fail due to bad ebuild changes. Let
@@ -682,8 +682,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
     # Set property to specify bisection builder job to run for Findit.
     logging.PrintKitchenSetBuildProperty(
-        'BISECT_BUILDER',
-        self._current_board + '-postsubmit-tryjob')
+        'BISECT_BUILDER', self._current_board + '-postsubmit-tryjob')
     try:
       commands.Build(
           self._build_root,
@@ -704,10 +703,10 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       failures_filename = os.path.join(self.archive_path,
                                        'BuildCompileFailureOutput.json')
       osutils.WriteFile(failures_filename, failure_json)
-      self.UploadArtifact(os.path.basename(failures_filename),
-                          archive=False)
-      self.PrintDownloadLink(os.path.basename(failures_filename),
-                             text_to_display='BuildCompileFailureOutput')
+      self.UploadArtifact(os.path.basename(failures_filename), archive=False)
+      self.PrintDownloadLink(
+          os.path.basename(failures_filename),
+          text_to_display='BuildCompileFailureOutput')
       gs_url = os.path.join(self.upload_url, 'BuildCompileFailureOutput.json')
       logging.PrintKitchenSetBuildProperty('BuildCompileFailureOutput', gs_url)
       raise
@@ -837,8 +836,8 @@ class BuildImageStage(BuildPackagesStage):
     parallel.RunParallelSteps([self._BuildVMImage, self._BuildGceTarballs])
 
   def _BuildVMImage(self):
-    if ((self._run.config.vm_tests or self._run.config.tast_vm_tests)
-        and not self._afdo_generate_min):
+    if ((self._run.config.vm_tests or self._run.config.tast_vm_tests) and
+        not self._afdo_generate_min):
       commands.BuildVMImageForTesting(
           self._build_root,
           self._current_board,
