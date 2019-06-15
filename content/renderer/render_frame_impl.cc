@@ -5852,8 +5852,6 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   // corresponding FrameNavigationEntry.
   params->page_state = SingleHistoryItemToPageState(current_history_item_);
 
-  params->content_source_id = GetLocalRootRenderWidget()->GetContentSourceId();
-
   params->method = document_loader->HttpMethod().Latin1();
   if (params->method == "POST")
     params->post_id = ExtractPostId(current_history_item_);

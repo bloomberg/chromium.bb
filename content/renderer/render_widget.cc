@@ -474,7 +474,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 #endif
       first_update_visual_state_after_hidden_(false),
       was_shown_time_(base::TimeTicks::Now()),
-      current_content_source_id_(0),
       widget_binding_(this, std::move(widget_request)) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
@@ -1789,7 +1788,6 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
 
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportSize(), screen_info_);
-  layer_tree_view_->SetContentSourceId(current_content_source_id_);
   // If the widget is hidden, delay starting the compositor until the user shows
   // it. Also if the RenderWidget is frozen, we delay starting the compositor
   // until we expect to use the widget, which will be signaled through
@@ -3623,10 +3621,6 @@ void RenderWidget::StartDragging(network::mojom::ReferrerPolicy policy,
                                      image_offset, possible_drag_event_info_));
 }
 
-uint32_t RenderWidget::GetContentSourceId() {
-  return current_content_source_id_;
-}
-
 void RenderWidget::DidNavigate() {
   // Blink may be navigating still between the Close IPC and the task that
   // actually closes this class, and for a main frame that would come through
@@ -3634,8 +3628,6 @@ void RenderWidget::DidNavigate() {
   if (closing_)
     return;
 
-  ++current_content_source_id_;
-  layer_tree_view_->SetContentSourceId(current_content_source_id_);
   layer_tree_view_->ClearCachesOnNextCommit();
 }
 

@@ -7020,8 +7020,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
   // situation) then we clear it after a while anyway.
   // See https://crbug.com/497588.
   if (frame_tree_node_->IsMainFrame() && GetView()) {
-    RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())
-        ->DidNavigate(validated_params->content_source_id);
+    RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())->DidNavigate();
   }
 
   // TODO(arthursonzogni): This can be removed when RenderDocument will be
