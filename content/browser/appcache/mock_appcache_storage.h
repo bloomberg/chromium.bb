@@ -120,7 +120,7 @@ class MockAppCacheStorage : public AppCacheStorage {
 
   void AddStoredCache(AppCache* cache);
   void RemoveStoredCache(AppCache* cache);
-  void RemoveStoredCaches(const AppCacheGroup::Caches& caches);
+  void RemoveStoredCaches(const std::vector<AppCache*>& caches);
   bool IsCacheStored(const AppCache* cache) {
     return stored_caches_.find(cache->cache_id()) != stored_caches_.end();
   }

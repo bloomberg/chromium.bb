@@ -251,7 +251,7 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
 
     // Copy the collection prior to removal, on final release
     // of a cache the group's collection will change.
-    AppCacheGroup::Caches copy = group->old_caches();
+    std::vector<AppCache*> copy = group->old_caches();
     RemoveStoredCaches(copy);
   }
 
@@ -459,7 +459,7 @@ void MockAppCacheStorage::ProcessMakeGroupObsolete(
 
   // Copy the collection prior to removal, on final release
   // of a cache the group's collection will change.
-  AppCacheGroup::Caches copy = group->old_caches();
+  std::vector<AppCache*> copy = group->old_caches();
   RemoveStoredCaches(copy);
 
   group->set_obsolete(true);
@@ -503,7 +503,7 @@ void MockAppCacheStorage::RemoveStoredCache(AppCache* cache) {
 }
 
 void MockAppCacheStorage::RemoveStoredCaches(
-    const AppCacheGroup::Caches& caches) {
+    const std::vector<AppCache*>& caches) {
   for (AppCache* cache : caches)
     RemoveStoredCache(cache);
 }
