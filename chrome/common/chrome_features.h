@@ -484,6 +484,8 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWebRtcRemoteEventLogGzipped;
 #endif
 
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kWebUIDarkMode;
+
 #if defined(OS_WIN)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWin10AcceleratedDefaultBrowserFlow;

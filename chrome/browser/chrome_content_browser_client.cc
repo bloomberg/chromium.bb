@@ -559,6 +559,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -3434,13 +3435,21 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);
 
-  // Force a light preferred color scheme on chrome:// pages if kWebUIDarkMode
-  // is disabled until all UI is correctly themed and OSes support dark mode.
-  // Note: the WebUI CSS explicitly uses light (instead of not dark), which is
-  // why we don't reset back to no-preference. https://crbug.com/965811
-  if (contents && contents->GetURL().SchemeIs(content::kChromeUIScheme) &&
-      !base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-    web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
+  // Force a light preferred color scheme on certain URLs if kWebUIDarkMode is
+  // disabled; some of the UI is not yet correctly themed. Note: the WebUI CSS
+  // explicitly uses light (instead of not dark), which is why we don't reset
+  // back to no-preference. https://crbug.com/965811
+  if (contents && !base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
+    bool force_light = contents->GetURL().SchemeIs(content::kChromeUIScheme);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    if (!force_light) {
+      force_light =
+          contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
+          contents->GetURL().host_piece() == extension_misc::kPdfExtensionId;
+    }
+#endif
+    if (force_light)
+      web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
   }
 
   // Apply native CaptionStyle parameters.
