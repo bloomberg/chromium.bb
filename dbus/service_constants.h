@@ -956,6 +956,13 @@ constexpr char kRemoveHostnameIpMappingMethod[] = "RemoveHostnameIpMapping";
 
 namespace arc {
 
+constexpr char kArcServiceName[] = "org.chromium.Arc";
+constexpr char kArcServicePath[] = "/org/chromium/Arc";
+constexpr char kArcInterfaceName[] = "org.chromium.Arc";
+
+// Signal
+constexpr char kArcStopped[] = "ArcStopped";
+
 namespace keymaster {
 constexpr char kArcKeymasterServiceName[] = "org.chromium.ArcKeymaster";
 constexpr char kArcKeymasterServicePath[] = "/org/chromium/ArcKeymaster";
