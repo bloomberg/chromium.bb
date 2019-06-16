@@ -12482,22 +12482,28 @@ static int compare_int64(const void *a, const void *b) {
   }
 }
 
-// Find the 2nd best RD for a reference frame (among single reference modes)
-// and store it in the 0-th element in ref_frame_rd.
-static void find_top_2_ref(int64_t ref_frame_rd[REF_FRAMES]) {
+// Find the best RD for a reference frame (among single reference modes)
+// and store +10% of it in the 0-th element in ref_frame_rd.
+static void find_top_ref(int64_t ref_frame_rd[REF_FRAMES]) {
   assert(ref_frame_rd[0] == INT64_MAX);
   int64_t ref_copy[REF_FRAMES - 1];
   memcpy(ref_copy, ref_frame_rd + 1,
          sizeof(ref_frame_rd[0]) * (REF_FRAMES - 1));
   qsort(ref_copy, REF_FRAMES - 1, sizeof(int64_t), compare_int64);
-  int64_t second_best = ref_copy[1];
-  ref_frame_rd[0] = second_best;
+
+  int64_t cutoff = ref_copy[0];
+  // The cut-off is within 10% of the best.
+  if (cutoff != INT64_MAX) {
+    assert(cutoff < INT64_MAX / 200);
+    cutoff = (110 * cutoff) / 100;
+  }
+  ref_frame_rd[0] = cutoff;
 }
 
-// Check if either frame is one of the top two.
-static INLINE bool in_top_2_ref(int64_t ref_frame_rd[REF_FRAMES],
-                                MV_REFERENCE_FRAME frame1,
-                                MV_REFERENCE_FRAME frame2) {
+// Check if either frame is within the cutoff.
+static INLINE bool in_single_ref_cutoff(int64_t ref_frame_rd[REF_FRAMES],
+                                        MV_REFERENCE_FRAME frame1,
+                                        MV_REFERENCE_FRAME frame2) {
   assert(frame2 > 0);
   return ref_frame_rd[frame1] <= ref_frame_rd[0] ||
          ref_frame_rd[frame2] <= ref_frame_rd[0];
@@ -12618,10 +12624,11 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     // frame at least as good as the 2nd best.
     if (sf->prune_compound_using_single_ref &&
         midx == MAX_SINGLE_REF_MODES + 1) {
-      find_top_2_ref(ref_frame_rd);
+      find_top_ref(ref_frame_rd);
     }
     if (sf->prune_compound_using_single_ref && midx > MAX_SINGLE_REF_MODES &&
-        comp_pred && !in_top_2_ref(ref_frame_rd, ref_frame, second_ref_frame)) {
+        comp_pred &&
+        !in_single_ref_cutoff(ref_frame_rd, ref_frame, second_ref_frame)) {
       continue;
     }
 
