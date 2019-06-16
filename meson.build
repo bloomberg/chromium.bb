@@ -253,7 +253,7 @@ if prog_xslt.found()
 endif
 with_man_pages = with_man_pages != 'false' and prog_xslt.found() and prog_sed.found()
 
-# Used for tets
+# Used for tests
 prog_bash = find_program('bash')
 
 config.set10('HAVE_VISIBILITY',
