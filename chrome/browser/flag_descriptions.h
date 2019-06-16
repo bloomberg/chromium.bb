@@ -2047,6 +2047,11 @@ extern const char kWindowsMixedRealityName[];
 extern const char kWindowsMixedRealityDescription[];
 #endif  // ENABLE_WINDOWS_MR
 
+#if BUILDFLAG(ENABLE_OPENXR)
+extern const char kOpenXRName[];
+extern const char kOpenXRDescription[];
+#endif  // ENABLE_OPENXR
+
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
 extern const char kXRSandboxName[];
 extern const char kXRSandboxDescription[];

@@ -3375,6 +3375,12 @@ const char kWindowsMixedRealityDescription[] =
     " (supported only on Windows 10 or later).";
 #endif  // ENABLE_WINDOWS_MR
 
+#if BUILDFLAG(ENABLE_OPENXR)
+const char kOpenXRName[] = "OpenXR support";
+const char kOpenXRDescription[] =
+    "If enabled, Chrome will use OpenXR Backend for VR.";
+#endif  // ENABLE_OPENXR
+
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
 const char kXRSandboxName[] = "XR device sandboxing";
 const char kXRSandboxDescription[] =

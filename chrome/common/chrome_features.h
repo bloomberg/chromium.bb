@@ -200,6 +200,10 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWindowsMixedReality;
 #endif  // ENABLE_WINDOWS_MR
 
+#if BUILDFLAG(ENABLE_OPENXR)
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOpenXR;
+#endif  // ENABLE_OPENXR
+
 #endif  // ENABLE_VR
 
 #if defined(OS_WIN)

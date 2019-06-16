@@ -2528,6 +2528,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "openxr",
+    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "out-of-blink-cors",
     "owners": [ "toyoshim" ],
     "expiry_milestone": 76

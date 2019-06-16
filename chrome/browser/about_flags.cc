@@ -1866,6 +1866,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWindowsMixedRealityDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kWindowsMixedReality)},
 #endif  // ENABLE_WINDOWS_MR
+#if BUILDFLAG(ENABLE_OPENXR)
+    {"openxr", flag_descriptions::kOpenXRName,
+     flag_descriptions::kOpenXRDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kOpenXR)},
+#endif  // ENABLE_OPENXR
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
     {"xr-sandbox", flag_descriptions::kXRSandboxName,
      flag_descriptions::kXRSandboxDescription, kOsWin,
