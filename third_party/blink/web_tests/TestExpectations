@@ -3326,7 +3326,6 @@ crbug.com/626703 [ Retina ] external/wpt/html/cross-origin/anonymous.tentative.h
 crbug.com/626703 [ Win10 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin/anonymous.tentative.html [ Failure Crash ]
 crbug.com/699040 external/wpt/svg/text/reftests/text-xml-space-001.svg [ Failure ]
-crbug.com/626703 external/wpt/css/css-sizing/clone-nowrap-intrinsic-size-bidi.html [ Failure ]
 crbug.com/626703 external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/blink-cors/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
