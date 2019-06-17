@@ -39020,6 +39020,7 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="EditedUserName"/>
   <int value="1" label="EditedPassword"/>
   <int value="2" label="UnmaskedPassword"/>
+  <int value="3" label="MaskedPassword"/>
 </enum>
 
 <enum name="MobileMessagesPasswordsModalPresent">
