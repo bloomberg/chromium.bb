@@ -115,9 +115,7 @@ base::scoped_nsobject<NSMenuItem> BuildFileMenu(
                 Item(IDS_CLOSE_TAB_MAC)
                     .command_id(IDC_CLOSE_TAB)
                     .remove_if(is_pwa),
-                Item(IDS_SAVE_PAGE_MAC)
-                    .command_id(IDC_SAVE_PAGE)
-                    .remove_if(is_pwa),
+                Item(IDS_SAVE_PAGE_MAC).command_id(IDC_SAVE_PAGE),
                 Item().is_separator().remove_if(is_pwa),
                 Item(IDS_SHARE_MAC).remove_if(is_pwa), Item().is_separator(),
                 Item(IDS_PRINT).command_id(IDC_PRINT),
