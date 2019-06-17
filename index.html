@@ -84,7 +84,7 @@
 
 import { loadTests } from './out/framework/listing.js';
 import { Logger } from './out/framework/logger.js';
-import { encodeSelectively, parseQueryString } from './out/framework/url_query.js';
+import { encodeSelectively, makeQueryString, parseQueryString } from './out/framework/url_query.js';
 
 const resultsVis = document.getElementById("resultsVis");
 function mkTest(path, description) {
@@ -120,7 +120,7 @@ function mkTest(path, description) {
   return testcases;
 }
 
-function mkCase(testcasesVis, t) {
+function mkCase(testcasesVis, query, t) {
   const testcase = $("<div>")
     .addClass("testcase")
     .appendTo(testcasesVis);
@@ -132,14 +132,10 @@ function mkCase(testcasesVis, t) {
     .addClass("caserun")
     .html("&#9654;")
     .appendTo(casehead);
-  let s = t.testcase.name;
-  if (t.testcase.params && Object.keys(t.testcase.params).length) {
-    s += " " + JSON.stringify(t.testcase.params);
-  }
   $("<div>")
     .addClass("casename")
     .appendTo(casehead)
-    .text(s);
+    .text(query);
   const casetime = $("<div>")
     .addClass("casetime")
     .appendTo(casehead);
@@ -150,7 +146,6 @@ function mkCase(testcasesVis, t) {
   const runCase = async () => {
     const res = await t.run();
 
-    console.log(res);
     casetime.text(res.timems.toFixed(4) + " ms");
 
     testcase.removeClass("pass");
@@ -202,7 +197,8 @@ function basepath(path) {
 
     const [tResult, tRec] = log.record(path);
     for (const t of group.iterate(tRec)) {
-      const runCase = mkCase(testcasesVis, t);
+      const query = makeQueryString(entry, t.testcase);
+      const runCase = mkCase(testcasesVis, query, t);
       runCaseList.push(runCase);
     }
   }

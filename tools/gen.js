@@ -4,13 +4,21 @@ const path = require("path");
 const process = require("process");
 global.fetch = require("node-fetch");
 
-function die() {
-  console.error(new Error());
-  console.error("");
+function usage(rc) {
   console.error("Usage:");
   console.error("  node tools/gen [SUITES...]");
   console.error("  node tools/gen cts unittests demos");
-  process.exit(1);
+  process.exit(rc);
+}
+
+function die() {
+  console.error(new Error());
+  console.error("");
+  usage(1);
+}
+
+if (process.argv.length <= 2) {
+  usage(0);
 }
 
 if (!fs.existsSync("src/")) {

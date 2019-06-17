@@ -6,13 +6,21 @@ const { loadTests } = require('../src/framework/listing');
 const { Logger } = require('../src/framework/logger');
 const { parseFilters } = require('../src/framework/url_query');
 
-function die() {
-  console.error(new Error());
-  console.error('');
-  console.error('Usage:');
+function usage(rc) {
+  console.error("Usage:");
   console.error('  node tools/run [FILTERS...]');
   console.error('  node tools/run unittests: demos:params:');
-  process.exit(1);
+  process.exit(rc);
+}
+
+function die() {
+  console.error(new Error());
+  console.error("");
+  usage(1);
+}
+
+if (process.argv.length <= 2) {
+  usage(0);
 }
 
 if (!fs.existsSync("src/")) {
