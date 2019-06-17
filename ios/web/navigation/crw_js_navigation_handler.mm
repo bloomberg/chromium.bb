@@ -69,29 +69,32 @@ GURL URLEscapedForHistory(const GURL& url) {
     _delegate = delegate;
 
     __weak CRWJSNavigationHandler* weakSelf = self;
-    auto navigationStateCallback =
-        ^bool(const base::DictionaryValue& message, const GURL&,
-              bool /* is_main_frame */, bool /* user_is_interacting */,
-              web::WebFrame* senderFrame) {
-          const std::string* command = message.FindStringKey("command");
-          DCHECK(command);
-          if (*command == "navigation.hashchange") {
-            [weakSelf handleNavigationHashChangeInFrame:senderFrame];
-            return true;
-          } else if (*command == "navigation.willChangeState") {
-            [weakSelf handleNavigationWillChangeStateInFrame:senderFrame];
-            return true;
-          } else if (*command == "navigation.didPushState") {
-            [weakSelf handleNavigationDidPushStateMessage:message
-                                                  inFrame:senderFrame];
-            return true;
-          } else if (*command == "navigation.didReplaceState") {
-            [weakSelf handleNavigationDidReplaceStateMessage:message
-                                                     inFrame:senderFrame];
-            return true;
-          }
-          return false;
-        };
+    auto navigationStateCallback = ^bool(const base::DictionaryValue& message,
+                                         const GURL&, bool /* is_main_frame */,
+                                         bool /* user_is_interacting */,
+                                         web::WebFrame* senderFrame) {
+      if (!senderFrame->IsMainFrame())
+        return false;
+
+      const std::string* command = message.FindStringKey("command");
+      DCHECK(command);
+      if (*command == "navigation.hashchange") {
+        [weakSelf handleNavigationHashChangeInFrame:senderFrame];
+      } else if (*command == "navigation.willChangeState") {
+        [weakSelf handleNavigationWillChangeStateInFrame:senderFrame];
+      } else if (*command == "navigation.didPushState") {
+        [weakSelf handleNavigationDidPushStateMessage:message
+                                              inFrame:senderFrame];
+      } else if (*command == "navigation.didReplaceState") {
+        [weakSelf handleNavigationDidReplaceStateMessage:message
+                                                 inFrame:senderFrame];
+      } else if (*command == "navigation.goDelta") {
+        [weakSelf handleNavigationGoDeltaMessage:message inFrame:senderFrame];
+      } else {
+        return false;
+      }
+      return true;
+    };
 
     self.webStateImpl->AddScriptCommandCallback(
         base::BindRepeating(navigationStateCallback), kCommandPrefix);
@@ -141,34 +144,26 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 // Handles the navigation.hashchange event emitted from |senderFrame|.
 - (void)handleNavigationHashChangeInFrame:(web::WebFrame*)senderFrame {
-  if (!senderFrame->IsMainFrame())
-    return;
-
   // Record that the current NavigationItem was created by a hash change, but
   // ignore hashchange events that are manually dispatched for same-document
   // navigations.
   if (self.dispatchingSameDocumentHashChangeEvent) {
     self.dispatchingSameDocumentHashChangeEvent = NO;
   } else {
-    web::NavigationItemImpl* item =
-        self.navigationManagerImpl->GetCurrentItemImpl();
-    item->SetIsCreatedFromHashChange(true);
+    self.navigationManagerImpl->GetCurrentItemImpl()
+        ->SetIsCreatedFromHashChange(true);
   }
 }
 
 // Handles the navigation.willChangeState message sent from |senderFrame|.
 - (void)handleNavigationWillChangeStateInFrame:(web::WebFrame*)senderFrame {
-  if (senderFrame->IsMainFrame()) {
-    self.changingHistoryState = YES;
-  }
+  self.changingHistoryState = YES;
 }
 
 // Handles the navigation.didChangeState message sent from |senderFrame|.
 - (void)handleNavigationDidPushStateMessage:
             (const base::DictionaryValue&)message
                                     inFrame:(web::WebFrame*)senderFrame {
-  if (!senderFrame->IsMainFrame())
-    return;
   DCHECK(self.changingHistoryState);
   self.changingHistoryState = NO;
 
@@ -194,10 +189,9 @@ GURL URLEscapedForHistory(const GURL& url) {
   pushURL = URLEscapedForHistory(pushURL);
   if (!pushURL.is_valid())
     return;
+
   web::NavigationItemImpl* navItem =
-      self.navigationManagerImpl
-          ? self.navigationManagerImpl->GetCurrentItemImpl()
-          : nullptr;
+      self.navigationManagerImpl->GetCurrentItemImpl();
   // PushState happened before first navigation entry or called when the
   // navigation entry does not contain a valid URL.
   if (!navItem || !navItem->GetURL().is_valid())
@@ -253,8 +247,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 - (void)handleNavigationDidReplaceStateMessage:
             (const base::DictionaryValue&)message
                                        inFrame:(web::WebFrame*)senderFrame {
-  if (!senderFrame->IsMainFrame())
-    return;
   DCHECK(self.changingHistoryState);
   self.changingHistoryState = NO;
 
@@ -273,9 +265,7 @@ GURL URLEscapedForHistory(const GURL& url) {
     return;
 
   web::NavigationItemImpl* navItem =
-      self.navigationManagerImpl
-          ? self.navigationManagerImpl->GetCurrentItemImpl()
-          : nullptr;
+      self.navigationManagerImpl->GetCurrentItemImpl();
   // ReplaceState happened before first navigation entry or called right
   // after window.open when the url is empty/not valid.
   if (!navItem || (self.navigationManagerImpl->GetItemCount() <= 1 &&
@@ -310,6 +300,17 @@ GURL URLEscapedForHistory(const GURL& url) {
                                           didFinishNavigation:nullptr];
                    }];
   return;
+}
+
+// Handles 'navigation.goDelta' message sent from |senderFrame|.
+- (void)handleNavigationGoDeltaMessage:(const base::DictionaryValue&)message
+                               inFrame:(web::WebFrame*)senderFrame {
+  const base::Value* value = message.FindKey("value");
+  if (value && value->is_double()) {
+    [self rendererInitiatedGoDelta:static_cast<int>(value->GetDouble())
+                    hasUserGesture:self.userInteractionState->IsUserInteracting(
+                                       self.webView)];
+  }
 }
 
 // Adds a new NavigationItem with the given URL and state object to the
@@ -349,6 +350,28 @@ GURL URLEscapedForHistory(const GURL& url) {
                                                                stateObject);
   context->SetHasCommitted(true);
   self.webStateImpl->OnNavigationFinished(context.get());
+}
+
+// Navigates forwards or backwards by |delta| pages. No-op if delta is out of
+// bounds. Reloads if delta is 0.
+// TODO(crbug.com/661316): Move this method to NavigationManager.
+- (void)rendererInitiatedGoDelta:(int)delta
+                  hasUserGesture:(BOOL)hasUserGesture {
+  if (self.beingDestroyed)
+    return;
+
+  if (delta == 0) {
+    [self.delegate
+        JSNavigationHandlerReloadWithRendererInitiatedNavigation:self];
+    return;
+  }
+
+  if (self.navigationManagerImpl->CanGoToOffset(delta)) {
+    int index = self.navigationManagerImpl->GetIndexForOffset(delta);
+    self.navigationManagerImpl->GoToIndex(
+        index, web::NavigationInitiationType::RENDERER_INITIATED,
+        /*has_user_gesture=*/hasUserGesture);
+  }
 }
 
 @end

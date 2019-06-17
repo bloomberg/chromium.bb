@@ -1809,12 +1809,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     (*handlers)["document.favicons"] =
         @selector(handleDocumentFaviconsMessage:context:);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
-    (*handlers)["window.history.back"] =
-        @selector(handleWindowHistoryBackMessage:context:);
-    (*handlers)["window.history.forward"] =
-        @selector(handleWindowHistoryForwardMessage:context:);
-    (*handlers)["window.history.go"] = @selector(handleWindowHistoryGoMessage:
-                                                                      context:);
     (*handlers)["restoresession.error"] =
         @selector(handleRestoreSessionErrorMessage:context:);
   });
@@ -2004,40 +1998,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return YES;
 }
 
-// Handles 'window.history.back' message.
-- (BOOL)handleWindowHistoryBackMessage:(base::DictionaryValue*)message
-                               context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-  [self rendererInitiatedGoDelta:-1
-                  hasUserGesture:[context[kUserIsInteractingKey] boolValue]];
-  return YES;
-}
-
-// Handles 'window.history.forward' message.
-- (BOOL)handleWindowHistoryForwardMessage:(base::DictionaryValue*)message
-                                  context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-  [self rendererInitiatedGoDelta:1
-                  hasUserGesture:[context[kUserIsInteractingKey] boolValue]];
-  return YES;
-}
-
-// Handles 'window.history.go' message.
-- (BOOL)handleWindowHistoryGoMessage:(base::DictionaryValue*)message
-                             context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-  double delta = 0;
-  if (message->GetDouble("value", &delta)) {
-    [self rendererInitiatedGoDelta:static_cast<int>(delta)
-                    hasUserGesture:[context[kUserIsInteractingKey] boolValue]];
-    return YES;
-  }
-  return NO;
-}
-
 // Handles 'restoresession.error' message.
 - (BOOL)handleRestoreSessionErrorMessage:(base::DictionaryValue*)message
                                  context:(NSDictionary*)context {
@@ -2058,29 +2018,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
               ? net::GURLWithNSURL(self.webView.URL).possibly_invalid_spec()
               : " N/A");
   return YES;
-}
-
-#pragma mark - Navigation Helpers
-
-// Navigates forwards or backwards by |delta| pages. No-op if delta is out of
-// bounds. Reloads if delta is 0.
-// TODO(crbug.com/661316): Move this method to NavigationManager.
-- (void)rendererInitiatedGoDelta:(int)delta
-                  hasUserGesture:(BOOL)hasUserGesture {
-  if (_isBeingDestroyed)
-    return;
-
-  if (delta == 0) {
-    [self reloadWithRendererInitiatedNavigation:YES];
-    return;
-  }
-
-  if (self.navigationManagerImpl->CanGoToOffset(delta)) {
-    int index = self.navigationManagerImpl->GetIndexForOffset(delta);
-    self.navigationManagerImpl->GoToIndex(
-        index, web::NavigationInitiationType::RENDERER_INITIATED,
-        /*has_user_gesture=*/hasUserGesture);
-  }
 }
 
 #pragma mark - WebUI
@@ -3033,6 +2970,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)JSNavigationHandler:(CRWJSNavigationHandler*)navigationHandler
         didFinishNavigation:(web::NavigationContextImpl*)context {
   [self didFinishNavigation:context];
+}
+
+- (void)JSNavigationHandlerReloadWithRendererInitiatedNavigation:
+    (CRWJSNavigationHandler*)navigationHandler {
+  [self reloadWithRendererInitiatedNavigation:YES];
 }
 
 #pragma mark - Testing-Only Methods

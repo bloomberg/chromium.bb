@@ -52,6 +52,10 @@ class NavigationContextImpl;
 - (void)JSNavigationHandler:(CRWJSNavigationHandler*)navigationHandler
         didFinishNavigation:(web::NavigationContextImpl*)context;
 
+// Instructs the delegate to reload a rendered initiated reload.
+- (void)JSNavigationHandlerReloadWithRendererInitiatedNavigation:
+    (CRWJSNavigationHandler*)navigationHandler;
+
 @end
 
 // Handles JS messages related to navigation(e.g. window.history.forward).
