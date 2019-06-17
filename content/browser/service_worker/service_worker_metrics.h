@@ -406,22 +406,6 @@ class ServiceWorkerMetrics {
   // navigation preload request is to be sent.
   static void RecordNavigationPreloadRequestHeaderSize(size_t size);
 
-  // Records timings for the navigation preload response and how
-  // it compares to starting the worker.
-  // |worker_start| is the time it took to prepare an activated and running
-  // worker to receive the fetch event. |initial_worker_status| and
-  // |start_situation| describe the preparation needed.
-  // |response_start| is the time it took until the navigation preload response
-  // started.
-  // |resource_type| must be ResourceType::kMainFrame or
-  // ResourceType::kSubFrame.
-  CONTENT_EXPORT static void RecordNavigationPreloadResponse(
-      base::TimeDelta worker_start,
-      base::TimeDelta response_start,
-      EmbeddedWorkerStatus initial_worker_status,
-      StartSituation start_situation,
-      ResourceType resource_type);
-
   static void RecordRuntime(base::TimeDelta time);
 
   // Records the result of starting service worker for a navigation hint.

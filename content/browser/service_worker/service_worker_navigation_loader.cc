@@ -226,8 +226,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
                      weak_factory_.GetWeakPtr()));
   did_navigation_preload_ = fetch_dispatcher_->MaybeStartNavigationPreload(
       resource_request_, url_loader_factory_getter_.get(), std::move(context),
-      provider_host_->web_contents_getter(),
-      base::DoNothing(/* TODO(crbug/762357): metrics? */));
+      provider_host_->web_contents_getter());
 
   // Record worker start time here as |fetch_dispatcher_| will start a service
   // worker if there is no running service worker.

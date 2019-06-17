@@ -740,68 +740,6 @@ void ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
                               size);
 }
 
-void ServiceWorkerMetrics::RecordNavigationPreloadResponse(
-    base::TimeDelta worker_start,
-    base::TimeDelta response_start,
-    EmbeddedWorkerStatus initial_worker_status,
-    StartSituation start_situation,
-    ResourceType resource_type) {
-  DCHECK_GE(worker_start.ToInternalValue(), 0);
-  DCHECK_GE(response_start.ToInternalValue(), 0);
-  DCHECK(resource_type == ResourceType::kMainFrame ||
-         resource_type == ResourceType::kSubFrame);
-  const bool is_main_frame = (resource_type == ResourceType::kMainFrame);
-  // TODO(falken): Log sub-frame navigations also.
-  if (!is_main_frame) {
-    return;
-  }
-  const bool nav_preload_finished_first = response_start < worker_start;
-  const base::TimeDelta concurrent_time =
-      nav_preload_finished_first ? response_start : worker_start;
-  base::TimeDelta worker_wait_time;
-  if (nav_preload_finished_first) {
-    worker_wait_time = worker_start - response_start;
-  }
-  const bool worker_start_occurred =
-      initial_worker_status != EmbeddedWorkerStatus::RUNNING;
-  const WorkerPreparationType preparation =
-      GetWorkerPreparationType(initial_worker_status, start_situation);
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "ServiceWorker.NavPreload.WorkerPreparationType_MainFrame", preparation);
-  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.NavPreload.ResponseTime_MainFrame",
-                             response_start);
-  UMA_HISTOGRAM_BOOLEAN("ServiceWorker.NavPreload.FinishedFirst_MainFrame",
-                        nav_preload_finished_first);
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "ServiceWorker.NavPreload.ConcurrentTime_MainFrame", concurrent_time);
-  if (nav_preload_finished_first) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "ServiceWorker.NavPreload.WorkerWaitTime_MainFrame", worker_wait_time);
-  }
-
-  if (worker_start_occurred) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "ServiceWorker.NavPreload.ResponseTime_MainFrame_"
-        "WorkerStartOccurred",
-        response_start);
-    UMA_HISTOGRAM_BOOLEAN(
-        "ServiceWorker.NavPreload.FinishedFirst_MainFrame_"
-        "WorkerStartOccurred",
-        nav_preload_finished_first);
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "ServiceWorker.NavPreload.ConcurrentTime_MainFrame_"
-        "WorkerStartOccurred",
-        concurrent_time);
-    if (nav_preload_finished_first) {
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "ServiceWorker.NavPreload.WorkerWaitTime_MainFrame_"
-          "WorkerStartOccurred",
-          worker_wait_time);
-    }
-  }
-}
-
 void ServiceWorkerMetrics::RecordRuntime(base::TimeDelta time) {
   // Start at 1 second since we expect service worker to last at least this
   // long: the update timer and idle timeout timer run on the order of seconds.
