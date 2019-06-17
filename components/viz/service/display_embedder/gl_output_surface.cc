@@ -25,9 +25,11 @@
 namespace viz {
 
 GLOutputSurface::GLOutputSurface(
-    scoped_refptr<VizProcessContextProvider> context_provider)
+    scoped_refptr<VizProcessContextProvider> context_provider,
+    gpu::SurfaceHandle surface_handle)
     : OutputSurface(context_provider),
       viz_context_provider_(context_provider),
+      surface_handle_(surface_handle),
       use_gpu_fence_(
           context_provider->ContextCapabilities().chromium_gpu_fence &&
           context_provider->ContextCapabilities()
@@ -134,11 +136,6 @@ uint32_t GLOutputSurface::GetFramebufferCopyTextureFormat() {
   return gl->GetCopyTextureInternalFormat();
 }
 
-std::unique_ptr<OverlayCandidateValidator>
-GLOutputSurface::TakeOverlayCandidateValidator() {
-  return nullptr;
-}
-
 bool GLOutputSurface::IsDisplayedAsOverlayPlane() const {
   return false;
 }
@@ -242,4 +239,7 @@ base::ScopedClosureRunner GLOutputSurface::GetCacheBackBufferCb() {
   return viz_context_provider_->GetCacheBackBufferCb();
 }
 
+gpu::SurfaceHandle GLOutputSurface::GetSurfaceHandle() const {
+  return surface_handle_;
+}
 }  // namespace viz

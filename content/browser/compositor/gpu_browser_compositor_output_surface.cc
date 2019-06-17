@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -25,10 +24,8 @@
 namespace content {
 
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
-    scoped_refptr<viz::ContextProviderCommandBuffer> context,
-    std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator)
-    : BrowserCompositorOutputSurface(std::move(context),
-                                     std::move(overlay_candidate_validator)),
+    scoped_refptr<viz::ContextProviderCommandBuffer> context)
+    : BrowserCompositorOutputSurface(std::move(context)),
       weak_ptr_factory_(this) {
   if (capabilities_.uses_default_gl_framebuffer) {
     capabilities_.flipped_output_surface =

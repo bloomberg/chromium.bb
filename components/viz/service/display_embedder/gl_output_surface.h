@@ -19,8 +19,8 @@ namespace viz {
 // swaps to an actual GL surface.
 class GLOutputSurface : public OutputSurface {
  public:
-  explicit GLOutputSurface(
-      scoped_refptr<VizProcessContextProvider> context_provider);
+  GLOutputSurface(scoped_refptr<VizProcessContextProvider> context_provider,
+                  gpu::SurfaceHandle surface_handle);
   ~GLOutputSurface() override;
 
   // OutputSurface implementation
@@ -36,8 +36,6 @@ class GLOutputSurface : public OutputSurface {
                bool use_stencil) override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
-      override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
@@ -53,6 +51,8 @@ class GLOutputSurface : public OutputSurface {
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   gfx::OverlayTransform GetDisplayTransform() override;
   base::ScopedClosureRunner GetCacheBackBufferCb() override;
+
+  gpu::SurfaceHandle GetSurfaceHandle() const override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }
@@ -83,6 +83,8 @@ class GLOutputSurface : public OutputSurface {
   OutputSurfaceClient* client_ = nullptr;
   bool wants_vsync_parameter_updates_ = false;
   ui::LatencyTracker latency_tracker_;
+
+  const gpu::SurfaceHandle surface_handle_;
 
   bool set_draw_rectangle_for_frame_ = false;
   // True if the draw rectangle has been set at all since the last resize.

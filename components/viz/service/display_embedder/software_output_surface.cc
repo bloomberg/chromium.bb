@@ -86,12 +86,6 @@ bool SoftwareOutputSurface::IsDisplayedAsOverlayPlane() const {
   return false;
 }
 
-std::unique_ptr<OverlayCandidateValidator>
-SoftwareOutputSurface::TakeOverlayCandidateValidator() {
-  // No overlay support in software compositing.
-  return nullptr;
-}
-
 unsigned SoftwareOutputSurface::GetOverlayTextureId() const {
   return 0;
 }

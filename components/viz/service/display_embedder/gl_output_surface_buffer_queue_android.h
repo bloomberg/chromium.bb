@@ -21,18 +21,12 @@ class GLOutputSurfaceBufferQueueAndroid : public GLOutputSurfaceBufferQueue {
   ~GLOutputSurfaceBufferQueueAndroid() override;
 
   // OutputSurface implementation
-  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
-      override;
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha,
                bool use_stencil) override;
-
- private:
-  std::unique_ptr<OverlayCandidateValidatorSurfaceControl>
-      overlay_candidate_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(GLOutputSurfaceBufferQueueAndroid);
 };

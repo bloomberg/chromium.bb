@@ -20,17 +20,10 @@ GLOutputSurfaceBufferQueueAndroid::GLOutputSurfaceBufferQueueAndroid(
                                  surface_handle,
                                  gpu_memory_buffer_manager,
                                  buffer_format) {
-  overlay_candidate_validator_ =
-      std::make_unique<OverlayCandidateValidatorSurfaceControl>();
 }
 
 GLOutputSurfaceBufferQueueAndroid::~GLOutputSurfaceBufferQueueAndroid() =
     default;
-
-std::unique_ptr<OverlayCandidateValidator>
-GLOutputSurfaceBufferQueueAndroid::TakeOverlayCandidateValidator() {
-  return std::move(overlay_candidate_validator_);
-}
 
 void GLOutputSurfaceBufferQueueAndroid::SetDisplayTransformHint(
     gfx::OverlayTransform transform) {

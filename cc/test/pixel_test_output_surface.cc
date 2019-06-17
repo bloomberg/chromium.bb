@@ -82,11 +82,6 @@ void PixelTestOutputSurface::SwapBuffersCallback() {
       gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(), 0));
 }
 
-std::unique_ptr<viz::OverlayCandidateValidator>
-PixelTestOutputSurface::TakeOverlayCandidateValidator() {
-  return nullptr;
-}
-
 bool PixelTestOutputSurface::IsDisplayedAsOverlayPlane() const {
   return false;
 }

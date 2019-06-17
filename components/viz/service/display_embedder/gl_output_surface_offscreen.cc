@@ -27,7 +27,7 @@ constexpr ResourceFormat kFboTextureFormat = RGBA_8888;
 
 GLOutputSurfaceOffscreen::GLOutputSurfaceOffscreen(
     scoped_refptr<VizProcessContextProvider> context_provider)
-    : GLOutputSurface(context_provider) {}
+    : GLOutputSurface(context_provider, gpu::kNullSurfaceHandle) {}
 
 GLOutputSurfaceOffscreen::~GLOutputSurfaceOffscreen() {
   DiscardBackbuffer();
