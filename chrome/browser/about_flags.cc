@@ -33,6 +33,7 @@
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/ntp_features.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -3440,6 +3441,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(data_reduction_proxy::features::
                             kDataReductionProxyEnabledWithNetworkService)},
+
+    {"enable-sharing-device-registration",
+     flag_descriptions::kSharingDeviceRegistrationName,
+     flag_descriptions::kSharingDeviceRegistrationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharingDeviceRegistration)},
+
 #if defined(OS_CHROMEOS)
     {"discover-app", flag_descriptions::kEnableDiscoverAppName,
      flag_descriptions::kEnableDiscoverAppDescription, kOsCrOS,

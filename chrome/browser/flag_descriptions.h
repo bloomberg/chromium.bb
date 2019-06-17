@@ -977,6 +977,9 @@ extern const char kSessionRestorePrioritizesBackgroundUseCasesDescription[];
 extern const char kSettingsWindowName[];
 extern const char kSettingsWindowDescription[];
 
+extern const char kSharingDeviceRegistrationName[];
+extern const char kSharingDeviceRegistrationDescription[];
+
 extern const char kShelfHoverPreviewsName[];
 extern const char kShelfHoverPreviewsDescription[];
 

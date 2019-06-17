@@ -1650,6 +1650,12 @@ const char kSettingsWindowName[] = "Show settings in a window";
 const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser tab.";
 
+const char kSharingDeviceRegistrationName[] =
+    "Enable device registration for Sharing features";
+const char kSharingDeviceRegistrationDescription[] =
+    "Enables device registration with Sharing infrastructure. Required to use "
+    "cross-device Sharing features.";
+
 const char kShelfHoverPreviewsName[] =
     "Show previews of running apps when hovering over the shelf.";
 const char kShelfHoverPreviewsDescription[] =

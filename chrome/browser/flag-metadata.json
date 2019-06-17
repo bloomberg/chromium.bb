@@ -1555,6 +1555,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "enable-sharing-device-registration",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-show-autofill-signatures",
     "owners": [ "kolos" ],
     // Used for debugging and QA by the autofill team for the indefinite future.

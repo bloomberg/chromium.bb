@@ -33846,6 +33846,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1386966873" label="disable-mac-views-native-app-windows"/>
   <int value="-1385221197"
       label="AllowSignedHTTPExchangeCertsWithoutExtension:enabled"/>
+  <int value="-1384426209" label="SharingDeviceRegistration:disabled"/>
   <int value="-1383597259" label="SyncUserConsentSeparateType:disabled"/>
   <int value="-1383145700"
       label="AutofillDoNotMigrateUnsupportedLocalCards:enabled"/>
@@ -34627,6 +34628,7 @@ from previous Chrome versions.
   <int value="-234966279" label="PointerEvent:disabled"/>
   <int value="-234687894"
       label="NonValidatingReloadOnRefreshContentV2:disabled"/>
+  <int value="-234231190" label="SharingDeviceRegistration:enabled"/>
   <int value="-231922000" label="enable-renderer-mojo-channel"/>
   <int value="-231426350" label="AutofillEnableToolbarStatusChip:enabled"/>
   <int value="-230824955" label="NTPMostLikelyFaviconsFromServer:enabled"/>
