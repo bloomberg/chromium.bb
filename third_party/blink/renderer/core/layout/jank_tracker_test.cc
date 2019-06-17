@@ -447,6 +447,41 @@ TEST_F(JankTrackerSimTest, SubframeWeighting) {
   EXPECT_FLOAT_EQ(0.15, jank_tracker.WeightedScore());
 }
 
+TEST_F(JankTrackerSimTest, ViewportSizeChange) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+      body { margin: 0; }
+      .square {
+        display: inline-block;
+        position: relative;
+        width: 300px;
+        height: 300px;
+        background:yellow;
+      }
+    </style>
+    <div class='square'></div>
+    <div class='square'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  // Resize the viewport, making it 400px wide. This should cause the second div
+  // to change position during block layout flow. Since it was the result of a
+  // viewport size change, this position change should not affect the score.
+  WebView().MainFrameWidget()->Resize(WebSize(400, 600));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  JankTracker& jank_tracker = MainFrame().GetFrameView()->GetJankTracker();
+  EXPECT_FLOAT_EQ(0.0, jank_tracker.Score());
+}
+
 TEST_F(JankTrackerTest, StableCompositingChanges) {
   SetBodyInnerHTML(R"HTML(
     <style>

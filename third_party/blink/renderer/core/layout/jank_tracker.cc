@@ -389,6 +389,11 @@ void JankTracker::NotifyScroll(ScrollType scroll_type) {
   observed_input_or_scroll_ = true;
 }
 
+void JankTracker::NotifyViewportSizeChanged() {
+  // This cancels any previously scheduled task from the same timer.
+  timer_.StartOneShot(kTimerDelay, FROM_HERE);
+}
+
 bool JankTracker::IsActive() {
   // This eliminates noise from the private Page object created by
   // SVGImage::DataChanged.

@@ -39,6 +39,7 @@ class CORE_EXPORT JankTracker {
   void NotifyPrePaintFinished();
   void NotifyInput(const WebInputEvent&);
   void NotifyScroll(ScrollType);
+  void NotifyViewportSizeChanged();
   bool IsActive();
   double Score() const { return score_; }
   double ScoreWithMoveDistance() const { return score_with_move_distance_; }

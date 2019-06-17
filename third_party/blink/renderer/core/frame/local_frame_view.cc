@@ -1221,6 +1221,9 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
       frame_->GetDocument()->Lifecycle().LifecyclePostponed())
     return;
 
+  if (frame_->IsMainFrame())
+    jank_tracker_->NotifyViewportSizeChanged();
+
   auto* layout_view = GetLayoutView();
   if (layout_view) {
     // If this is the main frame, we might have got here by hiding/showing the
