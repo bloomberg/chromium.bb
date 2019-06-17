@@ -412,8 +412,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                name:UIApplicationDidChangeStatusBarOrientationNotification
              object:nil];
 
-    _navigationHandler = [[CRWWKNavigationHandler alloc] init];
-    _navigationHandler.delegate = self;
+    _navigationHandler = [[CRWWKNavigationHandler alloc] initWithDelegate:self];
     _requestController.navigationHandler = _navigationHandler;
 
     _JSNavigationHandler =
