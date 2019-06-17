@@ -31,12 +31,15 @@ const NSTimeInterval kDefaultPageLoadTimeout = 300;
 const char kWebDriverSessionCommand[] = "session";
 const char kWebDriverNavigationCommand[] = "url";
 const char kWebDriverTimeoutsCommand[] = "timeouts";
+const char kWebDriverWindowCommand[] = "window";
+const char kWebDriverWindowHandlesCommand[] = "handles";
 
 // WebDriver error codes.
 const char kWebDriverInvalidArgumentError[] = "invalid argument";
 const char kWebDriverInvalidSessionError[] = "invalid session id";
 const char kWebDriverSessionCreationError[] = "session not created";
 const char kWebDriverTimeoutError[] = "timeout";
+const char kWebDriverNoSuchWindowError[] = "no such window";
 const char kWebDriverUnknownCommandError[] = "unknown command";
 
 // WebDriver error messages. The content of each message is implementation-
@@ -49,12 +52,17 @@ const char kWebDriverSessionAlreadyExistsMessage[] = "A session already exists";
 const char kWebDriverUnknownCommandMessage[] = "No such command";
 const char kWebDriverInvalidTimeoutMessage[] =
     "Timeouts must be non-negative integers";
+const char kWebDriverNoOpenWindowMessage[] = "No currently open window";
+const char kWebDriverMissingWindowHandleMessage[] = "No handle argument";
+const char kWebDriverNoMatchingWindowMessage[] =
+    "No window with the given handle";
 
 // WebDriver request field names. These are fields that are contained within
 // the body of a POST request.
 const char kWebDriverURLRequestField[] = "url";
 const char kWebDriverScriptTimeoutRequestField[] = "script";
 const char kWebDriverPageLoadTimeoutRequestField[] = "pageLoad";
+const char kWebDriverWindowHandleRequestField[] = "handle";
 
 // WebDriver response field name. This is the top-level field in the JSON object
 // contained in a response.
@@ -109,6 +117,21 @@ base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
     const std::string& command,
     net::test_server::HttpMethod http_method,
     const std::string& request_content) {
+  if (http_method == net::test_server::METHOD_GET) {
+    if (session_id_.empty()) {
+      return CreateErrorValue(kWebDriverInvalidSessionError,
+                              kWebDriverNoActiveSessionMessage);
+    }
+
+    if (command == kWebDriverWindowCommand)
+      return GetCurrentTabId();
+
+    if (command == kWebDriverWindowHandlesCommand)
+      return GetAllTabIds();
+
+    return base::nullopt;
+  }
+
   if (http_method == net::test_server::METHOD_POST) {
     base::Optional<base::Value> content =
         base::JSONReader::Read(request_content);
@@ -131,12 +154,25 @@ base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
     if (command == kWebDriverTimeoutsCommand)
       return SetTimeouts(*content);
 
+    if (command == kWebDriverWindowCommand) {
+      return SwitchToTabWithId(
+          content->FindKey(kWebDriverWindowHandleRequestField));
+    }
+
     return base::nullopt;
   }
 
   if (http_method == net::test_server::METHOD_DELETE) {
-    if (!session_id_.empty() && command == session_id_)
+    if (session_id_.empty()) {
+      return CreateErrorValue(kWebDriverInvalidSessionError,
+                              kWebDriverNoActiveSessionMessage);
+    }
+
+    if (command == session_id_)
       return CloseSession();
+
+    if (command == kWebDriverWindowCommand)
+      return CloseCurrentTab();
 
     return base::nullopt;
   }
@@ -244,4 +280,50 @@ base::Value CWTRequestHandler::SetTimeouts(const base::Value& timeouts) {
       page_load_timeout_ = timeout_in_seconds;
   }
   return base::Value(base::Value::Type::NONE);
+}
+
+base::Value CWTRequestHandler::GetCurrentTabId() {
+  NSString* tab_id = [CWTWebDriverAppInterface getCurrentTabID];
+  if (!tab_id) {
+    return CreateErrorValue(kWebDriverNoSuchWindowError,
+                            kWebDriverNoOpenWindowMessage);
+  }
+
+  return base::Value(base::SysNSStringToUTF8(tab_id));
+}
+
+base::Value CWTRequestHandler::GetAllTabIds() {
+  base::Value id_list(base::Value::Type::LIST);
+  NSArray* tab_ids = [CWTWebDriverAppInterface getTabIDs];
+  for (NSString* tab_id in tab_ids) {
+    id_list.GetList().push_back(base::Value(base::SysNSStringToUTF8(tab_id)));
+  }
+  return id_list;
+}
+
+base::Value CWTRequestHandler::SwitchToTabWithId(const base::Value* id) {
+  if (!id || !id->is_string()) {
+    return CreateErrorValue(kWebDriverInvalidArgumentError,
+                            kWebDriverMissingWindowHandleMessage);
+  }
+
+  NSError* error = [CWTWebDriverAppInterface
+      switchToTabWithID:base::SysUTF8ToNSString(id->GetString())];
+
+  if (!error)
+    return base::Value(base::Value::Type::NONE);
+
+  return CreateErrorValue(kWebDriverNoSuchWindowError,
+                          kWebDriverNoMatchingWindowMessage);
+}
+
+base::Value CWTRequestHandler::CloseCurrentTab() {
+  NSError* error = [CWTWebDriverAppInterface closeCurrentTab];
+
+  if (error) {
+    return CreateErrorValue(kWebDriverNoSuchWindowError,
+                            kWebDriverNoOpenWindowMessage);
+  }
+
+  return GetAllTabIds();
 }
