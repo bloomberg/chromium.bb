@@ -184,15 +184,14 @@ class QuickViewController {
   /**
    * Display quick view.
    *
-   * @param {QuickViewUma.WayToOpen=} opt_wayToOpen in which way opening of
-   *     quick view was triggered. Can be omitted if quick view is already open.
+   * @param {QuickViewUma.WayToOpen} wayToOpen The open quick view trigger.
    * @private
    */
-  display_(opt_wayToOpen) {
+  display_(wayToOpen) {
     this.updateQuickView_().then(() => {
       if (!this.quickView_.isOpened()) {
         this.quickView_.open();
-        this.quickViewUma_.onOpened(this.entries_[0], assert(opt_wayToOpen));
+        this.quickViewUma_.onOpened(this.entries_[0], wayToOpen);
       }
     });
   }
