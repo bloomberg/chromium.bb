@@ -67,8 +67,9 @@ typedef struct intCharTupple {
  * Mapping between braille dot and textual representation as used in dots operands
  */
 static const intCharTupple dotMapping[] = {
-	{ LOU_DOT_1, '1' }, { LOU_DOT_2, '2' }, { LOU_DOT_3, '3' }, { LOU_DOT_4, '4' }, { LOU_DOT_5, '5' }, { LOU_DOT_6, '6' },
-	{ LOU_DOT_7, '7' }, { LOU_DOT_8, '8' }, { LOU_DOT_9, '9' }, { LOU_DOT_10, 'A' }, { LOU_DOT_11, 'B' }, { LOU_DOT_12, 'C' },
+	{ LOU_DOT_1, '1' }, { LOU_DOT_2, '2' }, { LOU_DOT_3, '3' }, { LOU_DOT_4, '4' },
+	{ LOU_DOT_5, '5' }, { LOU_DOT_6, '6' }, { LOU_DOT_7, '7' }, { LOU_DOT_8, '8' },
+	{ LOU_DOT_9, '9' }, { LOU_DOT_10, 'A' }, { LOU_DOT_11, 'B' }, { LOU_DOT_12, 'C' },
 	{ LOU_DOT_13, 'D' }, { LOU_DOT_14, 'E' }, { LOU_DOT_15, 'F' }, { 0, 0 },
 };
 
@@ -649,26 +650,27 @@ _lou_allocMem(AllocBuf buffer, int index, int srcmax, int destmax);
 
 /**
  * Hash function for character strings
+ *
+ * @param lowercase Whether to convert the string to lowercase because
+ *                  making the hash of it.
  */
-int EXPORT_CALL
-_lou_stringHash(const widechar *c);
+unsigned long int EXPORT_CALL
+_lou_stringHash(const widechar *c, int lowercase, const TranslationTableHeader *table);
 
 /**
  * Hash function for single characters
  */
-int EXPORT_CALL
+unsigned long int EXPORT_CALL
 _lou_charHash(widechar c);
 
 /**
  * Return a string in the same format as the characters operand in opcodes
- * TODO: move to utils.c
  */
 char *EXPORT_CALL
 _lou_showString(widechar const *chars, int length);
 
 /**
  * Return a character string in the format of the dots operand
- * TODO: move to utils.c
  */
 char *EXPORT_CALL
 _lou_showDots(widechar const *dots, int length);
@@ -676,7 +678,6 @@ _lou_showDots(widechar const *dots, int length);
 /**
  * Return a character string where the attributes are indicated
  * by the attribute letters used in multipass opcodes
- * TODO: move to utils.c
  */
 char *EXPORT_CALL
 _lou_showAttributes(TranslationTableCharacterAttributes a);

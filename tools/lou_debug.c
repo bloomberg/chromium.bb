@@ -501,7 +501,7 @@ particular(void) {
 			printf("-> ");
 			getInput();
 			if (!_lou_extParseChars(inputBuffer, parsed)) break;
-			startHash = _lou_stringHash(parsed);
+			startHash = _lou_stringHash(parsed, 0, NULL);
 			if (table->forRules[startHash] == 0) {
 				printf("Character string not in table.\n");
 				break;
@@ -512,7 +512,7 @@ particular(void) {
 			printf("-> ");
 			getInput();
 			if (!_lou_extParseDots(inputBuffer, parsed)) break;
-			startHash = _lou_stringHash(parsed);
+			startHash = _lou_stringHash(parsed, 0, NULL);
 			if (table->backRules[startHash] == 0) {
 				printf("Dot pattern not in table.\n");
 				break;
