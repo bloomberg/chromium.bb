@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "chrome/browser/android/android_theme_resources.h"
+#include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -92,12 +93,25 @@ int PopupBlockedInfoBarDelegate::GetButtons() const {
   if (!can_show_popups_)
     return 0;
 
-  return BUTTON_OK;
+  int buttons = BUTTON_OK;
+  if (chrome::android::IsNoTouchModeEnabled())
+    buttons |= BUTTON_CANCEL;
+
+  return buttons;
 }
 
 base::string16 PopupBlockedInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16(IDS_POPUPS_BLOCKED_INFOBAR_BUTTON_SHOW);
+  switch (button) {
+    case BUTTON_OK:
+      return l10n_util::GetStringUTF16(IDS_POPUPS_BLOCKED_INFOBAR_BUTTON_SHOW);
+    case BUTTON_CANCEL:
+      return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
+    default:
+      NOTREACHED();
+      break;
+  }
+  return base::string16();
 }
 
 bool PopupBlockedInfoBarDelegate::Accept() {
