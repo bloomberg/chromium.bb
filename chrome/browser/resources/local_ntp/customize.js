@@ -551,7 +551,7 @@ customize.showCollectionSelectionDialog = function() {
   $(customize.IDS.TITLE).textContent =
       configData.translatedStrings.selectChromeWallpaper;
   if (!configData.richerPicker) {
-    menu.classList.toggle(customize.CLASSES.COLLECTION_DIALOG);
+    menu.classList.add(customize.CLASSES.COLLECTION_DIALOG);
     menu.classList.remove(customize.CLASSES.IMAGE_DIALOG);
   }
 
