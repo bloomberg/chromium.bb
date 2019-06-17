@@ -7,8 +7,8 @@
 [
   SecureContext,
   Exposed=Window,
+  ImplementedAs=NavigatorSMS,
   RuntimeEnabled=SmsReceiver
-] interface SMSReceiver {
-  [CallWith=ScriptState, MeasureAs=SMSReceiverStart]
-  Promise<SMS> receive(optional SMSReceiverOptions options);
+] partial interface Navigator {
+  [CallWith=ScriptState] readonly attribute SMSReceiver sms;
 };
