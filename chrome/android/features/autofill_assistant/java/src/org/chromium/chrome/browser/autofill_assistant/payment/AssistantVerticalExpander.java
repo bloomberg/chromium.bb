@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant.payment;
 
+import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -190,6 +192,7 @@ public class AssistantVerticalExpander extends LinearLayout {
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.gravity = Gravity.CENTER_VERTICAL;
         view.setLayoutParams(lp);
+        view.setTag(VERTICAL_EXPANDER_CHEVRON);
         return view;
     }
 
