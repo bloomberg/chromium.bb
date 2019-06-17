@@ -499,6 +499,14 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>Aligned storage</td>
+<td><code>std::aligned_storage&lt;10, 128&gt;</code></td>
+<td>Uninitialized storage for objects requiring specific alignment.</td>
+<td><a href="http://en.cppreference.com/w/cpp/types/aligned_storage">std::aligned_storage</a></td>
+<td>Can be used to replace code like <code>alignas(128) char c[10]</code>.</td>
+</tr>
+
+<tr>
 <td>Atomics</td>
 <td><code>&lt;atomic&gt;</code></td>
 <td>Fine-grained atomic types and operations</td>
@@ -511,7 +519,7 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <td><code>std::begin()</code>, <code>std::end()</code></td>
 <td>Allows use of free functions on any container, including fixed-size arrays</td>
 <td><a href="http://en.cppreference.com/w/cpp/iterator/begin">std::begin</a>, <a href="http://en.cppreference.com/w/cpp/iterator/end">std::end</a></td>
-<td>Useful for fixed-size arrays. Note that non-member <code>cbegin()</code> and <code>cend()</code> are not available until C++14. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/5iFNE8P5qT4">Discussion thread</a></td>
+<td>Useful for fixed-size arrays. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/5iFNE8P5qT4">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -727,7 +735,7 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <td><code>auto widget = std::make_unique&lt;Widget&gt;();</code></td>
 <td>Allocates objects on the heap and immediately constructs an <code>std::unique_ptr</code> to assume ownership.</td>
 <td><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr/make_unique">std::make_unique</a></td>
-<td>Should replace <code>base::MakeUnique</code> and <code>WTF::MakeUnique</code>. <a href="https://groups.google.com/a/chromium.org/d/msg/cxx/ow7hmdDm4yw/EDEvBRi_BQAJ">Discussion thread</a></td>
+<td><a href="https://groups.google.com/a/chromium.org/d/msg/cxx/ow7hmdDm4yw/EDEvBRi_BQAJ">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -826,7 +834,6 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <th style='width:240px;'>Notes and Discussion Thread</th>
 </tr>
 
-<tr>
 </tbody>
 </table>
 
@@ -843,14 +850,6 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <th style='width:240px;'>Description</th>
 <th style='width:240px;'>Documentation Link</th>
 <th style='width:240px;'>Notes and Discussion Thread</th>
-</tr>
-
-<tr>
-<td>Aligned storage</td>
-<td><code>std::aligned_storage&lt;10, 128&gt;</code></td>
-<td>Uninitialized storage for objects requiring specific alignment.</td>
-<td><a href="http://en.cppreference.com/w/cpp/types/aligned_storage">std::aligned_storage</a></td>
-<td>MSVC 2017's implementation does not align on boundaries greater than sizeof(double) = 8 bytes. Use <code>alignas(128) char foo[10];</code> instead. <a href="https://codereview.chromium.org/2932053002">Patch where this was discovered</a>.</td>
 </tr>
 
 <td>Bind Operations</td>
@@ -929,12 +928,28 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>String-Number Conversion Functions</td>
+<td><code>std::stoi()</code>, <code>std::stol()</code>, <code>std::stoul()</code>, <code>std::stoll</code>, <code>std::stoull()</code>, <code>std::stof()</code>, <code>std::stod()</code>, <code>std::stold()</code>, <code>std::to_string()</code></td>
+<td>Converts strings to/from numbers</td>
+<td><a href="http://en.cppreference.com/w/cpp/string/basic_string/stol">std::stoi, std::stol, std::stoll</a>, <a href="http://en.cppreference.com/w/cpp/string/basic_string/stoul">std::stoul, std::stoull</a>, <a href="http://en.cppreference.com/w/cpp/string/basic_string/stof">std::stof, std::stod, std::stold</a>, <a href="http://en.cppreference.com/w/cpp/string/basic_string/to_string">std::to_string</a></td>
+<td>The string-to-number conversions rely on exceptions to communicate failure, while the number-to-string conversions have performance concerns and depend on the locale.  Use the routines in <code>base/strings/string_number_conversions.h</code> instead.</td>
+</tr>
+
+<tr>
 <td>Thread Library</td>
 <td><code>&lt;thread&gt;</code> and related headers, including<br />
 <code>&lt;future&gt;</code>, <code>&lt;mutex&gt;</code>, <code>&lt;condition_variable&gt;</code></td>
 <td>Provides a standard multithreading library using <code>std::thread</code> and associates</td>
 <td><a href="http://en.cppreference.com/w/cpp/thread">Thread support library</a></td>
 <td>Overlaps with many classes in <code>base/</code>. Keep using the <code>base/</code> classes for now. <code>base::Thread</code> is tightly coupled to <code>MessageLoop</code> which would make it hard to replace. We should investigate using standard mutexes, or unique_lock, etc. to replace our locking/synchronization classes.</td>
+</tr>
+
+<tr>
+<td>Weak Pointers</td>
+<td><code>std::weak_ptr</code></td>
+<td>Allows a weak reference to a <code>std::shared_ptr</code></td>
+<td><a href="http://en.cppreference.com/w/cpp/memory/weak_ptr">std::weak_ptr</a></td>
+<td>Banned because <code>std::shared_ptr</code> is banned.  Use <code>base::WeakPtr</code> instead.</td>
 </tr>
 
 </tbody>
@@ -1156,14 +1171,6 @@ something, remove all callers and remove the function instead.</td>
 </tr>
 
 <tr>
-<td>String-Number Conversion Functions</td>
-<td><code>std::stoi()</code>, <code>std::stol()</code>, <code>std::stoul()</code>, <code>std::stoll</code>, <code>std::stoull()</code>, <code>std::stof()</code>, <code>std::stod()</code>, <code>std::stold()</code>, <code>std::to_string()</code></td>
-<td>Converts strings to/from numbers</td>
-<td><a href="http://en.cppreference.com/w/cpp/string/basic_string/stol">std::stoi, std::stol, std::stoll</a>, <a href="http://en.cppreference.com/w/cpp/string/basic_string/stoul">std::stoul, std::stoull</a>, <a href="http://en.cppreference.com/w/cpp/string/basic_string/stof">std::stof, std::stod, std::stold</a>, <a href="http://en.cppreference.com/w/cpp/string/basic_string/to_string">std::to_string</a></td>
-<td>May be useful to <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=593512">replace dmg_fp</a>.</td>
-</tr>
-
-<tr>
 <td>System Errors</td>
 <td><code>&lt;system_error&gt;</code></td>
 <td>Provides a standard system error library</td>
@@ -1193,14 +1200,6 @@ something, remove all callers and remove the function instead.</td>
 <td>Makes a copy of the variadic function arguments</td>
 <td><a href="http://en.cppreference.com/w/cpp/utility/variadic/va_copy">va_copy</a></td>
 <td></td>
-</tr>
-
-<tr>
-<td>Weak Pointers</td>
-<td><code>std::weak_ptr</code></td>
-<td>Allows a weak reference to a <code>std::shared_ptr</code></td>
-<td><a href="http://en.cppreference.com/w/cpp/memory/weak_ptr">std::weak_ptr</a></td>
-<td><a href="https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers">Ownership and Smart Pointers</a></td>
 </tr>
 
 <tr>
