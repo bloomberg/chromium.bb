@@ -5,7 +5,6 @@
 """Various utility functions and classes not specific to any single area."""
 
 import atexit
-import cStringIO
 import functools
 import json
 import logging
@@ -18,6 +17,10 @@ import time
 import utils
 from . import zip_package
 
+if sys.version_info.major == 2:
+  import cStringIO
+else:
+  import io as cStringIO
 
 # Path to (possibly extracted from zip) cacert.pem bundle file.
 # See get_cacerts_bundle().
