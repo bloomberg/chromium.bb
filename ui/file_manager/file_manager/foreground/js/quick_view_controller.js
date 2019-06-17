@@ -243,8 +243,9 @@ class QuickViewController {
     const entry = this.entries_[0];
     this.quickViewModel_.setSelectedEntry(entry);
 
-    // TODO(noel): Record UMA _after_ the rendering work below is done?
-    this.quickViewUma_.onEntryChanged(entry);
+    requestIdleCallback(() => {
+      this.quickViewUma_.onEntryChanged(entry);
+    });
 
     return Promise
         .all([
