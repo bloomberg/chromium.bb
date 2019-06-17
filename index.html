@@ -84,8 +84,9 @@
 <script type="module">
 "use strict";
 
+import { loadTests } from './out/framework/listing.js';
 import { Logger } from './out/framework/logger.js';
-import { filterListing, loadListing } from './out/framework/listing.js';
+import { makeQueryString, parseQueryString } from './out/framework/url_query.js';
 
 const resultsVis = document.getElementById("resultsVis");
 function mkTest(path, description) {
@@ -166,7 +167,6 @@ function mkCase(testcases, {name, params, run}) {
           .text(l);
       }
     }
-    console.log(res);
   };
   caserun[0].runCase = runCase;
   caserun.click(runCase);
@@ -180,30 +180,29 @@ function basepath(path) {
 
 (async () => {
   const url = new URL(window.location);
-  const suite = url.searchParams.get("suite") || "cts";
   const runnow = url.searchParams.get("runnow") === "1";
-  const filtersParam = url.searchParams.get("filters") || "";
-  const filters = filtersParam.split(',');
-  const listingPath = `./out/${suite}/listing.json`;
-  console.log("Filtering to test paths starting with", filters);
 
-  const info = `?runnow=${runnow ? "1" : "0"}&suite=${suite}&filters=${filtersParam}`;
-  document.getElementById("info").innerText = info;
-
-  const fullListing = await (await fetch(listingPath)).json();
-  const listing = await loadListing(suite, filterListing(filters, fullListing));
+  const filters = parseQueryString(window.location.search);
+  const listing = await loadTests('./out', filters);
+  const entries = await Promise.all(Array.from(listing,
+      ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
   // TODO: convert listing to tree so it can be displayed as a tree?
+
+  const info = `?runnow=${runnow ? '1' : '1'}&q=` + filters.map(makeQueryString).join('&q=');
+  document.getElementById("info").innerText = info;
 
   const log = new Logger();
   const runCaseList = [];
-  for (const [path, entry] of listing) {
+  for (const entry of entries) {
+      const { suite, path, node: { group } } = entry;
     const testcasesVis = mkTest(path, entry.description);
 
-    if (!entry.group) {
-      continue;
+    if (!group) {
+        continue;
     }
+
     const [tResult, tRec] = log.record(path);
-    for (const t of entry.group.iterate(tRec)) {
+    for (const t of group.iterate(tRec)) {
       const runCase = mkCase(testcasesVis, t);
       runCaseList.push(runCase);
     }

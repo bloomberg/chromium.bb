@@ -3,7 +3,7 @@ import { ICase } from './test_group.js';
 
 function encodeSelectively(s: string) {
     let ret = encodeURIComponent(s);
-    ret = ret.replace(/%20/g, '+');
+    ret = ret.replace(/%20/g, '+'); // Encode space with +
     ret = ret.replace(/%22/g, '"');
     ret = ret.replace(/%2C/g, ',');
     ret = ret.replace(/%2F/g, '/');
@@ -20,7 +20,7 @@ export function makeQueryString(entry: IEntry, testcase: ICase): string {
     if (testcase.params) {
         s += JSON.stringify(testcase.params);
     }
-    return '?q=' + encodeSelectively(s);
+    return encodeSelectively(s);
 }
 
 export function parseQueryString(query: string): string[] {
