@@ -572,8 +572,7 @@ Browser::~Browser() {
   // destroyed directly by Browser (e.g. for offscreen tabs,
   // https://crbug.com/664351).
   if (profile_->IsOffTheRecord() &&
-      profile_->GetOriginalProfile()->HasOffTheRecordProfile() &&
-      profile_->GetOriginalProfile()->GetOffTheRecordProfile() == profile_ &&
+      !profile_->IsIndependentOffTheRecordProfile() &&
       !BrowserList::IsIncognitoSessionInUse(profile_) &&
       !profile_->GetOriginalProfile()->IsSystemProfile()) {
     if (profile_->IsGuestSession()) {
