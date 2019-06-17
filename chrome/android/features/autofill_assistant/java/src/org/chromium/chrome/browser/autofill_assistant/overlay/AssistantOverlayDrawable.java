@@ -25,7 +25,7 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;

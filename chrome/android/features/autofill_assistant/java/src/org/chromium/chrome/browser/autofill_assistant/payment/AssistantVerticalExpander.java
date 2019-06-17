@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
 /**
@@ -181,8 +182,7 @@ public class AssistantVerticalExpander extends LinearLayout {
 
     private View createChevron() {
         TintedDrawable chevron = TintedDrawable.constructTintedDrawable(getContext(),
-                org.chromium.chrome.R.drawable.ic_expand_more_black_24dp,
-                org.chromium.chrome.R.color.payments_section_chevron);
+                R.drawable.ic_expand_more_black_24dp, R.color.payments_section_chevron);
 
         ImageView view = new ImageView(getContext());
         view.setImageDrawable(chevron);

@@ -108,10 +108,8 @@ class AssistantDetailsViewBinder
                 R.dimen.autofill_assistant_details_image_size);
         mImageHeight = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_details_image_size);
-        mPulseAnimationStartColor =
-                context.getResources().getColor(org.chromium.chrome.R.color.modern_grey_300);
-        mPulseAnimationEndColor =
-                context.getResources().getColor(org.chromium.chrome.R.color.modern_grey_200);
+        mPulseAnimationStartColor = context.getResources().getColor(R.color.modern_grey_300);
+        mPulseAnimationEndColor = context.getResources().getColor(R.color.modern_grey_200);
         mImageFetcher = ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY);
     }
 
@@ -252,15 +250,15 @@ class AssistantDetailsViewBinder
         setTextStyle(viewHolder.mTitleView, details.getUserApprovalRequired(),
                 details.getHighlightTitle(), R.style.TextAppearance_AssistantDetailsTitle);
         setTextStyle(viewHolder.mDescriptionLine1View, details.getUserApprovalRequired(),
-                details.getHighlightLine1(), org.chromium.chrome.R.style.TextAppearance_BlackBody);
+                details.getHighlightLine1(), R.style.TextAppearance_BlackBody);
         setTextStyle(viewHolder.mDescriptionLine2View, details.getUserApprovalRequired(),
-                details.getHighlightLine2(), org.chromium.chrome.R.style.TextAppearance_BlackBody);
+                details.getHighlightLine2(), R.style.TextAppearance_BlackBody);
         setTextStyle(viewHolder.mDescriptionLine3View, details.getUserApprovalRequired(),
                 details.getHighlightLine2(), R.style.TextAppearance_AssistantDetailsAttribution);
         setTextStyle(viewHolder.mPriceAttributionView, details.getUserApprovalRequired(),
                 details.getHighlightLine3(), R.style.TextAppearance_AssistantDetailsAttribution);
         setTextStyle(viewHolder.mTotalPriceLabelView, details.getUserApprovalRequired(),
-                /* highlight= */ false, org.chromium.chrome.R.style.TextAppearance_BlackButtonText);
+                /* highlight= */ false, R.style.TextAppearance_BlackButtonText);
         setTextStyle(viewHolder.mTotalPriceView, details.getUserApprovalRequired(),
                 /* highlight= */ false, R.style.TextAppearance_AssistantDetailsPrice);
 
@@ -291,7 +289,7 @@ class AssistantDetailsViewBinder
         } else if (approvalRequired) {
             // De-emphasized style.
             view.setTextColor(ApiCompatibilityUtils.getColor(
-                    mContext.getResources(), org.chromium.chrome.R.color.modern_grey_300));
+                    mContext.getResources(), R.color.modern_grey_300));
         }
     }
 

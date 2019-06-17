@@ -248,10 +248,10 @@ public class AutofillAssistantPaymentRequestUiTest {
                 "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "Uzbekistan",
                 "555 123-4567", "maggie@simpson.com", "");
         String billingAddressId = mHelper.setProfile(profile);
-        PersonalDataManager.CreditCard creditCard = new PersonalDataManager.CreditCard("",
-                "https://example.com", true, true, "Jon Doe", "4111111111111111", "1111", "12",
-                "2050", "visa", org.chromium.chrome.R.drawable.visa_card, CardType.UNKNOWN,
-                billingAddressId, "" /* serverId */);
+        PersonalDataManager.CreditCard creditCard =
+                new PersonalDataManager.CreditCard("", "https://example.com", true, true, "Jon Doe",
+                        "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
+                        CardType.UNKNOWN, billingAddressId, "" /* serverId */);
         mHelper.setCreditCard(creditCard);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
