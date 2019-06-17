@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/clipboard/data_object_item.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -73,14 +74,15 @@ void DataTransferItem::getAsString(ScriptState* script_state,
 
   auto* v8persistent_callback = ToV8PersistentCallbackFunction(callback);
   ExecutionContext* context = ExecutionContext::From(script_state);
+  auto task_id = std::make_unique<probe::AsyncTaskId>();
   probe::AsyncTaskScheduled(context, "DataTransferItem.getAsString",
-                            v8persistent_callback);
+                            task_id.get());
   context->GetTaskRunner(TaskType::kUserInteraction)
       ->PostTask(FROM_HERE,
                  WTF::Bind(&DataTransferItem::RunGetAsStringTask,
                            WrapPersistent(this), WrapPersistent(context),
                            WrapPersistent(v8persistent_callback),
-                           item_->GetAsString()));
+                           item_->GetAsString(), std::move(task_id)));
 }
 
 File* DataTransferItem::getAsFile() const {
@@ -97,9 +99,10 @@ DataTransferItem::DataTransferItem(DataTransfer* data_transfer,
 void DataTransferItem::RunGetAsStringTask(
     ExecutionContext* context,
     V8PersistentCallbackFunction<V8FunctionStringCallback>* callback,
-    const String& data) {
+    const String& data,
+    std::unique_ptr<probe::AsyncTaskId> task_id) {
   DCHECK(callback);
-  probe::AsyncTask async_task(context, callback);
+  probe::AsyncTask async_task(context, task_id.get());
   if (context)
     callback->InvokeAndReportException(nullptr, data);
 }

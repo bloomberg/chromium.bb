@@ -240,7 +240,7 @@ void MutationObserver::EnqueueMutationRecord(MutationRecord* mutation) {
   records_.push_back(mutation);
   Activate();
   probe::AsyncTaskScheduled(delegate_->GetExecutionContext(), mutation->type(),
-                            mutation);
+                            mutation->async_task_id());
 }
 
 void MutationObserver::SetHasTransientRegistration() {
@@ -261,8 +261,10 @@ bool MutationObserver::ShouldBeSuspended() const {
 }
 
 void MutationObserver::CancelInspectorAsyncTasks() {
-  for (auto& record : records_)
-    probe::AsyncTaskCanceled(delegate_->GetExecutionContext(), record);
+  for (auto& record : records_) {
+    probe::AsyncTaskCanceled(delegate_->GetExecutionContext(),
+                             record->async_task_id());
+  }
 }
 
 void MutationObserver::Deliver() {
@@ -287,7 +289,7 @@ void MutationObserver::Deliver() {
 
   // Report the first (earliest) stack as the async cause.
   probe::AsyncTask async_task(delegate_->GetExecutionContext(),
-                              records.front());
+                              records.front()->async_task_id());
   delegate_->Deliver(records, *this);
 }
 

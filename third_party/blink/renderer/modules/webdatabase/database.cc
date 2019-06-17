@@ -35,6 +35,7 @@
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/webdatabase/change_version_data.h"
 #include "third_party/blink/renderer/modules/webdatabase/change_version_wrapper.h"
@@ -294,14 +295,15 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
           << "Scheduling DatabaseCreationCallbackTask for database " << this;
       auto* v8persistent_callback =
           ToV8PersistentCallbackFunction(creation_callback);
+      auto task_id = std::make_unique<probe::AsyncTaskId>();
       probe::AsyncTaskScheduled(GetExecutionContext(), "openDatabase",
-                                v8persistent_callback);
+                                task_id.get());
       GetExecutionContext()
           ->GetTaskRunner(TaskType::kDatabaseAccess)
-          ->PostTask(
-              FROM_HERE,
-              WTF::Bind(&Database::RunCreationCallback, WrapPersistent(this),
-                        WrapPersistent(v8persistent_callback)));
+          ->PostTask(FROM_HERE, WTF::Bind(&Database::RunCreationCallback,
+                                          WrapPersistent(this),
+                                          WrapPersistent(v8persistent_callback),
+                                          std::move(task_id)));
     }
   }
 
@@ -309,8 +311,9 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
 }
 
 void Database::RunCreationCallback(
-    V8PersistentCallbackFunction<V8DatabaseCallback>* creation_callback) {
-  probe::AsyncTask async_task(GetExecutionContext(), creation_callback);
+    V8PersistentCallbackFunction<V8DatabaseCallback>* creation_callback,
+    std::unique_ptr<probe::AsyncTaskId> task_id) {
+  probe::AsyncTask async_task(GetExecutionContext(), task_id.get());
   creation_callback->InvokeAndReportException(nullptr, this);
 }
 

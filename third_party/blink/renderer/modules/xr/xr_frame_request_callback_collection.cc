@@ -12,6 +12,15 @@
 
 namespace blink {
 
+XRFrameRequestCallbackCollection::CallbackAndTask::CallbackAndTask(
+    V8XRFrameRequestCallback* callback)
+    : callback(callback) {}
+
+void XRFrameRequestCallbackCollection::CallbackAndTask::Trace(
+    blink::Visitor* visitor) {
+  visitor->Trace(callback);
+}
+
 XRFrameRequestCallbackCollection::XRFrameRequestCallbackCollection(
     ExecutionContext* context)
     : context_(context) {}
@@ -20,10 +29,12 @@ XRFrameRequestCallbackCollection::CallbackId
 XRFrameRequestCallbackCollection::RegisterCallback(
     V8XRFrameRequestCallback* callback) {
   CallbackId id = ++next_callback_id_;
-  callbacks_.Set(id, callback);
+  auto* callback_and_task = MakeGarbageCollected<CallbackAndTask>(callback);
+  callbacks_.Set(id, callback_and_task);
   pending_callbacks_.push_back(id);
 
-  probe::AsyncTaskScheduledBreakable(context_, "XRRequestFrame", callback);
+  probe::AsyncTaskScheduledBreakable(context_, "XRRequestFrame",
+                                     &callback_and_task->task_id);
   return id;
 }
 
@@ -58,9 +69,9 @@ void XRFrameRequestCallbackCollection::ExecuteCallbacks(XRSession* session,
     if (it == current_callbacks_.end())
       continue;
 
-    probe::AsyncTask async_task(context_, it->value);
+    probe::AsyncTask async_task(context_, &it->value->task_id);
     probe::UserCallback probe(context_, "XRRequestFrame", AtomicString(), true);
-    it->value->InvokeAndReportException(session, timestamp, frame);
+    it->value->callback->InvokeAndReportException(session, timestamp, frame);
   }
 
   current_callbacks_.clear();
