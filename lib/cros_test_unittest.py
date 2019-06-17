@@ -51,6 +51,25 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
         '/usr/local/autotest/bin/vm_sanity.py'
     ])
 
+  def testCatapult(self):
+    """Verify catapult test command."""
+    self._tester.catapult_tests = ['testAddResults']
+    self._tester.Run()
+    self.assertCommandContains([
+        'python', '/usr/local/telemetry/src/third_party/catapult/'
+        'telemetry/bin/run_tests', '--browser=system', 'testAddResults'
+    ])
+
+  def testCatapultAsGuest(self):
+    """Verify that we use the correct browser in guest mode."""
+    self._tester.catapult_tests = ['testAddResults']
+    self._tester.guest = True
+    self._tester.Run()
+    self.assertCommandContains([
+        'python', '/usr/local/telemetry/src/third_party/catapult/'
+        'telemetry/bin/run_tests', '--browser=system-guest', 'testAddResults'
+    ])
+
   def testBasicAutotest(self):
     """Tests a simple autotest call."""
     self._tester.autotest = ['accessiblity_Sanity']
