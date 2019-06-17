@@ -11,9 +11,14 @@ import com.google.android.libraries.feed.api.client.lifecycle.AppLifecycleListen
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -47,9 +52,30 @@ public class FeedAppLifecycle
     private AppLifecycleListener mAppLifecycleListener;
     private FeedLifecycleBridge mLifecycleBridge;
     private FeedScheduler mFeedScheduler;
+    private TaskDelegate mTaskDelegate;
 
     private int mTabbedActivityCount;
     private boolean mInitializeCalled;
+    private boolean mDelayedInitializeStarted;
+
+    /** Abstraction for posting delayed tasks. */
+    interface TaskDelegate {
+        /**
+         * @param taskTraits The TaskTraits that describe the desired TaskRunner.
+         * @param task The task to be run with the specified traits.
+         * @param delay The delay in milliseconds before the task can be run.
+         */
+        void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay);
+    }
+
+    /** The implementation used at runtime that calls into {@link PostTask}. */
+    @VisibleForTesting
+    static class DefaultTaskDelegate implements TaskDelegate {
+        @Override
+        public void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {
+            PostTask.postDelayedTask(taskTraits, task, delay);
+        }
+    }
 
     /**
      * Create a FeedAppLifecycle instance. In normal use, this should only be called by {@link
@@ -58,12 +84,21 @@ public class FeedAppLifecycle
      *        interface that we will call into.
      * @param lifecycleBridge FeedLifecycleBridge JNI bridge over which native lifecycle events are
      *        delivered.
+     * @param feedScheduler Scheduler to be notified of several events.
      */
     public FeedAppLifecycle(AppLifecycleListener appLifecycleListener,
             FeedLifecycleBridge lifecycleBridge, FeedScheduler feedScheduler) {
+        this(appLifecycleListener, lifecycleBridge, feedScheduler, new DefaultTaskDelegate());
+    }
+
+    /** Package private constructor used directly by tests to inject a mock TaskDelegate. */
+    @VisibleForTesting
+    FeedAppLifecycle(AppLifecycleListener appLifecycleListener, FeedLifecycleBridge lifecycleBridge,
+            FeedScheduler feedScheduler, TaskDelegate taskDelegate) {
         mAppLifecycleListener = appLifecycleListener;
         mLifecycleBridge = lifecycleBridge;
         mFeedScheduler = feedScheduler;
+        mTaskDelegate = taskDelegate;
 
         int resumedActivityCount = 0;
         for (Activity activity : ApplicationStatus.getRunningActivities()) {
@@ -128,6 +163,7 @@ public class FeedAppLifecycle
         mLifecycleBridge = null;
         mAppLifecycleListener = null;
         mFeedScheduler = null;
+        mTaskDelegate = null;
     }
 
     @Override
@@ -170,6 +206,23 @@ public class FeedAppLifecycle
     private void onEnterForeground() {
         reportEvent(AppLifecycleEvent.ENTER_FOREGROUND);
         mAppLifecycleListener.onEnterForeground();
+
+        if (!mDelayedInitializeStarted) {
+            mDelayedInitializeStarted = true;
+            int disableByDefault = -1;
+            int delayMs = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, "init_feed_after_delay_ms",
+                    disableByDefault);
+            if (delayMs >= 0) {
+                mTaskDelegate.postDelayedTask(UiThreadTaskTraits.BEST_EFFORT, () -> {
+                    // Since this is being run asynchronously, it's possible #destroy() is called
+                    // before the delay finishes. Must guard against this.
+                    if (mLifecycleBridge != null) {
+                        initialize();
+                    }
+                }, delayMs);
+            }
+        }
     }
 
     private void onEnterBackground() {

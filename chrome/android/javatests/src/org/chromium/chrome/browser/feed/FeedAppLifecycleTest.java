@@ -5,8 +5,11 @@
 package org.chromium.chrome.browser.feed;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,6 +25,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -51,7 +56,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
-import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -59,10 +63,10 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-@EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
 public class FeedAppLifecycleTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     @Mock
     private FeedScheduler mFeedScheduler;
     @Mock
@@ -72,7 +76,11 @@ public class FeedAppLifecycleTest {
     @Mock
     private AppLifecycleListener mAppLifecycleListener;
     @Mock
-    private Map<String, Boolean> mMockFeatureList;
+    private FeedAppLifecycle.TaskDelegate mTestDelegate;
+
+    @Captor
+    ArgumentCaptor<Runnable> mRunnableCaptor;
+
     private ChromeTabbedActivity mActivity;
     private FeedAppLifecycle mAppLifecycle;
     private FeedLifecycleBridge mLifecycleBridge;
@@ -82,8 +90,6 @@ public class FeedAppLifecycleTest {
     @Before
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
-        when(mMockFeatureList.get(anyString())).thenReturn(true);
-        ChromeFeatureList.setTestFeatures(mMockFeatureList);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             try {
                 ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
@@ -92,8 +98,8 @@ public class FeedAppLifecycleTest {
             }
             Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
             mLifecycleBridge = new FeedLifecycleBridge(profile);
-            mAppLifecycle =
-                    new FeedAppLifecycle(mAppLifecycleListener, mLifecycleBridge, mFeedScheduler);
+            mAppLifecycle = new FeedAppLifecycle(
+                    mAppLifecycleListener, mLifecycleBridge, mFeedScheduler, mTestDelegate);
             FeedProcessScopeFactory.createFeedProcessScopeForTesting(mFeedScheduler, mNetworkClient,
                     mOfflineIndicator, mAppLifecycle,
                     new FeedLoggingBridge(profile));
@@ -105,14 +111,14 @@ public class FeedAppLifecycleTest {
 
     @Test
     @SmallTest
-    @Feature({"InterestFeedContentSuggestions"})
+    @Feature({"Feed"})
     public void testConstructionChecksActiveTabbedActivities() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
     }
 
     @Test
     @SmallTest
-    @Feature({"InterestFeedContentSuggestions"})
+    @Feature({"Feed"})
     public void testActivityStateChangesIncrementStateCounters()
             throws InterruptedException, TimeoutException {
         verifyHistogram(mHistogramAppLifecycleEvents, AppLifecycleEvent.ENTER_BACKGROUND, 0);
@@ -128,7 +134,8 @@ public class FeedAppLifecycleTest {
 
     @Test
     @SmallTest
-    @Feature({"InterestFeedContentSuggestions"})
+    @Feature({"Feed"})
+    @EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
     public void testNtpOpeningTriggersInitializeOnlyOnce() throws InterruptedException {
         // We open to about:blank initially so we shouldn't have called initialize() yet.
         verify(mAppLifecycleListener, times(0)).initialize();
@@ -143,7 +150,7 @@ public class FeedAppLifecycleTest {
 
     @Test
     @SmallTest
-    @Feature({"InterestFeedContentSuggestions"})
+    @Feature({"Feed"})
     public void testOnHistoryDeleted() {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         verify(mAppLifecycleListener, times(0)).onClearAllWithRefresh();
@@ -167,7 +174,7 @@ public class FeedAppLifecycleTest {
 
     @Test
     @SmallTest
-    @Feature({"InterestFeedContentSuggestions"})
+    @Feature({"Feed"})
     public void testOnCachedDataCleared() {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         verify(mAppLifecycleListener, times(0)).onClearAllWithRefresh();
@@ -189,7 +196,7 @@ public class FeedAppLifecycleTest {
 
     @Test
     @SmallTest
-    @Feature({"InterestFeedContentSuggestions"})
+    @Feature({"Feed"})
     public void testOnSignedOut() {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         verify(mAppLifecycleListener, times(0)).onClearAllWithRefresh();
@@ -211,7 +218,7 @@ public class FeedAppLifecycleTest {
 
     @Test
     @SmallTest
-    @Feature({"InterestFeedContentSuggestions"})
+    @Feature({"Feed"})
     public void testOnSignedIn() {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         verify(mAppLifecycleListener, times(0)).onClearAllWithRefresh();
@@ -233,7 +240,7 @@ public class FeedAppLifecycleTest {
 
     @Test
     @SmallTest
-    @Feature({"InterestFeedContentSuggestions"})
+    @Feature({"Feed"})
     public void testSecondWindowDoesNotTriggerForegroundOrBackground()
             throws InterruptedException, TimeoutException {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
@@ -258,7 +265,8 @@ public class FeedAppLifecycleTest {
 
     @Test
     @SmallTest
-    @Feature({"InterestFeedContentSuggestions"})
+    @Feature({"Feed"})
+    @EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
     public void testMultiWindowDoesNotCauseMultipleInitialize() throws InterruptedException {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         verify(mAppLifecycleListener, times(1)).initialize();
@@ -272,7 +280,7 @@ public class FeedAppLifecycleTest {
 
     @Test
     @SmallTest
-    @Feature({"InterestFeedContentSuggestions"})
+    @Feature({"Feed"})
     public void testResumeTriggersSchedulerForegrounded()
             throws InterruptedException, TimeoutException {
         verify(mFeedScheduler, times(1)).onForegrounded();
@@ -282,7 +290,7 @@ public class FeedAppLifecycleTest {
 
     @Test
     @SmallTest
-    @Feature({"InterestFeedContentSuggestions"})
+    @Feature({"Feed"})
     public void testClearDataAfterDisablingDoesNotCrash() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
@@ -290,6 +298,72 @@ public class FeedAppLifecycleTest {
             FeedLifecycleBridge.onCachedDataCleared();
             FeedLifecycleBridge.onHistoryDeleted();
         });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Feed"})
+    public void testDelayedInitNoParam() {
+        verify(mAppLifecycleListener, times(1)).onEnterForeground();
+        verify(mAppLifecycleListener, times(0)).initialize();
+        verify(mTestDelegate, never()).postDelayedTask(any(), any(), anyLong());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:init_feed_after_delay_ms/99"})
+    public void
+    testDelayedInitWithParam() {
+        verify(mAppLifecycleListener, times(1)).onEnterForeground();
+        verify(mAppLifecycleListener, times(0)).initialize();
+        verify(mTestDelegate, times(1))
+                .postDelayedTask(
+                        eq(UiThreadTaskTraits.BEST_EFFORT), mRunnableCaptor.capture(), eq(99L));
+        mRunnableCaptor.getValue().run();
+        verify(mAppLifecycleListener, times(1)).initialize();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:init_feed_after_delay_ms/0"})
+    public void
+    testDelayedInitZeroParam() {
+        verify(mAppLifecycleListener, times(1)).onEnterForeground();
+        // While the real implementation will likely synchronously invoke the callback when given a
+        // delay of 0, our mocks have no logic in them.
+        verify(mAppLifecycleListener, times(0)).initialize();
+        verify(mTestDelegate, times(1))
+                .postDelayedTask(
+                        eq(UiThreadTaskTraits.BEST_EFFORT), mRunnableCaptor.capture(), eq(0L));
+        mRunnableCaptor.getValue().run();
+        verify(mAppLifecycleListener, times(1)).initialize();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:init_feed_after_delay_ms/99"})
+    public void
+    testDelayedInitWithDestroy() {
+        verify(mAppLifecycleListener, times(1)).onEnterForeground();
+        verify(mAppLifecycleListener, times(0)).initialize();
+        verify(mTestDelegate, times(1))
+                .postDelayedTask(
+                        eq(UiThreadTaskTraits.BEST_EFFORT), mRunnableCaptor.capture(), eq(99L));
+        // Must be on the UI thread, one of the dependencies checks.
+        TestThreadUtils.runOnUiThreadBlocking(() -> mAppLifecycle.destroy());
+
+        // Initialize shouldn't be called after we're destroyed.
+        mRunnableCaptor.getValue().run();
+        verify(mAppLifecycleListener, never()).initialize();
     }
 
     private void signalActivityStart(Activity activity)
