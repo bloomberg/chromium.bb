@@ -1225,6 +1225,11 @@
     "expiry_milestone": 74
   },
   {
+    "name": "enable-backdrop-filter",
+    "owners": [ "masonfreed", "paint-dev@chromium.org" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-layout-ng",
     "owners": [ "layout-dev@chromium.org" ],
     "expiry_milestone": 80

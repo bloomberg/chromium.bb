@@ -3003,6 +3003,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableBlinkGenPropertyTreesDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kBlinkGenPropertyTrees)},
 
+    {"enable-backdrop-filter", flag_descriptions::kEnableCSSBackdropFilterName,
+     flag_descriptions::kEnableCSSBackdropFilterDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kCSSBackdropFilter)},
+
     {"enable-display-locking", flag_descriptions::kEnableDisplayLockingName,
      flag_descriptions::kEnableDisplayLockingDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kDisplayLocking)},
