@@ -2202,28 +2202,47 @@ void Element::AttachLayoutTree(AttachContext& context) {
   DCHECK(GetDocument().InStyleRecalc());
 
   const ComputedStyle* style = GetComputedStyle();
-  if ((!style || style->IsEnsuredInDisplayNone()) &&
-      !ChildNeedsReattachLayoutTree()) {
+  bool being_rendered =
+      context.parent && style && !style->IsEnsuredInDisplayNone();
+  if (!being_rendered && !ChildNeedsReattachLayoutTree()) {
     Node::AttachLayoutTree(context);
     return;
   }
 
   AttachContext children_context(context);
+  LayoutObject* layout_object = nullptr;
+  if (CanParticipateInFlatTree()) {
+    if (being_rendered) {
+      // If an element requires forced legacy layout, all descendants need it
+      // too.
+      if (ShouldForceLegacyLayout())
+        children_context.force_legacy_layout = true;
+      LegacyLayout legacy = children_context.force_legacy_layout
+                                ? LegacyLayout::kForce
+                                : LegacyLayout::kAuto;
+      LayoutTreeBuilderForElement builder(*this, context, style, legacy);
+      builder.CreateLayoutObject();
 
-  if (style && CanParticipateInFlatTree()) {
-    // If an element requires forced legacy layout, all descendants need it too.
-    if (ShouldForceLegacyLayout())
-      children_context.force_legacy_layout = true;
-    LegacyLayout legacy = children_context.force_legacy_layout
-                              ? LegacyLayout::kForce
-                              : LegacyLayout::kAuto;
-    LayoutTreeBuilderForElement builder(*this, style, legacy);
-    builder.CreateLayoutObjectIfNeeded();
+      layout_object = GetLayoutObject();
+      if (layout_object) {
+        children_context.previous_in_flow = nullptr;
+        children_context.parent = layout_object;
+        children_context.next_sibling = nullptr;
+      } else if (style->Display() != EDisplay::kContents) {
+        // The layout object creation was suppressed for other reasons than
+        // being display:none or display:contents (E.g.
+        // LayoutObject::CanHaveChildren() returning false). Make sure we don't
+        // attempt to create LayoutObjects further down the subtree.
+        children_context.parent = nullptr;
+      }
+      // For display:contents elements, we keep the previous_in_flow,
+      // next_sibling, and parent, in the context for attaching children.
+    } else {
+      // We are a display:none element. Set the parent to nullptr to make sure
+      // we never create any child layout boxes.
+      children_context.parent = nullptr;
+    }
   }
-
-  LayoutObject* layout_object = GetLayoutObject();
-  if (layout_object)
-    children_context.previous_in_flow = nullptr;
   children_context.use_previous_in_flow = true;
 
   AttachPseudoElement(kPseudoIdBefore, children_context);
@@ -2627,11 +2646,9 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
 
   if (NeedsReattachLayoutTree()) {
     AttachContext reattach_context;
-    if (const Node* parent = LayoutTreeBuilderTraversal::LayoutParent(*this)) {
-      const LayoutObject* parent_object = parent->GetLayoutObject();
-      if (parent_object && parent_object->ForceLegacyLayout())
-        reattach_context.force_legacy_layout = true;
-    }
+    InitAttachContextParentAndSibling(reattach_context, *this);
+    if (reattach_context.parent && reattach_context.parent->ForceLegacyLayout())
+      reattach_context.force_legacy_layout = true;
     ReattachLayoutTree(reattach_context);
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
