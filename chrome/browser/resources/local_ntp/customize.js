@@ -677,6 +677,7 @@ customize.richerPicker_previewImage = function(tile) {
   const re = /w\d+\-h\d+/;
   $(customize.IDS.CUSTOM_BG).style.backgroundImage =
       tile.style.backgroundImage.replace(re, 'w1280-h720');
+  $(customize.IDS.CUSTOM_BG).style.opacity = 1;
 };
 
 /**
