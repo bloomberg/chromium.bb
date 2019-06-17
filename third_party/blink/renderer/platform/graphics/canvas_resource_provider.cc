@@ -1286,7 +1286,8 @@ void CanvasResourceProvider::RecycleResource(
     scoped_refptr<CanvasResource> resource) {
   // Need to check HasOneRef() because if there are outstanding references to
   // the resource, it cannot be safely recycled.
-  if (resource->HasOneRef() && resource_recycling_enabled_)
+  if (resource->HasOneRef() && resource_recycling_enabled_ &&
+      !is_single_buffered_)
     canvas_resources_.push_back(std::move(resource));
 }
 
@@ -1317,7 +1318,8 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::NewOrRecycledResource() {
 void CanvasResourceProvider::TryEnableSingleBuffering() {
   if (IsSingleBuffered() || !SupportsSingleBuffering())
     return;
-  SetResourceRecyclingEnabled(false);
+  is_single_buffered_ = true;
+  ClearRecycledResources();
 }
 
 bool CanvasResourceProvider::ImportResource(
