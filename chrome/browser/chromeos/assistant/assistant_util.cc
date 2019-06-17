@@ -42,10 +42,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
 
-  // TODO(wutao): Add a new type DISALLOWED_BY_KIOSK_MODE.
   if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
       user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE;
   }
 
   // String literals used in some cases in the array because their

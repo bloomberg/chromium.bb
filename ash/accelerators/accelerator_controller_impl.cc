@@ -744,6 +744,9 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_BY_ACCOUNT_MESSAGE));
       return;
+    case mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE:
+      // No need to show toast in KIOSK mode.
+      return;
     case mojom::AssistantAllowedState::ALLOWED:
       // Nothing need to do if allowed.
       break;
