@@ -11,7 +11,6 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -34,6 +33,7 @@ class PrefRegistrySimple;
 class SigninManagerAndroid;
 
 class AccountFetcherService;
+class AccountTrackerService;
 class GaiaCookieManagerService;
 
 namespace identity {
@@ -51,8 +51,7 @@ struct CookieParams;
 // ./README.md for detailed documentation.
 class IdentityManager : public PrimaryAccountManager::Observer,
                         public OAuth2TokenService::DiagnosticsObserver,
-                        public OAuth2TokenServiceObserver,
-                        public AccountTrackerService::Observer {
+                        public OAuth2TokenServiceObserver {
  public:
   class Observer {
    public:
@@ -620,9 +619,9 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   void OnRefreshTokenRevokedFromSource(const CoreAccountId& account_id,
                                        const std::string& source) override;
 
-  // AccountTrackerService::Observer:
-  void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountRemoved(const AccountInfo& info) override;
+  // AccountTrackerService callbacks:
+  void OnAccountUpdated(const AccountInfo& info);
+  void OnAccountRemoved(const AccountInfo& info);
 
   // Backing signin classes.
   std::unique_ptr<AccountTrackerService> account_tracker_service_;

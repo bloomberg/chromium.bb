@@ -8,6 +8,7 @@
 
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/ubertoken_fetcher_impl.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -65,10 +66,13 @@ IdentityManager::IdentityManager(
   primary_account_manager_->SetObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
-  account_tracker_service_->AddObserver(this);
 
-  // IdentityManager owns gaia_cookie_manager_service_ and will outlive it, so
+  // IdentityManager owns the ATS and GCMS instances and will outlive them, so
   // base::Unretained is safe.
+  account_tracker_service_->SetOnAccountUpdatedCallback(base::BindRepeating(
+      &IdentityManager::OnAccountUpdated, base::Unretained(this)));
+  account_tracker_service_->SetOnAccountRemovedCallback(base::BindRepeating(
+      &IdentityManager::OnAccountRemoved, base::Unretained(this)));
   gaia_cookie_manager_service_->SetGaiaAccountsInCookieUpdatedCallback(
       base::BindRepeating(&IdentityManager::OnGaiaAccountsInCookieUpdated,
                           base::Unretained(this)));
@@ -95,7 +99,6 @@ IdentityManager::~IdentityManager() {
   primary_account_manager_->ClearObserver();
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
-  account_tracker_service_->RemoveObserver(this);
 }
 
 void IdentityManager::AddObserver(Observer* observer) {
