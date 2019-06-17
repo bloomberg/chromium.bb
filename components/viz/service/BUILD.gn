@@ -252,8 +252,6 @@ viz_component("service") {
     sources += [
       "display_embedder/gl_output_surface_android.cc",
       "display_embedder/gl_output_surface_android.h",
-      "display_embedder/gl_output_surface_buffer_queue_android.cc",
-      "display_embedder/gl_output_surface_buffer_queue_android.h",
       "display_embedder/overlay_candidate_validator_android.cc",
       "display_embedder/overlay_candidate_validator_android.h",
       "display_embedder/overlay_candidate_validator_surface_control.cc",

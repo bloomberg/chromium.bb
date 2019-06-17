@@ -122,6 +122,9 @@ void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
 void GLOutputSurfaceBufferQueue::SetDisplayTransformHint(
     gfx::OverlayTransform transform) {
   display_transform_ = transform;
+
+  if (context_provider_)
+    context_provider_->ContextSupport()->SetDisplayTransform(transform);
 }
 
 gfx::OverlayTransform GLOutputSurfaceBufferQueue::GetDisplayTransform() {

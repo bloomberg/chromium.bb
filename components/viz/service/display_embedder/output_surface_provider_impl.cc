@@ -43,7 +43,6 @@
 
 #if defined(OS_ANDROID)
 #include "components/viz/service/display_embedder/gl_output_surface_android.h"
-#include "components/viz/service/display_embedder/gl_output_surface_buffer_queue_android.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -200,7 +199,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
       auto buffer_format = context_provider->UseRGB565PixelFormat()
                                ? gfx::BufferFormat::BGR_565
                                : gfx::BufferFormat::RGBA_8888;
-      output_surface = std::make_unique<GLOutputSurfaceBufferQueueAndroid>(
+      output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
           gpu_memory_buffer_manager_.get(), buffer_format);
 #else
