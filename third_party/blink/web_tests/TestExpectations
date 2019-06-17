@@ -5444,10 +5444,6 @@ crbug.com/615885 external/wpt/content-security-policy/securitypolicyviolation/im
 crbug.com/849975 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
 crbug.com/849975 virtual/threaded/external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
 
-# These won't pass as layout tests until the linked bug is fixed.
-crbug.com/828858 external/wpt/css/selectors/focus-visible-007.html [ Failure ]
-crbug.com/828858 external/wpt/inert/inert-node-is-uneditable.tentative.html [ Failure ]
-
 # Sheriff 2018-06-07
 crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Pass Failure Timeout ]
 crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-comment.js [ Pass Failure Timeout ]
