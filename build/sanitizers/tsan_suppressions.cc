@@ -52,9 +52,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/239359
     "race:media::TestInputCallback::OnData\n"
 
-    // http://crbug.com/244385
-    "race:unixTempFileDir\n"
-
     // http://crbug.com/244755
     "race:v8::internal::Zone::NewExpand\n"
 
