@@ -4,6 +4,7 @@ class MockSpatialNavigationHostService {
   constructor() {
     this.canExitFocus = false;
     this.canSelectElement = false;
+    this.isFormFocused = false;
     this.hasNextFormElement = false;
     this.hasDefaultVideoControls = false;
     this.callback = null;
@@ -18,6 +19,7 @@ class MockSpatialNavigationHostService {
   spatialNavigationStateChanged(state) {
     this.canExitFocus = state.canExitFocus;
     this.canSelectElement = state.canSelectElement;
+    this.isFormFocused = state.isFormFocused;
     this.hasNextFormElement = state.hasNextFormElement;
     this.hasDefaultVideoControls = state.hasDefaultVideoControls;
     if (this.callback) {

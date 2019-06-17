@@ -30,7 +30,7 @@
     assert_true(mockSnavService.canSelectElement,
                 "Should be able to select element.");
     assert_false(mockSnavService.hasNextFormElement,
-                "Should not be able to move to next form element.");
+                 "Should not be able to move to next form element.");
 
     eventSender.keyDown('Enter');
     assert_equals(document.activeElement,
@@ -43,7 +43,7 @@
                 "Should be able to exit focus.");
     assert_true(mockSnavService.canSelectElement,
                 "Should be able to select element.");
-    assert_true(mockSnavService.hasNextFormElement,
-                 "Should be able to move to next form element.");
+    assert_false(mockSnavService.hasNextFormElement,
+                 "Should not be able to move to next form element.");
   }, 'Form does not submit when passing spat nav focus.');
 </script>
