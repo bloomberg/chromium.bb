@@ -88,6 +88,7 @@ source_set("crw_context_menu_controller") {
     "//ios/web/public/deprecated",
     "//ios/web/web_state:context_menu",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
+    "//ui/base",
   ]
 
   sources = [
