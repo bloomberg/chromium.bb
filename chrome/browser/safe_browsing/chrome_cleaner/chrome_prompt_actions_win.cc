@@ -2,52 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/chrome_cleaner/srt_chrome_prompt_impl_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
 
 #include <algorithm>
 #include <string>
 #include <utility>
 
-#include "base/files/file_path.h"
-#include "base/location.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/uninstall_reason.h"
 
 namespace safe_browsing {
 
-using chrome_cleaner::mojom::ChromePrompt;
-using chrome_cleaner::mojom::ChromePromptRequest;
-using chrome_cleaner::mojom::PromptAcceptance;
-using content::BrowserThread;
-
-ChromePromptImpl::ChromePromptImpl(
+ChromePromptActions::ChromePromptActions(
     extensions::ExtensionService* extension_service,
-    ChromePromptRequest request,
-    base::OnceClosure on_connection_closed,
-    OnPromptUser on_prompt_user)
-    : binding_(this, std::move(request)),
-      extension_service_(extension_service),
+    PromptUserCallback on_prompt_user)
+    : extension_service_(extension_service),
       on_prompt_user_(std::move(on_prompt_user)) {
   DCHECK(on_prompt_user_);
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  binding_.set_connection_error_handler(std::move(on_connection_closed));
 }
 
-ChromePromptImpl::~ChromePromptImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-}
+ChromePromptActions::~ChromePromptActions() {}
 
-void ChromePromptImpl::PromptUser(
+void ChromePromptActions::PromptUser(
     const std::vector<base::FilePath>& files_to_delete,
     const base::Optional<std::vector<base::string16>>& registry_keys,
     const base::Optional<std::vector<base::string16>>& extension_ids,
-    ChromePrompt::PromptUserCallback callback) {
+    PromptUserReplyCallback callback) {
   using FileCollection = ChromeCleanerScannerResults::FileCollection;
   using RegistryKeyCollection =
       ChromeCleanerScannerResults::RegistryKeyCollection;
@@ -77,12 +64,10 @@ void ChromePromptImpl::PromptUser(
 // The |extensions_ids| passed to this function are a subset of the
 // |extension_ids| passed to PromptUser because the extensions are not all
 // disabled at the same time.
-void ChromePromptImpl::DisableExtensions(
-    const std::vector<base::string16>& extension_ids,
-    ChromePrompt::DisableExtensionsCallback callback) {
+bool ChromePromptActions::DisableExtensions(
+    const std::vector<base::string16>& extension_ids) {
   if (extension_service_ == nullptr || extension_ids_.empty()) {
-    std::move(callback).Run(false);
-    return;
+    return false;
   }
   // Clear the stored extension_ids by moving it onto this stack frame,
   // so subsequent calls will fail.
@@ -97,8 +82,7 @@ void ChromePromptImpl::DisableExtensions(
                extension_service_->GetInstalledExtension(id_utf8) != nullptr;
       });
   if (!ids_are_valid) {
-    std::move(callback).Run(false);
-    return;
+    return false;
   }
 
   // This only uninstalls extensions that have been displayed to the user on
@@ -111,7 +95,15 @@ void ChromePromptImpl::DisableExtensions(
                  base::UTF16ToUTF8(extension_id), reason, nullptr) &&
              result;
   }
-  std::move(callback).Run(result);
+  return result;
+}
+
+// Keep the printable name short since it's used in tests with very long
+// parameter lists.
+std::ostream& operator<<(
+    std::ostream& out,
+    ChromePromptActions::PromptAcceptance prompt_acceptance) {
+  return out << "Accept" << static_cast<int>(prompt_acceptance);
 }
 
 }  // namespace safe_browsing
