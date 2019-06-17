@@ -395,6 +395,9 @@ URLLoader::URLLoader(
   // they should be ignored by CORS checks.
   net::HttpRequestHeaders merged_headers = request.headers;
   merged_headers.MergeFrom(request.cors_exempt_headers);
+  // This should be ensured by the CorsURLLoaderFactory(), which is called
+  // before URLLoaders are created.
+  DCHECK(AreRequestHeadersSafe(merged_headers));
   url_request_->SetExtraRequestHeaders(merged_headers);
 
   url_request_->SetUserData(kUserDataKey,
@@ -644,6 +647,14 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
 
   if (!deferred_redirect_url_) {
     NOTREACHED();
+    return;
+  }
+
+  // Removing headers can't make the set of pre-existing headers unsafe, but
+  // adding headers can.
+  if (!AreRequestHeadersSafe(modified_headers)) {
+    NotifyCompleted(net::ERR_INVALID_ARGUMENT);
+    // |this| may have been deleted.
     return;
   }
 
