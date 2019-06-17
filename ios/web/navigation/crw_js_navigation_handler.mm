@@ -55,6 +55,8 @@ GURL URLEscapedForHistory(const GURL& url) {
 @property(nonatomic, readonly, weak) WKWebView* webView;
 // Returns CRWJSInjector from self.delegate.
 @property(nonatomic, readonly, weak) CRWJSInjector* JSInjector;
+// Returns current URL from self.delegate.
+@property(nonatomic, readonly, assign) GURL currentURL;
 
 @end
 
@@ -74,13 +76,17 @@ GURL URLEscapedForHistory(const GURL& url) {
           const std::string* command = message.FindStringKey("command");
           DCHECK(command);
           if (*command == "navigation.hashchange") {
-            [weakSelf handleWindowHashChangeInFrame:senderFrame];
+            [weakSelf handleNavigationHashChangeInFrame:senderFrame];
             return true;
           } else if (*command == "navigation.willChangeState") {
-            [weakSelf handleWindowWillChangeStateInFrame:senderFrame];
+            [weakSelf handleNavigationWillChangeStateInFrame:senderFrame];
             return true;
           } else if (*command == "navigation.didPushState") {
-            [weakSelf handleWindowHistoryDidPushStateMessage:message
+            [weakSelf handleNavigationDidPushStateMessage:message
+                                                  inFrame:senderFrame];
+            return true;
+          } else if (*command == "navigation.didReplaceState") {
+            [weakSelf handleNavigationDidReplaceStateMessage:message
                                                      inFrame:senderFrame];
             return true;
           }
@@ -129,8 +135,12 @@ GURL URLEscapedForHistory(const GURL& url) {
   return [self.delegate JSInjectorForJSNavigationHandler:self];
 }
 
+- (GURL)currentURL {
+  return [self.delegate currentURLForJSNavigationHandler:self];
+}
+
 // Handles the navigation.hashchange event emitted from |senderFrame|.
-- (void)handleWindowHashChangeInFrame:(web::WebFrame*)senderFrame {
+- (void)handleNavigationHashChangeInFrame:(web::WebFrame*)senderFrame {
   if (!senderFrame->IsMainFrame())
     return;
 
@@ -147,16 +157,16 @@ GURL URLEscapedForHistory(const GURL& url) {
 }
 
 // Handles the navigation.willChangeState message sent from |senderFrame|.
-- (void)handleWindowWillChangeStateInFrame:(web::WebFrame*)senderFrame {
+- (void)handleNavigationWillChangeStateInFrame:(web::WebFrame*)senderFrame {
   if (senderFrame->IsMainFrame()) {
     self.changingHistoryState = YES;
   }
 }
 
 // Handles the navigation.didChangeState message sent from |senderFrame|.
-- (void)handleWindowHistoryDidPushStateMessage:
+- (void)handleNavigationDidPushStateMessage:
             (const base::DictionaryValue&)message
-                                       inFrame:(web::WebFrame*)senderFrame {
+                                    inFrame:(web::WebFrame*)senderFrame {
   if (!senderFrame->IsMainFrame())
     return;
   DCHECK(self.changingHistoryState);
@@ -178,8 +188,7 @@ GURL URLEscapedForHistory(const GURL& url) {
     return;
   }
   GURL pushURL = web::history_state_util::GetHistoryStateChangeUrl(
-      [self.delegate currentURLForJSNavigationHandler:self], GURL(*baseURL),
-      *pageURL);
+      self.currentURL, GURL(*baseURL), *pageURL);
   // UIWebView seems to choke on unicode characters that haven't been
   // escaped; escape the URL now so the expected load URL is correct.
   pushURL = URLEscapedForHistory(pushURL);
@@ -240,6 +249,69 @@ GURL URLEscapedForHistory(const GURL& url) {
       }];
 }
 
+// Handles the navigation.didReplaceState message sent from |senderFrame|.
+- (void)handleNavigationDidReplaceStateMessage:
+            (const base::DictionaryValue&)message
+                                       inFrame:(web::WebFrame*)senderFrame {
+  if (!senderFrame->IsMainFrame())
+    return;
+  DCHECK(self.changingHistoryState);
+  self.changingHistoryState = NO;
+
+  const std::string* pageURL = message.FindStringKey("pageUrl");
+  const std::string* baseURL = message.FindStringKey("baseUrl");
+  if (!pageURL || !baseURL) {
+    DLOG(WARNING) << "JS message parameter not found: pageUrl or baseUrl";
+    return;
+  }
+  GURL replaceURL = web::history_state_util::GetHistoryStateChangeUrl(
+      self.currentURL, GURL(*baseURL), *pageURL);
+  // UIWebView seems to choke on unicode characters that haven't been
+  // escaped; escape the URL now so the expected load URL is correct.
+  replaceURL = URLEscapedForHistory(replaceURL);
+  if (!replaceURL.is_valid())
+    return;
+
+  web::NavigationItemImpl* navItem =
+      self.navigationManagerImpl
+          ? self.navigationManagerImpl->GetCurrentItemImpl()
+          : nullptr;
+  // ReplaceState happened before first navigation entry or called right
+  // after window.open when the url is empty/not valid.
+  if (!navItem || (self.navigationManagerImpl->GetItemCount() <= 1 &&
+                   navItem->GetURL().is_empty()))
+    return;
+  if (!web::history_state_util::IsHistoryStateChangeValid(navItem->GetURL(),
+                                                          replaceURL)) {
+    // If the current session entry URL origin still doesn't match
+    // replaceURL's origin, ignore the replaceState. This can happen if a
+    // new URL is loaded just before the replaceState.
+    return;
+  }
+  const std::string* stateObjectJSON = message.FindStringKey("stateObject");
+  if (!stateObjectJSON) {
+    DLOG(WARNING) << "JS message parameter not found: stateObject";
+    return;
+  }
+  NSString* stateObject = base::SysUTF8ToNSString(*stateObjectJSON);
+  [self replaceStateWithPageURL:replaceURL
+                    stateObject:stateObject
+                 hasUserGesture:self.userInteractionState->IsUserInteracting(
+                                    self.webView)];
+  NSString* replaceStateJS = [self javaScriptToReplaceWebViewURL:replaceURL
+                                                 stateObjectJSON:stateObject];
+  __weak CRWJSNavigationHandler* weakSelf = self;
+  [self.JSInjector executeJavaScript:replaceStateJS
+                   completionHandler:^(id, NSError*) {
+                     CRWJSNavigationHandler* strongSelf = weakSelf;
+                     if (!strongSelf || strongSelf.beingDestroyed)
+                       return;
+                     [strongSelf.delegate JSNavigationHandler:self
+                                          didFinishNavigation:nullptr];
+                   }];
+  return;
+}
+
 // Adds a new NavigationItem with the given URL and state object to the
 // history stack. A state object is a serialized generic JavaScript object
 // that contains details of the UI's state for a given NavigationItem/URL.
@@ -260,6 +332,23 @@ GURL URLEscapedForHistory(const GURL& url) {
   context->SetHasCommitted(true);
   self.webStateImpl->OnNavigationFinished(context.get());
   self.userInteractionState->SetUserInteractionRegisteredSincePageLoaded(false);
+}
+
+// Assigns the given URL and state object to the current NavigationItem.
+- (void)replaceStateWithPageURL:(const GURL&)pageURL
+                    stateObject:(NSString*)stateObject
+                 hasUserGesture:(BOOL)hasUserGesture {
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(
+          self.webStateImpl, pageURL, hasUserGesture,
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
+          /*is_renderer_initiated=*/true);
+  context->SetIsSameDocument(true);
+  self.webStateImpl->OnNavigationStarted(context.get());
+  self.navigationManagerImpl->UpdateCurrentItemForReplaceState(pageURL,
+                                                               stateObject);
+  context->SetHasCommitted(true);
+  self.webStateImpl->OnNavigationFinished(context.get());
 }
 
 @end

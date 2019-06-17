@@ -162,17 +162,6 @@ NSString* const kFrameBecameAvailableMessageName = @"FrameBecameAvailable";
 // Message command sent when a frame is unloading.
 NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 
-// URLs that are fed into UIWebView as history push/replace get escaped,
-// potentially changing their format. Code that attempts to determine whether a
-// URL hasn't changed can be confused by those differences though, so method
-// will round-trip a URL through the escaping process so that it can be adjusted
-// pre-storing, to allow later comparisons to work as expected.
-GURL URLEscapedForHistory(const GURL& url) {
-  // TODO(stuartmorgan): This is a very large hammer; see if limited unicode
-  // escaping would be sufficient.
-  return net::GURLWithNSURL(net::NSURLWithGURL(url));
-}
-
 }  // namespace
 
 @interface CRWWebController () <BrowsingDataRemoverObserver,
@@ -1823,8 +1812,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
     (*handlers)["window.history.back"] =
         @selector(handleWindowHistoryBackMessage:context:);
-    (*handlers)["window.history.didReplaceState"] =
-        @selector(handleWindowHistoryDidReplaceStateMessage:context:);
     (*handlers)["window.history.forward"] =
         @selector(handleWindowHistoryForwardMessage:context:);
     (*handlers)["window.history.go"] = @selector(handleWindowHistoryGoMessage:
@@ -2052,66 +2039,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return NO;
 }
 
-// Handles 'window.history.didReplaceState' message.
-- (BOOL)handleWindowHistoryDidReplaceStateMessage:
-            (base::DictionaryValue*)message
-                                          context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-  DCHECK(self.JSNavigationHandler.changingHistoryState);
-  self.JSNavigationHandler.changingHistoryState = NO;
-
-  std::string pageURL;
-  std::string baseURL;
-  if (!message->GetString("pageUrl", &pageURL) ||
-      !message->GetString("baseUrl", &baseURL)) {
-    DLOG(WARNING) << "JS message parameter not found: pageUrl or baseUrl";
-    return NO;
-  }
-  GURL replaceURL = web::history_state_util::GetHistoryStateChangeUrl(
-      [self currentURL], GURL(baseURL), pageURL);
-  // UIWebView seems to choke on unicode characters that haven't been
-  // escaped; escape the URL now so the expected load URL is correct.
-  replaceURL = URLEscapedForHistory(replaceURL);
-  if (!replaceURL.is_valid())
-    return YES;
-
-  web::NavigationItem* navItem = self.currentNavItem;
-  // ReplaceState happened before first navigation entry or called right
-  // after window.open when the url is empty/not valid.
-  if (!navItem || (self.navigationManagerImpl->GetItemCount() <= 1 &&
-                   navItem->GetURL().is_empty()))
-    return YES;
-  if (!web::history_state_util::IsHistoryStateChangeValid(
-          self.currentNavItem->GetURL(), replaceURL)) {
-    // If the current session entry URL origin still doesn't match
-    // replaceURL's origin, ignore the replaceState. This can happen if a
-    // new URL is loaded just before the replaceState.
-    return YES;
-  }
-  std::string stateObjectJSON;
-  if (!message->GetString("stateObject", &stateObjectJSON)) {
-    DLOG(WARNING) << "JS message parameter not found: stateObject";
-    return NO;
-  }
-  NSString* stateObject = base::SysUTF8ToNSString(stateObjectJSON);
-  [self replaceStateWithPageURL:replaceURL
-                    stateObject:stateObject
-                 hasUserGesture:[context[kUserIsInteractingKey] boolValue]];
-  NSString* replaceStateJS =
-      [self.JSNavigationHandler javaScriptToReplaceWebViewURL:replaceURL
-                                              stateObjectJSON:stateObject];
-  __weak CRWWebController* weakSelf = self;
-  [_jsInjector executeJavaScript:replaceStateJS
-               completionHandler:^(id, NSError*) {
-                 CRWWebController* strongSelf = weakSelf;
-                 if (!strongSelf || strongSelf->_isBeingDestroyed)
-                   return;
-                 [strongSelf didFinishNavigation:nullptr];
-               }];
-  return YES;
-}
-
 // Handles 'restoresession.error' message.
 - (BOOL)handleRestoreSessionErrorMessage:(base::DictionaryValue*)message
                                  context:(NSDictionary*)context {
@@ -2135,23 +2062,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 #pragma mark - Navigation Helpers
-
-// Assigns the given URL and state object to the current NavigationItem.
-- (void)replaceStateWithPageURL:(const GURL&)pageURL
-                    stateObject:(NSString*)stateObject
-                 hasUserGesture:(BOOL)hasUserGesture {
-  std::unique_ptr<web::NavigationContextImpl> context =
-      web::NavigationContextImpl::CreateNavigationContext(
-          self.webStateImpl, pageURL, hasUserGesture,
-          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
-          /*is_renderer_initiated=*/true);
-  context->SetIsSameDocument(true);
-  self.webStateImpl->OnNavigationStarted(context.get());
-  self.navigationManagerImpl->UpdateCurrentItemForReplaceState(pageURL,
-                                                               stateObject);
-  context->SetHasCommitted(true);
-  self.webStateImpl->OnNavigationFinished(context.get());
-}
 
 // Navigates forwards or backwards by |delta| pages. No-op if delta is out of
 // bounds. Reloads if delta is 0.
