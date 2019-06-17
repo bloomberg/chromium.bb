@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/events/window_event_context.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -45,6 +46,8 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/timing/event_timing.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
@@ -367,6 +370,15 @@ inline void EventDispatcher::DispatchEventPostProcess(
         if (event_->DefaultHandled())
           break;
       }
+    }
+  }
+
+  if (Page* page = node_->GetDocument().GetPage()) {
+    if (page->GetSettings().GetSpatialNavigationEnabled() &&
+        is_trusted_or_click && event_->IsKeyboardEvent() &&
+        ToKeyboardEvent(*event_).key() == "Enter" &&
+        event_->type() == event_type_names::kKeyup) {
+      page->GetSpatialNavigationController().ResetEnterKeyState();
     }
   }
 
