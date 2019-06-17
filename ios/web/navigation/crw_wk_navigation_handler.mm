@@ -273,6 +273,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       loadParams.referrer = self.currentReferrer;
 
       self.webStateImpl->GetNavigationManager()->LoadURLWithParams(loadParams);
+      return;
     }
   }
 
