@@ -950,7 +950,8 @@ void RenderCompositorFrameSinkImpl::OnBeginFrame(const viz::BeginFrameArgs& args
     d_last_begin_frame_args = args;
 
     if (d_client && d_client_needs_begin_frame) {
-        d_client->OnBeginFrame(args, std::move(d_presentation_feedbacks));
+        d_client->OnBeginFrame(args, d_presentation_feedbacks);
+        d_presentation_feedbacks.clear();
     }
 }
 
