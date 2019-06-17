@@ -4,7 +4,7 @@ web pages to improve data savings and/or performance.
 ## Manual Testing
 
 To manually evaluate the effect of Lite Pages on a webpage, start Chrome on
-Android with version equal to or greater than 76.0.3803.0, with the following
+Android with version equal to or greater than 77.0.3830.0, with the following
 command line flags:
 
 ```
@@ -13,7 +13,7 @@ chrome \
   --force-effective-connection-type=Slow-2G
 ```
 
-And then enable "Lite Mode" from the Chrome Settings Menu.
+And then enable "Lite Mode" from the Chrome Settings Menu (Android only).
 
 ## Explanation
 
