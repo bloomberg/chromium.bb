@@ -215,6 +215,12 @@ void SendDeprecationMessagesForSameSiteCookiesOnUI(
   // Return early if the frame has already been navigated away from.
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
+
+  // |web_contents| will be null on interstitial pages, which means
+  // the frame has been navigated away from and it's safe to return early
+  if (!web_contents)
+    return;
+
   RenderFrameHostImpl* root_frame_host = render_frame_host;
   while (root_frame_host->GetParent() != nullptr)
     root_frame_host = root_frame_host->GetParent();
