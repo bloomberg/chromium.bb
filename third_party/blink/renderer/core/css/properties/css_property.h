@@ -41,7 +41,6 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool IsCompositableProperty() const { return flags_ & kCompositableProperty; }
   bool IsDescriptor() const { return flags_ & kDescriptor; }
   bool IsProperty() const { return flags_ & kProperty; }
-  bool IsValidForVisitedLink() const { return flags_ & kValidForVisitedLink; }
   bool IsShorthand() const { return flags_ & kShorthand; }
   bool IsLonghand() const { return flags_ & kLonghand; }
   bool IsInherited() const { return flags_ & kInherited; }
@@ -91,15 +90,14 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     kCompositableProperty = 1 << 1,
     kDescriptor = 1 << 2,
     kProperty = 1 << 3,
-    kValidForVisitedLink = 1 << 4,
-    kShorthand = 1 << 5,
-    kLonghand = 1 << 6,
-    kInherited = 1 << 7,
+    kShorthand = 1 << 4,
+    kLonghand = 1 << 5,
+    kInherited = 1 << 6,
     // Visited properties are internal counterparts to properties that
     // are permitted in :visited styles. They are used to handle and store the
     // computed value as seen by painting (as opposed to the computed value
     // seen by CSSOM, which is represented by the unvisited property).
-    kVisited = 1 << 8,
+    kVisited = 1 << 7,
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,
