@@ -164,19 +164,20 @@ Response WebAuthnHandler::GetCredentials(
   if (!authenticator)
     return Response::InvalidParams(kAuthenticatorNotFound);
 
-  *out_credentials = Array<WebAuthn::Credential>::create();
+  *out_credentials = std::make_unique<Array<WebAuthn::Credential>>();
   for (const auto& credential : authenticator->registrations()) {
     const auto& rp_id_hash = credential.second.application_parameter;
     std::vector<uint8_t> private_key;
     credential.second.private_key->ExportPrivateKey(&private_key);
     (*out_credentials)
-        ->addItem(WebAuthn::Credential::Create()
-                      .SetCredentialId(Binary::fromVector(credential.first))
-                      .SetRpIdHash(Binary::fromSpan(rp_id_hash.data(),
-                                                    rp_id_hash.size()))
-                      .SetPrivateKey(Binary::fromVector(std::move(private_key)))
-                      .SetSignCount(credential.second.counter)
-                      .Build());
+        ->emplace_back(
+            WebAuthn::Credential::Create()
+                .SetCredentialId(Binary::fromVector(credential.first))
+                .SetRpIdHash(
+                    Binary::fromSpan(rp_id_hash.data(), rp_id_hash.size()))
+                .SetPrivateKey(Binary::fromVector(std::move(private_key)))
+                .SetSignCount(credential.second.counter)
+                .Build());
   }
   return Response::OK();
 }

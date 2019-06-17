@@ -252,10 +252,9 @@ Response BrowserHandler::GrantPermissions(
     return response;
 
   PermissionOverrides overrides;
-  for (size_t i = 0; i < permissions->length(); ++i) {
+  for (const std::string& permission : *permissions) {
     content::PermissionType type;
-    Response type_response =
-        FromProtocolPermissionType(permissions->get(i), &type);
+    Response type_response = FromProtocolPermissionType(permission, &type);
     if (!type_response.isSuccess())
       return type_response;
     overrides.insert(type);
