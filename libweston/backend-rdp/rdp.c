@@ -360,6 +360,8 @@ rdp_peer_refresh_raw(pixman_region32_t *region, pixman_image_t *image, freerdp_p
 		}
 	}
 
+	free(SURFACE_BITMAP_DATA(cmd));
+
 	marker.frameAction = SURFACECMD_FRAMEACTION_END;
 	update->SurfaceFrameMarker(peer->context, &marker);
 }
