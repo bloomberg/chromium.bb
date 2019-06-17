@@ -261,9 +261,11 @@ GaiaCookieManagerService::ExternalCcResultFetcher::GetExternalCcResult() {
   return base::JoinString(results, ",");
 }
 
-void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
+void GaiaCookieManagerService::ExternalCcResultFetcher::Start(
+    base::OnceClosure callback) {
   DCHECK(!helper_->external_cc_result_fetched_);
   m_external_cc_result_start_time_ = base::Time::Now();
+  callback_ = std::move(callback);
 
   CleanupTransientState();
   results_.clear();
@@ -453,11 +455,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
                                              time_to_check_connections);
 
   helper_->external_cc_result_fetched_ = true;
-  // Since the ExternalCCResultFetcher is only Started in place of calling
-  // StartFetchingMergeSession, we can assume we need to call
-  // StartFetchingMergeSession. If this assumption becomes invalid, a Callback
-  // will need to be passed to Start() and Run() here.
-  helper_->StartFetchingMergeSession();
+  std::move(callback_).Run();
 }
 
 GaiaCookieManagerService::GaiaCookieManagerService(
@@ -808,7 +806,9 @@ void GaiaCookieManagerService::OnUbertokenFetchComplete(
 
   if (!external_cc_result_fetched_ &&
       !external_cc_result_fetcher_.IsRunning()) {
-    external_cc_result_fetcher_.Start();
+    external_cc_result_fetcher_.Start(
+        base::BindOnce(&GaiaCookieManagerService::StartFetchingMergeSession,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -1064,6 +1064,15 @@ void GaiaCookieManagerService::StartFetchingAccessTokensForMultilogin() {
   DCHECK_EQ(SET_ACCOUNTS, requests_.front().request_type());
   VLOG(1) << "GaiaCookieManagerService::StartFetchingAccessToken account_id ="
           << base::JoinString(requests_.front().account_ids(), " ");
+
+  if (!external_cc_result_fetched_ &&
+      !external_cc_result_fetcher_.IsRunning()) {
+    external_cc_result_fetcher_.Start(base::BindOnce(
+        &GaiaCookieManagerService::StartFetchingAccessTokensForMultilogin,
+        weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
   token_requests_.clear();
   access_tokens_.clear();
   for (const std::string& account_id : requests_.front().account_ids()) {
@@ -1091,10 +1100,12 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
 
 void GaiaCookieManagerService::StartFetchingMultiLogin(
     const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>& accounts) {
+  DCHECK(external_cc_result_fetched_);
   gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
       this, requests_.front().source(), GetURLLoaderFactory());
 
-  gaia_auth_fetcher_->StartOAuthMultilogin(accounts);
+  gaia_auth_fetcher_->StartOAuthMultilogin(
+      accounts, external_cc_result_fetcher_.GetExternalCcResult());
 }
 
 void GaiaCookieManagerService::StartFetchingMergeSession() {

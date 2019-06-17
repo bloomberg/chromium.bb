@@ -184,7 +184,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
 
     // Start fetching the external CC result.  If a fetch is already in progress
     // it is canceled.
-    void Start();
+    void Start(base::OnceClosure callback);
 
     // Are external URLs still being checked?
     bool IsRunning();
@@ -221,6 +221,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
     LoaderToToken loaders_;
     ResultMap results_;
     base::Time m_external_cc_result_start_time_;
+    base::OnceClosure callback_;
 
     DISALLOW_COPY_AND_ASSIGN(ExternalCcResultFetcher);
   };
