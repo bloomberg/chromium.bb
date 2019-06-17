@@ -49,6 +49,8 @@ namespace {
 
 const uint32_t kRendererProcessId = 573;
 
+constexpr char kTestCorsExemptHeader[] = "x-test-cors-exempt";
+
 class TestURLLoaderFactory : public mojom::URLLoaderFactory {
  public:
   TestURLLoaderFactory() : weak_factory_(this) {}
@@ -158,6 +160,7 @@ class CorsURLLoaderTest : public testing::Test {
     auto context_params = mojom::NetworkContextParams::New();
     context_params->initial_proxy_config =
         net::ProxyConfigWithAnnotation::CreateDirect();
+    context_params->cors_exempt_header_list.push_back(kTestCorsExemptHeader);
     network_context_ = std::make_unique<NetworkContext>(
         network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
         std::move(context_params));
@@ -218,11 +221,10 @@ class CorsURLLoaderTest : public testing::Test {
     test_url_loader_factory_->NotifyClientOnComplete(error_code);
   }
 
-  void FollowRedirect() {
+  void FollowRedirect(const std::vector<std::string>& removed_headers = {}) {
     DCHECK(url_loader_);
-    url_loader_->FollowRedirect({},              // removed_headers
-                                {},              // modified_headers
-                                base::nullopt);  // new_url
+    url_loader_->FollowRedirect(removed_headers, {} /*modified_headers*/,
+                                base::nullopt /*new_url*/);
   }
 
   const ResourceRequest& GetRequest() const {
@@ -1185,6 +1187,34 @@ TEST_F(CorsURLLoaderTest, FollowErrorRedirect) {
   EXPECT_FALSE(client().has_received_response());
   ASSERT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::ERR_FAILED, client().completion_status().error_code);
+}
+
+TEST_F(CorsURLLoaderTest, CorsExemptHeaderRemovalOnCrossOriginRedirects) {
+  ResourceRequest request;
+  request.url = GURL("https://example.com/foo.png");
+  request.request_initiator = url::Origin::Create(GURL("https://example.com"));
+  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
+  request.cors_exempt_headers.SetHeader(kTestCorsExemptHeader, "test-value");
+  CreateLoaderAndStart(request);
+  EXPECT_EQ(1, num_created_loaders());
+
+  NotifyLoaderClientOnReceiveRedirect(
+      CreateRedirectInfo(301, "GET", GURL("https://google.com/bar.png")));
+  RunUntilRedirectReceived();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  ASSERT_TRUE(client().has_received_redirect());
+  ASSERT_FALSE(client().has_received_response());
+  ASSERT_FALSE(client().has_received_completion());
+  EXPECT_TRUE(
+      GetRequest().cors_exempt_headers.HasHeader(kTestCorsExemptHeader));
+
+  FollowRedirect({kTestCorsExemptHeader});
+  RunUntilCreateLoaderAndStartCalled();
+
+  EXPECT_EQ(2, num_created_loaders());
+  EXPECT_FALSE(
+      GetRequest().cors_exempt_headers.HasHeader(kTestCorsExemptHeader));
 }
 
 // Tests if OriginAccessList is actually used to decide the cors flag.
