@@ -1910,6 +1910,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AppCacheCheckResponseResult">
+  <obsolete>
+    Deprecated on 2019-06-17. appcache.CheckResponseResult no longer tracked.
+  </obsolete>
   <int value="0" label="OK"/>
   <int value="1" label="Manifest obsolete"/>
   <int value="2" label="Response obsolete"/>
@@ -1921,16 +1924,26 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AppCacheErrorSite">
+  <obsolete>
+    Deprecated on 2019-06-17. appcache.MissingManifestDetectedAtCallsite no
+    longer tracked.
+  </obsolete>
   <summary>Identifies the point of failure, see sources.</summary>
 </enum>
 
 <enum name="AppCacheInitResult">
+  <obsolete>
+    Deprecated on 2019-06-17. appcache.InitResult no longer tracked.
+  </obsolete>
   <int value="0" label="OK"/>
   <int value="1" label="SQL Database Error"/>
   <int value="2" label="Disk Cache Error"/>
 </enum>
 
 <enum name="AppCacheUpdateJobResult">
+  <obsolete>
+    Deprecated on 2019-06-17. appcache.UpdateJobResult no longer tracked.
+  </obsolete>
   <int value="0" label="OK"/>
   <int value="1" label="SQL Database Error"/>
   <int value="2" label="Disk Cache Error"/>

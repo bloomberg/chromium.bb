@@ -213,7 +213,6 @@ class CONTENT_EXPORT AppCacheUpdateJob
   void DiscardInprogressCache();
   void DiscardDuplicateResponses();
 
-  void LogHistogramStats(ResultType result, const GURL& failed_resource_url);
   void MadeProgress() { last_progress_time_ = base::Time::Now(); }
 
   // Deletes this object after letting the stack unwind.

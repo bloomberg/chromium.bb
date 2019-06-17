@@ -357,7 +357,6 @@ void AppCacheUpdateJob::HandleCacheFailure(
   DCHECK(!error_details.message.empty());
   DCHECK(result != UPDATE_OK);
   internal_state_ = CACHE_FAILURE;
-  LogHistogramStats(result, failed_resource_url);
   CancelAllUrlFetches();
   CancelAllMasterEntryFetches(error_details);
   NotifyAllError(error_details);
@@ -983,8 +982,9 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
   if (group_->newest_complete_cache())
     entry = group_->newest_complete_cache()->GetEntry(manifest_url_);
   if (!entry) {
-    // TODO(michaeln): This is just a bandaid to avoid a crash.
-    // http://code.google.com/p/chromium/issues/detail?id=95101
+    // TODO(pwnall): Old documentation said this avoided the crash at
+    //               https://crbug.com/95101. A removed histogram shows that
+    //               this path is hit very rarely.
     if (service_->storage() == storage_) {
       // Use a local variable because service_ is reset in HandleCacheFailure.
       AppCacheServiceImpl* service = service_;
@@ -994,7 +994,6 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
               blink::mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR, GURL(),
               0, false /*is_cross_origin*/),
           DB_ERROR, GURL());
-      AppCacheHistograms::AddMissingManifestEntrySample();
       service->DeleteAppCacheGroup(manifest_url_,
                                    net::CompletionOnceCallback());
     }
@@ -1378,7 +1377,6 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
             blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
       DiscardDuplicateResponses();
       internal_state_ = COMPLETED;
-      LogHistogramStats(UPDATE_OK, GURL());
       break;
     case CACHE_FAILURE:
       NOTREACHED();  // See HandleCacheFailure
@@ -1401,8 +1399,6 @@ void AppCacheUpdateJob::ScheduleUpdateRetry(int delay_ms) {
 
 void AppCacheUpdateJob::Cancel() {
   internal_state_ = CANCELLED;
-
-  LogHistogramStats(CANCELLED_ERROR, GURL());
 
   if (manifest_fetcher_) {
     delete manifest_fetcher_;
@@ -1469,36 +1465,6 @@ void AppCacheUpdateJob::DiscardInprogressCache() {
 
 void AppCacheUpdateJob::DiscardDuplicateResponses() {
   storage_->DoomResponses(manifest_url_, duplicate_response_ids_);
-}
-
-void AppCacheUpdateJob::LogHistogramStats(
-      ResultType result, const GURL& failed_resource_url) {
-  AppCacheHistograms::CountUpdateJobResult(result,
-                                           url::Origin::Create(manifest_url_));
-  if (result == UPDATE_OK)
-    return;
-
-  int percent_complete = 0;
-  if (url_file_list_.size() > 0) {
-    size_t actual_fetches_completed = url_fetches_completed_;
-    if (!failed_resource_url.is_empty() && actual_fetches_completed)
-      --actual_fetches_completed;
-    percent_complete = (static_cast<double>(actual_fetches_completed) /
-                            static_cast<double>(url_file_list_.size())) * 100.0;
-    percent_complete = std::min(percent_complete, 99);
-  }
-
-  bool was_making_progress =
-      base::Time::Now() - last_progress_time_ <
-          base::TimeDelta::FromMinutes(5);
-
-  bool off_origin_resource_failure =
-      !failed_resource_url.is_empty() &&
-          (failed_resource_url.GetOrigin() != manifest_url_.GetOrigin());
-
-  AppCacheHistograms::LogUpdateFailureStats(
-      url::Origin::Create(manifest_url_), percent_complete, was_making_progress,
-      off_origin_resource_failure);
 }
 
 void AppCacheUpdateJob::DeleteSoon() {
