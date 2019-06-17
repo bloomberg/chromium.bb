@@ -2025,6 +2025,7 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	pixman_box32_t *extents;
 
 	assert(!b->sprites_are_broken);
+	assert(b->atomic_modeset);
 	assert(mode == DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY);
 
 	/* Check the view spans exactly the output size, calculated in the
@@ -2039,20 +2040,13 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	/* If the surface buffer has an in-fence fd, but the plane doesn't
 	 * support fences, we can't place the buffer on this plane. */
 	if (ev->surface->acquire_fence_fd >= 0 &&
-	    (!b->atomic_modeset ||
-	     scanout_plane->props[WDRM_PLANE_IN_FENCE_FD].prop_id == 0))
+	    scanout_plane->props[WDRM_PLANE_IN_FENCE_FD].prop_id == 0)
 		return NULL;
 
 	fb = drm_fb_get_from_view(output_state, ev);
 	if (!fb) {
 		drm_debug(b, "\t\t\t\t[scanout] not placing view %p on scanout: "
 			     " couldn't get fb\n", ev);
-		return NULL;
-	}
-
-	/* Can't change formats with just a pageflip */
-	if (!b->atomic_modeset && fb->format->format != output->gbm_format) {
-		drm_fb_unref(fb);
 		return NULL;
 	}
 
@@ -2073,13 +2067,6 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	if (state->dest_x != 0 || state->dest_y != 0 ||
 	    state->dest_w != (unsigned) output->base.current_mode->width ||
 	    state->dest_h != (unsigned) output->base.current_mode->height)
-		goto err;
-
-	/* The legacy API does not let us perform cropping or scaling. */
-	if (!b->atomic_modeset &&
-	    (state->src_x != 0 || state->src_y != 0 ||
-	     state->src_w != state->dest_w << 16 ||
-	     state->src_h != state->dest_h << 16))
 		goto err;
 
 	state->in_fence_fd = ev->surface->acquire_fence_fd;
@@ -3297,6 +3284,7 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	} availability = NO_PLANES;
 
 	assert(!b->sprites_are_broken);
+	assert(b->atomic_modeset);
 
 	fb = drm_fb_get_from_view(output_state, ev);
 	if (!fb) {
@@ -3356,22 +3344,12 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 			state = NULL;
 			continue;
 		}
-		if (!b->atomic_modeset &&
-		    (state->src_w != state->dest_w << 16 ||
-		     state->src_h != state->dest_h << 16)) {
-			drm_debug(b, "\t\t\t\t[overlay] not placing view %p on overlay: "
-				     "no scaling without atomic\n", ev);
-			drm_plane_state_put_back(state);
-			state = NULL;
-			continue;
-		}
 
 		/* If the surface buffer has an in-fence fd, but the plane
 		 * doesn't support fences, we can't place the buffer on this
 		 * plane. */
 		if (ev->surface->acquire_fence_fd >= 0 &&
-		    (!b->atomic_modeset ||
-		     p->props[WDRM_PLANE_IN_FENCE_FD].prop_id == 0)) {
+		     p->props[WDRM_PLANE_IN_FENCE_FD].prop_id == 0) {
 			drm_debug(b, "\t\t\t\t[overlay] not placing view %p on overlay: "
 				     "no in-fence support\n", ev);
 			drm_plane_state_put_back(state);
@@ -7044,7 +7022,9 @@ planes_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 		b->cursors_are_broken ^= 1;
 		break;
 	case KEY_V:
-		b->sprites_are_broken ^= 1;
+		/* We don't support overlay-plane usage with legacy KMS. */
+		if (b->atomic_modeset)
+			b->sprites_are_broken ^= 1;
 		break;
 	case KEY_O:
 		b->sprites_hidden ^= 1;
