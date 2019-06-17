@@ -6,8 +6,6 @@
 #info {
   font-family: monospace;
 }
-#resultsVis {
-}
 .test {
   border-width: 1px 0 0 1px;
   border-style: solid;
@@ -86,7 +84,7 @@
 
 import { loadTests } from './out/framework/listing.js';
 import { Logger } from './out/framework/logger.js';
-import { makeQueryString, parseQueryString } from './out/framework/url_query.js';
+import { encodeSelectively, parseQueryString } from './out/framework/url_query.js';
 
 const resultsVis = document.getElementById("resultsVis");
 function mkTest(path, description) {
@@ -122,10 +120,10 @@ function mkTest(path, description) {
   return testcases;
 }
 
-function mkCase(testcases, {name, params, run}) {
+function mkCase(testcasesVis, t) {
   const testcase = $("<div>")
     .addClass("testcase")
-    .appendTo(testcases);
+    .appendTo(testcasesVis);
   const casehead = $("<div>")
     .addClass("casehead")
     .appendTo(testcase);
@@ -134,9 +132,9 @@ function mkCase(testcases, {name, params, run}) {
     .addClass("caserun")
     .html("&#9654;")
     .appendTo(casehead);
-  let s = name;
-  if (params && Object.keys(params).length) {
-    s += " " + JSON.stringify(params);
+  let s = t.testcase.name;
+  if (t.testcase.params && Object.keys(t.testcase.params).length) {
+    s += " " + JSON.stringify(t.testcase.params);
   }
   $("<div>")
     .addClass("casename")
@@ -150,8 +148,9 @@ function mkCase(testcases, {name, params, run}) {
     .appendTo(testcase);
 
   const runCase = async () => {
-    const res = await run();
+    const res = await t.run();
 
+    console.log(res);
     casetime.text(res.timems.toFixed(4) + " ms");
 
     testcase.removeClass("pass");
@@ -188,7 +187,7 @@ function basepath(path) {
       ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
   // TODO: convert listing to tree so it can be displayed as a tree?
 
-  const info = `?runnow=${runnow ? '1' : '1'}&q=` + filters.map(makeQueryString).join('&q=');
+  const info = `?runnow=${runnow ? '1' : '0'}&q=` + filters.map(encodeSelectively).join('&q=');
   document.getElementById("info").innerText = info;
 
   const log = new Logger();

@@ -1,7 +1,7 @@
 import { IEntry } from './listing.js';
 import { ICase } from './test_group.js';
 
-function encodeSelectively(s: string) {
+export function encodeSelectively(s: string) {
     let ret = encodeURIComponent(s);
     ret = ret.replace(/%20/g, '+'); // Encode space with +
     ret = ret.replace(/%22/g, '"');
