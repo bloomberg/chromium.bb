@@ -36,6 +36,7 @@ import android.view.WindowManager;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -83,6 +84,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
+import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -431,6 +433,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && useSeparateTask()) {
             mTaskDescriptionHelper = new ActivityTabTaskDescriptionHelper(this,
                     ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color));
+        }
+
+        if (isTaskRoot() && BuildInfo.isAtLeastQ()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.USAGE_STATS)) {
+            UsageStatsService.getInstance().createPageViewObserver(getTabModelSelector(), this);
         }
 
         super.finishNativeInitialization();
