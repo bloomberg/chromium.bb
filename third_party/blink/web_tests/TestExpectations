@@ -184,6 +184,12 @@ crbug.com/774873 [ Mac ] virtual/exotic-color-space/images/color-profile-border-
 crbug.com/774873 [ Linux ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 crbug.com/774873 [ Win ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 
+crbug.com/974652 [ Linux Debug ] fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+crbug.com/974652 [ Linux Debug ] media/audio-concurrent-supported.html  [ Pass Failure ]
+crbug.com/974652 [ Linux Debug ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+crbug.com/974652 [ Linux Debug ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
+crbug.com/974652 [ Linux Debug ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html  [ Pass Failure ]
+
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
