@@ -1662,6 +1662,7 @@ android_library("monochrome_java") {
   ]
   java_files =
       [ "java/src/org/chromium/chrome/browser/MonochromeApplication.java" ]
+  min_sdk_version = 24
 }
 
 # Defines a target that derives from the monochrome public application. This
@@ -1777,6 +1778,10 @@ if (public_android_sdk) {
     apk_name = "TrichromeLibrary"
     android_manifest = trichrome_library_android_manifest
     android_manifest_dep = ":trichrome_library_android_manifest"
+
+    # TODO(torne): make minsdk=Q once we no longer build hacky P version
+    min_sdk_version = android_sdk_version
+    target_sdk_version = android_sdk_version
     if (trichrome_synchronized_proguard) {
       static_library_dependent_targets = [
         {
@@ -1801,6 +1806,10 @@ if (public_android_sdk) {
     apk_name = "TrichromeLibraryForBundle"
     android_manifest = trichrome_library_android_manifest
     android_manifest_dep = ":trichrome_library_android_manifest"
+
+    # TODO(torne): make minsdk=Q once we no longer build hacky P version
+    min_sdk_version = android_sdk_version
+    target_sdk_version = android_sdk_version
     if (trichrome_synchronized_proguard) {
       static_library_dependent_targets = [
         {
@@ -1944,13 +1953,15 @@ template("monochrome_test_apk_tmpl") {
   monochrome_public_common_apk_or_module_tmpl(target_name) {
     forward_variables_from(invoker,
                            [
-                             "apk_name",
                              "android_manifest",
                              "android_manifest_dep",
+                             "apk_name",
                              "data_deps",
                              "loadable_modules",
+                             "min_sdk_version",
                              "secondary_abi_loadable_modules",
                              "shared_libraries",
+                             "target_sdk_version",
                            ])
 
     testonly = true
@@ -2023,6 +2034,8 @@ if (enable_vr) {
     apk_name = "VrNfcSimulator"
     android_manifest = vr_nfc_simulator_apk_manifest
     android_manifest_dep = ":vr_nfc_simulator_apk_manifest"
+    min_sdk_version = 24
+    target_sdk_version = 24
 
     deps = [
       ":chrome_test_vr_java",
@@ -2036,6 +2049,8 @@ if (enable_arcore) {
     apk_name = "MonochromePublicTestAr"
     android_manifest = monochrome_public_test_ar_apk_manifest
     android_manifest_dep = ":monochrome_public_test_ar_apk_manifest"
+    min_sdk_version = 24
+    target_sdk_version = android_sdk_version
 
     # This is where we would add the shared_libraries entry for
     # :libchromefortest in the non-Monochrome version. However, doing so in the
