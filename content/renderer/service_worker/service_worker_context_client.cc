@@ -42,6 +42,7 @@
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -390,7 +391,7 @@ ServiceWorkerContextClient::CreateServiceWorkerNetworkProviderOnMainThread() {
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>
-ServiceWorkerContextClient::CreateServiceWorkerFetchContextOnMainThread(
+ServiceWorkerContextClient::CreateWorkerFetchContextOnMainThreadLegacy(
     blink::WebServiceWorkerNetworkProvider* provider) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(preference_watcher_request_.is_pending());
@@ -404,6 +405,28 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContextOnMainThread(
                   provider)
                   ->script_loader_factory())
               ->Clone();
+
+  return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
+      *renderer_preferences_, script_url_, loader_factories_->Clone(),
+      std::move(script_loader_factory_info),
+      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
+          URLLoaderThrottleProviderType::kWorker),
+      GetContentClient()
+          ->renderer()
+          ->CreateWebSocketHandshakeThrottleProvider(),
+      std::move(preference_watcher_request_));
+}
+
+scoped_refptr<blink::WebWorkerFetchContext>
+ServiceWorkerContextClient::CreateWorkerFetchContextOnMainThread() {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(preference_watcher_request_.is_pending());
+
+  // TODO(bashi): Consider changing ServiceWorkerFetchContextImpl to take
+  // URLLoaderFactoryInfo.
+  auto script_loader_factory_info =
+      std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(std::move(
+          service_worker_provider_info_->script_loader_factory_ptr_info));
 
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
       *renderer_preferences_, script_url_, loader_factories_->Clone(),
