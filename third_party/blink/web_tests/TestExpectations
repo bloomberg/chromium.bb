@@ -1358,6 +1358,8 @@ crbug.com/591099 [ Mac10.13 ] virtual/mouseevent_fractional/fast/events/before-u
 crbug.com/591099 [ Mac10.13 ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
 
+crbug.com/974725 [ Win7 ] fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
+
 # Maybe a Mac-specific rebaselining issue.
 crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html [ Skip ]
 
