@@ -127,6 +127,9 @@ class IndexedDBDatabase::ConnectionRequest {
   // |connection| can be null if all connections were closed (see ForceClose).
   virtual void OnConnectionClosed(IndexedDBConnection* connection) = 0;
 
+  // Called when the transaction should be bound.
+  virtual void CreateAndBindTransaction() = 0;
+
   // Called when the upgrade transaction has started executing.
   virtual void UpgradeTransactionStarted(int64_t old_version) = 0;
 
@@ -307,14 +310,22 @@ class IndexedDBDatabase::OpenRequest
         blink::mojom::IDBTransactionMode::VersionChange,
         new IndexedDBBackingStore::Transaction(db_->backing_store()));
 
-    std::move(pending_->create_transaction_callback)
-        .Run(transaction->AsWeakPtr());
+    // Save a WeakPtr<IndexedDBTransaction> for the CreateAndBindTransaction
+    // function to use later.
+    pending_->transaction = transaction->AsWeakPtr();
 
     transaction->ScheduleTask(BindWeakOperation(
         &IndexedDBDatabase::VersionChangeOperation, db_->AsWeakPtr(),
         pending_->version, pending_->callbacks));
     transaction->locks_receiver()->locks = std::move(lock_receiver_.locks);
     transaction->Start();
+  }
+
+  void CreateAndBindTransaction() override {
+    if (pending_->create_transaction_callback && pending_->transaction) {
+      std::move(pending_->create_transaction_callback)
+          .Run(std::move(pending_->transaction));
+    }
   }
 
   // Called when the upgrade transaction has started executing.
@@ -425,6 +436,8 @@ class IndexedDBDatabase::DeleteRequest
 
     db_->RequestComplete(this);
   }
+
+  void CreateAndBindTransaction() override { NOTREACHED(); }
 
   void UpgradeTransactionStarted(int64_t old_version) override { NOTREACHED(); }
 
@@ -2067,6 +2080,7 @@ Status IndexedDBDatabase::VersionChangeOperation(
       base::BindOnce(&IndexedDBDatabase::VersionChangeAbortOperation,
                      AsWeakPtr(), old_version));
 
+  active_request_->CreateAndBindTransaction();
   active_request_->UpgradeTransactionStarted(old_version);
   return Status::OK();
 }
