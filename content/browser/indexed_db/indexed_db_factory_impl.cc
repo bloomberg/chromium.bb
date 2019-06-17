@@ -79,8 +79,17 @@ IndexedDBDatabaseError CreateDefaultError() {
 IndexedDBFactoryImpl::IndexedDBFactoryImpl(
     IndexedDBContextImpl* context,
     indexed_db::LevelDBFactory* leveldb_factory,
+    IndexedDBClassFactory* indexed_db_class_factory,
     base::Clock* clock)
-    : context_(context), leveldb_factory_(leveldb_factory), clock_(clock) {}
+    : context_(context),
+      leveldb_factory_(leveldb_factory),
+      indexed_db_class_factory_(indexed_db_class_factory),
+      clock_(clock) {
+  DCHECK(context);
+  DCHECK(leveldb_factory);
+  DCHECK(indexed_db_class_factory);
+  DCHECK(clock);
+}
 
 IndexedDBFactoryImpl::~IndexedDBFactoryImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -189,7 +198,7 @@ void IndexedDBFactoryImpl::Open(
     return;
   }
   std::unique_ptr<IndexedDBDatabase> database;
-  std::tie(database, s) = IndexedDBDatabase::Create(
+  std::tie(database, s) = indexed_db_class_factory_->CreateIndexedDBDatabase(
       name, factory->backing_store(), this,
       base::BindRepeating(&IndexedDBFactoryImpl::OnDatabaseError,
                           weak_factory_.GetWeakPtr(), origin),
@@ -275,7 +284,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   }
 
   std::unique_ptr<IndexedDBDatabase> database;
-  std::tie(database, s) = IndexedDBDatabase::Create(
+  std::tie(database, s) = indexed_db_class_factory_->CreateIndexedDBDatabase(
       name, factory->backing_store(), this,
       base::BindRepeating(&IndexedDBFactoryImpl::OnDatabaseError,
                           weak_factory_.GetWeakPtr(), origin),
@@ -573,9 +582,9 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
   IndexedDBBackingStore::Mode backing_store_mode =
       is_in_memory ? IndexedDBBackingStore::Mode::kInMemory
                    : IndexedDBBackingStore::Mode::kOnDisk;
-  std::unique_ptr<IndexedDBBackingStore> backing_store =
-      CreateBackingStore(backing_store_mode, origin, blob_path,
-                         std::move(database), context_->TaskRunner());
+  std::unique_ptr<IndexedDBBackingStore> backing_store = CreateBackingStore(
+      backing_store_mode, leveldb_factory_, origin, blob_path,
+      std::move(database), context_->TaskRunner());
 
   bool first_open_since_startup =
       backends_opened_since_startup_.insert(origin).second;
@@ -587,16 +596,17 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
     return {IndexedDBOriginStateHandle(), s, CreateDefaultError(),
             data_loss_info};
 
-  it = factories_per_origin_
-           .emplace(origin,
-                    std::make_unique<IndexedDBOriginState>(
-                        is_in_memory, clock_, &earliest_sweep_,
-                        base::BindOnce(
-                            &IndexedDBFactoryImpl::RemoveOriginState,
-                            origin_state_destruction_weak_factory_.GetWeakPtr(),
-                            origin),
-                        std::move(backing_store)))
-           .first;
+  it =
+      factories_per_origin_
+          .emplace(origin,
+                   std::make_unique<IndexedDBOriginState>(
+                       is_in_memory, clock_, leveldb_factory_, &earliest_sweep_,
+                       base::BindOnce(
+                           &IndexedDBFactoryImpl::RemoveOriginState,
+                           origin_state_destruction_weak_factory_.GetWeakPtr(),
+                           origin),
+                       std::move(backing_store)))
+          .first;
   context_->FactoryOpened(origin);
   return {it->second->CreateHandle(), s, IndexedDBDatabaseError(),
           data_loss_info};
@@ -604,12 +614,14 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
 
 std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
     IndexedDBBackingStore::Mode backing_store_mode,
+    indexed_db::LevelDBFactory* leveldb_factory,
     const url::Origin& origin,
     const base::FilePath& blob_path,
     std::unique_ptr<LevelDBDatabase> db,
     base::SequencedTaskRunner* task_runner) {
   return std::make_unique<IndexedDBBackingStore>(
-      backing_store_mode, this, origin, blob_path, std::move(db), task_runner);
+      backing_store_mode, this, leveldb_factory, origin, blob_path,
+      std::move(db), task_runner);
 }
 
 void IndexedDBFactoryImpl::RemoveOriginState(const url::Origin& origin) {

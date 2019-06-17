@@ -454,32 +454,11 @@ class IndexedDBDatabase::DeleteRequest
   DISALLOW_COPY_AND_ASSIGN(DeleteRequest);
 };
 
-// static
-std::tuple<std::unique_ptr<IndexedDBDatabase>, Status>
-IndexedDBDatabase::Create(
-    const base::string16& name,
-    IndexedDBBackingStore* backing_store,
-    IndexedDBFactory* factory,
-    ErrorCallback error_callback,
-    base::OnceClosure destroy_me,
-    std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
-    const Identifier& unique_identifier,
-    ScopesLockManager* transaction_lock_manager) {
-  std::unique_ptr<IndexedDBDatabase> database =
-      IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
-          name, backing_store, factory, std::move(error_callback),
-          std::move(destroy_me), std::move(metadata_coding), unique_identifier,
-          transaction_lock_manager);
-  Status s = database->OpenInternal();
-  if (!s.ok())
-    database = nullptr;
-  return {std::move(database), s};
-}
-
 IndexedDBDatabase::IndexedDBDatabase(
     const base::string16& name,
     IndexedDBBackingStore* backing_store,
     IndexedDBFactory* factory,
+    IndexedDBClassFactory* class_factory,
     ErrorCallback error_callback,
     base::OnceClosure destroy_me,
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
@@ -492,6 +471,7 @@ IndexedDBDatabase::IndexedDBDatabase(
                 kInvalidId),
       identifier_(unique_identifier),
       factory_(factory),
+      class_factory_(class_factory),
       metadata_coding_(std::move(metadata_coding)),
       lock_manager_(transaction_lock_manager),
       error_callback_(std::move(error_callback)),
@@ -593,7 +573,7 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
     int child_process_id) {
   std::unique_ptr<IndexedDBConnection> connection =
       std::make_unique<IndexedDBConnection>(
-          child_process_id, std::move(origin_state_handle),
+          child_process_id, std::move(origin_state_handle), class_factory_,
           weak_factory_.GetWeakPtr(),
           base::BindRepeating(&IndexedDBDatabase::VersionChangeIgnored,
                               weak_factory_.GetWeakPtr()),

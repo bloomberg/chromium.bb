@@ -111,7 +111,6 @@ class IndexedDBFactoryTest : public testing::Test {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
-        indexed_db::GetDefaultLevelDBFactory(),
         base::DefaultClock::GetInstance());
     context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
   }
@@ -120,7 +119,6 @@ class IndexedDBFactoryTest : public testing::Test {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         base::FilePath(),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
-        indexed_db::GetDefaultLevelDBFactory(),
         base::DefaultClock::GetInstance());
     context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
   }
@@ -129,8 +127,8 @@ class IndexedDBFactoryTest : public testing::Test {
                                  base::Clock* clock) {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
-        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), factory,
-        clock);
+        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock);
+    context_->SetLevelDBFactoryForTesting(factory);
     context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
   }
 
@@ -305,7 +303,7 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
                                 {kIDBTombstoneStatistics});
   base::SimpleTestClock clock;
   clock.SetNow(base::Time::Now());
-  SetupContextWithFactories(indexed_db::GetDefaultLevelDBFactory(), &clock);
+  SetupContextWithFactories(indexed_db::LevelDBFactory::Get(), &clock);
 
   const Origin origin = Origin::Create(GURL("http://localhost:81"));
 
