@@ -80,7 +80,7 @@ window.history.pushState = function(stateObject, pageTitle, pageUrl) {
   pageUrl = pageUrl || window.location.href;
   originalWindowHistoryPushState.call(history, stateObject, pageTitle, pageUrl);
   __gCrWeb.message.invokeOnHost({
-    'command': 'window.history.didPushState',
+    'command': 'navigation.didPushState',
     'stateObject': serializedState,
     'baseUrl': document.baseURI,
     'pageUrl': pageUrl.toString()

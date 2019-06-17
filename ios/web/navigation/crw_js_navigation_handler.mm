@@ -4,10 +4,17 @@
 
 #import "ios/web/navigation/crw_js_navigation_handler.h"
 
+#include "base/json/string_escape.h"
+#include "base/strings/sys_string_conversions.h"
+#include "ios/web/history_state_util.h"
+#import "ios/web/js_messaging/crw_js_injector.h"
+#import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
+#import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -15,14 +22,39 @@
 
 namespace {
 const char kCommandPrefix[] = "navigation";
+
+// URLs that are fed into WKWebView as history push/replace get escaped,
+// potentially changing their format. Code that attempts to determine whether a
+// URL hasn't changed can be confused by those differences though, so method
+// will round-trip a URL through the escaping process so that it can be adjusted
+// pre-storing, to allow later comparisons to work as expected.
+GURL URLEscapedForHistory(const GURL& url) {
+  // TODO(crbug.com/973871): This is a very large hammer; see if limited unicode
+  // escaping would be sufficient.
+  return net::GURLWithNSURL(net::NSURLWithGURL(url));
+}
+
 }  // namespace
 
 @interface CRWJSNavigationHandler ()
 
 @property(nonatomic, weak) id<CRWJSNavigationHandlerDelegate> delegate;
+
+// Sets to YES when |close| is called.
+@property(nonatomic, assign) BOOL beingDestroyed;
+
+// Returns WebStateImpl from self.delegate.
 @property(nonatomic, readonly, assign) web::WebStateImpl* webStateImpl;
+// Returns NavigationManagerImpl from self.webStateImpl.
 @property(nonatomic, readonly, assign)
     web::NavigationManagerImpl* navigationManagerImpl;
+// Returns UserInteractionState from self.delegate.
+@property(nonatomic, readonly, assign)
+    web::UserInteractionState* userInteractionState;
+// Returns WKWebView from self.delegate.
+@property(nonatomic, readonly, weak) WKWebView* webView;
+// Returns CRWJSInjector from self.delegate.
+@property(nonatomic, readonly, weak) CRWJSInjector* JSInjector;
 
 @end
 
@@ -47,6 +79,10 @@ const char kCommandPrefix[] = "navigation";
           } else if (*command == "navigation.willChangeState") {
             [weakSelf handleWindowWillChangeStateInFrame:senderFrame];
             return true;
+          } else if (*command == "navigation.didPushState") {
+            [weakSelf handleWindowHistoryDidPushStateMessage:message
+                                                     inFrame:senderFrame];
+            return true;
           }
           return false;
         };
@@ -58,7 +94,17 @@ const char kCommandPrefix[] = "navigation";
 }
 
 - (void)close {
+  self.beingDestroyed = YES;
   self.webStateImpl->RemoveScriptCommandCallback(kCommandPrefix);
+}
+
+- (NSString*)javaScriptToReplaceWebViewURL:(const GURL&)URL
+                           stateObjectJSON:(NSString*)stateObject {
+  std::string outURL;
+  base::EscapeJSONString(URL.spec(), true, &outURL);
+  return
+      [NSString stringWithFormat:@"__gCrWeb.replaceWebViewURL(%@, %@);",
+                                 base::SysUTF8ToNSString(outURL), stateObject];
 }
 
 #pragma mark - Private
@@ -69,6 +115,18 @@ const char kCommandPrefix[] = "navigation";
 
 - (web::NavigationManagerImpl*)navigationManagerImpl {
   return &(self.webStateImpl->GetNavigationManagerImpl());
+}
+
+- (web::UserInteractionState*)userInteractionState {
+  return [self.delegate userInteractionStateForJSNavigationHandler:self];
+}
+
+- (WKWebView*)webView {
+  return [self.delegate webViewForJSNavigationHandler:self];
+}
+
+- (CRWJSInjector*)JSInjector {
+  return [self.delegate JSInjectorForJSNavigationHandler:self];
 }
 
 // Handles the navigation.hashchange event emitted from |senderFrame|.
@@ -93,6 +151,115 @@ const char kCommandPrefix[] = "navigation";
   if (senderFrame->IsMainFrame()) {
     self.changingHistoryState = YES;
   }
+}
+
+// Handles the navigation.didChangeState message sent from |senderFrame|.
+- (void)handleWindowHistoryDidPushStateMessage:
+            (const base::DictionaryValue&)message
+                                       inFrame:(web::WebFrame*)senderFrame {
+  if (!senderFrame->IsMainFrame())
+    return;
+  DCHECK(self.changingHistoryState);
+  self.changingHistoryState = NO;
+
+  // If there is a pending entry, a new navigation has been registered but
+  // hasn't begun loading.  Since the pushState message is coming from the
+  // previous page, ignore it and allow the previously registered navigation to
+  // continue.  This can ocur if a pushState is issued from an anchor tag
+  // onClick event, as the click would have already been registered.
+  if (self.navigationManagerImpl->GetPendingItem()) {
+    return;
+  }
+
+  const std::string* pageURL = message.FindStringKey("pageUrl");
+  const std::string* baseURL = message.FindStringKey("baseUrl");
+  if (!pageURL || !baseURL) {
+    DLOG(WARNING) << "JS message parameter not found: pageUrl or baseUrl";
+    return;
+  }
+  GURL pushURL = web::history_state_util::GetHistoryStateChangeUrl(
+      [self.delegate currentURLForJSNavigationHandler:self], GURL(*baseURL),
+      *pageURL);
+  // UIWebView seems to choke on unicode characters that haven't been
+  // escaped; escape the URL now so the expected load URL is correct.
+  pushURL = URLEscapedForHistory(pushURL);
+  if (!pushURL.is_valid())
+    return;
+  web::NavigationItemImpl* navItem =
+      self.navigationManagerImpl
+          ? self.navigationManagerImpl->GetCurrentItemImpl()
+          : nullptr;
+  // PushState happened before first navigation entry or called when the
+  // navigation entry does not contain a valid URL.
+  if (!navItem || !navItem->GetURL().is_valid())
+    return;
+  if (!web::history_state_util::IsHistoryStateChangeValid(navItem->GetURL(),
+                                                          pushURL)) {
+    // If the current session entry URL origin still doesn't match pushURL's
+    // origin, ignore the pushState. This can happen if a new URL is loaded
+    // just before the pushState.
+    return;
+  }
+  const std::string* stateObjectJSON = message.FindStringKey("stateObject");
+  if (!stateObjectJSON) {
+    DLOG(WARNING) << "JS message parameter not found: stateObject";
+    return;
+  }
+  NSString* stateObject = base::SysUTF8ToNSString(*stateObjectJSON);
+
+  // If the user interacted with the page, categorize it as a link navigation.
+  // If not, categorize it is a client redirect as it occurred without user
+  // input and should not be added to the history stack.
+  // TODO(crbug.com/549301): Improve transition detection.
+  ui::PageTransition transition =
+      self.userInteractionState->UserInteractionRegisteredSincePageLoaded()
+          ? ui::PAGE_TRANSITION_LINK
+          : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+  [self pushStateWithPageURL:pushURL
+                 stateObject:stateObject
+                  transition:transition
+              hasUserGesture:self.userInteractionState->IsUserInteracting(
+                                 self.webView)];
+  [self.delegate
+      JSNavigationHandlerUpdateSSLStatusForCurrentNavigationItem:self];
+
+  // This is needed for some special pushState. See http://crbug.com/949305 .
+  NSString* replaceWebViewJS = [self javaScriptToReplaceWebViewURL:pushURL
+                                                   stateObjectJSON:stateObject];
+  __weak CRWJSNavigationHandler* weakSelf = self;
+  [self.JSInjector
+      executeJavaScript:replaceWebViewJS
+      completionHandler:^(id, NSError*) {
+        CRWJSNavigationHandler* strongSelf = weakSelf;
+        if (strongSelf && !strongSelf.beingDestroyed) {
+          [strongSelf.delegate
+              JSNavigationHandlerOptOutScrollsToTopForSubviews:self];
+          [strongSelf.delegate JSNavigationHandler:self
+                               didFinishNavigation:nullptr];
+        }
+      }];
+}
+
+// Adds a new NavigationItem with the given URL and state object to the
+// history stack. A state object is a serialized generic JavaScript object
+// that contains details of the UI's state for a given NavigationItem/URL.
+// TODO(crbug.com/956511): Move the pushState/replaceState logic into
+// NavigationManager.
+- (void)pushStateWithPageURL:(const GURL&)pageURL
+                 stateObject:(NSString*)stateObject
+                  transition:(ui::PageTransition)transition
+              hasUserGesture:(BOOL)hasUserGesture {
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(
+          self.webStateImpl, pageURL, hasUserGesture, transition,
+          /*is_renderer_initiated=*/true);
+  context->SetIsSameDocument(true);
+  self.webStateImpl->OnNavigationStarted(context.get());
+  self.navigationManagerImpl->AddPushStateItemIfNecessary(pageURL, stateObject,
+                                                          transition);
+  context->SetHasCommitted(true);
+  self.webStateImpl->OnNavigationFinished(context.get());
+  self.userInteractionState->SetUserInteractionRegisteredSincePageLoaded(false);
 }
 
 @end
