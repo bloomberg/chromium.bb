@@ -5533,7 +5533,8 @@ be describing additional metrics about the same event.
     <summary>
       Records the event that led the password manager to believe the submission
       was successful. Metrics is recorded only when the password is saved.
-      Recorded values correspond to the enum autofill::SubmissionIndicatorEvent.
+      Recorded values correspond to the enum
+      autofill::mojom::SubmissionIndicatorEvent.
     </summary>
   </metric>
   <metric name="Submission.Observed">
