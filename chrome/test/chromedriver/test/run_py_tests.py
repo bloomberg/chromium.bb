@@ -1897,14 +1897,21 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         image.src = 'data:image/png;base64,%s';
         """ % png_data_in_base64.replace("'", "\\'"))
 
+  def takeScreenshotAndVerifyCorrect(self, element):
+      """ Takes screenshot of given element and returns
+      'PASS' if all pixels in screenshot are rgb(255, 0, 0)
+      and 'FAIL' otherwise
+      """
+      elementScreenshotPNGBase64 = element.TakeElementScreenshot()
+      self.assertIsNotNone(elementScreenshotPNGBase64)
+      return self._driver.ExecuteAsyncScript(
+          ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
+
   def testTakeElementScreenshot(self):
     self._driver.Load(self.GetHttpUrlForFile(
                       '/chromedriver/page_with_redbox.html'))
-    elementScreenshotPNGBase64 = self._driver.FindElement(
-        'css selector', '#box').TakeElementScreenshot()
-    self.assertIsNotNone(elementScreenshotPNGBase64)
-    analysisResult = self._driver.ExecuteAsyncScript(
-        ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
+    redElement = self._driver.FindElement('css selector', '#box')
+    analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
 
   def testTakeElementScreenshotInIframe(self):
@@ -1912,22 +1919,16 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                       '/chromedriver/page_with_iframe_redbox.html'))
     frame = self._driver.FindElement('css selector', '#frm')
     self._driver.SwitchToFrame(frame)
-    elementScreenshotPNGBase64 = self._driver.FindElement(
-        'css selector', '#box').TakeElementScreenshot()
-    self.assertIsNotNone(elementScreenshotPNGBase64)
-    analysisResult = self._driver.ExecuteAsyncScript(
-        ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
+    redElement = self._driver.FindElement('css selector', '#box')
+    analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
 
   def testTakeLargeElementScreenshot(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/large_element.html'))
     self._driver.SetWindowRect(500, 500, 0, 0)
-    elementScreenshotPNGBase64 = self._driver.FindElement(
-        'css selector','#A').TakeElementScreenshot()
-    self.assertIsNotNone(elementScreenshotPNGBase64)
-    analysisResult = self._driver.ExecuteAsyncScript(
-        ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
+    redElement = self._driver.FindElement('css selector', '#A')
+    analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
 
   def testGenerateTestReport(self):
