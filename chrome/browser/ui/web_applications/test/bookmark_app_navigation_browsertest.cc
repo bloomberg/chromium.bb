@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/bookmark_app_navigation_browsertest.h"
+#include "chrome/browser/ui/web_applications/test/bookmark_app_navigation_browsertest.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
