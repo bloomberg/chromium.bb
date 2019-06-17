@@ -369,15 +369,9 @@ void ServiceWorkerMetrics::CountControlledPageLoad(Site site,
                      url));
 }
 
-void ServiceWorkerMetrics::RecordStartWorkerStatus(
+void ServiceWorkerMetrics::RecordStartInstalledWorkerStatus(
     blink::ServiceWorkerStatusCode status,
-    EventType purpose,
-    bool is_installed) {
-  if (!is_installed) {
-    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartNewWorker.Status", status);
-    return;
-  }
-
+    EventType purpose) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status);
   base::UmaHistogramEnumeration(
       base::StrCat({"ServiceWorker.StartWorker.StatusByPurpose",

@@ -324,11 +324,10 @@ class ServiceWorkerMetrics {
                                       const GURL& url,
                                       bool is_main_frame_load);
 
-  // Records the result of trying to start a worker. |is_installed| indicates
-  // whether the version has been installed.
-  static void RecordStartWorkerStatus(blink::ServiceWorkerStatusCode status,
-                                      EventType purpose,
-                                      bool is_installed);
+  // Records the result of trying to start an installed worker.
+  static void RecordStartInstalledWorkerStatus(
+      blink::ServiceWorkerStatusCode status,
+      EventType purpose);
 
   // Records the result of sending installed scripts to the renderer.
   static void RecordInstalledScriptsSenderStatus(
