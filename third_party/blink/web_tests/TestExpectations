@@ -877,6 +877,7 @@ crbug.com/591099 [ Mac ] css3/masking/clip-path-inset-large-radii.html [ Failure
 crbug.com/591099 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
 crbug.com/591099 http/tests/devtools/sources/debugger-frameworks/frameworks-jquery.js [ Failure ]
 crbug.com/591099 [ Mac ] images/feature-policy-oversized-images-resize.html [ Failure ]
+crbug.com/974717 [ Linux ] images/feature-policy-oversized-images-resize.html [ Failure Pass ]
 crbug.com/591099 [ Mac10.11 ] fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.11 ] media/track/track-cue-rendering-position-auto-rtl.html [ Failure ]
 crbug.com/591099 [ Mac10.11 ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
