@@ -365,9 +365,7 @@ scoped_refptr<NGPaintFragment>* NGPaintFragment::Find(
       return fragment;
 
     scoped_refptr<NGPaintFragment>* next = &(*fragment)->next_fragmented_;
-    auto* container =
-        DynamicTo<NGPhysicalContainerFragment>((*fragment)->PhysicalFragment());
-    if (container && container->BreakToken() == break_token)
+    if ((*fragment)->PhysicalFragment().BreakToken() == break_token)
       return next;
     fragment = next;
   }

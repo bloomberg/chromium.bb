@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -23,7 +24,7 @@ namespace {
 
 struct SameSizeAsNGPhysicalFragment
     : RefCounted<const NGPhysicalFragment, NGPhysicalFragmentTraits> {
-  void* layout_object;
+  void* pointers[2];
   PhysicalSize size;
   unsigned flags;
 };
@@ -220,6 +221,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
                                        unsigned sub_type)
     : layout_object_(*builder->layout_object_),
       size_(ToPhysicalSize(builder->size_, builder->GetWritingMode())),
+      break_token_(std::move(builder->break_token_)),
       type_(type),
       sub_type_(sub_type),
       style_variant_((unsigned)builder->style_variant_),
@@ -233,9 +235,11 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        NGStyleVariant style_variant,
                                        PhysicalSize size,
                                        NGFragmentType type,
-                                       unsigned sub_type)
+                                       unsigned sub_type,
+                                       scoped_refptr<NGBreakToken> break_token)
     : layout_object_(*layout_object),
       size_(size),
+      break_token_(std::move(break_token)),
       type_(type),
       sub_type_(sub_type),
       style_variant_((unsigned)style_variant),

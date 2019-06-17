@@ -97,7 +97,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   // Update if we have fragmented in this flow.
   NGBoxFragmentBuilder& PropagateBreak(const NGLayoutResult&);
-  NGBoxFragmentBuilder& PropagateBreak(const NGPhysicalContainerFragment&);
+  NGBoxFragmentBuilder& PropagateBreak(const NGPhysicalFragment&);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGStaticPosition&,

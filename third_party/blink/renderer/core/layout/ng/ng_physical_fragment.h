@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -21,8 +21,10 @@
 namespace blink {
 
 class ComputedStyle;
+class LayoutObject;
 class Node;
 class NGFragmentBuilder;
+class NGBreakToken;
 class NGInlineItem;
 class PaintLayer;
 
@@ -154,6 +156,7 @@ class CORE_EXPORT NGPhysicalFragment
   // (0, 0).
   PhysicalRect LocalRect() const { return {{}, size_}; }
 
+  NGBreakToken* BreakToken() const { return break_token_.get(); }
   NGStyleVariant StyleVariant() const {
     return static_cast<NGStyleVariant>(style_variant_);
   }
@@ -272,7 +275,8 @@ class CORE_EXPORT NGPhysicalFragment
                      NGStyleVariant,
                      PhysicalSize size,
                      NGFragmentType type,
-                     unsigned sub_type);
+                     unsigned sub_type,
+                     scoped_refptr<NGBreakToken> break_token = nullptr);
 
   const ComputedStyle& SlowEffectiveStyle() const;
 
@@ -280,6 +284,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   LayoutObject& layout_object_;
   const PhysicalSize size_;
+  scoped_refptr<NGBreakToken> break_token_;
 
   const unsigned type_ : 2;      // NGFragmentType
   const unsigned sub_type_ : 3;  // NGBoxType, NGTextType, or NGLineBoxType

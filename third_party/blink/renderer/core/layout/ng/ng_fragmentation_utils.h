@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 
@@ -34,10 +34,7 @@ inline bool IsFirstFragment(const NGConstraintSpace& constraint_space,
 
 // Return true if the specified fragment is the final fragment of some node.
 inline bool IsLastFragment(const NGPhysicalFragment& fragment) {
-  if (!fragment.IsContainer())
-    return false;
-  const auto* break_token =
-      To<NGPhysicalContainerFragment>(fragment).BreakToken();
+  const auto* break_token = fragment.BreakToken();
   return !break_token || break_token->IsFinished();
 }
 

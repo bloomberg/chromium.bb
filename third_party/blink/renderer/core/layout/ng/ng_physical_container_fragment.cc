@@ -17,13 +17,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
-<<<<<<< HEAD   (d91d4f Allocate memory for borders and padding members of NGPhysica)
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
-=======
-  void* break_token;
-  std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
-      oof_positioned_descendants_;
->>>>>>> CHANGE (3ad1c0 Move break_token_ to NGPhysicalContainerFragment from NGPhys)
   void* pointer;
   wtf_size_t size;
 };
@@ -41,7 +35,6 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGFragmentType type,
     unsigned sub_type)
     : NGPhysicalFragment(builder, type, sub_type),
-      break_token_(std::move(builder->break_token_)),
       oof_positioned_descendants_(
           std::move(builder->oof_positioned_descendants_)),
       buffer_(buffer),

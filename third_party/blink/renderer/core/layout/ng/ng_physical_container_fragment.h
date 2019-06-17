@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -100,8 +99,6 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
 
   ~NGPhysicalContainerFragment();
 
-  NGBreakToken* BreakToken() const { return break_token_.get(); }
-
   // Returns the children of |this|.
   //
   // Note, children in this collection maybe old generations. Items in this
@@ -160,13 +157,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
 
   static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
 
-<<<<<<< HEAD   (d91d4f Allocate memory for borders and padding members of NGPhysica)
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
-=======
-  scoped_refptr<NGBreakToken> break_token_;
-  const std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
-      oof_positioned_descendants_;
->>>>>>> CHANGE (3ad1c0 Move break_token_ to NGPhysicalContainerFragment from NGPhys)
 
   // Because flexible arrays need to be the last member in a class, the actual
   // storage is in the subclass and we just keep a pointer to it here.
