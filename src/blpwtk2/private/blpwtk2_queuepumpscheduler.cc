@@ -37,7 +37,10 @@ const std::string& QueuePumpScheduler::name()
 
 QueuePumpScheduler::QueuePumpScheduler()
 {
-    d_tunables.push_back({"budget", 80});
+    d_tunables.push_back({"important-work-budget", 80});
+    d_tunables.push_back({"idle-work-budget", 50});
+    d_tunables.push_back({"important-work-charge", 100});
+    d_tunables.push_back({"idle-work-charge", 120});
 }
 
 QueuePumpScheduler::~QueuePumpScheduler()
@@ -47,7 +50,12 @@ QueuePumpScheduler::~QueuePumpScheduler()
 void QueuePumpScheduler::isReadyToWork(bool *allowNormalWork, bool *allowIdleWork)
 {
     DWORD queueStatus =
-        HIWORD(::GetQueueStatus(QS_SENDMESSAGE | QS_POSTMESSAGE | QS_TIMER | QS_PAINT));
+        HIWORD(::GetQueueStatus(QS_SENDMESSAGE | QS_TIMER | QS_PAINT));
+
+    unsigned int importantWorkBudget = d_tunables[0].second;
+    unsigned int idleWorkBudget = d_tunables[1].second;
+    unsigned int importantWorkCharge = d_tunables[2].second;
+    unsigned int idleWorkCharge = d_tunables[3].second;
 
     if (GetInputState() || queueStatus & (QS_TIMER | QS_PAINT)) {
         // The input messages are only fetched from the input queue when
@@ -77,28 +85,39 @@ void QueuePumpScheduler::isReadyToWork(bool *allowNormalWork, bool *allowIdleWor
         // state where the chrome pump message is starved by these low
         // priority  messages.  For this reason, we only preempt ourselves a
         // fraction of the time.
-        d_totalBudget += d_tunables[0].second;
+        d_importantWorkBudget += importantWorkBudget;
+        d_idleWorkBudget += idleWorkBudget;
+    }
+    else {
+        // Since there are no pending low-priority messages, we
+        // conditionally allow chromium to do work by adding the charge
+        // to the budget.
+        d_importantWorkBudget += importantWorkCharge;
 
-        if (d_totalBudget >= 100) {
-            d_totalBudget -= 100;
-            *allowNormalWork = true;
+        if (0 == (queueStatus & QS_SENDMESSAGE)) {
+            // No sent messages are in the Windows queue so we allow Chromium
+            // to do idle work as well.  This is similar to the upstream
+            // implementation of MessagePumpForUI::DoRunLoop(), where we don't
+            // call DoIdleWork() if ProcessNextWindowMessage() returns true.
+            d_idleWorkBudget += idleWorkCharge;
+        }
+    }
+
+    if (d_importantWorkBudget >= importantWorkCharge) {
+        d_importantWorkBudget -= importantWorkCharge;
+        *allowNormalWork = true;
+
+        if (d_idleWorkBudget >= idleWorkCharge) {
+            d_idleWorkBudget -= idleWorkCharge;
+            *allowIdleWork = true;
+        }
+        else {
+            *allowIdleWork = false;
         }
     }
     else {
-        // Reset the budget for our pump message.  The budget is only meant to
-        // allow preemption of a long chain of low priority messages to allow
-        // chrome to do some work but we don't want to use it to preempt a new
-        // chain of low priority messages.
-        d_totalBudget = 0;
-
-        // Allow chrome to work.
-        *allowNormalWork = true;
-
-        if (0 == (queueStatus & (QS_SENDMESSAGE | QS_POSTMESSAGE))) {
-            // No messages are in the queue. We allow chrome to do idle work
-            // as well.
-            *allowIdleWork = true;
-        }
+        *allowNormalWork = false;
+        *allowIdleWork = false;
     }
 }
 
