@@ -1161,6 +1161,14 @@ if (!is_component_build) {
     outputs = [
       _zip_file,
     ]
+    _annotations_jar = "$root_out_dir/lib.java/third_party/android_deps/com_android_support_support_annotations.jar"
+    _src_jar = "$_package_dir/cronet_api-src.jar"
+    inputs = [
+      _annotations_jar,
+      _src_jar,
+      android_sdk_jar,
+    ]
+
     args = [
       "--output-dir",
       rebase_path(_package_dir, root_build_dir),
@@ -1174,16 +1182,18 @@ if (!is_component_build) {
       rebase_path(depfile, root_build_dir),
       "--zip-file",
       rebase_path(_zip_file, root_build_dir),
-
       "--android-sdk-jar",
       rebase_path(android_sdk_jar, root_build_dir),
+      "--support-annotations-jar",
+      rebase_path(_annotations_jar, root_build_dir),
 
       # JavaDoc is generated from Cronet's API source jar.
       "--input-src-jar",
-      rebase_path("$_package_dir/cronet_api-src.jar", root_build_dir),
+      rebase_path(_src_jar, root_build_dir),
     ]
     deps = [
       ":jar_cronet_api_source",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
   }
 
