@@ -41,7 +41,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionPr
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.omnibox.AnswerType;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -63,20 +63,20 @@ class AutocompleteMediator
         implements OnSuggestionsReceivedListener, SuggestionHost, StartStopWithNativeObserver {
     /** A struct containing information about the suggestion and its view type. */
     private static class SuggestionViewInfo {
-        /** Processor managing the suggestion. */
-        public final SuggestionProcessor processor;
-
         /** The suggestion this info represents. */
         public final OmniboxSuggestion suggestion;
 
         /** The model the view uses to render the suggestion. */
         public final PropertyModel model;
 
-        public SuggestionViewInfo(SuggestionProcessor suggestionProcessor,
-                OmniboxSuggestion omniboxSuggestion, PropertyModel propertyModel) {
-            processor = suggestionProcessor;
+        /** The view type ID. */
+        public final int typeId;
+
+        public SuggestionViewInfo(
+                OmniboxSuggestion omniboxSuggestion, PropertyModel propertyModel, int id) {
             suggestion = omniboxSuggestion;
             model = propertyModel;
+            typeId = id;
         }
     }
 
@@ -177,7 +177,7 @@ class AutocompleteMediator
 
     @Override
     public void onStopWithNative() {
-        recordSuggestionsShown();
+        recordAnswersHistogram();
     }
 
     /**
@@ -190,14 +190,19 @@ class AutocompleteMediator
     }
 
     /**
-     * Record histograms for presented suggestions.
+     * Record presence of AiS answers.
+     *
+     * Note: At the time of writing this functionality, AiS was offering at most one answer to any
+     * query. If this changes before the metric is expired, the code below may need either
+     * revisiting or a secondary metric telling us how many answer suggestions have been shown.
      */
-    private void recordSuggestionsShown() {
+    private void recordAnswersHistogram() {
         int richEntitiesCount = 0;
         for (SuggestionViewInfo info : mCurrentModels) {
-            info.processor.recordSuggestionPresented(info.suggestion, info.model);
-
-            if (info.processor.getViewTypeId() == OmniboxSuggestionUiType.ENTITY_SUGGESTION) {
+            if (info.suggestion.hasAnswer()) {
+                RecordHistogram.recordEnumeratedHistogram("Omnibox.AnswerInSuggestShown",
+                        info.suggestion.getAnswer().getType(), AnswerType.TOTAL_COUNT);
+            } else if (mEntitySuggestionProcessor.doesProcessSuggestion(info.suggestion)) {
                 richEntitiesCount++;
             }
         }
@@ -234,7 +239,7 @@ class AutocompleteMediator
         List<Pair<Integer, PropertyModel>> models = new ArrayList<>(mCurrentModels.size());
         for (int i = 0; i < mCurrentModels.size(); i++) {
             PropertyModel model = mCurrentModels.get(i).model;
-            models.add(new Pair<>(mCurrentModels.get(i).processor.getViewTypeId(), model));
+            models.add(new Pair<>(mCurrentModels.get(i).typeId, model));
         }
         mListPropertyModel.set(SuggestionListProperties.SUGGESTION_MODELS, models);
     }
@@ -393,7 +398,9 @@ class AutocompleteMediator
                 });
             }
         } else {
-            recordSuggestionsShown();
+            // Record presence of answers as user stops interacting with omnibox.
+            // This covers actions such as pressing 'back' button or choosing an answer.
+            recordAnswersHistogram();
 
             mSuggestionVisibilityState = SuggestionVisibilityState.DISALLOWED;
             mHasStartedNewOmniboxEditSession = false;
@@ -533,9 +540,6 @@ class AutocompleteMediator
             };
             return;
         }
-        SuggestionViewInfo info = mCurrentModels.get(position);
-        info.processor.recordSuggestionUsed(info.suggestion, info.model);
-
         loadUrlFromOmniboxMatch(position, suggestion, mLastActionUpTimestamp, true);
         mDelegate.hideKeyboard();
     }
@@ -823,7 +827,8 @@ class AutocompleteMediator
             // Before populating the model, add it to the list of current models.  If the suggestion
             // has an image and the image was already cached, it will be updated synchronously and
             // the model will only have the image populated if it is tracked as a current model.
-            mCurrentModels.add(new SuggestionViewInfo(processor, suggestion, model));
+            mCurrentModels.add(
+                    new SuggestionViewInfo(suggestion, model, processor.getViewTypeId()));
 
             processor.populateModel(suggestion, model, i);
         }
