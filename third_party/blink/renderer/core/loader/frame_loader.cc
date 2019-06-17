@@ -730,9 +730,6 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
         "Not allowed to load local resource: " + url.ElidedString()));
     return false;
   }
-
-  if (request.FrameName().IsEmpty())
-    request.SetFrameName(frame_->GetDocument()->BaseTarget());
   return true;
 }
 

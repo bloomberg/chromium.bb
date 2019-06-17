@@ -288,6 +288,8 @@ FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
 
   if (!target_.IsEmpty())
     frame_request.SetFrameName(target_);
+  else
+    frame_request.SetFrameName(origin_document->BaseTarget());
 
   ClientNavigationReason reason = ClientNavigationReason::kFormSubmissionGet;
   if (method_ == FormSubmission::kPostMethod) {
