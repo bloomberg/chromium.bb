@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/device_native_printers_handler.h"
+#include "chrome/browser/chromeos/policy/device_native_printers_external_data_handler.h"
 
 #include <utility>
 
@@ -21,37 +21,37 @@ base::WeakPtr<chromeos::BulkPrintersCalculator> GetBulkPrintersCalculator() {
 
 }  // namespace
 
-DeviceNativePrintersHandler::DeviceNativePrintersHandler(
-    PolicyService* policy_service)
+DeviceNativePrintersExternalDataHandler::
+    DeviceNativePrintersExternalDataHandler(PolicyService* policy_service)
     : device_native_printers_observer_(
           std::make_unique<DeviceCloudExternalDataPolicyObserver>(
               policy_service,
               key::kDeviceNativePrinters,
               this)) {}
 
-DeviceNativePrintersHandler::~DeviceNativePrintersHandler() {}
+DeviceNativePrintersExternalDataHandler::
+    ~DeviceNativePrintersExternalDataHandler() = default;
 
-void DeviceNativePrintersHandler::OnDeviceExternalDataSet(
+void DeviceNativePrintersExternalDataHandler::OnDeviceExternalDataSet(
     const std::string& policy) {
   GetBulkPrintersCalculator()->ClearData();
 }
 
-void DeviceNativePrintersHandler::OnDeviceExternalDataCleared(
+void DeviceNativePrintersExternalDataHandler::OnDeviceExternalDataCleared(
     const std::string& policy) {
   GetBulkPrintersCalculator()->ClearData();
 }
 
-void DeviceNativePrintersHandler::OnDeviceExternalDataFetched(
+void DeviceNativePrintersExternalDataHandler::OnDeviceExternalDataFetched(
     const std::string& policy,
     std::unique_ptr<std::string> data,
     const base::FilePath& file_path) {
   GetBulkPrintersCalculator()->SetData(std::move(data));
 }
 
-void DeviceNativePrintersHandler::Shutdown() {
+void DeviceNativePrintersExternalDataHandler::Shutdown() {
   if (device_native_printers_observer_)
     device_native_printers_observer_.reset();
-  chromeos::BulkPrintersCalculatorFactory::Get()->Shutdown();
 }
 
 }  // namespace policy

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/device_native_printers_handler.h"
+#include "chrome/browser/chromeos/policy/device_native_printers_external_data_handler.h"
 
 #include <memory>
 #include <string>
@@ -57,9 +57,9 @@ const char kDeviceNativePrintersContentsJson[] = R"json(
 
 }  // namespace
 
-class DeviceNativePrintersHandlerTest : public testing::Test {
+class DeviceNativePrintersExternalDataHandlerTest : public testing::Test {
  protected:
-  DeviceNativePrintersHandlerTest() {}
+  DeviceNativePrintersExternalDataHandlerTest() {}
 
   // testing::Test
   void SetUp() override {
@@ -70,29 +70,33 @@ class DeviceNativePrintersHandlerTest : public testing::Test {
     EXPECT_CALL(policy_service_,
                 RemoveObserver(policy::POLICY_DOMAIN_CHROME, testing::_))
         .Times(1);
-    device_native_printers_handler_ =
-        std::make_unique<DeviceNativePrintersHandler>(&policy_service_);
+    device_native_printers_external_data_handler_ =
+        std::make_unique<DeviceNativePrintersExternalDataHandler>(
+            &policy_service_);
     external_printers_ =
         chromeos::BulkPrintersCalculatorFactory::Get()->GetForDevice();
     external_printers_->SetAccessMode(
         chromeos::BulkPrintersCalculator::ALL_ACCESS);
   }
 
-  void TearDown() override { device_native_printers_handler_->Shutdown(); }
+  void TearDown() override {
+    device_native_printers_external_data_handler_->Shutdown();
+  }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockPolicyService policy_service_;
-  std::unique_ptr<DeviceNativePrintersHandler> device_native_printers_handler_;
+  std::unique_ptr<DeviceNativePrintersExternalDataHandler>
+      device_native_printers_external_data_handler_;
   base::WeakPtr<chromeos::BulkPrintersCalculator> external_printers_;
 };
 
-TEST_F(DeviceNativePrintersHandlerTest, OnDataFetched) {
+TEST_F(DeviceNativePrintersExternalDataHandlerTest, OnDataFetched) {
   EXPECT_TRUE(external_printers_->GetPrinters().empty());
 
-  device_native_printers_handler_->OnDeviceExternalDataSet(
+  device_native_printers_external_data_handler_->OnDeviceExternalDataSet(
       key::kDeviceNativePrinters);
-  device_native_printers_handler_->OnDeviceExternalDataFetched(
+  device_native_printers_external_data_handler_->OnDeviceExternalDataFetched(
       key::kDeviceNativePrinters,
       std::make_unique<std::string>(kDeviceNativePrintersContentsJson),
       base::FilePath());
@@ -106,16 +110,16 @@ TEST_F(DeviceNativePrintersHandlerTest, OnDataFetched) {
   EXPECT_EQ("Color Laser", printers.at("Second").display_name());
 }
 
-TEST_F(DeviceNativePrintersHandlerTest, OnDataCleared) {
+TEST_F(DeviceNativePrintersExternalDataHandlerTest, OnDataCleared) {
   EXPECT_TRUE(external_printers_->GetPrinters().empty());
 
-  device_native_printers_handler_->OnDeviceExternalDataSet(
+  device_native_printers_external_data_handler_->OnDeviceExternalDataSet(
       key::kDeviceNativePrinters);
-  device_native_printers_handler_->OnDeviceExternalDataFetched(
+  device_native_printers_external_data_handler_->OnDeviceExternalDataFetched(
       key::kDeviceNativePrinters,
       std::make_unique<std::string>(kDeviceNativePrintersContentsJson),
       base::FilePath());
-  device_native_printers_handler_->OnDeviceExternalDataCleared(
+  device_native_printers_external_data_handler_->OnDeviceExternalDataCleared(
       key::kDeviceNativePrinters);
   scoped_task_environment_.RunUntilIdle();
 

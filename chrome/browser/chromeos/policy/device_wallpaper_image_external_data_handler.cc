@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/device_wallpaper_image_handler.h"
+#include "chrome/browser/chromeos/policy/device_wallpaper_image_external_data_handler.h"
 
 #include <utility>
 
@@ -13,9 +13,9 @@
 
 namespace policy {
 
-DeviceWallpaperImageHandler::DeviceWallpaperImageHandler(
-    PrefService* local_state,
-    PolicyService* policy_service)
+DeviceWallpaperImageExternalDataHandler::
+    DeviceWallpaperImageExternalDataHandler(PrefService* local_state,
+                                            PolicyService* policy_service)
     : local_state_(local_state),
       device_wallpaper_image_observer_(
           std::make_unique<DeviceCloudExternalDataPolicyObserver>(
@@ -23,20 +23,22 @@ DeviceWallpaperImageHandler::DeviceWallpaperImageHandler(
               key::kDeviceWallpaperImage,
               this)) {}
 
-DeviceWallpaperImageHandler::~DeviceWallpaperImageHandler() = default;
+DeviceWallpaperImageExternalDataHandler::
+    ~DeviceWallpaperImageExternalDataHandler() = default;
 
 // static
-void DeviceWallpaperImageHandler::RegisterPrefs(PrefRegistrySimple* registry) {
+void DeviceWallpaperImageExternalDataHandler::RegisterPrefs(
+    PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDeviceWallpaperImageFilePath,
                                std::string());
 }
 
-void DeviceWallpaperImageHandler::OnDeviceExternalDataCleared(
+void DeviceWallpaperImageExternalDataHandler::OnDeviceExternalDataCleared(
     const std::string& policy) {
   local_state_->SetString(prefs::kDeviceWallpaperImageFilePath, std::string());
 }
 
-void DeviceWallpaperImageHandler::OnDeviceExternalDataFetched(
+void DeviceWallpaperImageExternalDataHandler::OnDeviceExternalDataFetched(
     const std::string& policy,
     std::unique_ptr<std::string> data,
     const base::FilePath& file_path) {
@@ -44,7 +46,7 @@ void DeviceWallpaperImageHandler::OnDeviceExternalDataFetched(
                           file_path.value());
 }
 
-void DeviceWallpaperImageHandler::Shutdown() {
+void DeviceWallpaperImageExternalDataHandler::Shutdown() {
   device_wallpaper_image_observer_.reset();
 }
 
