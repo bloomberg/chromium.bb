@@ -282,6 +282,14 @@ const char kFocusMode[] = "Focus Mode";
 const char kFocusModeDescription[] =
     "If enabled, allows the user to switch to Focus Mode";
 
+const char kFontSrcLocalMatchingName[] =
+    "Match @font-face { src: local(<name>) } names by PostScript and full font "
+    "name.";
+const char kFontSrcLocalMatchingDescription[] =
+    "Match local() src attributes in @font-face declarations precisely by "
+    "PostScript name and full font name instead of the previous behavior of "
+    "matching those unspecifically as family names.";
+
 const char kForceColorProfileSRGB[] = "sRGB";
 const char kForceColorProfileP3[] = "Display P3 D65";
 const char kForceColorProfileColorSpin[] = "Color spin with gamma 2.4";

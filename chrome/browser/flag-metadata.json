@@ -1932,6 +1932,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "font-src-local-matching",
+    "owners": [ "drott", "layout-dev" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "force-use-chrome-camera",
     "owners": [ "shenghao", "chromeos-camera-app-eng@google.com" ],
     "expiry_milestone": 76

@@ -197,6 +197,9 @@ extern const char kExperimentalAccessibilitySwitchAccessDescription[];
 extern const char kFCMInvalidationsName[];
 extern const char kFCMInvalidationsDescription[];
 
+extern const char kFontSrcLocalMatchingName[];
+extern const char kFontSrcLocalMatchingDescription[];
+
 extern const char kForceColorProfileSRGB[];
 extern const char kForceColorProfileP3[];
 extern const char kForceColorProfileColorSpin[];
@@ -591,8 +594,6 @@ extern const char kExtensionsOnChromeUrlsDescription[];
 
 extern const char kFeaturePolicyName[];
 extern const char kFeaturePolicyDescription[];
-
-extern const char kFontCacheScalingDescription[];
 
 extern const char kForceEffectiveConnectionTypeName[];
 extern const char kForceEffectiveConnectionTypeDescription[];

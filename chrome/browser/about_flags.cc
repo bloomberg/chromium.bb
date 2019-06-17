@@ -3930,6 +3930,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPeriodicBackgroundSyncDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPeriodicBackgroundSync)},
 
+    {"font-src-local-matching", flag_descriptions::kFontSrcLocalMatchingName,
+     flag_descriptions::kFontSrcLocalMatchingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFontSrcLocalMatching)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
