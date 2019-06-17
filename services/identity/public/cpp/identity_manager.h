@@ -10,7 +10,6 @@
 
 #include "base/observer_list.h"
 #include "build/build_config.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/primary_account_manager.h"
@@ -18,7 +17,6 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
-#include "services/identity/public/cpp/accounts_cookie_mutator.h"
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/scope_set.h"
 
@@ -35,6 +33,7 @@ class TestURLLoaderFactory;
 class PrefRegistrySimple;
 class SigninManagerAndroid;
 
+class AccountFetcherService;
 class GaiaCookieManagerService;
 
 namespace identity {
