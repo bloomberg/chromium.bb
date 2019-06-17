@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/guid.h"
 #include "crypto/ec_private_key.h"
@@ -27,6 +28,7 @@ VirtualAuthenticator::VirtualAuthenticator(
       unique_id_(base::GenerateGUID()),
       state_(base::MakeRefCounted<::device::VirtualFidoDevice::State>()) {
   state_->transport = transport;
+  SetUserPresence(true);
 }
 
 VirtualAuthenticator::~VirtualAuthenticator() = default;
@@ -60,6 +62,15 @@ bool VirtualAuthenticator::AddRegistration(
 
 void VirtualAuthenticator::ClearRegistrations() {
   state_->registrations.clear();
+}
+
+void VirtualAuthenticator::SetUserPresence(bool is_user_present) {
+  is_user_present_ = is_user_present;
+  state_->simulate_press_callback = base::BindRepeating(
+      [](bool is_user_present, device::VirtualFidoDevice* device) {
+        return is_user_present;
+      },
+      is_user_present);
 }
 
 std::unique_ptr<::device::FidoDevice> VirtualAuthenticator::ConstructDevice() {
@@ -116,13 +127,12 @@ void VirtualAuthenticator::ClearRegistrations(
 
 void VirtualAuthenticator::SetUserPresence(bool present,
                                            SetUserPresenceCallback callback) {
-  // TODO(https://crbug.com/785955): Implement once VirtualFidoDevice supports
-  // this.
+  SetUserPresence(present);
   std::move(callback).Run();
 }
 
 void VirtualAuthenticator::GetUserPresence(GetUserPresenceCallback callback) {
-  std::move(callback).Run(false);
+  std::move(callback).Run(is_user_present_);
 }
 
 }  // namespace content

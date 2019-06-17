@@ -51,6 +51,10 @@ class CONTENT_EXPORT VirtualAuthenticator
   // Removes all the credentials.
   void ClearRegistrations();
 
+  // Sets whether tests of user presence succeed or not for new requests sent to
+  // this authenticator. The default is true.
+  void SetUserPresence(bool is_user_present);
+
   ::device::FidoTransportProtocol transport() const {
     return state_->transport;
   }
@@ -82,6 +86,7 @@ class CONTENT_EXPORT VirtualAuthenticator
   const bool has_resident_key_;
   const bool has_user_verification_;
   const std::string unique_id_;
+  bool is_user_present_;
   scoped_refptr<::device::VirtualFidoDevice::State> state_;
   mojo::BindingSet<blink::test::mojom::VirtualAuthenticator> binding_set_;
 

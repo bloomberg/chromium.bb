@@ -108,6 +108,8 @@ Response WebAuthnHandler::AddVirtualAuthenticator(
           ? device::AuthenticatorAttachment::kPlatform
           : device::AuthenticatorAttachment::kCrossPlatform,
       options->GetHasResidentKey(), options->GetHasUserVerification());
+  authenticator->SetUserPresence(
+      options->GetAutomaticPresenceSimulation(true /* default */));
 
   *out_authenticator_id = authenticator->unique_id();
   return Response::OK();
