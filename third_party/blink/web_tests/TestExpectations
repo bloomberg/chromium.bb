@@ -6226,9 +6226,6 @@ crbug.com/971590 fast/dom/timer-throttling-out-of-view-cross-origin-page.html [ 
 crbug.com/971590 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 crbug.com/971612 fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
 
-# Sheriff 2019-06-10
-crbug.com/972516 [ Win ] netinfo/gc-unused-listeners.html [ Pass Failure ]
-
 # Sheriff 2019-06-13
 crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html [ Failure ]
 crbug.com/973726 [ Mac ] fast/css/large-list-of-rules-crash.html [ Pass Timeout ]
