@@ -1333,6 +1333,8 @@ bool HTMLElement::MatchesReadWritePseudoClass() const {
 void HTMLElement::HandleKeypressEvent(KeyboardEvent& event) {
   if (!IsSpatialNavigationEnabled(GetDocument().GetFrame()) || !SupportsFocus())
     return;
+  if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled())
+    return;
   GetDocument().UpdateStyleAndLayoutTree();
   // if the element is a text form control (like <input type=text> or
   // <textarea>) or has contentEditable attribute on, we should enter a space or
