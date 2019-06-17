@@ -1499,7 +1499,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             initializeBottomSheet(
                     !ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
         }
-        AppHooks.get().startMonitoringNetworkQuality();
         AppHooks.get().startSystemSettingsObserver();
     }
 
