@@ -83,8 +83,10 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
     column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                           0 /* resize_percent */, views::GridLayout::USE_PREF,
                           0, 0);
-    column_set->AddPaddingColumn(0 /* resize_percent */,
-                                 AutofillPopupBaseView::kValueLabelPadding);
+    column_set->AddPaddingColumn(
+        0 /* resize_percent */,
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            DISTANCE_BETWEEN_PRIMARY_AND_SECONDARY_LABELS_HORIZONTAL));
     column_set->AddColumn(views::GridLayout::TRAILING,
                           views::GridLayout::CENTER, 1.0 /* resize_percent */,
                           views::GridLayout::USE_PREF, 0, 0);
