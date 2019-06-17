@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_NATIVE_PRINTERS_EXTERNAL_DATA_HANDLER_H_
-#define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_NATIVE_PRINTERS_EXTERNAL_DATA_HANDLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POLICY_EXTERNAL_DATA_HANDLERS_DEVICE_NATIVE_PRINTERS_EXTERNAL_DATA_HANDLER_H_
+#define CHROME_BROWSER_CHROMEOS_POLICY_EXTERNAL_DATA_HANDLERS_DEVICE_NATIVE_PRINTERS_EXTERNAL_DATA_HANDLER_H_
 
 #include <memory>
 #include <string>
 
-#include "chrome/browser/chromeos/policy/device_cloud_external_data_policy_handler.h"
+#include "chrome/browser/chromeos/policy/external_data_handlers/device_cloud_external_data_policy_handler.h"
 
 namespace policy {
 
@@ -38,4 +38,4 @@ class DeviceNativePrintersExternalDataHandler
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_NATIVE_PRINTERS_EXTERNAL_DATA_HANDLER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POLICY_EXTERNAL_DATA_HANDLERS_DEVICE_NATIVE_PRINTERS_EXTERNAL_DATA_HANDLER_H_
