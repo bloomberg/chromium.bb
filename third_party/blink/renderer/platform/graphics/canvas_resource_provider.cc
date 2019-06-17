@@ -491,6 +491,9 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   bool SupportsDirectCompositing() const override { return true; }
   bool SupportsSingleBuffering() const override { return false; }
   GLuint GetBackingTextureHandleForOverwrite() override {
+    if (!ContextProviderWrapper())
+      return 0u;
+
     FlushGrContext();
     WillDraw();
     return resource()->GetTextureIdForBackendTexture();
