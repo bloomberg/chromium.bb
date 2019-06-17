@@ -7,9 +7,9 @@
 
 #include "base/containers/flat_map.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/services/ble_scan_parser/ble_scan_parser_impl.h"
+#include "services/data_decoder/ble_scan_parser_impl.h"
 
-namespace ble_scan_parser {
+namespace data_decoder {
 
 // Definitions of the data type flags:
 // https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile/
@@ -196,4 +196,4 @@ bool BleScanParserImpl::ParseServiceUuids(
   return true;
 }
 
-}  // namespace ble_scan_parser
+}  // namespace data_decoder

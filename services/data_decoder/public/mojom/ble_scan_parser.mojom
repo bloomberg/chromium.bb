@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module ble_scan_parser.mojom;
+module data_decoder.mojom;
 
 import "device/bluetooth/public/mojom/uuid.mojom";
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ble_scan_parser_impl.h"
+#include "services/data_decoder/ble_scan_parser_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ble_scan_parser {
+namespace data_decoder {
 
 TEST(BleScanParserImplTest, ParseBadUuidLengthReturnsEmptyString) {
   std::vector<uint8_t> bad_uuid(0xab, 5);
@@ -148,4 +148,4 @@ TEST(BleScanParserImplTest, ParseBleAdvertisingScan) {
   EXPECT_EQ(expected_manufacturer_data_map, actual->manufacturer_data_map);
 }
 
-}  // namespace ble_scan_parser
+}  // namespace data_decoder

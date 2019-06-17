@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_SERVICES_BLE_SCAN_PARSER_BLE_SCAN_PARSER_IMPL_H_
-#define CHROME_SERVICES_BLE_SCAN_PARSER_BLE_SCAN_PARSER_IMPL_H_
+#ifndef SERVICES_DATA_DECODER_BLE_SCAN_PARSER_IMPL_H_
+#define SERVICES_DATA_DECODER_BLE_SCAN_PARSER_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -11,11 +11,11 @@
 
 #include "base/containers/span.h"
 #include "base/macros.h"
-#include "chrome/services/ble_scan_parser/public/mojom/ble_scan_parser.mojom.h"
 #include "device/bluetooth/public/mojom/uuid.mojom.h"
+#include "services/data_decoder/public/mojom/ble_scan_parser.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-namespace ble_scan_parser {
+namespace data_decoder {
 
 enum class UuidFormat {
   // The UUID is the third and fourth bytes of a UUID with this pattern:
@@ -56,6 +56,6 @@ class BleScanParserImpl : public mojom::BleScanParser {
   DISALLOW_COPY_AND_ASSIGN(BleScanParserImpl);
 };
 
-}  // namespace ble_scan_parser
+}  // namespace data_decoder
 
-#endif  // CHROME_SERVICES_BLE_SCAN_PARSER_BLE_SCAN_PARSER_IMPL_H_
+#endif  // SERVICES_DATA_DECODER_BLE_SCAN_PARSER_IMPL_H_
