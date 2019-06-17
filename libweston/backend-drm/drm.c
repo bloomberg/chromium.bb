@@ -538,7 +538,6 @@ struct drm_output {
 	/* Holds the properties for the CRTC */
 	struct drm_property_info props_crtc[WDRM_CRTC__COUNT];
 
-	int vblank_pending;
 	int page_flip_pending;
 	int atomic_complete_pending;
 	int destroy_pending;
@@ -2005,9 +2004,8 @@ drm_output_assign_state(struct drm_output_state *state,
 		if (b->atomic_modeset)
 			continue;
 
-		if (plane->type == WDRM_PLANE_TYPE_OVERLAY)
-			output->vblank_pending++;
-		else if (plane->type == WDRM_PLANE_TYPE_PRIMARY)
+		assert(plane->type != WDRM_PLANE_TYPE_OVERLAY);
+		if (plane->type == WDRM_PLANE_TYPE_PRIMARY)
 			output->page_flip_pending = 1;
 	}
 }
@@ -2254,7 +2252,6 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 	struct drm_plane *scanout_plane = output->scanout_plane;
 	struct drm_property_info *dpms_prop;
 	struct drm_plane_state *scanout_state;
-	struct drm_plane_state *ps;
 	struct drm_mode *mode;
 	struct drm_head *head;
 	const struct pixel_format_info *pinfo = NULL;
@@ -2281,21 +2278,6 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 	}
 
 	if (state->dpms != WESTON_DPMS_ON) {
-		wl_list_for_each(ps, &state->plane_list, link) {
-			struct drm_plane *p = ps->plane;
-			assert(ps->fb == NULL);
-			assert(ps->output == NULL);
-
-			if (p->type != WDRM_PLANE_TYPE_OVERLAY)
-				continue;
-
-			ret = drmModeSetPlane(backend->drm.fd, p->plane_id,
-					      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			if (ret)
-				weston_log("drmModeSetPlane failed disable: %s\n",
-					   strerror(errno));
-		}
-
 		if (output->cursor_plane) {
 			ret = drmModeSetCursor(backend->drm.fd, output->crtc_id,
 					       0, 0, 0);
@@ -2373,56 +2355,6 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 		                             backend->pageflip_timeout);
 
 	drm_output_set_cursor(state);
-
-	/*
-	 * Now, update all the sprite surfaces
-	 */
-	wl_list_for_each(ps, &state->plane_list, link) {
-		uint32_t flags = 0, fb_id = 0;
-		drmVBlank vbl = {
-			.request.type = DRM_VBLANK_RELATIVE | DRM_VBLANK_EVENT,
-			.request.sequence = 1,
-		};
-		struct drm_plane *p = ps->plane;
-
-		if (p->type != WDRM_PLANE_TYPE_OVERLAY)
-			continue;
-
-		assert(p->state_cur->complete);
-		assert(!!p->state_cur->output == !!p->state_cur->fb);
-		assert(!p->state_cur->output || p->state_cur->output == output);
-		assert(!ps->complete);
-		assert(!ps->output || ps->output == output);
-		assert(!!ps->output == !!ps->fb);
-		/* The legacy SetPlane API doesn't support fences */
-		assert(ps->in_fence_fd == -1);
-
-		if (ps->fb && !backend->sprites_hidden)
-			fb_id = ps->fb->fb_id;
-
-		ret = drmModeSetPlane(backend->drm.fd, p->plane_id,
-				      output->crtc_id, fb_id, flags,
-				      ps->dest_x, ps->dest_y,
-				      ps->dest_w, ps->dest_h,
-				      ps->src_x, ps->src_y,
-				      ps->src_w, ps->src_h);
-		if (ret)
-			weston_log("setplane failed: %d: %s\n",
-				ret, strerror(errno));
-
-		vbl.request.type |= drm_waitvblank_pipe(output);
-
-		/*
-		 * Queue a vblank signal so we know when the surface
-		 * becomes active on the display or has been replaced.
-		 */
-		vbl.request.signal = (unsigned long) ps;
-		ret = drmWaitVBlank(backend->drm.fd, &vbl);
-		if (ret) {
-			weston_log("vblank event request failed: %d: %s\n",
-				ret, strerror(errno));
-		}
-	}
 
 	if (state->dpms != output->state_cur->dpms) {
 		wl_list_for_each(head, &output->base.head_list, base.output_link) {
@@ -3123,30 +3055,6 @@ drm_output_update_msc(struct drm_output *output, unsigned int seq)
 	output->base.msc = (msc_hi << 32) + seq;
 }
 
-static void
-vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
-	       void *data)
-{
-	struct drm_plane_state *ps = (struct drm_plane_state *) data;
-	struct drm_output_state *os = ps->output_state;
-	struct drm_output *output = os->output;
-	struct drm_backend *b = to_drm_backend(output->base.compositor);
-	uint32_t flags = WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
-			 WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
-
-	assert(!b->atomic_modeset);
-
-	drm_output_update_msc(output, frame);
-	output->vblank_pending--;
-	assert(output->vblank_pending >= 0);
-
-	assert(ps->fb);
-
-	if (output->page_flip_pending || output->vblank_pending)
-		return;
-
-	drm_output_update_complete(output, flags, sec, usec);
-}
 
 static void
 page_flip_handler(int fd, unsigned int frame,
@@ -3163,9 +3071,6 @@ page_flip_handler(int fd, unsigned int frame,
 	assert(!b->atomic_modeset);
 	assert(output->page_flip_pending);
 	output->page_flip_pending = 0;
-
-	if (output->vblank_pending)
-		return;
 
 	drm_output_update_complete(output, flags, sec, usec);
 }
@@ -4152,7 +4057,6 @@ on_drm_input(int fd, uint32_t mask, void *data)
 	else
 #endif
 		evctx.page_flip_handler = page_flip_handler;
-	evctx.vblank_handler = vblank_handler;
 	drmHandleEvent(fd, &evctx);
 
 	return 1;
@@ -6305,8 +6209,7 @@ drm_output_destroy(struct weston_output *base)
 
 	assert(!output->virtual);
 
-	if (output->page_flip_pending || output->vblank_pending ||
-	    output->atomic_complete_pending) {
+	if (output->page_flip_pending || output->atomic_complete_pending) {
 		output->destroy_pending = 1;
 		weston_log("destroy output while page flip pending\n");
 		return;
@@ -6335,8 +6238,7 @@ drm_output_disable(struct weston_output *base)
 
 	assert(!output->virtual);
 
-	if (output->page_flip_pending || output->vblank_pending ||
-	    output->atomic_complete_pending) {
+	if (output->page_flip_pending || output->atomic_complete_pending) {
 		output->disable_pending = 1;
 		return -1;
 	}
