@@ -22,7 +22,7 @@ namespace ash {
 
 namespace {
 // Autoclick scroll menu constants.
-int kAutoclickScrollMenuSizeDips = 250;
+constexpr int kAutoclickScrollMenuSizeDips = 192;
 }  // namespace
 
 AutoclickScrollBubbleController::AutoclickScrollBubbleController() {}
