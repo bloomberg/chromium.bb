@@ -2,7 +2,7 @@ import * as Shaderc from '@webgpu/shaderc';
 import { getGPU } from '../framework/gpu/implementation.js';
 import { Fixture } from '../framework/index.js';
 
-const shaderc: Promise<Shaderc.Shaderc> = Shaderc.instantiate();
+let shaderc: Promise<Shaderc.Shaderc> | undefined;
 
 export class GPUTest extends Fixture {
   public device: GPUDevice = undefined as any;
@@ -15,6 +15,8 @@ export class GPUTest extends Fixture {
     const adapter = await gpu.requestAdapter();
     this.device = await adapter.requestDevice({});
     this.queue = this.device.getQueue();
+
+    shaderc = shaderc || Shaderc.instantiate();
     this.shaderc = await shaderc;
   }
 

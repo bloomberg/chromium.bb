@@ -48,7 +48,7 @@ group.test('duplicate test name', DefaultFixture, (t) => {
   });
 });
 
-for (const char of '"`~@#$+=\\|!%^&*[]<>{}-\'.,') {
+for (const char of '"`~@#$+=\\|!^&*[]<>{}-\'.,') {
   group.testp('invalid test name', {char}, DefaultFixture, (t) => {
     const g = new TestGroup();
 

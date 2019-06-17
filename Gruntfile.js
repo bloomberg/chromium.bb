@@ -5,7 +5,19 @@ module.exports = function(grunt) {
       args: [
         ...(inspect ? ["--inspect-brk"] : []),
         "-r", "ts-node/register/transpile-only",
-        "./run-node.js",
+        "tools/run.js",
+        ...args
+      ]
+    };
+  };
+
+  const mkGen = (inspect, ...args) => {
+    return {
+      cmd: "node",
+      args: [
+        ...(inspect ? ["--inspect-brk"] : []),
+        "-r", "ts-node/register/transpile-only",
+        "tools/gen.js",
         ...args
       ]
     };
@@ -17,16 +29,22 @@ module.exports = function(grunt) {
 
     clean: ["out/"],
 
+    mkdir: {
+      "out": {
+        options: {
+          create: ["out"]
+        }
+      }
+    },
+
     run: {
-      "cts":       mkRun(false, "src/cts", "--run"),
-      "debug-cts": mkRun(true,  "src/cts", "--run"),
-      "list-cts":  mkRun(false, "src/cts", "--generate-listing=out/cts/listing.json"),
-      "unittests":       mkRun(false, "src/unittests", "--run"),
-      "debug-unittests": mkRun(true,  "src/unittests", "--run"),
-      "list-unittests":  mkRun(false, "src/unittests", "--generate-listing=out/unittests/listing.json"),
-      "demos":       mkRun(false, "src/demos", "--run"),
-      "debug-demos": mkRun(true,  "src/demos", "--run"),
-      "list-demos":  mkRun(false, "src/demos", "--generate-listing=out/demos/listing.json"),
+      "generate-listings": mkGen(false, "cts", "unittests", "demos"),
+      "cts":             mkRun(false, "cts"),
+      "debug-cts":       mkRun(true,  "cts"),
+      "unittests":       mkRun(false, "unittests"),
+      "debug-unittests": mkRun(true,  "unittests"),
+      "demos":           mkRun(false, "demos"),
+      "debug-demos":     mkRun(true,  "demos"),
       "build-out": {
         cmd: "npx",
         args: [
@@ -84,6 +102,7 @@ module.exports = function(grunt) {
 
   grunt.loadNpmTasks("grunt-contrib-clean");
   grunt.loadNpmTasks("grunt-http-server");
+  grunt.loadNpmTasks("grunt-mkdir");
   grunt.loadNpmTasks("grunt-run");
   grunt.loadNpmTasks("grunt-ts");
 
@@ -98,11 +117,10 @@ module.exports = function(grunt) {
   ]);
   publishedTasks.push({ name: "run:{lint,fix}", desc: "Run tslint" });
   publishTask("build", "Build out/", [
+    "mkdir:out",
     "run:build-shaderc",
     "run:build-out",
-    "run:list-cts",
-    "run:list-unittests",
-    "run:list-demos",
+    "run:generate-listings",
   ]);
   publishTask("serve", "Serve out/ on 127.0.0.1:8080", [
     "http-server:.",

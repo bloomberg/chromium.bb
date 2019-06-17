@@ -84,6 +84,11 @@ export class TestGroup {
     }
 
     const key = params ? (name + ':' + JSON.stringify(params)) : name;
+    // Disallow '%' so that decodeURIComponent(unencodedQuery) == unencodedQuery. Hopefully.
+    if (key.indexOf('%') !== -1) {
+      throw new Error('Invalid character % in test name or parameters');
+    }
+
     const p = params ? params : {};
     if (this.seen.has(key)) {
       throw new Error('Duplicate test name');

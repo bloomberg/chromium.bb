@@ -26,3 +26,7 @@ export function makeQueryString(entry: IEntry, testcase: ICase): string {
 export function parseQueryString(query: string): string[] {
     return new URLSearchParams(query).getAll('q');
 }
+
+export function parseFilters(filters: string[]): string[] {
+    return filters.map(f => decodeURIComponent(f));
+}
