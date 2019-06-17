@@ -184,6 +184,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       const std::vector<std::string>& mime_types) override;
   void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
                             memory_pressure_level) override;
+  void OnPeerToPeerConnectionsCountChange(uint32_t count) override;
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state) override;
 #endif

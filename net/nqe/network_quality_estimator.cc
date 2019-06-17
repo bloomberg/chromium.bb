@@ -1676,4 +1676,15 @@ void NetworkQualityEstimator::RecordSpdyPingLatency(
   AddAndNotifyObserversOfRTT(observation);
 }
 
+void NetworkQualityEstimator::OnPeerToPeerConnectionsCountChange(
+    uint32_t count) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  webrtc_active_connections_count_ = count;
+}
+
+uint32_t NetworkQualityEstimator::GetPeerToPeerConnectionsCountChange() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return webrtc_active_connections_count_;
+}
+
 }  // namespace net

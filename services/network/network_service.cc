@@ -40,6 +40,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_util.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -641,6 +642,11 @@ void NetworkService::AddExtraMimeTypesForCorb(
 void NetworkService::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   base::MemoryPressureListener::NotifyMemoryPressure(memory_pressure_level);
+}
+
+void NetworkService::OnPeerToPeerConnectionsCountChange(uint32_t count) {
+  network_quality_estimator_manager_->GetNetworkQualityEstimator()
+      ->OnPeerToPeerConnectionsCountChange(count);
 }
 
 #if defined(OS_ANDROID)
