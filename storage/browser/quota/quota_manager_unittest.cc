@@ -312,7 +312,7 @@ class QuotaManagerTest : public testing::Test {
     // The quota manager's default eviction policy is to use an LRU eviction
     // policy.
     quota_manager_->GetEvictionOrigin(
-        type, std::set<url::Origin>(), 0,
+        type, 0,
         base::BindOnce(&QuotaManagerTest::DidGetEvictionOrigin,
                        weak_factory_.GetWeakPtr()));
   }
