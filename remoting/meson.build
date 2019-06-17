@@ -1,5 +1,5 @@
 if get_option('remoting')
-	user_hint = 'If you rather not build this, set "remoting=false".'
+	user_hint = 'If you rather not build this, set \'-Dremoting=false\'.'
 
 	if not get_option('backend-drm')
 		error('Attempting to build the remoting plugin without the required DRM backend. ' + user_hint)
