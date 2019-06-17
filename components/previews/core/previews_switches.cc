@@ -25,7 +25,7 @@ const char kDoNotRequireLitePageRedirectInfoBar[] =
 const char kIgnorePreviewsBlacklist[] = "ignore-previews-blacklist";
 
 // Force enable all available previews on every page load.
-const char kForceEnablePreviews[] = "force-enable-previews";
+const char kForceEnablePreviews[] = "force-enable-lite-pages";
 
 // Override the Lite Page Preview Host.
 const char kLitePageServerPreviewHost[] = "litepage-server-previews-host";
