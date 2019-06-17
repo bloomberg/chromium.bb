@@ -1354,7 +1354,7 @@ crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/image-map-anchor-
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-focus-ring-zoom.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-overflowing-circle-focus-ring.html [ Failure ]
-crbug.com/591099 [ Mac10.13 ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
+crbug.com/591099 [ Mac ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
 
