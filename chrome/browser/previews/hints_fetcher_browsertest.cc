@@ -143,7 +143,8 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   void SetUpComponentUpdateHints(const GURL& hint_setup_url) {
     const optimization_guide::HintsComponentInfo& component_info =
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
-            optimization_guide::proto::NOSCRIPT, {hint_setup_url.host()}, {});
+            optimization_guide::proto::NOSCRIPT, {hint_setup_url.host()}, "*",
+            {});
 
     // Register a QuitClosure for when the next hint update is started below.
     base::RunLoop run_loop;

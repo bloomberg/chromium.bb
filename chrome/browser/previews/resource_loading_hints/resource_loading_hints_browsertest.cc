@@ -93,6 +93,10 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     https_url_ = https_server_->GetURL("/resource_loading_hints.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
 
+    https_second_url_ =
+        https_server_->GetURL("/resource_loading_hints_second.html");
+    ASSERT_TRUE(https_second_url_.SchemeIs(url::kHttpsScheme));
+
     https_no_transform_url_ = https_server_->GetURL(
         "/resource_loading_hints_with_no_transform_header.html");
     ASSERT_TRUE(https_no_transform_url_.SchemeIs(url::kHttpsScheme));
@@ -193,6 +197,12 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   }
 
   void SetDefaultOnlyResourceLoadingHints(const GURL& hint_setup_url) {
+    SetDefaultOnlyResourceLoadingHintsWithPagePattern(hint_setup_url, "*");
+  }
+
+  void SetDefaultOnlyResourceLoadingHintsWithPagePattern(
+      const GURL& hint_setup_url,
+      const std::string& page_pattern) {
     std::vector<std::string> resource_patterns;
     resource_patterns.push_back("foo.jpg");
     resource_patterns.push_back("png");
@@ -201,7 +211,7 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     ProcessHintsComponent(
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
             optimization_guide::proto::RESOURCE_LOADING,
-            {hint_setup_url.host()}, resource_patterns));
+            {hint_setup_url.host()}, page_pattern, resource_patterns));
     LoadHintsForUrl(hint_setup_url);
   }
 
@@ -242,6 +252,7 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   }
 
   const GURL& https_url() const { return https_url_; }
+  const GURL& https_second_url() const { return https_second_url_; }
   const GURL& https_no_transform_url() const { return https_no_transform_url_; }
   const GURL& https_hint_setup_url() const { return https_hint_setup_url_; }
   const GURL& http_url() const { return http_url_; }
@@ -326,6 +337,7 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   GURL https_url_;
+  GURL https_second_url_;
   GURL https_no_transform_url_;
   GURL https_hint_setup_url_;
   GURL http_url_;
@@ -549,6 +561,107 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
   EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
+}
+
+// Sets the default hints with a non-wildcard page pattern. Loads a webpage from
+// an origin for which the hints are present, but the page pattern does not
+// match. Verifies that the hints are not used on that webpage.
+IN_PROC_BROWSER_TEST_F(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(MatchingOrigin_NonMatchingPagePattern)) {
+  const GURL url = https_url();
+
+  // Whitelist resource loading hints for https_hint_setup_url()'s' host.
+  // Set pattern to a string that does not matches https_url() path.
+  ASSERT_EQ(std::string::npos, https_url().path().find("mismatched_pattern"));
+  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_url(),
+                                                    "mismatched_pattern");
+
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
+  InitializeOptimizationHints();
+
+  base::HistogramTester histogram_tester;
+
+  // The URL is not whitelisted. Verify that the hints are not used.
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(
+          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.PreviewShown.ResourceLoadingHints", 0);
+  histogram_tester.ExpectTotalCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
+  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
+}
+
+// Sets the default hints with a non-wildcard page pattern. First loads a
+// webpage from a host for which the hints are present (page pattern matches).
+// Next, loads a webpage from the same host but the webpage's URL does not match
+// the page patterns. Verifies that the hints are not used on that webpage.
+IN_PROC_BROWSER_TEST_F(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(SameOriginDifferentPattern)) {
+  // Whitelist resource loading hints for https_url()'s' host and pattern.
+  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_url(),
+                                                    https_url().path());
+
+  // Hints should be used when loading https_url().
+  SetExpectedFooJpgRequest(false);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
+
+  base::HistogramTester histogram_tester_1;
+
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester_1,
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 1);
+  histogram_tester_1.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", 1, 1);
+  histogram_tester_1.ExpectTotalCount(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect", 0);
+  histogram_tester_1.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
+  histogram_tester_1.ExpectBucketCount(
+      "Previews.PreviewShown.ResourceLoadingHints", true, 1);
+  // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
+  histogram_tester_1.ExpectBucketCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
+  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
+
+  // Load a different webpage on the same origin to ensure that the resource
+  // loading hints are not reused.
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
+  base::HistogramTester histogram_tester_2;
+
+  // https_second_url() is hosted on the same host as https_url(), but the path
+  // for https_second_url() is not whitelisted.
+  ASSERT_EQ(https_url().host(), https_second_url().host());
+  ASSERT_NE(https_url().path(), https_second_url().path());
+
+  ui_test_utils::NavigateToURL(browser(), https_second_url());
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester_2.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(
+          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
+  histogram_tester_2.ExpectTotalCount(
+      "Previews.PreviewShown.ResourceLoadingHints", 0);
+  histogram_tester_2.ExpectTotalCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
+  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
 // Sets both the experimental and default hints, but does not enable the
