@@ -30,6 +30,7 @@ const NSTimeInterval kDefaultPageLoadTimeout = 300;
 // WebDriver commands.
 const char kWebDriverSessionCommand[] = "session";
 const char kWebDriverNavigationCommand[] = "url";
+const char kWebDriverTimeoutsCommand[] = "timeouts";
 
 // WebDriver error codes.
 const char kWebDriverInvalidArgumentError[] = "invalid argument";
@@ -46,10 +47,14 @@ const char kWebDriverNoActiveSessionMessage[] = "No currently active session";
 const char kWebDriverPageLoadTimeoutMessage[] = "Page load timed out";
 const char kWebDriverSessionAlreadyExistsMessage[] = "A session already exists";
 const char kWebDriverUnknownCommandMessage[] = "No such command";
+const char kWebDriverInvalidTimeoutMessage[] =
+    "Timeouts must be non-negative integers";
 
 // WebDriver request field names. These are fields that are contained within
 // the body of a POST request.
 const char kWebDriverURLRequestField[] = "url";
+const char kWebDriverScriptTimeoutRequestField[] = "script";
+const char kWebDriverPageLoadTimeoutRequestField[] = "pageLoad";
 
 // WebDriver response field name. This is the top-level field in the JSON object
 // contained in a response.
@@ -122,6 +127,9 @@ base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
 
     if (command == kWebDriverNavigationCommand)
       return NavigateToUrl(content->FindKey(kWebDriverURLRequestField));
+
+    if (command == kWebDriverTimeoutsCommand)
+      return SetTimeouts(*content);
 
     return base::nullopt;
   }
@@ -215,4 +223,25 @@ base::Value CWTRequestHandler::NavigateToUrl(const base::Value* url) {
 
   return CreateErrorValue(kWebDriverTimeoutError,
                           kWebDriverPageLoadTimeoutMessage);
+}
+
+base::Value CWTRequestHandler::SetTimeouts(const base::Value& timeouts) {
+  for (const auto& timeout : timeouts.DictItems()) {
+    if (!timeout.second.is_int() || timeout.second.GetInt() < 0) {
+      return CreateErrorValue(kWebDriverInvalidArgumentError,
+                              kWebDriverInvalidTimeoutMessage);
+    }
+
+    int timeout_in_milliseconds = timeout.second.GetInt();
+    NSTimeInterval timeout_in_seconds =
+        static_cast<double>(timeout_in_milliseconds) / 1000;
+
+    // Only script and page load timeouts are supported in CWTChromeDriver.
+    // Other values are ignored.
+    if (timeout.first == kWebDriverScriptTimeoutRequestField)
+      script_timeout_ = timeout_in_seconds;
+    else if (timeout.first == kWebDriverPageLoadTimeoutRequestField)
+      page_load_timeout_ = timeout_in_seconds;
+  }
+  return base::Value(base::Value::Type::NONE);
 }

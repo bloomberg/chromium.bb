@@ -56,6 +56,9 @@ class CWTRequestHandler {
   // complete.
   base::Value NavigateToUrl(const base::Value* url);
 
+  // Sets timeouts used when performing browser operations.
+  base::Value SetTimeouts(const base::Value& timeouts);
+
   // Processes the given command, HTTP method, and request content. Returns the
   // result of processing the command, or nullopt_t if the command is unknown.
   base::Optional<base::Value> ProcessCommand(
