@@ -19,9 +19,8 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   // Collect the child's out of flow descendants.
   // child_offset is offset of inline_start/block_start vertex.
   // Candidates need offset of top/left vertex.
-  if (child.HasOutOfFlowPositionedDescendants()) {
-    const auto& out_of_flow_descendants =
-        child.OutOfFlowPositionedDescendants();
+  const auto& out_of_flow_descendants = child.OutOfFlowPositionedDescendants();
+  if (!out_of_flow_descendants.IsEmpty()) {
     LogicalOffset top_left_offset;
     PhysicalSize child_size = child.Size();
     switch (GetWritingMode()) {

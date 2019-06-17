@@ -17,7 +17,6 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
-<<<<<<< HEAD   (4386eb Move break_token_ to NGPhysicalContainerFragment from NGPhys)
 <<<<<<< HEAD   (d91d4f Allocate memory for borders and padding members of NGPhysica)
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
 =======
@@ -25,10 +24,6 @@ struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
   std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
       oof_positioned_descendants_;
 >>>>>>> CHANGE (3ad1c0 Move break_token_ to NGPhysicalContainerFragment from NGPhys)
-=======
-  std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
-      oof_positioned_descendants_;
->>>>>>> CHANGE (763c67 Allocate vector of NGOutOfFlowPositionedDescendant in NGPhys)
   void* pointer;
   wtf_size_t size;
 };
@@ -48,10 +43,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     : NGPhysicalFragment(builder, type, sub_type),
       break_token_(std::move(builder->break_token_)),
       oof_positioned_descendants_(
-          builder->oof_positioned_descendants_.IsEmpty()
-              ? nullptr
-              : new Vector<NGOutOfFlowPositionedDescendant>(
-                    std::move(builder->oof_positioned_descendants_))),
+          std::move(builder->oof_positioned_descendants_)),
       buffer_(buffer),
       num_children_(builder->children_.size()) {
   has_floating_descendants_ = builder->has_floating_descendants_;
