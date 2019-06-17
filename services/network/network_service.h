@@ -235,10 +235,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   static NetworkService* GetNetworkServiceForTesting();
 
-  // Tells the network service to not create a NetworkChangeNotifier instance.
-  // Must be called before the network service is started.
-  static void DisableNetworkChangeNotifierForTesting();
-
  private:
   // service_manager::Service implementation.
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,

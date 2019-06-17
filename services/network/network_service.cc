@@ -74,7 +74,6 @@ namespace network {
 
 namespace {
 
-bool g_disable_network_change_notifier = false;
 NetworkService* g_network_service = nullptr;
 
 net::NetLog* GetNetLog() {
@@ -91,8 +90,7 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     net::NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype) {
   // There is a global singleton net::NetworkChangeNotifier if NetworkService
   // is running inside of the browser process.
-  if (!g_disable_network_change_notifier &&
-      !net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
+  if (!net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     // On Android and ChromeOS, network change events are synced from the
     // browser process.
@@ -837,12 +835,6 @@ void NetworkService::Bind(mojom::NetworkServiceRequest request) {
 // static
 NetworkService* NetworkService::GetNetworkServiceForTesting() {
   return g_network_service;
-}
-
-// static
-void NetworkService::DisableNetworkChangeNotifierForTesting() {
-  DCHECK(!g_network_service);
-  g_disable_network_change_notifier = true;
 }
 
 }  // namespace network
