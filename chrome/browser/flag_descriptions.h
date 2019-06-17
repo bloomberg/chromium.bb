@@ -87,9 +87,6 @@ extern const char kAndroidPictureInPictureAPIDescription[];
 extern const char kAndroidSiteSettingsUIRefreshName[];
 extern const char kAndroidSiteSettingsUIRefreshDescription[];
 
-extern const char kAppBannersName[];
-extern const char kAppBannersDescription[];
-
 extern const char kAutomaticPasswordGenerationName[];
 extern const char kAutomaticPasswordGenerationDescription[];
 
@@ -1429,8 +1426,6 @@ extern const char kOffliningRecentPagesDescription[];
 extern const char kProgressBarThrottleName[];
 extern const char kProgressBarThrottleDescription[];
 
-extern const char kPwaImprovedSplashScreenName[];
-extern const char kPwaImprovedSplashScreenDescription[];
 extern const char kPwaPersistentNotificationName[];
 extern const char kPwaPersistentNotificationDescription[];
 

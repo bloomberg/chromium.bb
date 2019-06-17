@@ -103,11 +103,6 @@ const char kAndroidSiteSettingsUIRefreshDescription[] =
     "Enable the new UI "
     "changes in Site Settings in Android.";
 
-const char kAppBannersName[] = "App Banners";
-const char kAppBannersDescription[] =
-    "Enable the display of Progressive Web App banners, which prompt a user to "
-    "add a web app to their shelf, or other platform-specific equivalent.";
-
 const char kAutomaticPasswordGenerationName[] = "Automatic password generation";
 const char kAutomaticPasswordGenerationDescription[] =
     "Allow Chrome to offer to generate passwords when it detects account "
@@ -2409,11 +2404,6 @@ const char kProgressBarThrottleName[] = "Android progress update throttling.";
 const char kProgressBarThrottleDescription[] =
     "Limit the maximum progress update to make progress appear smoother.";
 
-const char kPwaImprovedSplashScreenName[] =
-    "Improved Splash Screen for standalone PWAs";
-const char kPwaImprovedSplashScreenDescription[] =
-    "Enables the Improved Splash Screen UX for standalone PWAs based on new "
-    "Web App Manifest attributes";
 const char kPwaPersistentNotificationName[] =
     "Persistent notification in standalone PWA";
 const char kPwaPersistentNotificationDescription[] =
