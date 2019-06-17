@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/chrome_ash_message_center_client.h"
 
+#include "ash/public/cpp/notifier_metadata.h"
+#include "ash/public/cpp/notifier_settings_observer.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/i18n/string_compare.h"
 #include "base/stl_util.h"
@@ -24,7 +26,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
-using ash::mojom::NotifierUiDataPtr;
 using message_center::MessageCenter;
 using message_center::NotifierId;
 
@@ -44,15 +45,16 @@ class NotifierComparator {
  public:
   explicit NotifierComparator(icu::Collator* collator) : collator_(collator) {}
 
-  bool operator()(const NotifierUiDataPtr& n1, const NotifierUiDataPtr& n2) {
-    if (n1->notifier_id.type != n2->notifier_id.type)
-      return n1->notifier_id.type < n2->notifier_id.type;
+  bool operator()(const ash::NotifierMetadata& n1,
+                  const ash::NotifierMetadata& n2) {
+    if (n1.notifier_id.type != n2.notifier_id.type)
+      return n1.notifier_id.type < n2.notifier_id.type;
 
     if (collator_) {
-      return base::i18n::CompareString16WithCollator(*collator_, n1->name,
-                                                     n2->name) == UCOL_LESS;
+      return base::i18n::CompareString16WithCollator(*collator_, n1.name,
+                                                     n2.name) == UCOL_LESS;
     }
-    return n1->name < n2->name;
+    return n1.name < n2.name;
   }
 
  private:
@@ -138,10 +140,6 @@ ChromeAshMessageCenterClient::ChromeAshMessageCenterClient(
 ChromeAshMessageCenterClient::~ChromeAshMessageCenterClient() {
   DCHECK_EQ(this, g_chrome_ash_message_center_client);
   g_chrome_ash_message_center_client = nullptr;
-  if (deferred_notifier_list_callback_) {
-    std::move(deferred_notifier_list_callback_)
-        .Run(std::vector<ash::mojom::NotifierUiDataPtr>());
-  }
 }
 
 void ChromeAshMessageCenterClient::Display(
@@ -163,6 +161,30 @@ void ChromeAshMessageCenterClient::Close(const std::string& notification_id) {
   }
 }
 
+void ChromeAshMessageCenterClient::GetNotifiers() {
+  Profile* profile = GetProfileForNotifiers();
+  if (!profile) {
+    LOG(ERROR) << "GetNotifiers called before profile fully loaded, see "
+                  "https://crbug.com/968825";
+    return;
+  }
+
+  std::vector<ash::NotifierMetadata> notifiers;
+  for (auto& source : sources_) {
+    auto source_notifiers = source.second->GetNotifierList(profile);
+    for (auto& notifier : source_notifiers)
+      notifiers.push_back(std::move(notifier));
+  }
+
+  UErrorCode error = U_ZERO_ERROR;
+  std::unique_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
+  NotifierComparator comparator(U_SUCCESS(error) ? collator.get() : nullptr);
+  std::sort(notifiers.begin(), notifiers.end(), comparator);
+
+  for (auto& observer : notifier_observers_)
+    observer.OnNotifiersUpdated(notifiers);
+}
+
 void ChromeAshMessageCenterClient::SetNotifierEnabled(
     const NotifierId& notifier_id,
     bool enabled) {
@@ -171,63 +193,14 @@ void ChromeAshMessageCenterClient::SetNotifierEnabled(
   sources_[notifier_id.type]->SetNotifierEnabled(profile, notifier_id, enabled);
 }
 
-void ChromeAshMessageCenterClient::GetNotifierList(
-    GetNotifierListCallback callback) {
-  if (deferred_notifier_list_callback_) {
-    std::move(deferred_notifier_list_callback_)
-        .Run(std::vector<ash::mojom::NotifierUiDataPtr>());
-    registrar_.RemoveAll();
-  }
-  Profile* profile = GetProfileForNotifiers();
-  if (profile) {
-    RespondWithNotifierList(profile, std::move(callback));
-  } else {
-    LOG(ERROR) << "GetNotifierList called before profile fully loaded, see "
-                  "https://crbug.com/968825";
-    deferred_notifier_list_callback_ = std::move(callback);
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
-                   content::NotificationService::AllSources());
-  }
+void ChromeAshMessageCenterClient::AddNotifierSettingsObserver(
+    ash::NotifierSettingsObserver* observer) {
+  notifier_observers_.AddObserver(observer);
 }
 
-void ChromeAshMessageCenterClient::RespondWithNotifierList(
-    Profile* profile,
-    GetNotifierListCallback callback) const {
-  CHECK(profile);
-  std::vector<ash::mojom::NotifierUiDataPtr> notifiers;
-  for (auto& source : sources_) {
-    auto source_notifiers = source.second->GetNotifierList(profile);
-    for (auto& notifier : source_notifiers) {
-      notifiers.push_back(std::move(notifier));
-    }
-  }
-
-  UErrorCode error = U_ZERO_ERROR;
-  std::unique_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
-  NotifierComparator comparator(U_SUCCESS(error) ? collator.get() : nullptr);
-  std::sort(notifiers.begin(), notifiers.end(), comparator);
-
-  std::move(callback).Run(std::move(notifiers));
-}
-
-void ChromeAshMessageCenterClient::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_ADDED: {
-      Profile* profile = GetProfileForNotifiers();
-      if (profile) {
-        CHECK(deferred_notifier_list_callback_);
-        RespondWithNotifierList(profile,
-                                std::move(deferred_notifier_list_callback_));
-        registrar_.RemoveAll();
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+void ChromeAshMessageCenterClient::RemoveNotifierSettingsObserver(
+    ash::NotifierSettingsObserver* observer) {
+  notifier_observers_.RemoveObserver(observer);
 }
 
 void ChromeAshMessageCenterClient::GetArcAppIdByPackageName(
@@ -241,20 +214,36 @@ void ChromeAshMessageCenterClient::GetArcAppIdByPackageName(
 void ChromeAshMessageCenterClient::OnIconImageUpdated(
     const NotifierId& notifier_id,
     const gfx::ImageSkia& image) {
-  // |controller_| may be null in unit tests.
-  if (!image.isNull() && controller_)
-    controller_->UpdateNotifierIcon(notifier_id, image);
+  for (auto& observer : notifier_observers_)
+    observer.OnNotifierIconUpdated(notifier_id, image);
 }
 
 void ChromeAshMessageCenterClient::OnNotifierEnabledChanged(
     const NotifierId& notifier_id,
     bool enabled) {
-  // May be null in unit tests.
-  if (controller_)
-    controller_->NotifierEnabledChanged(notifier_id, enabled);
+  if (!enabled)
+    MessageCenter::Get()->RemoveNotificationsForNotifierId(notifier_id);
 }
 
 // static
 void ChromeAshMessageCenterClient::FlushForTesting() {
   g_chrome_ash_message_center_client->binding_.FlushForTesting();
+}
+
+void ChromeAshMessageCenterClient::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_ADDED: {
+      Profile* profile = GetProfileForNotifiers();
+      if (profile) {
+        GetNotifiers();
+        registrar_.RemoveAll();
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 }

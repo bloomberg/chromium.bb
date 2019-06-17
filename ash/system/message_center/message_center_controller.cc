@@ -128,11 +128,6 @@ void MessageCenterController::BindRequest(
   binding_set_.AddBinding(this, std::move(request));
 }
 
-void MessageCenterController::SetNotifierEnabled(const NotifierId& notifier_id,
-                                                 bool enabled) {
-  client_->SetNotifierEnabled(notifier_id, enabled);
-}
-
 void MessageCenterController::SetClient(
     mojom::AshMessageCenterClientAssociatedPtrInfo client) {
   DCHECK(!client_.is_bound());
@@ -153,19 +148,6 @@ void MessageCenterController::SetArcNotificationsInstance(
   arc_notification_manager_->SetInstance(std::move(arc_notification_instance));
 }
 
-void MessageCenterController::UpdateNotifierIcon(const NotifierId& notifier_id,
-                                                 const gfx::ImageSkia& icon) {
-  for (auto& listener : notifier_settings_listeners_)
-    listener.UpdateNotifierIcon(notifier_id, icon);
-}
-
-void MessageCenterController::NotifierEnabledChanged(
-    const NotifierId& notifier_id,
-    bool enabled) {
-  if (!enabled)
-    MessageCenter::Get()->RemoveNotificationsForNotifierId(notifier_id);
-}
-
 void MessageCenterController::SetQuietMode(bool enabled) {
   MessageCenter::Get()->SetQuietMode(enabled);
 }
@@ -175,39 +157,6 @@ void MessageCenterController::GetArcAppIdByPackageName(
     GetAppIdByPackageNameCallback callback) {
   DCHECK(client_.is_bound());
   client_->GetArcAppIdByPackageName(package_name, std::move(callback));
-}
-
-void MessageCenterController::AddNotifierSettingsListener(
-    NotifierSettingsListener* listener) {
-  DCHECK(listener);
-  notifier_settings_listeners_.AddObserver(listener);
-}
-
-void MessageCenterController::RemoveNotifierSettingsListener(
-    NotifierSettingsListener* listener) {
-  DCHECK(listener);
-  notifier_settings_listeners_.RemoveObserver(listener);
-}
-
-void MessageCenterController::RequestNotifierSettingsUpdate() {
-  // |client_| may not be bound in unit tests.
-  if (!client_.is_bound())
-    return;
-
-  client_->GetNotifierList(base::BindOnce(
-      &MessageCenterController::OnGotNotifierList, base::Unretained(this)));
-}
-
-void MessageCenterController::OnGotNotifierList(
-    std::vector<mojom::NotifierUiDataPtr> ui_data) {
-  disabled_notifier_count_ = 0;
-  for (const auto& notifier : ui_data) {
-    if (!notifier->enabled)
-      ++disabled_notifier_count_;
-  }
-
-  for (auto& listener : notifier_settings_listeners_)
-    listener.OnNotifierListUpdated(ui_data);
 }
 
 }  // namespace ash
