@@ -1436,7 +1436,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             // TODO(yusufo): Unify initialization.
             initializeBottomSheet(true);
         }
-        AppHooks.get().startMonitoringNetworkQuality();
         AppHooks.get().startSystemSettingsObserver();
     }
 
