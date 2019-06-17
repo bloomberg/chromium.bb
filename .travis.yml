@@ -23,7 +23,7 @@ matrix:
       env: MODE=build-gcc
     - compiler: gcc
       env: MODE=build-gcc ENABLE_UCS4=--enable-ucs4
-    - compiler: i586-mingw32msvc-gcc
+    - compiler: i686-w64-mingw32-gcc
       env: MODE=build-mingw ENABLE_UCS4=--enable-ucs4 ARCH=32
     - compiler: x86_64-w64-mingw32-gcc
       env: MODE=build-mingw ENABLE_UCS4=--enable-ucs4 ARCH=64
