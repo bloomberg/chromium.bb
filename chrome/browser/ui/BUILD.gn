@@ -1867,6 +1867,7 @@ jumbo_split_static_library("ui") {
       "//chromeos/dbus/system_clock",
       "//chromeos/login/auth",
       "//chromeos/login/login_state",
+      "//chromeos/login/session",
       "//chromeos/network",
       "//chromeos/resources:resources_grit",
       "//chromeos/services/assistant/public:feature_flags",

@@ -39,6 +39,7 @@
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/login/session/session_termination_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -343,6 +344,10 @@ PrefService* SessionControllerClientImpl::GetUserPrefService(
 bool SessionControllerClientImpl::IsMultiProfileAvailable() {
   if (!profiles::IsMultipleProfilesEnabled() || !UserManager::IsInitialized())
     return false;
+  if (chromeos::SessionTerminationManager::Get() &&
+      chromeos::SessionTerminationManager::Get()->IsLockedToSingleUser()) {
+    return false;
+  }
   size_t users_logged_in = UserManager::Get()->GetLoggedInUsers().size();
   // Does not include users that are logged in.
   size_t users_available_to_add =
@@ -402,6 +407,9 @@ bool SessionControllerClientImpl::ShouldLockScreenAutomatically() {
 // static
 ash::AddUserSessionPolicy
 SessionControllerClientImpl::GetAddUserSessionPolicy() {
+  if (chromeos::SessionTerminationManager::Get()->IsLockedToSingleUser())
+    return ash::AddUserSessionPolicy::ERROR_LOCKED_TO_SINGLE_USER;
+
   UserManager* const user_manager = UserManager::Get();
   if (user_manager->GetUsersAllowedForMultiProfile().empty())
     return ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS;
@@ -412,8 +420,9 @@ SessionControllerClientImpl::GetAddUserSessionPolicy() {
   }
 
   if (UserManager::Get()->GetLoggedInUsers().size() >=
-      session_manager::kMaximumNumberOfUserSessions)
+      session_manager::kMaximumNumberOfUserSessions) {
     return ash::AddUserSessionPolicy::ERROR_MAXIMUM_USERS_REACHED;
+  }
 
   return ash::AddUserSessionPolicy::ALLOWED;
 }
