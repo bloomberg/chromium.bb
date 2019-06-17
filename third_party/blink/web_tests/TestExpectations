@@ -18,7 +18,7 @@ Bug(none) webgpu/fence.html [ Skip ]
 
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 
-# The following tests need to remove the assumption that user activation is
+# The following tests need to remove the assumption that user activation isfast/text/firstline/capitalize-transform.html
 # available in child/sibling frames.  This assumption doesn't hold with User
 # Activation v2 (UAv2).
 crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Timeout ]
@@ -192,8 +192,8 @@ crbug.com/974652 [ Linux Debug ] virtual/scroll_customization/fast/scrolling/uns
 
 crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
-crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Failure ]
-crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pass Failure ]
+crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Crash ]
+crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pass Crash ]
 crbug.com/974720 [ Mac10.13 ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 
