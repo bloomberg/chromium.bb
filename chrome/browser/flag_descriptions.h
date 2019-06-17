@@ -688,9 +688,6 @@ extern const char kIgnoreLitePageRedirectHintsBlacklistDescription[];
 extern const char kCompositorThreadedScrollbarScrollingName[];
 extern const char kCompositorThreadedScrollbarScrollingDescription[];
 
-extern const char kImprovedGeoLanguageDataName[];
-extern const char kImprovedGeoLanguageDataDescription[];
-
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
 

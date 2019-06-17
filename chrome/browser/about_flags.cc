@@ -2730,11 +2730,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(base::kDCheckIsFatalFeature)},
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
-    {"enable-improved-geolanguage-data",
-     flag_descriptions::kImprovedGeoLanguageDataName,
-     flag_descriptions::kImprovedGeoLanguageDataDescription, kOsAll,
-     FEATURE_VALUE_TYPE(language::kImprovedGeoLanguageData)},
-
     {"enable-pixel-canvas-recording",
      flag_descriptions::kEnablePixelCanvasRecordingName,
      flag_descriptions::kEnablePixelCanvasRecordingDescription, kOsDesktop,
