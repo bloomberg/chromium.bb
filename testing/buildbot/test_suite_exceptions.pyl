@@ -1374,6 +1374,12 @@
           '--jobs=1',
         ],
       },
+      'linux-trusty-rel': {
+        'args': [
+          '--xvfb',
+          '--jobs=1',
+        ],
+      },
       # chromium.mac
       # Disable parallelism on all Mac bots.
       'Mac10.10 Tests': {
