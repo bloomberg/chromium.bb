@@ -190,6 +190,13 @@ crbug.com/974652 [ Linux Debug ] virtual/fractional_scrolling/fast/scrolling/uns
 crbug.com/974652 [ Linux Debug ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 crbug.com/974652 [ Linux Debug ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html  [ Pass Failure ]
 
+crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
+crbug.com/974720 [ Mac10.13 ] fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Failure ]
+crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pass Failure ]
+crbug.com/974720 [ Mac10.13 ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+crbug.com/974720 [ Mac10.13 ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
@@ -1350,9 +1357,6 @@ crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-overflow
 crbug.com/591099 [ Mac10.13 ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
-
-crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
-
 
 # Maybe a Mac-specific rebaselining issue.
 crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html [ Skip ]
