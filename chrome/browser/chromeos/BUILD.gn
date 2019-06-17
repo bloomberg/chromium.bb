@@ -2200,8 +2200,6 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "accessibility/test_accessibility_focus_ring_controller.cc",
-    "accessibility/test_accessibility_focus_ring_controller.h",
     "android_sms/fake_android_sms_app_manager.cc",
     "android_sms/fake_android_sms_app_manager.h",
     "android_sms/fake_android_sms_app_setup_controller.cc",

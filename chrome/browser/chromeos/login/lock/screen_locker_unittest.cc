@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/test_accessibility_focus_ring_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -130,8 +129,6 @@ class ScreenLockerUnitTest : public testing::Test {
   // ScreenLocker dependencies:
   // * AccessibilityManager dependencies:
   FakeAccessibilityController fake_accessibility_controller_;
-  TestAccessibilityFocusRingController
-      test_accessibility_focus_ring_controller_;
   // * LoginScreenClient dependencies:
   session_manager::SessionManager session_manager_;
   TestLoginScreen test_login_screen_;

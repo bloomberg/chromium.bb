@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 
 #include <stddef.h>
 
@@ -43,8 +43,7 @@ constexpr float kHighlightOpacity = 0.3f;
 
 }  // namespace
 
-AccessibilityFocusRingController::AccessibilityFocusRingController()
-    : binding_(this) {
+AccessibilityFocusRingControllerImpl::AccessibilityFocusRingControllerImpl() {
   cursor_animation_info_.fade_in_time =
       base::TimeDelta::FromMilliseconds(kCursorFadeInTimeMilliseconds);
   cursor_animation_info_.fade_out_time =
@@ -55,24 +54,19 @@ AccessibilityFocusRingController::AccessibilityFocusRingController()
       base::TimeDelta::FromMilliseconds(kCaretFadeOutTimeMilliseconds);
 }
 
-AccessibilityFocusRingController::~AccessibilityFocusRingController() = default;
+AccessibilityFocusRingControllerImpl::~AccessibilityFocusRingControllerImpl() =
+    default;
 
-void AccessibilityFocusRingController::BindRequest(
-    mojom::AccessibilityFocusRingControllerRequest request) {
-  binding_.Bind(std::move(request));
-}
-
-void AccessibilityFocusRingController::SetFocusRing(
+void AccessibilityFocusRingControllerImpl::SetFocusRing(
     const std::string& focus_ring_id,
-    mojom::FocusRingPtr focus_ring) {
+    std::unique_ptr<AccessibilityFocusRingInfo> focus_ring) {
   AccessibilityFocusRingGroup* focus_ring_group =
       GetFocusRingGroupForId(focus_ring_id, true /* Create if missing */);
-
   if (focus_ring_group->UpdateFocusRing(std::move(focus_ring), this))
     OnLayerChange(focus_ring_group->focus_animation_info());
 }
 
-void AccessibilityFocusRingController::HideFocusRing(
+void AccessibilityFocusRingControllerImpl::HideFocusRing(
     const std::string& focus_ring_id) {
   AccessibilityFocusRingGroup* focus_ring_group =
       GetFocusRingGroupForId(focus_ring_id, false /* Do not create */);
@@ -82,7 +76,7 @@ void AccessibilityFocusRingController::HideFocusRing(
   OnLayerChange(focus_ring_group->focus_animation_info());
 }
 
-void AccessibilityFocusRingController::SetHighlights(
+void AccessibilityFocusRingControllerImpl::SetHighlights(
     const std::vector<gfx::Rect>& rects,
     SkColor color) {
   highlight_rects_ = rects;
@@ -91,26 +85,26 @@ void AccessibilityFocusRingController::SetHighlights(
   UpdateHighlightFromHighlightRects();
 }
 
-void AccessibilityFocusRingController::HideHighlights() {
+void AccessibilityFocusRingControllerImpl::HideHighlights() {
   highlight_rects_.clear();
   UpdateHighlightFromHighlightRects();
 }
 
-void AccessibilityFocusRingController::UpdateHighlightFromHighlightRects() {
+void AccessibilityFocusRingControllerImpl::UpdateHighlightFromHighlightRects() {
   if (!highlight_layer_)
     highlight_layer_ = std::make_unique<AccessibilityHighlightLayer>(this);
   highlight_layer_->Set(highlight_rects_, highlight_color_);
   highlight_layer_->SetOpacity(highlight_opacity_);
 }
 
-void AccessibilityFocusRingController::OnLayerChange(
+void AccessibilityFocusRingControllerImpl::OnLayerChange(
     LayerAnimationInfo* animation_info) {
   animation_info->change_time = base::TimeTicks::Now();
   if (animation_info->opacity == 0)
     animation_info->start_time = animation_info->change_time;
 }
 
-void AccessibilityFocusRingController::SetCursorRing(
+void AccessibilityFocusRingControllerImpl::SetCursorRing(
     const gfx::Point& location) {
   cursor_location_ = location;
   if (!cursor_layer_) {
@@ -122,11 +116,11 @@ void AccessibilityFocusRingController::SetCursorRing(
   OnLayerChange(&cursor_animation_info_);
 }
 
-void AccessibilityFocusRingController::HideCursorRing() {
+void AccessibilityFocusRingControllerImpl::HideCursorRing() {
   cursor_layer_.reset();
 }
 
-void AccessibilityFocusRingController::SetCaretRing(
+void AccessibilityFocusRingControllerImpl::SetCaretRing(
     const gfx::Point& location) {
   caret_location_ = location;
 
@@ -139,11 +133,11 @@ void AccessibilityFocusRingController::SetCaretRing(
   OnLayerChange(&caret_animation_info_);
 }
 
-void AccessibilityFocusRingController::HideCaretRing() {
+void AccessibilityFocusRingControllerImpl::HideCaretRing() {
   caret_layer_.reset();
 }
 
-void AccessibilityFocusRingController::SetNoFadeForTesting() {
+void AccessibilityFocusRingControllerImpl::SetNoFadeForTesting() {
   no_fade_for_testing_ = true;
   for (auto iter = focus_ring_groups_.begin(); iter != focus_ring_groups_.end();
        ++iter) {
@@ -159,12 +153,12 @@ void AccessibilityFocusRingController::SetNoFadeForTesting() {
 }
 
 const AccessibilityFocusRingGroup*
-AccessibilityFocusRingController::GetFocusRingGroupForTesting(
+AccessibilityFocusRingControllerImpl::GetFocusRingGroupForTesting(
     const std::string& focus_ring_id) {
   return GetFocusRingGroupForId(focus_ring_id, false /* create if missing */);
 }
 
-void AccessibilityFocusRingController::GetColorAndOpacityFromColor(
+void AccessibilityFocusRingControllerImpl::GetColorAndOpacityFromColor(
     SkColor color,
     float default_opacity,
     SkColor* result_color,
@@ -178,13 +172,13 @@ void AccessibilityFocusRingController::GetColorAndOpacityFromColor(
   *result_color = SkColorSetA(color, 0xFF);
 }
 
-void AccessibilityFocusRingController::OnDeviceScaleFactorChanged() {
+void AccessibilityFocusRingControllerImpl::OnDeviceScaleFactorChanged() {
   for (auto iter = focus_ring_groups_.begin(); iter != focus_ring_groups_.end();
        ++iter)
     iter->second->UpdateFocusRingsFromInfo(this);
 }
 
-void AccessibilityFocusRingController::OnAnimationStep(
+void AccessibilityFocusRingControllerImpl::OnAnimationStep(
     base::TimeTicks timestamp) {
   for (auto iter = focus_ring_groups_.begin(); iter != focus_ring_groups_.end();
        ++iter) {
@@ -199,7 +193,7 @@ void AccessibilityFocusRingController::OnAnimationStep(
     AnimateCaretRing(timestamp);
 }
 
-void AccessibilityFocusRingController::AnimateCursorRing(
+void AccessibilityFocusRingControllerImpl::AnimateCursorRing(
     base::TimeTicks timestamp) {
   CHECK(cursor_layer_);
 
@@ -211,7 +205,7 @@ void AccessibilityFocusRingController::AnimateCursorRing(
   cursor_layer_->SetOpacity(cursor_animation_info_.opacity);
 }
 
-void AccessibilityFocusRingController::AnimateCaretRing(
+void AccessibilityFocusRingControllerImpl::AnimateCaretRing(
     base::TimeTicks timestamp) {
   CHECK(caret_layer_);
 
@@ -224,7 +218,7 @@ void AccessibilityFocusRingController::AnimateCaretRing(
 }
 
 AccessibilityFocusRingGroup*
-AccessibilityFocusRingController::GetFocusRingGroupForId(
+AccessibilityFocusRingControllerImpl::GetFocusRingGroupForId(
     const std::string& focus_ring_id,
     bool create) {
   auto iter = focus_ring_groups_.find(focus_ring_id);
