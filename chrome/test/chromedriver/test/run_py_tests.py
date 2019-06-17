@@ -1965,16 +1965,44 @@ class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
   def testSendKeysToElementAppend(self):
       self._driver.Load(self.GetHttpUrlForFile(
           '/chromedriver/empty.html'))
+      textControlTypes = ["text", "search", "tel", "url",  "password"]
+      for textType in textControlTypes:
+          element = self._driver.ExecuteScript(
+              'document.body.innerHTML = '
+              '\'<input type="{}" value="send_this_value">\';'
+              'var input = document.getElementsByTagName("input")[0];'
+              'input.focus();'
+              'input.setSelectionRange(0,0);'
+              'return input;'.format(textType))
+          element.SendKeys('hello')
+          value = self._driver.ExecuteScript('return arguments[0].value;',
+                                             element)
+          self.assertEquals('send_this_valuehello', value)
+
+  def testSendKeysToEditableElement(self):
+      self._driver.Load(self.GetHttpUrlForFile(
+          '/chromedriver/empty.html'))
       element = self._driver.ExecuteScript(
           'document.body.innerHTML = '
-          '\'<input type="text" value="send_this_value">\';'
-          'var input = document.getElementsByTagName("input")[0];'
+          '\'<p contentEditable="true"> <i>hello-></i> '
+          '<b>send_this_value </b> </p>\';'
+          'var input = document.getElementsByTagName("i")[0];'
           'input.focus();'
-          'input.setSelectionRange(0,0);'
           'return input;')
       element.SendKeys('hello')
-      value = self._driver.ExecuteScript('return arguments[0].value;', element)
-      self.assertEquals('send_this_valuehello', value)
+      self.assertEquals(u'hello->hello', element.GetText())
+
+      self._driver.Load(self.GetHttpUrlForFile(
+          '/chromedriver/empty.html'))
+      element = self._driver.ExecuteScript(
+          'document.body.innerHTML = '
+          '\'<p contentEditable="true"> <i>hello</i> '
+          '<b>-></b> </p>\';'
+          'var input = document.getElementsByTagName("p")[0];'
+          'input.focus();'
+          'return input;')
+      element.SendKeys('hello')
+      self.assertEquals(u'hello ->hello', element.GetText())
 
   def testUnexpectedAlertOpenExceptionMessage(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
