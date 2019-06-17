@@ -96,8 +96,7 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
   UserMetricsRecorder* metrics = shell->metrics();
   // Clamshell mode only options should not activate in tablet mode.
-  const bool is_tablet_mode =
-      shell->tablet_mode_controller()->IsTabletModeWindowManagerEnabled();
+  const bool is_tablet_mode = shell->tablet_mode_controller()->InTabletMode();
   switch (command_id) {
     case MENU_AUTO_HIDE:
       SetShelfAutoHideBehaviorPref(
@@ -164,9 +163,7 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
   // mode, the shelf alignment option is not shown.
   LoginStatus status = Shell::Get()->session_controller()->login_status();
   if ((status == LoginStatus::USER || status == LoginStatus::OWNER) &&
-      !Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled()) {
+      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     alignment_submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
 
     constexpr int group = 0;

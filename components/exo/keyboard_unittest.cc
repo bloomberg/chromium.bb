@@ -318,7 +318,7 @@ TEST_F(KeyboardTest, OnKeyboardTypeChanged) {
 
   ash::TabletModeController* tablet_mode_controller =
       ash::Shell::Get()->tablet_mode_controller();
-  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  tablet_mode_controller->SetEnabledForTest(true);
 
   MockKeyboardDelegate delegate;
   Seat seat;
@@ -341,7 +341,7 @@ TEST_F(KeyboardTest, OnKeyboardTypeChanged) {
 
   keyboard.reset();
 
-  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  tablet_mode_controller->SetEnabledForTest(false);
 }
 
 TEST_F(KeyboardTest, OnKeyboardTypeChanged_AccessibilityKeyboard) {

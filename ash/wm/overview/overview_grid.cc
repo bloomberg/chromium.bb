@@ -392,9 +392,7 @@ void OverviewGrid::Shutdown() {
   }
   bool single_animation_in_clamshell =
       (animate_count == 1 && !has_non_cover_animating) &&
-      !Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled();
+      !Shell::Get()->tablet_mode_controller()->InTabletMode();
 
   // OverviewGrid in splitscreen does not include the window to be activated.
   if (!window_list_.empty() ||
@@ -417,9 +415,7 @@ void OverviewGrid::PrepareForOverview() {
   for (const auto& window : window_list_)
     window->PrepareForOverview();
   prepared_for_overview_ = true;
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     ScreenRotationAnimator::GetForRootWindow(root_window_)->AddObserver(this);
   }
 }
@@ -484,9 +480,7 @@ void OverviewGrid::PositionWindows(
       !window_list_.empty()) {
     bool single_animation_in_clamshell =
         animate_count == 1 && !has_non_cover_animating &&
-        !Shell::Get()
-             ->tablet_mode_controller()
-             ->IsTabletModeWindowManagerEnabled();
+        !Shell::Get()->tablet_mode_controller()->InTabletMode();
     fps_counter_ = std::make_unique<OverviewEnterFpsCounter>(
         window_list_[0]->GetWindow()->layer()->GetCompositor(),
         single_animation_in_clamshell);
@@ -1079,9 +1073,7 @@ void OverviewGrid::CalculateWindowListAnimationStates(
                   : items[i]->GetWindow()->GetBoundsInRootWindow();
     if (!src_bounds_temp.IsEmpty()) {
       if (transition == OverviewTransition::kEnter &&
-          Shell::Get()
-              ->tablet_mode_controller()
-              ->IsTabletModeWindowManagerEnabled()) {
+          Shell::Get()->tablet_mode_controller()->InTabletMode()) {
         BackdropController* backdrop_controller =
             GetActiveWorkspaceController(root_window_)
                 ->layout_manager()

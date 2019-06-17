@@ -1103,7 +1103,7 @@ TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
 
 // Tests the histogram of volume adjustment in tablet mode.
 TEST_F(AcceleratorControllerTest, TabletModeVolumeAdjustHistogram) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   base::HistogramTester histogram_tester;
   EXPECT_TRUE(
       histogram_tester.GetAllSamples(kTabletCountOfVolumeAdjustType).empty());
@@ -1170,7 +1170,7 @@ class SideVolumeButtonAcceleratorTest
 
   void SetUp() override {
     AcceleratorControllerTest::SetUp();
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
     test_api_->SetSideVolumeButtonLocation(region_, side_);
     ui::DeviceDataManagerTestApi().SetUncategorizedDevices({ui::InputDevice(
         kSideVolumeButtonId, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,

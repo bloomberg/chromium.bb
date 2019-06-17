@@ -334,9 +334,7 @@ void UnifiedSystemTrayController::InitFeaturePods() {
 
   // If you want to add a new feature pod item, add here.
 
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     UMA_HISTOGRAM_COUNTS_100("ChromeOS.SystemTray.Tablet.FeaturePodCountOnOpen",
                              unified_view_->GetVisibleFeaturePodCount());
   } else {

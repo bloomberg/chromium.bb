@@ -1512,9 +1512,7 @@ void AcceleratorControllerImpl::PerformAction(
     return;
 
   if ((action == VOLUME_DOWN || action == VOLUME_UP) &&
-      Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+      Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     if (ShouldSwapSideVolumeButtons(accelerator.source_device_id()))
       action = action == VOLUME_DOWN ? VOLUME_UP : VOLUME_DOWN;
 

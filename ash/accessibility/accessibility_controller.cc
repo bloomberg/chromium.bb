@@ -200,9 +200,7 @@ void ShowAccessibilityNotification(A11yNotificationType type) {
     text = l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED);
   } else {
-    bool is_tablet = Shell::Get()
-                         ->tablet_mode_controller()
-                         ->IsTabletModeWindowManagerEnabled();
+    bool is_tablet = Shell::Get()->tablet_mode_controller()->InTabletMode();
 
     title = l10n_util::GetStringUTF16(
         type == A11yNotificationType::kSpokenFeedbackBrailleEnabled
