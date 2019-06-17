@@ -23659,6 +23659,8 @@ Called by update_net_error_codes.py.-->
   <int value="2921" label="BuiltInModuleSwitchImported"/>
   <int value="2922" label="FeaturePolicyCommaSeparatedDeclarations"/>
   <int value="2923" label="FeaturePolicySemicolonSeparatedDeclarations"/>
+  <int value="2924" label="V8CallSiteAPIGetFunctionSloppyCall"/>
+  <int value="2925" label="V8CallSiteAPIGetThisSloppyCall"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
