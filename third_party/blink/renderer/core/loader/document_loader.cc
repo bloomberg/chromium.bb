@@ -402,7 +402,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
       single_page_app_navigation_type, kSPANavTypeCount);
 
   TRACE_EVENT1("blink", "FrameLoader::updateForSameDocumentNavigation", "url",
-               new_url.GetString().Ascii().data());
+               new_url.GetString().Ascii());
 
   // Generate start and stop notifications only when loader is completed so that
   // we don't fire them for fragment redirection that happens in window.onload

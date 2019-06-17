@@ -369,7 +369,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
   }
 
   TRACE_EVENT2("page-serialization", "FrameSerializer::serializeCSSStyleSheet",
-               "type", "CSS", "url", url.ElidedString().Utf8().data());
+               "type", "CSS", "url", url.ElidedString().Utf8());
   // Only report UMA metric if this is not a reentrant CSS serialization call.
   TimeTicks css_start_time;
   if (!is_serializing_css_) {
@@ -496,7 +496,7 @@ void FrameSerializer::AddImageToResources(ImageResourceContent* image,
     loaded_image_count_++;
 
   TRACE_EVENT2("page-serialization", "FrameSerializer::addImageToResources",
-               "type", "image", "url", url.ElidedString().Utf8().data());
+               "type", "image", "url", url.ElidedString().Utf8());
   base::TimeTicks image_start_time = CurrentTimeTicks();
 
   scoped_refptr<const SharedBuffer> data = image->GetImage()->Data();
