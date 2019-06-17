@@ -13,21 +13,15 @@
 namespace cast {
 namespace mdns {
 
-TEST(MdnsDomainNameTest, PushLabel) {
-  DomainName name;
-  EXPECT_TRUE(name.PushLabel("MyDevice"));
-  EXPECT_TRUE(name.PushLabel("_mYSERvice"));
-  EXPECT_TRUE(name.PushLabel("local"));
+TEST(MdnsDomainNameTest, Labels) {
+  DomainName name{"MyDevice", "_mYSERvice", "local"};
   ASSERT_EQ(3U, name.label_count());
   EXPECT_EQ("MyDevice", name.Label(0));
   EXPECT_EQ("_mYSERvice", name.Label(1));
   EXPECT_EQ("local", name.Label(2));
   EXPECT_EQ("MyDevice._mYSERvice.local", name.ToString());
 
-  DomainName other_name;
-  EXPECT_TRUE(other_name.PushLabel("OtherDevice"));
-  EXPECT_TRUE(other_name.PushLabel("_MYservice"));
-  EXPECT_TRUE(other_name.PushLabel("LOcal"));
+  DomainName other_name{"OtherDevice", "_MYservice", "LOcal"};
   ASSERT_EQ(3U, other_name.label_count());
   EXPECT_EQ("OtherDevice", other_name.Label(0));
   EXPECT_EQ("_MYservice", other_name.Label(1));
@@ -35,10 +29,8 @@ TEST(MdnsDomainNameTest, PushLabel) {
   EXPECT_EQ("OtherDevice._MYservice.LOcal", other_name.ToString());
 }
 
-TEST(MdnsDomainNameTest, CopyAndAssignAndClear) {
-  DomainName name;
-  name.PushLabel("testing");
-  name.PushLabel("local");
+TEST(MdnsDomainNameTest, CopyAndAssign) {
+  DomainName name{"testing", "local"};
   EXPECT_EQ(15u, name.max_wire_size());
 
   DomainName name_copy(name);
@@ -48,52 +40,19 @@ TEST(MdnsDomainNameTest, CopyAndAssignAndClear) {
   DomainName name_assign = name;
   EXPECT_EQ(name_assign, name);
   EXPECT_EQ(15u, name_assign.max_wire_size());
-
-  name.Clear();
-  EXPECT_EQ(1u, name.max_wire_size());
-  EXPECT_NE(name_copy, name);
-  EXPECT_NE(name_assign, name);
-  EXPECT_EQ(name_copy, name_assign);
 }
 
 TEST(MdnsDomainNameTest, IsEqual) {
-  DomainName first;
-  first.PushLabel("testing");
-  first.PushLabel("local");
-  DomainName second;
-  second.PushLabel("TeStInG");
-  second.PushLabel("LOCAL");
-  DomainName third;
-  third.PushLabel("testing");
-  DomainName fourth;
-  fourth.PushLabel("testing.local");
-  DomainName fifth;
-  fifth.PushLabel("Testing.Local");
+  DomainName first{"testing", "local"};
+  DomainName second{"TeStInG", "LOCAL"};
+  DomainName third{"testing"};
+  DomainName fourth{"testing.local"};
+  DomainName fifth{"Testing.Local"};
 
   EXPECT_EQ(first, second);
   EXPECT_EQ(fourth, fifth);
-
   EXPECT_NE(first, third);
   EXPECT_NE(first, fourth);
-}
-
-TEST(MdnsDomainNameTest, PushLabel_InvalidLabels) {
-  DomainName name;
-  EXPECT_TRUE(name.PushLabel("testing"));
-  EXPECT_FALSE(name.PushLabel(""));                    // Empty label
-  EXPECT_FALSE(name.PushLabel(std::string(64, 'a')));  // Label too long
-}
-
-TEST(MdnsDomainNameTest, PushLabel_NameTooLong) {
-  std::string maximum_label(63, 'a');
-
-  DomainName name;
-  EXPECT_TRUE(name.PushLabel(maximum_label));         // 64 bytes
-  EXPECT_TRUE(name.PushLabel(maximum_label));         // 128 bytes
-  EXPECT_TRUE(name.PushLabel(maximum_label));         // 192 bytes
-  EXPECT_FALSE(name.PushLabel(maximum_label));        // NAME > 255 bytes
-  EXPECT_TRUE(name.PushLabel(std::string(62, 'a')));  // NAME = 255
-  EXPECT_EQ(256u, name.max_wire_size());
 }
 
 TEST(MdnsRdataTest, SrvRecordRdata) {
@@ -105,10 +64,7 @@ TEST(MdnsRdataTest, SrvRecordRdata) {
       0x07, 't',  'e', 's', 't', 'i', 'n',  'g',
       0x05, 'l',  'o', 'c', 'a', 'l', 0x00,
   };
-  DomainName name;
-  name.PushLabel("testing");
-  name.PushLabel("local");
-  SrvRecordRdata rdata(5, 6, 8009, std::move(name));
+  SrvRecordRdata rdata(5, 6, 8009, DomainName{"testing", "local"});
   // RDLENGTH is uint16_t and is a part of kExpectedRdata.
   EXPECT_EQ(sizeof(kExpectedRdata), rdata.max_wire_size() + sizeof(uint16_t));
 
@@ -190,11 +146,7 @@ TEST(MdnsRdataTest, PtrRecordRdata) {
       0x00,
   };
   // clang-format on
-  DomainName name;
-  name.PushLabel("mydevice");
-  name.PushLabel("testing");
-  name.PushLabel("local");
-  PtrRecordRdata rdata(std::move(name));
+  PtrRecordRdata rdata(DomainName{"mydevice", "testing", "local"});
   // RDLENGTH is uint16_t and is a part of kExpectedRdata.
   EXPECT_EQ(sizeof(kExpectedRdata), rdata.max_wire_size() + sizeof(uint16_t));
 
@@ -274,16 +226,9 @@ TEST(MdnsRdataTest, IsEqual) {
 }
 
 TEST(MdnsRecordTest, CopyAndAssign) {
-  DomainName ptr_name;
-  ptr_name.PushLabel("testing");
-  ptr_name.PushLabel("local");
-  PtrRecordRdata rdata(std::move(ptr_name));
-
-  DomainName name;
-  name.PushLabel("hostname");
-  name.PushLabel("local");
-  MdnsRecord record(std::move(name), kTypePTR, kClassIN | kCacheFlushBit, 120,
-                    std::move(rdata));
+  MdnsRecord record(DomainName{"hostname", "local"}, kTypePTR,
+                    kClassIN | kCacheFlushBit, 120,
+                    PtrRecordRdata(DomainName{"testing", "local"}));
 
   MdnsRecord record_copy(record);
   EXPECT_EQ(record.name(), record_copy.name());
@@ -391,11 +336,7 @@ TEST(MdnsRecordTest, ReadCompressedNames) {
   EXPECT_EQ(record.type(), kTypePTR);
   EXPECT_EQ(record.record_class(), kClassIN);
   EXPECT_EQ(record.ttl(), UINT32_C(120));
-  DomainName ptr_name;
-  ptr_name.PushLabel("ptr");
-  ptr_name.PushLabel("testing");
-  ptr_name.PushLabel("local");
-  PtrRecordRdata ptr_rdata(std::move(ptr_name));
+  PtrRecordRdata ptr_rdata(DomainName{"ptr", "testing", "local"});
   EXPECT_EQ(record.rdata(), Rdata(ptr_rdata));
 
   EXPECT_TRUE(reader.ReadMdnsRecord(&record));
@@ -457,12 +398,9 @@ TEST(MdnsRecordTest, WriteARecord) {
       0xac, 0x00, 0x00, 0x01,  // 172.0.0.1
   };
   // clang-format on
-  DomainName name;
-  name.PushLabel("testing");
-  name.PushLabel("local");
-  ARecordRdata a_rdata(IPAddress{172,0,0,1});
-  MdnsRecord record(std::move(name), kTypeA, kClassIN | kCacheFlushBit, 120,
-                    std::move(a_rdata));
+  MdnsRecord record(DomainName{"testing", "local"}, kTypeA,
+                    kClassIN | kCacheFlushBit, 120,
+                    ARecordRdata(IPAddress{172, 0, 0, 1}));
 
   std::vector<uint8_t> buffer(sizeof(kExpectedResult));
   MdnsWriter writer(buffer.data(), buffer.size());
@@ -485,17 +423,9 @@ TEST(MdnsRecordTest, WritePtrRecord) {
       0xc0, 0x09,              // Domain name label pointer to byte
   };
   // clang-format on
-  DomainName name;
-  name.PushLabel("_service");
-  name.PushLabel("testing");
-  name.PushLabel("local");
-
-  DomainName ptr_name;
-  ptr_name.PushLabel("testing");
-  ptr_name.PushLabel("local");
-  PtrRecordRdata ptr_rdata(std::move(ptr_name));
-
-  MdnsRecord record(std::move(name), kTypePTR, kClassIN, 120, std::move(ptr_rdata));
+  MdnsRecord record(DomainName{"_service", "testing", "local"}, kTypePTR,
+                    kClassIN, 120,
+                    PtrRecordRdata(DomainName{"testing", "local"}));
 
   std::vector<uint8_t> buffer(sizeof(kExpectedResult));
   MdnsWriter writer(buffer.data(), buffer.size());

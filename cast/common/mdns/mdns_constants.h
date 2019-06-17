@@ -173,8 +173,9 @@ constexpr uint8_t kRcodeREFUSED = 5;
 
 // RFC 1035: https://www.ietf.org/rfc/rfc1035.txt
 
-// Maximum number of octets allowed in a single domain name.
-constexpr size_t kMaxDomainNameLength = 255;
+// Maximum number of octets allowed in a single domain name including the
+// terminating character octet
+constexpr size_t kMaxDomainNameLength = 256;
 // Maximum number of octets allowed in a single domain name label.
 constexpr size_t kMaxLabelLength = 63;
 

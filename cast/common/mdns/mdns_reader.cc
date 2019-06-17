@@ -31,7 +31,6 @@ bool MdnsReader::ReadCharacterString(std::string* out) {
 // See section 4.1.4. Message compression
 bool MdnsReader::ReadDomainName(DomainName* out) {
   OSP_DCHECK(out);
-  out->Clear();
   const uint8_t* position = current();
   // The number of bytes consumed reading from the starting position to either
   // the first label pointer or the final termination byte, including the
@@ -43,7 +42,8 @@ bool MdnsReader::ReadDomainName(DomainName* out) {
   // circular compression. The number of processed bytes cannot be possibly
   // greater than the length of the buffer.
   size_t bytes_processed = 0;
-
+  size_t domain_name_length = 0;
+  std::vector<absl::string_view> labels;
   // If we are pointing before the beginning or past the end of the buffer, we
   // hit a malformed pointer. If we have processed more bytes than there are in
   // the buffer, we are in a circular compression loop.
@@ -51,6 +51,7 @@ bool MdnsReader::ReadDomainName(DomainName* out) {
          bytes_processed <= length()) {
     const uint8_t label_type = openscreen::ReadBigEndian<uint8_t>(position);
     if (IsTerminationLabel(label_type)) {
+      *out = DomainName(labels.begin(), labels.end());
       if (!bytes_consumed) {
         bytes_consumed = position + sizeof(uint8_t) - current();
       }
@@ -74,10 +75,12 @@ bool MdnsReader::ReadDomainName(DomainName* out) {
       if (position + label_length >= end()) {
         return false;
       }
-      if (!out->PushLabel(absl::string_view(
-              reinterpret_cast<const char*>(position), label_length))) {
+      absl::string_view label(reinterpret_cast<const char*>(position), label_length);
+      domain_name_length += label_length + 1; // including the length byte
+      if (!IsValidDomainLabel(label) || domain_name_length > kMaxDomainNameLength) {
         return false;
       }
+      labels.push_back(label);
       bytes_processed += label_length;
       position += label_length;
     } else {

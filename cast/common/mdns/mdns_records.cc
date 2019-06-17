@@ -6,7 +6,6 @@
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_join.h"
-#include "platform/api/logging.h"
 
 namespace cast {
 namespace mdns {
@@ -14,32 +13,6 @@ namespace mdns {
 bool IsValidDomainLabel(absl::string_view label) {
   const size_t label_size = label.size();
   return label_size > 0 && label_size <= kMaxLabelLength;
-}
-
-void DomainName::Clear() {
-  max_wire_size_ = 1;
-  labels_.clear();
-}
-
-bool DomainName::PushLabel(absl::string_view label) {
-  if (!IsValidDomainLabel(label)) {
-    OSP_DLOG_ERROR << "Invalid domain name label: \"" << label << "\"";
-    return false;
-  }
-  // Include the label length byte in the size calculation.
-  // Add terminating character byte to maximum domain length, as it only
-  // limits label bytes and label length bytes.
-  if (max_wire_size_ + label.size() + 1 > kMaxDomainNameLength + 1) {
-    OSP_DLOG_ERROR << "Name too long. Cannot push label: \"" << label << "\"";
-    return false;
-  }
-
-  labels_.push_back(static_cast<std::string>(label));
-
-  // Update the size of the full name in wire format. Include the length byte in
-  // the size calculation.
-  max_wire_size_ += label.size() + 1;
-  return true;
 }
 
 const std::string& DomainName::Label(size_t label_index) const {

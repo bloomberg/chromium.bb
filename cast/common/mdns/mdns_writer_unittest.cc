@@ -20,12 +20,9 @@ TEST(MdnsWriterTest, WriteDomainName) {
     0x00
   };
   // clang-format on
-  DomainName name;
-  EXPECT_TRUE(name.PushLabel("testing"));
-  EXPECT_TRUE(name.PushLabel("local"));
   uint8_t result[sizeof(kExpectedResult)];
   MdnsWriter writer(result, sizeof(kExpectedResult));
-  ASSERT_TRUE(writer.WriteDomainName(name));
+  ASSERT_TRUE(writer.WriteDomainName(DomainName{"testing", "local"}));
   EXPECT_EQ(0UL, writer.remaining());
   EXPECT_EQ(0, memcmp(kExpectedResult, result, sizeof(result)));
 }
@@ -43,29 +40,12 @@ TEST(MdnsWriterTest, WriteDomainName_CompressedMessage) {
     0xC0, 0x0F,  // byte 15
   };
   // clang-format on
-  DomainName name1;
-  name1.PushLabel("testing");
-  name1.PushLabel("local");
-
-  DomainName name2;
-  name2.PushLabel("prefix");
-  name2.PushLabel("local");
-
-  DomainName name3;
-  name3.PushLabel("new");
-  name3.PushLabel("prefix");
-  name3.PushLabel("local");
-
-  DomainName name4;
-  name4.PushLabel("prefix");
-  name4.PushLabel("local");
-
   uint8_t result[sizeof(kExpectedResultCompressed)];
   MdnsWriter writer(result, sizeof(kExpectedResultCompressed));
-  ASSERT_TRUE(writer.WriteDomainName(name1));
-  ASSERT_TRUE(writer.WriteDomainName(name2));
-  ASSERT_TRUE(writer.WriteDomainName(name3));
-  ASSERT_TRUE(writer.WriteDomainName(name4));
+  ASSERT_TRUE(writer.WriteDomainName(DomainName{"testing", "local"}));
+  ASSERT_TRUE(writer.WriteDomainName(DomainName{"prefix", "local"}));
+  ASSERT_TRUE(writer.WriteDomainName(DomainName{"new", "prefix", "local"}));
+  ASSERT_TRUE(writer.WriteDomainName(DomainName{"prefix", "local"}));
   EXPECT_EQ(0UL, writer.remaining());
   EXPECT_THAT(std::vector<uint8_t>(result, result + sizeof(result)),
               testing::ElementsAreArray(kExpectedResultCompressed));
@@ -82,26 +62,13 @@ TEST(MdnsWriterTest, WriteDomainName_NotEnoughSpace) {
     0x00
   };
   // clang-format on
-  DomainName name1;
-  name1.PushLabel("testing");
-  name1.PushLabel("local");
-
-  // Not enough space to write this domain name. Failure to write it must not
-  // affect correct successful write of the next domain name.
-  DomainName name2;
-  name2.PushLabel("some");
-  name2.PushLabel("different");
-  name2.PushLabel("domain");
-
-  DomainName name3;
-  name3.PushLabel("different");
-  name3.PushLabel("domain");
-
   uint8_t result[sizeof(kExpectedResultCompressed)];
   MdnsWriter writer(result, sizeof(kExpectedResultCompressed));
-  ASSERT_TRUE(writer.WriteDomainName(name1));
-  ASSERT_FALSE(writer.WriteDomainName(name2));
-  ASSERT_TRUE(writer.WriteDomainName(name3));
+  ASSERT_TRUE(writer.WriteDomainName(DomainName{"testing", "local"}));
+  // Not enough space to write this domain name. Failure to write it must not
+  // affect correct successful write of the next domain name.
+  ASSERT_FALSE(writer.WriteDomainName(DomainName{"a", "different", "domain"}));
+  ASSERT_TRUE(writer.WriteDomainName(DomainName{"different", "domain"}));
   EXPECT_EQ(0UL, writer.remaining());
   EXPECT_THAT(std::vector<uint8_t>(result, result + sizeof(result)),
               testing::ElementsAreArray(kExpectedResultCompressed));
@@ -131,11 +98,7 @@ TEST(MdnsWriterTest, WriteDomainName_Long) {
       0x00,
   };
   // clang-format on
-  DomainName name;
-  EXPECT_TRUE(name.PushLabel(kLongLabel));
-  EXPECT_TRUE(name.PushLabel(kLongLabel));
-  EXPECT_TRUE(name.PushLabel(kLongLabel));
-  EXPECT_TRUE(name.PushLabel(kLongLabel));
+  DomainName name{kLongLabel, kLongLabel, kLongLabel, kLongLabel};
   uint8_t result[sizeof(kExpectedResult)];
   MdnsWriter writer(result, sizeof(kExpectedResult));
   ASSERT_TRUE(writer.WriteDomainName(name));
@@ -165,10 +128,7 @@ TEST(MdnsWriterTest, WriteDomainName_NoCompressionForBigOffsets) {
   };
   // clang-format on
 
-  DomainName name;
-  name.PushLabel("testing");
-  name.PushLabel("local");
-
+  DomainName name{"testing", "local"};
   // Maximum supported value for label pointer offset is 0x3FFF.
   // Labels written into a buffer at greater offsets must not
   // produce compression label pointers.
