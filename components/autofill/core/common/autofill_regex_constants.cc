@@ -96,6 +96,7 @@ const char kZipCodeRe[] =
     "|郵便番号"                 // ja-JP
     "|codigo|codpos|\\bcep\\b"  // pt-BR, pt-PT
     "|Почтовый.?Индекс"         // ru
+    "|पिन.?कोड"                 // hi
     "|邮政编码|邮编"            // zh-CN
     "|郵遞區號"                 // zh-TW
     "|우편.?번호";              // ko-KR
@@ -115,6 +116,8 @@ const char kCityRe[] =
     "|市"                                    // zh-CN
     "|分區"                                  // zh-TW
     "|شهر"                                   // fa
+    "|शहर"                                   // hi for city
+    "|ग्राम|गाँव"                              // hi for village
     "|^시[^도·・]|시[·・]?군[·・]?구";       // ko-KR
 const char kStateRe[] =
     "(?<!(united|hist|history).?)state|county|region|province"
@@ -125,6 +128,7 @@ const char kStateRe[] =
     "|省"                   // zh-CN
     "|地區"                 // zh-TW
     "|استان"                // fa
+    "|राज्य"                 // hi
     "|^시[·・]?도";         // ko-KR
 
 /////////////////////////////////////////////////////////////////////////////
@@ -148,8 +152,8 @@ const char kSearchTermRe[] =
 /////////////////////////////////////////////////////////////////////////////
 const char kPriceRe[] =
     "\\bprice\\b|\\brate\\b|\\bcost\\b"
-    "قیمة‎|سعر‎"                           // ar
-    "قیمت"                                            // fa
+    "|قیمة‎|سعر‎"                          // ar
+    "|قیمت"                                           // fa
     "|\\bprix\\b|\\bcoût\\b|\\bcout\\b|\\btarif\\b";  // fr-CA
 
 /////////////////////////////////////////////////////////////////////////////
@@ -258,6 +262,7 @@ const char kEmailRe[] =
     "|邮件|邮箱"                                   // zh-CN
     "|電郵地址"                                    // zh-TW
     "|ایمیل|پست.*الکترونیک"                        // fa
+    "|ईमेल|इलॅक्ट्रॉनिक.?मेल"                           // hi
     "|(?:이메일|전자.?우편|[Ee]-?mail)(.?주소)?";  // ko-KR
 
 /////////////////////////////////////////////////////////////////////////////
@@ -291,7 +296,8 @@ const char kFirstNameRe[] =
     "|nome"                    // pt-BR, pt-PT
     "|Имя"                     // ru
     "|نام"                     // fa
-    "|이름";                   // ko-KR
+    "|이름"                    // ko-KR
+    "|^नाम";                   // hi
 const char kMiddleInitialRe[] = "middle.*initial|m\\.i\\.|mi$|\\bmi\\b";
 const char kMiddleNameRe[] =
     "middle.*name|mname|middle$"
@@ -310,6 +316,7 @@ const char kLastNameRe[] =
     "|morada|apelidos|surename|sobrenome"  // pt-BR, pt-PT
     "|Фамилия"                             // ru
     "|نام.*خانوادگی"                       // fa
+    "|उपनाम"                               // hi
     "|\\b성(?:[^명]|\\b)";                 // ko-KR
 
 /////////////////////////////////////////////////////////////////////////////
@@ -323,6 +330,7 @@ const char kPhoneRe[] =
     "|電話"                                         // ja-JP
     "|telefone|telemovel"                           // pt-BR, pt-PT
     "|телефон"                                      // ru
+    "|मोबाइल"                                       // hi for mobile
     "|电话"                                         // zh-CN
     "|(?:전화|핸드폰|휴대폰|휴대전화)(?:.?번호)?";  // ko-KR
 const char kCountryCodeRe[] =
