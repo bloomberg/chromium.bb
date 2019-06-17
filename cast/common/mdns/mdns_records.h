@@ -35,14 +35,14 @@ class DomainName {
       OSP_DCHECK(IsValidDomainLabel(label));
       // Include the label length byte in the size calculation.
       OSP_DCHECK(max_wire_size_ + label.size() + 1 <= kMaxDomainNameLength);
-      labels_.emplace_back(static_cast<std::string>(label));
+      labels_.emplace_back(label);
       // Update the size of the full name in wire format. Include the length
       // byte in the size calculation.
       max_wire_size_ += label.size() + 1;
     }
   }
 
-  DomainName(std::initializer_list<absl::string_view> labels)
+  explicit DomainName(std::initializer_list<absl::string_view> labels)
       : DomainName(labels.begin(), labels.end()) {}
 
   DomainName(const DomainName& other) = default;
@@ -213,6 +213,7 @@ class TxtRecordRdata {
  public:
   TxtRecordRdata() = default;
   explicit TxtRecordRdata(std::vector<std::string> texts);
+  explicit TxtRecordRdata(std::initializer_list<absl::string_view> texts);
   TxtRecordRdata(const TxtRecordRdata& other) = default;
   TxtRecordRdata(TxtRecordRdata&& other) noexcept = default;
   ~TxtRecordRdata() = default;

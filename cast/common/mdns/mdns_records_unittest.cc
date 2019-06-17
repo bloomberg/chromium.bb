@@ -173,11 +173,7 @@ TEST(MdnsRdataTest, TxtRecordRdata) {
       'w', 'e', '.',  '.', 'i', 'r', 'd', '/', '/',
   };
   // clang-format on
-  std::vector<std::string> texts;
-  texts.push_back("foo=1");
-  texts.push_back("bar=2");
-  texts.push_back("name=we..ird//");
-  TxtRecordRdata rdata(std::move(texts));
+  TxtRecordRdata rdata{"foo=1", "bar=2", "name=we..ird//"};
   // RDLENGTH is uint16_t and is a part of kExpectedRdata.
   EXPECT_EQ(sizeof(kExpectedRdata), rdata.max_wire_size() + sizeof(uint16_t));
 
@@ -199,8 +195,7 @@ TEST(MdnsRdataTest, TxtRecordRdata_Empty) {
       0x00, 0x01,  // RDLENGTH = 1
       0x00,        // empty string
   };
-  std::vector<std::string> texts;
-  TxtRecordRdata rdata(std::move(texts));
+  TxtRecordRdata rdata;
   // RDLENGTH is uint16_t and is a part of kExpectedRdata.
   EXPECT_EQ(sizeof(kExpectedRdata), rdata.max_wire_size() + sizeof(uint16_t));
 

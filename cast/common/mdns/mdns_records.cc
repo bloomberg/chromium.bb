@@ -124,6 +124,13 @@ TxtRecordRdata::TxtRecordRdata(std::vector<std::string> texts)
                    [](const std::string& entry) { return entry.empty(); }));
 }
 
+TxtRecordRdata::TxtRecordRdata(std::initializer_list<absl::string_view> texts) {
+  for (const absl::string_view entry : texts) {
+    OSP_DCHECK(!entry.empty());
+    texts_.emplace_back(entry);
+  }
+}
+
 bool TxtRecordRdata::operator==(const TxtRecordRdata& rhs) const {
   return texts_ == rhs.texts_;
 }
