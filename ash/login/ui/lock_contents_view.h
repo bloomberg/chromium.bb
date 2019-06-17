@@ -145,7 +145,7 @@ class ASH_EXPORT LockContentsView
   void OnAuthEnabledForUser(const AccountId& user) override;
   void OnAuthDisabledForUser(
       const AccountId& user,
-      const ash::mojom::AuthDisabledDataPtr& auth_disabled_data) override;
+      const AuthDisabledData& auth_disabled_data) override;
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
   void OnTapToUnlockEnabledForUserChanged(const AccountId& user,
                                           bool enabled) override;

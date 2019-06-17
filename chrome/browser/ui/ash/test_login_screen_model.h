@@ -23,6 +23,12 @@ class TestLoginScreenModel : public ash::LoginScreenModel {
                         const ash::UserAvatar& avatar) override;
   void NotifyFingerprintAuthResult(const AccountId& account_id,
                                    bool successful) override;
+  void EnableAuthForUser(const AccountId& account_id) override;
+  void DisableAuthForUser(
+      const AccountId& account_id,
+      const ash::AuthDisabledData& auth_disabled_data) override;
+  void EnableTapToUnlockForUser(const AccountId& account_id) override;
+  void ForceOnlineSignInForUser(const AccountId& account_id) override;
   void ShowEasyUnlockIcon(const AccountId& user,
                           const ash::EasyUnlockIconOptions& icon) override;
   void UpdateWarningMessage(const base::string16& message) override;

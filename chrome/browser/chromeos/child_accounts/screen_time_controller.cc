@@ -46,6 +46,22 @@ constexpr char kScreenStateNextStateChangeTime[] = "next_state_change_time";
 constexpr char kScreenStateNextPolicyType[] = "next_active_policy";
 constexpr char kScreenStateNextUnlockTime[] = "next_unlock_time";
 
+ash::AuthDisabledReason ConvertLockReason(
+    usage_time_limit::PolicyType active_policy) {
+  switch (active_policy) {
+    case usage_time_limit::PolicyType::kFixedLimit:
+      return ash::AuthDisabledReason::kTimeWindowLimit;
+    case usage_time_limit::PolicyType::kUsageLimit:
+      return ash::AuthDisabledReason::kTimeUsageLimit;
+    case usage_time_limit::PolicyType::kOverride:
+      return ash::AuthDisabledReason::kTimeLimitOverride;
+    case usage_time_limit::PolicyType::kNoPolicy:
+      break;
+  }
+  NOTREACHED();
+  return ash::AuthDisabledReason();
+}
+
 }  // namespace
 
 // static
@@ -263,13 +279,10 @@ void ScreenTimeController::OnScreenLockByPolicy(
       chromeos::ProfileHelper::Get()
           ->GetUserByProfile(Profile::FromBrowserContext(context_))
           ->GetAccountId();
-  base::Optional<ash::mojom::AuthDisabledReason> disabled_reason =
-      ConvertLockReason(active_policy);
-  DCHECK(disabled_reason.has_value());
   ScreenLocker::default_screen_locker()->DisableAuthForUser(
       account_id,
-      ash::mojom::AuthDisabledData::New(
-          disabled_reason.value(), next_unlock_time, GetScreenTimeDuration()));
+      ash::AuthDisabledData(ConvertLockReason(active_policy), next_unlock_time,
+                            GetScreenTimeDuration()));
 
   // Add parent access code button.
   if (base::FeatureList::IsEnabled(features::kParentAccessCode))
@@ -290,26 +303,6 @@ void ScreenTimeController::OnScreenLockByPolicyEnd() {
   ScreenLocker::default_screen_locker()->EnableAuthForUser(account_id);
   if (base::FeatureList::IsEnabled(features::kParentAccessCode))
     LoginScreenClient::Get()->login_screen()->SetShowParentAccessButton(false);
-}
-
-base::Optional<ash::mojom::AuthDisabledReason>
-ScreenTimeController::ConvertLockReason(
-    usage_time_limit::PolicyType active_policy) {
-  base::Optional<ash::mojom::AuthDisabledReason> disabled_reason;
-  switch (active_policy) {
-    case usage_time_limit::PolicyType::kFixedLimit:
-      disabled_reason = ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT;
-      break;
-    case usage_time_limit::PolicyType::kUsageLimit:
-      disabled_reason = ash::mojom::AuthDisabledReason::TIME_USAGE_LIMIT;
-      break;
-    case usage_time_limit::PolicyType::kOverride:
-      disabled_reason = ash::mojom::AuthDisabledReason::TIME_LIMIT_OVERRIDE;
-      break;
-    default:
-      disabled_reason = base::nullopt;
-  }
-  return disabled_reason;
 }
 
 void ScreenTimeController::OnPolicyChanged() {

@@ -7,6 +7,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/session/user_info.h"
+#include "base/time/time.h"
 #include "base/token.h"
 #include "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom.h"
 
@@ -247,6 +248,42 @@ struct ASH_PUBLIC_EXPORT LoginUserInfo {
 
   // Contains the public account information if user type is PUBLIC_ACCOUNT.
   base::Optional<PublicAccountInfo> public_account_info;
+};
+
+enum class AuthDisabledReason {
+  // Auth is disabled because the device is locked by a time limit override.
+  kTimeLimitOverride,
+
+  // Auth is disabled because the user has reached their daily usage limit on
+  // the device.
+  kTimeUsageLimit,
+
+  // Auth is disabled because the device is within a locked time window.
+  kTimeWindowLimit,
+};
+
+// The data needed to customize the lock screen when auth is disabled.
+struct ASH_PUBLIC_EXPORT AuthDisabledData {
+  AuthDisabledData();
+  AuthDisabledData(AuthDisabledReason reason,
+                   const base::Time& auth_reenabled_time,
+                   const base::TimeDelta& device_used_time);
+  AuthDisabledData(const AuthDisabledData& other);
+  AuthDisabledData(AuthDisabledData&& other);
+  ~AuthDisabledData();
+
+  AuthDisabledData& operator=(const AuthDisabledData& other);
+  AuthDisabledData& operator=(AuthDisabledData&& other);
+
+  // Reason why auth is disabled.
+  AuthDisabledReason reason = AuthDisabledReason::kTimeLimitOverride;
+
+  // A future time when auth will be enabled. This value is for display purpose
+  // only, auth won't be automatically enabled when this time is reached.
+  base::Time auth_reenabled_time;
+
+  // The amount of time that the user used this device.
+  base::TimeDelta device_used_time;
 };
 
 }  // namespace ash

@@ -32,7 +32,7 @@ void LoginDataDispatcher::Observer::OnAuthEnabledForUser(
 
 void LoginDataDispatcher::Observer::OnAuthDisabledForUser(
     const AccountId& user,
-    const mojom::AuthDisabledDataPtr& auth_disabled_data) {}
+    const AuthDisabledData& auth_disabled_data) {}
 
 void LoginDataDispatcher::Observer::OnTapToUnlockEnabledForUserChanged(
     const AccountId& user,
@@ -99,6 +99,12 @@ void LoginDataDispatcher::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void LoginDataDispatcher::SetTapToUnlockEnabledForUser(const AccountId& user,
+                                                       bool enabled) {
+  for (auto& observer : observers_)
+    observer.OnTapToUnlockEnabledForUserChanged(user, enabled);
+}
+
 void LoginDataDispatcher::SetUserList(const std::vector<LoginUserInfo>& users) {
   for (auto& observer : observers_)
     observer.OnUsersChanged(users);
@@ -138,19 +144,16 @@ void LoginDataDispatcher::EnableAuthForUser(const AccountId& account_id) {
 
 void LoginDataDispatcher::DisableAuthForUser(
     const AccountId& account_id,
-    ash::mojom::AuthDisabledDataPtr auth_disabled_data) {
-  for (auto& observer : observers_) {
-    observer.OnAuthDisabledForUser(account_id, auth_disabled_data);
-  }
-}
-
-void LoginDataDispatcher::SetTapToUnlockEnabledForUser(const AccountId& user,
-                                                       bool enabled) {
+    const AuthDisabledData& auth_disabled_data) {
   for (auto& observer : observers_)
-    observer.OnTapToUnlockEnabledForUserChanged(user, enabled);
+    observer.OnAuthDisabledForUser(account_id, auth_disabled_data);
 }
 
-void LoginDataDispatcher::SetForceOnlineSignInForUser(const AccountId& user) {
+void LoginDataDispatcher::EnableTapToUnlockForUser(const AccountId& user) {
+  SetTapToUnlockEnabledForUser(user, true);
+}
+
+void LoginDataDispatcher::ForceOnlineSignInForUser(const AccountId& user) {
   for (auto& observer : observers_)
     observer.OnForceOnlineSignInForUser(user);
 }

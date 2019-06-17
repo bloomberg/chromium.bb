@@ -800,7 +800,7 @@ void LockContentsView::OnAuthEnabledForUser(const AccountId& user) {
 
 void LockContentsView::OnAuthDisabledForUser(
     const AccountId& user,
-    const ash::mojom::AuthDisabledDataPtr& auth_disabled_data) {
+    const AuthDisabledData& auth_disabled_data) {
   LockContentsView::UserState* state = FindStateForUser(user);
   if (!state) {
     LOG(ERROR) << "Unable to find user when disabling auth";

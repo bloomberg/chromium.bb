@@ -4,36 +4,9 @@
 
 module ash.mojom;
 
-import "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
-
-// Reason why the auth is disabled. This is used to personalize the UI.
-enum AuthDisabledReason {
-  // Auth is disabled because the device is locked by a time limit override.
-  TIME_LIMIT_OVERRIDE,
-
-  // Auth is disabled because the user has reached their daily usage limit on
-  // the device.
-  TIME_USAGE_LIMIT,
-
-  // Auth is disabled because the device is within a locked time window.
-  TIME_WINDOW_LIMIT,
-};
-
-// The data needed to customize the lock screen when auth is disabled.
-struct AuthDisabledData {
-  // Reason why auth is disabled.
-  AuthDisabledReason reason;
-
-  // A future time when auth will be enabled. This value is for display purpose
-  // only, auth won't be automatically enabled when this time is reached.
-  mojo_base.mojom.Time auth_reenabled_time;
-
-  // The amount of time that the user used this device.
-  mojo_base.mojom.TimeDelta device_used_time;
-};
 
 // Allows clients (e.g. the browser process) to send messages to the ash
 // login/lock/user-add screens.
@@ -65,27 +38,6 @@ interface LoginScreen {
 
   // Requests to close any displayed error messages in ash lock screen.
   ClearErrors();
-
-  // Requests to set the authentication type.
-  // |account_id|:    The account id of the user in the user pod.
-  // |auth_type|:     Authentication type.
-  // |initial_value|: A message shown in the password field of the user pod.
-  SetAuthType(signin.mojom.AccountId account_id,
-              proximity_auth.mojom.AuthType auth_type,
-              mojo_base.mojom.String16 initial_value);
-
-
-  // Called when auth should be enabled for the given user. When auth is
-  // disabled, the user cannot unlock the device. Auth is enabled by default.
-  // |account_id|:            The account id of the user in the user pod.
-  EnableAuthForUser(signin.mojom.AccountId account_id);
-
-  // Called when auth should be disabled for the given user. When auth is
-  // disabled, the user cannot unlock the device. Auth is enabled by default.
-  // |account_id|:            The account id of the user in the user pod.
-  // |auth_disabled_data|:    The data needed to customize the lock screen UI.
-  DisableAuthForUser(signin.mojom.AccountId account_id,
-                      AuthDisabledData auth_disabled_data);
 
   // Check if the login/lock screen is ready for a password.
   IsReadyForPassword() => (bool is_ready);

@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "ash/public/interfaces/login_screen.mojom.h"
+#include "ash/public/cpp/login_types.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -89,7 +89,7 @@ class ScreenLocker : public AuthStatusConsumer,
   // Enables authentication for the user with |account_id|. Notifies lock screen
   // UI. |auth_disabled_data| is used to display information in the UI.
   void DisableAuthForUser(const AccountId& account_id,
-                          ash::mojom::AuthDisabledDataPtr auth_disabled_data);
+                          const ash::AuthDisabledData& auth_disabled_data);
 
   // Authenticates the user with given |user_context|.
   void Authenticate(const UserContext& user_context,

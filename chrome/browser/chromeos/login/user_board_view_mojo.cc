@@ -122,8 +122,13 @@ void UserBoardViewMojo::HideUserPodCustomIcon(const AccountId& account_id) {
 void UserBoardViewMojo::SetAuthType(const AccountId& account_id,
                                     proximity_auth::mojom::AuthType auth_type,
                                     const base::string16& initial_value) {
-  LoginScreenClient::Get()->login_screen()->SetAuthType(account_id, auth_type,
-                                                        initial_value);
+  if (auth_type == proximity_auth::mojom::AuthType::USER_CLICK) {
+    ash::LoginScreen::Get()->GetModel()->EnableTapToUnlockForUser(account_id);
+  } else if (auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN) {
+    ash::LoginScreen::Get()->GetModel()->ForceOnlineSignInForUser(account_id);
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 base::WeakPtr<UserBoardView> UserBoardViewMojo::GetWeakPtr() {
