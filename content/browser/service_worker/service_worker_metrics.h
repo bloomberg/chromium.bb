@@ -210,37 +210,6 @@ class ServiceWorkerMetrics {
   };
 
   // Used for UMA. Append only.
-  // This enum describes how an activated worker was found and prepared (i.e.,
-  // reached the RUNNING status) in order to dispatch a fetch event to.
-  enum class WorkerPreparationType {
-    UNKNOWN = 0,
-    // The worker was already starting up. We waited for it to finish.
-    STARTING = 1,
-    // The worker was already running.
-    RUNNING = 2,
-    // The worker was stopping. We waited for it to stop, and then started it
-    // up.
-    STOPPING = 3,
-    // The worker was in the stopped state. We started it up, and startup
-    // required a new process to be created.
-    START_IN_NEW_PROCESS = 4,
-    // Deprecated 07/2017; replaced by START_IN_EXISTING_UNREADY_PROCESS and
-    // START_IN_EXISTING_READY_PROCESS.
-    //   START_IN_EXISTING_PROCESS = 5,
-    // The worker was in the stopped state. We started it up, and this occurred
-    // during browser startup.
-    START_DURING_STARTUP = 6,
-    // The worker was in the stopped state. We started it up, and it used an
-    // existing unready process.
-    START_IN_EXISTING_UNREADY_PROCESS = 7,
-    // The worker was in the stopped state. We started it up, and it used an
-    // existing ready process.
-    START_IN_EXISTING_READY_PROCESS = 8,
-    // Add new types here.
-    kMaxValue = START_IN_EXISTING_READY_PROCESS,
-  };
-
-  // Used for UMA. Append only.
   // Describes the outcome of a time measurement taken between processes.
   enum class CrossProcessTimeDelta {
     NORMAL,
@@ -341,15 +310,6 @@ class ServiceWorkerMetrics {
                                     bool is_installed,
                                     StartSituation start_situation,
                                     EventType purpose);
-
-  // Records metrics for the preparation of an activated Service Worker for a
-  // main frame navigation.
-  CONTENT_EXPORT static void RecordActivatedWorkerPreparationForMainFrame(
-      base::TimeDelta time,
-      EmbeddedWorkerStatus initial_worker_status,
-      StartSituation start_situation,
-      bool did_navigation_preload,
-      const GURL& url);
 
   // Records the result of trying to stop a worker.
   static void RecordWorkerStopped(StopStatus status);

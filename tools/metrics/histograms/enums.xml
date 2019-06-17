@@ -51813,6 +51813,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ServiceWorkerPreparationType">
+  <obsolete>
+    Removed on June 2019
+  </obsolete>
   <summary>
     The type of preparation that was required for the browser to find and
     possibly start up a service worker to dispatch a fetch event to. From

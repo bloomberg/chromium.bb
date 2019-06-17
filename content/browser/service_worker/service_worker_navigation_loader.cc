@@ -302,16 +302,6 @@ void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
   response_head_.load_timing.send_end = now;
 
   devtools_attached_ = version->embedded_worker()->devtools_attached();
-
-  // Note that we don't record worker preparation time in S13nServiceWorker
-  // path for now. If we want to measure worker preparation time we can
-  // calculate it from response_head_.service_worker_ready_time and
-  // response_head_.load_timing.request_start.
-  // https://crbug.com/852664
-  ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
-      base::TimeDelta(), initial_worker_status,
-      version->embedded_worker()->start_situation(), did_navigation_preload_,
-      resource_request_.url);
 }
 
 void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
