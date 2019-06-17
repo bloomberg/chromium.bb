@@ -44,7 +44,7 @@ unnecessary time to the test runtime. To avoid this, tests should:
     *   Note that `UserPolicyMixin` propagates policy changes to
         `LocalPolicyTestServerMixin` optionally provided in its constructor.
     *   For testing adding child users, directly setting up
-        `LocalPolicyTestsServer`, to avoid setting user's cached policy before
+        `LocalPolicyTestServer`, to avoid setting user's cached policy before
         they ever logged in, might be more appropriate.
 *   Set up `FakeGaiaMixin` to serve the child user's auth tokens.
     *   This should be done even if the test does not use fake gaia for login,
