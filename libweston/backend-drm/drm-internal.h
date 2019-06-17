@@ -501,3 +501,29 @@ to_drm_mode(struct weston_mode *base)
 {
 	return container_of(base, struct drm_mode, base);
 }
+
+int
+drm_mode_ensure_blob(struct drm_backend *backend, struct drm_mode *mode);
+
+struct drm_mode *
+drm_output_choose_mode(struct drm_output *output,
+		       struct weston_mode *target_mode);
+void
+update_head_from_connector(struct drm_head *head,
+			   drmModeObjectProperties *props);
+
+void
+drm_mode_list_destroy(struct drm_backend *backend, struct wl_list *mode_list);
+
+void
+drm_output_print_modes(struct drm_output *output);
+
+int
+drm_output_set_mode(struct weston_output *base,
+		    enum weston_drm_backend_output_mode mode,
+		    const char *modeline);
+
+uint64_t
+drm_property_get_value(struct drm_property_info *info,
+		       const drmModeObjectProperties *props,
+		       uint64_t def);
