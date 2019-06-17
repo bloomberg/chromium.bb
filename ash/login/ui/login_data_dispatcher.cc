@@ -79,8 +79,6 @@ void LoginDataDispatcher::Observer::
 void LoginDataDispatcher::Observer::OnDetachableBasePairingStatusChanged(
     DetachableBasePairingStatus pairing_status) {}
 
-void LoginDataDispatcher::Observer::OnSetShowParentAccessDialog(bool show) {}
-
 void LoginDataDispatcher::Observer::OnFocusLeavingLockScreenApps(bool reverse) {
 }
 
@@ -226,11 +224,6 @@ void LoginDataDispatcher::SetDetachableBasePairingStatus(
     DetachableBasePairingStatus pairing_status) {
   for (auto& observer : observers_)
     observer.OnDetachableBasePairingStatusChanged(pairing_status);
-}
-
-void LoginDataDispatcher::SetShowParentAccessDialog(bool show) {
-  for (auto& observer : observers_)
-    observer.OnSetShowParentAccessDialog(show);
 }
 
 void LoginDataDispatcher::HandleFocusLeavingLockScreenApps(bool reverse) {

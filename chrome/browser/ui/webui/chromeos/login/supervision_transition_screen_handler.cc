@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 
+#include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -101,7 +102,7 @@ void SupervisionTransitionScreenHandler::Show() {
   SystemTrayClient::Get()->SetPrimaryTrayEnabled(false);
   LoginScreenClient::Get()->login_screen()->SetShutdownButtonEnabled(false);
   LoginScreenClient::Get()->login_screen()->SetAllowLoginAsGuest(false);
-  LoginScreenClient::Get()->login_screen()->SetShowGuestButtonInOobe(false);
+  ash::LoginScreen::Get()->ShowGuestButtonInOobe(false);
 
   base::DictionaryValue data;
   data.SetBoolean("isRemovingSupervision",

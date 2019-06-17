@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -1509,7 +1510,7 @@ void WizardController::OnAccessibilityStatusChanged(
 }
 
 void WizardController::OnGuestModePolicyUpdated() {
-  LoginScreenClient::Get()->login_screen()->SetShowGuestButtonInOobe(
+  ash::LoginScreen::Get()->ShowGuestButtonInOobe(
       user_manager::UserManager::Get()->IsGuestSessionAllowed());
 }
 

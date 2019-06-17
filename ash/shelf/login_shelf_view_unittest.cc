@@ -525,7 +525,7 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterShutdownButtonStatusChange) {
 
 TEST_F(LoginShelfViewTest, ParentAccessButtonVisibility) {
   // Parent access button should only be visible on lock screen.
-  Shell::Get()->login_screen_controller()->SetShowParentAccessButton(true);
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(true);
 
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
@@ -556,12 +556,12 @@ TEST_F(LoginShelfViewTest, ParentAccessButtonVisibilityChangeOnLockScreen) {
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
 
-  Shell::Get()->login_screen_controller()->SetShowParentAccessButton(true);
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(true);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut,
                          LoginShelfView::kParentAccess}));
 
-  Shell::Get()->login_screen_controller()->SetShowParentAccessButton(false);
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
 }

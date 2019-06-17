@@ -24,21 +24,6 @@ interface LoginScreen {
   // successfully displayed.
   ShowLoginScreen() => (bool did_show);
 
-  // Requests to show error message in the ash lock screen.
-  // TODO(xiaoyinh): login_attempts is probably not needed from chrome,
-  // remove it when we start to count the login attempts in ash lock screen.
-  // |login_attempts|: The number of the login authentication attempts.
-  // |error_text|:     The error text to be shown in lock screen.
-  // |help_link_text|: The help link to be shown in lock screen.
-  // |help_topic_id|:  The id of the help app topic regarding this error.
-  ShowErrorMessage(int32 login_attempts,
-                   string error_text,
-                   string help_link_text,
-                   int32 help_topic_id);
-
-  // Requests to close any displayed error messages in ash lock screen.
-  ClearErrors();
-
   // Check if the login/lock screen is ready for a password.
   IsReadyForPassword() => (bool is_ready);
 
@@ -54,15 +39,6 @@ interface LoginScreen {
   // Sets if the guest button on the login shelf can be shown. Even if set to
   // true the button may still not be visible.
   SetAllowLoginAsGuest(bool allow_guest);
-
-  // Sets if the guest button on the login shelf can be shown during OOBE.
-  SetShowGuestButtonInOobe(bool show);
-
-  // Sets whether parent access button can be shown on the login shelf.
-  SetShowParentAccessButton(bool show);
-
-  // Sets whether parent access code input dialog is shown on the lock screen.
-  SetShowParentAccessDialog(bool show);
 
   // Transitions focus to the shelf area. If |reverse|, focuses the status area.
   FocusLoginShelf(bool reverse);

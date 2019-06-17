@@ -90,11 +90,11 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void SetAllowLoginAsGuest(bool allow_guest);
 
   // Sets whether parent access button can be shown on the login shelf.
-  void SetShowParentAccessButton(bool show);
+  void ShowParentAccessButton(bool show);
 
   // Sets if the guest button on the login shelf can be shown during gaia
   // signin screen.
-  void SetShowGuestButtonInOobe(bool show);
+  void ShowGuestButtonInOobe(bool show);
 
   // Sets whether users can be added from the login screen.
   void SetAddUserButtonEnabled(bool enable_add_user);

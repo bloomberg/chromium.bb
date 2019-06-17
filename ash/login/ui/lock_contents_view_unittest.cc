@@ -1946,7 +1946,7 @@ TEST_F(LockContentsViewUnitTest, ParentAccessDialog) {
                   .textfield()
                   ->HasFocus());
 
-  DataDispatcher()->SetShowParentAccessDialog(true);
+  contents->ShowParentAccessDialog(true);
 
   EXPECT_TRUE(primary_view->auth_user());
   EXPECT_TRUE(primary_view->parent_access());
@@ -1957,7 +1957,7 @@ TEST_F(LockContentsViewUnitTest, ParentAccessDialog) {
       ParentAccessView::TestApi(primary_view->parent_access())
           .access_code_view()));
 
-  DataDispatcher()->SetShowParentAccessDialog(false);
+  contents->ShowParentAccessDialog(false);
 
   EXPECT_TRUE(primary_view->auth_user());
   EXPECT_FALSE(primary_view->parent_access());

@@ -109,24 +109,18 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
 
   // LoginScreen:
   LoginScreenModel* GetModel() override;
+  void ShowGuestButtonInOobe(bool show) override;
+  void ShowParentAccessButton(bool show) override;
 
   // mojom::LoginScreen:
   void SetClient(mojom::LoginScreenClientPtr client) override;
   void ShowLockScreen(ShowLockScreenCallback on_shown) override;
   void ShowLoginScreen(ShowLoginScreenCallback on_shown) override;
-  void ShowErrorMessage(int32_t login_attempts,
-                        const std::string& error_text,
-                        const std::string& help_link_text,
-                        int32_t help_topic_id) override;
-  void ClearErrors() override;
   void IsReadyForPassword(IsReadyForPasswordCallback callback) override;
   void ShowKioskAppError(const std::string& message) override;
   void SetAddUserButtonEnabled(bool enable) override;
   void SetShutdownButtonEnabled(bool enable) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
-  void SetShowGuestButtonInOobe(bool show) override;
-  void SetShowParentAccessButton(bool show) override;
-  void SetShowParentAccessDialog(bool show) override;
   void FocusLoginShelf(bool reverse) override;
 
   // KioskAppMenu:

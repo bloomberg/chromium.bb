@@ -496,7 +496,7 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
       StartAddUser();
       break;
     case kParentAccess:
-      Shell::Get()->login_screen_controller()->SetShowParentAccessDialog(true);
+      LockScreen::Get()->ShowParentAccessDialog();
       break;
     default:
       NOTREACHED();
@@ -549,12 +549,12 @@ void LoginShelfView::SetAllowLoginAsGuest(bool allow_guest) {
   UpdateUi();
 }
 
-void LoginShelfView::SetShowParentAccessButton(bool show) {
+void LoginShelfView::ShowParentAccessButton(bool show) {
   show_parent_access_ = show;
   UpdateUi();
 }
 
-void LoginShelfView::SetShowGuestButtonInOobe(bool show) {
+void LoginShelfView::ShowGuestButtonInOobe(bool show) {
   allow_guest_in_oobe_ = show;
   UpdateUi();
 }

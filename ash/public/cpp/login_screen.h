@@ -23,6 +23,12 @@ class ASH_PUBLIC_EXPORT LoginScreen {
 
   virtual LoginScreenModel* GetModel() = 0;
 
+  // Shows or hides the guest button on the login shelf during OOBE.
+  virtual void ShowGuestButtonInOobe(bool show) = 0;
+
+  // Shows or hides the parent access button on the login shelf.
+  virtual void ShowParentAccessButton(bool show) = 0;
+
  protected:
   LoginScreen();
   virtual ~LoginScreen();

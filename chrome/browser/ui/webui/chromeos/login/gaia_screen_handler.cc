@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -935,7 +936,7 @@ void GaiaScreenHandler::HandleUpdateSigninUIState(int state) {
 }
 
 void GaiaScreenHandler::HandleShowGuestInOobe(bool show) {
-  LoginScreenClient::Get()->login_screen()->SetShowGuestButtonInOobe(show);
+  ash::LoginScreen::Get()->ShowGuestButtonInOobe(show);
 }
 
 void GaiaScreenHandler::OnShowAddUser() {
