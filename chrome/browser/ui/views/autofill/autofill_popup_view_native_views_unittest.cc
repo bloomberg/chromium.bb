@@ -138,25 +138,25 @@ TEST_F(AutofillPopupViewNativeViewsTest, AccessibilitySelectedEvent) {
   // Checks that a selection event is not sent when the view's |is_selected_|
   // member does not change.
   view()->GetRowsForTesting()[0]->SetSelected(false);
-  EXPECT_EQ(size_t(0), observer.GetSelectionEventCount());
+  EXPECT_EQ(0U, observer.GetSelectionEventCount());
   observer.ResetSelectionEventCount();
 
   // Checks that a selection event is sent when an unselected view becomes
   // selected.
   view()->GetRowsForTesting()[0]->SetSelected(true);
-  EXPECT_EQ(size_t(1), observer.GetSelectionEventCount());
+  EXPECT_EQ(1U, observer.GetSelectionEventCount());
   observer.ResetSelectionEventCount();
 
   // Checks that a selection event is not sent when the view's |is_selected_|
   // member does not change.
   view()->GetRowsForTesting()[0]->SetSelected(true);
-  EXPECT_EQ(size_t(0), observer.GetSelectionEventCount());
+  EXPECT_EQ(0U, observer.GetSelectionEventCount());
   observer.ResetSelectionEventCount();
 
   // Checks that a selection event is not sent when a selected view becomes
   // unselected.
   view()->GetRowsForTesting()[0]->SetSelected(false);
-  EXPECT_EQ(size_t(0), observer.GetSelectionEventCount());
+  EXPECT_EQ(0U, observer.GetSelectionEventCount());
 }
 
 TEST_F(AutofillPopupViewNativeViewsTest, AccessibilityTest) {
