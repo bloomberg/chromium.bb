@@ -6242,3 +6242,6 @@ crbug.com/973769 [ Linux ] media/video-pause-immediately.html [ Pass Failure ]
 crbug.com/973769 [ Linux ] media/video-played-ranges-1.html [ Pass Failure ]
 crbug.com/973769 [ Linux ] media/video-played-reset.html [ Pass Failure ]
 crbug.com/973769 [ Linux ] media/W3C/audio/events/event_timeupdate_manual.html [ Pass Failure ]
+
+# Flaky on Linux
+crbug.com/974660 [ Linux ] http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Pass Failure ]
