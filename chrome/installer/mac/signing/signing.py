@@ -81,6 +81,7 @@ def get_parts(config):
                 .format(config),
                 '{}.helper.renderer'.format(uncustomized_bundle_id),
                 options=CodeSignOptions.RESTRICT,
+                entitlements='helper-renderer-entitlements.plist',
                 verify_options=VerifyOptions.DEEP),
         'helper-plugin-app':
             CodeSignedProduct(
@@ -88,6 +89,7 @@ def get_parts(config):
                 .format(config),
                 '{}.helper.plugin'.format(uncustomized_bundle_id),
                 options=CodeSignOptions.RESTRICT,
+                entitlements='helper-plugin-entitlements.plist',
                 verify_options=VerifyOptions.DEEP),
         'app-mode-app':
             CodeSignedProduct(
