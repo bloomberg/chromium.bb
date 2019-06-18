@@ -58,8 +58,15 @@ message DirectoryEntryListProto { repeated DirectoryEntryProto entries = 1; }
 
 // Used for passing inputs into SmbProvider.Mount().
 message MountOptionsProto {
-  // Path of the share to be mounted. (e.g. "smb://qnap/testshare")
+  // Path of the share to be mounted (e.g. "smb://qnap/testshare"). Must be of
+  // the form "smb://hostname/sharename", and may have the hostname resolved to
+  // an IP address (e.g. "smb://192.168.3.142/testshare").
   optional string path = 1;
+  // Original path of the share to be mounted. Must be of the form
+  // "smb://hostname/sharename", and must have the hostname as entered by the
+  // user and not resolved to an IP address (unless the user entered an IP
+  // address as the hostname).
+  optional string original_path = 6;
 
   // Authentication parameters.
   optional string workgroup = 2;
@@ -71,6 +78,15 @@ message MountOptionsProto {
   // Skip attempting to connect to the share, and instead just register the
   // mount.
   optional bool skip_connect = 5;
+
+  // Username hash of the mounting profile.
+  optional string account_hash = 7;
+
+  // Save the password on successful mount. Requires |skip_connect| = false.
+  optional bool save_password = 8;
+
+  // Use a saved password.
+  optional bool restore_password = 9;
 }
 
 message MountConfigProto {
@@ -83,6 +99,9 @@ message MountConfigProto {
 message UnmountOptionsProto {
   // ID of the mount returned from Mount().
   optional int32 mount_id = 1;
+
+  // Remove any saved password for the mount.
+  optional bool remove_password = 2;
 }
 
 // Used for passing inputs into SmbProvider.ReadDirectory().
