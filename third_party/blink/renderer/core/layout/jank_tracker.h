@@ -33,6 +33,7 @@ class CORE_EXPORT JankTracker {
                             const PropertyTreeState& property_tree_state,
                             const IntRect& old_visual_rect,
                             const IntRect& new_visual_rect);
+  // Layer rects are relative to old layer position.
   void NotifyCompositedLayerMoved(const LayoutObject& object,
                                   FloatRect old_layer_rect,
                                   FloatRect new_layer_rect);

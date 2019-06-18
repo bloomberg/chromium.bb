@@ -231,12 +231,6 @@ void JankTracker::NotifyCompositedLayerMoved(const LayoutObject& layout_object,
   if (!layout_object.FirstFragment().HasLocalBorderBoxProperties())
     return;
 
-  // Convert to the local transform space, whose origin is the layer's previous
-  // location because the property trees haven't been updated yet.
-  FloatPoint transform_parent_offset = -old_layer_rect.Location();
-  old_layer_rect.MoveBy(transform_parent_offset);
-  new_layer_rect.MoveBy(transform_parent_offset);
-
   AccumulateJank(layout_object, PropertyTreeStateFor(layout_object),
                  old_layer_rect, new_layer_rect);
 }

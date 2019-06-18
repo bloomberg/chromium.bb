@@ -533,4 +533,67 @@ TEST_F(JankTrackerTest, StableCompositingChanges) {
   EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
 }
 
+TEST_F(JankTrackerTest, CompositedOverflowExpansion) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+
+    html { will-change: transform; }
+    body { height: 2000px; margin: 0; }
+    #drop {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      left: -10000px;
+      top: -1000px;
+    }
+    .pl {
+      position: relative;
+      background: #ddd;
+      z-index: 0;
+      width: 290px;
+      height: 170px;
+      left: 25px;
+      top: 25px;
+    }
+    #comp {
+      position: relative;
+      width: 240px;
+      height: 120px;
+      background: #efe;
+      will-change: transform;
+      z-index: 0;
+      left: 25px;
+      top: 25px;
+    }
+    .sh {
+      top: 515px !important;
+    }
+
+    </style>
+    <div class="pl">
+      <div id="comp"></div>
+    </div>
+    <div id="drop" style="display: none"></div>
+  )HTML");
+
+  Element* drop = GetDocument().getElementById("drop");
+  drop->removeAttribute(html_names::kStyleAttr);
+  UpdateAllLifecyclePhases();
+
+  drop->setAttribute(html_names::kStyleAttr, AtomicString("display: none"));
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+
+  Element* comp = GetDocument().getElementById("comp");
+  comp->setAttribute(html_names::kClassAttr, AtomicString("sh"));
+  drop->removeAttribute(html_names::kStyleAttr);
+  UpdateAllLifecyclePhases();
+
+  // old rect (240 * 120) / (800 * 600) = 0.06
+  // new rect, 50% clipped by viewport (240 * 60) / (800 * 600) = 0.03
+  // final score 0.06 + 0.03 = 0.09
+  EXPECT_FLOAT_EQ(0.09, GetJankTracker().Score());
+}
+
 }  // namespace blink
