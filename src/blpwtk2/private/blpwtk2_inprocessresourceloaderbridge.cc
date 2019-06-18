@@ -344,10 +344,11 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::addResponseHeader(
 {
     DCHECK(Statics::isInApplicationMainThread());
     DCHECK(!d_failed);
-    DCHECK(d_responseHeaders.get());
 
-    std::string str(header.data(), header.length());
-    d_responseHeaders->AddHeader(str);
+    if (d_responseHeaders) {
+        std::string str(header.data(), header.length());
+        d_responseHeaders->AddHeader(str);
+    }
 }
 
 bool InProcessResourceLoaderBridge::InProcessResourceContext::hasResponseHeaderValue(const StringRef& name, const StringRef& value) const
