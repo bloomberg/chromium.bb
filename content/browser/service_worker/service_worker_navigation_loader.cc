@@ -189,10 +189,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
                          "ServiceWorkerNavigationLoader::StartRequest", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
-  ServiceWorkerMetrics::URLRequestJobResult result =
-      ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
-  ServiceWorkerVersion* active_worker =
-      delegate_->GetServiceWorkerVersion(&result);
+  ServiceWorkerVersion* active_worker = delegate_->GetServiceWorkerVersion();
   if (!active_worker) {
     CommitCompleted(net::ERR_FAILED, "No active worker");
     return;
@@ -322,9 +319,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
 
   ServiceWorkerMetrics::RecordFetchEventStatus(true /* is_main_resource */,
                                                status);
-  ServiceWorkerMetrics::URLRequestJobResult result =
-      ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
-  if (!delegate_ || !delegate_->RequestStillValid(&result)) {
+  if (!delegate_ || !delegate_->RequestStillValid()) {
     // The navigation or shared worker startup is cancelled. Just abort.
     CommitCompleted(net::ERR_ABORTED, "No delegate");
     return;

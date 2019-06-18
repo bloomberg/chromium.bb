@@ -529,36 +529,6 @@ void ServiceWorkerMetrics::RecordFetchEventStatus(
   }
 }
 
-void ServiceWorkerMetrics::RecordURLRequestJobResult(
-    bool is_main_resource,
-    URLRequestJobResult result) {
-  if (is_main_resource) {
-    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.MainResource.Result",
-                              result, NUM_REQUEST_JOB_RESULT_TYPES);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.Subresource.Result",
-                              result, NUM_REQUEST_JOB_RESULT_TYPES);
-  }
-}
-
-void ServiceWorkerMetrics::RecordStatusZeroResponseError(
-    bool is_main_resource,
-    blink::mojom::ServiceWorkerResponseError error) {
-  if (is_main_resource) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "ServiceWorker.URLRequestJob.MainResource.StatusZeroError", error);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "ServiceWorker.URLRequestJob.Subresource.StatusZeroError", error);
-  }
-}
-
-void ServiceWorkerMetrics::RecordFallbackedRequestMode(
-    network::mojom::RequestMode mode) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.FallbackedRequestMode",
-                            mode);
-}
-
 void ServiceWorkerMetrics::RecordProcessCreated(bool is_new_process) {
   UMA_HISTOGRAM_BOOLEAN("EmbeddedWorkerInstance.ProcessCreated",
                         is_new_process);

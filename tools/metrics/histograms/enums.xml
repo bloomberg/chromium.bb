@@ -51963,6 +51963,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ServiceWorkerResponseError">
+  <obsolete>
+    No longer recorded since NetS13nSW shipped on Dec 2018.
+  </obsolete>
   <int value="0" label="ErrorUnknown"/>
   <int value="1" label="ErrorPromiseRejected"/>
   <int value="2" label="ErrorDefaultPrevented"/>
@@ -52043,6 +52046,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ServiceWorkerURLRequestJobResult">
+  <obsolete>
+    No longer recorded since NetS13nSW shipped on Dec 2018.
+  </obsolete>
   <int value="0" label="REQUEST_JOB_FALLBACK_RESPONSE"/>
   <int value="1" label="REQUEST_JOB_FALLBACK_FOR_CORS"/>
   <int value="2" label="REQUEST_JOB_HEADERS_ONLY_RESPONSE"/>

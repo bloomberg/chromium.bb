@@ -6,6 +6,7 @@
 
 #include <string>
 #include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
@@ -475,15 +476,11 @@ class ServiceWorkerNavigationLoaderTest
 
  protected:
   // ServiceWorkerNavigationLoader::Delegate -----------------------------------
-  ServiceWorkerVersion* GetServiceWorkerVersion(
-      ServiceWorkerMetrics::URLRequestJobResult* result) override {
+  ServiceWorkerVersion* GetServiceWorkerVersion() override {
     return version_.get();
   }
 
-  bool RequestStillValid(
-      ServiceWorkerMetrics::URLRequestJobResult* result) override {
-    return true;
-  }
+  bool RequestStillValid() override { return true; }
 
   void MainResourceLoadFailed() override {
     was_main_resource_load_failed_called_ = true;

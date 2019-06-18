@@ -24,8 +24,6 @@ class GURL;
 
 namespace content {
 
-enum class EmbeddedWorkerStatus;
-
 class ServiceWorkerMetrics {
  public:
   // Used for UMA. Append-only.
@@ -50,76 +48,6 @@ class ServiceWorkerMetrics {
     DELETE_DATABASE_ERROR,
     DELETE_DISK_CACHE_ERROR,
     NUM_DELETE_AND_START_OVER_RESULT_TYPES,
-  };
-
-  // Used for UMA. Append-only.
-  enum URLRequestJobResult {
-    // The service worker fell back to network.
-    REQUEST_JOB_FALLBACK_RESPONSE = 0,
-
-    // The service worker fell back to network and CORS check is needed.
-    REQUEST_JOB_FALLBACK_FOR_CORS = 1,
-
-    // The service worker responded with headers only (no body).
-    REQUEST_JOB_HEADERS_ONLY_RESPONSE = 2,
-
-    // The service worker responded with a stream body.
-    REQUEST_JOB_STREAM_RESPONSE = 3,
-
-    // The service worker responded with a blob body.
-    REQUEST_JOB_BLOB_RESPONSE = 4,
-
-    // The renderer responded with network error (see
-    // RecordStatusZeroResponseError() for error reasons).
-    REQUEST_JOB_ERROR_RESPONSE_STATUS_ZERO = 5,
-
-    // The renderer returned a response blob that could not be read.
-    REQUEST_JOB_ERROR_BAD_BLOB = 6,
-
-    // The provider host for the request was destroyed before the request
-    // could start.
-    REQUEST_JOB_ERROR_NO_PROVIDER_HOST = 7,
-
-    // The service worker assigned to the request could not be found, when
-    // the request tried to start.
-    REQUEST_JOB_ERROR_NO_ACTIVE_VERSION = 8,
-
-    // Obsolete.
-    // REQUEST_JOB_ERROR_NO_REQUEST = 9,
-
-    // An error occurred attempting to dispatch the event to the service worker.
-    REQUEST_JOB_ERROR_FETCH_EVENT_DISPATCH = 10,
-
-    // An error occurred while reading the blob response.
-    REQUEST_JOB_ERROR_BLOB_READ = 11,
-
-    // The connection to the stream response was destroyed before all the data
-    // was read.
-    REQUEST_JOB_ERROR_STREAM_ABORTED = 12,
-
-    // The request job destructed before it finished.
-    REQUEST_JOB_ERROR_KILLED = 13,
-
-    // The request job destructed before it finished. It was reading
-    // a blob response.
-    REQUEST_JOB_ERROR_KILLED_WITH_BLOB = 14,
-
-    // The request job was destructed before it finished. It was reading
-    // a stream response.
-    REQUEST_JOB_ERROR_KILLED_WITH_STREAM = 15,
-
-    // Obsolete.
-    // REQUEST_JOB_ERROR_DESTROYED = 16,
-    // REQUEST_JOB_ERROR_DESTROYED_WITH_BLOB = 17,
-    // REQUEST_JOB_ERROR_DESTROYED_WITH_STREAM = 18,
-
-    // The request job delegate behaved incorrectly.
-    REQUEST_JOB_ERROR_BAD_DELEGATE = 19,
-
-    // The browser failed to construct the request body.
-    REQUEST_JOB_ERROR_REQUEST_BODY_BLOB_FAILED = 20,
-
-    NUM_REQUEST_JOB_RESULT_TYPES,
   };
 
   // Used for UMA. Append-only.
@@ -332,20 +260,6 @@ class ServiceWorkerMetrics {
   // Records the result of dispatching a fetch event to a service worker.
   static void RecordFetchEventStatus(bool is_main_resource,
                                      blink::ServiceWorkerStatusCode status);
-
-  // Records result of a ServiceWorkerURLRequestJob that was forwarded to
-  // the service worker.
-  static void RecordURLRequestJobResult(bool is_main_resource,
-                                        URLRequestJobResult result);
-
-  // Records the error code provided when the renderer returns a response with
-  // status zero to a fetch request.
-  static void RecordStatusZeroResponseError(
-      bool is_main_resource,
-      blink::mojom::ServiceWorkerResponseError error);
-
-  // Records the mode of request that was fallbacked to the network.
-  static void RecordFallbackedRequestMode(network::mojom::RequestMode mode);
 
   static void RecordProcessCreated(bool is_new_process);
 

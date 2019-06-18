@@ -107,10 +107,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
           disallow_controller);
 
   // ServiceWorkerNavigationLoader::Delegate implementation:
-  ServiceWorkerVersion* GetServiceWorkerVersion(
-      ServiceWorkerMetrics::URLRequestJobResult* result) override;
-  bool RequestStillValid(
-      ServiceWorkerMetrics::URLRequestJobResult* result) override;
+  ServiceWorkerVersion* GetServiceWorkerVersion() override;
+  bool RequestStillValid() override;
   void MainResourceLoadFailed() override;
 
   // Sets |job_| to nullptr, and clears all extra response info associated with
