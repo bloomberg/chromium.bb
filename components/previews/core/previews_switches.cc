@@ -50,6 +50,11 @@ const char kHintsProtoOverride[] = "optimization_guide_hints_override";
 // hosts.
 const char kFetchHintsOverride[] = "optimization-guide-fetch-hints-override";
 
+// Overrides the hints fetch scheduling and delay, causing a hints fetch
+// immediately on start up using the TopHostProvider. This is meant for testing.
+const char kFetchHintsOverrideTimer[] =
+    "optimization-guide-fetch-hints-override-timer";
+
 // Overrides the Optimization Guide Service URL that the HintsFetcher will
 // request remote hints from.
 const char kOptimizationGuideServiceURL[] = "optimization-guide-service-url";
