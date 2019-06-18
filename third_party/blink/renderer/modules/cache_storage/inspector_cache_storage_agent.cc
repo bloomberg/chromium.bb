@@ -243,7 +243,7 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
     }
     wtf_size_t requestSize = requests.size();
     if (!requestSize) {
-      callback_->sendSuccess(std::make_unique<Array<DataEntry>>(), 0);
+      callback_->sendSuccess(Array<DataEntry>::create(), 0);
       return;
     }
 
@@ -318,7 +318,7 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
       responses_.EraseAt(params_.page_size,
                          responses_.size() - params_.page_size);
     }
-    auto array = std::make_unique<protocol::Array<DataEntry>>();
+    std::unique_ptr<Array<DataEntry>> array = Array<DataEntry>::create();
     for (const auto& request_response : responses_) {
       std::unique_ptr<DataEntry> entry =
           DataEntry::create()
@@ -334,7 +334,7 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
               .setResponseHeaders(
                   SerializeHeaders(request_response.response_headers))
               .build();
-      array->emplace_back(std::move(entry));
+      array->addItem(std::move(entry));
     }
 
     callback_->sendSuccess(std::move(array), returned_entries_count);
@@ -349,11 +349,11 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
 
   std::unique_ptr<Array<Header>> SerializeHeaders(
       const HTTPHeaderMap& headers) {
-    auto result = std::make_unique<protocol::Array<Header>>();
+    std::unique_ptr<Array<Header>> result = Array<Header>::create();
     for (HTTPHeaderMap::const_iterator it = headers.begin(),
                                        end = headers.end();
          it != end; ++it) {
-      result->emplace_back(
+      result->addItem(
           Header::create().setName(it->key).setValue(it->value).build());
     }
     return result;
@@ -400,7 +400,8 @@ class GetCacheKeysForRequestData {
                         CacheStorageErrorString(result->get_status()).data())));
               } else {
                 if (result->get_keys().IsEmpty()) {
-                  auto array = std::make_unique<protocol::Array<DataEntry>>();
+                  std::unique_ptr<Array<DataEntry>> array =
+                      Array<DataEntry>::create();
                   self->callback_->sendSuccess(std::move(array), 0);
                   return;
                 }
@@ -507,7 +508,7 @@ void InspectorCacheStorageAgent::requestCacheNames(
   if (!sec_origin->IsPotentiallyTrustworthy()) {
     // Don't treat this as an error, just don't attempt to open and enumerate
     // the caches.
-    callback->sendSuccess(std::make_unique<protocol::Array<ProtocolCache>>());
+    callback->sendSuccess(Array<ProtocolCache>::create());
     return;
   }
 
@@ -521,23 +522,23 @@ void InspectorCacheStorageAgent::requestCacheNames(
   }
 
   cache_storage->Keys(
-      trace_id,
-      WTF::Bind(
-          [](String security_origin,
-             std::unique_ptr<RequestCacheNamesCallback> callback,
-             const Vector<String>& caches) {
-            auto array = std::make_unique<protocol::Array<ProtocolCache>>();
-            for (auto& cache : caches) {
-              array->emplace_back(
-                  ProtocolCache::create()
-                      .setSecurityOrigin(security_origin)
-                      .setCacheName(cache)
-                      .setCacheId(BuildCacheId(security_origin, cache))
-                      .build());
-            }
-            callback->sendSuccess(std::move(array));
-          },
-          security_origin, std::move(callback)));
+      trace_id, WTF::Bind(
+                    [](String security_origin,
+                       std::unique_ptr<RequestCacheNamesCallback> callback,
+                       const Vector<String>& caches) {
+                      std::unique_ptr<Array<ProtocolCache>> array =
+                          Array<ProtocolCache>::create();
+                      for (auto& cache : caches) {
+                        array->addItem(ProtocolCache::create()
+                                           .setSecurityOrigin(security_origin)
+                                           .setCacheName(cache)
+                                           .setCacheId(BuildCacheId(
+                                               security_origin, cache))
+                                           .build());
+                      }
+                      callback->sendSuccess(std::move(array));
+                    },
+                    security_origin, std::move(callback)));
 }
 
 void InspectorCacheStorageAgent::requestEntries(
@@ -702,8 +703,8 @@ void InspectorCacheStorageAgent::requestCachedResponse(
   auto request = mojom::blink::FetchAPIRequest::New();
   request->url = KURL(request_url);
   request->method = String("GET");
-  for (const std::unique_ptr<protocol::CacheStorage::Header>& header :
-       *request_headers) {
+  for (size_t i = 0, len = request_headers->length(); i < len; ++i) {
+    auto* header = request_headers->get(i);
     request->headers.insert(header->getName(), header->getValue());
   }
 

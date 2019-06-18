@@ -106,9 +106,14 @@ void WindowElement::SetVisible(bool visible) {
     window_->Hide();
 }
 
-std::vector<std::string> WindowElement::GetAttributes() const {
-  return {"name", window_->GetName(), "active",
-          ::wm::IsActiveWindow(window_) ? "true" : "false"};
+std::unique_ptr<protocol::Array<std::string>> WindowElement::GetAttributes()
+    const {
+  auto attributes = protocol::Array<std::string>::create();
+  attributes->addItem("name");
+  attributes->addItem(window_->GetName());
+  attributes->addItem("active");
+  attributes->addItem(::wm::IsActiveWindow(window_) ? "true" : "false");
+  return attributes;
 }
 
 std::pair<gfx::NativeWindow, gfx::Rect>

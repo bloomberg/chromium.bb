@@ -37,27 +37,29 @@ void MemoryHandler::SetRenderer(int process_host_id,
 Response MemoryHandler::GetBrowserSamplingProfile(
     std::unique_ptr<Memory::SamplingProfile>* out_profile) {
   base::ModuleCache module_cache;
-  auto samples = std::make_unique<Array<Memory::SamplingProfileNode>>();
+  std::unique_ptr<Array<Memory::SamplingProfileNode>> samples =
+      Array<Memory::SamplingProfileNode>::create();
   std::vector<base::SamplingHeapProfiler::Sample> raw_samples =
       base::SamplingHeapProfiler::Get()->GetSamples(0);
 
   for (auto& sample : raw_samples) {
-    auto stack = std::make_unique<Array<String>>();
+    std::unique_ptr<Array<String>> stack = Array<String>::create();
     for (const void* frame : sample.stack) {
       uintptr_t address = reinterpret_cast<uintptr_t>(frame);
       module_cache.GetModuleForAddress(address);  // Populates module_cache.
-      stack->emplace_back(base::StringPrintf("0x%" PRIxPTR, address));
+      stack->addItem(base::StringPrintf("0x%" PRIxPTR, address));
     }
-    samples->emplace_back(Memory::SamplingProfileNode::Create()
-                              .SetSize(sample.size)
-                              .SetTotal(sample.total)
-                              .SetStack(std::move(stack))
-                              .Build());
+    samples->addItem(Memory::SamplingProfileNode::Create()
+                         .SetSize(sample.size)
+                         .SetTotal(sample.total)
+                         .SetStack(std::move(stack))
+                         .Build());
   }
 
-  auto modules = std::make_unique<Array<Memory::Module>>();
+  std::unique_ptr<Array<Memory::Module>> modules =
+      Array<Memory::Module>::create();
   for (const auto* module : module_cache.GetModules()) {
-    modules->emplace_back(
+    modules->addItem(
         Memory::Module::Create()
             .SetName(base::StringPrintf(
                 "%" PRFilePath, module->GetDebugBasename().value().c_str()))

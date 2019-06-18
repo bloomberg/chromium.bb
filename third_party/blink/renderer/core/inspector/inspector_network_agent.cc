@@ -629,12 +629,15 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
     const ResourceResponse::SecurityDetails* response_security_details =
         response.GetSecurityDetails();
 
-    auto san_list = std::make_unique<protocol::Array<String>>(
-        response_security_details->san_list.begin(),
-        response_security_details->san_list.end());
+    std::unique_ptr<protocol::Array<String>> san_list =
+        protocol::Array<String>::create();
+    for (auto const& san : response_security_details->san_list)
+      san_list->addItem(san);
 
-    auto signed_certificate_timestamp_list = std::make_unique<
-        protocol::Array<protocol::Network::SignedCertificateTimestamp>>();
+    std::unique_ptr<
+        protocol::Array<protocol::Network::SignedCertificateTimestamp>>
+        signed_certificate_timestamp_list = protocol::Array<
+            protocol::Network::SignedCertificateTimestamp>::create();
     for (auto const& sct : response_security_details->sct_list) {
       std::unique_ptr<protocol::Network::SignedCertificateTimestamp>
           signed_certificate_timestamp =
@@ -648,7 +651,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
                   .setSignatureAlgorithm(sct.signature_algorithm_)
                   .setSignatureData(sct.signature_data_)
                   .build();
-      signed_certificate_timestamp_list->emplace_back(
+      signed_certificate_timestamp_list->addItem(
           std::move(signed_certificate_timestamp));
     }
 
@@ -1415,8 +1418,8 @@ void InspectorNetworkAgent::getResponseBody(
 Response InspectorNetworkAgent::setBlockedURLs(
     std::unique_ptr<protocol::Array<String>> urls) {
   blocked_urls_.Clear();
-  for (const String& url : *urls)
-    blocked_urls_.Set(url, true);
+  for (size_t i = 0; i < urls->length(); i++)
+    blocked_urls_.Set(urls->get(i), true);
   return Response::OK();
 }
 
@@ -1518,7 +1521,7 @@ Response InspectorNetworkAgent::setDataSizeLimitsForTest(int max_total,
 Response InspectorNetworkAgent::getCertificate(
     const String& origin,
     std::unique_ptr<protocol::Array<String>>* certificate) {
-  *certificate = std::make_unique<protocol::Array<String>>();
+  *certificate = protocol::Array<String>::create();
   scoped_refptr<const SecurityOrigin> security_origin =
       SecurityOrigin::CreateFromString(origin);
   for (auto& resource : resources_data_->Resources()) {
@@ -1527,9 +1530,8 @@ Response InspectorNetworkAgent::getCertificate(
     if (resource_origin->IsSameSchemeHostPort(security_origin.get()) &&
         resource->Certificate().size()) {
       for (auto& cert : resource->Certificate()) {
-        (*certificate)
-            ->emplace_back(
-                Base64Encode(base::as_bytes(base::make_span(cert.Latin1()))));
+        certificate->get()->addItem(
+            Base64Encode(base::as_bytes(base::make_span(cert.Latin1()))));
       }
       return Response::OK();
     }
@@ -1615,9 +1617,10 @@ Response InspectorNetworkAgent::searchInResponseBody(
   auto results = v8_session_->searchInTextByLines(
       ToV8InspectorStringView(content), ToV8InspectorStringView(query),
       case_sensitive.fromMaybe(false), is_regex.fromMaybe(false));
-  *matches = std::make_unique<
-      protocol::Array<v8_inspector::protocol::Debugger::API::SearchMatch>>(
-      std::move(results));
+  *matches = protocol::Array<
+      v8_inspector::protocol::Debugger::API::SearchMatch>::create();
+  for (size_t i = 0; i < results.size(); ++i)
+    matches->get()->addItem(std::move(results[i]));
   return Response::OK();
 }
 

@@ -513,7 +513,7 @@ Response InspectorDOMAgent::getFlattenedDocument(
     sanitized_depth = INT_MAX;
 
   nodes->reset(new protocol::Array<protocol::DOM::Node>());
-  (*nodes)->emplace_back(BuildObjectForNode(
+  (*nodes)->addItem(BuildObjectForNode(
       document_.Get(), sanitized_depth, pierce.fromMaybe(false),
       document_node_to_id_map_.Get(), nodes->get()));
   return Response::OK();
@@ -577,7 +577,7 @@ Response InspectorDOMAgent::collectClassNamesFromSubtree(
     int node_id,
     std::unique_ptr<protocol::Array<String>>* class_names) {
   HashSet<String> unique_names;
-  *class_names = std::make_unique<protocol::Array<String>>();
+  *class_names = protocol::Array<String>::create();
   Node* parent_node = NodeForId(node_id);
   if (!parent_node ||
       (!parent_node->IsElementNode() && !parent_node->IsDocumentNode() &&
@@ -596,7 +596,7 @@ Response InspectorDOMAgent::collectClassNamesFromSubtree(
     }
   }
   for (const String& class_name : unique_names)
-    (*class_names)->emplace_back(class_name);
+    (*class_names)->addItem(class_name);
   return Response::OK();
 }
 
@@ -659,10 +659,10 @@ Response InspectorDOMAgent::querySelectorAll(
   if (exception_state.HadException())
     return Response::Error("DOM Error while querying");
 
-  *result = std::make_unique<protocol::Array<int>>();
+  *result = protocol::Array<int>::create();
 
   for (unsigned i = 0; i < elements->length(); ++i)
-    (*result)->emplace_back(PushNodePathToFrontend(elements->item(i)));
+    (*result)->addItem(PushNodePathToFrontend(elements->item(i)));
   return Response::OK();
 }
 
@@ -718,8 +718,9 @@ int InspectorDOMAgent::PushNodePathToFrontend(Node* node_to_push) {
   NodeToIdMap* new_map = MakeGarbageCollected<NodeToIdMap>();
   NodeToIdMap* dangling_map = new_map;
   dangling_node_to_id_maps_.push_back(new_map);
-  auto children = std::make_unique<protocol::Array<protocol::DOM::Node>>();
-  children->emplace_back(BuildObjectForNode(node, 0, false, dangling_map));
+  std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
+      protocol::Array<protocol::DOM::Node>::create();
+  children->addItem(BuildObjectForNode(node, 0, false, dangling_map));
   GetFrontend()->setChildNodes(0, std::move(children));
 
   return PushNodePathToFrontend(node_to_push, dangling_map);
@@ -1120,9 +1121,9 @@ Response InspectorDOMAgent::getSearchResults(
   if (from_index < 0 || to_index > size || from_index >= to_index)
     return Response::Error("Invalid search result range");
 
-  *node_ids = std::make_unique<protocol::Array<int>>();
+  *node_ids = protocol::Array<int>::create();
   for (int i = from_index; i < to_index; ++i)
-    (*node_ids)->emplace_back(PushNodePathToFrontend((it->value)[i].Get()));
+    (*node_ids)->addItem(PushNodePathToFrontend((it->value)[i].Get()));
   return Response::OK();
 }
 
@@ -1274,8 +1275,8 @@ Response InspectorDOMAgent::setFileInputFiles(
     return Response::Error("Node is not a file input element");
 
   Vector<String> paths;
-  for (const String& file : *files)
-    paths.push_back(file);
+  for (size_t index = 0; index < files->length(); ++index)
+    paths.push_back(files->get(index));
   ToHTMLInputElement(node)->SetFilesFromPaths(paths);
   return Response::OK();
 }
@@ -1484,10 +1485,10 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     }
 
     if (ShadowRoot* root = element->GetShadowRoot()) {
-      auto shadow_roots =
-          std::make_unique<protocol::Array<protocol::DOM::Node>>();
-      shadow_roots->emplace_back(BuildObjectForNode(
-          root, pierce ? depth : 0, pierce, nodes_map, flatten_result));
+      std::unique_ptr<protocol::Array<protocol::DOM::Node>> shadow_roots =
+          protocol::Array<protocol::DOM::Node>::create();
+      shadow_roots->addItem(BuildObjectForNode(root, pierce ? depth : 0, pierce,
+                                               nodes_map, flatten_result));
       value->setShadowRoots(std::move(shadow_roots));
       force_push_children = true;
     }
@@ -1559,7 +1560,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
         BuildArrayForContainerChildren(node, depth, pierce, nodes_map,
                                        flatten_result);
-    if (!children->empty() ||
+    if (children->length() > 0 ||
         depth)  // Push children along with shadow in any case.
       value->setChildren(std::move(children));
   }
@@ -1569,12 +1570,14 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
 
 std::unique_ptr<protocol::Array<String>>
 InspectorDOMAgent::BuildArrayForElementAttributes(Element* element) {
-  auto attributes_value = std::make_unique<protocol::Array<String>>();
+  std::unique_ptr<protocol::Array<String>> attributes_value =
+      protocol::Array<String>::create();
   // Go through all attributes and serialize them.
-  for (const blink::Attribute& attribute : element->Attributes()) {
+  AttributeCollection attributes = element->Attributes();
+  for (auto& attribute : attributes) {
     // Add attribute pair
-    attributes_value->emplace_back(attribute.GetName().ToString());
-    attributes_value->emplace_back(attribute.Value());
+    attributes_value->addItem(attribute.GetName().ToString());
+    attributes_value->addItem(attribute.Value());
   }
   return attributes_value;
 }
@@ -1586,7 +1589,8 @@ InspectorDOMAgent::BuildArrayForContainerChildren(
     bool pierce,
     NodeToIdMap* nodes_map,
     protocol::Array<protocol::DOM::Node>* flatten_result) {
-  auto children = std::make_unique<protocol::Array<protocol::DOM::Node>>();
+  std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
+      protocol::Array<protocol::DOM::Node>::create();
   if (depth == 0) {
     if (!nodes_map)
       return children;
@@ -1599,9 +1603,9 @@ InspectorDOMAgent::BuildArrayForContainerChildren(
           BuildObjectForNode(first_child, 0, pierce, nodes_map, flatten_result);
       child_node->setParentId(Bind(container, nodes_map));
       if (flatten_result) {
-        flatten_result->emplace_back(std::move(child_node));
+        flatten_result->addItem(std::move(child_node));
       } else {
-        children->emplace_back(std::move(child_node));
+        children->addItem(std::move(child_node));
       }
       children_requested_.insert(Bind(container, nodes_map));
     }
@@ -1618,9 +1622,9 @@ InspectorDOMAgent::BuildArrayForContainerChildren(
         BuildObjectForNode(child, depth, pierce, nodes_map, flatten_result);
     child_node->setParentId(Bind(container, nodes_map));
     if (flatten_result) {
-      flatten_result->emplace_back(std::move(child_node));
+      flatten_result->addItem(std::move(child_node));
     } else {
-      children->emplace_back(std::move(child_node));
+      children->addItem(std::move(child_node));
     }
     if (nodes_map)
       children_requested_.insert(Bind(container, nodes_map));
@@ -1636,14 +1640,14 @@ InspectorDOMAgent::BuildArrayForPseudoElements(Element* element,
       !element->GetPseudoElement(kPseudoIdAfter))
     return nullptr;
 
-  auto pseudo_elements =
-      std::make_unique<protocol::Array<protocol::DOM::Node>>();
+  std::unique_ptr<protocol::Array<protocol::DOM::Node>> pseudo_elements =
+      protocol::Array<protocol::DOM::Node>::create();
   if (element->GetPseudoElement(kPseudoIdBefore)) {
-    pseudo_elements->emplace_back(BuildObjectForNode(
+    pseudo_elements->addItem(BuildObjectForNode(
         element->GetPseudoElement(kPseudoIdBefore), 0, false, nodes_map));
   }
   if (element->GetPseudoElement(kPseudoIdAfter)) {
-    pseudo_elements->emplace_back(BuildObjectForNode(
+    pseudo_elements->addItem(BuildObjectForNode(
         element->GetPseudoElement(kPseudoIdAfter), 0, false, nodes_map));
   }
   return pseudo_elements;
@@ -1652,8 +1656,8 @@ InspectorDOMAgent::BuildArrayForPseudoElements(Element* element,
 std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
 InspectorDOMAgent::BuildArrayForDistributedNodes(
     V0InsertionPoint* insertion_point) {
-  auto distributed_nodes =
-      std::make_unique<protocol::Array<protocol::DOM::BackendNode>>();
+  std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
+      distributed_nodes = protocol::Array<protocol::DOM::BackendNode>::create();
   for (wtf_size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i) {
     Node* distributed_node = insertion_point->DistributedNodeAt(i);
     if (IsWhitespace(distributed_node))
@@ -1666,7 +1670,7 @@ InspectorDOMAgent::BuildArrayForDistributedNodes(
             .setBackendNodeId(
                 IdentifiersFactory::IntIdForNode(distributed_node))
             .build();
-    distributed_nodes->emplace_back(std::move(backend_node));
+    distributed_nodes->addItem(std::move(backend_node));
   }
   return distributed_nodes;
 }
@@ -1677,8 +1681,8 @@ InspectorDOMAgent::BuildDistributedNodesForSlot(HTMLSlotElement* slot_element) {
   // not be used anymore. DistributedNodes should be replaced with
   // AssignedNodes() when IncrementalShadowDOM becomes stable and Shadow DOM v0
   // is removed.
-  auto distributed_nodes =
-      std::make_unique<protocol::Array<protocol::DOM::BackendNode>>();
+  std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
+      distributed_nodes = protocol::Array<protocol::DOM::BackendNode>::create();
   for (auto& node : slot_element->AssignedNodes()) {
     if (IsWhitespace(node))
       continue;
@@ -1689,7 +1693,7 @@ InspectorDOMAgent::BuildDistributedNodesForSlot(HTMLSlotElement* slot_element) {
             .setNodeName(node->nodeName())
             .setBackendNodeId(IdentifiersFactory::IntIdForNode(node))
             .build();
-    distributed_nodes->emplace_back(std::move(backend_node));
+    distributed_nodes->addItem(std::move(backend_node));
   }
   return distributed_nodes;
 }
@@ -1930,7 +1934,8 @@ void InspectorDOMAgent::DidRemoveDOMAttr(Element* element,
 
 void InspectorDOMAgent::StyleAttributeInvalidated(
     const HeapVector<Member<Element>>& elements) {
-  auto node_ids = std::make_unique<protocol::Array<int>>();
+  std::unique_ptr<protocol::Array<int>> node_ids =
+      protocol::Array<int>::create();
   for (unsigned i = 0, size = elements.size(); i < size; ++i) {
     Element* element = elements.at(i);
     int id = BoundNodeId(element);
@@ -1940,7 +1945,7 @@ void InspectorDOMAgent::StyleAttributeInvalidated(
 
     if (dom_listener_)
       dom_listener_->DidModifyDOMAttr(element);
-    node_ids->emplace_back(id);
+    node_ids->addItem(id);
   }
   GetFrontend()->inlineStyleInvalidated(std::move(node_ids));
 }
@@ -2147,14 +2152,14 @@ Response InspectorDOMAgent::pushNodesByBackendIdsToFrontend(
   if (!document_ || !document_node_to_id_map_->Contains(document_))
     return Response::Error("Document needs to be requested first");
 
-  *result = std::make_unique<protocol::Array<int>>();
-  for (int id : *backend_node_ids) {
-    Node* node = DOMNodeIds::NodeForId(id);
+  *result = protocol::Array<int>::create();
+  for (size_t index = 0; index < backend_node_ids->length(); ++index) {
+    Node* node = DOMNodeIds::NodeForId(backend_node_ids->get(index));
     if (node && node->GetDocument().GetFrame() &&
         inspected_frames_->Contains(node->GetDocument().GetFrame()))
-      (*result)->emplace_back(PushNodePathToFrontend(node));
+      (*result)->addItem(PushNodePathToFrontend(node));
     else
-      (*result)->emplace_back(0);
+      (*result)->addItem(0);
   }
   return Response::OK();
 }

@@ -245,7 +245,7 @@ SurfaceElement* DOMAgentViz::GetRootSurfaceElement() {
 std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForFrameSink(
     UIElement* parent_element,
     const viz::FrameSinkId& parent_id) {
-  auto children = std::make_unique<Array<DOM::Node>>();
+  std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
 
   // Once the FrameSinkElement is created it calls this function to build its
   // subtree. We iterate through |parent_element|'s children and
@@ -257,20 +257,18 @@ std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForFrameSink(
     FrameSinkElement* child_element = CreateFrameSinkElement(
         child_id, parent_element, /*is_root=*/false, has_created_frame_sink);
 
-    children->emplace_back(BuildTreeForFrameSink(child_element, child_id));
+    children->addItem(BuildTreeForFrameSink(child_element, child_id));
     child_element->AddToParentSorted(parent_element);
   }
 
-  return BuildNode("FrameSink",
-                   std::make_unique<std::vector<std::string>>(
-                       parent_element->GetAttributes()),
+  return BuildNode("FrameSink", parent_element->GetAttributes(),
                    std::move(children), parent_element->node_id());
 }
 
 std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForSurface(
     UIElement* parent_element,
     const viz::SurfaceId& parent_id) {
-  auto children = std::make_unique<Array<DOM::Node>>();
+  std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
 
   // Once the SurfaceElement is created it calls this function to build its
   // subtree. We iterate through |parent_element|'s children and
@@ -288,12 +286,10 @@ std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForSurface(
       child_element->AddToParentSorted(parent_element);
     }
 
-    children->emplace_back(BuildTreeForSurface(child_element, child_id));
+    children->addItem(BuildTreeForSurface(child_element, child_id));
   }
 
-  return BuildNode("Surface",
-                   std::make_unique<std::vector<std::string>>(
-                       parent_element->GetAttributes()),
+  return BuildNode("Surface", parent_element->GetAttributes(),
                    std::move(children), parent_element->node_id());
 }
 

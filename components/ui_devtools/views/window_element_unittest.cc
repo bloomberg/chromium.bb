@@ -103,15 +103,22 @@ TEST_F(WindowElementTest, GetAttributes) {
   std::string window_name("A window name");
   window()->SetName(window_name);
 
-  std::vector<std::string> attrs = element()->GetAttributes();
+  std::unique_ptr<protocol::Array<std::string>> attrs =
+      element()->GetAttributes();
 
-  ASSERT_FALSE(wm::IsActiveWindow(window()));
-  EXPECT_THAT(attrs,
-              testing::ElementsAre("name", window_name, "active", "false"));
+  DCHECK_EQ(attrs->length(), 4U);
+
+  EXPECT_EQ(attrs->get(0), "name");
+  EXPECT_EQ(attrs->get(1), window_name);
+
+  DCHECK(!wm::IsActiveWindow(window()));
+  EXPECT_EQ(attrs->get(2), "active");
+  EXPECT_EQ(attrs->get(3), "false");
 
   wm::ActivateWindow(window());
   attrs = element()->GetAttributes();
-  EXPECT_THAT(attrs,
-              testing::ElementsAre("name", window_name, "active", "true"));
+  DCHECK_EQ(attrs->length(), 4U);
+  EXPECT_EQ(attrs->get(2), "active");
+  EXPECT_EQ(attrs->get(3), "true");
 }
 }  // namespace ui_devtools

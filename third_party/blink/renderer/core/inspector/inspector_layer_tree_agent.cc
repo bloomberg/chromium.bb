@@ -96,12 +96,12 @@ static std::unique_ptr<protocol::LayerTree::ScrollRect> BuildScrollRect(
 
 static std::unique_ptr<Array<protocol::LayerTree::ScrollRect>>
 BuildScrollRectsForLayer(const cc::Layer* layer, bool report_wheel_scrollers) {
-  auto scroll_rects =
-      std::make_unique<protocol::Array<protocol::LayerTree::ScrollRect>>();
+  std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =
+      Array<protocol::LayerTree::ScrollRect>::create();
   const cc::Region& non_fast_scrollable_rects =
       layer->non_fast_scrollable_region();
   for (const gfx::Rect& rect : non_fast_scrollable_rects) {
-    scroll_rects->emplace_back(BuildScrollRect(
+    scroll_rects->addItem(BuildScrollRect(
         IntRect(rect),
         protocol::LayerTree::ScrollRect::TypeEnum::RepaintsOnScroll));
   }
@@ -109,18 +109,18 @@ BuildScrollRectsForLayer(const cc::Layer* layer, bool report_wheel_scrollers) {
       layer->touch_action_region().region();
 
   for (const gfx::Rect& rect : touch_event_handler_region) {
-    scroll_rects->emplace_back(BuildScrollRect(
+    scroll_rects->addItem(BuildScrollRect(
         IntRect(rect),
         protocol::LayerTree::ScrollRect::TypeEnum::TouchEventHandler));
   }
   if (report_wheel_scrollers) {
-    scroll_rects->emplace_back(BuildScrollRect(
+    scroll_rects->addItem(BuildScrollRect(
         // TODO(yutak): This truncates the floating point position to integers.
         gfx::Rect(layer->position().x(), layer->position().y(),
                   layer->bounds().width(), layer->bounds().height()),
         protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
   }
-  return scroll_rects->empty() ? nullptr : std::move(scroll_rects);
+  return scroll_rects->length() ? std::move(scroll_rects) : nullptr;
 }
 
 // TODO(flackr): We should be getting the sticky position constraints from the
@@ -215,10 +215,10 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
   }
 
   if (!transform.IsIdentity()) {
-    auto transform_array = std::make_unique<protocol::Array<double>>();
+    auto transform_array = Array<double>::create();
     for (int col = 0; col < 4; ++col) {
       for (int row = 0; row < 4; ++row)
-        transform_array->emplace_back(transform.matrix().get(row, col));
+        transform_array->addItem(transform.matrix().get(row, col));
     }
     layer_object->setTransform(std::move(transform_array));
     // FIXME: rename these to setTransformOrigin*
@@ -336,7 +336,8 @@ InspectorLayerTreeAgent::BuildLayerTree() {
   if (!root_layer)
     return nullptr;
 
-  auto layers = std::make_unique<protocol::Array<protocol::LayerTree::Layer>>();
+  std::unique_ptr<Array<protocol::LayerTree::Layer>> layers =
+      Array<protocol::LayerTree::Layer>::create();
   auto* root_frame = inspected_frames_->Root();
   auto* layer_for_scrolling =
       root_frame->View()->LayoutViewport()->LayerForScrolling();
@@ -360,7 +361,7 @@ void InspectorLayerTreeAgent::GatherLayers(
   if (client_->IsInspectorLayer(layer))
     return;
   int layer_id = layer->id();
-  layers->emplace_back(BuildObjectForLayer(
+  layers->addItem(BuildObjectForLayer(
       RootLayer(), layer,
       has_wheel_event_handlers && layer_id == scrolling_layer_id));
   for (auto child : layer->children()) {
@@ -404,9 +405,9 @@ Response InspectorLayerTreeAgent::compositingReasons(
   if (!response.isSuccess())
     return response;
   CompositingReasons reasons = layer->compositing_reasons();
-  *reason_strings = std::make_unique<protocol::Array<String>>();
+  *reason_strings = Array<String>::create();
   for (const char* name : CompositingReason::ShortNames(reasons))
-    (*reason_strings)->emplace_back(name);
+    (*reason_strings)->addItem(name);
   return Response::OK();
 }
 
@@ -449,15 +450,15 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
 Response InspectorLayerTreeAgent::loadSnapshot(
     std::unique_ptr<Array<protocol::LayerTree::PictureTile>> tiles,
     String* snapshot_id) {
-  if (tiles->empty())
+  if (!tiles->length())
     return Response::Error("Invalid argument, no tiles provided");
-  if (tiles->size() > UINT_MAX)
+  if (tiles->length() > UINT_MAX)
     return Response::Error("Invalid argument, too many tiles provided");
-  wtf_size_t tiles_length = static_cast<wtf_size_t>(tiles->size());
+  wtf_size_t tiles_length = static_cast<wtf_size_t>(tiles->length());
   Vector<scoped_refptr<PictureSnapshot::TilePictureStream>> decoded_tiles;
   decoded_tiles.Grow(tiles_length);
   for (wtf_size_t i = 0; i < tiles_length; ++i) {
-    protocol::LayerTree::PictureTile* tile = (*tiles)[i].get();
+    protocol::LayerTree::PictureTile* tile = tiles->get(i);
     decoded_tiles[i] = base::AdoptRef(new PictureSnapshot::TilePictureStream());
     decoded_tiles[i]->layer_offset.Set(tile->getX(), tile->getY());
     const protocol::Binary& data = tile->getPicture();
@@ -539,12 +540,12 @@ Response InspectorLayerTreeAgent::profileSnapshot(
       snapshot->Profile(min_repeat_count.fromMaybe(1),
                         TimeDelta::FromSecondsD(min_duration.fromMaybe(0)),
                         clip_rect.isJust() ? &rect : nullptr);
-  *out_timings = std::make_unique<Array<Array<double>>>();
+  *out_timings = Array<Array<double>>::create();
   for (const auto& row : timings) {
-    auto out_row = std::make_unique<protocol::Array<double>>();
+    std::unique_ptr<Array<double>> out_row = Array<double>::create();
     for (TimeDelta delta : row)
-      out_row->emplace_back(delta.InSecondsF());
-    (*out_timings)->emplace_back(std::move(out_row));
+      out_row->addItem(delta.InSecondsF());
+    (*out_timings)->addItem(std::move(out_row));
   }
   return Response::OK();
 }
@@ -559,9 +560,8 @@ Response InspectorLayerTreeAgent::snapshotCommandLog(
   protocol::ErrorSupport errors;
   std::unique_ptr<protocol::Value> log_value = protocol::StringUtil::parseJSON(
       snapshot->SnapshotCommandLog()->ToJSONString());
-  *command_log = protocol::ValueConversions<
-      protocol::Array<protocol::DictionaryValue>>::fromValue(log_value.get(),
-                                                             &errors);
+  *command_log =
+      Array<protocol::DictionaryValue>::fromValue(log_value.get(), &errors);
   if (errors.hasErrors())
     return Response::Error(errors.errors());
   return Response::OK();

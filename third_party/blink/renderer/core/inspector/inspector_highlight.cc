@@ -139,9 +139,17 @@ class ShapePathBuilder : public PathBuilder {
 
 std::unique_ptr<protocol::Array<double>> BuildArrayForQuad(
     const FloatQuad& quad) {
-  return std::make_unique<std::vector<double>, std::initializer_list<double>>(
-      {quad.P1().X(), quad.P1().Y(), quad.P2().X(), quad.P2().Y(),
-       quad.P3().X(), quad.P3().Y(), quad.P4().X(), quad.P4().Y()});
+  std::unique_ptr<protocol::Array<double>> array =
+      protocol::Array<double>::create();
+  array->addItem(quad.P1().X());
+  array->addItem(quad.P1().Y());
+  array->addItem(quad.P2().X());
+  array->addItem(quad.P2().Y());
+  array->addItem(quad.P3().X());
+  array->addItem(quad.P3().Y());
+  array->addItem(quad.P4().X());
+  array->addItem(quad.P4().Y());
+  return array;
 }
 
 Path QuadToPath(const FloatQuad& quad) {
@@ -394,8 +402,14 @@ void CollectQuads(Node* node, Vector<FloatQuad>& out_quads) {
 
 std::unique_ptr<protocol::Array<double>> RectForPhysicalRect(
     const PhysicalRect& rect) {
-  return std::make_unique<std::vector<double>, std::initializer_list<double>>(
-      {rect.X(), rect.Y(), rect.Width(), rect.Height()});
+  std::unique_ptr<protocol::Array<double>> result =
+      protocol::Array<double>::create();
+
+  result->addItem(rect.X());
+  result->addItem(rect.Y());
+  result->addItem(rect.Width());
+  result->addItem(rect.Height());
+  return result;
 }
 
 // Returns |layout_object|'s bounding box in document coordinates.
@@ -471,7 +485,7 @@ InspectorHighlight::~InspectorHighlight() = default;
 void InspectorHighlight::AppendDistanceInfo(Node* node) {
   if (!InspectorHighlight::GetBoxModel(node, &model_, false))
     return;
-  boxes_ = std::make_unique<protocol::Array<protocol::Array<double>>>();
+  boxes_ = protocol::Array<protocol::Array<double>>::create();
   computed_style_ = protocol::DictionaryValue::create();
 
   node->GetDocument().EnsurePaintLocationDataValidForNode(node);
@@ -501,7 +515,7 @@ void InspectorHighlight::AppendDistanceInfo(Node* node) {
   PhysicalRect document_rect(
       node->GetDocument().GetLayoutView()->DocumentRect());
   LocalFrameView* local_frame_view = node->GetDocument().View();
-  boxes_->emplace_back(
+  boxes_->addItem(
       RectForPhysicalRect(local_frame_view->ConvertToRootFrame(document_rect)));
 }
 
@@ -551,11 +565,11 @@ void InspectorHighlight::AddLayoutBoxToDistanceInfo(
     for (const auto& text_box : layout_text->GetTextBoxInfo()) {
       PhysicalRect text_rect(
           TextFragmentRectInRootFrame(layout_object, text_box));
-      boxes_->emplace_back(RectForPhysicalRect(text_rect));
+      boxes_->addItem(RectForPhysicalRect(text_rect));
     }
   } else {
     PhysicalRect rect(RectInRootFrame(layout_object));
-    boxes_->emplace_back(RectForPhysicalRect(rect));
+    boxes_->addItem(RectForPhysicalRect(rect));
   }
 }
 
@@ -674,19 +688,10 @@ std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
   if (model_) {
     std::unique_ptr<protocol::DictionaryValue> distance_info =
         protocol::DictionaryValue::create();
-    distance_info->setArray(
-        "boxes",
-        protocol::ValueConversions<std::vector<
-            std::unique_ptr<std::vector<double>>>>::toValue(boxes_.get()));
-    distance_info->setArray(
-        "content", protocol::ValueConversions<std::vector<double>>::toValue(
-                       model_->getContent()));
-    distance_info->setArray(
-        "padding", protocol::ValueConversions<std::vector<double>>::toValue(
-                       model_->getPadding()));
-    distance_info->setArray(
-        "border", protocol::ValueConversions<std::vector<double>>::toValue(
-                      model_->getBorder()));
+    distance_info->setArray("boxes", boxes_->toValue());
+    distance_info->setArray("content", model_->getContent()->toValue());
+    distance_info->setArray("padding", model_->getPadding()->toValue());
+    distance_info->setArray("border", model_->getBorder()->toValue());
     distance_info->setValue("style", computed_style_->clone());
     object->setValue("distanceInfo", std::move(distance_info));
   }
@@ -763,19 +768,21 @@ bool InspectorHighlight::GetBoxModel(
   protocol::ErrorSupport errors;
   if (const ShapeOutsideInfo* shape_outside_info =
           ShapeOutsideInfoForNode(node, &paths, &bounds_quad)) {
-    auto shape = ShapePathBuilder::BuildPath(
-        *view, *layout_object, *shape_outside_info, paths.shape, 1.f);
-    auto margin_shape = ShapePathBuilder::BuildPath(
-        *view, *layout_object, *shape_outside_info, paths.margin_shape, 1.f);
     (*model)->setShapeOutside(
         protocol::DOM::ShapeOutsideInfo::create()
             .setBounds(BuildArrayForQuad(bounds_quad))
-            .setShape(protocol::ValueConversions<
-                      protocol::Array<protocol::Value>>::fromValue(shape.get(),
-                                                                   &errors))
-            .setMarginShape(
-                protocol::ValueConversions<protocol::Array<protocol::Value>>::
-                    fromValue(margin_shape.get(), &errors))
+            .setShape(protocol::Array<protocol::Value>::fromValue(
+                ShapePathBuilder::BuildPath(*view, *layout_object,
+                                            *shape_outside_info, paths.shape,
+                                            1.f)
+                    .get(),
+                &errors))
+            .setMarginShape(protocol::Array<protocol::Value>::fromValue(
+                ShapePathBuilder::BuildPath(*view, *layout_object,
+                                            *shape_outside_info,
+                                            paths.margin_shape, 1.f)
+                    .get(),
+                &errors))
             .build());
   }
 
@@ -812,7 +819,7 @@ bool InspectorHighlight::GetContentQuads(
 
   result->reset(new protocol::Array<protocol::Array<double>>());
   for (FloatQuad& quad : quads)
-    (*result)->emplace_back(BuildArrayForQuad(quad));
+    (*result)->addItem(BuildArrayForQuad(quad));
   return true;
 }
 
