@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
-<translation id="1001338328714563407">Ως διαχειριστής της συσκευής και του λογαριασμού σας από τον τομέα <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Όχι τώρα</translation>
 <translation id="1010200102790553230">Φόρτωση σελίδας αργότερα</translation>
 <translation id="1015730422737071372">Καταχωρίστε επιπλέον λεπτομέρειες</translation>
@@ -215,7 +214,6 @@
 <translation id="202813660234680402">Όχι, να μην προστεθεί</translation>
 <translation id="2030481566774242610">Μήπως εννοείτε <ph name="LINK" />;</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Ελέγξτε το διακομιστή μεσολάβησης και το τείχος προστασίας<ph name="END_LINK" /></translation>
-<translation id="2039578192324174100">Ελέγχει τον τρόπο χειρισμού των δεδομένων της συσκευής σας. Ο τρόπος με τον οποίο η Google επεξεργάζεται και χρησιμοποιεί τα δεδομένα της συσκευής σας καθορίζεται από τον διαχειριστή της συσκευής σας.</translation>
 <translation id="2053111141626950936">Οι σελίδες στα <ph name="LANGUAGE" /> δεν θα μεταφράζονται.</translation>
 <translation id="2053553514270667976">Ταχυδρομικός κώδικας</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 πρόταση}other{# προτάσεις}}</translation>
@@ -385,7 +383,6 @@
 <translation id="295526156371527179">Προειδοποίηση: Αυτή η πολιτική δεν συγχωνεύτηκε ως λεξικό όπως ορίζεται από την πολιτική, επειδή δεν είναι λεξικό.</translation>
 <translation id="2955913368246107853">Κλείσιμο γραμμής εύρεσης</translation>
 <translation id="2969319727213777354">Για την επίτευξη μιας ασφαλούς σύνδεσης, θα πρέπει να γίνει σωστή ρύθμιση του ρολογιού σας. Αυτό οφείλεται στο γεγονός ότι τα πιστοποιητικά που χρησιμοποιούν οι ιστότοποι για την ταυτοποίησή τους είναι έγκυρα μόνο για συγκεκριμένες χρονικές περιόδους. Εφόσον το ρολόι της συσκευής σας δεν είναι σωστά ρυθμισμένο, το Google Chrome δεν μπορεί να επαληθεύσει αυτά τα πιστοποιητικά.</translation>
-<translation id="2970515157925768593">Μπορεί να αλλάξει από απόσταση τη ρύθμιση της συσκευής και του λογαριασμού σας.</translation>
 <translation id="2972581237482394796">&amp;Επανάληψη ενέργειας</translation>
 <translation id="2977665033722899841">Έχει επιλεγεί ο λογαριασμός <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Διαγραφή δεδομένων</translation>
@@ -397,7 +394,6 @@
 <translation id="3005723025932146533">Εμφάνιση αποθηκευμένου αντιγράφου</translation>
 <translation id="3008447029300691911">Εισαγάγετε τον κωδικό CVC για την πιστωτική κάρτα <ph name="CREDIT_CARD" />. Μετά την επιβεβαίωση, θα κοινοποιηθούν τα στοιχεία της κάρτας σας με αυτόν τον ιστότοπο.</translation>
 <translation id="3010559122411665027">Καταχώριση λίστας "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">Ως διαχειριστής αυτής της συσκευής από τον τομέα <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Αποκλείστηκε αυτόματα</translation>
 <translation id="3023071826883856138">You4 (Φάκελος)</translation>
 <translation id="3024663005179499861">Λανθασμένος τύπος πολιτικής</translation>
@@ -443,7 +439,6 @@
 <translation id="3287510313208355388">Να γίνει λήψη όταν πραγματοποιηθεί σύνδεση</translation>
 <translation id="3293642807462928945">Μάθετε περισσότερα σχετικά με την πολιτική <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Δεν βρέθηκαν αποτελέσματα αναζήτησης</translation>
-<translation id="3311730110465560799">Μπορεί να αλλάξει από απόσταση τη ρύθμιση της συσκευής σας.</translation>
 <translation id="3320021301628644560">Προσθήκη διεύθυνσης χρέωσης</translation>
 <translation id="3324983252691184275">Βαθύ κόκκινο</translation>
 <translation id="3338095232262050444">Ασφαλές</translation>
@@ -539,7 +534,6 @@
 <translation id="3761718714832595332">Απόκρυψη κατάστασης</translation>
 <translation id="3765032636089507299">Η σελίδα Ασφαλούς περιήγησης είναι υπό κατασκευή.</translation>
 <translation id="3778403066972421603">Θέλετε να αποθηκεύσετε αυτήν την κάρτα στον Λογαριασμό σας Google και σε αυτήν τη συσκευή;</translation>
-<translation id="3779973883630527594">Η εταιρεία, το εκπαιδευτικό ίδρυμα ή ο οργανισμός που διαχειρίζεται αυτόν τον λογαριασμό:</translation>
 <translation id="3781428340399460090">Έντονο ροζ</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Λήγει <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -550,7 +544,6 @@
 <translation id="382518646247711829">Εάν χρησιμοποιείτε διακομιστή μεσολάβησης…</translation>
 <translation id="3828924085048779000">Δεν επιτρέπεται να είναι κενή η φράση πρόσβασης.</translation>
 <translation id="3831915413245941253">Ο τομέας <ph name="ENROLLMENT_DOMAIN" /> εγκατέστησε επεκτάσεις για επιπλέον λειτουργίες. Οι επεκτάσεις έχουν πρόσβαση σε κάποια από τα δεδομένα σας.</translation>
-<translation id="3835128043098956141">Ελέγχει τον τρόπο χειρισμού των δεδομένων του λογαριασμού σας. Ο τρόπος με τον οποίο η Google επεξεργάζεται και χρησιμοποιεί τα δεδομένα του λογαριασμού σας καθορίζεται από τον διαχειριστή του λογαριασμού σας.</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3858027520442213535">Ενημέρωση ημερομηνίας και ώρας</translation>
 <translation id="3884278016824448484">Αναγνωριστικό συσκευής που προκαλεί διένεξη</translation>
@@ -911,7 +904,6 @@
 <translation id="5838278095973806738">Δεν θα πρέπει να εισαγάγετε ευαίσθητες πληροφορίες σε αυτόν τον ιστότοπο (για παράδειγμα, κωδικούς πρόσβασης ή πιστωτικές κάρτες), επειδή ενδέχεται να υποκλαπούν από εισβολείς.</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
 <translation id="5863847714970149516">Η σελίδα που ακολουθεί μπορεί να προσπαθήσει να σας χρεώσει</translation>
-<translation id="5865951947699094510">Μπορεί να αλλάξει από απόσταση τη ρύθμιση του λογαριασμού σας.</translation>
 <translation id="5866257070973731571">Προσθήκη αριθμού τηλεφώνου</translation>
 <translation id="5869405914158311789">Δεν είναι δυνατή η πρόσβαση σε αυτόν τον ιστότοπο</translation>
 <translation id="5869522115854928033">Αποθηκευμένοι κωδικοί πρόσβασης</translation>
@@ -984,7 +976,6 @@
 <translation id="6290238015253830360">Τα προτεινόμενα άρθρα σας εμφανίζονται εδώ</translation>
 <translation id="6302269476990306341">Διακοπή Βοηθού Google στο Chrome</translation>
 <translation id="6305205051461490394">Δεν είναι δυνατή η πρόσβαση στο <ph name="URL" />.</translation>
-<translation id="6321321051990674438">Ελέγχει τον τρόπο χειρισμού των δεδομένων της συσκευής και του λογαριασμού σας. Ο τρόπος με τον οποίο η Google επεξεργάζεται και χρησιμοποιεί τα δεδομένα της συσκευής και του λογαριασμού σας καθορίζεται από τον διαχειριστή της συσκευής και του λογαριασμού σας.</translation>
 <translation id="6321917430147971392">Ελέγξτε τις ρυθμίσεις DNS</translation>
 <translation id="6328639280570009161">Δοκιμάστε να απενεργοποιήσετε την πρόβλεψη δικτύου</translation>
 <translation id="6328784461820205019">"Η σύνδεσή σας δεν είναι ιδιωτική" ή "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ή "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ή "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ή "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ή "Σφάλμα πιστοποιητικού SSL"</translation>
@@ -1273,7 +1264,6 @@
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
 <translation id="7805768142964895445">Κατάσταση</translation>
 <translation id="7806344367022510803">Αλλάξτε τις ρυθμίσεις της μηχανής αναζήτησης στο Chrome</translation>
-<translation id="7810209002420871817">Ως διαχειριστής του λογαριασμού σας από τον τομέα, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Κατάργηση πρότασης φόρμας από το Chrome;</translation>
 <translation id="7815407501681723534">Βρέθηκαν <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> για τον όρο αναζήτησης "<ph name="SEARCH_STRING" />"</translation>
