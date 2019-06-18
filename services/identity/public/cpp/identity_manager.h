@@ -154,7 +154,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
       const CoreAccountId& account_id,
       const std::string& oauth_consumer_name,
-      const identity::ScopeSet& scopes,
+      const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode);
 
@@ -164,7 +164,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
       const CoreAccountId& account_id,
       const std::string& oauth_consumer_name,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const identity::ScopeSet& scopes,
+      const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode);
 
@@ -176,7 +176,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
       const std::string& client_id,
       const std::string& client_secret,
       const std::string& oauth_consumer_name,
-      const identity::ScopeSet& scopes,
+      const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode);
 
@@ -185,7 +185,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   // request for |account_id| and |scopes| will fetch a new token from the
   // network. Otherwise, is a no-op.
   void RemoveAccessTokenFromCache(const CoreAccountId& account_id,
-                                  const identity::ScopeSet& scopes,
+                                  const ScopeSet& scopes,
                                   const std::string& access_token);
 
   // Provides the information of all accounts that have refresh tokens.
@@ -296,7 +296,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
     // Called when receiving request for access token.
     virtual void OnAccessTokenRequested(const std::string& account_id,
                                         const std::string& consumer_id,
-                                        const identity::ScopeSet& scopes) {}
+                                        const ScopeSet& scopes) {}
 
     // Called when an access token request is completed. Contains diagnostic
     // information about the access token request.
@@ -602,10 +602,9 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   void OnGaiaCookieDeletedByUserAction();
 
   // OAuth2TokenService::DiagnosticsObserver:
-  void OnAccessTokenRequested(
-      const CoreAccountId& account_id,
-      const std::string& consumer_id,
-      const OAuth2TokenService::ScopeSet& scopes) override;
+  void OnAccessTokenRequested(const CoreAccountId& account_id,
+                              const std::string& consumer_id,
+                              const ScopeSet& scopes) override;
   void OnFetchAccessTokenComplete(const CoreAccountId& account_id,
                                   const std::string& consumer_id,
                                   const ScopeSet& scopes,
