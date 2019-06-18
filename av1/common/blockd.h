@@ -227,11 +227,6 @@ typedef struct MB_MODE_INFO {
   int mi_row;
   int mi_col;
 #endif
-  // Index of the alpha Cb and alpha Cr combination
-  int cfl_alpha_idx;
-  // Joint sign of alpha Cb and alpha Cr
-  int cfl_alpha_signs;
-
 #if CONFIG_INSPECTION
   int16_t tx_skip[TXK_TYPE_BUF_LEN];
 #endif
@@ -261,6 +256,10 @@ typedef struct MB_MODE_INFO {
   int8_t angle_delta[PLANE_TYPES];
   /* deringing gain *per-superblock* */
   int8_t cdef_strength;
+  // Joint sign of alpha Cb and alpha Cr
+  int8_t cfl_alpha_signs;
+  // Index of the alpha Cb and alpha Cr combination
+  uint8_t cfl_alpha_idx;
   uint8_t ref_mv_idx;
   // Indicate if masked compound is used(1) or not(0).
   uint8_t comp_group_idx;

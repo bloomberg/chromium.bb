@@ -136,7 +136,7 @@ static void subtract_average_c(const uint16_t *src, int16_t *dst, int width,
 
 CFL_SUB_AVG_FN(c)
 
-static INLINE int cfl_idx_to_alpha(int alpha_idx, int joint_sign,
+static INLINE int cfl_idx_to_alpha(uint8_t alpha_idx, int8_t joint_sign,
                                    CFL_PRED_TYPE pred_type) {
   const int alpha_sign = (pred_type == CFL_PRED_U) ? CFL_SIGN_U(joint_sign)
                                                    : CFL_SIGN_V(joint_sign);

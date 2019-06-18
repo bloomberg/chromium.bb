@@ -875,8 +875,8 @@ static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
                UV_INTRA_MODES - !cfl_allowed);
   }
   if (uv_mode == UV_CFL_PRED) {
-    const int joint_sign = mbmi->cfl_alpha_signs;
-    const int idx = mbmi->cfl_alpha_idx;
+    const int8_t joint_sign = mbmi->cfl_alpha_signs;
+    const uint8_t idx = mbmi->cfl_alpha_idx;
 
 #if CONFIG_ENTROPY_STATS
     ++counts->cfl_sign[joint_sign];

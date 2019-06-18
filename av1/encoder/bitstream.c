@@ -857,8 +857,8 @@ static void write_intra_uv_mode(FRAME_CONTEXT *frame_ctx,
                    UV_INTRA_MODES - !cfl_allowed);
 }
 
-static void write_cfl_alphas(FRAME_CONTEXT *const ec_ctx, int idx,
-                             int joint_sign, aom_writer *w) {
+static void write_cfl_alphas(FRAME_CONTEXT *const ec_ctx, uint8_t idx,
+                             int8_t joint_sign, aom_writer *w) {
   aom_write_symbol(w, joint_sign, ec_ctx->cfl_sign_cdf, CFL_JOINT_SIGNS);
   // Magnitudes are only signaled for nonzero codes.
   if (CFL_SIGN_U(joint_sign) != CFL_SIGN_ZERO) {

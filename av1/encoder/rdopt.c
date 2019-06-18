@@ -6229,7 +6229,8 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
     // Collect RD stats for an alpha value of zero in this plane.
     // Skip i == CFL_SIGN_ZERO as (0, 0) is invalid.
     for (int i = CFL_SIGN_NEG; i < CFL_SIGNS; i++) {
-      const int joint_sign = PLANE_SIGN_TO_JOINT_SIGN(plane, CFL_SIGN_ZERO, i);
+      const int8_t joint_sign =
+          PLANE_SIGN_TO_JOINT_SIGN(plane, CFL_SIGN_ZERO, i);
       if (i == CFL_SIGN_NEG) {
         mbmi->cfl_alpha_idx = 0;
         mbmi->cfl_alpha_signs = joint_sign;
@@ -6246,7 +6247,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
     }
   }
 
-  int best_joint_sign = -1;
+  int8_t best_joint_sign = -1;
 
   for (int plane = 0; plane < CFL_PRED_PLANES; plane++) {
     for (int pn_sign = CFL_SIGN_NEG; pn_sign < CFL_SIGNS; pn_sign++) {
@@ -6257,7 +6258,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
         if (c > 2 && progress < c) break;
         av1_init_rd_stats(&rd_stats);
         for (int i = 0; i < CFL_SIGNS; i++) {
-          const int joint_sign = PLANE_SIGN_TO_JOINT_SIGN(plane, pn_sign, i);
+          const int8_t joint_sign = PLANE_SIGN_TO_JOINT_SIGN(plane, pn_sign, i);
           if (i == 0) {
             mbmi->cfl_alpha_idx = (c << CFL_ALPHABET_SIZE_LOG2) + c;
             mbmi->cfl_alpha_signs = joint_sign;
@@ -6288,7 +6289,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
   }
 
   int best_rate_overhead = INT_MAX;
-  int ind = 0;
+  uint8_t ind = 0;
   if (best_joint_sign >= 0) {
     const int u = best_c[best_joint_sign][CFL_PRED_U];
     const int v = best_c[best_joint_sign][CFL_PRED_V];
