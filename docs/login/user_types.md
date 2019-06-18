@@ -38,7 +38,7 @@ During child login, user session start will be delayed up to 10 seconds until
 the user's policies have been refreshed (using the user's OAuth token). This
 might cause issues for tests that include child user login, as it may add
 unnecessary time to the test runtime. To avoid this, tests should:
-*   Set up `LocalTestServerMixin` to serve a policy for the test user.
+*   Set up `LocalPolicyTestServerMixin` to serve a policy for the test user.
     *   This should be done even if a cached policy is set up using
         `UserPolicyMixin`.
     *   Note that `UserPolicyMixin` propagates policy changes to
