@@ -129,13 +129,10 @@ Response WebAuthnHandler::RemoveVirtualAuthenticator(
 Response WebAuthnHandler::AddCredential(
     const String& authenticator_id,
     std::unique_ptr<WebAuthn::Credential> credential) {
-  if (!virtual_discovery_factory_)
-    return Response::Error(kVirtualEnvironmentNotEnabled);
-
-  auto* authenticator =
-      virtual_discovery_factory_->GetAuthenticator(authenticator_id);
-  if (!authenticator)
-    return Response::InvalidParams(kAuthenticatorNotFound);
+  VirtualAuthenticator* authenticator;
+  Response response = FindAuthenticator(authenticator_id, &authenticator);
+  if (!response.isSuccess())
+    return response;
 
   if (credential->GetRpIdHash().size() != device::kRpIdHashLength) {
     return Response::InvalidParams(
@@ -156,13 +153,10 @@ Response WebAuthnHandler::AddCredential(
 Response WebAuthnHandler::GetCredentials(
     const String& authenticator_id,
     std::unique_ptr<Array<WebAuthn::Credential>>* out_credentials) {
-  if (!virtual_discovery_factory_)
-    return Response::Error(kVirtualEnvironmentNotEnabled);
-
-  auto* authenticator =
-      virtual_discovery_factory_->GetAuthenticator(authenticator_id);
-  if (!authenticator)
-    return Response::InvalidParams(kAuthenticatorNotFound);
+  VirtualAuthenticator* authenticator;
+  Response response = FindAuthenticator(authenticator_id, &authenticator);
+  if (!response.isSuccess())
+    return response;
 
   *out_credentials = Array<WebAuthn::Credential>::create();
   for (const auto& credential : authenticator->registrations()) {
@@ -182,15 +176,37 @@ Response WebAuthnHandler::GetCredentials(
 }
 
 Response WebAuthnHandler::ClearCredentials(const String& authenticator_id) {
+  VirtualAuthenticator* authenticator;
+  Response response = FindAuthenticator(authenticator_id, &authenticator);
+  if (!response.isSuccess())
+    return response;
+
+  authenticator->ClearRegistrations();
+  return Response::OK();
+}
+
+Response WebAuthnHandler::SetUserVerified(const String& authenticator_id,
+                                          bool is_user_verified) {
+  VirtualAuthenticator* authenticator;
+  Response response = FindAuthenticator(authenticator_id, &authenticator);
+  if (!response.isSuccess())
+    return response;
+
+  authenticator->set_user_verified(is_user_verified);
+  return Response::OK();
+}
+
+Response WebAuthnHandler::FindAuthenticator(
+    const String& id,
+    VirtualAuthenticator** out_authenticator) {
+  *out_authenticator = nullptr;
   if (!virtual_discovery_factory_)
     return Response::Error(kVirtualEnvironmentNotEnabled);
 
-  auto* authenticator =
-      virtual_discovery_factory_->GetAuthenticator(authenticator_id);
-  if (!authenticator)
+  *out_authenticator = virtual_discovery_factory_->GetAuthenticator(id);
+  if (!*out_authenticator)
     return Response::InvalidParams(kAuthenticatorNotFound);
 
-  authenticator->ClearRegistrations();
   return Response::OK();
 }
 

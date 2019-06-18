@@ -28,6 +28,9 @@ VirtualAuthenticator::VirtualAuthenticator(
       unique_id_(base::GenerateGUID()),
       state_(base::MakeRefCounted<::device::VirtualFidoDevice::State>()) {
   state_->transport = transport;
+  // If the authenticator has user verification, simulate having set it up
+  // already.
+  state_->fingerprints_enrolled = has_user_verification_;
   SetUserPresence(true);
 }
 
@@ -83,6 +86,7 @@ std::unique_ptr<::device::FidoDevice> VirtualAuthenticator::ConstructDevice() {
       config.internal_uv_support = has_user_verification_;
       config.is_platform_authenticator =
           attachment_ == ::device::AuthenticatorAttachment::kPlatform;
+      config.user_verification_succeeds = is_user_verified_;
       return std::make_unique<::device::VirtualCtap2Device>(state_, config);
     }
     default:
