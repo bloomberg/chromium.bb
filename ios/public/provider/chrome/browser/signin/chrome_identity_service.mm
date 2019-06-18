@@ -33,13 +33,6 @@ UINavigationController* ChromeIdentityService::CreateAccountDetailsController(
   return nil;
 }
 
-UINavigationController*
-ChromeIdentityService::CreateWebAndAppSettingDetailsController(
-    ChromeIdentity* identity,
-    id<ChromeIdentityBrowserOpener> browser_opener) {
-  return nil;
-}
-
 DismissWebAndAppSettingDetailsControllerBlock
 ChromeIdentityService::PresentWebAndAppSettingDetailsController(
     ChromeIdentity* identity,
