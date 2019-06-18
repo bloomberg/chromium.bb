@@ -111,11 +111,12 @@ class BigEndianBuffer {
  public:
   class Cursor {
    public:
-    Cursor(BigEndianBuffer* buffer) : buffer_(buffer), origin_(buffer_->current_) {}
+    Cursor(BigEndianBuffer* buffer)
+        : buffer_(buffer), origin_(buffer_->current_) {}
     Cursor(const Cursor& other) = delete;
     Cursor(Cursor&& other) = delete;
     ~Cursor() { buffer_->current_ = origin_; }
-    
+
     Cursor& operator=(const Cursor& other) = delete;
     Cursor& operator=(Cursor&& other) = delete;
 

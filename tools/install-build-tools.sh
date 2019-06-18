@@ -18,7 +18,6 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 
 pushd $GIT_ROOT
 set -x  # echo on
-ln -f buildtools/$env/gn gn
 sha1=$(curl "$BUILDTOOLS_REPO_URL/+/master/$env/clang-format.sha1?format=TEXT" | base64 --decode)
 curl -Lo clang-format "$GOOGLE_STORAGE_URL/chromium-clang-format/$sha1"
 chmod +x clang-format

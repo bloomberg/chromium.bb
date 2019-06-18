@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OSP_IMPL_TESTING_FAKE_CLOCK_H_
-#define OSP_IMPL_TESTING_FAKE_CLOCK_H_
+#ifndef PLATFORM_TEST_FAKE_CLOCK_H_
+#define PLATFORM_TEST_FAKE_CLOCK_H_
 
 #include "platform/api/time.h"
 
@@ -25,4 +25,4 @@ class FakeClock {
 
 }  // namespace openscreen
 
-#endif  // OSP_IMPL_TESTING_FAKE_CLOCK_H_
+#endif  // PLATFORM_TEST_FAKE_CLOCK_H_

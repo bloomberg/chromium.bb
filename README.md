@@ -51,15 +51,17 @@ dependencies that have changed.
 
 ### Installing build dependencies
 
-Run `./tools/install-build-tools.sh` from the root source directory to obtain a
-copy of the following build tools:
+The following tools are required for building:
 
  - Build file generator: `gn`
- - Code formatter: `clang-format`
+ - Code formatter (optional): `clang-format`
  - Builder: `ninja` ([GitHub releases](https://github.com/ninja-build/ninja/releases))
 
-`gn`, `clang-format`, and `ninja` will be installed in the repository root,
-which must be included in your `$PATH` or the build will fail.
+`clang-format` is only used for presubmit checks and optionally used on
+generated code from the CDDL tool.  A copy of `clang-format` can be downloaded
+to the repository root by running `./tools/install-build-tools.sh`.
+
+`gn` will be installed in `//buildtools/<platform>/` automatically by DEPS.
 
 You also need to ensure that you have the compiler toolchain dependencies.
 Currently, both Linux and Mac OS X build configurations use clang by default.
