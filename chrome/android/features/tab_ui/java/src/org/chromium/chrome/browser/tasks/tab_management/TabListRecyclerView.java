@@ -86,7 +86,9 @@ class TabListRecyclerView extends RecyclerView {
     private ValueAnimator mFadeInAnimator;
     private ValueAnimator mFadeOutAnimator;
     private VisibilityListener mListener;
+    private DynamicResourceLoader mLoader;
     private ViewResourceAdapter mDynamicView;
+    private boolean mIsDynamicViewRegistered;
     private long mLastDirtyTime;
     private RecyclerView.ItemAnimator mOriginalAnimator;
     private ImageView mShadowImageView;
@@ -110,6 +112,8 @@ class TabListRecyclerView extends RecyclerView {
 
     void prepareOverview() {
         endAllAnimations();
+
+        registerDynamicView();
 
         // Stop all the animations to make all the items show up and scroll to position immediately.
         mOriginalAnimator = getItemAnimator();
@@ -142,8 +146,10 @@ class TabListRecyclerView extends RecyclerView {
                 // Restore the original value.
                 setItemAnimator(mOriginalAnimator);
                 setShadowVisibility(computeVerticalScrollOffset() > 0);
-                if (mDynamicView != null)
+                if (mDynamicView != null) {
                     mDynamicView.dropCachedBitmap();
+                    unregisterDynamicView();
+                }
             }
         });
         if (!animate) mFadeInAnimator.end();
@@ -214,7 +220,24 @@ class TabListRecyclerView extends RecyclerView {
             }
         };
         mDynamicView.setDownsamplingScale(getDownsamplingScale());
-        loader.registerResource(getResourceId(), mDynamicView);
+        assert mLoader == null : "createDynamicView should only be called once";
+        mLoader = loader;
+    }
+
+    private void registerDynamicView() {
+        if (mIsDynamicViewRegistered) return;
+        if (mLoader == null) return;
+
+        mLoader.registerResource(getResourceId(), mDynamicView);
+        mIsDynamicViewRegistered = true;
+    }
+
+    private void unregisterDynamicView() {
+        if (!mIsDynamicViewRegistered) return;
+        if (mLoader == null) return;
+
+        mLoader.unregisterResource(getResourceId());
+        mIsDynamicViewRegistered = false;
     }
 
     @SuppressLint("NewApi") // Used on O+, invalidateChildInParent used for previous versions.
@@ -264,6 +287,9 @@ class TabListRecyclerView extends RecyclerView {
      */
     void startHiding(boolean animate) {
         endAllAnimations();
+
+        registerDynamicView();
+
         mListener.startedHiding(animate);
         mFadeOutAnimator = ObjectAnimator.ofFloat(this, View.ALPHA, 0);
         mFadeOutAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
@@ -284,6 +310,7 @@ class TabListRecyclerView extends RecyclerView {
     void postHiding() {
         if (mDynamicView != null) {
             mDynamicView.dropCachedBitmap();
+            unregisterDynamicView();
         }
     }
 
