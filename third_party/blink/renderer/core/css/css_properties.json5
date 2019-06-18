@@ -5355,6 +5355,14 @@
         initial_color: "blink::Color",
       },
     },
+    {
+      name: "-internal-effective-zoom",
+      inherited: true,
+      field_template: "primitive",
+      type_name: "float",
+      default_value: "1.0f",
+      field_group: "*",
+    },
 
     // Aliases; these map to the same CSSPropertyID
     {
