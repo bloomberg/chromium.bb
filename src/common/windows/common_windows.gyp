@@ -77,7 +77,7 @@
         'guid_string.h',
         'http_upload.cc',
         'http_upload.h',
-        'module_info.h'
+        'module_info.h',
         'omap.cc',
         'omap.h',
         'omap_internal.h',
