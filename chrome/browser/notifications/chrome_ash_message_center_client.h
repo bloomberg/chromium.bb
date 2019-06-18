@@ -6,14 +6,12 @@
 #define CHROME_BROWSER_NOTIFICATIONS_CHROME_ASH_MESSAGE_CENTER_CLIENT_H_
 
 #include "ash/public/cpp/notifier_settings_controller.h"
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
+#include "base/observer_list.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_platform_bridge_chromeos.h"
 #include "chrome/browser/notifications/notifier_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "ui/message_center/public/cpp/notifier_id.h"
 
 // This class serves as Chrome's AshMessageCenterClient, as well as the
 // NotificationPlatformBridge for ChromeOS. It dispatches notifications to Ash
@@ -21,7 +19,6 @@
 // NotifierControllers to provide notifier settings information to Ash (visible
 // in NotifierSettingsView).
 class ChromeAshMessageCenterClient : public ash::NotifierSettingsController,
-                                     public ash::mojom::AshMessageCenterClient,
                                      public NotifierController::Observer,
                                      public content::NotificationObserver {
  public:
@@ -42,19 +39,11 @@ class ChromeAshMessageCenterClient : public ash::NotifierSettingsController,
   void RemoveNotifierSettingsObserver(
       ash::NotifierSettingsObserver* observer) override;
 
-  // ash::mojom::AshMessageCenterClient:
-  void GetArcAppIdByPackageName(
-      const std::string& package_name,
-      GetArcAppIdByPackageNameCallback callback) override;
-
   // NotifierController::Observer:
   void OnIconImageUpdated(const message_center::NotifierId& notifier_id,
                           const gfx::ImageSkia& icon) override;
   void OnNotifierEnabledChanged(const message_center::NotifierId& notifier_id,
                                 bool enabled) override;
-
-  // Flushs |binding_|.
-  static void FlushForTesting();
 
  private:
   // content::NotificationObserver override.
@@ -70,8 +59,6 @@ class ChromeAshMessageCenterClient : public ash::NotifierSettingsController,
 
   base::ObserverList<ash::NotifierSettingsObserver> notifier_observers_;
 
-  ash::mojom::AshMessageCenterControllerPtr controller_;
-  mojo::AssociatedBinding<ash::mojom::AshMessageCenterClient> binding_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAshMessageCenterClient);

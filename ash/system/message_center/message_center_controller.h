@@ -6,23 +6,25 @@
 #define ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_CONTROLLER_H_
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/system/message_center/arc/arc_notification_manager.h"
-#include "ash/system/message_center/fullscreen_notification_blocker.h"
-#include "ash/system/message_center/inactive_user_notification_blocker.h"
-#include "ash/system/message_center/session_state_notification_blocker.h"
 #include "base/macros.h"
 #include "components/arc/common/notifications.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 class PrefRegistrySimple;
 
+namespace message_center {
+class NotificationBlocker;
+}
+
 namespace ash {
+
+class FullscreenNotificationBlocker;
+class InactiveUserNotificationBlocker;
+class SessionStateNotificationBlocker;
 
 // This class manages the ash message center and allows clients (like Chrome) to
 // add and remove notifications.
@@ -37,17 +39,9 @@ class ASH_EXPORT MessageCenterController
   void BindRequest(mojom::AshMessageCenterControllerRequest request);
 
   // mojom::AshMessageCenterController:
-  void SetClient(
-      mojom::AshMessageCenterClientAssociatedPtrInfo client) override;
   void SetArcNotificationsInstance(
       arc::mojom::NotificationsInstancePtr arc_notification_instance) override;
   void SetQuietMode(bool enabled) override;
-
-  // Handles get app id calls from ArcNotificationManager.
-  using GetAppIdByPackageNameCallback =
-      base::OnceCallback<void(const std::string& app_id)>;
-  void GetArcAppIdByPackageName(const std::string& package_name,
-                                GetAppIdByPackageNameCallback callback);
 
   InactiveUserNotificationBlocker*
   inactive_user_notification_blocker_for_testing() {
@@ -64,8 +58,6 @@ class ASH_EXPORT MessageCenterController
   std::unique_ptr<message_center::NotificationBlocker> all_popup_blocker_;
 
   mojo::BindingSet<mojom::AshMessageCenterController> binding_set_;
-
-  mojom::AshMessageCenterClientAssociatedPtr client_;
 
   std::unique_ptr<ArcNotificationManager> arc_notification_manager_;
 

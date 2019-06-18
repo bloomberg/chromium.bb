@@ -8,20 +8,13 @@
 
 #include <memory>
 
-#include "ash/public/cpp/notifier_metadata.h"
 #include "ash/public/cpp/notifier_settings_controller.h"
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/shell.h"
-#include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/message_center/test_notifier_settings_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/public/cpp/notifier_id.h"
-#include "ui/views/controls/scroll_view.h"
 
 namespace ash {
 

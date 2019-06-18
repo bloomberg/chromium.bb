@@ -6,23 +6,18 @@
 
 #include "ash/public/cpp/notifier_metadata.h"
 #include "ash/public/cpp/notifier_settings_observer.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/i18n/string_compare.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/arc_application_notifier_controller.h"
 #include "chrome/browser/notifications/extension_notifier_controller.h"
 #include "chrome/browser/notifications/web_page_notifier_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
@@ -108,21 +103,9 @@ class ForwardingNotificationDelegate
 
 ChromeAshMessageCenterClient::ChromeAshMessageCenterClient(
     NotificationPlatformBridgeDelegate* delegate)
-    : delegate_(delegate), binding_(this) {
+    : delegate_(delegate) {
   DCHECK(!g_chrome_ash_message_center_client);
   g_chrome_ash_message_center_client = this;
-
-  // May be null in unit tests.
-  auto* connection = content::ServiceManagerConnection::GetForProcess();
-  if (connection) {
-    connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                              &controller_);
-
-    // Register this object as the client interface implementation.
-    ash::mojom::AshMessageCenterClientAssociatedPtrInfo ptr_info;
-    binding_.Bind(mojo::MakeRequest(&ptr_info));
-    controller_->SetClient(std::move(ptr_info));
-  }
 
   sources_.insert(
       std::make_pair(message_center::NotifierType::APPLICATION,
@@ -203,14 +186,6 @@ void ChromeAshMessageCenterClient::RemoveNotifierSettingsObserver(
   notifier_observers_.RemoveObserver(observer);
 }
 
-void ChromeAshMessageCenterClient::GetArcAppIdByPackageName(
-    const std::string& package_name,
-    GetArcAppIdByPackageNameCallback callback) {
-  std::move(callback).Run(
-      ArcAppListPrefs::Get(arc::ArcSessionManager::Get()->profile())
-          ->GetAppIdByPackageName(package_name));
-}
-
 void ChromeAshMessageCenterClient::OnIconImageUpdated(
     const NotifierId& notifier_id,
     const gfx::ImageSkia& image) {
@@ -225,25 +200,14 @@ void ChromeAshMessageCenterClient::OnNotifierEnabledChanged(
     MessageCenter::Get()->RemoveNotificationsForNotifierId(notifier_id);
 }
 
-// static
-void ChromeAshMessageCenterClient::FlushForTesting() {
-  g_chrome_ash_message_center_client->binding_.FlushForTesting();
-}
-
 void ChromeAshMessageCenterClient::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_ADDED: {
-      Profile* profile = GetProfileForNotifiers();
-      if (profile) {
-        GetNotifiers();
-        registrar_.RemoveAll();
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
+  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_ADDED);
+  Profile* profile = GetProfileForNotifiers();
+  if (profile) {
+    GetNotifiers();
+    registrar_.RemoveAll();
   }
 }
