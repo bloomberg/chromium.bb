@@ -513,7 +513,7 @@ void FidoDeviceAuthenticator::GetSensorInfo(BioEnrollmentCallback callback) {
 }
 
 void FidoDeviceAuthenticator::BioEnrollFingerprint(
-    pin::TokenResponse token,
+    const pin::TokenResponse& token,
     BioEnrollmentCallback callback) {
   DCHECK(
       Options()->bio_enrollment_availability_preview !=
@@ -527,7 +527,7 @@ void FidoDeviceAuthenticator::BioEnrollFingerprint(
       base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
-void FidoDeviceAuthenticator::BioEnrollRename(pin::TokenResponse token,
+void FidoDeviceAuthenticator::BioEnrollRename(const pin::TokenResponse& token,
                                               std::vector<uint8_t> id,
                                               std::string name,
                                               BioEnrollmentCallback callback) {
@@ -535,13 +535,9 @@ void FidoDeviceAuthenticator::BioEnrollRename(pin::TokenResponse token,
       Options()->bio_enrollment_availability_preview !=
       AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
 
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
-      device_.get(),
+  RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
       BioEnrollmentRequest::ForRename(token, std::move(id), std::move(name)),
-      std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+      std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::OnBioEnroll(
@@ -577,18 +573,15 @@ void FidoDeviceAuthenticator::BioEnrollCancel(BioEnrollmentCallback callback) {
 }
 
 void FidoDeviceAuthenticator::BioEnrollEnumerate(
-    pin::TokenResponse token,
+    const pin::TokenResponse& token,
     BioEnrollmentCallback callback) {
   DCHECK(
       Options()->bio_enrollment_availability_preview !=
       AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
 
-  operation_ = std::make_unique<
-      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
-      device_.get(), BioEnrollmentRequest::ForEnumerate(std::move(token)),
-      std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse),
-      /*string_fixup_predicate=*/nullptr);
-  operation_->Start();
+  RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
+      BioEnrollmentRequest::ForEnumerate(std::move(token)), std::move(callback),
+      base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::Reset(ResetCallback callback) {
