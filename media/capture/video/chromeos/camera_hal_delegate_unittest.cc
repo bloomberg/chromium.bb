@@ -215,9 +215,9 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
 
   ASSERT_EQ(3u, descriptors.size());
   // We have workaround to always put front camera at first.
-  ASSERT_EQ(std::to_string(1), descriptors[0].device_id);
+  ASSERT_EQ("1", descriptors[0].device_id);
   ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_USER, descriptors[0].facing);
-  ASSERT_EQ(std::to_string(0), descriptors[1].device_id);
+  ASSERT_EQ("0", descriptors[1].device_id);
   ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT,
             descriptors[1].facing);
   ASSERT_EQ(kFakeDevicePath, descriptors[2].device_id);

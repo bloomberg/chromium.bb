@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/numerics/ranges.h"
 #include "base/posix/safe_strerror.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/image_capture_types.h"
@@ -120,7 +121,7 @@ std::string StreamTypeToString(StreamType stream_type) {
       return std::string("StreamType::kYUVOutput");
     default:
       return std::string("Unknown StreamType value: ") +
-             std::to_string(static_cast<int32_t>(stream_type));
+             base::NumberToString(static_cast<int32_t>(stream_type));
   }
 }  // namespace media
 
@@ -641,7 +642,7 @@ void CameraDeviceDelegate::OnConfiguredStreams(
             kCrosHalV3DeviceDelegateWrongNumberOfStreamsConfigured,
         FROM_HERE,
         std::string("Wrong number of streams configured: ") +
-            std::to_string(updated_config->streams.size()));
+            base::NumberToString(updated_config->streams.size()));
     return;
   }
 
