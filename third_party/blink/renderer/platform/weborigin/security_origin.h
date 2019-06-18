@@ -160,7 +160,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // the given URL.
   // Note: This function may return false when |url| has data scheme, which
   // is not aligned with CORS. If you want a CORS-aligned check, just use
-  // CORS mode (e.g., network::mojom::FetchRequestMode::kSameOrigin), or
+  // CORS mode (e.g., network::mojom::RequestMode::kSameOrigin), or
   // use CanReadContent.
   // See
   // https://docs.google.com/document/d/1_BD15unoPJVwKyf5yOUDu5kie492TTaBxzhJ58j1rD4/edit.

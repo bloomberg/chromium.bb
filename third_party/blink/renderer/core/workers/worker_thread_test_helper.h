@@ -92,7 +92,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::FetchCredentialsMode) override {
+      network::mojom::CredentialsMode) override {
     NOTREACHED();
   }
 

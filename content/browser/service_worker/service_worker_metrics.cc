@@ -554,7 +554,7 @@ void ServiceWorkerMetrics::RecordStatusZeroResponseError(
 }
 
 void ServiceWorkerMetrics::RecordFallbackedRequestMode(
-    network::mojom::FetchRequestMode mode) {
+    network::mojom::RequestMode mode) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.FallbackedRequestMode",
                             mode);
 }

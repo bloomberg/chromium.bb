@@ -7088,12 +7088,12 @@ void RenderFrameImpl::BeginNavigationInternal(
   // TODO(clamy): Data urls should not be sent back to the browser either.
   // These values are assumed on the browser side for navigations. These checks
   // ensure the renderer has the correct values.
-  DCHECK_EQ(network::mojom::FetchRequestMode::kNavigate,
-            info->url_request.GetFetchRequestMode());
-  DCHECK_EQ(network::mojom::FetchCredentialsMode::kInclude,
-            info->url_request.GetFetchCredentialsMode());
-  DCHECK_EQ(network::mojom::FetchRedirectMode::kManual,
-            info->url_request.GetFetchRedirectMode());
+  DCHECK_EQ(network::mojom::RequestMode::kNavigate,
+            info->url_request.GetMode());
+  DCHECK_EQ(network::mojom::CredentialsMode::kInclude,
+            info->url_request.GetCredentialsMode());
+  DCHECK_EQ(network::mojom::RedirectMode::kManual,
+            info->url_request.GetRedirectMode());
   DCHECK(frame_->Parent() ||
          info->frame_type ==
              network::mojom::RequestContextFrameType::kTopLevel);

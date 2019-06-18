@@ -292,18 +292,18 @@ void SetReferrer(
   }
 }
 
-// This maps the network::mojom::FetchRequestMode to a string that can be used
+// This maps the network::mojom::RequestMode to a string that can be used
 // in a `Sec-Fetch-Mode` header.
-const char* FetchRequestModeToString(network::mojom::FetchRequestMode mode) {
+const char* RequestModeToString(network::mojom::RequestMode mode) {
   switch (mode) {
-    case network::mojom::FetchRequestMode::kSameOrigin:
+    case network::mojom::RequestMode::kSameOrigin:
       return "same-origin";
-    case network::mojom::FetchRequestMode::kNoCors:
+    case network::mojom::RequestMode::kNoCors:
       return "no-cors";
-    case network::mojom::FetchRequestMode::kCors:
-    case network::mojom::FetchRequestMode::kCorsWithForcedPreflight:
+    case network::mojom::RequestMode::kCors:
+    case network::mojom::RequestMode::kCorsWithForcedPreflight:
       return "cors";
-    case network::mojom::FetchRequestMode::kNavigate:
+    case network::mojom::RequestMode::kNavigate:
       return "navigate";
   }
   NOTREACHED();
@@ -332,9 +332,8 @@ void SetSecFetchHeaders(
         request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
       }
 
-      request.SetHttpHeaderField(
-          "Sec-Fetch-Mode",
-          FetchRequestModeToString(request.GetFetchRequestMode()));
+      request.SetHttpHeaderField("Sec-Fetch-Mode",
+                                 RequestModeToString(request.GetMode()));
 
       // Note that the `Sec-Fetch-User` header is always false (and therefore
       // omitted) for subresource requests. Likewise, note that we rely on
@@ -885,20 +884,20 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         resource_request.RequestorOrigin();
     DCHECK(!options.cors_flag);
     params.MutableOptions().cors_flag = cors::CalculateCorsFlag(
-        params.Url(), origin.get(), resource_request.GetFetchRequestMode());
+        params.Url(), origin.get(), resource_request.GetMode());
     // TODO(yhirano): Reject requests for non CORS-enabled schemes.
     // See https://crrev.com/c/1298828.
     resource_request.SetAllowStoredCredentials(cors::CalculateCredentialsFlag(
-        resource_request.GetFetchCredentialsMode(),
+        resource_request.GetCredentialsMode(),
         cors::CalculateResponseTainting(
-            params.Url(), resource_request.GetFetchRequestMode(), origin.get(),
+            params.Url(), resource_request.GetMode(), origin.get(),
             params.Options().cors_flag ? CorsFlag::Set : CorsFlag::Unset)));
   }
 
   if (RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
-      resource_request.GetFetchCredentialsMode() ==
-          network::mojom::FetchCredentialsMode::kOmit) {
-    // See comments at network::ResourceRequest::fetch_credentials_mode.
+      resource_request.GetCredentialsMode() ==
+          network::mojom::CredentialsMode::kOmit) {
+    // See comments at network::ResourceRequest::credentials_mode.
     resource_request.SetAllowStoredCredentials(false);
   }
 

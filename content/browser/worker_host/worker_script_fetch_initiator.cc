@@ -52,7 +52,7 @@ void WorkerScriptFetchInitiator::Start(
     int process_id,
     const GURL& script_url,
     const url::Origin& request_initiator,
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::CredentialsMode credentials_mode,
     ResourceType resource_type,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     AppCacheNavigationHandleCore* appcache_handle_core,
@@ -106,8 +106,8 @@ void WorkerScriptFetchInitiator::Start(
     // CorsURLLoaderFactory::IsSane().
     // TODO(https://crbug.com/799935): Unify |LOAD_DO_NOT_*| into
     // |allow_credentials|.
-    resource_request->fetch_credentials_mode = credentials_mode;
-    if (credentials_mode == network::mojom::FetchCredentialsMode::kOmit) {
+    resource_request->credentials_mode = credentials_mode;
+    if (credentials_mode == network::mojom::CredentialsMode::kOmit) {
       resource_request->allow_credentials = false;
       const auto load_flags_pattern = net::LOAD_DO_NOT_SAVE_COOKIES |
                                       net::LOAD_DO_NOT_SEND_COOKIES |

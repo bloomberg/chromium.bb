@@ -738,10 +738,8 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  bool cors_flag =
-      request.fetch_request_mode !=
-          network::mojom::FetchRequestMode::kNavigate &&
-      request.fetch_request_mode != network::mojom::FetchRequestMode::kNoCors;
+  bool cors_flag = request.mode != network::mojom::RequestMode::kNavigate &&
+                   request.mode != network::mojom::RequestMode::kNoCors;
 
   // CORS mode requires a valid |request_inisiator|. Check this condition first
   // so that kDisableWebSecurity should not hide program errors in tests.

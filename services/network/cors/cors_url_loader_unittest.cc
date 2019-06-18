@@ -170,10 +170,10 @@ class CorsURLLoaderTest : public testing::Test {
 
   void CreateLoaderAndStart(const GURL& origin,
                             const GURL& url,
-                            mojom::FetchRequestMode fetch_request_mode) {
+                            mojom::RequestMode mode) {
     ResourceRequest request;
-    request.fetch_request_mode = fetch_request_mode;
-    request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+    request.mode = mode;
+    request.credentials_mode = mojom::CredentialsMode::kOmit;
     request.allow_credentials = false;
     request.method = net::HttpRequestHeaders::kGetMethod;
     request.url = url;
@@ -411,8 +411,8 @@ class BadMessageTestHelper {
 
 TEST_F(CorsURLLoaderTest, SameOriginWithoutInitiator) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kSameOrigin;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
+  request.mode = mojom::RequestMode::kSameOrigin;
+  request.credentials_mode = mojom::CredentialsMode::kInclude;
   request.url = GURL("http://example.com/");
   request.request_initiator = base::nullopt;
 
@@ -432,8 +432,8 @@ TEST_F(CorsURLLoaderTest, SameOriginWithoutInitiator) {
 
 TEST_F(CorsURLLoaderTest, NoCorsWithoutInitiator) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
+  request.mode = mojom::RequestMode::kNoCors;
+  request.credentials_mode = mojom::CredentialsMode::kInclude;
   request.url = GURL("http://example.com/");
   request.request_initiator = base::nullopt;
 
@@ -451,8 +451,8 @@ TEST_F(CorsURLLoaderTest, NoCorsWithoutInitiator) {
 
 TEST_F(CorsURLLoaderTest, CorsWithoutInitiator) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kInclude;
   request.url = GURL("http://example.com/");
   request.request_initiator = base::nullopt;
 
@@ -474,8 +474,8 @@ TEST_F(CorsURLLoaderTest, NavigateWithoutInitiator) {
   ResetFactory(base::nullopt /* initiator */, mojom::kBrowserProcessId);
 
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
+  request.mode = mojom::RequestMode::kNavigate;
+  request.credentials_mode = mojom::CredentialsMode::kInclude;
   request.url = GURL("http://example.com/");
   request.request_initiator = base::nullopt;
 
@@ -493,8 +493,8 @@ TEST_F(CorsURLLoaderTest, NavigateWithoutInitiator) {
 
 TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther1) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kNavigate;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.load_flags =
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
   request.url = GURL("http://example.com/");
@@ -516,8 +516,8 @@ TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther1) {
 
 TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther2) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kNavigate;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.load_flags =
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA;
   request.url = GURL("http://example.com/");
@@ -539,8 +539,8 @@ TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther2) {
 
 TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther3) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kNavigate;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA;
   request.url = GURL("http://example.com/");
@@ -562,7 +562,7 @@ TEST_F(CorsURLLoaderTest, CredentialsModeAndLoadFlagsContradictEachOther3) {
 
 TEST_F(CorsURLLoaderTest, NavigationFromRenderer) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kNavigate;
+  request.mode = mojom::RequestMode::kNavigate;
   request.url = GURL("http://example.com/");
   request.request_initiator = base::nullopt;
 
@@ -582,8 +582,7 @@ TEST_F(CorsURLLoaderTest, NavigationFromRenderer) {
 
 TEST_F(CorsURLLoaderTest, SameOriginRequest) {
   const GURL url("http://example.com/foo.png");
-  CreateLoaderAndStart(url.GetOrigin(), url,
-                       mojom::FetchRequestMode::kSameOrigin);
+  CreateLoaderAndStart(url.GetOrigin(), url, mojom::RequestMode::kSameOrigin);
 
   NotifyLoaderClientOnReceiveResponse();
   NotifyLoaderClientOnComplete(net::OK);
@@ -600,7 +599,7 @@ TEST_F(CorsURLLoaderTest, SameOriginRequest) {
 TEST_F(CorsURLLoaderTest, CrossOriginRequestWithNoCorsMode) {
   const GURL origin("http://example.com");
   const GURL url("http://other.com/foo.png");
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kNoCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kNoCors);
 
   NotifyLoaderClientOnReceiveResponse();
   NotifyLoaderClientOnComplete(net::OK);
@@ -620,8 +619,8 @@ TEST_F(CorsURLLoaderTest, CrossOriginRequestWithNoCorsModeAndPatchMethod) {
   const GURL origin("http://example.com");
   const GURL url("http://other.com/foo.png");
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
+  request.mode = mojom::RequestMode::kNoCors;
+  request.credentials_mode = mojom::CredentialsMode::kInclude;
   request.method = "PATCH";
   request.url = url;
   request.request_initiator = url::Origin::Create(origin);
@@ -646,7 +645,7 @@ TEST_F(CorsURLLoaderTest, CrossOriginRequestWithNoCorsModeAndPatchMethod) {
 TEST_F(CorsURLLoaderTest, CrossOriginRequestFetchRequestModeSameOrigin) {
   const GURL origin("http://example.com");
   const GURL url("http://other.com/foo.png");
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kSameOrigin);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kSameOrigin);
 
   RunUntilComplete();
 
@@ -664,7 +663,7 @@ TEST_F(CorsURLLoaderTest, CrossOriginRequestFetchRequestModeSameOrigin) {
 TEST_F(CorsURLLoaderTest, CrossOriginRequestWithCorsModeButMissingCorsHeader) {
   const GURL origin("http://example.com");
   const GURL url("http://other.com/foo.png");
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   NotifyLoaderClientOnReceiveResponse();
   NotifyLoaderClientOnComplete(net::OK);
@@ -687,7 +686,7 @@ TEST_F(CorsURLLoaderTest, CrossOriginRequestWithCorsModeButMissingCorsHeader) {
 TEST_F(CorsURLLoaderTest, CrossOriginRequestWithCorsMode) {
   const GURL origin("http://example.com");
   const GURL url("http://other.com/foo.png");
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   NotifyLoaderClientOnReceiveResponse(
       {"Access-Control-Allow-Origin: http://example.com"});
@@ -706,7 +705,7 @@ TEST_F(CorsURLLoaderTest,
        CrossOriginRequestFetchRequestWithCorsModeButMismatchedCorsHeader) {
   const GURL origin("http://example.com");
   const GURL url("http://other.com/foo.png");
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   NotifyLoaderClientOnReceiveResponse(
       {"Access-Control-Allow-Origin: http://some-other-domain.com"});
@@ -727,7 +726,7 @@ TEST_F(CorsURLLoaderTest, StripUsernameAndPassword) {
   const GURL origin("http://example.com");
   const GURL url("http://foo:bar@other.com/foo.png");
   std::string stripped_url = "http://other.com/foo.png";
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   NotifyLoaderClientOnReceiveResponse(
       {"Access-Control-Allow-Origin: http://example.com"});
@@ -748,7 +747,7 @@ TEST_F(CorsURLLoaderTest, CorsCheckPassOnRedirect) {
   const GURL url("https://other.example.com/foo.png");
   const GURL new_url("https://other2.example.com/bar.png");
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   EXPECT_EQ(1, num_created_loaders());
   EXPECT_EQ(GetRequest().url, url);
@@ -770,7 +769,7 @@ TEST_F(CorsURLLoaderTest, CorsCheckFailOnRedirect) {
   const GURL url("https://other.example.com/foo.png");
   const GURL new_url("https://other2.example.com/bar.png");
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   EXPECT_EQ(1, num_created_loaders());
   EXPECT_EQ(GetRequest().url, url);
@@ -794,7 +793,7 @@ TEST_F(CorsURLLoaderTest, NetworkLoaderErrorDuringRedirect) {
   const GURL url("https://other.example.com/foo.png");
   const GURL new_url("https://other2.example.com/bar.png");
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   EXPECT_EQ(1, num_created_loaders());
   EXPECT_EQ(GetRequest().url, url);
@@ -820,7 +819,7 @@ TEST_F(CorsURLLoaderTest, SameOriginToSameOriginRedirect) {
   const GURL url("https://example.com/foo.png");
   const GURL new_url("https://example.com/bar.png");
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   EXPECT_EQ(1, num_created_loaders());
   EXPECT_EQ(GetRequest().url, url);
@@ -856,7 +855,7 @@ TEST_F(CorsURLLoaderTest, SameOriginToCrossOriginRedirect) {
   const GURL url("https://example.com/foo.png");
   const GURL new_url("https://other.example.com/bar.png");
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   EXPECT_EQ(1, num_created_loaders());
   EXPECT_EQ(GetRequest().url, url);
@@ -895,7 +894,7 @@ TEST_F(CorsURLLoaderTest, CrossOriginToCrossOriginRedirect) {
   const GURL url("https://other.example.com/foo.png");
   const GURL new_url("https://other.example.com/bar.png");
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   EXPECT_EQ(1, num_created_loaders());
   EXPECT_EQ(GetRequest().url, url);
@@ -935,7 +934,7 @@ TEST_F(CorsURLLoaderTest, CrossOriginToOriginalOriginRedirect) {
   const GURL url("https://other.example.com/foo.png");
   const GURL new_url("https://example.com/bar.png");
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   EXPECT_EQ(1, num_created_loaders());
   EXPECT_EQ(GetRequest().url, url);
@@ -979,7 +978,7 @@ TEST_F(CorsURLLoaderTest, CrossOriginToAnotherCrossOriginRedirect) {
   const GURL url("https://other.example.com/foo.png");
   const GURL new_url("https://other2.example.com/bar.png");
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   EXPECT_EQ(1, num_created_loaders());
   EXPECT_EQ(GetRequest().url, url);
@@ -1021,8 +1020,8 @@ TEST_F(CorsURLLoaderTest,
   const GURL new_url("https://other2.example.com/bar.png");
 
   ResourceRequest original_request;
-  original_request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  original_request.mode = mojom::RequestMode::kCors;
+  original_request.credentials_mode = mojom::CredentialsMode::kOmit;
   original_request.allow_credentials = false;
   original_request.method = "PATCH";
   original_request.url = url;
@@ -1092,8 +1091,8 @@ TEST_F(CorsURLLoaderTest, RedirectInfoShouldBeUsed) {
   const GURL new_url("https://other.example.com/foo.png");
 
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.allow_credentials = false;
   request.method = "POST";
   request.url = url;
@@ -1142,7 +1141,7 @@ TEST_F(CorsURLLoaderTest, TooManyRedirects) {
   const GURL origin("https://example.com");
   const GURL url("https://example.com/foo.png");
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
   for (int i = 0; i < 20; ++i) {
     EXPECT_EQ(1, num_created_loaders());
 
@@ -1175,10 +1174,10 @@ TEST_F(CorsURLLoaderTest, FollowErrorRedirect) {
   const GURL new_url("https://example.com/bar.png");
 
   ResourceRequest original_request;
-  original_request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  original_request.mode = mojom::RequestMode::kCors;
+  original_request.credentials_mode = mojom::CredentialsMode::kOmit;
   original_request.allow_credentials = false;
-  original_request.fetch_redirect_mode = mojom::FetchRedirectMode::kError;
+  original_request.redirect_mode = mojom::RedirectMode::kError;
   original_request.method = "GET";
   original_request.url = url;
   original_request.request_initiator = url::Origin::Create(origin);
@@ -1204,7 +1203,7 @@ TEST_F(CorsURLLoaderTest, CorsExemptHeaderRemovalOnCrossOriginRedirects) {
   ResourceRequest request;
   request.url = GURL("https://example.com/foo.png");
   request.request_initiator = url::Origin::Create(GURL("https://example.com"));
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
+  request.mode = mojom::RequestMode::kCors;
   request.cors_exempt_headers.SetHeader(kTestCorsExemptHeader, "test-value");
   CreateLoaderAndStart(request);
   EXPECT_EQ(1, num_created_loaders());
@@ -1242,7 +1241,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_Allowed) {
                              url.host(),
                              mojom::CorsDomainMatchMode::kDisallowSubdomains);
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   NotifyLoaderClientOnReceiveResponse();
   NotifyLoaderClientOnComplete(net::OK);
@@ -1270,7 +1269,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_Blocked) {
                              url.host(),
                              mojom::CorsDomainMatchMode::kDisallowSubdomains);
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   NotifyLoaderClientOnReceiveResponse();
 
@@ -1294,7 +1293,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_AllowedByFactoryList) {
       url::Origin::Create(origin), url.scheme(), url.host(),
       mojom::CorsDomainMatchMode::kDisallowSubdomains);
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   NotifyLoaderClientOnReceiveResponse();
   NotifyLoaderClientOnComplete(net::OK);
@@ -1322,7 +1321,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_AllowedByFactoryListButBlocked) {
                              url.host(),
                              mojom::CorsDomainMatchMode::kDisallowSubdomains);
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kCors);
 
   NotifyLoaderClientOnReceiveResponse();
 
@@ -1346,7 +1345,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_NoCors) {
                              url.host(),
                              mojom::CorsDomainMatchMode::kDisallowSubdomains);
 
-  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kNoCors);
+  CreateLoaderAndStart(origin, url, mojom::RequestMode::kNoCors);
 
   NotifyLoaderClientOnReceiveResponse();
   NotifyLoaderClientOnComplete(net::OK);
@@ -1368,8 +1367,8 @@ TEST_F(CorsURLLoaderTest, 304ForSimpleRevalidation) {
   const GURL new_url("https://other2.example.com/bar.png");
 
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.allow_credentials = false;
   request.method = "GET";
   request.url = url;
@@ -1398,8 +1397,8 @@ TEST_F(CorsURLLoaderTest, 304ForSimpleGet) {
   const GURL new_url("https://other2.example.com/bar.png");
 
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.allow_credentials = false;
   request.method = "GET";
   request.url = url;
@@ -1424,8 +1423,8 @@ TEST_F(CorsURLLoaderTest, 200ForSimpleRevalidation) {
   const GURL new_url("https://other2.example.com/bar.png");
 
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.allow_credentials = false;
   request.method = "GET";
   request.url = url;
@@ -1454,8 +1453,8 @@ TEST_F(CorsURLLoaderTest, RevalidationAndPreflight) {
   const GURL new_url("https://other2.example.com/bar.png");
 
   ResourceRequest original_request;
-  original_request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  original_request.mode = mojom::RequestMode::kCors;
+  original_request.credentials_mode = mojom::CredentialsMode::kOmit;
   original_request.allow_credentials = false;
   original_request.method = "GET";
   original_request.url = url;
@@ -1500,8 +1499,8 @@ TEST_F(CorsURLLoaderTest, RevalidationAndPreflight) {
 // Keep this in sync with the CalculateResponseTainting test in
 // Blink's cors_test.cc.
 TEST(CorsURLLoaderTaintingTest, CalculateResponseTainting) {
-  using mojom::FetchRequestMode;
   using mojom::FetchResponseType;
+  using mojom::RequestMode;
 
   const GURL same_origin_url("https://example.com/");
   const GURL cross_origin_url("https://example2.com/");
@@ -1513,92 +1512,92 @@ TEST(CorsURLLoaderTaintingTest, CalculateResponseTainting) {
   // CORS flag is false, same-origin request
   EXPECT_EQ(FetchResponseType::kBasic,
             CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kSameOrigin, origin, false,
-                false, &origin_access_list));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNoCors, origin, false,
-                false, &origin_access_list));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kCors, origin, false, false,
+                same_origin_url, RequestMode::kSameOrigin, origin, false, false,
                 &origin_access_list));
   EXPECT_EQ(FetchResponseType::kBasic,
             CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kCorsWithForcedPreflight,
-                origin, false, false, &origin_access_list));
+                same_origin_url, RequestMode::kNoCors, origin, false, false,
+                &origin_access_list));
   EXPECT_EQ(FetchResponseType::kBasic,
             CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNavigate, origin, false,
-                false, &origin_access_list));
+                same_origin_url, RequestMode::kCors, origin, false, false,
+                &origin_access_list));
+  EXPECT_EQ(FetchResponseType::kBasic,
+            CorsURLLoader::CalculateResponseTainting(
+                same_origin_url, RequestMode::kCorsWithForcedPreflight, origin,
+                false, false, &origin_access_list));
+  EXPECT_EQ(FetchResponseType::kBasic,
+            CorsURLLoader::CalculateResponseTainting(
+                same_origin_url, RequestMode::kNavigate, origin, false, false,
+                &origin_access_list));
 
   // CORS flag is false, cross-origin request
   EXPECT_EQ(FetchResponseType::kOpaque,
             CorsURLLoader::CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kNoCors, origin, false,
-                false, &origin_access_list));
+                cross_origin_url, RequestMode::kNoCors, origin, false, false,
+                &origin_access_list));
   EXPECT_EQ(FetchResponseType::kBasic,
             CorsURLLoader::CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kNavigate, origin, false,
-                false, &origin_access_list));
+                cross_origin_url, RequestMode::kNavigate, origin, false, false,
+                &origin_access_list));
 
   // CORS flag is true, same-origin request
   EXPECT_EQ(FetchResponseType::kCors,
             CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kCors, origin, true, false,
+                same_origin_url, RequestMode::kCors, origin, true, false,
                 &origin_access_list));
   EXPECT_EQ(FetchResponseType::kCors,
             CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kCorsWithForcedPreflight,
-                origin, true, false, &origin_access_list));
+                same_origin_url, RequestMode::kCorsWithForcedPreflight, origin,
+                true, false, &origin_access_list));
 
   // CORS flag is true, cross-origin request
   EXPECT_EQ(FetchResponseType::kCors,
             CorsURLLoader::CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kCors, origin, true, false,
+                cross_origin_url, RequestMode::kCors, origin, true, false,
                 &origin_access_list));
   EXPECT_EQ(FetchResponseType::kCors,
             CorsURLLoader::CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kCorsWithForcedPreflight,
-                origin, true, false, &origin_access_list));
+                cross_origin_url, RequestMode::kCorsWithForcedPreflight, origin,
+                true, false, &origin_access_list));
 
   // Origin is not provided.
   EXPECT_EQ(FetchResponseType::kBasic,
             CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNoCors, no_origin, false,
+                same_origin_url, RequestMode::kNoCors, no_origin, false, false,
+                &origin_access_list));
+  EXPECT_EQ(FetchResponseType::kBasic,
+            CorsURLLoader::CalculateResponseTainting(
+                same_origin_url, RequestMode::kNavigate, no_origin, false,
                 false, &origin_access_list));
   EXPECT_EQ(FetchResponseType::kBasic,
             CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNavigate, no_origin, false,
-                false, &origin_access_list));
+                cross_origin_url, RequestMode::kNoCors, no_origin, false, false,
+                &origin_access_list));
   EXPECT_EQ(FetchResponseType::kBasic,
             CorsURLLoader::CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kNoCors, no_origin, false,
-                false, &origin_access_list));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CorsURLLoader::CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kNavigate, no_origin, false,
+                cross_origin_url, RequestMode::kNavigate, no_origin, false,
                 false, &origin_access_list));
 
   // Tainted origin.
   EXPECT_EQ(FetchResponseType::kOpaque,
             CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNoCors, origin, false, true,
+                same_origin_url, RequestMode::kNoCors, origin, false, true,
                 &origin_access_list));
   EXPECT_EQ(FetchResponseType::kBasic,
             CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kCorsWithForcedPreflight,
-                origin, false, true, &origin_access_list));
+                same_origin_url, RequestMode::kCorsWithForcedPreflight, origin,
+                false, true, &origin_access_list));
   EXPECT_EQ(FetchResponseType::kBasic,
             CorsURLLoader::CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNavigate, origin, false,
-                true, &origin_access_list));
+                same_origin_url, RequestMode::kNavigate, origin, false, true,
+                &origin_access_list));
 }
 
 TEST_F(CorsURLLoaderTest, RequestWithHostHeaderFails) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.allow_credentials = false;
   request.method = net::HttpRequestHeaders::kGetMethod;
   request.url = GURL("https://foo.test/path");
@@ -1615,8 +1614,8 @@ TEST_F(CorsURLLoaderTest, RequestWithHostHeaderFails) {
 
 TEST_F(CorsURLLoaderTest, RequestWithProxyAuthorizationHeaderFails) {
   ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
   request.allow_credentials = false;
   request.method = net::HttpRequestHeaders::kGetMethod;
   request.url = GURL("https://foo.test/path");
@@ -1634,7 +1633,7 @@ TEST_F(CorsURLLoaderTest, RequestWithProxyAuthorizationHeaderFails) {
 
 TEST_F(CorsURLLoaderTest, SetHostHeaderOnRedirectFails) {
   CreateLoaderAndStart(GURL("http://foo.test/"), GURL("http://foo.test/path"),
-                       mojom::FetchRequestMode::kCors);
+                       mojom::RequestMode::kCors);
 
   NotifyLoaderClientOnReceiveRedirect(
       CreateRedirectInfo(301, "GET", GURL("https://redirect.test/")));
@@ -1661,7 +1660,7 @@ TEST_F(CorsURLLoaderTest, SetHostHeaderOnRedirectFails) {
 
 TEST_F(CorsURLLoaderTest, SetProxyAuthorizationHeaderOnRedirectFails) {
   CreateLoaderAndStart(GURL("http://foo.test/"), GURL("http://foo.test/path"),
-                       mojom::FetchRequestMode::kCors);
+                       mojom::RequestMode::kCors);
 
   NotifyLoaderClientOnReceiveRedirect(
       CreateRedirectInfo(301, "GET", GURL("https://redirect.test/")));

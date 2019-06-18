@@ -311,8 +311,8 @@ class RequestInterceptor {
     request_initiator_to_inject_ = request_initiator;
   }
 
-  void InjectFetchMode(network::mojom::FetchRequestMode fetch_mode) {
-    fetch_mode_to_inject_ = fetch_mode;
+  void InjectFetchMode(network::mojom::RequestMode request_mode) {
+    request_mode_to_inject_ = request_mode;
   }
 
  private:
@@ -371,8 +371,8 @@ class RequestInterceptor {
     // Modify |params| if requested.
     if (request_initiator_to_inject_.has_value())
       params->url_request.request_initiator = request_initiator_to_inject_;
-    if (fetch_mode_to_inject_.has_value())
-      params->url_request.fetch_request_mode = fetch_mode_to_inject_.value();
+    if (request_mode_to_inject_.has_value())
+      params->url_request.mode = request_mode_to_inject_.value();
 
     // Inject |test_client_| into the request.
     DCHECK(!original_client_);
@@ -439,7 +439,7 @@ class RequestInterceptor {
   URLLoaderInterceptor interceptor_;
 
   base::Optional<url::Origin> request_initiator_to_inject_;
-  base::Optional<network::mojom::FetchRequestMode> fetch_mode_to_inject_;
+  base::Optional<network::mojom::RequestMode> request_mode_to_inject_;
 
   // |test_client_ptr_info_| below is used to transition results of
   // |test_client_.CreateInterfacePtr()| into IO thread.
@@ -1110,7 +1110,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 }
 
 // Tests that renderer will be terminated if it asks AppCache to initiate a
-// cross-origin request with network::mojom::FetchRequestMode::kNavigate.
+// cross-origin request with network::mojom::RequestMode::kNavigate.
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
                        AppCache_NoNavigationsEnforcement) {
   embedded_test_server()->StartAcceptingConnections();
@@ -1134,7 +1134,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   // RenderFrameHostImpl is created.
   GURL cross_site_url("http://cross-origin.com/site_isolation/nosniff.json");
   RequestInterceptor interceptor(cross_site_url);
-  interceptor.InjectFetchMode(network::mojom::FetchRequestMode::kNavigate);
+  interceptor.InjectFetchMode(network::mojom::RequestMode::kNavigate);
 
   // Load the main page twice. The second navigation should have AppCache
   // initialized for the page.

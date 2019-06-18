@@ -279,17 +279,17 @@ bool ScriptLoader::BlockForNoModule(mojom::ScriptType script_type,
 //     https://html.spec.whatwg.org/C/#prepare-a-script
 //   - Step 6 of obtaining a preloaded module script
 //     https://html.spec.whatwg.org/C/#link-type-modulepreload.
-network::mojom::FetchCredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
+network::mojom::CredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
     CrossOriginAttributeValue cross_origin) {
   switch (cross_origin) {
     case kCrossOriginAttributeNotSet:
     case kCrossOriginAttributeAnonymous:
-      return network::mojom::FetchCredentialsMode::kSameOrigin;
+      return network::mojom::CredentialsMode::kSameOrigin;
     case kCrossOriginAttributeUseCredentials:
-      return network::mojom::FetchCredentialsMode::kInclude;
+      return network::mojom::CredentialsMode::kInclude;
   }
   NOTREACHED();
-  return network::mojom::FetchCredentialsMode::kOmit;
+  return network::mojom::CredentialsMode::kOmit;
 }
 
 // https://github.com/WICG/feature-policy/issues/135
@@ -449,7 +449,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // <spec step="17">Let module script credentials mode be the module script
   // credentials mode for the element's crossorigin content attribute.</spec>
-  network::mojom::FetchCredentialsMode credentials_mode =
+  network::mojom::CredentialsMode credentials_mode =
       ModuleScriptCredentialsMode(cross_origin);
 
   // <spec step="18">Let cryptographic nonce be the element's

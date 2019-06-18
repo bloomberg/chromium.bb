@@ -715,8 +715,7 @@ void ImageLoader::UpdateFromElement(
   // ImageResource to be populated later.
   if (loading_image_document_) {
     ResourceRequest request(url);
-    request.SetFetchCredentialsMode(
-        network::mojom::FetchCredentialsMode::kOmit);
+    request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
     ImageResource* image_resource = ImageResource::Create(request);
     image_resource->NotifyStartLoad();
     SetImageForImageDocument(image_resource);

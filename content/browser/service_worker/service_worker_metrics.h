@@ -345,8 +345,7 @@ class ServiceWorkerMetrics {
       blink::mojom::ServiceWorkerResponseError error);
 
   // Records the mode of request that was fallbacked to the network.
-  static void RecordFallbackedRequestMode(
-      network::mojom::FetchRequestMode mode);
+  static void RecordFallbackedRequestMode(network::mojom::RequestMode mode);
 
   static void RecordProcessCreated(bool is_new_process);
 

@@ -78,7 +78,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
                      const base::Optional<url::Origin>& request_initiator,
                      const ResourceResponseInfo& response,
                      base::Optional<url::Origin> request_initiator_site_lock,
-                     mojom::FetchRequestMode fetch_request_mode);
+                     mojom::RequestMode request_mode);
 
     ~ResponseAnalyzer();
 
@@ -141,7 +141,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
       kNeedToSniffMore,
     };
     BlockingDecision ShouldBlockBasedOnHeaders(
-        mojom::FetchRequestMode fetch_request_mode,
+        mojom::RequestMode request_mode,
         const GURL& request_url,
         const base::Optional<url::Origin>& request_initiator,
         const ResourceResponseInfo& response);

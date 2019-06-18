@@ -467,10 +467,9 @@ class ServiceWorkerNavigationLoaderTest
         std::make_unique<network::ResourceRequest>();
     request->url = GURL("https://www.example.com/");
     request->method = "GET";
-    request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
-    request->fetch_credentials_mode =
-        network::mojom::FetchCredentialsMode::kInclude;
-    request->fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
+    request->mode = network::mojom::RequestMode::kNavigate;
+    request->credentials_mode = network::mojom::CredentialsMode::kInclude;
+    request->redirect_mode = network::mojom::RedirectMode::kManual;
     return request;
   }
 
@@ -923,10 +922,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackToNetwork) {
   network::ResourceRequest request;
   request.url = GURL("https://www.example.com/");
   request.method = "GET";
-  request.fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
-  request.fetch_credentials_mode =
-      network::mojom::FetchCredentialsMode::kInclude;
-  request.fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
+  request.mode = network::mojom::RequestMode::kNavigate;
+  request.credentials_mode = network::mojom::CredentialsMode::kInclude;
+  request.redirect_mode = network::mojom::RedirectMode::kManual;
 
   SingleRequestURLLoaderFactory::RequestHandler handler;
   auto loader = std::make_unique<ServiceWorkerNavigationLoader>(
@@ -1001,10 +999,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterFallbackToNetwork) {
   network::ResourceRequest request;
   request.url = GURL("https://www.example.com/");
   request.method = "GET";
-  request.fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
-  request.fetch_credentials_mode =
-      network::mojom::FetchCredentialsMode::kInclude;
-  request.fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
+  request.mode = network::mojom::RequestMode::kNavigate;
+  request.credentials_mode = network::mojom::CredentialsMode::kInclude;
+  request.redirect_mode = network::mojom::RedirectMode::kManual;
 
   SingleRequestURLLoaderFactory::RequestHandler handler;
   auto loader = std::make_unique<ServiceWorkerNavigationLoader>(
