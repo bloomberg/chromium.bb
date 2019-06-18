@@ -58104,6 +58104,10 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UserActivationFrameResultEnum">
+  <obsolete>
+    This was added to assess possible impact of UserActivationV2, by comparing
+    pre- and post-launch stats.
+  </obsolete>
   <int value="0" label="NullFailure"/>
   <int value="1" label="NullSuccess"/>
   <int value="2" label="SelfFailure"/>
