@@ -120,7 +120,8 @@ struct AXTreeUpdateState {
 
   // If this node is removed, it should be considered reparented.
   bool IsPotentiallyReparentedNode(const AXNode* node) const {
-    return base::Contains(potentially_reparented_ids, node->id());
+    return potentially_reparented_ids.find(node->id()) !=
+           potentially_reparented_ids.end();
   }
 
   // Returns whether this update reparents |node|.
