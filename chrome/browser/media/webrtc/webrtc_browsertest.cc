@@ -15,6 +15,7 @@
 #include "content/public/common/buildflags.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
@@ -256,6 +257,11 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        GetPeerToPeerConnectionsCountChangeFromNetworkService) {
+  // https://crbug.com/976186: Test fails when network service is in process.
+  // Network Service runs in-process only on Android.
+  if (content::IsInProcessNetworkService())
+    return;
+
   EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
 
   StartServerAndOpenTabs();
@@ -297,6 +303,27 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     MAYBE_WebRtcBrowserTest,
     RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange) {
+  EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
+  StartServerAndOpenTabs();
+  SetupPeerconnectionWithLocalStream(left_tab_);
+  SetupPeerconnectionWithLocalStream(right_tab_);
+  NegotiateCall(left_tab_, right_tab_);
+
+  std::string ice_gatheringstate =
+      ExecuteJavascript("getLastGatheringState()", left_tab_);
+
+  EXPECT_EQ("complete", ice_gatheringstate);
+  DetectVideoAndHangUp();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    MAYBE_WebRtcBrowserTest,
+    RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange_ConnectionCount) {
+  // https://crbug.com/976186: Test fails when network service is in process.
+  // Network Service runs in-process only on Android.
+  if (content::IsInProcessNetworkService())
+    return;
+
   EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
