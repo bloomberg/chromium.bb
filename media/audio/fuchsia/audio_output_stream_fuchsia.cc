@@ -197,7 +197,8 @@ void AudioOutputStreamFuchsia::PumpSamples() {
 
   base::TimeDelta delay;
   if (reference_time_.is_null()) {
-    delay = min_lead_time_.value();
+    delay = min_lead_time_.value() + parameters_.GetBufferDuration() / 2;
+    stream_position_samples_ = 0;
   } else {
     auto stream_time = GetCurrentStreamTime();
 
@@ -209,14 +210,6 @@ void AudioOutputStreamFuchsia::PumpSamples() {
     }
 
     delay = stream_time - now;
-  }
-
-  // Start playback if the stream was previously stopped.
-  if (reference_time_.is_null()) {
-    stream_position_samples_ = 0;
-    reference_time_ = now + min_lead_time_.value();
-    audio_renderer_->PlayNoReply(reference_time_.ToZxTime(),
-                                 stream_position_samples_);
   }
 
   // Request more samples from |callback_|.
@@ -241,6 +234,13 @@ void AudioOutputStreamFuchsia::PumpSamples() {
   packet.payload_size = packet_size;
   packet.flags = 0;
   audio_renderer_->SendPacketNoReply(std::move(packet));
+
+  // Start playback if the stream was previously stopped.
+  if (reference_time_.is_null()) {
+    reference_time_ = now + delay;
+    audio_renderer_->PlayNoReply(reference_time_.ToZxTime(),
+                                 stream_position_samples_);
+  }
 
   stream_position_samples_ += frames_filled;
   payload_buffer_pos_ =
