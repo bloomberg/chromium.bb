@@ -1649,8 +1649,8 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
     owned_render_widget_host_->RendererExited();
 
   // The renderer process is gone, so this frame can no longer be loading.
-  if (GetNavigationHandle())
-    GetNavigationHandle()->set_net_error_code(net::ERR_ABORTED);
+  if (navigation_request())
+    navigation_request()->set_net_error(net::ERR_ABORTED);
   ResetNavigationRequests();
   ResetLoadingState();
 
@@ -2233,10 +2233,9 @@ void RenderFrameHostImpl::DidFailProvisionalLoadWithError(
   // return early if navigation_handle_ is null, once we prevent that case from
   // happening in practice. See https://crbug.com/605289.
 
-  // Update the error code in the NavigationHandle of the navigation.
-  if (GetNavigationHandle()) {
-    GetNavigationHandle()->set_net_error_code(
-        static_cast<net::Error>(error_code));
+  // Update the error code in the NavigationRequest.
+  if (navigation_request()) {
+    navigation_request()->set_net_error(static_cast<net::Error>(error_code));
   }
 
   frame_tree_node_->navigator()->DidFailProvisionalLoadWithError(
@@ -4349,9 +4348,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
     // event from wiping out the is_waiting_for_beforeunload_ack_ state.
     if (frame_tree_node_->navigation_request() &&
         frame_tree_node_->navigation_request()->navigation_handle()) {
-      frame_tree_node_->navigation_request()
-          ->navigation_handle()
-          ->set_net_error_code(net::ERR_ABORTED);
+      frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
     }
     frame_tree_node_->ResetNavigationRequest(false, true);
   }
@@ -6442,7 +6439,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
 
       base::debug::SetCrashKeyString(
           base::debug::AllocateCrashKeyString(
-              "net_error_code", base::debug::CrashKeySize::Size32),
+              "net_error", base::debug::CrashKeySize::Size32),
           base::NumberToString(navigation_request->net_error()));
 
       base::debug::SetCrashKeyString(
