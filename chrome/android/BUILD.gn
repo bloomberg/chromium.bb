@@ -1959,6 +1959,7 @@ template("monochrome_test_apk_tmpl") {
                              "data_deps",
                              "loadable_modules",
                              "min_sdk_version",
+                             "proguard_configs",
                              "secondary_abi_loadable_modules",
                              "shared_libraries",
                              "target_sdk_version",
@@ -1986,8 +1987,11 @@ template("monochrome_test_apk_tmpl") {
       additional_apks += invoker.additional_apks
     }
     if (!is_java_debug) {
+      if (!defined(proguard_configs)) {
+        proguard_configs = []
+      }
       proguard_enabled = true
-      proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
+      proguard_configs += [ "//chrome/android/java/apk_for_test.flags" ]
     }
   }
 }
