@@ -4766,7 +4766,7 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
 
 static int get_interp_filter_selected(const AV1_COMMON *const cm,
                                       MV_REFERENCE_FRAME ref,
-                                      InterpFilters ifilter) {
+                                      InterpFilter ifilter) {
   const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref);
   if (buf == NULL) return 0;
   return buf->interp_filter_selected[ifilter];
@@ -4780,7 +4780,7 @@ static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
     return 0;
 
   for (MV_REFERENCE_FRAME ref = LAST_FRAME; ref <= ALTREF_FRAME; ++ref) {
-    for (InterpFilters ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
+    for (InterpFilter ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
          ++ifilter) {
       ref_total[ref] += get_interp_filter_selected(cm, ref, ifilter);
     }
@@ -4790,7 +4790,7 @@ static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
                          ref_total[ALTREF2_FRAME] + ref_total[ALTREF_FRAME]);
 
   int mask = 0;
-  for (InterpFilters ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
+  for (InterpFilter ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
        ++ifilter) {
     int last_score = get_interp_filter_selected(cm, LAST_FRAME, ifilter) * 30;
     if (ref_total[LAST_FRAME] && last_score <= ref_total[LAST_FRAME]) {
