@@ -53,15 +53,19 @@ function filterByGroup({ suite, groups }: IListing, prefix: string): IPendingEnt
     return entries;
 }
 
-function filterByTest(): IPendingEntry[] {
-    throw new Error();
+// function filterByTest(): IPendingEntry[] {
+//     throw new Error();
+// }
+
+// function filterByParams(): IPendingEntry[] {
+//     throw new Error();
+// }
+
+interface IListingGetter {
+    get(outDir: string, suite: string): Promise<IListing>;
 }
 
-function filterByParams(): IPendingEntry[] {
-    throw new Error();
-}
-
-class ListingFetcher {
+class ListingFetcher implements IListingGetter {
     private suites: Map<string, IListing> = new Map();
 
     public async get(outDir: string, suite: string): Promise<IListing> {
@@ -84,9 +88,10 @@ class ListingFetcher {
 
 // TODO: Unit test this.
 
-export async function loadTests(outDir: string, filters: string[]):
+export async function loadTests(outDir: string, filters: string[],
+                                getter: new() => IListingGetter = ListingFetcher):
         Promise<Iterator<IPendingEntry>> {
-    const fetcher = new ListingFetcher();
+    const fetcher = new getter();
 
     // Each filter is of one of these forms (urlencoded):
     //    cts

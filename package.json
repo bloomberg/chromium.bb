@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "grunt check build run:unittests"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kainino0x/cts-experiment.git"

@@ -1,19 +1,20 @@
-const fg = require("fast-glob");
-const fs = require("fs");
-const path = require("path");
-const process = require("process");
-global.fetch = require("node-fetch");
+const fg = require('fast-glob');
+const fs = require('fs');
+const path = require('path');
+const process = require('process');
+global.fetch = require('node-fetch');
+require('./js-to-ts.js');
 
 function usage(rc) {
-  console.error("Usage:");
-  console.error("  node tools/gen [SUITES...]");
-  console.error("  node tools/gen cts unittests demos");
+  console.error('Usage:');
+  console.error('  node tools/gen [SUITES...]');
+  console.error('  node tools/gen cts unittests demos');
   process.exit(rc);
 }
 
 function die() {
   console.error(new Error());
-  console.error("");
+  console.error('');
   usage(1);
 }
 
@@ -21,8 +22,8 @@ if (process.argv.length <= 2) {
   usage(0);
 }
 
-if (!fs.existsSync("src/")) {
-  console.error("Must be run from repository root");
+if (!fs.existsSync('src/')) {
+  console.error('Must be run from repository root');
   die();
 }
 
@@ -30,19 +31,19 @@ for (const suite of process.argv.slice(2)) {
   const outFile = path.normalize(`out/${suite}/listing.json`);
   const specDir = path.normalize(`src/${suite}/`); // always ends in /
 
-  const specSuffix = ".spec.ts";
-  const specFiles = fg.sync(specDir + "**/{README.txt,*" + specSuffix + "}", {
+  const specSuffix = '.spec.ts';
+  const specFiles = fg.sync(specDir + '**/{README.txt,*' + specSuffix + '}', {
     onlyFiles: false,
     markDirectories: true,
   });
 
   // Redirect imports of .js files to .ts files
   {
-    const Module = require("module");
+    const Module = require('module');
     const resolveFilename = Module._resolveFilename;
     Module._resolveFilename = (request, parentModule, isMain) => {
-      if (parentModule.filename.endsWith(".ts") && request.endsWith(".js")) {
-        request = request.substring(0, request.length - ".ts".length) + ".ts";
+      if (parentModule.filename.endsWith('.ts') && request.endsWith('.js')) {
+        request = request.substring(0, request.length - '.ts'.length) + '.ts';
       }
       return resolveFilename.call(this, request, parentModule, isMain);
     };
@@ -51,21 +52,21 @@ for (const suite of process.argv.slice(2)) {
   const listing = [];
   const modules = {};
   for (const spec of specFiles) {
-    const file = (typeof spec === "string") ? spec : spec.path;
+    const file = (typeof spec === 'string') ? spec : spec.path;
     const f = file.substring(specDir.length);
     if (f.endsWith(specSuffix)) {
-      const mod = require("../" + file);
+      const mod = require('../' + file);
       const testPath = f.substring(0, f.length - specSuffix.length);
       modules[testPath] = mod;
       listing.push({
         path: testPath,
         description: mod.description.trim(),
       });
-    } else if (path.basename(file) === "README.txt") {
+    } else if (path.basename(file) === 'README.txt') {
       const readme = file;
       if (fs.existsSync(readme)) {
-        const path = f.substring(0, f.length - "README.txt".length);
-        const description = fs.readFileSync(readme, "utf8").trim();
+        const path = f.substring(0, f.length - 'README.txt'.length);
+        const description = fs.readFileSync(readme, 'utf8').trim();
         listing.push({
           path,
           description,
@@ -73,7 +74,7 @@ for (const suite of process.argv.slice(2)) {
       }
       // ignore
     } else {
-      console.error("Unrecognized file: " + file);
+      console.error('Unrecognized file: ' + file);
       process.exit(1);
     }
   }

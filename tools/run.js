@@ -1,13 +1,14 @@
 const fs = require('fs');
 const process = require('process');
 global.fetch = require('node-fetch');
+require("./js-to-ts.js");
 
 const { loadTests } = require('../src/framework/listing');
 const { Logger } = require('../src/framework/logger');
 const { parseFilters } = require('../src/framework/url_query');
 
 function usage(rc) {
-  console.error("Usage:");
+  console.error('Usage:');
   console.error('  node tools/run [FILTERS...]');
   console.error('  node tools/run unittests: demos:params:');
   process.exit(rc);
@@ -28,13 +29,37 @@ if (!fs.existsSync("src/")) {
   die();
 }
 
+class ListingFetcherFS {
+  constructor() {
+    this.suites = new Map();
+  }
+
+  async get(outDir, suite) {
+    let listing = this.suites.get(suite);
+    if (listing) {
+      return listing;
+    }
+    const listingPath = `${outDir}/${suite}/listing.json`;
+    const fetched = await fs.promises.readFile(listingPath);
+    const groups = JSON.parse(fetched);
+
+    listing = { suite, groups };
+    this.suites.set(suite, listing);
+    return listing;
+  }
+}
+
+
 (async () => {
-  const filters = parseFilters(process.argv.slice(1));
-  const listing = await loadTests('./webgpu-cts/out', filters);
+  const filters = parseFilters(process.argv.slice(2));
+  const listing = await loadTests('./out', filters, ListingFetcherFS);
 
   const log = new Logger();
   const entries = await Promise.all(Array.from(listing,
       ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
+
+  const failed = [];
+  const warned = [];
 
   // TODO: don't run all tests all at once
   const running = [];
@@ -46,38 +71,20 @@ if (!fs.existsSync("src/")) {
 
     const [, rec] = log.record(path);
     for (const t of group.iterate(rec)) {
-      running.push(t.run());
+      running.push((async () => {
+        const res = await t.run();
+        if (res.status === "fail") {
+          failed.push(res);
+        }
+        if (res.status === "warn") {
+          warned.push(res);
+        }
+      })());
     }
   }
 
   await Promise.all(running);
-  console.log(JSON.stringify(log.results, undefined, 2));
-})();
 
-
-
-
-const failed = [];
-const warned = [];
-(async () => {
-  const log = new Logger();
-
-  for (const {path, description} of listing) {
-    if (path.endsWith("/")) {
-      continue;
-    }
-
-    const [tres, trec] = log.record(path);
-    for (const {name, params, run} of modules[path].group.iterate(trec)) {
-      const res = await run();
-      if (res.status === "fail") {
-        failed.push(res);
-      }
-      if (res.status === "warn") {
-        warned.push(res);
-      }
-    }
-  }
   console.error("** Results **");
   console.log(JSON.stringify(log.results, undefined, 2));
 
@@ -94,5 +101,25 @@ const warned = [];
     for (const r of failed) {
       console.error(r);
     }
+  }
+
+  console.error("** Summary **");
+
+  const total = running.length;
+  const passed = total - warned.length - failed.length;
+  function pct(x) {
+    return (100 * x / total).toFixed(2);
+  }
+  function rpt(x) {
+    const xs = x.toString().padStart(1 + Math.log10(total), ' ');
+    return `${xs} / ${total} = ${pct(x).padStart(6, ' ')}%`;
+  }
+  console.error(`
+Passed  w/o warnings = ${rpt(passed)}
+Passed with warnings = ${rpt(warned.length)}
+Failed               = ${rpt(failed.length)}`);
+
+  if (failed.length || warned.length) {
+    process.exit(1);
   }
 })();
