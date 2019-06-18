@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "ui/base/models/list_selection_model.h"
@@ -494,19 +493,6 @@ class TabDragController : public views::WidgetObserver {
   // Whether a drag to |window| should be blocked (for example, if the window
   // is showing a modal).
   bool ShouldDisallowDrag(gfx::NativeWindow window);
-
-  // Helper method for TabDragController::MoveAttached to update the pinnedness
-  // of the tab being moved by checking the pinnedness of the tabs being
-  // dragged with the pinnedness of the tab at the target dragged location.
-  // TODO (crbug.com/971676): This will swap and update the pinnedness of
-  // multi-selected tabs one at a time, which is unintended.
-  void UpdatePinnednessOfDraggedTab(int to_index);
-
-  // Helper method that checks if the index is valid in the TabDragContext and
-  // the pin at the index has the expected pinned value.
-  bool CheckValidPinnedness(
-      int index,
-      TabAnimationState::TabPinnedness expected_pinnedness);
 
   EventSource event_source_;
 
