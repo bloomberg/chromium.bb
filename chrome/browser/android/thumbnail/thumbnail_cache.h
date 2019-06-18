@@ -47,7 +47,8 @@ class ThumbnailCache : ThumbnailDelegate {
                  size_t approximation_cache_size,
                  size_t compression_queue_max_size,
                  size_t write_queue_max_size,
-                 bool use_approximation_thumbnail);
+                 bool use_approximation_thumbnail,
+                 bool save_jpeg_thumbnails);
 
   ~ThumbnailCache() override;
 
@@ -77,6 +78,7 @@ class ThumbnailCache : ThumbnailDelegate {
   void InvalidateCachedThumbnail(Thumbnail* thumbnail) override;
   static base::FilePath GetCacheDirectory();
   static base::FilePath GetFilePath(TabId tab_id);
+  static base::FilePath GetJpegFilePath(TabId tab_id);
 
  private:
   class ThumbnailMetaData {
@@ -100,6 +102,8 @@ class ThumbnailCache : ThumbnailDelegate {
                                  sk_sp<SkPixelRef> compressed_data,
                                  float scale,
                                  const gfx::Size& content_size);
+  void WriteJpegThumbnailIfNecessary(TabId tab_id,
+                                     std::vector<uint8_t> compressed_data);
   void CompressThumbnailIfNecessary(TabId tab_id,
                                     const base::Time& time_stamp,
                                     const SkBitmap& bitmap,
@@ -112,12 +116,18 @@ class ThumbnailCache : ThumbnailDelegate {
                         float scale,
                         const gfx::Size& content_size,
                         const base::Callback<void()>& post_write_task);
+  static void WriteJpegTask(TabId tab_id,
+                            std::vector<uint8_t> compressed_data,
+                            const base::Callback<void()>& post_write_task);
   void PostWriteTask();
   static void CompressionTask(
       SkBitmap raw_data,
       gfx::Size encoded_size,
       const base::Callback<void(sk_sp<SkPixelRef>, const gfx::Size&)>&
           post_compression_task);
+  static void JpegProcessingTask(
+      SkBitmap bitmap,
+      const base::Callback<void(std::vector<uint8_t>)>& post_processing_task);
   void PostCompressionTask(TabId tab_id,
                            const base::Time& time_stamp,
                            float scale,
@@ -152,6 +162,7 @@ class ThumbnailCache : ThumbnailDelegate {
   const size_t compression_queue_max_size_;
   const size_t write_queue_max_size_;
   const bool use_approximation_thumbnail_;
+  const bool save_jpeg_thumbnails_;
 
   size_t compression_tasks_count_;
   size_t write_tasks_count_;
