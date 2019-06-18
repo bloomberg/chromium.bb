@@ -125,10 +125,10 @@ constexpr bool kDefaultSupportSiteLocalGroup = true;
 struct Header {
   uint16_t id;
   uint16_t flags;
-  uint16_t qdcount;
-  uint16_t ancount;
-  uint16_t nscount;
-  uint16_t arcount;
+  uint16_t question_count;
+  uint16_t answer_count;
+  uint16_t authority_record_count;
+  uint16_t additional_record_count;
 };
 
 // TODO(mayaki): Here and below consider converting constants to members of

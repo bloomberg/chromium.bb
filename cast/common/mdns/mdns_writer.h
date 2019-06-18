@@ -35,10 +35,35 @@ class MdnsWriter : public openscreen::BigEndianWriter {
   // specified in the record.
   bool WriteMdnsRecord(const MdnsRecord& record);
   bool WriteMdnsQuestion(const MdnsQuestion& question);
+  // This method writes multiple mDNS questions and records that are a part of
+  // a mDNS message being read
+  bool WriteMdnsMessage(const MdnsMessage& message);
 
  private:
   bool WriteIPAddress(const IPAddress& address);
   bool WriteRdata(const Rdata& rdata);
+  bool WriteMdnsMessageHeader(const Header& header);
+
+  template <class ItemType>
+  bool WriteCollection(const std::vector<ItemType>& collection) {
+    Cursor cursor(this);
+    for (const ItemType& entry : collection) {
+      if (!WriteCollectionItem(entry)) {
+        return false;
+      }
+    }
+    cursor.Commit();
+    return true;
+  }
+
+  // Forwarding helpers for WriteCollection
+  inline bool WriteCollectionItem(const MdnsRecord& record) {
+    return WriteMdnsRecord(record);
+  }
+  inline bool WriteCollectionItem(const MdnsQuestion& question) {
+    return WriteMdnsQuestion(question);
+  }
+
   // Domain name compression dictionary.
   // Maps hashes of previously written domain (sub)names
   // to the label pointers of the first occurences in the underlying buffer.

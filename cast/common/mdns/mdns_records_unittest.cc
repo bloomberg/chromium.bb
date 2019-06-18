@@ -534,5 +534,185 @@ TEST(MdnsQuestionTest, Write) {
   EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedResult));
 }
 
+TEST(MdnsMessageTest, CopyAndAssign) {
+  MdnsQuestion question(DomainName{"testing", "local"}, kTypePTR,
+                        kClassIN | kUnicastResponseBit);
+
+  MdnsRecord record1(DomainName{"record1"}, kTypeA, kClassIN, 120,
+                     ARecordRdata(IPAddress{172, 0, 0, 1}));
+
+  MdnsRecord record2(DomainName{"record2"}, kTypeTXT, kClassIN, 120,
+                     TxtRecordRdata{"foo=1", "bar=2"});
+
+  MdnsMessage message(123, 0x8400);
+  message.AddQuestion(std::move(question));
+  message.AddAnswer(std::move(record1));
+  message.AddAnswer(std::move(record2));
+
+  EXPECT_EQ(message.questions().size(), UINT64_C(1));
+  EXPECT_EQ(message.answers().size(), UINT64_C(2));
+
+  MdnsMessage message_copy(message);
+  EXPECT_EQ(message_copy.id(), UINT16_C(123));
+  EXPECT_EQ(message_copy.flags(), UINT16_C(0x8400));
+  EXPECT_EQ(message_copy.questions(), message.questions());
+  EXPECT_EQ(message_copy.answers(), message.answers());
+  EXPECT_EQ(message_copy.authority_records(), message.authority_records());
+  EXPECT_EQ(message_copy.additional_records(), message.additional_records());
+  EXPECT_EQ(message_copy, message);
+
+  MdnsMessage message_assign;
+  message_assign = message;
+  EXPECT_EQ(message_assign.id(), UINT16_C(123));
+  EXPECT_EQ(message_assign.flags(), UINT16_C(0x8400));
+  EXPECT_EQ(message_assign.questions(), message.questions());
+  EXPECT_EQ(message_assign.answers(), message.answers());
+  EXPECT_EQ(message_assign.authority_records(), message.authority_records());
+  EXPECT_EQ(message_assign.additional_records(), message.additional_records());
+  EXPECT_EQ(message_assign, message);
+}
+
+TEST(MdnsMessageTest, Read) {
+  // clang-format off
+  const uint8_t kTestMessage[] = {
+      // Header
+      0x00, 0x01,  // ID = 1
+      0x84, 0x00,  // FLAGS = AA | RESPONSE
+      0x00, 0x00,  // Questions = 0
+      0x00, 0x01,  // Answers = 1
+      0x00, 0x00,  // Authority = 0
+      0x00, 0x01,  // Additional = 1
+      // Record 1
+      0x07, 'r', 'e', 'c', 'o', 'r', 'd', '1',
+      0x00,
+      0x00, 0x0c,              // TYPE = PTR (12)
+      0x00, 0x01,              // CLASS = IN (1)
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x0f,              // RDLENGTH = 15 bytes
+      0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      // Record 2
+      0x07, 'r', 'e', 'c', 'o', 'r', 'd', '2',
+      0x00,
+      0x00, 0x01,              // TYPE = A (1)
+      0x00, 0x01,              // CLASS = IN (1)
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x04,              // RDLENGTH = 4 bytes
+      0xac, 0x00, 0x00, 0x01,  // 172.0.0.1
+  };
+  // clang-format on
+  MdnsReader reader(kTestMessage, sizeof(kTestMessage));
+  MdnsMessage message;
+  EXPECT_TRUE(reader.ReadMdnsMessage(&message));
+  EXPECT_EQ(reader.remaining(), UINT64_C(0));
+
+  EXPECT_EQ(message.id(), UINT16_C(1));
+  EXPECT_EQ(message.flags(), UINT16_C(0x8400));
+
+  EXPECT_EQ(message.questions().size(), UINT64_C(0));
+
+  ASSERT_EQ(message.answers().size(), UINT64_C(1));
+  const MdnsRecord& answer = message.answers().at(0);
+  EXPECT_EQ(answer.name().ToString(), "record1");
+  EXPECT_EQ(answer.type(), kTypePTR);
+  EXPECT_EQ(answer.record_class(), kClassIN);
+  EXPECT_EQ(answer.ttl(), UINT32_C(120));
+  PtrRecordRdata ptr_rdata(DomainName{"testing", "local"});
+  EXPECT_EQ(answer.rdata(), Rdata(ptr_rdata));
+
+  EXPECT_EQ(message.authority_records().size(), UINT64_C(0));
+
+  ASSERT_EQ(message.additional_records().size(), UINT64_C(1));
+  const MdnsRecord& additional = message.additional_records().at(0);
+  EXPECT_EQ(additional.name().ToString(), "record2");
+  EXPECT_EQ(additional.type(), kTypeA);
+  EXPECT_EQ(additional.record_class(), kClassIN);
+  EXPECT_EQ(additional.ttl(), UINT32_C(120));
+  ARecordRdata a_rdata(IPAddress{172, 0, 0, 1});
+  EXPECT_EQ(additional.rdata(), Rdata(a_rdata));
+}
+
+TEST(MdnsMessageTest, FailToReadInvalidRecordCounts) {
+  // clang-format off
+  const uint8_t kInvalidMessage1[] = {
+      0x00, 0x00,  // ID = 0
+      0x00, 0x00,  // FLAGS = 0
+      0x00, 0x01,  // Questions = 1
+      0x00, 0x01,  // Answers = 1
+      0x00, 0x00,  // Authority = 0
+      0x00, 0x00,  // Additional = 0
+      0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      0x00, 0x0c,  // TYPE = PTR (12)
+      0x00, 0x01,  // CLASS = IN (1)
+      // NOTE: Missing answer record
+  };
+  const uint8_t kInvalidMessage2[] = {
+      0x00, 0x00,  // ID = 0
+      0x00, 0x00,  // FLAGS = 0
+      0x00, 0x00,  // Questions = 0
+      0x00, 0x00,  // Answers = 0
+      0x00, 0x00,  // Authority = 0
+      0x00, 0x02,  // Additional = 2
+      0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      0x00, 0x0c,              // TYPE = PTR (12)
+      0x00, 0x01,              // CLASS = IN (1)
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x00,              // RDLENGTH = 0
+      // NOTE: Only 1 answer record is given.
+  };
+  // clang-format on
+  MdnsMessage message;
+  MdnsReader reader1(kInvalidMessage1, sizeof(kInvalidMessage1));
+  EXPECT_FALSE(reader1.ReadMdnsMessage(&message));
+  MdnsReader reader2(kInvalidMessage2, sizeof(kInvalidMessage2));
+  EXPECT_FALSE(reader2.ReadMdnsMessage(&message));
+}
+
+TEST(MdnsMessageTest, Write) {
+  // clang-format off
+  const uint8_t kExpectedMessage[] = {
+      0x00, 0x01,  // ID = 1
+      0x04, 0x00,  // FLAGS = AA
+      0x00, 0x01,  // Question count
+      0x00, 0x00,  // Answer count
+      0x00, 0x01,  // Authority count
+      0x00, 0x00,  // Additional count
+      // Question
+      0x08, 'q', 'u', 'e', 's', 't', 'i', 'o', 'n',
+      0x00,
+      0x00, 0x0c,  // TYPE = PTR (12)
+      0x00, 0x01,  // CLASS = IN (1)
+      // Authority Record
+      0x04, 'a', 'u', 't', 'h',
+      0x00,
+      0x00, 0x10,              // TYPE = TXT (16)
+      0x00, 0x01,              // CLASS = IN (1)
+      0x00, 0x00, 0x00, 0x78,  // TTL = 120 seconds
+      0x00, 0x0c,              // RDLENGTH = 12 bytes
+      0x05, 'f', 'o', 'o', '=', '1',
+      0x05, 'b', 'a', 'r', '=', '2',
+  };
+  // clang-format on
+  MdnsQuestion question(DomainName{"question"}, kTypePTR, kClassIN);
+
+  MdnsRecord auth_record(DomainName{"auth"}, kTypeTXT, kClassIN, 120,
+                         TxtRecordRdata{"foo=1", "bar=2"});
+
+  MdnsMessage message(1, 0x0400);
+  message.AddQuestion(question);
+  message.AddAuthorityRecord(auth_record);
+
+  std::vector<uint8_t> buffer(sizeof(kExpectedMessage));
+  MdnsWriter writer(buffer.data(), buffer.size());
+  EXPECT_TRUE(writer.WriteMdnsMessage(message));
+  EXPECT_EQ(writer.remaining(), UINT64_C(0));
+  EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedMessage));
+}
+
 }  // namespace mdns
 }  // namespace cast
