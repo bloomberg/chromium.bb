@@ -70,25 +70,29 @@ void AddExplanations(
     const std::vector<SecurityStyleExplanation>& explanations_to_add,
     Explanations* explanations) {
   for (const auto& it : explanations_to_add) {
-    auto certificate = std::make_unique<protocol::Array<String>>();
+    std::unique_ptr<protocol::Array<String>> certificate =
+        protocol::Array<String>::create();
     if (it.certificate) {
-      certificate->emplace_back();
+      std::string encoded;
       base::Base64Encode(net::x509_util::CryptoBufferAsStringPiece(
                              it.certificate->cert_buffer()),
-                         &certificate->back());
+                         &encoded);
+      certificate->addItem(encoded);
 
       for (const auto& cert : it.certificate->intermediate_buffers()) {
-        certificate->emplace_back();
         base::Base64Encode(
-            net::x509_util::CryptoBufferAsStringPiece(cert.get()),
-            &certificate->back());
+            net::x509_util::CryptoBufferAsStringPiece(cert.get()), &encoded);
+        certificate->addItem(encoded);
       }
     }
 
-    auto recommendations =
-        std::make_unique<protocol::Array<String>>(it.recommendations);
+    std::unique_ptr<protocol::Array<String>> recommendations =
+        protocol::Array<String>::create();
+    for (const auto& recommendation : it.recommendations) {
+      recommendations->addItem(recommendation);
+    }
 
-    explanations->emplace_back(
+    explanations->addItem(
         Security::SecurityStateExplanation::Create()
             .SetSecurityState(security_style)
             .SetTitle(it.title)
@@ -154,7 +158,7 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
   const std::string security_state =
       SecurityStyleToProtocolSecurityState(security_style);
 
-  auto explanations = std::make_unique<Explanations>();
+  std::unique_ptr<Explanations> explanations = Explanations::create();
   AddExplanations(Security::SecurityStateEnum::Insecure,
                   security_style_explanations.insecure_explanations,
                   explanations.get());

@@ -136,9 +136,13 @@ bool ViewElement::SetPropertiesFromString(const std::string& text) {
   return true;
 }
 
-std::vector<std::string> ViewElement::GetAttributes() const {
+std::unique_ptr<protocol::Array<std::string>> ViewElement::GetAttributes()
+    const {
+  auto attributes = protocol::Array<std::string>::create();
   // TODO(lgrey): Change name to class after updating tests.
-  return {"name", view_->GetClassName()};
+  attributes->addItem("name");
+  attributes->addItem(view_->GetClassName());
+  return attributes;
 }
 
 std::pair<gfx::NativeWindow, gfx::Rect>

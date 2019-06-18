@@ -90,11 +90,11 @@ std::unique_ptr<Browser::Histogram> Convert(base::HistogramBase& in_histogram,
     base::HistogramBase::Sample low;
     int64_t high;
     bucket_it->Get(&low, &high, &count);
-    out_buckets->emplace_back(Browser::Bucket::Create()
-                                  .SetLow(low)
-                                  .SetHigh(high)
-                                  .SetCount(count)
-                                  .Build());
+    out_buckets->addItem(Browser::Bucket::Create()
+                             .SetLow(low)
+                             .SetHigh(high)
+                             .SetCount(count)
+                             .Build());
   }
 
   return Browser::Histogram::Create()
@@ -167,7 +167,7 @@ Response BrowserHandler::GetHistograms(
            base::StatisticsRecorder::GetHistograms(),
            in_query.fromMaybe("")))) {
     DCHECK(h);
-    (*out_histograms)->emplace_back(Convert(*h, in_delta.fromMaybe(false)));
+    (*out_histograms)->addItem(Convert(*h, in_delta.fromMaybe(false)));
   }
 
   return Response::OK();
@@ -208,9 +208,10 @@ Response BrowserHandler::GrantPermissions(
   if (!response.isSuccess())
     return response;
   PermissionControllerImpl::PermissionOverrides overrides;
-  for (const protocol::Browser::PermissionType& t : *permissions) {
+  for (size_t i = 0; i < permissions->length(); ++i) {
     PermissionType type;
-    Response type_response = FromProtocolPermissionType(t, &type);
+    Response type_response =
+        FromProtocolPermissionType(permissions->get(i), &type);
     if (!type_response.isSuccess())
       return type_response;
     overrides.insert(type);
@@ -257,16 +258,16 @@ Response BrowserHandler::GetHistogram(
 
 Response BrowserHandler::GetBrowserCommandLine(
     std::unique_ptr<protocol::Array<std::string>>* arguments) {
-  *arguments = std::make_unique<protocol::Array<std::string>>();
+  *arguments = protocol::Array<std::string>::create();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // The commandline is potentially sensitive, only return it if it
   // contains kEnableAutomation.
   if (command_line->HasSwitch(switches::kEnableAutomation)) {
     for (const auto& arg : command_line->argv()) {
 #if defined(OS_WIN)
-      (*arguments)->emplace_back(base::UTF16ToUTF8(arg));
+      (*arguments)->addItem(base::UTF16ToUTF8(arg.c_str()));
 #else
-      (*arguments)->emplace_back(arg);
+      (*arguments)->addItem(arg.c_str());
 #endif
     }
     return Response::OK();

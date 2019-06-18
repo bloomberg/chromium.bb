@@ -35,10 +35,10 @@ void RootElement::GetVisible(bool* visible) const {
 void RootElement::SetVisible(bool visible) {
   NOTREACHED();
 }
-
-std::vector<std::string> RootElement::GetAttributes() const {
+std::unique_ptr<protocol::Array<std::string>> RootElement::GetAttributes()
+    const {
   NOTREACHED();
-  return {};
+  return nullptr;
 }
 
 std::pair<gfx::NativeWindow, gfx::Rect>

@@ -127,8 +127,8 @@ BuildObjectForAnimationKeyframes(const KeyframeEffect* effect) {
   const KeyframeEffectModelBase* model = effect->Model();
   Vector<double> computed_offsets =
       KeyframeEffectModelBase::GetComputedOffsets(model->GetFrames());
-  auto keyframes =
-      std::make_unique<protocol::Array<protocol::Animation::KeyframeStyle>>();
+  std::unique_ptr<protocol::Array<protocol::Animation::KeyframeStyle>>
+      keyframes = protocol::Array<protocol::Animation::KeyframeStyle>::create();
 
   for (wtf_size_t i = 0; i < model->GetFrames().size(); i++) {
     const Keyframe* keyframe = model->GetFrames().at(i);
@@ -136,7 +136,7 @@ BuildObjectForAnimationKeyframes(const KeyframeEffect* effect) {
     if (!keyframe->IsStringKeyframe())
       continue;
     const StringKeyframe* string_keyframe = ToStringKeyframe(keyframe);
-    keyframes->emplace_back(
+    keyframes->addItem(
         BuildObjectForStringKeyframe(string_keyframe, computed_offsets.at(i)));
   }
   return protocol::Animation::KeyframesRule::create()
@@ -235,7 +235,8 @@ Response InspectorAnimationAgent::getCurrentTime(const String& id,
 Response InspectorAnimationAgent::setPaused(
     std::unique_ptr<protocol::Array<String>> animation_ids,
     bool paused) {
-  for (const String& animation_id : *animation_ids) {
+  for (size_t i = 0; i < animation_ids->length(); ++i) {
+    String animation_id = animation_ids->get(i);
     blink::Animation* animation = nullptr;
     Response response = AssertAnimation(animation_id, animation);
     if (!response.isSuccess())
@@ -305,7 +306,8 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
 Response InspectorAnimationAgent::seekAnimations(
     std::unique_ptr<protocol::Array<String>> animation_ids,
     double current_time) {
-  for (const String& animation_id : *animation_ids) {
+  for (size_t i = 0; i < animation_ids->length(); ++i) {
+    String animation_id = animation_ids->get(i);
     blink::Animation* animation = nullptr;
     Response response = AssertAnimation(animation_id, animation);
     if (!response.isSuccess())
@@ -322,7 +324,8 @@ Response InspectorAnimationAgent::seekAnimations(
 
 Response InspectorAnimationAgent::releaseAnimations(
     std::unique_ptr<protocol::Array<String>> animation_ids) {
-  for (const String& animation_id : *animation_ids) {
+  for (size_t i = 0; i < animation_ids->length(); ++i) {
+    String animation_id = animation_ids->get(i);
     blink::Animation* animation = id_to_animation_.at(animation_id);
     if (animation)
       animation->SetEffectSuppressed(false);

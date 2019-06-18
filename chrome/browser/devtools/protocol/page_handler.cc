@@ -51,7 +51,7 @@ protocol::Response PageHandler::SetAdBlockingEnabled(bool enabled) {
 
 void PageHandler::GetInstallabilityErrors(
     std::unique_ptr<GetInstallabilityErrorsCallback> callback) {
-  auto errors = std::make_unique<protocol::Array<std::string>>();
+  auto errors = protocol::Array<std::string>::create();
   InstallableManager* manager =
       web_contents() ? InstallableManager::FromWebContents(web_contents())
                      : nullptr;
@@ -68,6 +68,8 @@ void PageHandler::GetInstallabilityErrors(
 void PageHandler::GotInstallabilityErrors(
     std::unique_ptr<GetInstallabilityErrorsCallback> callback,
     std::vector<std::string> errors) {
-  callback->sendSuccess(
-      std::make_unique<protocol::Array<std::string>>(std::move(errors)));
+  auto result = protocol::Array<std::string>::create();
+  for (const auto& error : errors)
+    result->addItem(error);
+  callback->sendSuccess(std::move(result));
 }

@@ -92,8 +92,8 @@ Response InspectorApplicationCacheAgent::getFramesWithManifests(
     std::unique_ptr<
         protocol::Array<protocol::ApplicationCache::FrameWithManifest>>*
         result) {
-  *result = std::make_unique<
-      protocol::Array<protocol::ApplicationCache::FrameWithManifest>>();
+  *result =
+      protocol::Array<protocol::ApplicationCache::FrameWithManifest>::create();
 
   for (LocalFrame* frame : *inspected_frames_) {
     DocumentLoader* document_loader = frame->Loader().GetDocumentLoader();
@@ -110,7 +110,7 @@ Response InspectorApplicationCacheAgent::getFramesWithManifests(
               .setManifestURL(manifest_url)
               .setStatus(static_cast<int>(host->GetStatus()))
               .build();
-      (*result)->emplace_back(std::move(value));
+      (*result)->addItem(std::move(value));
     }
   }
   return Response::OK();
@@ -183,11 +183,17 @@ std::unique_ptr<
 InspectorApplicationCacheAgent::BuildArrayForApplicationCacheResources(
     const Vector<mojom::blink::AppCacheResourceInfo>&
         application_cache_resources) {
-  auto resources = std::make_unique<
-      protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>>();
+  std::unique_ptr<
+      protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>>
+      resources = protocol::Array<
+          protocol::ApplicationCache::ApplicationCacheResource>::create();
 
-  for (const auto& resource : application_cache_resources)
-    resources->emplace_back(BuildObjectForApplicationCacheResource(resource));
+  Vector<mojom::blink::AppCacheResourceInfo>::const_iterator end =
+      application_cache_resources.end();
+  Vector<mojom::blink::AppCacheResourceInfo>::const_iterator it =
+      application_cache_resources.begin();
+  for (int i = 0; it != end; ++it, i++)
+    resources->addItem(BuildObjectForApplicationCacheResource(*it));
 
   return resources;
 }

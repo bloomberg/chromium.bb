@@ -60,16 +60,26 @@ std::unique_ptr<protocol::DOM::Rect> BuildRectForPhysicalRect(
 
 std::unique_ptr<protocol::Array<double>> BuildRectForPhysicalRect2(
     const PhysicalRect& rect) {
-  return std::make_unique<std::vector<double>, std::initializer_list<double>>(
-      {rect.X(), rect.Y(), rect.Width(), rect.Height()});
+  std::unique_ptr<protocol::Array<double>> result =
+      protocol::Array<double>::create();
+  result->addItem(rect.X());
+  result->addItem(rect.Y());
+  result->addItem(rect.Width());
+  result->addItem(rect.Height());
+  return result;
 }
 
 std::unique_ptr<protocol::Array<double>> BuildRectForLayout(const int x,
                                                             const int y,
                                                             const int width,
                                                             const int height) {
-  return std::make_unique<std::vector<double>, std::initializer_list<double>>(
-      {x, y, width, height});
+  std::unique_ptr<protocol::Array<double>> result =
+      protocol::Array<double>::create();
+  result->addItem(x);
+  result->addItem(y);
+  result->addItem(width);
+  result->addItem(height);
+  return result;
 }
 
 // Returns |layout_object|'s bounding box in document coordinates.
@@ -110,21 +120,21 @@ Document* GetEmbeddedDocument(PaintLayer* layer) {
 
 std::unique_ptr<protocol::DOMSnapshot::RareStringData> StringData() {
   return protocol::DOMSnapshot::RareStringData::create()
-      .setIndex(std::make_unique<protocol::Array<int>>())
-      .setValue(std::make_unique<protocol::Array<int>>())
+      .setIndex(protocol::Array<int>::create())
+      .setValue(protocol::Array<int>::create())
       .build();
 }
 
 std::unique_ptr<protocol::DOMSnapshot::RareIntegerData> IntegerData() {
   return protocol::DOMSnapshot::RareIntegerData::create()
-      .setIndex(std::make_unique<protocol::Array<int>>())
-      .setValue(std::make_unique<protocol::Array<int>>())
+      .setIndex(protocol::Array<int>::create())
+      .setValue(protocol::Array<int>::create())
       .build();
 }
 
 std::unique_ptr<protocol::DOMSnapshot::RareBooleanData> BooleanData() {
   return protocol::DOMSnapshot::RareBooleanData::create()
-      .setIndex(std::make_unique<protocol::Array<int>>())
+      .setIndex(protocol::Array<int>::create())
       .build();
 }
 
@@ -255,21 +265,21 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
     return Response::Error("Document is not available");
 
   // Setup snapshot.
-  dom_nodes_ =
-      std::make_unique<protocol::Array<protocol::DOMSnapshot::DOMNode>>();
-  layout_tree_nodes_ = std::make_unique<
-      protocol::Array<protocol::DOMSnapshot::LayoutTreeNode>>();
+  dom_nodes_ = protocol::Array<protocol::DOMSnapshot::DOMNode>::create();
+  layout_tree_nodes_ =
+      protocol::Array<protocol::DOMSnapshot::LayoutTreeNode>::create();
   computed_styles_ =
-      std::make_unique<protocol::Array<protocol::DOMSnapshot::ComputedStyle>>();
+      protocol::Array<protocol::DOMSnapshot::ComputedStyle>::create();
   computed_styles_map_ = std::make_unique<ComputedStylesMap>();
   css_property_filter_ = std::make_unique<CSSPropertyFilter>();
 
   // Look up the CSSPropertyIDs for each entry in |style_filter|.
-  for (const String& entry : *style_filter) {
-    CSSPropertyID property_id = cssPropertyID(entry);
+  for (wtf_size_t i = 0; i < style_filter->length(); i++) {
+    CSSPropertyID property_id = cssPropertyID(style_filter->get(i));
     if (property_id == CSSPropertyID::kInvalid)
       continue;
-    css_property_filter_->emplace_back(entry, property_id);
+    css_property_filter_->push_back(
+        std::make_pair(style_filter->get(i), property_id));
   }
 
   if (include_paint_order.fromMaybe(false)) {
@@ -298,18 +308,18 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>*
         documents,
     std::unique_ptr<protocol::Array<String>>* strings) {
-  strings_ = std::make_unique<protocol::Array<String>>();
-  documents_ = std::make_unique<
-      protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>();
+  strings_ = protocol::Array<String>::create();
+  documents_ =
+      protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>::create();
 
   css_property_filter_ = std::make_unique<CSSPropertyFilter>();
   // Look up the CSSPropertyIDs for each entry in |computed_styles|.
-  for (String& entry : *computed_styles) {
-    CSSPropertyID property_id = cssPropertyID(entry);
+  for (size_t i = 0; i < computed_styles->length(); i++) {
+    CSSPropertyID property_id = cssPropertyID(computed_styles->get(i));
     if (property_id == CSSPropertyID::kInvalid)
       continue;
-    css_property_filter_->emplace_back(std::move(entry),
-                                       std::move(property_id));
+    css_property_filter_->push_back(
+        std::make_pair(computed_styles->get(i), property_id));
   }
 
   include_snapshot_dom_rects_ = include_dom_rects.fromMaybe(false);
@@ -377,8 +387,8 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
     }
   }
   protocol::DOMSnapshot::DOMNode* value = owned_value.get();
-  int index = static_cast<int>(dom_nodes_->size());
-  dom_nodes_->emplace_back(std::move(owned_value));
+  int index = static_cast<int>(dom_nodes_->length());
+  dom_nodes_->addItem(std::move(owned_value));
 
   int layoutNodeIndex =
       VisitLayoutTreeNode(node->GetLayoutObject(), node, index);
@@ -493,8 +503,8 @@ int InspectorDOMSnapshotAgent::AddString(const String& string) {
   auto it = string_table_.find(string);
   int index;
   if (it == string_table_.end()) {
-    index = static_cast<int>(strings_->size());
-    strings_->emplace_back(string);
+    index = static_cast<int>(strings_->length());
+    strings_->addItem(string);
     string_table_.Set(string, index);
   } else {
     index = it->value;
@@ -506,22 +516,22 @@ void InspectorDOMSnapshotAgent::SetRare(
     protocol::DOMSnapshot::RareIntegerData* data,
     int index,
     int value) {
-  data->getIndex()->emplace_back(index);
-  data->getValue()->emplace_back(value);
+  data->getIndex()->addItem(index);
+  data->getValue()->addItem(value);
 }
 
 void InspectorDOMSnapshotAgent::SetRare(
     protocol::DOMSnapshot::RareStringData* data,
     int index,
     const String& value) {
-  data->getIndex()->emplace_back(index);
-  data->getValue()->emplace_back(AddString(value));
+  data->getIndex()->addItem(index);
+  data->getValue()->addItem(AddString(value));
 }
 
 void InspectorDOMSnapshotAgent::SetRare(
     protocol::DOMSnapshot::RareBooleanData* data,
     int index) {
-  data->getIndex()->emplace_back(index);
+  data->getIndex()->addItem(index);
 }
 
 void InspectorDOMSnapshotAgent::VisitDocument2(Document* document) {
@@ -544,42 +554,38 @@ void InspectorDOMSnapshotAgent::VisitDocument2(Document* document) {
               AddString(IdentifiersFactory::FrameId(document->GetFrame())))
           .setPublicId(AddString(doc_type ? doc_type->publicId() : String()))
           .setSystemId(AddString(doc_type ? doc_type->systemId() : String()))
-          .setNodes(
-              protocol::DOMSnapshot::NodeTreeSnapshot::create()
-                  .setParentIndex(std::make_unique<protocol::Array<int>>())
-                  .setNodeType(std::make_unique<protocol::Array<int>>())
-                  .setNodeName(std::make_unique<protocol::Array<int>>())
-                  .setNodeValue(std::make_unique<protocol::Array<int>>())
-                  .setBackendNodeId(std::make_unique<protocol::Array<int>>())
-                  .setAttributes(
-                      std::make_unique<protocol::Array<protocol::Array<int>>>())
-                  .setTextValue(StringData())
-                  .setInputValue(StringData())
-                  .setInputChecked(BooleanData())
-                  .setOptionSelected(BooleanData())
-                  .setContentDocumentIndex(IntegerData())
-                  .setPseudoType(StringData())
-                  .setIsClickable(BooleanData())
-                  .setCurrentSourceURL(StringData())
-                  .setOriginURL(StringData())
-                  .build())
+          .setNodes(protocol::DOMSnapshot::NodeTreeSnapshot::create()
+                        .setParentIndex(protocol::Array<int>::create())
+                        .setNodeType(protocol::Array<int>::create())
+                        .setNodeName(protocol::Array<int>::create())
+                        .setNodeValue(protocol::Array<int>::create())
+                        .setBackendNodeId(protocol::Array<int>::create())
+                        .setAttributes(
+                            protocol::Array<protocol::Array<int>>::create())
+                        .setTextValue(StringData())
+                        .setInputValue(StringData())
+                        .setInputChecked(BooleanData())
+                        .setOptionSelected(BooleanData())
+                        .setContentDocumentIndex(IntegerData())
+                        .setPseudoType(StringData())
+                        .setIsClickable(BooleanData())
+                        .setCurrentSourceURL(StringData())
+                        .setOriginURL(StringData())
+                        .build())
           .setLayout(
               protocol::DOMSnapshot::LayoutTreeSnapshot::create()
-                  .setNodeIndex(std::make_unique<protocol::Array<int>>())
-                  .setBounds(std::make_unique<
-                             protocol::Array<protocol::Array<double>>>())
-                  .setText(std::make_unique<protocol::Array<int>>())
-                  .setStyles(
-                      std::make_unique<protocol::Array<protocol::Array<int>>>())
+                  .setNodeIndex(protocol::Array<int>::create())
+                  .setBounds(protocol::Array<protocol::Array<double>>::create())
+                  .setText(protocol::Array<int>::create())
+                  .setStyles(protocol::Array<protocol::Array<int>>::create())
                   .setStackingContexts(BooleanData())
                   .build())
           .setTextBoxes(
               protocol::DOMSnapshot::TextBoxSnapshot::create()
-                  .setLayoutIndex(std::make_unique<protocol::Array<int>>())
-                  .setBounds(std::make_unique<
-                             protocol::Array<protocol::Array<double>>>())
-                  .setStart(std::make_unique<protocol::Array<int>>())
-                  .setLength(std::make_unique<protocol::Array<int>>())
+                  .setLayoutIndex(protocol::Array<int>::create())
+                  .setBounds(protocol::Array<protocol::Array<double>>::create())
+                  .setStart(protocol::Array<int>::create())
+                  .setLength(protocol::Array<int>::create())
                   .build())
           .build();
 
@@ -591,15 +597,15 @@ void InspectorDOMSnapshotAgent::VisitDocument2(Document* document) {
 
   if (include_snapshot_dom_rects_) {
     document_->getLayout()->setOffsetRects(
-        std::make_unique<protocol::Array<protocol::Array<double>>>());
+        protocol::Array<protocol::Array<double>>::create());
     document_->getLayout()->setClientRects(
-        std::make_unique<protocol::Array<protocol::Array<double>>>());
+        protocol::Array<protocol::Array<double>>::create());
     document_->getLayout()->setScrollRects(
-        std::make_unique<protocol::Array<protocol::Array<double>>>());
+        protocol::Array<protocol::Array<double>>::create());
   }
 
   VisitNode2(document, -1);
-  documents_->emplace_back(std::move(document_));
+  documents_->addItem(std::move(document_));
 }
 
 int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
@@ -617,21 +623,19 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
   }
 
   auto* nodes = document_->getNodes();
-  int index = static_cast<int>(nodes->getNodeName(nullptr)->size());
+  int index = static_cast<int>(nodes->getNodeName(nullptr)->length());
   DOMNodeId backend_node_id = DOMNodeIds::IdForNode(node);
 
   // Create DOMNode object and add it to the result array before traversing
   // children, so that parents appear before their children in the array.
-  nodes->getParentIndex(nullptr)->emplace_back(parent_index);
+  nodes->getParentIndex(nullptr)->addItem(parent_index);
 
-  nodes->getNodeType(nullptr)->emplace_back(
-      static_cast<int>(node->getNodeType()));
-  nodes->getNodeName(nullptr)->emplace_back(AddString(node->nodeName()));
-  nodes->getNodeValue(nullptr)->emplace_back(AddString(node_value));
-  nodes->getBackendNodeId(nullptr)->emplace_back(
+  nodes->getNodeType(nullptr)->addItem(static_cast<int>(node->getNodeType()));
+  nodes->getNodeName(nullptr)->addItem(AddString(node->nodeName()));
+  nodes->getNodeValue(nullptr)->addItem(AddString(node_value));
+  nodes->getBackendNodeId(nullptr)->addItem(
       IdentifiersFactory::IntIdForNode(node));
-  nodes->getAttributes(nullptr)->emplace_back(
-      BuildArrayForElementAttributes2(node));
+  nodes->getAttributes(nullptr)->addItem(BuildArrayForElementAttributes2(node));
   BuildLayoutTreeNode(node->GetLayoutObject(), node, index);
 
   if (origin_url_map_ && origin_url_map_->Contains(backend_node_id)) {
@@ -743,15 +747,15 @@ InspectorDOMSnapshotAgent::VisitContainerChildren(
     Node* container,
     bool include_event_listeners,
     bool include_user_agent_shadow_tree) {
-  auto children = std::make_unique<protocol::Array<int>>();
+  auto children = protocol::Array<int>::create();
 
   if (!HasChildren(*container, include_user_agent_shadow_tree))
     return nullptr;
 
   Node* child = FirstChild(*container, include_user_agent_shadow_tree);
   while (child) {
-    children->emplace_back(VisitNode(child, include_event_listeners,
-                                     include_user_agent_shadow_tree));
+    children->addItem(VisitNode(child, include_event_listeners,
+                                include_user_agent_shadow_tree));
     child = NextSibling(*child, include_user_agent_shadow_tree);
   }
 
@@ -799,13 +803,12 @@ InspectorDOMSnapshotAgent::VisitPseudoElements(
     return nullptr;
   }
 
-  auto pseudo_elements = std::make_unique<protocol::Array<int>>();
+  auto pseudo_elements = protocol::Array<int>::create();
   for (PseudoId pseudo_id :
        {kPseudoIdFirstLetter, kPseudoIdBefore, kPseudoIdAfter}) {
     if (Node* pseudo_node = parent->GetPseudoElement(pseudo_id)) {
-      pseudo_elements->emplace_back(VisitNode(pseudo_node,
-                                              include_event_listeners,
-                                              include_user_agent_shadow_tree));
+      pseudo_elements->addItem(VisitNode(pseudo_node, include_event_listeners,
+                                         include_user_agent_shadow_tree));
     }
   }
   return pseudo_elements;
@@ -822,30 +825,30 @@ void InspectorDOMSnapshotAgent::VisitPseudoElements2(Element* parent,
 
 std::unique_ptr<protocol::Array<protocol::DOMSnapshot::NameValue>>
 InspectorDOMSnapshotAgent::BuildArrayForElementAttributes(Element* element) {
-  AttributeCollection attributes = element->Attributes();
-  if (attributes.IsEmpty())
-    return nullptr;
   auto attributes_value =
-      std::make_unique<protocol::Array<protocol::DOMSnapshot::NameValue>>();
+      protocol::Array<protocol::DOMSnapshot::NameValue>::create();
+  AttributeCollection attributes = element->Attributes();
   for (const auto& attribute : attributes) {
-    attributes_value->emplace_back(protocol::DOMSnapshot::NameValue::create()
-                                       .setName(attribute.GetName().ToString())
-                                       .setValue(attribute.Value())
-                                       .build());
+    attributes_value->addItem(protocol::DOMSnapshot::NameValue::create()
+                                  .setName(attribute.GetName().ToString())
+                                  .setValue(attribute.Value())
+                                  .build());
   }
+  if (attributes_value->length() == 0)
+    return nullptr;
   return attributes_value;
 }
 
 std::unique_ptr<protocol::Array<int>>
 InspectorDOMSnapshotAgent::BuildArrayForElementAttributes2(Node* node) {
-  auto result = std::make_unique<protocol::Array<int>>();
+  auto result = protocol::Array<int>::create();
   auto* element = DynamicTo<Element>(node);
   if (!element)
     return result;
   AttributeCollection attributes = element->Attributes();
   for (const auto& attribute : attributes) {
-    result->emplace_back(AddString(attribute.GetName().ToString()));
-    result->emplace_back(AddString(attribute.Value()));
+    result->addItem(AddString(attribute.GetName().ToString()));
+    result->addItem(AddString(attribute.Value()));
   }
   return result;
 }
@@ -884,10 +887,11 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
     layout_tree_node->setLayoutText(layout_text->GetText());
     Vector<LayoutText::TextBoxInfo> text_boxes = layout_text->GetTextBoxInfo();
     if (!text_boxes.IsEmpty()) {
-      auto inline_text_nodes = std::make_unique<
-          protocol::Array<protocol::DOMSnapshot::InlineTextBox>>();
+      std::unique_ptr<protocol::Array<protocol::DOMSnapshot::InlineTextBox>>
+          inline_text_nodes =
+              protocol::Array<protocol::DOMSnapshot::InlineTextBox>::create();
       for (const auto& text_box : text_boxes) {
-        inline_text_nodes->emplace_back(
+        inline_text_nodes->addItem(
             protocol::DOMSnapshot::InlineTextBox::create()
                 .setStartCharacterIndex(text_box.dom_start_offset)
                 .setNumCharacters(text_box.dom_length)
@@ -899,8 +903,8 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
     }
   }
 
-  int index = static_cast<int>(layout_tree_nodes_->size());
-  layout_tree_nodes_->emplace_back(std::move(layout_tree_node));
+  int index = static_cast<int>(layout_tree_nodes_->length());
+  layout_tree_nodes_->addItem(std::move(layout_tree_node));
   return index;
 }
 
@@ -913,10 +917,10 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   auto* text_box_snapshot = document_->getTextBoxes();
 
   int layout_index =
-      static_cast<int>(layout_tree_snapshot->getNodeIndex()->size());
-  layout_tree_snapshot->getNodeIndex()->emplace_back(node_index);
-  layout_tree_snapshot->getStyles()->emplace_back(BuildStylesForNode(node));
-  layout_tree_snapshot->getBounds()->emplace_back(
+      static_cast<int>(layout_tree_snapshot->getNodeIndex()->length());
+  layout_tree_snapshot->getNodeIndex()->addItem(node_index);
+  layout_tree_snapshot->getStyles()->addItem(BuildStylesForNode(node));
+  layout_tree_snapshot->getBounds()->addItem(
       BuildRectForPhysicalRect2(RectInDocument(layout_object)));
 
   if (include_snapshot_dom_rects_) {
@@ -933,21 +937,21 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
     DCHECK(scrollRects);
 
     if (auto* element = DynamicTo<Element>(node)) {
-      offsetRects->emplace_back(
+      offsetRects->addItem(
           BuildRectForLayout(element->OffsetLeft(), element->OffsetTop(),
                              element->OffsetWidth(), element->OffsetHeight()));
 
-      clientRects->emplace_back(
+      clientRects->addItem(
           BuildRectForLayout(element->clientLeft(), element->clientTop(),
                              element->clientWidth(), element->clientHeight()));
 
-      scrollRects->emplace_back(
+      scrollRects->addItem(
           BuildRectForLayout(element->scrollLeft(), element->scrollTop(),
                              element->scrollWidth(), element->scrollHeight()));
     } else {
-      offsetRects->emplace_back(std::make_unique<protocol::Array<double>>());
-      clientRects->emplace_back(std::make_unique<protocol::Array<double>>());
-      scrollRects->emplace_back(std::make_unique<protocol::Array<double>>());
+      offsetRects->addItem(protocol::Array<double>::create());
+      clientRects->addItem(protocol::Array<double>::create());
+      scrollRects->addItem(protocol::Array<double>::create());
     }
   }
 
@@ -956,7 +960,7 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
 
   String text = layout_object->IsText() ? ToLayoutText(layout_object)->GetText()
                                         : String();
-  layout_tree_snapshot->getText()->emplace_back(AddString(text));
+  layout_tree_snapshot->getText()->addItem(AddString(text));
 
   if (!layout_object->IsText())
     return layout_index;
@@ -967,11 +971,11 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
     return layout_index;
 
   for (const auto& text_box : text_boxes) {
-    text_box_snapshot->getLayoutIndex()->emplace_back(layout_index);
-    text_box_snapshot->getBounds()->emplace_back(BuildRectForPhysicalRect2(
+    text_box_snapshot->getLayoutIndex()->addItem(layout_index);
+    text_box_snapshot->getBounds()->addItem(BuildRectForPhysicalRect2(
         TextFragmentRectInDocument(layout_object, text_box)));
-    text_box_snapshot->getStart()->emplace_back(text_box.dom_start_offset);
-    text_box_snapshot->getLength()->emplace_back(text_box.dom_length);
+    text_box_snapshot->getStart()->addItem(text_box.dom_start_offset);
+    text_box_snapshot->getLength()->addItem(text_box.dom_length);
   }
 
   return layout_index;
@@ -1000,22 +1004,21 @@ int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
 
   // It's a distinct style, so append to |computedStyles|.
   auto style_properties =
-      std::make_unique<protocol::Array<protocol::DOMSnapshot::NameValue>>();
+      protocol::Array<protocol::DOMSnapshot::NameValue>::create();
 
   for (wtf_size_t i = 0; i < style.size(); i++) {
     if (style[i].IsEmpty())
       continue;
-    style_properties->emplace_back(
-        protocol::DOMSnapshot::NameValue::create()
-            .setName((*css_property_filter_)[i].first)
-            .setValue(style[i])
-            .build());
+    style_properties->addItem(protocol::DOMSnapshot::NameValue::create()
+                                  .setName((*css_property_filter_)[i].first)
+                                  .setValue(style[i])
+                                  .build());
   }
 
-  wtf_size_t index = static_cast<wtf_size_t>(computed_styles_->size());
-  computed_styles_->emplace_back(protocol::DOMSnapshot::ComputedStyle::create()
-                                     .setProperties(std::move(style_properties))
-                                     .build());
+  wtf_size_t index = static_cast<wtf_size_t>(computed_styles_->length());
+  computed_styles_->addItem(protocol::DOMSnapshot::ComputedStyle::create()
+                                .setProperties(std::move(style_properties))
+                                .build());
   computed_styles_map_->insert(std::move(style), index);
   return index;
 }
@@ -1024,10 +1027,10 @@ std::unique_ptr<protocol::Array<int>>
 InspectorDOMSnapshotAgent::BuildStylesForNode(Node* node) {
   auto* computed_style_info =
       MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
-  auto result = std::make_unique<protocol::Array<int>>();
+  std::unique_ptr<protocol::Array<int>> result = protocol::Array<int>::create();
   for (const auto& pair : *css_property_filter_) {
     String value = computed_style_info->GetPropertyValue(pair.second);
-    result->emplace_back(AddString(value));
+    result->addItem(AddString(value));
   }
   return result;
 }

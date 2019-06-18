@@ -559,10 +559,10 @@ Response PageHandler::GetNavigationHistory(
 
   NavigationController& controller = web_contents->GetController();
   *current_index = controller.GetCurrentEntryIndex();
-  *entries = std::make_unique<NavigationEntries>();
+  *entries = NavigationEntries::create();
   for (int i = 0; i != controller.GetEntryCount(); ++i) {
     auto* entry = controller.GetEntryAtIndex(i);
-    (*entries)->emplace_back(
+    (*entries)->addItem(
         Page::NavigationEntry::Create()
             .SetId(entry->GetUniqueID())
             .SetUrl(entry->GetURL().spec())
@@ -1106,17 +1106,18 @@ void PageHandler::ScreenshotCaptured(
 void PageHandler::GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
                               const GURL& manifest_url,
                               blink::mojom::ManifestDebugInfoPtr debug_info) {
-  auto errors = std::make_unique<protocol::Array<Page::AppManifestError>>();
+  std::unique_ptr<Array<Page::AppManifestError>> errors =
+      Array<Page::AppManifestError>::create();
   bool failed = true;
   if (debug_info) {
     failed = false;
     for (const auto& error : debug_info->errors) {
-      errors->emplace_back(Page::AppManifestError::Create()
-                               .SetMessage(error->message)
-                               .SetCritical(error->critical)
-                               .SetLine(error->line)
-                               .SetColumn(error->column)
-                               .Build());
+      errors->addItem(Page::AppManifestError::Create()
+                          .SetMessage(error->message)
+                          .SetCritical(error->critical)
+                          .SetLine(error->line)
+                          .SetColumn(error->column)
+                          .Build());
       if (error->critical)
         failed = true;
     }
@@ -1154,7 +1155,7 @@ Response PageHandler::SetWebLifecycleState(const std::string& state) {
 
 void PageHandler::GetInstallabilityErrors(
     std::unique_ptr<GetInstallabilityErrorsCallback> callback) {
-  auto errors = std::make_unique<protocol::Array<std::string>>();
+  auto errors = protocol::Array<std::string>::create();
   // TODO: Use InstallableManager once it moves into content/.
   // Until then, this code is only used to return empty array in the tests.
   callback->sendSuccess(std::move(errors));

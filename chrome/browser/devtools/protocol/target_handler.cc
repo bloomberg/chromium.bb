@@ -53,9 +53,10 @@ protocol::Response TargetHandler::SetRemoteLocations(
   if (!locations)
     return protocol::Response::OK();
 
-  for (const auto& location : *locations) {
+  for (size_t i = 0; i < locations->length(); ++i) {
+    auto* item = locations->get(i);
     remote_locations_.insert(
-        net::HostPortPair(location->GetHost(), location->GetPort()));
+        net::HostPortPair(item->GetHost(), item->GetPort()));
   }
 
   ChromeDevToolsManagerDelegate* delegate =

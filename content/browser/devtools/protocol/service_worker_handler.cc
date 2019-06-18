@@ -361,16 +361,16 @@ void ServiceWorkerHandler::OpenNewDevToolsWindow(int process_id,
 void ServiceWorkerHandler::OnWorkerRegistrationUpdated(
     const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
   using Registration = ServiceWorker::ServiceWorkerRegistration;
-  auto result = std::make_unique<protocol::Array<Registration>>();
+  std::unique_ptr<protocol::Array<Registration>> result =
+      protocol::Array<Registration>::create();
   for (const auto& registration : registrations) {
-    result->emplace_back(
-        Registration::Create()
-            .SetRegistrationId(
-                base::NumberToString(registration.registration_id))
-            .SetScopeURL(registration.scope.spec())
-            .SetIsDeleted(registration.delete_flag ==
-                          ServiceWorkerRegistrationInfo::IS_DELETED)
-            .Build());
+    result->addItem(Registration::Create()
+                        .SetRegistrationId(
+                            base::NumberToString(registration.registration_id))
+                        .SetScopeURL(registration.scope.spec())
+                        .SetIsDeleted(registration.delete_flag ==
+                                      ServiceWorkerRegistrationInfo::IS_DELETED)
+                        .Build());
   }
   frontend_->WorkerRegistrationUpdated(std::move(result));
 }
@@ -378,7 +378,8 @@ void ServiceWorkerHandler::OnWorkerRegistrationUpdated(
 void ServiceWorkerHandler::OnWorkerVersionUpdated(
     const std::vector<ServiceWorkerVersionInfo>& versions) {
   using Version = ServiceWorker::ServiceWorkerVersion;
-  auto result = std::make_unique<protocol::Array<Version>>();
+  std::unique_ptr<protocol::Array<Version>> result =
+      protocol::Array<Version>::create();
   for (const auto& version : versions) {
     base::flat_set<std::string> client_set;
 
@@ -400,9 +401,10 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
             DevToolsAgentHost::GetOrCreateFor(web_contents)->GetId());
       }
     }
-    auto clients = std::make_unique<protocol::Array<std::string>>();
-    for (std::string& client : client_set)
-      clients->emplace_back(std::move(client));
+    std::unique_ptr<protocol::Array<std::string>> clients =
+        protocol::Array<std::string>::create();
+    for (auto& c : client_set)
+      clients->addItem(c);
 
     std::unique_ptr<Version> version_value =
         Version::Create()
@@ -423,7 +425,7 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
                 version.devtools_agent_route_id));
     if (host)
       version_value->SetTargetId(host->GetId());
-    result->emplace_back(std::move(version_value));
+    result->addItem(std::move(version_value));
   }
   frontend_->WorkerVersionUpdated(std::move(result));
 }
