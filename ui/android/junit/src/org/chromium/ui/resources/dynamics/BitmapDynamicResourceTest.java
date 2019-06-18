@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.base.util.GarbageCollectionTestUtil.isGarbageCollected;
+import static org.chromium.base.GarbageCollectionTestUtils.canBeGarbageCollected;
 
 import android.graphics.Bitmap;
 
@@ -47,11 +47,11 @@ public class BitmapDynamicResourceTest {
         WeakReference<Bitmap> bitmapWeakReference = new WeakReference<>(bitmap);
         mResource.setBitmap(bitmap);
         bitmap = null;
-        assertFalse(isGarbageCollected(bitmapWeakReference));
+        assertFalse(canBeGarbageCollected(bitmapWeakReference));
 
         Bitmap bitmap2 = Bitmap.createBitmap(3, 4, Bitmap.Config.ARGB_8888);
         mResource.setBitmap(bitmap2);
-        assertTrue(isGarbageCollected(bitmapWeakReference));
+        assertTrue(canBeGarbageCollected(bitmapWeakReference));
     }
 
     @Test
@@ -60,9 +60,9 @@ public class BitmapDynamicResourceTest {
         WeakReference<Bitmap> bitmapWeakReference = new WeakReference<>(bitmap);
         mResource.setBitmap(bitmap);
         bitmap = null;
-        assertFalse(isGarbageCollected(bitmapWeakReference));
+        assertFalse(canBeGarbageCollected(bitmapWeakReference));
 
         mResource.getBitmap();
-        assertTrue(isGarbageCollected(bitmapWeakReference));
+        assertTrue(canBeGarbageCollected(bitmapWeakReference));
     }
 }

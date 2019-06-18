@@ -73,7 +73,7 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void resetThumbnail() {
-        thumbnail.setImageResource(0);
+        thumbnail.setImageDrawable(null);
         thumbnail.setMinimumHeight(thumbnail.getWidth());
     }
 }

@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import static org.chromium.base.GarbageCollectionTestUtils.canBeGarbageCollected;
+
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
@@ -31,6 +32,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -152,17 +154,66 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @UiThreadTest
     public void testThumbnail() throws Exception {
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
-        // This should have set the image resource id to 0 and reset it.
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-            Assert.assertNull(mTabGridViewHolder.thumbnail.getDrawable());
-        } else {
-            assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(ColorDrawable.class));
-        }
+        Assert.assertNull(mTabGridViewHolder.thumbnail.getDrawable());
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
 
         mShouldReturnBitmap = true;
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
         assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testThumbnailGCAfterNullBitmap() throws Exception {
+        mShouldReturnBitmap = true;
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
+        Bitmap bitmap = ((BitmapDrawable) mTabGridViewHolder.thumbnail.getDrawable()).getBitmap();
+        WeakReference<Bitmap> ref = new WeakReference<>(bitmap);
+        bitmap = null;
+
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
+        Assert.assertFalse(canBeGarbageCollected(ref));
+
+        mShouldReturnBitmap = false;
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        Assert.assertTrue(canBeGarbageCollected(ref));
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testThumbnailGCAfterNewBitmap() throws Exception {
+        mShouldReturnBitmap = true;
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
+        Bitmap bitmap = ((BitmapDrawable) mTabGridViewHolder.thumbnail.getDrawable()).getBitmap();
+        WeakReference<Bitmap> ref = new WeakReference<>(bitmap);
+        bitmap = null;
+
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
+        Assert.assertFalse(canBeGarbageCollected(ref));
+
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        Assert.assertTrue(canBeGarbageCollected(ref));
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testResetThumbnailGC() throws Exception {
+        mShouldReturnBitmap = true;
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
+        assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
+        Bitmap bitmap = ((BitmapDrawable) mTabGridViewHolder.thumbnail.getDrawable()).getBitmap();
+        WeakReference<Bitmap> ref = new WeakReference<>(bitmap);
+        bitmap = null;
+
+        Assert.assertFalse(canBeGarbageCollected(ref));
+
+        mTabGridViewHolder.resetThumbnail();
+        Assert.assertTrue(canBeGarbageCollected(ref));
     }
 
     @Test

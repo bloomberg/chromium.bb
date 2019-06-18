@@ -8,7 +8,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.base.util.GarbageCollectionTestUtil.isGarbageCollected;
+import static org.chromium.base.GarbageCollectionTestUtils.canBeGarbageCollected;
 
 import android.graphics.Bitmap;
 
@@ -16,24 +16,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.lang.ref.WeakReference;
 
 /**
- * Tests for {@link GarbageCollectionTestUtil}.
+ * Tests for {@link GarbageCollectionTestUtils}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class GarbageCollectionTestUtilTest {
+public class GarbageCollectionTestUtilsUnitTest {
     @Test
-    public void testIsGarbageCollected() {
+    public void testCanBeGarbageCollected() {
         Bitmap bitmap = Bitmap.createBitmap(1, 2, Bitmap.Config.ARGB_8888);
         WeakReference<Bitmap> bitmapWeakReference = new WeakReference<>(bitmap);
         assertNotNull(bitmapWeakReference.get());
-        assertFalse(isGarbageCollected(bitmapWeakReference));
+        assertFalse(canBeGarbageCollected(bitmapWeakReference));
 
         bitmap = null;
-        assertTrue(isGarbageCollected(bitmapWeakReference));
+        assertTrue(canBeGarbageCollected(bitmapWeakReference));
     }
 }
