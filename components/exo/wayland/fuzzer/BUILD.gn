@@ -14,6 +14,20 @@ kDefaultWaylandProtocols = [
   "//third_party/wayland-protocols/src/unstable/xdg-shell/xdg-shell-unstable-v6.xml",
 ]
 
+wayland_templater("protocol_dump") {
+  sources = [
+    "misc/dump.tmpl",
+  ]
+  protocols = kDefaultWaylandProtocols
+}
+
+wayland_templater("protocol_graph") {
+  sources = [
+    "misc/graph.dot.tmpl",
+  ]
+  protocols = kDefaultWaylandProtocols
+}
+
 wayland_templater("actions_tmpl") {
   sources = [
     "actions.proto.tmpl",
