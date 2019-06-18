@@ -514,6 +514,10 @@ bool OverviewGrid::Move(OverviewSession::Direction direction, bool animate) {
     SelectedWindow()->set_selected(false);
   }
 
+  // TODO(dantonvu|sammiequon): Refactor this so OverviewSession controls and
+  // owns |selection_widget_|. Also rename selection related names to
+  // highlighted as selection can also mean something else in overview.
+
   // [up] key is equivalent to [left] key and [down] key is equivalent to
   // [right] key.
   if (!selection_widget_) {
@@ -529,19 +533,30 @@ bool OverviewGrid::Move(OverviewSession::Direction direction, bool animate) {
     }
     changed_selection_index = true;
   }
+
+  // Checks number of windows present during a session. If there's only one
+  // window being used across all displays, allow the user to highlight the
+  // window but unable to move it.
+  // TODO(sammiequon): Investigate if we can remove this call.
+  if (overview_session()->NumWindowsTotal() == 1u) {
+    MoveSelectionWidget(direction, recreate_selection_widget, out_of_bounds,
+                        animate);
+    return true;
+  }
+
   while (!changed_selection_index) {
     switch (direction) {
       case OverviewSession::UP:
       case OverviewSession::LEFT:
         if (selected_index_ == 0)
           out_of_bounds = true;
-        selected_index_--;
+        --selected_index_;
         break;
       case OverviewSession::DOWN:
       case OverviewSession::RIGHT:
         if (selected_index_ >= window_list_.size() - 1)
           out_of_bounds = true;
-        selected_index_++;
+        ++selected_index_;
         break;
     }
     if (!out_of_bounds && SelectedWindow()) {
