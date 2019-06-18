@@ -23,10 +23,10 @@
 
 using UkmEntry = ukm::builders::AmpPageLoad;
 
-class AmpUkmObserverBrowserTest : public InProcessBrowserTest {
+class AmpPageLoadMetricsBrowserTest : public InProcessBrowserTest {
  public:
-  AmpUkmObserverBrowserTest() {}
-  ~AmpUkmObserverBrowserTest() override {}
+  AmpPageLoadMetricsBrowserTest() {}
+  ~AmpPageLoadMetricsBrowserTest() override {}
 
   void PreRunTestOnMainThread() override {
     InProcessBrowserTest::PreRunTestOnMainThread();
@@ -85,10 +85,10 @@ class AmpUkmObserverBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
   std::unique_ptr<net::EmbeddedTestServer> https_test_server_;
 
-  DISALLOW_COPY_AND_ASSIGN(AmpUkmObserverBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(AmpPageLoadMetricsBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(AmpUkmObserverBrowserTest, NoAmp) {
+IN_PROC_BROWSER_TEST_F(AmpPageLoadMetricsBrowserTest, NoAmp) {
   page_load_metrics::PageLoadMetricsTestWaiter waiter(
       browser()->tab_strip_model()->GetActiveWebContents());
   waiter.AddPageExpectation(
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(AmpUkmObserverBrowserTest, NoAmp) {
   ExpectMetricCountForUrl(url, "SubFrameAmpPageLoad", 0);
 }
 
-IN_PROC_BROWSER_TEST_F(AmpUkmObserverBrowserTest, AmpMainFrame) {
+IN_PROC_BROWSER_TEST_F(AmpPageLoadMetricsBrowserTest, AmpMainFrame) {
   page_load_metrics::PageLoadMetricsTestWaiter waiter(
       browser()->tab_strip_model()->GetActiveWebContents());
   waiter.AddPageExpectation(page_load_metrics::PageLoadMetricsTestWaiter::
@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(AmpUkmObserverBrowserTest, AmpMainFrame) {
   ExpectMetricCountForUrl(url, "SubFrameAmpPageLoad", 0);
 }
 
-IN_PROC_BROWSER_TEST_F(AmpUkmObserverBrowserTest, AmpSubframe) {
+IN_PROC_BROWSER_TEST_F(AmpPageLoadMetricsBrowserTest, AmpSubframe) {
   page_load_metrics::PageLoadMetricsTestWaiter waiter(
       browser()->tab_strip_model()->GetActiveWebContents());
   waiter.AddPageExpectation(page_load_metrics::PageLoadMetricsTestWaiter::
