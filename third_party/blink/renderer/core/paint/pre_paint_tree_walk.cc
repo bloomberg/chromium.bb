@@ -286,7 +286,6 @@ bool PrePaintTreeWalk::ContextRequiresTreeBuilderContext(
          context.paint_invalidator_context.NeedsVisualRectUpdate(object);
 }
 
-#if DCHECK_IS_ON()
 void PrePaintTreeWalk::CheckTreeBuilderContextState(
     const LayoutObject& object,
     const PrePaintTreeWalkContext& parent_context) {
@@ -296,21 +295,20 @@ void PrePaintTreeWalk::CheckTreeBuilderContextState(
     return;
   }
 
-  DCHECK(!object.NeedsPaintPropertyUpdate());
-  DCHECK(!object.DescendantNeedsPaintPropertyUpdate());
-  DCHECK(!object.DescendantNeedsPaintOffsetAndVisualRectUpdate());
+  CHECK(!object.NeedsPaintPropertyUpdate());
+  CHECK(!object.DescendantNeedsPaintPropertyUpdate());
+  CHECK(!object.DescendantNeedsPaintOffsetAndVisualRectUpdate());
   if (parent_context.paint_invalidator_context.NeedsVisualRectUpdate(object)) {
     // Note that if paint_invalidator_context's NeedsVisualRectUpdate(object) is
-    // true, we definitely want to DCHECK. However, we would also like to know
+    // true, we definitely want to CHECK. However, we would also like to know
     // the value of object.NeedsPaintOffsetAndVisualRectUpdate(), hence one of
-    // the two DCHECKs below will definitely trigger, and depending on which one
+    // the two CHECKs below will definitely trigger, and depending on which one
     // does we will know the value.
-    DCHECK(object.NeedsPaintOffsetAndVisualRectUpdate());
-    DCHECK(!object.NeedsPaintOffsetAndVisualRectUpdate());
+    CHECK(object.NeedsPaintOffsetAndVisualRectUpdate());
+    CHECK(!object.NeedsPaintOffsetAndVisualRectUpdate());
   }
-  NOTREACHED();
+  CHECK(false) << "Unknown reason.";
 }
-#endif
 
 void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
                                     PrePaintTreeWalkContext& context) {
@@ -425,9 +423,8 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
     return;
   }
 
-#if DCHECK_IS_ON()
+  // The following is for debugging crbug.com/974639.
   CheckTreeBuilderContextState(object, parent_context());
-#endif
 
   // Early out from the tree walk if possible.
   if (!needs_tree_builder_context_update && !ObjectRequiresPrePaint(object) &&
