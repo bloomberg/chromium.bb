@@ -102,7 +102,7 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     NOTIMPLEMENTED();
     return nullptr;
 #else
-    return base::WrapUnique(net::NetworkChangeNotifier::Create());
+    return net::NetworkChangeNotifier::Create();
 #endif
   }
   return nullptr;
