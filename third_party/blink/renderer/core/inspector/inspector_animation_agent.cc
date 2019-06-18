@@ -222,12 +222,16 @@ Response InspectorAnimationAgent::getCurrentTime(const String& id,
   if (id_to_animation_clone_.at(id))
     animation = id_to_animation_clone_.at(id);
 
-  if (animation->Paused()) {
+  if (animation->Paused() || !animation->timeline()->IsActive()) {
     *current_time = animation->currentTime();
   } else {
     // Use startTime where possible since currentTime is limited.
-    *current_time = animation->TimelineInternal()->currentTime() -
-                    animation->startTime().value_or(NullValue());
+    base::Optional<double> timeline_time = animation->timeline()->CurrentTime();
+    // TODO(crbug.com/916117): Handle NaN values for scroll linked animations.
+    *current_time = timeline_time
+                        ? timeline_time.value() -
+                              animation->startTime().value_or(NullValue())
+                        : NullValue();
   }
   return Response::OK();
 }
@@ -246,8 +250,17 @@ Response InspectorAnimationAgent::setPaused(
       return Response::Error("Failed to clone detached animation");
     if (paused && !clone->Paused()) {
       // Ensure we restore a current time if the animation is limited.
-      double current_time = clone->TimelineInternal()->currentTime() -
-                            clone->startTime().value_or(NullValue());
+      double current_time = 0;
+      if (!clone->timeline()->IsActive()) {
+        current_time = clone->currentTime();
+      } else {
+        base::Optional<double> timeline_time = clone->timeline()->CurrentTime();
+        // TODO(crbug.com/916117): Handle NaN values.
+        current_time = timeline_time
+                           ? timeline_time.value() -
+                                 clone->startTime().value_or(NullValue())
+                           : NullValue();
+      }
       clone->pause();
       clone->setCurrentTime(current_time, false);
     } else if (!paused && clone->Paused()) {
@@ -497,14 +510,16 @@ DocumentTimeline& InspectorAnimationAgent::ReferenceTimeline() {
 double InspectorAnimationAgent::NormalizedStartTime(
     blink::Animation& animation) {
   double time_ms = animation.startTime().value_or(NullValue());
-  if (ReferenceTimeline().PlaybackRate() == 0) {
-    time_ms += ReferenceTimeline().currentTime() -
-               animation.TimelineInternal()->currentTime();
-  } else {
-    time_ms += (animation.TimelineInternal()->ZeroTime() -
-                ReferenceTimeline().ZeroTime())
-                   .InMillisecondsF() *
-               ReferenceTimeline().PlaybackRate();
+  if (animation.timeline()->IsDocumentTimeline()) {
+    if (ReferenceTimeline().PlaybackRate() == 0) {
+      time_ms += ReferenceTimeline().currentTime() -
+                 ToDocumentTimeline(animation.timeline())->currentTime();
+    } else {
+      time_ms += (ToDocumentTimeline(animation.timeline())->ZeroTime() -
+                  ReferenceTimeline().ZeroTime())
+                     .InMillisecondsF() *
+                 ReferenceTimeline().PlaybackRate();
+    }
   }
   // Round to the closest microsecond.
   return std::round(time_ms * 1000) / 1000;
