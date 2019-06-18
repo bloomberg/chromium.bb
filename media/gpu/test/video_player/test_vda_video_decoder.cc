@@ -172,16 +172,26 @@ int TestVDAVideoDecoder::GetMaxDecodeRequests() const {
 
 void TestVDAVideoDecoder::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
-    VideoPixelFormat pixel_format,
+    VideoPixelFormat format,
     uint32_t textures_per_buffer,
-    const gfx::Size& size,
+    const gfx::Size& dimensions,
+    uint32_t texture_target) {
+  NOTIMPLEMENTED() << "VDA must call ProvidePictureBuffersWithVisibleRect()";
+}
+
+void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
+    uint32_t requested_num_of_buffers,
+    VideoPixelFormat format,
+    uint32_t textures_per_buffer,
+    const gfx::Size& dimensions,
+    const gfx::Rect& visible_rect,
     uint32_t texture_target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
-  ASSERT_NE(pixel_format, PIXEL_FORMAT_UNKNOWN);
+  ASSERT_NE(format, PIXEL_FORMAT_UNKNOWN);
   ASSERT_EQ(textures_per_buffer, 1u);
   DVLOGF(4) << "Requested " << requested_num_of_buffers
-            << " picture buffers with size " << size.height() << "x"
-            << size.height();
+            << " picture buffers with size " << dimensions.height() << "x"
+            << dimensions.height();
 
   std::vector<PictureBuffer> picture_buffers;
 
@@ -189,7 +199,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffers(
     case VideoDecodeAccelerator::Config::OutputMode::IMPORT:
       // If using import mode, create a set of DMABuf-backed video frames.
       for (uint32_t i = 0; i < requested_num_of_buffers; ++i) {
-        picture_buffers.emplace_back(GetNextPictureBufferId(), size);
+        picture_buffers.emplace_back(GetNextPictureBufferId(), dimensions);
       }
       decoder_->AssignPictureBuffers(picture_buffers);
 
@@ -199,8 +209,8 @@ void TestVDAVideoDecoder::ProvidePictureBuffers(
         scoped_refptr<VideoFrame> video_frame;
 #if defined(OS_LINUX)
         video_frame = CreatePlatformVideoFrame(
-            pixel_format, size, gfx::Rect(size), size, base::TimeDelta(),
-            gfx::BufferUsage::SCANOUT_VDA_WRITE);
+            format, dimensions, visible_rect, visible_rect.size(),
+            base::TimeDelta(), gfx::BufferUsage::SCANOUT_VDA_WRITE);
 #endif
         LOG_ASSERT(video_frame) << "Failed to create video frame";
         video_frames_.emplace(picture_buffer.id(), video_frame);
@@ -211,7 +221,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffers(
         NOTREACHED();
 #endif
         LOG_ASSERT(!handle.is_null()) << "Failed to create GPU memory handle";
-        decoder_->ImportBufferForPicture(picture_buffer.id(), pixel_format,
+        decoder_->ImportBufferForPicture(picture_buffer.id(), format,
                                          std::move(handle));
       }
       break;
@@ -221,12 +231,12 @@ void TestVDAVideoDecoder::ProvidePictureBuffers(
       for (uint32_t i = 0; i < requested_num_of_buffers; ++i) {
         uint32_t texture_id;
         auto video_frame = frame_renderer_->CreateVideoFrame(
-            pixel_format, size, texture_target, &texture_id);
+            format, dimensions, texture_target, &texture_id);
         LOG_ASSERT(video_frame) << "Failed to create video frame";
         int32_t picture_buffer_id = GetNextPictureBufferId();
         PictureBuffer::TextureIds texture_ids(1, texture_id);
-        picture_buffers.emplace_back(picture_buffer_id, size, texture_ids,
-                                     texture_ids, texture_target, pixel_format);
+        picture_buffers.emplace_back(picture_buffer_id, dimensions, texture_ids,
+                                     texture_ids, texture_target, format);
         video_frames_.emplace(picture_buffer_id, std::move(video_frame));
       }
       // The decoder requires an active GL context to allocate memory.
@@ -271,8 +281,8 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
                        picture.picture_buffer_id()));
 
     scoped_refptr<VideoFrame> wrapped_video_frame = VideoFrame::WrapVideoFrame(
-        *video_frame, video_frame->format(), video_frame->visible_rect(),
-        video_frame->visible_rect().size());
+        *video_frame, video_frame->format(), picture.visible_rect(),
+        picture.visible_rect().size());
     wrapped_video_frame->AddDestructionObserver(std::move(reuse_cb));
 
     output_cb_.Run(wrapped_video_frame);
