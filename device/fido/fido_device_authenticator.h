@@ -87,8 +87,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void BioEnrollEnumerate(const pin::TokenResponse&,
                           BioEnrollmentCallback) override;
   void BioEnrollRename(const pin::TokenResponse&,
-                       std::vector<uint8_t>,
-                       std::string,
+                       std::vector<uint8_t> template_id,
+                       std::string name,
+                       BioEnrollmentCallback) override;
+  void BioEnrollDelete(const pin::TokenResponse&,
+                       std::vector<uint8_t> template_id,
                        BioEnrollmentCallback) override;
 
   void Reset(ResetCallback callback) override;

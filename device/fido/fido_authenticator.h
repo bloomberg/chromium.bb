@@ -177,8 +177,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual void BioEnrollEnumerate(const pin::TokenResponse&,
                                   BioEnrollmentCallback);
   virtual void BioEnrollRename(const pin::TokenResponse&,
-                               std::vector<uint8_t>,
-                               std::string,
+                               std::vector<uint8_t> template_id,
+                               std::string name,
+                               BioEnrollmentCallback);
+  virtual void BioEnrollDelete(const pin::TokenResponse&,
+                               std::vector<uint8_t> template_id,
                                BioEnrollmentCallback);
 
   // Reset triggers a reset operation on the authenticator. This erases all

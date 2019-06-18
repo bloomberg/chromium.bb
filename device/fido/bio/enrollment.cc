@@ -97,6 +97,20 @@ BioEnrollmentRequest BioEnrollmentRequest::ForRename(
   return request;
 }
 
+// static
+BioEnrollmentRequest BioEnrollmentRequest::ForDelete(
+    const pin::TokenResponse& token,
+    std::vector<uint8_t> id) {
+  BioEnrollmentRequest request;
+  request.subcommand = BioEnrollmentSubCommand::kRemoveEnrollment;
+  request.params = cbor::Value::MapValue();
+  request.params->emplace(
+      static_cast<int>(BioEnrollmentSubCommandParam::kTemplateId),
+      std::move(id));
+  SetPinAuth(&request, token);
+  return request;
+}
+
 BioEnrollmentRequest::BioEnrollmentRequest(BioEnrollmentRequest&&) = default;
 BioEnrollmentRequest& BioEnrollmentRequest::operator=(BioEnrollmentRequest&&) =
     default;

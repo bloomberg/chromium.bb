@@ -513,30 +513,45 @@ void FidoDeviceAuthenticator::GetSensorInfo(BioEnrollmentCallback callback) {
 }
 
 void FidoDeviceAuthenticator::BioEnrollFingerprint(
-    const pin::TokenResponse& token,
+    const pin::TokenResponse& response,
     BioEnrollmentCallback callback) {
   DCHECK(
       Options()->bio_enrollment_availability_preview !=
       AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
 
   RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
-      BioEnrollmentRequest::ForEnrollBegin(token),
+      BioEnrollmentRequest::ForEnrollBegin(response),
       base::BindOnce(&FidoDeviceAuthenticator::OnBioEnroll,
-                     weak_factory_.GetWeakPtr(), std::move(token),
+                     weak_factory_.GetWeakPtr(), std::move(response),
                      std::move(callback)),
       base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
-void FidoDeviceAuthenticator::BioEnrollRename(const pin::TokenResponse& token,
-                                              std::vector<uint8_t> id,
-                                              std::string name,
-                                              BioEnrollmentCallback callback) {
+void FidoDeviceAuthenticator::BioEnrollRename(
+    const pin::TokenResponse& response,
+    std::vector<uint8_t> template_id,
+    std::string name,
+    BioEnrollmentCallback callback) {
   DCHECK(
       Options()->bio_enrollment_availability_preview !=
       AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
 
   RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
-      BioEnrollmentRequest::ForRename(token, std::move(id), std::move(name)),
+      BioEnrollmentRequest::ForRename(response, std::move(template_id),
+                                      std::move(name)),
+      std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse));
+}
+
+void FidoDeviceAuthenticator::BioEnrollDelete(
+    const pin::TokenResponse& response,
+    std::vector<uint8_t> template_id,
+    BioEnrollmentCallback callback) {
+  DCHECK(
+      Options()->bio_enrollment_availability_preview !=
+      AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
+
+  RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
+      BioEnrollmentRequest::ForDelete(response, std::move(template_id)),
       std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 

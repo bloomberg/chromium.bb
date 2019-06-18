@@ -1449,6 +1449,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
           enumerated_ids);
       break;
     case static_cast<int>(SubCmd::kSetFriendlyName):
+    case static_cast<int>(SubCmd::kRemoveEnrollment):
       if (template_id && *template_id == std::vector<uint8_t>{0, 0, 0, 2}) {
         return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
       }
