@@ -223,7 +223,7 @@ void DesksController::ActivateDesk(const Desk* desk) {
     if (overview_controller->InOverviewSession()) {
       // Selecting the active desk's mini_view in overview mode is allowed and
       // should just exit overview mode normally.
-      overview_controller->ToggleOverview();
+      overview_controller->EndOverview();
     }
     return;
   }
@@ -294,7 +294,7 @@ void DesksController::OnStartingDeskScreenshotTaken(const Desk* ending_desk) {
     // Exit overview mode immediately without any animations before taking the
     // ending desk screenshot. This makes sure that the ending desk
     // screenshot will only show the windows in that desk, not overview stuff.
-    Shell::Get()->overview_controller()->ToggleOverview(
+    Shell::Get()->overview_controller()->EndOverview(
         OverviewSession::EnterExitOverviewType::kImmediateExit);
   }
 

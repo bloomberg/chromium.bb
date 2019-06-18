@@ -1364,13 +1364,13 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   }
 
   // Toggle overview.
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->StartOverview();
   base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
   ASSERT_TRUE(backdrop);
   EXPECT_FALSE(backdrop->IsVisible());
 
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->EndOverview();
   base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
   ASSERT_TRUE(backdrop);
@@ -1397,12 +1397,12 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   }
 
   // Toggle overview with the delegate.
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->StartOverview();
   base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
   ASSERT_TRUE(backdrop);
   EXPECT_FALSE(backdrop->IsVisible());
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->EndOverview();
   base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
   ASSERT_TRUE(backdrop);
@@ -1563,8 +1563,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, DISABLED_OpenAppListInOverviewMode) {
   ShowTopWindowBackdropForContainer(default_container(), true);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
-  // Toggle overview button to enter overview mode.
-  Shell::Get()->overview_controller()->ToggleOverview();
+  // Enter overview mode.
+  Shell::Get()->overview_controller()->StartOverview();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(test_helper.GetBackdropWindow());
 

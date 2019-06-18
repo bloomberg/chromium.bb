@@ -251,7 +251,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   auto* controller = DesksController::Get();
 
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   const auto* overview_grid =
@@ -309,9 +309,9 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   // Exit overview mode and re-enter. Since we have more than one pre-existing
   // desks, their mini_views should be created upon construction of the desks
   // bar.
-  overview_controller->ToggleOverview();
+  overview_controller->EndOverview();
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // Get the new grid and the new desk_bar_view.
@@ -586,7 +586,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   // desks mini views, and there are exactly two windows in the overview mode
   // grid.
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
@@ -623,14 +623,14 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   // showing exactly one window.
   auto win2 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win2.get());
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(1u, overview_grid->window_list().size());
 
   // When exiting overview mode without changing desks, the focus should be
   // restored to the same window.
-  overview_controller->ToggleOverview();
+  overview_controller->EndOverview();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   // Run a loop since the overview session is destroyed async and until that
   // happens, focus will be on the dummy "OverviewModeFocusedWidget".
@@ -653,7 +653,7 @@ TEST_F(DesksTest, ActivateDeskFromOverviewDualDisplay) {
 
   // Enter overview mode.
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   auto roots = Shell::GetAllRootWindows();
@@ -701,7 +701,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   Desk* desk_4 = controller->desks()[3].get();
   ActivateDesk(desk_4);
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
@@ -753,7 +753,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
 
   // Exiting overview mode should not cause any mini_views refreshes, since the
   // destroyed overview-specific windows do not show up in the mini_view.
-  overview_controller->ToggleOverview();
+  overview_controller->EndOverview();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_EQ(1, desk_4_observer.notify_counts());
   desk_4->RemoveObserver(&desk_4_observer);
@@ -782,7 +782,7 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
 
   // Enter overview mode, and remove desk_2 from its mini-view close button.
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
@@ -831,7 +831,7 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
 
   // Exiting overview mode should not cause any mini_views refreshes, since the
   // destroyed overview-specific windows do not show up in the mini_view.
-  overview_controller->ToggleOverview();
+  overview_controller->EndOverview();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_EQ(1, desk_1_observer.notify_counts());
   desk_1->RemoveObserver(&desk_1_observer);
@@ -848,7 +848,7 @@ TEST_F(DesksTest, ActivateActiveDeskFromOverview) {
   // Enter overview mode, and click on `desk_1`'s mini_view, and expect that
   // overview mode exits since this is the already active desk.
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
@@ -914,7 +914,7 @@ TEST_F(DesksTest, DragWindowToDesk) {
   EXPECT_TRUE(shadow->layer()->GetTargetVisibility());
 
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(1u, overview_grid->size());
@@ -978,7 +978,7 @@ TEST_F(DesksTest, DragMinimizedWindowToDesk) {
   ASSERT_TRUE(window_state->IsMinimized());
 
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   auto* overview_session = overview_controller->overview_session();
@@ -1023,7 +1023,7 @@ TEST_F(DesksTest, DragWindowToNonMiniViewPoints) {
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
 
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
@@ -1163,7 +1163,7 @@ TEST_F(DesksTest, TabletModeBackdrops) {
   // Enter overview and expect that the backdrop is still present for desk_1 but
   // hidden.
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   ASSERT_TRUE(desk_1_backdrop_controller->backdrop_window());
   EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window()->IsVisible());
@@ -1194,7 +1194,7 @@ TEST_F(DesksTest, TabletModeBackdrops) {
 
   // Exit overview, and expect that desk_2's backdrop remains hidden since the
   // desk is not activated yet.
-  overview_controller->ToggleOverview(
+  overview_controller->EndOverview(
       OverviewSession::EnterExitOverviewType::kImmediateExit);
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window());
@@ -1224,7 +1224,7 @@ TEST_F(DesksTest, TabletModeDesksCreationRemovalCycle) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* desks_controller = DesksController::Get();
 
@@ -1266,7 +1266,7 @@ TEST_F(DesksTest, MiniViewsTouchGestures) {
   controller->NewDesk();
   ASSERT_EQ(3u, controller->desks().size());
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
@@ -1341,7 +1341,7 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
 
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
 
