@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/webrtc_local_audio_source_provider.h"
+#include "third_party/blink/public/web/modules/mediastream/webaudio_media_stream_audio_sink.h"
 
 #include <string>
 
@@ -21,9 +21,9 @@ namespace blink {
 // Size of the buffer that WebAudio processes each time, it is the same value
 // as AudioNode::ProcessingSizeInFrames in WebKit.
 // static
-const size_t WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize = 128;
+const size_t WebAudioMediaStreamAudioSink::kWebAudioRenderBufferSize = 128;
 
-WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
+WebAudioMediaStreamAudioSink::WebAudioMediaStreamAudioSink(
     const WebMediaStreamTrack& track,
     int context_sample_rate)
     : is_enabled_(false), track_(track), track_stopped_(false) {
@@ -40,7 +40,7 @@ WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
   WebMediaStreamAudioSink::AddToAudioTrack(this, track_);
 }
 
-WebRtcLocalAudioSourceProvider::~WebRtcLocalAudioSourceProvider() {
+WebAudioMediaStreamAudioSink::~WebAudioMediaStreamAudioSink() {
   if (audio_converter_.get())
     audio_converter_->RemoveInput(this);
 
@@ -50,7 +50,7 @@ WebRtcLocalAudioSourceProvider::~WebRtcLocalAudioSourceProvider() {
     WebMediaStreamAudioSink::RemoveFromAudioTrack(this, track_);
 }
 
-void WebRtcLocalAudioSourceProvider::OnSetFormat(
+void WebAudioMediaStreamAudioSink::OnSetFormat(
     const media::AudioParameters& params) {
   DCHECK(params.IsValid());
 
@@ -70,14 +70,14 @@ void WebRtcLocalAudioSourceProvider::OnSetFormat(
       kMaxNumberOfAudioFifoBuffers * params.frames_per_buffer()));
 }
 
-void WebRtcLocalAudioSourceProvider::OnReadyStateChanged(
+void WebAudioMediaStreamAudioSink::OnReadyStateChanged(
     WebMediaStreamSource::ReadyState state) {
   NON_REENTRANT_SCOPE(ready_state_reentrancy_checker_);
   if (state == WebMediaStreamSource::kReadyStateEnded)
     track_stopped_ = true;
 }
 
-void WebRtcLocalAudioSourceProvider::OnData(
+void WebAudioMediaStreamAudioSink::OnData(
     const media::AudioBus& audio_bus,
     base::TimeTicks estimated_capture_time) {
   NON_REENTRANT_SCOPE(capture_reentrancy_checker_);
@@ -100,12 +100,12 @@ void WebRtcLocalAudioSourceProvider::OnData(
   }
 }
 
-void WebRtcLocalAudioSourceProvider::SetClient(
+void WebAudioMediaStreamAudioSink::SetClient(
     WebAudioSourceProviderClient* client) {
   NOTREACHED();
 }
 
-void WebRtcLocalAudioSourceProvider::ProvideInput(
+void WebAudioMediaStreamAudioSink::ProvideInput(
     const WebVector<float*>& audio_data,
     size_t number_of_frames) {
   NON_REENTRANT_SCOPE(provide_input_reentrancy_checker_);
@@ -133,8 +133,8 @@ void WebRtcLocalAudioSourceProvider::ProvideInput(
 // AudioConverter which in turn is called by the above ProvideInput() function.
 // Thus thread safety analysis is disabled here and |lock_| acquire manually
 // asserted.
-double WebRtcLocalAudioSourceProvider::ProvideInput(media::AudioBus* audio_bus,
-                                                    uint32_t frames_delayed)
+double WebAudioMediaStreamAudioSink::ProvideInput(media::AudioBus* audio_bus,
+                                                  uint32_t frames_delayed)
     NO_THREAD_SAFETY_ANALYSIS {
   lock_.AssertAcquired();
   if (fifo_->frames() >= audio_bus->frames()) {
@@ -148,7 +148,7 @@ double WebRtcLocalAudioSourceProvider::ProvideInput(media::AudioBus* audio_bus,
   return 1.0;
 }
 
-void WebRtcLocalAudioSourceProvider::SetSinkParamsForTesting(
+void WebAudioMediaStreamAudioSink::SetSinkParamsForTesting(
     const media::AudioParameters& sink_params) {
   base::AutoLock auto_lock(lock_);
   sink_params_ = sink_params;

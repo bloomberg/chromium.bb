@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBRTC_LOCAL_AUDIO_SOURCE_PROVIDER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBRTC_LOCAL_AUDIO_SOURCE_PROVIDER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_AUDIO_SINK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_AUDIO_SINK_H_
 
 #include <stddef.h>
 
@@ -32,14 +32,10 @@ namespace blink {
 
 class WebAudioSourceProviderClient;
 
-// TODO(miu): This implementation should be renamed to WebAudioMediaStreamSink,
-// as it should work as a provider for WebAudio from ANY MediaStreamAudioTrack.
-// http://crbug.com/577874
-//
-// WebRtcLocalAudioSourceProvider provides a bridge between classes:
+// WebAudioMediaStreamAudioSink provides a bridge between classes:
 //     MediaStreamAudioTrack ---> WebAudioSourceProvider
 //
-// WebRtcLocalAudioSourceProvider works as a sink to the MediaStreamAudioTrack
+// WebAudioMediaStreamAudioSink works as a sink to the MediaStreamAudioTrack
 // and stores the capture data to a FIFO. When the media stream is connected to
 // WebAudio MediaStreamAudioSourceNode as a source provider,
 // MediaStreamAudioSourceNode will periodically call provideInput() to get the
@@ -49,16 +45,16 @@ class WebAudioSourceProviderClient;
 //
 // TODO(crbug.com/704136): Move this class out of the Blink exposed API
 // when all users of it have been Onion souped.
-class BLINK_MODULES_EXPORT WebRtcLocalAudioSourceProvider
+class BLINK_MODULES_EXPORT WebAudioMediaStreamAudioSink
     : public WebAudioSourceProvider,
       public media::AudioConverter::InputCallback,
       public WebMediaStreamAudioSink {
  public:
   static const size_t kWebAudioRenderBufferSize;
 
-  explicit WebRtcLocalAudioSourceProvider(const WebMediaStreamTrack& track,
-                                          int context_sample_rate);
-  ~WebRtcLocalAudioSourceProvider() override;
+  explicit WebAudioMediaStreamAudioSink(const WebMediaStreamTrack& track,
+                                        int context_sample_rate);
+  ~WebAudioMediaStreamAudioSink() override;
 
   // WebMediaStreamAudioSink implementation.
   void OnData(const media::AudioBus& audio_bus,
@@ -120,9 +116,9 @@ class BLINK_MODULES_EXPORT WebRtcLocalAudioSourceProvider
   // Used to assert that OnReadyStateChanged() is not accessed concurrently.
   REENTRANCY_CHECKER(ready_state_reentrancy_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(WebRtcLocalAudioSourceProvider);
+  DISALLOW_COPY_AND_ASSIGN(WebAudioMediaStreamAudioSink);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBRTC_LOCAL_AUDIO_SOURCE_PROVIDER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_AUDIO_SINK_H_

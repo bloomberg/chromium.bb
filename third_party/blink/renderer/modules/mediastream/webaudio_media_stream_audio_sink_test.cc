@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/webrtc_local_audio_source_provider.h"
+#include "third_party/blink/public/web/modules/mediastream/webaudio_media_stream_audio_sink.h"
 
 #include <stddef.h>
 
@@ -17,16 +17,15 @@
 
 namespace blink {
 
-class WebRtcLocalAudioSourceProviderTest : public testing::Test {
+class WebAudioMediaStreamAudioSinkTest : public testing::Test {
  protected:
   void SetUp() override {
     source_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          media::CHANNEL_LAYOUT_MONO, 48000, 480);
     const int context_sample_rate = 44100;
-    sink_params_.Reset(
-        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO, context_sample_rate,
-        WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize);
+    sink_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                       media::CHANNEL_LAYOUT_STEREO, context_sample_rate,
+                       WebAudioMediaStreamAudioSink::kWebAudioRenderBufferSize);
     sink_bus_ = media::AudioBus::Create(sink_params_);
     WebMediaStreamSource audio_source;
     audio_source.Initialize(WebString::FromUTF8("dummy_source_id"),
@@ -37,7 +36,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
     blink_track_.SetPlatformTrack(
         std::make_unique<MediaStreamAudioTrack>(true));
     source_provider_.reset(
-        new WebRtcLocalAudioSourceProvider(blink_track_, context_sample_rate));
+        new WebAudioMediaStreamAudioSink(blink_track_, context_sample_rate));
     source_provider_->SetSinkParamsForTesting(sink_params_);
     source_provider_->OnSetFormat(source_params_);
   }
@@ -52,10 +51,10 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
   media::AudioParameters sink_params_;
   std::unique_ptr<media::AudioBus> sink_bus_;
   WebMediaStreamTrack blink_track_;
-  std::unique_ptr<WebRtcLocalAudioSourceProvider> source_provider_;
+  std::unique_ptr<WebAudioMediaStreamAudioSink> source_provider_;
 };
 
-TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
+TEST_F(WebAudioMediaStreamAudioSinkTest, VerifyDataFlow) {
   // TODO(miu): This test should be re-worked so that the audio data and format
   // is feed into a MediaStreamAudioSource and, through the
   // MediaStreamAudioTrack, ultimately delivered to the |source_provider_|.
@@ -114,7 +113,7 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   }
 }
 
-TEST_F(WebRtcLocalAudioSourceProviderTest,
+TEST_F(WebAudioMediaStreamAudioSinkTest,
        DeleteSourceProviderBeforeStoppingTrack) {
   source_provider_.reset();
 
@@ -122,7 +121,7 @@ TEST_F(WebRtcLocalAudioSourceProviderTest,
   MediaStreamAudioTrack::From(blink_track_)->Stop();
 }
 
-TEST_F(WebRtcLocalAudioSourceProviderTest,
+TEST_F(WebAudioMediaStreamAudioSinkTest,
        StopTrackBeforeDeletingSourceProvider) {
   // Stop the audio track.
   MediaStreamAudioTrack::From(blink_track_)->Stop();
