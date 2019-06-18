@@ -281,22 +281,16 @@ static uint64_t compute_cdef_dist(uint16_t *dst, int dstride, uint16_t *src,
 }
 
 static int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
-  int maxc, maxr;
-  int skip = 1;
-  maxc = cm->mi_cols - mi_col;
-  maxr = cm->mi_rows - mi_row;
-
-  maxr = AOMMIN(maxr, MI_SIZE_64X64);
-  maxc = AOMMIN(maxc, MI_SIZE_64X64);
-
-  for (int r = 0; r < maxr; r++) {
-    for (int c = 0; c < maxc; c++) {
-      skip =
-          skip &&
-          cm->mi_grid_visible[(mi_row + r) * cm->mi_stride + mi_col + c]->skip;
+  const int maxr = AOMMIN(cm->mi_rows - mi_row, MI_SIZE_64X64);
+  const int maxc = AOMMIN(cm->mi_cols - mi_col, MI_SIZE_64X64);
+  const int stride = cm->mi_stride;
+  MB_MODE_INFO **mbmi = cm->mi_grid_visible + mi_row * stride + mi_col;
+  for (int r = 0; r < maxr; ++r, mbmi += stride) {
+    for (int c = 0; c < maxc; ++c) {
+      if (!mbmi[c]->skip) return 0;
     }
   }
-  return skip;
+  return 1;
 }
 
 void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
