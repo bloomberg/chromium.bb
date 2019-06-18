@@ -33625,6 +33625,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1684773837" label="TabEngagementReportingAndroid:disabled"/>
   <int value="-1684123448" label="disable-best-effort-tasks"/>
   <int value="-1682843294" label="DataReductionProxyDecidesTransform:enabled"/>
+  <int value="-1681832882" label="shelf-scrollable"/>
   <int value="-1677715989" label="UnifiedConsent:disabled"/>
   <int value="-1676256979"
       label="AutofillUpstreamUseGooglePayOnAndroidBranding:enabled"/>
@@ -35857,6 +35858,7 @@ from previous Chrome versions.
   <int value="1614309501" label="DataSaverLiteModeRebranding:enabled"/>
   <int value="1614596813" label="CloseButtonsInactiveTabs:disabled"/>
   <int value="1615988672" label="GrantNotificationsToDSE:enabled"/>
+  <int value="1616782064" label="shelf-dense-clamshell"/>
   <int value="1616938915"
       label="OmniboxUIExperimentWhiteBackgroundOnBlur:disabled"/>
   <int value="1617187093" label="enable-improved-a2hs"/>

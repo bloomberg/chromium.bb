@@ -980,8 +980,17 @@ extern const char kSettingsWindowDescription[];
 extern const char kSharingDeviceRegistrationName[];
 extern const char kSharingDeviceRegistrationDescription[];
 
+extern const char kShelfDenseClamshellName[];
+extern const char kShelfDenseClamshellDescription[];
+
 extern const char kShelfHoverPreviewsName[];
 extern const char kShelfHoverPreviewsDescription[];
+
+extern const char kShelfNewUiName[];
+extern const char kShelfNewUiDescription[];
+
+extern const char kShelfScrollableName[];
+extern const char kShelfScrollableDescription[];
 
 extern const char kShowAndroidFilesInFilesAppName[];
 extern const char kShowAndroidFilesInFilesAppDescription[];

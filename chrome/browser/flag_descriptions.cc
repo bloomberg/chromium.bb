@@ -1656,11 +1656,26 @@ const char kSharingDeviceRegistrationDescription[] =
     "Enables device registration with Sharing infrastructure. Required to use "
     "cross-device Sharing features.";
 
+const char kShelfDenseClamshellName[] =
+    "Show a smaller, denser shelf in laptop mode.";
+const char kShelfDenseClamshellDescription[] =
+    "Reduces the size of the shelf and its apps when in laptop mode.";
+
 const char kShelfHoverPreviewsName[] =
     "Show previews of running apps when hovering over the shelf.";
 const char kShelfHoverPreviewsDescription[] =
     "Shows previews of the open windows for a given running app when hovering "
     "over the shelf.";
+
+const char kShelfNewUiName[] = "Enable a new modular design for the shelf.";
+const char kShelfNewUiDescription[] =
+    "Shows a new modular design for the shelf where the various pieces are "
+    "separate and behave independently, especially in tablet mode.";
+
+const char kShelfScrollableName[] =
+    "Enable a scrollable list of apps on the shelf";
+const char kShelfScrollableDescription[] =
+    "Shows a list of applications that is scrollable by default on tablets.";
 
 const char kShowAndroidFilesInFilesAppName[] =
     "Show Android files in Files app";
