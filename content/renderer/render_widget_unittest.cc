@@ -296,7 +296,7 @@ class RenderWidgetUnittest : public testing::Test {
 
 TEST_F(RenderWidgetUnittest, CursorChange) {
   blink::WebCursorInfo cursor_info;
-  cursor_info.type = blink::WebCursorInfo::Type::kTypePointer;
+  cursor_info.type = ui::CursorType::kPointer;
 
   widget()->DidChangeCursor(cursor_info);
   EXPECT_EQ(widget()->sink()->message_count(), 1U);
