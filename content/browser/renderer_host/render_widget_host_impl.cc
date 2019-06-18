@@ -954,6 +954,10 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   bool width_changed =
       !old_visual_properties_ || old_visual_properties_->new_size.width() !=
                                      visual_properties->new_size.width();
+  bool visible_viewport_size_changed =
+      !old_visual_properties_ ||
+      old_visual_properties_->visible_viewport_size !=
+          visual_properties->visible_viewport_size;
 
   // TODO(jonross): Enable on ChromeOS once blocking mus bugs are fixed:
   // https://crbug.com/920642 https://crbug.com/920006
@@ -995,6 +999,10 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
         visual_properties->local_surface_id_allocation->local_surface_id()
             .ToString());
     visual_properties_ack_pending_ = needs_ack;
+    if (delegate() && visible_viewport_size_changed) {
+      delegate()->NotifyVisibleViewportSizeChanged(
+          visual_properties->visible_viewport_size);
+    }
     old_visual_properties_.swap(visual_properties);
     sent_visual_properties = true;
   }
