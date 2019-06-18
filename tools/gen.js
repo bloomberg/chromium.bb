@@ -29,7 +29,7 @@ if (!fs.existsSync('src/')) {
 
 for (const suite of process.argv.slice(2)) {
   const outFile = path.normalize(`out/${suite}/listing.json`);
-  const specDir = path.normalize(`src/${suite}/`); // always ends in /
+  const specDir = path.normalize(`src/${suite}/`);  // always ends in /
 
   const specSuffix = '.spec.ts';
   const specFiles = fg.sync(specDir + '**/{README.txt,*' + specSuffix + '}', {
@@ -79,6 +79,9 @@ for (const suite of process.argv.slice(2)) {
     }
   }
 
-  fs.writeFileSync(outFile, JSON.stringify(listing, undefined, 2),
-      (err) => { if (err) { throw err; } });
+  fs.writeFileSync(outFile, JSON.stringify(listing, undefined, 2), (err) => {
+    if (err) {
+      throw err;
+    }
+  });
 }

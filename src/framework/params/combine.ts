@@ -4,7 +4,9 @@ import {
   ParamSpecIterator,
 } from './index.js';
 
-export function pcombine(params: ParamSpecIterable[]) { return new PCombine(params); }
+export function pcombine(params: ParamSpecIterable[]) {
+  return new PCombine(params);
+}
 
 function merge(a: IParamsSpec, b: IParamsSpec): IParamsSpec {
   for (const key of Object.keys(a)) {
@@ -12,10 +14,10 @@ function merge(a: IParamsSpec, b: IParamsSpec): IParamsSpec {
       throw new Error('Duplicate key: ' + key);
     }
   }
-  return {...a, ...b};
+  return { ...a, ...b };
 }
 
-function * cartesian(iters: ParamSpecIterable[]): ParamSpecIterator {
+function* cartesian(iters: ParamSpecIterable[]): ParamSpecIterator {
   if (iters.length === 0) {
     return;
   }

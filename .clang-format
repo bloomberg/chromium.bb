@@ -1,0 +1,4 @@
+Language: JavaScript
+BasedOnStyle: Chromium
+JavaScriptQuotes: Single
+ColumnLimit: 100

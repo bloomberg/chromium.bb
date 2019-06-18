@@ -32,7 +32,7 @@ class RunCase {
   }
 }
 
-type IFixture<F extends Fixture> = new(log: CaseRecorder, params: IParamsAny) => F;
+type FixtureClass<F extends Fixture> = new (log: CaseRecorder, params: IParamsAny) => F;
 
 export abstract class Fixture {
   public params: IParamsAny;
@@ -43,7 +43,7 @@ export abstract class Fixture {
     this.params = params;
   }
 
-  public async init(): Promise<void> {}
+  public async init(): Promise<void> { }
 
   public log(msg: string) {
     this.rec.log(msg);
@@ -54,18 +54,7 @@ export class TestGroup {
   private seen: Set<string> = new Set();
   private tests: ICase[] = [];
 
-  public constructor() {}
-
-  public testp<F extends Fixture>(name: string,
-                                  params: IParamsSpec,
-                                  fixture: IFixture<F>,
-                                  fn: TestFn<F>): void {
-    return this.testImpl(name, params, fixture, fn);
-  }
-
-  public test<F extends Fixture>(name: string, fixture: IFixture<F>, fn: TestFn<F>): void {
-    return this.testImpl(name, undefined, fixture, fn);
-  }
+  public constructor() { }
 
   public * iterate(log: GroupRecorder): Iterable<RunCase> {
     for (const t of this.tests) {
@@ -73,10 +62,8 @@ export class TestGroup {
     }
   }
 
-  private testImpl<F extends Fixture>(name: string,
-                                      params: (IParamsSpec | undefined),
-                                      fixture: IFixture<F>,
-                                      fn: TestFn<F>): void {
+  public test<F extends Fixture>(
+    name: string, fixture: FixtureClass<F>, fn: TestFn<F>, params?: IParamsSpec): void {
     // It may be OK to add more allowed characters here.
     const validNames = /^[a-zA-Z0-9/_ ]+$/;
     if (!validNames.test(name)) {

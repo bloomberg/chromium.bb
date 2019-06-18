@@ -19,7 +19,7 @@ group.test('default fixture', DefaultFixture, (t0) => {
   const g = new TestGroup();
 
   g.test('test', DefaultFixture, print);
-  g.testp('testp', {a: 1}, DefaultFixture, print);
+  g.test('testp', DefaultFixture, print, { a: 1 });
 
   // TODO: check output
 });
@@ -33,27 +33,31 @@ group.test('custom fixture', DefaultFixture, (t0) => {
 
   const g = new TestGroup();
 
-  g.test('test', Printer, (t) => { t.print(); });
-  g.testp('testp', {a: 1}, Printer, (t) => { t.print(); });
+  g.test('test', Printer, (t) => {
+    t.print();
+  });
+  g.test('testp', Printer, (t) => {
+    t.print();
+  }, { a: 1 });
 
   // TODO: check output
 });
 
 group.test('duplicate test name', DefaultFixture, (t) => {
   const g = new TestGroup();
-  g.test('abc', DefaultFixture, () => {});
+  g.test('abc', DefaultFixture, () => { });
 
   t.shouldThrow(() => {
-    g.test('abc', DefaultFixture, () => {});
+    g.test('abc', DefaultFixture, () => { });
   });
 });
 
 for (const char of '"`~@#$+=\\|!^&*[]<>{}-\'.,') {
-  group.testp('invalid test name', {char}, DefaultFixture, (t) => {
+  group.test('invalid test name', DefaultFixture, (t) => {
     const g = new TestGroup();
 
     t.shouldThrow(() => {
-      g.test('a' + char + 'b', DefaultFixture, () => {});
+      g.test('a' + char + 'b', DefaultFixture, () => { });
     });
-  });
+  }, { char });
 }

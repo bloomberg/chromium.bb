@@ -1,22 +1,22 @@
 const fs = require('fs');
 const process = require('process');
 global.fetch = require('node-fetch');
-require("./js-to-ts.js");
+require('./js-to-ts.js');
 
 const { loadTests } = require('../src/framework/listing');
 const { Logger } = require('../src/framework/logger');
 const { parseFilters } = require('../src/framework/url_query');
 
 function usage(rc) {
-  console.error('Usage:');
-  console.error('  node tools/run [FILTERS...]');
-  console.error('  node tools/run unittests: demos:params:');
+  console.log('Usage:');
+  console.log('  node tools/run [FILTERS...]');
+  console.log('  node tools/run unittests: demos:params:');
   process.exit(rc);
 }
 
 function die() {
-  console.error(new Error());
-  console.error("");
+  console.log(new Error());
+  console.log('');
   usage(1);
 }
 
@@ -24,8 +24,8 @@ if (process.argv.length <= 2) {
   usage(0);
 }
 
-if (!fs.existsSync("src/")) {
-  console.error("Must be run from repository root");
+if (!fs.existsSync('src/')) {
+  console.log('Must be run from repository root');
   die();
 }
 
@@ -49,14 +49,13 @@ class ListingFetcherFS {
   }
 }
 
-
 (async () => {
   const filters = parseFilters(process.argv.slice(2));
   const listing = await loadTests('./out', filters, ListingFetcherFS);
 
   const log = new Logger();
-  const entries = await Promise.all(Array.from(listing,
-      ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
+  const entries = await Promise.all(
+    Array.from(listing, ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
 
   const failed = [];
   const warned = [];
@@ -73,10 +72,10 @@ class ListingFetcherFS {
     for (const t of group.iterate(rec)) {
       running.push((async () => {
         const res = await t.run();
-        if (res.status === "fail") {
+        if (res.status === 'fail') {
           failed.push(res);
         }
-        if (res.status === "warn") {
+        if (res.status === 'warn') {
           warned.push(res);
         }
       })());
@@ -85,25 +84,26 @@ class ListingFetcherFS {
 
   await Promise.all(running);
 
-  console.error("** Results **");
+  console.log('** Results **');
   console.log(JSON.stringify(log.results, undefined, 2));
 
   if (warned.length) {
-    console.error("");
-    console.error("** Warnings **");
+    console.log('');
+    console.log('** Warnings **');
     for (const r of warned) {
-      console.error(r);
+      console.log(r);
     }
   }
   if (failed.length) {
-    console.error("");
-    console.error("** Failures **");
+    console.log('');
+    console.log('** Failures **');
     for (const r of failed) {
-      console.error(r);
+      console.log(r);
     }
   }
 
-  console.error("** Summary **");
+  console.log('');
+  console.log('** Summary **');
 
   const total = running.length;
   const passed = total - warned.length - failed.length;
@@ -114,7 +114,7 @@ class ListingFetcherFS {
     const xs = x.toString().padStart(1 + Math.log10(total), ' ');
     return `${xs} / ${total} = ${pct(x).padStart(6, ' ')}%`;
   }
-  console.error(`
+  console.log(`
 Passed  w/o warnings = ${rpt(passed)}
 Passed with warnings = ${rpt(warned.length)}
 Failed               = ${rpt(failed.length)}`);

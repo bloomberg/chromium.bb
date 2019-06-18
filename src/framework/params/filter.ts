@@ -19,7 +19,7 @@ class PFilter implements ParamSpecIterable {
     this.pred = pred;
   }
 
-  public * [Symbol.iterator](): ParamSpecIterator {
+  public *[Symbol.iterator](): ParamSpecIterator {
     for (const p of this.cases) {
       if (this.pred(p)) {
         yield p;

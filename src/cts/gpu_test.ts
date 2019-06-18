@@ -57,11 +57,12 @@ export class GPUTest extends Fixture {
   private compile(type: ('f' | 'v' | 'c'), source: string): Uint32Array {
     const compiler = new this.shaderc.Compiler();
     const opts = new this.shaderc.CompileOptions();
-    const result = compiler.CompileGlslToSpv(source,
-        type === 'f' ? this.shaderc.shader_kind.fragment :
-        type === 'v' ? this.shaderc.shader_kind.vertex :
-        this.shaderc.shader_kind.compute,
-        'a.glsl', 'main', opts);
+    const result = compiler.CompileGlslToSpv(
+      source,
+      type === 'f' ?
+        this.shaderc.shader_kind.fragment :
+        type === 'v' ? this.shaderc.shader_kind.vertex : this.shaderc.shader_kind.compute,
+      'a.glsl', 'main', opts);
     const error = result.GetErrorMessage();
     if (error) {
       // tslint:disable-next-line: no-console

@@ -30,9 +30,8 @@ group.test('clear', GPUTest, async (t) => {
   });
   pass.endPass();
   encoder.copyTextureToBuffer(
-    { texture: colorAttachment, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
-    { buffer: dst, rowPitch: 256, imageHeight: 1 },
-    { width: 1, height: 1, depth: 1});
+    { texture: colorAttachment, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
+    { buffer: dst, rowPitch: 256, imageHeight: 1 }, { width: 1, height: 1, depth: 1 });
   t.device.getQueue().submit([encoder.finish()]);
 
   await t.expectContents(dst, new Uint8Array([0x00, 0xff, 0x00, 0xff]));
@@ -94,9 +93,8 @@ group.test('fullscreen quad', GPUTest, async (t) => {
   pass.draw(3, 1, 0, 0);
   pass.endPass();
   encoder.copyTextureToBuffer(
-    { texture: colorAttachment, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
-    { buffer: dst, rowPitch: 256, imageHeight: 1 },
-    { width: 1, height: 1, depth: 1});
+    { texture: colorAttachment, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
+    { buffer: dst, rowPitch: 256, imageHeight: 1 }, { width: 1, height: 1, depth: 1 });
   t.device.getQueue().submit([encoder.finish()]);
 
   await t.expectContents(dst, new Uint8Array([0x00, 0xff, 0x00, 0xff]));

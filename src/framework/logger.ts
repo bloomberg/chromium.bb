@@ -16,8 +16,7 @@ export interface IResult {
 export class Logger {
   public readonly results: ITestLog[] = [];
 
-  constructor() {
-  }
+  constructor() { }
 
   public record(path: string): [ITestLog, GroupRecorder] {
     const cases: IResult[] = [];
@@ -68,8 +67,7 @@ export class CaseRecorder {
     }
     const endTime = now();
     this.result.timems = endTime - this.startTime;
-    this.result.status = this.failed ? 'fail' :
-        this.warned ? 'warn' : 'pass';
+    this.result.status = this.failed ? 'fail' : this.warned ? 'warn' : 'pass';
 
     this.result.logs = this.logs;
   }

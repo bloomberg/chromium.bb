@@ -18,7 +18,7 @@ class PExclude implements ParamSpecIterable {
     this.exclude = Array.from(exclude);
   }
 
-  public * [Symbol.iterator](): ParamSpecIterator {
+  public *[Symbol.iterator](): ParamSpecIterator {
     for (const p of this.cases) {
       if (this.exclude.every((e) => !paramsEqual(p, e))) {
         yield p;

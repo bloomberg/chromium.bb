@@ -7,7 +7,7 @@ import { GPUTest } from '../gpu_test.js';
 
 export const group = new TestGroup();
 
-class CopyTest extends GPUTest {}
+class CopyTest extends GPUTest { }
 
 group.test('b2b', CopyTest, async (t) => {
   const data = new Uint32Array([0x01020304]);
@@ -37,12 +37,10 @@ group.test('b2t2b', CopyTest, async (t) => {
   const encoder = t.device.createCommandEncoder({});
   encoder.copyBufferToTexture(
     { buffer: src, rowPitch: 256, imageHeight: 1 },
-    { texture: mid, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
-    { width: 1, height: 1, depth: 1 });
+    { texture: mid, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } }, { width: 1, height: 1, depth: 1 });
   encoder.copyTextureToBuffer(
-    { texture: mid, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
-    { buffer: dst, rowPitch: 256, imageHeight: 1 },
-    { width: 1, height: 1, depth: 1 });
+    { texture: mid, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
+    { buffer: dst, rowPitch: 256, imageHeight: 1 }, { width: 1, height: 1, depth: 1 });
   t.device.getQueue().submit([encoder.finish()]);
 
   await t.expectContents(dst, data);
@@ -65,16 +63,13 @@ group.test('b2t2t2b', CopyTest, async (t) => {
   const encoder = t.device.createCommandEncoder({});
   encoder.copyBufferToTexture(
     { buffer: src, rowPitch: 256, imageHeight: 1 },
-    { texture: mid1, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
-    { width: 1, height: 1, depth: 1 });
+    { texture: mid1, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } }, { width: 1, height: 1, depth: 1 });
   encoder.copyTextureToTexture(
-    { texture: mid1, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
-    { texture: mid2, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
-    { width: 1, height: 1, depth: 1 });
+    { texture: mid1, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
+    { texture: mid2, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } }, { width: 1, height: 1, depth: 1 });
   encoder.copyTextureToBuffer(
-    { texture: mid2, mipLevel: 0, origin: { x: 0, y: 0, z: 0} },
-    { buffer: dst, rowPitch: 256, imageHeight: 1 },
-    { width: 1, height: 1, depth: 1 });
+    { texture: mid2, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
+    { buffer: dst, rowPitch: 256, imageHeight: 1 }, { width: 1, height: 1, depth: 1 });
   t.device.getQueue().submit([encoder.finish()]);
 
   await t.expectContents(dst, data);

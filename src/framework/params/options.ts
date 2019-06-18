@@ -13,9 +13,9 @@ class POptions implements ParamSpecIterable {
     this.values = values;
   }
 
-  public * [Symbol.iterator](): ParamSpecIterator {
+  public *[Symbol.iterator](): ParamSpecIterator {
     for (const value of this.values) {
-      yield {[this.name]: value};
+      yield { [this.name]: value };
     }
   }
 }

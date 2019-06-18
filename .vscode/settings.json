@@ -1,4 +1,5 @@
 {
+  "clang-format.executable": "${workspaceRoot}/node_modules/.bin/clang-format",
   "editor.detectIndentation": false,
   "editor.rulers": [100],
   "editor.tabSize": 2,

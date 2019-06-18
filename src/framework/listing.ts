@@ -1,56 +1,55 @@
 import { TestGroup } from './test_group.js';
 
 interface IGroupDesc {
-    path: string;
-    description: string;
+  path: string;
+  description: string;
 }
 
 interface IListing {
-    suite: string;
-    groups: Iterable<IGroupDesc>;
+  suite: string;
+  groups: Iterable<IGroupDesc>;
 }
 
 interface ITestNode {
-    // undefined for README.txt, defined for a test module.
-    group?: TestGroup;
-    description: string;
+  // undefined for README.txt, defined for a test module.
+  group?: TestGroup;
+  description: string;
 }
 
 export interface IEntry {
-    suite: string;
-    path: string;
+  suite: string;
+  path: string;
 }
 
 interface IPendingEntry extends IEntry {
-    node: Promise<ITestNode>;
+  node: Promise<ITestNode>;
 }
 
 function* concatAndDedup(lists: IPendingEntry[][]): Iterator<IPendingEntry> {
-    const seen = new Set<string>();
-    for (const nodes of lists) {
-        for (const node of nodes) {
-            if (!seen.has(node.path)) {
-                seen.add(node.path);
-                yield node;
-            }
-        }
+  const seen = new Set<string>();
+  for (const nodes of lists) {
+    for (const node of nodes) {
+      if (!seen.has(node.path)) {
+        seen.add(node.path);
+        yield node;
+      }
     }
+  }
 }
 
 function filterByGroup({ suite, groups }: IListing, prefix: string): IPendingEntry[] {
-    const entries: IPendingEntry[] = [];
+  const entries: IPendingEntry[] = [];
 
-    for (const { path, description } of groups) {
-        if (path.startsWith(prefix)) {
-            const isReadme = path === '' || path.endsWith('/');
-            const node = isReadme ?
-                Promise.resolve({ description }) :
-                import(`../${suite}/${path}.spec.js`);
-            entries.push({ suite, path, node });
-        }
+  for (const { path, description } of groups) {
+    if (path.startsWith(prefix)) {
+      const isReadme = path === '' || path.endsWith('/');
+      const node =
+        isReadme ? Promise.resolve({ description }) : import(`../${suite}/${path}.spec.js`);
+      entries.push({ suite, path, node });
     }
+  }
 
-    return entries;
+  return entries;
 }
 
 // function filterByTest(): IPendingEntry[] {
@@ -62,66 +61,66 @@ function filterByGroup({ suite, groups }: IListing, prefix: string): IPendingEnt
 // }
 
 interface IListingGetter {
-    get(outDir: string, suite: string): Promise<IListing>;
+  get(outDir: string, suite: string): Promise<IListing>;
 }
 
 class ListingFetcher implements IListingGetter {
-    private suites: Map<string, IListing> = new Map();
+  private suites: Map<string, IListing> = new Map();
 
-    public async get(outDir: string, suite: string): Promise<IListing> {
-        let listing = this.suites.get(suite);
-        if (listing) {
-            return listing;
-        }
-        const listingPath = `${outDir}/${suite}/listing.json`;
-        const fetched = await fetch(listingPath);
-        if (fetched.status !== 200) {
-            throw new Error(listingPath + ' not found');
-        }
-        const groups: IGroupDesc[] = await fetched.json();
-
-        listing = { suite, groups };
-        this.suites.set(suite, listing);
-        return listing;
+  public async get(outDir: string, suite: string): Promise<IListing> {
+    let listing = this.suites.get(suite);
+    if (listing) {
+      return listing;
     }
+    const listingPath = `${outDir}/${suite}/listing.json`;
+    const fetched = await fetch(listingPath);
+    if (fetched.status !== 200) {
+      throw new Error(listingPath + ' not found');
+    }
+    const groups: IGroupDesc[] = await fetched.json();
+
+    listing = { suite, groups };
+    this.suites.set(suite, listing);
+    return listing;
+  }
 }
 
 // TODO: Unit test this.
 
-export async function loadTests(outDir: string, filters: string[],
-                                getter: new() => IListingGetter = ListingFetcher):
-        Promise<Iterator<IPendingEntry>> {
-    const fetcher = new getter();
+export async function loadTests(
+  outDir: string, filters: string[],
+  getter: new () => IListingGetter = ListingFetcher): Promise<Iterator<IPendingEntry>> {
+  const fetcher = new getter();
 
-    // Each filter is of one of these forms (urlencoded):
-    //    cts
-    //    cts:
-    //    cts:buf
-    //    cts:buffers/
-    //    cts:buffers/map
-    //
-    //    cts:buffers/mapWriteAsync:
-    //    cts:buffers/mapWriteAsync:ba
-    //
-    //    cts:buffers/mapWriteAsync:basic~
-    //    cts:buffers/mapWriteAsync:basic~{}
-    //    cts:buffers/mapWriteAsync:basic~{filter:"params"}
-    //
-    //    cts:buffers/mapWriteAsync:basic:
-    //    cts:buffers/mapWriteAsync:basic:{}
-    //    cts:buffers/mapWriteAsync:basic:{exact:"params"}
-    const listings = [];
-    for (const filter of filters) {
-        const parts = filter.split(':', 3);
-        if (parts.length === 1) {
-            parts.push('');
-        }
-        if (parts.length === 2) {
-            const listing = await fetcher.get(outDir, parts[0]);
-            listings.push(filterByGroup(listing, parts[1]));
-        } else if (parts.length === 3) {
-            throw new Error();
-        }
+  // Each filter is of one of these forms (urlencoded):
+  //    cts
+  //    cts:
+  //    cts:buf
+  //    cts:buffers/
+  //    cts:buffers/map
+  //
+  //    cts:buffers/mapWriteAsync:
+  //    cts:buffers/mapWriteAsync:ba
+  //
+  //    cts:buffers/mapWriteAsync:basic~
+  //    cts:buffers/mapWriteAsync:basic~{}
+  //    cts:buffers/mapWriteAsync:basic~{filter:"params"}
+  //
+  //    cts:buffers/mapWriteAsync:basic:
+  //    cts:buffers/mapWriteAsync:basic:{}
+  //    cts:buffers/mapWriteAsync:basic:{exact:"params"}
+  const listings = [];
+  for (const filter of filters) {
+    const parts = filter.split(':', 3);
+    if (parts.length === 1) {
+      parts.push('');
     }
-    return concatAndDedup(listings);
+    if (parts.length === 2) {
+      const listing = await fetcher.get(outDir, parts[0]);
+      listings.push(filterByGroup(listing, parts[1]));
+    } else if (parts.length === 3) {
+      throw new Error();
+    }
+  }
+  return concatAndDedup(listings);
 }

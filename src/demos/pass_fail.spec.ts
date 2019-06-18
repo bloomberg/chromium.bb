@@ -3,7 +3,8 @@ Manual tests for pass/fail display and output behavior.
 `;
 
 import {
-  DefaultFixture, TestGroup,
+  DefaultFixture,
+  TestGroup,
 } from '../framework/index.js';
 
 export const group = new TestGroup();
