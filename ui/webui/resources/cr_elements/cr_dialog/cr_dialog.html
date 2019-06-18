@@ -47,7 +47,6 @@
         flex-direction: column;
         max-height: 100vh;
         overflow: auto;
-        @apply --cr-dialog-wrapper;
       }
 
       /* When needing to flex, force .body-container alone to shrink. */
@@ -196,7 +195,7 @@
         on-cancel="onNativeDialogCancel_" part="dialog">
       <!-- This wrapper is necessary, such that the "pulse" animation is not
         erroneously played when the user clicks on the outer-most scrollbar. -->
-      <div id="content-wrapper">
+      <div id="content-wrapper" part="wrapper">
         <div class="top-container">
           <div class="title-container" tabindex="-1">
             <slot name="title"></slot>

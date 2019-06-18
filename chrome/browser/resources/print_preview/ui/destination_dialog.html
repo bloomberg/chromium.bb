@@ -42,10 +42,11 @@
         width:  calc(100vw - 2 * var(--print-preview-dialog-margin));
       }
 
+      #dialog::part(wrapper) {
+        height: calc(100vh - 2 * var(--print-preview-dialog-margin));
+      }
+
       #dialog {
-        --cr-dialog-wrapper: {
-          height: calc(100vh - 2 * var(--print-preview-dialog-margin));
-        };
         --cr-dialog-body-container: {
           flex: 1;
         };
