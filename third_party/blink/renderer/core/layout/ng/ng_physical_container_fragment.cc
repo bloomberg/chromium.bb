@@ -17,7 +17,8 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
-  Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
+  std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
+      oof_positioned_descendants_;
   void* pointer;
   wtf_size_t size;
 };
@@ -36,7 +37,10 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     unsigned sub_type)
     : NGPhysicalFragment(builder, type, sub_type),
       oof_positioned_descendants_(
-          std::move(builder->oof_positioned_descendants_)),
+          builder->oof_positioned_descendants_.IsEmpty()
+              ? nullptr
+              : new Vector<NGOutOfFlowPositionedDescendant>(
+                    std::move(builder->oof_positioned_descendants_))),
       buffer_(buffer),
       num_children_(builder->children_.size()) {
   has_floating_descendants_ = builder->has_floating_descendants_;
