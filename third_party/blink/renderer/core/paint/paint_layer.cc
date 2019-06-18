@@ -2818,14 +2818,14 @@ void PaintLayer::ClearCompositedLayerMapping(bool layer_being_destroyed) {
     if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       // The visual rects will be in a different coordinate space after losing
       // their compositing container. Clear them before prepaint to avoid
-      // spurious layout shift reports from JankTracker.
+      // spurious layout shift reports from LayoutShiftTracker.
       // If the PaintLayer were not being destroyed, this would happen during
       // the compositing update (PaintLayerCompositor::UpdateIfNeeded).
-      // TODO: JankTracker's reliance on having visual rects cleared before
-      // prepaint in the case of compositing changes is not ideal, and will not
-      // work with CompositeAfterPaint. Some transform tree changes may still
-      // produce incorrect behavior from JankTracker (see discussion on review
-      // thread of http://crrev.com/c/1636403).
+      // TODO: LayoutShiftTracker's reliance on having visual rects cleared
+      // before prepaint in the case of compositing changes is not ideal, and
+      // will not work with CompositeAfterPaint. Some transform tree changes may
+      // still produce incorrect behavior from LayoutShiftTracker (see
+      // discussion on review thread of http://crrev.com/c/1636403).
       if (Compositor()) {
         Compositor()
             ->ForceRecomputeVisualRectsIncludingNonCompositingDescendants(

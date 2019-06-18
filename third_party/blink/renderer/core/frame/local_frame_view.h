@@ -69,12 +69,12 @@ class FragmentAnchor;
 class Frame;
 class FrameViewAutoSizeInfo;
 class JSONObject;
-class JankTracker;
 class KURL;
 class LayoutAnalyzer;
 class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
+class LayoutShiftTracker;
 class LayoutSVGRoot;
 class LayoutView;
 class LocalFrame;
@@ -689,7 +689,7 @@ class CORE_EXPORT LocalFrameView final
   cc::AnimationHost* GetCompositorAnimationHost() const;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const;
 
-  JankTracker& GetJankTracker() { return *jank_tracker_; }
+  LayoutShiftTracker& GetLayoutShiftTracker() { return *layout_shift_tracker_; }
   PaintTimingDetector& GetPaintTimingDetector() const {
     return *paint_timing_detector_;
   }
@@ -995,7 +995,7 @@ class CORE_EXPORT LocalFrameView final
   size_t paint_frame_count_;
 
   UniqueObjectId unique_id_;
-  std::unique_ptr<JankTracker> jank_tracker_;
+  std::unique_ptr<LayoutShiftTracker> layout_shift_tracker_;
   Member<PaintTimingDetector> paint_timing_detector_;
 
   HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;

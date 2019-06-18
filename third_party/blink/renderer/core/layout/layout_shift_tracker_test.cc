@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -14,17 +14,19 @@
 
 namespace blink {
 
-class JankTrackerTest : public RenderingTest {
+class LayoutShiftTrackerTest : public RenderingTest {
  protected:
   void SetUp() override {
     RenderingTest::SetUp();
     EnableCompositing();
   }
   LocalFrameView& GetFrameView() { return *GetFrame().View(); }
-  JankTracker& GetJankTracker() { return GetFrameView().GetJankTracker(); }
+  LayoutShiftTracker& GetLayoutShiftTracker() {
+    return GetFrameView().GetLayoutShiftTracker();
+  }
 
   void SimulateInput() {
-    GetJankTracker().NotifyInput(WebMouseEvent(
+    GetLayoutShiftTracker().NotifyInput(WebMouseEvent(
         WebInputEvent::kMouseDown, WebFloatPoint(), WebFloatPoint(),
         WebPointerProperties::Button::kLeft, 0,
         WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks()));
@@ -36,7 +38,7 @@ class JankTrackerTest : public RenderingTest {
   }
 };
 
-TEST_F(JankTrackerTest, SimpleBlockMovement) {
+TEST_F(LayoutShiftTrackerTest, SimpleBlockMovement) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #j { position: relative; width: 300px; height: 100px; }
@@ -44,22 +46,22 @@ TEST_F(JankTrackerTest, SimpleBlockMovement) {
     <div id='j'></div>
   )HTML");
 
-  EXPECT_EQ(0.0, GetJankTracker().Score());
-  EXPECT_EQ(0.0, GetJankTracker().OverallMaxDistance());
+  EXPECT_EQ(0.0, GetLayoutShiftTracker().Score());
+  EXPECT_EQ(0.0, GetLayoutShiftTracker().OverallMaxDistance());
 
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
   UpdateAllLifecyclePhases();
   // 300 * (100 + 60) / (default viewport size 800 * 600)
-  EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0.1, GetLayoutShiftTracker().Score());
   // ScoreWithMoveDistance should be scaled by the amount that the content moved
   // (60px) relative to the max viewport dimension (width=800px).
   EXPECT_FLOAT_EQ(0.1 * (60.0 / 800.0),
-                  GetJankTracker().ScoreWithMoveDistance());
-  EXPECT_FLOAT_EQ(60.0, GetJankTracker().OverallMaxDistance());
+                  GetLayoutShiftTracker().ScoreWithMoveDistance());
+  EXPECT_FLOAT_EQ(60.0, GetLayoutShiftTracker().OverallMaxDistance());
 }
 
-TEST_F(JankTrackerTest, GranularitySnapping) {
+TEST_F(LayoutShiftTrackerTest, GranularitySnapping) {
   if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
     return;
 
@@ -73,10 +75,10 @@ TEST_F(JankTrackerTest, GranularitySnapping) {
                                                   AtomicString("top: 58px"));
   UpdateAllLifecyclePhases();
   // Rect locations and sizes should snap to multiples of 600 / 60 = 10.
-  EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0.1, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, Transform) {
+TEST_F(LayoutShiftTrackerTest, Transform) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -92,10 +94,10 @@ TEST_F(JankTrackerTest, Transform) {
                                                   AtomicString("top: 60px"));
   UpdateAllLifecyclePhases();
   // (600 - 300) * (140 - 40 + 60) / (default viewport size 800 * 600)
-  EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0.1, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, RtlDistance) {
+TEST_F(LayoutShiftTrackerTest, RtlDistance) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #j { position: relative; width: 100px; height: 100px; direction: rtl; }
@@ -105,10 +107,10 @@ TEST_F(JankTrackerTest, RtlDistance) {
   GetDocument().getElementById("j")->setAttribute(
       html_names::kStyleAttr, AtomicString("width: 70px; left: 10px"));
   UpdateAllLifecyclePhases();
-  EXPECT_FLOAT_EQ(20.0, GetJankTracker().OverallMaxDistance());
+  EXPECT_FLOAT_EQ(20.0, GetLayoutShiftTracker().OverallMaxDistance());
 }
 
-TEST_F(JankTrackerTest, SmallMovementIgnored) {
+TEST_F(LayoutShiftTrackerTest, SmallMovementIgnored) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #j { position: relative; width: 300px; height: 100px; }
@@ -118,10 +120,10 @@ TEST_F(JankTrackerTest, SmallMovementIgnored) {
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 2px"));
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(0.0, GetJankTracker().Score());
+  EXPECT_EQ(0.0, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, SmallMovementIgnoredWithZoom) {
+TEST_F(LayoutShiftTrackerTest, SmallMovementIgnoredWithZoom) {
   GetDocument().GetFrame()->SetPageZoomFactor(2);
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -132,10 +134,10 @@ TEST_F(JankTrackerTest, SmallMovementIgnoredWithZoom) {
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 2px"));
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(0.0, GetJankTracker().Score());
+  EXPECT_EQ(0.0, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, IgnoreAfterInput) {
+TEST_F(LayoutShiftTrackerTest, IgnoreAfterInput) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #j { position: relative; width: 300px; height: 100px; }
@@ -146,11 +148,11 @@ TEST_F(JankTrackerTest, IgnoreAfterInput) {
                                                   AtomicString("top: 60px"));
   SimulateInput();
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(0.0, GetJankTracker().Score());
-  EXPECT_TRUE(GetJankTracker().ObservedInputOrScroll());
+  EXPECT_EQ(0.0, GetLayoutShiftTracker().Score());
+  EXPECT_TRUE(GetLayoutShiftTracker().ObservedInputOrScroll());
 }
 
-TEST_F(JankTrackerTest, CompositedElementMovement) {
+TEST_F(LayoutShiftTrackerTest, CompositedElementMovement) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #jank {
@@ -182,10 +184,10 @@ TEST_F(JankTrackerTest, CompositedElementMovement) {
   // #jank is 400x200 after viewport intersection with correct application of
   // composited #container offset, and 100px lower after janking, so jank score
   // is (400 * 300) / (viewport size 800 * 600)
-  EXPECT_FLOAT_EQ(0.25, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0.25, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, CompositedJankBeforeFirstPaint) {
+TEST_F(LayoutShiftTrackerTest, CompositedJankBeforeFirstPaint) {
   // Tests that we don't crash if a new layer janks during a second compositing
   // update before prepaint sets up property tree state.  See crbug.com/881735
   // (which invokes UpdateLifecycleToCompositingCleanPlusScrolling through
@@ -212,7 +214,7 @@ TEST_F(JankTrackerTest, CompositedJankBeforeFirstPaint) {
   UpdateAllLifecyclePhases();
 }
 
-TEST_F(JankTrackerTest, IgnoreFixedAndSticky) {
+TEST_F(LayoutShiftTrackerTest, IgnoreFixedAndSticky) {
   SetBodyInnerHTML(R"HTML(
     <style>
     body { height: 1000px; }
@@ -240,10 +242,10 @@ TEST_F(JankTrackerTest, IgnoreFixedAndSticky) {
 
   GetDocument().scrollingElement()->setScrollTop(50);
   UpdateAllLifecyclePhases();
-  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, IgnoreSVG) {
+TEST_F(LayoutShiftTrackerTest, IgnoreSVG) {
   SetBodyInnerHTML(R"HTML(
     <svg>
       <circle cx="50" cy="50" r="40"
@@ -253,10 +255,10 @@ TEST_F(JankTrackerTest, IgnoreSVG) {
   GetDocument().QuerySelector("circle")->setAttribute(svg_names::kCxAttr,
                                                       AtomicString("100"));
   UpdateAllLifecyclePhases();
-  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, JankWhileScrolled) {
+TEST_F(LayoutShiftTrackerTest, JankWhileScrolled) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { height: 1000px; margin: 0; }
@@ -266,17 +268,17 @@ TEST_F(JankTrackerTest, JankWhileScrolled) {
   )HTML");
 
   GetDocument().scrollingElement()->setScrollTop(100);
-  EXPECT_EQ(0.0, GetJankTracker().Score());
-  EXPECT_EQ(0.0, GetJankTracker().OverallMaxDistance());
+  EXPECT_EQ(0.0, GetLayoutShiftTracker().Score());
+  EXPECT_EQ(0.0, GetLayoutShiftTracker().OverallMaxDistance());
 
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
   UpdateAllLifecyclePhases();
   // 300 * (height 200 - scrollY 100 + movement 60) / (800 * 600 viewport)
-  EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0.1, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, FullyClippedVisualRect) {
+TEST_F(LayoutShiftTrackerTest, FullyClippedVisualRect) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -289,10 +291,10 @@ TEST_F(JankTrackerTest, FullyClippedVisualRect) {
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 200px"));
   UpdateAllLifecyclePhases();
-  EXPECT_FLOAT_EQ(0.0, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0.0, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, PartiallyClippedVisualRect) {
+TEST_F(LayoutShiftTrackerTest, PartiallyClippedVisualRect) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -306,10 +308,10 @@ TEST_F(JankTrackerTest, PartiallyClippedVisualRect) {
                                                   AtomicString("top: 200px"));
   UpdateAllLifecyclePhases();
   // (clipped width 150px) * (height 200 + movement 200) / (800 * 600 viewport)
-  EXPECT_FLOAT_EQ(0.125, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0.125, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, MultiClipVisualRect) {
+TEST_F(LayoutShiftTrackerTest, MultiClipVisualRect) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -327,11 +329,11 @@ TEST_F(JankTrackerTest, MultiClipVisualRect) {
   // clipped at 0px,150px height, so the additional 200px of vertical
   // move distance is not included in the score.
   // (clip width 200) * (clip height 150) / (800 * 600 viewport)
-  EXPECT_FLOAT_EQ(0.0625, GetJankTracker().Score());
-  EXPECT_FLOAT_EQ(200.0, GetJankTracker().OverallMaxDistance());
+  EXPECT_FLOAT_EQ(0.0625, GetLayoutShiftTracker().Score());
+  EXPECT_FLOAT_EQ(200.0, GetLayoutShiftTracker().OverallMaxDistance());
 }
 
-TEST_F(JankTrackerTest, ShiftOutsideViewport) {
+TEST_F(LayoutShiftTrackerTest, ShiftOutsideViewport) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -345,10 +347,10 @@ TEST_F(JankTrackerTest, ShiftOutsideViewport) {
   UpdateAllLifecyclePhases();
   // Since the element moves entirely outside of the viewport, it shouldn't
   // generate a score.
-  EXPECT_FLOAT_EQ(0.0, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0.0, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, ShiftInToViewport) {
+TEST_F(LayoutShiftTrackerTest, ShiftInToViewport) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -363,10 +365,10 @@ TEST_F(JankTrackerTest, ShiftInToViewport) {
   // The element moves from outside the viewport to within the viewport, which
   // should generate jank.
   // (width 600) * (height 0 + move 200) / (800 * 600 viewport)
-  EXPECT_FLOAT_EQ(0.25, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0.25, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, ClipWithoutPaintLayer) {
+TEST_F(LayoutShiftTrackerTest, ClipWithoutPaintLayer) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #scroller { overflow: scroll; width: 200px; height: 500px; }
@@ -389,12 +391,12 @@ TEST_F(JankTrackerTest, ClipWithoutPaintLayer) {
   UpdateAllLifecyclePhases();
   // Make sure no jank score is reported, since the element that moved is fully
   // clipped by the scroller.
-  EXPECT_FLOAT_EQ(0.0, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0.0, GetLayoutShiftTracker().Score());
 }
 
-class JankTrackerSimTest : public SimTest {};
+class LayoutShiftTrackerSimTest : public SimTest {};
 
-TEST_F(JankTrackerSimTest, SubframeWeighting) {
+TEST_F(LayoutShiftTrackerSimTest, SubframeWeighting) {
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
 
   // TODO(crbug.com/943668): Test OOPIF path.
@@ -430,9 +432,10 @@ TEST_F(JankTrackerSimTest, SubframeWeighting) {
   test::RunPendingTasks();
 
   // 300 * (100 + 60) / (default viewport size 800 * 600)
-  JankTracker& jank_tracker = child_frame.GetFrameView()->GetJankTracker();
-  EXPECT_FLOAT_EQ(0.4, jank_tracker.Score());
-  EXPECT_FLOAT_EQ(0.1, jank_tracker.WeightedScore());
+  LayoutShiftTracker& layout_shift_tracker =
+      child_frame.GetFrameView()->GetLayoutShiftTracker();
+  EXPECT_FLOAT_EQ(0.4, layout_shift_tracker.Score());
+  EXPECT_FLOAT_EQ(0.1, layout_shift_tracker.WeightedScore());
 
   // Move subframe halfway outside the viewport.
   GetDocument().getElementById("i")->setAttribute(html_names::kStyleAttr,
@@ -443,11 +446,11 @@ TEST_F(JankTrackerSimTest, SubframeWeighting) {
   Compositor().BeginFrame();
   test::RunPendingTasks();
 
-  EXPECT_FLOAT_EQ(0.8, jank_tracker.Score());
-  EXPECT_FLOAT_EQ(0.15, jank_tracker.WeightedScore());
+  EXPECT_FLOAT_EQ(0.8, layout_shift_tracker.Score());
+  EXPECT_FLOAT_EQ(0.15, layout_shift_tracker.WeightedScore());
 }
 
-TEST_F(JankTrackerSimTest, ViewportSizeChange) {
+TEST_F(LayoutShiftTrackerSimTest, ViewportSizeChange) {
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
 
   SimRequest main_resource("https://example.com/", "text/html");
@@ -478,11 +481,12 @@ TEST_F(JankTrackerSimTest, ViewportSizeChange) {
   Compositor().BeginFrame();
   test::RunPendingTasks();
 
-  JankTracker& jank_tracker = MainFrame().GetFrameView()->GetJankTracker();
-  EXPECT_FLOAT_EQ(0.0, jank_tracker.Score());
+  LayoutShiftTracker& layout_shift_tracker =
+      MainFrame().GetFrameView()->GetLayoutShiftTracker();
+  EXPECT_FLOAT_EQ(0.0, layout_shift_tracker.Score());
 }
 
-TEST_F(JankTrackerTest, StableCompositingChanges) {
+TEST_F(LayoutShiftTrackerTest, StableCompositingChanges) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -530,10 +534,10 @@ TEST_F(JankTrackerTest, StableCompositingChanges) {
   };
   while (advance()) {
   }
-  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(JankTrackerTest, CompositedOverflowExpansion) {
+TEST_F(LayoutShiftTrackerTest, CompositedOverflowExpansion) {
   SetBodyInnerHTML(R"HTML(
     <style>
 
@@ -583,7 +587,7 @@ TEST_F(JankTrackerTest, CompositedOverflowExpansion) {
   drop->setAttribute(html_names::kStyleAttr, AtomicString("display: none"));
   UpdateAllLifecyclePhases();
 
-  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0, GetLayoutShiftTracker().Score());
 
   Element* comp = GetDocument().getElementById("comp");
   comp->setAttribute(html_names::kClassAttr, AtomicString("sh"));
@@ -593,7 +597,7 @@ TEST_F(JankTrackerTest, CompositedOverflowExpansion) {
   // old rect (240 * 120) / (800 * 600) = 0.06
   // new rect, 50% clipped by viewport (240 * 60) / (800 * 600) = 0.03
   // final score 0.06 + 0.03 = 0.09
-  EXPECT_FLOAT_EQ(0.09, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(0.09, GetLayoutShiftTracker().Score());
 }
 
 }  // namespace blink

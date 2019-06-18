@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/picture_layer.h"
@@ -92,7 +92,7 @@ static void RegionToTracedValue(const Region& region,
   value.EndArray();
 }
 
-static void RegionToTracedValue(const JankRegion& region,
+static void RegionToTracedValue(const LayoutShiftRegion& region,
                                 double granularity_scale,
                                 TracedValue& value) {
   Region old_region;
@@ -108,22 +108,23 @@ static bool ShouldLog(const LocalFrame& frame) {
 }
 #endif
 
-JankTracker::JankTracker(LocalFrameView* frame_view)
+LayoutShiftTracker::LayoutShiftTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       score_(0.0),
       score_with_move_distance_(0.0),
       weighted_score_(0.0),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
-             &JankTracker::TimerFired),
+             &LayoutShiftTracker::TimerFired),
       frame_max_distance_(0.0),
       overall_max_distance_(0.0),
       observed_input_or_scroll_(false) {}
 
-void JankTracker::AccumulateJank(const LayoutObject& source,
-                                 const PropertyTreeState& property_tree_state,
-                                 FloatRect old_rect,
-                                 FloatRect new_rect) {
+void LayoutShiftTracker::AccumulateJank(
+    const LayoutObject& source,
+    const PropertyTreeState& property_tree_state,
+    FloatRect old_rect,
+    FloatRect new_rect) {
   if (old_rect.IsEmpty() || new_rect.IsEmpty())
     return;
 
@@ -209,7 +210,7 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
   }
 }
 
-void JankTracker::NotifyObjectPrePaint(
+void LayoutShiftTracker::NotifyObjectPrePaint(
     const LayoutObject& object,
     const PropertyTreeState& property_tree_state,
     const IntRect& old_visual_rect,
@@ -221,9 +222,10 @@ void JankTracker::NotifyObjectPrePaint(
                  FloatRect(new_visual_rect));
 }
 
-void JankTracker::NotifyCompositedLayerMoved(const LayoutObject& layout_object,
-                                             FloatRect old_layer_rect,
-                                             FloatRect new_layer_rect) {
+void LayoutShiftTracker::NotifyCompositedLayerMoved(
+    const LayoutObject& layout_object,
+    FloatRect old_layer_rect,
+    FloatRect new_layer_rect) {
   if (!IsActive())
     return;
 
@@ -235,7 +237,7 @@ void JankTracker::NotifyCompositedLayerMoved(const LayoutObject& layout_object,
                  old_layer_rect, new_layer_rect);
 }
 
-double JankTracker::SubframeWeightingFactor() const {
+double LayoutShiftTracker::SubframeWeightingFactor() const {
   LocalFrame& frame = frame_view_->GetFrame();
   if (frame.IsMainFrame())
     return 1;
@@ -261,7 +263,7 @@ double JankTracker::SubframeWeightingFactor() const {
          main_frame_size.Area();
 }
 
-void JankTracker::NotifyPrePaintFinished() {
+void LayoutShiftTracker::NotifyPrePaintFinished() {
   if (!IsActive())
     return;
   bool use_sweep_line = RuntimeEnabledFeatures::JankTrackingSweepLineEnabled();
@@ -354,7 +356,7 @@ void JankTracker::NotifyPrePaintFinished() {
   frame_max_distance_ = 0.0;
 }
 
-void JankTracker::NotifyInput(const WebInputEvent& event) {
+void LayoutShiftTracker::NotifyInput(const WebInputEvent& event) {
   bool event_is_meaningful =
       event.GetType() == WebInputEvent::kMouseDown ||
       event.GetType() == WebInputEvent::kKeyDown ||
@@ -374,7 +376,7 @@ void JankTracker::NotifyInput(const WebInputEvent& event) {
   timer_.StartOneShot(kTimerDelay, FROM_HERE);
 }
 
-void JankTracker::NotifyScroll(ScrollType scroll_type) {
+void LayoutShiftTracker::NotifyScroll(ScrollType scroll_type) {
   // Only include user-initiated scrolls. Ignore scrolls due to e.g. hash
   // fragment navigations.
   if (scroll_type != kUserScroll && scroll_type != kCompositorScroll)
@@ -383,12 +385,12 @@ void JankTracker::NotifyScroll(ScrollType scroll_type) {
   observed_input_or_scroll_ = true;
 }
 
-void JankTracker::NotifyViewportSizeChanged() {
+void LayoutShiftTracker::NotifyViewportSizeChanged() {
   // This cancels any previously scheduled task from the same timer.
   timer_.StartOneShot(kTimerDelay, FROM_HERE);
 }
 
-bool JankTracker::IsActive() {
+bool LayoutShiftTracker::IsActive() {
   // This eliminates noise from the private Page object created by
   // SVGImage::DataChanged.
   if (frame_view_->GetFrame().GetChromeClient().IsSVGImageChromeClient())
@@ -400,7 +402,7 @@ bool JankTracker::IsActive() {
   return true;
 }
 
-std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
+std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
     double jank_fraction,
     double jank_fraction_with_move_distance,
     double granularity_scale) const {
@@ -421,7 +423,7 @@ std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
   return value;
 }
 
-std::vector<gfx::Rect> JankTracker::ConvertIntRectsToGfxRects(
+std::vector<gfx::Rect> LayoutShiftTracker::ConvertIntRectsToGfxRects(
     const Vector<IntRect>& int_rects,
     double granularity_scale) {
   std::vector<gfx::Rect> rects;
@@ -434,9 +436,9 @@ std::vector<gfx::Rect> JankTracker::ConvertIntRectsToGfxRects(
   return rects;
 }
 
-void JankTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
-                                      double granularity_scale,
-                                      bool using_sweep_line) {
+void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
+                                             double granularity_scale,
+                                             bool using_sweep_line) {
   // Store the layout shift rects in the HUD layer.
   GraphicsLayer* root_graphics_layer =
       frame_view_->GetLayoutView()->Compositor()->RootGraphicsLayer();

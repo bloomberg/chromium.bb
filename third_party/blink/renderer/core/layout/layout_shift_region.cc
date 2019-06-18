@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/jank_region.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_region.h"
 
 namespace blink {
 
@@ -302,7 +302,7 @@ uint64_t Sweeper::SweepImpl(SegmentTree& tree,
 
 }  // namespace
 
-uint64_t JankRegion::Area() const {
+uint64_t LayoutShiftRegion::Area() const {
   if (rects_.IsEmpty())
     return 0;
 

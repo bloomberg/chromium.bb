@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
@@ -172,14 +172,14 @@ TEST_F(SVGImageTest, SupportsSubsequenceCaching) {
       ToLayoutBoxModelObject(svg_root)->Layer()->SupportsSubsequenceCaching());
 }
 
-TEST_F(SVGImageTest, JankTrackerDisabled) {
+TEST_F(SVGImageTest, LayoutShiftTrackerDisabled) {
   const bool kDontPause = false;
   Load("<svg xmlns='http://www.w3.org/2000/svg'></svg>", kDontPause);
   LocalFrame* local_frame =
       To<LocalFrame>(GetImage().GetPageForTesting()->MainFrame());
   EXPECT_TRUE(local_frame->GetDocument()->IsSVGDocument());
-  auto& jank_tracker = local_frame->View()->GetJankTracker();
-  EXPECT_FALSE(jank_tracker.IsActive());
+  auto& layout_shift_tracker = local_frame->View()->GetLayoutShiftTracker();
+  EXPECT_FALSE(layout_shift_tracker.IsActive());
 }
 
 TEST_F(SVGImageTest, SetSizeOnVisualViewport) {

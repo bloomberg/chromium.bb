@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/jank_region.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_region.h"
 
 #include <gtest/gtest.h>
 #include "third_party/blink/renderer/platform/geometry/region.h"
 
 namespace blink {
 
-class JankRegionTest : public testing::Test {};
+class LayoutShiftRegionTest : public testing::Test {};
 
-TEST_F(JankRegionTest, Basic) {
-  JankRegion region;
+TEST_F(LayoutShiftRegionTest, Basic) {
+  LayoutShiftRegion region;
   EXPECT_EQ(0u, region.Area());
 
   region.AddRect(IntRect(2, 1, 1, 3));
@@ -43,8 +43,8 @@ TEST_F(JankRegionTest, Basic) {
   EXPECT_EQ(0u, region.Area());
 }
 
-TEST_F(JankRegionTest, LargeRandom) {
-  JankRegion region;
+TEST_F(LayoutShiftRegionTest, LargeRandom) {
+  LayoutShiftRegion region;
   Region naive_region;
   static const int data[] = {
       52613, 38528, 20785, 40550, 29734, 48229, 37113, 3520,  66776, 26746,
@@ -107,8 +107,8 @@ TEST_F(JankRegionTest, LargeRandom) {
 //   █ █ █
 //  ███████
 //   █ █ █
-TEST_F(JankRegionTest, Waffle) {
-  JankRegion region;
+TEST_F(LayoutShiftRegionTest, Waffle) {
+  LayoutShiftRegion region;
   unsigned n = 250000;
   for (unsigned i = 2; i <= n; i += 2) {
     region.AddRect(IntRect(i, 1, 1, n + 1));

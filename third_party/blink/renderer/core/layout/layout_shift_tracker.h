@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_JANK_TRACKER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_JANK_TRACKER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SHIFT_TRACKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SHIFT_TRACKER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/jank_region.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_region.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -21,14 +21,14 @@ class PropertyTreeState;
 class TracedValue;
 class WebInputEvent;
 
-// Tracks "jank" from layout objects changing their visual location between
-// animation frames.
-class CORE_EXPORT JankTracker {
-  USING_FAST_MALLOC(JankTracker);
+// Tracks "layout shifts" from layout objects changing their visual location
+// between animation frames. See https://github.com/WICG/layout-instability.
+class CORE_EXPORT LayoutShiftTracker {
+  USING_FAST_MALLOC(LayoutShiftTracker);
 
  public:
-  JankTracker(LocalFrameView*);
-  ~JankTracker() {}
+  LayoutShiftTracker(LocalFrameView*);
+  ~LayoutShiftTracker() {}
   void NotifyObjectPrePaint(const LayoutObject& object,
                             const PropertyTreeState& property_tree_state,
                             const IntRect& old_visual_rect,
@@ -81,18 +81,18 @@ class CORE_EXPORT JankTracker {
 
   // The cumulative jank score for this LocalFrame, with each increase weighted
   // by the extent to which the LocalFrame visibly occupied the main frame at
-  // the time the jank occurred (e.g. x0.5 if the subframe occupied half of the
-  // main frame's reported size (see JankTracker::SubframeWeightingFactor).
+  // the time the jank occurred, e.g. x0.5 if the subframe occupied half of the
+  // main frame's reported size; see SubframeWeightingFactor().
   double weighted_score_;
 
   // The per-animation-frame jank region.
   Region region_;
 
   // Experimental jank region implementation using sweep-line algorithm.
-  JankRegion region_experimental_;
+  LayoutShiftRegion region_experimental_;
 
   // Tracks the short period after an input event during which we ignore jank.
-  TaskRunnerTimer<JankTracker> timer_;
+  TaskRunnerTimer<LayoutShiftTracker> timer_;
 
   // The maximum distance any layout object has moved in the current animation
   // frame.
@@ -108,4 +108,4 @@ class CORE_EXPORT JankTracker {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_JANK_TRACKER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SHIFT_TRACKER_H_
