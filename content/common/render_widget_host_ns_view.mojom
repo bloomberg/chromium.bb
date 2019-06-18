@@ -136,9 +136,9 @@ interface RenderWidgetHostNSViewHost {
 
   // Forward a keyboard event to the RenderWidgetHost that is currently handling
   // the key-down event.
-  ForwardKeyboardEvent(content.mojom.Event event, bool skip_in_browser);
   ForwardKeyboardEventWithCommands(
       content.mojom.Event event,
+      array<uint8> native_event_data,
       bool skip_in_browser,
       array<content.mojom.EditCommand> commands);
 
