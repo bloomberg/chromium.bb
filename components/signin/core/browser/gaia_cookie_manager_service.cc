@@ -1129,7 +1129,15 @@ void GaiaCookieManagerService::StartFetchingLogOut() {
   RecordLogoutRequestState(LogoutRequestState::kStarted);
   gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
       this, requests_.front().source(), GetURLLoaderFactory());
-  gaia_auth_fetcher_->StartLogOut();
+  bool use_continue_url = false;
+#if defined(OS_ANDROID)
+  use_continue_url = base::FeatureList::IsEnabled(signin::kMiceFeature);
+#endif
+  if (use_continue_url) {
+    gaia_auth_fetcher_->StartLogOutWithBlankContinueURL();
+  } else {
+    gaia_auth_fetcher_->StartLogOut();
+  }
 }
 
 void GaiaCookieManagerService::StartFetchingListAccounts() {
