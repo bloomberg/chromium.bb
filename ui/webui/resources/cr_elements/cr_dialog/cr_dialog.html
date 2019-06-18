@@ -23,6 +23,10 @@
         padding: 0;
         top: 50%;
         width: 512px;
+
+        /* Avoid using the mixin. Use ::part(dialog) instead.
+         * Necessary for backward compatibility with Polymer1/SDv0 (only used by
+         * OOBE). TODO(crbug.com/955194): Remove this once fixed.*/
         @apply --cr-dialog-native;
       }
 
@@ -189,7 +193,7 @@
       }
     </style>
     <dialog id="dialog" on-close="onNativeDialogClose_"
-        on-cancel="onNativeDialogCancel_">
+        on-cancel="onNativeDialogCancel_" part="dialog">
       <!-- This wrapper is necessary, such that the "pulse" animation is not
         erroneously played when the user clicks on the outer-most scrollbar. -->
       <div id="content-wrapper">
