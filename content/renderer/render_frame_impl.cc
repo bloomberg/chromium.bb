@@ -4479,8 +4479,9 @@ void RenderFrameImpl::DidEnforceInsecureRequestPolicy(
 }
 
 void RenderFrameImpl::DidEnforceInsecureNavigationsSet(
-    const std::vector<uint32_t>& set) {
-  GetFrameHost()->EnforceInsecureNavigationsSet(set);
+    const WebVector<uint32_t>& set) {
+  GetFrameHost()->EnforceInsecureNavigationsSet(
+      const_cast<WebVector<uint32_t>&>(set).ReleaseVector());
 }
 
 void RenderFrameImpl::DidChangeFramePolicy(
@@ -5829,7 +5830,8 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   params->origin = frame_origin;
 
   params->insecure_request_policy = frame_->GetInsecureRequestPolicy();
-  params->insecure_navigations_set = frame_->GetInsecureRequestToUpgrade();
+  params->insecure_navigations_set =
+      frame_->GetInsecureRequestToUpgrade().ReleaseVector();
 
   params->has_potentially_trustworthy_unique_origin =
       frame_origin.IsUnique() && frame_origin.IsPotentiallyTrustworthy();
