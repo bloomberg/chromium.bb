@@ -15,7 +15,7 @@ samples_pages = [
 ]
 
 other_pages = [
-  'explainer.html',
+  'attribution.html',
   'favicon-32x32.png',
   'favicon-96x96.png',
   'favicon.ico',

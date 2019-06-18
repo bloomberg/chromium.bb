@@ -83,18 +83,11 @@
   <body>
 
     <div class='container' id='container'>
-      <header class='header'>
-        <div id='nav'>
-            <a href='./index.html' class='selected'>Samples</a>
-        </div>
-
-        <h1><a href='' class='wordmark'><span>WebXR</span></a></h1>
-        <h2 class='tagline'>Sample Pages</h2>
+        <h1><a href='' class='wordmark'><span>WebXR Samples for Chrome</span></a></h1>
       </header>
 
       <main class='main' id='main'>
-        <p>Sample pages demonstrating how to use various aspects of the WebXR API.<br/>
-        <a href="explainer.html">Learn More</a></p>
+        <p>Sample pages demonstrating how to use various aspects of the WebXR API <b><em>as implemented in Chrome versions 76-77.</b></em><br/>
 
         <script>
           let pages = [
@@ -102,17 +95,11 @@
               path: 'xr-barebones.html',
               description: 'Extremely simple use of WebXR with no library dependencies. Doesn\'t render anything exciting.' },
 
-            { tag: 'hr' },
-            { tag: 'br' },
-
             { title: 'Magic Window', category: 'Basics',
               path: 'magic-window.html',
               description: 'Demonstrates use of a non-exclusive XRSession to present "Magic Window" content.' },
 
-            { tag: 'hr' },
-            { tag: 'br' },
-
-            { title: 'Teleportation', category: 'Input',
+            { title: 'Teleportation', category: 'Spatial Tracking, Input',
               path: 'teleportation.html',
               description: 'Demonstrates teleporting the viewer by updating the XRSession reference space.' },
 
@@ -156,11 +143,6 @@
             let links = document.createElement('div');
             links.classList.add('links');
 
-            let liveLink = document.createElement('a');
-            liveLink.href = page.path;
-            liveLink.innerHTML = 'Open';
-            links.appendChild(liveLink);
-
             article.appendChild(links);
 
             mainElement.appendChild(article);
@@ -170,7 +152,7 @@
 
       <p>Models used in these samples come from <a href="https://poly.google.com">Poly</a>, and many were modeled in <a href="https://vr.google.com/blocks/">Blocks</a>.<br/>
       They are stored and loaded using the <a href="https://www.khronos.org/gltf/">glTF 2.0 format</a>.<br/>
-      Attribution for individual models can be found under the <a href="https://github.com/immersive-web/webxr-samples/tree/master/media/gltf">media/gltf</a> folders for this repository.</p>
+      Attribution for individual models can be found <a href="attribution.html">here</a>.</p>
 
       <footer class='footer'>
       </footer>
