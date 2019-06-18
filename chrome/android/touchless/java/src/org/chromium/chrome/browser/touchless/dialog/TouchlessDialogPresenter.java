@@ -198,6 +198,8 @@ public class TouchlessDialogPresenter extends Presenter {
                 listener.setIsMultiClickable(model.get(DialogListItemProperties.MULTI_CLICKABLE));
                 model.set(DialogListItemProperties.CLICK_LISTENER, listener);
                 view.setOnClickListener(listener);
+            } else {
+                view.setOnClickListener(model.get(DialogListItemProperties.CLICK_LISTENER));
             }
         } else if (DialogListItemProperties.MULTI_CLICKABLE == propertyKey) {
             View.OnClickListener listener = model.get(DialogListItemProperties.CLICK_LISTENER);
