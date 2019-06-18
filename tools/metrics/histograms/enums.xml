@@ -49644,63 +49644,170 @@ Called by update_net_trust_anchors.py.-->
     Enumerates names of Mojo interfaces that are requests through
     RenderFrameHostImpl::GetInterface.
   </summary>
+  <int value="4595745" label="blink.mojom.NativeFileSystemManager"/>
+  <int value="28688772" label="snippets_internals.mojom.PageHandlerFactory"/>
   <int value="39256405" label="device.mojom.Geolocation"/>
+  <int value="70273688" label="device.mojom.VRService"/>
   <int value="81966276" label="blink.mojom.KeyboardLockService"/>
+  <int value="83462680" label="media.mojom.MediaMetricsProvider"/>
   <int value="112672197" label="blink.mojom.SharedWorkerConnector"/>
+  <int value="116454628" label="blink.mojom.CacheStorage"/>
+  <int value="118314811" label="media.mojom.RemoterFactory"/>
+  <int value="127672107" label="mojom.UsbInternalsPageHandler"/>
   <int value="141486647" label="webauth.mojom.Authenticator"/>
   <int value="155545232" label="blink.mojom.GeolocationService"/>
   <int value="188516542" label="content.mojom.MediaStreamDispatcherHost"/>
   <int value="190256703" label="network.mojom.RestrictedCookieManager"/>
+  <int value="194725745" label="app_management.mojom.PageHandlerFactory"/>
+  <int value="202417688" label="resource_coordinator.mojom.WebUIGraphDump"/>
+  <int value="241045822" label="blink.mojom.DateTimeChooser"/>
+  <int value="242965667" label="blink.mojom.MediaSessionService"/>
+  <int value="250652837" label="mojom.ProcessInternalsHandler"/>
   <int value="264532149" label="blink.mojom.LockManager"/>
+  <int value="271849582" label="performance_manager.mojom.WebUIGraphDump"/>
+  <int value="273500403" label="blink.mojom.PresentationService"/>
   <int value="298400659" label="media.mojom.MediaMetricsProvider"/>
+  <int value="302655516" label="blink.mojom.WakeLockService"/>
+  <int value="323903839" label="feed_internals.mojom.PageHandler"/>
+  <int value="389086904" label="content.mojom.BrowserTarget"/>
+  <int value="390613312" label="autofill.mojom.AutofillDriver"/>
+  <int value="390850644" label="device.mojom.GamepadMonitor"/>
+  <int value="398982196" label="mojom.InterventionsInternalsPageHandler"/>
+  <int value="423966775" label="blink.mojom.IDBFactory"/>
+  <int value="443506227" label="blink.mojom.SpeechRecognizer"/>
+  <int value="450992839" label="blink.mojom.WebBluetoothService"/>
+  <int value="453803103" label="device.mojom.Geolocation"/>
+  <int value="465691137" label="blink.mojom.BadgeService"/>
+  <int value="470231457" label="extensions.KeepAlive"/>
   <int value="473587909" label="autofill.mojom.AutofillDriver"/>
   <int value="480255287" label="content.mojom.BrowserTarget"/>
+  <int value="485751698" label="blink.mojom.MediaStreamDispatcherHost"/>
+  <int value="536067486" label="ws.mojom.Gpu"/>
+  <int value="575717011" label="blink.mojom.AnchorElementMetricsHost"/>
   <int value="583861320" label="media.mojom.InterfaceFactory"/>
   <int value="593735191" label="blink.mojom.PresentationService"/>
   <int value="620853817" label="media.mojom.Renderer"/>
+  <int value="660485518" label="payments.mojom.PaymentRequest"/>
+  <int value="664813603" label="blink.mojom.ShareService"/>
+  <int value="668914812" label="autofill.mojom.PasswordManagerDriver"/>
   <int value="670026296" label="blink.mojom.CacheStorage"/>
+  <int value="738435690" label="blink.mojom.SharedWorkerConnector"/>
+  <int value="772959538"
+      label="dom_distiller.mojom.DistillerJavaScriptService"/>
+  <int value="781395216" label="dom_distiller.mojom.DistillabilityService"/>
   <int value="833468074" label="device.mojom.VRService"/>
   <int value="846414148" label="blink.mojom.MediaDevicesDispatcherHost"/>
+  <int value="893321775"
+      label="resource_coordinator.mojom.FrameCoordinationUnit"/>
+  <int value="902740039" label="blink.mojom.PermissionService"/>
   <int value="917382314" label="blink.mojom.TextSuggestionHost"/>
   <int value="917568449" label="media.mojom.ImageCapture"/>
   <int value="948847120" label="blink.mojom.WebUsbService"/>
+  <int value="958735765" label="shape_detection.mojom.FaceDetectionProvider"/>
   <int value="968027799" label="blink.mojom.MediaSessionService"/>
+  <int value="979421400" label="device.mojom.NFC"/>
+  <int value="982123735" label="blink.mojom.ColorChooserFactory"/>
+  <int value="994757370" label="blink.mojom.InsecureInputService"/>
   <int value="996732224" label="autofill.mojom.PasswordManagerDriver"/>
+  <int value="1014286658" label="blink.mojom.NotificationService"/>
+  <int value="1037735345" label="extensions.mime_handler.BeforeUnloadControl"/>
+  <int value="1044427386" label="blink.mojom.SmsManager"/>
+  <int value="1048723358" label="content.mojom.InputInjector"/>
+  <int value="1049460515" label="translate.mojom.ContentTranslateDriver"/>
   <int value="1071268620" label="blink.mojom.QuotaDispatcherHost"/>
+  <int value="1100311626" label="blink.mojom.TextSuggestionHost"/>
+  <int value="1102158904" label="chrome.mojom.PrerenderCanceler"/>
   <int value="1116085333"
       label="content.mojom.RendererAudioOutputStreamFactory"/>
+  <int value="1117840258" label="media.mojom.InterfaceFactory"/>
+  <int value="1123228604" label="blink.mojom.QuotaDispatcherHost"/>
+  <int value="1144764995" label="network.mojom.WebSocket"/>
   <int value="1144778719" label="ui.mojom.Gpu"/>
+  <int value="1148580579" label="blink.mojom.LockManager"/>
+  <int value="1157068323"
+      label="resource_coordinator.mojom.DocumentCoordinationUnit"/>
+  <int value="1207132298" label="media.mojom.Renderer"/>
   <int value="1214902026" label="device.mojom.VibrationManager"/>
+  <int value="1225155271" label="blink.mojom.DedicatedWorkerHostFactory"/>
   <int value="1237802022" label="blink.mojom.PermissionService"/>
+  <int value="1241592573" label="media.mojom.VideoDecodePerfHistory"/>
+  <int value="1258017914" label="blink.mojom.UnhandledTapNotifier"/>
+  <int value="1293422219" label="media.mojom.ImageCapture"/>
   <int value="1298636847" label="media.mojom.RemoterFactory"/>
+  <int value="1303034727" label="blink.mojom.PictureInPictureService"/>
+  <int value="1311956027"
+      label="discardable_memory.mojom.DiscardableSharedMemoryManager"/>
   <int value="1321671191" label="blink.mojom.BudgetService"/>
   <int value="1337066913"
       label="resource_coordinator.mojom.FrameCoordinationUnit"/>
+  <int value="1363277053" label="mojom.OmniboxPageHandler"/>
   <int value="1374541190" label="payments.mojom.PaymentManager"/>
+  <int value="1391649397" label="blink.mojom.InstalledAppProvider"/>
   <int value="1416694600" label="payments.mojom.PaymentRequest"/>
   <int value="1419976867" label="blink.mojom.DedicatedWorkerHostFactory"/>
   <int value="1448556545" label="content.mojom.InputInjector"/>
+  <int value="1450167594" label="device.mojom.WakeLock"/>
+  <int value="1454720654" label="blink.mojom.ContactsManager"/>
+  <int value="1487601584" label="blink.mojom.SerialService"/>
+  <int value="1494628140" label="blink.mojom.BackgroundFetchService"/>
+  <int value="1497405510" label="blink.mojom.Portal"/>
+  <int value="1514474533" label="blink.mojom.DisplayCutoutHost"/>
+  <int value="1517562643"
+      label="content.mojom.RendererAudioInputStreamFactory"/>
+  <int value="1528642323" label="mojom.BluetoothInternalsHandler"/>
   <int value="1548931182" label="shape_detection.mojom.FaceDetectionProvider"/>
+  <int value="1558418769" label="mojom.DiscardsDetailsProvider"/>
   <int value="1558900994" label="device.mojom.NFC"/>
+  <int value="1566236400" label="mojom.SiteEngagementDetailsProvider"/>
+  <int value="1569949878" label="mojom.ResetPasswordHandler"/>
   <int value="1608786055" label="network.mojom.WebSocket"/>
+  <int value="1617971260" label="blink.mojom.HidService"/>
+  <int value="1625278273"
+      label="shape_detection.mojom.BarcodeDetectionProvider"/>
+  <int value="1637627623" label="device.mojom.SensorProvider"/>
   <int value="1658893493" label="device.mojom.WakeLock"/>
   <int value="1659485640" label="password_manager.mojom.CredentialManager"/>
+  <int value="1664576526"
+      label="media.mojom.MediaEngagementScoreDetailsProvider"/>
+  <int value="1694940426" label="blink.mojom.KeyboardLockService"/>
   <int value="1725898486" label="blink.mojom.UnhandledTapNotifier"/>
   <int value="1726661029" label="blink.mojom.ColorChooserFactory"/>
   <int value="1727086043"
       label="content.mojom.RendererAudioInputStreamFactory"/>
   <int value="1729889736"
       label="discardable_memory.mojom.DiscardableSharedMemoryManager"/>
+  <int value="1736030522" label="downloads.mojom.PageHandlerFactory"/>
   <int value="1750772802" label="blink.mojom.NotificationService"/>
+  <int value="1751386040" label="page_load_metrics.mojom.PageLoadMetrics"/>
   <int value="1769429998" label="blink.mojom.PrefetchURLLoaderService"/>
+  <int value="1780600451" label="blink.mojom.MediaDevicesDispatcherHost"/>
   <int value="1785235899" label="shape_detection.mojom.BarcodeDetection"/>
   <int value="1798060917" label="blink.mojom.BackgroundFetchService"/>
+  <int value="1811548070" label="payments.mojom.PaymentManager"/>
+  <int value="1831896638"
+      label="content.mojom.RendererAudioOutputStreamFactory"/>
+  <int value="1844445757" label="image_annotation.mojom.Annotator"/>
   <int value="1851878773" label="blink.mojom.WebBluetoothService"/>
+  <int value="1872102254" label="blink.mojom.PrefetchURLLoaderService"/>
+  <int value="1872706686"
+      label="contextual_search.mojom.ContextualSearchJsApiService"/>
+  <int value="1884536898" label="blink.mojom.FileSystemManager"/>
+  <int value="1893297160" label="network.mojom.RestrictedCookieManager"/>
+  <int value="1921948028" label="blink.mojom.GeolocationService"/>
   <int value="1951066980" label="shape_detection.mojom.TextDetection"/>
+  <int value="1972006840" label="blink.mojom.FileChooser"/>
+  <int value="2015729329" label="extensions.mime_handler.MimeHandlerService"/>
+  <int value="2019700793" label="device.mojom.VibrationManager"/>
+  <int value="2036010684" label="chrome.mojom.OfflinePageAutoFetcher"/>
+  <int value="2051587908" label="blink.mojom.IdleManager"/>
+  <int value="2056556199" label="media_router.mojom.MediaRouter"/>
   <int value="2060513738"
       label="webauth.test.mojom.VirtualAuthenticatorManager"/>
   <int value="2067597900" label="blink.mojom.InsecureInputService"/>
+  <int value="2076591855" label="viz.mojom.Gpu"/>
   <int value="2109171099" label="device.mojom.SensorProvider"/>
+  <int value="2137870010" label="web_ui_test.mojom.TestRunner"/>
+  <int value="2147202291" label="shape_detection.mojom.TextDetection"/>
 </enum>
 
 <enum name="RenderViewContextMenuItem">
