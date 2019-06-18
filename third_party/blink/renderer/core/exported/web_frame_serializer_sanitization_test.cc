@@ -413,4 +413,24 @@ TEST_F(WebFrameSerializerSanitizationTest, StyleElementsWithDynamicCSS) {
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("h1 { color: green; }"));
 }
 
+TEST_F(WebFrameSerializerSanitizationTest, PictureElement) {
+  RegisterMockedFileURLLoad(KURL("http://www.test.com/1x.png"),
+                            "frameserialization/1x.png");
+  RegisterMockedFileURLLoad(KURL("http://www.test.com/2x.png"),
+                            "frameserialization/2x.png");
+
+  WebView()->MainFrameWidget()->Resize(WebSize(500, 500));
+
+  String mhtml = GenerateMHTMLFromHtml("http://www.test.com", "picture.html");
+
+  // srcset attribute should be kept.
+  EXPECT_EQ(2, MatchSubstring(mhtml, "srcset=", 7));
+
+  // 2x.png resource should be added.
+  EXPECT_NE(WTF::kNotFound,
+            mhtml.Find("Content-Location: http://www.test.com/2x.png"));
+  EXPECT_EQ(WTF::kNotFound,
+            mhtml.Find("Content-Location: http://www.test.com/1x.png"));
+}
+
 }  // namespace blink

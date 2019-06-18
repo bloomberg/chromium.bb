@@ -361,8 +361,11 @@ void FrameSerializer::AddResourceForElement(Document& document,
   }
 
   if (const auto* image = ToHTMLImageElementOrNull(element)) {
-    KURL image_url =
-        document.CompleteURL(image->getAttribute(html_names::kSrcAttr));
+    // ImageSourceURL() works for both scenarios:
+    // * parent element is <picture>: best fit image URL from sibling source
+    //   element
+    // * single <img> element: image url contained in href attribute
+    KURL image_url = document.CompleteURL(image->ImageSourceURL());
     ImageResourceContent* cached_image = image->CachedImage();
     AddImageToResources(cached_image, image_url);
   } else if (const auto* input = ToHTMLInputElementOrNull(element)) {
