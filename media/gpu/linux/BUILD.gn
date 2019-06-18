@@ -24,6 +24,10 @@ source_set("linux") {
     "//media/gpu:common",
   ]
 
+  if (use_vaapi) {
+    deps += [ "//media/gpu/vaapi" ]
+  }
+
   if (use_v4l2_codec) {
     deps += [ "//media/gpu/v4l2" ]
   }
