@@ -117,7 +117,9 @@ void GLOutputSurfaceOffscreen::SwapBuffers(OutputSurfaceFrame frame) {
 void GLOutputSurfaceOffscreen::OnSwapBuffersComplete(
     std::vector<ui::LatencyInfo> latency_info) {
   latency_tracker()->OnGpuSwapBuffersCompleted(latency_info);
-  client()->DidReceiveSwapBuffersAck();
+  // Swap timings are not available since for offscreen there is no Swap, just
+  // a SignalSyncToken.
+  client()->DidReceiveSwapBuffersAck(gfx::SwapTimings());
   client()->DidReceivePresentationFeedback(gfx::PresentationFeedback());
 }
 

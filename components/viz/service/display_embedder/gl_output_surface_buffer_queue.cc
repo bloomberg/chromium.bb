@@ -102,18 +102,17 @@ gfx::BufferFormat GLOutputSurfaceBufferQueue::GetOverlayBufferFormat() const {
 }
 
 void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
-    gfx::SwapResult result) {
+    const gfx::SwapResponse& response) {
   bool force_swap = false;
-  if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
+  if (response.result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
-    result = gfx::SwapResult::SWAP_ACK;
     buffer_queue_->RecreateBuffers();
     force_swap = true;
   }
 
   buffer_queue_->PageFlipComplete();
-  client()->DidReceiveSwapBuffersAck();
+  client()->DidReceiveSwapBuffersAck(response.timings);
 
   if (force_swap)
     client()->SetNeedsRedrawRect(gfx::Rect(swap_size_));

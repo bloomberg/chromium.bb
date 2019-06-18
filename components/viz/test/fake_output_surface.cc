@@ -54,9 +54,9 @@ void FakeOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
 }
 
 void FakeOutputSurface::SwapBuffersAck() {
-  client_->DidReceiveSwapBuffersAck();
-  client_->DidReceivePresentationFeedback(
-      {base::TimeTicks::Now(), base::TimeDelta(), 0});
+  base::TimeTicks now = base::TimeTicks::Now();
+  client_->DidReceiveSwapBuffersAck({now, now});
+  client_->DidReceivePresentationFeedback({now, base::TimeDelta(), 0});
 }
 
 void FakeOutputSurface::BindFramebuffer() {

@@ -154,8 +154,9 @@ bool GLOutputSurface::HasExternalStencilTest() const {
 
 void GLOutputSurface::ApplyExternalStencil() {}
 
-void GLOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result) {
-  client_->DidReceiveSwapBuffersAck();
+void GLOutputSurface::DidReceiveSwapBuffersAck(
+    const gfx::SwapResponse& response) {
+  client_->DidReceiveSwapBuffersAck(response.timings);
 }
 
 void GLOutputSurface::HandlePartialSwap(
@@ -176,7 +177,7 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
   if (!params.ca_layer_params.is_empty)
     client_->DidReceiveCALayerParams(params.ca_layer_params);
-  DidReceiveSwapBuffersAck(params.swap_response.result);
+  DidReceiveSwapBuffersAck(params.swap_response);
 
   UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);

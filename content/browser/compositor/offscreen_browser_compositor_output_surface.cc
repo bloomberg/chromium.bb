@@ -186,7 +186,9 @@ void OffscreenBrowserCompositorOutputSurface::OnReflectorChanged() {
 void OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete(
     const std::vector<ui::LatencyInfo>& latency_info) {
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
-  client_->DidReceiveSwapBuffersAck();
+  // Swap timings are not available since for offscreen there is no Swap, just
+  // a SignalSyncToken.
+  client_->DidReceiveSwapBuffersAck(gfx::SwapTimings());
   client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
 }
 

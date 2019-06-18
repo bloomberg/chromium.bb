@@ -59,7 +59,7 @@ class GLOutputSurface : public OutputSurface {
   ui::LatencyTracker* latency_tracker() { return &latency_tracker_; }
 
   // Called when a swap completion is signaled from ImageTransportSurface.
-  virtual void DidReceiveSwapBuffersAck(gfx::SwapResult result);
+  virtual void DidReceiveSwapBuffersAck(const gfx::SwapResponse& response);
 
   // Called in SwapBuffers() when a swap is determined to be partial. Subclasses
   // might override this method because different platforms handle partial swaps

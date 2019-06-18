@@ -134,7 +134,7 @@ class DirectOutputSurface : public viz::OutputSurface {
 
  private:
   void OnSwapBuffersComplete() {
-    client_->DidReceiveSwapBuffersAck();
+    client_->DidReceiveSwapBuffersAck(gfx::SwapTimings());
     client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
   }
 
