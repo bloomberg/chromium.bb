@@ -2280,6 +2280,25 @@
             ]
         }
     ],
+    "FontSrcLocalMatching": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FontSrcLocalMatching"
+                    ]
+                }
+            ]
+        }
+    ],
     "ForbidSyncXHRInPageDismissal": [
         {
             "platforms": [
