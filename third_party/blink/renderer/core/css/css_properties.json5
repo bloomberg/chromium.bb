@@ -5362,6 +5362,8 @@
       type_name: "float",
       default_value: "1.0f",
       field_group: "*",
+      priority: "High",
+      style_builder_custom_functions: ["initial", "inherit", "value"],
     },
 
     // Aliases; these map to the same CSSPropertyID
