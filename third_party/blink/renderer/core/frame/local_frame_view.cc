@@ -3324,6 +3324,10 @@ void LocalFrameView::SetTracksPaintInvalidations(
 void LocalFrameView::TrackObjectPaintInvalidation(
     const DisplayItemClient& client,
     PaintInvalidationReason reason) {
+  TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
+                       "InvalidateDisplayItemClient", TRACE_EVENT_SCOPE_GLOBAL,
+                       "client", client.DebugName().Utf8(), "reason",
+                       PaintInvalidationReasonToString(reason));
   if (!tracked_object_paint_invalidations_)
     return;
 

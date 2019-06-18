@@ -1118,10 +1118,6 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
         layers[i].offset_from_layout_object != new_offset_from_layout_object) {
       ObjectPaintInvalidator(layers[i].paint_layer->GetLayoutObject())
           .InvalidatePaintIncludingNonCompositingDescendants();
-
-      TRACE_LAYER_INVALIDATION(layers[i].paint_layer,
-                               inspector_layer_invalidation_tracking_event::
-                                   kSquashingLayerGeometryWasUpdated);
       layers_needing_paint_invalidation.push_back(layers[i].paint_layer);
     }
     layers[i].offset_from_layout_object = new_offset_from_layout_object;

@@ -2268,13 +2268,10 @@ crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Tim
 # Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
 # Next 2 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
 crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1547
 crbug.com/891427 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-blink-rel/1504
 crbug.com/891427 tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Pass Failure Timeout Crash ]
-# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win10-blink-rel/1510
-crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Failure Timeout Crash ]
 
 # The following fail only on Mac.
 crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
@@ -5658,7 +5655,6 @@ crbug.com/898378 [ Mac10.13 ] virtual/scroll_customization/fast/scroll-behavior/
 
 
 # Sheriff 2018-10-29
-crbug.com/899710 [ Win ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Failure Pass Timeout ]
 crbug.com/766357 [ Win ] virtual/threaded/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
 
 # Sheriff 2018-10-30
@@ -6159,7 +6155,6 @@ crbug.com/959693 external/wpt/trusted-types/WorkerGlobalScope-importScripts.http
 # Sheriff 2019-05-20
 crbug.com/963739 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Timeout ]
 crbug.com/964158 [ Linux ] external/wpt/payment-handler/change-payment-method.https.html [ Pass Crash ]
-crbug.com/899710 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Pass Timeout ]
 crbug.com/964239 external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 
