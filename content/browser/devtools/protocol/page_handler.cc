@@ -398,6 +398,13 @@ void PageHandler::Reload(Maybe<bool> bypassCache,
     callback->sendFailure(Response::InternalError());
     return;
   }
+
+  // In the case of inspecting a GuestView (e.g. a PDF), we should reload
+  // the outer web contents (embedder), since otherwise reloading the guest by
+  // itself will fail.
+  if (web_contents->GetOuterWebContents())
+    web_contents = web_contents->GetOuterWebContents();
+
   // It is important to fallback before triggering reload, so that
   // renderer could prepare beforehand.
   callback->fallThrough();
