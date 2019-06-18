@@ -162,7 +162,7 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
   // Only allow shelf alignment modifications by the owner or user. In tablet
   // mode, the shelf alignment option is not shown.
   LoginStatus status = Shell::Get()->session_controller()->login_status();
-  if ((status == LoginStatus::USER || status == LoginStatus::OWNER) &&
+  if (status == LoginStatus::USER &&
       !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     alignment_submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
 

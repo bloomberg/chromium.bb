@@ -500,44 +500,6 @@ TEST_F(SessionControllerClientImplTest, SupervisedUser) {
             session_controller.last_user_session()->custodian_email);
 }
 
-TEST_F(SessionControllerClientImplTest, DeviceOwner) {
-  // Create an object to test and connect it to our test interface.
-  SessionControllerClientImpl client;
-  TestSessionController session_controller;
-  client.Init();
-
-  const AccountId owner =
-      AccountId::FromUserEmailGaiaId("owner@test.com", "1111111111");
-  const AccountId normal_user =
-      AccountId::FromUserEmailGaiaId("user@test.com", "2222222222");
-  user_manager()->SetOwnerId(owner);
-  UserAddedToSession(owner);
-  EXPECT_TRUE(
-      session_controller.last_user_session()->user_info.is_device_owner);
-
-  UserAddedToSession(normal_user);
-  EXPECT_FALSE(
-      session_controller.last_user_session()->user_info.is_device_owner);
-}
-
-TEST_F(SessionControllerClientImplTest, UserBecomesDeviceOwner) {
-  // Create an object to test and connect it to our test interface.
-  SessionControllerClientImpl client;
-  TestSessionController session_controller;
-  client.Init();
-
-  const AccountId owner =
-      AccountId::FromUserEmailGaiaId("owner@test.com", "1111111111");
-  UserAddedToSession(owner);
-  // The device owner is empty, the current session shouldn't be the owner.
-  EXPECT_FALSE(
-      session_controller.last_user_session()->user_info.is_device_owner);
-
-  user_manager()->SetOwnerId(owner);
-  EXPECT_TRUE(
-      session_controller.last_user_session()->user_info.is_device_owner);
-}
-
 TEST_F(SessionControllerClientImplTest, UserPrefsChange) {
   // Create an object to test and connect it to our test interface.
   SessionControllerClientImpl client;

@@ -104,9 +104,6 @@ std::unique_ptr<ash::UserSession> UserToUserSession(const User& user) {
   session->user_info.has_gaia_account = user.has_gaia_account();
   session->user_info.should_display_managed_ui =
       profile && chrome::ShouldDisplayManagedUi(profile);
-  const AccountId& owner_id = UserManager::Get()->GetOwnerAccountId();
-  session->user_info.is_device_owner =
-      owner_id.is_valid() && owner_id == user.GetAccountId();
   if (profile) {
     session->user_info.service_instance_group =
         content::BrowserContext::GetServiceInstanceGroupFor(profile);
@@ -175,7 +172,6 @@ SessionControllerClientImpl::SessionControllerClientImpl() {
   SessionManager::Get()->AddObserver(this);
   UserManager::Get()->AddSessionStateObserver(this);
   UserManager::Get()->AddObserver(this);
-  chromeos::LoginState::Get()->AddObserver(this);
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
@@ -212,7 +208,6 @@ SessionControllerClientImpl::~SessionControllerClientImpl() {
         ->RemoveObserver(this);
   }
 
-  chromeos::LoginState::Get()->RemoveObserver(this);
   SessionManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveSessionStateObserver(this);
@@ -524,10 +519,6 @@ void SessionControllerClientImpl::OnCustodianInfoChanged() {
       supervised_user_profile_);
   if (user)
     SendUserSession(*user);
-}
-
-void SessionControllerClientImpl::LoggedInStateChanged() {
-  SendUserSession(*UserManager::Get()->GetActiveUser());
 }
 
 void SessionControllerClientImpl::Observe(
