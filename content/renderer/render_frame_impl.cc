@@ -7528,10 +7528,10 @@ void RenderFrameImpl::ShowCreatedWindow(bool opened_by_user_gesture,
   //
   // This call happens only for renderer-created windows; for example, when a
   // tab is created by script via window.open().
-  Send(new FrameHostMsg_ShowCreatedWindow(
-      GetRoutingID(), render_widget_to_show->routing_id(),
+  GetFrameHost()->ShowCreatedWindow(
+      render_widget_to_show->routing_id(),
       RenderViewImpl::NavigationPolicyToDisposition(policy), initial_rect,
-      opened_by_user_gesture));
+      opened_by_user_gesture);
 }
 
 void RenderFrameImpl::RenderWidgetSetFocus(bool enable) {

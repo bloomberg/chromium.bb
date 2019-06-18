@@ -1477,7 +1477,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
 #endif
     IPC_MESSAGE_HANDLER(FrameHostMsg_RequestOverlayRoutingToken,
                         OnRequestOverlayRoutingToken)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
   IPC_END_MESSAGE_MAP()
 
   // No further actions here, since we may have been deleted.
@@ -3674,10 +3673,10 @@ void RenderFrameHostImpl::SetKeepAliveTimeoutForTesting(
     keep_alive_handle_factory_->SetTimeout(keep_alive_timeout_);
 }
 
-void RenderFrameHostImpl::OnShowCreatedWindow(int pending_widget_routing_id,
-                                              WindowOpenDisposition disposition,
-                                              const gfx::Rect& initial_rect,
-                                              bool user_gesture) {
+void RenderFrameHostImpl::ShowCreatedWindow(int pending_widget_routing_id,
+                                            WindowOpenDisposition disposition,
+                                            const gfx::Rect& initial_rect,
+                                            bool user_gesture) {
   delegate_->ShowCreatedWindow(GetProcess()->GetID(), pending_widget_routing_id,
                                disposition, initial_rect, user_gesture);
 }
