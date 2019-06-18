@@ -87,8 +87,8 @@ enum amdgpu_bo_handle_type {
 	/** DMA-buf fd handle */
 	amdgpu_bo_handle_type_dma_buf_fd = 2,
 
-	/** KMS handle, but re-importing as a DMABUF handle through
-	 *  drmPrimeHandleToFD is forbidden. (Glamor does that)
+	/** Deprecated in favour of and same behaviour as
+	 * amdgpu_bo_handle_type_kms, use that instead of this
 	 */
 	amdgpu_bo_handle_type_kms_noimport = 3,
 };
