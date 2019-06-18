@@ -584,7 +584,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * Returns the management domain if the signed in account is managed, otherwise returns null.
      */
     public String getManagementDomain() {
-        return SigninManagerJni.get().getManagementDomain(this, mNativeSigninManagerAndroid);
+        return mDelegate.getManagementDomain(this, mNativeSigninManagerAndroid);
     }
 
     @VisibleForTesting

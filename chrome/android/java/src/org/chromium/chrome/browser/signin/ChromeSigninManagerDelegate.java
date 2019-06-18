@@ -33,6 +33,12 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
     }
 
     @Override
+    public String getManagementDomain(
+            @JCaller SigninManager self, long nativeSigninManagerAndroid) {
+        return SigninManagerJni.get().getManagementDomain(self, nativeSigninManagerAndroid);
+    }
+
+    @Override
     public void handleGooglePlayServicesUnavailability(Activity activity, boolean cancelable) {
         UserRecoverableErrorHandler errorHandler = activity != null
                 ? new UserRecoverableErrorHandler.ModalDialog(activity, cancelable)

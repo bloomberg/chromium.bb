@@ -26,6 +26,11 @@ public interface SigninManagerDelegate {
     public void handleGooglePlayServicesUnavailability(Activity activity, boolean cancelable);
 
     /**
+     * @return the management domain if the signed in account is managed, otherwise null.
+     */
+    public String getManagementDomain(@JCaller SigninManager self, long nativeSigninManagerAndroid);
+
+    /**
      * @return Whether the device has Google Play Services.
      */
     public boolean isGooglePlayServicesPresent(Context context);
