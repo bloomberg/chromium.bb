@@ -58495,6 +58495,9 @@ Full version information for the fingerprint enum values:
   <int value="9"
       label="Saved pref present for different version and country code in
              seed is different"/>
+  <int value="10"
+      label="Saved pref present for variations overridden country is set.
+             Mainly used for testing / developer."/>
 </enum>
 
 <enum name="VariationsResourceRequestsAllowedState">
