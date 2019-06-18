@@ -53,12 +53,9 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
  public:
   PlatformNotificationContextTriggerTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME,
-            // TODO(crbug.com/974365): The IO thread is only needed so
-            // MessagePumpFuchsia will create an async::Loop, which is needed
-            // for fidl.
-            content::TestBrowserThreadBundle::REAL_IO_THREAD),
+            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
+            base::test::ScopedTaskEnvironment::NowSource::
+                MAIN_THREAD_MOCK_TIME),
         notification_browser_client_(&browser_context_),
         success_(false) {
     SetBrowserClientForTesting(&notification_browser_client_);
