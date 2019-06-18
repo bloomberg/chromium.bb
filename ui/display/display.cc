@@ -21,12 +21,14 @@
 namespace display {
 namespace {
 
-constexpr int DEFAULT_BITS_PER_PIXEL = 24;
-constexpr int DEFAULT_BITS_PER_COMPONENT = 8;
+constexpr int kDefaultBitsPerPixel = 24;
+constexpr int kDefaultBitsPerComponent = 8;
 
-// Assuming HDR10 color space with RGB10A2 backbuffer.
-constexpr int HDR_BITS_PER_PIXEL = 30;
-constexpr int HDR_BITS_PER_COMPONENT = 10;
+constexpr int kHDR10BitsPerPixel = 30;
+constexpr int kHDR10BitsPerComponent = 10;
+
+constexpr int kSCRGBLinearBitsPerPixel = 48;
+constexpr int kSCRGBLinearBitsPerComponent = 16;
 
 // This variable tracks whether the forced device scale factor switch needs to
 // be read from the command line, i.e. if it is set to -1 then the command line
@@ -66,6 +68,8 @@ gfx::ColorSpace ForcedColorProfileStringToColorSpace(const std::string& value) {
     return gfx::ColorSpace::CreateDisplayP3D65();
   if (value == "scrgb-linear")
     return gfx::ColorSpace::CreateSCRGBLinear();
+  if (value == "hdr10")
+    return gfx::ColorSpace::CreateHDR10();
   if (value == "extended-srgb")
     return gfx::ColorSpace::CreateExtendedSRGB();
   if (value == "generic-rgb") {
@@ -211,9 +215,12 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
       bounds_(bounds),
       work_area_(bounds),
       device_scale_factor_(GetForcedDeviceScaleFactor()) {
-  SetColorSpaceAndDepth(HasForceDisplayColorProfile()
-                            ? GetForcedDisplayColorProfile()
-                            : gfx::ColorSpace::CreateSRGB());
+  gfx::ColorSpace color_space = HasForceDisplayColorProfile()
+                                    ? GetForcedDisplayColorProfile()
+                                    : gfx::ColorSpace::CreateSRGB();
+  float sdr_white_level =
+      color_space.IsHDR() ? 200.f : gfx::ColorSpace::kDefaultSDRWhiteLevel;
+  SetColorSpaceAndDepth(color_space, sdr_white_level);
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif
@@ -301,13 +308,15 @@ void Display::SetColorSpaceAndDepth(const gfx::ColorSpace& color_space,
                                     float sdr_white_level) {
   color_space_ = color_space;
   sdr_white_level_ = sdr_white_level;
-  // Assuming HDR10 color space and buffer format.
-  if (color_space_.IsHDR()) {
-    color_depth_ = HDR_BITS_PER_PIXEL;
-    depth_per_component_ = HDR_BITS_PER_COMPONENT;
+  if (color_space_ == gfx::ColorSpace::CreateHDR10()) {
+    color_depth_ = kHDR10BitsPerPixel;
+    depth_per_component_ = kHDR10BitsPerComponent;
+  } else if (color_space == gfx::ColorSpace::CreateSCRGBLinear()) {
+    color_depth_ = kSCRGBLinearBitsPerPixel;
+    depth_per_component_ = kSCRGBLinearBitsPerComponent;
   } else {
-    color_depth_ = DEFAULT_BITS_PER_PIXEL;
-    depth_per_component_ = DEFAULT_BITS_PER_COMPONENT;
+    color_depth_ = kDefaultBitsPerPixel;
+    depth_per_component_ = kDefaultBitsPerComponent;
   }
 }
 
