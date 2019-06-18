@@ -17,6 +17,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
+  void* break_token;
   std::unique_ptr<Vector<NGOutOfFlowPositionedDescendant>>
       oof_positioned_descendants_;
   void* pointer;
@@ -36,6 +37,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGFragmentType type,
     unsigned sub_type)
     : NGPhysicalFragment(builder, type, sub_type),
+      break_token_(std::move(builder->break_token_)),
       oof_positioned_descendants_(
           builder->oof_positioned_descendants_.IsEmpty()
               ? nullptr
