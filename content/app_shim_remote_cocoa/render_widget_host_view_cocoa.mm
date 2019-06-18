@@ -162,6 +162,9 @@ void ExtractUnderlines(NSAttributedString* string,
   NSInteger textSuggestionsSequenceNumber_;
   BOOL shouldRequestTextSubstitutions_;
   BOOL substitutionWasApplied_;
+
+  NSTextCheckingTypes userEnabledTextCheckingTypes_;
+  NSTextCheckingTypes userDisabledTextCheckingTypes_;
 }
 @property(readonly) NSTextCheckingType enabledTextCheckingTypes;
 @property(readonly) BOOL inputAllowsTextSubstitution;
@@ -419,6 +422,8 @@ void ExtractUnderlines(NSAttributedString* string,
     checkingTypes |= NSTextCheckingTypeDash;
   if (NSSpellChecker.automaticTextReplacementEnabled)
     checkingTypes |= NSTextCheckingTypeReplacement;
+  checkingTypes |= userEnabledTextCheckingTypes_;
+  checkingTypes &= ~userDisabledTextCheckingTypes_;
   return checkingTypes;
 }
 
@@ -1517,7 +1522,49 @@ void ExtractUnderlines(NSAttributedString* string,
   return YES;
 }
 
+- (void)toggleTextCheckingType:(NSTextCheckingType)type {
+  if (self.enabledTextCheckingTypes & type) {
+    userEnabledTextCheckingTypes_ &= ~type;
+    userDisabledTextCheckingTypes_ |= type;
+  } else {
+    userEnabledTextCheckingTypes_ |= type;
+    userDisabledTextCheckingTypes_ &= ~type;
+  }
+}
+
+- (void)toggleAutomaticQuoteSubstitution:(id)sender {
+  [self toggleTextCheckingType:NSTextCheckingTypeQuote];
+}
+
+- (void)toggleAutomaticDashSubstitution:(id)sender {
+  [self toggleTextCheckingType:NSTextCheckingTypeDash];
+}
+
+- (void)toggleAutomaticTextReplacement:(id)sender {
+  [self toggleTextCheckingType:NSTextCheckingTypeReplacement];
+}
+
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
+    NSTextCheckingType representedTextCheckingType = 0;
+    if (item.action == @selector(orderFrontSubstitutionsPanel:)) {
+      return YES;
+    } else if (item.action == @selector(toggleAutomaticQuoteSubstitution:)) {
+      representedTextCheckingType = NSTextCheckingTypeQuote;
+    } else if (item.action == @selector(toggleAutomaticDashSubstitution:)) {
+      representedTextCheckingType = NSTextCheckingTypeDash;
+    } else if (item.action == @selector(toggleAutomaticTextReplacement:)) {
+      representedTextCheckingType = NSTextCheckingTypeReplacement;
+    }
+    if (representedTextCheckingType) {
+      menuItem.state =
+          (self.enabledTextCheckingTypes & representedTextCheckingType)
+              ? NSControlStateValueOn
+              : NSControlStateValueOff;
+      return self.inputAllowsTextSubstitution;
+    }
+  }
+
   if (responderDelegate_ &&
       [responderDelegate_ respondsToSelector:@selector
                           (validateUserInterfaceItem:isValidItem:)]) {

@@ -198,6 +198,17 @@ base::scoped_nsobject<NSMenuItem> BuildEditMenu(
                           Item(IDS_EDIT_CHECK_GRAMMAR_MAC)
                               .action(@selector(toggleGrammarChecking:)),
                     }),
+                Item(IDS_EDIT_SUBSTITUTIONS_MAC).submenu({
+                  Item(IDS_EDIT_SHOW_SUBSTITUTIONS_MAC)
+                      .action(@selector(orderFrontSubstitutionsPanel:)),
+                      Item().is_separator(),
+                      Item(IDS_EDIT_SMART_QUOTES_MAC)
+                          .action(@selector(toggleAutomaticQuoteSubstitution:)),
+                      Item(IDS_EDIT_SMART_DASHES_MAC)
+                          .action(@selector(toggleAutomaticDashSubstitution:)),
+                      Item(IDS_EDIT_TEXT_REPLACEMENT_MAC)
+                          .action(@selector(toggleAutomaticTextReplacement:)),
+                }),
                 Item(IDS_SPEECH_MAC).tag(50158).submenu({
                   Item(IDS_SPEECH_START_SPEAKING_MAC)
                       .action(@selector(startSpeaking:)),
