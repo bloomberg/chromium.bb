@@ -241,12 +241,13 @@ bool IsLegacyGPU(ID3D11Device* device) {
 // on the given |video_device|.
 bool IsResolutionSupportedForDevice(const gfx::Size& resolution_to_test,
                                     const GUID& decoder_guid,
-                                    ID3D11VideoDevice* video_device) {
+                                    ID3D11VideoDevice* video_device,
+                                    DXGI_FORMAT format) {
   D3D11_VIDEO_DECODER_DESC desc = {
       decoder_guid,                 // Guid
       resolution_to_test.width(),   // SampleWidth
       resolution_to_test.height(),  // SampleHeight
-      DXGI_FORMAT_NV12              // OutputFormat
+      format                        // OutputFormat
   };
 
   // We've chosen the least expensive test for identifying if a given resolution
@@ -273,7 +274,8 @@ ResolutionPair GetMaxResolutionsForGUIDs(
     const gfx::Size& default_max,
     ID3D11VideoDevice* video_device,
     const std::vector<GUID>& valid_guids,
-    const std::vector<gfx::Size>& resolutions_to_test) {
+    const std::vector<gfx::Size>& resolutions_to_test,
+    DXGI_FORMAT format = DXGI_FORMAT_NV12) {
   TRACE_EVENT0("gpu,startup", "GetMaxResolutionsForGUIDs");
   ResolutionPair result(default_max, gfx::Size());
 
@@ -300,16 +302,20 @@ ResolutionPair GetMaxResolutionsForGUIDs(
                         }));
 
   for (const auto& res : resolutions_to_test) {
-    if (!IsResolutionSupportedForDevice(res, decoder_guid, video_device))
+    if (!IsResolutionSupportedForDevice(res, decoder_guid, video_device,
+                                        format)) {
       break;
+    }
     result.first = res;
   }
 
   // The max supported portrait resolution should be just be a w/h flip of the
   // max supported landscape resolution.
   gfx::Size flipped(result.first.height(), result.first.width());
-  if (IsResolutionSupportedForDevice(flipped, decoder_guid, video_device))
+  if (IsResolutionSupportedForDevice(flipped, decoder_guid, video_device,
+                                     format)) {
     result.second = flipped;
+  }
 
   return result;
 }
@@ -1447,7 +1453,8 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
               {D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2},
               {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
                gfx::Size(7680, 4320), gfx::Size(8192, 4320),
-               gfx::Size(8192, 8192)});
+               gfx::Size(8192, 8192)},
+              DXGI_FORMAT_P010);
         }
       }
     }
