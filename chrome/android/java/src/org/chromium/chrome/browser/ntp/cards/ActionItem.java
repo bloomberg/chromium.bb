@@ -183,11 +183,13 @@ public class ActionItem extends OptionalLeaf {
             // If we fail to find it under the action_button id, fallback to the top-level view.
             if (mButton == null) mButton = itemView;
             mUiDelegate = uiDelegate;
-            mButton.setOnClickListener(v -> mActionListItem.performAction(uiDelegate,
-                    this::showFetchFailureSnackbar, this::showNoNewSuggestionsSnackbar));
+            mButton.setOnClickListener(v
+                    -> mActionListItem.performAction(uiDelegate, this::showFetchFailureMessage,
+                            this::showNoNewSuggestionsMessage));
         }
 
-        private void showFetchFailureSnackbar() {
+        /** Shows a message to the user that the fetch failed. */
+        protected void showFetchFailureMessage() {
             mUiDelegate.getSnackbarManager().showSnackbar(Snackbar.make(
                     itemView.getResources().getString(R.string.ntp_suggestions_fetch_failed),
                     new SnackbarManager.SnackbarController() { },
@@ -196,7 +198,8 @@ public class ActionItem extends OptionalLeaf {
             );
         }
 
-        private void showNoNewSuggestionsSnackbar() {
+        /** Shows a message to the user that no new suggestions could be loaded. */
+        protected void showNoNewSuggestionsMessage() {
             mUiDelegate.getSnackbarManager().showSnackbar(Snackbar.make(
                     itemView.getResources().getString(
                             R.string.ntp_suggestions_fetch_no_new_suggestions),
