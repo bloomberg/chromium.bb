@@ -54,6 +54,7 @@ blink_modules_sources("mediastream") {
     "video_track_adapter.h",
     "video_track_adapter_settings.cc",
     "web_media_stream_utils.cc",
+    "webrtc_local_audio_source_provider.cc",
   ]
 }
 

@@ -2,25 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc_local_audio_source_provider.h"
+#include "third_party/blink/public/web/modules/mediastream/webrtc_local_audio_source_provider.h"
 
 #include <string>
 
 #include "base/logging.h"
-#include "content/public/renderer/render_frame.h"
-#include "content/renderer/media/audio/audio_device_factory.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "third_party/blink/public/platform/web_audio_source_provider_client.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
-using blink::WebVector;
-
 namespace {
 static const size_t kMaxNumberOfAudioFifoBuffers = 10;
 }
 
-namespace content {
+namespace blink {
 
 // Size of the buffer that WebAudio processes each time, it is the same value
 // as AudioNode::ProcessingSizeInFrames in WebKit.
@@ -28,22 +24,20 @@ namespace content {
 const size_t WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize = 128;
 
 WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
-    const blink::WebMediaStreamTrack& track,
+    const WebMediaStreamTrack& track,
     int context_sample_rate)
     : is_enabled_(false), track_(track), track_stopped_(false) {
   // Get the native audio output hardware sample-rate for the sink.
   // We need to check if there is a valid frame since the unittests
   // do not have one and they will inject their own |sink_params_| for testing.
-  blink::WebLocalFrame* const web_frame =
-      blink::WebLocalFrame::FrameForCurrentContext();
-  RenderFrame* const render_frame = RenderFrame::FromWebFrame(web_frame);
-  if (render_frame) {
+  WebLocalFrame* const web_frame = WebLocalFrame::FrameForCurrentContext();
+  if (web_frame) {
     sink_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                        media::CHANNEL_LAYOUT_STEREO, context_sample_rate,
                        kWebAudioRenderBufferSize);
   }
   // Connect the source provider to the track as a sink.
-  blink::WebMediaStreamAudioSink::AddToAudioTrack(this, track_);
+  WebMediaStreamAudioSink::AddToAudioTrack(this, track_);
 }
 
 WebRtcLocalAudioSourceProvider::~WebRtcLocalAudioSourceProvider() {
@@ -53,7 +47,7 @@ WebRtcLocalAudioSourceProvider::~WebRtcLocalAudioSourceProvider() {
   // If the track is still active, it is necessary to notify the track before
   // the source provider goes away.
   if (!track_stopped_)
-    blink::WebMediaStreamAudioSink::RemoveFromAudioTrack(this, track_);
+    WebMediaStreamAudioSink::RemoveFromAudioTrack(this, track_);
 }
 
 void WebRtcLocalAudioSourceProvider::OnSetFormat(
@@ -77,9 +71,9 @@ void WebRtcLocalAudioSourceProvider::OnSetFormat(
 }
 
 void WebRtcLocalAudioSourceProvider::OnReadyStateChanged(
-      blink::WebMediaStreamSource::ReadyState state) {
+    WebMediaStreamSource::ReadyState state) {
   NON_REENTRANT_SCOPE(ready_state_reentrancy_checker_);
-  if (state == blink::WebMediaStreamSource::kReadyStateEnded)
+  if (state == WebMediaStreamSource::kReadyStateEnded)
     track_stopped_ = true;
 }
 
@@ -107,7 +101,7 @@ void WebRtcLocalAudioSourceProvider::OnData(
 }
 
 void WebRtcLocalAudioSourceProvider::SetClient(
-    blink::WebAudioSourceProviderClient* client) {
+    WebAudioSourceProviderClient* client) {
   NOTREACHED();
 }
 
@@ -119,12 +113,13 @@ void WebRtcLocalAudioSourceProvider::ProvideInput(
 
   if (!output_wrapper_ ||
       static_cast<size_t>(output_wrapper_->channels()) != audio_data.size()) {
-    output_wrapper_ = media::AudioBus::CreateWrapper(audio_data.size());
+    output_wrapper_ =
+        media::AudioBus::CreateWrapper(static_cast<int>(audio_data.size()));
   }
 
-  output_wrapper_->set_frames(number_of_frames);
+  output_wrapper_->set_frames(static_cast<int>(number_of_frames));
   for (size_t i = 0; i < audio_data.size(); ++i)
-    output_wrapper_->SetChannelData(i, audio_data[i]);
+    output_wrapper_->SetChannelData(static_cast<int>(i), audio_data[i]);
 
   base::AutoLock auto_lock(lock_);
   if (!audio_converter_)
@@ -147,8 +142,7 @@ double WebRtcLocalAudioSourceProvider::ProvideInput(media::AudioBus* audio_bus,
   } else {
     audio_bus->Zero();
     DVLOG(1) << "WARNING: Underrun, FIFO has data " << fifo_->frames()
-             << " samples but " << audio_bus->frames()
-             << " samples are needed";
+             << " samples but " << audio_bus->frames() << " samples are needed";
   }
 
   return 1.0;
@@ -160,4 +154,4 @@ void WebRtcLocalAudioSourceProvider::SetSinkParamsForTesting(
   sink_params_ = sink_params;
 }
 
-}  // namespace content
+}  // namespace blink

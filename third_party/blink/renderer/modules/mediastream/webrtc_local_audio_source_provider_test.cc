@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/public/web/modules/mediastream/webrtc_local_audio_source_provider.h"
+
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +15,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 
-namespace content {
+namespace blink {
 
 class WebRtcLocalAudioSourceProviderTest : public testing::Test {
  protected:
@@ -27,15 +28,14 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
         media::CHANNEL_LAYOUT_STEREO, context_sample_rate,
         WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize);
     sink_bus_ = media::AudioBus::Create(sink_params_);
-    blink::WebMediaStreamSource audio_source;
-    audio_source.Initialize(blink::WebString::FromUTF8("dummy_source_id"),
-                            blink::WebMediaStreamSource::kTypeAudio,
-                            blink::WebString::FromUTF8("dummy_source_name"),
+    WebMediaStreamSource audio_source;
+    audio_source.Initialize(WebString::FromUTF8("dummy_source_id"),
+                            WebMediaStreamSource::kTypeAudio,
+                            WebString::FromUTF8("dummy_source_name"),
                             false /* remote */);
-    blink_track_.Initialize(blink::WebString::FromUTF8("audio_track"),
-                            audio_source);
+    blink_track_.Initialize(WebString::FromUTF8("audio_track"), audio_source);
     blink_track_.SetPlatformTrack(
-        std::make_unique<blink::MediaStreamAudioTrack>(true));
+        std::make_unique<MediaStreamAudioTrack>(true));
     source_provider_.reset(
         new WebRtcLocalAudioSourceProvider(blink_track_, context_sample_rate));
     source_provider_->SetSinkParamsForTesting(sink_params_);
@@ -45,13 +45,13 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
   void TearDown() override {
     source_provider_.reset();
     blink_track_.Reset();
-    blink::WebHeap::CollectAllGarbageForTesting();
+    WebHeap::CollectAllGarbageForTesting();
   }
 
   media::AudioParameters source_params_;
   media::AudioParameters sink_params_;
   std::unique_ptr<media::AudioBus> sink_bus_;
-  blink::WebMediaStreamTrack blink_track_;
+  WebMediaStreamTrack blink_track_;
   std::unique_ptr<WebRtcLocalAudioSourceProvider> source_provider_;
 };
 
@@ -61,8 +61,7 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   // MediaStreamAudioTrack, ultimately delivered to the |source_provider_|.
 
   // Point the WebVector into memory owned by |sink_bus_|.
-  blink::WebVector<float*> audio_data(
-      static_cast<size_t>(sink_bus_->channels()));
+  WebVector<float*> audio_data(static_cast<size_t>(sink_bus_->channels()));
   for (size_t i = 0; i < audio_data.size(); ++i)
     audio_data[i] = sink_bus_->channel(i);
 
@@ -76,8 +75,7 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   const std::unique_ptr<media::AudioBus> source_bus =
       media::AudioBus::Create(source_params_);
   std::fill(source_bus->channel(0),
-            source_bus->channel(0) + source_bus->frames(),
-            0.5f);
+            source_bus->channel(0) + source_bus->frames(), 0.5f);
 
   // Deliver data to |source_provider_|.
   base::TimeTicks estimated_capture_time = base::TimeTicks::Now();
@@ -98,9 +96,9 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   }
 
   // Make a second data delivery.
-  estimated_capture_time +=
-      source_bus->frames() * base::TimeDelta::FromSeconds(1) /
-      source_params_.sample_rate();
+  estimated_capture_time += source_bus->frames() *
+                            base::TimeDelta::FromSeconds(1) /
+                            source_params_.sample_rate();
   source_provider_->OnData(*source_bus, estimated_capture_time);
 
   // Verify that non-zero data samples are present in the results of the
@@ -121,16 +119,16 @@ TEST_F(WebRtcLocalAudioSourceProviderTest,
   source_provider_.reset();
 
   // Stop the audio track.
-  blink::MediaStreamAudioTrack::From(blink_track_)->Stop();
+  MediaStreamAudioTrack::From(blink_track_)->Stop();
 }
 
 TEST_F(WebRtcLocalAudioSourceProviderTest,
        StopTrackBeforeDeletingSourceProvider) {
   // Stop the audio track.
-  blink::MediaStreamAudioTrack::From(blink_track_)->Stop();
+  MediaStreamAudioTrack::From(blink_track_)->Stop();
 
   // Delete the source provider.
   source_provider_.reset();
 }
 
-}  // namespace content
+}  // namespace blink

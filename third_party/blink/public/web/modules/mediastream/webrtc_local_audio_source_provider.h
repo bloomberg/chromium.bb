@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_SOURCE_PROVIDER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_SOURCE_PROVIDER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBRTC_LOCAL_AUDIO_SOURCE_PROVIDER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBRTC_LOCAL_AUDIO_SOURCE_PROVIDER_H_
 
 #include <stddef.h>
 
@@ -12,13 +12,12 @@
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "base/thread_annotations.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 #include "media/base/audio_converter.h"
 #include "media/base/reentrancy_checker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
@@ -27,20 +26,18 @@ class AudioBus;
 class AudioConverter;
 class AudioFifo;
 class AudioParameters;
-}
+}  // namespace media
 
 namespace blink {
-class WebAudioSourceProviderClient;
-}
 
-namespace content {
+class WebAudioSourceProviderClient;
 
 // TODO(miu): This implementation should be renamed to WebAudioMediaStreamSink,
 // as it should work as a provider for WebAudio from ANY MediaStreamAudioTrack.
 // http://crbug.com/577874
 //
 // WebRtcLocalAudioSourceProvider provides a bridge between classes:
-//     MediaStreamAudioTrack ---> blink::WebAudioSourceProvider
+//     MediaStreamAudioTrack ---> WebAudioSourceProvider
 //
 // WebRtcLocalAudioSourceProvider works as a sink to the MediaStreamAudioTrack
 // and stores the capture data to a FIFO. When the media stream is connected to
@@ -49,28 +46,29 @@ namespace content {
 // data from the FIFO.
 //
 // Most calls are protected by a lock.
-class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
-    : public blink::WebAudioSourceProvider,
+//
+// TODO(crbug.com/704136): Move this class out of the Blink exposed API
+// when all users of it have been Onion souped.
+class BLINK_MODULES_EXPORT WebRtcLocalAudioSourceProvider
+    : public WebAudioSourceProvider,
       public media::AudioConverter::InputCallback,
-      public blink::WebMediaStreamAudioSink {
+      public WebMediaStreamAudioSink {
  public:
   static const size_t kWebAudioRenderBufferSize;
 
-  explicit WebRtcLocalAudioSourceProvider(
-      const blink::WebMediaStreamTrack& track,
-      int context_sample_rate);
+  explicit WebRtcLocalAudioSourceProvider(const WebMediaStreamTrack& track,
+                                          int context_sample_rate);
   ~WebRtcLocalAudioSourceProvider() override;
 
-  // blink::WebMediaStreamAudioSink implementation.
+  // WebMediaStreamAudioSink implementation.
   void OnData(const media::AudioBus& audio_bus,
               base::TimeTicks estimated_capture_time) override;
   void OnSetFormat(const media::AudioParameters& params) override;
-  void OnReadyStateChanged(
-      blink::WebMediaStreamSource::ReadyState state) override;
+  void OnReadyStateChanged(WebMediaStreamSource::ReadyState state) override;
 
-  // blink::WebAudioSourceProvider implementation.
-  void SetClient(blink::WebAudioSourceProviderClient* client) override;
-  void ProvideInput(const blink::WebVector<float*>& audio_data,
+  // WebAudioSourceProvider implementation.
+  void SetClient(WebAudioSourceProviderClient* client) override;
+  void ProvideInput(const WebVector<float*>& audio_data,
                     size_t number_of_frames) override;
 
   // Method to allow the unittests to inject its own sink parameters to avoid
@@ -105,7 +103,7 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
   // The audio track that this source provider is connected to.
   // No lock protection needed since only accessed in constructor and
   // destructor.
-  blink::WebMediaStreamTrack track_;
+  WebMediaStreamTrack track_;
 
   // Flag to tell if the track has been stopped or not.
   // No lock protection needed since only accessed in constructor, destructor
@@ -125,6 +123,6 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalAudioSourceProvider);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_SOURCE_PROVIDER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBRTC_LOCAL_AUDIO_SOURCE_PROVIDER_H_
