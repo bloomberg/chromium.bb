@@ -306,8 +306,7 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::addResponseHeader(
   DCHECK(Statics::isInApplicationMainThread());
   DCHECK(!d_failed);
 
-  // HttpResponseHeaders::AddHeader assumes raw_header has a size of at least 2.
-  if (d_responseHeaders && d_responseHeaders->raw_headers().size() > 2) {
+  if (d_responseHeaders) {
     std::string str(header.data(), header.length());
     d_responseHeaders->AddHeader(str);
   }
@@ -461,7 +460,7 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::
   responseInfo.content_length = d_responseHeaders->GetContentLength();
   d_responseHeaders->GetMimeTypeAndCharset(&responseInfo.mime_type,
                                            &responseInfo.charset);
-  d_responseHeaders = 0;
+  d_responseHeaders.reset();
 
   if (responseInfo.mime_type.empty() && length > 0) {
     net::SniffMimeType(buffer, std::min(length, net::kMaxBytesToSniff), d_url,
