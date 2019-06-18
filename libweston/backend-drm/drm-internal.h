@@ -508,6 +508,25 @@ drm_output_find_by_crtc(struct drm_backend *b, uint32_t crtc_id);
 struct drm_head *
 drm_head_find_by_connector(struct drm_backend *backend, uint32_t connector_id);
 
+static inline bool
+drm_view_transform_supported(struct weston_view *ev, struct weston_output *output)
+{
+	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
+
+	/* This will incorrectly disallow cases where the combination of
+	 * buffer and view transformations match the output transform.
+	 * Fixing this requires a full analysis of the transformation
+	 * chain. */
+	if (ev->transform.enabled &&
+	    ev->transform.matrix.type >= WESTON_MATRIX_TRANSFORM_ROTATE)
+		return false;
+
+	if (viewport->buffer.transform != output->transform)
+		return false;
+
+	return true;
+}
+
 int
 drm_mode_ensure_blob(struct drm_backend *backend, struct drm_mode *mode);
 
@@ -582,3 +601,17 @@ void
 drm_output_state_free(struct drm_output_state *state);
 void
 drm_pending_state_free(struct drm_pending_state *pending_state);
+
+struct drm_fb *
+drm_fb_ref(struct drm_fb *fb);
+void
+drm_fb_unref(struct drm_fb *fb);
+
+struct drm_fb *
+drm_fb_create_dumb(struct drm_backend *b, int width, int height,
+		   uint32_t format);
+struct drm_fb *
+drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
+		   bool is_opaque, enum drm_fb_type type);
+struct drm_fb *
+drm_fb_get_from_view(struct drm_output_state *state, struct weston_view *ev);
