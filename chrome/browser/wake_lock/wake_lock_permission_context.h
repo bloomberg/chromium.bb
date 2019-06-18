@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_context_base.h"
-#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
 class WakeLockPermissionContext : public PermissionContextBase {

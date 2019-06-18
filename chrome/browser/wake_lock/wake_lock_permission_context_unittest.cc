@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/wake_lock/wake_lock_permission_context.h"
+
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -23,11 +24,11 @@ TEST_F(WakeLockPermissionContextTests, InsecureOriginsAreRejected) {
   GURL insecure_url("http://www.example.com");
   GURL secure_url("https://www.example.com");
 
-  const ContentSettingsType wake_lock_types[] = {
+  const ContentSettingsType kWakeLockTypes[] = {
       CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN,
       CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM};
 
-  for (const auto& content_settings_type : wake_lock_types) {
+  for (const auto& content_settings_type : kWakeLockTypes) {
     WakeLockPermissionContext permission_context(profile(),
                                                  content_settings_type);
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
