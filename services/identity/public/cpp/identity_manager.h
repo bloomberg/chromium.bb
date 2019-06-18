@@ -12,9 +12,9 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/primary_account_manager.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
+#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/scope_set.h"
@@ -35,6 +35,7 @@ class SigninManagerAndroid;
 class AccountFetcherService;
 class AccountTrackerService;
 class GaiaCookieManagerService;
+class ProfileOAuth2TokenService;
 
 namespace identity {
 
