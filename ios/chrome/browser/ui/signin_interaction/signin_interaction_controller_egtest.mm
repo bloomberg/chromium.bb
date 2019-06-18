@@ -344,41 +344,65 @@ void TapOnPrimarySignInButtonInRecentTabs() {
 
 #pragma mark - Dismiss tests
 
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: setting menu.
+// Interrupted at: user consent.
 - (void)testDismissSigninFromSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromSettings
                         tapSettingsLink:NO];
 }
 
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: setting menu.
+// Interrupted at: advanced sign-in.
 - (void)testDismissAdvancedSigninSettingsFromAdvancedSigninSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromSettings
                         tapSettingsLink:YES];
 }
 
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: bookmark view.
+// Interrupted at: user consent.
 - (void)testDismissSigninFromBookmarks {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromBookmarks
                         tapSettingsLink:NO];
 }
 
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: bookmark view.
+// Interrupted at: advanced sign-in.
 - (void)testDismissAdvancedSigninBookmarksFromAdvancedSigninSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromBookmarks
                         tapSettingsLink:YES];
 }
 
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: recent tabs.
+// Interrupted at: user consent.
 - (void)testDismissSigninFromRecentTabs {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromRecentTabs
                         tapSettingsLink:NO];
 }
 
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: recent tabs.
+// Interrupted at: advanced sign-in.
 - (void)testDismissSigninFromRecentTabsFromAdvancedSigninSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromRecentTabs
                         tapSettingsLink:YES];
 }
 
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: tab switcher.
+// Interrupted at: user consent.
 - (void)testDismissSigninFromTabSwitcher {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromTabSwitcher
                         tapSettingsLink:NO];
 }
 
+// Tests to dismiss sign-in by opening an URL from another app.
+// Sign-in opened from: tab switcher.
+// Interrupted at: advanced sign-in.
 - (void)testDismissSigninFromTabSwitcherFromAdvancedSigninSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromTabSwitcher
                         tapSettingsLink:YES];
@@ -386,6 +410,9 @@ void TapOnPrimarySignInButtonInRecentTabs() {
 
 #pragma mark - Utils
 
+// Starts the sign-in workflow, and simulates opening an URL from another app.
+// |openSigninMethod| is the way to start the sign-in.
+// |tapSettingsLink| if YES, the setting link is tapped before opening the URL.
 - (void)assertOpenURLWhenSigninFromView:(OpenSigninMethod)openSigninMethod
                         tapSettingsLink:(BOOL)tapSettingsLink {
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
