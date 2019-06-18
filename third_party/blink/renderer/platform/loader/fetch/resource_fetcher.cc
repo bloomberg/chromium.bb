@@ -618,8 +618,9 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
   }
 
   resource_load_observer_->DidFinishLoading(
-      identifier, TimeTicks(), 0, resource->GetResponse().DecodedBodyLength(),
-      false, ResourceLoadObserver::ResponseSource::kFromMemoryCache);
+      identifier, base::TimeTicks(), 0,
+      resource->GetResponse().DecodedBodyLength(), false,
+      ResourceLoadObserver::ResponseSource::kFromMemoryCache);
 
   if (!is_static_data) {
     // Resources loaded from memory cache should be reported the first time
@@ -638,7 +639,7 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     info->SetLoadResponseEnd(info->InitialTime());
     scheduled_resource_timing_reports_.push_back(std::move(info));
     if (!resource_timing_report_timer_.IsActive())
-      resource_timing_report_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+      resource_timing_report_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
 }
 
@@ -699,7 +700,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
   if (data->size())
     resource->SetResourceBuffer(data);
   resource->SetCacheIdentifier(cache_identifier);
-  resource->Finish(TimeTicks(), task_runner_.get());
+  resource->Finish(base::TimeTicks(), task_runner_.get());
 
   AddToMemoryCacheIfNeeded(params, resource);
   return resource;
@@ -1717,7 +1718,7 @@ Vector<KURL> ResourceFetcher::GetUrlsOfUnusedPreloads() {
 
 void ResourceFetcher::HandleLoaderFinish(
     Resource* resource,
-    TimeTicks response_end,
+    base::TimeTicks response_end,
     LoaderFinishType type,
     uint32_t inflight_keepalive_bytes,
     bool should_report_corb_blocking,

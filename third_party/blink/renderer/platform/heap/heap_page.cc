@@ -301,7 +301,7 @@ bool BaseArena::SweepUnsweptPage(BasePage* page) {
   return is_empty;
 }
 
-bool BaseArena::LazySweepWithDeadline(TimeTicks deadline) {
+bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
   // It might be heavy to call
   // Platform::current()->monotonicallyIncreasingTimeSeconds() per page (i.e.,
   // 128 KB sweep or one LargeObject sweep), so we check the deadline per 10

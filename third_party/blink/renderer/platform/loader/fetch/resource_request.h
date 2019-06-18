@@ -440,7 +440,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   // TODO(yoav): initial_url_for_resource_timing_ is a stop-gap only needed
   // until Out-of-Blink CORS lands: https://crbug.com/736308
   KURL initial_url_for_resource_timing_;
-  // TimeDelta::Max() represents the default timeout on platforms that have one.
+  // base::TimeDelta::Max() represents the default timeout on platforms that
+  // have one.
   base::TimeDelta timeout_interval_;
   KURL site_for_cookies_;
   scoped_refptr<const SecurityOrigin> top_frame_origin_;

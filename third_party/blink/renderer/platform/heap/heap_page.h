@@ -823,7 +823,7 @@ class PLATFORM_EXPORT BaseArena {
   bool SweepUnsweptPageOnConcurrentThread(BasePage*);
   // Returns true if we have swept all pages within the deadline. Returns false
   // otherwise.
-  bool LazySweepWithDeadline(TimeTicks deadline);
+  bool LazySweepWithDeadline(base::TimeTicks deadline);
   void CompleteSweep();
   void SweepOnConcurrentThread();
 

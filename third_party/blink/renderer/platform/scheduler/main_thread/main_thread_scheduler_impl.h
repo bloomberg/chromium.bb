@@ -297,7 +297,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   base::TimeTicks EnableVirtualTime();
 
   // Tells the scheduler that all TaskQueues should use virtual time. Returns
-  // the TimeTicks that virtual time offsets will be relative to.
+  // the base::TimeTicks that virtual time offsets will be relative to.
   base::TimeTicks EnableVirtualTime(BaseTimeOverridePolicy policy);
   bool IsVirtualTimeEnabled() const;
 

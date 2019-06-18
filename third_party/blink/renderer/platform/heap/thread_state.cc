@@ -94,8 +94,8 @@ const size_t kDefaultAllocatedObjectSizeThreshold = 100 * 1024;
 
 // Duration of one incremental marking step. Should be short enough that it
 // doesn't cause jank even though it is scheduled as a normal task.
-constexpr TimeDelta kDefaultIncrementalMarkingStepDuration =
-    TimeDelta::FromMilliseconds(2);
+constexpr base::TimeDelta kDefaultIncrementalMarkingStepDuration =
+    base::TimeDelta::FromMilliseconds(2);
 
 constexpr size_t kMaxTerminationGCLoops = 20;
 
@@ -556,7 +556,7 @@ ThreadState* ThreadState::FromObject(const void* object) {
   return page->Arena()->GetThreadState();
 }
 
-void ThreadState::PerformIdleLazySweep(TimeTicks deadline) {
+void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
   DCHECK(CheckThread());
 
   // If we are not in a sweeping phase, there is nothing to do here.
@@ -947,7 +947,7 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   UMA_HISTOGRAM_ENUMERATION("BlinkGC.GCReason", event.reason);
 
   // Blink GC cycle time.
-  const WTF::TimeDelta cycle_duration =
+  const base::TimeDelta cycle_duration =
       event.scope_data
           [ThreadHeapStatsCollector::kIncrementalMarkingStartMarking] +
       event.scope_data[ThreadHeapStatsCollector::kIncrementalMarkingStep] +
@@ -957,14 +957,14 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       event.scope_data[ThreadHeapStatsCollector::kLazySweepOnAllocation];
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForGCCycle", cycle_duration);
 
-  const WTF::TimeDelta incremental_marking_duration =
+  const base::TimeDelta incremental_marking_duration =
       event.scope_data
           [ThreadHeapStatsCollector::kIncrementalMarkingStartMarking] +
       event.scope_data[ThreadHeapStatsCollector::kIncrementalMarkingStep];
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForIncrementalMarking",
                       incremental_marking_duration);
 
-  const WTF::TimeDelta marking_duration =
+  const base::TimeDelta marking_duration =
       event.scope_data
           [ThreadHeapStatsCollector::kIncrementalMarkingStartMarking] +
       event.scope_data[ThreadHeapStatsCollector::kIncrementalMarkingStep] +
@@ -972,14 +972,14 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking", marking_duration);
 
   constexpr size_t kMinObjectSizeForReportingThroughput = 1024 * 1024;
-  if (WTF::TimeTicks::IsHighResolution() &&
+  if (base::TimeTicks::IsHighResolution() &&
       (event.object_size_in_bytes_before_sweeping >
        kMinObjectSizeForReportingThroughput) &&
       !marking_duration.is_zero()) {
     DCHECK_GT(marking_duration.InMillisecondsF(), 0.0);
     // For marking throughput computation all marking steps, independent of
     // whether they are triggered from V8 or Blink, are relevant.
-    const WTF::TimeDelta blink_marking_duration =
+    const base::TimeDelta blink_marking_duration =
         marking_duration +
         event.scope_data
             [ThreadHeapStatsCollector::kUnifiedMarkingAtomicPrologue] +
@@ -1288,7 +1288,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
     AtomicPauseScope atomic_pause_scope(this);
     next_incremental_marking_step_duration_ =
         kDefaultIncrementalMarkingStepDuration;
-    previous_incremental_marking_time_left_ = TimeDelta::Max();
+    previous_incremental_marking_time_left_ = base::TimeDelta::Max();
     MarkPhasePrologue(BlinkGC::kNoHeapPointersOnStack,
                       BlinkGC::kIncrementalMarking, reason);
     MarkPhaseVisitRoots();
@@ -1385,7 +1385,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   if (SweepForbidden())
     return;
 
-  TimeTicks start_total_collect_garbage_time = WTF::CurrentTimeTicks();
+  base::TimeTicks start_total_collect_garbage_time = WTF::CurrentTimeTicks();
   RUNTIME_CALL_TIMER_SCOPE_IF_ISOLATE_EXISTS(
       GetIsolate(), RuntimeCallStats::CounterId::kCollectGarbage);
 
@@ -1407,7 +1407,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
   }
 
-  const TimeDelta total_collect_garbage_time =
+  const base::TimeDelta total_collect_garbage_time =
       WTF::CurrentTimeTicks() - start_total_collect_garbage_time;
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForTotalCollectGarbage",
                       total_collect_garbage_time);
@@ -1449,7 +1449,7 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
 }
 
 void ThreadState::AtomicPauseMarkTransitiveClosure() {
-  CHECK(MarkPhaseAdvanceMarking(TimeTicks::Max()));
+  CHECK(MarkPhaseAdvanceMarking(base::TimeTicks::Max()));
 }
 
 void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
@@ -1608,7 +1608,7 @@ void ThreadState::MarkPhaseVisitRoots() {
   }
 }
 
-bool ThreadState::MarkPhaseAdvanceMarking(TimeTicks deadline) {
+bool ThreadState::MarkPhaseAdvanceMarking(base::TimeTicks deadline) {
   return Heap().AdvanceMarking(
       reinterpret_cast<MarkingVisitor*>(current_gc_data_.visitor.get()),
       deadline);
@@ -1691,8 +1691,9 @@ void ThreadState::EnableCompactionForNextGCForTesting() {
 void ThreadState::UpdateIncrementalMarkingStepDuration() {
   if (!IsIncrementalMarking())
     return;
-  TimeDelta time_left = Heap().stats_collector()->estimated_marking_time() -
-                        Heap().stats_collector()->marking_time_so_far();
+  base::TimeDelta time_left =
+      Heap().stats_collector()->estimated_marking_time() -
+      Heap().stats_collector()->marking_time_so_far();
   // Increase step size if estimated time left is increasing.
   if (previous_incremental_marking_time_left_ < time_left) {
     constexpr double ratio = 2.0;

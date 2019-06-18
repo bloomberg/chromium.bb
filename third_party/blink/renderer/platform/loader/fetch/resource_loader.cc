@@ -614,7 +614,7 @@ void ResourceLoader::DidChangePriority(ResourceLoadPriority load_priority,
 
 void ResourceLoader::ScheduleCancel() {
   if (!cancel_timer_.IsActive())
-    cancel_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    cancel_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void ResourceLoader::CancelTimerFired(TimerBase*) {
@@ -1100,13 +1100,13 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
       "endData", EndResourceLoadData(RequestOutcome::kSuccess));
 
   fetcher_->HandleLoaderFinish(
-      resource_.Get(), TimeTicks(),
+      resource_.Get(), base::TimeTicks(),
       ResourceFetcher::kDidFinishFirstPartInMultipart, 0, false,
       std::vector<network::cors::PreflightTimingInfo>());
 }
 
 void ResourceLoader::DidFinishLoading(
-    TimeTicks response_end,
+    base::TimeTicks response_end,
     int64_t encoded_data_length,
     int64_t encoded_body_length,
     int64_t decoded_body_length,
