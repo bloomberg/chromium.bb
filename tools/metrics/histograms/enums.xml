@@ -47779,6 +47779,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="21" label="FIT_TO_PAGE"/>
   <int value="22" label="DEFAULT_DPI"/>
   <int value="23" label="NON_DEFAULT_DPI"/>
+  <int value="24" label="PIN"/>
 </enum>
 
 <enum name="PrivetNotificationsEvent">
