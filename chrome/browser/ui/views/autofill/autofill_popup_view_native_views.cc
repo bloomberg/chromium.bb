@@ -792,7 +792,8 @@ void AutofillPopupRowView::SetSelected(bool is_selected) {
     return;
 
   is_selected_ = is_selected;
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  if (is_selected)
+    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   RefreshStyle();
 }
 
