@@ -1096,7 +1096,7 @@ void Browser::SetTopControlsGestureScrollInProgress(bool in_progress) {
 
 bool Browser::CanOverscrollContent() const {
 #if defined(USE_AURA)
-  return !is_app() && is_type_tabbed() &&
+  return !is_devtools() &&
          base::FeatureList::IsEnabled(features::kOverscrollHistoryNavigation);
 #else
   return false;
