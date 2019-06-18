@@ -78,28 +78,6 @@ function getMaxDate() {
   return dateToHtmlValues(maxDate).date;
 }
 
-/**
- * Gets the current time in a different timezone.
- * @param {!string} timezoneId The timezone to be used to convert the time.
- * @return {Date} The converted time.
- */
-function getDateInTimezone(timezoneId) {
-  return new Date(new Date().toLocaleString('en-US', {timeZone: timezoneId}));
-}
-
-/**
- * Gives the time difference between two timezones.
- * @param {!string} firstTimezoneId The timezone on the left-hand size of the
- *     subtraction.
- * @param {!string} secondsTimezoneId The timezone on the right-hand side of the
- *     subtraction.
- * @return {number} Delta in milliseconds between the two timezones.
- */
-function getTimezoneDelta(firstTimezoneId, secondsTimezoneId) {
-  return getDateInTimezone(firstTimezoneId) -
-      getDateInTimezone(secondsTimezoneId);
-}
-
 Polymer({
   is: 'set-time-dialog',
 
@@ -146,16 +124,6 @@ Polymer({
       readonly: true,
       value: getMaxDate,
     },
-
-    /**
-     * The last timezone selected.
-     * @private
-     */
-    selectedTimezone_: {
-      type: String,
-      value: () =>
-          /** @type {string} */ (loadTimeData.getValue('currentTimezoneId')),
-    },
   },
 
   /**
@@ -181,14 +149,13 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.updateTime_(new Date());
+    this.updateTime_();
   },
 
   /** @override */
   attached: function() {
     // Register listeners for updates from C++ code.
-    this.addWebUIListener(
-        'system-clock-updated', this.updateTime_.bind(this, new Date()));
+    this.addWebUIListener('system-clock-updated', this.updateTime_.bind(this));
     this.addWebUIListener(
         'system-timezone-changed', this.setTimezone_.bind(this));
     this.addWebUIListener('validation-complete', this.saveAndClose_.bind(this));
@@ -196,23 +163,6 @@ Polymer({
     this.browserProxy_.sendPageReady();
 
     /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
-  },
-
-  /**
-   * @return {!Date} The date that is currently displayed on the dialog.
-   * @private
-   */
-  getInputTime_: function() {
-    // Midnight of the current day in GMT.
-    const date = this.$.dateInput.valueAsDate;
-    // Add hours and minutes as set on the time input field.
-    date.setMilliseconds(this.$.timeInput.valueAsNumber);
-    // Add seconds from the system time, since the input fields only allow
-    // setting hour and minute.
-    date.setSeconds(date.getSeconds() + new Date().getSeconds());
-    // Add timezone offset to get real time.
-    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-    return date;
   },
 
   /**
@@ -224,26 +174,21 @@ Polymer({
     const timezoneSelect = this.$$('#timezoneSelect');
     assert(timezoneSelect.childElementCount > 0);
     timezoneSelect.value = timezoneId;
-
-    const now = this.getInputTime_();
-    const timezoneDelta = getTimezoneDelta(timezoneId, this.selectedTimezone_);
-    now.setMilliseconds(now.getMilliseconds() + timezoneDelta);
-
-    this.selectedTimezone_ = timezoneId;
-    this.updateTime_(now);
+    this.updateTime_();
   },
 
   /**
-   * Updates the date/time controls time.
+   * Updates the date/time controls to the current local time.
    * Called initially, then called again once a minute.
-   * @param {!Date} newTime Time used to update the date/time controls.
    * @private
    */
-  updateTime_: function(newTime) {
+  updateTime_: function() {
+    const now = new Date();
+
     // Only update time controls if neither is focused.
     if (document.activeElement.id != 'dateInput' &&
         document.activeElement.id != 'timeInput') {
-      const htmlValues = dateToHtmlValues(newTime);
+      const htmlValues = dateToHtmlValues(now);
       this.prevValues_.date = this.$.dateInput.value = htmlValues.date;
       this.prevValues_.time = this.$.timeInput.value = htmlValues.time;
     }
@@ -253,11 +198,9 @@ Polymer({
     }
 
     // Start timer to update these inputs every minute.
-    const secondsRemaining = 60 - newTime.getSeconds();
-    const nextTime =
-        new Date(newTime.setSeconds(newTime.getSeconds() + secondsRemaining));
-    this.timeTimeoutId_ = window.setTimeout(
-        this.updateTime_.bind(this, nextTime), secondsRemaining * 1000);
+    const secondsRemaining = 60 - now.getSeconds();
+    this.timeTimeoutId_ =
+        window.setTimeout(this.updateTime_.bind(this), secondsRemaining * 1000);
   },
 
   /**
@@ -265,15 +208,14 @@ Polymer({
    * @private
    */
   applyTime_: function() {
-    const now = this.getInputTime_();
+    const date = this.$.dateInput.valueAsDate;
+    date.setMilliseconds(
+        date.getMilliseconds() + this.$.timeInput.valueAsNumber);
 
     // Add timezone offset to get real time.
-    const timezoneDelta = getTimezoneDelta(
-        /** @type {string} */ (loadTimeData.getValue('currentTimezoneId')),
-        this.selectedTimezone_);
-    now.setMilliseconds(now.getMilliseconds() + timezoneDelta);
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
 
-    const seconds = Math.floor(now / 1000);
+    const seconds = Math.floor(date / 1000);
     this.browserProxy_.setTimeInSeconds(seconds);
   },
 
@@ -290,9 +232,6 @@ Polymer({
       // Restore previous value.
       e.target.value = this.prevValues_[e.target.id];
     }
-
-    // Schedule periodic updates with the new time.
-    this.updateTime_(this.getInputTime_());
   },
 
   /**
@@ -300,7 +239,7 @@ Polymer({
    * @private
    */
   onTimezoneChange_: function(e) {
-    this.setTimezone_(e.currentTarget.value);
+    this.browserProxy_.setTimezone(e.currentTarget.value);
   },
 
   /**
@@ -319,7 +258,6 @@ Polymer({
   /** @private */
   saveAndClose_: function() {
     this.applyTime_();
-    this.browserProxy_.setTimezone(this.selectedTimezone_);
     this.browserProxy_.dialogClose();
   },
 });
