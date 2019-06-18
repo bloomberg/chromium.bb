@@ -547,7 +547,7 @@ MSSymbolServerConverter::LocateAndConvertSymbolFile(
 
   AutoDeleter sym_deleter(*converted_symbol_file);
 
-  bool success = writer.WriteMap(converted_output);
+  bool success = writer.WriteSymbols(converted_output);
   fclose(converted_output);
 
   if (!success) {

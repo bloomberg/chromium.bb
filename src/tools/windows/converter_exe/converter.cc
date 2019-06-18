@@ -229,7 +229,7 @@ static bool UploadSymbolFile(const wstring &upload_symbol_url,
   files[L"symbol_file"] = converted_file_w;
 
   FprintfFlush(stderr, "Uploading %s\n", converted_file.c_str());
-  if (!HTTPUpload::SendRequest(
+  if (!HTTPUpload::SendMultipartPostRequest(
       upload_symbol_url, parameters,
       files, NULL, NULL, NULL)) {
     FprintfFlush(stderr, "UploadSymbolFile: HTTPUpload::SendRequest failed "
