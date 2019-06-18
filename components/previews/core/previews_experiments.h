@@ -85,6 +85,13 @@ size_t MaxStoredHistoryLengthForHostIndifferentBlackList();
 // The maximum number of hosts allowed in the in memory black list.
 size_t MaxInMemoryHostsInBlackList();
 
+// The maximum number of hosts that can be stored in the
+// |kHintsFetcherTopHostBlacklist| dictionary pref when initialized. The top
+// hosts will also be returned in order of most engaged. This prevents the most
+// engaged hosts in a user's history before DataSaver being enabled from being
+// requested until the user navigates to the host again.
+size_t MaxHintsFetcherTopHostBlacklistSize();
+
 // The maximum number of hosts allowed to be requested by the client to the
 // remote Optimzation Guide Service.
 size_t MaxHostsForOptimizationGuideServiceHintsFetch();
