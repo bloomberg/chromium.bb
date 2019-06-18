@@ -336,14 +336,6 @@ var getBlendMode = (function() {
     return blendModeEnums[mode] || '';
   }
 }())
-/*!
- Transformation Matrix v2.0
- (c) Epistemex 2014-2015
- www.epistemex.com
- By Ken Fyrstenberg
- Contributions by leeoniya.
- License: MIT, header required.
- */
 
 /**
  * 2D transformation matrix object initialized with identity matrix.
@@ -735,30 +727,6 @@ var Matrix = (function(){
     };
 }());
 
-/*
- Copyright 2014 David Bau.
-
- Permission is hereby granted, free of charge, to any person obtaining
- a copy of this software and associated documentation files (the
- "Software"), to deal in the Software without restriction, including
- without limitation the rights to use, copy, modify, merge, publish,
- distribute, sublicense, and/or sell copies of the Software, and to
- permit persons to whom the Software is furnished to do so, subject to
- the following conditions:
-
- The above copyright notice and this permission notice shall be
- included in all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
- */
-
 (function (pool, math) {
 //
 // The following constants are related to IEEE 754 limits.
@@ -969,18 +937,7 @@ var Matrix = (function(){
     BMMath    // math: package containing random, pow, and seedrandom
 );
 var BezierFactory = (function(){
-    /**
-     * BezierEasing - use bezier curve for transition easing function
-     * by Gaëtan Renaudeau 2014 - 2015 – MIT License
-     *
-     * Credits: is based on Firefox's nsSMILKeySpline.cpp
-     * Usage:
-     * var spline = BezierEasing([ 0.25, 0.1, 0.25, 1.0 ])
-     * spline.get(x) => returns the easing value | x must be in [0, 1] range
-     *
-     */
-
-        var ob = {};
+    var ob = {};
     ob.getBezierEasing = getBezierEasing;
     var beziers = {};
 
