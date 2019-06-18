@@ -19,7 +19,10 @@
 
 namespace media {
 
-static const int kTestCallbacks = 5;
+static const size_t kTestCallbacks = 5;
+
+using testing::Eq;
+using testing::SizeIs;
 
 class FakeAudioWorkerTest : public testing::Test {
  public:
@@ -65,14 +68,13 @@ class FakeAudioWorkerTest : public testing::Test {
                          base::Unretained(this), callbacks),
           time_between_callbacks_ / 2);
     } else {
-      EndTest(callbacks);
+      EndTest();
     }
   }
 
-  void EndTest(size_t callbacks) {
+  void EndTest() {
     ASSERT_TRUE(TaskRunner()->BelongsToCurrentThread());
     fake_worker_.Stop();
-    EXPECT_LE(callbacks, callbacks_.size());
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunner() {
@@ -96,7 +98,7 @@ TEST_F(FakeAudioWorkerTest, FakeBasicCallback) {
   base::OnceClosure run_on_audio_thread = base::BindOnce(
       &FakeAudioWorkerTest::RunOnAudioThread, base::Unretained(this));
   base::OnceClosure end_test =
-      base::BindOnce(&FakeAudioWorkerTest::EndTest, base::Unretained(this), 1);
+      base::BindOnce(&FakeAudioWorkerTest::EndTest, base::Unretained(this));
 
   // Start() should immediately post a task to run the callback, so we
   // should end up with only a single callback being run.
@@ -108,6 +110,8 @@ TEST_F(FakeAudioWorkerTest, FakeBasicCallback) {
       FROM_HERE, std::move(run_on_audio_thread), std::move(end_test));
 
   scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_THAT(callbacks_, SizeIs(1));
 }
 
 // Ensure the time between callbacks is correct.
@@ -117,6 +121,8 @@ TEST_F(FakeAudioWorkerTest, TimeBetweenCallbacks) {
       base::BindOnce(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,
                      base::Unretained(this), kTestCallbacks));
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
+
+  EXPECT_THAT(callbacks_, SizeIs(Eq(kTestCallbacks)));
 
   // There are only (kTestCallbacks - 1) intervals between kTestCallbacks.
   base::TimeTicks start_time = callbacks_.front();
@@ -138,21 +144,29 @@ TEST_F(FakeAudioWorkerTest, TimeBetweenCallbacks) {
 
 // Ensure Start()/Stop() on the worker doesn't generate too many callbacks. See
 // http://crbug.com/159049.
-// Flaky test; see crbug.com/974078
-TEST_F(FakeAudioWorkerTest, DISABLED_StartStopClearsCallbacks) {
-  TaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,
-                     base::Unretained(this), kTestCallbacks));
+TEST_F(FakeAudioWorkerTest, StartStopClearsCallbacks) {
+  TaskRunner()->PostTask(FROM_HERE,
+                         base::BindOnce(&FakeAudioWorkerTest::RunOnAudioThread,
+                                        base::Unretained(this)));
 
-  // Issue a Stop() / Start() in between expected callbacks to maximize the
-  // chance of catching the worker doing the wrong thing.
+  // Issuing a Stop() / Start() in the middle of the callback period should not
+  // trigger a callback.
   scoped_task_environment_.FastForwardBy(time_between_callbacks_ / 2);
+  EXPECT_THAT(callbacks_, SizeIs(1));
   TaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&FakeAudioWorkerTest::StopStartOnAudioThread,
                                 base::Unretained(this)));
 
+  scoped_task_environment_.FastForwardBy(time_between_callbacks_);
+  // We expect 3 callbacks: First Start(), Second Start(), and one for the
+  // period. If the first callback was not cancelled, we would get 4 callbacks,
+  // two on the first period.
+  TaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FakeAudioWorkerTest::EndTest, base::Unretained(this)));
+
   // EndTest() will ensure the proper number of callbacks have occurred.
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_THAT(callbacks_, SizeIs(3));
 }
 }  // namespace media
