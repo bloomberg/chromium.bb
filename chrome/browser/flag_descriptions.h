@@ -1812,9 +1812,6 @@ extern const char kEnableChromeOsAccountManagerDescription[];
 extern const char kEnableDiscoverAppName[];
 extern const char kEnableDiscoverAppDescription[];
 
-extern const char kEnableDriveFsName[];
-extern const char kEnableDriveFsDescription[];
-
 extern const char kEnableEncryptionMigrationName[];
 extern const char kEnableEncryptionMigrationDescription[];
 

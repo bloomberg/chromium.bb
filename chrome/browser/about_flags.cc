@@ -3175,12 +3175,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
-    {"enable-drive-fs", flag_descriptions::kEnableDriveFsName,
-     flag_descriptions::kEnableDriveFsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kDriveFs)},
-#endif  // OS_CHROMEOS
-
-#if defined(OS_CHROMEOS)
     {"enable-myfiles-volume", flag_descriptions::kEnableMyFilesVolumeName,
      flag_descriptions::kEnableMyFilesVolumeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMyFilesVolume)},

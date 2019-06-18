@@ -3031,10 +3031,6 @@ const char kEnableDiscoverAppName[] = "Enable Discover App";
 const char kEnableDiscoverAppDescription[] =
     "Enable Discover App icon in launcher.";
 
-const char kEnableDriveFsName[] = "Enable DriveFS";
-const char kEnableDriveFsDescription[] =
-    "Enables use of the new DriveFS-based Drive sync client.";
-
 const char kEnableEncryptionMigrationName[] =
     "Enable encryption migration of user data";
 const char kEnableEncryptionMigrationDescription[] =
