@@ -44,16 +44,6 @@ class FakeAudioWorkerTest : public testing::Test {
         &FakeAudioWorkerTest::CalledByFakeWorker, base::Unretained(this)));
   }
 
-  void RunOnceOnAudioThread() {
-    ASSERT_TRUE(TaskRunner()->BelongsToCurrentThread());
-    RunOnAudioThread();
-    // Start() should immediately post a task to run the callback, so we
-    // should end up with only a single callback being run.
-    TaskRunner()->PostTask(FROM_HERE,
-                           base::BindOnce(&FakeAudioWorkerTest::EndTest,
-                                          base::Unretained(this), 1));
-  }
-
   void StopStartOnAudioThread() {
     ASSERT_TRUE(TaskRunner()->BelongsToCurrentThread());
     fake_worker_.Stop();
@@ -102,17 +92,21 @@ class FakeAudioWorkerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FakeAudioWorkerTest);
 };
 
-// Ensure the worker runs on the audio thread and fires callbacks.
-// TODO(https://crbug.com/945486): Flakily failing on Fuchsia.
-#if defined(OS_FUCHSIA)
-#define MAYBE_FakeBasicCallback DISABLED_FakeBasicCallback
-#else
-#define MAYBE_FakeBasicCallback FakeBasicCallback
-#endif
-TEST_F(FakeAudioWorkerTest, MAYBE_FakeBasicCallback) {
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeAudioWorkerTest::RunOnceOnAudioThread,
-                                base::Unretained(this)));
+TEST_F(FakeAudioWorkerTest, FakeBasicCallback) {
+  base::OnceClosure run_on_audio_thread = base::BindOnce(
+      &FakeAudioWorkerTest::RunOnAudioThread, base::Unretained(this));
+  base::OnceClosure end_test =
+      base::BindOnce(&FakeAudioWorkerTest::EndTest, base::Unretained(this), 1);
+
+  // Start() should immediately post a task to run the callback, so we
+  // should end up with only a single callback being run.
+  //
+  // PostTaskAndReply because we want to end_test after run_on_audio_thread is
+  // finished. This is because RunOnAudioThread may post other tasks which
+  // should run before we end_test.
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTaskAndReply(
+      FROM_HERE, std::move(run_on_audio_thread), std::move(end_test));
+
   scoped_task_environment_.RunUntilIdle();
 }
 
