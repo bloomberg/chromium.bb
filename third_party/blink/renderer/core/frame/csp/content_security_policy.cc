@@ -185,10 +185,11 @@ void ContentSecurityPolicy::SetupSelf(const ContentSecurityPolicy& other) {
 void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
   DCHECK(delegate_);
 
-  const SecurityOrigin* security_origin = delegate_->GetSecurityOrigin();
-  DCHECK(security_origin);
+  const SecurityOrigin* self_origin =
+      delegate_->GetSecurityOrigin()->GetOriginOrPrecursorOriginIfOpaque();
+  DCHECK(self_origin);
 
-  SetupSelf(*security_origin);
+  SetupSelf(*self_origin);
 
   // Set mixed content checking and sandbox flags, then dump all the parsing
   // error messages, then poke at histograms.
