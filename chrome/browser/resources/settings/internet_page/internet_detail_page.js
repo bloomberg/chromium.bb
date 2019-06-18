@@ -1534,6 +1534,11 @@ Polymer({
       return false;
     }
 
+    // Cellular IP addresses are shown under the network details section.
+    if (this.isCellular_(networkProperties)) {
+      return false;
+    }
+
     return !!ipAddress && this.isConnectedState_(networkProperties);
   },
 
