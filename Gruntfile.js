@@ -39,12 +39,12 @@ module.exports = function(grunt) {
 
     run: {
       'generate-listings': mkGen(false, 'cts', 'unittests', 'demos'),
-      'cts':             mkRun(false, 'cts'),
-      'debug-cts':       mkRun(true,  'cts'),
-      'unittests':       mkRun(false, 'unittests'),
-      'debug-unittests': mkRun(true,  'unittests'),
-      'demos':           mkRun(false, 'demos'),
-      'debug-demos':     mkRun(true,  'demos'),
+      'cts': mkRun(false, 'cts'),
+      'debug-cts': mkRun(true, 'cts'),
+      'unittests': mkRun(false, 'unittests'),
+      'debug-unittests': mkRun(true, 'unittests'),
+      'demos': mkRun(false, 'demos'),
+      'debug-demos': mkRun(true, 'demos'),
       'build-out': {
         cmd: 'npx',
         args: [
@@ -66,12 +66,16 @@ module.exports = function(grunt) {
       },
       'lint': {
         cmd: 'npx',
-        args: [ 'tslint', '--project', '.' ]
+        args: ['tslint', '--project', '.']
       },
       'fix': {
         cmd: 'npx',
-        args: [ 'tslint', '--project', '.', '--fix' ]
+        args: ['tslint', '--project', '.', '--fix']
       },
+      'check-git-is-clean': {
+        cmd: 'git',
+        args: ['diff-index', '--quiet', 'HEAD', '--']
+      }
     },
 
     'http-server': {
@@ -104,6 +108,7 @@ module.exports = function(grunt) {
         src: [
           'src/**/*.ts',
           'tools/**/*.js',
+          'Gruntfile.js',
         ]
       }
     }
@@ -119,14 +124,14 @@ module.exports = function(grunt) {
   const publishedTasks = [];
   function publishTask(name, desc, deps) {
     grunt.registerTask(name, deps);
-    publishedTasks.push({name, desc});
+    publishedTasks.push({ name, desc });
   }
 
   publishTask('check', 'Check Typescript build', [
     'ts:check',
   ]);
   publishedTasks.push({ name: 'run:{lint,fix}', desc: 'Run tslint' });
-  publishedTasks.push({ name: 'tsfmt', desc: 'Run tsfmt' });
+  publishTask('format', 'Run tsfmt', ['tsfmt']);
   publishTask('build', 'Build out/', [
     'mkdir:out',
     'run:build-shaderc',
@@ -143,9 +148,17 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', '', () => {
     console.log('Available tasks (see grunt --help for info):');
-    for (const {name, desc} of publishedTasks) {
+    for (const { name, desc } of publishedTasks) {
       console.log(`$ grunt ${name}`);
       console.log(`  ${desc}`);
     }
   });
+
+  publishTask('presubmit', 'Run all presubmit checks', [
+    'check',
+    'build',
+    'run:unittests',
+    'format',
+    'run:check-git-is-clean',
+  ]);
 };
