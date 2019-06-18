@@ -890,6 +890,7 @@ crbug.com/974717 [ Linux ] images/feature-policy-oversized-images-resize.html [ 
 crbug.com/591099 [ Mac10.11 ] fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.11 ] media/track/track-cue-rendering-position-auto-rtl.html [ Failure ]
 crbug.com/591099 [ Mac10.11 ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
+crbug.com/976355 [ Mac10.12 ] fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] compositing/geometry/root-layer-update.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] compositing/overlap-blending/reflection-opacity-huge.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] compositing/reflections/reflection-positioning2.html [ Failure ]
