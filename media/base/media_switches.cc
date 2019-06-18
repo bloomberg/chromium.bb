@@ -242,10 +242,10 @@ const base::Feature kBackgroundVideoPauseOptimization{
 const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable the instance from LinuxVideoDecoderFactory in MojoVideoDecoderService,
-// replacing VdaVideoDecoder at Chrome OS platform.
-const base::Feature kLinuxVideoDecoder{"LinuxVideoDecoder",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+// Enable the instance from ChromeosVideoDecoderFactory in
+// MojoVideoDecoderService, replacing VdaVideoDecoder at Chrome OS platform.
+const base::Feature kChromeosVideoDecoder{"ChromeosVideoDecoder",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable The D3D11 Video decoder.
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/linux/platform_video_frame_pool.h"
+#include "media/gpu/chromeos/platform_video_frame_pool.h"
 
 #include <utility>
 
@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
-#include "media/gpu/linux/platform_video_frame_utils.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 
 namespace media {

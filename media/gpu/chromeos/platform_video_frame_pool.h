@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_LINUX_PLATFORM_VIDEO_FRAME_POOL_H_
-#define MEDIA_GPU_LINUX_PLATFORM_VIDEO_FRAME_POOL_H_
+#ifndef MEDIA_GPU_CHROMEOS_PLATFORM_VIDEO_FRAME_POOL_H_
+#define MEDIA_GPU_CHROMEOS_PLATFORM_VIDEO_FRAME_POOL_H_
 
 #include <stddef.h>
 
@@ -15,7 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "media/base/video_frame.h"
-#include "media/gpu/linux/dmabuf_video_frame_pool.h"
+#include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace base {
@@ -140,4 +140,4 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
 };
 
 }  // namespace media
-#endif  // MEDIA_GPU_LINUX_PLATFORM_VIDEO_FRAME_POOL_H_
+#endif  // MEDIA_GPU_CHROMEOS_PLATFORM_VIDEO_FRAME_POOL_H_

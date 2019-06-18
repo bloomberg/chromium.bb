@@ -6,13 +6,13 @@ import("//build/buildflag_header.gni")
 import("//build/config/ui.gni")
 import("//media/gpu/args.gni")
 
-assert(is_linux)
+assert(is_chromeos)
 
-source_set("linux") {
+source_set("chromeos") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
-    "linux_video_decoder_factory.cc",
-    "linux_video_decoder_factory.h",
+    "chromeos_video_decoder_factory.cc",
+    "chromeos_video_decoder_factory.h",
   ]
 
   deps = [

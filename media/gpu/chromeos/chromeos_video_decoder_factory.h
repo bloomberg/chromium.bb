@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_LINUX_LINUX_VIDEO_DECODER_FACTORY_H_
-#define MEDIA_GPU_LINUX_LINUX_VIDEO_DECODER_FACTORY_H_
+#ifndef MEDIA_GPU_CHROMEOS_CHROMEOS_VIDEO_DECODER_FACTORY_H_
+#define MEDIA_GPU_CHROMEOS_CHROMEOS_VIDEO_DECODER_FACTORY_H_
 
 #include <memory>
 
@@ -23,7 +23,7 @@ namespace media {
 
 class VideoDecoder;
 
-class MEDIA_GPU_EXPORT LinuxVideoDecoderFactory {
+class MEDIA_GPU_EXPORT ChromeosVideoDecoderFactory {
  public:
   using GetCommandBufferStubCB = base::OnceCallback<gpu::CommandBufferStub*()>;
 
@@ -43,4 +43,4 @@ class MEDIA_GPU_EXPORT LinuxVideoDecoderFactory {
 };
 
 }  // namespace media
-#endif  // MEDIA_GPU_LINUX_LINUX_VIDEO_DECODER_FACTORY_H_
+#endif  // MEDIA_GPU_CHROMEOS_CHROMEOS_VIDEO_DECODER_FACTORY_H_

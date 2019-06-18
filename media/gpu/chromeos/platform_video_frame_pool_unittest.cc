@@ -9,7 +9,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/gpu/linux/platform_video_frame_pool.h"
+#include "media/gpu/chromeos/platform_video_frame_pool.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
