@@ -69,11 +69,16 @@ var (
 var (
 	// pathsToScan are the subpaths in the systemRoot that should be scanned for shared libraries.
 	pathsToScan = []string{
-		"/Library/QuickTime",
 		"/System/Library/Components",
 		"/System/Library/Frameworks",
 		"/System/Library/PrivateFrameworks",
 		"/usr/lib",
+	}
+
+	// optionalPathsToScan is just like pathsToScan, but the paths are permitted to be absent.
+	optionalPathsToScan = []string{
+		// Gone in 10.15.
+		"/Library/QuickTime",
 	}
 
 	// uploadServers are the list of servers to which symbols should be uploaded.
@@ -322,7 +327,11 @@ func findLibsInRoot(root string, dq *DumpQueue) {
 	fq.WorkerPool = StartWorkerPool(12, fq.worker)
 
 	for _, p := range pathsToScan {
-		fq.findLibsInPath(path.Join(root, p))
+		fq.findLibsInPath(path.Join(root, p), true)
+	}
+
+	for _, p := range optionalPathsToScan {
+		fq.findLibsInPath(path.Join(root, p), false)
 	}
 
 	close(fq.queue)
@@ -332,9 +341,12 @@ func findLibsInRoot(root string, dq *DumpQueue) {
 
 // findLibsInPath recursively walks the directory tree, sending file paths to
 // test for being Mach-O to the findQueue.
-func (fq *findQueue) findLibsInPath(loc string) {
+func (fq *findQueue) findLibsInPath(loc string, mustExist bool) {
 	d, err := os.Open(loc)
 	if err != nil {
+		if !mustExist && os.IsNotExist(err) {
+			return
+		}
 		log.Fatalf("Could not open %s: %v", loc, err)
 	}
 	defer d.Close()
@@ -348,7 +360,7 @@ func (fq *findQueue) findLibsInPath(loc string) {
 		for _, fi := range fis {
 			fp := path.Join(loc, fi.Name())
 			if fi.IsDir() {
-				fq.findLibsInPath(fp)
+				fq.findLibsInPath(fp, true)
 				continue
 			} else if fi.Mode()&os.ModeSymlink != 0 {
 				continue
