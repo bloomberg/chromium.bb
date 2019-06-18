@@ -110,7 +110,7 @@ static INLINE void init_best_pickmode(BEST_PICKMODE *bp) {
   bp->best_ref_frame = LAST_FRAME;
   bp->best_tx_size = TX_8X8;
   bp->best_intra_tx_size = TX_8X8;
-  bp->best_pred_filter = EIGHTTAP_REGULAR;
+  bp->best_pred_filter = av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
   bp->best_mode_skip_txfm = 0;
   bp->best_second_ref_frame = NONE_FRAME;
   bp->best_pred = NULL;
@@ -1355,8 +1355,9 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     // TODO(kyslov) bring back filter search
-    mi->interp_filters =
-        (filter_ref == SWITCHABLE) ? EIGHTTAP_REGULAR : filter_ref;
+    mi->interp_filters = (filter_ref == SWITCHABLE)
+                             ? av1_broadcast_interp_filter(EIGHTTAP_REGULAR)
+                             : av1_broadcast_interp_filter(filter_ref);
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                   AOM_PLANE_Y, AOM_PLANE_Y);
 #if !_TMP_USE_CURVFIT_

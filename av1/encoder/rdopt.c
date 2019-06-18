@@ -6625,7 +6625,8 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     ref_yv12[1] = xd->plane[plane].pre[1];
 
     // Get the prediction block from the 'other' reference frame.
-    const InterpFilters interp_filters = EIGHTTAP_REGULAR;
+    const InterpFilters interp_filters =
+        av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
 
     // Since we have scaled the reference frames to match the size of the
     // current frame we must use a unit scaling factor during mode selection.
