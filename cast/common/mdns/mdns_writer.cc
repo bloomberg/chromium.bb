@@ -214,6 +214,16 @@ bool MdnsWriter::WriteMdnsRecord(const MdnsRecord& record) {
   return false;
 }
 
+bool MdnsWriter::WriteMdnsQuestion(const MdnsQuestion& question) {
+  Cursor cursor(this);
+  if (WriteDomainName(question.name()) && Write<uint16_t>(question.type()) &&
+      Write<uint16_t>(question.record_class())) {
+    cursor.Commit();
+    return true;
+  }
+  return false;
+}
+
 bool MdnsWriter::WriteIPAddress(const IPAddress& address) {
   uint8_t bytes[IPAddress::kV6Size];
   size_t size;

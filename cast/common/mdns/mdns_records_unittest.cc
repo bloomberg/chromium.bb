@@ -429,5 +429,110 @@ TEST(MdnsRecordTest, WritePtrRecord) {
   EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedResult));
 }
 
+TEST(MdnsQuestionTest, CopyAndAssign) {
+  MdnsQuestion question(DomainName{"testing", "local"}, kTypePTR,
+                        kClassIN | kUnicastResponseBit);
+
+  MdnsQuestion question_copy(question);
+  EXPECT_EQ(question_copy.name().ToString(), "testing.local");
+  EXPECT_EQ(question_copy.type(), kTypePTR);
+  EXPECT_EQ(question_copy.record_class(), kClassIN | kUnicastResponseBit);
+  EXPECT_EQ(question_copy, question);
+
+  MdnsQuestion question_assign;
+  question_assign = question;
+  EXPECT_EQ(question_assign.name().ToString(), "testing.local");
+  EXPECT_EQ(question_assign.type(), kTypePTR);
+  EXPECT_EQ(question_assign.record_class(), kClassIN | kUnicastResponseBit);
+  EXPECT_EQ(question_assign, question);
+}
+
+TEST(MdnsQuestionTest, Read) {
+  // clang-format off
+  const uint8_t kTestQuestion[] = {
+      0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      0x00, 0x01,  // TYPE = A (1)
+      0x80, 0x01,  // CLASS = IN (1) | UNICAST_BIT
+  };
+  // clang-format on
+  MdnsReader reader(kTestQuestion, sizeof(kTestQuestion));
+  MdnsQuestion question;
+  EXPECT_TRUE(reader.ReadMdnsQuestion(&question));
+  EXPECT_EQ(reader.remaining(), UINT64_C(0));
+
+  EXPECT_EQ(question.name().ToString(), "testing.local");
+  EXPECT_EQ(question.type(), kTypeA);
+  EXPECT_EQ(question.record_class(), kClassIN | kUnicastResponseBit);
+}
+
+TEST(MdnsQuestionTest, ReadCompressedNames) {
+  // clang-format off
+  const uint8_t kTestQuestions[] = {
+      // First Question
+      0x05, 'f', 'i', 'r', 's', 't',
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      0x00, 0x01,  // TYPE = A (1)
+      0x80, 0x01,  // CLASS = IN (1) | UNICAST_BIT
+      // Second Question
+      0x06, 's', 'e', 'c', 'o', 'n', 'd',
+      0xc0, 0x06,  // Domain name label pointer
+      0x00, 0x0c,  // TYPE = PTR (12)
+      0x00, 0x01,  // CLASS = IN (1)
+  };
+  // clang-format on
+  MdnsReader reader(kTestQuestions, sizeof(kTestQuestions));
+  MdnsQuestion question;
+  EXPECT_TRUE(reader.ReadMdnsQuestion(&question));
+
+  EXPECT_EQ(question.name().ToString(), "first.local");
+  EXPECT_EQ(question.type(), kTypeA);
+  EXPECT_EQ(question.record_class(), kClassIN | kUnicastResponseBit);
+
+  EXPECT_TRUE(reader.ReadMdnsQuestion(&question));
+  EXPECT_EQ(reader.remaining(), UINT64_C(0));
+
+  EXPECT_EQ(question.name().ToString(), "second.local");
+  EXPECT_EQ(question.type(), kTypePTR);
+  EXPECT_EQ(question.record_class(), kClassIN);
+}
+
+TEST(MdnsQuestionTest, FailToReadInvalidHostName) {
+  // clang-format off
+  const uint8_t kTestQuestion[] = {
+      // Invalid NAME: length byte too short
+      0x03, 'i', 'n', 'v', 'a', 'l', 'i', 'd',
+      0x00,
+      0x00, 0x01,  // TYPE = A (1)
+      0x00, 0x01,  // CLASS = IN (1)
+  };
+  // clang-format on
+  MdnsReader reader(kTestQuestion, sizeof(kTestQuestion));
+  MdnsQuestion question;
+  EXPECT_FALSE(reader.ReadMdnsQuestion(&question));
+}
+
+TEST(MdnsQuestionTest, Write) {
+  // clang-format off
+  const uint8_t kExpectedResult[] = {
+      0x04, 'w', 'i', 'r', 'e',
+      0x06, 'f', 'o', 'r', 'm', 'a', 't',
+      0x05, 'l', 'o', 'c', 'a', 'l',
+      0x00,
+      0x00, 0x0c,  // TYPE = PTR (12)
+      0x80, 0x01,  // CLASS = IN (1) | UNICAST_BIT
+  };
+  // clang-format on
+  MdnsQuestion question(DomainName{"wire", "format", "local"}, kTypePTR,
+                        kClassIN | kUnicastResponseBit);
+  std::vector<uint8_t> buffer(sizeof(kExpectedResult));
+  MdnsWriter writer(buffer.data(), buffer.size());
+  EXPECT_TRUE(writer.WriteMdnsQuestion(question));
+  EXPECT_EQ(writer.remaining(), UINT64_C(0));
+  EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedResult));
+}
+
 }  // namespace mdns
 }  // namespace cast

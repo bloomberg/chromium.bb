@@ -34,6 +34,7 @@ class MdnsWriter : public openscreen::BigEndianWriter {
   // The correct type of RDATA to be written is contained in the type
   // specified in the record.
   bool WriteMdnsRecord(const MdnsRecord& record);
+  bool WriteMdnsQuestion(const MdnsQuestion& question);
 
  private:
   bool WriteIPAddress(const IPAddress& address);

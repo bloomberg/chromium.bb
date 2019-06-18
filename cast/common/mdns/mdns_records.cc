@@ -180,11 +180,29 @@ bool MdnsRecord::operator!=(const MdnsRecord& rhs) const {
 }
 
 size_t MdnsRecord::max_wire_size() const {
-  auto wire_size_visitor = [](auto&& arg) {
-    return arg.max_wire_size();
-  };
+  auto wire_size_visitor = [](auto&& arg) { return arg.max_wire_size(); };
   return name_.max_wire_size() + sizeof(type_) + sizeof(record_class_) +
          sizeof(ttl_) + absl::visit(wire_size_visitor, rdata_);
+}
+
+MdnsQuestion::MdnsQuestion(DomainName name,
+                           uint16_t type,
+                           uint16_t record_class)
+    : name_(std::move(name)), type_(type), record_class_(record_class) {
+  OSP_CHECK(!name_.empty());
+}
+
+bool MdnsQuestion::operator==(const MdnsQuestion& rhs) const {
+  return type_ == rhs.type_ && record_class_ == rhs.record_class_ &&
+         name_ == rhs.name_;
+}
+
+bool MdnsQuestion::operator!=(const MdnsQuestion& rhs) const {
+  return !(*this == rhs);
+}
+
+size_t MdnsQuestion::max_wire_size() const {
+  return name_.max_wire_size() + sizeof(type_) + sizeof(record_class_);
 }
 
 }  // namespace mdns

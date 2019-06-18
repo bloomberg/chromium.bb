@@ -280,6 +280,33 @@ class MdnsRecord {
   Rdata rdata_;
 };
 
+class MdnsQuestion {
+ public:
+  MdnsQuestion() = default;
+  MdnsQuestion(DomainName name, uint16_t type, uint16_t record_class);
+  MdnsQuestion(const MdnsQuestion& other) = default;
+  MdnsQuestion(MdnsQuestion&& other) noexcept = default;
+  ~MdnsQuestion() = default;
+
+  MdnsQuestion& operator=(const MdnsQuestion& other) = default;
+  MdnsQuestion& operator=(MdnsQuestion&& other) noexcept = default;
+
+  bool operator==(const MdnsQuestion& other) const;
+  bool operator!=(const MdnsQuestion& other) const;
+
+  size_t max_wire_size() const;
+  const DomainName& name() const { return name_; }
+  uint16_t type() const { return type_; }
+  uint16_t record_class() const { return record_class_; }
+
+ private:
+  void CopyFrom(const MdnsQuestion& other);
+
+  DomainName name_;
+  uint16_t type_ = 0;
+  uint16_t record_class_ = 0;
+};
+
 }  // namespace mdns
 }  // namespace cast
 

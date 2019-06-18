@@ -210,6 +210,21 @@ bool MdnsReader::ReadMdnsRecord(MdnsRecord* out) {
   return false;
 }
 
+bool MdnsReader::ReadMdnsQuestion(MdnsQuestion* out) {
+  OSP_DCHECK(out);
+  Cursor cursor(this);
+  DomainName name;
+  uint16_t type;
+  uint16_t record_class;
+  if (ReadDomainName(&name) && Read<uint16_t>(&type) &&
+      Read<uint16_t>(&record_class)) {
+    *out = MdnsQuestion(std::move(name), type, record_class);
+    cursor.Commit();
+    return true;
+  }
+  return false;
+}
+
 bool MdnsReader::ReadIPAddress(IPAddress::Version version, IPAddress* out) {
   size_t ipaddress_size = (version == IPAddress::Version::kV6)
                               ? IPAddress::kV6Size

@@ -31,6 +31,7 @@ class MdnsReader : public openscreen::BigEndianReader {
   // The correct type of RDATA to be read is determined by the type
   // specified in the record.
   bool ReadMdnsRecord(MdnsRecord* out);
+  bool ReadMdnsQuestion(MdnsQuestion* out);
 
 private:
   bool ReadIPAddress(IPAddress::Version version, IPAddress* out);
