@@ -100,6 +100,10 @@ Response FromProtocolPermissionType(
     *out_type = content::PermissionType::PAYMENT_HANDLER;
   } else if (type == protocol::Browser::PermissionTypeEnum::BackgroundFetch) {
     *out_type = content::PermissionType::BACKGROUND_FETCH;
+  } else if (type == protocol::Browser::PermissionTypeEnum::WakeLockScreen) {
+    *out_type = content::PermissionType::WAKE_LOCK_SCREEN;
+  } else if (type == protocol::Browser::PermissionTypeEnum::WakeLockSystem) {
+    *out_type = content::PermissionType::WAKE_LOCK_SYSTEM;
   } else {
     return Response::InvalidParams("Unknown permission type: " + type);
   }

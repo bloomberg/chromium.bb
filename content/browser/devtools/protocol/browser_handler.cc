@@ -147,6 +147,10 @@ Response FromProtocolPermissionType(
   } else if (type ==
              protocol::Browser::PermissionTypeEnum::PeriodicBackgroundSync) {
     *out_type = PermissionType::PERIODIC_BACKGROUND_SYNC;
+  } else if (type == protocol::Browser::PermissionTypeEnum::WakeLockScreen) {
+    *out_type = PermissionType::WAKE_LOCK_SCREEN;
+  } else if (type == protocol::Browser::PermissionTypeEnum::WakeLockSystem) {
+    *out_type = PermissionType::WAKE_LOCK_SYSTEM;
   } else {
     return Response::InvalidParams("Unknown permission type: " + type);
   }

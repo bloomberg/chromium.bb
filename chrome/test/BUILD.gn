@@ -3117,6 +3117,7 @@ test("unit_tests") {
     "../browser/update_client/chrome_update_query_params_delegate_unittest.cc",
     "../browser/vr/metrics/session_metrics_helper_unittest.cc",
     "../browser/vr/vr_tab_helper_unittest.cc",
+    "../browser/wake_lock/wake_lock_permission_context_unittest.cc",
     "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
     "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
     "../browser/win/chrome_elf_init_unittest.cc",

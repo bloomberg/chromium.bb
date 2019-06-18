@@ -9455,6 +9455,8 @@ Called by update_net_error_codes.py.-->
   <int value="50" label="Periodic background sync"/>
   <int value="51" label="HID guard"/>
   <int value="52" label="HID permission data"/>
+  <int value="54" label="Screen wake lock"/>
+  <int value="55" label="System wake lock"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -46131,6 +46133,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="17" label="PERMISSION_BACKGROUND_FETCH"/>
   <int value="18" label="PERMISSION_IDLE_DETECTION"/>
   <int value="19" label="PERMISSION_PERIODIC_BACKGROUND_SYNC"/>
+  <int value="20" label="PERMISSION_WAKE_LOCK_SCREEN"/>
+  <int value="21" label="PERMISSION_WAKE_LOCK_SYSTEM"/>
 </enum>
 
 <enum name="PersistedLogsLogReadStatus">
