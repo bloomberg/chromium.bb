@@ -502,6 +502,12 @@ to_drm_mode(struct weston_mode *base)
 	return container_of(base, struct drm_mode, base);
 }
 
+struct drm_output *
+drm_output_find_by_crtc(struct drm_backend *b, uint32_t crtc_id);
+
+struct drm_head *
+drm_head_find_by_connector(struct drm_backend *backend, uint32_t connector_id);
+
 int
 drm_mode_ensure_blob(struct drm_backend *backend, struct drm_mode *mode);
 
@@ -523,7 +529,56 @@ drm_output_set_mode(struct weston_output *base,
 		    enum weston_drm_backend_output_mode mode,
 		    const char *modeline);
 
+void
+drm_property_info_populate(struct drm_backend *b,
+		           const struct drm_property_info *src,
+			   struct drm_property_info *info,
+			   unsigned int num_infos,
+			   drmModeObjectProperties *props);
 uint64_t
 drm_property_get_value(struct drm_property_info *info,
 		       const drmModeObjectProperties *props,
 		       uint64_t def);
+int
+drm_plane_populate_formats(struct drm_plane *plane, const drmModePlane *kplane,
+			   const drmModeObjectProperties *props);
+void
+drm_property_info_free(struct drm_property_info *info, int num_props);
+
+extern struct drm_property_enum_info plane_type_enums[];
+extern const struct drm_property_info plane_props[];
+extern struct drm_property_enum_info dpms_state_enums[];
+extern const struct drm_property_info connector_props[];
+extern const struct drm_property_info crtc_props[];
+
+int
+init_kms_caps(struct drm_backend *b);
+
+int
+drm_pending_state_test(struct drm_pending_state *pending_state);
+int
+drm_pending_state_apply(struct drm_pending_state *pending_state);
+int
+drm_pending_state_apply_sync(struct drm_pending_state *pending_state);
+
+void
+drm_output_set_gamma(struct weston_output *output_base,
+		     uint16_t size, uint16_t *r, uint16_t *g, uint16_t *b);
+
+void
+drm_output_update_msc(struct drm_output *output, unsigned int seq);
+void
+drm_output_update_complete(struct drm_output *output, uint32_t flags,
+			   unsigned int sec, unsigned int usec);
+int
+on_drm_input(int fd, uint32_t mask, void *data);
+
+struct drm_plane_state *
+drm_output_state_get_existing_plane(struct drm_output_state *state_output,
+				    struct drm_plane *plane);
+void
+drm_plane_state_free(struct drm_plane_state *state, bool force);
+void
+drm_output_state_free(struct drm_output_state *state);
+void
+drm_pending_state_free(struct drm_pending_state *pending_state);
