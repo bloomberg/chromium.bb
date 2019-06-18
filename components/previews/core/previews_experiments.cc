@@ -268,6 +268,17 @@ bool IsInLitePageRedirectControl() {
       features::kLitePageServerPreviews, "control_group", false);
 }
 
+bool LitePageRedirectPreviewShouldPresolve() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "preresolve_on_slow_connections",
+      true);
+}
+
+base::TimeDelta LitePageRedirectPreviewPresolveInterval() {
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      features::kLitePageServerPreviews, "preresolve_interval_in_seconds", 60));
+}
+
 net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type) {
   switch (type) {

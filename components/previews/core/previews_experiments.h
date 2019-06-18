@@ -147,6 +147,12 @@ int LitePageRedirectPreviewMaxServerBlacklistByteSize();
 // a navigation.
 size_t LitePageRedirectPreviewMaxNavigationRestarts();
 
+// Whether we should preresolve the lite page redirect server.
+bool LitePageRedirectPreviewShouldPresolve();
+
+// The duration in between preresolving the lite page redirect server.
+base::TimeDelta LitePageRedirectPreviewPresolveInterval();
+
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
 
