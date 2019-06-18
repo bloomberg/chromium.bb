@@ -95,7 +95,7 @@ class FileReader::ThrottlingController final
     if (!controller)
       return;
 
-    probe::AsyncTaskScheduled(context, "FileReader", reader->async_task_id());
+    probe::AsyncTaskScheduled(context, "FileReader", reader);
     controller->PushReader(reader);
   }
 
@@ -116,7 +116,7 @@ class FileReader::ThrottlingController final
       return;
 
     controller->FinishReader(reader, next_step);
-    probe::AsyncTaskCanceled(context, reader->async_task_id());
+    probe::AsyncTaskCanceled(context, reader);
   }
 
   explicit ThrottlingController(ExecutionContext& context)
@@ -459,7 +459,7 @@ void FileReader::DidFail(FileErrorCode error_code) {
 }
 
 void FileReader::FireEvent(const AtomicString& type) {
-  probe::AsyncTask async_task(GetExecutionContext(), async_task_id(), "event");
+  probe::AsyncTask async_task(GetExecutionContext(), this, "event");
   if (!loader_) {
     DispatchEvent(*ProgressEvent::Create(type, false, 0, 0));
     return;

@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_FRAME_REQUEST_CALLBACK_COLLECTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_FRAME_REQUEST_CALLBACK_COLLECTION_H_
 
-#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -41,15 +40,7 @@ class XRFrameRequestCallbackCollection final
            !WTF::IsHashTraitsEmptyValue<Traits, CallbackId>(id);
   }
 
-  struct CallbackAndTask : public GarbageCollectedFinalized {
-    explicit CallbackAndTask(V8XRFrameRequestCallback* callback);
-    void Trace(blink::Visitor* visitor);
-
-    Member<V8XRFrameRequestCallback> callback;
-    probe::AsyncTaskId task_id;
-  };
-
-  using CallbackMap = HeapHashMap<CallbackId, Member<CallbackAndTask>>;
+  using CallbackMap = HeapHashMap<CallbackId, Member<V8XRFrameRequestCallback>>;
   CallbackMap callbacks_;
   Vector<CallbackId> pending_callbacks_;
 

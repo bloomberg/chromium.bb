@@ -138,8 +138,7 @@ class Database final : public ScriptWrappable {
                             DatabaseError&,
                             String& error_message);
   void RunCreationCallback(
-      V8PersistentCallbackFunction<V8DatabaseCallback>* creation_callback,
-      std::unique_ptr<probe::AsyncTaskId> task_id);
+      V8PersistentCallbackFunction<V8DatabaseCallback>* creation_callback);
 
   void ScheduleTransaction();
 

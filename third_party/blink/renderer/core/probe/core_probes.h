@@ -33,7 +33,6 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 
@@ -53,8 +52,6 @@ class ThreadDebugger;
 
 namespace probe {
 
-class AsyncTaskId;
-
 class CORE_EXPORT ProbeBase {
   STACK_ALLOCATED();
 
@@ -73,18 +70,15 @@ class CORE_EXPORT AsyncTask {
 
  public:
   AsyncTask(ExecutionContext*,
-            AsyncTaskId* task,
+            void* task,
             const char* step = nullptr,
             bool enabled = true);
   ~AsyncTask();
 
  private:
   ThreadDebugger* debugger_;
-  AsyncTaskId* task_;
+  void* task_;
   bool recurring_;
-
-  // This persistent is safe since the class is STACK_ALLOCATED.
-  Persistent<AdTracker> ad_tracker_;
 };
 
 // Called from generated instrumentation code.
@@ -119,14 +113,15 @@ inline CoreProbeSink* ToCoreProbeSink(EventTarget* event_target) {
 
 CORE_EXPORT void AsyncTaskScheduled(ExecutionContext*,
                                     const StringView& name,
-                                    AsyncTaskId*);
+                                    void*);
 CORE_EXPORT void AsyncTaskScheduledBreakable(ExecutionContext*,
                                              const char* name,
-                                             AsyncTaskId*);
-CORE_EXPORT void AsyncTaskCanceled(ExecutionContext*, AsyncTaskId*);
+                                             void*);
+CORE_EXPORT void AsyncTaskCanceled(ExecutionContext*, void*);
+CORE_EXPORT void AsyncTaskCanceled(v8::Isolate*, void*);
 CORE_EXPORT void AsyncTaskCanceledBreakable(ExecutionContext*,
                                             const char* name,
-                                            AsyncTaskId*);
+                                            void*);
 CORE_EXPORT void AllAsyncTasksCanceled(ExecutionContext*);
 
 }  // namespace probe

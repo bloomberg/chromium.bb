@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/media/remote_playback_observer.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_state.h"
@@ -51,7 +50,7 @@ const AtomicString& RemotePlaybackStateToString(
 
 void RunRemotePlaybackTask(ExecutionContext* context,
                            base::OnceClosure task,
-                           std::unique_ptr<probe::AsyncTaskId> task_id) {
+                           std::unique_ptr<int> task_id) {
   probe::AsyncTask async_task(context, task_id.get());
   std::move(task).Run();
 }
@@ -261,9 +260,7 @@ void RemotePlayback::PromptInternal() {
     // task id.
     base::OnceClosure task =
         WTF::Bind(&RemotePlayback::PromptCancelled, WrapPersistent(this));
-
-    std::unique_ptr<probe::AsyncTaskId> task_id =
-        std::make_unique<probe::AsyncTaskId>();
+    std::unique_ptr<int> task_id = std::make_unique<int>(0);
     probe::AsyncTaskScheduled(GetExecutionContext(), "promptCancelled",
                               task_id.get());
     GetExecutionContext()
@@ -293,8 +290,7 @@ int RemotePlayback::WatchAvailabilityInternal(
   // We can remove the wrapper if InspectorInstrumentation returns a task id.
   base::OnceClosure task = WTF::Bind(&RemotePlayback::NotifyInitialAvailability,
                                      WrapPersistent(this), id);
-  std::unique_ptr<probe::AsyncTaskId> task_id =
-      std::make_unique<probe::AsyncTaskId>();
+  std::unique_ptr<int> task_id = std::make_unique<int>(0);
   probe::AsyncTaskScheduled(GetExecutionContext(), "watchAvailabilityCallback",
                             task_id.get());
   GetExecutionContext()
