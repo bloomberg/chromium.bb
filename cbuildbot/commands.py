@@ -2247,6 +2247,37 @@ def ExtractBuildDepsGraph(buildroot, board):
     return output['depGraph']
 
 
+def GenerateBuildConfigs(board, config_useflags):
+  """Generate build configs..
+
+  Args:
+    board: Board type that was built on this machine.
+    config_useflags: A list of useflags for this build set by the cbuildbot
+      configs.
+
+  Returns:
+    A jsonizable object which is the combination of config.yaml (for unibuild)
+    and use flags.
+  """
+  config_fname = os.path.join(
+      cros_build_lib.GetSysroot(board), 'usr', 'share', 'chromeos-config',
+      'yaml', 'config.yaml')
+
+  results = {}
+  if os.path.exists(config_fname):
+    with open(config_fname) as f:
+      results = json.load(f)
+
+  results['board'] = board
+  results['useflags'] = portage_util.PortageqEnvvar(
+      variable='USE', board=board, allow_undefined=False)
+
+  if config_useflags:
+    results['config_useflags'] = config_useflags
+
+  return results
+
+
 def GenerateCPEExport(buildroot, board, useflags=None):
   """Generate CPE export.
 

@@ -922,6 +922,11 @@ def DefaultSettings():
       # release builders should run this stage.
       run_cpeexport=False,
 
+      # Whether to run BuildConfigsExport stage. This stage generates build
+      # configs (see crbug.com/974795 project). Only release builders should
+      # run this stage.
+      run_build_configs_export=False,
+
       # A list of TastVMTestConfig objects describing Tast-based test suites
       # that should be run in a VM.
       tast_vm_tests=[],
@@ -1358,9 +1363,9 @@ class SiteConfig(dict):
 
     for name, c in self.iteritems():
       if c['boards'] and (board is None or board in c['boards']):
-        if (name.endswith('-%s' % CONFIG_TYPE_RELEASE) and c['internal']):
+        if name.endswith('-%s' % CONFIG_TYPE_RELEASE) and c['internal']:
           int_cfgs.append(c.deepcopy())
-        elif (name.endswith('-%s' % CONFIG_TYPE_FULL) and not c['internal']):
+        elif name.endswith('-%s' % CONFIG_TYPE_FULL) and not c['internal']:
           ext_cfgs.append(c.deepcopy())
 
     return ext_cfgs, int_cfgs

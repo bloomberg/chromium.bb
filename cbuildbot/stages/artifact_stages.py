@@ -440,6 +440,41 @@ class CPEExportStage(generic_stages.BoardSpecificBuilderStage,
     self.UploadArtifact(os.path.basename(results_filename), archive=False)
 
 
+class BuildConfigsExportStage(generic_stages.BoardSpecificBuilderStage,
+                              generic_stages.ArchivingStageMixin):
+  """Handles generation & upload of build related configs.
+
+  NOTES: this is an ephemeral stage just to gather build config data for
+    crbug.com/974795 and will be removed once that project finished.
+  """
+  config_name = 'build_configs'
+  category = constants.CI_INFRA_STAGE
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def PerformStage(self):
+    """Generate and upload build configs.
+
+    The build config includes config.yaml (for unibuild) and USE flags.
+    """
+    board = self._current_board
+    config_useflags = self._run.config.useflags
+
+    logging.info('Generating build configs.')
+    results = commands.GenerateBuildConfigs(board, config_useflags)
+
+    results_str = json.dumps(results, indent=2)
+    logging.info('Results:\n %s', results_str)
+
+    logging.info('Writing build configs to files for archive.')
+    results_filename = os.path.join(self.archive_path,
+                                    'chromeos-build-configs-%s.json' % board)
+
+    osutils.WriteFile(results_filename, results_str)
+
+    logging.info('Uploading build config files.')
+    self.UploadArtifact(os.path.basename(results_filename), archive=False)
+
+
 class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
                         generic_stages.ArchivingStageMixin):
   """Handles generation & upload of debug symbols."""

@@ -237,6 +237,9 @@ class SimpleBuilder(generic_builders.Builder):
     if config.run_cpeexport:
       stage_list += [[artifact_stages.CPEExportStage, board]]
 
+    if config.run_build_configs_export:
+      stage_list += [[artifact_stages.BuildConfigsExportStage, board]]
+
     stage_list += [[artifact_stages.UploadTestArtifactsStage, board]]
 
     stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
