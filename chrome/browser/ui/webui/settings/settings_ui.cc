@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
@@ -340,7 +339,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   AddLocalizedStrings(html_source, profile);
 
-  DarkModeHandler::Initialize(web_ui, html_source);
   ManagedUIHandler::Initialize(web_ui, html_source);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),

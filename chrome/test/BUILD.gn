@@ -3665,7 +3665,6 @@ test("unit_tests") {
       "../browser/ui/toolbar/toolbar_actions_model_unittest.cc",
       "../browser/ui/web_applications/app_browser_controller_unittest.cc",
       "../browser/ui/webui/browsing_history_handler_unittest.cc",
-      "../browser/ui/webui/dark_mode_handler_unittest.cc",
       "../browser/ui/webui/downloads/downloads_dom_handler_unittest.cc",
       "../browser/ui/webui/downloads/downloads_list_tracker_unittest.cc",
       "../browser/ui/webui/downloads/mock_downloads_page.cc",
