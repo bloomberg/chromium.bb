@@ -1849,6 +1849,7 @@ jumbo_split_static_library("ui") {
       "//chrome/browser/chromeos/supervision/mojom",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
+      "//chrome/services/file_util/public/cpp",
       "//chromeos",
       "//chromeos/assistant:buildflags",
       "//chromeos/audio",
