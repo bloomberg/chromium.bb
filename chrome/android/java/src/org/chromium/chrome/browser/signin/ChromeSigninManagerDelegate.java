@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
 
+import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JCaller;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -42,6 +43,13 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
     @Override
     public boolean isGooglePlayServicesPresent(Context context) {
         return !ExternalAuthUtils.getInstance().isGooglePlayServicesMissing(context);
+    }
+
+    @Override
+    public void isAccountManaged(@JCaller SigninManager signinManager,
+            long nativeSigninManagerAndroid, String email, final Callback<Boolean> callback) {
+        SigninManagerJni.get().isAccountManaged(
+                signinManager, nativeSigninManagerAndroid, email, callback);
     }
 
     @Override
