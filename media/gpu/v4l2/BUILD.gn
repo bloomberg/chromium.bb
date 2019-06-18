@@ -69,6 +69,7 @@ source_set("v4l2") {
 
   deps = [
     "//base",
+    "//gpu/ipc/common",
     "//gpu/ipc/service",
     "//media",
     "//media/gpu:buildflags",
