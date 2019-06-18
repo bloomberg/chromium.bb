@@ -221,9 +221,11 @@ class CorsURLLoaderTest : public testing::Test {
     test_url_loader_factory_->NotifyClientOnComplete(error_code);
   }
 
-  void FollowRedirect(const std::vector<std::string>& removed_headers = {}) {
+  void FollowRedirect(const std::vector<std::string>& removed_headers = {},
+                      const net::HttpRequestHeaders& modified_headers =
+                          net::HttpRequestHeaders()) {
     DCHECK(url_loader_);
-    url_loader_->FollowRedirect(removed_headers, {} /*modified_headers*/,
+    url_loader_->FollowRedirect(removed_headers, modified_headers,
                                 base::nullopt /*new_url*/);
   }
 
@@ -1611,6 +1613,25 @@ TEST_F(CorsURLLoaderTest, RequestWithHostHeaderFails) {
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
 }
 
+TEST_F(CorsURLLoaderTest, RequestWithProxyAuthorizationHeaderFails) {
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.allow_credentials = false;
+  request.method = net::HttpRequestHeaders::kGetMethod;
+  request.url = GURL("https://foo.test/path");
+  request.request_initiator = url::Origin::Create(GURL("https://foo.test"));
+  request.headers.SetHeader(net::HttpRequestHeaders::kProxyAuthorization,
+                            "Basic Zm9vOmJhcg==");
+  CreateLoaderAndStart(request);
+
+  RunUntilComplete();
+
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+}
+
 TEST_F(CorsURLLoaderTest, SetHostHeaderOnRedirectFails) {
   CreateLoaderAndStart(GURL("http://foo.test/"), GURL("http://foo.test/path"),
                        mojom::FetchRequestMode::kCors);
@@ -1626,7 +1647,37 @@ TEST_F(CorsURLLoaderTest, SetHostHeaderOnRedirectFails) {
 
   ClearHasReceivedRedirect();
   // This should cause the request to fail.
-  AddHostHeaderAndFollowRedirect();
+  net::HttpRequestHeaders modified_headers;
+  modified_headers.SetHeader(net::HttpRequestHeaders::kHost, "bar.test");
+  FollowRedirect({} /* removed_headers */, modified_headers);
+
+  RunUntilComplete();
+
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+}
+
+TEST_F(CorsURLLoaderTest, SetProxyAuthorizationHeaderOnRedirectFails) {
+  CreateLoaderAndStart(GURL("http://foo.test/"), GURL("http://foo.test/path"),
+                       mojom::FetchRequestMode::kCors);
+
+  NotifyLoaderClientOnReceiveRedirect(
+      CreateRedirectInfo(301, "GET", GURL("https://redirect.test/")));
+  RunUntilRedirectReceived();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_TRUE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_FALSE(client().has_received_completion());
+
+  ClearHasReceivedRedirect();
+  // This should cause the request to fail.
+  net::HttpRequestHeaders modified_headers;
+  modified_headers.SetHeader(net::HttpRequestHeaders::kProxyAuthorization,
+                             "Basic Zm9vOmJhcg==");
+  FollowRedirect({} /* removed_headers */, modified_headers);
 
   RunUntilComplete();
 
