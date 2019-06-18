@@ -247,7 +247,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void SetLoader(ResourceLoader*);
   ResourceLoader* Loader() const { return loader_.Get(); }
 
-  bool ShouldBlockLoadEvent() const;
   bool IsLoadEventBlockingResourceType() const;
 
   // Computes the status of an object after loading. Updates the expire date on

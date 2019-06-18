@@ -661,7 +661,7 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceAndUse) {
   Resource* preload_scanner_resource =
       MockResource::Fetch(fetch_params_preload_scanner, fetcher, nullptr);
   EXPECT_EQ(resource, preload_scanner_resource);
-  EXPECT_FALSE(resource->IsLinkPreload());
+  EXPECT_TRUE(resource->IsLinkPreload());
 
   // Resource created by parser
   FetchParameters fetch_params{ResourceRequest(url)};
@@ -669,7 +669,7 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceAndUse) {
       MakeGarbageCollected<MockResourceClient>();
   Resource* new_resource = MockResource::Fetch(fetch_params, fetcher, client);
   EXPECT_EQ(resource, new_resource);
-  EXPECT_FALSE(resource->IsLinkPreload());
+  EXPECT_TRUE(resource->IsLinkPreload());
 
   // DCL reached
   fetcher->ClearPreloads(ResourceFetcher::kClearSpeculativeMarkupPreloads);
@@ -696,7 +696,7 @@ TEST_F(ResourceFetcherTest, PreloadMatchWithBypassingCache) {
   Resource* second_resource =
       MockResource::Fetch(fetch_params_second, fetcher, nullptr);
   EXPECT_EQ(resource, second_resource);
-  EXPECT_FALSE(resource->IsLinkPreload());
+  EXPECT_TRUE(resource->IsLinkPreload());
 }
 
 TEST_F(ResourceFetcherTest, CrossFramePreloadMatchIsNotAllowed) {
@@ -789,7 +789,7 @@ TEST_F(ResourceFetcherTest, RepetitiveSpeculativePreloadShouldBeMerged) {
   EXPECT_FALSE(resource1->IsUnusedPreload());
 }
 
-TEST_F(ResourceFetcherTest, SpeculativePreloadShouldBePromotedToLinkePreload) {
+TEST_F(ResourceFetcherTest, SpeculativePreloadShouldBePromotedToLinkPreload) {
   auto* fetcher = CreateFetcher();
 
   KURL url("http://127.0.0.1:8000/foo.png");
@@ -824,7 +824,7 @@ TEST_F(ResourceFetcherTest, SpeculativePreloadShouldBePromotedToLinkePreload) {
   EXPECT_EQ(resource1, resource3);
   EXPECT_FALSE(fetcher->ContainsAsPreload(resource1));
   EXPECT_FALSE(resource1->IsUnusedPreload());
-  EXPECT_FALSE(resource1->IsLinkPreload());
+  EXPECT_TRUE(resource1->IsLinkPreload());
 }
 
 TEST_F(ResourceFetcherTest, Revalidate304) {

@@ -1028,8 +1028,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
         ScheduleStaleRevalidate(resource);
       }
 
-      if (resource->IsLinkPreload() && !params.IsLinkPreload())
-        resource->SetLinkPreload(false);
       break;
   }
   DCHECK(resource);
@@ -1910,10 +1908,17 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
 
     loader =
         MakeGarbageCollected<ResourceLoader>(this, scheduler_, resource, size);
-    if (resource->ShouldBlockLoadEvent())
+    // Preload requests should not block the load event. IsLinkPreload()
+    // actually continues to return true for Resources matched from the preload
+    // cache that must block the load event, but that is OK because this method
+    // is not responsible for promoting matched preloads to load-blocking. This
+    // is handled by MakePreloadedResourceBlockOnloadIfNeeded().
+    if (!resource->IsLinkPreload() &&
+        resource->IsLoadEventBlockingResourceType()) {
       loaders_.insert(loader);
-    else
+    } else {
       non_blocking_loaders_.insert(loader);
+    }
 
     StorePerformanceTimingInitiatorInformation(resource);
   }

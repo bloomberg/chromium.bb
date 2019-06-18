@@ -1213,10 +1213,6 @@ blink::mojom::CodeCacheType Resource::ResourceTypeToCodeCacheType(
   return ToCodeCacheType(resource_type);
 }
 
-bool Resource::ShouldBlockLoadEvent() const {
-  return !link_preload_ && IsLoadEventBlockingResourceType();
-}
-
 bool Resource::IsLoadEventBlockingResourceType() const {
   switch (type_) {
     case ResourceType::kImage:
