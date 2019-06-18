@@ -2836,6 +2836,7 @@ jumbo_split_static_library("browser") {
       "apps/intent_helper/page_transition_util.h",
       "background/background_contents.cc",
       "background/background_contents.h",
+      "background/background_contents_service_observer.h",
       "badging/badge_manager.cc",
       "badging/badge_manager.h",
       "badging/badge_manager_delegate.h",
