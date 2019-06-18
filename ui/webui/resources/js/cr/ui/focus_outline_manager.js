@@ -9,9 +9,6 @@ cr.define('cr.ui', function() {
    */
   const CLASS_NAME = 'focus-outline-visible';
 
-  /** @type {!Map<!Document, !cr.ui.FocusOutlineManager>} */
-  const docsToManager = new Map();
-
   /**
    * This class sets a CSS class name on the HTML element of |doc| when the user
    * presses the tab key. It removes the class name when the user clicks
@@ -26,47 +23,46 @@ cr.define('cr.ui', function() {
    * And the outline will only be shown if the user uses the keyboard to get to
    * it.
    *
+   * @param {Document} doc The document to attach the focus outline manager to.
+   * @constructor
    */
-  class FocusOutlineManager {
-    /**
-     * @param {Document} doc The document to attach the focus outline manager
-     *     to.
-     */
-    constructor(doc) {
-      /**
-       * Whether focus change is triggered by TAB key.
-       * @private {boolean}
-       */
-      this.focusByKeyboard_ = true;
+  function FocusOutlineManager(doc) {
+    this.classList_ = doc.documentElement.classList;
 
-      this.classList_ = doc.documentElement.classList;
-
-      const onEvent = function(focusByKeyboard, e) {
-        if (this.focusByKeyboard_ === focusByKeyboard) {
-          return;
-        }
-        this.focusByKeyboard_ = focusByKeyboard;
-        this.updateVisibility();
-      };
-
-      doc.addEventListener('keydown', onEvent.bind(this, true), true);
-      doc.addEventListener('mousedown', onEvent.bind(this, false), true);
-
-      doc.addEventListener('focusout', event => {
-        window.setTimeout(() => {
-          if (!doc.hasFocus()) {
-            this.focusByKeyboard_ = true;
-            this.updateVisibility();
-          }
-        }, 0);
-      });
-
+    const onEvent = function(focusByKeyboard, e) {
+      if (this.focusByKeyboard_ === focusByKeyboard) {
+        return;
+      }
+      this.focusByKeyboard_ = focusByKeyboard;
       this.updateVisibility();
-    }
+    };
 
-    updateVisibility() {
+    doc.addEventListener('keydown', onEvent.bind(this, true), true);
+    doc.addEventListener('mousedown', onEvent.bind(this, false), true);
+
+    doc.addEventListener('focusout', function(event) {
+      window.setTimeout(function() {
+        if (!doc.hasFocus()) {
+          this.focusByKeyboard_ = true;
+          this.updateVisibility();
+        }
+      }.bind(this), 0);
+    }.bind(this));
+
+    this.updateVisibility();
+  }
+
+  FocusOutlineManager.prototype = {
+    /**
+     * Whether focus change is triggered by TAB key.
+     * @type {boolean}
+     * @private
+     */
+    focusByKeyboard_: true,
+
+    updateVisibility: function() {
       this.visible = this.focusByKeyboard_;
-    }
+    },
 
     /**
      * Whether the focus outline should be visible.
@@ -74,27 +70,29 @@ cr.define('cr.ui', function() {
      */
     set visible(visible) {
       this.classList_.toggle(CLASS_NAME, visible);
-    }
-
+    },
     get visible() {
       return this.classList_.contains(CLASS_NAME);
     }
+  };
 
-    /**
-     * Gets a per document singleton focus outline manager.
-     * @param {!Document} doc The document to get the |FocusOutlineManager| for.
-     * @return {!cr.ui.FocusOutlineManager} The per document singleton focus
-     *     outline manager.
-     */
-    static forDocument(doc) {
-      let manager = docsToManager.get(doc);
-      if (!manager) {
-        manager = new FocusOutlineManager(doc);
-        docsToManager.set(doc, manager);
-      }
-      return manager;
+  /** @type {!Map<!Document, !cr.ui.FocusOutlineManager>} */
+  const docsToManager = new Map();
+
+  /**
+   * Gets a per document singleton focus outline manager.
+   * @param {!Document} doc The document to get the |FocusOutlineManager| for.
+   * @return {!cr.ui.FocusOutlineManager} The per document singleton focus
+   *     outline manager.
+   */
+  FocusOutlineManager.forDocument = function(doc) {
+    let manager = docsToManager.get(doc);
+    if (!manager) {
+      manager = new FocusOutlineManager(doc);
+      docsToManager.set(doc, manager);
     }
-  }
+    return manager;
+  };
 
   return {FocusOutlineManager: FocusOutlineManager};
 });
