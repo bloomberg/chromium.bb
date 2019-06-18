@@ -351,6 +351,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.passwordItem.identifyingIconAccessibilityLabel =
         l10n_util::GetNSString(
             IDS_IOS_INFOBAR_MODAL_PASSWORD_REVEAL_PASSWORD_HINT);
+    [self.passwordMetricsRecorder
+        recordModalEvent:MobileMessagesPasswordsModalEvent::MaskedPassword];
   } else {
     self.passwordItem.identifyingIcon =
         [UIImage imageNamed:@"infobar_hide_password_icon"];
@@ -358,6 +360,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.passwordItem.identifyingIconAccessibilityLabel =
         l10n_util::GetNSString(
             IDS_IOS_INFOBAR_MODAL_PASSWORD_HIDE_PASSWORD_HINT);
+    [self.passwordMetricsRecorder
+        recordModalEvent:MobileMessagesPasswordsModalEvent::UnmaskedPassword];
   }
   [self reconfigureCellsForItems:@[ self.passwordItem ]];
 }
