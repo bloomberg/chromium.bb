@@ -161,7 +161,7 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
   DCHECK(provider);
   web_app::AppId app_id = provider->registrar().FindAppIdForUrl(validated_url_);
   if (!app_id.empty() && app_id == installed_app_id)
-    OnInstall(false /* is_native app */, blink::kWebDisplayModeStandalone);
+    OnInstall(blink::kWebDisplayModeStandalone);
 }
 
 void AppBannerManagerDesktop::OnAppRegistrarDestroyed() {

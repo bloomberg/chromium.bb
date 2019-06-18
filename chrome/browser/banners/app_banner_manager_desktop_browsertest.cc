@@ -64,8 +64,8 @@ class FakeAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
   }
 
  protected:
-  void OnInstall(bool is_native, blink::WebDisplayMode display) override {
-    AppBannerManager::OnInstall(is_native, display);
+  void OnInstall(blink::WebDisplayMode display) override {
+    AppBannerManager::OnInstall(display);
     if (on_install_)
       std::move(on_install_).Run();
   }

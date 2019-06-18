@@ -175,10 +175,8 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url) {
       base::BindOnce(&AppBannerManager::OnDidGetManifest, GetWeakPtr()));
 }
 
-void AppBannerManager::OnInstall(bool is_native,
-                                 blink::WebDisplayMode display) {
-  if (!is_native)
-    TrackInstallDisplayMode(display);
+void AppBannerManager::OnInstall(blink::WebDisplayMode display) {
+  TrackInstallDisplayMode(display);
   blink::mojom::InstallationServicePtr installation_service;
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
       mojo::MakeRequest(&installation_service));
