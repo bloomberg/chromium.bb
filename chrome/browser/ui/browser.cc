@@ -1091,12 +1091,12 @@ void Browser::SetTopControlsShownRatio(content::WebContents* web_contents,
   window_->SetTopControlsShownRatio(web_contents, ratio);
 }
 
-int Browser::GetTopControlsHeight() const {
+int Browser::GetTopControlsHeight() {
   return window_->GetTopControlsHeight();
 }
 
 bool Browser::DoBrowserControlsShrinkRendererSize(
-    const content::WebContents* contents) const {
+    const content::WebContents* contents) {
   return window_->DoBrowserControlsShrinkRendererSize(contents);
 }
 
@@ -1104,7 +1104,7 @@ void Browser::SetTopControlsGestureScrollInProgress(bool in_progress) {
   window_->SetTopControlsGestureScrollInProgress(in_progress);
 }
 
-bool Browser::CanOverscrollContent() const {
+bool Browser::CanOverscrollContent() {
 #if defined(USE_AURA)
   return !is_devtools() &&
          base::FeatureList::IsEnabled(features::kOverscrollHistoryNavigation);
@@ -1661,7 +1661,7 @@ void Browser::EnumerateDirectory(
   FileSelectHelper::EnumerateDirectory(web_contents, std::move(listener), path);
 }
 
-bool Browser::EmbedsFullscreenWidget() const {
+bool Browser::EmbedsFullscreenWidget() {
   return true;
 }
 
@@ -1678,14 +1678,12 @@ void Browser::ExitFullscreenModeForTab(WebContents* web_contents) {
       web_contents);
 }
 
-bool Browser::IsFullscreenForTabOrPending(
-    const WebContents* web_contents) const {
+bool Browser::IsFullscreenForTabOrPending(const WebContents* web_contents) {
   return exclusive_access_manager_->fullscreen_controller()
       ->IsFullscreenForTabOrPending(web_contents);
 }
 
-blink::WebDisplayMode Browser::GetDisplayMode(
-    const WebContents* web_contents) const {
+blink::WebDisplayMode Browser::GetDisplayMode(const WebContents* web_contents) {
   if (window_->IsFullscreen())
     return blink::kWebDisplayModeFullscreen;
 
