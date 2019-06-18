@@ -150,9 +150,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // if ShouldBlockBasedOnHeaders returns kNeedToSniffMore
     void CreateSniffers();
 
-    // Logs bytes read for sniffing, but only if sniffing actually happened.
-    void LogBytesReadForSniffing();
-
     // Outcome of ShouldBlockBasedOnHeaders recorded inside the Create method.
     BlockingDecision should_block_based_on_headers_;
 

@@ -931,13 +931,6 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldReportBlockedResponse()
   return true;
 }
 
-void CrossOriginReadBlocking::ResponseAnalyzer::LogBytesReadForSniffing() {
-  if (bytes_read_for_sniffing_ >= 0) {
-    UMA_HISTOGRAM_COUNTS_1M("SiteIsolation.XSD.Browser.BytesReadForSniffing",
-                            bytes_read_for_sniffing_);
-  }
-}
-
 void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
   // Note that if a response is allowed because of hitting EOF or
   // kMaxBytesToSniff, then |sniffers_| are not emptied and consequently
@@ -955,8 +948,6 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
       needs_sniffing()
           ? network::CrossOriginReadBlocking::Action::kAllowedAfterSniffing
           : network::CrossOriginReadBlocking::Action::kAllowedWithoutSniffing);
-
-  LogBytesReadForSniffing();
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
@@ -969,20 +960,9 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
           ? network::CrossOriginReadBlocking::Action::kBlockedAfterSniffing
           : network::CrossOriginReadBlocking::Action::kBlockedWithoutSniffing);
 
-  UMA_HISTOGRAM_BOOLEAN(
-      "SiteIsolation.XSD.Browser.Blocked.ContentLength.WasAvailable",
-      content_length() >= 0);
-  if (content_length() >= 0) {
-    UMA_HISTOGRAM_COUNTS_10000(
-        "SiteIsolation.XSD.Browser.Blocked.ContentLength.ValueIfAvailable",
-        content_length());
-  }
-
   UMA_HISTOGRAM_ENUMERATION(
       "SiteIsolation.XSD.Browser.Blocked.CanonicalMimeType",
       canonical_mime_type_);
-
-  LogBytesReadForSniffing();
 }
 
 // static
