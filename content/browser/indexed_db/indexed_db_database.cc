@@ -159,7 +159,9 @@ class IndexedDBDatabase::OpenRequest
               std::unique_ptr<IndexedDBPendingConnection> pending_connection)
       : ConnectionRequest(std::move(origin_state_handle), db),
         pending_(std::move(pending_connection)),
-        weak_factory_(this) {}
+        weak_factory_(this) {
+    db_->metadata_.was_cold_open = pending_->was_cold_open;
+  }
 
   void Perform() override {
     if (db_->metadata_.id == kInvalidId) {

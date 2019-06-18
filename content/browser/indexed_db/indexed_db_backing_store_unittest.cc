@@ -191,7 +191,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
     idb_factory_ = std::make_unique<TestIDBFactory>(idb_context_.get());
 
     leveldb::Status s;
-    std::tie(origin_state_handle_, s, std::ignore, std::ignore) =
+    std::tie(origin_state_handle_, s, std::ignore, std::ignore, std::ignore) =
         idb_factory_->GetOrOpenOriginFactory(origin, idb_context_->data_path());
     if (!origin_state_handle_.IsHeld()) {
       backing_store_ = nullptr;

@@ -125,7 +125,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   std::tuple<IndexedDBOriginStateHandle,
              leveldb::Status,
              IndexedDBDatabaseError,
-             IndexedDBDataLossInfo>
+             IndexedDBDataLossInfo,
+             /*was_cold_open=*/bool>
   GetOrOpenOriginFactory(const url::Origin& origin,
                          const base::FilePath& data_directory);
 

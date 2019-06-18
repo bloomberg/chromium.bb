@@ -106,7 +106,7 @@ void IndexedDBFactoryImpl::GetDatabaseInfo(
   IndexedDBDatabaseError error;
   // Note: Any data loss information here is not piped up to the renderer, and
   // will be lost.
-  std::tie(origin_state_handle, s, error, std::ignore) =
+  std::tie(origin_state_handle, s, error, std::ignore, std::ignore) =
       GetOrOpenOriginFactory(origin, data_directory);
   if (!origin_state_handle.IsHeld() || !origin_state_handle.origin_state()) {
     callbacks->OnError(error);
@@ -144,7 +144,7 @@ void IndexedDBFactoryImpl::GetDatabaseNames(
   IndexedDBDatabaseError error;
   // Note: Any data loss information here is not piped up to the renderer, and
   // will be lost.
-  std::tie(origin_state_handle, s, error, std::ignore) =
+  std::tie(origin_state_handle, s, error, std::ignore, std::ignore) =
       GetOrOpenOriginFactory(origin, data_directory);
   if (!origin_state_handle.IsHeld() || !origin_state_handle.origin_state()) {
     callbacks->OnError(error);
@@ -182,7 +182,8 @@ void IndexedDBFactoryImpl::Open(
   IndexedDBOriginStateHandle origin_state_handle;
   leveldb::Status s;
   IndexedDBDatabaseError error;
-  std::tie(origin_state_handle, s, error, connection->data_loss_info) =
+  std::tie(origin_state_handle, s, error, connection->data_loss_info,
+           connection->was_cold_open) =
       GetOrOpenOriginFactory(origin, data_directory);
   if (!origin_state_handle.IsHeld() || !origin_state_handle.origin_state()) {
     connection->callbacks->OnError(error);
@@ -238,7 +239,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   IndexedDBDatabaseError error;
   // Note: Any data loss information here is not piped up to the renderer, and
   // will be lost.
-  std::tie(origin_state_handle, s, error, std::ignore) =
+  std::tie(origin_state_handle, s, error, std::ignore, std::ignore) =
       GetOrOpenOriginFactory(origin, data_directory);
   if (!origin_state_handle.IsHeld() || !origin_state_handle.origin_state()) {
     callbacks->OnError(error);
@@ -535,7 +536,8 @@ IndexedDBOriginState* IndexedDBFactoryImpl::GetOriginFactory(
 std::tuple<IndexedDBOriginStateHandle,
            leveldb::Status,
            IndexedDBDatabaseError,
-           IndexedDBDataLossInfo>
+           IndexedDBDataLossInfo,
+           bool>
 IndexedDBFactoryImpl::GetOrOpenOriginFactory(
     const Origin& origin,
     const base::FilePath& data_directory) {
@@ -543,7 +545,8 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
   auto it = factories_per_origin_.find(origin);
   if (it != factories_per_origin_.end()) {
     return {it->second->CreateHandle(), leveldb::Status::OK(),
-            IndexedDBDatabaseError(), IndexedDBDataLossInfo()};
+            IndexedDBDatabaseError(), IndexedDBDataLossInfo(),
+            /*was_cold_open=*/false};
   }
 
   base::FilePath blob_path;
@@ -555,7 +558,7 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
         indexed_db::CreateDatabaseDirectories(data_directory, origin);
     if (!s.ok())
       return {IndexedDBOriginStateHandle(), s, CreateDefaultError(),
-              IndexedDBDataLossInfo()};
+              IndexedDBDataLossInfo(), /*was_cold_open=*/true};
   }
   std::unique_ptr<LevelDBDatabase> database;
   IndexedDBDataLossInfo data_loss_info;
@@ -571,11 +574,11 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
                   blink::kWebIDBDatabaseExceptionQuotaError,
                   ASCIIToUTF16("Encountered full disk while opening "
                                "backing store for indexedDB.open.")),
-              data_loss_info};
+              data_loss_info, /*was_cold_open=*/true};
 
     } else {
       return {IndexedDBOriginStateHandle(), s, CreateDefaultError(),
-              data_loss_info};
+              data_loss_info, /*was_cold_open=*/true};
     }
   }
   bool is_in_memory = data_directory.empty();
@@ -594,7 +597,7 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
 
   if (!s.ok())
     return {IndexedDBOriginStateHandle(), s, CreateDefaultError(),
-            data_loss_info};
+            data_loss_info, /*was_cold_open=*/true};
 
   it =
       factories_per_origin_
@@ -609,7 +612,7 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
           .first;
   context_->FactoryOpened(origin);
   return {it->second->CreateHandle(), s, IndexedDBDatabaseError(),
-          data_loss_info};
+          data_loss_info, /*was_cold_open=*/true};
 }
 
 std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(

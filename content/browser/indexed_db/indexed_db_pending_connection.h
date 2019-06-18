@@ -39,6 +39,7 @@ struct CONTENT_EXPORT IndexedDBPendingConnection {
   base::OnceCallback<void(base::WeakPtr<IndexedDBTransaction>)>
       create_transaction_callback;
   base::WeakPtr<IndexedDBTransaction> transaction;
+  bool was_cold_open = false;
 };
 
 }  // namespace content
