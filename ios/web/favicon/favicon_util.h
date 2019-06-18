@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_UI_FAVICON_UTIL_H_
-#define IOS_WEB_WEB_STATE_UI_FAVICON_UTIL_H_
+#ifndef IOS_WEB_FAVICON_FAVICON_UTIL_H_
+#define IOS_WEB_FAVICON_FAVICON_UTIL_H_
 
 #include "ios/web/public/favicon/favicon_url.h"
 
@@ -24,4 +24,4 @@ bool ExtractFaviconURL(const base::DictionaryValue* favicon_url_message,
                        std::vector<web::FaviconURL>* out_parameter);
 
 }  // namespace web
-#endif  // IOS_WEB_WEB_STATE_UI_FAVICON_UTIL_H_
+#endif  // IOS_WEB_FAVICON_FAVICON_UTIL_H_
