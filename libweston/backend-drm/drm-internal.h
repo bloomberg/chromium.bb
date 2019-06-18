@@ -615,3 +615,53 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 		   bool is_opaque, enum drm_fb_type type);
 struct drm_fb *
 drm_fb_get_from_view(struct drm_output_state *state, struct weston_view *ev);
+
+
+struct drm_pending_state *
+drm_pending_state_alloc(struct drm_backend *backend);
+void
+drm_pending_state_free(struct drm_pending_state *pending_state);
+struct drm_output_state *
+drm_pending_state_get_output(struct drm_pending_state *pending_state,
+			     struct drm_output *output);
+
+
+/**
+ * Mode for drm_output_state_duplicate.
+ */
+enum drm_output_state_duplicate_mode {
+	DRM_OUTPUT_STATE_CLEAR_PLANES, /**< reset all planes to off */
+	DRM_OUTPUT_STATE_PRESERVE_PLANES, /**< preserve plane state */
+};
+
+struct drm_output_state *
+drm_output_state_alloc(struct drm_output *output,
+		       struct drm_pending_state *pending_state);
+struct drm_output_state *
+drm_output_state_duplicate(struct drm_output_state *src,
+			   struct drm_pending_state *pending_state,
+			   enum drm_output_state_duplicate_mode plane_mode);
+void
+drm_output_state_free(struct drm_output_state *state);
+struct drm_plane_state *
+drm_output_state_get_plane(struct drm_output_state *state_output,
+			   struct drm_plane *plane);
+struct drm_plane_state *
+drm_output_state_get_existing_plane(struct drm_output_state *state_output,
+				    struct drm_plane *plane);
+
+
+
+struct drm_plane_state *
+drm_plane_state_alloc(struct drm_output_state *state_output,
+		      struct drm_plane *plane);
+struct drm_plane_state *
+drm_plane_state_duplicate(struct drm_output_state *state_output,
+			  struct drm_plane_state *src);
+void
+drm_plane_state_free(struct drm_plane_state *state, bool force);
+void
+drm_plane_state_put_back(struct drm_plane_state *state);
+bool
+drm_plane_state_coords_for_view(struct drm_plane_state *state,
+				struct weston_view *ev);
