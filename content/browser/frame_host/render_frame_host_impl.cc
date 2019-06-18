@@ -4855,9 +4855,8 @@ void RenderFrameHostImpl::CommitNavigation(
       auto file_factory = std::make_unique<FileURLLoaderFactory>(
           browser_context->GetPath(),
           browser_context->GetSharedCorsOriginAccessList(),
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+          // A user-initiated navigation is USER_BLOCKING.
+          base::TaskPriority::USER_BLOCKING);
       non_network_url_loader_factories_.emplace(url::kFileScheme,
                                                 std::move(file_factory));
     }

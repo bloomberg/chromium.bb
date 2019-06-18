@@ -1583,9 +1583,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       std::make_unique<FileURLLoaderFactory>(
           partition->browser_context()->GetPath(),
           partition->browser_context()->GetSharedCorsOriginAccessList(),
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+          // USER_VISIBLE because loaded file resources may affect the UI.
+          base::TaskPriority::USER_VISIBLE);
 
   if (frame_tree_node) {  // May be nullptr in some unit tests.
     devtools_instrumentation::WillCreateURLLoaderFactory(

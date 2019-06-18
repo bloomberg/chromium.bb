@@ -720,11 +720,13 @@ FileURLLoaderFactory::FileURLLoaderFactory(
     const base::FilePath& profile_path,
     scoped_refptr<const SharedCorsOriginAccessList>
         shared_cors_origin_access_list,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    base::TaskPriority task_priority)
     : profile_path_(profile_path),
       shared_cors_origin_access_list_(
           std::move(shared_cors_origin_access_list)),
-      task_runner_(std::move(task_runner)) {}
+      task_runner_(base::CreateSequencedTaskRunner(
+          {base::MayBlock(), task_priority,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
 FileURLLoaderFactory::~FileURLLoaderFactory() = default;
 
@@ -879,9 +881,7 @@ std::unique_ptr<network::mojom::URLLoaderFactory> CreateFileURLLoaderFactory(
   // it?
   return std::make_unique<content::FileURLLoaderFactory>(
       profile_path, shared_cors_origin_access_list,
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+      base::TaskPriority::USER_VISIBLE);
 }
 
 }  // namespace content

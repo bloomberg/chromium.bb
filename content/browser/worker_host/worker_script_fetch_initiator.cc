@@ -188,9 +188,8 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
     auto file_factory = std::make_unique<FileURLLoaderFactory>(
         storage_partition->browser_context()->GetPath(),
         storage_partition->browser_context()->GetSharedCorsOriginAccessList(),
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+        // USER_VISIBLE because worker script fetch may affect the UI.
+        base::TaskPriority::USER_VISIBLE);
     network::mojom::URLLoaderFactoryPtr file_factory_ptr;
     mojo::MakeStrongBinding(std::move(file_factory),
                             mojo::MakeRequest(&file_factory_ptr));
