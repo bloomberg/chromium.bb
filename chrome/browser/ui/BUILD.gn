@@ -476,6 +476,7 @@ jumbo_split_static_library("ui") {
     "//components/safe_browsing/db:database_manager",
     "//components/safe_browsing/db:util",
     "//components/safe_browsing/password_protection",
+    "//components/safe_browsing/triggers:ad_popup_trigger",
     "//components/safe_browsing/web_ui",
     "//components/search",
     "//components/search_engines",
