@@ -392,13 +392,6 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   // state of IdentityManager.
   DiagnosticsProvider* GetDiagnosticsProvider();
 
-#if defined(OS_CHROMEOS)
-  // Sets the primary account info with IdentityManager.
-  // TODO(https://crbug.com/814787): Eliminate this method.
-  void LegacySetPrimaryAccount(const std::string& gaia_id,
-                               const std::string& email_address);
-#endif
-
 #if defined(OS_IOS)
   // Forces the processing of GaiaCookieManagerService::OnCookieChange. On
   // iOS, it's necessary to force-trigger the processing of cookie changes

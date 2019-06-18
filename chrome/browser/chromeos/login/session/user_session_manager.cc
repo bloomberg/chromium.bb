@@ -157,6 +157,7 @@
 #include "rlz/buildflags/buildflags.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -1309,9 +1310,9 @@ void UserSessionManager::InitProfilePreferences(
     // Make sure that the google service username is properly set (we do this
     // on every sign in, not just the first login, to deal with existing
     // profiles that might not have it set yet).
-    // TODO(https://crbug.com/814787): Determine the right long-term flow here.
-    identity_manager->LegacySetPrimaryAccount(
-        gaia_id, user_context.GetAccountId().GetUserEmail());
+    identity_manager->GetPrimaryAccountMutator()
+        ->SetPrimaryAccountAndUpdateAccountInfo(
+            gaia_id, user_context.GetAccountId().GetUserEmail());
     std::string account_id = identity_manager->GetPrimaryAccountId();
     VLOG(1) << "Seed IdentityManager with the authenticated account info, "
             << "success=" << !account_id.empty();

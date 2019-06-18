@@ -388,20 +388,6 @@ DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
   return diagnostics_provider_.get();
 }
 
-#if defined(OS_CHROMEOS)
-void IdentityManager::LegacySetPrimaryAccount(
-    const std::string& gaia_id,
-    const std::string& email_address) {
-  // On ChromeOS the primary account is not guaranteed to be present in
-  // AccountTrackerService when it is set, but PrimaryAccountManager::SignIn()
-  // requires that it be so.
-  // TODO(https://crbug.com/967602): Eliminate the need to seed the account
-  // here.
-  account_tracker_service_->SeedAccountInfo(gaia_id, email_address);
-  primary_account_manager_->SignIn(email_address);
-}
-#endif
-
 #if defined(OS_IOS)
 void IdentityManager::ForceTriggerOnCookieChange() {
   gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();

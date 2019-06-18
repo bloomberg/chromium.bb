@@ -30,10 +30,7 @@
 #include "services/identity/public/cpp/diagnostics_provider_impl.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
-
-#if !defined(OS_CHROMEOS)
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
-#endif
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/web_data_service_factory.h"
@@ -42,21 +39,6 @@
 #endif
 
 namespace {
-
-// Helper function returning a newly constructed PrimaryAccountMutator for
-// |profile|.  May return null if mutation of the signed-in state is not
-// supported on the current platform.
-std::unique_ptr<identity::PrimaryAccountMutator> BuildPrimaryAccountMutator(
-    Profile* profile,
-    AccountTrackerService* account_tracker_service,
-    PrimaryAccountManager* primary_account_manager) {
-#if !defined(OS_CHROMEOS)
-  return std::make_unique<identity::PrimaryAccountMutatorImpl>(
-      account_tracker_service, primary_account_manager, profile->GetPrefs());
-#else
-  return nullptr;
-#endif
-}
 
 // Helper function returning a newly constructed AccountsMutator for
 // |profile|. May return null if mutation of accounts is not supported on the
@@ -188,8 +170,9 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
                                  token_service.get());
 
   std::unique_ptr<identity::PrimaryAccountMutator> primary_account_mutator =
-      BuildPrimaryAccountMutator(profile, account_tracker_service.get(),
-                                 primary_account_manager.get());
+      std::make_unique<identity::PrimaryAccountMutatorImpl>(
+          account_tracker_service.get(), primary_account_manager.get(),
+          profile->GetPrefs());
 
   std::unique_ptr<identity::AccountsMutator> accounts_mutator =
       BuildAccountsMutator(profile, account_tracker_service.get(),
