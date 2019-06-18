@@ -1060,6 +1060,8 @@ class Browser : public TabStripModelObserver,
   // Tracks when this browser is being created by session restore.
   bool is_session_restore_;
 
+  base::TimeTicks focus_mode_start_time_;
+
   UnloadController unload_controller_;
 
   std::unique_ptr<ChromeBubbleManager> bubble_manager_;
