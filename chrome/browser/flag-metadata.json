@@ -2635,11 +2635,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "pwa-persistent-notification",
-    "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "reader-mode-heuristics",
     "owners": [ "mdjones" ],
     "expiry_milestone": 78

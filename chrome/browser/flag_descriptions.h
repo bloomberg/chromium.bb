@@ -1427,9 +1427,6 @@ extern const char kOffliningRecentPagesDescription[];
 extern const char kProgressBarThrottleName[];
 extern const char kProgressBarThrottleDescription[];
 
-extern const char kPwaPersistentNotificationName[];
-extern const char kPwaPersistentNotificationDescription[];
-
 extern const char kReaderModeHeuristicsName[];
 extern const char kReaderModeHeuristicsDescription[];
 extern const char kReaderModeHeuristicsMarkup[];

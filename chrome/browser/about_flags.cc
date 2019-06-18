@@ -2680,13 +2680,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kReaderModeInCCT)},
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
-    {"pwa-persistent-notification",
-     flag_descriptions::kPwaPersistentNotificationName,
-     flag_descriptions::kPwaPersistentNotificationDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kPwaPersistentNotification)},
-#endif  // OS_ANDROID
-
     {"click-to-open-pdf", flag_descriptions::kClickToOpenPDFName,
      flag_descriptions::kClickToOpenPDFDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kClickToOpenPDFPlaceholder)},
