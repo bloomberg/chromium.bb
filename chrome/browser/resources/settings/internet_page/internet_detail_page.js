@@ -572,6 +572,22 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {string} The text to display with roaming details.
+   * @private
+   */
+  getRoamingDetails_: function(networkProperties) {
+    if (!networkProperties.Cellular.AllowRoaming) {
+      return this.i18n('networkAllowDataRoamingDisabled');
+    }
+
+    return networkProperties.Cellular.RoamingState ===
+            CrOnc.RoamingState.ROAMING ?
+        this.i18n('networkAllowDataRoamingEnabledRoaming') :
+        this.i18n('networkAllowDataRoamingEnabledHome');
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} True if the network is connected.
    * @private
    */
@@ -1276,8 +1292,8 @@ Polymer({
     const type = this.networkProperties_.Type;
     if (type == CrOnc.Type.CELLULAR && !!this.networkProperties_.Cellular) {
       fields.push(
-          'Cellular.ActivationState', 'Cellular.RoamingState',
-          'RestrictedConnectivity', 'Cellular.ServingOperator.Name');
+          'Cellular.ActivationState', 'RestrictedConnectivity',
+          'Cellular.ServingOperator.Name');
     } else if (type == CrOnc.Type.TETHER && !!this.networkProperties_.Tether) {
       fields.push(
           'Tether.BatteryPercentage', 'Tether.SignalStrength',

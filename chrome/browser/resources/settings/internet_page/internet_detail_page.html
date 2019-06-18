@@ -197,7 +197,8 @@
       <template is="dom-if" if="[[isCellular_(networkProperties_)]]">
         <settings-toggle-button id="allowDataRoaming"
             pref="{{prefs.cros.signed.data_roaming_enabled}}"
-            label="$i18n{networkAllowDataRoaming}">
+            label="$i18n{networkAllowDataRoaming}"
+            sub-label="[[getRoamingDetails_(networkProperties_)]]">
         </settings-toggle-button>
       </template>
       <!-- SIM Info (Cellular only). -->
