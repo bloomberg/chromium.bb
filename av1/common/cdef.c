@@ -23,12 +23,14 @@
 
 static int is_8x8_block_skip(MB_MODE_INFO **grid, int mi_row, int mi_col,
                              int mi_stride) {
-  int is_skip = 1;
-  for (int r = 0; r < mi_size_high[BLOCK_8X8]; ++r)
-    for (int c = 0; c < mi_size_wide[BLOCK_8X8]; ++c)
-      is_skip &= grid[(mi_row + r) * mi_stride + (mi_col + c)]->skip;
+  MB_MODE_INFO **mbmi = grid + mi_row * mi_stride + mi_col;
+  for (int r = 0; r < mi_size_high[BLOCK_8X8]; ++r, mbmi += mi_stride) {
+    for (int c = 0; c < mi_size_wide[BLOCK_8X8]; ++c) {
+      if (!mbmi[c]->skip) return 0;
+    }
+  }
 
-  return is_skip;
+  return 1;
 }
 
 int cdef_compute_sb_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
