@@ -155,13 +155,9 @@ mr.mirror.MirrorMediaStream = class {
    * Requests a screen capture source from the user via a native dialog and
    * returns the source ID, or rejects if a timeout is reached or the user
    * cancels.
-   * @param {Tab=} targetTab Optional tab that the stream is created for.
-   * @param {number=} timeoutMillis The timeout in milliseconds.
    * @return {!Promise<string>} Fulfilled with the source ID.
    */
-  static requestScreenCaptureSourceId(
-      targetTab,
-      timeoutMillis = mr.mirror.MirrorMediaStream.WINDOW_PICKER_TIMEOUT_) {
+  static requestScreenCaptureSourceId() {
     return new Promise((resolve, reject) => {
       const desktopChooserConfig = ['screen', 'audio'];
       if (mr.PlatformUtils.getCurrentOS() == mr.PlatformUtils.OS.LINUX) {
@@ -179,10 +175,10 @@ mr.mirror.MirrorMediaStream = class {
             'timeout',
             mr.MirrorAnalytics.CapturingFailure
                 .CAPTURE_DESKTOP_FAIL_ERROR_TIMEOUT));
-      }, timeoutMillis);
+      }, mr.mirror.MirrorMediaStream.WINDOW_PICKER_TIMEOUT_);
       // https://developer.chrome.com/extensions/desktopCapture#method-chooseDesktopMedia
       requestId = chrome.desktopCapture.chooseDesktopMedia(
-          desktopChooserConfig, targetTab || null, sourceId => {
+          desktopChooserConfig, null, sourceId => {
             window.clearTimeout(timeoutId);
             if (!sourceId) {
               // User cancelled the desktop media selector prompt.
