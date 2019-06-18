@@ -50,8 +50,8 @@ interface RenderWidgetHostNSView {
   // Call the -[NSView setToolTipAtMousePoint] method.
   SetTooltipText(mojo_base.mojom.String16 display_text);
 
-  // Forward changes in ui::TextInputType.
-  SetTextInputType(ui.mojom.TextInputType text_input_type);
+  // Forward changes in content::TextInputState.
+  SetTextInputState(ui.mojom.TextInputType text_input_type, uint32 flags);
 
   // Forward the TextInputManager::TextSelection from the renderer.
   SetTextSelection(mojo_base.mojom.String16 text,

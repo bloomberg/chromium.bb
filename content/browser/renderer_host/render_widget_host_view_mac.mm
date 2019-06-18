@@ -560,7 +560,11 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
   if (!did_update_state)
     return;
 
-  ns_view_->SetTextInputType(GetTextInputType());
+  const TextInputState* state = text_input_manager->GetTextInputState();
+  if (state)
+    ns_view_->SetTextInputState(state->type, state->flags);
+  else
+    ns_view_->SetTextInputState(ui::TEXT_INPUT_TYPE_NONE, 0);
 
   // |updated_view| is the last view to change its TextInputState which can be
   // used to start/stop monitoring composition info when it has a focused
@@ -576,7 +580,6 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
 
   // Set the monitor state based on the text input focus state.
   const bool has_focus = HasFocus();
-  const TextInputState* state = text_input_manager->GetTextInputState();
   bool need_monitor_composition =
       has_focus && state && state->type != ui::TEXT_INPUT_TYPE_NONE;
 
