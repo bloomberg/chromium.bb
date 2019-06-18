@@ -1516,9 +1516,13 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->IsLoggedInAsUserWithGaiaAccount()) {
-    if (user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML)
+    if (user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML) {
       user_manager::known_user::UpdateUsingSAML(user_context_.GetAccountId(),
                                                 true);
+      user_manager::known_user::UpdateIsUsingSAMLPrincipalsAPI(
+          user_context_.GetAccountId(),
+          user_context_.IsUsingSamlPrincipalsApi());
+    }
     SAMLOfflineSigninLimiter* saml_offline_signin_limiter =
         SAMLOfflineSigninLimiterFactory::GetForProfile(profile);
     if (saml_offline_signin_limiter)
