@@ -114,7 +114,7 @@ func main() {
 	if *dumpOnlyPath != "" {
 		// -dump-to specified, so make sure that the path is a directory.
 		if fi, err := os.Stat(*dumpOnlyPath); err != nil {
-			log.Fatal("-dump-to location: %v", err)
+			log.Fatalf("-dump-to location: %v", err)
 		} else if !fi.IsDir() {
 			log.Fatal("-dump-to location is not a directory")
 		}
@@ -127,7 +127,7 @@ func main() {
 		uq = StartUploadQueue()
 
 		if p, err := ioutil.TempDir("", "upload_system_symbols"); err != nil {
-			log.Fatal("Failed to create temporary directory: %v", err)
+			log.Fatalf("Failed to create temporary directory: %v", err)
 		} else {
 			dumpPath = p
 			defer os.RemoveAll(p)
@@ -266,7 +266,7 @@ func (dq *DumpQueue) worker() {
 		symfile := fmt.Sprintf("%s_%s.sym", filebase, req.arch)
 		f, err := os.Create(symfile)
 		if err != nil {
-			log.Fatal("Error creating symbol file:", err)
+			log.Fatalf("Error creating symbol file: %v", err)
 		}
 
 		cmd := exec.Command(dumpSyms, "-a", req.arch, req.path)
@@ -288,13 +288,13 @@ func (dq *DumpQueue) worker() {
 func uploadFromDirectory(directory string, uq *UploadQueue) {
 	d, err := os.Open(directory)
 	if err != nil {
-		log.Fatal("Could not open directory to upload: %v", err)
+		log.Fatalf("Could not open directory to upload: %v", err)
 	}
 	defer d.Close()
 
 	entries, err := d.Readdirnames(0)
 	if err != nil {
-		log.Fatal("Could not read directory: %v", err)
+		log.Fatalf("Could not read directory: %v", err)
 	}
 
 	for _, entry := range entries {
@@ -335,14 +335,14 @@ func findLibsInRoot(root string, dq *DumpQueue) {
 func (fq *findQueue) findLibsInPath(loc string) {
 	d, err := os.Open(loc)
 	if err != nil {
-		log.Fatal("Could not open %s: %v", loc, err)
+		log.Fatalf("Could not open %s: %v", loc, err)
 	}
 	defer d.Close()
 
 	for {
 		fis, err := d.Readdir(100)
 		if err != nil && err != io.EOF {
-			log.Fatal("Error reading directory %s: %v", loc, err)
+			log.Fatalf("Error reading directory %s: %v", loc, err)
 		}
 
 		for _, fi := range fis {
