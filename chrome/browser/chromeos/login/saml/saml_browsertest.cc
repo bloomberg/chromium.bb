@@ -497,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   content::ExecuteScriptAsync(
       GetLoginUI()->GetWebContents(),
       test::GetOobeElementPath({"gaia-signin", "signin-back-button"}) +
-          ".fire('tap');");
+          ".fire('click');");
 
   // Auth flow should change back to Gaia.
   std::string message;
