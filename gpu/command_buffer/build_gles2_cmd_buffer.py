@@ -2202,6 +2202,12 @@ _FUNCTION_INFO = {
     'es31': True,
     'unit_test': False,
   },
+  'DispatchComputeIndirect': {
+    'cmd_args': 'GLintptrNotNegative offset',
+    'trace_level': 2,
+    'es31': True,
+    'unit_test': False,
+  },
   'DrawArrays': {
     'type': 'Custom',
     'impl_func': False,
