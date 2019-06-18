@@ -341,6 +341,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "bluetooth-aggressive-appearance-filter",
+    "owners": [ "hansberry" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "bypass-app-banner-engagement-checks",
     "owners": [ "dominickn" ],
     "expiry_milestone": 78

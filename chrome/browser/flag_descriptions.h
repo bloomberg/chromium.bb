@@ -1731,6 +1731,9 @@ extern const char kAshNotificationStackingBarRedesignDescription[];
 extern const char kAshSwapSideVolumeButtonsForOrientationName[];
 extern const char kAshSwapSideVolumeButtonsForOrientationDescription[];
 
+extern const char kBluetoothAggressiveAppearanceFilterName[];
+extern const char kBluetoothAggressiveAppearanceFilterDescription[];
+
 extern const char kBulkPrintersName[];
 extern const char kBulkPrintersDescription[];
 

@@ -2910,6 +2910,12 @@ const char kAshSwapSideVolumeButtonsForOrientationDescription[] =
     "increase the volume and the button that's closer to the bottom/left "
     "always decrease the volume.";
 
+const char kBluetoothAggressiveAppearanceFilterName[] =
+    "Aggressive Bluetooth device filtering";
+const char kBluetoothAggressiveAppearanceFilterDescription[] =
+    "Enables a more aggressive Bluetooth filter in the UI to hide devices that "
+    "likely cannot be connected to.";
+
 const char kBulkPrintersName[] = "Bulk Printers Policy";
 const char kBulkPrintersDescription[] = "Enables the new bulk printers policy";
 

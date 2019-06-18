@@ -34010,6 +34010,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1172572865" label="NTPShowGoogleGInOmnibox:enabled"/>
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
   <int value="-1167992523" label="DesktopPWAsCustomTabUI:disabled"/>
+  <int value="-1166745977"
+      label="BluetoothAggressiveAppearanceFilter:disabled"/>
   <int value="-1166715563" label="ChromeOSAssistant:disabled"/>
   <int value="-1165191758" label="ForegroundNotificationManager:disabled"/>
   <int value="-1164858657" label="CrostiniUsbAllowUnsupported:disabled"/>
@@ -34628,6 +34630,7 @@ from previous Chrome versions.
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
   <int value="-240531943" label="ContextualSearchRankerQuery:disabled"/>
   <int value="-239616243" label="HighDynamicRange:enabled"/>
+  <int value="-239176328" label="BluetoothAggressiveAppearanceFilter:enabled"/>
   <int value="-234966279" label="PointerEvent:disabled"/>
   <int value="-234687894"
       label="NonValidatingReloadOnRefreshContentV2:disabled"/>
