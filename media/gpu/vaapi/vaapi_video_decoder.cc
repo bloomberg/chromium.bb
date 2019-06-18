@@ -378,9 +378,16 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
   LOG_ASSERT(!gpu_memory_buffer_handle.is_null())
       << "Failed to create GPU memory handle";
 
+  auto buffer_format =
+      VideoPixelFormatToGfxBufferFormat(frame->layout().format());
+  if (!buffer_format) {
+    VLOGF(1) << "Unexpected frame format";
+    SetState(State::kError);
+    return nullptr;
+  }
+
   if (!picture->ImportGpuMemoryBufferHandle(
-          VideoPixelFormatToGfxBufferFormat(frame->layout().format()),
-          std::move(gpu_memory_buffer_handle))) {
+          *buffer_format, std::move(gpu_memory_buffer_handle))) {
     LOG(ERROR) << "Failed to import GpuMemoryBufferHandle";
     SetState(State::kError);
     return nullptr;

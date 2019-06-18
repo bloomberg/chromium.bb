@@ -35,11 +35,13 @@ scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
   DCHECK(factory);
 
-  gfx::BufferFormat buffer_format =
-      VideoPixelFormatToGfxBufferFormat(pixel_format);
+  auto buffer_format = VideoPixelFormatToGfxBufferFormat(pixel_format);
+  if (!buffer_format)
+    return nullptr;
+
   auto pixmap =
       factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, VK_NULL_HANDLE,
-                                  coded_size, buffer_format, buffer_usage);
+                                  coded_size, *buffer_format, buffer_usage);
   if (!pixmap)
     return nullptr;
 

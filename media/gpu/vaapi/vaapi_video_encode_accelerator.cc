@@ -566,9 +566,15 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
                    "Failed to create GMB handle from video frame");
       return nullptr;
     }
-    if (!va_picture->ImportGpuMemoryBufferHandle(
-            VideoPixelFormatToGfxBufferFormat(frame->format()),
-            std::move(gmb_handle))) {
+
+    auto buffer_format = VideoPixelFormatToGfxBufferFormat(frame->format());
+    if (!buffer_format) {
+      NOTIFY_ERROR(kInvalidArgumentError,
+                   "Unsupported format: " << frame->format());
+      return nullptr;
+    }
+    if (!va_picture->ImportGpuMemoryBufferHandle(*buffer_format,
+                                                 std::move(gmb_handle))) {
       NOTIFY_ERROR(kPlatformFailureError,
                    "Failed in ImportGpuMemoryBufferHandle");
       return nullptr;
