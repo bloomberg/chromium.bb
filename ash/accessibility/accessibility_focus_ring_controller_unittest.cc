@@ -1,11 +1,9 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
-
+#include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/accessibility/accessibility_cursor_ring_layer.h"
-#include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,44 +13,64 @@
 
 namespace ash {
 
-using AccessibilityFocusRingControllerTest = AshTestBase;
+class TestableAccessibilityFocusRingController
+    : public AccessibilityFocusRingController {
+ public:
+  TestableAccessibilityFocusRingController() {}
+  ~TestableAccessibilityFocusRingController() override = default;
+
+  static void GetColorAndOpacityFromColor(SkColor color,
+                                          float default_opacity,
+                                          SkColor* result_color,
+                                          float* result_opacity) {
+    AccessibilityFocusRingController::GetColorAndOpacityFromColor(
+        color, default_opacity, result_color, result_opacity);
+  }
+};
+
+class AccessibilityFocusRingControllerTest : public AshTestBase {
+ public:
+  AccessibilityFocusRingControllerTest() = default;
+  ~AccessibilityFocusRingControllerTest() override = default;
+
+ protected:
+  TestableAccessibilityFocusRingController controller_;
+};
 
 TEST_F(AccessibilityFocusRingControllerTest, CallingHideWhenEmpty) {
-  auto* controller = Shell::Get()->accessibility_focus_ring_controller();
   // Ensure that calling hide does not crash the controller if there are
   // no focus rings yet for a given ID.
-  controller->HideFocusRing("catsRCute");
+  controller_.HideFocusRing("catsRCute");
 }
 
 TEST_F(AccessibilityFocusRingControllerTest, SetFocusRingCorrectRingGroup) {
-  auto* controller = Shell::Get()->accessibility_focus_ring_controller();
-  EXPECT_EQ(nullptr, controller->GetFocusRingGroupForTesting("catsRCute"));
+  EXPECT_EQ(nullptr, controller_.GetFocusRingGroupForTesting("catsRCute"));
   SkColor cat_color = SkColorSetARGB(0xFF, 0x42, 0x42, 0x42);
 
-  auto cat_focus_ring = std::make_unique<AccessibilityFocusRingInfo>();
+  mojom::FocusRingPtr cat_focus_ring = mojom::FocusRing::New();
   cat_focus_ring->color = cat_color;
   cat_focus_ring->rects_in_screen.push_back(gfx::Rect(0, 0, 10, 10));
-  controller->SetFocusRing("catsRCute", std::move(cat_focus_ring));
+  controller_.SetFocusRing("catsRCute", std::move(cat_focus_ring));
 
   // A focus ring group was created.
-  ASSERT_NE(nullptr, controller->GetFocusRingGroupForTesting("catsRCute"));
-  EXPECT_EQ(1u, controller->GetFocusRingGroupForTesting("catsRCute")
+  ASSERT_NE(nullptr, controller_.GetFocusRingGroupForTesting("catsRCute"));
+  EXPECT_EQ(1u, controller_.GetFocusRingGroupForTesting("catsRCute")
                     ->focus_layers_for_testing()
                     .size());
 
-  EXPECT_EQ(nullptr, controller->GetFocusRingGroupForTesting("dogsRCool"));
-  auto dog_focus_ring = std::make_unique<AccessibilityFocusRingInfo>();
+  EXPECT_EQ(nullptr, controller_.GetFocusRingGroupForTesting("dogsRCool"));
+  mojom::FocusRingPtr dog_focus_ring = mojom::FocusRing::New();
   dog_focus_ring->rects_in_screen.push_back(gfx::Rect(10, 30, 70, 150));
-  controller->SetFocusRing("dogsRCool", std::move(dog_focus_ring));
+  controller_.SetFocusRing("dogsRCool", std::move(dog_focus_ring));
 
-  ASSERT_NE(nullptr, controller->GetFocusRingGroupForTesting("dogsRCool"));
-  int size = controller->GetFocusRingGroupForTesting("dogsRCool")
+  ASSERT_NE(nullptr, controller_.GetFocusRingGroupForTesting("dogsRCool"));
+  int size = controller_.GetFocusRingGroupForTesting("dogsRCool")
                  ->focus_layers_for_testing()
                  .size();
   EXPECT_EQ(1, size);
   // The first focus ring group was not updated.
   const std::vector<std::unique_ptr<AccessibilityFocusRingLayer>>& layers =
-      controller->GetFocusRingGroupForTesting("catsRCute")
+      controller_.GetFocusRingGroupForTesting("catsRCute")
           ->focus_layers_for_testing();
   EXPECT_EQ(1u, layers.size());
   EXPECT_EQ(cat_color, layers[0]->color_for_testing());
@@ -64,7 +82,7 @@ TEST_F(AccessibilityFocusRingControllerTest, CursorWorksOnMultipleDisplays) {
   ASSERT_EQ(2u, root_windows.size());
 
   // Simulate a mouse event on the primary display.
-  AccessibilityFocusRingControllerImpl* controller =
+  AccessibilityFocusRingController* controller =
       Shell::Get()->accessibility_focus_ring_controller();
   gfx::Point location(90, 90);
   controller->SetCursorRing(location);
@@ -97,11 +115,11 @@ TEST_F(AccessibilityFocusRingControllerTest, HighlightColorCalculation) {
   SkColor result_color = SK_ColorWHITE;
   float result_opacity = 0.0f;
 
-  AccessibilityFocusRingControllerImpl::GetColorAndOpacityFromColor(
+  TestableAccessibilityFocusRingController::GetColorAndOpacityFromColor(
       without_alpha, default_opacity, &result_color, &result_opacity);
   EXPECT_EQ(default_opacity, result_opacity);
 
-  AccessibilityFocusRingControllerImpl::GetColorAndOpacityFromColor(
+  TestableAccessibilityFocusRingController::GetColorAndOpacityFromColor(
       with_alpha, default_opacity, &result_color, &result_opacity);
   EXPECT_NEAR(0.239f, result_opacity, .001);
 }

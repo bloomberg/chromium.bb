@@ -1,9 +1,9 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_CONTROLLER_IMPL_H_
-#define ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_CONTROLLER_IMPL_H_
+#ifndef ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_
+#define ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_
 
 #include <memory>
 #include <vector>
@@ -13,11 +13,12 @@
 #include "ash/accessibility/accessibility_layer.h"
 #include "ash/accessibility/layer_animation_info.h"
 #include "ash/ash_export.h"
-#include "ash/public/cpp/accessibility_focus_ring_controller.h"
+#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -26,19 +27,21 @@ namespace ash {
 class AccessibilityCursorRingLayer;
 class AccessibilityHighlightLayer;
 
-// AccessibilityFocusRingControllerImpl handles drawing custom rings around the
-// focused object, cursor, and/or caret for accessibility.
-class ASH_EXPORT AccessibilityFocusRingControllerImpl
+// AccessibilityFocusRingController handles drawing custom rings around
+// the focused object, cursor, and/or caret for accessibility.
+class ASH_EXPORT AccessibilityFocusRingController
     : public AccessibilityLayerDelegate,
-      public AccessibilityFocusRingController {
+      public mojom::AccessibilityFocusRingController {
  public:
-  AccessibilityFocusRingControllerImpl();
-  ~AccessibilityFocusRingControllerImpl() override;
+  AccessibilityFocusRingController();
+  ~AccessibilityFocusRingController() override;
 
-  // AccessibilityFocusRingController overrides:
-  void SetFocusRing(
-      const std::string& focus_ring_id,
-      std::unique_ptr<AccessibilityFocusRingInfo> focus_ring) override;
+  // Binds the mojom::AccessibilityFocusRingController interface to this object.
+  void BindRequest(mojom::AccessibilityFocusRingControllerRequest request);
+
+  // mojom::AccessibilityFocusRingController overrides:
+  void SetFocusRing(const std::string& focus_ring_id,
+                    mojom::FocusRingPtr focus_ring) override;
   void HideFocusRing(const std::string& focus_ring_id) override;
   void SetHighlights(const std::vector<gfx::Rect>& rects,
                      SkColor color) override;
@@ -65,8 +68,10 @@ class ASH_EXPORT AccessibilityFocusRingControllerImpl
   const AccessibilityFocusRingGroup* GetFocusRingGroupForTesting(
       const std::string& focus_ring_id);
 
-  // Breaks an SkColor into its opacity and color. If the opacity is not set
-  // (or is 0xFF), uses the |default_opacity| instead. Visible for testing.
+ protected:
+  // Breaks an SkColor into its opacity and color. If the opacity is
+  // not set (or is 0xFF), uses the |default_opacity| instead.
+  // Visible for testing.
   static void GetColorAndOpacityFromColor(SkColor color,
                                           float default_opacity,
                                           SkColor* result_color,
@@ -85,6 +90,9 @@ class ASH_EXPORT AccessibilityFocusRingControllerImpl
   void AnimateCaretRing(base::TimeTicks timestamp);
 
   void OnLayerChange(LayerAnimationInfo* animation_info);
+
+  // Binding for mojom::AccessibilityFocusRingController interface.
+  mojo::Binding<mojom::AccessibilityFocusRingController> binding_;
 
   AccessibilityFocusRingGroup* GetFocusRingGroupForId(
       const std::string& focus_ring_id,
@@ -107,9 +115,9 @@ class ASH_EXPORT AccessibilityFocusRingControllerImpl
 
   bool no_fade_for_testing_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingControllerImpl);
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_CONTROLLER_IMPL_H_
+#endif  // ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_

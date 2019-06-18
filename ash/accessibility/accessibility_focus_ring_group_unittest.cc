@@ -10,7 +10,9 @@
 #include "ash/accessibility/accessibility_focus_ring.h"
 #include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/accessibility/accessibility_layer.h"
+#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/test/ash_test_base.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -33,7 +35,6 @@ class TestableAccessibilityFocusRingGroup : public AccessibilityFocusRingGroup {
 
  private:
   int margin_;
-  DISALLOW_COPY_AND_ASSIGN(TestableAccessibilityFocusRingGroup);
 };
 
 class AccessibilityFocusRingGroupTest : public AshTestBase {
