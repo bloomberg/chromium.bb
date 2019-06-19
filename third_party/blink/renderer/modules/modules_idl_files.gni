@@ -505,6 +505,7 @@ modules_idl_files =
           "xr/xr_layer.idl",
           "xr/xr_plane.idl",
           "xr/xr_plane_detection_state.idl",
+          "xr/xr_plane_set.idl",
           "xr/xr_pose.idl",
           "xr/xr_ray.idl",
           "xr/xr_reference_space.idl",
