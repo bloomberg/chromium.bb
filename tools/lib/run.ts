@@ -1,61 +1,36 @@
-#!/usr/bin/env node
-require('../src/tools/setup-ts-in-node.js');
-const fs = require('fs');
-const process = require('process');
+// tslint:disable: no-console
 
-const { loadTests } = require('../src/framework/listing');
-const { Logger } = require('../src/framework/logger');
-const { parseFilters } = require('../src/framework/url_query');
+import * as fs from 'fs';
+import * as process from 'process';
 
-function usage(rc) {
+import { ITestNode } from '../../src/framework/loader';
+import { Logger } from '../../src/framework/logger';
+import { parseFilters } from '../../src/framework/url_query';
+import { TestLoaderNode } from './loader_node';
+
+function usage(rc: number) {
   console.log('Usage:');
-  console.log('  node tools/run.js [FILTERS...]');
-  console.log('  node tools/run.js unittests: demos:params:');
+  console.log('  node tools/run [FILTERS...]');
+  console.log('  node tools/run unittests: demos:params:');
   process.exit(rc);
-}
-
-function die() {
-  console.log(new Error());
-  console.log('');
-  usage(1);
 }
 
 if (process.argv.length <= 2) {
   usage(0);
 }
 
-if (!fs.existsSync('src/')) {
+if (!fs.existsSync('tools/lib/run.ts')) {
   console.log('Must be run from repository root');
-  die();
-}
-
-class ListingFetcherFS {
-  constructor() {
-    this.suites = new Map();
-  }
-
-  async get(outDir, suite) {
-    let listing = this.suites.get(suite);
-    if (listing) {
-      return listing;
-    }
-    const listingPath = `${outDir}/${suite}/listing.json`;
-    const fetched = await fs.promises.readFile(listingPath);
-    const groups = JSON.parse(fetched);
-
-    listing = { suite, groups };
-    this.suites.set(suite, listing);
-    return listing;
-  }
+  usage(1);
 }
 
 (async () => {
   const filters = parseFilters(process.argv.slice(2));
-  const listing = await loadTests('./out', filters, ListingFetcherFS);
+  const loader = new TestLoaderNode();
+  const listing = await loader.loadTests('./out', filters);
 
   const log = new Logger();
-  const entries = await Promise.all(
-    Array.from(listing, ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
+  const entries = await Promise.all(Array.from(listing, ({ suite, path, node }) => node.then((n: ITestNode) => ({ suite, path, node: n }))));
 
   const failed = [];
   const warned = [];

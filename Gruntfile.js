@@ -15,11 +15,11 @@ module.exports = function(grunt) {
 
     run: {
       'generate-listings': {
-        cmd: 'tools/gen.js',
+        cmd: 'tools/gen',
         args: [ 'cts', 'unittests', 'demos' ]
       },
       'test': {
-        cmd: 'tools/run.js',
+        cmd: 'tools/run',
         args: [ 'unittests' ]
       },
       'build-out': {

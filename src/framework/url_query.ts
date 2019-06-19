@@ -1,4 +1,4 @@
-import { IEntry } from './listing.js';
+import { IEntry } from './loader.js';
 import { ICase } from './test_group.js';
 
 export function encodeSelectively(s: string) {

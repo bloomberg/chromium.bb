@@ -29,6 +29,6 @@
     "baseUrl": "./src",
   },
   "include": [
-    "./src",
+    "./src", "tools/run.ts", "tools/setup-ts-in-node.js", "tools/gen.ts",
   ]
 }

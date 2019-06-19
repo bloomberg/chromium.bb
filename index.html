@@ -82,7 +82,7 @@
 <script type="module">
 "use strict";
 
-import { loadTests } from './out/framework/listing.js';
+import { TestLoaderWeb } from './out/framework/loader_web.js';
 import { Logger } from './out/framework/logger.js';
 import { encodeSelectively, makeQueryString, parseQueryString } from './out/framework/url_query.js';
 
@@ -177,7 +177,8 @@ function basepath(path) {
   const runnow = url.searchParams.get("runnow") === "1";
 
   const filters = parseQueryString(window.location.search);
-  const listing = await loadTests('./out', filters);
+  const loader = new TestLoaderWeb();
+  const listing = await loader.loadTests('./out', filters);
   const entries = await Promise.all(Array.from(listing,
       ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
   // TODO: convert listing to tree so it can be displayed as a tree?
