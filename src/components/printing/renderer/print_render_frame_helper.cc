@@ -1156,6 +1156,56 @@ void PrintRenderFrameHelper::OnDestruct() {
   delete this;
 }
 
+std::vector<char> PrintRenderFrameHelper::PrintToPDF(
+    blink::WebLocalFrame* localframe) {
+  std::vector<char> buffer;
+  DCHECK(localframe);
+
+  int expected_pages_count_ = 0;
+  if (CalculateNumberOfPages(localframe, blink::WebNode(),
+                             &expected_pages_count_) &&
+      expected_pages_count_ > 0) {
+    PrintMsg_PrintPages_Params& params = *print_pages_params_;
+    PrintMsg_Print_Params& print_params = params.params;
+    prep_frame_view_.reset(new PrepareFrameAndViewForPrint(
+        print_params, localframe, blink::WebNode(), true));
+
+    prep_frame_view_->StartPrinting();
+    int page_count = prep_frame_view_->GetExpectedPageCount();
+
+    blink::WebLocalFrame* frame = prep_frame_view_->frame();
+
+    std::vector<int> printed_pages = GetPrintedPages(params, page_count);
+    if (!printed_pages.empty()) {
+      // blpwtk2: This logic is borrowed from the PrintPagesNative function
+      // defined below
+      std::vector<gfx::Size> page_size_in_dpi(printed_pages.size());
+      std::vector<gfx::Rect> content_area_in_dpi(printed_pages.size());
+
+      MetafileSkia metafile(print_params.printed_doc_type,
+                            print_params.document_cookie);
+      CHECK(metafile.Init());
+
+      PrintMsg_Print_Params page_params;
+      for (size_t i = 0; i < printed_pages.size(); ++i) {
+        const int page_number = printed_pages[i];
+        double scale_factor = GetScaleFactor(print_params.scale_factor,
+                                             !print_preview_context_.IsModifiable());
+
+        PrintPageInternal(page_params, page_number, page_count, scale_factor, frame,
+                          &metafile, &page_size_in_dpi[i],
+                          &content_area_in_dpi[i]);
+      }
+      FinishFramePrinting();
+      metafile.FinishDocument();
+
+      metafile.GetDataAsVector(&buffer);
+    }
+  }
+
+  return buffer;
+}
+
 void PrintRenderFrameHelper::OnPrintPages() {
   if (ipc_nesting_level_ > 1)
     return;

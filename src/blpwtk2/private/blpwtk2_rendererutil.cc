@@ -19,6 +19,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+#include <vector>
 
 #include <blpwtk2_rendererutil.h>
 #include <blpwtk2_blob.h>
@@ -33,6 +34,7 @@
 #include <content/public/renderer/render_view.h>
 #include <third_party/blink/public/web/web_view.h>
 #include <third_party/blink/public/web/web_frame.h>
+#include <third_party/blink/public/web/web_local_frame.h>
 #include <skia/ext/platform_canvas.h>
 #include <third_party/skia/include/core/SkDocument.h>
 #include <third_party/skia/include/core/SkStream.h>
@@ -41,6 +43,8 @@
 #include <ui/events/blink/web_input_event.h>
 #include <ui/aura/window.h>
 #include <ui/aura/client/screen_position_client.h>
+#include <components/printing/renderer/print_render_frame_helper.h>
+#include <v8.h>
 
 namespace blpwtk2 {
 
@@ -127,7 +131,7 @@ void RendererUtil::handleInputEvents(content::RenderWidget *rw, const WebView::I
         case WM_MBUTTONUP:
         case WM_RBUTTONUP: {
             ui::MouseEvent uiMouseEvent(msg);
-            blink::WebMouseEvent blinkMouseEvent = 
+            blink::WebMouseEvent blinkMouseEvent =
                             ui::MakeWebMouseEvent(uiMouseEvent);
             rw->bbHandleInputEvent(blinkMouseEvent);
         } break;
@@ -150,6 +154,34 @@ void RendererUtil::handleInputEvents(content::RenderWidget *rw, const WebView::I
 // patch section: print to pdf
 
 
+
+String RendererUtil::printToPDF(
+    content::RenderView* renderView, const std::string& propertyName)
+{
+    blpwtk2::String returnVal;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+
+    for (auto* frame = renderView->GetWebView()->MainFrame(); frame;
+         frame = frame->TraverseNext()) {
+      if (auto* local_frame = frame->ToWebLocalFrame()) {
+        v8::Local<v8::Context> jsContext =
+            local_frame->MainWorldScriptContext();
+        v8::Local<v8::Object> winObject = jsContext->Global();
+
+        if (winObject->Has(jsContext,
+                v8::String::NewFromUtf8(isolate, propertyName.c_str())).FromJust()) {
+          std::vector<char> buffer = printing::PrintRenderFrameHelper::Get(
+                                         renderView->GetMainRenderFrame())
+                                         ->PrintToPDF(local_frame);
+          returnVal.assign(buffer.data(), buffer.size());
+          break;
+        }
+      }
+    }
+
+    return returnVal;
+}
 
 }  // close namespace blpwtk2
 
