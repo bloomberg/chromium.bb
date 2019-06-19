@@ -34,7 +34,6 @@
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -502,12 +501,9 @@ void BackgroundFetchDelegateImpl::OnDownloadStarted(
                                           std::move(response));
   }
 
-  // Release the request body blob, if any, and update the upload progress.
+  // Update the upload progress.
   auto it = job_details.current_fetch_guids.find(download_guid);
   DCHECK(it != job_details.current_fetch_guids.end());
-
-  if (it->second.request_body_blob)
-    it->second.request_body_blob.reset();
   job_details.fetch_description->uploaded_bytes += it->second.body_size_bytes;
 }
 
@@ -922,19 +918,12 @@ void BackgroundFetchDelegateImpl::DidGetUploadData(
   auto& request_data = job_details.current_fetch_guids.at(download_guid);
   request_data.body_size_bytes = blob->size;
 
+  // Use a Data Pipe to transfer the blob.
+  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
+  blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
   auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      profile_->IsOffTheRecord()) {
-    // Use a Data Pipe to transfer the blob.
-    network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-    blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
-    blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
-    request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
-  } else {
-    // Use the blob itself and store the handle for the duration of the upload.
-    request_body->AppendBlob(blob->uuid);
-    request_data.request_body_blob = std::move(blob);
-  }
+  request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
 
   std::move(callback).Run(request_body);
 }
