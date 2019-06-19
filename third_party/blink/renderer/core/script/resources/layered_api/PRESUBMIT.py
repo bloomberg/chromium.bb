@@ -13,9 +13,9 @@ def _CommonChecks(input_api, output_api):
   # is not in third_party/node/node_modules/.
   mjs_files = input_api.AffectedFiles(
       file_filter=lambda f: (f.LocalPath().endswith('.mjs') and
-                             not 'virtual-scroller' in f.LocalPath() and
-                             not 'kv-storage' in f.LocalPath() and
-                             not 'toast' in f.LocalPath()),
+                             not '/virtual-scroller/' in f.LocalPath() and
+                             not '/kv-storage/' in f.LocalPath() and
+                             not '/toast/' in f.LocalPath()),
       include_deletes=False)
   if not mjs_files:
     return results
