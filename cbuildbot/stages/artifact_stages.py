@@ -447,7 +447,7 @@ class BuildConfigsExportStage(generic_stages.BoardSpecificBuilderStage,
   NOTES: this is an ephemeral stage just to gather build config data for
     crbug.com/974795 and will be removed once that project finished.
   """
-  config_name = 'build_configs'
+  config_name = 'run_build_configs_export'
   category = constants.CI_INFRA_STAGE
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
