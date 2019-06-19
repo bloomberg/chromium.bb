@@ -3420,15 +3420,6 @@
           'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
         },
       },
-      'Linux Tests (dbg)(1)(32)': {
-        'mixins': [
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
-        },
-      },
       # TODO(crbug.com/930364): Remove once linux-coverage-rel is folded into
       # linux-rel or ended up not being able to fold.
       'Linux Tests Code Coverage': {
