@@ -507,11 +507,12 @@ def fetch_and_map(isolated_hash, storage, cache, outdir, use_symlinks):
       cache=cache,
       outdir=outdir,
       use_symlinks=use_symlinks)
+  hot = (collections.Counter(cache.used) -
+         collections.Counter(cache.added)).elements()
   return bundle, {
     'duration': time.time() - start,
     'items_cold': base64.b64encode(large.pack(sorted(cache.added))),
-    'items_hot': base64.b64encode(
-        large.pack(sorted(set(cache.used) - set(cache.added)))),
+    'items_hot': base64.b64encode(large.pack(sorted(hot))),
   }
 
 
