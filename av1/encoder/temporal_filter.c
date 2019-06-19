@@ -39,9 +39,6 @@
 #define WINDOW_SIZE 25
 #define SCALE 1000
 
-#define EDGE_THRESHOLD 50
-#define SQRT_PI_BY_2 1.25331413732
-
 static unsigned int index_mult[14] = { 0,     0,     0,     0,     49152,
                                        39322, 32768, 28087, 24576, 21846,
                                        19661, 17874, 0,     15124 };
@@ -985,6 +982,7 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
                                       YV12_BUFFER_CONFIG **frames,
                                       int frame_count, int alt_ref_index,
                                       int strength, double sigma,
+                                      int is_key_frame,
                                       struct scale_factors *ref_scale_factors) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -1009,8 +1007,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
   const int mb_uv_width = BW >> mbd->plane[1].subsampling_x;
 #if EXPERIMENT_TEMPORAL_FILTER
   const int is_screen_content_type = cm->allow_screen_content_tools != 0;
-  const int use_new_temporal_mode =
-      AOMMIN(cm->width, cm->height) >= 480 && !is_screen_content_type;
+  const int use_new_temporal_mode = AOMMIN(cm->width, cm->height) >= 480 &&
+                                    !is_screen_content_type && !is_key_frame;
 #else
   (void)sigma;
   const int use_new_temporal_mode = 0;
@@ -1316,8 +1314,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
 // Signal Processing, 2008, St Julians, Malta.
 //
 // Return noise estimate, or -1.0 if there was a failure
-static double estimate_noise(const uint8_t *src, int width, int height,
-                             int stride, int edge_thresh) {
+double estimate_noise(const uint8_t *src, int width, int height, int stride,
+                      int edge_thresh) {
   int64_t sum = 0;
   int64_t num = 0;
   for (int i = 1; i < height - 1; ++i) {
@@ -1351,8 +1349,8 @@ static double estimate_noise(const uint8_t *src, int width, int height,
 }
 
 // Return noise estimate, or -1.0 if there was a failure
-static double highbd_estimate_noise(const uint8_t *src8, int width, int height,
-                                    int stride, int bd, int edge_thresh) {
+double highbd_estimate_noise(const uint8_t *src8, int width, int height,
+                             int stride, int bd, int edge_thresh) {
   uint16_t *src = CONVERT_TO_SHORTPTR(src8);
   int64_t sum = 0;
   int64_t num = 0;
@@ -1386,31 +1384,10 @@ static double highbd_estimate_noise(const uint8_t *src8, int width, int height,
   return sigma;
 }
 
-// Apply buffer limits and context specific adjustments to arnr filter.
-static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
-                               int *arnr_frames, int *arnr_strength,
-                               double *sigma) {
-  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
-  const int frames_after_arf =
-      av1_lookahead_depth(cpi->lookahead) - distance - 1;
-  int frames_fwd = (cpi->oxcf.arnr_max_frames - 1) >> 1;
-  int frames_bwd;
-  int q, frames, strength;
-
-  // Define the forward and backwards filter limits for this arnr group.
-  if (frames_fwd > frames_after_arf) frames_fwd = frames_after_arf;
-  if (frames_fwd > distance) frames_fwd = distance;
-
-  frames_bwd = frames_fwd;
-
-  // For even length filter there is one more frame backward
-  // than forward: e.g. len=6 ==> bbbAff, len=7 ==> bbbAfff.
-  if (frames_bwd < distance) frames_bwd += (oxcf->arnr_max_frames + 1) & 0x1;
-
-  // Set the baseline active filter size.
-  frames = frames_bwd + 1 + frames_fwd;
-
+static int estimate_strength(AV1_COMP *cpi, int distance, int group_boost,
+                             double *sigma) {
   // Adjust the strength based on active max q.
+  int q;
   if (cpi->common.current_frame.frame_number > 1)
     q = ((int)av1_convert_qindex_to_q(cpi->rc.avg_frame_qindex[INTER_FRAME],
                                       cpi->common.seq_params.bit_depth));
@@ -1419,6 +1396,7 @@ static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
                                       cpi->common.seq_params.bit_depth));
   MACROBLOCKD *mbd = &cpi->td.mb.e_mbd;
   struct lookahead_entry *buf = av1_lookahead_peek(cpi->lookahead, distance);
+  int strength;
   double noiselevel;
   if (is_cur_buf_hbd(mbd)) {
     noiselevel = highbd_estimate_noise(
@@ -1431,7 +1409,7 @@ static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
                                 EDGE_THRESHOLD);
     *sigma = noiselevel;
   }
-  int adj_strength = oxcf->arnr_strength;
+  int adj_strength = cpi->oxcf.arnr_strength;
   if (noiselevel > 0) {
     // Get 4 integer adjustment levels in [-2, 1]
     int noiselevel_adj;
@@ -1454,18 +1432,45 @@ static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
     if (strength < 0) strength = 0;
   }
 
+  if (strength > group_boost / 300) {
+    strength = group_boost / 300;
+  }
+
+  return strength;
+}
+
+// Apply buffer limits and context specific adjustments to arnr filter.
+static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
+                               int *arnr_frames, int *arnr_strength,
+                               double *sigma) {
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+  const int frames_after_arf =
+      av1_lookahead_depth(cpi->lookahead) - distance - 1;
+  int frames_fwd = (cpi->oxcf.arnr_max_frames - 1) >> 1;
+  int frames_bwd;
+  int frames;
+
+  // Define the forward and backwards filter limits for this arnr group.
+  if (frames_fwd > frames_after_arf) frames_fwd = frames_after_arf;
+  if (frames_fwd > distance) frames_fwd = distance;
+
+  frames_bwd = frames_fwd;
+
+  // For even length filter there is one more frame backward
+  // than forward: e.g. len=6 ==> bbbAff, len=7 ==> bbbAfff.
+  if (frames_bwd < distance) frames_bwd += (oxcf->arnr_max_frames + 1) & 0x1;
+
+  // Set the baseline active filter size.
+  frames = frames_bwd + 1 + frames_fwd;
+
   // Adjust number of frames in filter and strength based on gf boost level.
   if (frames > group_boost / 150) {
     frames = group_boost / 150;
     frames += !(frames & 1);
   }
 
-  if (strength > group_boost / 300) {
-    strength = group_boost / 300;
-  }
-
   *arnr_frames = frames;
-  *arnr_strength = strength;
+  *arnr_strength = estimate_strength(cpi, distance, group_boost, sigma);
 }
 
 void av1_temporal_filter(AV1_COMP *cpi, int distance) {
@@ -1490,6 +1495,11 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
     // beneficial to use non-zero strength filtering.
     strength = 0;
     frames_to_blur = 1;
+  } else if (distance == -1) {
+    // Apply temporal filtering on key frame.
+    strength = estimate_strength(cpi, distance, rc->gfu_boost, &sigma);
+    // Number of frames for temporal filtering, could be tuned.
+    frames_to_blur = NUM_KEY_FRAME_DENOISING;
   } else {
     adjust_arnr_filter(cpi, distance, rc->gfu_boost, &frames_to_blur, &strength,
                        &sigma);
@@ -1504,19 +1514,29 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
     cpi->is_arf_filter_off[which_arf] = 0;
   cpi->common.showable_frame = cpi->is_arf_filter_off[which_arf];
 
-  frames_to_blur_backward = (frames_to_blur / 2);
-  frames_to_blur_forward = ((frames_to_blur - 1) / 2);
-  start_frame = distance + frames_to_blur_forward;
+  if (distance == -1) {
+    frames_to_blur_backward = 0;
+    frames_to_blur_forward = frames_to_blur - 1;
+    start_frame = distance + frames_to_blur_forward;
+  } else {
+    frames_to_blur_backward = (frames_to_blur / 2);
+    frames_to_blur_forward = ((frames_to_blur - 1) / 2);
+    start_frame = distance + frames_to_blur_forward;
+  }
 
   // Setup frame pointers, NULL indicates frame not included in filter.
   for (frame = 0; frame < frames_to_blur; ++frame) {
     const int which_buffer = start_frame - frame;
     struct lookahead_entry *buf =
         av1_lookahead_peek(cpi->lookahead, which_buffer);
-    frames[frames_to_blur - 1 - frame] = &buf->img;
+    if (buf == NULL) {
+      frames[frames_to_blur - 1 - frame] = NULL;
+    } else {
+      frames[frames_to_blur - 1 - frame] = &buf->img;
+    }
   }
 
-  if (frames_to_blur > 0) {
+  if (frames_to_blur > 0 && frames[0] != NULL) {
     // Setup scaling factors. Scaling on each of the arnr frames is not
     // supported.
     // ARF is produced at the native frame size and resized when coded.
@@ -1532,5 +1552,6 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   av1_initialize_cost_tables(&cpi->common, &cpi->td.mb);
 
   temporal_filter_iterate_c(cpi, frames, frames_to_blur,
-                            frames_to_blur_backward, strength, sigma, &sf);
+                            frames_to_blur_backward, strength, sigma,
+                            distance == -1, &sf);
 }

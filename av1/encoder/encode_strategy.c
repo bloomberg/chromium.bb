@@ -32,6 +32,8 @@
 #include "av1/encoder/temporal_filter.h"
 #include "av1/encoder/tpl_model.h"
 
+#define TEMPORAL_FILTER_KEY_FRAME (CONFIG_REALTIME_ONLY ? 0 : 1)
+
 void av1_configure_buffer_updates(AV1_COMP *const cpi,
                                   EncodeFrameParams *const frame_params,
                                   const FRAME_UPDATE_TYPE type,
@@ -986,6 +988,88 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi,
   return refresh_mask;
 }
 
+#if !CONFIG_REALTIME_ONLY
+// Apply temporal filtering to key frames and encode the filtered frame.
+// If the current frame is not key frame, this function is identical to
+// av1_encode().
+static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
+                              EncodeFrameInput *const frame_input,
+                              EncodeFrameParams *const frame_params,
+                              EncodeFrameResults *const frame_results,
+                              int *temporal_filtered) {
+  if (frame_params->frame_type != KEY_FRAME) {
+    cpi->pack_bitstream = 1;
+    if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
+        AOM_CODEC_OK) {
+      return AOM_CODEC_ERROR;
+    }
+    return AOM_CODEC_OK;
+  }
+
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+  AV1_COMMON *const cm = &cpi->common;
+  double noise_level;
+  const int use_hbd = frame_input->source->flags & YV12_FLAG_HIGHBITDEPTH;
+  if (use_hbd) {
+    noise_level = highbd_estimate_noise(
+        frame_input->source->y_buffer, frame_input->source->y_crop_width,
+        frame_input->source->y_crop_height, frame_input->source->y_stride,
+        cm->seq_params.bit_depth, EDGE_THRESHOLD);
+  } else {
+    noise_level = estimate_noise(frame_input->source->y_buffer,
+                                 frame_input->source->y_crop_width,
+                                 frame_input->source->y_crop_height,
+                                 frame_input->source->y_stride, EDGE_THRESHOLD);
+  }
+  const int apply_filtering =
+      oxcf->pass == 2 && frame_params->frame_type == KEY_FRAME &&
+      cpi->rc.frames_to_key > NUM_KEY_FRAME_DENOISING && noise_level > 0 &&
+      !is_lossless_requested(oxcf) && oxcf->arnr_max_frames > 0;
+
+  // Apply filtering to key frame and encode.
+  if (apply_filtering) {
+    const int num_planes = av1_num_planes(cm);
+    // Keep a copy of the source image.
+    aom_yv12_copy_frame(frame_input->source, &cpi->source_kf_buffer,
+                        num_planes);
+    // TODO(chengchen): Encode the key frame, this is a workaround to get
+    // internal data structures properly initialized, for example, mi, x, xd.
+    // Do not pack bitstream in this case.
+    cpi->pack_bitstream = 0;
+    if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
+        AOM_CODEC_OK) {
+      return AOM_CODEC_ERROR;
+    }
+    // Produce the filtered key frame.
+    av1_temporal_filter(cpi, -1);
+    aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
+    *temporal_filtered = 1;
+    // Set frame_input source to temporal filtered key frame.
+    frame_input->source = &cpi->alt_ref_buffer;
+    // Encode the filtered key frame. Pack bitstream.
+    cpi->pack_bitstream = 1;
+    if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
+        AOM_CODEC_OK) {
+      return AOM_CODEC_ERROR;
+    }
+    // Set frame_input source to true source for psnr calculation.
+    if (oxcf->arnr_max_frames > 0 && *temporal_filtered) {
+      aom_yv12_copy_frame(&cpi->source_kf_buffer, cpi->source, num_planes);
+      aom_yv12_copy_frame(&cpi->source_kf_buffer, cpi->unscaled_source,
+                          num_planes);
+    }
+  } else {
+    // Encode other frames.
+    cpi->pack_bitstream = 1;
+    if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
+        AOM_CODEC_OK) {
+      return AOM_CODEC_ERROR;
+    }
+  }
+  return AOM_CODEC_OK;
+}
+#endif  // !CONFIG_REALTIME_ONLY
+
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
                         int64_t *const time_stamp, int64_t *const time_end,
@@ -1186,10 +1270,18 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     }
   }
 
+#if TEMPORAL_FILTER_KEY_FRAME
+  if (denoise_and_encode(cpi, dest, &frame_input, &frame_params, &frame_results,
+                         &temporal_filtered) != AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
+  }
+#else   // !TEMPORAL_FILTER_KEY_FRAME
+  cpi->pack_bitstream = 1;
   if (av1_encode(cpi, dest, &frame_input, &frame_params, &frame_results) !=
       AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
+#endif  // TEMPORAL_FILTER_KEY_FRAME
   if (oxcf->pass != 1) cpi->num_gf_group_show_frames += frame_params.show_frame;
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {

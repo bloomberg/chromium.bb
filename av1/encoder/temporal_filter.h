@@ -30,7 +30,15 @@ extern "C" {
 #define SUB_BH 16
 #define SUB_BW 16
 
+#define NUM_KEY_FRAME_DENOISING 7
+#define EDGE_THRESHOLD 50
+#define SQRT_PI_BY_2 1.25331413732
+
 void av1_temporal_filter(AV1_COMP *cpi, int distance);
+double estimate_noise(const uint8_t *src, int width, int height, int stride,
+                      int edge_thresh);
+double highbd_estimate_noise(const uint8_t *src8, int width, int height,
+                             int stride, int bd, int edge_thresh);
 
 #ifdef __cplusplus
 }  // extern "C"

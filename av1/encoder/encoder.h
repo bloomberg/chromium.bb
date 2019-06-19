@@ -868,6 +868,8 @@ typedef struct AV1_COMP {
 
   YV12_BUFFER_CONFIG alt_ref_buffer;
 
+  YV12_BUFFER_CONFIG source_kf_buffer;
+
 #if CONFIG_INTERNAL_STATS
   unsigned int mode_chosen_counts[MAX_MODES];
 
@@ -1022,6 +1024,11 @@ typedef struct AV1_COMP {
   int deltaq_used;
 
   double *ssim_rdmult_scaling_factors;
+
+  // Whether writing to bitstream. It allows us to encode one frame multiple
+  // times without writing to bitstream and thus provides flexibility for
+  // experiments, for example, temporal filtering on key frames.
+  int pack_bitstream;
 } AV1_COMP;
 
 typedef struct {
