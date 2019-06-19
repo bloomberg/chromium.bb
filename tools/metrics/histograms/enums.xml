@@ -6241,6 +6241,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Present"/>
 </enum>
 
+<enum name="BooleanProcessReuseDisallowed">
+  <int value="0" label="Process reuse allowed"/>
+  <int value="1" label="Process reuse disallowed"/>
+</enum>
+
 <enum name="BooleanProfileSignedIn">
   <int value="0" label="Profile was not Signed In"/>
   <int value="1" label="Profile was Signed In"/>
