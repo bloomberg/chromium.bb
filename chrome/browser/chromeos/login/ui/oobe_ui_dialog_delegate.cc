@@ -70,7 +70,7 @@ class OobeWebDialogView : public views::WebDialogView {
   }
 
   bool TakeFocus(content::WebContents* source, bool reverse) override {
-    LoginScreenClient::Get()->login_screen()->FocusLoginShelf(reverse);
+    ash::LoginScreen::Get()->FocusLoginShelf(reverse);
     return true;
   }
 

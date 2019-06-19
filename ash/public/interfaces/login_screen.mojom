@@ -23,25 +23,6 @@ interface LoginScreen {
   // Displays the login screen. |did_show| is true iff the login UI was
   // successfully displayed.
   ShowLoginScreen() => (bool did_show);
-
-  // Check if the login/lock screen is ready for a password.
-  IsReadyForPassword() => (bool is_ready);
-
-  // Display a toast describing the latest kiosk app launch error.
-  ShowKioskAppError(string message);
-
-  // Sets whether users can be added from the login screen.
-  SetAddUserButtonEnabled(bool enable);
-
-  // Sets whether shutdown button is enabled in the login screen.
-  SetShutdownButtonEnabled(bool enable);
-
-  // Sets if the guest button on the login shelf can be shown. Even if set to
-  // true the button may still not be visible.
-  SetAllowLoginAsGuest(bool allow_guest);
-
-  // Transitions focus to the shelf area. If |reverse|, focuses the status area.
-  FocusLoginShelf(bool reverse);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests

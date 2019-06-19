@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -289,7 +290,7 @@ void LoginDisplayHostMojo::ShowResetScreen() {
 
 void LoginDisplayHostMojo::UpdateAddUserButtonStatus() {
   DCHECK(GetOobeUI());
-  LoginScreenClient::Get()->login_screen()->SetAddUserButtonEnabled(
+  ash::LoginScreen::Get()->EnableAddUserButton(
       !GetOobeUI()->signin_screen_handler()->AllWhitelistedUsersPresent());
 }
 

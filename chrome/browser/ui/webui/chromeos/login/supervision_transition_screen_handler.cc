@@ -100,8 +100,8 @@ void SupervisionTransitionScreenHandler::Show() {
   // Disable system tray, shutdown button and prevent login as guest when
   // supervision transition screen is shown.
   SystemTrayClient::Get()->SetPrimaryTrayEnabled(false);
-  LoginScreenClient::Get()->login_screen()->SetShutdownButtonEnabled(false);
-  LoginScreenClient::Get()->login_screen()->SetAllowLoginAsGuest(false);
+  ash::LoginScreen::Get()->EnableShutdownButton(false);
+  ash::LoginScreen::Get()->SetAllowLoginAsGuest(false);
   ash::LoginScreen::Get()->ShowGuestButtonInOobe(false);
 
   base::DictionaryValue data;

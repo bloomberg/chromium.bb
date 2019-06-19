@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
