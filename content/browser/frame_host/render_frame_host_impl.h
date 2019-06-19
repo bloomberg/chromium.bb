@@ -77,7 +77,7 @@
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
-#include "third_party/blink/public/mojom/sms/sms_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -1392,7 +1392,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void BindIdleManagerRequest(blink::mojom::IdleManagerRequest request);
 
-  void BindSmsManagerRequest(blink::mojom::SmsManagerRequest request);
+  void BindSmsReceiverRequest(blink::mojom::SmsReceiverRequest request);
 
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,

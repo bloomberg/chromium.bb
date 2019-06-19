@@ -196,6 +196,7 @@
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 #include "ui/accessibility/ax_tree.h"
@@ -4245,7 +4246,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     registry_->AddInterface(base::BindRepeating(
-        &RenderFrameHostImpl::BindSmsManagerRequest, base::Unretained(this)));
+        &RenderFrameHostImpl::BindSmsReceiverRequest, base::Unretained(this)));
   }
 }
 
@@ -6010,8 +6011,8 @@ blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {
   return chooser;
 }
 
-void RenderFrameHostImpl::BindSmsManagerRequest(
-    blink::mojom::SmsManagerRequest request) {
+void RenderFrameHostImpl::BindSmsReceiverRequest(
+    blink::mojom::SmsReceiverRequest request) {
   if (GetParent()) {
     mojo::ReportBadMessage("Must be in top-level browser context.");
     return;
