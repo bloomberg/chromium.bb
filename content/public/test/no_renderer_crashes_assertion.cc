@@ -36,6 +36,7 @@ void NoRendererCrashesAssertion::Observe(
   ChildProcessTerminationInfo* process_info =
       content::Details<content::ChildProcessTerminationInfo>(details).ptr();
   switch (process_info->status) {
+    case base::TERMINATION_STATUS_LAUNCH_FAILED:
     case base::TERMINATION_STATUS_NORMAL_TERMINATION:
     case base::TERMINATION_STATUS_STILL_RUNNING:
       return;  // Not a crash.
