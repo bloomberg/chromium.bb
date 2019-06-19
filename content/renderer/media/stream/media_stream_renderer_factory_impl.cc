@@ -9,10 +9,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/stream/track_audio_renderer.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/modules/webrtc/peer_connection_remote_audio_source.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_renderer_sink.h"
@@ -107,7 +107,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
 
   // If the track has a local source, or is a remote track that does not use the
   // WebRTC audio pipeline, return a new TrackAudioRenderer instance.
-  if (!PeerConnectionRemoteAudioTrack::From(audio_track)) {
+  if (!blink::PeerConnectionRemoteAudioTrack::From(audio_track)) {
     // TODO(xians): Add support for the case where the media stream contains
     // multiple audio tracks.
     DVLOG(1) << "Creating TrackAudioRenderer for "

@@ -5,10 +5,10 @@
 #include "content/renderer/media/stream/remote_media_stream_track_adapter.h"
 
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
-#include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc/track_observer.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/webrtc/peer_connection_remote_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 
 namespace content {
@@ -88,7 +88,8 @@ void RemoteAudioTrackAdapter::InitializeWebAudioTrack(
   InitializeWebTrack(blink::WebMediaStreamSource::kTypeAudio);
 
   blink::MediaStreamAudioSource* const source =
-      new PeerConnectionRemoteAudioSource(observed_track().get(), main_thread);
+      new blink::PeerConnectionRemoteAudioSource(observed_track().get(),
+                                                 main_thread);
   web_track()->Source().SetPlatformSource(
       base::WrapUnique(source));  // Takes ownership.
 

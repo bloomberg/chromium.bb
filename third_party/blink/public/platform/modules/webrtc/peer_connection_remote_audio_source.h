@@ -2,27 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_
 
 #include <memory>
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace media {
 class AudioBus;
 }
 
-namespace content {
+namespace blink {
+
+// TODO(crbug.com/704136): Move the classes below out of the Blink exposed
+// API when all users of it have been Onion souped.
 
 // PeerConnectionRemoteAudioTrack is a WebRTC specific implementation of an
 // audio track whose data is sourced from a PeerConnection.
-class PeerConnectionRemoteAudioTrack final
-    : public blink::MediaStreamAudioTrack {
+class BLINK_PLATFORM_EXPORT PeerConnectionRemoteAudioTrack final
+    : public MediaStreamAudioTrack {
  public:
   explicit PeerConnectionRemoteAudioTrack(
       scoped_refptr<webrtc::AudioTrackInterface> track_interface);
@@ -30,8 +34,7 @@ class PeerConnectionRemoteAudioTrack final
 
   // If |track| is an instance of PeerConnectionRemoteAudioTrack, return a
   // type-casted pointer to it. Otherwise, return null.
-  static PeerConnectionRemoteAudioTrack* From(
-      blink::MediaStreamAudioTrack* track);
+  static PeerConnectionRemoteAudioTrack* From(MediaStreamAudioTrack* track);
 
   webrtc::AudioTrackInterface* track_interface() const {
     return track_interface_.get();
@@ -48,14 +51,14 @@ class PeerConnectionRemoteAudioTrack final
 
   // In debug builds, check that all methods that could cause object graph
   // or data flow changes are being called on the main thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionRemoteAudioTrack);
 };
 
 // Represents the audio provided by the receiving end of a PeerConnection.
-class PeerConnectionRemoteAudioSource final
-    : public blink::MediaStreamAudioSource,
+class BLINK_PLATFORM_EXPORT PeerConnectionRemoteAudioSource final
+    : public MediaStreamAudioSource,
       protected webrtc::AudioTrackSinkInterface {
  public:
   PeerConnectionRemoteAudioSource(
@@ -65,14 +68,17 @@ class PeerConnectionRemoteAudioSource final
 
  protected:
   // MediaStreamAudioSource implementation.
-  std::unique_ptr<blink::MediaStreamAudioTrack> CreateMediaStreamAudioTrack(
+  std::unique_ptr<MediaStreamAudioTrack> CreateMediaStreamAudioTrack(
       const std::string& id) final;
   bool EnsureSourceIsStarted() final;
   void EnsureSourceIsStopped() final;
 
   // webrtc::AudioTrackSinkInterface implementation.
-  void OnData(const void* audio_data, int bits_per_sample, int sample_rate,
-              size_t number_of_channels, size_t number_of_frames) final;
+  void OnData(const void* audio_data,
+              int bits_per_sample,
+              int sample_rate,
+              size_t number_of_channels,
+              size_t number_of_frames) final;
 
  private:
   // Interface to the implementation that calls OnData().
@@ -80,7 +86,7 @@ class PeerConnectionRemoteAudioSource final
 
   // In debug builds, check that all methods that could cause object graph
   // or data flow changes are being called on the main thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // True if |this| is receiving an audio flow as a sink of the remote
   // PeerConnection via |track_interface_|.
@@ -99,6 +105,6 @@ class PeerConnectionRemoteAudioSource final
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionRemoteAudioSource);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_

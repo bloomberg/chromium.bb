@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
+#include "third_party/blink/public/platform/modules/webrtc/peer_connection_remote_audio_source.h"
 
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 // Used as an identifier for the down-casters.
@@ -18,7 +18,7 @@ void* const kPeerConnectionRemoteTrackIdentifier =
 
 PeerConnectionRemoteAudioTrack::PeerConnectionRemoteAudioTrack(
     scoped_refptr<webrtc::AudioTrackInterface> track_interface)
-    : blink::MediaStreamAudioTrack(false /* is_local_track */),
+    : MediaStreamAudioTrack(false /* is_local_track */),
       track_interface_(std::move(track_interface)) {
   DVLOG(1)
       << "PeerConnectionRemoteAudioTrack::PeerConnectionRemoteAudioTrack()";
@@ -28,12 +28,12 @@ PeerConnectionRemoteAudioTrack::~PeerConnectionRemoteAudioTrack() {
   DVLOG(1)
       << "PeerConnectionRemoteAudioTrack::~PeerConnectionRemoteAudioTrack()";
   // Ensure the track is stopped.
-  blink::MediaStreamAudioTrack::Stop();
+  MediaStreamAudioTrack::Stop();
 }
 
 // static
 PeerConnectionRemoteAudioTrack* PeerConnectionRemoteAudioTrack::From(
-    blink::MediaStreamAudioTrack* track) {
+    MediaStreamAudioTrack* track) {
   if (track &&
       track->GetClassIdentifier() == kPeerConnectionRemoteTrackIdentifier)
     return static_cast<PeerConnectionRemoteAudioTrack*>(track);
@@ -41,7 +41,7 @@ PeerConnectionRemoteAudioTrack* PeerConnectionRemoteAudioTrack::From(
 }
 
 void PeerConnectionRemoteAudioTrack::SetEnabled(bool enabled) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // This affects the shared state of the source for whether or not it's a part
   // of the mixed audio that's rendered for remote tracks from WebRTC.
@@ -52,7 +52,7 @@ void PeerConnectionRemoteAudioTrack::SetEnabled(bool enabled) {
   // state and the shared state might not be the same.
   track_interface_->set_enabled(enabled);
 
-  blink::MediaStreamAudioTrack::SetEnabled(enabled);
+  MediaStreamAudioTrack::SetEnabled(enabled);
 }
 
 void* PeerConnectionRemoteAudioTrack::GetClassIdentifier() const {
@@ -62,8 +62,8 @@ void* PeerConnectionRemoteAudioTrack::GetClassIdentifier() const {
 PeerConnectionRemoteAudioSource::PeerConnectionRemoteAudioSource(
     scoped_refptr<webrtc::AudioTrackInterface> track_interface,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : blink::MediaStreamAudioSource(std::move(task_runner),
-                                    false /* is_local_source */),
+    : MediaStreamAudioSource(std::move(task_runner),
+                             false /* is_local_source */),
       track_interface_(std::move(track_interface)),
       is_sink_of_peer_connection_(false) {
   DCHECK(track_interface_);
@@ -77,15 +77,15 @@ PeerConnectionRemoteAudioSource::~PeerConnectionRemoteAudioSource() {
   EnsureSourceIsStopped();
 }
 
-std::unique_ptr<blink::MediaStreamAudioTrack>
+std::unique_ptr<MediaStreamAudioTrack>
 PeerConnectionRemoteAudioSource::CreateMediaStreamAudioTrack(
     const std::string& id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return std::make_unique<PeerConnectionRemoteAudioTrack>(track_interface_);
 }
 
 bool PeerConnectionRemoteAudioSource::EnsureSourceIsStarted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_sink_of_peer_connection_)
     return true;
   VLOG(1) << "Starting PeerConnection remote audio source with id="
@@ -96,7 +96,7 @@ bool PeerConnectionRemoteAudioSource::EnsureSourceIsStarted() {
 }
 
 void PeerConnectionRemoteAudioSource::EnsureSourceIsStopped() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_sink_of_peer_connection_) {
     track_interface_->RemoveSink(this);
     is_sink_of_peer_connection_ = false;
@@ -134,24 +134,23 @@ void PeerConnectionRemoteAudioSource::OnData(const void* audio_data,
   audio_bus_->FromInterleaved(audio_data, number_of_frames,
                               bits_per_sample / 8);
 
-  media::AudioParameters params =
-      blink::MediaStreamAudioSource::GetAudioParameters();
+  media::AudioParameters params = MediaStreamAudioSource::GetAudioParameters();
   if (!params.IsValid() ||
       params.format() != media::AudioParameters::AUDIO_PCM_LOW_LATENCY ||
       static_cast<size_t>(params.channels()) != number_of_channels ||
       params.sample_rate() != sample_rate ||
       static_cast<size_t>(params.frames_per_buffer()) != number_of_frames) {
-    blink::MediaStreamAudioSource::SetFormat(
+    MediaStreamAudioSource::SetFormat(
         media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                media::GuessChannelLayout(number_of_channels),
                                sample_rate, number_of_frames));
   }
 
-  blink::MediaStreamAudioSource::DeliverDataToTracks(*audio_bus_, playout_time);
+  MediaStreamAudioSource::DeliverDataToTracks(*audio_bus_, playout_time);
 
 #ifndef NDEBUG
   single_audio_thread_guard_.Release();
 #endif
 }
 
-}  // namespace content
+}  // namespace blink

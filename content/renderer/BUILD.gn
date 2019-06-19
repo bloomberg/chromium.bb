@@ -250,8 +250,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/media_stream_video_webrtc_sink.h",
     "media/webrtc/peer_connection_dependency_factory.cc",
     "media/webrtc/peer_connection_dependency_factory.h",
-    "media/webrtc/peer_connection_remote_audio_source.cc",
-    "media/webrtc/peer_connection_remote_audio_source.h",
     "media/webrtc/peer_connection_tracker.cc",
     "media/webrtc/peer_connection_tracker.h",
     "media/webrtc/rtc_certificate_generator.cc",
