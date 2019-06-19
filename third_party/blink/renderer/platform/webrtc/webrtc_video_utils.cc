@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_video_utils.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_utils.h"
 
-namespace content {
+namespace blink {
 
 media::VideoRotation WebRtcToMediaVideoRotation(
     webrtc::VideoRotation rotation) {
@@ -170,4 +170,4 @@ media::VideoColorSpace WebRtcToMediaVideoColorSpace(
   return media::VideoColorSpace(primaries, transfer, matrix, range);
 }
 
-}  // namespace content
+}  // namespace blink
