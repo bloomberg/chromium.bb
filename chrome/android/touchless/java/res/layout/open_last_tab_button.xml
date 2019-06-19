@@ -7,9 +7,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:targetApi="21">
 
-    <!-- The Chrome Explore header displayed when the user has no history. -->
-    <include layout="@layout/open_last_tab_fallback_view"/>
-
     <LinearLayout
         android:id="@+id/open_last_tab"
         android:layout_width="match_parent"
@@ -17,6 +14,7 @@
         android:layout_gravity="center"
         android:paddingHorizontal="@dimen/open_last_tab_button_padding_horizontal"
         android:paddingVertical="@dimen/open_last_tab_button_padding_vertical"
+        android:layout_marginBottom="@dimen/open_last_tab_bottom_margin"
         android:background="@drawable/hairline_border_card_background"
         style="@style/Theme.AppCompat.Light">
 
