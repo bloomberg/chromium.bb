@@ -2729,9 +2729,8 @@ resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
 		const TranslationTableCharacterAttribute emphModeCharsAttr,
 		const TranslationTableHeader *table, const InString *input,
 		unsigned int *wordBuffer) {
-	int in_word = 0, in_pass = 0, word_start = -1, word_reset = 0, orig_reset = -1,
-		letter_cnt = 0;
-	int i, j;
+	int in_word = 0, in_pass = 0, word_start = -1, word_reset = 0, letter_cnt = 0;
+	int i;
 
 	for (i = 0; i < input->length; i++) {
 		if (in_pass)
@@ -2808,7 +2807,6 @@ resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
 							buffer[i].end &= ~class;
 							buffer[i].word &= ~class;
 						}
-						orig_reset = -1;
 					} else {
 						/* hit reset */
 						if (wordBuffer[i] & WORD_RESET ||
@@ -2817,17 +2815,9 @@ resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
 							if (!checkAttr(input->chars[i], CTC_Letter, 0, table)) {
 								/* ... unless they are marked as not resetting
 								 * (capsmodechars / emphmodechars) */
-								if (checkAttr(input->chars[i], emphModeCharsAttr, 0,
-											table)) {
-									orig_reset = i;
+								if (checkAttr(
+											input->chars[i], emphModeCharsAttr, 0, table))
 									continue;
-								} else if (orig_reset >= 0) {
-									/* invalid no reset sequence */
-									for (j = orig_reset; j < i; j++)
-										buffer[j].word &= ~class;
-									// word_reset = 1;
-									orig_reset = -1;
-								}
 							}
 
 							/* check if symbol is not already resetting */
