@@ -3930,7 +3930,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
   av1_zero_left_context(xd);
 
   // Reset delta for every tile
-  if (mi_row == tile_info->mi_row_start) {
+  if (mi_row == tile_info->mi_row_start || cpi->row_mt) {
     if (cm->delta_q_info.delta_q_present_flag)
       xd->current_qindex = cm->base_qindex;
     if (cm->delta_q_info.delta_lf_present_flag) {
@@ -4937,8 +4937,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cpi->row_mt_sync_write_ptr = av1_row_mt_sync_write_dummy;
     cpi->row_mt = 0;
 
-    if (cpi->oxcf.row_mt && (cpi->oxcf.max_threads > 1) &&
-        !cm->delta_q_info.delta_q_present_flag) {
+    if (cpi->oxcf.row_mt && (cpi->oxcf.max_threads > 1)) {
       cpi->row_mt = 1;
       cpi->row_mt_sync_read_ptr = av1_row_mt_sync_read;
       cpi->row_mt_sync_write_ptr = av1_row_mt_sync_write;
