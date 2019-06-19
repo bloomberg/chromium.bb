@@ -299,6 +299,10 @@
       status: "experimental",
     },
     {
+      name: "ContentIndex",
+      status: "experimental",
+    },
+    {
       name: "ContextMenu",
       status: "experimental",
     },
