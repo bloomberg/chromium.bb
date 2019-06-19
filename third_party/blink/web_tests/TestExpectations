@@ -6257,3 +6257,6 @@ crbug.com/976743 virtual/gpu-rasterization/images/color-profile-image-canvas.htm
 crbug.com/976743 virtual/gpu-rasterization/images/color-profile-image.html [ Pass Failure ]
 crbug.com/976743 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Pass Failure ]
 crbug.com/976743 virtual/gpu-rasterization/images/ycbcr-with-cmyk-color-profile.html [ Pass Failure ]
+
+# Sheriff 2019-06-19
+crbug.com/959129 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
