@@ -2063,6 +2063,8 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT" desc="Settings > Internet > Network details: Label for proxy port input.">
       Port
     </message>
+
+    <!-- Settings > Internet > SIM lock/unlock dialog -->
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for buton to change the PIN.">
       Change PIN
     </message>
@@ -2111,6 +2113,22 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a PUK.">
       Enter PIN Unlock Key
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PIN was entered.">
+      Incorrect PIN. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PUK was entered.">
+      Incorrect PUK. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PIN was entered.">
+      Invalid PIN. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PUK was entered.">
+      Invalid PUK. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_PIN_MISMATCH" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when PIN values do not match.">
+      PIN values do not match.
+    </message>
+
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PREFER" desc="Settings > Internet > Network details: Label for the checkbox determining whether a network is preferred over other networks.">
       Prefer this network
     </message>
