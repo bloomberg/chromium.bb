@@ -5,9 +5,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/synchronization/lock.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -289,15 +291,18 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
 
   // Called by |embedded_test_server()|.
   void MonitorRequest(const net::test_server::HttpRequest& request) {
+    base::AutoLock lock(last_request_lock_);
     last_request_relative_url_ = request.relative_url;
   }
 
   std::string last_request_relative_url() const {
+    base::AutoLock lock(last_request_lock_);
     return last_request_relative_url_;
   }
 
  private:
-  std::string last_request_relative_url_;
+  mutable base::Lock last_request_lock_;
+  std::string last_request_relative_url_ GUARDED_BY(last_request_lock_);
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceRestartBrowserTest);

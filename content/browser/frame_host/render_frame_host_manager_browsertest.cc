@@ -21,7 +21,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/test/bind_test_util.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -5180,6 +5182,7 @@ class RenderFrameHostManagerUnloadBrowserTest
   // Starts monitoring requests made to the embedded_http_server() looking for
   // one made to |url|.  To be used together with WaitForMonitoredRequest().
   void StartMonitoringRequestsFor(const GURL& url) {
+    base::AutoLock lock(lock_);
     request_url_ = url;
     saw_request_url_ = false;
   }
@@ -5187,16 +5190,24 @@ class RenderFrameHostManagerUnloadBrowserTest
   // Waits for a request to a URL set earlier via StartMonitoringRequestsFor().
   // Returns right away if that request was already made.
   void WaitForMonitoredRequest() {
+    base::AutoLock lock(lock_);
     if (saw_request_url_)
       return;
 
     run_loop_.reset(new base::RunLoop());
-    run_loop_->Run();
+    {
+      base::RunLoop* run_loop = run_loop_.get();
+      base::AutoUnlock unlock(lock_);
+      run_loop->Run();
+    }
     run_loop_.reset();
   }
 
   // Returns the body of the monitored request if it was a POST.
-  const std::string& GetRequestContent() { return request_content_; }
+  const std::string& GetRequestContent() {
+    base::AutoLock lock(lock_);
+    return request_content_;
+  }
 
   // Adds an unload handler to |rfh| and verifies that the unload state
   // bookkeeping on |rfh| is updated properly.
@@ -5238,6 +5249,7 @@ class RenderFrameHostManagerUnloadBrowserTest
     if (it != request.headers.end())
       requested_url = GURL("http://" + it->second + request.relative_url);
 
+    base::AutoLock lock(lock_);
     if (!saw_request_url_ && request_url_ == requested_url) {
       saw_request_url_ = true;
       request_content_ = request.content;
@@ -5246,10 +5258,11 @@ class RenderFrameHostManagerUnloadBrowserTest
     }
   }
 
-  GURL request_url_;
-  std::string request_content_;
-  bool saw_request_url_ = false;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  base::Lock lock_;
+  GURL request_url_ GUARDED_BY(lock_);
+  std::string request_content_ GUARDED_BY(lock_);
+  bool saw_request_url_ GUARDED_BY(lock_) = false;
+  std::unique_ptr<base::RunLoop> run_loop_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManagerUnloadBrowserTest);
 };

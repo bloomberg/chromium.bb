@@ -148,13 +148,6 @@ char kTSanDefaultSuppressions[] =
     // https://crbug.com/965722
     "race:content::(anonymous namespace)::CorruptDBRequestHandler\n"
 
-    // https://crbug.com/965724
-    "race:content::NetworkServiceRestartBrowserTest::MonitorRequest\n"
-
-    // https://crbug.com/965726
-    "race:content::RenderFrameHostManagerUnloadBrowserTest::"
-    "MonitorResourceRequest\n"
-
     // End of suppressions.
     ;  // Please keep this semicolon.
 
