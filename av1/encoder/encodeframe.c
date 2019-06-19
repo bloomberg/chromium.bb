@@ -256,8 +256,9 @@ static void setup_block_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   x->rdmult = cpi->rd.RDMULT;
-  if (cm->delta_q_info.delta_q_present_flag)
+  if (cm->delta_q_info.delta_q_present_flag) {
     x->rdmult = set_deltaq_rdmult(cpi, xd);
+  }
   if (cpi->oxcf.tuning == AOM_TUNE_SSIM) {
     set_ssim_rdmult(cpi, x, bsize, mi_row, mi_col, &x->rdmult);
   }
@@ -663,7 +664,7 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
 
   // Save rdmult before it might be changed, so it can be restored later.
   const int orig_rdmult = x->rdmult;
-  setup_block_rdmult(cpi, x, mi_row, mi_col, bsize);
+  x->rdmult = cpi->rd.RDMULT;
 
   if (aq_mode == VARIANCE_AQ) {
     if (cpi->vaq_refresh) {
@@ -681,8 +682,9 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
       x->rdmult = av1_cyclic_refresh_get_rdmult(cpi->cyclic_refresh);
   }
 
-  if (cm->delta_q_info.delta_q_present_flag)
+  if (cm->delta_q_info.delta_q_present_flag) {
     x->rdmult = set_deltaq_rdmult(cpi, xd);
+  }
 
   // Set error per bit for current rdmult
   set_error_per_bit(x, x->rdmult);
@@ -1544,6 +1546,8 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   MACROBLOCKD *xd = &x->e_mbd;
 
   set_offsets_without_segment_id(cpi, tile, x, mi_row, mi_col, bsize);
+  const int origin_mult = x->rdmult;
+  setup_block_rdmult(cpi, x, mi_row, mi_col, bsize);
   MB_MODE_INFO *mbmi = xd->mi[0];
   mbmi->partition = partition;
   update_state(cpi, tile_data, td, ctx, mi_row, mi_col, bsize, dry_run);
@@ -1577,6 +1581,7 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     }
     update_stats(&cpi->common, tile_data, td, mi_row, mi_col);
   }
+  x->rdmult = origin_mult;
 }
 
 #if !CONFIG_REALTIME_ONLY
@@ -2214,6 +2219,8 @@ static int rd_try_subblock(AV1_COMP *const cpi, ThreadData *td,
                            PICK_MODE_CONTEXT *prev_ctx,
                            PICK_MODE_CONTEXT *this_ctx) {
   MACROBLOCK *const x = &td->mb;
+  const int orig_mult = x->rdmult;
+  setup_block_rdmult(cpi, x, mi_row, mi_col, subsize);
 
   av1_rd_cost_update(x->rdmult, &best_rdcost);
   if (cpi->sf.adaptive_motion_search) load_pred_mv(x, prev_ctx);
@@ -2232,7 +2239,10 @@ static int rd_try_subblock(AV1_COMP *const cpi, ThreadData *td,
     av1_rd_cost_update(x->rdmult, sum_rdc);
   }
 
-  if (sum_rdc->rdcost >= best_rdcost.rdcost) return 0;
+  if (sum_rdc->rdcost >= best_rdcost.rdcost) {
+    x->rdmult = orig_mult;
+    return 0;
+  }
 
   if (!is_last) {
     update_state(cpi, tile_data, td, this_ctx, mi_row, mi_col, subsize, 1);
@@ -2240,6 +2250,7 @@ static int rd_try_subblock(AV1_COMP *const cpi, ThreadData *td,
                       subsize, NULL);
   }
 
+  x->rdmult = orig_mult;
   return 1;
 }
 

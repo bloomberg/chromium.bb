@@ -12528,7 +12528,7 @@ static INLINE bool in_single_ref_cutoff(int64_t ref_frame_rd[REF_FRAMES],
 
 void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, int mi_row, int mi_col,
-                               RD_STATS *rd_cost, BLOCK_SIZE bsize,
+                               RD_STATS *rd_cost, const BLOCK_SIZE bsize,
                                PICK_MODE_CONTEXT *ctx, int64_t best_rd_so_far) {
   AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
