@@ -395,13 +395,12 @@ void QuicChromiumClientSession::Handle::ResetPromised(
 }
 
 std::unique_ptr<quic::QuicConnection::ScopedPacketFlusher>
-QuicChromiumClientSession::Handle::CreatePacketBundler(
-    quic::QuicConnection::AckBundling bundling_mode) {
+QuicChromiumClientSession::Handle::CreatePacketBundler() {
   if (!session_)
     return nullptr;
 
   return std::make_unique<quic::QuicConnection::ScopedPacketFlusher>(
-      session_->connection(), bundling_mode);
+      session_->connection());
 }
 
 bool QuicChromiumClientSession::Handle::SharesSameSession(
