@@ -2605,8 +2605,22 @@ convertToPassage(const int pass_start, const int pass_end, const int word_start,
 					table->emphRules[emphRule][endPhraseAfterOffset], table, &indicRule))
 		buffer[pass_end].end |= class;
 	else if (brailleIndicatorDefined(table->emphRules[emphRule][endPhraseBeforeOffset],
-					 table, &indicRule))
-		buffer[word_start].end |= class;
+					 table, &indicRule)) {
+		/* if the phrase end indicator is the same as the word indicator, mark it as a
+		 * word so that the resolveEmphasisResets code applies */
+		const TranslationTableRule *begwordRule;
+		if (brailleIndicatorDefined(
+					table->emphRules[emphRule][begWordOffset], table, &begwordRule) &&
+				indicRule->dotslen == begwordRule->dotslen &&
+				!memcmp(&indicRule->charsdots[0], &begwordRule->charsdots[0],
+						begwordRule->dotslen * CHARSIZE)) {
+			buffer[word_start].word |= class;
+			/* a passage has only whole emphasized words */
+			wordBuffer[word_start] |= WORD_WHOLE;
+		} else {
+			buffer[word_start].end |= class;
+		}
+	}
 }
 
 static void
@@ -2729,13 +2743,23 @@ resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
 		const TranslationTableCharacterAttribute emphModeCharsAttr,
 		const TranslationTableHeader *table, const InString *input,
 		unsigned int *wordBuffer) {
-	int in_word = 0, in_pass = 0, word_start = -1, word_reset = 0, letter_cnt = 0;
+	int in_word = 0, in_pass = 0, word_start = -1, word_reset = 0, letter_cnt = 0,
+		pass_end = -1;
 	int i;
 
 	for (i = 0; i < input->length; i++) {
-		if (in_pass)
-			if (buffer[i].end & class) in_pass = 0;
-
+		if (in_pass) {
+			if (buffer[i].end & class)
+				in_pass = 0;
+			else if (buffer[i].word & class) {
+				/* the passage is ended with a "begphrase before" indicator and this
+				 * indicator is the same as the "begword" indicator */
+				in_pass = 0;
+				/* remember this position so that if there is a reset later in this word,
+				 * we can remove this indicator */
+				pass_end = i;
+			}
+		}
 		if (!in_pass) {
 			if (buffer[i].begin & class)
 				in_pass = 1;
@@ -2745,21 +2769,32 @@ resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
 						/* deal with case when reset was at beginning of word */
 						if (wordBuffer[i] & WORD_RESET ||
 								!checkAttr(input->chars[i], CTC_Letter, 0, table)) {
-							/* move the word marker to the next character or remove it
-							 * altogether if the next character is a space */
-							if (wordBuffer[i + 1] & WORD_CHAR) {
-								buffer[i + 1].word |= class;
-								if (wordBuffer[i] & WORD_WHOLE)
-									wordBuffer[i + 1] |= WORD_WHOLE;
+							/* if the reset is a letter and marks the end of a passage,
+							 * use the word indicator */
+							/* note that there must be at least one word reset on a letter
+							 * because a passage can not end on a word without uppercase
+							 * letters */
+							if (!(pass_end == i &&
+										checkAttr(
+												input->chars[i], CTC_Letter, 0, table))) {
+
+								/* move the word marker to the next character or remove it
+								 * altogether if the next character is a space */
+								if (wordBuffer[i + 1] & WORD_CHAR) {
+									buffer[i + 1].word |= class;
+									if (wordBuffer[i] & WORD_WHOLE)
+										wordBuffer[i + 1] |= WORD_WHOLE;
+									if (pass_end == i) pass_end++;
+								}
+								buffer[i].word &= ~class;
+								wordBuffer[i] &= ~WORD_WHOLE;
+
+								/* if reset is a letter, make it a symbol */
+								if (checkAttr(input->chars[i], CTC_Letter, 0, table))
+									buffer[i].symbol |= class;
+
+								continue;
 							}
-							buffer[i].word &= ~class;
-							wordBuffer[i] &= ~WORD_WHOLE;
-
-							/* if reset is a letter, make it a symbol */
-							if (checkAttr(input->chars[i], CTC_Letter, 0, table))
-								buffer[i].symbol |= class;
-
-							continue;
 						}
 
 						in_word = 1;
@@ -2785,7 +2820,7 @@ resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
 						in_word = 0;
 
 						/* check if symbol */
-						if (letter_cnt == 1) {
+						if (letter_cnt == 1 && word_start != pass_end) {
 							buffer[word_start].symbol |= class;
 							buffer[word_start].word &= ~class;
 							wordBuffer[word_start] &= ~WORD_WHOLE;
@@ -2821,7 +2856,7 @@ resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
 							}
 
 							/* check if symbol is not already resetting */
-							if (letter_cnt == 1) {
+							if (letter_cnt == 1 && word_start != pass_end) {
 								buffer[word_start].symbol |= class;
 								buffer[word_start].word &= ~class;
 								wordBuffer[word_start] &= ~WORD_WHOLE;
@@ -2829,6 +2864,11 @@ resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
 
 							/* if reset is a letter, make it the new word_start */
 							if (checkAttr(input->chars[i], CTC_Letter, 0, table)) {
+								if (word_start == pass_end)
+									/* move the word marker that ends the passage to the
+									 * current position */
+									buffer[pass_end].word &= ~class;
+								pass_end = -1;
 								word_reset = 0;
 								word_start = i;
 								letter_cnt = 1;
@@ -2840,6 +2880,11 @@ resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
 						}
 
 						if (word_reset) {
+							if (word_start == pass_end)
+								/* move the word marker that ends the passage to the
+								 * current position */
+								buffer[pass_end].word &= ~class;
+							pass_end = -1;
 							word_reset = 0;
 							word_start = i;
 							letter_cnt = 0;
@@ -2856,7 +2901,7 @@ resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
 	/* clean up end */
 	if (in_word) {
 		/* check if symbol */
-		if (letter_cnt == 1) {
+		if (letter_cnt == 1 && word_start != pass_end) {
 			buffer[word_start].symbol |= class;
 			buffer[word_start].word &= ~class;
 			wordBuffer[word_start] &= ~WORD_WHOLE;
