@@ -74,11 +74,12 @@ void ToolbarIconContainerView::UpdateHighlight(bool highlighted) {
   if (!uses_highlight_)
     return;
 
-  SetBackground(highlighted
-                    ? views::CreateRoundedRectBackground(
-                          SkColorSetA(GetToolbarInkDropBaseColor(this),
-                                      kToolbarButtonBackgroundAlpha),
-                          ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-                              views::EMPHASIS_MAXIMUM, size()))
-                    : nullptr);
+  SetBorder(highlighted
+                ? views::CreateRoundedRectBorder(
+                      1,
+                      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+                          views::EMPHASIS_MAXIMUM, size()),
+                      SkColorSetA(GetToolbarInkDropBaseColor(this),
+                                  kToolbarButtonBackgroundAlpha))
+                : nullptr);
 }

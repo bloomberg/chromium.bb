@@ -1002,6 +1002,7 @@ void View::SetBackground(std::unique_ptr<Background> b) {
 
 void View::SetBorder(std::unique_ptr<Border> b) {
   border_ = std::move(b);
+  SchedulePaint();
 }
 
 const ui::ThemeProvider* View::GetThemeProvider() const {
