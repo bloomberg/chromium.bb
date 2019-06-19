@@ -210,32 +210,47 @@ class TabListMediator {
 
             Tab newlySelectedTab = mTabModelSelector.getCurrentTab();
 
-            if (currentTab == newlySelectedTab) {
-                RecordUserAction.record("MobileTabReturnedToCurrentTab." + mComponentName);
-            } else {
-                recordTabOffsetOfSwitch(currentTab, newlySelectedTab);
-                RecordUserAction.record("MobileTabSwitched." + mComponentName);
+            if (!mActionsOnAllRelatedTabs) {
+                // We filtered the tab switching related metric for components that takes actions on
+                // all related tabs (e.g. GTS) because that component can switch to different
+                // TabModel before switching tabs, while this class only contains information for
+                // all tabs that are in the same TabModel, more specifically:
+                //   * For Tabs.TabOffsetOfSwitch, we do not want to log anything if the user
+                //     switched from normal to incognito or vice-versa.
+                //   * For MobileTabSwitched, as compared to the VTS, we need to account for
+                //     MobileTabReturnedToCurrentTab action. This action is defined as return to the
+                //     same tab as before entering the component, and we don't have this information
+                //     here.
+                recordUserSwitchedTab(currentTab, newlySelectedTab);
             }
         }
-        private void recordTabOffsetOfSwitch(Tab fromTab, Tab toTab) {
-            assert fromTab != toTab;
 
-            int fromIndex = mTabModelSelector.getTabModelFilterProvider()
-                                    .getCurrentTabModelFilter()
-                                    .indexOf(fromTab);
-            int toIndex = mTabModelSelector.getTabModelFilterProvider()
-                                  .getCurrentTabModelFilter()
-                                  .indexOf(toTab);
+        /**
+         * Records Tabs.TabOffsetOfSwitch and MobileTabSwitched for the component only if the
+         * fromTab and toTab have the same filter index.
+         *
+         * @param fromTab The previous selected tab.
+         * @param toTab The new selected tab.
+         */
+        private void recordUserSwitchedTab(Tab fromTab, Tab toTab) {
+            int fromFilterIndex = mTabModelSelector.getTabModelFilterProvider()
+                                          .getCurrentTabModelFilter()
+                                          .indexOf(fromTab);
+            int toFilterIndex = mTabModelSelector.getTabModelFilterProvider()
+                                        .getCurrentTabModelFilter()
+                                        .indexOf(toTab);
 
-            if (fromIndex == toIndex) {
-                fromIndex = TabModelUtils.getTabIndexById(
-                        mTabModelSelector.getCurrentModel(), fromTab.getId());
-                toIndex = TabModelUtils.getTabIndexById(
-                        mTabModelSelector.getCurrentModel(), toTab.getId());
-            }
+            if (fromFilterIndex != toFilterIndex) return;
+
+            int fromIndex = TabModelUtils.getTabIndexById(
+                    mTabModelSelector.getCurrentModel(), fromTab.getId());
+            int toIndex = TabModelUtils.getTabIndexById(
+                    mTabModelSelector.getCurrentModel(), toTab.getId());
 
             RecordHistogram.recordSparseHistogram(
                     "Tabs.TabOffsetOfSwitch." + mComponentName, fromIndex - toIndex);
+
+            RecordUserAction.record("MobileTabSwitched." + mComponentName);
         }
     };
 

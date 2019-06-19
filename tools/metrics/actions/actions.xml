@@ -11544,6 +11544,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileExitStackView">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    User exited the Android tab switcher due to one of the listed actions,
+    opened a new normal/incognito tab, selected an existed tab, or pressed
+    system back button.
+  </description>
+</action>
+
 <action name="MobileExternalNavigationDispatched">
   <owner>thildebr@chromium.org</owner>
   <description>
