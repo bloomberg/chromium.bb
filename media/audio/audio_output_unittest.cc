@@ -98,7 +98,7 @@ TEST_F(AudioOutputTest, StopTwice) {
 }
 
 // This test produces actual audio for .25 seconds on the default device.
-TEST_F(AudioOutputTest, Play200HzTone) {
+TEST_F(AudioOutputTest, DISABLED_Play200HzTone) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
 
   stream_params_ =
