@@ -333,7 +333,6 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/image_annotation/public/mojom/constants.mojom.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -5015,9 +5014,6 @@ void ChromeContentBrowserClient::WillCreateWebSocket(
 
 void ChromeContentBrowserClient::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   PrefService* local_state;
   if (g_browser_process) {
     DCHECK(g_browser_process->local_state());

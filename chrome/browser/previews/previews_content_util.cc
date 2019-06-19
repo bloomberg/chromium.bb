@@ -39,7 +39,6 @@
 #include "net/base/ip_address.h"
 #include "net/base/url_util.h"
 #include "net/nqe/effective_connection_type.h"
-#include "services/network/public/cpp/features.h"
 
 namespace previews {
 
@@ -370,7 +369,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   if (previews_state & content::LITE_PAGE_REDIRECT_ON) {
     if (IsLitePageRedirectPreviewURL(url)) {
       if (navigation_handle &&
-          base::FeatureList::IsEnabled(network::features::kNetworkService) &&
           base::FeatureList::IsEnabled(
               previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
         previews_data->set_server_lite_page_info(
