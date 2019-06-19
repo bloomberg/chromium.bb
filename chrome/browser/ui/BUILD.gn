@@ -2394,6 +2394,8 @@ jumbo_split_static_library("ui") {
 
     if (use_dbus) {
       sources += [
+        "views/status_icons/dbus_menu.cc",
+        "views/status_icons/dbus_menu.h",
         "views/status_icons/dbus_properties_interface.cc",
         "views/status_icons/dbus_properties_interface.h",
         "views/status_icons/dbus_types.cc",

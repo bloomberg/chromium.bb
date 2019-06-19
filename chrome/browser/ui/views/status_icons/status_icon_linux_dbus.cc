@@ -11,10 +11,12 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/numerics/checked_math.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/status_icons/dbus_menu.h"
 #include "chrome/browser/ui/views/status_icons/dbus_properties_interface.h"
 #include "chrome/browser/ui/views/status_icons/dbus_types.h"
 #include "chrome/browser/ui/views/status_icons/success_barrier_callback.h"
@@ -39,6 +41,7 @@ const char kInterfaceStatusNotifierWatcher[] = "org.kde.StatusNotifierWatcher";
 // Object paths.
 const char kPathStatusNotifierItem[] = "/StatusNotifierItem";
 const char kPathStatusNotifierWatcher[] = "/StatusNotifierWatcher";
+const char kPathDbusMenu[] = "/com/canonical/dbusmenu";
 
 // Methods.
 const char kMethodRegisterStatusNotifierItem[] = "RegisterStatusNotifierItem";
@@ -72,7 +75,6 @@ const char kSignalNewIcon[] = "NewIcon";
 const char kSignalNewToolTip[] = "NewToolTip";
 
 // Property values.
-const char kPropertyValueMenu[] = "/NO_DBUSMENU";
 const char kPropertyValueCategory[] = "ApplicationStatus";
 const char kPropertyValueStatus[] = "Active";
 
@@ -91,7 +93,7 @@ int NextServiceId() {
 
 std::string ServiceNameFromId(int service_id) {
   return std::string(kInterfaceStatusNotifierItem) + '-' +
-         base::NumberToString(base::Process::Current().Pid()) + "-" +
+         base::NumberToString(base::Process::Current().Pid()) + '-' +
          base::NumberToString(service_id);
 }
 
@@ -115,8 +117,9 @@ auto MakeDbusImage(const gfx::ImageSkia& image) {
       color_data.push_back(SkColorGetB(color));
     }
   }
-  return MakeDbusArray(MakeDbusStruct(DbusInt32(width), DbusInt32(height),
-                                      DbusByteArray(std::move(color_data))));
+  return MakeDbusArray(MakeDbusStruct(
+      DbusInt32(width), DbusInt32(height),
+      DbusByteArray(base::RefCountedBytes::TakeVector(&color_data))));
 }
 
 auto MakeDbusToolTip(const std::string& text) {
@@ -173,7 +176,16 @@ void StatusIconLinuxDbus::SetToolTip(const base::string16& tool_tip) {
 }
 
 void StatusIconLinuxDbus::UpdatePlatformContextMenu(ui::MenuModel* model) {
-  NOTIMPLEMENTED();
+  if (menu_)
+    menu_->SetModel(model, true);
+}
+
+void StatusIconLinuxDbus::RefreshPlatformContextMenu() {
+  // This codepath gets called for property changes like changed labels or
+  // icons, but also for layout changes like deleted items.
+  // TODO(thomasanderson): Split this into two methods so we can avoid
+  // rebuilding the menu for simple property changes.
+  UpdatePlatformContextMenu(delegate_->GetMenuModel());
 }
 
 void StatusIconLinuxDbus::OnHostRegisteredResponse(dbus::Response* response) {
@@ -203,7 +215,6 @@ void StatusIconLinuxDbus::OnOwnership(const std::string& service_name,
     return;
   }
 
-  // static
   static constexpr struct {
     const char* name;
     void (StatusIconLinuxDbus::*callback)(dbus::MethodCall*,
@@ -215,10 +226,11 @@ void StatusIconLinuxDbus::OnOwnership(const std::string& service_name,
       {kMethodSecondaryActivate, &StatusIconLinuxDbus::OnSecondaryActivate},
   };
 
-  // The barrier requires base::size(methods) + 1 calls.  base::size(methods)
-  // for each method exported, and 1 for |properties_| initialization.
+  // The barrier requires base::size(methods) + 2 calls.  base::size(methods)
+  // for each method exported, 1 for |properties_| initialization, and 1 for
+  // |menu_| initialization.
   barrier_ =
-      SuccessBarrierCallback(base::size(methods) + 1,
+      SuccessBarrierCallback(base::size(methods) + 2,
                              base::BindOnce(&StatusIconLinuxDbus::OnInitialized,
                                             weak_factory_.GetWeakPtr()));
 
@@ -231,6 +243,10 @@ void StatusIconLinuxDbus::OnOwnership(const std::string& service_name,
                             weak_factory_.GetWeakPtr()));
   }
 
+  menu_ = std::make_unique<DbusMenu>(
+      bus_->GetExportedObject(dbus::ObjectPath(kPathDbusMenu)), barrier_);
+  menu_->SetModel(delegate_->GetMenuModel(), false);
+
   properties_ = std::make_unique<DbusPropertiesInterface>(item_, barrier_);
   properties_->RegisterInterface(kInterfaceStatusNotifierItem);
   auto set_property = [&](const std::string& property_name, auto&& value) {
@@ -239,8 +255,7 @@ void StatusIconLinuxDbus::OnOwnership(const std::string& service_name,
   };
   set_property(kPropertyItemIsMenu, DbusBoolean(false));
   set_property(kPropertyWindowId, DbusInt32(0));
-  set_property(kPropertyMenu,
-               DbusObjectPath(dbus::ObjectPath(kPropertyValueMenu)));
+  set_property(kPropertyMenu, DbusObjectPath(dbus::ObjectPath(kPathDbusMenu)));
   set_property(kPropertyAttentionIconName, DbusString(""));
   set_property(kPropertyAttentionMovieName, DbusString(""));
   set_property(kPropertyCategory, DbusString(kPropertyValueCategory));

@@ -20,6 +20,7 @@ namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
+class DbusMenu;
 class DbusPropertiesInterface;
 
 // A status icon following the StatusNotifierItem specification.
@@ -33,6 +34,7 @@ class StatusIconLinuxDbus : public views::StatusIconLinux {
   void SetImage(const gfx::ImageSkia& image) override;
   void SetToolTip(const base::string16& tool_tip) override;
   void UpdatePlatformContextMenu(ui::MenuModel* model) override;
+  void RefreshPlatformContextMenu() override;
 
  private:
   // Step 1: verify with the StatusNotifierWatcher that a StatusNotifierHost is
@@ -76,6 +78,8 @@ class StatusIconLinuxDbus : public views::StatusIconLinux {
   base::RepeatingCallback<void(bool)> barrier_;
 
   std::unique_ptr<DbusPropertiesInterface> properties_;
+
+  std::unique_ptr<DbusMenu> menu_;
 
   base::WeakPtrFactory<StatusIconLinuxDbus> weak_factory_;
 
