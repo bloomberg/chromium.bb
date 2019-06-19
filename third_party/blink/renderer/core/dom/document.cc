@@ -6939,7 +6939,7 @@ void Document::TasksWereUnpaused() {
   if (scripted_animation_controller_)
     scripted_animation_controller_->Unpause();
 
-  GetAgent().GetMutationObserverNotifier().ResumeSuspendedObservers();
+  GetWindowAgent().GetMutationObserverNotifier().ResumeSuspendedObservers();
   if (dom_window_)
     DOMWindowPerformance::performance(*dom_window_)->ResumeSuspendedObservers();
 }
@@ -7918,8 +7918,8 @@ LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
   return *lazy_load_image_observer_;
 }
 
-WindowAgent& Document::GetAgent() {
-  return *static_cast<WindowAgent*>(ExecutionContext::GetAgent());
+WindowAgent& Document::GetWindowAgent() {
+  return *static_cast<WindowAgent*>(GetAgent());
 }
 
 void Document::CountPotentialFeaturePolicyViolation(
