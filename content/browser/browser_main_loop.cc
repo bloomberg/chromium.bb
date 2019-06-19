@@ -98,7 +98,6 @@
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/common/thread_pool_util.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -1553,9 +1552,6 @@ void BrowserMainLoop::InitializeMojo() {
     // thread.
     mojo::SyncCallRestrictions::DisallowSyncCall();
   }
-
-  GetContentClient()->OnServiceManagerConnected(
-      ServiceManagerConnection::GetForProcess());
 
   // Ensure that any NavigableContentsViews constructed in the browser process
   // know they're running in the same process as the service.
