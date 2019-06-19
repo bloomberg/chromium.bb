@@ -327,6 +327,7 @@ jumbo_source_set("unit_tests") {
     "mediacapturefromelement/html_audio_element_capturer_source_unittest.cc",
     "mediacapturefromelement/html_video_element_capturer_source_unittest.cc",
     "mediarecorder/audio_track_recorder_unittest.cc",
+    "mediarecorder/media_recorder_handler_unittest.cc",
     "mediarecorder/video_track_recorder_unittest.cc",
     "mediastream/media_constraints_test.cc",
     "mediastream/media_devices_test.cc",

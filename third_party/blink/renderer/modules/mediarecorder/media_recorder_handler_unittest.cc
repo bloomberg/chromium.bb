@@ -8,11 +8,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "content/child/child_process.h"
-#include "content/renderer/media_recorder/media_recorder_handler.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_bus.h"
 #include "media/base/video_frame.h"
@@ -20,24 +16,26 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler_client.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_registry.h"
-#include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
-using ::testing::InSequence;
 using ::testing::Gt;
+using ::testing::InSequence;
 using ::testing::Lt;
 using ::testing::Mock;
 using ::testing::TestWithParam;
 using ::testing::ValuesIn;
 
-using blink::WebString;
+namespace blink {
 
-namespace content {
-
-ACTION_P(RunClosure, closure) {
+// Using RunClosure5 instead of RunClosure to avoid symbol collisions in jumbo
+// builds.
+ACTION_P(RunClosure5, closure) {
   closure.Run();
 }
 
@@ -76,9 +74,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
                                  public blink::WebMediaRecorderHandlerClient {
  public:
   MediaRecorderHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        media_recorder_handler_(new MediaRecorderHandler(
+      : media_recorder_handler_(new MediaRecorderHandler(
             blink::scheduler::GetSingleThreadTaskRunnerForTesting())),
         audio_source_(kTestAudioChannels,
                       440 /* freq */,
@@ -90,7 +86,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
 
   ~MediaRecorderHandlerTest() {
     registry_.reset();
-    blink::WebHeap::CollectAllGarbageForTesting();
+    ThreadState::Current()->CollectAllGarbageForTesting();
   }
 
   MOCK_METHOD4(WriteData, void(const char*, size_t, bool, double));
@@ -98,10 +94,10 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
 
   bool recording() const { return media_recorder_handler_->recording_; }
   bool hasVideoRecorders() const {
-    return !media_recorder_handler_->video_recorders_.empty();
+    return !media_recorder_handler_->video_recorders_.IsEmpty();
   }
   bool hasAudioRecorders() const {
-    return !media_recorder_handler_->audio_recorders_.empty();
+    return !media_recorder_handler_->audio_recorders_.IsEmpty();
   }
 
   void OnVideoFrameForTesting(scoped_refptr<media::VideoFrame> frame) {
@@ -137,10 +133,8 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
     return bus;
   }
 
-  // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
-  // and Sources in |registry_| into believing they are on the right threads.
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const ChildProcess child_process_;
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
+
   blink::MockMediaStreamRegistry registry_;
 
   // The Class under test. Needs to be scoped_ptr to force its destruction.
@@ -156,26 +150,26 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
 // Checks that canSupportMimeType() works as expected, by sending supported
 // combinations and unsupported ones.
 TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
-  const WebString unsupported_mime_type(WebString::FromASCII("video/mpeg"));
+  const String unsupported_mime_type("video/mpeg");
   EXPECT_FALSE(media_recorder_handler_->CanSupportMimeType(
-      unsupported_mime_type, WebString()));
+      unsupported_mime_type, String()));
 
-  const WebString mime_type_video(WebString::FromASCII("video/webm"));
-  EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(mime_type_video,
-                                                          WebString()));
-  const WebString mime_type_video_uppercase(WebString::FromASCII("video/WEBM"));
+  const String mime_type_video("video/webm");
+  EXPECT_TRUE(
+      media_recorder_handler_->CanSupportMimeType(mime_type_video, String()));
+  const String mime_type_video_uppercase("video/WEBM");
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
-      mime_type_video_uppercase, WebString()));
-  const WebString example_good_codecs_1(WebString::FromASCII("vp8"));
+      mime_type_video_uppercase, String()));
+  const String example_good_codecs_1("vp8");
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
       mime_type_video, example_good_codecs_1));
-  const WebString example_good_codecs_2(WebString::FromASCII("vp9,opus"));
+  const String example_good_codecs_2("vp9,opus");
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
       mime_type_video, example_good_codecs_2));
-  const WebString example_good_codecs_3(WebString::FromASCII("VP9,opus"));
+  const String example_good_codecs_3("VP9,opus");
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
       mime_type_video, example_good_codecs_3));
-  const WebString example_good_codecs_4(WebString::FromASCII("H264"));
+  const String example_good_codecs_4("H264");
 #if BUILDFLAG(RTC_USE_H264)
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
       mime_type_video, example_good_codecs_4));
@@ -184,24 +178,24 @@ TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
       mime_type_video, example_good_codecs_4));
 #endif
 
-  const WebString example_unsupported_codecs_1(WebString::FromASCII("daala"));
+  const String example_unsupported_codecs_1("daala");
   EXPECT_FALSE(media_recorder_handler_->CanSupportMimeType(
       mime_type_video, example_unsupported_codecs_1));
 
-  const WebString mime_type_audio(WebString::FromASCII("audio/webm"));
-  EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(mime_type_audio,
-                                                          WebString()));
-  const WebString example_good_codecs_5(WebString::FromASCII("opus"));
+  const String mime_type_audio("audio/webm");
+  EXPECT_TRUE(
+      media_recorder_handler_->CanSupportMimeType(mime_type_audio, String()));
+  const String example_good_codecs_5("opus");
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
       mime_type_audio, example_good_codecs_5));
-  const WebString example_good_codecs_6(WebString::FromASCII("OpUs"));
+  const String example_good_codecs_6("OpUs");
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
       mime_type_audio, example_good_codecs_6));
-  const WebString example_good_codecs_7(WebString::FromASCII("pcm"));
+  const String example_good_codecs_7("pcm");
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
       mime_type_audio, example_good_codecs_7));
 
-  const WebString example_unsupported_codecs_2(WebString::FromASCII("vorbis"));
+  const String example_unsupported_codecs_2("vorbis");
   EXPECT_FALSE(media_recorder_handler_->CanSupportMimeType(
       mime_type_audio, example_unsupported_codecs_2));
 }
@@ -209,8 +203,8 @@ TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
 // Checks that the initialization-destruction sequence works fine.
 TEST_P(MediaRecorderHandlerTest, InitializeStartStop) {
   AddTracks();
-  const WebString mime_type(WebString::FromASCII(GetParam().mime_type));
-  const WebString codecs(WebString::FromASCII(GetParam().codecs));
+  const String mime_type(GetParam().mime_type);
+  const String codecs(GetParam().codecs);
   EXPECT_TRUE(media_recorder_handler_->Initialize(this, registry_.test_stream(),
                                                   mime_type, codecs, 0, 0));
   EXPECT_FALSE(recording());
@@ -242,8 +236,8 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
 
   AddTracks();
 
-  const WebString mime_type(WebString::FromASCII(GetParam().mime_type));
-  const WebString codecs(WebString::FromASCII(GetParam().codecs));
+  const String mime_type(GetParam().mime_type);
+  const String codecs(GetParam().codecs);
   EXPECT_TRUE(media_recorder_handler_->Initialize(this, registry_.test_stream(),
                                                   mime_type, codecs, 0, 0));
   EXPECT_TRUE(media_recorder_handler_->Start(0));
@@ -262,7 +256,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(std::move(quit_closure)));
+        .WillOnce(RunClosure5(std::move(quit_closure)));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -279,7 +273,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(std::move(quit_closure)));
+        .WillOnce(RunClosure5(std::move(quit_closure)));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -299,13 +293,13 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(quit_closure));
+        .WillOnce(RunClosure5(quit_closure));
     if (GetParam().encoder_supports_alpha) {
       EXPECT_CALL(*this, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
           .Times(AtLeast(1));
       EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
           .Times(1)
-          .WillOnce(RunClosure(std::move(quit_closure)));
+          .WillOnce(RunClosure5(std::move(quit_closure)));
     }
 
     OnVideoFrameForTesting(alpha_frame);
@@ -332,8 +326,8 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
 
   AddTracks();
 
-  const WebString mime_type(WebString::FromASCII(GetParam().mime_type));
-  const WebString codecs(WebString::FromASCII(GetParam().codecs));
+  const String mime_type(GetParam().mime_type);
+  const String codecs(GetParam().codecs);
   EXPECT_TRUE(media_recorder_handler_->Initialize(this, registry_.test_stream(),
                                                   mime_type, codecs, 0, 0));
   EXPECT_TRUE(media_recorder_handler_->Start(0));
@@ -358,7 +352,7 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(std::move(quit_closure)));
+        .WillOnce(RunClosure5(std::move(quit_closure)));
 
     for (int i = 0; i < kRatioOpusToTestAudioBuffers; ++i)
       OnAudioBusForTesting(*audio_bus1);
@@ -375,7 +369,7 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(std::move(quit_closure)));
+        .WillOnce(RunClosure5(std::move(quit_closure)));
 
     for (int i = 0; i < kRatioOpusToTestAudioBuffers; ++i)
       OnAudioBusForTesting(*audio_bus2);
@@ -397,8 +391,8 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
 
   AddTracks();
 
-  const WebString mime_type(WebString::FromASCII(GetParam().mime_type));
-  const WebString codecs(WebString::FromASCII(GetParam().codecs));
+  const String mime_type(GetParam().mime_type);
+  const String codecs(GetParam().codecs);
   EXPECT_TRUE(media_recorder_handler_->Initialize(this, registry_.test_stream(),
                                                   mime_type, codecs, 0, 0));
   EXPECT_TRUE(media_recorder_handler_->Start(0));
@@ -414,7 +408,7 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     EXPECT_CALL(*this, WriteData(_, _, _, _)).Times(AtLeast(1));
     EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(std::move(quit_closure)));
+        .WillOnce(RunClosure5(std::move(quit_closure)));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -428,7 +422,7 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     EXPECT_CALL(*this, WriteData(_, _, _, _)).Times(0);
     EXPECT_CALL(*this, OnError(_))
         .Times(1)
-        .WillOnce(RunClosure(std::move(quit_closure)));
+        .WillOnce(RunClosure5(std::move(quit_closure)));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -442,25 +436,27 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
 // Checks the ActualMimeType() versus the expected.
 TEST_P(MediaRecorderHandlerTest, ActualMimeType) {
   AddTracks();
-  const WebString mime_type(WebString::FromASCII(GetParam().mime_type));
-  const WebString codecs(WebString::FromASCII(GetParam().codecs));
+  const String mime_type(GetParam().mime_type);
+  const String codecs(GetParam().codecs);
   EXPECT_TRUE(media_recorder_handler_->Initialize(this, registry_.test_stream(),
                                                   mime_type, codecs, 0, 0));
 
-  std::string actual_mime_type(GetParam().mime_type);
-  actual_mime_type.append(";codecs=");
+  StringBuilder actual_mime_type;
+  actual_mime_type.Append(GetParam().mime_type);
+  actual_mime_type.Append(";codecs=");
   if (strlen(GetParam().codecs) != 0u)
-    actual_mime_type.append(GetParam().codecs);
+    actual_mime_type.Append(GetParam().codecs);
   else if (GetParam().has_video)
-    actual_mime_type.append("vp8");
+    actual_mime_type.Append("vp8");
   else if (GetParam().has_audio)
-    actual_mime_type.append("opus");
+    actual_mime_type.Append("opus");
 
-  EXPECT_EQ(media_recorder_handler_->ActualMimeType().Utf8(), actual_mime_type);
+  EXPECT_EQ(media_recorder_handler_->ActualMimeType(),
+            actual_mime_type.ToString());
 
   // Expect a last call on destruction, with size 0 and |lastInSlice| true.
   EXPECT_CALL(*this, WriteData(nullptr, 0, true, _)).Times(1);
   media_recorder_handler_.reset();
 }
 
-}  // namespace content
+}  // namespace blink

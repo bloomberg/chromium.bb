@@ -40,7 +40,6 @@ namespace scheduler {
 class WebThreadScheduler;
 }
 class WebGraphicsContext3DProvider;
-class WebMediaRecorderHandler;
 class WebSecurityOrigin;
 }  // namespace blink
 
@@ -145,8 +144,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebRTCCertificateGenerator>
   CreateRTCCertificateGenerator() override;
-  std::unique_ptr<blink::WebMediaRecorderHandler> CreateMediaRecorderHandler(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter()
       override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() override;

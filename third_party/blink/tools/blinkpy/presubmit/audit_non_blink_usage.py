@@ -598,6 +598,7 @@ _CONFIG = [
             'base::queue',
 
             'base::SharedMemory',
+            'base::StringPiece',
             'base::ThreadTaskRunnerHandle',
             'media::.+',
             'libopus::.+',

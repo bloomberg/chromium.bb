@@ -1883,7 +1883,6 @@ test("content_unittests") {
     "../renderer/media/webrtc/webrtc_media_stream_track_adapter_unittest.cc",
     "../renderer/media/webrtc/webrtc_set_description_observer_unittest.cc",
     "../renderer/media/webrtc/webrtc_video_track_source_unittest.cc",
-    "../renderer/media_recorder/media_recorder_handler_unittest.cc",
     "../renderer/p2p/filtering_network_manager_unittest.cc",
     "../renderer/p2p/ipc_network_manager_unittest.cc",
     "../renderer/peripheral_content_heuristic_unittest.cc",
@@ -2121,8 +2120,6 @@ test("content_unittests") {
   }
 
   if (is_chromecast) {
-    sources -=
-        [ "../renderer/media_recorder/media_recorder_handler_unittest.cc" ]
     defines += [ "IS_CHROMECAST" ]
   }
 
