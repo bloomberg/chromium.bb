@@ -1314,8 +1314,6 @@ jumbo_source_set("browser") {
     "memory/memory_monitor_android.h",
     "memory/memory_monitor_win.cc",
     "memory/memory_monitor_win.h",
-    "memory/swap_metrics_delegate_uma.cc",
-    "memory/swap_metrics_delegate_uma.h",
     "memory/swap_metrics_driver_impl.cc",
     "memory/swap_metrics_driver_impl.h",
     "memory/swap_metrics_driver_impl_linux.cc",
