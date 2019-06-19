@@ -99,7 +99,8 @@ std::vector<CoreAccountId> DeviceOAuth2TokenServiceDelegate::GetAccounts()
     case STATE_VALIDATION_PENDING:
     case STATE_VALIDATION_STARTED:
     case STATE_TOKEN_VALID:
-      accounts.push_back(GetRobotAccountId());
+      if (!GetRobotAccountId().empty())
+        accounts.push_back(GetRobotAccountId());
       return accounts;
   }
 
@@ -108,6 +109,10 @@ std::vector<CoreAccountId> DeviceOAuth2TokenServiceDelegate::GetAccounts()
 }
 
 CoreAccountId DeviceOAuth2TokenServiceDelegate::GetRobotAccountId() const {
+  if (!robot_account_id_for_testing_.empty()) {
+    return robot_account_id_for_testing_;
+  }
+
   std::string account_id;
   CrosSettings::Get()->GetString(kServiceAccountIdentity, &account_id);
   return CoreAccountId(account_id);
