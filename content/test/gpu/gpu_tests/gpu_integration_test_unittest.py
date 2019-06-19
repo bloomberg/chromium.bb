@@ -17,6 +17,7 @@ import itertools
 from collections import defaultdict
 
 from telemetry.testing import browser_test_runner
+from telemetry.testing import fakes
 from telemetry.internal.platform import system_info
 
 from gpu_tests import context_lost_integration_test
@@ -60,117 +61,77 @@ DEVICE_STRING_SGX = 'PowerVR SGX 554'
 
 ResultType = json_results.ResultType
 
-class MockPlatform(object):
-  def __init__(self, os_name, os_version_name=None):
-    self.os_name = os_name
-    self.os_version_name = os_version_name
+def _GetMockArgs(is_asan=False, webgl_version='1.0.0'):
+  args = mock.MagicMock()
+  args.is_asan = is_asan
+  args.webgl_conformance_version = webgl_version
+  args.webgl2_only = False
+  args.url = 'https://www.google.com'
+  args.duration = 10
+  args.delay = 10
+  args.resolution = 100
+  args.fullscreen = False
+  args.underlay = False
+  args.logdir = '/tmp'
+  args.repeat = 1
+  args.outliers = 0
+  args.bypass_ipg = False
+  args.expected_vendor_id = 0
+  args.expected_device_id = 0
+  args.browser_options = []
+  return args
 
-  def GetOSName(self):
-    return self.os_name
 
-  def GetOSVersionName(self):
-    return self.os_version_name
-
-
-class MockBrowser(object):
-  def __init__(self, platform, gpu='', device='', vendor_string='',
-               device_string='', browser_type=None, gl_renderer=None,
-               passthrough=False):
-    self.platform = platform
-    self.browser_type = browser_type
-    sys_info = {
-      'model_name': '',
-      'gpu': {
-        'devices': [
-          {'vendor_id': gpu, 'device_id': device,
-           'vendor_string': vendor_string, 'device_string': device_string},
-        ],
-       'aux_attributes': {'passthrough_cmd_decoder': passthrough}
-      }
+def _GetSystemInfo(
+    gpu='', device='', vendor_string='',
+    device_string='', passthrough=False, gl_renderer=''):
+  sys_info = {
+    'model_name': '',
+    'gpu': {
+      'devices': [
+        {'vendor_id': gpu, 'device_id': device,
+         'vendor_string': vendor_string, 'device_string': device_string},
+      ],
+     'aux_attributes': {'passthrough_cmd_decoder': passthrough}
     }
-    if gl_renderer:
-      sys_info['gpu']['aux_attributes']['gl_renderer'] = gl_renderer
-    self.system_info = system_info.SystemInfo.FromDict(sys_info)
-
-  def GetSystemInfo(self):
-    return self.system_info
-
-  def __enter__(self):
-    return self
-
-  def __exit__(self, *args):
-    pass
+  }
+  if gl_renderer:
+    sys_info['gpu']['aux_attributes']['gl_renderer'] = gl_renderer
+  return system_info.SystemInfo.FromDict(sys_info)
 
 
-class MockArgs(object):
-
-  def __init__(self, is_asan=False, webgl_version='1.0.0'):
-    self.is_asan = is_asan
-    self.webgl_conformance_version = webgl_version
-    self.webgl2_only = False
-    self.url = 'https://www.google.com'
-    self.duration = 10
-    self.delay = 10
-    self.resolution = 100
-    self.fullscreen = False
-    self.underlay = False
-    self.logdir = '/tmp'
-    self.repeat = 1
-    self.outliers = 0
-    self.bypass_ipg = False
-    self.expected_vendor_id = 0
-    self.expected_device_id = 0
-    self.browser_options = []
+def _GetTagsToTest(browser, test_class=None, args=None):
+  gpu_tests = test_class or gpu_integration_test.GpuIntegrationTest
+  expectations_fn = gpu_tests.ExpectationsFiles
+  gpu_tests.ExpectationsFiles = mock.MagicMock(return_value=['exp.txt'])
+  ret = None
+  try:
+    possible_browser = fakes.FakePossibleBrowser()
+    possible_browser._returned_browser = browser
+    args = args or _GetMockArgs()
+    ret = set(gpu_tests.GenerateTags(args, possible_browser))
+  finally:
+    gpu_tests.ExpectationsFiles = expectations_fn
+  return ret
 
 
-class MockAbstractGpuTestClass(gpu_integration_test.GpuIntegrationTest):
-
-  @classmethod
-  def GenerateGpuTests(cls, options):
-    return []
-
-  def RunActualGpuTest(self, test_path, *args):
-    pass
-
-
-class MockTestCaseWithoutExpectationsFile(MockAbstractGpuTestClass):
-  pass
-
-
-class MockTestCaseWithExpectationsFile(MockAbstractGpuTestClass):
-
-  @classmethod
-  def ExpectationsFiles(cls):
-    return ['example_test_expectations.txt']
+def _GenerateNvidiaExampleTagsForTestClassAndArgs(test_class, args):
+  exp_files_fn = test_class.ExpectationsFiles
+  ret = None
+  try:
+    test_class.ExpectationsFiles = mock.MagicMock(return_value=['exp.txt'])
+    _ = [_ for _ in test_class.GenerateGpuTests(args)]
+    platform = fakes.FakePlatform('win', 'win10')
+    browser = fakes.FakeBrowser(platform, 'release')
+    browser._returned_system_info = _GetSystemInfo(
+        gpu=VENDOR_NVIDIA, device=0x1cb3, gl_renderer='ANGLE Direct3D9')
+    ret = _GetTagsToTest(browser, test_class)
+  finally:
+    test_class.ExpectationsFiles = exp_files_fn
+  return ret
 
 
-class MockPossibleBrowser(object):
-
-  def __init__(self, browser=None):
-    self._returned_browser = browser
-
-  def BrowserSession(self, options):
-    del options
-    return self._returned_browser
-
-
-def _generateNvidiaExampleTagsForTestClassAndArgs(test_class, args):
-  class MockTestCase(test_class, MockAbstractGpuTestClass):
-
-    @classmethod
-    def ExpectationsFiles(cls):
-      return ['example_test_expectations.txt']
-
-  _ = [_ for _ in MockTestCase.GenerateGpuTests(args)]
-  platform = MockPlatform('win', 'win10')
-  browser = MockBrowser(
-      platform, VENDOR_NVIDIA, 0x1cb3, browser_type='release',
-      gl_renderer='ANGLE Direct3D9')
-  possible_browser = MockPossibleBrowser(browser)
-  return set(MockTestCase.GenerateTags(args, possible_browser))
-
-
-def _checkTestExpectationsAreForExistingTests(
+def _CheckTestExpectationsAreForExistingTests(
     test_class, mock_options, test_names=None):
   test_names = test_names or [
       args[0] for args in
@@ -197,7 +158,7 @@ def _checkTestExpectationsAreForExistingTests(
       _trie = _trie[l]
 
 
-def is_collision(s1, s2):
+def _IsCollision(s1, s2):
   # s1 collides with s2 when s1 is a subset of s2
   # A tag is in both sets if its a generic tag
   # and its in one set while a specifc tag covered by the generic tag is in
@@ -211,7 +172,7 @@ def is_collision(s1, s2):
   return True
 
 
-def _glob_conflicts_with_exp(possible_collision, exp):
+def _ConflictLeaksRegression(possible_collision, exp):
   reason_template = (
       'Pattern \'{0}\' on line {1} has the %s expectation however the '
       'the pattern on \'{2}\' line {3} has the Pass expectation'). format(
@@ -228,7 +189,7 @@ def _glob_conflicts_with_exp(possible_collision, exp):
   return ''
 
 
-def _map_gpu_devices_to_vendors(tag_sets):
+def _MapGpuDevicesToVendors(tag_sets):
   for tag_set in tag_sets:
     if any(gpu in tag_set for gpu in GPU_CONDITIONS):
       _map_specific_to_generic.update(
@@ -237,7 +198,7 @@ def _map_gpu_devices_to_vendors(tag_sets):
       break
 
 
-def _checkTestExpectationGlobsForCollision(expectations, file_name):
+def _CheckTestExpectationGlobsForCollision(expectations, file_name):
   """This function looks for collisions between test expectations with patterns
   that match with test expectation patterns that are globs. A test expectation
   collides with another if its pattern matches with another's glob and if its
@@ -256,7 +217,7 @@ def _checkTestExpectationGlobsForCollision(expectations, file_name):
   parser = expectations_parser.TaggedTestListParser(expectations)
   globs_to_expectations = defaultdict(list)
 
-  _map_gpu_devices_to_vendors(parser.tag_sets)
+  _MapGpuDevicesToVendors(parser.tag_sets)
 
   for exp in parser.expectations:
     _trie = trie.setdefault(exp.test[0], {})
@@ -284,9 +245,9 @@ def _checkTestExpectationGlobsForCollision(expectations, file_name):
     matched_to_globs = [e for e in expectations if e.test != glob]
     for match in matched_to_globs:
       for possible_collision in globs_to_match:
-        reason = _glob_conflicts_with_exp(possible_collision, match)
+        reason = _ConflictLeaksRegression(possible_collision, match)
         if (reason and
-            is_collision(possible_collision.tags, match.tags)):
+            _IsCollision(possible_collision.tags, match.tags)):
           if not conflicts_found:
             error_msg += ('\n\nFound conflicts for pattern %s in %s:\n' %
                           (glob, file_name))
@@ -296,7 +257,7 @@ def _checkTestExpectationGlobsForCollision(expectations, file_name):
   assert not master_conflicts_found, error_msg
 
 
-def _checkTestExpectationPatternsForCollision(expectations, file_name):
+def _CheckTestExpectationPatternsForCollision(expectations, file_name):
   """This function makes sure that any test expectations that have the same
   pattern do not collide with each other. They collide when one expectation's
   tags are a subset of the other expectation's tags. If the expectation with
@@ -311,14 +272,14 @@ def _checkTestExpectationPatternsForCollision(expectations, file_name):
   tests_to_exps = defaultdict(list)
   master_conflicts_found = False
   error_msg = ''
-  _map_gpu_devices_to_vendors(parser.tag_sets)
+  _MapGpuDevicesToVendors(parser.tag_sets)
 
   for exp in parser.expectations:
     tests_to_exps[exp.test].append(exp)
   for pattern, exps in tests_to_exps.items():
     conflicts_found = False
     for e1, e2 in itertools.combinations(exps, 2):
-      if is_collision(e1.tags, e2.tags) or is_collision(e2.tags, e1.tags):
+      if _IsCollision(e1.tags, e2.tags) or _IsCollision(e2.tags, e1.tags):
         if not conflicts_found:
           error_msg += ('\n\nFound conflicts for test %s in %s:\n' %
                         (pattern, file_name))
@@ -337,28 +298,22 @@ def _CheckPatternIsValid(pattern):
         'expectation does not exist: ' + full_path)
 
 
-def _testCheckTestExpectationsAreForExistingTests(expectations):
-  options = MockArgs()
+def _TestCheckTestExpectationsAreForExistingTests(expectations):
+  options = _GetMockArgs()
   expectations_file = tempfile.NamedTemporaryFile(delete=False)
   expectations_file.write(expectations)
   expectations_file.close()
-
-  class _MockTestCase(object):
-    @classmethod
-    def Name(cls):
-      return '_MockTestCase'
-
-    @classmethod
-    def GenerateGpuTests(cls, options):
-      tests = [('a/b/c', ())]
-      for t in tests:
-        yield t
-
-    @classmethod
-    def ExpectationsFiles(cls):
-      return [expectations_file.name]
-
-  _checkTestExpectationsAreForExistingTests(_MockTestCase, options)
+  gpu_tests = gpu_integration_test.GpuIntegrationTest
+  generate_gpu_fn = gpu_tests.GenerateGpuTests
+  expectations_files_fn = gpu_tests.ExpectationsFiles
+  gpu_tests.GenerateGpuTests = mock.MagicMock(return_value=[('a/b/c', ())])
+  gpu_tests.ExpectationsFiles = mock.MagicMock(
+      return_value=[expectations_file.name])
+  try:
+    _CheckTestExpectationsAreForExistingTests(gpu_tests, options)
+  finally:
+    gpu_tests.GenerateGpuTests = generate_gpu_fn
+    gpu_tests.ExpectationsFiles = expectations_files_fn
 
 
 def _FindTestCases():
@@ -405,7 +360,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel xp debug ] a/b/c/d [ Skip ]
     '''
     with self.assertRaises(AssertionError):
-      _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
+      _CheckTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testNoCollisionBetweenSpecificOsTags(self):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
@@ -414,7 +369,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel win7 ] a/b/c/d [ Failure ]
     [ intel xp debug ] a/b/c/d [ Skip ]
     '''
-    _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
+    _CheckTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testCollisionInTestExpectationsWithGpuVendorAndDeviceTags(self):
     test_expectations = '''# tags: [ mac win linux xp ]
@@ -424,7 +379,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ nvidia-0x01 xp debug ] a/b/c/d [ Skip ]
     '''
     with self.assertRaises(AssertionError):
-      _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
+      _CheckTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testCollisionInTestExpectationsWithGpuVendorAndDeviceTags2(self):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
@@ -434,7 +389,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ nvidia win7 debug ] a/b/c/* [ Skip ]
     '''
     with self.assertRaises(AssertionError):
-      _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
+      _CheckTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testNoCollisionBetweenGpuDeviceTags(self):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
@@ -444,7 +399,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ nvidia-0x02 win7 debug ] a/b/c/d [ Skip ]
     [ nvidia win debug ] a/b/c/* [ Skip ]
     '''
-    _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
+    _CheckTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testMixGenericandSpecificTagsInCollidingSets(self):
     test_expectations = '''# tags: [ mac win linux xp win7 ]
@@ -454,7 +409,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ nvidia win7 debug ] a/b/c/d [ Skip ]
     '''
     with self.assertRaises(AssertionError):
-      _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
+      _CheckTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testCollisionInTestExpectationCausesAssertion(self):
     test_expectations = '''# tags: [ mac win linux ]
@@ -469,7 +424,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel mac ] a/b/c [ Failure ]
     '''
     with self.assertRaises(AssertionError) as context:
-      _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
+      _CheckTestExpectationPatternsForCollision(test_expectations, 'test.txt')
     self.assertIn("Found conflicts for test a/b/c/d in test.txt:",
       str(context.exception))
     self.assertIn('line 4 conflicts with line 5',
@@ -494,7 +449,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel debug mac ] a/b/c/d/e [ Failure ]
     '''
     with self.assertRaises(AssertionError) as context:
-      _checkTestExpectationGlobsForCollision(test_expectations, 'test.txt')
+      _CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
     self.assertIn('Found conflicts for pattern a/b/c/d* in test.txt:',
         str(context.exception))
     self.assertIn(("line 4 conflicts with line 5: Pattern 'a/b/c/d*' on line 4 "
@@ -512,7 +467,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel debug ] a/b/c/d [ Failure ]
     [ intel debug ] a/b/c/d [ Skip ]
     '''
-    _checkTestExpectationGlobsForCollision(test_expectations, 'test.txt')
+    _CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
 
   def testCollisionWithGlobsWithSkipExpectation(self):
     test_expectations = '''# tags: [ mac win linux ]
@@ -523,7 +478,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel debug mac ] a/b/c/d/e [ RetryOnFailure ]
     '''
     with self.assertRaises(AssertionError) as context:
-      _checkTestExpectationGlobsForCollision(test_expectations, 'test.txt')
+      _CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
     self.assertIn('Found conflicts for pattern a/b/c/d* in test.txt:',
         str(context.exception))
     self.assertNotIn('line 4 conflicts with line 5',
@@ -543,7 +498,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel debug ] a/b/c/d [ Skip ]
     [ intel debug ] a/b/c/d [ Skip ]
     '''
-    _checkTestExpectationGlobsForCollision(test_expectations, 'test.txt')
+    _CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
 
   def testNoCollisionInTestExpectations(self):
     test_expectations = '''# tags: [ mac win linux ]
@@ -553,7 +508,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     [ intel debug ] a/b/c/d [ Failure ]
     [ nvidia debug ] a/b/c/d [ Failure ]
     '''
-    _checkTestExpectationPatternsForCollision(test_expectations, 'test.txt')
+    _CheckTestExpectationPatternsForCollision(test_expectations, 'test.txt')
 
   def testNoCollisionsForSameTestsInGpuTestExpectations(self):
     webgl_conformance_test_class = (
@@ -562,10 +517,10 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
         for i in xrange(1, 2 + (test_case == webgl_conformance_test_class)):
           _ = list(test_case.GenerateGpuTests(
-              MockArgs(webgl_version=('%d.0.0' % i))))
+              _GetMockArgs(webgl_version=('%d.0.0' % i))))
           if test_case.ExpectationsFiles():
             with open(test_case.ExpectationsFiles()[0]) as f:
-              _checkTestExpectationPatternsForCollision(f.read(),
+              _CheckTestExpectationPatternsForCollision(f.read(),
               os.path.basename(f.name))
 
   def testNoCollisionsWithGlobsInGpuTestExpectations(self):
@@ -575,19 +530,19 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
         for i in xrange(1, 2 + (test_case == webgl_conformance_test_class)):
           _ = list(test_case.GenerateGpuTests(
-              MockArgs(webgl_version=('%d.0.0' % i))))
+              _GetMockArgs(webgl_version=('%d.0.0' % i))))
           if test_case.ExpectationsFiles():
             with open(test_case.ExpectationsFiles()[0]) as f:
-              _checkTestExpectationGlobsForCollision(f.read(),
+              _CheckTestExpectationGlobsForCollision(f.read(),
               os.path.basename(f.name))
 
   def testGpuTestExpectationsAreForExistingTests(self):
-    options = MockArgs()
+    options = _GetMockArgs()
     for test_case in _FindTestCases():
       if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
         if (test_case.Name() not in ('pixel', 'webgl_conformance')
             and test_case.ExpectationsFiles()):
-          _checkTestExpectationsAreForExistingTests(test_case, options)
+          _CheckTestExpectationsAreForExistingTests(test_case, options)
 
   def testWebglTestPathsExist(self):
     webgl_test_class = (
@@ -596,7 +551,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       if test_case == webgl_test_class:
         for i in xrange(1, 3):
           _ = list(test_case.GenerateGpuTests(
-              MockArgs(webgl_version='%d.0.0' % i)))
+              _GetMockArgs(webgl_version='%d.0.0' % i)))
           with open(test_case.ExpectationsFiles()[0], 'r') as f:
             expectations = expectations_parser.TaggedTestListParser(f.read())
             for exp in expectations.expectations:
@@ -609,19 +564,19 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       pixel_test_names.extend(
           [p.name for p in method(
               pixel_integration_test.PixelIntegrationTest.test_base_name)])
-    _checkTestExpectationsAreForExistingTests(
+    _CheckTestExpectationsAreForExistingTests(
         pixel_integration_test.PixelIntegrationTest,
-        MockArgs(), pixel_test_names)
+        _GetMockArgs(), pixel_test_names)
 
   def testExpectationPatternNotInGeneratedTests(self):
     with self.assertRaises(AssertionError) as context:
-      _testCheckTestExpectationsAreForExistingTests('a/b/d [ Failure ]')
+      _TestCheckTestExpectationsAreForExistingTests('a/b/d [ Failure ]')
     self.assertIn(("1: Glob 'a/b/d' does not match with any"
-                  " tests in the _MockTestCase test suite"),
+                  " tests in the GpuIntegrationTest test suite"),
                   str(context.exception))
 
   def testGlobMatchesTestName(self):
-    _testCheckTestExpectationsAreForExistingTests('a/b* [ Failure ]')
+    _TestCheckTestExpectationsAreForExistingTests('a/b* [ Failure ]')
 
   def testOverrideDefaultRetryArgumentsinRunGpuIntegrationTests(self):
     self._RunGpuIntegrationTests(
@@ -645,13 +600,13 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     # we need to make sure that GenerateTags() returns an empty list if
     # there are no expectations files returned from ExpectationsFiles() or
     # else Typ will raise an exception
-    args = MockArgs()
-    possible_browser = MockPossibleBrowser()
-    self.assertFalse(MockTestCaseWithoutExpectationsFile.GenerateTags(
+    args = _GetMockArgs()
+    possible_browser = mock.MagicMock()
+    self.assertFalse(gpu_integration_test.GpuIntegrationTest.GenerateTags(
         args, possible_browser))
 
   def _TestTagGenerationForMockPlatform(self, test_class, args):
-    tag_set = _generateNvidiaExampleTagsForTestClassAndArgs(
+    tag_set = _GenerateNvidiaExampleTagsForTestClassAndArgs(
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest,
         args)
     self.assertTrue(
@@ -660,7 +615,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     return tag_set
 
   def testGenerateContextLostExampleTagsForAsan(self):
-    args = MockArgs(is_asan=True)
+    args = _GetMockArgs(is_asan=True)
     tag_set = self._TestTagGenerationForMockPlatform(
         context_lost_integration_test.ContextLostIntegrationTest,
         args)
@@ -668,7 +623,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertNotIn('no-asan', tag_set)
 
   def testGenerateContextLostExampleTagsForNoAsan(self):
-    args = MockArgs()
+    args = _GetMockArgs()
     tag_set = self._TestTagGenerationForMockPlatform(
         context_lost_integration_test.ContextLostIntegrationTest,
         args)
@@ -676,7 +631,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertNotIn('asan', tag_set)
 
   def testGenerateWebglConformanceExampleTagsForWebglVersion1andAsan(self):
-    args = MockArgs(is_asan=True, webgl_version='1.0.0')
+    args = _GetMockArgs(is_asan=True, webgl_version='1.0.0')
     tag_set = self._TestTagGenerationForMockPlatform(
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest,
         args)
@@ -684,7 +639,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertFalse(set(['no-asan', 'webgl-version-2']) & tag_set)
 
   def testGenerateWebglConformanceExampleTagsForWebglVersion2andNoAsan(self):
-    args = MockArgs(is_asan=False, webgl_version='2.0.0')
+    args = _GetMockArgs(is_asan=False, webgl_version='2.0.0')
     tag_set = self._TestTagGenerationForMockPlatform(
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest,
         args)
@@ -692,45 +647,36 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertFalse(set(['asan', 'webgl-version-1']) & tag_set)
 
   def testGenerateNvidiaExampleTags(self):
-    args = MockArgs()
-    platform = MockPlatform('win', 'win10')
-    browser = MockBrowser(
-        platform, VENDOR_NVIDIA, 0x1cb3, browser_type='release',
-        gl_renderer='ANGLE Direct3D9')
-    possible_browser = MockPossibleBrowser(browser)
+    platform = fakes.FakePlatform('win', 'win10')
+    browser = fakes.FakeBrowser(platform, 'release')
+    browser._returned_system_info = _GetSystemInfo(
+        gpu=VENDOR_NVIDIA, device=0x1cb3, gl_renderer='ANGLE Direct3D9')
     self.assertEqual(
-        set(MockTestCaseWithExpectationsFile.GenerateTags(
-            args, possible_browser)),
+        _GetTagsToTest(browser),
         set(['win', 'win10', 'release', 'nvidia', 'nvidia-0x1cb3',
              'd3d9', 'no-passthrough']))
 
   def testGenerateVendorTagUsingVendorString(self):
-    args = MockArgs()
-    platform = MockPlatform('mac', 'mojave')
-    browser = MockBrowser(
-        platform, browser_type='release',
-        gl_renderer='ANGLE OpenGL ES', passthrough=True,
+    platform = fakes.FakePlatform('mac', 'mojave')
+    browser = fakes.FakeBrowser(platform, 'release')
+    browser._returned_system_info = _GetSystemInfo(
         vendor_string=VENDOR_STRING_IMAGINATION,
-        device_string=DEVICE_STRING_SGX)
-    possible_browser = MockPossibleBrowser(browser)
+        device_string=DEVICE_STRING_SGX,
+        passthrough=True, gl_renderer='ANGLE OpenGL ES')
     self.assertEqual(
-        set(MockTestCaseWithExpectationsFile.GenerateTags(
-            args, possible_browser)),
+        _GetTagsToTest(browser),
         set(['mac', 'mojave', 'release', 'imagination',
              'imagination-powervr-sgx-554',
              'opengles', 'passthrough']))
 
   def testGenerateVendorTagUsingDeviceString(self):
-    args = MockArgs()
-    platform = MockPlatform('mac', 'mojave')
-    browser = MockBrowser(
-        platform, browser_type='release',
+    platform = fakes.FakePlatform('mac', 'mojave')
+    browser = fakes.FakeBrowser(platform, 'release')
+    browser._returned_system_info = _GetSystemInfo(
         vendor_string='illegal vendor string',
         device_string='ANGLE (Imagination, Triangle Monster 3000, 1.0)')
-    possible_browser = MockPossibleBrowser(browser)
     self.assertEqual(
-        set(MockTestCaseWithExpectationsFile.GenerateTags(
-            args, possible_browser)),
+        _GetTagsToTest(browser),
         set(['mac', 'mojave', 'release', 'imagination',
              'imagination-triangle-monster-3000',
              'no-angle', 'no-passthrough']))
