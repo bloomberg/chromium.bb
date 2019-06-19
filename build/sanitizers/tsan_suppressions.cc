@@ -49,9 +49,6 @@ char kTSanDefaultSuppressions[] =
     "race:third_party/ffmpeg/libavcodec/h264pred.c\n"
     "race:media::ReleaseData\n"
 
-    // http://crbug.com/239359
-    "race:media::TestInputCallback::OnData\n"
-
     // http://crbug.com/244755
     "race:v8::internal::Zone::NewExpand\n"
 
