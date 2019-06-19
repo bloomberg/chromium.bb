@@ -176,15 +176,15 @@ DeviceOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return url_loader_factory_;
 }
 
-OAuth2AccessTokenFetcher*
+std::unique_ptr<OAuth2AccessTokenFetcher>
 DeviceOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   std::string refresh_token = GetRefreshToken();
   DCHECK(!refresh_token.empty());
-  return new OAuth2AccessTokenFetcherImpl(consumer, url_loader_factory,
-                                          refresh_token);
+  return std::make_unique<OAuth2AccessTokenFetcherImpl>(
+      consumer, url_loader_factory, refresh_token);
 }
 
 void DeviceOAuth2TokenServiceDelegate::DidGetSystemSalt(
