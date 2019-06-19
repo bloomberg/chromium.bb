@@ -6248,4 +6248,4 @@ crbug.com/974660 [ Linux ] http/tests/devtools/elements/highlight/highlight-node
 
 # Failing on windows with lazy-feedback-allocation feature in V8. See the bug
 # for more details.
-crbug.com/976587 [ Win ] netinfo/gc-unused-listeners.html [ Pass Failure ]
+crbug.com/976587 [ Win Mac ] netinfo/gc-unused-listeners.html [ Pass Failure ]
