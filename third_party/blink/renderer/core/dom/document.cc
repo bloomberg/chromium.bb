@@ -2759,14 +2759,13 @@ void Document::Initialize() {
 }
 
 void Document::Shutdown() {
-  if (num_canvases_ > 0)
-    UMA_HISTOGRAM_COUNTS_100("Blink.Canvas.NumCanvasesPerPage", num_canvases_);
   TRACE_EVENT0("blink", "Document::shutdown");
   CHECK(!frame_ || frame_->Tree().ChildCount() == 0);
   if (!IsActive())
     return;
 
-  GetViewportData().Shutdown();
+  // An active Document must have an associated frame.
+  CHECK(frame_);
 
   // Frame navigation can cause a new Document to be attached. Don't allow that,
   // since that will cause a situation where LocalFrame still has a Document
@@ -2777,12 +2776,26 @@ void Document::Shutdown() {
   // Defer plugin dispose to avoid plugins trying to run script inside
   // ScriptForbiddenScope, which will crash the renderer after
   // https://crrev.com/200984
+  // TODO(dcheng): This is a temporary workaround, Document::Shutdown() should
+  // not be running script at all.
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
-  // Don't allow script to run in the middle of detachLayoutTree() because a
+  // Don't allow script to run in the middle of DetachLayoutTree() because a
   // detaching Document is not in a consistent state.
   ScriptForbiddenScope forbid_script;
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kStopping);
+
+  // Do not add code before this without a documented reason. A postcondition of
+  // Shutdown() is that |frame_| must not have an attached Document. Allowing
+  // script execution when the Document is shutting down can make it easy to
+  // accidentally violate this condition, and the ordering of the scopers above
+  // is subtle due to legacy interactions with plugins.
+
+  if (num_canvases_ > 0)
+    UMA_HISTOGRAM_COUNTS_100("Blink.Canvas.NumCanvasesPerPage", num_canvases_);
+
+  GetViewportData().Shutdown();
+
   View()->Dispose();
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!View()->IsAttached());
