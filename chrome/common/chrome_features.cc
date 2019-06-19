@@ -224,7 +224,7 @@ const base::Feature kDesktopPWAsWithoutExtensions{
 // Enables or disables new Desktop PWAs unified |InstallManager| that does not
 // use extensions.
 const base::Feature kDesktopPWAsUnifiedInstall{
-    "DesktopPWAsUnifiedInstall", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DesktopPWAsUnifiedInstall", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the ability to install PWAs from the omnibox.
 const base::Feature kDesktopPWAsOmniboxInstall{
