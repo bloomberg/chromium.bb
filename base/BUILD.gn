@@ -3114,12 +3114,9 @@ if (is_android) {
     public_deps = [
       ":android_runtime_jni_headers",
     ]
-
-    jni_package = "base"
   }
 
   generate_jar_jni("android_runtime_jni_headers") {
-    jni_package = "base"
     classes = [
       "java/lang/Runnable.class",
       "java/lang/Runtime.class",
