@@ -1307,6 +1307,7 @@ if (!is_android) {
       data_deps += [
         "//chrome",
         "//ash/keyboard/ui:resources",
+        "//testing/buildbot/filters:chromeos_filters",
         "//ui/file_manager:unit_test_data",
       ]
 
