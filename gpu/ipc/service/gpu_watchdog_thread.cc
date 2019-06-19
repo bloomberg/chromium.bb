@@ -216,9 +216,7 @@ GpuWatchdogThreadImplV1::~GpuWatchdogThreadImplV1() {
   CloseHandle(watched_thread_handle_);
 #endif
 
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 
 #if defined(USE_X11)
   if (tty_file_)
@@ -530,9 +528,8 @@ void GpuWatchdogThreadImplV1::AddPowerObserver() {
 }
 
 void GpuWatchdogThreadImplV1::OnAddPowerObserver() {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  DCHECK(power_monitor);
-  power_monitor->AddObserver(this);
+  DCHECK(base::PowerMonitor::IsInitialized());
+  base::PowerMonitor::AddObserver(this);
 }
 
 void GpuWatchdogThreadImplV1::OnSuspend() {

@@ -37,9 +37,7 @@ GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
   Stop();  // stop the watchdog thread
 
   base::MessageLoopCurrent::Get()->RemoveTaskObserver(this);
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 // static
@@ -59,10 +57,8 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
 // Do not add power observer during watchdog init, PowerMonitor might not be up
 // running yet.
 void GpuWatchdogThreadImplV2::AddPowerObserver() {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  DCHECK(power_monitor);
-  if (power_monitor)
-    power_monitor->AddObserver(this);
+  DCHECK(base::PowerMonitor::IsInitialized());
+  base::PowerMonitor::AddObserver(this);
 }
 
 void GpuWatchdogThreadImplV2::OnBackgrounded() {}
