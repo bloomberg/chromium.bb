@@ -353,11 +353,14 @@
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom.h"
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_switches.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/native_theme/caption_style.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -3132,6 +3135,33 @@ net::NetLog* ChromeContentBrowserClient::GetNetLog() {
   return g_browser_process->net_log();
 }
 
+base::Optional<ui::CaptionStyle> GetCaptionStyleFromPrefs(PrefService* prefs) {
+  if (!prefs) {
+    return base::nullopt;
+  }
+
+  ui::CaptionStyle style;
+
+  style.text_size = prefs->GetString(prefs::kAccessibilityCaptionsTextSize);
+  style.font_family = prefs->GetString(prefs::kAccessibilityCaptionsTextFont);
+  style.text_color = base::StringPrintf(
+      "rgba(%s,%s)",
+      prefs->GetString(prefs::kAccessibilityCaptionsTextColor).c_str(),
+      base::NumberToString(
+          prefs->GetInteger(prefs::kAccessibilityCaptionsTextOpacity) / 100.0)
+          .c_str());
+  style.background_color = base::StringPrintf(
+      "rgba(%s,%s)",
+      prefs->GetString(prefs::kAccessibilityCaptionsBackgroundColor).c_str(),
+      base::NumberToString(
+          prefs->GetInteger(prefs::kAccessibilityCaptionsBackgroundOpacity) /
+          100.0)
+          .c_str());
+  style.text_shadow = prefs->GetString(prefs::kAccessibilityCaptionsTextShadow);
+
+  return style;
+}
+
 void ChromeContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* rvh, WebPreferences* web_prefs) {
   Profile* profile = Profile::FromBrowserContext(
@@ -3453,14 +3483,33 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
 
   // Apply native CaptionStyle parameters.
-  // TODO(ellyjones): Support more native caption styling.
-  ui::CaptionStyle style = native_theme->GetSystemCaptionStyle();
-  web_prefs->text_track_background_color = style.background_color;
-  web_prefs->text_track_text_color = style.text_color;
-  web_prefs->text_track_text_size = style.text_size;
-  web_prefs->text_track_text_shadow = style.text_shadow;
-  web_prefs->text_track_font_family = style.font_family;
-  web_prefs->text_track_font_variant = style.font_variant;
+  base::Optional<ui::CaptionStyle> style;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kForceCaptionStyle)) {
+    style = ui::CaptionStyle::FromSpec(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kForceCaptionStyle));
+  }
+
+  // Apply system caption style.
+  if (!style) {
+    style = native_theme->GetSystemCaptionStyle();
+  }
+
+  // Apply caption style from preferences if system caption style is undefined.
+  if (!style && base::FeatureList::IsEnabled(features::kCaptionSettings)) {
+    style = GetCaptionStyleFromPrefs(prefs);
+  }
+
+  if (style) {
+    web_prefs->text_track_background_color = style->background_color;
+    web_prefs->text_track_text_color = style->text_color;
+    web_prefs->text_track_text_size = style->text_size;
+    web_prefs->text_track_text_shadow = style->text_shadow;
+    web_prefs->text_track_font_family = style->font_family;
+    web_prefs->text_track_font_variant = style->font_variant;
+  }
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->OverrideWebkitPrefs(rvh, web_prefs);
