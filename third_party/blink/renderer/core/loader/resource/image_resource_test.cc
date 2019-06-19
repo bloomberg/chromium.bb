@@ -232,7 +232,7 @@ void TestThatReloadIsStartedThenServeReload(
       WrappedResourceResponse(resource_response));
   image_resource->Loader()->DidReceiveData(data, kDataLength);
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), kDataLength, kDataLength, kDataLength, false,
+      base::TimeTicks(), kDataLength, kDataLength, kDataLength, false,
       std::vector<network::cors::PreflightTimingInfo>());
 
   // Checks |imageResource|'s status after reloading.
@@ -289,7 +289,7 @@ void TestThatIsPlaceholderRequestAndServeResponse(
       reinterpret_cast<const char*>(kJpegImage),
       kJpegImageSubrangeWithDimensionsLength);
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), kJpegImageSubrangeWithDimensionsLength,
+      base::TimeTicks(), kJpegImageSubrangeWithDimensionsLength,
       kJpegImageSubrangeWithDimensionsLength,
       kJpegImageSubrangeWithDimensionsLength, false,
       std::vector<network::cors::PreflightTimingInfo>());
@@ -333,8 +333,9 @@ void TestThatIsNotPlaceholderRequestAndServeResponse(
   image_resource->Loader()->DidReceiveData(
       reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), sizeof(kJpegImage), sizeof(kJpegImage), sizeof(kJpegImage),
-      false, std::vector<network::cors::PreflightTimingInfo>());
+      base::TimeTicks(), sizeof(kJpegImage), sizeof(kJpegImage),
+      sizeof(kJpegImage), false,
+      std::vector<network::cors::PreflightTimingInfo>());
 
   // Checks that |imageResource| is successfully loaded,
   // showing a non-placeholder image.
@@ -432,7 +433,7 @@ TEST(ImageResourceTest, MultipartImage) {
   // This part finishes. The image is created, callbacks are sent, and the data
   // buffer is cleared.
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), 0, 0, 0, false,
+      base::TimeTicks(), 0, 0, 0, false,
       std::vector<network::cors::PreflightTimingInfo>());
   EXPECT_TRUE(image_resource->ResourceBuffer());
   EXPECT_FALSE(image_resource->ErrorOccurred());
@@ -478,7 +479,7 @@ TEST(ImageResourceTest, BitmapMultipartImage) {
                              sizeof(kJpegImage));
   image_resource->AppendData(kBoundary, strlen(kBoundary));
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), 0, 0, 0, false,
+      base::TimeTicks(), 0, 0, 0, false,
       std::vector<network::cors::PreflightTimingInfo>());
   EXPECT_TRUE(image_resource->GetContent()->HasImage());
   EXPECT_TRUE(image_resource->GetContent()->GetImage()->IsBitmapImage());
@@ -1044,7 +1045,7 @@ TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
   EXPECT_EQ(0, observer->ImageChangedCount());
 
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), 0, 0, 0, false,
+      base::TimeTicks(), 0, 0, 0, false,
       std::vector<network::cors::PreflightTimingInfo>());
 
   EXPECT_EQ(ResourceStatus::kDecodeError, image_resource->GetStatus());
@@ -1090,7 +1091,7 @@ TEST(ImageResourceTest, PartialContentWithoutDimensions) {
   EXPECT_EQ(0, observer->ImageChangedCount());
 
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), kJpegImageSubrangeWithoutDimensionsLength,
+      base::TimeTicks(), kJpegImageSubrangeWithoutDimensionsLength,
       kJpegImageSubrangeWithoutDimensionsLength,
       kJpegImageSubrangeWithoutDimensionsLength, false,
       std::vector<network::cors::PreflightTimingInfo>());
@@ -1319,7 +1320,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
     EXPECT_EQ(0, observer->ImageChangedCount());
 
     image_resource->Loader()->DidFinishLoading(
-        TimeTicks(), kJpegImageSubrangeWithoutDimensionsLength,
+        base::TimeTicks(), kJpegImageSubrangeWithoutDimensionsLength,
         kJpegImageSubrangeWithoutDimensionsLength,
         kJpegImageSubrangeWithoutDimensionsLength, false,
         std::vector<network::cors::PreflightTimingInfo>());
@@ -1462,8 +1463,9 @@ TEST(ImageResourceTest, FetchAllowPlaceholderFullResponseDecodeSuccess) {
     image_resource->Loader()->DidReceiveData(
         reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
     image_resource->Loader()->DidFinishLoading(
-        TimeTicks(), sizeof(kJpegImage), sizeof(kJpegImage), sizeof(kJpegImage),
-        false, std::vector<network::cors::PreflightTimingInfo>());
+        base::TimeTicks(), sizeof(kJpegImage), sizeof(kJpegImage),
+        sizeof(kJpegImage), false,
+        std::vector<network::cors::PreflightTimingInfo>());
 
     EXPECT_EQ(ResourceStatus::kCached, image_resource->GetStatus());
     EXPECT_EQ(sizeof(kJpegImage), image_resource->EncodedSize());

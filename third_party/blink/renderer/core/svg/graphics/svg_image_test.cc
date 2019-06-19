@@ -114,7 +114,7 @@ TEST_F(SVGImageTest, TimelineSuspendAndResume) {
   // Fire the timer/trigger a frame update. Since the observer always returns
   // true for shouldPauseAnimation, this will result in the timeline being
   // suspended.
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
   EXPECT_TRUE(chrome_client.IsSuspended());
   EXPECT_FALSE(timer->IsActive());
@@ -148,7 +148,7 @@ TEST_F(SVGImageTest, ResetAnimation) {
 
   // Fire the timer/trigger a frame update. The timeline will remain
   // suspended and no frame will be scheduled.
-  test::RunDelayedTasks(TimeDelta::FromMillisecondsD(1) +
+  test::RunDelayedTasks(base::TimeDelta::FromMillisecondsD(1) +
                         timer->NextFireInterval());
   EXPECT_TRUE(chrome_client.IsSuspended());
   EXPECT_FALSE(timer->IsActive());
@@ -226,7 +226,7 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
 
   // Wait for the next animation frame to be triggered, and then trigger a new
   // frame. The image animation timeline should be running.
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
   Compositor().BeginFrame();
 
@@ -236,7 +236,7 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   // fire. This should suspend the image animation. (Suspend the image's
   // animation timeline.)
   WebView().SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
 
   EXPECT_TRUE(svg_image_chrome_client.IsSuspended());
@@ -244,7 +244,7 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   // Set page visibility to 'visible' - this should schedule a new animation
   // frame and resume the image animation.
   WebView().SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
   Compositor().BeginFrame();
 
