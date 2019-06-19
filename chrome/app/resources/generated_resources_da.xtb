@@ -517,7 +517,7 @@
 <translation id="1799071797295057738">Udvidelsen "<ph name="EXTENSION_NAME" />" blev automatisk deaktiveret.</translation>
 <translation id="1802687198411089702">Siden svarer ikke. Du kan vente på den eller afslutte.</translation>
 <translation id="1802931390041703523">Flash blev blokeret på denne side</translation>
-<translation id="1803545009660609783">Genindstil</translation>
+<translation id="1803545009660609783">Genoplær</translation>
 <translation id="1805472176602625930">Tryk på knappen på sikkerhedsnøglen</translation>
 <translation id="1805738995123446102">En fane i baggrunden anvender din mikrofon</translation>
 <translation id="1805822111539868586">Se visninger</translation>
@@ -531,7 +531,7 @@
 <translation id="1817871734039893258">Microsoft-filgendannelse</translation>
 <translation id="1818007989243628752">Slet adgangskoden til <ph name="USERNAME" /></translation>
 <translation id="1818913467757368489">Upload af logfil er i gang.</translation>
-<translation id="1819721979226826163">Tryk på Appunderretninger &gt; Google Play-tjenester.</translation>
+<translation id="1819721979226826163">Tryk på Appnotifikationer &gt; Google Play-tjenester.</translation>
 <translation id="1820028137326691631">Angiv adgangskode fra administrator</translation>
 <translation id="1822140782238030981">Er du allerede Chrome-bruger? Log ind</translation>
 <translation id="1826516787628120939">Kontrollerer</translation>
@@ -4470,7 +4470,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7957615753207896812">Åbn enhedens tastaturindstillinger</translation>
 <translation id="7959074893852789871">Filen indeholdt flere certifikater, hvoraf nogle af dem ikke blev importeret:</translation>
 <translation id="7961015016161918242">Aldrig</translation>
-<translation id="7963826112438303517">Assistenten bruger disse optagelser og dine indtalte anmodninger til at oprette og opdatere din stemmemodel, som kun gemmes på enheder, hvor du har aktiveret Voice Match. Se eller genoptræn taleaktivitet i indstillingerne for Google Assistent.</translation>
+<translation id="7963826112438303517">Assistenten bruger disse optagelser og dine indtalte anmodninger til at oprette og opdatere din stemmemodel, som kun gemmes på enheder, hvor du har aktiveret Voice Match. Se eller genoplær taleaktivitet i indstillingerne for Google Assistent.</translation>
 <translation id="7966241909927244760">K&amp;opiér billedets webadresse</translation>
 <translation id="7968742106503422125">Læse og ændre data, du kopierer og indsætter</translation>
 <translation id="7968833647796919681">Aktivér registrering af data om ydeevne</translation>
