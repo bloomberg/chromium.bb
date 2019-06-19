@@ -471,7 +471,7 @@ class CORE_EXPORT EventHandler final
   // It is ok we only record last_show_press_timestamp_ in root frame since
   // root frame will have subframe as active element if subframe has active
   // element.
-  base::Optional<WTF::TimeTicks> last_show_press_timestamp_;
+  base::Optional<base::TimeTicks> last_show_press_timestamp_;
   Member<Element> last_deferred_tap_element_;
 
   // Set on GestureTapDown if unique_touch_event_id_ matches cached adjusted

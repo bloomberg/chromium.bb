@@ -843,7 +843,7 @@ void DisplayLockContext::RescheduleTimeoutTask(double delay) {
       *GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI),
       FROM_HERE,
       WTF::Bind(&DisplayLockContext::TriggerTimeout, WrapWeakPersistent(this)),
-      TimeDelta::FromMillisecondsD(delay));
+      base::TimeDelta::FromMillisecondsD(delay));
 }
 
 void DisplayLockContext::CancelTimeoutTask() {

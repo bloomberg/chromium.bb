@@ -676,7 +676,7 @@ void ScrollableArea::ShowOverlayScrollbars() {
   SetScrollbarsHiddenIfOverlay(false);
   needs_show_scrollbar_layers_ = true;
 
-  const TimeDelta time_until_disable =
+  const base::TimeDelta time_until_disable =
       GetPageScrollbarTheme().OverlayScrollbarFadeOutDelay() +
       GetPageScrollbarTheme().OverlayScrollbarFadeOutDuration();
 

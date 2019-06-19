@@ -105,9 +105,9 @@ using MainThreadScrollingReasons = uint32_t;
 
 struct LifecycleData {
   LifecycleData() {}
-  LifecycleData(TimeTicks start_time_arg, int count_arg)
+  LifecycleData(base::TimeTicks start_time_arg, int count_arg)
       : start_time(start_time_arg), count(count_arg) {}
-  TimeTicks start_time;
+  base::TimeTicks start_time;
   // The number of lifecycles that have occcurred since the first one,
   // inclusive, on a given LocalFrameRoot.
   unsigned count = 0;
@@ -987,7 +987,7 @@ class CORE_EXPORT LocalFrameView final
 
   scoped_refptr<LocalFrameUkmAggregator> ukm_aggregator_;
   unsigned forced_layout_stack_depth_;
-  TimeTicks forced_layout_start_time_;
+  base::TimeTicks forced_layout_start_time_;
 
   Member<PrintContext> print_context_;
 

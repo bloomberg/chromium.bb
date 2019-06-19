@@ -81,7 +81,7 @@ class CORE_EXPORT ImageElementTiming final
    public:
     ElementTimingInfo(const String& url,
                       const FloatRect& rect,
-                      const TimeTicks& response_end,
+                      const base::TimeTicks& response_end,
                       const AtomicString& identifier,
                       const IntSize& intrinsic_size,
                       const AtomicString& id,
@@ -99,7 +99,7 @@ class CORE_EXPORT ImageElementTiming final
 
     String url;
     FloatRect rect;
-    TimeTicks response_end;
+    base::TimeTicks response_end;
     AtomicString identifier;
     IntSize intrinsic_size;
     AtomicString id;

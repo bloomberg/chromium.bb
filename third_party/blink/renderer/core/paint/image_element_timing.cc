@@ -142,8 +142,8 @@ void ImageElementTiming::NotifyImagePaintedInternal(
          performance->ShouldBufferEntries())) {
       // Create an entry with a |startTime| of 0.
       performance->AddElementTiming(
-          ImagePaintString(), url.GetString(), intersection_rect, TimeTicks(),
-          cached_image.LoadResponseEnd(), attr,
+          ImagePaintString(), url.GetString(), intersection_rect,
+          base::TimeTicks(), cached_image.LoadResponseEnd(), attr,
           cached_image.IntrinsicSize(kDoNotRespectImageOrientation), id,
           element);
     }

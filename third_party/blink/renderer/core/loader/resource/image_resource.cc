@@ -62,7 +62,7 @@ namespace {
 // The amount of time to wait before informing the clients that the image has
 // been updated (in seconds). This effectively throttles invalidations that
 // result from new data arriving for this image.
-constexpr auto kFlushDelay = TimeDelta::FromSeconds(1);
+constexpr auto kFlushDelay = base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
@@ -83,7 +83,7 @@ class ImageResource::ImageResourceInfoImpl final
 
  private:
   const KURL& Url() const override { return resource_->Url(); }
-  TimeTicks LoadResponseEnd() const override {
+  base::TimeTicks LoadResponseEnd() const override {
     return resource_->LoadResponseEnd();
   }
   bool IsSchedulingReload() const override {
@@ -351,13 +351,13 @@ void ImageResource::AppendData(const char* data, size_t length) {
     if (!is_pending_flushing_) {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner =
           Loader()->GetLoadingTaskRunner();
-      TimeTicks now = CurrentTimeTicks();
+      base::TimeTicks now = CurrentTimeTicks();
       if (last_flush_time_.is_null())
         last_flush_time_ = now;
 
       DCHECK_LE(last_flush_time_, now);
-      TimeDelta flush_delay =
-          std::max(TimeDelta(), last_flush_time_ - now + kFlushDelay);
+      base::TimeDelta flush_delay =
+          std::max(base::TimeDelta(), last_flush_time_ - now + kFlushDelay);
       task_runner->PostDelayedTask(FROM_HERE,
                                    WTF::Bind(&ImageResource::FlushImageIfNeeded,
                                              WrapWeakPersistent(this)),
@@ -419,7 +419,7 @@ void ImageResource::NotifyStartLoad() {
   GetContent()->NotifyStartLoad();
 }
 
-void ImageResource::Finish(TimeTicks load_finish_time,
+void ImageResource::Finish(base::TimeTicks load_finish_time,
                            base::SingleThreadTaskRunner* task_runner) {
   if (multipart_parser_) {
     if (!ErrorOccurred())

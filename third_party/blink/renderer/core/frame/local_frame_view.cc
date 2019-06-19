@@ -277,7 +277,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
                                : nullptr)),
       main_thread_scrolling_reasons_(0),
       forced_layout_stack_depth_(0),
-      forced_layout_start_time_(TimeTicks()),
+      forced_layout_start_time_(base::TimeTicks()),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()),
       layout_shift_tracker_(std::make_unique<LayoutShiftTracker>(this)),
@@ -1779,7 +1779,7 @@ void LocalFrameView::ScheduleUpdatePluginsIfNecessary() {
   DCHECK(!IsInPerformLayout());
   if (update_plugins_timer_.IsActive() || part_update_set_.IsEmpty())
     return;
-  update_plugins_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  update_plugins_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void LocalFrameView::PerformPostLayoutTasks() {

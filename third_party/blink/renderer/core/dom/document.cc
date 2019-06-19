@@ -2583,7 +2583,7 @@ void Document::LayoutUpdated() {
 
 void Document::ClearFocusedElementSoon() {
   if (!clear_focused_element_timer_.IsActive())
-    clear_focused_element_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    clear_focused_element_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void Document::ClearFocusedElementTimerFired(TimerBase*) {
@@ -3656,9 +3656,9 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   auto& before_unload_event = *MakeGarbageCollected<BeforeUnloadEvent>();
   before_unload_event.initEvent(event_type_names::kBeforeunload, false, true);
   load_event_progress_ = kBeforeUnloadEventInProgress;
-  const TimeTicks beforeunload_event_start = CurrentTimeTicks();
+  const base::TimeTicks beforeunload_event_start = CurrentTimeTicks();
   dom_window_->DispatchEvent(before_unload_event, this);
-  const TimeTicks beforeunload_event_end = CurrentTimeTicks();
+  const base::TimeTicks beforeunload_event_end = CurrentTimeTicks();
   load_event_progress_ = kBeforeUnloadEventCompleted;
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, beforeunload_histogram,
@@ -3715,10 +3715,10 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   String text = before_unload_event.returnValue();
   beforeunload_dialog_histogram.Count(
       BeforeUnloadDialogHistogramEnum::kShowDialog);
-  const TimeTicks beforeunload_confirmpanel_start = CurrentTimeTicks();
+  const base::TimeTicks beforeunload_confirmpanel_start = CurrentTimeTicks();
   did_allow_navigation =
       chrome_client->OpenBeforeUnloadConfirmPanel(text, frame_, is_reload);
-  const TimeTicks beforeunload_confirmpanel_end = CurrentTimeTicks();
+  const base::TimeTicks beforeunload_confirmpanel_end = CurrentTimeTicks();
   if (did_allow_navigation) {
     // Only record when a navigation occurs, since we want to understand
     // the impact of the before unload dialog on overall input to navigation.
@@ -3746,11 +3746,11 @@ void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
     if (load_event_progress_ < kPageHideInProgress) {
       load_event_progress_ = kPageHideInProgress;
       if (LocalDOMWindow* window = domWindow()) {
-        const TimeTicks pagehide_event_start = CurrentTimeTicks();
+        const base::TimeTicks pagehide_event_start = CurrentTimeTicks();
         window->DispatchEvent(
             *PageTransitionEvent::Create(event_type_names::kPagehide, false),
             this);
-        const TimeTicks pagehide_event_end = CurrentTimeTicks();
+        const base::TimeTicks pagehide_event_end = CurrentTimeTicks();
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, pagehide_histogram,
             ("DocumentEventTiming.PageHideDuration", 0, 10000000, 50));
@@ -3767,10 +3767,12 @@ void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
       if (page_visible) {
         // Dispatch visibilitychange event, but don't bother doing
         // other notifications as we're about to be unloaded.
-        const TimeTicks pagevisibility_hidden_event_start = CurrentTimeTicks();
+        const base::TimeTicks pagevisibility_hidden_event_start =
+            CurrentTimeTicks();
         DispatchEvent(
             *Event::CreateBubble(event_type_names::kVisibilitychange));
-        const TimeTicks pagevisibility_hidden_event_end = CurrentTimeTicks();
+        const base::TimeTicks pagevisibility_hidden_event_end =
+            CurrentTimeTicks();
         DEFINE_STATIC_LOCAL(CustomCountHistogram, pagevisibility_histogram,
                             ("DocumentEventTiming.PageVibilityHiddenDuration",
                              0, 10000000, 50));
@@ -3790,10 +3792,10 @@ void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
       if (timing && timing->UnloadEventStart().is_null() &&
           timing->UnloadEventEnd().is_null()) {
         DCHECK(!timing->NavigationStart().is_null());
-        const TimeTicks unload_event_start = CurrentTimeTicks();
+        const base::TimeTicks unload_event_start = CurrentTimeTicks();
         timing->MarkUnloadEventStart(unload_event_start);
         frame_->DomWindow()->DispatchEvent(unload_event, this);
-        const TimeTicks unload_event_end = CurrentTimeTicks();
+        const base::TimeTicks unload_event_end = CurrentTimeTicks();
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, unload_histogram,
             ("DocumentEventTiming.UnloadDuration", 0, 10000000, 50));
@@ -3809,11 +3811,11 @@ void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
 }
 
 void Document::DispatchFreezeEvent() {
-  const TimeTicks freeze_event_start = CurrentTimeTicks();
+  const base::TimeTicks freeze_event_start = CurrentTimeTicks();
   SetFreezingInProgress(true);
   DispatchEvent(*Event::Create(event_type_names::kFreeze));
   SetFreezingInProgress(false);
-  const TimeTicks freeze_event_end = CurrentTimeTicks();
+  const base::TimeTicks freeze_event_end = CurrentTimeTicks();
   DEFINE_STATIC_LOCAL(CustomCountHistogram, freeze_histogram,
                       ("DocumentEventTiming.FreezeDuration", 0, 10000000, 50));
   freeze_histogram.CountMicroseconds(freeze_event_end - freeze_event_start);
@@ -6178,7 +6180,7 @@ void Document::FinishedParsing() {
   // on cache access since that could lead to huge caches being kept alive
   // indefinitely by something innocuous like JS setting .innerHTML repeatedly
   // on a timer.
-  element_data_cache_clear_timer_.StartOneShot(TimeDelta::FromSeconds(10),
+  element_data_cache_clear_timer_.StartOneShot(base::TimeDelta::FromSeconds(10),
                                                FROM_HERE);
 
   // Parser should have picked up all preloads by now
@@ -7019,7 +7021,7 @@ void Document::DecrementLoadEventDelayCountAndCheckLoadEvent() {
 
 void Document::CheckLoadEventSoon() {
   if (GetFrame() && !load_event_delay_timer_.IsActive())
-    load_event_delay_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    load_event_delay_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 bool Document::IsDelayingLoadEvent() {
@@ -7043,7 +7045,7 @@ void Document::LoadPluginsSoon() {
   // FIXME: Remove this timer once we don't need to compute layout to load
   // plugins.
   if (!plugin_loading_timer_.IsActive())
-    plugin_loading_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    plugin_loading_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void Document::PluginLoadingTimerFired(TimerBase*) {
@@ -7380,7 +7382,7 @@ void Document::DidAssociateFormControl(Element* element) {
   // We add a slight delay because this could be called rapidly.
   if (!did_associate_form_controls_timer_.IsActive()) {
     did_associate_form_controls_timer_.StartOneShot(
-        TimeDelta::FromMilliseconds(300), FROM_HERE);
+        base::TimeDelta::FromMilliseconds(300), FROM_HERE);
   }
 }
 

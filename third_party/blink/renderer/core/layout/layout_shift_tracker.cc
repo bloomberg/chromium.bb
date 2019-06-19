@@ -25,7 +25,8 @@
 
 namespace blink {
 
-static constexpr TimeDelta kTimerDelay = TimeDelta::FromMilliseconds(500);
+static constexpr base::TimeDelta kTimerDelay =
+    base::TimeDelta::FromMilliseconds(500);
 static const float kRegionGranularitySteps = 60.0;
 // TODO: Vary by Finch experiment parameter.
 static const float kSweepLineRegionGranularity = 1.0;
