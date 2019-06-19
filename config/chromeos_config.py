@@ -680,6 +680,7 @@ def GeneralTemplates(site_config):
       push_image=True,
       upload_symbols=True,
       run_cpeexport=True,
+      run_build_configs_export=True,
       binhost_bucket='gs://chromeos-dev-installer',
       binhost_key='RELEASE_BINHOST',
       binhost_base_url='https://commondatastorage.googleapis.com/'
