@@ -76,6 +76,10 @@ namespace gpu {
 class GpuMemoryBufferManager;
 }
 
+namespace media {
+class GpuVideoAcceleratorFactories;
+}
+
 namespace rtc {
 class Thread;
 }
@@ -673,6 +677,12 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual WebTransmissionEncodingInfoHandler*
   TransmissionEncodingInfoHandler() {
+    return nullptr;
+  }
+
+  // GpuVideoAcceleratorFactories --------------------------------------
+
+  virtual media::GpuVideoAcceleratorFactories* GetGpuFactories() {
     return nullptr;
   }
 

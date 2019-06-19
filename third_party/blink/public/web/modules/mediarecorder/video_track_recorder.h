@@ -2,24 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_RECORDER_VIDEO_TRACK_RECORDER_H_
-#define CONTENT_RENDERER_MEDIA_RECORDER_VIDEO_TRACK_RECORDER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
 
 #include <memory>
 
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
-#include "content/public/common/buildflags.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/muxers/webm_muxer.h"
 #include "media/video/video_encode_accelerator.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+// TODO(crbug.com/960665): Remove all INSIDE_BLINK definition in this header
+// once this header file moves to blink/renderer.
+#if INSIDE_BLINK
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#endif
 
 namespace base {
 class Thread;
@@ -44,7 +54,22 @@ const int kVEAEncoderMinResolutionHeight = 480;
 #endif
 }  // namespace video_track_recorder
 
-namespace content {
+#if INSIDE_BLINK
+namespace WTF {
+
+template <>
+struct CrossThreadCopier<media::WebmMuxer::VideoParameters> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = media::WebmMuxer::VideoParameters;
+  static Type Copy(Type pointer) { return pointer; }
+};
+
+}  // namespace WTF
+#endif
+
+namespace blink {
+
+class Thread;
 
 // VideoTrackRecorder is a MediaStreamVideoSink that encodes the video frames
 // received from a Stream Video Track. This class is constructed and used on a
@@ -52,7 +77,10 @@ namespace content {
 // MediaStreamVideo* classes that are constructed/configured on Main Render
 // thread but that pass frames on Render IO thread. It has an internal Encoder
 // with its own threading subtleties, see the implementation file.
-class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
+//
+// TODO(crbug.com/960665): Move this class out of the Blink exposed API and
+// when MediaRecorderHandler have been Onion souped.
+class BLINK_MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
  public:
   // Do not change the order of codecs; add new ones right before LAST.
   enum class CodecId {
@@ -64,14 +92,15 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
     LAST
   };
 
-  using OnEncodedVideoCB =
-      base::Callback<void(const media::WebmMuxer::VideoParameters& params,
-                          std::unique_ptr<std::string> encoded_data,
-                          std::unique_ptr<std::string> encoded_alpha,
-                          base::TimeTicks capture_timestamp,
-                          bool is_key_frame)>;
+  using OnEncodedVideoCB = base::RepeatingCallback<void(
+      const media::WebmMuxer::VideoParameters& params,
+      std::unique_ptr<std::string> encoded_data,
+      std::unique_ptr<std::string> encoded_alpha,
+      base::TimeTicks capture_timestamp,
+      bool is_key_frame)>;
   using OnErrorCB = base::Closure;
 
+#if INSIDE_BLINK
   // Wraps a counter in a class in order to enable use of base::WeakPtr<>.
   // See https://crbug.com/859610 for why this was added.
   class Counter {
@@ -102,13 +131,14 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
   // namely configuration, encoding (which might take some time) and
   // destruction. This task runner can be passed on the creation. If nothing is
   // passed, a new encoding thread is created and used.
-  class Encoder : public base::RefCountedThreadSafe<Encoder> {
+  class Encoder : public WTF::ThreadSafeRefCounted<Encoder> {
    public:
-    Encoder(const OnEncodedVideoCB& on_encoded_video_callback,
-            int32_t bits_per_second,
-            scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-            scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner =
-                nullptr);
+    Encoder(
+        const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
+        int32_t bits_per_second,
+        scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+        scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner =
+            nullptr);
 
     // Start encoding |frame|, returning via |on_encoded_video_callback_|. This
     // call will also trigger an encode configuration upon first frame arrival
@@ -121,8 +151,15 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
     void RetrieveFrameOnMainThread(scoped_refptr<media::VideoFrame> video_frame,
                                    base::TimeTicks capture_timestamp);
 
+    using OnEncodedVideoInternalCB = WTF::CrossThreadFunction<void(
+        const media::WebmMuxer::VideoParameters& params,
+        std::unique_ptr<std::string> encoded_data,
+        std::unique_ptr<std::string> encoded_alpha,
+        base::TimeTicks capture_timestamp,
+        bool is_key_frame)>;
+
     static void OnFrameEncodeCompleted(
-        const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
+        const OnEncodedVideoInternalCB& on_encoded_video_cb,
         const media::WebmMuxer::VideoParameters& params,
         std::unique_ptr<std::string> data,
         std::unique_ptr<std::string> alpha_data,
@@ -133,7 +170,7 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
     virtual bool CanEncodeAlphaChannel();
 
    protected:
-    friend class base::RefCountedThreadSafe<Encoder>;
+    friend class WTF::ThreadSafeRefCounted<Encoder>;
     friend class VideoTrackRecorderTest;
 
     // This destructor may run on either |main_task_runner|,
@@ -162,7 +199,7 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
     scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner_;
 
     // Optional thread for encoding. Active for the lifetime of VpxEncoder.
-    std::unique_ptr<base::Thread> encoding_thread_;
+    std::unique_ptr<Thread> encoding_thread_;
 
     // While |paused_|, frames are not encoded. Used only from
     // |encoding_thread_|.
@@ -190,7 +227,7 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
   // Class to encapsulate the enumeration of CodecIds/VideoCodecProfiles
   // supported by the VEA underlying platform. Provides methods to query the
   // preferred CodecId and to check if a given CodecId is supported.
-  class CONTENT_EXPORT CodecEnumerator {
+  class BLINK_MODULES_EXPORT CodecEnumerator {
    public:
     CodecEnumerator(const media::VideoEncodeAccelerator::SupportedProfiles&
                         vea_supported_profiles);
@@ -212,11 +249,13 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
 
    private:
     // VEA-supported profiles grouped by CodecId.
-    base::flat_map<CodecId, media::VideoEncodeAccelerator::SupportedProfiles>
+    HashMap<CodecId, media::VideoEncodeAccelerator::SupportedProfiles>
         supported_profiles_;
+    CodecId preferred_codec_id_ = CodecId::LAST;
 
     DISALLOW_COPY_AND_ASSIGN(CodecEnumerator);
   };
+#endif
 
   static CodecId GetPreferredCodecId();
 
@@ -231,7 +270,7 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
 
   VideoTrackRecorder(
       CodecId codec,
-      const blink::WebMediaStreamTrack& track,
+      const WebMediaStreamTrack& track,
       const OnEncodedVideoCB& on_encoded_video_cb,
       int32_t bits_per_second,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
@@ -257,14 +296,17 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
   THREAD_CHECKER(main_thread_checker_);
 
   // We need to hold on to the Blink track to remove ourselves on dtor.
-  blink::WebMediaStreamTrack track_;
+  WebMediaStreamTrack track_;
 
   // Inner class to encode using whichever codec is configured.
+#if !INSIDE_BLINK
+  class Encoder;
+#endif
   scoped_refptr<Encoder> encoder_;
 
-  base::Callback<void(bool allow_vea_encoder,
-                      scoped_refptr<media::VideoFrame> frame,
-                      base::TimeTicks capture_time)>
+  base::RepeatingCallback<void(bool allow_vea_encoder,
+                               scoped_refptr<media::VideoFrame> frame,
+                               base::TimeTicks capture_time)>
       initialize_encoder_callback_;
 
   bool should_pause_encoder_on_initialization_;
@@ -276,5 +318,6 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorder);
 };
 
-}  // namespace content
-#endif  // CONTENT_RENDERER_MEDIA_RECORDER_VIDEO_TRACK_RECORDER_H_
+}  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_

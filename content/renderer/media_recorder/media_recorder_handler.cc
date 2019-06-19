@@ -50,17 +50,18 @@ namespace {
 const float kNumPixelsPerSecondSmoothnessThresholdLow = 640 * 480 * 30.0;
 const float kNumPixelsPerSecondSmoothnessThresholdHigh = 1280 * 720 * 30.0;
 
-media::VideoCodec CodecIdToMediaVideoCodec(VideoTrackRecorder::CodecId id) {
+media::VideoCodec CodecIdToMediaVideoCodec(
+    blink::VideoTrackRecorder::CodecId id) {
   switch (id) {
-    case VideoTrackRecorder::CodecId::VP8:
+    case blink::VideoTrackRecorder::CodecId::VP8:
       return media::kCodecVP8;
-    case VideoTrackRecorder::CodecId::VP9:
+    case blink::VideoTrackRecorder::CodecId::VP9:
       return media::kCodecVP9;
 #if BUILDFLAG(RTC_USE_H264)
-    case VideoTrackRecorder::CodecId::H264:
+    case blink::VideoTrackRecorder::CodecId::H264:
       return media::kCodecH264;
 #endif
-    case VideoTrackRecorder::CodecId::LAST:
+    case blink::VideoTrackRecorder::CodecId::LAST:
       return media::kUnknownVideoCodec;
   }
   NOTREACHED() << "Unsupported video codec";
@@ -83,20 +84,20 @@ media::AudioCodec CodecIdToMediaAudioCodec(
 
 // Extracts the first recognised CodecId of |codecs| or CodecId::LAST if none
 // of them is known.
-VideoTrackRecorder::CodecId VideoStringToCodecId(
+blink::VideoTrackRecorder::CodecId VideoStringToCodecId(
     const blink::WebString& codecs) {
   const std::string& codecs_str = ToLowerASCII(codecs.Utf8());
 
   if (codecs_str.find("vp8") != std::string::npos)
-    return VideoTrackRecorder::CodecId::VP8;
+    return blink::VideoTrackRecorder::CodecId::VP8;
   if (codecs_str.find("vp9") != std::string::npos)
-    return VideoTrackRecorder::CodecId::VP9;
+    return blink::VideoTrackRecorder::CodecId::VP9;
 #if BUILDFLAG(RTC_USE_H264)
   if (codecs_str.find("h264") != std::string::npos ||
       codecs_str.find("avc1") != std::string::npos)
-    return VideoTrackRecorder::CodecId::H264;
+    return blink::VideoTrackRecorder::CodecId::H264;
 #endif
-  return VideoTrackRecorder::CodecId::LAST;
+  return blink::VideoTrackRecorder::CodecId::LAST;
 }
 
 blink::AudioTrackRecorder::CodecId AudioStringToCodecId(
@@ -117,7 +118,7 @@ MediaRecorderHandler::MediaRecorderHandler(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : video_bits_per_second_(0),
       audio_bits_per_second_(0),
-      video_codec_id_(VideoTrackRecorder::CodecId::LAST),
+      video_codec_id_(blink::VideoTrackRecorder::CodecId::LAST),
       audio_codec_id_(blink::AudioTrackRecorder::CodecId::LAST),
       recording_(false),
       client_(nullptr),
@@ -202,12 +203,12 @@ bool MediaRecorderHandler::Initialize(
   }
 
   // Once established that we support the codec(s), hunt then individually.
-  const VideoTrackRecorder::CodecId video_codec_id =
+  const blink::VideoTrackRecorder::CodecId video_codec_id =
       VideoStringToCodecId(codecs);
-  video_codec_id_ = (video_codec_id != VideoTrackRecorder::CodecId::LAST)
+  video_codec_id_ = (video_codec_id != blink::VideoTrackRecorder::CodecId::LAST)
                         ? video_codec_id
-                        : VideoTrackRecorder::GetPreferredCodecId();
-  DVLOG_IF(1, video_codec_id == VideoTrackRecorder::CodecId::LAST)
+                        : blink::VideoTrackRecorder::GetPreferredCodecId();
+  DVLOG_IF(1, video_codec_id == blink::VideoTrackRecorder::CodecId::LAST)
       << "Falling back to preferred video codec id "
       << static_cast<int>(video_codec_id_);
 
@@ -280,11 +281,11 @@ bool MediaRecorderHandler::Start(int timeslice) {
     if (video_track.IsNull())
       return false;
 
-    const VideoTrackRecorder::OnEncodedVideoCB on_encoded_video_cb =
+    const blink::VideoTrackRecorder::OnEncodedVideoCB on_encoded_video_cb =
         media::BindToCurrentLoop(base::Bind(
             &MediaRecorderHandler::OnEncodedVideo, weak_factory_.GetWeakPtr()));
 
-    video_recorders_.emplace_back(new VideoTrackRecorder(
+    video_recorders_.emplace_back(new blink::VideoTrackRecorder(
         video_codec_id_, video_track, on_encoded_video_cb,
         video_bits_per_second_, task_runner_));
   }
@@ -374,7 +375,7 @@ void MediaRecorderHandler::EncodingInfo(
 
   if (configuration.video_configuration && info->supported) {
     const bool is_likely_accelerated =
-        VideoTrackRecorder::CanUseAcceleratedEncoder(
+        blink::VideoTrackRecorder::CanUseAcceleratedEncoder(
             VideoStringToCodecId(codec),
             configuration.video_configuration->width,
             configuration.video_configuration->height,
@@ -416,39 +417,39 @@ blink::WebString MediaRecorderHandler::ActualMimeType() {
     mime_type.append("audio/webm;codecs=");
   } else {
     switch (video_codec_id_) {
-      case VideoTrackRecorder::CodecId::VP8:
-      case VideoTrackRecorder::CodecId::VP9:
+      case blink::VideoTrackRecorder::CodecId::VP8:
+      case blink::VideoTrackRecorder::CodecId::VP9:
         mime_type.append("video/webm;codecs=");
         break;
 #if BUILDFLAG(RTC_USE_H264)
-      case VideoTrackRecorder::CodecId::H264:
+      case blink::VideoTrackRecorder::CodecId::H264:
         mime_type.append("video/x-matroska;codecs=");
         break;
 #endif
-      case VideoTrackRecorder::CodecId::LAST:
+      case blink::VideoTrackRecorder::CodecId::LAST:
         // Do nothing.
         break;
     }
   }
   if (has_video_tracks) {
     switch (video_codec_id_) {
-      case VideoTrackRecorder::CodecId::VP8:
+      case blink::VideoTrackRecorder::CodecId::VP8:
         mime_type.append("vp8");
         break;
-      case VideoTrackRecorder::CodecId::VP9:
+      case blink::VideoTrackRecorder::CodecId::VP9:
         mime_type.append("vp9");
         break;
 #if BUILDFLAG(RTC_USE_H264)
-      case VideoTrackRecorder::CodecId::H264:
+      case blink::VideoTrackRecorder::CodecId::H264:
         mime_type.append("avc1");
         break;
 #endif
-      case VideoTrackRecorder::CodecId::LAST:
+      case blink::VideoTrackRecorder::CodecId::LAST:
         DCHECK_NE(audio_codec_id_, blink::AudioTrackRecorder::CodecId::LAST);
     }
   }
   if (has_video_tracks && has_audio_tracks) {
-    if (video_codec_id_ != VideoTrackRecorder::CodecId::LAST &&
+    if (video_codec_id_ != blink::VideoTrackRecorder::CodecId::LAST &&
         audio_codec_id_ != blink::AudioTrackRecorder::CodecId::LAST) {
       mime_type.append(",");
     }
@@ -462,7 +463,7 @@ blink::WebString MediaRecorderHandler::ActualMimeType() {
         mime_type.append("pcm");
         break;
       case blink::AudioTrackRecorder::CodecId::LAST:
-        DCHECK_NE(video_codec_id_, VideoTrackRecorder::CodecId::LAST);
+        DCHECK_NE(video_codec_id_, blink::VideoTrackRecorder::CodecId::LAST);
     }
   }
   return blink::WebString::FromUTF8(mime_type);

@@ -594,8 +594,15 @@ _CONFIG = [
         ],
         'allowed': [
             'base::data',
+            # TODO(crbug.com/960665): Remove it once it is replaced with a WTF equivalent.
+            'base::queue',
+
+            'base::SharedMemory',
+            'base::ThreadTaskRunnerHandle',
             'media::.+',
             'libopus::.+',
+            'libyuv::.+',
+            'video_track_recorder::.+',
         ]
     },
     {

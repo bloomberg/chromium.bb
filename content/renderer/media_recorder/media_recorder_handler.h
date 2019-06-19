@@ -14,10 +14,10 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media_recorder/video_track_recorder.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/web/modules/mediarecorder/audio_track_recorder.h"
+#include "third_party/blink/public/web/modules/mediarecorder/video_track_recorder.h"
 
 namespace blink {
 class WebMediaRecorderHandlerClient;
@@ -99,7 +99,7 @@ class CONTENT_EXPORT MediaRecorderHandler final
   int32_t audio_bits_per_second_;
 
   // Video Codec, VP8 is used by default.
-  VideoTrackRecorder::CodecId video_codec_id_;
+  blink::VideoTrackRecorder::CodecId video_codec_id_;
 
   // Audio Codec, OPUS is used by default.
   blink::AudioTrackRecorder::CodecId audio_codec_id_;
@@ -118,7 +118,7 @@ class CONTENT_EXPORT MediaRecorderHandler final
   // |client_| is a weak pointer, and is valid for the lifetime of this object.
   blink::WebMediaRecorderHandlerClient* client_;
 
-  std::vector<std::unique_ptr<VideoTrackRecorder>> video_recorders_;
+  std::vector<std::unique_ptr<blink::VideoTrackRecorder>> video_recorders_;
   std::vector<std::unique_ptr<blink::AudioTrackRecorder>> audio_recorders_;
 
   // Worker class doing the actual Webm Muxing work.

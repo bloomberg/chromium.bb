@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_recorder/vpx_encoder.h"
+#include "third_party/blink/renderer/modules/mediarecorder/vpx_encoder.h"
 
 #include <algorithm>
-#include <string>
 
-#include "base/bind.h"
 #include "base/system/sys_info.h"
-#include "base/threading/thread.h"
-#include "base/trace_event/trace_event.h"
 #include "media/base/video_frame.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "ui/gfx/geometry/size.h"
 
 using media::VideoFrame;
 using media::VideoFrameMetadata;
 
-namespace content {
+namespace blink {
 
 void VpxEncoder::VpxCodecDeleter::operator()(vpx_codec_ctx_t* codec) {
   if (!codec)
@@ -35,10 +36,9 @@ static int GetNumberOfThreadsForEncoding() {
 }
 
 // static
-void VpxEncoder::ShutdownEncoder(std::unique_ptr<base::Thread> encoding_thread,
+void VpxEncoder::ShutdownEncoder(std::unique_ptr<Thread> encoding_thread,
                                  ScopedVpxCodecCtxPtr encoder) {
-  DCHECK(encoding_thread->IsRunning());
-  encoding_thread->Stop();
+  DCHECK(encoding_thread);
   // Both |encoding_thread| and |encoder| will be destroyed at end-of-scope.
 }
 
@@ -53,14 +53,14 @@ VpxEncoder::VpxEncoder(
       use_vp9_(use_vp9) {
   codec_config_.g_timebase.den = 0;        // Not initialized.
   alpha_codec_config_.g_timebase.den = 0;  // Not initialized.
-  DCHECK(encoding_thread_->IsRunning());
+  DCHECK(encoding_thread_);
 }
 
 VpxEncoder::~VpxEncoder() {
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VpxEncoder::ShutdownEncoder, std::move(encoding_thread_),
-                     std::move(encoder_)));
+  PostCrossThreadTask(
+      *main_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&VpxEncoder::ShutdownEncoder,
+                          std::move(encoding_thread_), std::move(encoder_)));
 }
 
 bool VpxEncoder::CanEncodeAlphaChannel() {
@@ -73,7 +73,7 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   const gfx::Size frame_size = frame->visible_rect().size();
-  base::TimeDelta duration = EstimateFrameDuration(*frame);
+  TimeDelta duration = EstimateFrameDuration(*frame);
   const media::WebmMuxer::VideoParameters video_params(frame);
 
   if (!IsInitialized(codec_config_) ||
@@ -96,10 +96,10 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
     v_plane_offset_ = media::VideoFrame::PlaneSize(
                           frame->format(), VideoFrame::kUPlane, frame_size)
                           .GetArea();
-    alpha_dummy_planes_.resize(
+    alpha_dummy_planes_.resize(SafeCast<wtf_size_t>(
         v_plane_offset_ + media::VideoFrame::PlaneSize(
                               frame->format(), VideoFrame::kVPlane, frame_size)
-                              .GetArea());
+                              .GetArea()));
     // It is more expensive to encode 0x00, so use 0x80 instead.
     std::fill(alpha_dummy_planes_.begin(), alpha_dummy_planes_.end(), 0x80);
   }
@@ -124,18 +124,21 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
     DoEncode(alpha_encoder_.get(), frame_size, frame->data(VideoFrame::kAPlane),
              frame->visible_data(VideoFrame::kAPlane),
              frame->stride(VideoFrame::kAPlane), alpha_dummy_planes_.data(),
-             u_plane_stride_, alpha_dummy_planes_.data() + v_plane_offset_,
-             v_plane_stride_, duration, keyframe, alpha_data.get(),
-             &alpha_keyframe);
+             SafeCast<int>(u_plane_stride_),
+             alpha_dummy_planes_.data() + v_plane_offset_,
+             SafeCast<int>(v_plane_stride_), duration, keyframe,
+             alpha_data.get(), &alpha_keyframe);
     DCHECK_EQ(keyframe, alpha_keyframe);
   }
   frame = nullptr;
 
-  origin_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(OnFrameEncodeCompleted, on_encoded_video_callback_,
-                     video_params, std::move(data), std::move(alpha_data),
-                     capture_timestamp, keyframe));
+  PostCrossThreadTask(
+      *origin_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(
+          OnFrameEncodeCompleted,
+          WTF::Passed(CrossThreadBind(on_encoded_video_callback_)),
+          video_params, std::move(data), std::move(alpha_data),
+          capture_timestamp, keyframe));
 }
 
 void VpxEncoder::DoEncode(vpx_codec_ctx_t* const encoder,
@@ -147,7 +150,7 @@ void VpxEncoder::DoEncode(vpx_codec_ctx_t* const encoder,
                           int u_stride,
                           uint8_t* const v_plane,
                           int v_stride,
-                          const base::TimeDelta& duration,
+                          const TimeDelta& duration,
                           bool force_keyframe,
                           std::string* const output_data,
                           bool* const keyframe) {
@@ -171,7 +174,8 @@ void VpxEncoder::DoEncode(vpx_codec_ctx_t* const encoder,
   // entirely on |predicted_frame_duration|.
   const vpx_codec_err_t ret =
       vpx_codec_encode(encoder, &vpx_image, 0 /* pts */,
-                       duration.InMicroseconds(), flags, VPX_DL_REALTIME);
+                       static_cast<unsigned long>(duration.InMicroseconds()),
+                       flags, VPX_DL_REALTIME);
   DCHECK_EQ(ret, VPX_CODEC_OK)
       << vpx_codec_err_to_string(ret) << ", #" << vpx_codec_error(encoder)
       << " -" << vpx_codec_error_detail(encoder);
@@ -179,7 +183,7 @@ void VpxEncoder::DoEncode(vpx_codec_ctx_t* const encoder,
   *keyframe = false;
   vpx_codec_iter_t iter = nullptr;
   const vpx_codec_cx_pkt_t* pkt = nullptr;
-  while ((pkt = vpx_codec_get_cx_data(encoder, &iter)) != nullptr) {
+  while ((pkt = vpx_codec_get_cx_data(encoder, &iter))) {
     if (pkt->kind != VPX_CODEC_CX_FRAME_PKT)
       continue;
     output_data->assign(static_cast<char*>(pkt->data.frame.buf),
@@ -285,7 +289,7 @@ bool VpxEncoder::IsInitialized(const vpx_codec_enc_cfg_t& codec_config) const {
   return codec_config.g_timebase.den != 0;
 }
 
-base::TimeDelta VpxEncoder::EstimateFrameDuration(const VideoFrame& frame) {
+TimeDelta VpxEncoder::EstimateFrameDuration(const VideoFrame& frame) {
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   using base::TimeDelta;
@@ -309,4 +313,4 @@ base::TimeDelta VpxEncoder::EstimateFrameDuration(const VideoFrame& frame) {
                   std::max(predicted_frame_duration, kMinFrameDuration));
 }
 
-}  // namespace content
+}  // namespace blink

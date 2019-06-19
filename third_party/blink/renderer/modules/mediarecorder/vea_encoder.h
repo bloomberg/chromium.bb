@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_RECORDER_VEA_ENCODER_H_
-#define CONTENT_RENDERER_MEDIA_RECORDER_VEA_ENCODER_H_
-
-#include <queue>
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VEA_ENCODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VEA_ENCODER_H_
 
 #include "base/containers/queue.h"
 #include "base/single_thread_task_runner.h"
-#include "content/renderer/media_recorder/video_track_recorder.h"
 #include "media/video/video_encode_accelerator.h"
+#include "third_party/blink/public/web/modules/mediarecorder/video_track_recorder.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -21,7 +21,7 @@ namespace media {
 class GpuVideoAcceleratorFactories;
 }  // namespace media
 
-namespace content {
+namespace blink {
 
 // Class encapsulating VideoEncodeAccelerator interactions.
 // This class is created and destroyed on its owner thread. All other methods
@@ -80,9 +80,10 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   std::unique_ptr<media::VideoEncodeAccelerator> video_encoder_;
 
   // Shared memory buffers for output with the VEA.
-  std::vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
+  Vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
 
   // Shared memory buffers for output with the VEA as FIFO.
+  // TODO(crbug.com/960665): Replace with a WTF equivalent.
   base::queue<std::unique_ptr<base::SharedMemory>> input_buffers_;
 
   // Tracks error status.
@@ -98,6 +99,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   gfx::Size vea_requested_input_coded_size_;
 
   // Frames and corresponding timestamps in encode as FIFO.
+  // TODO(crbug.com/960665): Replace with a WTF equivalent.
   base::queue<VideoParamsAndTimestamp> frames_in_encode_;
 
   // Number of encoded frames produced consecutively without a keyframe.
@@ -110,6 +112,6 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   const VideoTrackRecorder::OnErrorCB on_error_callback_;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_RECORDER_VEA_ENCODER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VEA_ENCODER_H_

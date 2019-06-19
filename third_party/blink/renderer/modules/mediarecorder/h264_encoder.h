@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_RECORDER_H264_ENCODER_H_
-#define CONTENT_RENDERER_MEDIA_RECORDER_H264_ENCODER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_H264_ENCODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_H264_ENCODER_H_
 
 #include "base/single_thread_task_runner.h"
-#include "content/public/common/buildflags.h"
+#include "third_party/blink/public/public_buildflags.h"
 
 #if !BUILDFLAG(RTC_USE_H264)
 #error RTC_USE_H264 should be defined.
 #endif  // #if BUILDFLAG(RTC_USE_H264)
 
 #include "base/time/time.h"
-#include "content/renderer/media_recorder/video_track_recorder.h"
+#include "third_party/blink/public/web/modules/mediarecorder/video_track_recorder.h"
 #include "third_party/openh264/src/codec/api/svc/codec_api.h"
 
-namespace content {
+namespace blink {
 
 // Class encapsulating all openh264 interactions for H264 encoding.
 class H264Encoder final : public VideoTrackRecorder::Encoder {
@@ -26,7 +26,7 @@ class H264Encoder final : public VideoTrackRecorder::Encoder {
   };
   typedef std::unique_ptr<ISVCEncoder, ISVCEncoderDeleter> ScopedISVCEncoderPtr;
 
-  static void ShutdownEncoder(std::unique_ptr<base::Thread> encoding_thread,
+  static void ShutdownEncoder(std::unique_ptr<Thread> encoding_thread,
                               ScopedISVCEncoderPtr encoder);
 
   H264Encoder(
@@ -55,6 +55,6 @@ class H264Encoder final : public VideoTrackRecorder::Encoder {
   DISALLOW_COPY_AND_ASSIGN(H264Encoder);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_RECORDER_H264_ENCODER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_H264_ENCODER_H_

@@ -317,12 +317,6 @@ target(link_target_type, "renderer") {
     "media/webrtc_logging.h",
     "media_recorder/media_recorder_handler.cc",
     "media_recorder/media_recorder_handler.h",
-    "media_recorder/vea_encoder.cc",
-    "media_recorder/vea_encoder.h",
-    "media_recorder/video_track_recorder.cc",
-    "media_recorder/video_track_recorder.h",
-    "media_recorder/vpx_encoder.cc",
-    "media_recorder/vpx_encoder.h",
     "menu_item_builder.cc",
     "menu_item_builder.h",
     "mhtml_handle_writer.cc",
@@ -565,7 +559,6 @@ target(link_target_type, "renderer") {
     "//third_party/blink/public/common",
     "//third_party/boringssl",
     "//third_party/icu",
-    "//third_party/libvpx",
     "//third_party/libyuv",
     "//third_party/sqlite",
     "//third_party/webrtc/api:callfactory_api",
@@ -711,14 +704,6 @@ target(link_target_type, "renderer") {
       "pepper/pepper_media_stream_video_track_host.cc",
       "pepper/pepper_media_stream_video_track_host.h",
     ]
-  }
-
-  if (rtc_use_h264) {
-    sources += [
-      "media_recorder/h264_encoder.cc",
-      "media_recorder/h264_encoder.h",
-    ]
-    deps += [ "//third_party/openh264:encoder" ]
   }
 
   if (enable_plugins) {

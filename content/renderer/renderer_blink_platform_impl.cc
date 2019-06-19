@@ -65,6 +65,7 @@
 #include "media/audio/audio_output_device.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -968,6 +969,16 @@ void RendererBlinkPlatformImpl::RecordMetricsForBackgroundedRendererPurge() {
   if (!render_thread)
     return;
   render_thread->RecordMetricsForBackgroundedRendererPurge();
+}
+
+//------------------------------------------------------------------------------
+media::GpuVideoAcceleratorFactories*
+RendererBlinkPlatformImpl::GetGpuFactories() {
+  auto* render_thread = RenderThreadImpl::current();
+  if (!render_thread)
+    return nullptr;
+
+  return render_thread->GetGpuFactories();
 }
 
 //------------------------------------------------------------------------------

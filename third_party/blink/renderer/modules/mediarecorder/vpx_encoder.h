@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_RECORDER_VPX_ENCODER_H_
-#define CONTENT_RENDERER_MEDIA_RECORDER_VPX_ENCODER_H_
-
-#include <vector>
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VPX_ENCODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VPX_ENCODER_H_
 
 #include "base/single_thread_task_runner.h"
-#include "content/renderer/media_recorder/video_track_recorder.h"
+#include "third_party/blink/public/web/modules/mediarecorder/video_track_recorder.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
 
-namespace content {
+namespace blink {
 
 // Class encapsulating all libvpx interactions for VP8/VP9 encoding.
 class VpxEncoder final : public VideoTrackRecorder::Encoder {
@@ -25,7 +25,7 @@ class VpxEncoder final : public VideoTrackRecorder::Encoder {
   typedef std::unique_ptr<vpx_codec_ctx_t, VpxCodecDeleter>
       ScopedVpxCodecCtxPtr;
 
-  static void ShutdownEncoder(std::unique_ptr<base::Thread> encoding_thread,
+  static void ShutdownEncoder(std::unique_ptr<Thread> encoding_thread,
                               ScopedVpxCodecCtxPtr encoder);
 
   VpxEncoder(
@@ -77,7 +77,7 @@ class VpxEncoder final : public VideoTrackRecorder::Encoder {
   vpx_codec_enc_cfg_t alpha_codec_config_;
   ScopedVpxCodecCtxPtr alpha_encoder_;
 
-  std::vector<uint8_t> alpha_dummy_planes_;
+  Vector<uint8_t> alpha_dummy_planes_;
   size_t v_plane_offset_;
   size_t u_plane_stride_;
   size_t v_plane_stride_;
@@ -91,6 +91,6 @@ class VpxEncoder final : public VideoTrackRecorder::Encoder {
   DISALLOW_COPY_AND_ASSIGN(VpxEncoder);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_RECORDER_VPX_ENCODER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VPX_ENCODER_H_

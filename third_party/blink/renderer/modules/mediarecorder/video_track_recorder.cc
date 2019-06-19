@@ -2,42 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_recorder/video_track_recorder.h"
+#include "third_party/blink/public/web/modules/mediarecorder/video_track_recorder.h"
 
-#include <map>
-#include <utility>
-
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
+#include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
-#include "content/renderer/media_recorder/vea_encoder.h"
-#include "content/renderer/media_recorder/vpx_encoder.h"
-#include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "media/muxers/webm_muxer.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
-#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/public/public_buildflags.h"
+#include "third_party/blink/renderer/modules/mediarecorder/vea_encoder.h"
+#include "third_party/blink/renderer/modules/mediarecorder/vpx_encoder.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/geometry/size.h"
 
 #if BUILDFLAG(RTC_USE_H264)
-#include "content/renderer/media_recorder/h264_encoder.h"
+#include "third_party/blink/renderer/modules/mediarecorder/h264_encoder.h"
 #endif  // #if BUILDFLAG(RTC_USE_H264)
 
 using media::VideoFrame;
-using video_track_recorder::kVEAEncoderMinResolutionWidth;
 using video_track_recorder::kVEAEncoderMinResolutionHeight;
+using video_track_recorder::kVEAEncoderMinResolutionWidth;
 
-namespace content {
+namespace blink {
 
 libyuv::RotationMode MediaVideoRotationToRotationMode(
     media::VideoRotation rotation) {
@@ -85,15 +84,13 @@ const int kMaxNumberOfFramesInEncode = 10;
 
 // Obtains video encode accelerator's supported profiles.
 media::VideoEncodeAccelerator::SupportedProfiles GetVEASupportedProfiles() {
-  content::RenderThreadImpl* const render_thread_impl =
-      content::RenderThreadImpl::current();
-  if (!render_thread_impl) {
+  if (!Platform::Current()) {
     DVLOG(2) << "Couldn't access the render thread";
     return media::VideoEncodeAccelerator::SupportedProfiles();
   }
 
   media::GpuVideoAcceleratorFactories* const gpu_factories =
-      render_thread_impl->GetGpuFactories();
+      Platform::Current()->GetGpuFactories();
   if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled()) {
     DVLOG(2) << "Couldn't initialize GpuVideoAcceleratorFactories";
     return media::VideoEncodeAccelerator::SupportedProfiles();
@@ -130,8 +127,17 @@ VideoTrackRecorder::CodecEnumerator::CodecEnumerator(
                  << ", max_framerate: "
                  << supported_profile.max_framerate_numerator << "/"
                  << supported_profile.max_framerate_denominator;
-        supported_profiles_[codec_id_and_profile.codec_id].push_back(
-            supported_profile);
+        auto iter = supported_profiles_.find(codec_id_and_profile.codec_id);
+        if (iter == supported_profiles_.end()) {
+          auto result = supported_profiles_.insert(
+              codec_id_and_profile.codec_id,
+              media::VideoEncodeAccelerator::SupportedProfiles());
+          result.stored_value->value.push_back(supported_profile);
+        } else {
+          iter->value.push_back(supported_profile);
+        }
+        if (preferred_codec_id_ == CodecId::LAST)
+          preferred_codec_id_ = codec_id_and_profile.codec_id;
       }
     }
   }
@@ -141,9 +147,10 @@ VideoTrackRecorder::CodecEnumerator::~CodecEnumerator() = default;
 
 VideoTrackRecorder::CodecId
 VideoTrackRecorder::CodecEnumerator::GetPreferredCodecId() const {
-  if (supported_profiles_.empty())
+  if (preferred_codec_id_ == CodecId::LAST)
     return CodecId::VP8;
-  return supported_profiles_.begin()->first;
+
+  return preferred_codec_id_;
 }
 
 media::VideoCodecProfile
@@ -152,7 +159,7 @@ VideoTrackRecorder::CodecEnumerator::GetFirstSupportedVideoCodecProfile(
   const auto profile = supported_profiles_.find(codec);
   return profile == supported_profiles_.end()
              ? media::VIDEO_CODEC_PROFILE_UNKNOWN
-             : profile->second.front().profile;
+             : profile->value.front().profile;
 }
 
 media::VideoEncodeAccelerator::SupportedProfiles
@@ -160,7 +167,7 @@ VideoTrackRecorder::CodecEnumerator::GetSupportedProfiles(CodecId codec) const {
   const auto profile = supported_profiles_.find(codec);
   return profile == supported_profiles_.end()
              ? media::VideoEncodeAccelerator::SupportedProfiles()
-             : profile->second;
+             : profile->value;
 }
 
 VideoTrackRecorder::Counter::Counter() : count_(0u), weak_factory_(this) {}
@@ -194,9 +201,11 @@ VideoTrackRecorder::Encoder::Encoder(
   DCHECK(!on_encoded_video_callback_.is_null());
   if (encoding_task_runner_)
     return;
-  encoding_thread_.reset(new base::Thread("EncodingThread"));
-  encoding_thread_->Start();
-  encoding_task_runner_ = encoding_thread_->task_runner();
+
+  encoding_thread_ = Thread::CreateThread(
+      ThreadCreationParams(WebThreadType::kVideoEncoderThread));
+
+  encoding_task_runner_ = encoding_thread_->GetTaskRunner();
 }
 
 VideoTrackRecorder::Encoder::~Encoder() {
@@ -213,6 +222,7 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   // Cache the thread sending frames on first frame arrival.
   if (!origin_task_runner_.get())
     origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+
   DCHECK(origin_task_runner_->BelongsToCurrentThread());
   if (paused_)
     return;
@@ -231,9 +241,12 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   }
 
   if (video_frame->HasTextures()) {
-    main_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&Encoder::RetrieveFrameOnMainThread, this,
-                                  std::move(video_frame), capture_timestamp));
+    PostCrossThreadTask(
+        *main_task_runner_.get(), FROM_HERE,
+        CrossThreadBindOnce(&Encoder::RetrieveFrameOnMainThread,
+                            WrapRefCounted(this), std::move(video_frame),
+                            capture_timestamp));
+
     return;
   }
 
@@ -248,15 +261,16 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
         video_frame->natural_size());
   }
   wrapped_frame->AddDestructionObserver(media::BindToCurrentLoop(
-      base::BindOnce(&VideoTrackRecorder::Counter::DecreaseCount,
-                     num_frames_in_encode_->GetWeakPtr())));
-  wrapped_frame->AddDestructionObserver(base::BindOnce(
-      [](scoped_refptr<VideoFrame> video_frame) {}, std::move(video_frame)));
+      WTF::BindRepeating(&VideoTrackRecorder::Counter::DecreaseCount,
+                         num_frames_in_encode_->GetWeakPtr())));
+  wrapped_frame->AddDestructionObserver(ConvertToBaseCallback(CrossThreadBind(
+      [](scoped_refptr<VideoFrame> video_frame) {}, std::move(video_frame))));
   num_frames_in_encode_->IncreaseCount();
 
-  encoding_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&Encoder::EncodeOnEncodingTaskRunner, this,
-                                wrapped_frame, capture_timestamp));
+  PostCrossThreadTask(*encoding_task_runner_.get(), FROM_HERE,
+                      CrossThreadBindOnce(&Encoder::EncodeOnEncodingTaskRunner,
+                                          WrapRefCounted(this), wrapped_frame,
+                                          capture_timestamp));
 }
 
 void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
@@ -266,9 +280,10 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
 
   scoped_refptr<media::VideoFrame> frame;
 
-  // |context_provider| is null if the GPU process has crashed or isn't there.
-  viz::ContextProviderCommandBuffer* const context_provider =
-      RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+  // |context_provider| is null if the GPU process has crashed or isn't there
+  std::unique_ptr<WebGraphicsContext3DProvider> context_provider =
+      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
+
   if (!context_provider) {
     // Send black frames (yuv = {0, 127, 127}).
     frame = media::VideoFrame::CreateColorFrame(
@@ -309,7 +324,8 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
     if (!video_renderer_)
       video_renderer_.reset(new media::PaintCanvasVideoRenderer);
 
-    video_renderer_->Copy(video_frame.get(), canvas_.get(), context_provider);
+    context_provider->CopyVideoFrame(video_renderer_.get(), video_frame.get(),
+                                     canvas_.get());
 
     SkPixmap pixmap;
     if (!bitmap_.peekPixels(&pixmap)) {
@@ -338,20 +354,21 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
     }
   }
 
-  encoding_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&Encoder::EncodeOnEncodingTaskRunner, this,
-                                frame, capture_timestamp));
+  PostCrossThreadTask(
+      *encoding_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&Encoder::EncodeOnEncodingTaskRunner,
+                          WrapRefCounted(this), frame, capture_timestamp));
 }
 
 // static
 void VideoTrackRecorder::Encoder::OnFrameEncodeCompleted(
-    const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
+    const OnEncodedVideoInternalCB& on_encoded_video_cb,
     const media::WebmMuxer::VideoParameters& params,
     std::unique_ptr<std::string> data,
     std::unique_ptr<std::string> alpha_data,
     base::TimeTicks capture_timestamp,
     bool keyframe) {
-  DVLOG(1) << (keyframe ? "" : "non ") << "keyframe "<< data->length() << "B, "
+  DVLOG(1) << (keyframe ? "" : "non ") << "keyframe " << data->length() << "B, "
            << capture_timestamp << " ms";
   on_encoded_video_cb.Run(params, std::move(data), std::move(alpha_data),
                           capture_timestamp, keyframe);
@@ -359,8 +376,9 @@ void VideoTrackRecorder::Encoder::OnFrameEncodeCompleted(
 
 void VideoTrackRecorder::Encoder::SetPaused(bool paused) {
   if (!encoding_task_runner_->BelongsToCurrentThread()) {
-    encoding_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&Encoder::SetPaused, this, paused));
+    PostCrossThreadTask(
+        *encoding_task_runner_.get(), FROM_HERE,
+        CrossThreadBindOnce(&Encoder::SetPaused, WrapRefCounted(this), paused));
     return;
   }
   paused_ = paused;
@@ -408,7 +426,7 @@ bool VideoTrackRecorder::CanUseAcceleratedEncoder(CodecId codec,
 
 VideoTrackRecorder::VideoTrackRecorder(
     CodecId codec,
-    const blink::WebMediaStreamTrack& track,
+    const WebMediaStreamTrack& track,
     const OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
@@ -420,21 +438,21 @@ VideoTrackRecorder::VideoTrackRecorder(
   DCHECK(!track_.IsNull());
   DCHECK(track_.GetPlatformTrack());
 
-  initialize_encoder_callback_ = base::Bind(
+  initialize_encoder_callback_ = WTF::BindRepeating(
       &VideoTrackRecorder::InitializeEncoder, weak_ptr_factory_.GetWeakPtr(),
       codec, on_encoded_video_callback, bits_per_second);
 
   // InitializeEncoder() will be called on Render Main thread.
-  blink::MediaStreamVideoSink::ConnectToTrack(
+  MediaStreamVideoSink::ConnectToTrack(
       track_,
-      media::BindToCurrentLoop(base::Bind(initialize_encoder_callback_,
-                                          true /* allow_vea_encoder */)),
+      media::BindToCurrentLoop(WTF::BindRepeating(
+          initialize_encoder_callback_, true /* allow_vea_encoder */)),
       false);
 }
 
 VideoTrackRecorder::~VideoTrackRecorder() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  blink::MediaStreamVideoSink::DisconnectFromTrack();
+  MediaStreamVideoSink::DisconnectFromTrack();
   track_.Reset();
 }
 
@@ -483,7 +501,7 @@ void VideoTrackRecorder::InitializeEncoder(
   if (encoder_)
     return;
 
-  blink::MediaStreamVideoSink::DisconnectFromTrack();
+  MediaStreamVideoSink::DisconnectFromTrack();
 
   const gfx::Size& input_size = frame->visible_rect().size();
   if (allow_vea_encoder && CanUseAcceleratedEncoder(codec, input_size.width(),
@@ -493,23 +511,23 @@ void VideoTrackRecorder::InitializeEncoder(
         GetCodecEnumerator()->GetFirstSupportedVideoCodecProfile(codec);
     encoder_ = VEAEncoder::Create(
         on_encoded_video_callback,
-        media::BindToCurrentLoop(base::Bind(&VideoTrackRecorder::OnError,
-                                            weak_ptr_factory_.GetWeakPtr())),
+        media::BindToCurrentLoop(WTF::BindRepeating(
+            &VideoTrackRecorder::OnError, weak_ptr_factory_.GetWeakPtr())),
         bits_per_second, vea_profile, input_size, main_task_runner_);
   } else {
     UMA_HISTOGRAM_BOOLEAN("Media.MediaRecorder.VEAUsed", false);
     switch (codec) {
 #if BUILDFLAG(RTC_USE_H264)
       case CodecId::H264:
-        encoder_ = new H264Encoder(on_encoded_video_callback, bits_per_second,
-                                   main_task_runner_);
+        encoder_ = base::MakeRefCounted<H264Encoder>(
+            on_encoded_video_callback, bits_per_second, main_task_runner_);
         break;
 #endif
       case CodecId::VP8:
       case CodecId::VP9:
-        encoder_ =
-            new VpxEncoder(codec == CodecId::VP9, on_encoded_video_callback,
-                           bits_per_second, main_task_runner_);
+        encoder_ = base::MakeRefCounted<VpxEncoder>(
+            codec == CodecId::VP9, on_encoded_video_callback, bits_per_second,
+            main_task_runner_);
         break;
       default:
         NOTREACHED() << "Unsupported codec " << static_cast<int>(codec);
@@ -520,9 +538,10 @@ void VideoTrackRecorder::InitializeEncoder(
     encoder_->SetPaused(should_pause_encoder_on_initialization_);
 
   // StartFrameEncode() will be called on Render IO thread.
-  blink::MediaStreamVideoSink::ConnectToTrack(
+  MediaStreamVideoSink::ConnectToTrack(
       track_,
-      base::Bind(&VideoTrackRecorder::Encoder::StartFrameEncode, encoder_),
+      ConvertToBaseCallback(CrossThreadBind(
+          &VideoTrackRecorder::Encoder::StartFrameEncode, encoder_)),
       false);
 }
 
@@ -532,13 +551,13 @@ void VideoTrackRecorder::OnError() {
 
   // InitializeEncoder() will be called to reinitialize encoder on Render Main
   // thread.
-  blink::MediaStreamVideoSink::DisconnectFromTrack();
+  MediaStreamVideoSink::DisconnectFromTrack();
   encoder_ = nullptr;
-  blink::MediaStreamVideoSink::ConnectToTrack(
+  MediaStreamVideoSink::ConnectToTrack(
       track_,
-      media::BindToCurrentLoop(base::Bind(initialize_encoder_callback_,
-                                          false /*allow_vea_encoder*/)),
+      media::BindToCurrentLoop(WTF::BindRepeating(initialize_encoder_callback_,
+                                                  false /*allow_vea_encoder*/)),
       false);
 }
 
-}  // namespace content
+}  // namespace blink

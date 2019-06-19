@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_recorder/h264_encoder.h"
+#include "third_party/blink/renderer/modules/mediarecorder/h264_encoder.h"
 
-#include <string>
-
-#include "base/bind.h"
-#include "base/threading/thread.h"
-#include "base/trace_event/trace_event.h"
 #include "media/base/video_frame.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/openh264/src/codec/api/svc/codec_app_def.h"
 #include "third_party/openh264/src/codec/api/svc/codec_def.h"
 #include "ui/gfx/geometry/size.h"
 
 using media::VideoFrame;
 
-namespace content {
+namespace blink {
 
 void H264Encoder::ISVCEncoderDeleter::operator()(ISVCEncoder* codec) {
   if (!codec)
@@ -27,10 +28,9 @@ void H264Encoder::ISVCEncoderDeleter::operator()(ISVCEncoder* codec) {
 }
 
 // static
-void H264Encoder::ShutdownEncoder(std::unique_ptr<base::Thread> encoding_thread,
+void H264Encoder::ShutdownEncoder(std::unique_ptr<Thread> encoding_thread,
                                   ScopedISVCEncoderPtr encoder) {
-  DCHECK(encoding_thread->IsRunning());
-  encoding_thread->Stop();
+  DCHECK(encoding_thread);
   // Both |encoding_thread| and |encoder| will be destroyed at end-of-scope.
 }
 
@@ -41,14 +41,14 @@ H264Encoder::H264Encoder(
     : Encoder(on_encoded_video_callback,
               bits_per_second,
               std::move(task_runner)) {
-  DCHECK(encoding_thread_->IsRunning());
+  DCHECK(encoding_thread_);
 }
 
 H264Encoder::~H264Encoder() {
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&H264Encoder::ShutdownEncoder, std::move(encoding_thread_),
-                     std::move(openh264_encoder_)));
+  PostCrossThreadTask(*main_task_runner_.get(), FROM_HERE,
+                      CrossThreadBindOnce(&H264Encoder::ShutdownEncoder,
+                                          std::move(encoding_thread_),
+                                          std::move(openh264_encoder_)));
 }
 
 void H264Encoder::EncodeOnEncodingTaskRunner(
@@ -105,11 +105,13 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
   }
 
   const bool is_key_frame = info.eFrameType == videoFrameTypeIDR;
-  origin_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(OnFrameEncodeCompleted, on_encoded_video_callback_,
-                     video_params, std::move(data), nullptr, capture_timestamp,
-                     is_key_frame));
+  PostCrossThreadTask(
+      *origin_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(
+          OnFrameEncodeCompleted,
+          WTF::Passed(CrossThreadBind(on_encoded_video_callback_)),
+          video_params, std::move(data), nullptr, capture_timestamp,
+          is_key_frame));
 }
 
 void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
@@ -183,4 +185,4 @@ void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
   openh264_encoder_->SetOption(ENCODER_OPTION_DATAFORMAT, &pixel_format);
 }
 
-}  // namespace content
+}  // namespace blink

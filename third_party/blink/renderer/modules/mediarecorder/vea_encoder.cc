@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_recorder/vea_encoder.h"
+#include "third_party/blink/renderer/modules/mediarecorder/vea_encoder.h"
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/containers/queue.h"
 #include "base/metrics/histogram_macros.h"
-#include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
+#include "media/video/gpu_video_accelerator_factories.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/geometry/size.h"
 
 using media::VideoFrame;
-using video_track_recorder::kVEAEncoderMinResolutionWidth;
 using video_track_recorder::kVEAEncoderMinResolutionHeight;
+using video_track_recorder::kVEAEncoderMinResolutionWidth;
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -42,13 +42,13 @@ scoped_refptr<VEAEncoder> VEAEncoder::Create(
     media::VideoCodecProfile codec,
     const gfx::Size& size,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  auto encoder = base::WrapRefCounted(
+  auto encoder = base::AdoptRef(
       new VEAEncoder(on_encoded_video_callback, on_error_callback,
                      bits_per_second, codec, size, std::move(task_runner)));
-  encoder->encoding_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner, encoder,
-                     size));
+  PostCrossThreadTask(
+      *encoder->encoding_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner,
+                          encoder, size));
   return encoder;
 }
 
@@ -63,8 +63,8 @@ VEAEncoder::VEAEncoder(
               bits_per_second > 0 ? bits_per_second
                                   : size.GetArea() * kVEADefaultBitratePerPixel,
               std::move(task_runner),
-              RenderThreadImpl::current()->GetGpuFactories()->GetTaskRunner()),
-      gpu_factories_(RenderThreadImpl::current()->GetGpuFactories()),
+              Platform::Current()->GetGpuFactories()->GetTaskRunner()),
+      gpu_factories_(Platform::Current()->GetGpuFactories()),
       codec_(codec),
       error_notified_(false),
       num_frames_after_keyframe_(0),
@@ -84,16 +84,18 @@ VEAEncoder::~VEAEncoder() {
   base::WaitableEvent release_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  // base::Unretained is safe because the class will be alive until
+  // CrossThreadUnretained is safe because the class will be alive until
   // |release_waiter| is signaled.
   // TODO(emircan): Consider refactoring media::VideoEncodeAccelerator to avoid
   // using naked pointers and using DeleteSoon() here, see
   // http://crbug.com/701627.
   // It is currently unsafe because |video_encoder_| might be in use on another
   // function on |encoding_task_runner_|, see http://crbug.com/701030.
-  encoding_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VEAEncoder::DestroyOnEncodingTaskRunner,
-                                base::Unretained(this), &release_waiter));
+  PostCrossThreadTask(
+      *encoding_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&VEAEncoder::DestroyOnEncodingTaskRunner,
+                          CrossThreadUnretained(this),
+                          CrossThreadUnretained(&release_waiter)));
   release_waiter.Wait();
 }
 
@@ -115,7 +117,7 @@ void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
   }
 
   for (size_t i = 0; i < output_buffers_.size(); ++i)
-    UseOutputBitstreamBufferId(i);
+    UseOutputBitstreamBufferId(static_cast<int32_t>(i));
 }
 
 void VEAEncoder::BitstreamBufferReady(
@@ -139,11 +141,15 @@ void VEAEncoder::BitstreamBufferReady(
 
   const auto front_frame = frames_in_encode_.front();
   frames_in_encode_.pop();
-  origin_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(OnFrameEncodeCompleted, on_encoded_video_callback_,
-                     front_frame.first, std::move(data), nullptr,
-                     front_frame.second, metadata.key_frame));
+
+  PostCrossThreadTask(
+      *origin_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(
+          OnFrameEncodeCompleted,
+          WTF::Passed(CrossThreadBind(on_encoded_video_callback_)),
+          front_frame.first, std::move(data), nullptr, front_frame.second,
+          metadata.key_frame));
+
   UseOutputBitstreamBufferId(bitstream_buffer_id);
 }
 
@@ -189,7 +195,7 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   }
 
   // Drop frames if RequireBitstreamBuffers() hasn't been called.
-  if (output_buffers_.empty() || vea_requested_input_coded_size_.IsEmpty()) {
+  if (output_buffers_.IsEmpty() || vea_requested_input_coded_size_.IsEmpty()) {
     // TODO(emircan): Investigate if resetting encoder would help.
     DVLOG(3) << "Might drop frame.";
     last_frame_.reset(new std::pair<scoped_refptr<VideoFrame>, base::TimeTicks>(
@@ -241,8 +247,8 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
       return;
     }
     video_frame->AddDestructionObserver(media::BindToCurrentLoop(
-        base::Bind(&VEAEncoder::FrameFinished, this,
-                   base::Passed(std::move(input_buffer)))));
+        WTF::BindRepeating(&VEAEncoder::FrameFinished, WrapRefCounted(this),
+                           WTF::Passed(std::move(input_buffer)))));
     libyuv::I420Copy(frame->visible_data(media::VideoFrame::kYPlane),
                      frame->stride(media::VideoFrame::kYPlane),
                      frame->visible_data(media::VideoFrame::kUPlane),
@@ -287,4 +293,4 @@ void VEAEncoder::DestroyOnEncodingTaskRunner(
     async_waiter->Signal();
 }
 
-}  // namespace content
+}  // namespace blink
