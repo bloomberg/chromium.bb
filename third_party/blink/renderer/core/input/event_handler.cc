@@ -1834,15 +1834,6 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   // candidates.
   DCHECK(!location.IsRectBasedTest());
 
-  if (ShouldApplyTouchAdjustment(gesture_event) &&
-      (gesture_event.GetType() == WebInputEvent::kGestureTap ||
-       gesture_event.GetType() == WebInputEvent::kGestureLongPress)) {
-    float adjusted_distance = FloatSize(adjusted_event.PositionInRootFrame() -
-                                        gesture_event.PositionInRootFrame())
-                                  .DiagonalLength();
-    UMA_HISTOGRAM_COUNTS_100("Event.Touch.TouchAdjustment.AdjustDistance",
-                             static_cast<int>(adjusted_distance));
-  }
   return GestureEventWithHitTestResults(adjusted_event, location,
                                         hit_test_result);
 }
