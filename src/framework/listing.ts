@@ -28,14 +28,10 @@ interface IPendingEntry extends IEntry {
   node: Promise<ITestNode>;
 }
 
-function* concatAndDedup(lists: IPendingEntry[][]): Iterator<IPendingEntry> {
-  const seen = new Set<string>();
+function* concat(lists: IPendingEntry[][]): Iterator<IPendingEntry> {
   for (const nodes of lists) {
     for (const node of nodes) {
-      if (!seen.has(node.path)) {
-        seen.add(node.path);
-        yield node;
-      }
+      yield node;
     }
   }
 }
@@ -188,5 +184,5 @@ export async function loadTests(outDir: string, filters: string[], fetcherClass:
     listings.push(loadFilter(fetcher, outDir, filter));
   }
 
-  return concatAndDedup(await Promise.all(listings));
+  return concat(await Promise.all(listings));
 }

@@ -4,6 +4,8 @@
 cd cts-experiment/
 yarn install
 
+tools/run.js cts
+
 yarn global add grunt-cli  # install grunt globally
 grunt  # shows available grunt commands
 ```

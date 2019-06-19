@@ -1,3 +1,5 @@
+#!/usr/bin/env node -r ts-node/register/transpile-only
+
 const fg = require('fast-glob');
 const fs = require('fs');
 const path = require('path');
@@ -7,8 +9,8 @@ require('./js-to-ts.js');
 
 function usage(rc) {
   console.error('Usage:');
-  console.error('  node tools/gen [SUITES...]');
-  console.error('  node tools/gen cts unittests demos');
+  console.error('  node tools/gen.js [SUITES...]');
+  console.error('  node tools/gen.js cts unittests demos');
   process.exit(rc);
 }
 

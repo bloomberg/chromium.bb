@@ -1,28 +1,4 @@
 module.exports = function(grunt) {
-  const mkRun = (inspect, ...args) => {
-    return {
-      cmd: 'node',
-      args: [
-        ...(inspect ? ['--inspect-brk'] : []),
-        '-r', 'ts-node/register/transpile-only',
-        'tools/run.js',
-        ...args
-      ]
-    };
-  };
-
-  const mkGen = (inspect, ...args) => {
-    return {
-      cmd: 'node',
-      args: [
-        ...(inspect ? ['--inspect-brk'] : []),
-        '-r', 'ts-node/register/transpile-only',
-        'tools/gen.js',
-        ...args
-      ]
-    };
-  };
-
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -38,13 +14,14 @@ module.exports = function(grunt) {
     },
 
     run: {
-      'generate-listings': mkGen(false, 'cts', 'unittests', 'demos'),
-      'cts': mkRun(false, 'cts'),
-      'debug-cts': mkRun(true, 'cts'),
-      'unittests': mkRun(false, 'unittests'),
-      'debug-unittests': mkRun(true, 'unittests'),
-      'demos': mkRun(false, 'demos'),
-      'debug-demos': mkRun(true, 'demos'),
+      'generate-listings': {
+        cmd: 'tools/gen.js',
+        args: [ 'cts', 'unittests', 'demos' ]
+      },
+      'test': {
+        cmd: 'tools/run.js',
+        args: [ 'unittests' ]
+      },
       'build-out': {
         cmd: 'npx',
         args: [
@@ -131,9 +108,6 @@ module.exports = function(grunt) {
   ]);
   publishedTasks.push({ name: 'clean', desc: 'Clean out/' });
 
-  publishedTasks.push({ name: 'run:{cts,unittests,demos}', desc: '(Node) Run {cts,unittests,demos}' });
-  publishedTasks.push({ name: 'run:debug-{cts,unittests,demos}', desc: '(Node) Debug {cts,unittests,demos}' });
-
   grunt.registerTask('default', '', () => {
     console.log('Available tasks (see grunt --help for info):');
     for (const { name, desc } of publishedTasks) {
@@ -145,7 +119,7 @@ module.exports = function(grunt) {
   publishTask('presubmit', 'Run all presubmit checks', [
     'check',
     'build',
-    'run:unittests',
+    'run:test',
 
     // 'format',  // TODO
     'run:fix',

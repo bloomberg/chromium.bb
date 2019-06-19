@@ -1,3 +1,5 @@
+#!/usr/bin/env node -r ts-node/register/transpile-only
+
 const fs = require('fs');
 const process = require('process');
 global.fetch = require('node-fetch');
@@ -9,8 +11,8 @@ const { parseFilters } = require('../src/framework/url_query');
 
 function usage(rc) {
   console.log('Usage:');
-  console.log('  node tools/run [FILTERS...]');
-  console.log('  node tools/run unittests: demos:params:');
+  console.log('  node tools/run.js [FILTERS...]');
+  console.log('  node tools/run.js unittests: demos:params:');
   process.exit(rc);
 }
 
