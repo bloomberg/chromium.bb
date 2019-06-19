@@ -152,6 +152,7 @@ Still reading?
     <!-- see crbug.com/542435 -->
     <ignore regexp="android_webview/apk/java/res"/>
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res"/>
+    <ignore regexp="chrome/android/features/autofill_assistant/java/res"/>
     <ignore regexp="chrome/android/webapk/shell_apk/res"/>
     <ignore regexp="chromecast/internal"/>
     <ignore regexp="tools/android/push_apps_to_background/res"/>
