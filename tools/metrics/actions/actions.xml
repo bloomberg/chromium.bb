@@ -4645,8 +4645,13 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CreateHostedApp">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 06/2019 (replaced by InstallWebAppFromMenu and
+    CreateShortcut).
+  </obsolete>
+  <owner>alancutter@chromium.org</owner>
+  <owner>raymes@chromium.org</owner>
+  <description>The sum of CreateShortcut and InstallWebAppFromMenu</description>
 </action>
 
 <action name="CreateLink">
@@ -4660,9 +4665,12 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CreateShortcut">
-  <obsolete>Deprecated as of 04/2017 (replaced by CreateHostedApp).</obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>alancutter@chromium.org</owner>
+  <owner>raymes@chromium.org</owner>
+  <description>
+    Shortcut app creation triggered via &quot;Menu &gt; More Tools &gt; Create
+    Shortcut...&quot;
+  </description>
 </action>
 
 <action name="CredentialManager_AccountChooser_Accepted">
@@ -7711,6 +7719,14 @@ should be able to be added at any place in this file.
 <action name="InstallSite">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="InstallWebAppFromMenu">
+  <owner>alancutter@chromium.org</owner>
+  <owner>raymes@chromium.org</owner>
+  <description>
+    PWA install triggered via &quot;Menu &gt; Install App name...&quot;
+  </description>
 </action>
 
 <action name="InstantExtended.MostVisitedClicked">

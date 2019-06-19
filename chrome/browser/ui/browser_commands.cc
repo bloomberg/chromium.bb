@@ -1332,6 +1332,7 @@ bool CanViewSource(const Browser* browser) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser,
                                              bool force_shortcut_app) {
+  // TODO(alancutter): Legacy metric to remove in ~M80.
   base::RecordAction(UserMetricsAction("CreateHostedApp"));
   web_app::CreateWebAppFromCurrentWebContents(browser, force_shortcut_app,
                                               base::DoNothing());
