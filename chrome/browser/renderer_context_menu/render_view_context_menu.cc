@@ -1250,6 +1250,14 @@ void RenderViewContextMenu::AppendLinkItems() {
           send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kShowItem);
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
       if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
+#if defined(OS_MACOSX)
+        menu_model_.AddItem(
+            IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,
+            l10n_util::GetStringFUTF16(
+                IDS_LINK_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
+                    GetBrowser()->profile()))));
+#else
         menu_model_.AddItemWithIcon(
             IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,
             l10n_util::GetStringFUTF16(
@@ -1257,6 +1265,7 @@ void RenderViewContextMenu::AppendLinkItems() {
                 base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
                     GetBrowser()->profile()))),
             *send_tab_to_self::GetImageSkia());
+#endif
         send_tab_to_self::RecordSendTabToSelfClickResult(
             send_tab_to_self::kLinkMenu,
             SendTabToSelfClickResult::kShowDeviceList);
@@ -1268,10 +1277,16 @@ void RenderViewContextMenu::AppendLinkItems() {
                 browser->tab_strip_model()->GetActiveWebContents(),
                 send_tab_to_self::SendTabToSelfMenuType::kLink,
                 params_.link_url);
+#if defined(OS_MACOSX)
+        menu_model_.AddSubMenuWithStringId(
+            IDC_CONTENT_LINK_SEND_TAB_TO_SELF, IDS_LINK_MENU_SEND_TAB_TO_SELF,
+            send_tab_to_self_sub_menu_model_.get());
+#else
         menu_model_.AddSubMenuWithStringIdAndIcon(
             IDC_CONTENT_LINK_SEND_TAB_TO_SELF, IDS_LINK_MENU_SEND_TAB_TO_SELF,
             send_tab_to_self_sub_menu_model_.get(),
             *send_tab_to_self::GetImageSkia());
+#endif
       }
     }
 
@@ -1458,6 +1473,14 @@ void RenderViewContextMenu::AppendPageItems() {
         send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kShowItem);
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
+#if defined(OS_MACOSX)
+      menu_model_.AddItem(
+          IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
+          l10n_util::GetStringFUTF16(
+              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+              base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
+                  GetBrowser()->profile()))));
+#else
       menu_model_.AddItemWithIcon(
           IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
           l10n_util::GetStringFUTF16(
@@ -1465,6 +1488,7 @@ void RenderViewContextMenu::AppendPageItems() {
               base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
                   GetBrowser()->profile()))),
           *send_tab_to_self::GetImageSkia());
+#endif
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kContentMenu,
           SendTabToSelfClickResult::kShowDeviceList);
@@ -1475,10 +1499,16 @@ void RenderViewContextMenu::AppendPageItems() {
           std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
               GetBrowser()->tab_strip_model()->GetActiveWebContents(),
               send_tab_to_self::SendTabToSelfMenuType::kContent);
+#if defined(OS_MACOSX)
+      menu_model_.AddSubMenuWithStringId(
+          IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+          send_tab_to_self_sub_menu_model_.get());
+#else
       menu_model_.AddSubMenuWithStringIdAndIcon(
           IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
           send_tab_to_self_sub_menu_model_.get(),
           *send_tab_to_self::GetImageSkia());
+#endif
     }
 
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);

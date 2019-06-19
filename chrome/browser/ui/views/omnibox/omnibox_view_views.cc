@@ -1769,8 +1769,10 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
           index, IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
           send_tab_to_self_sub_menu_model_.get());
     }
+#if !defined(OS_MACOSX)
     menu_contents->SetIcon(index,
                            gfx::Image(*send_tab_to_self::GetImageSkia()));
+#endif
     menu_contents->InsertSeparatorAt(++index, ui::NORMAL_SEPARATOR);
   }
 
