@@ -1096,6 +1096,8 @@ source_set("chromeos") {
     "kiosk_next_home/kiosk_next_home_interface_broker_impl.h",
     "kiosk_next_home/metrics_helper.cc",
     "kiosk_next_home/metrics_helper.h",
+    "kiosk_next_home/website_controller_impl.cc",
+    "kiosk_next_home/website_controller_impl.h",
     "language_preferences.cc",
     "language_preferences.h",
     "launcher_search_provider/error_reporter.cc",
