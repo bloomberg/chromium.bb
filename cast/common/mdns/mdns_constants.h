@@ -235,7 +235,7 @@ constexpr uint16_t MakePointerLabel(uint16_t offset) {
   return (uint16_t(kLabelPointer) << 8) | (offset & kLabelOffsetMask);
 }
 
-constexpr uint16_t MakeDirectLabel(uint8_t length) {
+constexpr uint8_t MakeDirectLabel(uint8_t length) {
   return (length & ~kLabelMask) | kLabelDirect;
 }
 

@@ -58,22 +58,26 @@ bool UpdateRecordLength(const uint8_t* end, uint8_t* begin) {
 MdnsWriter::MdnsWriter(uint8_t* buffer, size_t length)
     : BigEndianWriter(buffer, length) {}
 
-bool MdnsWriter::WriteCharacterString(absl::string_view value) {
+bool MdnsWriter::Write(absl::string_view value) {
   if (value.length() > std::numeric_limits<uint8_t>::max()) {
     return false;
   }
   Cursor cursor(this);
-  if (Write<uint8_t>(value.length()) &&
-      WriteBytes(value.data(), value.length())) {
+  if (Write(static_cast<uint8_t>(value.length())) &&
+      Write(value.data(), value.length())) {
     cursor.Commit();
     return true;
   }
   return false;
 }
 
+bool MdnsWriter::Write(const std::string& value) {
+  return Write(absl::string_view(value));
+}
+
 // RFC 1035: https://www.ietf.org/rfc/rfc1035.txt
 // See section 4.1.4. Message compression
-bool MdnsWriter::WriteDomainName(const DomainName& name) {
+bool MdnsWriter::Write(const DomainName& name) {
   if (name.empty()) {
     return false;
   }
@@ -91,7 +95,7 @@ bool MdnsWriter::WriteDomainName(const DomainName& name) {
     // names that are longer than the currently processed sub-name.
     auto find_result = dictionary_.find(subhashes[i]);
     if (find_result != dictionary_.end()) {
-      if (!Write<uint16_t>(find_result->second)) {
+      if (!Write(find_result->second)) {
         return false;
       }
       dictionary_.insert(tentative_dictionary.begin(),
@@ -106,12 +110,12 @@ bool MdnsWriter::WriteDomainName(const DomainName& name) {
           std::make_pair(subhashes[i], MakePointerLabel(current() - begin())));
     }
     const std::string& label = name.Label(i);
-    if (!Write<uint8_t>(MakeDirectLabel(label.size())) ||
-        !WriteBytes(label.data(), label.size())) {
+    if (!Write(MakeDirectLabel(label.size())) ||
+        !Write(label.data(), label.size())) {
       return false;
     }
   }
-  if (!Write<uint8_t>(kLabelTermination)) {
+  if (!Write(kLabelTermination)) {
     return false;
   }
   // The probability of a collision is extremely low in this application, as the
@@ -122,23 +126,22 @@ bool MdnsWriter::WriteDomainName(const DomainName& name) {
   return true;
 }
 
-bool MdnsWriter::WriteRawRecordRdata(const RawRecordRdata& rdata) {
+bool MdnsWriter::Write(const RawRecordRdata& rdata) {
   Cursor cursor(this);
-  if (Write<uint16_t>(rdata.size()) && WriteBytes(rdata.data(), rdata.size())) {
+  if (Write(rdata.size()) && Write(rdata.data(), rdata.size())) {
     cursor.Commit();
     return true;
   }
   return false;
 }
 
-bool MdnsWriter::WriteSrvRecordRdata(const SrvRecordRdata& rdata) {
+bool MdnsWriter::Write(const SrvRecordRdata& rdata) {
   Cursor cursor(this);
   // Leave space at the beginning at |rollback_position| to write the record
   // length. Cannot write it upfront, since the exact space taken by the target
   // domain name is not known as it might be compressed.
-  if (Skip(sizeof(uint16_t)) && Write<uint16_t>(rdata.priority()) &&
-      Write<uint16_t>(rdata.weight()) && Write<uint16_t>(rdata.port()) &&
-      WriteDomainName(rdata.target()) &&
+  if (Skip(sizeof(uint16_t)) && Write(rdata.priority()) &&
+      Write(rdata.weight()) && Write(rdata.port()) && Write(rdata.target()) &&
       UpdateRecordLength(current(), cursor.origin())) {
     cursor.Commit();
     return true;
@@ -146,32 +149,32 @@ bool MdnsWriter::WriteSrvRecordRdata(const SrvRecordRdata& rdata) {
   return false;
 }
 
-bool MdnsWriter::WriteARecordRdata(const ARecordRdata& rdata) {
+bool MdnsWriter::Write(const ARecordRdata& rdata) {
   Cursor cursor(this);
-  if (Write<uint16_t>(IPAddress::kV4Size) &&
-      WriteIPAddress(rdata.ipv4_address())) {
+  if (Write(static_cast<uint16_t>(IPAddress::kV4Size)) &&
+      Write(rdata.ipv4_address())) {
     cursor.Commit();
     return true;
   }
   return false;
 }
 
-bool MdnsWriter::WriteAAAARecordRdata(const AAAARecordRdata& rdata) {
+bool MdnsWriter::Write(const AAAARecordRdata& rdata) {
   Cursor cursor(this);
-  if (Write<uint16_t>(IPAddress::kV6Size) &&
-      WriteIPAddress(rdata.ipv6_address())) {
+  if (Write(static_cast<uint16_t>(IPAddress::kV6Size)) &&
+      Write(rdata.ipv6_address())) {
     cursor.Commit();
     return true;
   }
   return false;
 }
 
-bool MdnsWriter::WritePtrRecordRdata(const PtrRecordRdata& rdata) {
+bool MdnsWriter::Write(const PtrRecordRdata& rdata) {
   Cursor cursor(this);
   // Leave space at the beginning at |rollback_position| to write the record
   // length. Cannot write it upfront, since the exact space taken by the target
   // domain name is not known as it might be compressed.
-  if (Skip(sizeof(uint16_t)) && WriteDomainName(rdata.ptr_domain()) &&
+  if (Skip(sizeof(uint16_t)) && Write(rdata.ptr_domain()) &&
       UpdateRecordLength(current(), cursor.origin())) {
     cursor.Commit();
     return true;
@@ -179,22 +182,21 @@ bool MdnsWriter::WritePtrRecordRdata(const PtrRecordRdata& rdata) {
   return false;
 }
 
-bool MdnsWriter::WriteTxtRecordRdata(const TxtRecordRdata& rdata) {
+bool MdnsWriter::Write(const TxtRecordRdata& rdata) {
   Cursor cursor(this);
   // Leave space at the beginning at |rollback_position| to write the record
   // length. It's cheaper to update it at the end than precompute the length.
   if (!Skip(sizeof(uint16_t))) {
     return false;
   }
-  for (const std::string& entry : rdata.texts()) {
-    if (!entry.empty() && !WriteCharacterString(entry)) {
+  if (rdata.texts().size() > 0) {
+    if (!Write(rdata.texts())) {
       return false;
     }
-  }
-  // If the delta still equals the space reserved for the record length then
-  // no strings were written, an empty collection or all strings are empty.
-  if (cursor.delta() == sizeof(uint16_t) && !Write<uint8_t>(kTXTEmptyRdata)) {
-    return false;
+  } else {
+    if (!Write(kTXTEmptyRdata)) {
+      return false;
+    }
   }
   if (!UpdateRecordLength(current(), cursor.origin())) {
     return false;
@@ -203,28 +205,28 @@ bool MdnsWriter::WriteTxtRecordRdata(const TxtRecordRdata& rdata) {
   return true;
 }
 
-bool MdnsWriter::WriteMdnsRecord(const MdnsRecord& record) {
+bool MdnsWriter::Write(const MdnsRecord& record) {
   Cursor cursor(this);
-  if (WriteDomainName(record.name()) && Write<uint16_t>(record.type()) &&
-      Write<uint16_t>(record.record_class()) && Write<uint32_t>(record.ttl()) &&
-      WriteRdata(record.rdata())) {
+  if (Write(record.name()) && Write(record.type()) &&
+      Write(record.record_class()) && Write(record.ttl()) &&
+      Write(record.rdata())) {
     cursor.Commit();
     return true;
   }
   return false;
 }
 
-bool MdnsWriter::WriteMdnsQuestion(const MdnsQuestion& question) {
+bool MdnsWriter::Write(const MdnsQuestion& question) {
   Cursor cursor(this);
-  if (WriteDomainName(question.name()) && Write<uint16_t>(question.type()) &&
-      Write<uint16_t>(question.record_class())) {
+  if (Write(question.name()) && Write(question.type()) &&
+      Write(question.record_class())) {
     cursor.Commit();
     return true;
   }
   return false;
 }
 
-bool MdnsWriter::WriteMdnsMessage(const MdnsMessage& message) {
+bool MdnsWriter::Write(const MdnsMessage& message) {
   Cursor cursor(this);
   Header header;
   header.id = message.id();
@@ -233,17 +235,16 @@ bool MdnsWriter::WriteMdnsMessage(const MdnsMessage& message) {
   header.answer_count = message.answers().size();
   header.authority_record_count = message.authority_records().size();
   header.additional_record_count = message.additional_records().size();
-  if (WriteMdnsMessageHeader(header) && WriteCollection(message.questions()) &&
-      WriteCollection(message.answers()) &&
-      WriteCollection(message.authority_records()) &&
-      WriteCollection(message.additional_records())) {
+  if (Write(header) && Write(message.questions()) && Write(message.answers()) &&
+      Write(message.authority_records()) &&
+      Write(message.additional_records())) {
     cursor.Commit();
     return true;
   }
   return false;
 }
 
-bool MdnsWriter::WriteIPAddress(const IPAddress& address) {
+bool MdnsWriter::Write(const IPAddress& address) {
   uint8_t bytes[IPAddress::kV6Size];
   size_t size;
   if (address.IsV6()) {
@@ -253,47 +254,19 @@ bool MdnsWriter::WriteIPAddress(const IPAddress& address) {
     address.CopyToV4(bytes);
     size = IPAddress::kV4Size;
   }
-  return WriteBytes(bytes, size);
+  return Write(bytes, size);
 }
 
-bool MdnsWriter::WriteRdata(const Rdata& rdata) {
-  class RdataWriter {
-   public:
-    explicit RdataWriter(MdnsWriter* writer) : writer_(writer) {}
-    bool operator()(const RawRecordRdata& value) const {
-      return writer_->WriteRawRecordRdata(value);
-    }
-    bool operator()(const SrvRecordRdata& value) const {
-      return writer_->WriteSrvRecordRdata(value);
-    }
-    bool operator()(const ARecordRdata& value) const {
-      return writer_->WriteARecordRdata(value);
-    }
-    bool operator()(const AAAARecordRdata& value) const {
-      return writer_->WriteAAAARecordRdata(value);
-    }
-    bool operator()(const PtrRecordRdata& value) const {
-      return writer_->WritePtrRecordRdata(value);
-    }
-    bool operator()(const TxtRecordRdata& value) const {
-      return writer_->WriteTxtRecordRdata(value);
-    }
-
-   private:
-    MdnsWriter* writer_;
-  };
-
-  RdataWriter rdata_writer(this);
-  return absl::visit(rdata_writer, rdata);
+bool MdnsWriter::Write(const Rdata& rdata) {
+  return absl::visit([this](const auto& rdata) { return this->Write(rdata); },
+                     rdata);
 }
 
-bool MdnsWriter::WriteMdnsMessageHeader(const Header& header) {
+bool MdnsWriter::Write(const Header& header) {
   Cursor cursor(this);
-  if (Write<uint16_t>(header.id) && Write<uint16_t>(header.flags) &&
-      Write<uint16_t>(header.question_count) &&
-      Write<uint16_t>(header.answer_count) &&
-      Write<uint16_t>(header.authority_record_count) &&
-      Write<uint16_t>(header.additional_record_count)) {
+  if (Write(header.id) && Write(header.flags) && Write(header.question_count) &&
+      Write(header.answer_count) && Write(header.authority_record_count) &&
+      Write(header.additional_record_count)) {
     cursor.Commit();
     return true;
   }

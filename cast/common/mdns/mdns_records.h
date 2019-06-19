@@ -318,8 +318,9 @@ class MdnsQuestion {
 // flags: 2 bytes network-order flags bitfield
 // questions: questions in the message
 // answers: resource records that answer the questions
-// authority_records: resource records that point toward authoritative name servers
-// additional_records: additional resource records that relate to the query
+// authority_records: resource records that point toward authoritative name
+// servers additional_records: additional resource records that relate to the
+// query
 class MdnsMessage {
  public:
   MdnsMessage() = default;

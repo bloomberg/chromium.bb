@@ -349,7 +349,7 @@ TEST(BigEndianWriterTest, WriteValues) {
   BigEndianWriter writer(data, sizeof(data));
 
   uint8_t buffer[] = {0x0, 0x1};
-  EXPECT_TRUE(writer.WriteBytes(buffer, sizeof(buffer)));
+  EXPECT_TRUE(writer.Write(buffer, sizeof(buffer)));
   EXPECT_TRUE(writer.Write<uint8_t>(UINT8_C(0x2)));
   EXPECT_TRUE(writer.Write<uint16_t>(UINT16_C(0x0304)));
   EXPECT_TRUE(writer.Write<uint32_t>(UINT32_C(0x05060708)));
@@ -384,7 +384,7 @@ TEST(BigEndianWriterTest, RespectLength) {
   EXPECT_FALSE(writer.Write<uint16_t>(0));
 
   uint8_t buffer[2];
-  EXPECT_FALSE(writer.WriteBytes(buffer, 2));
+  EXPECT_FALSE(writer.Write(buffer, 2));
   EXPECT_TRUE(writer.Skip(1));
 
   // 0 left

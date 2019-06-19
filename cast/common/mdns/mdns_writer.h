@@ -16,52 +16,47 @@ namespace mdns {
 
 class MdnsWriter : public openscreen::BigEndianWriter {
  public:
+  using BigEndianWriter::Write;
+
   MdnsWriter(uint8_t* buffer, size_t length);
 
   // The following methods return true if the method was able to successfully
   // write the value to the underlying buffer and advances current() to point
   // right past the written data. Returns false if the method failed to write
   // the value to the underlying buffer, current() remains unchanged.
-  bool WriteCharacterString(absl::string_view value);
-  bool WriteDomainName(const DomainName& name);
-  bool WriteRawRecordRdata(const RawRecordRdata& rdata);
-  bool WriteSrvRecordRdata(const SrvRecordRdata& rdata);
-  bool WriteARecordRdata(const ARecordRdata& rdata);
-  bool WriteAAAARecordRdata(const AAAARecordRdata& rdata);
-  bool WritePtrRecordRdata(const PtrRecordRdata& rdata);
-  bool WriteTxtRecordRdata(const TxtRecordRdata& rdata);
-  // This method writes a DNS resource record with its RDATA.
+  bool Write(absl::string_view value);
+  bool Write(const std::string& value);
+  bool Write(const DomainName& name);
+  bool Write(const RawRecordRdata& rdata);
+  bool Write(const SrvRecordRdata& rdata);
+  bool Write(const ARecordRdata& rdata);
+  bool Write(const AAAARecordRdata& rdata);
+  bool Write(const PtrRecordRdata& rdata);
+  bool Write(const TxtRecordRdata& rdata);
+  // Writes a DNS resource record with its RDATA.
   // The correct type of RDATA to be written is contained in the type
   // specified in the record.
-  bool WriteMdnsRecord(const MdnsRecord& record);
-  bool WriteMdnsQuestion(const MdnsQuestion& question);
-  // This method writes multiple mDNS questions and records that are a part of
+  bool Write(const MdnsRecord& record);
+  bool Write(const MdnsQuestion& question);
+  // Writes multiple mDNS questions and records that are a part of
   // a mDNS message being read
-  bool WriteMdnsMessage(const MdnsMessage& message);
+  bool Write(const MdnsMessage& message);
 
  private:
-  bool WriteIPAddress(const IPAddress& address);
-  bool WriteRdata(const Rdata& rdata);
-  bool WriteMdnsMessageHeader(const Header& header);
+  bool Write(const IPAddress& address);
+  bool Write(const Rdata& rdata);
+  bool Write(const Header& header);
 
   template <class ItemType>
-  bool WriteCollection(const std::vector<ItemType>& collection) {
+  bool Write(const std::vector<ItemType>& collection) {
     Cursor cursor(this);
     for (const ItemType& entry : collection) {
-      if (!WriteCollectionItem(entry)) {
+      if (!Write(entry)) {
         return false;
       }
     }
     cursor.Commit();
     return true;
-  }
-
-  // Forwarding helpers for WriteCollection
-  inline bool WriteCollectionItem(const MdnsRecord& record) {
-    return WriteMdnsRecord(record);
-  }
-  inline bool WriteCollectionItem(const MdnsQuestion& question) {
-    return WriteMdnsQuestion(question);
   }
 
   // Domain name compression dictionary.
@@ -70,7 +65,7 @@ class MdnsWriter : public openscreen::BigEndianWriter {
   // Compression of multiple domain names is supported on the same instance of
   // the MdnsWriter. Underlying buffer may contain other data in addition to the
   // domain names. The compression dictionary persists between calls to
-  // WriteDomainName.
+  // Write.
   // Label pointer is only 16 bits in size as per RFC 1035. Only lower 14 bits
   // are allocated for storing the offset.
   std::unordered_map<uint64_t, uint16_t> dictionary_;

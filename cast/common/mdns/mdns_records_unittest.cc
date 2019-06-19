@@ -76,7 +76,7 @@ TEST(MdnsRdataTest, SrvRecordRdata) {
 
   uint8_t buffer[sizeof(kExpectedRdata)];
   MdnsWriter writer(buffer, sizeof(buffer));
-  EXPECT_TRUE(writer.WriteSrvRecordRdata(rdata));
+  EXPECT_TRUE(writer.Write(rdata));
   EXPECT_EQ(0UL, writer.remaining());
   EXPECT_EQ(0, memcmp(kExpectedRdata, buffer, sizeof(buffer)));
 }
@@ -101,7 +101,7 @@ TEST(MdnsRdataTest, ARecordRdata) {
 
   uint8_t buffer[sizeof(kExpectedRdata)];
   MdnsWriter writer(buffer, sizeof(buffer));
-  EXPECT_TRUE(writer.WriteARecordRdata(rdata));
+  EXPECT_TRUE(writer.Write(rdata));
   EXPECT_EQ(0UL, writer.remaining());
   EXPECT_EQ(0, memcmp(kExpectedRdata, buffer, sizeof(buffer)));
 }
@@ -131,7 +131,7 @@ TEST(MdnsRdataTest, AAAARecordRdata) {
 
   uint8_t buffer[sizeof(kExpectedRdata)];
   MdnsWriter writer(buffer, sizeof(buffer));
-  EXPECT_TRUE(writer.WriteAAAARecordRdata(rdata));
+  EXPECT_TRUE(writer.Write(rdata));
   EXPECT_EQ(0UL, writer.remaining());
   EXPECT_EQ(0, memcmp(kExpectedRdata, buffer, sizeof(buffer)));
 }
@@ -158,7 +158,7 @@ TEST(MdnsRdataTest, PtrRecordRdata) {
 
   uint8_t buffer[sizeof(kExpectedRdata)];
   MdnsWriter writer(buffer, sizeof(buffer));
-  EXPECT_TRUE(writer.WritePtrRecordRdata(rdata));
+  EXPECT_TRUE(writer.Write(rdata));
   EXPECT_EQ(0UL, writer.remaining());
   EXPECT_EQ(0, memcmp(kExpectedRdata, buffer, sizeof(buffer)));
 }
@@ -185,7 +185,7 @@ TEST(MdnsRdataTest, TxtRecordRdata) {
 
   uint8_t buffer[sizeof(kExpectedRdata)];
   MdnsWriter writer(buffer, sizeof(buffer));
-  EXPECT_TRUE(writer.WriteTxtRecordRdata(rdata));
+  EXPECT_TRUE(writer.Write(rdata));
   EXPECT_EQ(0UL, writer.remaining());
   EXPECT_EQ(0, memcmp(kExpectedRdata, buffer, sizeof(buffer)));
 }
@@ -207,7 +207,7 @@ TEST(MdnsRdataTest, TxtRecordRdata_Empty) {
 
   uint8_t buffer[sizeof(kExpectedRdata)];
   MdnsWriter writer(buffer, sizeof(buffer));
-  EXPECT_TRUE(writer.WriteTxtRecordRdata(rdata));
+  EXPECT_TRUE(writer.Write(rdata));
   EXPECT_EQ(0UL, writer.remaining());
   EXPECT_EQ(0, memcmp(kExpectedRdata, buffer, sizeof(buffer)));
 }
@@ -399,7 +399,7 @@ TEST(MdnsRecordTest, WriteARecord) {
 
   std::vector<uint8_t> buffer(sizeof(kExpectedResult));
   MdnsWriter writer(buffer.data(), buffer.size());
-  EXPECT_TRUE(writer.WriteMdnsRecord(record));
+  EXPECT_TRUE(writer.Write(record));
   EXPECT_EQ(writer.remaining(), UINT64_C(0));
   EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedResult));
 }
@@ -424,7 +424,7 @@ TEST(MdnsRecordTest, WritePtrRecord) {
 
   std::vector<uint8_t> buffer(sizeof(kExpectedResult));
   MdnsWriter writer(buffer.data(), buffer.size());
-  EXPECT_TRUE(writer.WriteMdnsRecord(record));
+  EXPECT_TRUE(writer.Write(record));
   EXPECT_EQ(writer.remaining(), UINT64_C(0));
   EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedResult));
 }
@@ -529,7 +529,7 @@ TEST(MdnsQuestionTest, Write) {
                         kClassIN | kUnicastResponseBit);
   std::vector<uint8_t> buffer(sizeof(kExpectedResult));
   MdnsWriter writer(buffer.data(), buffer.size());
-  EXPECT_TRUE(writer.WriteMdnsQuestion(question));
+  EXPECT_TRUE(writer.Write(question));
   EXPECT_EQ(writer.remaining(), UINT64_C(0));
   EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedResult));
 }
@@ -709,7 +709,7 @@ TEST(MdnsMessageTest, Write) {
 
   std::vector<uint8_t> buffer(sizeof(kExpectedMessage));
   MdnsWriter writer(buffer.data(), buffer.size());
-  EXPECT_TRUE(writer.WriteMdnsMessage(message));
+  EXPECT_TRUE(writer.Write(message));
   EXPECT_EQ(writer.remaining(), UINT64_C(0));
   EXPECT_THAT(buffer, testing::ElementsAreArray(kExpectedMessage));
 }

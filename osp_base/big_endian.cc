@@ -21,7 +21,7 @@ bool BigEndianReader::ReadBytes(size_t length, void* out) {
 BigEndianWriter::BigEndianWriter(uint8_t* buffer, size_t length)
     : BigEndianBuffer(buffer, length) {}
 
-bool BigEndianWriter::WriteBytes(const void* buffer, size_t length) {
+bool BigEndianWriter::Write(const void* buffer, size_t length) {
   uint8_t* write_position = current();
   if (Skip(length)) {
     memcpy(write_position, buffer, length);

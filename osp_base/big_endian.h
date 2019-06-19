@@ -187,7 +187,7 @@ class BigEndianWriter : public BigEndianBuffer<uint8_t> {
     return false;
   }
 
-  bool WriteBytes(const void* buffer, size_t length);
+  bool Write(const void* buffer, size_t length);
 };
 
 }  // namespace openscreen
