@@ -23,6 +23,7 @@ const char kGetKerberosFilesMethod[] = "GetKerberosFiles";
 
 // Signals
 const char kKerberosFilesChangedSignal[] = "KerberosFilesChanged";
+const char kKerberosTicketExpiringSignal[] = "KerberosTicketExpiring";
 
 }  // namespace kerberos
 
