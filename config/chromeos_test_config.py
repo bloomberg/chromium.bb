@@ -61,8 +61,13 @@ class HWTestList(object):
     installer_kwargs = kwargs.copy()
     # Force au suite to run first.
     installer_kwargs['priority'] = constants.HWTEST_CQ_PRIORITY
-    installer_kwargs['blocking'] = False
-    installer_kwargs['async'] = True
+    # Context: crbug.com/976834
+    # Because this blocking suite fails a fair bit, it effectively acts as a
+    # rate limiter to the Autotest scheduling system since all of the subsequent
+    # test suites aren't run if this fails.
+    # Making this non-blocking and async will cause Autotest scheduling to fail.
+    installer_kwargs['blocking'] = True
+    installer_kwargs['async'] = False
 
     async_kwargs = kwargs.copy()
     async_kwargs['priority'] = constants.HWTEST_POST_BUILD_PRIORITY
