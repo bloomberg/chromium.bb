@@ -6064,7 +6064,20 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="GridTabSwitcher.Drag.AddToGroupOrCreateGroup">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    User drags a tab and drops it on another tab to form a new group in grid tab
+    switcher.
+  </description>
+</action>
+
 <action name="GridTabSwitcher.DropTabToMerge">
+  <obsolete>
+    Deprecated as of 6/2019. Replaced with
+    GridTabSwitcher.Drag.AddToGroupOrCreateGroup.
+  </obsolete>
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <description>
@@ -20748,10 +20761,28 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="TabGrid.DragToReorder">
+<action name="TabGrid.Drag">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <description>User drags a tab to reorder it.</description>
+</action>
+
+<action name="TabGrid.DragToReorder">
+  <obsolete>
+    Deprecated as of 6/2019. Replaced with TabGrid.Drag.Reordered.
+  </obsolete>
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>User drags a tab to reorder it.</description>
+</action>
+
+<action name="TabGridDialog.Drag.RemoveFromGroup">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    User drags a tab in tab grid dialog and drops it on the ungroup bar to move
+    the tab out of the group.
+  </description>
 </action>
 
 <action name="TabGridSheet.UndoCloseTab">
@@ -22281,13 +22312,21 @@ should be able to be added at any place in this file.
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">
-  <suffix name="GridTabSwitcher"
+  <suffix name="Reordered.GridTabSwitcher"
       label="Users drag to reorder tabs in grid layout TabSwitcher."/>
-  <suffix name="TabGridDialog"
+  <suffix name="Reordered.TabGridDialog"
       label="Users drag to reorder tabs in tab grid dialog."/>
-  <suffix name="TabGridSheet"
+  <suffix name="Reordered.TabGridSheet"
       label="Users drag to reorder tabs in tab group bottom sheet."/>
-  <affected-action name="TabGrid.DragToReorder"/>
+  <suffix name="Start.GridTabSwitcher"
+      label="Users long tap on a tab to trigger dragging in grid layout
+             TabSwitcher."/>
+  <suffix name="Start.TabGridDialog"
+      label="Users long tap on a tab to trigger dragging in tab grid dialog."/>
+  <suffix name="Start.TabGridSheet"
+      label="Users long tap on a tab to trigger dragging in tab group bottom
+             sheet."/>
+  <affected-action name="TabGrid.Drag"/>
 </action-suffix>
 
 </actions>
