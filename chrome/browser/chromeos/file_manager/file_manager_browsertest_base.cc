@@ -1570,6 +1570,11 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
         arc::kEnableDocumentsProviderInFilesAppFeature);
   }
 
+  if (IsFormatDialogTest()) {
+    enabled_features.emplace_back(
+        chromeos::features::kEnableFileManagerFormatDialog);
+  }
+
   feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
@@ -1730,6 +1735,10 @@ bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
 }
 
 bool FileManagerBrowserTestBase::GetEnableDocumentsProvider() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetEnableFormatDialog() const {
   return false;
 }
 
