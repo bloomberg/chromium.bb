@@ -95,7 +95,7 @@ async function filterByParamsExact(suite: string, group: string, test: string, p
   return {
     description: node.description,
     group: new TestGroupFiltered(node.group, testcase =>
-      objectEquals(testcase.params, paramsExact)),
+      testcase.name === test && objectEquals(testcase.params, paramsExact)),
   };
 }
 
@@ -135,7 +135,7 @@ async function loadFilter(fetcher: IListingFetcher, outDir: string, filter: stri
     return filterByGroup(await fetcher.get(outDir, suite), '');
   } else {
     const suite = filter.substring(0, i1);
-    const i2 = filter.indexOf(':', i1);
+    const i2 = filter.indexOf(':', i1 + 1);
     if (i2 === -1) {
       // - cts:
       // - cts:buf
@@ -153,12 +153,12 @@ async function loadFilter(fetcher: IListingFetcher, outDir: string, filter: stri
         const testPrefix = filter.substring(i2 + 1);
         return [{ suite, path: group, node: filterByTestMatch(suite, group, testPrefix) }];
       } else {
-        const i3 = i2 + i3sub;
+        const i3 = i2 + 1 + i3sub;
         const test = filter.substring(i2 + 1, i3);
         const token = filter.charAt(i3);
 
         let params;
-        if (i3 + 1 > filter.length) {
+        if (i3 + 1 < filter.length) {
           params = JSON.parse(filter.substring(i3 + 1)) as IParamsAny;
         }
 
