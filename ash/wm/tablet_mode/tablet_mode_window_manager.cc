@@ -425,6 +425,8 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
   if (state == SplitViewState::kLeftSnapped ||
       state == SplitViewState::kRightSnapped) {
     overview_controller->StartOverview();
+  } else {
+    overview_controller->EndOverview();
   }
 }
 
