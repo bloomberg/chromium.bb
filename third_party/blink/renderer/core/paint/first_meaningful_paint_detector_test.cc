@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/paint/paint_event.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -18,9 +17,10 @@ namespace blink {
 class FirstMeaningfulPaintDetectorTest : public PageTestBase {
  protected:
   void SetUp() override {
-    platform_->AdvanceClock(base::TimeDelta::FromSeconds(1));
+    EnablePlatform();
+    platform()->AdvanceClock(base::TimeDelta::FromSeconds(1));
     const base::TickClock* test_clock =
-        platform_->test_task_runner()->GetMockTickClock();
+        platform()->test_task_runner()->GetMockTickClock();
     FirstMeaningfulPaintDetector::SetTickClockForTesting(test_clock);
     PageTestBase::SetUp();
     GetPaintTiming().SetTickClockForTesting(test_clock);
@@ -33,10 +33,10 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
     FirstMeaningfulPaintDetector::SetTickClockForTesting(clock);
   }
 
-  base::TimeTicks Now() { return platform_->test_task_runner()->NowTicks(); }
+  base::TimeTicks Now() { return platform()->test_task_runner()->NowTicks(); }
 
   base::TimeTicks AdvanceClockAndGetTime() {
-    platform_->AdvanceClock(base::TimeDelta::FromSeconds(1));
+    platform()->AdvanceClock(base::TimeDelta::FromSeconds(1));
     return Now();
   }
 
@@ -46,7 +46,7 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
   }
 
   void SimulateLayoutAndPaint(int new_elements) {
-    platform_->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
+    platform()->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
     StringBuilder builder;
     for (int i = 0; i < new_elements; i++)
       builder.Append("<span>a</span>");
@@ -74,20 +74,20 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
   void SimulateUserInput() { Detector().NotifyInputEvent(); }
 
   void ClearFirstPaintSwapPromise() {
-    platform_->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
+    platform()->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
     GetPaintTiming().ReportSwapTime(
         PaintEvent::kFirstPaint, WebWidgetClient::SwapResult::kDidSwap, Now());
   }
 
   void ClearFirstContentfulPaintSwapPromise() {
-    platform_->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
+    platform()->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
     GetPaintTiming().ReportSwapTime(PaintEvent::kFirstContentfulPaint,
                                     WebWidgetClient::SwapResult::kDidSwap,
                                     Now());
   }
 
   void ClearProvisionalFirstMeaningfulPaintSwapPromise() {
-    platform_->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
+    platform()->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
     ClearProvisionalFirstMeaningfulPaintSwapPromise(Now());
   }
 
@@ -110,10 +110,6 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
     GetPaintTiming().MarkFirstPaint();
     ClearFirstPaintSwapPromise();
   }
-
- protected:
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform_;
 };
 
 TEST_F(FirstMeaningfulPaintDetectorTest, NoFirstPaint) {
@@ -228,7 +224,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   SimulateLayoutAndPaint(10);
   EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
   ClearProvisionalFirstMeaningfulPaintSwapPromise();
-  platform_->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
+  platform()->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
   MarkFirstContentfulPaintAndClearSwapPromise();
   SimulateNetworkStable();
   EXPECT_GE(GetPaintTiming().FirstMeaningfulPaint(),
@@ -312,7 +308,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   MarkFirstContentfulPaintAndClearSwapPromise();
   SimulateLayoutAndPaint(1);
   EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
-  platform_->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
+  platform()->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
   SimulateLayoutAndPaint(10);
   EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 2U);
   // Having outstanding swap promises should defer setting FMP.
@@ -336,7 +332,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   SimulateLayoutAndPaint(10);
   EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
   ClearProvisionalFirstMeaningfulPaintSwapPromise();
-  platform_->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
+  platform()->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
   GetPaintTiming().MarkFirstContentfulPaint();
   // FCP > FMP candidate, but still waiting for FCP swap.
   SimulateNetworkStable();
@@ -357,13 +353,13 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   // Simulate only network 2-quiet so provisional FMP will be set on next
   // layout.
   base::TimeTicks pre_stable_timestamp = AdvanceClockAndGetTime();
-  platform_->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
+  platform()->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
   SimulateNetwork2Quiet();
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaint(), base::TimeTicks());
 
   // Force another FMP candidate while there is a pending swap promise and the
   // network 2-quiet FMP non-swap timestamp is set.
-  platform_->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
+  platform()->AdvanceClock(base::TimeDelta::FromMilliseconds(1));
   SimulateLayoutAndPaint(10);
   EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
 
