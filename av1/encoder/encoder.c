@@ -3634,11 +3634,16 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
         //        gfu_boost);
         cpi->rc.gfu_boost = (cpi->rc.gfu_boost + gfu_boost) / 2;
       } else if (frame_is_intra_only(cm)) {
-        const int kf_boost =
-            get_kf_boost_from_r0(cpi->rd.r0, cpi->rc.frames_to_key);
-        // printf("old kf boost %d new kf boost %d [%d]\n", cpi->rc.kf_boost,
-        //        kf_boost, cpi->rc.frames_to_key);
-        cpi->rc.kf_boost = (cpi->rc.kf_boost + kf_boost) / 2;
+        // TODO(debargha): Turn off q adjustment for kf temporarily to
+        // reduce impact on speed of encoding. Need to investigate how
+        // to mitigate the issue.
+        if (cpi->oxcf.rc_mode == AOM_Q) {
+          const int kf_boost =
+              get_kf_boost_from_r0(cpi->rd.r0, cpi->rc.frames_to_key);
+          // printf("old kf boost %d new kf boost %d [%d]\n", cpi->rc.kf_boost,
+          //        kf_boost, cpi->rc.frames_to_key);
+          cpi->rc.kf_boost = (cpi->rc.kf_boost + kf_boost) / 2;
+        }
       }
       cpi->rd.mc_count_base =
           (double)mc_count_base / (cm->mi_rows * cm->mi_cols);
