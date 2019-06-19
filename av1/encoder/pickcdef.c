@@ -293,64 +293,67 @@ static int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
   return 1;
 }
 
+static void pick_cdef_from_qp(AV1_COMMON *const cm) {
+  const int bd = cm->seq_params.bit_depth;
+  const int q = av1_ac_quant_QTX(cm->base_qindex, 0, bd) >> (bd - 8);
+  CdefInfo *const cdef_info = &cm->cdef_info;
+  cdef_info->cdef_bits = 0;
+  cdef_info->nb_cdef_strengths = 1;
+  cdef_info->cdef_pri_damping = 3 + (cm->base_qindex >> 6);
+  cdef_info->cdef_sec_damping = 3 + (cm->base_qindex >> 6);
+
+  int predicted_y_f1 = 0;
+  int predicted_y_f2 = 0;
+  int predicted_uv_f1 = 0;
+  int predicted_uv_f2 = 0;
+  aom_clear_system_state();
+  if (!frame_is_intra_only(cm)) {
+    predicted_y_f1 = clamp((int)roundf(-q * q * 0.00000235939456f +
+                                       q * 0.0068615186f + 0.02709886f),
+                           0, 15);
+    predicted_y_f2 = clamp((int)roundf(-q * q * 0.000000576297339f +
+                                       q * 0.00139933452f + 0.03831067f),
+                           0, 3);
+    predicted_uv_f1 = clamp((int)roundf(-q * q * 0.000000709506878f +
+                                        q * 0.00346288458f + 0.00887099f),
+                            0, 15);
+    predicted_uv_f2 = clamp((int)roundf(q * q * 0.000000238740853f +
+                                        q * 0.000282235851f + 0.05576307f),
+                            0, 3);
+  } else {
+    predicted_y_f1 = clamp(
+        (int)roundf(q * q * 0.00000337319739f + q * 0.0080705937f + 0.0187634f),
+        0, 15);
+    predicted_y_f2 = clamp((int)roundf(-q * q * -0.00000291673427f +
+                                       q * 0.00277986238f + 0.0079405f),
+                           0, 3);
+    predicted_uv_f1 = clamp((int)roundf(-q * q * 0.0000130790995f +
+                                        q * 0.0128924046f - 0.00748388f),
+                            0, 15);
+    predicted_uv_f2 = clamp((int)roundf(q * q * 0.00000326517829f +
+                                        q * 0.000355201832f + 0.00228092f),
+                            0, 3);
+  }
+  cdef_info->cdef_strengths[0] =
+      predicted_y_f1 * CDEF_SEC_STRENGTHS + predicted_y_f2;
+  cdef_info->cdef_uv_strengths[0] =
+      predicted_uv_f1 * CDEF_SEC_STRENGTHS + predicted_uv_f2;
+
+  const int nvfb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  const int nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  MB_MODE_INFO **mbmi = cm->mi_grid_visible;
+  for (int r = 0; r < nvfb; ++r) {
+    for (int c = 0; c < nhfb; ++c) {
+      mbmi[MI_SIZE_64X64 * c]->cdef_strength = 0;
+    }
+    mbmi += MI_SIZE_64X64 * cm->mi_stride;
+  }
+}
+
 void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                      AV1_COMMON *cm, MACROBLOCKD *xd, int pick_method) {
-  CdefInfo *const cdef_info = &cm->cdef_info;
   if (pick_method == CDEF_PICK_FROM_Q) {
-    const int bd = cm->seq_params.bit_depth;
-    const int q = av1_ac_quant_QTX(cm->base_qindex, 0, bd) >> (bd - 8);
-    cdef_info->cdef_bits = 0;
-    cdef_info->nb_cdef_strengths = 1;
-    cdef_info->cdef_pri_damping = 3 + (cm->base_qindex >> 6);
-    cdef_info->cdef_sec_damping = 3 + (cm->base_qindex >> 6);
-
-    int predicted_y_f1 = 0;
-    int predicted_y_f2 = 0;
-    int predicted_uv_f1 = 0;
-    int predicted_uv_f2 = 0;
-    aom_clear_system_state();
-    if (!frame_is_intra_only(cm)) {
-      predicted_y_f1 = clamp((int)roundf(-q * q * 0.00000235939456f +
-                                         q * 0.0068615186f + 0.02709886f),
-                             0, 15);
-      predicted_y_f2 = clamp((int)roundf(-q * q * 0.000000576297339f +
-                                         q * 0.00139933452f + 0.03831067f),
-                             0, 3);
-      predicted_uv_f1 = clamp((int)roundf(-q * q * 0.000000709506878f +
-                                          q * 0.00346288458f + 0.00887099f),
-                              0, 15);
-      predicted_uv_f2 = clamp((int)roundf(q * q * 0.000000238740853f +
-                                          q * 0.000282235851f + 0.05576307f),
-                              0, 3);
-    } else {
-      predicted_y_f1 = clamp((int)roundf(q * q * 0.00000337319739f +
-                                         q * 0.0080705937f + 0.0187634f),
-                             0, 15);
-      predicted_y_f2 = clamp((int)roundf(-q * q * -0.00000291673427f +
-                                         q * 0.00277986238f + 0.0079405f),
-                             0, 3);
-      predicted_uv_f1 = clamp((int)roundf(-q * q * 0.0000130790995f +
-                                          q * 0.0128924046f - 0.00748388f),
-                              0, 15);
-      predicted_uv_f2 = clamp((int)roundf(q * q * 0.00000326517829f +
-                                          q * 0.000355201832f + 0.00228092f),
-                              0, 3);
-    }
-    cdef_info->cdef_strengths[0] =
-        predicted_y_f1 * CDEF_SEC_STRENGTHS + predicted_y_f2;
-    cdef_info->cdef_uv_strengths[0] =
-        predicted_uv_f1 * CDEF_SEC_STRENGTHS + predicted_uv_f2;
-
-    const int nvfb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
-    const int nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
-    MB_MODE_INFO **mbmi = cm->mi_grid_visible;
-    for (int r = 0; r < nvfb; ++r) {
-      for (int c = 0; c < nhfb; ++c) {
-        mbmi[MI_SIZE_64X64 * c]->cdef_strength = 0;
-      }
-      mbmi += MI_SIZE_64X64 * cm->mi_stride;
-    }
-
+    pick_cdef_from_qp(cm);
     return;
   }
 
@@ -522,6 +525,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       (cm->seq_params.bit_depth - 8);
   aom_clear_system_state();
   const double lambda = .12 * quantizer * quantizer / 256.;
+  CdefInfo *const cdef_info = &cm->cdef_info;
   for (int i = 0; i <= 3; i++) {
     int best_lev0[CDEF_MAX_STRENGTHS];
     int best_lev1[CDEF_MAX_STRENGTHS] = { 0 };
