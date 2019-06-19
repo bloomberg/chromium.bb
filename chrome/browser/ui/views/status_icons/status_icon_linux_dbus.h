@@ -16,6 +16,7 @@
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 
 namespace gfx {
@@ -99,6 +100,9 @@ class StatusIconLinuxDbus : public views::StatusIconLinux,
   // delegate_->GetMenuModel() or |empty_menu_| if the delegate's menu is null.
   // Appears after the other menus so that it gets destroyed first.
   std::unique_ptr<ConcatMenuModel> concat_menu_;
+  // Used when the server doesn't support DBus menus and requests for us to use
+  // our own menu.
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   base::WeakPtrFactory<StatusIconLinuxDbus> weak_factory_;
 

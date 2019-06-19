@@ -30,6 +30,9 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 
@@ -317,7 +320,23 @@ void StatusIconLinuxDbus::OnActivate(
 void StatusIconLinuxDbus::OnContextMenu(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender sender) {
-  NOTIMPLEMENTED();
+  dbus::MessageReader reader(method_call);
+  int32_t x;
+  int32_t y;
+  if (!reader.PopInt32(&x) || !reader.PopInt32(&y)) {
+    sender.Run(nullptr);
+    return;
+  }
+
+  if (!menu_runner_) {
+    menu_runner_ = std::make_unique<views::MenuRunner>(
+        concat_menu_.get(), views::MenuRunner::HAS_MNEMONICS |
+                                views::MenuRunner::CONTEXT_MENU |
+                                views::MenuRunner::FIXED_ANCHOR);
+  }
+  menu_runner_->RunMenuAt(
+      nullptr, nullptr, gfx::Rect(gfx::Point(x, y), gfx::Size()),
+      views::MenuAnchorPosition::kTopRight, ui::MENU_SOURCE_MOUSE);
   sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
@@ -356,4 +375,5 @@ void StatusIconLinuxDbus::UpdateMenuImpl(ui::MenuModel* model,
   concat_menu_ =
       std::make_unique<ConcatMenuModel>(click_action_menu_.get(), model);
   menu_->SetModel(concat_menu_.get(), send_signal);
+  menu_runner_.reset();
 }
