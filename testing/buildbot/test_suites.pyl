@@ -3420,6 +3420,46 @@
       }
     },
 
+
+    'gpu_skia_renderer_telemetry_tests': {
+      'skia_renderer_pixel_skia_gold_test': {
+        'name': 'skia_renderer_pixel_skia_gold_test',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--refimg-cloud-storage-bucket',
+          'chromium-gpu-archive/reference-images',
+          '--os-type',
+          '${os_type}',
+          '--build-revision',
+          '${got_revision}',
+          '--test-machine-name',
+          '${buildername}',
+          '--use-skia-gold',
+          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+        ],
+        'non_precommit_args': [
+          '--upload-refimg-to-cloud-storage',
+        ],
+        'precommit_args': [
+          '--download-refimg-from-cloud-storage',
+          # Gerrit issue ID
+          '--review-patch-issue',
+          '${patch_issue}',
+          # Patch set number
+          '--review-patch-set',
+          '${patch_set}',
+          # Buildbucket ID
+          '--buildbucket-build-id',
+          '${buildbucket_build_id}',
+        ],
+        'experiment_percentage': 100,
+        'swarming': {
+          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+        },
+        'telemetry_test_name': 'pixel',
+      },
+    },
+
     'gpu_swiftshader_gtests': {
       'swiftshader_unittests': {
       },

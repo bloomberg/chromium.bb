@@ -1,5 +1,6 @@
 # tags: [ android chromeos highsierra linux mac mojave win ]
 # tags: [ android-chromium android-webview-instrumentation debug ]
+# tags: [ skia-renderer no-skia-renderer ]
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e
 #         nvidia nvidia-0xfe9 qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
 #         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
@@ -188,3 +189,6 @@ crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorke
 # Producing blank images on Macmini and Macbook Pro
 crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
 crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Failure ]
+
+# Fails when the browser feature SkiaRenderer is enabled
+crbug.com/976370 [ skia-renderer ] Pixel_CSS3DBlueBox [ Skip ]

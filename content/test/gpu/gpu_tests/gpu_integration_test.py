@@ -314,6 +314,14 @@ class GpuIntegrationTest(
       # be converted to its lower case form.
       tags.extend([tag.lower().replace(' ', '-').replace('_', '-') for tag in [
           gpu_vendor, gpu_device_tag, angle_renderer, cmd_decoder]])
+    # If additional options have been set via '--extra-browser-args' check for
+    # those which map to expectation tags. The '_browser_backend' attribute may
+    # not exist in unit tests.
+    if (hasattr(browser, '_browser_backend') and
+        browser._browser_backend.browser_options.extra_browser_args):
+      skia_renderer = gpu_helper.GetSkiaRenderer(\
+          browser._browser_backend.browser_options.extra_browser_args)
+      tags.extend([skia_renderer])
     return tags
 
   @classmethod
