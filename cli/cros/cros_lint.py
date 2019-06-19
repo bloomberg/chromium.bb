@@ -235,7 +235,7 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
   cmd.append('-x')
   if gentoo_format:
     # ebuilds don't explicitly export variables or contain a shebang.
-    cmd.append('--exclude=SC2034,SC2148')
+    cmd.append('--exclude=SC2148')
     # ebuilds always use bash.
     cmd.append('--shell=bash')
   else:
