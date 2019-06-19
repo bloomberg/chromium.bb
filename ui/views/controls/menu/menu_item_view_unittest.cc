@@ -197,7 +197,6 @@ class MenuItemViewLayoutTest : public ::testing::Test {
 
     submenu_parent_ = std::make_unique<View>();
     submenu_parent_->AddChildView(submenu);
-    submenu_parent_->SetPosition(gfx::Point(0, 0));
     submenu_parent_->SetSize(submenu->GetPreferredSize());
   }
 
