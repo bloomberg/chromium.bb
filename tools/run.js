@@ -1,9 +1,7 @@
-#!/usr/bin/env node -r ts-node/register/transpile-only
-
+#!/usr/bin/env node
+require('../src/tools/setup-ts-in-node.js');
 const fs = require('fs');
 const process = require('process');
-global.fetch = require('node-fetch');
-require('./js-to-ts.js');
 
 const { loadTests } = require('../src/framework/listing');
 const { Logger } = require('../src/framework/logger');

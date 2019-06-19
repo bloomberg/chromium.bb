@@ -1,3 +1,6 @@
+// Automatically transpile .ts imports
+require('ts-node/register/transpile-only');
+
 // Redirect imports of .js files to .ts files
 const Module = require('module');
 const resolveFilename = Module._resolveFilename;

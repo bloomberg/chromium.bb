@@ -1,11 +1,9 @@
-#!/usr/bin/env node -r ts-node/register/transpile-only
-
+#!/usr/bin/env node
+require('../src/tools/setup-ts-in-node.js');
 const fg = require('fast-glob');
 const fs = require('fs');
 const path = require('path');
 const process = require('process');
-global.fetch = require('node-fetch');
-require('./js-to-ts.js');
 
 function usage(rc) {
   console.error('Usage:');
