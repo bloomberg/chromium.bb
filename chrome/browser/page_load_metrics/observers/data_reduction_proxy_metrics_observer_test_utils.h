@@ -111,9 +111,6 @@ class DataReductionProxyMetricsObserverTestBase
   // Validates the times in the pingback.
   void ValidateTimes();
 
-  // Validates the LoFi state in the pingback.
-  void ValidateLoFiInPingback(bool lofi_expected);
-
   // Validates the blacklist state in the pingback.
   void ValidateBlackListInPingback(bool black_listed);
 

@@ -1341,28 +1341,14 @@ void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
 }
 
 void RenderViewContextMenu::AppendImageItems() {
-  std::map<std::string, std::string>::const_iterator it =
-      params_.properties.find(
-          data_reduction_proxy::chrome_proxy_content_transform_header());
-  if ((it != params_.properties.end() &&
-       it->second == data_reduction_proxy::empty_image_directive()) ||
-      (!params_.has_image_contents &&
-       base::FeatureList::IsEnabled(
-           features::kLoadBrokenImagesFromContextMenu))) {
+  if (!params_.has_image_contents &&
+      base::FeatureList::IsEnabled(
+          features::kLoadBrokenImagesFromContextMenu)) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LOAD_IMAGE,
                                     IDS_CONTENT_CONTEXT_LOAD_IMAGE);
   }
-  DataReductionProxyChromeSettings* settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          browser_context_);
-  if (settings && settings->CanUseDataReductionProxy(params_.src_url)) {
-    menu_model_.AddItemWithStringId(
-        IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB,
-        IDS_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB);
-  } else {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
-                                    IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
-  }
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
+                                  IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
                                   IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGE,

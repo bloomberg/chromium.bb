@@ -9678,7 +9678,7 @@ Called by update_net_error_codes.py.-->
 <enum name="ContextMenuSaveImage">
   <summary>Context menu type related to the save image option.</summary>
   <int value="0" label="Loaded"/>
-  <int value="1" label="Image was fatched LoFi"/>
+  <int value="1" label="(DEPRECATED in M77) Image was fatched LoFi"/>
   <int value="2" label="Not downloadable scheme"/>
   <int value="3" label="No save image option and param is not image"/>
   <int value="4" label="No save image option and param is image"/>

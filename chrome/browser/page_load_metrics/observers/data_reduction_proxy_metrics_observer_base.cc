@@ -334,11 +334,6 @@ void DataReductionProxyMetricsObserverBase::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (extra_request_complete_info.data_reduction_proxy_data &&
-      extra_request_complete_info.data_reduction_proxy_data->lofi_received()) {
-    data_->set_lofi_received(true);
-  }
-
   if (extra_request_complete_info.resource_type ==
       content::ResourceType::kMainFrame) {
     main_frame_fetch_start_ =

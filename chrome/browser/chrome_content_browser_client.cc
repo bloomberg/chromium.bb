@@ -5411,7 +5411,7 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
       navigation_handle->GetReloadType() != content::ReloadType::NONE;
 
   content::PreviewsState server_previews_enabled_state =
-      content::SERVER_LOFI_ON | content::SERVER_LITE_PAGE_ON;
+      content::SERVER_LITE_PAGE_ON;
 
   // For now, treat server previews types as a single decision, and do not
   // re-evaluate upon redirect. Plumbing does not exist to modify the CPAT
