@@ -92,6 +92,10 @@ class AutoclickScrollCloseButton : public TopShortcutButton,
     views::ImageButton::PaintButtonContents(canvas);
   }
 
+  const char* GetClassName() const override {
+    return "AutoclickScrollCloseButton";
+  }
+
  private:
   bool hovered_ = false;
   DISALLOW_COPY_AND_ASSIGN(AutoclickScrollCloseButton);
@@ -282,6 +286,8 @@ class AutoclickScrollButton : public CustomShapeButton,
     SchedulePaint();
   }
 
+  const char* GetClassName() const override { return "AutoclickScrollButton"; }
+
  private:
   const AutoclickController::ScrollPadAction action_;
   gfx::Size size_;
@@ -363,6 +369,10 @@ void AutoclickScrollView::Layout() {
       kScrollPadButtonHypotenuseDips / 2 - kScrollButtonCloseSizeDips / 2,
       kScrollPadButtonHypotenuseDips / 2 - kScrollButtonCloseSizeDips / 2,
       kScrollButtonCloseSizeDips, kScrollButtonCloseSizeDips);
+}
+
+const char* AutoclickScrollView::GetClassName() const {
+  return "AutoclickScrollView";
 }
 
 }  // namespace ash
