@@ -47,10 +47,6 @@ class ProfileAndroid : public base::SupportsUserData::Data {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  base::android::ScopedJavaLocalRef<jobject> GetProfileKey(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   // Whether this profile is off the record.
   jboolean IsOffTheRecord(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);

@@ -5,11 +5,6 @@
 #include "chrome/browser/profiles/profile_key.h"
 
 #include "base/logging.h"
-#include "build/build_config.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/profiles/profile_key_android.h"
-#endif  // OS_ANDROID
 
 ProfileKey::ProfileKey(const base::FilePath& path, ProfileKey* original_key)
     : SimpleFactoryKey(path, original_key != nullptr /* is_off_the_record */),
@@ -38,11 +33,3 @@ void ProfileKey::SetPrefs(PrefService* prefs) {
 ProfileKey* ProfileKey::FromSimpleFactoryKey(SimpleFactoryKey* key) {
   return key ? static_cast<ProfileKey*>(key) : nullptr;
 }
-
-#if defined(OS_ANDROID)
-ProfileKeyAndroid* ProfileKey::GetProfileKeyAndroid() {
-  if (!profile_key_android_)
-    profile_key_android_ = std::make_unique<ProfileKeyAndroid>(this);
-  return profile_key_android_.get();
-}
-#endif  // OS_ANDROID
