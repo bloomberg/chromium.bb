@@ -70,7 +70,7 @@ TEST(MdnsRdataTest, SrvRecordRdata) {
 
   MdnsReader reader(kExpectedRdata, sizeof(kExpectedRdata));
   SrvRecordRdata rdata_read;
-  EXPECT_TRUE(reader.ReadSrvRecordRdata(&rdata_read));
+  EXPECT_TRUE(reader.Read(&rdata_read));
   EXPECT_EQ(rdata_read, rdata);
   EXPECT_EQ(0UL, reader.remaining());
 
@@ -94,7 +94,7 @@ TEST(MdnsRdataTest, ARecordRdata) {
 
   MdnsReader reader(kExpectedRdata, sizeof(kExpectedRdata));
   ARecordRdata rdata_read;
-  EXPECT_TRUE(reader.ReadARecordRdata(&rdata_read));
+  EXPECT_TRUE(reader.Read(&rdata_read));
   EXPECT_TRUE(rdata_read.ipv4_address().IsV4());
   EXPECT_EQ(rdata_read, rdata);
   EXPECT_EQ(0UL, reader.remaining());
@@ -124,7 +124,7 @@ TEST(MdnsRdataTest, AAAARecordRdata) {
 
   MdnsReader reader(kExpectedRdata, sizeof(kExpectedRdata));
   AAAARecordRdata rdata_read;
-  EXPECT_TRUE(reader.ReadAAAARecordRdata(&rdata_read));
+  EXPECT_TRUE(reader.Read(&rdata_read));
   EXPECT_TRUE(rdata_read.ipv6_address().IsV6());
   EXPECT_EQ(rdata_read, rdata);
   EXPECT_EQ(0UL, reader.remaining());
@@ -152,7 +152,7 @@ TEST(MdnsRdataTest, PtrRecordRdata) {
 
   MdnsReader reader(kExpectedRdata, sizeof(kExpectedRdata));
   PtrRecordRdata rdata_read;
-  EXPECT_TRUE(reader.ReadPtrRecordRdata(&rdata_read));
+  EXPECT_TRUE(reader.Read(&rdata_read));
   EXPECT_EQ(rdata_read, rdata);
   EXPECT_EQ(0UL, reader.remaining());
 
@@ -179,7 +179,7 @@ TEST(MdnsRdataTest, TxtRecordRdata) {
 
   MdnsReader reader(kExpectedRdata, sizeof(kExpectedRdata));
   TxtRecordRdata rdata_read;
-  EXPECT_TRUE(reader.ReadTxtRecordRdata(&rdata_read));
+  EXPECT_TRUE(reader.Read(&rdata_read));
   EXPECT_EQ(rdata_read, rdata);
   EXPECT_EQ(0UL, reader.remaining());
 
@@ -201,7 +201,7 @@ TEST(MdnsRdataTest, TxtRecordRdata_Empty) {
 
   MdnsReader reader(kExpectedRdata, sizeof(kExpectedRdata));
   TxtRecordRdata rdata_read;
-  EXPECT_TRUE(reader.ReadTxtRecordRdata(&rdata_read));
+  EXPECT_TRUE(reader.Read(&rdata_read));
   EXPECT_EQ(rdata_read, rdata);
   EXPECT_EQ(0UL, reader.remaining());
 
@@ -258,7 +258,7 @@ TEST(MdnsRecordTest, ReadARecord) {
   // clang-format on
   MdnsReader reader(kTestRecord, sizeof(kTestRecord));
   MdnsRecord record;
-  EXPECT_TRUE(reader.ReadMdnsRecord(&record));
+  EXPECT_TRUE(reader.Read(&record));
   EXPECT_EQ(reader.remaining(), UINT64_C(0));
 
   EXPECT_EQ(record.name().ToString(), "testing.local");
@@ -287,7 +287,7 @@ TEST(MdnsRecordTest, ReadUnknownRecordType) {
   // clang-format on
   MdnsReader reader(kTestRecord, sizeof(kTestRecord));
   MdnsRecord record;
-  EXPECT_TRUE(reader.ReadMdnsRecord(&record));
+  EXPECT_TRUE(reader.Read(&record));
   EXPECT_EQ(reader.remaining(), UINT64_C(0));
 
   EXPECT_EQ(record.name().ToString(), "testing.local");
@@ -325,7 +325,7 @@ TEST(MdnsRecordTest, ReadCompressedNames) {
   MdnsReader reader(kTestRecord, sizeof(kTestRecord));
 
   MdnsRecord record;
-  EXPECT_TRUE(reader.ReadMdnsRecord(&record));
+  EXPECT_TRUE(reader.Read(&record));
 
   EXPECT_EQ(record.name().ToString(), "testing.local");
   EXPECT_EQ(record.type(), kTypePTR);
@@ -334,7 +334,7 @@ TEST(MdnsRecordTest, ReadCompressedNames) {
   PtrRecordRdata ptr_rdata(DomainName{"ptr", "testing", "local"});
   EXPECT_EQ(record.rdata(), Rdata(ptr_rdata));
 
-  EXPECT_TRUE(reader.ReadMdnsRecord(&record));
+  EXPECT_TRUE(reader.Read(&record));
   EXPECT_EQ(reader.remaining(), UINT64_C(0));
 
   EXPECT_EQ(record.name().ToString(), "one.two.testing.local");
@@ -359,7 +359,7 @@ TEST(MdnsRecordTest, FailToReadMissingRdata) {
   // clang-format on
   MdnsReader reader(kTestRecord, sizeof(kTestRecord));
   MdnsRecord record;
-  EXPECT_FALSE(reader.ReadMdnsRecord(&record));
+  EXPECT_FALSE(reader.Read(&record));
 }
 
 TEST(MdnsRecordTest, FailToReadInvalidHostName) {
@@ -377,7 +377,7 @@ TEST(MdnsRecordTest, FailToReadInvalidHostName) {
   // clang-format on
   MdnsReader reader(kTestRecord, sizeof(kTestRecord));
   MdnsRecord record;
-  EXPECT_FALSE(reader.ReadMdnsRecord(&record));
+  EXPECT_FALSE(reader.Read(&record));
 }
 
 TEST(MdnsRecordTest, WriteARecord) {
@@ -459,7 +459,7 @@ TEST(MdnsQuestionTest, Read) {
   // clang-format on
   MdnsReader reader(kTestQuestion, sizeof(kTestQuestion));
   MdnsQuestion question;
-  EXPECT_TRUE(reader.ReadMdnsQuestion(&question));
+  EXPECT_TRUE(reader.Read(&question));
   EXPECT_EQ(reader.remaining(), UINT64_C(0));
 
   EXPECT_EQ(question.name().ToString(), "testing.local");
@@ -485,13 +485,13 @@ TEST(MdnsQuestionTest, ReadCompressedNames) {
   // clang-format on
   MdnsReader reader(kTestQuestions, sizeof(kTestQuestions));
   MdnsQuestion question;
-  EXPECT_TRUE(reader.ReadMdnsQuestion(&question));
+  EXPECT_TRUE(reader.Read(&question));
 
   EXPECT_EQ(question.name().ToString(), "first.local");
   EXPECT_EQ(question.type(), kTypeA);
   EXPECT_EQ(question.record_class(), kClassIN | kUnicastResponseBit);
 
-  EXPECT_TRUE(reader.ReadMdnsQuestion(&question));
+  EXPECT_TRUE(reader.Read(&question));
   EXPECT_EQ(reader.remaining(), UINT64_C(0));
 
   EXPECT_EQ(question.name().ToString(), "second.local");
@@ -511,7 +511,7 @@ TEST(MdnsQuestionTest, FailToReadInvalidHostName) {
   // clang-format on
   MdnsReader reader(kTestQuestion, sizeof(kTestQuestion));
   MdnsQuestion question;
-  EXPECT_FALSE(reader.ReadMdnsQuestion(&question));
+  EXPECT_FALSE(reader.Read(&question));
 }
 
 TEST(MdnsQuestionTest, Write) {
@@ -604,7 +604,7 @@ TEST(MdnsMessageTest, Read) {
   // clang-format on
   MdnsReader reader(kTestMessage, sizeof(kTestMessage));
   MdnsMessage message;
-  EXPECT_TRUE(reader.ReadMdnsMessage(&message));
+  EXPECT_TRUE(reader.Read(&message));
   EXPECT_EQ(reader.remaining(), UINT64_C(0));
 
   EXPECT_EQ(message.id(), UINT16_C(1));
@@ -668,9 +668,9 @@ TEST(MdnsMessageTest, FailToReadInvalidRecordCounts) {
   // clang-format on
   MdnsMessage message;
   MdnsReader reader1(kInvalidMessage1, sizeof(kInvalidMessage1));
-  EXPECT_FALSE(reader1.ReadMdnsMessage(&message));
+  EXPECT_FALSE(reader1.Read(&message));
   MdnsReader reader2(kInvalidMessage2, sizeof(kInvalidMessage2));
-  EXPECT_FALSE(reader2.ReadMdnsMessage(&message));
+  EXPECT_FALSE(reader2.Read(&message));
 }
 
 TEST(MdnsMessageTest, Write) {

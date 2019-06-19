@@ -160,7 +160,7 @@ TEST(BigEndianReaderTest, ReadValues) {
   BigEndianReader reader(data, sizeof(data));
 
   uint8_t buffer[2];
-  EXPECT_TRUE(reader.ReadBytes(sizeof(buffer), buffer));
+  EXPECT_TRUE(reader.Read(sizeof(buffer), buffer));
   EXPECT_EQ(buffer[0], UINT8_C(0x0));
   EXPECT_EQ(buffer[1], UINT8_C(0x1));
 
@@ -211,7 +211,7 @@ TEST(BigEndianReaderTest, RespectLength) {
   EXPECT_FALSE(reader.Read<uint16_t>(&u16));
 
   uint8_t buffer[2];
-  EXPECT_FALSE(reader.ReadBytes(2, buffer));
+  EXPECT_FALSE(reader.Read(2, buffer));
   EXPECT_TRUE(reader.Skip(1));
 
   // 0 left

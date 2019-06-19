@@ -13,23 +13,24 @@ namespace mdns {
 MdnsReader::MdnsReader(const uint8_t* buffer, size_t length)
     : BigEndianReader(buffer, length) {}
 
-bool MdnsReader::ReadCharacterString(std::string* out) {
+bool MdnsReader::Read(std::string* out) {
   Cursor cursor(this);
   uint8_t string_length;
-  if (Read<uint8_t>(&string_length)) {
-    const char* string_begin = reinterpret_cast<const char*>(current());
-    if (Skip(string_length)) {
-      *out = std::string(string_begin, string_length);
-      cursor.Commit();
-      return true;
-    }
+  if (!Read(&string_length)) {
+    return false;
   }
-  return false;
+  const char* string_begin = reinterpret_cast<const char*>(current());
+  if (!Skip(string_length)) {
+    return false;
+  }
+  *out = std::string(string_begin, string_length);
+  cursor.Commit();
+  return true;
 }
 
 // RFC 1035: https://www.ietf.org/rfc/rfc1035.txt
 // See section 4.1.4. Message compression
-bool MdnsReader::ReadDomainName(DomainName* out) {
+bool MdnsReader::Read(DomainName* out) {
   OSP_DCHECK(out);
   const uint8_t* position = current();
   // The number of bytes consumed reading from the starting position to either
@@ -92,13 +93,13 @@ bool MdnsReader::ReadDomainName(DomainName* out) {
   return false;
 }
 
-bool MdnsReader::ReadRawRecordRdata(RawRecordRdata* out) {
+bool MdnsReader::Read(RawRecordRdata* out) {
   OSP_DCHECK(out);
   Cursor cursor(this);
   uint16_t record_length;
-  if (Read<uint16_t>(&record_length)) {
+  if (Read(&record_length)) {
     std::vector<uint8_t> buffer(record_length);
-    if (ReadBytes(buffer.size(), buffer.data())) {
+    if (Read(buffer.size(), buffer.data())) {
       *out = RawRecordRdata(std::move(buffer));
       cursor.Commit();
       return true;
@@ -107,7 +108,7 @@ bool MdnsReader::ReadRawRecordRdata(RawRecordRdata* out) {
   return false;
 }
 
-bool MdnsReader::ReadSrvRecordRdata(SrvRecordRdata* out) {
+bool MdnsReader::Read(SrvRecordRdata* out) {
   OSP_DCHECK(out);
   Cursor cursor(this);
   uint16_t record_length;
@@ -115,9 +116,8 @@ bool MdnsReader::ReadSrvRecordRdata(SrvRecordRdata* out) {
   uint16_t weight;
   uint16_t port;
   DomainName target;
-  if (Read<uint16_t>(&record_length) && Read<uint16_t>(&priority) &&
-      Read<uint16_t>(&weight) && Read<uint16_t>(&port) &&
-      ReadDomainName(&target) &&
+  if (Read(&record_length) && Read(&priority) && Read(&weight) && Read(&port) &&
+      Read(&target) &&
       (cursor.delta() == sizeof(record_length) + record_length)) {
     *out = SrvRecordRdata(priority, weight, port, std::move(target));
     cursor.Commit();
@@ -126,13 +126,13 @@ bool MdnsReader::ReadSrvRecordRdata(SrvRecordRdata* out) {
   return false;
 }
 
-bool MdnsReader::ReadARecordRdata(ARecordRdata* out) {
+bool MdnsReader::Read(ARecordRdata* out) {
   OSP_DCHECK(out);
   Cursor cursor(this);
   uint16_t record_length;
   IPAddress address;
-  if (Read<uint16_t>(&record_length) && (record_length == IPAddress::kV4Size) &&
-      ReadIPAddress(IPAddress::Version::kV4, &address)) {
+  if (Read(&record_length) && (record_length == IPAddress::kV4Size) &&
+      Read(IPAddress::Version::kV4, &address)) {
     *out = ARecordRdata(address);
     cursor.Commit();
     return true;
@@ -140,13 +140,13 @@ bool MdnsReader::ReadARecordRdata(ARecordRdata* out) {
   return false;
 }
 
-bool MdnsReader::ReadAAAARecordRdata(AAAARecordRdata* out) {
+bool MdnsReader::Read(AAAARecordRdata* out) {
   OSP_DCHECK(out);
   Cursor cursor(this);
   uint16_t record_length;
   IPAddress address;
-  if (Read<uint16_t>(&record_length) && (record_length == IPAddress::kV6Size) &&
-      ReadIPAddress(IPAddress::Version::kV6, &address)) {
+  if (Read(&record_length) && (record_length == IPAddress::kV6Size) &&
+      Read(IPAddress::Version::kV6, &address)) {
     *out = AAAARecordRdata(address);
     cursor.Commit();
     return true;
@@ -154,12 +154,12 @@ bool MdnsReader::ReadAAAARecordRdata(AAAARecordRdata* out) {
   return false;
 }
 
-bool MdnsReader::ReadPtrRecordRdata(PtrRecordRdata* out) {
+bool MdnsReader::Read(PtrRecordRdata* out) {
   OSP_DCHECK(out);
   Cursor cursor(this);
   uint16_t record_length;
   DomainName ptr_domain;
-  if (Read<uint16_t>(&record_length) && ReadDomainName(&ptr_domain) &&
+  if (Read(&record_length) && Read(&ptr_domain) &&
       (cursor.delta() == sizeof(record_length) + record_length)) {
     *out = PtrRecordRdata(std::move(ptr_domain));
     cursor.Commit();
@@ -168,32 +168,33 @@ bool MdnsReader::ReadPtrRecordRdata(PtrRecordRdata* out) {
   return false;
 }
 
-bool MdnsReader::ReadTxtRecordRdata(TxtRecordRdata* out) {
+bool MdnsReader::Read(TxtRecordRdata* out) {
   OSP_DCHECK(out);
   Cursor cursor(this);
   uint16_t record_length;
-  if (Read<uint16_t>(&record_length)) {
-    std::vector<std::string> texts;
-    while (cursor.delta() < sizeof(record_length) + record_length) {
-      std::string entry;
-      if (!ReadCharacterString(&entry)) {
-        return false;
-      }
-      OSP_DCHECK(entry.length() <= kTXTMaxEntrySize);
-      if (!entry.empty()) {
-        texts.push_back(std::move(entry));
-      }
+  if (!Read(&record_length)) {
+    return false;
+  }
+  std::vector<std::string> texts;
+  while (cursor.delta() < sizeof(record_length) + record_length) {
+    std::string entry;
+    if (!Read(&entry)) {
+      return false;
     }
-    if (cursor.delta() == sizeof(record_length) + record_length) {
-      *out = TxtRecordRdata(std::move(texts));
-      cursor.Commit();
-      return true;
+    OSP_DCHECK(entry.length() <= kTXTMaxEntrySize);
+    if (!entry.empty()) {
+      texts.emplace_back(std::move(entry));
     }
   }
-  return false;
+  if (cursor.delta() != sizeof(record_length) + record_length) {
+    return false;
+  }
+  *out = TxtRecordRdata(std::move(texts));
+  cursor.Commit();
+  return true;
 }
 
-bool MdnsReader::ReadMdnsRecord(MdnsRecord* out) {
+bool MdnsReader::Read(MdnsRecord* out) {
   OSP_DCHECK(out);
   Cursor cursor(this);
   DomainName name;
@@ -201,9 +202,8 @@ bool MdnsReader::ReadMdnsRecord(MdnsRecord* out) {
   uint16_t record_class;
   uint32_t ttl;
   Rdata rdata;
-  if (ReadDomainName(&name) && Read<uint16_t>(&type) &&
-      Read<uint16_t>(&record_class) && Read<uint32_t>(&ttl) &&
-      ReadRdata(type, &rdata)) {
+  if (Read(&name) && Read(&type) && Read(&record_class) && Read(&ttl) &&
+      Read(type, &rdata)) {
     *out =
         MdnsRecord(std::move(name), type, record_class, ttl, std::move(rdata));
     cursor.Commit();
@@ -212,14 +212,13 @@ bool MdnsReader::ReadMdnsRecord(MdnsRecord* out) {
   return false;
 }
 
-bool MdnsReader::ReadMdnsQuestion(MdnsQuestion* out) {
+bool MdnsReader::Read(MdnsQuestion* out) {
   OSP_DCHECK(out);
   Cursor cursor(this);
   DomainName name;
   uint16_t type;
   uint16_t record_class;
-  if (ReadDomainName(&name) && Read<uint16_t>(&type) &&
-      Read<uint16_t>(&record_class)) {
+  if (Read(&name) && Read(&type) && Read(&record_class)) {
     *out = MdnsQuestion(std::move(name), type, record_class);
     cursor.Commit();
     return true;
@@ -227,7 +226,7 @@ bool MdnsReader::ReadMdnsQuestion(MdnsQuestion* out) {
   return false;
 }
 
-bool MdnsReader::ReadMdnsMessage(MdnsMessage* out) {
+bool MdnsReader::Read(MdnsMessage* out) {
   OSP_DCHECK(out);
   Cursor cursor(this);
   Header header;
@@ -235,11 +234,10 @@ bool MdnsReader::ReadMdnsMessage(MdnsMessage* out) {
   std::vector<MdnsRecord> answers;
   std::vector<MdnsRecord> authority_records;
   std::vector<MdnsRecord> additional_records;
-  if (ReadMdnsMessageHeader(&header) &&
-      ReadCollection(header.question_count, &questions) &&
-      ReadCollection(header.answer_count, &answers) &&
-      ReadCollection(header.authority_record_count, &authority_records) &&
-      ReadCollection(header.additional_record_count, &additional_records)) {
+  if (Read(&header) && Read(header.question_count, &questions) &&
+      Read(header.answer_count, &answers) &&
+      Read(header.authority_record_count, &authority_records) &&
+      Read(header.additional_record_count, &additional_records)) {
     *out = MdnsMessage(header.id, header.flags, questions, answers,
                        authority_records, additional_records);
     cursor.Commit();
@@ -248,7 +246,7 @@ bool MdnsReader::ReadMdnsMessage(MdnsMessage* out) {
   return false;
 }
 
-bool MdnsReader::ReadIPAddress(IPAddress::Version version, IPAddress* out) {
+bool MdnsReader::Read(IPAddress::Version version, IPAddress* out) {
   OSP_DCHECK(out);
   size_t ipaddress_size = (version == IPAddress::Version::kV6)
                               ? IPAddress::kV6Size
@@ -261,68 +259,30 @@ bool MdnsReader::ReadIPAddress(IPAddress::Version version, IPAddress* out) {
   return false;
 }
 
-bool MdnsReader::ReadRdata(uint16_t type, Rdata* out) {
+bool MdnsReader::Read(uint16_t type, Rdata* out) {
   OSP_DCHECK(out);
   switch (type) {
-    case kTypeSRV: {
-      SrvRecordRdata srv_rdata;
-      if (ReadSrvRecordRdata(&srv_rdata)) {
-        *out = std::move(srv_rdata);
-        return true;
-      }
-      return false;
-    }
-    case kTypeA: {
-      ARecordRdata a_rdata;
-      if (ReadARecordRdata(&a_rdata)) {
-        *out = std::move(a_rdata);
-        return true;
-      }
-      return false;
-    }
-    case kTypeAAAA: {
-      AAAARecordRdata aaaa_rdata;
-      if (ReadAAAARecordRdata(&aaaa_rdata)) {
-        *out = std::move(aaaa_rdata);
-        return true;
-      }
-      return false;
-    }
-    case kTypePTR: {
-      PtrRecordRdata ptr_rdata;
-      if (ReadPtrRecordRdata(&ptr_rdata)) {
-        *out = std::move(ptr_rdata);
-        return true;
-      }
-      return false;
-    }
-    case kTypeTXT: {
-      TxtRecordRdata txt_rdata;
-      if (ReadTxtRecordRdata(&txt_rdata)) {
-        *out = std::move(txt_rdata);
-        return true;
-      }
-      return false;
-    }
-    default: {
-      RawRecordRdata raw_rdata;
-      if (ReadRawRecordRdata(&raw_rdata)) {
-        *out = std::move(raw_rdata);
-        return true;
-      }
-      return false;
-    }
+    case kTypeSRV:
+      return Read<SrvRecordRdata>(out);
+    case kTypeA:
+      return Read<ARecordRdata>(out);
+    case kTypeAAAA:
+      return Read<AAAARecordRdata>(out);
+    case kTypePTR:
+      return Read<PtrRecordRdata>(out);
+    case kTypeTXT:
+      return Read<TxtRecordRdata>(out);
+    default:
+      return Read<RawRecordRdata>(out);
   }
 }
 
-bool MdnsReader::ReadMdnsMessageHeader(Header* out) {
+bool MdnsReader::Read(Header* out) {
   OSP_DCHECK(out);
   Cursor cursor(this);
-  if (Read<uint16_t>(&out->id) && Read<uint16_t>(&out->flags) &&
-      Read<uint16_t>(&out->question_count) &&
-      Read<uint16_t>(&out->answer_count) &&
-      Read<uint16_t>(&out->authority_record_count) &&
-      Read<uint16_t>(&out->additional_record_count)) {
+  if (Read(&out->id) && Read(&out->flags) && Read(&out->question_count) &&
+      Read(&out->answer_count) && Read(&out->authority_record_count) &&
+      Read(&out->additional_record_count)) {
     cursor.Commit();
     return true;
   }

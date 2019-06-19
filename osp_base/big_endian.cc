@@ -9,7 +9,7 @@ namespace openscreen {
 BigEndianReader::BigEndianReader(const uint8_t* buffer, size_t length)
     : BigEndianBuffer(buffer, length) {}
 
-bool BigEndianReader::ReadBytes(size_t length, void* out) {
+bool BigEndianReader::Read(size_t length, void* out) {
   const uint8_t* read_position = current();
   if (Skip(length)) {
     memcpy(out, read_position, length);

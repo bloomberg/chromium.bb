@@ -170,7 +170,7 @@ class BigEndianReader : public BigEndianBuffer<const uint8_t> {
     return false;
   }
 
-  bool ReadBytes(size_t length, void* out);
+  bool Read(size_t length, void* out);
 };
 
 class BigEndianWriter : public BigEndianBuffer<uint8_t> {

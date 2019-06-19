@@ -13,41 +13,43 @@ namespace mdns {
 
 class MdnsReader : public openscreen::BigEndianReader {
  public:
+  using BigEndianReader::Read;
+
   MdnsReader(const uint8_t* buffer, size_t length);
 
   // The following methods return true if the method was able to successfully
   // read the value to |out| and advances current() to point right past the read
   // data. Returns false if the method failed to read the value to |out|,
   // current() remains unchanged.
-  bool ReadCharacterString(std::string* out);
-  bool ReadDomainName(DomainName* out);
-  bool ReadRawRecordRdata(RawRecordRdata* out);
-  bool ReadSrvRecordRdata(SrvRecordRdata* out);
-  bool ReadARecordRdata(ARecordRdata* out);
-  bool ReadAAAARecordRdata(AAAARecordRdata* out);
-  bool ReadPtrRecordRdata(PtrRecordRdata* out);
-  bool ReadTxtRecordRdata(TxtRecordRdata* out);
+  bool Read(std::string* out);
+  bool Read(DomainName* out);
+  bool Read(RawRecordRdata* out);
+  bool Read(SrvRecordRdata* out);
+  bool Read(ARecordRdata* out);
+  bool Read(AAAARecordRdata* out);
+  bool Read(PtrRecordRdata* out);
+  bool Read(TxtRecordRdata* out);
   // Reads a DNS resource record with its RDATA.
   // The correct type of RDATA to be read is determined by the type
   // specified in the record.
-  bool ReadMdnsRecord(MdnsRecord* out);
-  bool ReadMdnsQuestion(MdnsQuestion* out);
+  bool Read(MdnsRecord* out);
+  bool Read(MdnsQuestion* out);
   // Reads multiple mDNS questions and records that are a part of
   // a mDNS message being read.
-  bool ReadMdnsMessage(MdnsMessage* out);
+  bool Read(MdnsMessage* out);
 
  private:
-  bool ReadIPAddress(IPAddress::Version version, IPAddress* out);
-  bool ReadRdata(uint16_t type, Rdata* out);
-  bool ReadMdnsMessageHeader(Header* out);
+  bool Read(IPAddress::Version version, IPAddress* out);
+  bool Read(uint16_t type, Rdata* out);
+  bool Read(Header* out);
 
   template <class ItemType>
-  bool ReadCollection(uint16_t count, std::vector<ItemType>* out) {
+  bool Read(uint16_t count, std::vector<ItemType>* out) {
     Cursor cursor(this);
     out->reserve(count);
     for (uint16_t i = 0; i < count; ++i) {
       ItemType entry;
-      if (!ReadCollectionItem(&entry)) {
+      if (!Read(&entry)) {
         return false;
       }
       out->emplace_back(std::move(entry));
@@ -56,12 +58,14 @@ class MdnsReader : public openscreen::BigEndianReader {
     return true;
   }
 
-  // Forwarding helpers for ReadCollection
-  inline bool ReadCollectionItem(MdnsRecord* out) {
-    return ReadMdnsRecord(out);
-  }
-  inline bool ReadCollectionItem(MdnsQuestion* out) {
-    return ReadMdnsQuestion(out);
+  template <class RdataType>
+  bool Read(Rdata* out) {
+    RdataType rdata;
+    if (Read(&rdata)) {
+      *out = std::move(rdata);
+      return true;
+    }
+    return false;
   }
 };
 

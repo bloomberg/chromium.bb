@@ -32,24 +32,24 @@ TEST(MdnsReaderTest, ReadDomainName) {
   EXPECT_EQ(reader.length(), sizeof(kMessage));
   EXPECT_EQ(reader.offset(), 0u);
   DomainName name;
-  EXPECT_TRUE(reader.ReadDomainName(&name));
+  EXPECT_TRUE(reader.Read(&name));
   EXPECT_EQ(name.ToString(), "testing.local");
-  EXPECT_TRUE(reader.ReadDomainName(&name));
+  EXPECT_TRUE(reader.Read(&name));
   EXPECT_EQ(name.ToString(), "service.testing.local");
-  EXPECT_TRUE(reader.ReadDomainName(&name));
+  EXPECT_TRUE(reader.Read(&name));
   EXPECT_EQ(name.ToString(), "device.service.testing.local");
-  EXPECT_TRUE(reader.ReadDomainName(&name));
+  EXPECT_TRUE(reader.Read(&name));
   EXPECT_EQ(name.ToString(), "service.testing.local");
   EXPECT_EQ(reader.offset(), sizeof(kMessage));
   EXPECT_EQ(0UL, reader.remaining());
-  EXPECT_FALSE(reader.ReadDomainName(&name));
+  EXPECT_FALSE(reader.Read(&name));
 }
 
 TEST(MdnsReaderTest, ReadDomainName_Empty) {
   constexpr uint8_t kDomainName[] = {0x00};
   MdnsReader reader(kDomainName, sizeof(kDomainName));
   DomainName name;
-  EXPECT_TRUE(reader.ReadDomainName(&name));
+  EXPECT_TRUE(reader.Read(&name));
   EXPECT_EQ(0UL, reader.remaining());
 }
 
@@ -61,7 +61,7 @@ TEST(MdnsReaderTest, ReadDomainName_TooShort) {
   constexpr uint8_t kDomainName[] = {0x03, 'a', 'b'};
   MdnsReader reader(kDomainName, sizeof(kDomainName));
   DomainName name;
-  EXPECT_FALSE(reader.ReadDomainName(&name));
+  EXPECT_FALSE(reader.Read(&name));
   EXPECT_EQ(0u, reader.offset());
 }
 
@@ -76,7 +76,7 @@ TEST(MdnsReaderTest, ReadDomainName_TooLong) {
 
   MdnsReader reader(kDomainName.data(), kDomainName.size());
   DomainName name;
-  EXPECT_FALSE(reader.ReadDomainName(&name));
+  EXPECT_FALSE(reader.Read(&name));
   EXPECT_EQ(0u, reader.offset());
 }
 
@@ -84,7 +84,7 @@ TEST(MdnsReaderTest, ReadDomainName_LabelPointerOutOfBounds) {
   constexpr uint8_t kDomainName[] = {0xc0, 0x02};
   MdnsReader reader(kDomainName, sizeof(kDomainName));
   DomainName name;
-  EXPECT_FALSE(reader.ReadDomainName(&name));
+  EXPECT_FALSE(reader.Read(&name));
   EXPECT_EQ(0u, reader.offset());
 }
 
@@ -92,7 +92,7 @@ TEST(MdnsReaderTest, ReadDomainName_InvalidLabel) {
   constexpr uint8_t kDomainName[] = {0x80};
   MdnsReader reader(kDomainName, sizeof(kDomainName));
   DomainName name;
-  EXPECT_FALSE(reader.ReadDomainName(&name));
+  EXPECT_FALSE(reader.Read(&name));
   EXPECT_EQ(0u, reader.offset());
 }
 
@@ -107,7 +107,7 @@ TEST(MdnsReaderTest, ReadDomainName_CircularCompression) {
   // clang-format on
   MdnsReader reader(kDomainName, sizeof(kDomainName));
   DomainName name;
-  EXPECT_FALSE(reader.ReadDomainName(&name));
+  EXPECT_FALSE(reader.Read(&name));
   EXPECT_EQ(0u, reader.offset());
 }
 
