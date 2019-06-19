@@ -19,10 +19,6 @@ class ListValue;
 
 namespace safe_browsing {
 // Features list
-// Controls whether we send RIND reports when a popup originating from a Google
-// ad is blocked.
-extern const base::Feature kAdPopupTriggerFeature;
-
 extern const base::Feature kAdSamplerTriggerFeature;
 
 // Controls whether we sample inline JavaScript for ads in RIND
