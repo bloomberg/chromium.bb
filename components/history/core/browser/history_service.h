@@ -390,14 +390,14 @@ class HistoryService : public KeyedService {
 
   // Implemented by the caller of 'QueryDownloads' below, and is called when the
   // history service has retrieved a list of all download state. The call
-  typedef base::Callback<void(std::unique_ptr<std::vector<DownloadRow>>)>
-      DownloadQueryCallback;
+  using DownloadQueryCallback =
+      base::OnceCallback<void(std::vector<DownloadRow>)>;
 
   // Begins a history request to retrieve the state of all downloads in the
   // history db. 'callback' runs when the history service request is complete,
   // at which point 'info' contains an array of DownloadRow, one per
   // download. The callback is called on the thread that calls QueryDownloads().
-  void QueryDownloads(const DownloadQueryCallback& callback);
+  void QueryDownloads(DownloadQueryCallback callback);
 
   // Called to update the history service about the current state of a download.
   // This is a 'fire and forget' query, so just pass the relevant state info to

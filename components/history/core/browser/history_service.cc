@@ -731,19 +731,13 @@ void HistoryService::GetNextDownloadId(const DownloadIdCallback& callback) {
 
 // Handle queries for a list of all downloads in the history database's
 // 'downloads' table.
-void HistoryService::QueryDownloads(const DownloadQueryCallback& callback) {
+void HistoryService::QueryDownloads(DownloadQueryCallback callback) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<DownloadRow>* rows = new std::vector<DownloadRow>();
-  std::unique_ptr<std::vector<DownloadRow>> scoped_rows(rows);
-  // Beware! The first Bind() does not simply |scoped_rows.get()| because
-  // std::move(scoped_rows) nullifies |scoped_rows|, and compilers do not
-  // guarantee that the first Bind's arguments are evaluated before the second
-  // Bind's arguments.
-  backend_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&HistoryBackend::QueryDownloads, history_backend_, rows),
-      base::BindOnce(callback, std::move(scoped_rows)));
+  PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::QueryDownloads, history_backend_),
+      std::move(callback));
 }
 
 // Handle updates for a particular download. This is a 'fire and forget'
