@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_ELEMENT_TIMING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_ELEMENT_TIMING_H_
 
+#include <utility>
+
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -68,11 +70,6 @@ class CORE_EXPORT ImageElementTiming final
   FloatRect ComputeIntersectionRect(const LocalFrame*,
                                     const LayoutObject&,
                                     const PropertyTreeState&);
-  // Checks if the element must be reported, given its elementtiming attribute
-  // and its intersection rect.
-  bool ShouldReportElement(const LocalFrame*,
-                           const AtomicString& element_timing,
-                           const FloatRect&) const;
 
   // Callback for the swap promise. Reports paint timestamps.
   void ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
