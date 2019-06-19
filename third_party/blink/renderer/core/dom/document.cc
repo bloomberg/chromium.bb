@@ -8190,6 +8190,10 @@ void Document::ClearUseCounterForTesting(mojom::WebFeature feature) {
     loader->GetUseCounterHelper().ClearMeasurementForTesting(feature);
 }
 
+void Document::Dispose() {
+  navigation_initiator_bindings_.CloseAllBindings();
+}
+
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 
 }  // namespace blink
