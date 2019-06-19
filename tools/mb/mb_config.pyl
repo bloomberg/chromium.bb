@@ -474,7 +474,7 @@
       'WebKit Linux ASAN': 'asan_lsan_release_bot',
       'WebKit Linux Leak': 'release_bot',
       'WebKit Linux MSAN': 'msan_release_bot',
-      'android-asan': 'android_clang_asan_debug_bot_arm64',
+      'android-asan': 'android_clang_asan_debug_bot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
     },
 
@@ -896,10 +896,6 @@
 
     'android_clang_asan_debug_bot': [
       'android', 'clang', 'asan', 'debug_bot', 'strip_debug_info',
-    ],
-
-    'android_clang_asan_debug_bot_arm64': [
-      'android', 'clang', 'asan', 'debug_bot', 'arm64',
     ],
 
     'android_clang_asan_debug_trybot_compile_only': [
