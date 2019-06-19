@@ -76,7 +76,7 @@ class ControllerTest : public ::testing::Test {
     NetworkServiceManager::Create(std::move(service_listener), nullptr,
                                   std::move(quic_bridge_.quic_client),
                                   std::move(quic_bridge_.quic_server));
-    controller_ = std::make_unique<Controller>(FakeClock::now);
+    controller_ = std::make_unique<Controller>(platform::FakeClock::now);
     ON_CALL(quic_bridge_.mock_server_observer, OnIncomingConnectionMock(_))
         .WillByDefault(
             Invoke([this](std::unique_ptr<ProtocolConnection>& connection) {
@@ -281,8 +281,8 @@ class ControllerTest : public ::testing::Test {
 
   MessageDemuxer::MessageWatch availability_watch_;
   MockMessageCallback mock_callback_;
-  FakeClock fake_clock_{platform::Clock::time_point(seconds(11111))};
-  FakeQuicBridge quic_bridge_{FakeClock::now};
+  platform::FakeClock fake_clock_{platform::Clock::time_point(seconds(11111))};
+  FakeQuicBridge quic_bridge_{platform::FakeClock::now};
   MockServiceListenerDelegate mock_listener_delegate_;
   std::unique_ptr<Controller> controller_;
   ServiceInfo receiver_info1{"service-id1",

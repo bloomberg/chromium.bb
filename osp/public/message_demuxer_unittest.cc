@@ -47,13 +47,14 @@ class MessageDemuxerTest : public ::testing::Test {
 
   const uint64_t endpoint_id_ = 13;
   const uint64_t connection_id_ = 45;
-  FakeClock fake_clock_{
+  platform::FakeClock fake_clock_{
       platform::Clock::time_point(std::chrono::milliseconds(1298424))};
   msgs::CborEncodeBuffer buffer_;
   msgs::PresentationConnectionOpenRequest request_{1, "fry-am-the-egg-man",
                                                    "url"};
   MockMessageCallback mock_callback_;
-  MessageDemuxer demuxer_{FakeClock::now, MessageDemuxer::kDefaultBufferLimit};
+  MessageDemuxer demuxer_{platform::FakeClock::now,
+                          MessageDemuxer::kDefaultBufferLimit};
 };
 
 }  // namespace
@@ -312,7 +313,7 @@ TEST_F(MessageDemuxerTest, GlobalWatchAfterData) {
 }
 
 TEST_F(MessageDemuxerTest, BufferLimit) {
-  MessageDemuxer demuxer(FakeClock::now, 10);
+  MessageDemuxer demuxer(platform::FakeClock::now, 10);
 
   demuxer.OnStreamData(endpoint_id_, connection_id_, buffer_.data(),
                        buffer_.size());

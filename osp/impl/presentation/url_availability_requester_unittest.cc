@@ -121,9 +121,10 @@ class UrlAvailabilityRequesterTest : public Test {
 
   MockMessageCallback mock_callback_;
   MessageDemuxer::MessageWatch availability_watch_;
-  FakeClock fake_clock_{platform::Clock::time_point(milliseconds(1298424))};
-  FakeQuicBridge quic_bridge_{FakeClock::now};
-  UrlAvailabilityRequester listener_{FakeClock::now};
+  platform::FakeClock fake_clock_{
+      platform::Clock::time_point(milliseconds(1298424))};
+  FakeQuicBridge quic_bridge_{platform::FakeClock::now};
+  UrlAvailabilityRequester listener_{platform::FakeClock::now};
 
   std::string url1_{"https://example.com/foo.html"};
   std::string url2_{"https://example.com/bar.html"};

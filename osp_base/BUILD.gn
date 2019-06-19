@@ -6,6 +6,8 @@ import("//build_overrides/build.gni")
 
 source_set("osp_base") {
   sources = [
+    "alarm.cc",
+    "alarm.h",
     "big_endian.cc",
     "big_endian.h",
     "crypto/openssl_util.cc",
@@ -48,6 +50,7 @@ source_set("osp_base_unittests") {
   testonly = true
 
   sources = [
+    "alarm_unittest.cc",
     "big_endian_unittest.cc",
     "crypto/rsa_private_key_unittest.cc",
     "crypto/secure_hash_unittest.cc",

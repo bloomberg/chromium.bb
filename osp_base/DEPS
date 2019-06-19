@@ -5,6 +5,9 @@
 include_rules = [
     '-platform',
     '+platform/api/logging.h',
+    '+platform/api/task_runner.h',
+    '+platform/api/time.h',
+    '+platform/test',
     '+json',
     '+openssl',
 ]

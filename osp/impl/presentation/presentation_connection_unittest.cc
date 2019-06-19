@@ -69,9 +69,9 @@ class ConnectionTest : public ::testing::Test {
     return response;
   }
 
-  FakeClock fake_clock_{
+  platform::FakeClock fake_clock_{
       platform::Clock::time_point(std::chrono::milliseconds(1298424))};
-  FakeQuicBridge quic_bridge_{FakeClock::now};
+  FakeQuicBridge quic_bridge_{platform::FakeClock::now};
   ConnectionManager controller_connection_manager_{
       quic_bridge_.controller_demuxer.get()};
   ConnectionManager receiver_connection_manager_{

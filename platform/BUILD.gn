@@ -74,6 +74,8 @@ source_set("test") {
   sources = [
     "test/fake_clock.cc",
     "test/fake_clock.h",
+    "test/fake_task_runner.cc",
+    "test/fake_task_runner.h",
   ]
 
   configs += [ "../build:allow_build_from_embedder" ]

@@ -91,9 +91,9 @@ class PresentationReceiverTest : public ::testing::Test {
   }
 
   const std::string url1_{"https://www.example.com/receiver.html"};
-  FakeClock fake_clock_{
+  platform::FakeClock fake_clock_{
       platform::Clock::time_point(std::chrono::milliseconds(1298424))};
-  FakeQuicBridge quic_bridge_{FakeClock::now};
+  FakeQuicBridge quic_bridge_{platform::FakeClock::now};
   MockReceiverDelegate mock_receiver_delegate_;
 };
 
