@@ -1958,8 +1958,7 @@ static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   if (cm->allow_intrabc) return;
   const int num_planes = av1_num_planes(cm);
   int i;
-  aom_wb_write_literal(wb, cm->cdef_info.cdef_pri_damping - 3, 2);
-  assert(cm->cdef_info.cdef_pri_damping == cm->cdef_info.cdef_sec_damping);
+  aom_wb_write_literal(wb, cm->cdef_info.cdef_damping - 3, 2);
   aom_wb_write_literal(wb, cm->cdef_info.cdef_bits, 2);
   for (i = 0; i < cm->cdef_info.nb_cdef_strengths; i++) {
     aom_wb_write_literal(wb, cm->cdef_info.cdef_strengths[i],

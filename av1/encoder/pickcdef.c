@@ -299,8 +299,7 @@ static void pick_cdef_from_qp(AV1_COMMON *const cm) {
   CdefInfo *const cdef_info = &cm->cdef_info;
   cdef_info->cdef_bits = 0;
   cdef_info->nb_cdef_strengths = 1;
-  cdef_info->cdef_pri_damping = 3 + (cm->base_qindex >> 6);
-  cdef_info->cdef_sec_damping = 3 + (cm->base_qindex >> 6);
+  cdef_info->cdef_damping = 3 + (cm->base_qindex >> 6);
 
   int predicted_y_f1 = 0;
   int predicted_y_f2 = 0;
@@ -366,8 +365,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   const int nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   int *sb_index = aom_malloc(nvfb * nhfb * sizeof(*sb_index));
   int *selected_strength = aom_malloc(nvfb * nhfb * sizeof(*sb_index));
-  const int pri_damping = 3 + (cm->base_qindex >> 6);
-  const int sec_damping = 3 + (cm->base_qindex >> 6);
+  const int damping = 3 + (cm->base_qindex >> 6);
   const int fast = pick_method == CDEF_FAST_SEARCH;
   const int total_strengths = fast ? REDUCED_TOTAL_STRENGTHS : TOTAL_STRENGTHS;
   DECLARE_ALIGNED(32, uint16_t, tmp_dst[1 << (MAX_SB_SIZE_LOG2 * 2)]);
@@ -494,10 +492,10 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                        (fbr * MI_SIZE_64X64 << mi_high_l2[pli]) - yoff,
                        (fbc * MI_SIZE_64X64 << mi_wide_l2[pli]) - xoff,
                        stride[pli], ysize, xsize);
-          cdef_filter_fb(NULL, tmp_dst, CDEF_BSTRIDE, in, xdec[pli], ydec[pli],
-                         dir, &dirinit, var, pli, dlist, cdef_count, threshold,
-                         sec_strength + (sec_strength == 3), pri_damping,
-                         sec_damping, coeff_shift);
+          av1_cdef_filter_fb(
+              NULL, tmp_dst, CDEF_BSTRIDE, in, xdec[pli], ydec[pli], dir,
+              &dirinit, var, pli, dlist, cdef_count, threshold,
+              sec_strength + (sec_strength == 3), damping, coeff_shift);
           const uint64_t curr_mse = compute_cdef_dist(
               ref_coeff[pli] +
                   (fbr * MI_SIZE_64X64 << mi_high_l2[pli]) * stride[pli] +
@@ -584,8 +582,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     }
   }
 
-  cdef_info->cdef_pri_damping = pri_damping;
-  cdef_info->cdef_sec_damping = sec_damping;
+  cdef_info->cdef_damping = damping;
 
   aom_free(mse[0]);
   aom_free(mse[1]);

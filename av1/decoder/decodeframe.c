@@ -1998,8 +1998,7 @@ static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   CdefInfo *const cdef_info = &cm->cdef_info;
 
   if (cm->allow_intrabc) return;
-  cdef_info->cdef_pri_damping = aom_rb_read_literal(rb, 2) + 3;
-  cdef_info->cdef_sec_damping = cdef_info->cdef_pri_damping;
+  cdef_info->cdef_damping = aom_rb_read_literal(rb, 2) + 3;
   cdef_info->cdef_bits = aom_rb_read_literal(rb, 2);
   cdef_info->nb_cdef_strengths = 1 << cdef_info->cdef_bits;
   for (int i = 0; i < cdef_info->nb_cdef_strengths; i++) {

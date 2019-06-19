@@ -173,12 +173,12 @@ static INLINE int adjust_strength(int strength, int32_t var) {
   return var ? (strength * (4 + i) + 8) >> 4 : 0;
 }
 
-void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
-                    int xdec, int ydec, int dir[CDEF_NBLOCKS][CDEF_NBLOCKS],
-                    int *dirinit, int var[CDEF_NBLOCKS][CDEF_NBLOCKS], int pli,
-                    cdef_list *dlist, int cdef_count, int level,
-                    int sec_strength, int pri_damping, int sec_damping,
-                    int coeff_shift) {
+void av1_cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride,
+                        uint16_t *in, int xdec, int ydec,
+                        int dir[CDEF_NBLOCKS][CDEF_NBLOCKS], int *dirinit,
+                        int var[CDEF_NBLOCKS][CDEF_NBLOCKS], int pli,
+                        cdef_list *dlist, int cdef_count, int level,
+                        int sec_strength, int damping, int coeff_shift) {
   int bi;
   int bx;
   int by;
@@ -186,8 +186,7 @@ void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
 
   int pri_strength = level << coeff_shift;
   sec_strength <<= coeff_shift;
-  sec_damping += coeff_shift - (pli != AOM_PLANE_Y);
-  pri_damping += coeff_shift - (pli != AOM_PLANE_Y);
+  damping += coeff_shift - (pli != AOM_PLANE_Y);
   bsize =
       ydec ? (xdec ? BLOCK_4X4 : BLOCK_8X4) : (xdec ? BLOCK_4X8 : BLOCK_8X8);
   bsizex = 3 - xdec;
@@ -241,7 +240,7 @@ void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
           &dst8[(by << bsizey) * dstride + (bx << bsizex)], NULL, dstride,
           &in[(by * CDEF_BSTRIDE << bsizey) + (bx << bsizex)],
           (pli ? t : adjust_strength(t, var[by][bx])), s, t ? dir[by][bx] : 0,
-          pri_damping, sec_damping, bsize, coeff_shift);
+          damping, damping, bsize, coeff_shift);
     else
       cdef_filter_block(
           NULL,
@@ -250,6 +249,6 @@ void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
           dirinit ? 1 << bsizex : dstride,
           &in[(by * CDEF_BSTRIDE << bsizey) + (bx << bsizex)],
           (pli ? t : adjust_strength(t, var[by][bx])), s, t ? dir[by][bx] : 0,
-          pri_damping, sec_damping, bsize, coeff_shift);
+          damping, damping, bsize, coeff_shift);
   }
 }

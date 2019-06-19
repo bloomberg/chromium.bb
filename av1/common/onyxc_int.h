@@ -183,8 +183,7 @@ typedef struct BufferPool {
 } BufferPool;
 
 typedef struct {
-  int cdef_pri_damping;
-  int cdef_sec_damping;
+  int cdef_damping;
   int nb_cdef_strengths;
   int cdef_strengths[CDEF_MAX_STRENGTHS];
   int cdef_uv_strengths[CDEF_MAX_STRENGTHS];

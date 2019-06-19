@@ -238,8 +238,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       for (int pli = 0; pli < num_planes; pli++) {
         int coffset;
         int rend, cend;
-        int pri_damping = cdef_info->cdef_pri_damping;
-        int sec_damping = cdef_info->cdef_sec_damping;
+        int damping = cdef_info->cdef_damping;
         int hsize = nhb << mi_wide_l2[pli];
         int vsize = nvb << mi_high_l2[pli];
 
@@ -350,7 +349,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         }
 
         if (cm->seq_params.use_highbitdepth) {
-          cdef_filter_fb(
+          av1_cdef_filter_fb(
               NULL,
               &CONVERT_TO_SHORTPTR(
                   xd->plane[pli]
@@ -360,9 +359,9 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
               xd->plane[pli].dst.stride,
               &src[CDEF_VBORDER * CDEF_BSTRIDE + CDEF_HBORDER], xdec[pli],
               ydec[pli], dir, NULL, var, pli, dlist, cdef_count, level,
-              sec_strength, pri_damping, sec_damping, coeff_shift);
+              sec_strength, damping, coeff_shift);
         } else {
-          cdef_filter_fb(
+          av1_cdef_filter_fb(
               &xd->plane[pli]
                    .dst.buf[xd->plane[pli].dst.stride *
                                 (MI_SIZE_64X64 * fbr << mi_high_l2[pli]) +
@@ -370,7 +369,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
               NULL, xd->plane[pli].dst.stride,
               &src[CDEF_VBORDER * CDEF_BSTRIDE + CDEF_HBORDER], xdec[pli],
               ydec[pli], dir, NULL, var, pli, dlist, cdef_count, level,
-              sec_strength, pri_damping, sec_damping, coeff_shift);
+              sec_strength, damping, coeff_shift);
         }
       }
       cdef_left = 1;
