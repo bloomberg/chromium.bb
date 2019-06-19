@@ -6495,8 +6495,7 @@ void RenderFrameImpl::BeginNavigation(
     // process.
     // TODO(arthursonzogni): Remove this. Everything should use the default code
     // path and be driven by the browser process.
-    if (((url == content::kAboutSrcDocURL) ||
-         WebDocumentLoader::WillLoadUrlAsEmpty(url)) &&
+    if ((url.IsAboutSrcdoc() || WebDocumentLoader::WillLoadUrlAsEmpty(url)) &&
         !is_history_navigation_in_new_child_frame) {
       if (!frame_->WillStartNavigation(
               *info, false /* is_history_navigation_in_new_child_frame */))
