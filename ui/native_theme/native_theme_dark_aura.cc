@@ -54,14 +54,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_TextfieldSelectionBackgroundFocused:
       return kTextSelectionBackgroundFocused;
 
-    // Results Tables
-    case kColorId_ResultsTableNormalBackground:
-      return SkColorSetRGB(0x28, 0x28, 0x28);
-    case kColorId_ResultsTableNormalText:
-      return SK_ColorWHITE;
-    case kColorId_ResultsTableDimmedText:
-      return SkColorSetA(GetSystemColor(kColorId_ResultsTableNormalText), 0x80);
-
     // FocusableBorder
     case kColorId_FocusedBorderColor:
       return SkColorSetA(gfx::kGoogleBlue300, 0x66);
@@ -78,7 +70,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_LabelDisabledColor:
     case kColorId_TextOnProminentButtonColor:
     case kColorId_ButtonPressedShade:
-    case kColorId_ResultsTableHoveredBackground:
     case kColorId_ProminentButtonDisabledColor:
     case kColorId_ButtonBorderColor:
     case kColorId_DefaultIconColor:

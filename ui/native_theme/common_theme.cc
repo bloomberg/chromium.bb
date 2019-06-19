@@ -305,18 +305,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_UnfocusedBorderColor:
       return SkColorSetA(SK_ColorBLACK, 0x66);
 
-    // Results Tables
-    case NativeTheme::kColorId_ResultsTableNormalBackground:
-      return SK_ColorWHITE;
-    case NativeTheme::kColorId_ResultsTableHoveredBackground:
-      return SkColorSetA(base_theme->GetSystemColor(
-                             NativeTheme::kColorId_ResultsTableNormalText),
-                         0x0D);
-    case NativeTheme::kColorId_ResultsTableNormalText:
-      return SK_ColorBLACK;
-    case NativeTheme::kColorId_ResultsTableDimmedText:
-      return SkColorSetRGB(0x64, 0x64, 0x64);
-
     // Material spinner/throbber
     case NativeTheme::kColorId_ThrobberSpinningColor:
       return gfx::kGoogleBlue600;
