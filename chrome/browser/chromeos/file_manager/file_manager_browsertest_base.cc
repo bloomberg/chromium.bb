@@ -2134,7 +2134,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         extensions::AppWindowRegistry::Get(profile())->app_windows();
     ASSERT_FALSE(app_windows.empty());
     app_windows.front()->GetNativeWindow()->GetHost()->DispatchKeyEventPostIME(
-        &key_event, base::NullCallback());
+        &key_event);
     *output = "mediaKeyDispatched";
     return;
   }
@@ -2158,7 +2158,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       host = app_windows.front()->GetNativeWindow()->GetHost();
     }
     ASSERT_TRUE(host);
-    host->DispatchKeyEventPostIME(&key_event, base::NullCallback());
+    host->DispatchKeyEventPostIME(&key_event);
     *output = "tabKeyDispatched";
     return;
   }
