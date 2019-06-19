@@ -776,6 +776,41 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, FrameDeletedAfterActivation) {
   }
 }
 
+// Tests that activating a portal at the same time as it is being removed
+// doesn't crash the browser.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RemovePortalWhenUnloading) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  // Create a container for the portal.
+  EXPECT_TRUE(ExecJs(main_frame,
+                     "var div = document.createElement('div');"
+                     "document.body.appendChild(div);"));
+
+  // Create portal.
+  PortalCreatedObserver portal_created_observer(main_frame);
+  EXPECT_TRUE(ExecJs(main_frame,
+                     "var portal = document.createElement('portal');"
+                     "div.appendChild(portal);"));
+
+  // Add a same-origin iframe in the same div as the portal that activates the
+  // portal on its unload handler.
+  EXPECT_TRUE(
+      ExecJs(main_frame,
+             "var iframe = document.createElement('iframe');"
+             "iframe.src = 'about:blank';"
+             "div.appendChild(iframe);"
+             "iframe.contentWindow.onunload = () => portal.activate();"));
+
+  // Remove the div from the document. This destroys the portal's WebContents
+  // and should destroy the Portal object as well, so that the activate message
+  // is not processed.
+  EXPECT_TRUE(ExecJs(main_frame, "div.remove();"));
+}
+
 class PortalOOPIFBrowserTest : public PortalBrowserTest {
  protected:
   PortalOOPIFBrowserTest() {}

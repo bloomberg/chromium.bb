@@ -47,6 +47,11 @@ Portal::~Portal() {
       WebContents::FromRenderFrameHost(owner_render_frame_host_));
   devtools_instrumentation::PortalDetached(outer_contents_impl->GetMainFrame());
 
+  FrameTreeNode* outer_node = FrameTreeNode::GloballyFindByID(
+      portal_contents_impl_->GetOuterDelegateFrameTreeNodeId());
+  if (outer_node)
+    outer_node->RemoveObserver(this);
+
   g_portal_token_map.Get().erase(portal_token_);
 }
 
@@ -134,6 +139,7 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
       blink::WebTreeScopeType::kDocument, "", "", true,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties(), false, blink::FrameOwnerElementType::kPortal);
+  outer_node->AddObserver(this);
 
   bool web_contents_created = false;
   if (!portal_contents_) {
@@ -195,6 +201,7 @@ void Portal::Activate(blink::TransferableMessage data,
   bool is_loading = portal_contents_impl_->IsLoading();
   FrameTreeNode* outer_frame_tree_node = FrameTreeNode::GloballyFindByID(
       portal_contents_impl_->GetOuterDelegateFrameTreeNodeId());
+  outer_frame_tree_node->RemoveObserver(this);
   std::unique_ptr<WebContents> portal_contents =
       portal_contents_impl_->DetachFromOuterWebContents();
   owner_render_frame_host_->RemoveChild(outer_frame_tree_node);
@@ -261,7 +268,17 @@ void Portal::PostMessageToHost(
       target_origin);
 }
 
+void Portal::OnFrameTreeNodeDestroyed(FrameTreeNode* frame_tree_node) {
+  // Listens for the deletion of the FrameTreeNode corresponding to this portal
+  // in the outer WebContents (not the FrameTreeNode of the document containing
+  // it). If that outer FrameTreeNode goes away, this Portal should stop
+  // accepting new messages and go away as well.
+  binding_->Close();  // Also deletes |this|.
+}
+
 void Portal::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
+  // When the portal is in an orphaned state, the RenderFrameDeleted callback is
+  // used to tie the portal's lifetime to its owner.
   if (render_frame_host == owner_render_frame_host_)
     binding_->Close();  // Also deletes |this|.
 }
