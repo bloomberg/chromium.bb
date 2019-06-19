@@ -346,11 +346,6 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
     return;
   }
 
-  if (alternative_terminate_for_testing_) {
-    alternative_terminate_for_testing_.Run();
-    return;
-  }
-
 #if defined(OS_WIN)
   // Defer termination until a certain amount of CPU time has elapsed on the
   // watched thread.
@@ -622,15 +617,6 @@ int GpuWatchdogThreadImplV1::GetActiveTTY() const {
   return -1;
 }
 #endif
-
-void GpuWatchdogThreadImplV1::SetAlternativeTerminateFunctionForTesting(
-    base::RepeatingClosure on_terminate) {
-  alternative_terminate_for_testing_ = std::move(on_terminate);
-}
-
-void GpuWatchdogThreadImplV1::SetTimeoutForTesting(base::TimeDelta timeout) {
-  timeout_ = timeout;
-}
 
 GpuWatchdogThread::GpuWatchdogThread() : base::Thread("GpuWatchdog") {}
 GpuWatchdogThread::~GpuWatchdogThread() {}
