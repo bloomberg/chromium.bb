@@ -528,7 +528,9 @@ enum aome_enc_control_id {
    */
   AV1E_SET_TARGET_SEQ_LEVEL_IDX,
 
-  /*!\brief Codec control function to get sequence level index.
+  /*!\brief Codec control function to get sequence level index for each
+   * operating point. There can be at most 32 operating points. The results will
+   * be written into a provided integer array of sufficient size.
    */
   AV1E_GET_SEQ_LEVEL_IDX,
 
