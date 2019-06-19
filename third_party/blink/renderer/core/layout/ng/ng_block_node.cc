@@ -71,8 +71,8 @@ NOINLINE void CreateAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
 }
 
 template <typename Callback>
-inline void DetermineAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
-                                     const Callback& callback) {
+NOINLINE void DetermineAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
+                                       const Callback& callback) {
   const ComputedStyle& style = params.node.Style();
   const LayoutBox& box = *params.node.GetLayoutBox();
   if (box.IsLayoutNGFlexibleBox()) {
