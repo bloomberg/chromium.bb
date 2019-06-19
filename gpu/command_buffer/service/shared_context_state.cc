@@ -17,6 +17,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -242,9 +243,13 @@ bool SharedContextState::InitializeGL(
     MakeCurrent(nullptr);
   }
 
-  // TODO(penghuang): query extension from VulkanInstance.
+  // Swiftshader GL and Vulkan report supporting external objects extensions,
+  // but they don't.
   support_vulkan_external_object_ =
-      gpu_preferences.use_vulkan == gpu::VulkanImplementationName::kNative;
+      !gl::g_current_gl_version->is_swiftshader &&
+      gpu_preferences.use_vulkan == gpu::VulkanImplementationName::kNative &&
+      gl::g_current_gl_driver->ext.b_GL_EXT_memory_object_fd &&
+      gl::g_current_gl_driver->ext.b_GL_EXT_semaphore_fd;
 
   return true;
 }
