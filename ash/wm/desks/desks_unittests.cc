@@ -1213,6 +1213,48 @@ TEST_F(DesksTest, TabletModeBackdrops) {
   EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window());
 }
 
+TEST_F(DesksTest, NoDesksBarInTabletModeWithOneDesk) {
+  // Initially there's only one desk.
+  auto* controller = DesksController::Get();
+  ASSERT_EQ(1u, controller->desks().size());
+
+  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  // Enter tablet mode and expect that the DesksBar widget won't be created.
+  // Avoid TabletModeController::OnGetSwitchStates() from disabling tablet mode.
+  base::RunLoop().RunUntilIdle();
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  const auto* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_FALSE(desks_bar_view);
+
+  // It's possible to drag the window without any crashes.
+  auto* overview_session = overview_controller->overview_session();
+  auto* overview_item =
+      overview_session->GetOverviewItemForWindow(window.get());
+  DragItemToPoint(overview_item, window->GetBoundsInScreen().CenterPoint(),
+                  GetEventGenerator(), /*drop=*/true);
+
+  // Exit overview and add a new desk, then re-enter overview. Expect that now
+  // the desks bar is visible.
+  overview_controller->EndOverview();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  controller->NewDesk();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
+}
+
 TEST_F(DesksTest, TabletModeDesksCreationRemovalCycle) {
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
