@@ -855,7 +855,7 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   if (connection()->connected()) {
     // Ensure that the connection is closed by the time the session is
     // destroyed.
-    connection()->CloseConnection(quic::QUIC_INTERNAL_ERROR,
+    connection()->CloseConnection(quic::QUIC_PEER_GOING_AWAY,
                                   "session torn down",
                                   quic::ConnectionCloseBehavior::SILENT_CLOSE);
   }
