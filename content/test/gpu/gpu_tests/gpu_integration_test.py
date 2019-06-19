@@ -86,6 +86,13 @@ class GpuIntegrationTest(
     browser_args.append(
       '--disable-gpu-process-for-dx12-vulkan-info-collection')
 
+    if not ('--force_low_power_gpu' in browser_args or
+            '--force_high_performance_gpu' in browser_args):
+      # Force the GPU tests to use the high-performance GPU on dual-GPU machines
+      # by default. In Chromium's hardware fleet this currently only has an
+      # effect on the dual-GPU MacBook Pros.
+      browser_args.append('--force_high_performance_gpu')
+
     # Append the new arguments.
     browser_options.AppendExtraBrowserArgs(browser_args)
     cls._last_launched_browser_args = set(browser_args)
