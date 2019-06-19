@@ -27,6 +27,9 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/menu_model.h"
+#include "ui/base/models/menu_separator_types.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 
@@ -168,6 +171,8 @@ void StatusIconLinuxDbus::SetToolTip(const base::string16& tool_tip) {
   if (!properties_)
     return;
 
+  UpdateMenuImpl(delegate_->GetMenuModel(), true);
+
   properties_->SetProperty(
       kInterfaceStatusNotifierItem, kPropertyToolTip,
       MakeDbusToolTip(base::UTF16ToUTF8(delegate_->GetToolTip())));
@@ -176,8 +181,7 @@ void StatusIconLinuxDbus::SetToolTip(const base::string16& tool_tip) {
 }
 
 void StatusIconLinuxDbus::UpdatePlatformContextMenu(ui::MenuModel* model) {
-  if (menu_)
-    menu_->SetModel(model, true);
+  UpdateMenuImpl(model, true);
 }
 
 void StatusIconLinuxDbus::RefreshPlatformContextMenu() {
@@ -185,7 +189,12 @@ void StatusIconLinuxDbus::RefreshPlatformContextMenu() {
   // icons, but also for layout changes like deleted items.
   // TODO(thomasanderson): Split this into two methods so we can avoid
   // rebuilding the menu for simple property changes.
-  UpdatePlatformContextMenu(delegate_->GetMenuModel());
+  UpdateMenuImpl(delegate_->GetMenuModel(), true);
+}
+
+void StatusIconLinuxDbus::ExecuteCommand(int command_id, int event_flags) {
+  DCHECK_EQ(command_id, 0);
+  delegate_->OnClick();
 }
 
 void StatusIconLinuxDbus::OnHostRegisteredResponse(dbus::Response* response) {
@@ -245,7 +254,7 @@ void StatusIconLinuxDbus::OnOwnership(const std::string& service_name,
 
   menu_ = std::make_unique<DbusMenu>(
       bus_->GetExportedObject(dbus::ObjectPath(kPathDbusMenu)), barrier_);
-  menu_->SetModel(delegate_->GetMenuModel(), false);
+  UpdateMenuImpl(delegate_->GetMenuModel(), false);
 
   properties_ = std::make_unique<DbusPropertiesInterface>(item_, barrier_);
   properties_->RegisterInterface(kInterfaceStatusNotifierItem);
@@ -325,4 +334,26 @@ void StatusIconLinuxDbus::OnSecondaryActivate(
   // Intentionally ignore secondary activations.  In the future, we may decide
   // to run the same handler as regular activations.
   sender.Run(dbus::Response::FromMethodCall(method_call));
+}
+
+void StatusIconLinuxDbus::UpdateMenuImpl(ui::MenuModel* model,
+                                         bool send_signal) {
+  if (!menu_)
+    return;
+
+  if (!model) {
+    empty_menu_ = std::make_unique<ui::SimpleMenuModel>(nullptr);
+    model = empty_menu_.get();
+  }
+
+  click_action_menu_ = std::make_unique<ui::SimpleMenuModel>(this);
+  if (delegate_->HasClickAction() && !delegate_->GetToolTip().empty()) {
+    click_action_menu_->AddItem(0, delegate_->GetToolTip());
+    if (model->GetItemCount())
+      click_action_menu_->AddSeparator(ui::MenuSeparatorType::NORMAL_SEPARATOR);
+  }
+
+  concat_menu_ =
+      std::make_unique<ConcatMenuModel>(click_action_menu_.get(), model);
+  menu_->SetModel(concat_menu_.get(), send_signal);
 }

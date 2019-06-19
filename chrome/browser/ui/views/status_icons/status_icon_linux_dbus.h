@@ -10,10 +10,12 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/views/status_icons/concat_menu_model.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 
 namespace gfx {
@@ -25,7 +27,8 @@ class DbusPropertiesInterface;
 
 // A status icon following the StatusNotifierItem specification.
 // https://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/StatusNotifierItem/
-class StatusIconLinuxDbus : public views::StatusIconLinux {
+class StatusIconLinuxDbus : public views::StatusIconLinux,
+                            public ui::SimpleMenuModel::Delegate {
  public:
   StatusIconLinuxDbus();
   ~StatusIconLinuxDbus() override;
@@ -35,6 +38,9 @@ class StatusIconLinuxDbus : public views::StatusIconLinux {
   void SetToolTip(const base::string16& tool_tip) override;
   void UpdatePlatformContextMenu(ui::MenuModel* model) override;
   void RefreshPlatformContextMenu() override;
+
+  // ui::SimpleMenuModel::Delegate:
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   // Step 1: verify with the StatusNotifierWatcher that a StatusNotifierHost is
@@ -69,6 +75,8 @@ class StatusIconLinuxDbus : public views::StatusIconLinux {
   void OnSecondaryActivate(dbus::MethodCall* method_call,
                            dbus::ExportedObject::ResponseSender sender);
 
+  void UpdateMenuImpl(ui::MenuModel* model, bool send_signal);
+
   scoped_refptr<dbus::Bus> bus_;
 
   int service_id_ = 0;
@@ -80,6 +88,17 @@ class StatusIconLinuxDbus : public views::StatusIconLinux {
   std::unique_ptr<DbusPropertiesInterface> properties_;
 
   std::unique_ptr<DbusMenu> menu_;
+  // A menu that contains the click action (if there is a click action) and a
+  // separator (if there's a click action and delegate_->GetMenuModel() is
+  // non-empty).
+  std::unique_ptr<ui::SimpleMenuModel> click_action_menu_;
+  // An empty menu for use in |concat_menu_| if delegate_->GetMenuModel() is
+  // null.
+  std::unique_ptr<ui::SimpleMenuModel> empty_menu_;
+  // A concatenation of |click_action_menu_| and either
+  // delegate_->GetMenuModel() or |empty_menu_| if the delegate's menu is null.
+  // Appears after the other menus so that it gets destroyed first.
+  std::unique_ptr<ConcatMenuModel> concat_menu_;
 
   base::WeakPtrFactory<StatusIconLinuxDbus> weak_factory_;
 
