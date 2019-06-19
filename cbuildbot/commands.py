@@ -2225,23 +2225,15 @@ def ExtractBuildDepsGraph(buildroot, board):
     buildroot: The root directory where the build occurs.
     board: Board type that was built on this machine.
   """
-  cmd = ['build_api', 'chromite.api.DependencyService/GetBuildDependencyGraph']
-  with osutils.TempDir() as tmpdir:
-    input_proto_file = os.path.join(tmpdir, 'input.json')
-    output_proto_file = os.path.join(tmpdir, 'output.json')
-    with open(input_proto_file, 'w') as f:
-      input_proto = {
-          'build_target': {
-              'name': board,
-          },
-      }
-      json.dump(input_proto, f)
-    cmd += [
-        '--input-json', input_proto_file, '--output-json', output_proto_file
-    ]
-    RunBuildScript(buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
-    output = json.loads(osutils.ReadFile(output_proto_file))
-    return output['depGraph']
+  input_proto = {
+      'build_target': {
+          'name': board,
+      },
+  }
+  json_output = CallBuildApiWithInputProto(
+      buildroot, 'chromite.api.DependencyService/GetBuildDependencyGraph',
+      input_proto)
+  return json_output['depGraph']
 
 
 def GenerateBuildConfigs(board, config_useflags):
@@ -3392,17 +3384,49 @@ def BuildFirmwareArchive(buildroot,
     The basename of the archived file, or None if the target board does
     not have firmware from source.
   """
-  firmware_root = os.path.join(buildroot, 'chroot', 'build', board, 'firmware')
-  source_list = [
-      os.path.relpath(f, firmware_root)
-      for f in glob.iglob(os.path.join(firmware_root, '*'))
-  ]
-  if not source_list:
+  input_proto = {
+      'sysroot': {
+          'path': os.path.join('build', board),
+      },
+      'chroot': {
+          'path' : os.path.join(buildroot, 'chroot'),
+      },
+      'output_dir': archive_dir,
+  }
+  try:
+    json_output = CallBuildApiWithInputProto(
+        buildroot, 'chromite.api.ArtifactsService/BundleFirmware', input_proto)
+  except failures_lib.BuildScriptFailure:
+    # BuildScriptFailure exceptions indicate no archive was built. Other errors
+    # will halt the build.
     return None
-
-  archive_file = os.path.join(archive_dir, archive_name)
-  BuildTarball(buildroot, source_list, archive_file, cwd=firmware_root)
+  archive_path = json_output['artifacts'][0]['path']
+  shutil.move(archive_path, os.path.join(archive_dir, archive_name))
   return archive_name
+
+
+def CallBuildApiWithInputProto(buildroot, build_api_command, input_proto):
+  """Call BuildApi with the input_proto and buildroot.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    build_api_command: Service (command) to execute.
+    input_proto (BundleRequest): The input proto.
+
+  Returns:
+    The json-encoded output proto.
+  """
+  cmd = ['build_api', build_api_command]
+  with osutils.TempDir() as tmpdir:
+    input_proto_file = os.path.join(tmpdir, 'input.json')
+    output_proto_file = os.path.join(tmpdir, 'output.json')
+    with open(input_proto_file, 'w') as f:
+      json.dump(input_proto, f)
+    cmd += [
+        '--input-json', input_proto_file, '--output-json', output_proto_file
+    ]
+    RunBuildScript(buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
+    return json.loads(osutils.ReadFile(output_proto_file))
 
 
 def BuildFactoryZip(buildroot,
