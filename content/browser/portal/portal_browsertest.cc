@@ -663,7 +663,6 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigateToChrome) {
   Portal* portal = portal_created_observer.WaitUntilPortalCreated();
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::From(portal);
-  WebContentsImpl* portal_contents = portal->GetPortalContents();
 
   // Try to navigate to chrome://settings and wait for the process to die.
   portal_interceptor->navigate_callback_ = base::BindRepeating(
@@ -672,12 +671,11 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigateToChrome) {
         portal->Navigate(chrome_url, std::move(referrer));
       },
       portal);
-  RenderProcessHostKillWaiter kill_waiter(
-      portal_contents->GetMainFrame()->GetProcess());
+  RenderProcessHostKillWaiter kill_waiter(main_frame->GetProcess());
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   ignore_result(ExecJs(main_frame, JsReplace("portal.src = $1;", a_url)));
 
-  EXPECT_EQ(base::nullopt, kill_waiter.Wait());
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
 // Regression test for crbug.com/969714. Tests that receiving a touch ack
