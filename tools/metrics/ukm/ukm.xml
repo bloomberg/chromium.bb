@@ -5268,6 +5268,12 @@ be describing additional metrics about the same event.
       nearest 10.
     </summary>
   </metric>
+  <metric name="ThirdPartyCookieBlockingEnabledForSite">
+    <summary>
+      Records whether third party cookie blocking was enabled for a site. Only
+      recorded for users who enabled the cookie controls ui.
+    </summary>
+  </metric>
   <metric name="WasCached">
     <summary>
       Set to 1 if the main resource was served from cache.
