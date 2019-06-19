@@ -86,9 +86,6 @@ namespace {
 constexpr int kMarginBetweenAppsAndOverflow = 16;
 }  // namespace
 
-constexpr int kBackButtonIndex = 0;
-constexpr int kAppListButtonIndex = 1;
-
 // The distance of the cursor from the outer rim of the shelf before it
 // separates.
 constexpr int kRipOffDistance = 48;
@@ -168,11 +165,13 @@ class ShelfFocusSearch : public views::FocusSearch {
     ShelfView* main_shelf = shelf_view_->main_shelf();
     ShelfView* overflow_shelf = shelf_view_->overflow_shelf();
 
+    if (IsTabletModeEnabled())
+      focusable_views.push_back(main_shelf->GetBackButton());
+
+    focusable_views.push_back(main_shelf->GetAppListButton());
     for (int i = main_shelf->first_visible_index();
          i <= main_shelf->last_visible_index(); ++i) {
-      views::View* view = main_shelf->view_model()->view_at(i);
-      if (view != main_shelf->GetBackButton() || IsTabletModeEnabled())
-        focusable_views.push_back(view);
+      focusable_views.push_back(main_shelf->view_model()->view_at(i));
     }
     if (main_shelf->GetOverflowButton()->GetVisible())
       focusable_views.push_back(main_shelf->GetOverflowButton());
@@ -356,12 +355,10 @@ void ShelfView::Init() {
   std::unique_ptr<BackButton> back_button_ptr = CreateBackButton();
   ConfigureChildView(back_button_ptr.get());
   back_button_ = AddChildView(std::move(back_button_ptr));
-  view_model_->Add(back_button_, kBackButtonIndex);
 
   std::unique_ptr<AppListButton> home_button_ptr = CreateHomeButton();
   ConfigureChildView(home_button_ptr.get());
   home_button_ = AddChildView(std::move(home_button_ptr));
-  view_model_->Add(home_button_, kAppListButtonIndex);
   home_button_->set_context_menu_controller(this);
 
   for (ShelfItems::const_iterator i = items.begin(); i != items.end(); ++i) {
@@ -436,15 +433,9 @@ OverflowButton* ShelfView::GetOverflowButton() const {
 
 void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
   visible_shelf_item_bounds_union_.SetRect(0, 0, 0, 0);
-  for (int i = first_visible_index_; i <= last_visible_index_; ++i) {
+  for (int i = std::max(0, first_visible_index_); i <= last_visible_index_;
+       ++i) {
     const views::View* child = view_model_->view_at(i);
-    // Since shelf items are centered, we don't want to include the app list
-    // button, otherwise tooltips will show when hovering a potentially large
-    // amount of white space between the app list button and the first item.
-    if (child == GetAppListButton())
-      continue;
-    if (!IsTabletModeEnabled() && child == GetBackButton())
-      continue;
     if (ShouldShowTooltipForView(child))
       visible_shelf_item_bounds_union_.Union(child->GetMirroredBounds());
   }
@@ -500,9 +491,14 @@ gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
 }
 
 gfx::Size ShelfView::CalculatePreferredSize() const {
-  // Use |last_visible_index_| != -1 as sentinel to ensure
-  // CalculateIdealBounds() is called before getting here.
-  DCHECK_NE(last_visible_index_, -1);
+  if (model_->item_count() == 0) {
+    // There are no apps.
+    return shelf_->IsHorizontalAlignment()
+               ? gfx::Size(GetAppListButton()->bounds().right(),
+                           ShelfConstants::shelf_size())
+               : gfx::Size(ShelfConstants::shelf_size(),
+                           GetAppListButton()->bounds().bottom());
+  }
 
   int last_button_index = last_visible_index_;
   if (!is_overflow_mode() && overflow_button_ && overflow_button_->GetVisible())
@@ -845,12 +841,15 @@ const std::vector<aura::Window*> ShelfView::GetOpenWindowsForShelfView(
 views::View* ShelfView::FindFirstFocusableChild() {
   if (is_overflow_mode())
     return main_shelf()->FindFirstFocusableChild();
-  return view_model_->view_at(first_visible_index());
+  return IsTabletModeEnabled() ? static_cast<views::View*>(GetBackButton())
+                               : static_cast<views::View*>(GetAppListButton());
 }
 
 views::View* ShelfView::FindLastFocusableChild() {
   if (IsShowingOverflowBubble())
     return overflow_shelf()->FindLastFocusableChild();
+  if (view_model_->view_size() == 0)
+    return static_cast<views::View*>(GetAppListButton());
   return overflow_button_->GetVisible()
              ? overflow_button_
              : view_model_->view_at(last_visible_index());
@@ -1035,11 +1034,18 @@ bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
   if (event.flags() & ui::EF_IS_DOUBLE_CLICK)
     return false;
 
+  const bool repost = IsRepostEvent(event);
+
+  // The back and app buttons are not part of the view model, treat them
+  // separately.
+  if (view == GetAppListButton() || view == GetBackButton())
+    return !repost;
+
   // Ignore if this is a repost event on the last pressed shelf item.
   int index = view_model_->GetIndexOfView(view);
   if (index == -1)
     return false;
-  return !IsRepostEvent(event) || last_pressed_index_ != index;
+  return !repost || last_pressed_index_ != index;
 }
 
 void ShelfView::SwapButtons(ShelfButton* button_to_swap, bool with_next) {
@@ -1060,8 +1066,7 @@ void ShelfView::SwapButtons(ShelfButton* button_to_swap, bool with_next) {
   }
 
   const int target_index = with_next ? src_index + 1 : src_index - 1;
-  const int first_swappable_index =
-      std::max(first_visible_index_, kAppListButtonIndex + 1);
+  const int first_swappable_index = std::max(first_visible_index_, 0);
   const int last_swappable_index = last_visible_index_;
   if (src_index == -1 || (target_index > last_swappable_index) ||
       (target_index < first_swappable_index)) {
@@ -1091,7 +1096,7 @@ void ShelfView::PointerPressedOnButton(views::View* view,
     shelf_menu_model_adapter_->Cancel();
 
   int index = view_model_->GetIndexOfView(view);
-  if (index == -1 || view_model_->view_size() <= 1)
+  if (index == -1 || view_model_->view_size() < 1)
     return;  // View is being deleted, ignore request.
 
   if (view == GetAppListButton() || view == GetBackButton())
@@ -1175,7 +1180,6 @@ void ShelfView::LayoutBackAndHomeButtons() {
 }
 
 void ShelfView::LayoutOverflowButton() const {
-  DCHECK_NE(0, view_model_->view_size());
   int x = 0;
   int y = 0;
   if (last_visible_index_ != -1) {
@@ -1212,7 +1216,7 @@ void ShelfView::AnimateToIdealBounds() {
   if (home->border())
     home->SetBorder(views::NullBorder());
 
-  for (int i = kAppListButtonIndex + 1; i < view_model_->view_size(); ++i) {
+  for (int i = 0; i < view_model_->view_size(); ++i) {
     View* view = view_model_->view_at(i);
     bounds_animator_->AnimateViewTo(view, view_model_->ideal_bounds(i));
     // Now that the item animation starts, we have to make sure that the
@@ -1636,12 +1640,8 @@ std::pair<int, int> ShelfView::GetDragRange(int index) {
       max_index = i;
     }
   }
-  DCHECK_EQ(1, model_->GetItemIndexForType(TYPE_APP_LIST_DEPRECATED));
   min_index =
-      std::max(min_index,
-               is_overflow_mode()
-                   ? first_visible_index_
-                   : model_->GetItemIndexForType(TYPE_APP_LIST_DEPRECATED) + 1);
+      std::max(min_index, is_overflow_mode() ? first_visible_index_ : 0);
   max_index = std::min(max_index, last_visible_index_);
   return std::pair<int, int>(min_index, max_index);
 }

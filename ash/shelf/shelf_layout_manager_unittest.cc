@@ -89,7 +89,7 @@ namespace ash {
 namespace {
 
 void PressAppListButton() {
-  ash::Shell::Get()->app_list_controller()->OnAppListButtonPressed(
+  Shell::Get()->app_list_controller()->OnAppListButtonPressed(
       display::Screen::GetScreen()->GetPrimaryDisplay().id(),
       app_list::AppListShowSource::kShelfButton, base::TimeTicks());
 }

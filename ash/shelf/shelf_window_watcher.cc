@@ -237,7 +237,7 @@ void ShelfWindowWatcher::OnUserWindowPropertyChanged(aura::Window* window) {
 
   // Update an existing ShelfWindowWatcher item when a window property changes.
   int index = model_->ItemIndexByID(GetShelfID(window));
-  if (index > 0 && user_windows_with_items_.count(window) > 0) {
+  if (index >= 0 && user_windows_with_items_.count(window) > 0) {
     ShelfItem item = model_->items()[index];
     UpdateShelfItemForWindow(&item, window);
     model_->Set(index, item);
