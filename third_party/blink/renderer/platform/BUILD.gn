@@ -1354,6 +1354,7 @@ jumbo_component("platform") {
     "weborigin/security_policy.h",
     "weborigin/security_violation_reporting_policy.h",
     "weborigin/url_security_origin_map.h",
+    "webrtc/webrtc_logging.cc",
     "windows_keyboard_codes.h",
   ]
 

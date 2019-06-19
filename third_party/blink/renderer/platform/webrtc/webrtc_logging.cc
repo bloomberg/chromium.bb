@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc_logging.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 
 #include "base/time/time.h"
-#include "content/public/renderer/webrtc_log_message_delegate.h"
 #include "third_party/webrtc_overrides/rtc_base/logging.h"
 
-namespace content {
+namespace blink {
 
 // Shall only be set once and never go back to NULL.
 WebRtcLogMessageDelegate* g_webrtc_logging_delegate = nullptr;
@@ -30,4 +29,4 @@ void WebRtcLogMessage(const std::string& message) {
     g_webrtc_logging_delegate->LogMessage(message);
 }
 
-}  // namespace content
+}  // namespace blink
