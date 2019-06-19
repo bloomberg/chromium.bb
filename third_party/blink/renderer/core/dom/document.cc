@@ -750,23 +750,22 @@ Document::Document(const DocumentInit& initializer,
     frame_->Client()->DidSetFramePolicyHeaders(GetSandboxFlags(), {});
 
   Document* context_document = ContextDocument();
-  if (context_document) {
-    Frame* context_document_frame = context_document->GetFrame();
-    CHECK(context_document_frame);
+  if (context_document && context_document->GetFrame()) {
     bool has_potential_universal_access_privilege = false;
-    if (Settings* settings = context_document_frame->GetSettings()) {
+    if (Settings* settings = context_document->GetFrame()->GetSettings()) {
       // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
       // dynamically change.
       if (!settings->GetWebSecurityEnabled() ||
           settings->GetAllowUniversalAccessFromFileURLs())
         has_potential_universal_access_privilege = true;
     }
-    SetAgent(context_document_frame->window_agent_factory().GetAgentForOrigin(
-        has_potential_universal_access_privilege, GetIsolate(),
-        GetSecurityOrigin()));
+    SetAgent(
+        context_document->GetFrame()->window_agent_factory().GetAgentForOrigin(
+            has_potential_universal_access_privilege, GetIsolate(),
+            GetSecurityOrigin()));
   } else {
-    // ContextDocument is null only for Documents created in unit tests.
-    // In that case, use a throw away WindowAgent.
+    // If the ContextDocument or its frame is not available, use a throw away
+    // WindowAgent as we do in GetScheduler.
     SetAgent(MakeGarbageCollected<WindowAgent>(GetIsolate()));
   }
 
