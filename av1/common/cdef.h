@@ -37,8 +37,8 @@ static INLINE int constrain(int diff, int threshold, int damping) {
 extern "C" {
 #endif
 
-int cdef_compute_sb_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
-                         cdef_list *dlist, BLOCK_SIZE bsize);
+int av1_cdef_compute_sb_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
+                             cdef_list *dlist, BLOCK_SIZE bsize);
 void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd);
 
 void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,

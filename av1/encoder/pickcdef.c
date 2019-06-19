@@ -467,7 +467,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
 
       // No filtering if the entire filter block is skipped
       if (sb_all_skip(cm, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64)) continue;
-      const int cdef_count = cdef_compute_sb_list(
+      const int cdef_count = av1_cdef_compute_sb_list(
           cm, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64, dlist, bs);
 
       int dirinit = 0;

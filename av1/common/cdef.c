@@ -33,8 +33,8 @@ static int is_8x8_block_skip(MB_MODE_INFO **grid, int mi_row, int mi_col,
   return 1;
 }
 
-int cdef_compute_sb_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
-                         cdef_list *dlist, BLOCK_SIZE bs) {
+int av1_cdef_compute_sb_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
+                             cdef_list *dlist, BLOCK_SIZE bs) {
   MB_MODE_INFO **grid = cm->mi_grid_visible;
   int maxc = cm->mi_cols - mi_col;
   int maxr = cm->mi_rows - mi_row;
@@ -48,16 +48,11 @@ int cdef_compute_sb_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
   else
     maxr = AOMMIN(maxr, MI_SIZE_64X64);
 
-  const int r_step = mi_size_high[BLOCK_8X8];
-  const int c_step = mi_size_wide[BLOCK_8X8];
-  const int r_shift = (r_step == 2);
-  const int c_shift = (c_step == 2);
-
-  assert(r_step == 1 || r_step == 2);
-  assert(c_step == 1 || c_step == 2);
-
+  const int r_step = 2;  // mi_size_high[BLOCK_8X8]
+  const int c_step = 2;  // mi_size_wide[BLOCK_8X8]
+  const int r_shift = 1;
+  const int c_shift = 1;
   int count = 0;
-
   for (int r = 0; r < maxr; r += r_step) {
     for (int c = 0; c < maxc; c += c_step) {
       if (!is_8x8_block_skip(grid, mi_row + r, mi_col + c, cm->mi_stride)) {
@@ -227,9 +222,9 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       uv_sec_strength += uv_sec_strength == 3;
       if ((level == 0 && sec_strength == 0 && uv_level == 0 &&
            uv_sec_strength == 0) ||
-          (cdef_count = cdef_compute_sb_list(cm, fbr * MI_SIZE_64X64,
-                                             fbc * MI_SIZE_64X64, dlist,
-                                             BLOCK_64X64)) == 0) {
+          (cdef_count = av1_cdef_compute_sb_list(cm, fbr * MI_SIZE_64X64,
+                                                 fbc * MI_SIZE_64X64, dlist,
+                                                 BLOCK_64X64)) == 0) {
         cdef_left = 0;
         continue;
       }
