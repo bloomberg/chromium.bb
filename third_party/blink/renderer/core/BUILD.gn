@@ -1228,6 +1228,7 @@ jumbo_source_set("unit_tests") {
     "html/custom/custom_element_test_helpers.h",
     "html/custom/custom_element_upgrade_sorter_test.cc",
     "html/forms/email_input_type_test.cc",
+    "html/forms/external_date_time_chooser_test.cc",
     "html/forms/external_popup_menu_test.cc",
     "html/forms/file_input_type_test.cc",
     "html/forms/form_controller_test.cc",
