@@ -1986,9 +1986,6 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
                                      HitTestingTransformState* transform_state,
                                      double* z_offset) {
   const LayoutObject& layout_object = GetLayoutObject();
-  if (layout_object.PaintBlockedByDisplayLock())
-    return nullptr;
-
   DCHECK_GE(layout_object.GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kCompositingClean);
 
@@ -2156,7 +2153,8 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
 
     // Next we want to see if the mouse pos is inside the child LayoutObjects of
     // the layer. Check every fragment in reverse order.
-    if (IsSelfPaintingLayer()) {
+    if (IsSelfPaintingLayer() && !layout_object.PaintBlockedByDisplayLock(
+                                     DisplayLockContext::kChildren)) {
       // Hit test with a temporary HitTestResult, because we only want to commit
       // to 'result' if we know we're frontmost.
       HitTestResult temp_result(result.GetHitTestRequest(),
@@ -2405,6 +2403,10 @@ PaintLayer* PaintLayer::HitTestChildren(
     return nullptr;
 
   if (!stacking_node_)
+    return nullptr;
+
+  if (GetLayoutObject().PaintBlockedByDisplayLock(
+          DisplayLockContext::kChildren))
     return nullptr;
 
   const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();

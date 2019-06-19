@@ -2577,11 +2577,10 @@ static void CollectDrawableLayersForLayerListRecursively(
     return;
   }
 
-  // TODO(crbug.com/966493): We can't currently collect display-locked elements
-  // as foreign layers. However, if we skip collecting them, then we need to
-  // ensure to notify the display lock context, because when we unlock we need
-  // to force recollecting of graphics layers.
-  if (layer->Client().PaintBlockedByDisplayLock()) {
+  if (layer->Client().PaintBlockedByDisplayLockIncludingAncestors(
+          DisplayLockContextLifecycleTarget::kSelf)) {
+    // If we skip the layer, then we need to ensure to notify the
+    // display-lock, since we need to force recollect the layers when we commit.
     layer->Client().NotifyDisplayLockNeedsGraphicsLayerCollection();
     return;
   }

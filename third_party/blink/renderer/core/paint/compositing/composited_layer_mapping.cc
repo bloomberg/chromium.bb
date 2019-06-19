@@ -3529,9 +3529,19 @@ void CompositedLayerMapping::GraphicsLayersDidChange() {
   frame_view->GraphicsLayersDidChange();
 }
 
-bool CompositedLayerMapping::PaintBlockedByDisplayLock() const {
+bool CompositedLayerMapping::PaintBlockedByDisplayLockIncludingAncestors(
+    DisplayLockContextLifecycleTarget target) const {
   auto* node = GetLayoutObject().GetNode();
-  return node && DisplayLockUtilities::NearestLockedInclusiveAncestor(*node);
+  if (!node)
+    return false;
+  if (target == DisplayLockContextLifecycleTarget::kSelf &&
+      node->IsElementNode()) {
+    if (auto* context = ToElement(node)->GetDisplayLockContext()) {
+      if (!context->ShouldPaint(DisplayLockContext::kSelf))
+        return true;
+    }
+  }
+  return DisplayLockUtilities::NearestLockedExclusiveAncestor(*node);
 }
 
 void CompositedLayerMapping::NotifyDisplayLockNeedsGraphicsLayerCollection() {
