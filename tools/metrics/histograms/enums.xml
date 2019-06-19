@@ -47321,6 +47321,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="ORIGIN_EXTERNAL_REQUEST"/>
   <int value="12" label="ORIGIN_LINK_REL_NEXT"/>
   <int value="13" label="ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER"/>
+  <int value="15" label="ORIGIN_NAVIGATION_PREDICTOR"/>
 </enum>
 
 <enum name="PrerenderPageviewEvents">
