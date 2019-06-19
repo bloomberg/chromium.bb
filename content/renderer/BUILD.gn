@@ -281,8 +281,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/rtc_video_encoder_factory.h",
     "media/webrtc/stun_field_trial.cc",
     "media/webrtc/stun_field_trial.h",
-    "media/webrtc/track_observer.cc",
-    "media/webrtc/track_observer.h",
     "media/webrtc/transceiver_state_surfacer.cc",
     "media/webrtc/transceiver_state_surfacer.h",
     "media/webrtc/transmission_encoding_info_handler.cc",

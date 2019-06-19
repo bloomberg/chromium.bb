@@ -2,27 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_TRACK_OBSERVER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_TRACK_OBSERVER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_TRACK_OBSERVER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_TRACK_OBSERVER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
-namespace content {
+namespace blink {
 
-class CONTENT_EXPORT TrackObserver {
+// TODO(crbug.com/704136): Move the classes below out of the Blink exposed
+// API when all users of it have been Onion souped.
+class BLINK_PLATFORM_EXPORT TrackObserver {
  public:
-  using OnChangedCallback = base::RepeatingCallback<void(
-      webrtc::MediaStreamTrackInterface::TrackState)>;
-
   TrackObserver(const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
                 const scoped_refptr<webrtc::MediaStreamTrackInterface>& track);
   ~TrackObserver();
 
+  using OnChangedCallback = base::RepeatingCallback<void(
+      webrtc::MediaStreamTrackInterface::TrackState)>;
   void SetCallback(const OnChangedCallback& callback);
 
   const scoped_refptr<webrtc::MediaStreamTrackInterface>& track() const;
@@ -33,6 +34,6 @@ class CONTENT_EXPORT TrackObserver {
   DISALLOW_COPY_AND_ASSIGN(TrackObserver);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_TRACK_OBSERVER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_TRACK_OBSERVER_H_

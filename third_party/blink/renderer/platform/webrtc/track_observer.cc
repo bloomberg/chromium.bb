@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/track_observer.h"
+#include "third_party/blink/public/platform/modules/webrtc/track_observer.h"
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
-namespace content {
+namespace blink {
 
-class CONTENT_EXPORT TrackObserver::TrackObserverImpl
-    : public base::RefCountedThreadSafe<TrackObserver::TrackObserverImpl>,
+class TrackObserver::TrackObserverImpl
+    : public WTF::ThreadSafeRefCounted<TrackObserver::TrackObserverImpl>,
       public webrtc::ObserverInterface {
  public:
   TrackObserverImpl(
@@ -58,7 +61,7 @@ class CONTENT_EXPORT TrackObserver::TrackObserverImpl
   }
 
  private:
-  friend class base::RefCountedThreadSafe<TrackObserverImpl>;
+  friend class WTF::ThreadSafeRefCounted<TrackObserverImpl>;
   ~TrackObserverImpl() override {
     DCHECK(!track_.get()) << "must have been unregistered before deleting";
   }
@@ -67,9 +70,10 @@ class CONTENT_EXPORT TrackObserver::TrackObserverImpl
   void OnChanged() override {
     DCHECK(!main_thread_->BelongsToCurrentThread());
     webrtc::MediaStreamTrackInterface::TrackState state = track_->state();
-    main_thread_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&TrackObserverImpl::OnChangedOnMainThread, this, state));
+    PostCrossThreadTask(
+        *main_thread_.get(), FROM_HERE,
+        CrossThreadBindOnce(&TrackObserverImpl::OnChangedOnMainThread,
+                            WrapRefCounted(this), state));
   }
 
   void OnChangedOnMainThread(
@@ -87,8 +91,7 @@ class CONTENT_EXPORT TrackObserver::TrackObserverImpl
 TrackObserver::TrackObserver(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     const scoped_refptr<webrtc::MediaStreamTrackInterface>& track)
-    : observer_(new TrackObserverImpl(main_thread, track)) {
-}
+    : observer_(base::MakeRefCounted<TrackObserverImpl>(main_thread, track)) {}
 
 TrackObserver::~TrackObserver() {
   // Explicitly unregister before releasing our reference.
@@ -103,9 +106,9 @@ void TrackObserver::SetCallback(const OnChangedCallback& callback) {
   observer_->SetCallback(callback);
 }
 
-const scoped_refptr<webrtc::MediaStreamTrackInterface>&
-TrackObserver::track() const {
+const scoped_refptr<webrtc::MediaStreamTrackInterface>& TrackObserver::track()
+    const {
   return observer_->track();
 }
 
-}  // namespace content
+}  // namespace blink
