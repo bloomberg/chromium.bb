@@ -19,6 +19,12 @@
     <org.chromium.chrome.browser.touchless.OpenLastTabView
         android:id="@+id/open_last_tab_button"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingHorizontal="@dimen/open_last_tab_button_padding_horizontal"
+        android:paddingVertical="@dimen/open_last_tab_button_padding_vertical"
+        android:layout_marginBottom="@dimen/open_last_tab_bottom_margin"
+        android:background="@drawable/hairline_border_card_background"
+        style="@style/Theme.AppCompat.Light"/>
 
 </org.chromium.chrome.browser.touchless.TouchlessNewTabPageTopLayout>
