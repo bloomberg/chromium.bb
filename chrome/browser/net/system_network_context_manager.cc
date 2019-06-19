@@ -477,6 +477,8 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
 
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
+
+  registry->RegisterIntegerPref(prefs::kMaxConnectionsPerProxy, -1);
 }
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(
@@ -532,6 +534,11 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
          "application/vnd.wordprocessing-openxml",
          "text/csv"});
   }
+
+  int max_connections_per_proxy =
+      local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
+  if (max_connections_per_proxy != -1)
+    network_service->SetMaxConnectionsPerProxy(max_connections_per_proxy);
 
   // The system NetworkContext must be created first, since it sets
   // |primary_network_context| to true.
