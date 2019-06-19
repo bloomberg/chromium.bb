@@ -1357,6 +1357,7 @@ jumbo_component("platform") {
     "webrtc/peer_connection_remote_audio_source.cc",
     "webrtc/track_observer.cc",
     "webrtc/webrtc_logging.cc",
+    "webrtc/webrtc_video_frame_adapter.cc",
     "windows_keyboard_codes.h",
   ]
 

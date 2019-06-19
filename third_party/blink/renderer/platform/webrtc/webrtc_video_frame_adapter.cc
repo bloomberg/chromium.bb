@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
 
 #include "base/logging.h"
 #include "third_party/webrtc/common_video/include/video_frame_buffer.h"
@@ -80,14 +80,13 @@ void IsValidFrame(const media::VideoFrame& frame) {
 
 }  // anonymous namespace
 
-namespace content {
+namespace blink {
 
 WebRtcVideoFrameAdapter::WebRtcVideoFrameAdapter(
     scoped_refptr<media::VideoFrame> frame)
     : frame_(std::move(frame)) {}
 
-WebRtcVideoFrameAdapter::~WebRtcVideoFrameAdapter() {
-}
+WebRtcVideoFrameAdapter::~WebRtcVideoFrameAdapter() {}
 
 webrtc::VideoFrameBuffer::Type WebRtcVideoFrameAdapter::type() const {
   return Type::kNative;
@@ -137,4 +136,4 @@ const webrtc::I420BufferInterface* WebRtcVideoFrameAdapter::GetI420() const {
   return frame_adapter_.get();
 }
 
-}  // namespace content
+}  // namespace blink
