@@ -2628,7 +2628,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
 
   // Test policy-installed extensions are reloaded when killed.
   {
-    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
     BackgroundContentsService::
         SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(0);
     content::WindowedNotificationObserver extension_crashed_observer(
@@ -2639,8 +2638,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
     extensions::ExtensionHost* extension_host =
         extensions::ProcessManager::Get(browser()->profile())
             ->GetBackgroundHostForExtension(kGoodCrxId);
-    extension_host->render_process_host()->Shutdown(
-        content::RESULT_CODE_KILLED);
+    content::RenderProcessHost* process = extension_host->render_process_host();
+    content::ScopedAllowRendererCrashes allow_renderer_crashes(process);
+    process->Shutdown(content::RESULT_CODE_KILLED);
     extension_crashed_observer.Wait();
     extension_loaded_observer.WaitForExtensionLoaded();
   }
