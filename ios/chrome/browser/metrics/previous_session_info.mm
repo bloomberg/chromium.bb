@@ -60,6 +60,9 @@ DeviceThermalState GetThermalStateFromNSProcessInfoThermalState(
 NSString* const kLastRanVersion = @"LastRanVersion";
 // - The (string) device language.
 NSString* const kLastRanLanguage = @"LastRanLanguage";
+// - The (integer) available device storage, in kilobytes.
+NSString* const kPreviousSessionInfoAvailableDeviceStorage =
+    @"PreviousSessionInfoAvailableDeviceStorage";
 // - The (float) battery charge level.
 NSString* const kPreviousSessionInfoBatteryLevel =
     @"PreviousSessionInfoBatteryLevel";
@@ -90,6 +93,7 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 @property(nonatomic, assign) BOOL didBeginRecordingCurrentSession;
 
 // Redefined to be read-write.
+@property(nonatomic, assign) NSInteger availableDeviceStorage;
 @property(nonatomic, assign) float deviceBatteryLevel;
 @property(nonatomic, assign) DeviceBatteryState deviceBatteryState;
 @property(nonatomic, assign) DeviceThermalState deviceThermalState;
@@ -103,6 +107,7 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 
 @implementation PreviousSessionInfo
 
+@synthesize availableDeviceStorage = _availableDeviceStorage;
 @synthesize deviceBatteryLevel = _deviceBatteryLevel;
 @synthesize deviceBatteryState = _deviceBatteryState;
 @synthesize deviceThermalState = _deviceThermalState;
@@ -124,6 +129,8 @@ static PreviousSessionInfo* gSharedInstance = nil;
 
     // Load the persisted information.
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    gSharedInstance.availableDeviceStorage =
+        [defaults integerForKey:kPreviousSessionInfoAvailableDeviceStorage];
     gSharedInstance.didSeeMemoryWarningShortlyBeforeTerminating =
         [defaults boolForKey:previous_session_info_constants::
                                  kDidSeeMemoryWarningShortlyBeforeTerminating];
@@ -218,6 +225,15 @@ static PreviousSessionInfo* gSharedInstance = nil;
 
   // Save critical state information for crash detection.
   [defaults synchronize];
+}
+
+- (void)updateAvailableDeviceStorage:(NSInteger)availableStorage {
+  if (!self.didBeginRecordingCurrentSession)
+    return;
+
+  [[NSUserDefaults standardUserDefaults]
+      setInteger:availableStorage
+          forKey:kPreviousSessionInfoAvailableDeviceStorage];
 }
 
 - (void)updateStoredBatteryLevel {

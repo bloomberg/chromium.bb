@@ -50,6 +50,9 @@ enum class DeviceBatteryState {
 @property(nonatomic, assign, readonly)
     previous_session_info_constants::DeviceBatteryState deviceBatteryState;
 
+// The storage available, in kilobytes, at the end of the previous session.
+@property(nonatomic, assign, readonly) NSInteger availableDeviceStorage;
+
 // The thermal state of the device at the end of the previous session.
 @property(nonatomic, assign, readonly)
     previous_session_info_constants::DeviceThermalState deviceThermalState;
@@ -80,6 +83,9 @@ enum class DeviceBatteryState {
 // Clears the persisted information about the previous session and starts
 // persisting information about the current session, for use in a next session.
 - (void)beginRecordingCurrentSession;
+
+// Updates the currently available device storage, in kilobytes.
+- (void)updateAvailableDeviceStorage:(NSInteger)availableStorage;
 
 // Updates the saved last known battery level of the device.
 - (void)updateStoredBatteryLevel;
