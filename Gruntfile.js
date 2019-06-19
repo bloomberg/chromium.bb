@@ -51,7 +51,7 @@ module.exports = function(grunt) {
       },
       'check-git-is-clean': {
         cmd: 'git',
-        args: ['diff-index', '--quiet', 'HEAD', '--']
+        args: ['diff-index', '--quiet', 'HEAD']
       }
     },
 
@@ -122,7 +122,7 @@ module.exports = function(grunt) {
     'run:test',
 
     // 'format',  // TODO
-    'run:fix',
+    // 'run:fix',  // TODO
     'run:check-git-is-clean',
   ]);
 };
