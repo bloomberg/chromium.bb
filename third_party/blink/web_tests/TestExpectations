@@ -5686,7 +5686,7 @@ crbug.com/906952 editing/pasteboard/file-drag-to-editable.html [ Pass Crash ]
 
 # See also crbug.com/907150
 crbug.com/667560 http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Failure Timeout ]
-crbug.com/907412 [ Mac10.13 ] external/wpt/domxpath/xml_xpath_runner.html [ Pass Timeout ]
+crbug.com/907412 external/wpt/domxpath/xml_xpath_runner.html [ Pass Timeout ]
 
 #Sheriff 2018-11-22
 crbug.com/907862 [ Mac10.13 ] gamepad/multiple-event-listeners.html [ Pass Failure ]
