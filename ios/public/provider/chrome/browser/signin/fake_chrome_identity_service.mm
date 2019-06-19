@@ -124,6 +124,22 @@ FakeChromeIdentityService::CreateAccountDetailsController(
   return navigationController;
 }
 
+DismissASMViewControllerBlock
+FakeChromeIdentityService::PresentAccountDetailsController(
+    ChromeIdentity* identity,
+    UIViewController* viewController,
+    BOOL animated) {
+  UIViewController* accountDetailsViewController =
+      [[FakeAccountDetailsViewController alloc] initWithIdentity:identity];
+  [viewController presentViewController:accountDetailsViewController
+                               animated:animated
+                             completion:nil];
+  return ^(BOOL animated) {
+    [accountDetailsViewController dismissViewControllerAnimated:animated
+                                                     completion:nil];
+  };
+}
+
 ChromeIdentityInteractionManager*
 FakeChromeIdentityService::CreateChromeIdentityInteractionManager(
     ios::ChromeBrowserState* browser_state,

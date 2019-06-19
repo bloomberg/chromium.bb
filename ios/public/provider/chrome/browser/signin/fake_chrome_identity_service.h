@@ -27,6 +27,10 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   UINavigationController* CreateAccountDetailsController(
       ChromeIdentity* identity,
       id<ChromeIdentityBrowserOpener> browser_opener) override;
+  DismissASMViewControllerBlock PresentAccountDetailsController(
+      ChromeIdentity* identity,
+      UIViewController* viewController,
+      BOOL animated) override;
   ChromeIdentityInteractionManager* CreateChromeIdentityInteractionManager(
       ios::ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const override;
