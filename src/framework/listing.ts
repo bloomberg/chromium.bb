@@ -38,22 +38,16 @@ function* concat(lists: IPendingEntry[][]): Iterator<IPendingEntry> {
 
 type TestGroupFilter = (testcase: ICase) => boolean;
 
-class TestGroupFiltered implements ITestGroup {
-  private group: ITestGroup;
-  private filter: TestGroupFilter;
-
-  constructor(group: ITestGroup, filter: TestGroupFilter) {
-    this.group = group;
-    this.filter = filter;
-  }
-
-  public *iterate(log: GroupRecorder): Iterable<RunCase> {
-    for (const rc of this.group.iterate(log)) {
-      if (this.filter(rc.testcase)) {
-        yield rc;
+function filterTestGroup(group: ITestGroup, filter: TestGroupFilter) {
+  return {
+    * iterate(log: GroupRecorder): Iterable<RunCase> {
+      for (const rc of group.iterate(log)) {
+        if (filter(rc.testcase)) {
+          yield rc;
+        }
       }
-    }
-  }
+    },
+  };
 }
 
 function filterByGroup({ suite, groups }: IListing, groupPrefix: string): IPendingEntry[] {
@@ -79,7 +73,7 @@ async function filterByTestMatch(suite: string, group: string, testPrefix: strin
   }
   return {
     description: node.description,
-    group: new TestGroupFiltered(node.group, testcase => testcase.name.startsWith(testPrefix)),
+    group: filterTestGroup(node.group, testcase => testcase.name.startsWith(testPrefix)),
   };
 }
 
@@ -90,7 +84,7 @@ async function filterByParamsExact(suite: string, group: string, test: string, p
   }
   return {
     description: node.description,
-    group: new TestGroupFiltered(node.group, testcase =>
+    group: filterTestGroup(node.group, testcase =>
       testcase.name === test && objectEquals(testcase.params, paramsExact)),
   };
 }
