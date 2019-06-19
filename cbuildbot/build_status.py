@@ -31,7 +31,7 @@ class SlaveStatus(object):
   it will only interpret slave statuses by querying CIDB.
   """
 
-  BUILD_START_TIMEOUT_MIN = 5
+  BUILD_START_TIMEOUT_MIN = 30
 
   ACCEPTED_STATUSES = (constants.BUILDER_STATUS_PASSED,
                        constants.BUILDER_STATUS_SKIPPED,)
