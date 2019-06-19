@@ -301,8 +301,16 @@ static int32_t read_tile_group_header(AV1Decoder *pbi,
     *end_tile = aom_rb_read_literal(rb, tile_bits);
   }
   if (*start_tile > *end_tile) {
+    aom_internal_error(
+        &cm->error, AOM_CODEC_CORRUPT_FRAME,
+        "tg_end (%d) must be greater than or equal to tg_start (%d)", *end_tile,
+        *start_tile);
+    return -1;
+  }
+  if (*end_tile >= num_tiles) {
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "tg_end must be greater than or equal to tg_start");
+                       "tg_end (%d) must be less than NumTiles (%d)", *end_tile,
+                       num_tiles);
     return -1;
   }
 
