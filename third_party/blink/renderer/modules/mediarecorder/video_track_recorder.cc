@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediarecorder/video_track_recorder.h"
+#include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -19,7 +19,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/public/public_buildflags.h"
+#include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
 #include "third_party/blink/renderer/modules/mediarecorder/vea_encoder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/vpx_encoder.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"

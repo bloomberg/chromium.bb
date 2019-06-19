@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VPX_ENCODER_H_
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/web/modules/mediarecorder/video_track_recorder.h"
+#include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"

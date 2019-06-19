@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIARECORDER_AUDIO_TRACK_RECORDER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIARECORDER_AUDIO_TRACK_RECORDER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_AUDIO_TRACK_RECORDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_AUDIO_TRACK_RECORDER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace media {
 class AudioBus;
@@ -30,7 +30,7 @@ class Thread;
 // the "capture thread"). It owns an internal thread to use for encoding, on
 // which lives an AudioTrackEncoder with its own threading subtleties, see the
 // implementation file.
-class BLINK_MODULES_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
+class MODULES_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
  public:
   enum class CodecId {
     // Do not change the order of codecs. Add new ones right before LAST.
@@ -93,4 +93,4 @@ class BLINK_MODULES_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIARECORDER_AUDIO_TRACK_RECORDER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_AUDIO_TRACK_RECORDER_H_

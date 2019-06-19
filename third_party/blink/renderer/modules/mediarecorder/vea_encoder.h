@@ -8,7 +8,7 @@
 #include "base/containers/queue.h"
 #include "base/single_thread_task_runner.h"
 #include "media/video/video_encode_accelerator.h"
-#include "third_party/blink/public/web/modules/mediarecorder/video_track_recorder.h"
+#include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/size.h"

@@ -23,7 +23,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler_client.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/public_buildflags.h"
+#include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 

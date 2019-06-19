@@ -2,8 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//third_party/blink/renderer/modules/modules.gni")
 import("//third_party/webrtc/webrtc.gni")
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [ "RTC_USE_H264=$rtc_use_h264" ]
+}
 
 blink_modules_sources("mediarecorder") {
   sources = [
@@ -30,6 +36,7 @@ blink_modules_sources("mediarecorder") {
   ]
 
   deps = [
+    ":buildflags",
     "//third_party/libvpx",
     "//third_party/libyuv",
     "//third_party/opus",

@@ -6,14 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_H264_ENCODER_H_
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/public_buildflags.h"
+#include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
 
 #if !BUILDFLAG(RTC_USE_H264)
 #error RTC_USE_H264 should be defined.
 #endif  // #if BUILDFLAG(RTC_USE_H264)
 
 #include "base/time/time.h"
-#include "third_party/blink/public/web/modules/mediarecorder/video_track_recorder.h"
+#include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
 #include "third_party/openh264/src/codec/api/svc/codec_api.h"
 
 namespace blink {

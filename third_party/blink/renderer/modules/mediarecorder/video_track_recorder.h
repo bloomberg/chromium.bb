@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -16,20 +15,15 @@
 #include "build/build_config.h"
 #include "media/muxers/webm_muxer.h"
 #include "media/video/video_encode_accelerator.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-
-// TODO(crbug.com/960665): Remove all INSIDE_BLINK definition in this header
-// once this header file moves to blink/renderer.
-#if INSIDE_BLINK
+#include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
-#endif
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace base {
 class Thread;
@@ -54,7 +48,6 @@ const int kVEAEncoderMinResolutionHeight = 480;
 #endif
 }  // namespace video_track_recorder
 
-#if INSIDE_BLINK
 namespace WTF {
 
 template <>
@@ -65,7 +58,6 @@ struct CrossThreadCopier<media::WebmMuxer::VideoParameters> {
 };
 
 }  // namespace WTF
-#endif
 
 namespace blink {
 
@@ -77,10 +69,7 @@ class Thread;
 // MediaStreamVideo* classes that are constructed/configured on Main Render
 // thread but that pass frames on Render IO thread. It has an internal Encoder
 // with its own threading subtleties, see the implementation file.
-//
-// TODO(crbug.com/960665): Move this class out of the Blink exposed API and
-// when MediaRecorderHandler have been Onion souped.
-class BLINK_MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
+class MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
  public:
   // Do not change the order of codecs; add new ones right before LAST.
   enum class CodecId {
@@ -98,9 +87,8 @@ class BLINK_MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
       std::unique_ptr<std::string> encoded_alpha,
       base::TimeTicks capture_timestamp,
       bool is_key_frame)>;
-  using OnErrorCB = base::Closure;
+  using OnErrorCB = base::RepeatingClosure;
 
-#if INSIDE_BLINK
   // Wraps a counter in a class in order to enable use of base::WeakPtr<>.
   // See https://crbug.com/859610 for why this was added.
   class Counter {
@@ -227,7 +215,7 @@ class BLINK_MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
   // Class to encapsulate the enumeration of CodecIds/VideoCodecProfiles
   // supported by the VEA underlying platform. Provides methods to query the
   // preferred CodecId and to check if a given CodecId is supported.
-  class BLINK_MODULES_EXPORT CodecEnumerator {
+  class MODULES_EXPORT CodecEnumerator {
    public:
     CodecEnumerator(const media::VideoEncodeAccelerator::SupportedProfiles&
                         vea_supported_profiles);
@@ -255,7 +243,6 @@ class BLINK_MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
 
     DISALLOW_COPY_AND_ASSIGN(CodecEnumerator);
   };
-#endif
 
   static CodecId GetPreferredCodecId();
 
@@ -299,9 +286,6 @@ class BLINK_MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
   WebMediaStreamTrack track_;
 
   // Inner class to encode using whichever codec is configured.
-#if !INSIDE_BLINK
-  class Encoder;
-#endif
   scoped_refptr<Encoder> encoder_;
 
   base::RepeatingCallback<void(bool allow_vea_encoder,
@@ -320,4 +304,4 @@ class BLINK_MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
