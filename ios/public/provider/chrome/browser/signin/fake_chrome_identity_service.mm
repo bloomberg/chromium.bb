@@ -113,17 +113,6 @@ FakeChromeIdentityService::GetInstanceFromChromeProvider() {
       ios::GetChromeBrowserProvider()->GetChromeIdentityService());
 }
 
-UINavigationController*
-FakeChromeIdentityService::CreateAccountDetailsController(
-    ChromeIdentity* identity,
-    id<ChromeIdentityBrowserOpener> browser_opener) {
-  UIViewController* accountDetailsViewController =
-      [[FakeAccountDetailsViewController alloc] initWithIdentity:identity];
-  UINavigationController* navigationController = [[UINavigationController alloc]
-      initWithRootViewController:accountDetailsViewController];
-  return navigationController;
-}
-
 DismissASMViewControllerBlock
 FakeChromeIdentityService::PresentAccountDetailsController(
     ChromeIdentity* identity,

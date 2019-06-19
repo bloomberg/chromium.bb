@@ -24,9 +24,6 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   static FakeChromeIdentityService* GetInstanceFromChromeProvider();
 
   // ChromeIdentityService implementation.
-  UINavigationController* CreateAccountDetailsController(
-      ChromeIdentity* identity,
-      id<ChromeIdentityBrowserOpener> browser_opener) override;
   DismissASMViewControllerBlock PresentAccountDetailsController(
       ChromeIdentity* identity,
       UIViewController* viewController,

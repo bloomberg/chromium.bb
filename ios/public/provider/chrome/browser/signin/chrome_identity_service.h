@@ -104,12 +104,6 @@ class ChromeIdentityService {
   // Dismisses all the dialogs created by the abstracted flows.
   virtual void DismissDialogs();
 
-  // Deprecated. Please use PresentAccountDetailsController().
-  // See: crbug.com/858845.
-  virtual UINavigationController* CreateAccountDetailsController(
-      ChromeIdentity* identity,
-      id<ChromeIdentityBrowserOpener> browser_opener);
-
   // Presents a new Account Details view.
   // |identity| the identity used to present the view.
   // |view_controller| the view to present the details view.
