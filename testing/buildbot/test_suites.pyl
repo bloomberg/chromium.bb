@@ -3420,7 +3420,6 @@
       }
     },
 
-
     'gpu_skia_renderer_telemetry_tests': {
       'skia_renderer_pixel_skia_gold_test': {
         'name': 'skia_renderer_pixel_skia_gold_test',
@@ -3457,6 +3456,23 @@
           'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
         },
         'telemetry_test_name': 'pixel',
+      },
+    },
+
+    'gpu_skia_renderer_vulkan_gtests': {
+      'vulkan_content_browsertests': {
+        'args': [
+          '--use-vulkan=native',
+          '--disable-vulkan-fallback-to-gl-for-testing',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_content_browsertests.filter',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'android_swarming': {
+          'shards': 12,
+        },
+        'test': 'content_browsertests',
       },
     },
 

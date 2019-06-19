@@ -2519,6 +2519,19 @@
           'gpu_telemetry_tests': 'gpu_fyi_android_webgl2_and_gold_telemetry_tests',
         },
       },
+      'Android FYI SkiaRenderer Vulkan (Pixel 2)': {
+        'os_type': 'android',
+        'browser_config': 'android-chromium',
+        'skip_merge_script': True,
+        'mixins': [
+          'gpu_pool',
+          'pie',
+          'walleye',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_skia_renderer_vulkan_gtests',
+        },
+      },
       'Android FYI dEQP Release (Nexus 5X)': {
         'os_type': 'android',
         'skip_merge_script': True,

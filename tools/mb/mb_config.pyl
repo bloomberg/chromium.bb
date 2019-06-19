@@ -378,6 +378,7 @@
       'Android FYI 32 dEQP Vk Release (Pixel XL)': 'deqp_android_vulkan_release_trybot',
       'Android FYI 64 dEQP Vk Release (Pixel 2)': 'deqp_android_vulkan_release_trybot_arm64',
       'Android FYI 64 dEQP Vk Release (Pixel XL)': 'deqp_android_vulkan_release_trybot_arm64',
+      'Android FYI SkiaRenderer Vulkan (Pixel 2)': 'gpu_tests_android_release_trybot',
       'GPU FYI Linux Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Linux Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'GPU FYI Linux Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
