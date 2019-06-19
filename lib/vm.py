@@ -320,7 +320,12 @@ class VM(device.Device):
     if not self.image_path:
       raise VMError('No VM image found. Use cros chrome-sdk --download-vm.')
     if not os.path.isfile(self.image_path):
-      raise VMError('VM image does not exist: %s' % self.image_path)
+      # Checks if the image path points to a directory containing the bin file.
+      image_path = os.path.join(self.image_path, constants.VM_IMAGE_BIN)
+      if os.path.isfile(image_path):
+        self.image_path = image_path
+      else:
+        raise VMError('VM image does not exist: %s' % self.image_path)
     logging.debug('VM image path: %s', self.image_path)
 
   def _WaitForSSHPort(self):

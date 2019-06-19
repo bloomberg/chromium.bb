@@ -111,3 +111,10 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     osutils.WriteFile(self._vm.pidfile, pid)
     self._vm.Stop()
     self.assertCommandContains(['kill', '-9', pid])
+
+  def testAppendBinFile(self):
+    """When image-path points to a directory, we should append the bin file."""
+    self._vm.image_path = self.tempdir
+    self._vm.Start()
+    self.assertEqual(self._vm.image_path,
+                     self.TempFilePath('chromiumos_qemu_image.bin'))
