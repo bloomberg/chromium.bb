@@ -510,7 +510,6 @@ jumbo_component("platform") {
     "exported/web_media_player_client.cc",
     "exported/web_media_player_encrypted_media_client.cc",
     "exported/web_media_player_source.cc",
-    "exported/web_media_recorder_handler.cc",
     "exported/web_media_stream.cc",
     "exported/web_media_stream_audio_sink.cc",
     "exported/web_media_stream_source.cc",

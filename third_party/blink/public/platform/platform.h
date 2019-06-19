@@ -114,7 +114,6 @@ class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
-class WebMediaRecorderHandler;
 class WebMediaStreamCenter;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
@@ -586,11 +585,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual std::unique_ptr<WebRTCPeerConnectionHandler>
   CreateRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*,
                                  scoped_refptr<base::SingleThreadTaskRunner>);
-
-  // Creates a WebMediaRecorderHandler to record MediaStreams.
-  // May return null if the functionality is not available or out of resources.
-  virtual std::unique_ptr<WebMediaRecorderHandler> CreateMediaRecorderHandler(
-      scoped_refptr<base::SingleThreadTaskRunner>);
 
   // May return null if WebRTC functionality is not available or out of
   // resources.
