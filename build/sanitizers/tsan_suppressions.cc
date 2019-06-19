@@ -124,9 +124,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/415472
     "deadlock:base::trace_event::TraceLog::GetCategoryGroupEnabled\n"
 
-    // http://crbug.com/490856
-    "deadlock:content::TracingControllerImpl::SetEnabledOnFileThread\n"
-
     // Lock inversion in third party code, won't fix.
     // https://crbug.com/455638
     "deadlock:dbus::Bus::ShutdownAndBlock\n"
