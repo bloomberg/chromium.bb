@@ -54,7 +54,7 @@ void SetLockedFullscreenState(Browser* browser, bool locked) {
 
   // Reset the clipboard and kill dev tools when entering or exiting locked
   // fullscreen (security concerns).
-  ui::Clipboard::GetForCurrentThread()->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardType::kCopyPaste);
   content::DevToolsAgentHost::DetachAllClients();
 
   // Disable ARC while in the locked fullscreen mode.

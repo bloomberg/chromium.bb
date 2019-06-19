@@ -562,7 +562,7 @@ TEST_F(OmniboxViewViewsTest, BackspaceExitsKeywordMode) {
 
 TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
   command_updater()->UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, true);
 
   // Test command is disabled for an empty clipboard.
@@ -619,7 +619,7 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
   ASSERT_TRUE(omnibox_view()->IsSelectAll());
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
 
   clipboard->Clear(clipboard_type);
   ui::TextEditCommand clipboard_command = GetParam();
@@ -655,7 +655,7 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutUserText) {
   ASSERT_TRUE(omnibox_view()->IsSelectAll());
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
 
   clipboard->Clear(clipboard_type);
   ui::TextEditCommand clipboard_command = GetParam();

@@ -1691,7 +1691,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CopyURL) {
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   base::string16 result;
-  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
+  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &result);
   EXPECT_EQ(result, base::UTF8ToUTF16(kExampleURL));
 }
 

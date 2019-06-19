@@ -2593,18 +2593,18 @@ BrowserTestClipboardScope::~BrowserTestClipboardScope() {
 }
 
 void BrowserTestClipboardScope::SetRtf(const std::string& rtf) {
-  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
   clipboard_writer.WriteRTF(rtf);
 }
 
 void BrowserTestClipboardScope::SetText(const std::string& text) {
-  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
   clipboard_writer.WriteText(base::ASCIIToUTF16(text));
 }
 
 void BrowserTestClipboardScope::GetText(std::string* result) {
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
-      ui::CLIPBOARD_TYPE_COPY_PASTE, result);
+      ui::ClipboardType::kCopyPaste, result);
 }
 
 class FrameFocusedObserver::FrameTreeNodeObserverImpl

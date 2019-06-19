@@ -1296,7 +1296,7 @@ bool IsDebuggerAttachedToCurrentTab(Browser* browser) {
 }
 
 void CopyURL(Browser* browser) {
-  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
   scw.WriteText(base::UTF8ToUTF16(browser->tab_strip_model()
                                       ->GetActiveWebContents()
                                       ->GetVisibleURL()
