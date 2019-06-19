@@ -13,6 +13,7 @@ from __future__ import print_function
 import os
 
 from chromite.api import controller
+from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import test_pb2
 from chromite.lib import build_target_util
@@ -48,16 +49,12 @@ def DebugInfoTest(input_proto, _output_proto):
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
 
+@validate.require('build_target.name', 'result_path')
 def BuildTargetUnitTest(input_proto, output_proto):
   """Run a build target's ebuild unit tests."""
   # Required args.
   board = input_proto.build_target.name
   result_path = input_proto.result_path
-
-  if not board:
-    cros_build_lib.Die('build_target.name is required.')
-  if not result_path:
-    cros_build_lib.Die('result_path is required.')
 
   # Method flags.
   # An empty sysroot means build packages was not run. This is used for
@@ -103,26 +100,21 @@ def ChromiteUnitTest(_input_proto, _output_proto):
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
 
+@validate.require('build_target.name', 'vm_path.path', 'test_harness',
+                  'vm_tests')
 def VmTest(input_proto, _output_proto):
   """Run VM tests."""
-  if not input_proto.HasField('build_target'):
-    cros_build_lib.Die('build_target is required')
-  build_target = input_proto.build_target
-
-  vm_path = input_proto.vm_path
-  if not vm_path.path:
-    cros_build_lib.Die('vm_path.path is required.')
+  build_target_name = input_proto.build_target.name
+  vm_path = input_proto.vm_path.path
 
   test_harness = input_proto.test_harness
   if test_harness == test_pb2.VmTestRequest.UNSPECIFIED:
     cros_build_lib.Die('test_harness is required')
 
   vm_tests = input_proto.vm_tests
-  if not vm_tests:
-    cros_build_lib.Die('vm_tests must contain at least one element')
 
   cmd = ['cros_run_test', '--debug', '--no-display', '--copy-on-write',
-         '--board', build_target.name, '--image-path', vm_path.path,
+         '--board', build_target_name, '--image-path', vm_path,
          '--%s' % test_pb2.VmTestRequest.TestHarness.Name(test_harness).lower()]
   cmd.extend(vm_test.pattern for vm_test in vm_tests)
 

@@ -13,6 +13,7 @@ from __future__ import print_function
 import os
 
 from chromite.api import controller
+from chromite.api import validate
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import constants
@@ -42,6 +43,7 @@ _VM_IMAGE_MAPPING = {
 }
 
 
+@validate.require('build_target.name')
 def Create(input_proto, output_proto):
   """Build an image.
 
@@ -50,8 +52,6 @@ def Create(input_proto, output_proto):
     output_proto (image_pb2.CreateImageResult): The output message.
   """
   board = input_proto.build_target.name
-  if not board:
-    cros_build_lib.Die('build_target.name is required.')
 
   # Build the base image if no images provided.
   to_build = input_proto.image_types or [_BASE_ID]
@@ -158,6 +158,8 @@ def _PopulateBuiltImages(board, image_types, output_proto):
     new_image.build_target.name = board
 
 
+@validate.require('build_target.name', 'result.directory')
+@validate.exists('image.path')
 def Test(input_proto, output_proto):
   """Run image tests.
 
@@ -168,13 +170,6 @@ def Test(input_proto, output_proto):
   image_path = input_proto.image.path
   board = input_proto.build_target.name
   result_directory = input_proto.result.directory
-
-  if not board:
-    cros_build_lib.Die('The build_target.name is required.')
-  if not result_directory:
-    cros_build_lib.Die('The result.directory is required.')
-  if not image_path:
-    cros_build_lib.Die('The image.path is required.')
 
   if not os.path.isfile(image_path) or not image_path.endswith('.bin'):
     cros_build_lib.Die(

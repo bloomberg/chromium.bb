@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import urlparse
 
+from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import binhost_pb2
 from chromite.lib import build_target_util
@@ -26,13 +27,10 @@ _OVERLAY_TYPE_TO_NAME = {
 }
 
 
+@validate.require('build_target.name')
 def GetBinhosts(input_proto, output_proto):
   """Get a list of binhosts."""
-  target_name = input_proto.build_target.name
-  if not target_name:
-    cros_build_lib.Die('BuildTarget.name is required.')
-
-  build_target = build_target_util.BuildTarget(target_name)
+  build_target = build_target_util.BuildTarget(input_proto.build_target.name)
 
   binhosts = binhost.GetBinhosts(build_target)
 
@@ -42,13 +40,10 @@ def GetBinhosts(input_proto, output_proto):
     new_binhost.package_index = 'Packages'
 
 
+@validate.require('build_target.name')
 def GetPrivatePrebuiltAclArgs(input_proto, output_proto):
   """Get the ACL args from the files in the private overlays."""
-  build_target_name = input_proto.build_target.name
-  if not build_target_name:
-    cros_build_lib.Die('Build target name is required.')
-
-  build_target = build_target_util.BuildTarget(build_target_name)
+  build_target = build_target_util.BuildTarget(input_proto.build_target.name)
 
   try:
     args = binhost.GetPrebuiltAclArgs(build_target)
@@ -109,6 +104,7 @@ def PrepareBinhostUploads(input_proto, output_proto):
     output_proto.upload_targets.add().path = upload_target.strip('/')
 
 
+@validate.require('build_target.name', 'uri')
 def SetBinhost(input_proto, output_proto):
   """Set the URI for a given binhost key and build target.
 
