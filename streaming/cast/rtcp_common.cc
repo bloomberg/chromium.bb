@@ -14,8 +14,8 @@ namespace cast_streaming {
 RtcpCommonHeader::RtcpCommonHeader() = default;
 RtcpCommonHeader::~RtcpCommonHeader() = default;
 
-void RtcpCommonHeader::Serialize(absl::Span<uint8_t> buffer) const {
-  OSP_CHECK_GE(buffer.size(), kRtcpCommonHeaderSize);
+void RtcpCommonHeader::AppendFields(absl::Span<uint8_t>* buffer) const {
+  OSP_CHECK_GE(buffer->size(), kRtcpCommonHeaderSize);
 
   uint8_t byte0 = kRtcpRequiredVersionAndPaddingBits
                   << kRtcpReportCountFieldNumBits;
@@ -47,13 +47,13 @@ void RtcpCommonHeader::Serialize(absl::Span<uint8_t> buffer) const {
       OSP_NOTREACHED();
       break;
   }
-  AppendField<uint8_t>(byte0, &buffer);
+  AppendField<uint8_t>(byte0, buffer);
 
-  AppendField<uint8_t>(static_cast<uint8_t>(packet_type), &buffer);
+  AppendField<uint8_t>(static_cast<uint8_t>(packet_type), buffer);
 
   // The size of the packet must be evenly divisible by the 32-bit word size.
   OSP_DCHECK_EQ(0, payload_size % sizeof(uint32_t));
-  AppendField<uint16_t>(payload_size / sizeof(uint32_t), &buffer);
+  AppendField<uint16_t>(payload_size / sizeof(uint32_t), buffer);
 }
 
 // static
@@ -113,10 +113,10 @@ absl::optional<RtcpCommonHeader> RtcpCommonHeader::Parse(
 RtcpReportBlock::RtcpReportBlock() = default;
 RtcpReportBlock::~RtcpReportBlock() = default;
 
-void RtcpReportBlock::Serialize(absl::Span<uint8_t> buffer) const {
-  OSP_CHECK_GE(buffer.size(), kRtcpReportBlockSize);
+void RtcpReportBlock::AppendFields(absl::Span<uint8_t>* buffer) const {
+  OSP_CHECK_GE(buffer->size(), kRtcpReportBlockSize);
 
-  AppendField<uint32_t>(ssrc, &buffer);
+  AppendField<uint32_t>(ssrc, buffer);
   OSP_DCHECK_GE(packet_fraction_lost_numerator,
                 std::numeric_limits<uint8_t>::min());
   OSP_DCHECK_LE(packet_fraction_lost_numerator,
@@ -129,17 +129,17 @@ void RtcpReportBlock::Serialize(absl::Span<uint8_t> buffer) const {
        << kRtcpCumulativePacketsFieldNumBits) |
           (static_cast<int>(cumulative_packets_lost) &
            FieldBitmask<uint32_t>(kRtcpCumulativePacketsFieldNumBits)),
-      &buffer);
-  AppendField<uint32_t>(extended_high_sequence_number, &buffer);
+      buffer);
+  AppendField<uint32_t>(extended_high_sequence_number, buffer);
   const int64_t jitter_ticks = jitter / RtpTimeDelta::FromTicks(1);
   OSP_DCHECK_GE(jitter_ticks, 0);
   OSP_DCHECK_LE(jitter_ticks, int64_t{std::numeric_limits<uint32_t>::max()});
-  AppendField<uint32_t>(jitter_ticks, &buffer);
-  AppendField<uint32_t>(last_status_report_id, &buffer);
+  AppendField<uint32_t>(jitter_ticks, buffer);
+  AppendField<uint32_t>(last_status_report_id, buffer);
   const int64_t delay_ticks = delay_since_last_report.count();
   OSP_DCHECK_GE(delay_ticks, 0);
   OSP_DCHECK_LE(delay_ticks, int64_t{std::numeric_limits<uint32_t>::max()});
-  AppendField<uint32_t>(delay_ticks, &buffer);
+  AppendField<uint32_t>(delay_ticks, buffer);
 }
 
 // static

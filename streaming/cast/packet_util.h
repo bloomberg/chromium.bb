@@ -38,6 +38,15 @@ constexpr Integer FieldBitmask(unsigned field_size_in_bits) {
   return (Integer{1} << field_size_in_bits) - 1;
 }
 
+// Reserves |num_bytes| from the beginning of the given span, returning the
+// reserved space.
+inline absl::Span<uint8_t> ReserveSpace(int num_bytes,
+                                        absl::Span<uint8_t>* out) {
+  const absl::Span<uint8_t> reserved = out->subspan(0, num_bytes);
+  out->remove_prefix(num_bytes);
+  return reserved;
+}
+
 // Performs a quick-scan of the packet data for the purposes of routing it to an
 // appropriate parser. Identifies whether the packet is a RTP packet, RTCP
 // packet, or unknown; and provides the originator's SSRC. This only performs a

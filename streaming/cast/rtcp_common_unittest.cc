@@ -11,6 +11,15 @@ namespace openscreen {
 namespace cast_streaming {
 namespace {
 
+template <typename T>
+void SerializeAndExpectPointerAdvanced(const T& source,
+                                       int num_bytes,
+                                       uint8_t* buffer) {
+  absl::Span<uint8_t> buffer_span(buffer, num_bytes);
+  source.AppendFields(&buffer_span);
+  EXPECT_EQ(buffer + num_bytes, buffer_span.data());
+}
+
 // Tests that the RTCP Common Header for a packet type that includes an Item
 // Count is successfully serialized and re-parsed.
 TEST(RtcpCommonTest, SerializesAndParsesHeaderForSenderReports) {
@@ -20,7 +29,7 @@ TEST(RtcpCommonTest, SerializesAndParsesHeaderForSenderReports) {
   original.payload_size = 16;
 
   uint8_t buffer[kRtcpCommonHeaderSize];
-  original.Serialize(buffer);
+  SerializeAndExpectPointerAdvanced(original, kRtcpCommonHeaderSize, buffer);
 
   const auto parsed = RtcpCommonHeader::Parse(buffer);
   ASSERT_TRUE(parsed.has_value());
@@ -38,7 +47,7 @@ TEST(RtcpCommonTest, SerializesAndParsesHeaderForCastFeedback) {
   original.payload_size = 99 * sizeof(uint32_t);
 
   uint8_t buffer[kRtcpCommonHeaderSize];
-  original.Serialize(buffer);
+  SerializeAndExpectPointerAdvanced(original, kRtcpCommonHeaderSize, buffer);
 
   const auto parsed = RtcpCommonHeader::Parse(buffer);
   ASSERT_TRUE(parsed.has_value());
@@ -114,7 +123,7 @@ TEST(RtcpCommonTest, SerializesAndParsesRtcpReportBlocks) {
   original.delay_since_last_report = RtcpReportBlock::Delay(99999);
 
   uint8_t buffer[kRtcpReportBlockSize];
-  original.Serialize(buffer);
+  SerializeAndExpectPointerAdvanced(original, kRtcpReportBlockSize, buffer);
 
   // If the number of report blocks is zero, or some other SSRC is specified,
   // ParseOne() should not return a result.
@@ -153,6 +162,7 @@ TEST(RtcpCommonTest, ParsesOneReportBlockFromMultipleBlocks) {
 
   // Generate multiple report blocks with different recipient SSRCs.
   uint8_t buffer[kRtcpReportBlockSize * kNumBlocks];
+  absl::Span<uint8_t> buffer_span(buffer, kRtcpReportBlockSize * kNumBlocks);
   for (int i = 0; i < kNumBlocks; ++i) {
     RtcpReportBlock another;
     another.ssrc = expected.ssrc + i - 2;
@@ -166,8 +176,7 @@ TEST(RtcpCommonTest, ParsesOneReportBlockFromMultipleBlocks) {
     another.delay_since_last_report =
         expected.delay_since_last_report + RtcpReportBlock::Delay(i - 2);
 
-    another.Serialize(absl::Span<uint8_t>(buffer + i * kRtcpReportBlockSize,
-                                          kRtcpReportBlockSize));
+    another.AppendFields(&buffer_span);
   }
 
   // Expect that the desired report block is found and parsed correctly.

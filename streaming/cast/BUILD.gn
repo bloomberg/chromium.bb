@@ -44,6 +44,8 @@ source_set("common") {
 
 source_set("receiver") {
   sources = [
+    "compound_rtcp_builder.cc",
+    "compound_rtcp_builder.h",
     "rtp_packet_parser.cc",
     "rtp_packet_parser.h",
     "sender_report_parser.cc",
@@ -57,6 +59,8 @@ source_set("receiver") {
 
 source_set("sender") {
   sources = [
+    "compound_rtcp_parser.cc",
+    "compound_rtcp_parser.h",
     "rtp_packetizer.cc",
     "rtp_packetizer.h",
     "sender_report_builder.cc",
@@ -72,8 +76,11 @@ source_set("cast_unittests") {
   testonly = true
 
   sources = [
+    "compound_rtcp_builder_unittest.cc",
+    "compound_rtcp_parser_unittest.cc",
     "expanded_value_base_unittest.cc",
     "frame_crypto_unittest.cc",
+    "mock_compound_rtcp_parser_client.h",
     "ntp_time_unittest.cc",
     "packet_util_unittest.cc",
     "rtcp_common_unittest.cc",
@@ -87,12 +94,29 @@ source_set("cast_unittests") {
   deps = [
     ":receiver",
     ":sender",
+    "../../third_party/googletest:gmock",
     "../../third_party/googletest:gtest",
   ]
 }
 
 if (build_with_chromium) {
   import("//testing/libfuzzer/fuzzer_test.gni")
+
+  fuzzer_test("compound_rtcp_parser_fuzzer") {
+    sources = [
+      "compound_rtcp_parser_fuzzer.cc",
+    ]
+
+    deps = [
+      ":sender",
+      "../../third_party/abseil",
+    ]
+
+    seed_corpus = "compound_rtcp_parser_fuzzer_seeds"
+
+    # Note: 1500 is approx. kMaxRtpPacketSize in rtp_defines.h.
+    libfuzzer_options = [ "max_len=1500" ]
+  }
 
   fuzzer_test("rtp_packet_parser_fuzzer") {
     sources = [
