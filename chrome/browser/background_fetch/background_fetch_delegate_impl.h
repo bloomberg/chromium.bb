@@ -205,6 +205,7 @@ class BackgroundFetchDelegateImpl
       // while the request is sent out, and will be cleared after.
       blink::mojom::SerializedBlobPtr request_body_blob = nullptr;
 
+      uint64_t body_size_bytes = 0u;
       uint64_t in_progress_uploaded_bytes = 0u;
       uint64_t in_progress_downloaded_bytes = 0u;
     };

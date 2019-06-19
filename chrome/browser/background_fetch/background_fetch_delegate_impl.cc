@@ -506,11 +506,9 @@ void BackgroundFetchDelegateImpl::OnDownloadStarted(
   auto it = job_details.current_fetch_guids.find(download_guid);
   DCHECK(it != job_details.current_fetch_guids.end());
 
-  if (it->second.request_body_blob) {
-    job_details.fetch_description->uploaded_bytes +=
-        it->second.request_body_blob->size;
+  if (it->second.request_body_blob)
     it->second.request_body_blob.reset();
-  }
+  job_details.fetch_description->uploaded_bytes += it->second.body_size_bytes;
 }
 
 void BackgroundFetchDelegateImpl::OnDownloadUpdated(
@@ -919,6 +917,11 @@ void BackgroundFetchDelegateImpl::DidGetUploadData(
     return;
   }
 
+  auto& job_details = job_it->second;
+  DCHECK(job_details.current_fetch_guids.count(download_guid));
+  auto& request_data = job_details.current_fetch_guids.at(download_guid);
+  request_data.body_size_bytes = blob->size;
+
   auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
       profile_->IsOffTheRecord()) {
@@ -930,11 +933,7 @@ void BackgroundFetchDelegateImpl::DidGetUploadData(
   } else {
     // Use the blob itself and store the handle for the duration of the upload.
     request_body->AppendBlob(blob->uuid);
-
-    auto& job_details = job_it->second;
-    DCHECK(job_details.current_fetch_guids.count(download_guid));
-    job_details.current_fetch_guids.at(download_guid).request_body_blob =
-        std::move(blob);
+    request_data.request_body_blob = std::move(blob);
   }
 
   std::move(callback).Run(request_body);
