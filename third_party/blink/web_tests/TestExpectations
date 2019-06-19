@@ -3310,6 +3310,8 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-negative-timestamp-events.html [ Timeout ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/bidi/start_alignment.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
