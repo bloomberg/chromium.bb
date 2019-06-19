@@ -26,7 +26,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/win/hwnd_util.h"
 
 namespace ui {
 namespace {
@@ -296,12 +295,6 @@ LRESULT InputMethodWinBase::OnChar(HWND window_handle,
       GetTextInputClient()->InsertChar(char_event);
     }
   }
-
-  // Explicitly show the system menu at a good location on [Alt]+[Space].
-  // Note: Setting |handled| to FALSE for DefWindowProc triggering of the system
-  //       menu causes undesirable titlebar artifacts in the classic theme.
-  if (message == WM_SYSCHAR && wparam == VK_SPACE)
-    gfx::ShowSystemMenu(window_handle);
 
   return 0;
 }
