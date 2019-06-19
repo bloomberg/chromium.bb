@@ -2748,6 +2748,8 @@ jumbo_split_static_library("browser") {
       "previews/android/previews_android_bridge.h",
       "profiles/profile_android.cc",
       "profiles/profile_android.h",
+      "profiles/profile_key_android.cc",
+      "profiles/profile_key_android.h",
       "search/contextual_search_policy_handler_android.cc",
       "search/contextual_search_policy_handler_android.h",
       "search_engines/template_url_service_factory_android.cc",
