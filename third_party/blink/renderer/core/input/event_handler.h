@@ -327,13 +327,6 @@ class CORE_EXPORT EventHandler final
 
   // Updates the event, location and result to the adjusted target.
   void ApplyTouchAdjustment(WebGestureEvent*, HitTestLocation&, HitTestResult*);
-  WebInputEventResult HandleGestureTapDown(
-      const GestureEventWithHitTestResults&);
-  WebInputEventResult HandleGestureTap(const GestureEventWithHitTestResults&);
-  WebInputEventResult HandleGestureLongPress(
-      const GestureEventWithHitTestResults&);
-  WebInputEventResult HandleGestureLongTap(
-      const GestureEventWithHitTestResults&);
 
   void PerformHitTest(const HitTestLocation& location,
                       HitTestResult&,
