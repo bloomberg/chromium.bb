@@ -16,9 +16,12 @@ export interface IParamsSpec {
 export type ParamSpecIterable = Iterable<IParamsSpec>;
 export type ParamSpecIterator = IterableIterator<IParamsSpec>;
 
-export function paramsEqual(x: IParamsSpec, y: IParamsSpec): boolean {
+export function paramsEquals(x: IParamsSpec | undefined, y: IParamsSpec | undefined): boolean {
   if (x === y) {
     return true;
+  }
+  if (x === undefined || y === undefined) {
+    return false;
   }
 
   for (const xk of Object.keys(x)) {
@@ -32,6 +35,15 @@ export function paramsEqual(x: IParamsSpec, y: IParamsSpec): boolean {
 
   for (const yk of Object.keys(y)) {
     if (!x.hasOwnProperty(yk)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function paramsSupersets(sup: IParamsSpec, sub: IParamsSpec): boolean {
+  for (const k of Object.keys(sub)) {
+    if (!sup.hasOwnProperty(k) || sup[k] !== sub[k]) {
       return false;
     }
   }

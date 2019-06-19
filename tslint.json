@@ -11,7 +11,8 @@
     "no-bitwise": false,
     "no-empty": false,
     "object-literal-sort-keys": false,
-    "quotemark": [true, "single", "avoid-escape", "avoid-template"]
+    "quotemark": [true, "single", "avoid-escape", "avoid-template"],
+    "variable-name": [true, "allow-leading-underscore"]
   },
   "rulesDirectory": [],
   "linterOptions": {

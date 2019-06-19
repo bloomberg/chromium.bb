@@ -4,7 +4,7 @@ import { IParamsAny, IParamsSpec } from './params/index.js';
 type TestFn<F extends Fixture> = (t: F) => (Promise<void> | void);
 export interface ICase {
   name: string;
-  params?: object;
+  params?: IParamsSpec;
   run: (log: CaseRecorder) => Promise<void>;
 }
 

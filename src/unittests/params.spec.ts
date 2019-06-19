@@ -5,7 +5,7 @@ Unit tests for parameterization system.
 import { DefaultFixture } from '../framework/default_fixture.js';
 import {
   IParamsSpec,
-  objectEquals,
+  paramsEquals,
   ParamSpecIterable,
   pcombine,
   pexclude,
@@ -18,7 +18,8 @@ export const group = new TestGroup();
 
 class ParamsTest extends DefaultFixture {
   public expectSpecEqual(act: ParamSpecIterable, exp: IParamsSpec[]) {
-    this.expect(objectEquals(Array.from(act), exp));
+    const a = Array.from(act);
+    this.expect(a.length === exp.length && a.every((x, i) => paramsEquals(x, exp[i])));
   }
 }
 

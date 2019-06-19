@@ -1,7 +1,6 @@
 import { GroupRecorder } from './logger.js';
-import { IParamsAny } from './params/index.js';
+import { IParamsAny, paramsEquals } from './params/index.js';
 import { allowedTestNameCharacters, ICase, ITestGroup, RunCase } from './test_group.js';
-import { objectEquals } from './util.js';
 
 export interface IGroupDesc {
   path: string;
@@ -155,7 +154,7 @@ export abstract class TestLoader {
     return {
       description: node.description,
       group: filterTestGroup(node.group, testcase =>
-        testcase.name === test && objectEquals(testcase.params, paramsExact)),
+        testcase.name === test && paramsEquals(testcase.params, paramsExact)),
     };
   }
 }

@@ -1,3 +1,4 @@
+import { IParamsSpec } from './params/index.js';
 import { getStackTrace, now } from './util.js';
 
 type Status = 'running' | 'pass' | 'warn' | 'fail';
@@ -7,7 +8,7 @@ interface ITestLog {
 }
 export interface IResult {
   name: string;
-  params?: object;
+  params?: IParamsSpec;
   status: Status;
   logs?: string[];
   timems: number;
@@ -33,7 +34,7 @@ export class GroupRecorder {
     this.test = test;
   }
 
-  public record(name: string, params?: object): [IResult, CaseRecorder] {
+  public record(name: string, params?: IParamsSpec): [IResult, CaseRecorder] {
     const result: IResult = { name, status: 'running', timems: -1 };
     if (params) {
       result.params = params;

@@ -1,6 +1,6 @@
 import {
   IParamsSpec,
-  paramsEqual,
+  paramsEquals,
   ParamSpecIterable,
   ParamSpecIterator,
 } from './index.js';
@@ -20,7 +20,7 @@ class PExclude implements ParamSpecIterable {
 
   public *[Symbol.iterator](): ParamSpecIterator {
     for (const p of this.cases) {
-      if (this.exclude.every((e) => !paramsEqual(p, e))) {
+      if (this.exclude.every((e) => !paramsEquals(p, e))) {
         yield p;
       }
     }
