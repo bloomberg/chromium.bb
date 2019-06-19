@@ -8,7 +8,7 @@ export interface ICase {
   run: (log: CaseRecorder) => Promise<void>;
 }
 
-class RunCase {
+export class RunCase {
   public readonly testcase: ICase;
   private recorder: GroupRecorder;
 
@@ -50,7 +50,13 @@ export abstract class Fixture {
   }
 }
 
-export class TestGroup {
+export const allowedTestNameCharacters: string = 'a-zA-Z0-9/_ ';
+
+export interface ITestGroup {
+  iterate(log: GroupRecorder): Iterable<RunCase>;
+}
+
+export class TestGroup implements ITestGroup {
   private seen: Set<string> = new Set();
   private tests: ICase[] = [];
 
@@ -65,7 +71,7 @@ export class TestGroup {
   public test<F extends Fixture>(
     name: string, fixture: FixtureClass<F>, fn: TestFn<F>, params?: IParamsSpec): void {
     // It may be OK to add more allowed characters here.
-    const validNames = /^[a-zA-Z0-9/_ ]+$/;
+    const validNames = new RegExp('^' + allowedTestNameCharacters + '+$');
     if (!validNames.test(name)) {
       throw new Error(`Invalid test name ${name}; must match ${validNames}`);
     }

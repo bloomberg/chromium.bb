@@ -1,4 +1,7 @@
-import { TestGroup } from './test_group.js';
+import { GroupRecorder } from './logger.js';
+import { IParamsAny } from './params/index.js';
+import { allowedTestNameCharacters, ITestGroup, RunCase, TestGroup, ICase } from './test_group.js';
+import { objectEquals } from './util.js';
 
 interface IGroupDesc {
   path: string;
@@ -12,7 +15,7 @@ interface IListing {
 
 interface ITestNode {
   // undefined for README.txt, defined for a test module.
-  group?: TestGroup;
+  group?: ITestGroup;
   description: string;
 }
 
@@ -37,14 +40,35 @@ function* concatAndDedup(lists: IPendingEntry[][]): Iterator<IPendingEntry> {
   }
 }
 
-function filterByGroup({ suite, groups }: IListing, prefix: string): IPendingEntry[] {
+type TestGroupFilter = (testcase: ICase) => boolean;
+
+class TestGroupFiltered implements ITestGroup {
+  private group: ITestGroup;
+  private filter: TestGroupFilter;
+
+  constructor(group: ITestGroup, filter: TestGroupFilter) {
+    this.group = group;
+    this.filter = filter;
+  }
+
+  public *iterate(log: GroupRecorder): Iterable<RunCase> {
+    for (const rc of this.group.iterate(log)) {
+      if (this.filter(rc.testcase)) {
+        yield rc;
+      }
+    }
+  }
+}
+
+function filterByGroup({ suite, groups }: IListing, groupPrefix: string): IPendingEntry[] {
   const entries: IPendingEntry[] = [];
 
   for (const { path, description } of groups) {
-    if (path.startsWith(prefix)) {
+    if (path.startsWith(groupPrefix)) {
       const isReadme = path === '' || path.endsWith('/');
-      const node =
-        isReadme ? Promise.resolve({ description }) : import(`../${suite}/${path}.spec.js`);
+      const node: Promise<ITestNode> = isReadme
+        ? Promise.resolve({ description })
+        : import(`../${suite}/${path}.spec.js`);
       entries.push({ suite, path, node });
     }
   }
@@ -52,19 +76,35 @@ function filterByGroup({ suite, groups }: IListing, prefix: string): IPendingEnt
   return entries;
 }
 
-// function filterByTest(): IPendingEntry[] {
-//     throw new Error();
-// }
+async function filterByTestMatch(suite: string, group: string, testPrefix: string): Promise<ITestNode> {
+  const node = (await import(`../${suite}/${group}.spec.js`)) as ITestNode;
+  if (!node.group) {
+    return node;
+  }
+  return {
+    description: node.description,
+    group: new TestGroupFiltered(node.group, testcase => testcase.name.startsWith(testPrefix)),
+  };
+}
 
-// function filterByParams(): IPendingEntry[] {
-//     throw new Error();
-// }
+async function filterByParamsExact(suite: string, group: string, test: string, paramsExact: IParamsAny | undefined): Promise<ITestNode> {
+  const node = (await import(`../${suite}/${group}.spec.js`)) as ITestNode;
+  if (!node.group) {
+    return node;
+  }
+  return {
+    description: node.description,
+    group: new TestGroupFiltered(node.group, testcase =>
+      objectEquals(testcase.params, paramsExact)
+    ),
+  };
+}
 
-interface IListingGetter {
+interface IListingFetcher {
   get(outDir: string, suite: string): Promise<IListing>;
 }
 
-class ListingFetcher implements IListingGetter {
+class ListingFetcher implements IListingFetcher {
   private suites: Map<string, IListing> = new Map();
 
   public async get(outDir: string, suite: string): Promise<IListing> {
@@ -87,40 +127,70 @@ class ListingFetcher implements IListingGetter {
 
 // TODO: Unit test this.
 
-export async function loadTests(
-  outDir: string, filters: string[],
-  getter: new () => IListingGetter = ListingFetcher): Promise<Iterator<IPendingEntry>> {
-  const fetcher = new getter();
+// Each filter is of one of the forms below (urlencoded).
+// - cts
+// - cts:
+// - cts:buf
+// - cts:buffers/
+// - cts:buffers/map
+//
+// - cts:buffers/mapWriteAsync:
+// - cts:buffers/mapWriteAsync:ba
+//
+// - cts:buffers/mapWriteAsync:basic~
+// - cts:buffers/mapWriteAsync:basic~{}
+// - cts:buffers/mapWriteAsync:basic~{filter:"params"}
+//
+// - cts:buffers/mapWriteAsync:basic:
+// - cts:buffers/mapWriteAsync:basic:{}
+// - cts:buffers/mapWriteAsync:basic:{exact:"params"}
+async function loadFilter(fetcher: IListingFetcher, outDir: string, filter: string): Promise<IPendingEntry[]> {
+  const i1 = filter.indexOf(':');
+  if (i1 === -1) {
+    const suite = filter;
+    return filterByGroup(await fetcher.get(outDir, suite), '');
+  } else {
+    const suite = filter.substring(0, i1);
+    const i2 = filter.indexOf(':', i1);
+    if (i2 === -1) {
+      const groupPrefix = filter.substring(i1 + 1);
+      return filterByGroup(await fetcher.get(outDir, suite), groupPrefix);
+    } else {
+      const group = filter.substring(i1 + 1, i2);
+      const endOfTestName = new RegExp('[^' + allowedTestNameCharacters + ']');
+      const i3sub = filter.substring(i2 + 1).search(endOfTestName);
+      if (i3sub === -1) {
+        const testPrefix = filter.substring(i2 + 1);
+        return [{ suite, path: group, node: filterByTestMatch(suite, group, testPrefix) }];
+      } else {
+        const i3 = i2 + i3sub;
+        const test = filter.substring(i2 + 1, i3);
+        const token = filter.charAt(i3);
 
-  // Each filter is of one of these forms (urlencoded):
-  //    cts
-  //    cts:
-  //    cts:buf
-  //    cts:buffers/
-  //    cts:buffers/map
-  //
-  //    cts:buffers/mapWriteAsync:
-  //    cts:buffers/mapWriteAsync:ba
-  //
-  //    cts:buffers/mapWriteAsync:basic~
-  //    cts:buffers/mapWriteAsync:basic~{}
-  //    cts:buffers/mapWriteAsync:basic~{filter:"params"}
-  //
-  //    cts:buffers/mapWriteAsync:basic:
-  //    cts:buffers/mapWriteAsync:basic:{}
-  //    cts:buffers/mapWriteAsync:basic:{exact:"params"}
-  const listings = [];
-  for (const filter of filters) {
-    const parts = filter.split(':', 3);
-    if (parts.length === 1) {
-      parts.push('');
-    }
-    if (parts.length === 2) {
-      const listing = await fetcher.get(outDir, parts[0]);
-      listings.push(filterByGroup(listing, parts[1]));
-    } else if (parts.length === 3) {
-      throw new Error();
+        let params;
+        if (i3 + 1 > filter.length) {
+          params = JSON.parse(filter.substring(i3 + 1)) as IParamsAny;
+        }
+
+        if (token === '~') {
+          throw new Error('params matching (~) is unimplemented');
+        } else if (token === ':') {
+          return [{ suite, path: group, node: filterByParamsExact(suite, group, test, params) }];
+        } else {
+          throw new Error("invalid character after test name; must be '~' or ':'");
+        }
+      }
     }
   }
-  return concatAndDedup(listings);
+}
+
+export async function loadTests(outDir: string, filters: string[], fetcherClass: new () => IListingFetcher = ListingFetcher): Promise<Iterator<IPendingEntry>> {
+  const fetcher = new fetcherClass();
+
+  const listings = [];
+  for (const filter of filters) {
+    listings.push(loadFilter(fetcher, outDir, filter));
+  }
+
+  return concatAndDedup(await Promise.all(listings));
 }

@@ -13,12 +13,14 @@ export function encodeSelectively(s: string) {
   return ret;
 }
 
-export function makeQueryString(entry: IEntry, testcase: ICase): string {
+export function makeQueryString(entry: IEntry, testcase?: ICase): string {
   let s = entry.suite + ':';
   s += entry.path + ':';
-  s += testcase.name + ':';
-  if (testcase.params) {
-    s += JSON.stringify(testcase.params);
+  if (testcase) {
+    s += testcase.name + ':';
+    if (testcase.params) {
+      s += JSON.stringify(testcase.params);
+    }
   }
   return encodeSelectively(s);
 }

@@ -346,7 +346,7 @@ async-each@^1.0.1:
   resolved "https://registry.yarnpkg.com/async-each/-/async-each-1.0.3.tgz#b727dbf87d7651602f06f4d4ac387f47d91b0cbf"
   integrity sha512-z/WhQ5FPySLdvREByI2vZiTWwCnF0moMJ1hK9YQwDTHKh6I7/uSckMetoRGb5UBZPC1z0jlw+n/XCgjeH7y1AQ==
 
-async@^1.2.1, async@^1.5.2, async@~1.5.2:
+async@^1.5.2, async@~1.5.2:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
   integrity sha1-7GphrlZIDAw8skHJVhjiCJL5Zyo=
@@ -1209,15 +1209,6 @@ grunt-ts@^6.0.0-beta.22:
     semver "^5.3.0"
     strip-bom "^2.0.0"
 
-grunt-tsfmt@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/grunt-tsfmt/-/grunt-tsfmt-2.0.0.tgz#2cb3f39f43c5f73bc232e6ca30729deaf54a0ac3"
-  integrity sha1-LLPzn0PF9zvCMubKMHKd6vVKCsM=
-  dependencies:
-    async "^1.2.1"
-    native-promise-only "^0.7.6-a"
-    underscore "^1.6.0"
-
 grunt@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.0.4.tgz#c799883945a53a3d07622e0737c8f70bfe19eb38"
@@ -1831,11 +1822,6 @@ nanomatch@^1.2.9:
     regex-not "^1.0.0"
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
-
-native-promise-only@^0.7.6-a:
-  version "0.7.6-a"
-  resolved "https://registry.yarnpkg.com/native-promise-only/-/native-promise-only-0.7.6-a.tgz#b24bd0451409cc3440f755bf40d24028792068d0"
-  integrity sha1-skvQRRQJzDRA91W/QNJAKHkgaNA=
 
 ncp@0.5.1:
   version "0.5.1"
@@ -2711,11 +2697,6 @@ underscore.string@~3.3.4:
   dependencies:
     sprintf-js "^1.0.3"
     util-deprecate "^1.0.2"
-
-underscore@^1.6.0:
-  version "1.9.1"
-  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.9.1.tgz#06dce34a0e68a7babc29b365b8e74b8925203961"
-  integrity sha512-5/4etnCkd9c8gwgowi5/om/mYO5ajCaOgdzj/oW+0eQV9WxKBDZw5+ycmKmeaTXjInS/W0BzpGLo2xR2aBwZdg==
 
 union-value@^1.0.0:
   version "1.0.0"

@@ -102,16 +102,6 @@ module.exports = function(grunt) {
         },
       },
     },
-
-    'tsfmt': {
-      files: {
-        src: [
-          'src/**/*.ts',
-          'tools/**/*.js',
-          'Gruntfile.js',
-        ]
-      }
-    }
   });
 
   grunt.loadNpmTasks('grunt-contrib-clean');
@@ -119,7 +109,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-mkdir');
   grunt.loadNpmTasks('grunt-run');
   grunt.loadNpmTasks('grunt-ts');
-  grunt.loadNpmTasks('grunt-tsfmt');
 
   const publishedTasks = [];
   function publishTask(name, desc, deps) {
@@ -131,7 +120,6 @@ module.exports = function(grunt) {
     'ts:check',
   ]);
   publishedTasks.push({ name: 'run:{lint,fix}', desc: 'Run tslint' });
-  publishTask('format', 'Run tsfmt', ['tsfmt']);
   publishTask('build', 'Build out/', [
     'mkdir:out',
     'run:build-shaderc',
@@ -158,7 +146,9 @@ module.exports = function(grunt) {
     'check',
     'build',
     'run:unittests',
-    'format',
+
+    // 'format',  // TODO
+    'run:fix',
     'run:check-git-is-clean',
   ]);
 };
