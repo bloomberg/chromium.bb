@@ -42,7 +42,8 @@ class ScheduledNotificationManager {
 
   // Creates the instance.
   static std::unique_ptr<ScheduledNotificationManager> Create(
-      std::unique_ptr<CollectionStore<NotificationEntry>> store);
+      std::unique_ptr<CollectionStore<NotificationEntry>> store,
+      const std::vector<SchedulerClientType>& clients);
 
   // Initializes the notification store.
   virtual void Init(Delegate* delegate, InitCallback callback) = 0;

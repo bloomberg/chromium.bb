@@ -61,7 +61,7 @@ KeyedService* CreateNotificationScheduleService(
   std::vector<SchedulerClientType> registered_clients;
   client_registrar->GetRegisteredClients(&registered_clients);
   auto impression_tracker = std::make_unique<ImpressionHistoryTrackerImpl>(
-      *config.get(), std::move(registered_clients), std::move(impression_store),
+      *config.get(), registered_clients, std::move(impression_store),
       base::DefaultClock::GetInstance());
 
   // Build scheduled notification manager.
@@ -75,7 +75,9 @@ KeyedService* CreateNotificationScheduleService(
       std::make_unique<NotificationStore>(std::move(notification_db));
 
   std::unique_ptr<ScheduledNotificationManager> notification_manager;
-  notification_manager->Create(std::move(notification_store));
+  client_registrar->GetRegisteredClients(&registered_clients);
+  notification_manager->Create(std::move(notification_store),
+                               registered_clients);
 
   auto context = std::make_unique<NotificationSchedulerContext>(
       std::move(client_registrar), std::move(background_task_scheduler),
