@@ -33,11 +33,13 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -58,8 +60,18 @@ std::unique_ptr<aura::Window> CreateTransientWindow(
   return window;
 }
 
+std::unique_ptr<aura::Window> CreateTransientModalChildWindow(
+    aura::Window* transient_parent) {
+  auto child =
+      CreateTransientWindow(transient_parent, gfx::Rect(20, 30, 200, 150));
+  child->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  ::wm::SetModalParent(child.get(), transient_parent);
+  return child;
+}
+
 bool DoesActiveDeskContainWindow(aura::Window* window) {
-  return DesksController::Get()->active_desk()->windows().contains(window);
+  return base::Contains(DesksController::Get()->active_desk()->windows(),
+                        window);
 }
 
 OverviewGrid* GetOverviewGridForRoot(aura::Window* root) {
@@ -459,9 +471,13 @@ TEST_F(DesksTest, TransientWindows) {
   // it's tracked in desk_1 (even though desk_2 is the currently active one).
   // This is because the transient parent exists in desk_1.
   auto win2 = CreateTransientWindow(win1.get(), gfx::Rect(100, 100, 50, 50));
-  ::wm::AddTransientChild(win1.get(), win2.get());
   EXPECT_EQ(3u, desk_1->windows().size());
+  EXPECT_TRUE(desk_2->windows().empty());
   EXPECT_FALSE(DoesActiveDeskContainWindow(win2.get()));
+  auto* desk_1_container = desk_1->GetDeskContainerForRoot(root);
+  EXPECT_EQ(win0.get(), desk_1_container->children()[0]);
+  EXPECT_EQ(win1.get(), desk_1_container->children()[1]);
+  EXPECT_EQ(win2.get(), desk_1_container->children()[2]);
 
   // Remove the inactive desk 1, and expect that its windows, including
   // transient will move to desk 2.
@@ -469,9 +485,60 @@ TEST_F(DesksTest, TransientWindows) {
   EXPECT_EQ(1u, controller->desks().size());
   EXPECT_EQ(desk_2, controller->active_desk());
   EXPECT_EQ(3u, desk_2->windows().size());
-  EXPECT_TRUE(DoesActiveDeskContainWindow(win0.get()));
-  EXPECT_TRUE(DoesActiveDeskContainWindow(win1.get()));
-  EXPECT_TRUE(DoesActiveDeskContainWindow(win2.get()));
+  auto* desk_2_container = desk_2->GetDeskContainerForRoot(root);
+  EXPECT_EQ(win0.get(), desk_2_container->children()[0]);
+  EXPECT_EQ(win1.get(), desk_2_container->children()[1]);
+  EXPECT_EQ(win2.get(), desk_2_container->children()[2]);
+}
+
+TEST_F(DesksTest, TransientModalChildren) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  controller->NewDesk();
+  ASSERT_EQ(3u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  Desk* desk_3 = controller->desks()[2].get();
+  EXPECT_EQ(desk_1, controller->active_desk());
+  EXPECT_TRUE(desk_1->is_active());
+
+  // Create three windows, one of them is a modal transient child.
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateTransientModalChildWindow(win0.get());
+  EXPECT_EQ(win1.get(), ::wm::GetModalTransient(win0.get()));
+  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 200, 100));
+  ASSERT_EQ(3u, desk_1->windows().size());
+  auto* root = Shell::GetPrimaryRootWindow();
+  auto* desk_1_container = desk_1->GetDeskContainerForRoot(root);
+  EXPECT_EQ(win0.get(), desk_1_container->children()[0]);
+  EXPECT_EQ(win1.get(), desk_1_container->children()[1]);
+  EXPECT_EQ(win2.get(), desk_1_container->children()[2]);
+
+  // Remove desk_1, and expect that all its windows (including the transient
+  // modal child and its parent) are moved to desk_2, and that their z-order
+  // within the container is preserved.
+  controller->RemoveDesk(desk_1);
+  EXPECT_EQ(desk_2, controller->active_desk());
+  ASSERT_EQ(3u, desk_2->windows().size());
+  auto* desk_2_container = desk_2->GetDeskContainerForRoot(root);
+  EXPECT_EQ(win0.get(), desk_2_container->children()[0]);
+  EXPECT_EQ(win1.get(), desk_2_container->children()[1]);
+  EXPECT_EQ(win2.get(), desk_2_container->children()[2]);
+  EXPECT_EQ(win1.get(), ::wm::GetModalTransient(win0.get()));
+
+  // Move only the modal child window to desk_3, and expect that its parent will
+  // move along with it, and their z-order is preserved.
+  controller->MoveWindowFromActiveDeskTo(win1.get(), desk_3);
+  ASSERT_EQ(1u, desk_2->windows().size());
+  ASSERT_EQ(2u, desk_3->windows().size());
+  EXPECT_EQ(win2.get(), desk_2_container->children()[0]);
+  auto* desk_3_container = desk_3->GetDeskContainerForRoot(root);
+  EXPECT_EQ(win0.get(), desk_3_container->children()[0]);
+  EXPECT_EQ(win1.get(), desk_3_container->children()[1]);
+
+  // The modality remains the same.
+  ActivateDesk(desk_3);
+  EXPECT_EQ(win1.get(), ::wm::GetModalTransient(win0.get()));
 }
 
 TEST_F(DesksTest, WindowActivation) {
@@ -954,7 +1021,7 @@ TEST_F(DesksTest, DragWindowToDesk) {
   EXPECT_TRUE(overview_grid->empty());
   EXPECT_FALSE(DoesActiveDeskContainWindow(window.get()));
   EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
-  EXPECT_TRUE(desk_2->windows().contains(window.get()));
+  EXPECT_TRUE(base::Contains(desk_2->windows(), window.get()));
   EXPECT_FALSE(overview_grid->drop_target_widget());
 
   // After the window is dropped onto another desk, its shadow should be
@@ -999,7 +1066,7 @@ TEST_F(DesksTest, DragMinimizedWindowToDesk) {
                   GetEventGenerator());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_grid->empty());
-  EXPECT_TRUE(desk_2->windows().contains(window.get()));
+  EXPECT_TRUE(base::Contains(desk_2->windows(), window.get()));
   EXPECT_FALSE(overview_grid->drop_target_widget());
   DeskSwitchAnimationWaiter waiter;
   ClickOnMiniView(desk_2_mini_view, GetEventGenerator());
@@ -1187,7 +1254,7 @@ TEST_F(DesksTest, TabletModeBackdrops) {
                   desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
                   GetEventGenerator());
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(desk_2->windows().contains(window.get()));
+  EXPECT_TRUE(base::Contains(desk_2->windows(), window.get()));
   EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window());
   ASSERT_TRUE(desk_2_backdrop_controller->backdrop_window());
   EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window()->IsVisible());

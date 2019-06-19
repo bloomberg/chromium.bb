@@ -1194,12 +1194,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BasicBackdropTests) {
               default_container()->children()[0]->bounds().ToString());
   }
 
-  // With the window gone the backdrop should be invisible again.
-  ASSERT_EQ(1U, default_container()->children().size());
-  EXPECT_FALSE(default_container()->children()[0]->IsVisible());
-
-  // Destroying the Backdrop should empty the container.
-  ShowTopWindowBackdropForContainer(default_container(), false);
+  // With the window gone the backdrop should be destroyed.
   ASSERT_EQ(0U, default_container()->children().size());
 }
 
@@ -1249,9 +1244,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
   EXPECT_EQ("b,C,X", GetWindowOrderAsString(backdrop, window1.get(),
                                             window2.get(), window3.get()));
   window3.reset();
-  EXPECT_EQ("b,x", GetWindowOrderAsString(backdrop, window1.get(),
-                                          window2.get(), window3.get()));
-  ShowTopWindowBackdropForContainer(default_container(), false);
   EXPECT_EQ("b", GetWindowOrderAsString(nullptr, window1.get(), window2.get(),
                                         window3.get()));
 }
@@ -2037,10 +2029,9 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   ASSERT_EQ(always_on_top_container->children().size(), 2U);
 
   always_on_top_window->SetProperty(aura::client::kAlwaysOnTopKey, false);
-  // Make sure the backdrop window stays in AlwaysOnTopContainer even after
+  // The backdrop window will be destroyed immediately after
   // |always_on_top_window| moves to the default container.
-  ASSERT_EQ(always_on_top_container->children().size(), 1U);
-  EXPECT_EQ(always_on_top_container->children()[0]->GetName(), "Backdrop");
+  EXPECT_TRUE(always_on_top_container->children().empty());
 }
 
 }  // namespace ash

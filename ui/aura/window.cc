@@ -929,6 +929,8 @@ void Window::RemoveChildImpl(Window* child, Window* new_parent) {
   child->OnParentChanged();
   if (layout_manager_)
     layout_manager_->OnWindowRemovedFromLayout(child);
+  for (WindowObserver& observer : observers_)
+    observer.OnWindowRemoved(child);
 }
 
 void Window::OnParentChanged() {
