@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/trace_event/trace_event.h"
+#include "content/renderer/media/webrtc/webrtc_video_utils.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
@@ -18,7 +19,6 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/webrtc/track_observer.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
-#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_utils.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/api/video/video_sink_interface.h"
 #include "third_party/webrtc/rtc_base/time_utils.h"  // for TimeMicros
@@ -174,12 +174,12 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
   if (incoming_frame.rotation() != webrtc::kVideoRotation_0) {
     video_frame->metadata()->SetRotation(
         media::VideoFrameMetadata::ROTATION,
-        blink::WebRtcToMediaVideoRotation(incoming_frame.rotation()));
+        WebRtcToMediaVideoRotation(incoming_frame.rotation()));
   }
 
   if (incoming_frame.color_space()) {
     video_frame->set_color_space(
-        blink::WebRtcToMediaVideoColorSpace(*incoming_frame.color_space())
+        WebRtcToMediaVideoColorSpace(*incoming_frame.color_space())
             .ToGfxColorSpace());
   }
 
