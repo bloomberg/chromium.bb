@@ -1,6 +1,6 @@
 import { GroupRecorder } from './logger.js';
 import { IParamsAny } from './params/index.js';
-import { allowedTestNameCharacters, ITestGroup, RunCase, TestGroup, ICase } from './test_group.js';
+import { allowedTestNameCharacters, ICase, ITestGroup, RunCase } from './test_group.js';
 import { objectEquals } from './util.js';
 
 interface IGroupDesc {
@@ -95,8 +95,7 @@ async function filterByParamsExact(suite: string, group: string, test: string, p
   return {
     description: node.description,
     group: new TestGroupFiltered(node.group, testcase =>
-      objectEquals(testcase.params, paramsExact)
-    ),
+      objectEquals(testcase.params, paramsExact)),
   };
 }
 
@@ -128,31 +127,20 @@ class ListingFetcher implements IListingFetcher {
 // TODO: Unit test this.
 
 // Each filter is of one of the forms below (urlencoded).
-// - cts
-// - cts:
-// - cts:buf
-// - cts:buffers/
-// - cts:buffers/map
-//
-// - cts:buffers/mapWriteAsync:
-// - cts:buffers/mapWriteAsync:ba
-//
-// - cts:buffers/mapWriteAsync:basic~
-// - cts:buffers/mapWriteAsync:basic~{}
-// - cts:buffers/mapWriteAsync:basic~{filter:"params"}
-//
-// - cts:buffers/mapWriteAsync:basic:
-// - cts:buffers/mapWriteAsync:basic:{}
-// - cts:buffers/mapWriteAsync:basic:{exact:"params"}
 async function loadFilter(fetcher: IListingFetcher, outDir: string, filter: string): Promise<IPendingEntry[]> {
   const i1 = filter.indexOf(':');
   if (i1 === -1) {
+    // - cts
     const suite = filter;
     return filterByGroup(await fetcher.get(outDir, suite), '');
   } else {
     const suite = filter.substring(0, i1);
     const i2 = filter.indexOf(':', i1);
     if (i2 === -1) {
+      // - cts:
+      // - cts:buf
+      // - cts:buffers/
+      // - cts:buffers/map
       const groupPrefix = filter.substring(i1 + 1);
       return filterByGroup(await fetcher.get(outDir, suite), groupPrefix);
     } else {
@@ -160,6 +148,8 @@ async function loadFilter(fetcher: IListingFetcher, outDir: string, filter: stri
       const endOfTestName = new RegExp('[^' + allowedTestNameCharacters + ']');
       const i3sub = filter.substring(i2 + 1).search(endOfTestName);
       if (i3sub === -1) {
+        // - cts:buffers/mapWriteAsync:
+        // - cts:buffers/mapWriteAsync:ba
         const testPrefix = filter.substring(i2 + 1);
         return [{ suite, path: group, node: filterByTestMatch(suite, group, testPrefix) }];
       } else {
@@ -173,8 +163,14 @@ async function loadFilter(fetcher: IListingFetcher, outDir: string, filter: stri
         }
 
         if (token === '~') {
+          // - cts:buffers/mapWriteAsync:basic~
+          // - cts:buffers/mapWriteAsync:basic~{}
+          // - cts:buffers/mapWriteAsync:basic~{filter:"params"}
           throw new Error('params matching (~) is unimplemented');
         } else if (token === ':') {
+          // - cts:buffers/mapWriteAsync:basic:
+          // - cts:buffers/mapWriteAsync:basic:{}
+          // - cts:buffers/mapWriteAsync:basic:{exact:"params"}
           return [{ suite, path: group, node: filterByParamsExact(suite, group, test, params) }];
         } else {
           throw new Error("invalid character after test name; must be '~' or ':'");

@@ -71,7 +71,7 @@ export class TestGroup implements ITestGroup {
   public test<F extends Fixture>(
     name: string, fixture: FixtureClass<F>, fn: TestFn<F>, params?: IParamsSpec): void {
     // It may be OK to add more allowed characters here.
-    const validNames = new RegExp('^' + allowedTestNameCharacters + '+$');
+    const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
     if (!validNames.test(name)) {
       throw new Error(`Invalid test name ${name}; must match ${validNames}`);
     }
