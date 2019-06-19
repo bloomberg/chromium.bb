@@ -23676,6 +23676,7 @@ Called by update_net_error_codes.py.-->
   <int value="2923" label="FeaturePolicySemicolonSeparatedDeclarations"/>
   <int value="2924" label="V8CallSiteAPIGetFunctionSloppyCall"/>
   <int value="2925" label="V8CallSiteAPIGetThisSloppyCall"/>
+  <int value="2926" label="BuiltInModuleToast"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
