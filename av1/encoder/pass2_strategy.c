@@ -1856,7 +1856,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
 
   if (cpi->oxcf.pass == 2 && !twopass->stats_in) return;
 
-  if (rc->frames_till_gf_update_due > 0) {
+  if (rc->frames_till_gf_update_due > 0 && !(frame_flags & FRAMEFLAGS_KEY)) {
     assert(gf_group->index < gf_group->size);
     const int update_type = gf_group->update_type[gf_group->index];
 
