@@ -1,0 +1,33 @@
+// Copyright 2019 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package update_engine;
+
+// This is the message transferred between update_engine and other processes
+// about the current status of the update_engine. It is used either in
+// |GetUpdateStatusAdvanced| DBus method or |StatusUpdateAdvanced| signal.
+//
+// NOTE: Keep this updated with:
+// update_engine/cient_library/include/update_engine/update_status.h
+message StatusResult {
+  // When the update_engine last checked for updates (time_t: seconds from Unix
+  // epoch).
+  int64 last_checked_time = 1;
+
+  // The current progress (0.0f-1.0f).
+  double progress = 2;
+
+  // The current status/operation of the update_engine.
+  string current_operation = 3;
+
+  // The new product version.
+  string new_version = 4;
+
+  // The size of the update payload (bytes).
+  int64 new_size = 5;
+}

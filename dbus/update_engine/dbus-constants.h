@@ -17,7 +17,9 @@ const char kUpdateEngineServiceErrorFailed[] =
 // Methods.
 const char kAttemptUpdate[] = "AttemptUpdate";
 const char kGetLastAttemptError[] = "GetLastAttemptError";
+// TODO(crbug.com/977320): Deprecate |GetStatus| method.
 const char kGetStatus[] = "GetStatus";
+const char kGetStatusAdvanced[] = "GetStatusAdvanced";
 const char kRebootIfNeeded[] = "RebootIfNeeded";
 const char kSetChannel[] = "SetChannel";
 const char kGetChannel[] = "GetChannel";
@@ -32,7 +34,9 @@ const char kSetUpdateOverCellularTarget[] =
     "SetUpdateOverCellularTarget";
 
 // Signals.
+// TODO(crbug.com/977320): Deprecate |StatusUpdate| signal.
 const char kStatusUpdate[] = "StatusUpdate";
+const char kStatusUpdateAdvanced[] = "StatusUpdateAdvanced";
 
 // Flags used in the AttemptUpdateWithFlags() D-Bus method.
 typedef enum {
