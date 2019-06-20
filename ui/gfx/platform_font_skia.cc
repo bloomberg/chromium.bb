@@ -37,6 +37,8 @@ const char* kFallbackFontFamilyName = "serif";
 const char* kFallbackFontFamilyName = "sans";
 #endif
 
+constexpr SkGlyphID kUnsupportedGlyph = 0;
+
 // The default font, used for the default constructor.
 base::LazyInstance<scoped_refptr<PlatformFontSkia>>::Leaky g_default_font =
     LAZY_INSTANCE_INITIALIZER;
@@ -336,10 +338,19 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
       average_width_pixels_ = SkScalarToDouble(metrics.fAvgCharWidth);
     } else {
       // Some Skia fonts manager do not compute the average character size
-      // (e.g. Direct Write). The default behavior when the metric is not
-      // available is to use the max char width.
-      average_width_pixels_ = SkScalarToDouble(metrics.fMaxCharWidth);
+      // (e.g. Direct Write). The following code computes the average character
+      // width the same way blink (e.g. PlatformFont) does. Use the width of the
+      //  letter 'x' when available, otherwise use the max character width.
+      SkGlyphID glyph = typeface_->unicharToGlyph('x');
+      if (glyph != kUnsupportedGlyph) {
+        SkScalar sk_width;
+        font.getWidths(&glyph, 1, &sk_width);
+        average_width_pixels_ = SkScalarCeilToInt(sk_width);
+      }
+      if (!average_width_pixels_)
+        average_width_pixels_ = SkScalarCeilToInt(metrics.fMaxCharWidth);
     }
+    DCHECK_NE(average_width_pixels_, 0);
   }
 }
 
