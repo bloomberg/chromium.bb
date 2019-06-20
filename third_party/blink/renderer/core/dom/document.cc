@@ -3128,6 +3128,9 @@ void Document::open(Document* entered_document,
   if (ignore_opens_during_unload_count_)
     return;
 
+  if (ignore_opens_and_writes_for_abort_)
+    return;
+
   // Change |document|'s URL to the URL of the responsible document specified
   // by the entry settings object.
   if (entered_document && this != entered_document) {
@@ -3213,6 +3216,14 @@ void Document::DetachParser() {
 }
 
 void Document::CancelParsing() {
+  // There appears to be an unspecced assumption that a document.open()
+  // or document.write() immediately after a navigation start won't cancel
+  // the navigation. Firefox avoids cancelling the navigation by ignoring an
+  // open() or write() after an active parser is aborted. See
+  // https://github.com/whatwg/html/issues/4723 for discussion about
+  // standardizing this behavior.
+  if (parser_ && parser_->IsParsing())
+    ignore_opens_and_writes_for_abort_ = true;
   DetachParser();
   SetParsingState(kFinishedParsing);
   SetReadyState(kComplete);
@@ -3535,35 +3546,8 @@ bool Document::ShouldComplete() {
          AllDescendantsAreComplete(this);
 }
 
-void Document::Abort(bool for_form_submission) {
-  // The spec says that form submissions should start navigating
-  // asynchronously, but we currently start the navigation immediately. This
-  // mostly works. However, starting a navigation entails aborting the current
-  // document (i.e., this function), and compatibility seems to require a very
-  // weird kind of abort for form submissions. In
-  // https://bugs.webkit.org/show_bug.cgi?id=45627, we concluded that form
-  // submission should synchronously cancel parsing, and added a regression test
-  // for that behavior in fast/loader/form-submit-aborts-parsing.html, However,
-  // https://crbug.com/955556 shows that a document.write() immediately after a
-  // form submission should not implicitly open() a new document, thus
-  // cancelling the form submission, as tested in
-  // fast/loader/document-write-after-form-submit.html. Firefox passes both
-  // these tests, so matching their behavior seems to make sense. It appears
-  // that, unlike other aborts, we don't want to hard-detach the parser, but
-  // want it to let it unwind slightly more gently. Therefore, call
-  // DocumentParser::StopParsing() and suppress the load event, instead of
-  // calling CancelParsing().
-  // TODO(japhet): This special case is designed to be mergeable to M75, but
-  // should be fixed before M76 branches.
-  if (for_form_submission) {
-    if (!LoadEventFinished())
-      load_event_progress_ = kLoadEventCompleted;
-    if (parser_)
-      parser_->StopParsing();
-    SetParsingState(kFinishedParsing);
-  } else {
-    CancelParsing();
-  }
+void Document::Abort() {
+  CancelParsing();
   CheckCompletedInternal();
 }
 
@@ -3903,6 +3887,9 @@ void Document::write(const String& text,
         "Can only call write() on same-origin documents.");
     return;
   }
+
+  if (ignore_opens_and_writes_for_abort_)
+    return;
 
   NestingLevelIncrementer nesting_level_incrementer(write_recursion_depth_);
 
