@@ -14,6 +14,11 @@ tests:
   - - Брайль бичиг бол хараагүй хүний ертөнцийг харах цонх мөн.
     - ⠠⠃⠗⠁⠯⠇⠾ ⠃⠊⠟⠊⠛ ⠃⠕⠇ ⠓⠁⠗⠁⠁⠛⠹⠯ ⠓⠹⠝⠊⠯ ⠑⠗⠞⠧⠝⠉⠊⠯⠛ ⠓⠁⠗⠁⠓ ⠉⠕⠝⠓ ⠍⠧⠝⠲
 
+flags: {testmode: forward}
+tests:
+  - - The only thing worse than being blind is having sight but no vision.
+    - ⠠⠞⠓⠑ ⠕⠝⠇⠽ ⠞⠓⠊⠝⠛ ⠺⠕⠗⠎⠑ ⠞⠓⠁⠝ ⠃⠑⠊⠝⠛ ⠃⠇⠊⠝⠙ ⠊⠎ ⠓⠁⠧⠊⠝⠛ ⠎⠊⠛⠓⠞ ⠃⠥⠞ ⠝⠕ ⠧⠊⠎⠊⠕⠝⠲
+
 # spaces
 table: mn-MN-g1.utb
 flags: {testmode: bothDirections}
