@@ -16,6 +16,7 @@ issues]].
 ** Braille table improvements
 - Fix an issue with ordinal numbers inside caps passages in Dutch
   braille. Thanks to Bert Frees.
+- Improved back-translation for Mongolian thanks to Angaragerdene.
 
 ** Other changes
 ** Deprecation notice
