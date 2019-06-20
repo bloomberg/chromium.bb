@@ -581,6 +581,15 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/media_capabilities/media_capabilities_fuzzer.cc',
+        ],
+        'allowed': [
+            'mc_fuzzer::.+',
+            'google::protobuf::RepeatedField',
+        ]
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/mediacapturefromelement/',
         ],
         'allowed': [
