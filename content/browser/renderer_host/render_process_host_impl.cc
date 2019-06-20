@@ -74,7 +74,8 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
-#include "content/browser/background_sync/background_sync_service_impl.h"
+#include "content/browser/background_sync/one_shot_background_sync_service_impl.h"
+#include "content/browser/background_sync/periodic_background_sync_service_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/blob_dispatcher_host.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
@@ -2032,7 +2033,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          &BackgroundSyncContextImpl::CreateService,
+          &BackgroundSyncContextImpl::CreateOneShotSyncService,
+          base::Unretained(
+              storage_partition_impl_->GetBackgroundSyncContext())));
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(
+          &BackgroundSyncContextImpl::CreatePeriodicSyncService,
           base::Unretained(
               storage_partition_impl_->GetBackgroundSyncContext())));
   AddUIThreadInterface(

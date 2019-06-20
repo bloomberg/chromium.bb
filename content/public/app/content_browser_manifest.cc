@@ -54,7 +54,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               "renderer",
               std::set<const char*>{
                   "blink.mojom.AppCacheBackend",
-                  "blink.mojom.BackgroundSyncService",
                   "blink.mojom.BlobRegistry",
                   "blink.mojom.BroadcastChannelProvider",
                   "blink.mojom.ClipboardHost",
@@ -66,6 +65,8 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.Hyphenation",
                   "blink.mojom.MediaStreamTrackMetricsHost",
                   "blink.mojom.MimeRegistry",
+                  "blink.mojom.OneShotBackgroundSyncService",
+                  "blink.mojom.PeriodicBackgroundSyncService",
                   "blink.mojom.PluginRegistry",
                   "blink.mojom.PushMessaging",
                   "blink.mojom.ReportingServiceProxy",
