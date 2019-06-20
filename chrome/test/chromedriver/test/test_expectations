@@ -21,10 +21,6 @@ _NEGATIVE_FILTER = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2854
     'ChromeOptionsFunctionalTest.canSetAcceptInsecureCerts',
 
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2835
-    'CookieImplementationTest.deleteAllCookies',
-    'CookieImplementationTest.canHandleHttpOnlyCookie',
-
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2858
     'ElementFindingTest.testFindingMultipleElementsByInvalidClassNameShouldThrow',
     'ElementFindingTest.testFindingMultipleElementsByCompoundClassNameShouldThrow',
