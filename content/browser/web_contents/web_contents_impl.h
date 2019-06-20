@@ -100,7 +100,7 @@ class RenderWidgetHostInputEventRouter;
 class SavePackage;
 class ScreenOrientationProvider;
 class SiteInstance;
-class TestWCBeforeUnloadDelegate;  // site_per_process_browsertest.cc
+class BeforeUnloadBlockingDelegate;  // content_browser_test_utils_internal.h
 class
     TestWCDelegateForDialogsAndFullscreen;  // web_contents_impl_browsertest.cc
 class TestWebContents;
@@ -1047,7 +1047,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   friend class RenderFrameHostImplBeforeUnloadBrowserTest;
   friend class WebContentsImplBrowserTest;
-  friend class TestWCBeforeUnloadDelegate;
+  friend class BeforeUnloadBlockingDelegate;
   friend class TestWCDelegateForDialogsAndFullscreen;
 
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, NoJSMessageOnInterstitials);
