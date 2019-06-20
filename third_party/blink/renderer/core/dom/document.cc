@@ -6050,48 +6050,23 @@ namespace {
 using resource_coordinator::mojom::InterventionPolicy;
 using resource_coordinator::mojom::PolicyControlledIntervention;
 
-typedef bool (*InterventionPolicyGetter)(const FeatureContext*);
-struct InterventionPolicyGetters {
-  InterventionPolicyGetter opt_in_getter;
-  InterventionPolicyGetter opt_out_getter;
-};
-
-// A helper function for setting intervention policy values on a frame en masse.
+// A helper function for setting intervention policy values on a frame.
 void SetInitialInterventionPolicies(
     DocumentResourceCoordinator* document_resource_coordinator,
-    const ExecutionContext* context) {
-  DEFINE_STATIC_LOCAL(Vector<InterventionPolicyGetters>,
-                      kInterventionPolicyGetters, ());
-  if (kInterventionPolicyGetters.IsEmpty()) {
-    InterventionPolicyGetters getters = {
-        &RuntimeEnabledFeatures::PageLifecycleTransitionsOptInEnabled,
-        &RuntimeEnabledFeatures::PageLifecycleTransitionsOptOutEnabled};
-    kInterventionPolicyGetters.push_back(getters);
-    const wtf_size_t kInterventionPolicyGettersSize = 1;
-    static_assert(
-        kInterventionPolicyGettersSize ==
-            static_cast<wtf_size_t>(PolicyControlledIntervention::kMaxValue) +
-                1,
-        "kInterventionPolicyGetters array must be kept in sync with "
-        "mojom::PolicyControlledIntervention enum.");
+    ExecutionContext* context) {
+  // An explicit opt-out overrides an explicit opt-in if both are present.
+  InterventionPolicy policy = InterventionPolicy::kDefault;
+  if (RuntimeEnabledFeatures::PageLifecycleTransitionsOptOutEnabled(context)) {
+    policy = InterventionPolicy::kOptOut;
+    UseCounter::Count(context, WebFeature::kPageLifecycleTransitionsOptOut);
+  } else if (RuntimeEnabledFeatures::PageLifecycleTransitionsOptInEnabled(
+                 context)) {
+    policy = InterventionPolicy::kOptIn;
+    UseCounter::Count(context, WebFeature::kPageLifecycleTransitionsOptIn);
   }
-  // Note that these must be emitted in order, as the *last* policy being set
-  // is used as a sentinel in the browser-side logic to infer that the frame has
-  // transmitted all of its policy data.
-  for (wtf_size_t i = 0; i < kInterventionPolicyGetters.size(); ++i) {
-    bool opt_in = (*kInterventionPolicyGetters[i].opt_in_getter)(context);
-    bool opt_out = (*kInterventionPolicyGetters[i].opt_out_getter)(context);
 
-    // An explicit opt-out overrides an explicit opt-in if both are present.
-    InterventionPolicy policy = InterventionPolicy::kDefault;
-    if (opt_out)
-      policy = InterventionPolicy::kOptOut;
-    else if (opt_in)
-      policy = InterventionPolicy::kOptIn;
-
-    document_resource_coordinator->SetInterventionPolicy(
-        static_cast<PolicyControlledIntervention>(i), policy);
-  }
+  document_resource_coordinator->SetInterventionPolicy(
+      PolicyControlledIntervention::kPageLifecycleTransitions, policy);
 }
 
 }  // namespace

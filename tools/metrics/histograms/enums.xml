@@ -23690,6 +23690,8 @@ Called by update_net_error_codes.py.-->
   <int value="2925" label="V8CallSiteAPIGetThisSloppyCall"/>
   <int value="2926" label="BuiltInModuleToast"/>
   <int value="2927" label="LargestContentfulPaintExplicitlyRequested"/>
+  <int value="2928" label="PageLifecycleTransitionsOptIn"/>
+  <int value="2929" label="PageLifecycleTransitionsOptOut"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

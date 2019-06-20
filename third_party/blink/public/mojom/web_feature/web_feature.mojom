@@ -2314,6 +2314,8 @@ enum WebFeature {
   kV8CallSiteAPIGetThisSloppyCall = 2925,
   kBuiltInModuleToast = 2926,
   kLargestContentfulPaintExplicitlyRequested = 2927,
+  kPageLifecycleTransitionsOptIn = 2928,
+  kPageLifecycleTransitionsOptOut = 2929,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
