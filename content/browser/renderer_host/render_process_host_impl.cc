@@ -3012,6 +3012,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kIPCConnectionTimeout,
     switches::kJavaScriptFlags,
     switches::kLitePagesServerSubresourceHost,
+    switches::kLogBestEffortTasks,
     switches::kLogFile,
     switches::kLoggingLevel,
     switches::kMaxActiveWebGLContexts,

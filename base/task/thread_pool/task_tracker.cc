@@ -8,7 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/json/json_writer.h"
@@ -138,6 +140,14 @@ TaskShutdownBehavior GetEffectiveShutdownBehavior(const TaskTraits& traits,
   return shutdown_behavior;
 }
 
+bool HasLogBestEffortTasksSwitch() {
+  // The CommandLine might not be initialized if ThreadPool is initialized in a
+  // dynamic library which doesn't have access to argc/argv.
+  return CommandLine::InitializedForCurrentProcess() &&
+         CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kLogBestEffortTasks);
+}
+
 }  // namespace
 
 // Atomic internal state used by TaskTracker to track items that are blocking
@@ -232,7 +242,8 @@ class TaskTracker::State {
 
 // TODO(jessemckenna): Write a helper function to avoid code duplication below.
 TaskTracker::TaskTracker(StringPiece histogram_label)
-    : state_(new State),
+    : has_log_best_effort_tasks_switch_(HasLogBestEffortTasksSwitch()),
+      state_(new State),
       can_run_policy_(CanRunPolicy::kAll),
       flush_cv_(flush_lock_.CreateConditionVariable()),
       shutdown_lock_(&flush_lock_),
@@ -406,6 +417,14 @@ bool TaskTracker::WillPostTask(Task* task,
   task_annotator_.WillQueueTask("ThreadPool_PostTask", task, "");
 
   return true;
+}
+
+void TaskTracker::WillPostTaskNow(const Task& task, TaskPriority priority) {
+  if (has_log_best_effort_tasks_switch_ &&
+      priority == TaskPriority::BEST_EFFORT) {
+    // A TaskPriority::BEST_EFFORT task is being posted.
+    LOG(INFO) << task.posted_from.ToString();
+  }
 }
 
 RegisteredTaskSource TaskTracker::WillQueueTaskSource(

@@ -261,7 +261,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
     EXPECT_LE(num_run_tasks_, created_sequences_.size());
   }
 
-  TaskTracker task_tracker_ = {"Test"};
+  TaskTracker task_tracker_{"Test"};
 
   // Synchronizes access to all members below.
   mutable CheckedLock lock_;

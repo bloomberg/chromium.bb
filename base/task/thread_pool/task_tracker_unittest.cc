@@ -228,7 +228,7 @@ class ThreadPoolTaskTrackerTest
     return num_tasks_executed_;
   }
 
-  TaskTracker tracker_ = {"Test"};
+  TaskTracker tracker_{"Test"};
 
  private:
   void RunTaskCallback() {

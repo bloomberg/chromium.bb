@@ -43,6 +43,13 @@ const char kForceFieldTrials[]              = "force-fieldtrials";
 // Generates full memory crash dump.
 const char kFullMemoryCrashReport[] = "full-memory-crash-report";
 
+// Logs information about all tasks posted with TaskPriority::BEST_EFFORT. Use
+// this to diagnose issues that are thought to be caused by
+// TaskPriority::BEST_EFFORT execution fences. Note: Tasks posted to a
+// non-BEST_EFFORT UpdateableSequencedTaskRunner whose priority is later lowered
+// to BEST_EFFORT are not logged.
+const char kLogBestEffortTasks[] = "log-best-effort-tasks";
+
 // Suppresses all error dialogs when present.
 const char kNoErrorDialogs[]                = "noerrdialogs";
 

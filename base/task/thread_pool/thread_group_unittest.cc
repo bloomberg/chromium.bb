@@ -172,7 +172,7 @@ class ThreadGroupTest : public testing::TestWithParam<PoolExecutionType>,
   }
 
   Thread service_thread_;
-  TaskTracker task_tracker_ = {"Test"};
+  TaskTracker task_tracker_{"Test"};
   DelayedTaskManager delayed_task_manager_;
   test::MockPooledTaskRunnerDelegate mock_pooled_task_runner_delegate_ = {
       task_tracker_.GetTrackedRef(), &delayed_task_manager_};
