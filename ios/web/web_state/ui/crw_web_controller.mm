@@ -959,96 +959,21 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)loadData:(NSData*)data
         MIMEType:(NSString*)MIMEType
           forURL:(const GURL&)URL {
-  [self stopLoading];
-  web::NavigationItemImpl* item =
-      self.navigationManagerImpl->GetLastCommittedItemImpl();
-  auto navigationContext = web::NavigationContextImpl::CreateNavigationContext(
-      self.webStateImpl, URL,
-      /*has_user_gesture=*/true, item->GetTransitionType(),
-      /*is_renderer_initiated=*/false);
-  self.navigationHandler.navigationState = web::WKNavigationState::REQUESTED;
-  navigationContext->SetNavigationItemUniqueID(item->GetUniqueID());
-
-  item->SetNavigationInitiationType(
-      web::NavigationInitiationType::BROWSER_INITIATED);
-  // The error_retry_state_machine may still be in the
-  // |kDisplayingWebErrorForFailedNavigation| from the navigation that is being
-  // replaced. As the navigation is now successful, the error can be cleared.
-  item->error_retry_state_machine().SetNoNavigationError();
-  // The load data call will replace the current navigation and the webView URL
-  // of the navigation will be replaced by |URL|. Set the URL of the
-  // navigationItem to keep them synced.
-  // Note: it is possible that the URL in item already match |url|. But item can
-  // also contain a placeholder URL intended to be replaced.
-  item->SetURL(URL);
-  navigationContext->SetMimeType(MIMEType);
-  if (item->GetUserAgentType() == web::UserAgentType::NONE &&
-      URLNeedsUserAgentType(URL)) {
-    item->SetUserAgentType(web::UserAgentType::MOBILE);
-  }
-
-  WKNavigation* navigation =
-      [self.webView loadData:data
-                       MIMEType:MIMEType
-          characterEncodingName:base::SysUTF8ToNSString(base::kCodepageUTF8)
-                        baseURL:net::NSURLWithGURL(URL)];
-
-  [self.navigationHandler.navigationStates
-         setContext:std::move(navigationContext)
-      forNavigation:navigation];
-  [self.navigationHandler.navigationStates
-           setState:web::WKNavigationState::REQUESTED
-      forNavigation:navigation];
+  [_requestController loadData:data
+                       webView:self.webView
+                      MIMEType:MIMEType
+                        forURL:URL];
 }
 
 // Loads the HTML into the page at the given URL. Only for testing purpose.
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
-  DCHECK(HTML.length);
-  // Remove the transient content view.
-  self.webStateImpl->ClearTransientContent();
-
-  self.navigationHandler.navigationState = web::WKNavigationState::REQUESTED;
-
   // Web View should not be created for App Specific URLs.
   if (!web::GetWebClient()->IsAppSpecificURL(URL)) {
     [self ensureWebViewCreated];
     DCHECK(self.webView) << "self.webView null while trying to load HTML";
   }
-  WKNavigation* navigation =
-      [self.webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
-  [self.navigationHandler.navigationStates
-           setState:web::WKNavigationState::REQUESTED
-      forNavigation:navigation];
-  std::unique_ptr<web::NavigationContextImpl> context;
-  const ui::PageTransition loadHTMLTransition =
-      ui::PageTransition::PAGE_TRANSITION_TYPED;
-  if (self.webStateImpl->HasWebUI()) {
-    // WebUI uses |loadHTML:forURL:| to feed the content to web view. This
-    // should not be treated as a navigation, but WKNavigationDelegate callbacks
-    // still expect a valid context.
-    context = web::NavigationContextImpl::CreateNavigationContext(
-        self.webStateImpl, URL, /*has_user_gesture=*/true, loadHTMLTransition,
-        /*is_renderer_initiated=*/false);
-    context->SetNavigationItemUniqueID(self.currentNavItem->GetUniqueID());
-    if (web::features::StorePendingItemInContext()) {
-      // Transfer pending item ownership to NavigationContext.
-      // NavigationManager owns pending item after navigation is requested and
-      // until navigation context is created.
-      context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
-    }
-  } else {
-    context = [self registerLoadRequestForURL:URL
-                                     referrer:web::Referrer()
-                                   transition:loadHTMLTransition
-                       sameDocumentNavigation:NO
-                               hasUserGesture:YES
-                            rendererInitiated:NO
-                        placeholderNavigation:NO];
-  }
-  context->SetLoadingHtmlString(true);
-  context->SetMimeType(@"text/html");
-  [self.navigationHandler.navigationStates setContext:std::move(context)
-                                        forNavigation:navigation];
+
+  [_requestController loadHTML:HTML webView:self.webView forURL:URL];
 }
 
 - (void)requirePageReconstruction {
