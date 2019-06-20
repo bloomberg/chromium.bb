@@ -148,6 +148,9 @@ char kTSanDefaultSuppressions[] =
     // https://crbug.com/965722
     "race:content::(anonymous namespace)::CorruptDBRequestHandler\n"
 
+    // https://crbug.com/977085
+    "race:vp3_update_thread_context\n"
+
     // End of suppressions.
     ;  // Please keep this semicolon.
 
