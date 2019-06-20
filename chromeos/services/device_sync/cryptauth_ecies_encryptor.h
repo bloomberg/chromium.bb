@@ -24,7 +24,18 @@ namespace device_sync {
 // created.
 class CryptAuthEciesEncryptor {
  public:
-  using IdToInputMap = base::flat_map<std::string, std::string>;
+  struct PayloadAndKey {
+    PayloadAndKey();
+    PayloadAndKey(const std::string& payload, const std::string& key);
+
+    // Unencrypted/Encrypted payload to be encrypted/decrypted.
+    std::string payload;
+
+    // Public/Private key for encryption/decryption.
+    std::string key;
+  };
+
+  using IdToInputMap = base::flat_map<std::string, PayloadAndKey>;
   using IdToOutputMap =
       base::flat_map<std::string, base::Optional<std::string>>;
   using SingleInputCallback =
@@ -33,36 +44,24 @@ class CryptAuthEciesEncryptor {
 
   virtual ~CryptAuthEciesEncryptor();
 
-  // Encrypts |unencrypted_payload| with |encrypting_public_key|, returning the
-  // encrypted payload in the callback or null if the encryption was
-  // unsuccessful.
+  // Encrypts/Decrypts the input payload with the provided key, returning the
+  // encrypted/decrypted payload in the callback or null if the
+  // encryption/decryption was unsuccessful.
   void Encrypt(const std::string& unencrypted_payload,
                const std::string& encrypting_public_key,
                SingleInputCallback encryption_finished_callback);
-
-  // Decrypts |encrypted_payload| with |decrypting_private_key|, returning the
-  // decrypted payload in the callback or null if the decryption was
-  // unsuccessful.
   void Decrypt(const std::string& encrypted_payload,
                const std::string& decrypting_private_key,
                SingleInputCallback decryption_finished_callback);
 
-  // Encrypts all values of the input ID to payload map,
-  // |id_to_unencrypted_payload_map|, using the same |encrypting_public_key|.
-  // The encrypted payloads are returned in the callback, paired with their
-  // input IDs. Unsuccessful encryptions result in null values. Note: The IDs
-  // are only used to correlate the output with input.
-  void BatchEncrypt(const IdToInputMap& id_to_unencrypted_payload_map,
-                    const std::string& encrypting_public_key,
+  // Encrypts/Decrypts all payloads of the input ID-to-PayloadAndKey map with
+  // the provided keys. The encrypted/decrypted payloads are returned in the
+  // callback, paired with their input IDs. Unsuccessful encryptions/decryptions
+  // result in null values. Note: The IDs are only used to correlate the output
+  // with input.
+  void BatchEncrypt(const IdToInputMap& id_to_payload_and_key_map,
                     BatchCallback encryption_finished_callback);
-
-  // Decrypts all values of the input ID to payload map,
-  // |id_to_encrypted_payload_map|, using the same |decrypting_private_key|.
-  // The decrypted payloads are returned in the callback, paired with their
-  // input IDs. Unsuccessful decryptions result in null values. Note: The IDs
-  // are only used to correlate the output with input.
-  void BatchDecrypt(const IdToInputMap& id_to_encrypted_payload_map,
-                    const std::string& decrypting_private_key,
+  void BatchDecrypt(const IdToInputMap& id_to_payload_and_key_map,
                     BatchCallback decryption_finished_callback);
 
  protected:
@@ -74,11 +73,9 @@ class CryptAuthEciesEncryptor {
   void OnAttemptFinished(const IdToOutputMap& id_to_output_map);
 
   IdToInputMap id_to_input_map_;
-  std::string input_key_;
 
  private:
   void ProcessInput(const IdToInputMap& id_to_input_map,
-                    const std::string& input_key,
                     BatchCallback callback);
 
   BatchCallback callback_;

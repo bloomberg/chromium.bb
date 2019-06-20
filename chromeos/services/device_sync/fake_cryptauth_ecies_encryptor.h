@@ -26,7 +26,6 @@ class FakeCryptAuthEciesEncryptor : CryptAuthEciesEncryptor {
                      const IdToOutputMap& id_to_output_map);
 
   const IdToInputMap& id_to_input_map() const { return id_to_input_map_; }
-  const std::string& input_key() const { return input_key_; }
 
  private:
   // CryptAuthEciesEncryptor:

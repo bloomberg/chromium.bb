@@ -29,7 +29,7 @@ namespace device_sync {
 // The encryption algorithm is as follows:
 //   1) Generate a session key pair.
 //   2) Use Diffie-Hellman key exchange to derive symmetric key from the session
-//      private key and the input |encrypting_public_key|.
+//      private key and the input encrypting public key.
 //   3) Create a SecureMessage from the input payload, encrypted and signed with
 //      the derived symmetric key, using AES-256-CBC and HMAC-SHA256,
 //      respectively.
@@ -41,15 +41,15 @@ namespace device_sync {
 //   1) Parse the serialized SecureMessage input.
 //   2) Use Diffie-Hellman key exchange to derive symmetric key from the session
 //      public key--provided in the unencrypted SecureMessage Header's
-//      decryption_key_id field--and the input |decrypting_private_key|. This
+//      decryption_key_id field--and the input decrypting private key. This
 //      should match the key derived in the step 2) of the encryption algorithm
-//      if |encrypting_public_key| and |decrypting_private_key| are a key pair.
+//      if the encrypting public key and decrypting private key are a key pair.
 //   3) Decrypt the input SecureMessage and verify the signature using the
 //      derived symmetric key.
 //   4) Extract the decrypted payload string from the body of the decrypted
 //      SecureMessage.
 //
-// Note that the input |encrypting_public_key| must be a serialized
+// Note that the input encrypting public keys must be a serialized
 // securemessage::GenericPublicKey proto, and the encrypting/decrypting key pair
 // must be P-256.
 class CryptAuthEciesEncryptorImpl : public CryptAuthEciesEncryptor {

@@ -141,7 +141,7 @@ void CryptAuthEciesEncryptorImpl::OnSessionKeyPairGenerated(
     const std::string& session_private_key) {
   for (const auto& id_input_pair : id_to_input_map_) {
     secure_message_delegate_->DeriveKey(
-        session_private_key, input_key_,
+        session_private_key, id_input_pair.second.key,
         base::Bind(
             &CryptAuthEciesEncryptorImpl::OnDiffieHellmanEncryptionKeyDerived,
             base::Unretained(this), id_input_pair.first, session_public_key));
@@ -158,7 +158,7 @@ void CryptAuthEciesEncryptorImpl::OnDiffieHellmanEncryptionKeyDerived(
   options.decryption_key_id = session_public_key;
 
   secure_message_delegate_->CreateSecureMessage(
-      id_to_input_map_[id], dh_key, options,
+      id_to_input_map_[id].payload, dh_key, options,
       base::Bind(&CryptAuthEciesEncryptorImpl::OnSecureMessageCreated,
                  base::Unretained(this), id));
 }
@@ -182,7 +182,7 @@ void CryptAuthEciesEncryptorImpl::OnBatchDecryptionStarted() {
 
   for (const auto& id_input_pair : id_to_input_map_) {
     base::Optional<securemessage::Header> header =
-        ParseHeaderFromSerializedSecureMessage(id_input_pair.second);
+        ParseHeaderFromSerializedSecureMessage(id_input_pair.second.payload);
     if (!header) {
       OnSingleOutputFinished(id_input_pair.first, base::nullopt /* output */);
       continue;
@@ -201,10 +201,11 @@ void CryptAuthEciesEncryptorImpl::OnBatchDecryptionStarted() {
     }
 
     secure_message_delegate_->DeriveKey(
-        input_key_, *session_public_key,
+        id_input_pair.second.key, *session_public_key,
         base::Bind(
             &CryptAuthEciesEncryptorImpl::OnDiffieHellmanDecryptionKeyDerived,
-            base::Unretained(this), id_input_pair.first, id_input_pair.second));
+            base::Unretained(this), id_input_pair.first,
+            id_input_pair.second.payload));
   }
 }
 

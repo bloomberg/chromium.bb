@@ -24,12 +24,13 @@ namespace device_sync {
 
 namespace {
 
-const char kPublicKey[] = "public_key";
 const char kSessionPublicKey[] = "session_public_key";
 const char kPayloadId1[] = "payload_id_1";
-const char kUnencryptedPayload1[] = "unencrypted_payload_1";
 const char kPayloadId2[] = "payload_id_2";
+const char kUnencryptedPayload1[] = "unencrypted_payload_1";
 const char kUnencryptedPayload2[] = "unencrypted_payload_2";
+const char kPublicKey1[] = "public_key_1";
+const char kPublicKey2[] = "public_key_2";
 const char kPayloadNotSet[] = "[Payload not set]";
 
 constexpr securemessage::EncScheme kSecureMessageEncryptionScheme =
@@ -57,27 +58,6 @@ void VerifyEncryptedPayload(
   EXPECT_EQ(kSecureMessageEncryptionScheme, header.encryption_scheme());
   EXPECT_EQ(kSecureMessageSignatureScheme, header.signature_scheme());
   EXPECT_EQ(expected_session_public_key, header.decryption_key_id());
-}
-
-CryptAuthEciesEncryptor::IdToOutputMap ConvertBatchInputToOutput(
-    const CryptAuthEciesEncryptor::IdToInputMap& id_to_input_map) {
-  CryptAuthEciesEncryptor::IdToOutputMap id_to_output_map;
-  for (const auto& id_input_pair : id_to_input_map) {
-    id_to_output_map.try_emplace(id_input_pair.first, id_input_pair.second);
-  }
-
-  return id_to_output_map;
-}
-
-CryptAuthEciesEncryptor::IdToInputMap ConvertBatchOutputToInput(
-    const CryptAuthEciesEncryptor::IdToOutputMap& id_to_output_map) {
-  CryptAuthEciesEncryptor::IdToInputMap id_to_input_map;
-  for (const auto& id_output_pair : id_to_output_map) {
-    EXPECT_TRUE(id_output_pair.second);
-    id_to_input_map.try_emplace(id_output_pair.first, *id_output_pair.second);
-  }
-
-  return id_to_input_map;
 }
 
 }  // namespace
@@ -114,14 +94,13 @@ class DeviceSyncCryptAuthEciesEncryptorImplTest : public testing::Test {
   }
 
   void BatchEncrypt(const CryptAuthEciesEncryptor::IdToInputMap&
-                        id_to_unencrypted_payload_map,
-                    const std::string& encrypting_public_key) {
+                        id_to_unencrypted_payload_map) {
     encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Get()->BuildInstance();
     fake_secure_message_delegate()->set_next_public_key(kSessionPublicKey);
 
     base::RunLoop run_loop;
     encryptor_->BatchEncrypt(
-        id_to_unencrypted_payload_map, encrypting_public_key,
+        id_to_unencrypted_payload_map,
         base::BindOnce(&DeviceSyncCryptAuthEciesEncryptorImplTest::
                            OnBatchEncryptionFinished,
                        base::Unretained(this), run_loop.QuitClosure()));
@@ -144,14 +123,13 @@ class DeviceSyncCryptAuthEciesEncryptorImplTest : public testing::Test {
     run_loop.Run();
   }
 
-  void BatchDecrypt(
-      const CryptAuthEciesEncryptor::IdToInputMap& id_to_encrypted_payload_map,
-      const std::string& decrypting_private_key) {
+  void BatchDecrypt(const CryptAuthEciesEncryptor::IdToInputMap&
+                        id_to_encrypted_payload_map) {
     encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Get()->BuildInstance();
 
     base::RunLoop run_loop;
     encryptor_->BatchDecrypt(
-        id_to_encrypted_payload_map, decrypting_private_key,
+        id_to_encrypted_payload_map,
         base::BindOnce(&DeviceSyncCryptAuthEciesEncryptorImplTest::
                            OnBatchDecryptionFinished,
                        base::Unretained(this), run_loop.QuitClosure()));
@@ -168,13 +146,33 @@ class DeviceSyncCryptAuthEciesEncryptorImplTest : public testing::Test {
     EXPECT_EQ(expected_batch_decrypted_payloads, batch_decrypted_payloads_);
   }
 
-  const base::Optional<std::string>& encrypted_payload() {
-    return encrypted_payload_;
+  // Replaces the unencrypted payloads and encrypting public keys with the
+  // corresponding encrypted payloads and decrypting private keys.
+  CryptAuthEciesEncryptor::IdToInputMap
+  ConvertBatchEncryptInputToBatchDecryptInput(
+      const CryptAuthEciesEncryptor::IdToInputMap&
+          id_to_unencrypted_payload_and_public_key_map) {
+    EXPECT_TRUE(batch_encrypted_payloads_);
+
+    CryptAuthEciesEncryptor::IdToInputMap
+        id_to_encrypted_payload_and_private_key_map =
+            id_to_unencrypted_payload_and_public_key_map;
+    for (auto& id_pk_pair : id_to_encrypted_payload_and_private_key_map) {
+      const base::Optional<std::string>& encrypted_payload =
+          (*batch_encrypted_payloads_)[id_pk_pair.first];
+      EXPECT_TRUE(encrypted_payload);
+
+      id_pk_pair.second = CryptAuthEciesEncryptor::PayloadAndKey(
+          *encrypted_payload,
+          fake_secure_message_delegate()->GetPrivateKeyForPublicKey(
+              id_pk_pair.second.key));
+    }
+
+    return id_to_encrypted_payload_and_private_key_map;
   }
 
-  base::Optional<CryptAuthEciesEncryptor::IdToOutputMap>
-  batch_encrypted_payloads() {
-    return batch_encrypted_payloads_;
+  const base::Optional<std::string>& encrypted_payload() {
+    return encrypted_payload_;
   }
 
   multidevice::FakeSecureMessageDelegate* fake_secure_message_delegate() {
@@ -244,29 +242,30 @@ class DeviceSyncCryptAuthEciesEncryptorImplTest : public testing::Test {
 };
 
 TEST_F(DeviceSyncCryptAuthEciesEncryptorImplTest, EncryptAndDecrypt) {
-  Encrypt(kUnencryptedPayload1, kPublicKey);
+  Encrypt(kUnencryptedPayload1, kPublicKey1);
 
   Decrypt(
       *encrypted_payload(),
-      fake_secure_message_delegate()->GetPrivateKeyForPublicKey(kPublicKey));
+      fake_secure_message_delegate()->GetPrivateKeyForPublicKey(kPublicKey1));
   VerifyDecryption(kUnencryptedPayload1);
 }
 
 TEST_F(DeviceSyncCryptAuthEciesEncryptorImplTest, BatchEncryptAndDecrypt) {
-  const CryptAuthEciesEncryptor::IdToInputMap id_to_unencrypted_payload_map = {
-      {kPayloadId1, kUnencryptedPayload1}, {kPayloadId2, kUnencryptedPayload2}};
-  BatchEncrypt(id_to_unencrypted_payload_map, kPublicKey);
+  const CryptAuthEciesEncryptor::IdToInputMap unencrypted_input = {
+      {kPayloadId1, CryptAuthEciesEncryptor::PayloadAndKey(kUnencryptedPayload1,
+                                                           kPublicKey1)},
+      {kPayloadId2, CryptAuthEciesEncryptor::PayloadAndKey(kUnencryptedPayload2,
+                                                           kPublicKey2)}};
+  BatchEncrypt(unencrypted_input);
 
-  BatchDecrypt(
-      ConvertBatchOutputToInput(*batch_encrypted_payloads()),
-      fake_secure_message_delegate()->GetPrivateKeyForPublicKey(kPublicKey));
-  VerifyBatchDecryption(
-      ConvertBatchInputToOutput(id_to_unencrypted_payload_map));
+  BatchDecrypt(ConvertBatchEncryptInputToBatchDecryptInput(unencrypted_input));
+  VerifyBatchDecryption({{kPayloadId1, kUnencryptedPayload1},
+                         {kPayloadId2, kUnencryptedPayload2}});
 }
 
 TEST_F(DeviceSyncCryptAuthEciesEncryptorImplTest,
        DecryptionFailure_WrongDecryptionKey) {
-  Encrypt(kUnencryptedPayload1, kPublicKey);
+  Encrypt(kUnencryptedPayload1, kPublicKey1);
 
   Decrypt(*encrypted_payload(), "Invalid private key");
   VerifyDecryption(base::nullopt /* expected_decrypted_payload */);
@@ -274,25 +273,27 @@ TEST_F(DeviceSyncCryptAuthEciesEncryptorImplTest,
 
 TEST_F(DeviceSyncCryptAuthEciesEncryptorImplTest,
        DecryptionFailure_CannotParseSecureMessage) {
-  const CryptAuthEciesEncryptor::IdToInputMap id_to_unencrypted_payload_map = {
-      {kPayloadId1, kUnencryptedPayload1}, {kPayloadId2, kUnencryptedPayload2}};
-  BatchEncrypt(id_to_unencrypted_payload_map, kPublicKey);
-  CryptAuthEciesEncryptor::IdToInputMap id_to_encrypted_payload_map =
-      ConvertBatchOutputToInput(*batch_encrypted_payloads());
+  const CryptAuthEciesEncryptor::IdToInputMap unencrypted_input = {
+      {kPayloadId1, CryptAuthEciesEncryptor::PayloadAndKey(kUnencryptedPayload1,
+                                                           kPublicKey1)},
+      {kPayloadId2, CryptAuthEciesEncryptor::PayloadAndKey(kUnencryptedPayload2,
+                                                           kPublicKey2)}};
+
+  BatchEncrypt(unencrypted_input);
+  CryptAuthEciesEncryptor::IdToInputMap encrypted_input =
+      ConvertBatchEncryptInputToBatchDecryptInput(unencrypted_input);
 
   // Corrupt the second serialized SecureMessage.
-  id_to_encrypted_payload_map[kPayloadId2] = "Invalid SecureMessage";
+  encrypted_input[kPayloadId2].payload = "Invalid SecureMessage";
 
-  BatchDecrypt(
-      id_to_encrypted_payload_map,
-      fake_secure_message_delegate()->GetPrivateKeyForPublicKey(kPublicKey));
+  BatchDecrypt(encrypted_input);
   VerifyBatchDecryption(
       {{kPayloadId1, kUnencryptedPayload1}, {kPayloadId2, base::nullopt}});
 }
 
 TEST_F(DeviceSyncCryptAuthEciesEncryptorImplTest,
        DecryptionFailure_CannotParseSecureMessageHeaderAndBody) {
-  Encrypt(kUnencryptedPayload1, kPublicKey);
+  Encrypt(kUnencryptedPayload1, kPublicKey1);
 
   // Corrupt the HeaderAndBody.
   securemessage::SecureMessage secure_message_with_invalid_header_and_body;
@@ -303,54 +304,53 @@ TEST_F(DeviceSyncCryptAuthEciesEncryptorImplTest,
 
   Decrypt(
       secure_message_with_invalid_header_and_body.SerializeAsString(),
-      fake_secure_message_delegate()->GetPrivateKeyForPublicKey(kPublicKey));
+      fake_secure_message_delegate()->GetPrivateKeyForPublicKey(kPublicKey1));
   VerifyDecryption(base::nullopt /* expected_decrypted_payload */);
 }
 
 TEST_F(DeviceSyncCryptAuthEciesEncryptorImplTest,
        DecryptionFailure_InvalidSchemesInHeader) {
-  const CryptAuthEciesEncryptor::IdToInputMap id_to_unencrypted_payload_map = {
-      {kPayloadId1, kUnencryptedPayload1}, {kPayloadId2, kUnencryptedPayload2}};
-  BatchEncrypt(id_to_unencrypted_payload_map, kPublicKey);
-  CryptAuthEciesEncryptor::IdToInputMap id_to_encrypted_payload_map =
-      ConvertBatchOutputToInput(*batch_encrypted_payloads());
+  const CryptAuthEciesEncryptor::IdToInputMap unencrypted_input = {
+      {kPayloadId1, CryptAuthEciesEncryptor::PayloadAndKey(kUnencryptedPayload1,
+                                                           kPublicKey1)},
+      {kPayloadId2, CryptAuthEciesEncryptor::PayloadAndKey(kUnencryptedPayload2,
+                                                           kPublicKey2)}};
+  BatchEncrypt(unencrypted_input);
+  CryptAuthEciesEncryptor::IdToInputMap encrypted_input =
+      ConvertBatchEncryptInputToBatchDecryptInput(unencrypted_input);
 
   // Corrupt the specified encryption scheme of the first SecureMessage.
   {
     securemessage::SecureMessage secure_message;
-    secure_message.ParseFromString(id_to_encrypted_payload_map[kPayloadId1]);
+    secure_message.ParseFromString(encrypted_input[kPayloadId1].payload);
     securemessage::HeaderAndBody header_and_body;
     header_and_body.ParseFromString(secure_message.header_and_body());
     header_and_body.mutable_header()->set_encryption_scheme(
         securemessage::EncScheme::NONE);
     secure_message.set_header_and_body(header_and_body.SerializeAsString());
-    id_to_encrypted_payload_map[kPayloadId1] =
-        secure_message.SerializeAsString();
+    encrypted_input[kPayloadId1].payload = secure_message.SerializeAsString();
   }
 
   // Corrupt the specified signature scheme of the second SecureMessage.
   {
     securemessage::SecureMessage secure_message;
-    secure_message.ParseFromString(id_to_encrypted_payload_map[kPayloadId2]);
+    secure_message.ParseFromString(encrypted_input[kPayloadId2].payload);
     securemessage::HeaderAndBody header_and_body;
     header_and_body.ParseFromString(secure_message.header_and_body());
     header_and_body.mutable_header()->set_signature_scheme(
         securemessage::SigScheme::RSA2048_SHA256);
     secure_message.set_header_and_body(header_and_body.SerializeAsString());
-    id_to_encrypted_payload_map[kPayloadId2] =
-        secure_message.SerializeAsString();
+    encrypted_input[kPayloadId2].payload = secure_message.SerializeAsString();
   }
 
-  BatchDecrypt(
-      id_to_encrypted_payload_map,
-      fake_secure_message_delegate()->GetPrivateKeyForPublicKey(kPublicKey));
+  BatchDecrypt(encrypted_input);
   VerifyBatchDecryption(
       {{kPayloadId1, base::nullopt}, {kPayloadId2, base::nullopt}});
 }
 
 TEST_F(DeviceSyncCryptAuthEciesEncryptorImplTest,
        DecryptionFailure_EmptyDecryptionKeyId) {
-  Encrypt(kUnencryptedPayload1, kPublicKey);
+  Encrypt(kUnencryptedPayload1, kPublicKey1);
 
   // Remove the session public key.
   securemessage::SecureMessage secure_message;
@@ -362,7 +362,7 @@ TEST_F(DeviceSyncCryptAuthEciesEncryptorImplTest,
 
   Decrypt(
       secure_message.SerializeAsString(),
-      fake_secure_message_delegate()->GetPrivateKeyForPublicKey(kPublicKey));
+      fake_secure_message_delegate()->GetPrivateKeyForPublicKey(kPublicKey1));
   VerifyDecryption(base::nullopt /* expected_decrypted_payload */);
 }
 
