@@ -334,9 +334,14 @@ void AutoclickController::DoAutoclickAction() {
       menu_bubble_controller_->ClickOnScrollBubble(gesture_anchor_location_,
                                                    mouse_event_flags_);
     } else {
-      // TODO(katie): Move the scroll bubble closer to the new scroll location.
       scroll_location_ = gesture_anchor_location_;
       UpdateScrollPosition(scroll_location_);
+      // If the user has requested a new point on the screen as the target of
+      // scrolls, move the scroll bubble close to that point.
+      // TODO(katie): Determine the scrollable region using the automation API
+      // and a component extension, and pass in the region as well as a single
+      // point here, per the spec.
+      menu_bubble_controller_->SetScrollPoint(scroll_location_);
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.ChangeScrollPoint"));
     }
@@ -566,7 +571,7 @@ void AutoclickController::RecordUserAction(
           base::UserMetricsAction("Accessibility.Autoclick.DragAndDrop"));
       return;
     case mojom::AutoclickEventType::kScroll:
-      // Scroll users actions are recorded from AutoclickScrollView.
+      // Scroll users actions will be recorded from AutoclickScrollView.
     case mojom::AutoclickEventType::kNoAction:
       // No action shouldn't have a UserAction, so we return.
       return;

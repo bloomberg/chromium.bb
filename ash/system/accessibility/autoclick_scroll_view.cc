@@ -382,11 +382,17 @@ void AutoclickScrollView::Layout() {
   scroll_down_button_->SetBounds(0, kScrollPadButtonHypotenuseDips / 2,
                                  kScrollPadButtonHypotenuseDips,
                                  kScrollPadButtonHypotenuseDips / 2);
-  scroll_left_button_->SetBounds(0, 0, kScrollPadButtonHypotenuseDips / 2,
-                                 kScrollPadButtonHypotenuseDips);
-  scroll_right_button_->SetBounds(kScrollPadButtonHypotenuseDips / 2, 0,
-                                  kScrollPadButtonHypotenuseDips / 2,
-                                  kScrollPadButtonHypotenuseDips);
+  // In RTL languages, the left and right buttons bounds should be inverted
+  // so that they still draw on the correct side of the screen.
+  gfx::Rect left_bounds(0, 0, kScrollPadButtonHypotenuseDips / 2,
+                        kScrollPadButtonHypotenuseDips);
+  gfx::Rect right_bounds(kScrollPadButtonHypotenuseDips / 2, 0,
+                         kScrollPadButtonHypotenuseDips / 2,
+                         kScrollPadButtonHypotenuseDips);
+  scroll_left_button_->SetBoundsRect(base::i18n::IsRTL() ? right_bounds
+                                                         : left_bounds);
+  scroll_right_button_->SetBoundsRect(base::i18n::IsRTL() ? left_bounds
+                                                          : right_bounds);
   close_scroll_button_->SetBounds(
       kScrollPadButtonHypotenuseDips / 2 - kScrollButtonCloseSizeDips / 2,
       kScrollPadButtonHypotenuseDips / 2 - kScrollButtonCloseSizeDips / 2,
