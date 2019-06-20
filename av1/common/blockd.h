@@ -240,32 +240,32 @@ typedef struct MB_MODE_INFO {
   TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
   MV_REFERENCE_FRAME ref_frame[2];
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
-  int8_t use_wedge_interintra;
   int8_t skip;
-  int8_t skip_mode;
   uint8_t inter_tx_size[INTER_TX_SIZE_BUF_LEN];
   TX_SIZE tx_size;
   int8_t delta_lf_from_base;
   int8_t delta_lf[FRAME_LF_COUNT];
-  int8_t segment_id;
-  int8_t seg_id_predicted;  // valid only when temporal_update is enabled
   int8_t interintra_wedge_index;
-  uint8_t use_intrabc;
   // The actual prediction angle is the base angle + (angle_delta * step).
   int8_t angle_delta[PLANE_TYPES];
   /* deringing gain *per-superblock* */
-  int8_t cdef_strength;
   // Joint sign of alpha Cb and alpha Cr
   int8_t cfl_alpha_signs;
   // Index of the alpha Cb and alpha Cr combination
   uint8_t cfl_alpha_idx;
-  uint8_t ref_mv_idx;
-  // Indicate if masked compound is used(1) or not(0).
-  uint8_t comp_group_idx;
-  // If comp_group_idx=0, indicate if dist_wtd_comp(0) or avg_comp(1) is used.
-  uint8_t compound_idx;
   uint8_t num_proj_ref;
   uint8_t overlappable_neighbors[2];
+  // If comp_group_idx=0, indicate if dist_wtd_comp(0) or avg_comp(1) is used.
+  uint8_t compound_idx;
+  uint8_t use_wedge_interintra : 1;
+  uint8_t segment_id : 3;
+  uint8_t seg_id_predicted : 1;  // valid only when temporal_update is enabled
+  uint8_t skip_mode : 1;
+  uint8_t use_intrabc : 1;
+  uint8_t ref_mv_idx : 2;
+  // Indicate if masked compound is used(1) or not(0).
+  uint8_t comp_group_idx : 1;
+  int8_t cdef_strength : 4;
 } MB_MODE_INFO;
 
 static INLINE int is_intrabc_block(const MB_MODE_INFO *mbmi) {
