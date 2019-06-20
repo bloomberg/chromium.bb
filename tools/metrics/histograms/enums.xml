@@ -50288,11 +50288,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="SVG"/>
   <int value="7" label="XSL"/>
   <int value="8" label="Link prefetch"/>
-  <int value="9" label="Link subresource"/>
-  <int value="10" label="Text track"/>
-  <int value="11" label="ImportResource"/>
-  <int value="12" label="Media"/>
+  <int value="9" label="Text track"/>
+  <int value="10" label="ImportResource"/>
+  <int value="11" label="Audio"/>
+  <int value="12" label="Video"/>
   <int value="13" label="Manifest"/>
+  <int value="14" label="Mock"/>
 </enum>
 
 <enum name="RestoredCachedStyleSheet">
