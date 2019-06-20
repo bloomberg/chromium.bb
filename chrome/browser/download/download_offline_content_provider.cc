@@ -41,6 +41,11 @@ namespace {
 // Thumbnail size used for generating thumbnails for image files.
 const int kThumbnailSizeInDP = 64;
 
+// The delay to wait after loading history and before starting the check for
+// externally removed downloads.
+const base::TimeDelta kCheckExternallyRemovedDownloadsDelay =
+    base::TimeDelta::FromMilliseconds(100);
+
 bool ShouldShowDownloadItem(const DownloadItem* item) {
   return !item->IsTemporary() && !item->IsTransient() && !item->IsDangerous() &&
          !item->GetTargetFilePath().empty();
@@ -60,6 +65,61 @@ std::unique_ptr<OfflineItemShareInfo> CreateShareInfo(
   return share_info;
 }
 
+// Observes the all downloads, primrarily responsible for cleaning up the
+// externally removed downloads, and notifying the provider about download
+// deletions.
+class AllDownloadObserver
+    : public download::AllDownloadEventNotifier::Observer {
+ public:
+  explicit AllDownloadObserver(DownloadOfflineContentProvider* provider);
+  ~AllDownloadObserver() override;
+
+  void OnDownloadUpdated(SimpleDownloadManagerCoordinator* manager,
+                         DownloadItem* item) override;
+  void OnDownloadRemoved(SimpleDownloadManagerCoordinator* manager,
+                         DownloadItem* item) override;
+
+ private:
+  void DeleteDownloadItem(SimpleDownloadManagerCoordinator* manager,
+                          const std::string& guid);
+
+  DownloadOfflineContentProvider* provider_;
+  base::WeakPtrFactory<AllDownloadObserver> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(AllDownloadObserver);
+};
+
+AllDownloadObserver::AllDownloadObserver(
+    DownloadOfflineContentProvider* provider)
+    : provider_(provider), weak_ptr_factory_(this) {}
+
+AllDownloadObserver::~AllDownloadObserver() {}
+
+void AllDownloadObserver::OnDownloadUpdated(
+    SimpleDownloadManagerCoordinator* manager,
+    DownloadItem* item) {
+  if (item->GetFileExternallyRemoved()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&AllDownloadObserver::DeleteDownloadItem,
+                                  weak_ptr_factory_.GetWeakPtr(), manager,
+                                  item->GetGuid()));
+  }
+}
+
+void AllDownloadObserver::OnDownloadRemoved(
+    SimpleDownloadManagerCoordinator* manager,
+    DownloadItem* item) {
+  provider_->OnDownloadRemoved(item);
+}
+
+void AllDownloadObserver::DeleteDownloadItem(
+    SimpleDownloadManagerCoordinator* manager,
+    const std::string& guid) {
+  DownloadItem* item = manager->GetDownloadByGuid(guid);
+  if (item)
+    item->Remove();
+}
+
 }  // namespace
 
 DownloadOfflineContentProvider::DownloadOfflineContentProvider(
@@ -70,12 +130,15 @@ DownloadOfflineContentProvider::DownloadOfflineContentProvider(
       manager_(nullptr),
       weak_ptr_factory_(this) {
   aggregator_->RegisterProvider(name_space_, this);
+  all_download_observer_.reset(new AllDownloadObserver(this));
 }
 
 DownloadOfflineContentProvider::~DownloadOfflineContentProvider() {
   aggregator_->UnregisterProvider(name_space_);
-  if (manager_)
+  if (manager_) {
     manager_->RemoveObserver(this);
+    manager_->GetNotifier()->RemoveObserver(all_download_observer_.get());
+  }
 }
 
 void DownloadOfflineContentProvider::SetSimpleDownloadManagerCoordinator(
@@ -84,6 +147,7 @@ void DownloadOfflineContentProvider::SetSimpleDownloadManagerCoordinator(
   DCHECK(!manager_);
   manager_ = manager;
   manager_->AddObserver(this);
+  manager_->GetNotifier()->AddObserver(all_download_observer_.get());
 }
 
 // TODO(shaktisahu) : Pass DownloadOpenSource.
@@ -96,8 +160,10 @@ void DownloadOfflineContentProvider::OpenItem(LaunchLocation location,
 
 void DownloadOfflineContentProvider::RemoveItem(const ContentId& id) {
   DownloadItem* item = GetDownload(id.id);
-  if (item)
+  if (item) {
+    item->DeleteFile(base::DoNothing());
     item->Remove();
+  }
 }
 
 void DownloadOfflineContentProvider::CancelDownload(const ContentId& id) {
@@ -249,6 +315,19 @@ void DownloadOfflineContentProvider::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void DownloadOfflineContentProvider::OnDownloadsInitialized(
+    bool active_downloads_only) {
+  if (active_downloads_only)
+    return;
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          &DownloadOfflineContentProvider::CheckForExternallyRemovedDownloads,
+          weak_ptr_factory_.GetWeakPtr()),
+      kCheckExternallyRemovedDownloadsDelay);
+}
+
 void DownloadOfflineContentProvider::OnManagerGoingDown() {
   std::vector<DownloadItem*> all_items;
   GetAllDownloads(&all_items);
@@ -350,4 +429,12 @@ void DownloadOfflineContentProvider::UpdateObservers(
     const base::Optional<UpdateDelta>& update_delta) {
   for (auto& observer : observers_)
     observer.OnItemUpdated(item, update_delta);
+}
+
+void DownloadOfflineContentProvider::CheckForExternallyRemovedDownloads() {
+  if (checked_for_externally_removed_downloads_ || !manager_)
+    return;
+
+  checked_for_externally_removed_downloads_ = true;
+  manager_->CheckForExternallyRemovedDownloads();
 }
