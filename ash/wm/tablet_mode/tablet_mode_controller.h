@@ -95,9 +95,6 @@ class ASH_EXPORT TabletModeController
   // async.
   static void SetForceNoScreenshotForTest();
 
-  // Test if the TabletModeWindowManager is enabled or not.
-  bool InTabletMode() const;
-
   // Add a special window to the TabletModeWindowManager for tracking. This is
   // only required for special windows which are handled by other window
   // managers like the |MultiUserWindowManagerImpl|.
@@ -126,7 +123,7 @@ class ASH_EXPORT TabletModeController
 
   // TabletMode:
   void SetTabletModeToggleObserver(TabletModeToggleObserver* observer) override;
-  bool IsEnabled() const override;
+  bool InTabletMode() const override;
   void SetEnabledForTest(bool enabled) override;
 
   // ShellObserver:

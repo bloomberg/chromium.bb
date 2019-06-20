@@ -265,10 +265,6 @@ void TabletModeController::SetForceNoScreenshotForTest() {
   force_no_screenshot = true;
 }
 
-bool TabletModeController::InTabletMode() const {
-  return !!tablet_mode_window_manager_;
-}
-
 void TabletModeController::AddWindow(aura::Window* window) {
   if (InTabletMode())
     tablet_mode_window_manager_->AddWindow(window);
@@ -343,8 +339,8 @@ void TabletModeController::SetTabletModeToggleObserver(
   toggle_observer_ = observer;
 }
 
-bool TabletModeController::IsEnabled() const {
-  return InTabletMode();
+bool TabletModeController::InTabletMode() const {
+  return !!tablet_mode_window_manager_;
 }
 
 void TabletModeController::SetEnabledForTest(bool enabled) {
@@ -740,7 +736,7 @@ bool TabletModeController::CanEnterTabletMode() {
   // If we have ever seen accelerometer data, then HandleHingeRotation may
   // trigger tablet mode at some point in the future.
   // All TabletMode-enabled devices can enter tablet mode.
-  return have_seen_accelerometer_data_ || IsEnabled();
+  return have_seen_accelerometer_data_ || InTabletMode();
 }
 
 void TabletModeController::AttemptEnterTabletMode() {
