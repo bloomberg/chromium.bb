@@ -153,7 +153,7 @@ typedef struct {
 
 #define MAX_INTERP_FILTER_STATS 64
 typedef struct {
-  InterpFilters filters;
+  int_interpfilters filters;
   int_mv mv[2];
   int8_t ref_frames[2];
   COMPOUND_TYPE comp_type;
@@ -171,7 +171,7 @@ typedef struct {
   int_mv mv[2];
   MV_REFERENCE_FRAME ref_frames[2];
   PREDICTION_MODE mode;
-  InterpFilters filter;
+  int_interpfilters filter;
   int ref_mv_idx;
   int is_global[2];
 } COMP_RD_STATS;

@@ -51,7 +51,7 @@ typedef struct {
   MV_REFERENCE_FRAME best_ref_frame;
   MV_REFERENCE_FRAME best_second_ref_frame;
   uint8_t best_mode_skip_txfm;
-  InterpFilters best_pred_filter;
+  int_interpfilters best_pred_filter;
 } BEST_PICKMODE;
 
 typedef struct {

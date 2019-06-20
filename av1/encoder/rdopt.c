@@ -158,10 +158,10 @@ static model_rd_from_sse_type model_rd_sse_fn[MODELRD_TYPES] = {
 #define MODELRD_TYPE_MOTION_MODE_RD 1
 
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
-static const InterpFilters filter_sets[DUAL_FILTER_SET_SIZE] = {
-  0x00000000, 0x00010000, 0x00020000,  // y = 0
-  0x00000001, 0x00010001, 0x00020001,  // y = 1
-  0x00000002, 0x00010002, 0x00020002,  // y = 2
+static const int_interpfilters filter_sets[DUAL_FILTER_SET_SIZE] = {
+  { 0x00000000 }, { 0x00010000 }, { 0x00020000 },  // y = 0
+  { 0x00000001 }, { 0x00010001 }, { 0x00020001 },  // y = 1
+  { 0x00000002 }, { 0x00010002 }, { 0x00020002 },  // y = 2
 };
 
 typedef struct {
@@ -6625,7 +6625,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     ref_yv12[1] = xd->plane[plane].pre[1];
 
     // Get the prediction block from the 'other' reference frame.
-    const InterpFilters interp_filters =
+    const int_interpfilters interp_filters =
         av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
 
     // Since we have scaled the reference frames to match the size of the
@@ -8113,11 +8113,11 @@ static INLINE void swap_dst_buf(MACROBLOCKD *xd, const BUFFER_SET *dst_bufs[2],
 }
 
 static INLINE int get_switchable_rate(MACROBLOCK *const x,
-                                      const InterpFilters filters,
+                                      const int_interpfilters filters,
                                       const int ctx[2]) {
   int inter_filter_cost;
-  const InterpFilter filter0 = av1_extract_interp_filter(filters, 0);
-  const InterpFilter filter1 = av1_extract_interp_filter(filters, 1);
+  const InterpFilter filter0 = filters.as_filters.y_filter;
+  const InterpFilter filter1 = filters.as_filters.x_filter;
   inter_filter_cost = x->switchable_interp_costs[ctx[0]][filter0];
   inter_filter_cost += x->switchable_interp_costs[ctx[1]][filter1];
   return SWITCHABLE_INTERP_RATE_FACTOR * inter_filter_cost;
@@ -8139,7 +8139,7 @@ static INLINE int64_t interpolation_filter_rd(
   int tmp_rate[2], tmp_skip_sb[2] = { 1, 1 };
   int64_t tmp_dist[2], tmp_skip_sse[2] = { 0, 0 };
 
-  const InterpFilters last_best = mbmi->interp_filters;
+  const int_interpfilters last_best = mbmi->interp_filters;
   mbmi->interp_filters = filter_sets[filter_idx];
   const int tmp_rs =
       get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
@@ -8320,7 +8320,7 @@ static INLINE void find_best_non_dual_interp_filter(
 
   // Regular filter evaluation should have been done and hence the same should
   // be the winner
-  assert(x->e_mbd.mi[0]->interp_filters == filter_sets[0]);
+  assert(x->e_mbd.mi[0]->interp_filters.as_int == filter_sets[0].as_int);
   assert(filter_set_size == DUAL_FILTER_SET_SIZE);
   if ((skip_hor & skip_ver) != cpi->default_interp_skip_flags) {
     int pred_filter_search;
@@ -8329,10 +8329,10 @@ static INLINE void find_best_non_dual_interp_filter(
     const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
     const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
     if (above_mbmi && is_inter_block(above_mbmi)) {
-      af_horiz = av1_extract_interp_filter(above_mbmi->interp_filters, 1);
+      af_horiz = above_mbmi->interp_filters.as_filters.x_filter;
     }
     if (left_mbmi && is_inter_block(left_mbmi)) {
-      lf_horiz = av1_extract_interp_filter(left_mbmi->interp_filters, 1);
+      lf_horiz = left_mbmi->interp_filters.as_filters.x_filter;
     }
     pred_filter_search = is_pred_filter_search_allowed(
         cpi, bsize, mi_row, mi_col, af_horiz, af_horiz, lf_horiz, lf_horiz);
@@ -8340,8 +8340,8 @@ static INLINE void find_best_non_dual_interp_filter(
       assert(af_horiz != INTERP_INVALID);
       filter_idx = SWITCHABLE * af_horiz;
       // This assert tells that (filter_x == filter_y) for non-dual filter case
-      assert((filter_sets[filter_idx] & 0xffff) ==
-             (filter_sets[filter_idx] >> 16));
+      assert(filter_sets[filter_idx].as_filters.x_filter ==
+             filter_sets[filter_idx].as_filters.y_filter);
       if (cpi->sf.adaptive_interp_filter_search &&
           (cpi->sf.interp_filter_search_mask & (1 << (filter_idx >> 2)))) {
         return;
@@ -8373,7 +8373,8 @@ static INLINE void find_best_non_dual_interp_filter(
     int skip_pred = cpi->default_interp_skip_flags;
     for (i = filter_set_size - 1; i > 0; i -= (SWITCHABLE_FILTERS + 1)) {
       // This assert tells that (filter_x == filter_y) for non-dual filter case
-      assert((filter_sets[i] & 0xffff) == (filter_sets[i] >> 16));
+      assert(filter_sets[i].as_filters.x_filter ==
+             filter_sets[i].as_filters.y_filter);
       if (cpi->sf.adaptive_interp_filter_search &&
           (cpi->sf.interp_filter_search_mask & (1 << (i >> 2)))) {
         continue;
@@ -8389,7 +8390,8 @@ static INLINE void find_best_non_dual_interp_filter(
     for (i = (SWITCHABLE_FILTERS + 1); i < filter_set_size;
          i += (SWITCHABLE_FILTERS + 1)) {
       // This assert tells that (filter_x == filter_y) for non-dual filter case
-      assert((filter_sets[i] & 0xffff) == (filter_sets[i] >> 16));
+      assert(filter_sets[i].as_filters.x_filter ==
+             filter_sets[i].as_filters.y_filter);
       if (cpi->sf.adaptive_interp_filter_search &&
           (cpi->sf.interp_filter_search_mask & (1 << (i >> 2)))) {
         continue;
@@ -8405,7 +8407,8 @@ static INLINE void find_best_non_dual_interp_filter(
       // accounting switchable filter rate)
       if (cpi->sf.skip_sharp_interp_filter_search &&
           skip_pred != cpi->default_interp_skip_flags) {
-        if (mbmi->interp_filters == filter_sets[(SWITCHABLE_FILTERS + 1)])
+        if (mbmi->interp_filters.as_int ==
+            filter_sets[(SWITCHABLE_FILTERS + 1)].as_int)
           break;
       }
     }
@@ -8435,7 +8438,7 @@ static INLINE int is_comp_rd_match(const AV1_COMP *const cpi,
   // TODO(ranjit): Ensure that compound type search use regular filter always
   // and check if following check can be removed
   // Check if interp filter matches with previous case
-  if (st->filter != mi->interp_filters) return 0;
+  if (st->filter.as_int != mi->interp_filters.as_int) return 0;
 
   const MACROBLOCKD *const xd = &x->e_mbd;
   // Match MV and reference indices
@@ -8632,8 +8635,9 @@ static int64_t interpolation_filter_search(
     return 0;
   }
   if (!need_search) {
-    assert(mbmi->interp_filters ==
-           av1_broadcast_interp_filter(EIGHTTAP_REGULAR));
+    int_interpfilters filters = av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
+    assert(mbmi->interp_filters.as_int == filters.as_int);
+    (void)filters;
     return 0;
   }
   if (args->modelled_rd != NULL) {
@@ -8722,12 +8726,12 @@ static int64_t interpolation_filter_search(
       const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
       const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
       if (above_mbmi && is_inter_block(above_mbmi)) {
-        af_horiz = av1_extract_interp_filter(above_mbmi->interp_filters, 1);
-        af_vert = av1_extract_interp_filter(above_mbmi->interp_filters, 0);
+        af_horiz = above_mbmi->interp_filters.as_filters.x_filter;
+        af_vert = above_mbmi->interp_filters.as_filters.y_filter;
       }
       if (left_mbmi && is_inter_block(left_mbmi)) {
-        lf_horiz = av1_extract_interp_filter(left_mbmi->interp_filters, 1);
-        lf_vert = av1_extract_interp_filter(left_mbmi->interp_filters, 0);
+        lf_horiz = left_mbmi->interp_filters.as_filters.x_filter;
+        lf_vert = left_mbmi->interp_filters.as_filters.y_filter;
       }
       pred_filter_search = is_pred_filter_search_allowed(
           cpi, bsize, mi_row, mi_col, af_horiz, af_vert, lf_horiz, lf_vert);
@@ -9218,7 +9222,7 @@ static INLINE void obmc_check_identical_mv(MACROBLOCKD *xd, int rel_mi_col,
 
   if (nb_mi->ref_frame[0] != current_mi->ref_frame[0] ||
       nb_mi->mv[0].as_int != current_mi->mv[0].as_int ||
-      nb_mi->interp_filters != current_mi->interp_filters) {
+      nb_mi->interp_filters.as_int != current_mi->interp_filters.as_int) {
     ctxt->mv_field_check_result = 0;
   }
 }
@@ -10577,7 +10581,7 @@ static int64_t handle_inter_mode(
 
       if (!is_comp_pred)
         args->single_filter[this_mode][refs[0]] =
-            av1_extract_interp_filter(mbmi->interp_filters, 0);
+            mbmi->interp_filters.as_filters.y_filter;
 
       if (args->modelled_rd != NULL) {
         if (is_comp_pred) {
@@ -13026,16 +13030,14 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     return;
   }
 
-  assert(
-      (cm->interp_filter == SWITCHABLE) ||
-      (cm->interp_filter ==
-       av1_extract_interp_filter(search_state.best_mbmode.interp_filters, 0)) ||
-      !is_inter_block(&search_state.best_mbmode));
-  assert(
-      (cm->interp_filter == SWITCHABLE) ||
-      (cm->interp_filter ==
-       av1_extract_interp_filter(search_state.best_mbmode.interp_filters, 1)) ||
-      !is_inter_block(&search_state.best_mbmode));
+  assert((cm->interp_filter == SWITCHABLE) ||
+         (cm->interp_filter ==
+          search_state.best_mbmode.interp_filters.as_filters.y_filter) ||
+         !is_inter_block(&search_state.best_mbmode));
+  assert((cm->interp_filter == SWITCHABLE) ||
+         (cm->interp_filter ==
+          search_state.best_mbmode.interp_filters.as_filters.x_filter) ||
+         !is_inter_block(&search_state.best_mbmode));
 
   if (!cpi->rc.is_src_frame_alt_ref)
     av1_update_rd_thresh_fact(cm, tile_data->thresh_freq_fact,
@@ -13051,9 +13053,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   if (mbmi->mode == GLOBALMV || mbmi->mode == GLOBAL_GLOBALMV) {
     // Correct the interp filters for GLOBALMV
     if (is_nontrans_global_motion(xd, xd->mi[0])) {
-      assert(mbmi->interp_filters ==
-             av1_broadcast_interp_filter(
-                 av1_unswitchable_filter(cm->interp_filter)));
+      int_interpfilters filters = av1_broadcast_interp_filter(
+          av1_unswitchable_filter(cm->interp_filter));
+      assert(mbmi->interp_filters.as_int == filters.as_int);
+      (void)filters;
     }
   }
 
@@ -13604,16 +13607,14 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     return;
   }
 
-  assert(
-      (cm->interp_filter == SWITCHABLE) ||
-      (cm->interp_filter ==
-       av1_extract_interp_filter(search_state.best_mbmode.interp_filters, 0)) ||
-      !is_inter_block(&search_state.best_mbmode));
-  assert(
-      (cm->interp_filter == SWITCHABLE) ||
-      (cm->interp_filter ==
-       av1_extract_interp_filter(search_state.best_mbmode.interp_filters, 1)) ||
-      !is_inter_block(&search_state.best_mbmode));
+  assert((cm->interp_filter == SWITCHABLE) ||
+         (cm->interp_filter ==
+          search_state.best_mbmode.interp_filters.as_filters.y_filter) ||
+         !is_inter_block(&search_state.best_mbmode));
+  assert((cm->interp_filter == SWITCHABLE) ||
+         (cm->interp_filter ==
+          search_state.best_mbmode.interp_filters.as_filters.x_filter) ||
+         !is_inter_block(&search_state.best_mbmode));
 
   if (!cpi->rc.is_src_frame_alt_ref)
     av1_update_rd_thresh_fact(cm, tile_data->thresh_freq_fact,
@@ -13629,9 +13630,10 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   if (mbmi->mode == GLOBALMV || mbmi->mode == GLOBAL_GLOBALMV) {
     // Correct the interp filters for GLOBALMV
     if (is_nontrans_global_motion(xd, xd->mi[0])) {
-      assert(mbmi->interp_filters ==
-             av1_broadcast_interp_filter(
-                 av1_unswitchable_filter(cm->interp_filter)));
+      int_interpfilters filters = av1_broadcast_interp_filter(
+          av1_unswitchable_filter(cm->interp_filter));
+      assert(mbmi->interp_filters.as_int == filters.as_int);
+      (void)filters;
     }
   }
 
@@ -13735,7 +13737,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
         rs = av1_get_switchable_rate(cm, x, xd);
         if (rs < best_rs) {
           best_rs = rs;
-          best_filter = av1_extract_interp_filter(mbmi->interp_filters, 0);
+          best_filter = mbmi->interp_filters.as_filters.y_filter;
         }
       }
     }
@@ -13763,8 +13765,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   }
 
   assert((cm->interp_filter == SWITCHABLE) ||
-         (cm->interp_filter ==
-          av1_extract_interp_filter(mbmi->interp_filters, 0)));
+         (cm->interp_filter == mbmi->interp_filters.as_filters.y_filter));
 
   av1_update_rd_thresh_fact(cm, tile_data->thresh_freq_fact,
                             cpi->sf.adaptive_rd_thresh, bsize, THR_GLOBALMV);

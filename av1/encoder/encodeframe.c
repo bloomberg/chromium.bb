@@ -2769,7 +2769,7 @@ BEGIN_PARTITION_SEARCH:
     if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
         partition_none_allowed) {
       pc_tree->horizontal[0].pred_interp_filter =
-          av1_extract_interp_filter(ctx_none->mic.interp_filters, 0);
+          ctx_none->mic.interp_filters.as_filters.y_filter;
     }
     sum_rdc.rate = partition_cost[PARTITION_HORZ];
     sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
@@ -2814,7 +2814,7 @@ BEGIN_PARTITION_SEARCH:
       if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
           partition_none_allowed) {
         pc_tree->horizontal[1].pred_interp_filter =
-            av1_extract_interp_filter(ctx_h->mic.interp_filters, 0);
+            ctx_h->mic.interp_filters.as_filters.y_filter;
       }
 
       av1_rd_stats_subtraction(x->rdmult, &best_rdc, &sum_rdc,
@@ -2868,7 +2868,7 @@ BEGIN_PARTITION_SEARCH:
     if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
         partition_none_allowed) {
       pc_tree->vertical[0].pred_interp_filter =
-          av1_extract_interp_filter(ctx_none->mic.interp_filters, 0);
+          ctx_none->mic.interp_filters.as_filters.y_filter;
     }
     sum_rdc.rate = partition_cost[PARTITION_VERT];
     sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
@@ -2912,7 +2912,7 @@ BEGIN_PARTITION_SEARCH:
       if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
           partition_none_allowed) {
         pc_tree->vertical[1].pred_interp_filter =
-            av1_extract_interp_filter(ctx_none->mic.interp_filters, 0);
+            ctx_none->mic.interp_filters.as_filters.y_filter;
       }
 
       av1_rd_stats_subtraction(x->rdmult, &best_rdc, &sum_rdc,
