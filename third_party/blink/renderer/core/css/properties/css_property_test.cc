@@ -5,18 +5,27 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_instances.h"
+#include "third_party/blink/renderer/core/css/properties/longhand.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/data_equivalency.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 
-TEST(CSSPropertyTest, VisitedPropertiesAreNotWebExposed) {
+class CSSPropertyTest : public PageTestBase {};
+
+TEST_F(CSSPropertyTest, VisitedPropertiesAreNotWebExposed) {
   for (CSSPropertyID property_id : CSSPropertyIDList()) {
     const CSSProperty& property = CSSProperty::Get(property_id);
     EXPECT_TRUE(!property.IsVisited() || !property.IsWebExposed());
   }
 }
 
-TEST(CSSPropertyTest, GetVisitedPropertyOnlyReturnsVisitedProperties) {
+TEST_F(CSSPropertyTest, GetVisitedPropertyOnlyReturnsVisitedProperties) {
   for (CSSPropertyID property_id : CSSPropertyIDList()) {
     const CSSProperty& property = CSSProperty::Get(property_id);
     const CSSProperty* visited = property.GetVisitedProperty();
@@ -24,9 +33,62 @@ TEST(CSSPropertyTest, GetVisitedPropertyOnlyReturnsVisitedProperties) {
   }
 }
 
-TEST(CSSPropertyTest, InternalEffectiveZoomNotWebExposed) {
+TEST_F(CSSPropertyTest, GetUnvisitedPropertyFromVisited) {
+  for (CSSPropertyID property_id : CSSPropertyIDList()) {
+    const CSSProperty& property = CSSProperty::Get(property_id);
+    EXPECT_EQ(property.IsVisited(),
+              static_cast<bool>(property.GetUnvisitedProperty()));
+  }
+}
+
+TEST_F(CSSPropertyTest, InternalEffectiveZoomNotWebExposed) {
   const CSSProperty& property = GetCSSPropertyInternalEffectiveZoom();
   EXPECT_FALSE(property.IsWebExposed());
+}
+
+TEST_F(CSSPropertyTest, VisitedPropertiesCanParseValues) {
+  scoped_refptr<ComputedStyle> initial_style = ComputedStyle::Create();
+  const auto* context = MakeGarbageCollected<CSSParserContext>(GetDocument());
+  CSSParserLocalContext local_context;
+
+  // Count the number of 'visited' properties seen.
+  size_t num_visited = 0;
+
+  for (CSSPropertyID property_id : CSSPropertyIDList()) {
+    const CSSProperty& property = CSSProperty::Get(property_id);
+    const CSSProperty* visited = property.GetVisitedProperty();
+    if (!visited)
+      continue;
+
+    // Get any value compatible with 'property'. The initial value will do.
+    const CSSValue* initial_value = property.CSSValueFromComputedStyle(
+        *initial_style, nullptr /* layout_object */, nullptr /* node */,
+        false /* allow_visited_style */);
+    ASSERT_TRUE(initial_value);
+
+    // Tokenize that value, and parse it using both the regular property, and
+    // the accompanying 'visited' property.
+    String css_text = initial_value->CssText();
+    auto tokens = CSSTokenizer(css_text).TokenizeToEOF();
+
+    CSSParserTokenRange regular_range(tokens);
+    const CSSValue* parsed_regular_value =
+        To<Longhand>(property).ParseSingleValue(regular_range, *context,
+                                                local_context);
+    CSSParserTokenRange visited_range(tokens);
+    const CSSValue* parsed_visited_value =
+        To<Longhand>(*visited).ParseSingleValue(visited_range, *context,
+                                                local_context);
+
+    // The properties should have identical parsing behavior.
+    EXPECT_TRUE(DataEquivalent(parsed_regular_value, parsed_visited_value));
+
+    num_visited++;
+  }
+
+  // Verify that we have seen at least one visited property. If we didn't (and
+  // there is no bug), it means this test can be removed.
+  EXPECT_GT(num_visited, 0u);
 }
 
 }  // namespace blink

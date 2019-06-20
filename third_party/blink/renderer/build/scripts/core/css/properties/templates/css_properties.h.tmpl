@@ -61,6 +61,9 @@ class {{class_name}} final : public {{property.superclass}} {
   {% if property.visited_property %}
   const CSSProperty* GetVisitedProperty() const override;
   {% endif %}
+  {% if property.unvisited_property %}
+  const CSSProperty* GetUnvisitedProperty() const override;
+  {% endif %}
   {% for property_method in property.property_methods %}
   {{property_method.return_type}} {{property_method.name}}{{property_method.parameters}} const override;
   {% endfor %}

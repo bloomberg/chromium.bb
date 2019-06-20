@@ -82,6 +82,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     return *this;
   }
   virtual const CSSProperty* GetVisitedProperty() const { return nullptr; }
+  virtual const CSSProperty* GetUnvisitedProperty() const { return nullptr; }
   static void FilterWebExposedCSSPropertiesIntoVector(
       const CSSPropertyID*,
       size_t length,
