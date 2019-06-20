@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_SYSTEM_INPUT_INJECTOR_H_
-#define UI_EVENTS_SYSTEM_INPUT_INJECTOR_H_
+#ifndef UI_OZONE_PUBLIC_SYSTEM_INPUT_INJECTOR_H_
+#define UI_OZONE_PUBLIC_SYSTEM_INPUT_INJECTOR_H_
 
-#include <memory>
-
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/events/event.h"
-#include "ui/events/events_export.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/gfx/geometry/point_f.h"
 
 namespace gfx {
 class PointF;
@@ -21,7 +18,7 @@ namespace ui {
 
 // Interface exposed for remoting to convert its events from the network to
 // native events.
-class EVENTS_EXPORT SystemInputInjector {
+class COMPONENT_EXPORT(OZONE) SystemInputInjector {
  public:
   SystemInputInjector() {}
   virtual ~SystemInputInjector() {}
@@ -52,26 +49,6 @@ class EVENTS_EXPORT SystemInputInjector {
   DISALLOW_COPY_AND_ASSIGN(SystemInputInjector);
 };
 
-class EVENTS_EXPORT SystemInputInjectorFactory {
- public:
-  virtual std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() = 0;
-
- protected:
-  ~SystemInputInjectorFactory() {}
-};
-
-// Sets a global SystemInputInjectorFactory which is used in remoting instead
-// of requesting the usual Ozone version.
-//
-// This is placed in //ui/events not just since it's event related, but also
-// because its one of the few places that both //remoting/ and //ui/ozone can
-// depend on.
-EVENTS_EXPORT void SetSystemInputInjectorFactory(
-    SystemInputInjectorFactory* factory);
-
-// Returns the override input injector factory, or null if neither are set.
-EVENTS_EXPORT SystemInputInjectorFactory* GetSystemInputInjectorFactory();
-
 }  // namespace ui
 
-#endif  // UI_EVENTS_SYSTEM_INPUT_INJECTOR_H_
+#endif  // UI_OZONE_PUBLIC_SYSTEM_INPUT_INJECTOR_H_
