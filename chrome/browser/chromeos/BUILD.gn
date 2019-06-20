@@ -2074,6 +2074,8 @@ source_set("chromeos") {
     "wilco_dtc_supportd/wilco_dtc_supportd_manager.h",
     "wilco_dtc_supportd/wilco_dtc_supportd_messaging.cc",
     "wilco_dtc_supportd/wilco_dtc_supportd_messaging.h",
+    "wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.cc",
+    "wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.h",
     "wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.cc",
     "wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.h",
 
@@ -2688,6 +2690,7 @@ source_set("unit_tests") {
     "wilco_dtc_supportd/wilco_dtc_supportd_bridge_unittest.cc",
     "wilco_dtc_supportd/wilco_dtc_supportd_manager_unittest.cc",
     "wilco_dtc_supportd/wilco_dtc_supportd_messaging_unittest.cc",
+    "wilco_dtc_supportd/wilco_dtc_supportd_notification_controller_unittest.cc",
     "wilco_dtc_supportd/wilco_dtc_supportd_web_request_service_unittest.cc",
 
     # TODO(zturner): Enable this on Windows. See
