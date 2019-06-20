@@ -147,10 +147,9 @@
 
       .spell-check-radio-button.enhanced {
         align-items: start;
-        --cr-radio-button-disc: {
-          /* Align with just the first line of text */
-          margin-top: calc((1.5em - var(--cr-radio-button-size)) / 2);
-        }
+        /* Align with just the first line of text */
+        --cr-radio-button-disc-margin-block-start: calc(
+            (1.5em - var(--cr-radio-button-size)) / 2);
       }
 
       .enhanced-spellcheck-description {
