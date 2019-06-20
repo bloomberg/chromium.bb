@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/core/embedder/embedder.h"
@@ -28,6 +29,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/cors/cors_url_loader_factory.h"
+#include "services/network/loader_util.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
@@ -1659,6 +1661,72 @@ TEST_F(CorsURLLoaderTest, RequestWithProxyAuthorizationHeaderFails) {
   EXPECT_FALSE(client().has_received_response());
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+}
+
+TEST_F(CorsURLLoaderTest, NoConcerningRequestHeadersLoggedCorrectly) {
+  base::HistogramTester histograms;
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kNoCors;
+  request.credentials_mode = mojom::CredentialsMode::kInclude;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+  request.headers.SetHeader("Not", "Concerning");
+  request.headers.SetHeader("Totally", "Fine");
+
+  CreateLoaderAndStart(request);
+  NotifyLoaderClientOnReceiveResponse();
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_TRUE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
+
+  histograms.ExpectBucketCount(
+      "NetworkService.ConcerningRequestHeader.PresentOnStart", true, 0);
+  histograms.ExpectBucketCount(
+      "NetworkService.ConcerningRequestHeader.PresentOnStart", false, 1);
+}
+
+TEST_F(CorsURLLoaderTest, ConcerningRequestHeadersLoggedCorrectly) {
+  base::HistogramTester histograms;
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kNoCors;
+  request.credentials_mode = mojom::CredentialsMode::kInclude;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+  request.headers.SetHeader(net::HttpRequestHeaders::kConnection, "Close");
+  request.headers.SetHeader(net::HttpRequestHeaders::kCookie, "BadIdea=true");
+
+  CreateLoaderAndStart(request);
+  NotifyLoaderClientOnReceiveResponse();
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_TRUE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
+
+  histograms.ExpectBucketCount(
+      "NetworkService.ConcerningRequestHeader.PresentOnStart", true, 1);
+  histograms.ExpectBucketCount(
+      "NetworkService.ConcerningRequestHeader.PresentOnStart", false, 0);
+  for (int i = 0; i < static_cast<int>(ConcerningHeaderId::kMaxValue); ++i) {
+    if (i == static_cast<int>(ConcerningHeaderId::kConnection) ||
+        i == static_cast<int>(ConcerningHeaderId::kCookie)) {
+      histograms.ExpectBucketCount(
+          "NetworkService.ConcerningRequestHeader.HeaderPresentOnStart", i, 1);
+    } else {
+      histograms.ExpectBucketCount(
+          "NetworkService.ConcerningRequestHeader.HeaderPresentOnStart", i, 0);
+    }
+  }
 }
 
 TEST_F(CorsURLLoaderTest, SetHostHeaderOnRedirectFails) {

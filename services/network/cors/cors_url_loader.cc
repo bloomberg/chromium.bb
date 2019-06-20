@@ -164,6 +164,9 @@ void CorsURLLoader::FollowRedirect(
     }
   }
 
+  LogConcerningRequestHeaders(modified_headers,
+                              true /* added_during_redirect */);
+
   for (const auto& name : removed_headers) {
     request_.headers.RemoveHeader(name);
     request_.cors_exempt_headers.RemoveHeader(name);
