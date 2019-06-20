@@ -42,6 +42,7 @@
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/system_connector.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -305,8 +306,8 @@ class TracingHandler::PerfettoTracingSession
     DCHECK(!tracing_active_);
     tracing_active_ = true;
 
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        tracing::mojom::kServiceName, &consumer_host_);
+    GetSystemConnector()->BindInterface(tracing::mojom::kServiceName,
+                                        &consumer_host_);
 
     perfetto::TraceConfig perfetto_config =
         CreatePerfettoConfiguration(chrome_config);

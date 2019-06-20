@@ -55,9 +55,9 @@ void AudioFocusManager::RequestGroupedAudioFocus(
 
   RequestAudioFocusInternal(
       std::make_unique<AudioFocusRequest>(
-          this, std::move(request), std::move(media_session),
-          std::move(session_info), type, request_id, GetBindingSourceName(),
-          group_id),
+          weak_ptr_factory_.GetWeakPtr(), std::move(request),
+          std::move(media_session), std::move(session_info), type, request_id,
+          GetBindingSourceName(), group_id),
       type);
 
   std::move(callback).Run(request_id);

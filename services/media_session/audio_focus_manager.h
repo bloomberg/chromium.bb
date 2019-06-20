@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -153,6 +154,8 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // Adding observers should happen on the same thread that the service is
   // running on.
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<AudioFocusManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioFocusManager);
 };

@@ -54,6 +54,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -648,9 +649,8 @@ void BrowserContext::Initialize(BrowserContext* browser_context,
       kServiceInstanceGroup,
       std::make_unique<ServiceInstanceGroupHolder>(new_group));
 
-  ServiceManagerConnection* service_manager_connection =
-      ServiceManagerConnection::GetForProcess();
-  if (service_manager_connection && base::ThreadTaskRunnerHandle::IsSet()) {
+  auto* system_connector = GetSystemConnector();
+  if (system_connector && base::ThreadTaskRunnerHandle::IsSet()) {
     // NOTE: Many unit tests create a TestBrowserContext without initializing
     // Mojo or the global service manager connection.
 
@@ -661,7 +661,7 @@ void BrowserContext::Initialize(BrowserContext* browser_context,
     service_manager::Identity identity(mojom::kBrowserServiceName, new_group,
                                        base::Token{},
                                        base::Token::CreateRandom());
-    service_manager_connection->GetConnector()->RegisterServiceInstance(
+    system_connector->RegisterServiceInstance(
         identity, std::move(service), metadata.BindNewPipeAndPassReceiver());
     metadata->SetPID(base::GetCurrentProcId());
 

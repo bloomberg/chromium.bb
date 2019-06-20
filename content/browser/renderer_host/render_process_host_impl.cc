@@ -162,6 +162,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/webrtc_log.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host.h"
@@ -721,9 +722,7 @@ template <typename Interface>
 void ForwardRequest(const char* service_name,
                     mojo::InterfaceRequest<Interface> request) {
   // TODO(beng): This should really be using the per-profile connector.
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(service_name, std::move(request));
+  GetSystemConnector()->BindInterface(service_name, std::move(request));
 }
 
 class RenderProcessHostIsReadyObserver : public RenderProcessHostObserver {
@@ -1770,15 +1769,17 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
     // Note that some embedders (e.g. Android WebView) may not initialize a
     // Connector per BrowserContext. In those cases we fall back to the
     // browser-wide Connector.
-    if (!ServiceManagerConnection::GetForProcess()) {
-      // Additionally, some test code may not initialize the process-wide
-      // ServiceManagerConnection prior to this point. This class of test code
-      // doesn't care about render processes, so we can initialize a dummy
-      // connection.
+    connector = GetSystemConnector();
+    if (!connector && !ServiceManagerConnection::GetForProcess()) {
+      // Additionally, some test code may not initialize the system Connector.
+      // We initialize one that the ChildConnection below can use.
+      // TODO(crbug.com/904240): Figure out why some unit tests fail when this
+      // doesn't create a full ServiceManagerConnection.
+      service_manager::mojom::ServicePtr unused_service;
       ServiceManagerConnection::SetForProcess(ServiceManagerConnection::Create(
-          mojo::MakeRequest(&test_service_), io_task_runner));
+          mojo::MakeRequest(&unused_service), io_task_runner));
+      connector = ServiceManagerConnection::GetForProcess()->GetConnector();
     }
-    connector = ServiceManagerConnection::GetForProcess()->GetConnector();
   }
 
   // Establish a ServiceManager connection for the new render service instance.

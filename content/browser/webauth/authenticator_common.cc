@@ -29,12 +29,12 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
 #include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -760,7 +760,7 @@ void AuthenticatorCommon::MakeCredential(
       FROM_HERE, options->adjusted_timeout,
       base::BindOnce(&AuthenticatorCommon::OnTimeout, base::Unretained(this)));
   if (!connector_)
-    connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
+    connector_ = GetSystemConnector();
 
   // Save client data to return with the authenticator response.
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
@@ -922,7 +922,7 @@ void AuthenticatorCommon::GetAssertion(
       base::BindOnce(&AuthenticatorCommon::OnTimeout, base::Unretained(this)));
 
   if (!connector_)
-    connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
+    connector_ = GetSystemConnector();
 
   ctap_get_assertion_request_ = CreateCtapGetAssertionRequest(
       client_data_json_, std::move(options), app_id_,

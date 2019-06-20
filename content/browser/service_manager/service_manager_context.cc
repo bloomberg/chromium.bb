@@ -32,6 +32,7 @@
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
+#include "content/browser/system_connector_impl.h"
 #include "content/browser/utility_process_host.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
@@ -634,6 +635,7 @@ ServiceManagerContext::ServiceManagerContext(
       system_remote.InitWithNewPipeAndPassReceiver(),
       service_manager_thread_task_runner_));
   auto* system_connection = ServiceManagerConnection::GetForProcess();
+  SetSystemConnector(system_connection->GetConnector()->Clone());
 
   RegisterInProcessService(
       resource_coordinator::mojom::kServiceName,
