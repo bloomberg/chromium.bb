@@ -718,6 +718,7 @@ _CONFIG = [
         ],
         'allowed': [
             'cricket::.*',
+            'media::.+',
             'rtc::.+',
             'webrtc::.+',
             'quic::.+',

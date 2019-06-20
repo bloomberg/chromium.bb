@@ -2,35 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace blink {
+
 class TrackObserver;
-}
 
-namespace content {
-
-// MediaStreamRemoteVideoSource implements the blink::MediaStreamVideoSource
+// MediaStreamRemoteVideoSource implements the MediaStreamVideoSource
 // interface for video tracks received on a PeerConnection. The purpose of the
 // class is to make sure there is no difference between a video track where the
 // source is a local source and a video track where the source is a remote video
 // track.
-class CONTENT_EXPORT MediaStreamRemoteVideoSource
-    : public blink::MediaStreamVideoSource {
+//
+// TODO(crbug.com/704136): Move the classes below out of the Blink exposed
+// API when all users of it have been Onion souped.
+class BLINK_MODULES_EXPORT MediaStreamRemoteVideoSource
+    : public MediaStreamVideoSource {
  public:
   explicit MediaStreamRemoteVideoSource(
-      std::unique_ptr<blink::TrackObserver> observer);
+      std::unique_ptr<TrackObserver> observer);
   ~MediaStreamRemoteVideoSource() override;
 
   // Should be called when the remote video track this source originates from is
@@ -39,9 +38,9 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
   void OnSourceTerminated();
 
  protected:
-  // Implements blink::MediaStreamVideoSource.
+  // Implements MediaStreamVideoSource.
   void StartSourceImpl(
-      const blink::VideoCaptureDeliverFrameCB& frame_callback) override;
+      const VideoCaptureDeliverFrameCB& frame_callback) override;
 
   void StopSourceImpl() override;
 
@@ -56,11 +55,11 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
   // libjingle thread and forward it to the IO-thread.
   class RemoteVideoSourceDelegate;
   scoped_refptr<RemoteVideoSourceDelegate> delegate_;
-  std::unique_ptr<blink::TrackObserver> observer_;
+  std::unique_ptr<TrackObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamRemoteVideoSource);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_

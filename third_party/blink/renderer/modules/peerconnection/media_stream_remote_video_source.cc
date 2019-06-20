@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
+#include "third_party/blink/public/web/modules/peerconnection/media_stream_remote_video_source.h"
 
 #include <stdint.h>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
@@ -19,24 +18,43 @@
 #include "third_party/blink/public/platform/modules/webrtc/track_observer.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_video_utils.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/api/video/video_sink_interface.h"
 #include "third_party/webrtc/rtc_base/time_utils.h"  // for TimeMicros
 
-namespace content {
+namespace WTF {
+
+// Template specializations of [1], needed to be able to pass WTF callbacks
+// that have VideoTrackAdapterSettings or gfx::Size parameters across threads.
+//
+// [1] third_party/blink/renderer/platform/wtf/cross_thread_copier.h.
+template <>
+struct CrossThreadCopier<scoped_refptr<webrtc::VideoFrameBuffer>>
+    : public CrossThreadCopierPassThrough<
+          scoped_refptr<webrtc::VideoFrameBuffer>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+}  // namespace WTF
+
+namespace blink {
 
 // Internal class used for receiving frames from the webrtc track on a
 // libjingle thread and forward it to the IO-thread.
 class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
-    : public base::RefCountedThreadSafe<RemoteVideoSourceDelegate>,
+    : public WTF::ThreadSafeRefCounted<RemoteVideoSourceDelegate>,
       public rtc::VideoSinkInterface<webrtc::VideoFrame> {
  public:
   RemoteVideoSourceDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      const blink::VideoCaptureDeliverFrameCB& new_frame_callback);
+      const VideoCaptureDeliverFrameCB& new_frame_callback);
 
  protected:
-  friend class base::RefCountedThreadSafe<RemoteVideoSourceDelegate>;
+  friend class WTF::ThreadSafeRefCounted<RemoteVideoSourceDelegate>;
   ~RemoteVideoSourceDelegate() override;
 
   // Implements rtc::VideoSinkInterface used for receiving video frames
@@ -50,7 +68,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // |frame_callback_| is accessed on the IO thread.
-  blink::VideoCaptureDeliverFrameCB frame_callback_;
+  VideoCaptureDeliverFrameCB frame_callback_;
 
   // Timestamp of the first received frame.
   base::TimeDelta start_timestamp_;
@@ -62,7 +80,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
 MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
     RemoteVideoSourceDelegate(
         scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-        const blink::VideoCaptureDeliverFrameCB& new_frame_callback)
+        const VideoCaptureDeliverFrameCB& new_frame_callback)
     : io_task_runner_(io_task_runner),
       frame_callback_(new_frame_callback),
       start_timestamp_(media::kNoTimestamp),
@@ -72,9 +90,8 @@ MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
       time_diff_(base::TimeTicks::Now() - base::TimeTicks() -
                  base::TimeDelta::FromMicroseconds(rtc::TimeMicros())) {}
 
-MediaStreamRemoteVideoSource::
-RemoteVideoSourceDelegate::~RemoteVideoSourceDelegate() {
-}
+MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
+    ~RemoteVideoSourceDelegate() {}
 
 namespace {
 void DoNothing(const scoped_refptr<rtc::RefCountInterface>& ref) {}
@@ -105,7 +122,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
 
   switch (buffer->type()) {
     case webrtc::VideoFrameBuffer::Type::kNative: {
-      video_frame = static_cast<blink::WebRtcVideoFrameAdapter*>(buffer.get())
+      video_frame = static_cast<WebRtcVideoFrameAdapter*>(buffer.get())
                         ->getMediaVideoFrame();
       video_frame->set_timestamp(elapsed_timestamp);
       break;
@@ -167,19 +184,21 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     return;
 
   // The bind ensures that we keep a reference to the underlying buffer.
-  if (buffer->type() != webrtc::VideoFrameBuffer::Type::kNative)
-    video_frame->AddDestructionObserver(base::BindOnce(&DoNothing, buffer));
+  if (buffer->type() != webrtc::VideoFrameBuffer::Type::kNative) {
+    video_frame->AddDestructionObserver(
+        ConvertToBaseOnceCallback(CrossThreadBindOnce(&DoNothing, buffer)));
+  }
 
   // Rotation may be explicitly set sometimes.
   if (incoming_frame.rotation() != webrtc::kVideoRotation_0) {
     video_frame->metadata()->SetRotation(
         media::VideoFrameMetadata::ROTATION,
-        blink::WebRtcToMediaVideoRotation(incoming_frame.rotation()));
+        WebRtcToMediaVideoRotation(incoming_frame.rotation()));
   }
 
   if (incoming_frame.color_space()) {
     video_frame->set_color_space(
-        blink::WebRtcToMediaVideoColorSpace(*incoming_frame.color_space())
+        WebRtcToMediaVideoColorSpace(*incoming_frame.color_space())
             .ToGfxColorSpace());
   }
 
@@ -192,10 +211,10 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
   video_frame->metadata()->SetTimeTicks(media::VideoFrameMetadata::DECODE_TIME,
                                         base::TimeTicks::Now());
 
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RemoteVideoSourceDelegate::DoRenderFrameOnIOThread, this,
-                     video_frame));
+  PostCrossThreadTask(
+      *io_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&RemoteVideoSourceDelegate::DoRenderFrameOnIOThread,
+                          WrapRefCounted(this), video_frame));
 }
 
 void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
@@ -207,12 +226,12 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
 }
 
 MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
-    std::unique_ptr<blink::TrackObserver> observer)
+    std::unique_ptr<TrackObserver> observer)
     : observer_(std::move(observer)) {
   // The callback will be automatically cleared when 'observer_' goes out of
   // scope and no further callbacks will occur.
-  observer_->SetCallback(base::BindRepeating(
-      &MediaStreamRemoteVideoSource::OnChanged, base::Unretained(this)));
+  observer_->SetCallback(WTF::BindRepeating(
+      &MediaStreamRemoteVideoSource::OnChanged, WTF::Unretained(this)));
 }
 
 MediaStreamRemoteVideoSource::~MediaStreamRemoteVideoSource() {
@@ -226,14 +245,15 @@ void MediaStreamRemoteVideoSource::OnSourceTerminated() {
 }
 
 void MediaStreamRemoteVideoSource::StartSourceImpl(
-    const blink::VideoCaptureDeliverFrameCB& frame_callback) {
+    const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!delegate_.get());
-  delegate_ = new RemoteVideoSourceDelegate(io_task_runner(), frame_callback);
+  delegate_ = base::MakeRefCounted<RemoteVideoSourceDelegate>(io_task_runner(),
+                                                              frame_callback);
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->AddOrUpdateSink(delegate_.get(), rtc::VideoSinkWants());
-  OnStartDone(blink::mojom::MediaStreamRequestResult::OK);
+  OnStartDone(mojom::MediaStreamRequestResult::OK);
 }
 
 void MediaStreamRemoteVideoSource::StopSourceImpl() {
@@ -244,7 +264,7 @@ void MediaStreamRemoteVideoSource::StopSourceImpl() {
   // longer receives the video track.
   if (!observer_)
     return;
-  DCHECK(state() != blink::MediaStreamVideoSource::ENDED);
+  DCHECK(state() != MediaStreamVideoSource::ENDED);
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->RemoveSink(delegate_.get());
@@ -262,10 +282,10 @@ void MediaStreamRemoteVideoSource::OnChanged(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (state) {
     case webrtc::MediaStreamTrackInterface::kLive:
-      SetReadyState(blink::WebMediaStreamSource::kReadyStateLive);
+      SetReadyState(WebMediaStreamSource::kReadyStateLive);
       break;
     case webrtc::MediaStreamTrackInterface::kEnded:
-      SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
+      SetReadyState(WebMediaStreamSource::kReadyStateEnded);
       break;
     default:
       NOTREACHED();
@@ -273,4 +293,4 @@ void MediaStreamRemoteVideoSource::OnChanged(
   }
 }
 
-}  // namespace content
+}  // namespace blink
