@@ -2240,7 +2240,10 @@ test("content_unittests") {
   # HID support is not available without udev.
   is_linux_without_udev = is_linux && !use_udev
   if (!is_linux_without_udev && !is_android) {
-    sources += [ "../browser/webauth/authenticator_impl_unittest.cc" ]
+    sources += [
+      "../browser/webauth/authenticator_impl_unittest.cc",
+      "../browser/webauth/authenticator_mojom_traits_unittest.cc",
+    ]
     deps += [
       "//components/autofill/content/browser/webauthn",
       "//device/base",
