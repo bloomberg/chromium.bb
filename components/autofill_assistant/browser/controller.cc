@@ -569,6 +569,17 @@ void Controller::OnGetScripts(const GURL& url,
 
   DVLOG(2) << __func__ << " from " << script_domain_ << " returned "
            << scripts.size() << " scripts";
+  if (VLOG_IS_ON(3)) {
+    for (const auto& script : scripts) {
+      // Strip domain from beginning if possible (redundant with log above).
+      auto pos = script->handle.path.find(script_domain_);
+      if (pos == 0) {
+        DVLOG(3) << "\t" << script->handle.path.substr(script_domain_.length());
+      } else {
+        DVLOG(3) << "\t" << script->handle.path;
+      }
+    }
+  }
   script_tracker()->SetScripts(std::move(scripts));
   script_tracker()->CheckScripts();
   StartPeriodicScriptChecks();
