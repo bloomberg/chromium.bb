@@ -720,10 +720,10 @@ class TabListMediator {
         };
         mTabListFaviconProvider.getFaviconForUrlAsync(
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
+        boolean forceUpdate = isSelected && !quickMode;
         if (mThumbnailProvider != null
-                && (mModel.get(index).get(TabProperties.THUMBNAIL_FETCHER) == null || isSelected
+                && (mModel.get(index).get(TabProperties.THUMBNAIL_FETCHER) == null || forceUpdate
                         || isUpdatingId)) {
-            boolean forceUpdate = isSelected && !quickMode;
             ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, forceUpdate,
                     forceUpdate
                             && !ChromeFeatureList.isEnabled(
