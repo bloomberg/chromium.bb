@@ -50495,6 +50495,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SafeBrowsingWebSocketResult">
+  <obsolete>
+    Removed in June 2019.
+  </obsolete>
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="SAFE"/>
   <int value="2" label="BLOCKED"/>
@@ -60459,11 +60462,17 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WebSocketNewPerMessageDeflateContextTakeoverMode">
+  <obsolete>
+    Removed in July 2019.
+  </obsolete>
   <int value="0" label="Do not take over"/>
   <int value="1" label="Take over"/>
 </enum>
 
 <enum name="WebSocketPerMessageDeflateContextTakeOverMode">
+  <obsolete>
+    Deprecated 2014-06.
+  </obsolete>
   <int value="0" label="Do not take over"/>
   <int value="1" label="Take over"/>
 </enum>
