@@ -25,7 +25,7 @@
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/common/app_permissions.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
@@ -83,8 +83,8 @@ void LoadIcon1(apps::mojom::IconCompression icon_compression,
 
     case apps::mojom::IconCompression::kUncompressed:
       data_decoder::DecodeImage(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-          icon_png_data, data_decoder::mojom::ImageCodec::DEFAULT, false,
+          content::GetSystemConnector(), icon_png_data,
+          data_decoder::mojom::ImageCodec::DEFAULT, false,
           data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
           base::BindOnce(&LoadIcon2, std::move(callback)));
       break;
