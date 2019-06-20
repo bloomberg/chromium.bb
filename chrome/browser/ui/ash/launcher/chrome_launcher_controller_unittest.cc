@@ -27,6 +27,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
@@ -37,6 +38,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
+#include "chrome/browser/apps/app_service/arc_apps.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -48,6 +51,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ui/app_list/app_service_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -77,9 +81,12 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/services/app_service/app_service.h"
+#include "chrome/services/app_service/public/mojom/constants.mojom.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
@@ -113,6 +120,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "services/network/test/test_network_connection_tracker.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
@@ -305,6 +313,15 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
     extension_service_->Init();
 
+    if (app_service_proxy_connector_) {
+      DCHECK(profile());
+      app_service_proxy_impl_.reset(apps::AppServiceProxyImpl::CreateForTesting(
+          profile(), app_service_proxy_connector_));
+      old_app_service_proxy_for_testing_ =
+          AppServiceAppModelBuilder::SetAppServiceProxyForTesting(
+              app_service_proxy_impl_.get());
+    }
+
     if (auto_start_arc_test_)
       arc_test_.SetUp(profile());
 
@@ -437,6 +454,11 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   void TearDown() override {
     arc_test_.TearDown();
+    if (app_service_proxy_impl_) {
+      AppServiceAppModelBuilder::SetAppServiceProxyForTesting(
+          old_app_service_proxy_for_testing_);
+      app_service_proxy_impl_.reset(nullptr);
+    }
     launcher_controller_ = nullptr;
     BrowserWithTestWindowTest::TearDown();
   }
@@ -905,6 +927,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   app_list::AppListSyncableService* app_list_syncable_service_ = nullptr;
 
+  service_manager::Connector* app_service_proxy_connector_ = nullptr;
+  std::unique_ptr<apps::AppServiceProxyImpl> app_service_proxy_impl_;
+  apps::AppServiceProxy* old_app_service_proxy_for_testing_ = nullptr;
+
  private:
   TestBrowserWindow* CreateTestBrowserWindowAura() {
     std::unique_ptr<aura::Window> window(
@@ -923,7 +949,23 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 class ChromeLauncherControllerWithArcTest
     : public ChromeLauncherControllerTest {
  protected:
-  ChromeLauncherControllerWithArcTest() { auto_start_arc_test_ = true; }
+  ChromeLauncherControllerWithArcTest() {
+    auto_start_arc_test_ = true;
+    if (!base::FeatureList::IsEnabled(features::kAppServiceAsh)) {
+      return;
+    }
+    // We set some state in the ChromeLauncherControllerTest superclass to
+    // affect what ChromeLauncherControllerTest::SetUp does, making it call
+    // AppServiceAppModelBuilder::SetAppServiceProxyForTesting (ASAMB::SASPFT).
+    // We can only call SASPFT after the TestingProfile is created (which
+    // happens in the superclass' SetUp) but before the ASAMB is constructed
+    // (which also happens in the superclass' SetUp).
+    app_service_ = std::make_unique<apps::AppService>(
+        test_connector_factory_.RegisterInstance(apps::mojom::kServiceName));
+    app_service_proxy_connector_ =
+        test_connector_factory_.GetDefaultConnector();
+  }
+
   ~ChromeLauncherControllerWithArcTest() override {}
 
   void SetUp() override {
@@ -931,9 +973,24 @@ class ChromeLauncherControllerWithArcTest
     ArcAppIcon::DisableSafeDecodingForTesting();
 
     ChromeLauncherControllerTest::SetUp();
+    if (app_service_proxy_connector_) {
+      arc_apps_.reset(apps::ArcApps::CreateForTesting(
+          profile(), app_service_proxy_impl_.get()));
+    }
+  }
+
+  void TearDown() override {
+    if (app_service_proxy_connector_) {
+      arc_apps_.reset(nullptr);
+    }
+    ChromeLauncherControllerTest::TearDown();
   }
 
  private:
+  service_manager::TestConnectorFactory test_connector_factory_;
+  std::unique_ptr<service_manager::Service> app_service_;
+  std::unique_ptr<apps::ArcApps> arc_apps_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerWithArcTest);
 };
 
@@ -2188,6 +2245,8 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPin) {
   SendListOfArcApps();
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension2_.get());
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
@@ -2204,9 +2263,16 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPin) {
   EXPECT_EQ("Chrome, App1, Fake App 0, App2", GetPinnedAppStatus());
 
   UninstallArcApps();
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
   EXPECT_EQ("Chrome, App1, App2", GetPinnedAppStatus());
+
   SendListOfArcApps();
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
   EXPECT_EQ("Chrome, App1, App2", GetPinnedAppStatus());
 
@@ -2217,7 +2283,11 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPin) {
   EXPECT_EQ("Chrome, App1, App2", GetPinnedAppStatus());
   EnablePlayStore(true);
   EXPECT_EQ("Chrome, App1, App2", GetPinnedAppStatus());
+
   SendListOfArcApps();
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ("Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
 }
 

@@ -161,15 +161,25 @@ ArcApps* ArcApps::Get(Profile* profile) {
   return ArcAppsFactory::GetForProfile(profile);
 }
 
-ArcApps::ArcApps(Profile* profile)
+// static
+ArcApps* ArcApps::CreateForTesting(Profile* profile,
+                                   apps::AppServiceProxy* proxy) {
+  return new ArcApps(profile, proxy);
+}
+
+ArcApps::ArcApps(Profile* profile) : ArcApps(profile, nullptr) {}
+
+ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
     : binding_(this), profile_(profile), prefs_(nullptr) {
   if (!arc::IsArcAllowedForProfile(profile_) ||
       (arc::ArcServiceManager::Get() == nullptr)) {
     return;
   }
 
-  apps::mojom::AppServicePtr& app_service =
-      apps::AppServiceProxyFactory::GetForProfile(profile)->AppService();
+  if (!proxy) {
+    proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
+  }
+  apps::mojom::AppServicePtr& app_service = proxy->AppService();
   if (!app_service.is_bound()) {
     return;
   }
