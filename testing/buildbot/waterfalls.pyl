@@ -2328,19 +2328,6 @@
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
         },
       },
-      'Android FYI 32 Vk Release (Pixel XL)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'gpu_pool',
-          'marlin',
-          'pie',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-        },
-      },
       'Android FYI 32 dEQP Vk Release (Pixel 2)': {
         'os_type': 'android',
         'skip_merge_script': True,
@@ -2348,18 +2335,6 @@
           'gpu_pool',
           'pie',
           'walleye',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
-        },
-      },
-      'Android FYI 32 dEQP Vk Release (Pixel XL)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'gpu_pool',
-          'marlin',
-          'pie',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
@@ -2378,19 +2353,6 @@
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
         },
       },
-      'Android FYI 64 Vk Release (Pixel XL)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'gpu_pool',
-          'marlin',
-          'pie',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-        },
-      },
       'Android FYI 64 dEQP Vk Release (Pixel 2)': {
         'os_type': 'android',
         'skip_merge_script': True,
@@ -2398,18 +2360,6 @@
           'gpu_pool',
           'pie',
           'walleye',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
-        },
-      },
-      'Android FYI 64 dEQP Vk Release (Pixel XL)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'gpu_pool',
-          'marlin',
-          'pie',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
