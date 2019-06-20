@@ -50,13 +50,13 @@ export class StdToastElement extends HTMLElement {
   #shadow = this.attachShadow({mode: 'closed'});
   #timeoutID;
 
-  constructor(message = '') {
+  constructor(message) {
     super();
 
     this.#shadow.adoptedStyleSheets = [generateStylesheet()];
 
     this.#shadow.innerHTML = `<slot></slot>`;
-    if (!this.textContent) {
+    if (message !== undefined) {
       this.textContent = message;
     }
   }
