@@ -81,6 +81,8 @@ const CGFloat kSpotlightCornerRadius = 7;
     self.hiddenInCurrentSizeClass = newHiddenValue;
     [self setHiddenForCurrentStateAndSizeClass];
   }
+
+  [self checkNamedGuide];
 }
 
 - (void)setHiddenInCurrentState:(BOOL)hiddenInCurrentState {
@@ -160,13 +162,18 @@ const CGFloat kSpotlightCornerRadius = 7;
 // Checks if the button should be visible based on its hiddenInCurrentSizeClass
 // and hiddenInCurrentState properties, then updates its visibility accordingly.
 - (void)setHiddenForCurrentStateAndSizeClass {
-  BOOL previouslyHidden = self.hidden;
   self.hidden = self.hiddenInCurrentState || self.hiddenInCurrentSizeClass;
 
-  if (!self.hidden && previouslyHidden != self.hidden && self.guideName) {
-    // The button is appearing. At this point, if it has a layout guide
-    // associated, it should constraint it to itself.
-    [NamedGuide guideWithName:self.guideName view:self].constrainedView = self;
+  [self checkNamedGuide];
+}
+
+// Checks whether the named guide associated with this button, if there is one,
+// should be updated.
+- (void)checkNamedGuide {
+  if (!self.hidden && self.guideName) {
+    NamedGuide* guide = [NamedGuide guideWithName:self.guideName view:self];
+    if (guide.constrainedView != self)
+      guide.constrainedView = self;
   }
 }
 
