@@ -655,6 +655,7 @@ cc_test("cc_unittests") {
     "raster/synchronous_task_graph_runner_unittest.cc",
     "raster/task_graph_work_queue_unittest.cc",
     "resources/resource_pool_unittest.cc",
+    "scheduler/compositor_frame_reporter_unittest.cc",
     "scheduler/compositor_frame_reporting_controller_unittest.cc",
     "scheduler/compositor_timing_history_unittest.cc",
     "scheduler/scheduler_state_machine_unittest.cc",
