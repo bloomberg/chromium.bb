@@ -340,15 +340,24 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
       // Some Skia fonts manager do not compute the average character size
       // (e.g. Direct Write). The following code computes the average character
       // width the same way blink (e.g. PlatformFont) does. Use the width of the
-      //  letter 'x' when available, otherwise use the max character width.
+      // letter 'x' when available, otherwise use the max character width.
       SkGlyphID glyph = typeface_->unicharToGlyph('x');
       if (glyph != kUnsupportedGlyph) {
         SkScalar sk_width;
         font.getWidths(&glyph, 1, &sk_width);
         average_width_pixels_ = SkScalarCeilToInt(sk_width);
       }
-      if (!average_width_pixels_)
-        average_width_pixels_ = SkScalarCeilToInt(metrics.fMaxCharWidth);
+      if (!average_width_pixels_) {
+        if (metrics.fMaxCharWidth) {
+          average_width_pixels_ = SkScalarCeilToInt(metrics.fMaxCharWidth);
+        } else {
+          // Older version of the DirectWrite API doesn't implement support for
+          // max char width. Fall back on a multiple of the ascent. This is
+          // entirely arbitrary but comes pretty close to the expected value in
+          // most cases.
+          average_width_pixels_ = ascent_pixels_ * 2;
+        }
+      }
     }
     DCHECK_NE(average_width_pixels_, 0);
   }
