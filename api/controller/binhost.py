@@ -90,8 +90,6 @@ def PrepareBinhostUploads(input_proto, output_proto):
   if not gs.PathIsGs(uri):
     raise ValueError('Upload URI %s must be Google Storage.' % uri)
 
-  package_index_paths = [f.path.path for f in input_proto.package_index_files]
-
   parsed_uri = urlparse.urlparse(uri)
   upload_uri = gs.GetGsURL(parsed_uri.netloc, for_gsutil=True).rstrip('/')
   upload_path = parsed_uri.path.lstrip('/')
@@ -101,7 +99,7 @@ def PrepareBinhostUploads(input_proto, output_proto):
   uploads_dir = binhost.GetPrebuiltsRoot(chroot, sysroot, build_target)
   index_path = binhost.UpdatePackageIndex(uploads_dir, upload_uri, upload_path,
                                           sudo=True)
-  upload_targets = binhost.GetPrebuiltsFiles(uploads_dir, package_index_paths)
+  upload_targets = binhost.GetPrebuiltsFiles(uploads_dir)
   assert index_path.startswith(uploads_dir), (
       'expected index_path to start with uploads_dir')
   upload_targets.append(index_path[len(uploads_dir):])

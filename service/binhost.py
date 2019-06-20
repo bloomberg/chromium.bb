@@ -113,7 +113,7 @@ def GetPrebuiltsRoot(chroot, sysroot, build_target):
   return root
 
 
-def GetPrebuiltsFiles(prebuilts_root, package_index_paths):
+def GetPrebuiltsFiles(prebuilts_root):
   """Find paths to prebuilts at the given root directory.
 
   Assumes the root contains a Portage package index named Packages.
@@ -130,23 +130,13 @@ def GetPrebuiltsFiles(prebuilts_root, package_index_paths):
 
   Args:
     prebuilts_root: Absolute path to root directory containing a package index.
-    package_index_paths (list[str]): A list of paths to previous package index
-      files used to de-duplicate prebuilts.
 
   Returns:
     List of paths to all prebuilt archives, relative to the root.
   """
-  indexes = []
-  for package_index_path in package_index_paths:
-    index = binpkg.PackageIndex()
-    index.ReadFilePath(package_index_path)
-    indexes.append(index)
-
   package_index = binpkg.GrabLocalPackageIndex(prebuilts_root)
-  packages = package_index.ResolveDuplicateUploads(indexes)
-
   prebuilt_paths = []
-  for package in packages:
+  for package in package_index.packages:
     prebuilt_paths.append(package['CPV'] + '.tbz2')
 
     include_debug_symbols = package.get('DEBUG_SYMBOLS')

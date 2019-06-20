@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import os
-import time
 
 from chromite.lib import binpkg
 from chromite.lib import build_target_util
@@ -176,49 +175,9 @@ CPV: package/prebuilt_b
                       makedirs=True)
     osutils.WriteFile(os.path.join(self.root, 'package/prebuilt_b.tbz2'), 'b')
 
-    actual = binhost.GetPrebuiltsFiles(self.root, [])
+    actual = binhost.GetPrebuiltsFiles(self.root)
     expected = ['package/prebuilt_a.tbz2', 'package/prebuilt_b.tbz2']
     self.assertEqual(actual, expected)
-
-  def testPrebuiltsDeduplication(self):
-    """GetPrebuiltsFiles returns all archives for all packages."""
-    current_time = int(time.time())
-    # As of time of writing it checks for no older than 2 weeks. We just need
-    # to be newer than that, but older than the new time, so just knock off a
-    # few seconds.
-    old_time = current_time - 5
-
-    packages_content = """\
-ARCH: amd64
-URI: gs://foo_prebuilts
-
-CPV: package/prebuilt_a
-SHA1: 02b0a68a347e39c6d7be3c987022c134e4ba75e5
-MTIME: %d
-
-CPV: package/prebuilt_b
-""" % current_time
-
-    old_packages_content = """\
-ARCH: amd64
-URI: gs://foo_prebuilts
-
-CPV: package/prebuilt_a
-SHA1: 02b0a68a347e39c6d7be3c987022c134e4ba75e5
-MTIME: %d
-""" % old_time
-
-    old_binhost = os.path.join(self.tempdir, 'old_packages')
-    old_package_index = os.path.join(old_binhost, 'Packages')
-    osutils.WriteFile(old_package_index, old_packages_content, makedirs=True)
-    osutils.WriteFile(os.path.join(self.root, 'Packages'), packages_content)
-    osutils.WriteFile(os.path.join(self.root, 'package/prebuilt_a.tbz2'), 'a',
-                      makedirs=True)
-    osutils.WriteFile(os.path.join(self.root, 'package/prebuilt_b.tbz2'), 'b')
-
-    actual = binhost.GetPrebuiltsFiles(self.root, [old_package_index])
-    expected = ['package/prebuilt_b.tbz2']
-    self.assertEqual(expected, actual)
 
   def testGetPrebuiltsFilesWithDebugSymbols(self):
     """GetPrebuiltsFiles returns debug symbols archive if specified in index."""
@@ -235,7 +194,7 @@ DEBUG_SYMBOLS: yes
     osutils.WriteFile(os.path.join(self.root, 'package/prebuilt.debug.tbz2'),
                       'debug', makedirs=True)
 
-    actual = binhost.GetPrebuiltsFiles(self.root, [])
+    actual = binhost.GetPrebuiltsFiles(self.root)
     expected = ['package/prebuilt.tbz2', 'package/prebuilt.debug.tbz2']
     self.assertEqual(actual, expected)
 
@@ -250,7 +209,7 @@ CPV: package/prebuilt
     osutils.WriteFile(os.path.join(self.root, 'Packages'), packages_content)
 
     with self.assertRaises(LookupError):
-      binhost.GetPrebuiltsFiles(self.root, [])
+      binhost.GetPrebuiltsFiles(self.root)
 
 
 class UpdatePackageIndexTest(cros_test_lib.MockTempDirTestCase):
