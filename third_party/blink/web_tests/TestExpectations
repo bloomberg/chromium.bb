@@ -6166,3 +6166,6 @@ crbug.com/976743 virtual/gpu-rasterization/images/ycbcr-with-cmyk-color-profile.
 
 # Sheriff 2019-06-19
 crbug.com/959129 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
+
+# Sheriff 2019-06-20
+crbug.com/977153 [ Mac ]  fast/forms/validation-bubble-appearance-wrap.html [ Pass Failure ]
