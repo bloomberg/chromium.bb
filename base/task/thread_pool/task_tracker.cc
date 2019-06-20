@@ -131,9 +131,9 @@ HistogramBase* GetHistogramForTaskTraits(
 // Returns shutdown behavior based on |traits|; returns SKIP_ON_SHUTDOWN if
 // shutdown behavior is BLOCK_SHUTDOWN and |is_delayed|, because delayed tasks
 // are not allowed to block shutdown.
-TaskShutdownBehavior GetEffectiveShutdownBehavior(const TaskTraits& traits,
-                                                  bool is_delayed) {
-  const TaskShutdownBehavior shutdown_behavior = traits.shutdown_behavior();
+TaskShutdownBehavior GetEffectiveShutdownBehavior(
+    TaskShutdownBehavior shutdown_behavior,
+    bool is_delayed) {
   if (shutdown_behavior == TaskShutdownBehavior::BLOCK_SHUTDOWN && is_delayed) {
     return TaskShutdownBehavior::SKIP_ON_SHUTDOWN;
   }
@@ -459,7 +459,7 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
 
   // Run the next task in |task_source|.
   Optional<Task> task;
-  TaskTraits traits;
+  TaskTraits traits{ThreadPool()};
   {
     TaskSource::Transaction task_source_transaction(
         task_source->BeginTransaction());
@@ -524,11 +524,11 @@ void TaskTracker::RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms(
     bool may_block,
     TimeTicks posted_time,
     int num_tasks_run_when_posted) const {
-  TaskTraits task_traits;
+  TaskTraits task_traits{ThreadPool()};
   if (may_block)
-    task_traits = TaskTraits(task_priority, MayBlock());
+    task_traits = TaskTraits(ThreadPool(), task_priority, MayBlock());
   else
-    task_traits = TaskTraits(task_priority);
+    task_traits = TaskTraits(ThreadPool(), task_priority);
   RecordLatencyHistogram(LatencyHistogramType::HEARTBEAT_LATENCY, task_traits,
                          posted_time);
   GetHistogramForTaskTraits(task_traits,
