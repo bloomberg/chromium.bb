@@ -82,10 +82,10 @@ if (!fs.existsSync('tools/lib/run.ts')) {
 
   const total = running.length;
   const passed = total - warned.length - failed.length;
-  function pct(x) {
+  function pct(x: number) {
     return (100 * x / total).toFixed(2);
   }
-  function rpt(x) {
+  function rpt(x: number) {
     const xs = x.toString().padStart(1 + Math.log10(total), ' ');
     return `${xs} / ${total} = ${pct(x).padStart(6, ' ')}%`;
   }

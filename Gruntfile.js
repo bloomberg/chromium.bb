@@ -71,13 +71,6 @@ module.exports = function(grunt) {
           passThrough: true,
         },
       },
-
-      'out/': {
-        tsconfig: {
-          tsconfig: 'tsconfig.web.json',
-          passThrough: true,
-        },
-      },
     },
   });
 

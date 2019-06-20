@@ -41,7 +41,13 @@ export function paramsEquals(x: IParamsSpec | undefined, y: IParamsSpec | undefi
   return true;
 }
 
-export function paramsSupersets(sup: IParamsSpec, sub: IParamsSpec): boolean {
+export function paramsSupersets(sup: IParamsSpec | undefined, sub: IParamsSpec | undefined): boolean {
+  if (sub === undefined) {
+    return true;
+  }
+  if (sup === undefined) {  // && sub !== undefined
+    return false;
+  }
   for (const k of Object.keys(sub)) {
     if (!sup.hasOwnProperty(k) || sup[k] !== sub[k]) {
       return false;

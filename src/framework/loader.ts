@@ -1,5 +1,5 @@
 import { GroupRecorder } from './logger.js';
-import { IParamsAny, paramsEquals } from './params/index.js';
+import { IParamsAny, paramsEquals, paramsSupersets } from './params/index.js';
 import { allowedTestNameCharacters, ICase, ITestGroup, RunCase } from './test_group.js';
 
 export interface IGroupDesc {
@@ -104,7 +104,11 @@ export abstract class TestLoader {
       // - cts:buffers/mapWriteAsync:basic~
       // - cts:buffers/mapWriteAsync:basic~{}
       // - cts:buffers/mapWriteAsync:basic~{filter:"params"}
-      throw new Error('params matching (~) is unimplemented');
+      return [{
+        suite,
+        path: group,
+        node: this.filterByParamsMatch(suite, group, test, params),
+      }];
     } else if (token === ':') {
       // - cts:buffers/mapWriteAsync:basic:
       // - cts:buffers/mapWriteAsync:basic:{}
@@ -143,6 +147,18 @@ export abstract class TestLoader {
     return {
       description: node.description,
       group: filterTestGroup(node.group, testcase => testcase.name.startsWith(testPrefix)),
+    };
+  }
+
+  private async filterByParamsMatch(suite: string, group: string, test: string, paramsMatch?: IParamsAny): Promise<ITestNode> {
+    const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
+    if (!node.group) {
+      return node;
+    }
+    return {
+      description: node.description,
+      group: filterTestGroup(node.group, testcase =>
+        testcase.name === test && paramsSupersets(testcase.params, paramsMatch)),
     };
   }
 

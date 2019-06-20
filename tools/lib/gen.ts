@@ -1,5 +1,6 @@
 // tslint:disable: no-console
 
+// tslint:disable-next-line: no-implicit-dependencies
 import * as fg from 'fast-glob';
 import * as fs from 'fs';
 import * as path from 'path';

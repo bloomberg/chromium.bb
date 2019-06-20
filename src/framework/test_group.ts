@@ -45,6 +45,8 @@ export abstract class Fixture {
 
   public async init(): Promise<void> { }
 
+  public finalize(): void { }
+
   public log(msg: string) {
     this.rec.log(msg);
   }
@@ -94,7 +96,8 @@ export class TestGroup implements ITestGroup {
       async run(log) {
         const inst = new fixture(log, p);
         await inst.init();
-        return fn(inst);
+        await fn(inst);
+        inst.finalize();
       },
     });
   }
