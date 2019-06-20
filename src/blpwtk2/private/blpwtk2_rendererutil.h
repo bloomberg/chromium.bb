@@ -49,8 +49,7 @@ struct RendererUtil
 
 
     // patch section: print to pdf
-    static String printToPDF(
-        content::RenderView* renderView, const std::string& propertyName);
+    static String printToPDF(content::RenderView* renderView);
 
 
 

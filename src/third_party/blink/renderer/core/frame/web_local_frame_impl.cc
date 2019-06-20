@@ -2564,4 +2564,9 @@ void WebLocalFrameImpl::SetLifecycleState(mojom::FrameLifecycleState state) {
   GetFrame()->SetLifecycleState(state);
 }
 
+bool WebLocalFrameImpl::IsPrintAllowed() const {
+  DCHECK(GetFrame());
+  return GetFrame()->IsPrintAllowed();
+}
+
 }  // namespace blink

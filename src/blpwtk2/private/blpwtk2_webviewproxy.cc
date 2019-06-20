@@ -376,7 +376,7 @@ void WebViewProxy::setSecurityToken(v8::Isolate *isolate,
 String WebViewProxy::printToPDF(const StringRef& propertyName)
 {
     content::RenderView *rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
-    return RendererUtil::printToPDF(rv, propertyName.toStdString());
+    return RendererUtil::printToPDF(rv);
 }
 
 // blpwtk2::WebViewClientDelegate overrides
