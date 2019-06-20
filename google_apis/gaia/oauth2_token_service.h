@@ -158,6 +158,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // |scopes| is the set of scopes to get an access token for, |consumer| is
   // the object that will be called back with results if the returned request
   // is not deleted. Virtual for mocking.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   virtual std::unique_ptr<Request> StartRequest(const CoreAccountId& account_id,
                                                 const ScopeSet& scopes,
                                                 Consumer* consumer);
@@ -172,6 +173,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // This method does the same as |StartRequest| except it uses |client_id| and
   // |client_secret| to identify OAuth client app instead of using
   // Chrome's default values.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   std::unique_ptr<Request> StartRequestForClient(
       const CoreAccountId& account_id,
       const std::string& client_id,
@@ -182,6 +184,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // This method does the same as |StartRequest| except it uses the
   // URLLoaderfactory given by |url_loader_factory| instead of using the one
   // returned by |GetURLLoaderFactory| implemented by derived classes.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   std::unique_ptr<Request> StartRequestWithContext(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -261,6 +264,10 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   GetAccessTokenDiagnosticsObservers();
 
  protected:
+  // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
+  // fully manages access tokens independently of OAuth2TokenService.
+  friend class OAuth2AccessTokenManager;
+
   // Implements a cancelable |OAuth2TokenService::Request|, which should be
   // operated on the UI thread.
   // TODO(davidroche): move this out of header file.
@@ -353,23 +360,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // Provide a URLLoaderFactory used for fetching access tokens with the
   // |StartRequest| method.
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
-
-  // This method does the same as |StartRequestWithContext| except it
-  // uses |client_id| and |client_secret| to identify OAuth
-  // client app instead of using Chrome's default values.
-  std::unique_ptr<Request> StartRequestForClientWithContext(
-      const CoreAccountId& account_id,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::string& client_id,
-      const std::string& client_secret,
-      const ScopeSet& scopes,
-      Consumer* consumer);
-
-  // Posts a task to fire the Consumer callback with the cached token response.
-  void InformConsumerWithCachedTokenResponse(
-      const OAuth2AccessTokenConsumer::TokenResponse* token_response,
-      RequestImpl* request,
-      const RequestParameters& client_scopes);
 
   // Returns a currently valid OAuth2 access token for the given set of scopes,
   // or NULL if none have been cached. Note the user of this method should
