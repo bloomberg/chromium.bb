@@ -290,7 +290,8 @@ ZeroSuggestProvider::ZeroSuggestProvider(
             CanSendURL(GURL(kArbitraryInsecureUrlString), suggest_url,
                        template_url_service->GetDefaultSearchProvider(),
                        metrics::OmniboxEventProto::OTHER,
-                       template_url_service->search_terms_data(), client));
+                       template_url_service->search_terms_data(), client,
+                       false));
   }
 }
 
@@ -599,7 +600,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
       template_url_service->GetDefaultSearchProvider();
   const bool can_send_current_url = CanSendURL(
       current_url, suggest_url, default_provider, current_page_classification_,
-      template_url_service->search_terms_data(), client());
+      template_url_service->search_terms_data(), client(), false);
   // Collect metrics on eligibility.
   GURL arbitrary_insecure_url(kArbitraryInsecureUrlString);
   ZeroSuggestEligibility eligibility = ZeroSuggestEligibility::ELIGIBLE;
@@ -607,7 +608,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     const bool can_send_ordinary_url =
         CanSendURL(arbitrary_insecure_url, suggest_url, default_provider,
                    current_page_classification_,
-                   template_url_service->search_terms_data(), client());
+                   template_url_service->search_terms_data(), client(), false);
     eligibility = can_send_ordinary_url
                       ? ZeroSuggestEligibility::URL_INELIGIBLE
                       : ZeroSuggestEligibility::GENERALLY_INELIGIBLE;
