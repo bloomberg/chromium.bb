@@ -3382,6 +3382,7 @@ Unknown properties are collapsed to zero. -->
   <int value="17" label="Get scripts failed"/>
   <int value="18" label="Get scripts unparsable"/>
   <int value="19" label="No initial scripts"/>
+  <int value="20" label="Installing the feature module failed"/>
 </enum>
 
 <enum name="AutofillAssistantOnBoarding">

@@ -98,7 +98,7 @@ public class AutofillAssistantFacade {
         AutofillAssistantMetrics.recordDropOut(DropOutReason.AA_START);
         AutofillAssistantModuleEntryProvider.getModuleEntry(activity, (moduleEntry) -> {
             if (moduleEntry == null) {
-                AutofillAssistantMetrics.recordDropOut(DropOutReason.DFM_CANCELLED);
+                AutofillAssistantMetrics.recordDropOut(DropOutReason.DFM_INSTALL_FAILED);
                 return;
             }
 
