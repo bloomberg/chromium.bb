@@ -136,6 +136,9 @@ set_aom_config_var(CONFIG_HTB_TRELLIS 0 NUMBER
 set_aom_config_var(CONFIG_REALTIME_ONLY 0 NUMBER
                    "Build for RTC-only to reduce binary size.")
 set_aom_config_var(CONFIG_NN_V2 0 NUMBER "Fully-connected neural nets ver.2.")
+set_aom_config_var(CONFIG_SUPERRES_IN_RECODE 1 NUMBER
+                   "Enable encoding both full-res and superres in recode loop"
+                   "when SUPERRES_AUTO mode is used.")
 #
 # Variables in this section control optional features of the build system.
 #

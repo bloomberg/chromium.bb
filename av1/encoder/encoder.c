@@ -3935,6 +3935,16 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
   return new_denom;
 }
 
+#if CONFIG_SUPERRES_IN_RECODE
+static int superres_in_recode_allowed(const AV1_COMP *const cpi) {
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+  // Empirically found to not be beneficial for AOM_Q mode and images coding.
+  return oxcf->superres_mode == SUPERRES_AUTO &&
+         (oxcf->rc_mode == AOM_VBR || oxcf->rc_mode == AOM_CQ) &&
+         cpi->rc.frames_to_key > 1;
+}
+#endif  // CONFIG_SUPERRES_IN_RECODE
+
 #define SUPERRES_ENERGY_BY_Q2_THRESH_KEYFRAME_SOLO 0.012
 #define SUPERRES_ENERGY_BY_Q2_THRESH_KEYFRAME 0.008
 #define SUPERRES_ENERGY_BY_Q2_THRESH_ARFFRAME 0.008
@@ -3991,7 +4001,7 @@ static uint8_t get_superres_denom_for_qindex(const AV1_COMP *cpi, int qindex,
 
   const double energy_by_q2_thresh =
       get_energy_by_q2_thresh(gf_group, &cpi->rc);
-  const int denom = get_superres_denom_from_qindex_energy(
+  int denom = get_superres_denom_from_qindex_energy(
       qindex, energy, energy_by_q2_thresh, SUPERRES_ENERGY_BY_AC_THRESH);
   /*
   printf("\nenergy = [");
@@ -4003,6 +4013,13 @@ static uint8_t get_superres_denom_for_qindex(const AV1_COMP *cpi, int qindex,
              : cpi->rc.gfu_boost);
   printf("denom = %d\n", denom);
   */
+#if CONFIG_SUPERRES_IN_RECODE
+  if (superres_in_recode_allowed(cpi)) {
+    // Force superres to be tried in the recode loop, as full-res is also going
+    // to be tried anyway.
+    denom = AOMMAX(denom, SCALE_NUMERATOR + 1);
+  }
+#endif  // CONFIG_SUPERRES_IN_RECODE
   return denom;
 }
 
@@ -4675,6 +4692,15 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 
   av1_setup_frame_size(cpi);
 
+#if CONFIG_SUPERRES_IN_RECODE
+  if (superres_in_recode_allowed(cpi) &&
+      cm->superres_scale_denominator == SCALE_NUMERATOR) {
+    // Superres won't be picked, so no need to try, as we will go through
+    // another recode loop for full-resolution after this anyway.
+    return -1;
+  }
+#endif  // CONFIG_SUPERRES_IN_RECODE
+
   int top_index = 0, bottom_index = 0;
   int q = 0, q_low = 0, q_high = 0;
   set_size_dependent_vars(cpi, &q, &bottom_index, &top_index);
@@ -4824,6 +4850,229 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 
   return AOM_CODEC_OK;
 }
+
+static int encode_with_recode_loop_and_filter(AV1_COMP *cpi, size_t *size,
+                                              uint8_t *dest, int64_t *sse,
+                                              int64_t *rate,
+                                              int *largest_tile_id) {
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, encode_with_recode_loop_time);
+#endif
+  int err = encode_with_recode_loop(cpi, size, dest);
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, encode_with_recode_loop_time);
+#endif
+  if (err != AOM_CODEC_OK) {
+    if (err == -1) {
+      // special case as described in encode_with_recode_loop().
+      // Encoding was skipped.
+      err = AOM_CODEC_OK;
+      if (sse != NULL) *sse = INT64_MAX;
+      if (rate != NULL) *rate = INT64_MAX;
+      *largest_tile_id = 0;
+    }
+    return err;
+  }
+
+#ifdef OUTPUT_YUV_SKINMAP
+  if (cpi->common.current_frame.frame_number > 1) {
+    av1_compute_skin_map(cpi, yuv_skinmap_file);
+  }
+#endif  // OUTPUT_YUV_SKINMAP
+
+  AV1_COMMON *const cm = &cpi->common;
+  SequenceHeader *const seq_params = &cm->seq_params;
+
+  // Special case code to reduce pulsing when key frames are forced at a
+  // fixed interval. Note the reconstruction error if it is the frame before
+  // the force key frame
+  if (cpi->rc.next_key_frame_forced && cpi->rc.frames_to_key == 1) {
+    if (seq_params->use_highbitdepth) {
+      cpi->ambient_err = aom_highbd_get_y_sse(cpi->source, &cm->cur_frame->buf);
+    } else {
+      cpi->ambient_err = aom_get_y_sse(cpi->source, &cm->cur_frame->buf);
+    }
+  }
+
+  cm->cur_frame->buf.color_primaries = seq_params->color_primaries;
+  cm->cur_frame->buf.transfer_characteristics =
+      seq_params->transfer_characteristics;
+  cm->cur_frame->buf.matrix_coefficients = seq_params->matrix_coefficients;
+  cm->cur_frame->buf.monochrome = seq_params->monochrome;
+  cm->cur_frame->buf.chroma_sample_position =
+      seq_params->chroma_sample_position;
+  cm->cur_frame->buf.color_range = seq_params->color_range;
+  cm->cur_frame->buf.render_width = cm->render_width;
+  cm->cur_frame->buf.render_height = cm->render_height;
+
+  // TODO(zoeliu): For non-ref frames, loop filtering may need to be turned
+  // off.
+
+  // Pick the loop filter level for the frame.
+  if (!cm->allow_intrabc) {
+    loopfilter_frame(cpi, cm);
+  } else {
+    cm->lf.filter_level[0] = 0;
+    cm->lf.filter_level[1] = 0;
+    cm->cdef_info.cdef_bits = 0;
+    cm->cdef_info.cdef_strengths[0] = 0;
+    cm->cdef_info.nb_cdef_strengths = 1;
+    cm->cdef_info.cdef_uv_strengths[0] = 0;
+    cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
+    cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
+    cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
+  }
+
+  // TODO(debargha): Fix mv search range on encoder side
+  // aom_extend_frame_inner_borders(&cm->cur_frame->buf, av1_num_planes(cm));
+  aom_extend_frame_borders(&cm->cur_frame->buf, av1_num_planes(cm));
+
+#ifdef OUTPUT_YUV_REC
+  aom_write_one_yuv_frame(cm, &cm->cur_frame->buf);
+#endif
+
+  finalize_encoded_frame(cpi);
+  // Build the bitstream
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, av1_pack_bitstream_final_time);
+#endif
+  if (av1_pack_bitstream(cpi, dest, size, largest_tile_id) != AOM_CODEC_OK)
+    return AOM_CODEC_ERROR;
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, av1_pack_bitstream_final_time);
+#endif
+
+  // Compute sse and rate.
+  if (sse != NULL) {
+    *sse = (seq_params->use_highbitdepth)
+               ? aom_highbd_get_y_sse(cpi->source, &cm->cur_frame->buf)
+               : aom_get_y_sse(cpi->source, &cm->cur_frame->buf);
+  }
+  if (rate != NULL) {
+    const int64_t bits = (*size << 3);
+    *rate = (bits << 5);  // To match scale.
+  }
+  return AOM_CODEC_OK;
+}
+
+#if CONFIG_SUPERRES_IN_RECODE
+
+static void save_cur_buf(AV1_COMP *cpi) {
+  CODING_CONTEXT *const cc = &cpi->coding_context;
+  AV1_COMMON *cm = &cpi->common;
+  const YV12_BUFFER_CONFIG *ybf = &cm->cur_frame->buf;
+  memset(&cc->copy_buffer, 0, sizeof(cc->copy_buffer));
+  if (aom_alloc_frame_buffer(&cc->copy_buffer, ybf->y_crop_width,
+                             ybf->y_crop_height, ybf->subsampling_x,
+                             ybf->subsampling_y,
+                             ybf->flags & YV12_FLAG_HIGHBITDEPTH, ybf->border,
+                             cm->byte_alignment) != AOM_CODEC_OK) {
+    aom_internal_error(
+        &cm->error, AOM_CODEC_MEM_ERROR,
+        "Failed to allocate copy buffer for saving coding context");
+  }
+  aom_yv12_copy_frame(ybf, &cc->copy_buffer, av1_num_planes(cm));
+}
+
+// Coding context that only needs to be saved when recode loop includes
+// filtering (deblocking, CDEF, superres post-encode upscale and/or loop
+// restoraton).
+static void save_extra_coding_context(AV1_COMP *cpi) {
+  CODING_CONTEXT *const cc = &cpi->coding_context;
+  AV1_COMMON *cm = &cpi->common;
+
+  cc->lf = cm->lf;
+  cc->cdef_info = cm->cdef_info;
+  cc->rc = cpi->rc;
+}
+
+static void save_all_coding_context(AV1_COMP *cpi) {
+  save_coding_context(cpi);
+  save_cur_buf(cpi);
+  save_extra_coding_context(cpi);
+  if (!frame_is_intra_only(&cpi->common)) release_scaled_references(cpi);
+}
+
+static void restore_cur_buf(AV1_COMP *cpi) {
+  CODING_CONTEXT *const cc = &cpi->coding_context;
+  AV1_COMMON *cm = &cpi->common;
+  aom_yv12_copy_frame(&cc->copy_buffer, &cm->cur_frame->buf,
+                      av1_num_planes(cm));
+}
+
+// Coding context that only needs to be restored when recode loop includes
+// filtering (deblocking, CDEF, superres post-encode upscale and/or loop
+// restoraton).
+static void restore_extra_coding_context(AV1_COMP *cpi) {
+  CODING_CONTEXT *const cc = &cpi->coding_context;
+  AV1_COMMON *cm = &cpi->common;
+  cm->lf = cc->lf;
+  cm->cdef_info = cc->cdef_info;
+  cpi->rc = cc->rc;
+}
+
+static void restore_all_coding_context(AV1_COMP *cpi) {
+  restore_coding_context(cpi);
+  restore_cur_buf(cpi);
+  restore_extra_coding_context(cpi);
+  if (!frame_is_intra_only(&cpi->common)) release_scaled_references(cpi);
+}
+
+static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
+                                            uint8_t *dest,
+                                            int *largest_tile_id) {
+  const AV1_COMMON *const cm = &cpi->common;
+  AV1EncoderConfig *const oxcf = &cpi->oxcf;
+  assert(cm->seq_params.enable_superres);
+  assert(superres_in_recode_allowed(cpi));
+  aom_codec_err_t err = AOM_CODEC_OK;
+  save_all_coding_context(cpi);
+
+  // Encode with superres.
+  int64_t sse1 = INT64_MAX;
+  int64_t rate1 = INT64_MAX;
+  int largest_tile_id1;
+  err = encode_with_recode_loop_and_filter(cpi, size, dest, &sse1, &rate1,
+                                           &largest_tile_id1);
+  if (err != AOM_CODEC_OK) return err;
+
+  // Encode without superres.
+  restore_all_coding_context(cpi);
+  int64_t sse2 = INT64_MAX;
+  int64_t rate2 = INT64_MAX;
+  int largest_tile_id2;
+  oxcf->superres_mode = SUPERRES_NONE;  // To force full-res.
+  err = encode_with_recode_loop_and_filter(cpi, size, dest, &sse2, &rate2,
+                                           &largest_tile_id2);
+  oxcf->superres_mode = SUPERRES_AUTO;  // Reset.
+  if (err != AOM_CODEC_OK) return err;
+
+  // Note: Both use common rdmult based on base qindex of fullres.
+  const int64_t rdmult =
+      av1_compute_rd_mult_based_on_qindex(cpi, cm->base_qindex);
+  const double proj_rdcost1 = RDCOST_DBL(rdmult, rate1, sse1);
+  const double proj_rdcost2 = RDCOST_DBL(rdmult, rate2, sse2);
+
+  // Re-encode with superres if it's better.
+  if (proj_rdcost1 < proj_rdcost2) {
+    restore_all_coding_context(cpi);
+    // TODO(urvang): We should avoid rerunning the recode loop by saving
+    // previous output+state, or running encode only for the selected 'q' in
+    // previous step.
+    int64_t sse3 = INT64_MAX;
+    int64_t rate3 = INT64_MAX;
+    err = encode_with_recode_loop_and_filter(cpi, size, dest, &sse3, &rate3,
+                                             largest_tile_id);
+    assert(sse1 == sse3);
+    assert(rate1 == rate3);
+    assert(largest_tile_id1 == *largest_tile_id);
+  } else {
+    *largest_tile_id = largest_tile_id2;
+  }
+
+  return err;
+}
+#endif  // CONFIG_SUPERRES_IN_RECODE
 
 #define DUMP_RECON_FRAMES 0
 
@@ -5328,10 +5577,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   }
   cm->timing_info_present &= !seq_params->reduced_still_picture_hdr;
 
-#if CONFIG_COLLECT_COMPONENT_TIMING
-  start_timing(cpi, encode_with_recode_loop_time);
-#endif
-
   if (cpi->oxcf.pass == 2 && cpi->oxcf.enable_tpl_model == 2 &&
       current_frame->frame_type == INTER_FRAME) {
     if (!cm->show_frame) {
@@ -5340,77 +5585,22 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     }
   }
 
-  if (encode_with_recode_loop(cpi, size, dest) != AOM_CODEC_OK)
-    return AOM_CODEC_ERROR;
-#if CONFIG_COLLECT_COMPONENT_TIMING
-  end_timing(cpi, encode_with_recode_loop_time);
-#endif
-
-#ifdef OUTPUT_YUV_SKINMAP
-  if (cpi->common.current_frame.frame_number > 1) {
-    av1_compute_skin_map(cpi, yuv_skinmap_file);
-  }
-#endif  // OUTPUT_YUV_SKINMAP
-
-  // Special case code to reduce pulsing when key frames are forced at a
-  // fixed interval. Note the reconstruction error if it is the frame before
-  // the force key frame
-  if (cpi->rc.next_key_frame_forced && cpi->rc.frames_to_key == 1) {
-    if (seq_params->use_highbitdepth) {
-      cpi->ambient_err = aom_highbd_get_y_sse(cpi->source, &cm->cur_frame->buf);
-    } else {
-      cpi->ambient_err = aom_get_y_sse(cpi->source, &cm->cur_frame->buf);
+  int largest_tile_id = 0;
+#if CONFIG_SUPERRES_IN_RECODE
+  if (superres_in_recode_allowed(cpi)) {
+    if (encode_with_and_without_superres(cpi, size, dest, &largest_tile_id) !=
+        AOM_CODEC_OK) {
+      return AOM_CODEC_ERROR;
     }
-  }
-
-  cm->cur_frame->buf.color_primaries = seq_params->color_primaries;
-  cm->cur_frame->buf.transfer_characteristics =
-      seq_params->transfer_characteristics;
-  cm->cur_frame->buf.matrix_coefficients = seq_params->matrix_coefficients;
-  cm->cur_frame->buf.monochrome = seq_params->monochrome;
-  cm->cur_frame->buf.chroma_sample_position =
-      seq_params->chroma_sample_position;
-  cm->cur_frame->buf.color_range = seq_params->color_range;
-  cm->cur_frame->buf.render_width = cm->render_width;
-  cm->cur_frame->buf.render_height = cm->render_height;
-
-  // TODO(zoeliu): For non-ref frames, loop filtering may need to be turned
-  // off.
-
-  // Pick the loop filter level for the frame.
-  if (!cm->allow_intrabc) {
-    loopfilter_frame(cpi, cm);
   } else {
-    cm->lf.filter_level[0] = 0;
-    cm->lf.filter_level[1] = 0;
-    cm->cdef_info.cdef_bits = 0;
-    cm->cdef_info.cdef_strengths[0] = 0;
-    cm->cdef_info.nb_cdef_strengths = 1;
-    cm->cdef_info.cdef_uv_strengths[0] = 0;
-    cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
-    cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
-    cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
+#endif  // CONFIG_SUPERRES_IN_RECODE
+    if (encode_with_recode_loop_and_filter(cpi, size, dest, NULL, NULL,
+                                           &largest_tile_id) != AOM_CODEC_OK) {
+      return AOM_CODEC_ERROR;
+    }
+#if CONFIG_SUPERRES_IN_RECODE
   }
-
-  // TODO(debargha): Fix mv search range on encoder side
-  // aom_extend_frame_inner_borders(&cm->cur_frame->buf, av1_num_planes(cm));
-  aom_extend_frame_borders(&cm->cur_frame->buf, av1_num_planes(cm));
-
-#ifdef OUTPUT_YUV_REC
-  aom_write_one_yuv_frame(cm, &cm->cur_frame->buf);
-#endif
-
-  finalize_encoded_frame(cpi);
-  // Build the bitstream
-  int largest_tile_id = 0;  // Output from pack_bitstream
-#if CONFIG_COLLECT_COMPONENT_TIMING
-  start_timing(cpi, av1_pack_bitstream_final_time);
-#endif
-  if (av1_pack_bitstream(cpi, dest, size, &largest_tile_id) != AOM_CODEC_OK)
-    return AOM_CODEC_ERROR;
-#if CONFIG_COLLECT_COMPONENT_TIMING
-  end_timing(cpi, av1_pack_bitstream_final_time);
-#endif
+#endif  // CONFIG_SUPERRES_IN_RECODE
 
   cpi->seq_params_locked = 1;
 
