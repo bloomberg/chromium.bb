@@ -211,28 +211,37 @@ void OffsetX(int x_offset, std::vector<gfx::Rect>* rects) {
 
 }  // namespace
 
-// EscapeTracker installs an event monitor and runs a callback when it receives
-// the escape key.
-class EscapeTracker : public ui::EventObserver {
+// KeyEventTracker installs an event monitor and runs a callback to end the drag
+// when it receives any key event.
+class KeyEventTracker : public ui::EventObserver {
  public:
-  EscapeTracker(base::OnceClosure callback, gfx::NativeWindow context)
-      : escape_callback_(std::move(callback)) {
+  KeyEventTracker(base::OnceClosure end_drag_callback,
+                  base::OnceClosure revert_drag_callback,
+                  gfx::NativeWindow context)
+      : end_drag_callback_(std::move(end_drag_callback)),
+        revert_drag_callback_(std::move(revert_drag_callback)) {
     event_monitor_ = views::EventMonitor::CreateApplicationMonitor(
         this, context, {ui::ET_KEY_PRESSED});
   }
-  ~EscapeTracker() override = default;
+  ~KeyEventTracker() override = default;
 
  private:
   // ui::EventObserver:
   void OnEvent(const ui::Event& event) override {
-    if (event.AsKeyEvent()->key_code() == ui::VKEY_ESCAPE && escape_callback_)
-      std::move(escape_callback_).Run();
+    if (event.AsKeyEvent()->key_code() == ui::VKEY_ESCAPE &&
+        revert_drag_callback_) {
+      std::move(revert_drag_callback_).Run();
+    } else if (event.AsKeyEvent()->key_code() != ui::VKEY_ESCAPE &&
+               end_drag_callback_) {
+      std::move(end_drag_callback_).Run();
+    }
   }
 
-  base::OnceClosure escape_callback_;
+  base::OnceClosure end_drag_callback_;
+  base::OnceClosure revert_drag_callback_;
   std::unique_ptr<views::EventMonitor> event_monitor_;
 
-  DISALLOW_COPY_AND_ASSIGN(EscapeTracker);
+  DISALLOW_COPY_AND_ASSIGN(KeyEventTracker);
 };
 
 class TabDragController::SourceTabStripEmptinessTracker
@@ -467,15 +476,17 @@ void TabDragController::Init(TabDragContext* source_context,
       std::find(tabs.begin(), tabs.end(), source_tab) - tabs.begin();
 
   // Listen for Esc key presses.
-  escape_tracker_ = std::make_unique<EscapeTracker>(
-      base::BindOnce(&TabDragController::EndDrag, weak_factory_.GetWeakPtr(),
+  key_event_tracker_ = std::make_unique<KeyEventTracker>(
+      base::BindOnce(&TabDragController::EndDrag, base::Unretained(this),
+                     END_DRAG_COMPLETE),
+      base::BindOnce(&TabDragController::EndDrag, base::Unretained(this),
                      END_DRAG_CANCEL),
       source_context_->AsView()->GetWidget()->GetNativeWindow());
 
   if (source_tab->width() > 0) {
-    offset_to_width_ratio_ = static_cast<float>(
-        source_tab->GetMirroredXInView(source_tab_offset)) /
-        static_cast<float>(source_tab->width());
+    offset_to_width_ratio_ =
+        float{source_tab->GetMirroredXInView(source_tab_offset)} /
+        float{source_tab->width()};
   }
   InitWindowCreatePoint();
   initial_selection_model_ = std::move(initial_selection_model);
@@ -543,7 +554,7 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
     }
     current_state_ = DragState::kDraggingTabs;
     Attach(source_context_, gfx::Point());
-    if (static_cast<int>(drag_data_.size()) ==
+    if (int{drag_data_.size()} ==
         source_context_->GetTabStripModel()->count()) {
       views::Widget* widget = GetAttachedBrowserWidget();
       gfx::Rect new_bounds;
@@ -751,8 +762,8 @@ bool TabDragController::CanStartDrag(const gfx::Point& point_in_screen) const {
   static const int kMinimumDragDistance = 10;
   int x_offset = abs(point_in_screen.x() - start_point_in_screen_.x());
   int y_offset = abs(point_in_screen.y() - start_point_in_screen_.y());
-  return sqrt(pow(static_cast<float>(x_offset), 2) +
-              pow(static_cast<float>(y_offset), 2)) > kMinimumDragDistance;
+  return sqrt(pow(float{x_offset}, 2) + pow(float{y_offset}, 2)) >
+         kMinimumDragDistance;
 }
 
 TabDragController::Liveness TabDragController::ContinueDragging(
@@ -906,8 +917,7 @@ TabDragController::DragBrowserToNewTabStrip(TabDragContext* target_context,
 
 void TabDragController::DragActiveTabStacked(
     const gfx::Point& point_in_screen) {
-  if (attached_context_->GetTabCount() !=
-      static_cast<int>(initial_tab_positions_.size()))
+  if (attached_context_->GetTabCount() != int{initial_tab_positions_.size()})
     return;  // TODO: should cancel drag if this happens.
 
   int delta = point_in_screen.x() - start_point_in_screen_.x();
@@ -957,7 +967,7 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
     TabStripModel* attached_model = attached_context_->GetTabStripModel();
     int to_index = attached_context_->GetInsertionIndexForDraggedBounds(
         GetDraggedViewTabStripBounds(dragged_view_point), false,
-        static_cast<int>(drag_data_.size()), mouse_has_ever_moved_left_,
+        int{drag_data_.size()}, mouse_has_ever_moved_left_,
         mouse_has_ever_moved_right_);
     bool do_move = true;
     // While dragging within a tabstrip the expectation is the insertion index
@@ -1178,7 +1188,7 @@ void TabDragController::Attach(TabDragContext* attached_context,
     tab_strip_point.Offset(0, -mouse_offset_.y());
     int index = attached_context_->GetInsertionIndexForDraggedBounds(
         GetDraggedViewTabStripBounds(tab_strip_point), true,
-        static_cast<int>(drag_data_.size()), mouse_has_ever_moved_left_,
+        int{drag_data_.size()}, mouse_has_ever_moved_left_,
         mouse_has_ever_moved_right_);
     attach_index_ = index;
     attach_x_ = tab_strip_point.x();
@@ -1297,7 +1307,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
 void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
     const gfx::Point& point_in_screen) {
   if (attached_context_->GetTabStripModel()->count() ==
-      static_cast<int>(drag_data_.size())) {
+      int{drag_data_.size()}) {
     // All the tabs in a browser are being dragged but all the tabs weren't
     // initially being dragged. For this to happen the user would have to
     // start dragging a set of tabs, the other tabs close, then detach.
@@ -1920,12 +1930,12 @@ void TabDragController::AdjustBrowserAndTabBoundsForDrag(
   // If the new tabstrip is smaller than the old resize the tabs.
   if (dragged_context_width < tab_area_width) {
     const float leading_ratio =
-        drag_bounds->front().x() / static_cast<float>(tab_area_width);
+        drag_bounds->front().x() / float{tab_area_width};
     *drag_bounds = CalculateBoundsForDraggedTabs();
 
     if (drag_bounds->back().right() < dragged_context_width) {
       const int delta_x = std::min(
-          static_cast<int>(leading_ratio * dragged_context_width),
+          int{(leading_ratio * dragged_context_width)},
           dragged_context_width -
               (drag_bounds->back().right() - drag_bounds->front().x()));
       OffsetX(delta_x, drag_bounds);

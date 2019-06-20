@@ -607,12 +607,6 @@ class DetachToBrowserTabDragControllerTest
 
 // Creates a browser with two tabs, drags the second to the first.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
-  // TODO(sky): this won't work with touch as it requires a long press.
-  if (input_source() == INPUT_SOURCE_TOUCH) {
-    VLOG(1) << "Test is DISABLED for touch input.";
-    return;
-  }
-
   AddTabAndResetBrowser(browser());
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -632,6 +626,25 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
   // The tab strip should no longer have capture because the drag was ended and
   // mouse/touch was released.
   EXPECT_FALSE(tab_strip->GetWidget()->HasCapture());
+}
+
+// Drags a tab within the window (without dragging the whole window) then
+// pressing a key ends the drag.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       KeyPressShouldEndDragTest) {
+  AddTabAndResetBrowser(browser());
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
+
+  ASSERT_TRUE(TabDragController::IsActive());
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
+                                              false, false, false));
+  EXPECT_EQ("1 0", IDString(browser()->tab_strip_model()));
+  EXPECT_FALSE(TabDragController::IsActive());
+  EXPECT_FALSE(tab_strip->GetDragContext()->IsDragSessionActive());
 }
 
 #if defined(USE_AURA)
