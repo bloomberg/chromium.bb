@@ -4,6 +4,11 @@
 # TODO(crbug.com/976807): Enable this.
 -SiteIsolationFlagHandlingTest.FlagHandlingTest*
 
+# TODO(crbug.com/977170): Enable this.
+-StructSequence/OobeLocalizationTest.LocalizationTest/3
+-StructSequence/OobeLocalizationTest.LocalizationTest/4
+-StructSequence/OobeLocalizationTest.LocalizationTest/8
+
 # TODO(crbug.com/976987): Enable this.
 -UserCloudPolicyManagerTest.ErrorLoadingPolicyForUnmanagedUser/0
 -UserCloudPolicyManagerTest.ErrorLoadingPolicyForUnmanagedUser/1
