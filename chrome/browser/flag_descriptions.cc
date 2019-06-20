@@ -262,6 +262,18 @@ const char kCaptionSettingsName[] = "Caption Settings";
 const char kCaptionSettingsDescription[] =
     "Enable the ability to customize captions.";
 
+const char kClickToCallReceiverName[] =
+    "Enable receiver device to handle click to call feature";
+const char kClickToCallReceiverDescription[] =
+    "Enables receiver device to handle click to call feature by showing a "
+    "notification to call the phone number clicked on the desktop.";
+
+const char kClickToCallUIName[] =
+    "Enable click to call feature signals to be handled on desktop";
+const char kClickToCallUIDescription[] =
+    "Enables click to call feature signals to be handled on desktop by showing "
+    "a list of user's available devices with telephony functionality.";
+
 const char kClickToOpenPDFName[] = "Click to open embedded PDFs";
 const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "

@@ -33,6 +33,7 @@
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/ntp_features.h"
+#include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -3419,6 +3420,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantKeyRemappingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantKeyRemapping)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"click-to-call-receiver", flag_descriptions::kClickToCallReceiverName,
+     flag_descriptions::kClickToCallReceiverDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kClickToCallReceiver)},
+
+    {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
+     flag_descriptions::kClickToCallUIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kClickToCallUI)},
 
     {"enable-filesystem-in-incognito",
      flag_descriptions::kEnableFilesystemInIncognitoName,

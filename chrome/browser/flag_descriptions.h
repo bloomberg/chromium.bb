@@ -167,6 +167,12 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kCaptionSettingsName[];
 extern const char kCaptionSettingsDescription[];
 
+extern const char kClickToCallReceiverName[];
+extern const char kClickToCallReceiverDescription[];
+
+extern const char kClickToCallUIName[];
+extern const char kClickToCallUIDescription[];
+
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
 

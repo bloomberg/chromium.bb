@@ -1494,6 +1494,8 @@ jumbo_split_static_library("browser") {
     "sessions/tab_restore_service_factory.h",
     "sharing/ack_message_handler.cc",
     "sharing/ack_message_handler.h",
+    "sharing/click_to_call/feature.cc",
+    "sharing/click_to_call/feature.h",
     "sharing/features.cc",
     "sharing/features.h",
     "sharing/sharing_device_info.cc",

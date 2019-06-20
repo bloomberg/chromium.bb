@@ -33321,6 +33321,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2113783491" label="ArcFilePickerExperiment:enabled"/>
   <int value="-2113705745"
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
+  <int value="-2112547309" label="ClickToCallReceiver:enabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
   <int value="-2106960993" label="HarfBuzzPDFSubsetter:disabled"/>
   <int value="-2105133782" label="GesturePropertiesDBusService:enabled"/>
@@ -34395,6 +34396,7 @@ from previous Chrome versions.
   <int value="-632030508" label="NativeWindowNavButtons:disabled"/>
   <int value="-631740127" label="inert-visual-viewport"/>
   <int value="-624221121" label="CommandLineOnNonRooted:enabled"/>
+  <int value="-623364791" label="ClickToCallReceiver:disabled"/>
   <int value="-622685174" label="enable-pdf-material-ui"/>
   <int value="-621382525" label="VizDisplayCompositor:enabled"/>
   <int value="-621044227" label="OmniboxReverseTabSwitchLogic:enabled"/>
@@ -34629,6 +34631,7 @@ from previous Chrome versions.
       label="disable-proximity-auth-bluetooth-low-energy-discovery"/>
   <int value="-275164173" label="QuickUnlockPinSignin:enabled"/>
   <int value="-271790049" label="ArcUsbHost:enabled"/>
+  <int value="-271084069" label="ClickToCallUI:enabled"/>
   <int value="-270626757" label="log-net-log"/>
   <int value="-268549184"
       label="AutofillSaveCreditCardUsesStrikeSystemV2:enabled"/>
@@ -35247,6 +35250,7 @@ from previous Chrome versions.
       label="AutofillToolkitViewsCreditCardDialogsMac:enabled"/>
   <int value="667643314" label="LitePageServerPreviews:enabled"/>
   <int value="673588373" label="OmniboxPedalSuggestions:disabled"/>
+  <int value="677866592" label="ClickToCallUI:disabled"/>
   <int value="679931272" label="DcheckIsFatal:enabled"/>
   <int value="680070635"
       label="enable-fullscreen-handwriting-virtual-keyboard:disabled"/>

@@ -410,6 +410,16 @@
     "owners": [ "dullweber" ],
     "expiry_milestone": 78
   },
+	{
+    "name": "click-to-call-receiver",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 79
+  },
+  {
+    "name": "click-to-call-ui",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 79
+  },
   {
     "name": "click-to-open-pdf",
     "owners": [ "tommycli" ],
@@ -1557,7 +1567,7 @@
   {
     "name": "enable-sharing-device-registration",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 79
   },
   {
     "name": "enable-show-autofill-signatures",
