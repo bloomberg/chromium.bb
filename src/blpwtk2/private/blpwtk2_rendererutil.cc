@@ -203,8 +203,7 @@ void RendererUtil::drawContentsToBlob(content::RenderView        *rv,
 
 
 
-String RendererUtil::printToPDF(
-    content::RenderView* renderView, const std::string& propertyName)
+String RendererUtil::printToPDF(content::RenderView* renderView)
 {
     blpwtk2::String returnVal;
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
@@ -213,12 +212,7 @@ String RendererUtil::printToPDF(
     for (auto* frame = renderView->GetWebView()->MainFrame(); frame;
          frame = frame->TraverseNext()) {
       if (auto* local_frame = frame->ToWebLocalFrame()) {
-        v8::Local<v8::Context> jsContext =
-            local_frame->MainWorldScriptContext();
-        v8::Local<v8::Object> winObject = jsContext->Global();
-
-        if (winObject->Has(
-                v8::String::NewFromUtf8(isolate, propertyName.c_str()))) {
+        if (local_frame->IsPrintAllowed()) {
           std::vector<char> buffer = printing::PrintRenderFrameHelper::Get(
                                          renderView->GetMainRenderFrame())
                                          ->PrintToPDF(local_frame);

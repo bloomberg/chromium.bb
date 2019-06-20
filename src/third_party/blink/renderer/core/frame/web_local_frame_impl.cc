@@ -2663,4 +2663,9 @@ void WebLocalFrameImpl::DrawInCanvas(const WebRect& rect,
   }
 }
 
+bool WebLocalFrameImpl::IsPrintAllowed() const {
+  DCHECK(GetFrame());
+  return GetFrame()->IsPrintAllowed();
+}
+
 }  // namespace blink
