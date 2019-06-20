@@ -51,6 +51,7 @@
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/content_browser_sanity_checker.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_switches.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
@@ -228,8 +229,22 @@ void BrowserTestBase::SetUp() {
   // GPU blacklisting decisions were made.
   command_line->AppendSwitch(switches::kLogGpuControlListDecisions);
 
-  if (use_software_compositing_)
+  // Make sure software compositing tests don't attempt to force hardware
+  // compositing.
+  if (use_software_compositing_) {
     command_line->AppendSwitch(switches::kDisableGpu);
+    command_line->RemoveSwitch(switches::kDisableSoftwareCompositingFallback);
+#if defined(USE_X11)
+    // If Vulkan is enabled, make sure it uses SwiftShader instead of native,
+    // though only on platforms where it is supported.
+    // TODO(samans): Support Swiftshader on more platforms.
+    // https://crbug.com/963988
+    if (command_line->HasSwitch(switches::kUseVulkan)) {
+      command_line->AppendSwitchASCII(
+          switches::kUseVulkan, switches::kVulkanImplementationNameSwiftshader);
+    }
+#endif
+  }
 
   // The layout of windows on screen is unpredictable during tests, so disable
   // occlusion when running browser tests.
