@@ -430,11 +430,43 @@ void LogRendererKillCrashKeys(const GURL& site_url) {
 }
 
 base::Optional<url::Origin> GetOriginForURLLoaderFactory(
-    GURL target_url,
-    SiteInstanceImpl* site_instance) {
+    NavigationRequest* navigation_request) {
+  // Return a safe unique origin when there is no |navigation_request| (e.g.
+  // when RFHI::CommitNavigation is called via RFHI::NavigateToInterstitialURL).
+  if (!navigation_request)
+    return url::Origin();
+
+  // GetOriginForURLLoaderFactory should only be called at the ready-to-commit
+  // time, when the RFHI and process to commit the navigation are already known.
+  DCHECK_LE(NavigationRequest::RESPONSE_STARTED, navigation_request->state());
+  RenderFrameHostImpl* target_frame = navigation_request->render_frame_host();
+
+  // Check if this is loadDataWithBaseUrl (which needs special treatment).
+  const CommonNavigationParams& common_params =
+      navigation_request->common_params();
+  if (common_params.url.SchemeIs(url::kDataScheme) &&
+      !common_params.base_url_for_data_url.is_empty()) {
+    // A (potentially attacker-controlled) renderer process should not be able
+    // to use loadDataWithBaseUrl code path to initiate fetches on behalf of a
+    // victim origin (fetches controlled by attacker-provided
+    // |common_params.url| data: URL in a victim's origin from the
+    // attacker-provided |common_params.base_url_for_data_url|).  Browser
+    // process should verify that |common_params.base_url_for_data_url| is empty
+    // for all renderer-initiated navigations (e.g. see
+    // VerifyBeginNavigationCommonParams), but as a defense-in-depth this is
+    // also asserted below.
+    CHECK(navigation_request->browser_initiated());
+
+    // loadDataWithBaseUrl submits a data: |common_params.url| (which has a
+    // unique origin), but commits that URL as if it came from
+    // |common_params.base_url_for_data_url|.  See also
+    // https://crbug.com/976253.
+    return url::Origin::Create(common_params.base_url_for_data_url);
+  }
+
   // TODO(lukasza, nasko): https://crbug.com/888079: Use exact origin, instead
   // of falling back to site URL for about:blank and about:srcdoc.
-  if (target_url.SchemeIs(url::kAboutScheme)) {
+  if (common_params.url.SchemeIs(url::kAboutScheme)) {
     // |site_instance|'s site URL cannot be used as
     // |request_initiator_site_lock| unless the site requires a dedicated
     // process.  Otherwise b.com may share a process associated with a.com, in
@@ -442,19 +474,19 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactory(
     // "http://nonisolated.invalid" in the future) and in that scenario
     // |request_initiator| for requests from b.com should NOT be locked to
     // a.com.
+    SiteInstanceImpl* site_instance = target_frame->GetSiteInstance();
     if (!SiteInstanceImpl::ShouldLockToOrigin(
             site_instance->GetIsolationContext(), site_instance->GetSiteURL()))
       return base::nullopt;
-
     return SiteInstanceImpl::GetRequestInitiatorSiteLock(
         site_instance->GetSiteURL());
   }
 
   // In cases not covered above, URLLoaderFactory should be associated with the
-  // origin of |target_url|.  This works fine for all URLs, including data: URLs
-  // (which should use an opaque origin for their subresource requests) and
-  // blob: URLs (which embed their origin inside the |target_url|).
-  return url::Origin::Create(target_url);
+  // origin of |common_params.url|.  This works fine for all URLs, including
+  // data: URLs (which should use an opaque origin for their subresource
+  // requests) and blob: URLs (which embed their origin inside the URL).
+  return url::Origin::Create(common_params.url);
 }
 
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CloneFactoryBundle(
@@ -4842,8 +4874,7 @@ void RenderFrameHostImpl::CommitNavigation(
       recreate_default_url_loader_factory_after_network_service_crash_ = true;
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
-              GetOriginForURLLoaderFactory(common_params.url,
-                                           GetSiteInstance()),
+              GetOriginForURLLoaderFactory(navigation_request),
               mojo::MakeRequest(&default_factory_info));
       subresource_loader_factories->set_bypass_redirect_checks(
           bypass_redirect_checks);
@@ -4907,7 +4938,7 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           false /* is_navigation */, false /* is_download */,
-          GetOriginForURLLoaderFactory(common_params.url, GetSiteInstance())
+          GetOriginForURLLoaderFactory(navigation_request)
               .value_or(url::Origin()),
           &factory_request, nullptr /* header_client */,
           nullptr /* bypass_redirect_checks */);
