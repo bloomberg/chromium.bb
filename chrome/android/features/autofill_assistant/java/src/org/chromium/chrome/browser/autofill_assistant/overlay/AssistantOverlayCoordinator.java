@@ -19,6 +19,7 @@ import java.util.List;
  */
 public class AssistantOverlayCoordinator {
     private final ChromeActivity mActivity;
+    private final AssistantOverlayModel mModel;
     private final AssistantOverlayEventFilter mEventFilter;
     private final AssistantOverlayDrawable mDrawable;
     private final ScrimView mScrim;
@@ -26,6 +27,7 @@ public class AssistantOverlayCoordinator {
 
     public AssistantOverlayCoordinator(ChromeActivity activity, AssistantOverlayModel model) {
         mActivity = activity;
+        mModel = model;
         mScrim = mActivity.getScrim();
         mEventFilter = new AssistantOverlayEventFilter(
                 mActivity, mActivity.getFullscreenManager(), mActivity.getCompositorViewHolder());
@@ -55,6 +57,11 @@ public class AssistantOverlayCoordinator {
                         model.get(AssistantOverlayModel.HIGHLIGHT_BORDER_COLOR));
             }
         });
+    }
+
+    /** Return the model observed by this coordinator. */
+    public AssistantOverlayModel getModel() {
+        return mModel;
     }
 
     /**

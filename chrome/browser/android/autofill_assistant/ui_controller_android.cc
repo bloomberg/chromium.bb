@@ -66,19 +66,22 @@ static constexpr base::TimeDelta kGracefulShutdownDelay =
 
 // static
 std::unique_ptr<UiControllerAndroid> UiControllerAndroid::CreateFromWebContents(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    const base::android::JavaParamRef<jobject>& joverlay_coordinator) {
   JNIEnv* env = AttachCurrentThread();
   auto jactivity = Java_AutofillAssistantUiController_findAppropriateActivity(
       env, web_contents->GetJavaWebContents());
   if (!jactivity) {
     return nullptr;
   }
-  return std::make_unique<UiControllerAndroid>(env, jactivity);
+  return std::make_unique<UiControllerAndroid>(env, jactivity,
+                                               joverlay_coordinator);
 }
 
 UiControllerAndroid::UiControllerAndroid(
     JNIEnv* env,
-    const base::android::JavaRef<jobject>& jactivity)
+    const base::android::JavaRef<jobject>& jactivity,
+    const base::android::JavaParamRef<jobject>& joverlay_coordinator)
     : overlay_delegate_(this),
       header_delegate_(this),
       payment_request_delegate_(this),
@@ -88,7 +91,7 @@ UiControllerAndroid::UiControllerAndroid(
       env, jactivity,
       /* allowTabSwitching= */
       base::FeatureList::IsEnabled(features::kAutofillAssistantChromeEntry),
-      reinterpret_cast<intptr_t>(this));
+      reinterpret_cast<intptr_t>(this), joverlay_coordinator);
 
   // Register overlay_delegate_ as delegate for the overlay.
   Java_AssistantOverlayModel_setDelegate(env, GetOverlayModel(),
@@ -565,14 +568,6 @@ void UiControllerAndroid::OnUserInteractionInsideTouchableArea() {
 }
 
 // Other methods.
-
-void UiControllerAndroid::ShowOnboarding(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& jexperiment_ids,
-    const base::android::JavaParamRef<jobject>& on_accept) {
-  Java_AutofillAssistantUiController_onShowOnboarding(
-      env, java_object_, jexperiment_ids, on_accept);
-}
 
 void UiControllerAndroid::WillShutdown(Metrics::DropOutReason reason) {
   if (reason == Metrics::CUSTOM_TAB_CLOSED) {

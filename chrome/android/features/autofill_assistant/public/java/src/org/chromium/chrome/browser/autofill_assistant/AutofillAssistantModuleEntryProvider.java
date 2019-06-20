@@ -59,7 +59,7 @@ public class AutofillAssistantModuleEntryProvider {
 
     private static AutofillAssistantModuleEntry createEntry(Tab tab) {
         AutofillAssistantModuleEntryFactory factory = AutofillAssistantModule.getImpl();
-        return factory.createEntry(tab.getWebContents());
+        return factory.createEntry(tab.getActivity(), tab.getWebContents());
     }
 
     private static void loadDynamicModuleWithUi(

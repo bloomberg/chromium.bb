@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
-import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -90,8 +89,8 @@ public class AutofillAssistantFacade {
         }
 
         // Early exit if autofill assistant should not be triggered.
-        if (!canStart(activity.getInitialIntent())
-                && !AutofillAssistantPreferencesUtil.getShowOnboarding()) {
+        boolean canStartWithoutOnboarding = canStart(activity.getInitialIntent());
+        if (!canStartWithoutOnboarding && !AutofillAssistantPreferencesUtil.getShowOnboarding()) {
             return;
         }
 
@@ -102,19 +101,13 @@ public class AutofillAssistantFacade {
                 AutofillAssistantMetrics.recordDropOut(DropOutReason.DFM_CANCELLED);
                 return;
             }
-            // Starting autofill assistant without onboarding.
-            if (canStart(activity.getInitialIntent())) {
-                AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN);
-                startNow(activity, moduleEntry);
-                return;
-            }
-            // Starting autofill assistant with onboarding.
-            if (AutofillAssistantPreferencesUtil.getShowOnboarding()) {
-                moduleEntry.showOnboarding(
-                        getExperimentIds(activity.getInitialIntent().getExtras()),
-                        () -> startNow(activity, moduleEntry));
-                return;
-            }
+
+            Bundle bundleExtras = activity.getInitialIntent().getExtras();
+            Map<String, String> parameters = extractParameters(bundleExtras);
+            parameters.remove(PARAMETER_ENABLED);
+            String initialUrl = activity.getInitialIntent().getDataString();
+            moduleEntry.start(canStartWithoutOnboarding, initialUrl, parameters, experimentIds,
+                    activity.getInitialIntent().getExtras());
         });
     }
 
@@ -142,16 +135,6 @@ public class AutofillAssistantFacade {
             experiments.append(experimentsFromIntent);
         }
         return experiments.toString();
-    }
-
-    private static void startNow(ChromeActivity activity, AutofillAssistantModuleEntry entry) {
-        Bundle bundleExtras = activity.getInitialIntent().getExtras();
-        Map<String, String> parameters = extractParameters(bundleExtras);
-        parameters.remove(PARAMETER_ENABLED);
-        String initialUrl = activity.getInitialIntent().getDataString();
-
-        entry.start(initialUrl, parameters, getExperimentIds(bundleExtras),
-                activity.getInitialIntent().getExtras());
     }
 
     /** Return the value if the given boolean parameter from the extras. */
