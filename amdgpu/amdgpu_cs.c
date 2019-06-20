@@ -147,12 +147,12 @@ drm_public int amdgpu_cs_ctx_override_priority(amdgpu_device_handle dev,
                                                int master_fd,
                                                unsigned priority)
 {
+	union drm_amdgpu_sched args;
 	int r;
 
 	if (!dev || !context || master_fd < 0)
 		return -EINVAL;
 
-	union drm_amdgpu_sched args;
 	memset(&args, 0, sizeof(args));
 
 	args.in.op = AMDGPU_SCHED_OP_CONTEXT_PRIORITY_OVERRIDE;
