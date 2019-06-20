@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/network_service_test_helper.h"
 #include "extensions/browser/api/sockets_tcp/sockets_tcp_api.h"
@@ -95,10 +95,8 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtensionTLS) {
   // Because the network service runs in a utility process, the cert of the
   // SpawnedTestServer won't be recognized, so inject mock cert verifier through
   // the test helper interface.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(content::mojom::kNetworkServiceName,
-                      &network_service_test);
+  content::GetSystemConnector()->BindInterface(
+      content::mojom::kNetworkServiceName, &network_service_test);
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
   network_service_test->MockCertVerifierSetDefaultResult(net::OK);
 
