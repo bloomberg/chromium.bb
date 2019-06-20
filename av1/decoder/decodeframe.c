@@ -2600,7 +2600,7 @@ static void get_tile_buffer(const uint8_t *const data_end,
   if (!is_last) {
     if (!read_is_valid(*data, tile_size_bytes, data_end))
       aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
-                         "Truncated packet or corrupt tile length");
+                         "Not enough data to read tile size");
 
     size = mem_get_varsize(*data, tile_size_bytes) + AV1_MIN_TILE_SIZE_BYTES;
     *data += tile_size_bytes;
