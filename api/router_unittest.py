@@ -9,11 +9,11 @@ from __future__ import print_function
 
 import os
 
+from chromite.api import router
 from chromite.api.gen.chromite.api import build_api_test_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
-from chromite.scripts import build_api
 
 
 class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
@@ -21,7 +21,7 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
   _INPUT_JSON_TEMPLATE = '{"id":"Input ID", "chroot":{"path": "%s"}}'
 
   def setUp(self):
-    self.router = build_api.Router()
+    self.router = router.Router()
     self.router.Register(build_api_test_pb2)
 
     self.input_file = os.path.join(self.tempdir, 'input.json')
