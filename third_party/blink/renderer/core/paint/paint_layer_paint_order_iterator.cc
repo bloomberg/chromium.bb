@@ -28,28 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 
-// FIXME: We should build our primitive on top of
-// PaintLayerStackingNode and remove this include.
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
 
 namespace blink {
 
-PaintLayerStackingNodeIterator::PaintLayerStackingNodeIterator(
-    const PaintLayerStackingNode& root,
-    unsigned which_children)
-    : root_(root), remaining_children_(which_children), index_(0) {
-  current_normal_flow_child_ = root.Layer()->FirstChild();
-}
-
-PaintLayer* PaintLayerStackingNodeIterator::Next() {
+PaintLayer* PaintLayerPaintOrderIterator::Next() {
   if (remaining_children_ & kNegativeZOrderChildren) {
-    PaintLayerStackingNode::PaintLayers* neg_z_order_list =
-        root_.NegZOrderList();
-    if (neg_z_order_list && index_ < neg_z_order_list->size())
-      return neg_z_order_list->at(index_++);
+    if (root_.StackingNode()) {
+      const auto& neg_z_order_list = root_.StackingNode()->NegZOrderList();
+      if (index_ < neg_z_order_list.size())
+        return neg_z_order_list[index_++];
+    }
 
     index_ = 0;
     remaining_children_ &= ~kNegativeZOrderChildren;
@@ -59,25 +51,25 @@ PaintLayer* PaintLayerStackingNodeIterator::Next() {
     for (; current_normal_flow_child_;
          current_normal_flow_child_ =
              current_normal_flow_child_->NextSibling()) {
-      if (!current_normal_flow_child_->GetLayoutObject()
-               .StyleRef()
-               .IsStacked()) {
-        PaintLayer* normal_flow_child = current_normal_flow_child_;
-        current_normal_flow_child_ = current_normal_flow_child_->NextSibling();
-        return normal_flow_child;
-      }
+      if (current_normal_flow_child_->GetLayoutObject().StyleRef().IsStacked())
+        continue;
+
+      PaintLayer* normal_flow_child = current_normal_flow_child_;
+      current_normal_flow_child_ = current_normal_flow_child_->NextSibling();
+      return normal_flow_child;
     }
 
     // We reset the iterator in case we reuse it.
-    current_normal_flow_child_ = root_.Layer()->FirstChild();
+    current_normal_flow_child_ = root_.FirstChild();
     remaining_children_ &= ~kNormalFlowChildren;
   }
 
   if (remaining_children_ & kPositiveZOrderChildren) {
-    PaintLayerStackingNode::PaintLayers* pos_z_order_list =
-        root_.PosZOrderList();
-    if (pos_z_order_list && index_ < pos_z_order_list->size())
-      return pos_z_order_list->at(index_++);
+    if (root_.StackingNode()) {
+      const auto& pos_z_order_list = root_.StackingNode()->PosZOrderList();
+      if (index_ < pos_z_order_list.size())
+        return pos_z_order_list[index_++];
+    }
 
     index_ = 0;
     remaining_children_ &= ~kPositiveZOrderChildren;
@@ -86,12 +78,13 @@ PaintLayer* PaintLayerStackingNodeIterator::Next() {
   return nullptr;
 }
 
-PaintLayer* PaintLayerStackingNodeReverseIterator::Next() {
+PaintLayer* PaintLayerPaintOrderReverseIterator::Next() {
   if (remaining_children_ & kNegativeZOrderChildren) {
-    PaintLayerStackingNode::PaintLayers* neg_z_order_list =
-        root_.NegZOrderList();
-    if (neg_z_order_list && index_ >= 0)
-      return neg_z_order_list->at(index_--);
+    if (root_.StackingNode()) {
+      const auto& neg_z_order_list = root_.StackingNode()->NegZOrderList();
+      if (index_ >= 0)
+        return neg_z_order_list[index_--];
+    }
 
     remaining_children_ &= ~kNegativeZOrderChildren;
     SetIndexToLastItem();
@@ -101,14 +94,13 @@ PaintLayer* PaintLayerStackingNodeReverseIterator::Next() {
     for (; current_normal_flow_child_;
          current_normal_flow_child_ =
              current_normal_flow_child_->PreviousSibling()) {
-      if (!current_normal_flow_child_->GetLayoutObject()
-               .StyleRef()
-               .IsStacked()) {
-        PaintLayer* normal_flow_child = current_normal_flow_child_;
-        current_normal_flow_child_ =
-            current_normal_flow_child_->PreviousSibling();
-        return normal_flow_child;
-      }
+      if (current_normal_flow_child_->GetLayoutObject().StyleRef().IsStacked())
+        continue;
+
+      PaintLayer* normal_flow_child = current_normal_flow_child_;
+      current_normal_flow_child_ =
+          current_normal_flow_child_->PreviousSibling();
+      return normal_flow_child;
     }
 
     remaining_children_ &= ~kNormalFlowChildren;
@@ -116,10 +108,11 @@ PaintLayer* PaintLayerStackingNodeReverseIterator::Next() {
   }
 
   if (remaining_children_ & kPositiveZOrderChildren) {
-    PaintLayerStackingNode::PaintLayers* pos_z_order_list =
-        root_.PosZOrderList();
-    if (pos_z_order_list && index_ >= 0)
-      return pos_z_order_list->at(index_--);
+    if (root_.StackingNode()) {
+      const auto& pos_z_order_list = root_.StackingNode()->PosZOrderList();
+      if (index_ >= 0)
+        return pos_z_order_list[index_--];
+    }
 
     remaining_children_ &= ~kPositiveZOrderChildren;
     SetIndexToLastItem();
@@ -128,29 +121,31 @@ PaintLayer* PaintLayerStackingNodeReverseIterator::Next() {
   return nullptr;
 }
 
-void PaintLayerStackingNodeReverseIterator::SetIndexToLastItem() {
+void PaintLayerPaintOrderReverseIterator::SetIndexToLastItem() {
   if (remaining_children_ & kNegativeZOrderChildren) {
-    PaintLayerStackingNode::PaintLayers* neg_z_order_list =
-        root_.NegZOrderList();
-    if (neg_z_order_list) {
-      index_ = neg_z_order_list->size() - 1;
-      return;
+    if (root_.StackingNode()) {
+      const auto& neg_z_order_list = root_.StackingNode()->NegZOrderList();
+      if (!neg_z_order_list.IsEmpty()) {
+        index_ = neg_z_order_list.size() - 1;
+        return;
+      }
     }
 
     remaining_children_ &= ~kNegativeZOrderChildren;
   }
 
   if (remaining_children_ & kNormalFlowChildren) {
-    current_normal_flow_child_ = root_.Layer()->LastChild();
+    current_normal_flow_child_ = root_.LastChild();
     return;
   }
 
   if (remaining_children_ & kPositiveZOrderChildren) {
-    PaintLayerStackingNode::PaintLayers* pos_z_order_list =
-        root_.PosZOrderList();
-    if (pos_z_order_list) {
-      index_ = pos_z_order_list->size() - 1;
-      return;
+    if (root_.StackingNode()) {
+      const auto& pos_z_order_list = root_.StackingNode()->PosZOrderList();
+      if (!pos_z_order_list.IsEmpty()) {
+        index_ = pos_z_order_list.size() - 1;
+        return;
+      }
     }
 
     remaining_children_ &= ~kPositiveZOrderChildren;

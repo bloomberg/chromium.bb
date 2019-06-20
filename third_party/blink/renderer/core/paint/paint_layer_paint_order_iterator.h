@@ -28,57 +28,61 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_STACKING_NODE_ITERATOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_STACKING_NODE_ITERATOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINT_ORDER_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINT_ORDER_ITERATOR_H_
 
-#include "base/macros.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
-enum ChildrenIteration {
-  kNegativeZOrderChildren = 1,
-  // Normal flow children are not mandated by CSS 2.1 but are an artifact of
-  // our implementation: we allocate PaintLayers for elements that
-  // are not treated as stacking contexts and thus we need to walk them
-  // during painting and hit-testing.
-  kNormalFlowChildren = 1 << 1,
-  kPositiveZOrderChildren = 1 << 2,
-  kAllChildren =
-      kNegativeZOrderChildren | kNormalFlowChildren | kPositiveZOrderChildren
-};
-
-class PaintLayerStackingNode;
-class PaintLayer;
-
-// This iterator walks the PaintLayerStackingNode lists in the following order:
+// This iterator walks the PaintLayer descendants in the following paint order:
 // NegativeZOrderChildren -> NormalFlowChildren -> PositiveZOrderChildren.
-class PaintLayerStackingNodeIterator {
+class CORE_EXPORT PaintLayerPaintOrderIterator {
   STACK_ALLOCATED();
 
  public:
-  PaintLayerStackingNodeIterator(const PaintLayerStackingNode& root,
-                                 unsigned which_children);
+  PaintLayerPaintOrderIterator(const PaintLayer& root,
+                               PaintLayerIteration which_children)
+      : root_(root),
+        remaining_children_(which_children),
+        index_(0),
+        current_normal_flow_child_(root.FirstChild())
+#if DCHECK_IS_ON()
+        ,
+        mutation_detector_(root)
+#endif
+  {
+  }
 
   PaintLayer* Next();
 
  private:
-  const PaintLayerStackingNode& root_;
+  const PaintLayer& root_;
   unsigned remaining_children_;
   unsigned index_;
   PaintLayer* current_normal_flow_child_;
-  DISALLOW_COPY_AND_ASSIGN(PaintLayerStackingNodeIterator);
+#if DCHECK_IS_ON()
+  PaintLayerListMutationDetector mutation_detector_;
+#endif
+  DISALLOW_COPY_AND_ASSIGN(PaintLayerPaintOrderIterator);
 };
 
-// This iterator is similar to PaintLayerStackingNodeIterator but it walks the
+// This iterator is similar to PaintLayerPaintOrderIterator but it walks the
 // lists in reverse order (from the last item to the first one).
-class PaintLayerStackingNodeReverseIterator {
+class CORE_EXPORT PaintLayerPaintOrderReverseIterator {
   STACK_ALLOCATED();
 
  public:
-  PaintLayerStackingNodeReverseIterator(const PaintLayerStackingNode& root,
-                                        unsigned which_children)
-      : root_(root), remaining_children_(which_children) {
+  PaintLayerPaintOrderReverseIterator(const PaintLayer& root,
+                                      unsigned which_children)
+      : root_(root),
+        remaining_children_(which_children)
+#if DCHECK_IS_ON()
+        ,
+        mutation_detector_(root)
+#endif
+  {
     SetIndexToLastItem();
   }
 
@@ -87,13 +91,16 @@ class PaintLayerStackingNodeReverseIterator {
  private:
   void SetIndexToLastItem();
 
-  const PaintLayerStackingNode& root_;
+  const PaintLayer& root_;
   unsigned remaining_children_;
   int index_;
   PaintLayer* current_normal_flow_child_;
-  DISALLOW_COPY_AND_ASSIGN(PaintLayerStackingNodeReverseIterator);
+#if DCHECK_IS_ON()
+  PaintLayerListMutationDetector mutation_detector_;
+#endif
+  DISALLOW_COPY_AND_ASSIGN(PaintLayerPaintOrderReverseIterator);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_STACKING_NODE_ITERATOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINT_ORDER_ITERATOR_H_
