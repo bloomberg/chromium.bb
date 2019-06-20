@@ -97,9 +97,9 @@ constexpr char kOmniboxZeroSuggestEligibleHistogramName[] =
     "Omnibox.ZeroSuggest.Eligible.OnFocusV2";
 
 // If the user is not signed-in or the user does not have Google set up as their
-// default search engine, the personalized service is replaced with the most
-// visited service.
-bool PersonalizedServiceShouldFallBackToMostVisited(
+// default search engine, the remote suggestions service is replaced with the
+// most visited service.
+bool RemoteSuggestionsShouldFallBackToMostVisited(
     AutocompleteProviderClient* client,
     const TemplateURLService* template_url_service) {
   if (!client->SearchSuggestEnabled())
@@ -359,7 +359,7 @@ bool ZeroSuggestProvider::UpdateResults(const std::string& json_data) {
   if (!data)
     return false;
 
-  // When running the personalized service, we want to store suggestion
+  // When running the REMOTE_NO_URL variant, we want to store suggestion
   // responses if non-empty.
   if (result_type_running_ == REMOTE_NO_URL && !json_data.empty()) {
     client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
@@ -632,8 +632,11 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     return REMOTE_NO_URL;
 
   if (field_trial_variant == kRemoteNoUrlVariant) {
-    return PersonalizedServiceShouldFallBackToMostVisited(client(),
-                                                          template_url_service)
+    // TODO(tommycli): It's odd that this doesn't apply to kRemoteSendUrlVariant
+    // as well. Most likely this fallback concept should be replaced by
+    // a more general configuration setup.
+    return RemoteSuggestionsShouldFallBackToMostVisited(client(),
+                                                        template_url_service)
                ? MOST_VISITED
                : REMOTE_NO_URL;
   }
