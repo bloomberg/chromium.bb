@@ -43,8 +43,8 @@
 
 #define PTR_TO_UINT(x) ((unsigned)((intptr_t)(x)))
 
-static pthread_mutex_t fd_mutex = PTHREAD_MUTEX_INITIALIZER;
-static amdgpu_device_handle fd_list;
+static pthread_mutex_t dev_mutex = PTHREAD_MUTEX_INITIALIZER;
+static amdgpu_device_handle dev_list;
 
 static int fd_compare(int fd1, int fd2)
 {
@@ -95,13 +95,13 @@ static int amdgpu_get_auth(int fd, int *auth)
 
 static void amdgpu_device_free_internal(amdgpu_device_handle dev)
 {
-	amdgpu_device_handle *node = &fd_list;
+	amdgpu_device_handle *node = &dev_list;
 
-	pthread_mutex_lock(&fd_mutex);
+	pthread_mutex_lock(&dev_mutex);
 	while (*node != dev && (*node)->next)
 		node = &(*node)->next;
 	*node = (*node)->next;
-	pthread_mutex_unlock(&fd_mutex);
+	pthread_mutex_unlock(&dev_mutex);
 
 	close(dev->fd);
 	if ((dev->flink_fd >= 0) && (dev->fd != dev->flink_fd))
@@ -155,16 +155,16 @@ drm_public int amdgpu_device_initialize(int fd,
 
 	*device_handle = NULL;
 
-	pthread_mutex_lock(&fd_mutex);
+	pthread_mutex_lock(&dev_mutex);
 	r = amdgpu_get_auth(fd, &flag_auth);
 	if (r) {
 		fprintf(stderr, "%s: amdgpu_get_auth (1) failed (%i)\n",
 			__func__, r);
-		pthread_mutex_unlock(&fd_mutex);
+		pthread_mutex_unlock(&dev_mutex);
 		return r;
 	}
 
-	for (dev = fd_list; dev; dev = dev->next)
+	for (dev = dev_list; dev; dev = dev->next)
 		if (fd_compare(dev->fd, fd) == 0)
 			break;
 
@@ -173,7 +173,7 @@ drm_public int amdgpu_device_initialize(int fd,
 		if (r) {
 			fprintf(stderr, "%s: amdgpu_get_auth (2) failed (%i)\n",
 				__func__, r);
-			pthread_mutex_unlock(&fd_mutex);
+			pthread_mutex_unlock(&dev_mutex);
 			return r;
 		}
 		if ((flag_auth) && (!flag_authexist)) {
@@ -182,14 +182,14 @@ drm_public int amdgpu_device_initialize(int fd,
 		*major_version = dev->major_version;
 		*minor_version = dev->minor_version;
 		amdgpu_device_reference(device_handle, dev);
-		pthread_mutex_unlock(&fd_mutex);
+		pthread_mutex_unlock(&dev_mutex);
 		return 0;
 	}
 
 	dev = calloc(1, sizeof(struct amdgpu_device));
 	if (!dev) {
 		fprintf(stderr, "%s: calloc failed\n", __func__);
-		pthread_mutex_unlock(&fd_mutex);
+		pthread_mutex_unlock(&dev_mutex);
 		return -ENOMEM;
 	}
 
@@ -265,9 +265,9 @@ drm_public int amdgpu_device_initialize(int fd,
 	*major_version = dev->major_version;
 	*minor_version = dev->minor_version;
 	*device_handle = dev;
-	dev->next = fd_list;
-	fd_list = dev;
-	pthread_mutex_unlock(&fd_mutex);
+	dev->next = dev_list;
+	dev_list = dev;
+	pthread_mutex_unlock(&dev_mutex);
 
 	return 0;
 
@@ -275,7 +275,7 @@ cleanup:
 	if (dev->fd >= 0)
 		close(dev->fd);
 	free(dev);
-	pthread_mutex_unlock(&fd_mutex);
+	pthread_mutex_unlock(&dev_mutex);
 	return r;
 }
 
