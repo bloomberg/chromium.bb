@@ -171,6 +171,18 @@ def _PylintFile(path, output_format, debug):
   return _LinterRunCommand(cmd, debug, extra_env=extra_env)
 
 
+def _GolintFile(path, _, debug):
+  """Returns result of running golint on |path|."""
+  # Try using golint if it exists.
+  try:
+    cmd = ['golint', '-set_exit_status', path]
+    return _LinterRunCommand(cmd, debug)
+  except cros_build_lib.RunCommandError:
+    logging.notice('Install golint for additional go linting.')
+    return cros_build_lib.CommandResult('gofmt "%s"' % path,
+                                        returncode=0)
+
+
 def _JsonLintFile(path, _output_format, _debug):
   """Returns result of running json lint checks on |path|."""
   result = cros_build_lib.CommandResult('python -mjson.tool "%s"' % path,
@@ -313,6 +325,7 @@ _EXT_TO_LINTER_MAP = {
     frozenset({'.cc', '.cpp', '.h'}): _CpplintFile,
     frozenset({'.json'}): _JsonLintFile,
     frozenset({'.py'}): _PylintFile,
+    frozenset({'.go'}): _GolintFile,
     frozenset({'.sh'}): _ShellLintFile,
     frozenset({'.ebuild', '.eclass', '.bashrc'}): _GentooShellLintFile,
     frozenset({'.md'}): _MarkdownLintFile,
