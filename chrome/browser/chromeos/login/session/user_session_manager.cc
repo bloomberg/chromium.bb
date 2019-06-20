@@ -172,10 +172,6 @@
 #include "components/rlz/rlz_tracker.h"
 #endif
 
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chrome/browser/ui/ash/assistant/assistant_client.h"
-#endif
-
 namespace chromeos {
 
 namespace {
@@ -1538,9 +1534,12 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       content::NotificationService::AllSources(),
       content::Details<Profile>(profile));
 
-  // Initialize various services only for primary user.
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
+  session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
+      user->GetAccountId());
+
+  // Initialize various services only for primary user.
   if (user_manager->GetPrimaryUser() == user) {
     InitRlz(profile);
     InitializeCerts(profile);
@@ -1696,14 +1695,6 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   ProfileHelper::Get()->ProfileStartup(profile);
 
   if (start_session_type_ == PRIMARY_USER_SESSION) {
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-    // Initialize Assistant early to be used in post login Oobe steps.
-    // Note: AssistantClient::MaybeInit is also called in
-    // SessionControllerClient::OnSessionStateChanged, which happends after the
-    // post login Oobe steps. Therefore Assistant is initialized here.
-    if (chromeos::switches::IsAssistantEnabled())
-      AssistantClient::Get()->MaybeInit(profile);
-#endif
     UserFlow* user_flow = ChromeUserManager::Get()->GetCurrentUserFlow();
     WizardController* oobe_controller = WizardController::default_controller();
     base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
