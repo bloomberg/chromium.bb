@@ -131,6 +131,7 @@ struct rdp_backend {
 	char *rdp_key;
 	int tls_enabled;
 	int no_clients_resize;
+	int force_no_compression;
 };
 
 enum peer_item_flags {
@@ -971,6 +972,11 @@ xf_peer_activate(freerdp_peer* client)
 		return FALSE;
 	}
 
+	if (b->force_no_compression && settings->CompressionEnabled) {
+		weston_log("Forcing compression off\n");
+		settings->CompressionEnabled = FALSE;
+	}
+
 	if (output->base.width != (int)settings->DesktopWidth ||
 			output->base.height != (int)settings->DesktopHeight)
 	{
@@ -1364,6 +1370,7 @@ rdp_backend_create(struct weston_compositor *compositor,
 	b->base.create_output = rdp_output_create;
 	b->rdp_key = config->rdp_key ? strdup(config->rdp_key) : NULL;
 	b->no_clients_resize = config->no_clients_resize;
+	b->force_no_compression = config->force_no_compression;
 
 	compositor->backend = &b->base;
 
@@ -1447,6 +1454,7 @@ config_init_to_defaults(struct weston_rdp_backend_config *config)
 	config->server_key = NULL;
 	config->env_socket = 0;
 	config->no_clients_resize = 0;
+	config->force_no_compression = 0;
 }
 
 WL_EXPORT int

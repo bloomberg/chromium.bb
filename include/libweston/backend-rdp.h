@@ -65,6 +65,7 @@ struct weston_rdp_backend_config {
 	char *server_key;
 	int env_socket;
 	int no_clients_resize;
+	int force_no_compression;
 };
 
 #ifdef  __cplusplus
