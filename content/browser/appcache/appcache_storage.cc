@@ -35,7 +35,7 @@ AppCacheStorage::DelegateReference::DelegateReference(
     Delegate* delegate, AppCacheStorage* storage)
     : delegate(delegate), storage(storage) {
   storage->delegate_references_.insert(
-      DelegateReferenceMap::value_type(delegate, this));
+      std::map<Delegate*, DelegateReference*>::value_type(delegate, this));
 }
 
 AppCacheStorage::DelegateReference::~DelegateReference() {
@@ -76,7 +76,10 @@ void AppCacheStorage::ResponseInfoLoadTask::OnReadComplete(int result) {
         storage_->GetWeakPtr(), manifest_url_, response_id_,
         std::move(info_buffer_->http_info), info_buffer_->response_data_size);
   }
-  FOR_EACH_DELEGATE(delegates_, OnResponseInfoLoaded(info.get(), response_id_));
+  AppCacheStorage::ForEachDelegate(
+      delegates_, [&](AppCacheStorage::Delegate* delegate) {
+        delegate->OnResponseInfoLoaded(info.get(), response_id_);
+      });
 
   // returning deletes this
 }
