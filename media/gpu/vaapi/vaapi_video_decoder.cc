@@ -130,7 +130,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  if (!decoder_thread_.Start()) {
+  if (!decoder_thread_.IsRunning() && !decoder_thread_.Start()) {
     std::move(init_cb).Run(false);
     return;
   }
@@ -149,8 +149,31 @@ void VaapiVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
                                        InitCB init_cb,
                                        OutputCB output_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK_EQ(state_, State::kUninitialized);
+  DCHECK(state_ == State::kUninitialized || state_ == State::kWaitingForInput);
   DVLOGF(3);
+
+  // Reinitializing the decoder is allowed if there are no pending decodes.
+  if (current_decode_task_ || !decode_task_queue_.empty()) {
+    VLOGF(1) << "Don't call Initialize() while there are pending decode tasks";
+    client_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
+    return;
+  }
+
+  // We expect the decoder to have released all output buffers (by the client
+  // triggering a flush or reset), even if the media::VideoDecoder API doesn't
+  // explicitly specify this.
+  DCHECK(output_frames_.empty());
+
+  if (state_ != State::kUninitialized) {
+    DVLOGF(3) << "Reinitializing decoder";
+    if (decoder_) {
+      decoder_->Reset();
+      decoder_ = nullptr;
+    }
+    vaapi_wrapper_ = nullptr;
+    SetState(State::kUninitialized);
+  }
 
   // Initialize VAAPI wrapper.
   VideoCodecProfile profile = config.profile();
@@ -595,9 +618,8 @@ void VaapiVideoDecoder::SetState(State state) {
 
   // Check whether the state change is valid.
   switch (state) {
-    case State::kDecoding:
-      DCHECK(state_ == State::kWaitingForInput ||
-             state_ == State::kWaitingForOutput);
+    case State::kUninitialized:
+      DCHECK_EQ(state_, State::kWaitingForInput);
       break;
     case State::kWaitingForInput:
       DCHECK(decode_task_queue_.empty());
@@ -608,6 +630,10 @@ void VaapiVideoDecoder::SetState(State state) {
     case State::kWaitingForOutput:
       DCHECK(current_decode_task_);
       DCHECK_EQ(state_, State::kDecoding);
+      break;
+    case State::kDecoding:
+      DCHECK(state_ == State::kWaitingForInput ||
+             state_ == State::kWaitingForOutput);
       break;
     case State::kResetting:
       DCHECK(state_ == State::kWaitingForInput ||
