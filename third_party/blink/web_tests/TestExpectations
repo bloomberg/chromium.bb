@@ -6162,3 +6162,4 @@ crbug.com/977153 [ Mac ] fast/forms/validation-bubble-appearance-wrap.html [ Pas
 crbug.com/976045 [ Win ] fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976045 [ Win ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976045 [ Win ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+crbug.com/976157 inspector-protocol/runtime/runtime-console-basic-functions.js [ Pass Failure ]
