@@ -6162,3 +6162,4 @@ crbug.com/976045 [ Win ] fast/scrolling/unscrollable-layer-subpixel-size-with-ne
 crbug.com/976045 [ Win ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976045 [ Win ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976157 inspector-protocol/runtime/runtime-console-basic-functions.js [ Pass Failure ]
+crbug.com/977379 [ Mac10.10 ] fast/events/before-unload-return-value-from-listener.html [ Pass Timeout Failure ]
