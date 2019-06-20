@@ -60850,6 +60850,11 @@ Full version information for the fingerprint enum values:
   <int value="1" label="onReceivedClientCertRequest"/>
   <int value="2" label="onReceivedHttpAuthRequest"/>
   <int value="3" label="onDownloadStart"/>
+  <int value="4" label="onPageStarted"/>
+  <int value="5" label="onPageFinished"/>
+  <int value="6" label="onLoadResource"/>
+  <int value="7" label="onPageCommitVisible"/>
+  <int value="8" label="shouldOverrideUrlLoading"/>
 </enum>
 
 <enum name="WebViewClientErrorCode">
