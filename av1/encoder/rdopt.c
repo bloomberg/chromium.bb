@@ -7733,14 +7733,14 @@ static int interinter_compound_motion_search(const AV1_COMP *const cpi,
                                     mi_row, mi_col, tmp_mv, &tmp_rate_mv, 2);
     mbmi->mv[0].as_int = tmp_mv[0].as_int;
     mbmi->mv[1].as_int = tmp_mv[1].as_int;
-  } else if (this_mode == NEW_NEARESTMV || this_mode == NEW_NEARMV) {
+  } else if (this_mode >= NEAREST_NEWMV && this_mode <= NEW_NEARMV) {
+    // which = 1 if this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV
+    // which = 0 if this_mode == NEW_NEARESTMV || this_mode == NEW_NEARMV
+    int which = (NEWMV == compound_ref1_mode(this_mode));
     do_masked_motion_search_indexed(cpi, x, cur_mv, compound_data, bsize,
-                                    mi_row, mi_col, tmp_mv, &tmp_rate_mv, 0);
-    mbmi->mv[0].as_int = tmp_mv[0].as_int;
-  } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
-    do_masked_motion_search_indexed(cpi, x, cur_mv, compound_data, bsize,
-                                    mi_row, mi_col, tmp_mv, &tmp_rate_mv, 1);
-    mbmi->mv[1].as_int = tmp_mv[1].as_int;
+                                    mi_row, mi_col, tmp_mv, &tmp_rate_mv,
+                                    which);
+    mbmi->mv[which].as_int = tmp_mv[which].as_int;
   }
   return tmp_rate_mv;
 }
