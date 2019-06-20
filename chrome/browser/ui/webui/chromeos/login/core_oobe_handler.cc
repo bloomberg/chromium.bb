@@ -51,7 +51,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "google_apis/google_api_keys.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -103,7 +103,7 @@ CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
   tablet_mode_client->AddObserver(this);
 
   // |connector| may be null in tests.
-  auto* connector = ash_util::GetServiceManagerConnector();
+  auto* connector = content::GetSystemConnector();
   if (connector) {
     connector->BindInterface(ash::mojom::kServiceName,
                              &cros_display_config_ptr_);
