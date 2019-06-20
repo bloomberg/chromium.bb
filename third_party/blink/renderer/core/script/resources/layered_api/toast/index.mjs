@@ -57,7 +57,7 @@ export class StdToastElement extends HTMLElement {
 
     this.#shadow.innerHTML = `<slot></slot>`;
     if (!this.textContent) {
-      this.textContent = `${message}`;
+      this.textContent = message;
     }
   }
 
