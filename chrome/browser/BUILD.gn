@@ -4821,7 +4821,6 @@ jumbo_split_static_library("browser") {
     sources += [
       "spellchecker/spell_check_host_chrome_impl.cc",
       "spellchecker/spell_check_host_chrome_impl.h",
-      "spellchecker/spell_check_host_chrome_impl_mac.cc",
       "spellchecker/spellcheck_custom_dictionary.cc",
       "spellchecker/spellcheck_custom_dictionary.h",
       "spellchecker/spellcheck_factory.cc",
@@ -4835,6 +4834,13 @@ jumbo_split_static_library("browser") {
       "spellchecker/spellcheck_service.cc",
       "spellchecker/spellcheck_service.h",
     ]
+
+    if (use_browser_spellchecker) {
+      sources += [
+        "spellchecker/spelling_request.cc",
+        "spellchecker/spelling_request.h",
+      ]
+    }
 
     if (has_spellcheck_panel) {
       sources += [
