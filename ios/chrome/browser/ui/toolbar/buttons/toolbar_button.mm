@@ -20,26 +20,6 @@ const CGFloat kSpotlightCornerRadius = 7;
 }  // namespace
 
 @implementation ToolbarButton
-@synthesize visibilityMask = _visibilityMask;
-@synthesize guideName = _guideName;
-@synthesize hiddenInCurrentSizeClass = _hiddenInCurrentSizeClass;
-@synthesize hiddenInCurrentState = _hiddenInCurrentState;
-@synthesize spotlighted = _spotlighted;
-@synthesize dimmed = _dimmed;
-@synthesize configuration = _configuration;
-@synthesize spotlightView = _spotlightView;
-
-+ (instancetype)toolbarButtonWithImageForNormalState:(UIImage*)normalImage
-                            imageForHighlightedState:(UIImage*)highlightedImage
-                               imageForDisabledState:(UIImage*)disabledImage {
-  ToolbarButton* button = [[self class] buttonWithType:UIButtonTypeCustom];
-  [button setImage:normalImage forState:UIControlStateNormal];
-  [button setImage:highlightedImage forState:UIControlStateHighlighted];
-  [button setImage:disabledImage forState:UIControlStateDisabled];
-  [button setImage:highlightedImage forState:UIControlStateSelected];
-  button.translatesAutoresizingMaskIntoConstraints = NO;
-  return button;
-}
 
 + (instancetype)toolbarButtonWithImage:(UIImage*)image {
   ToolbarButton* button = [[self class] buttonWithType:UIButtonTypeSystem];
