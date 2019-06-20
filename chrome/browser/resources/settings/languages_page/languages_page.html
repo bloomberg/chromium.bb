@@ -171,7 +171,7 @@
         display: none;
       }
 
-      .restart-button {
+      #restartButton {
         margin-inline-start: var(--settings-controlled-by-spacing);
       }
 
@@ -230,8 +230,9 @@
                 </div>
 <if expr="chromeos or is_win">
                 <template is="dom-if" if="[[isRestartRequired_(
-                        item.language.code, languages.prospectiveUILanguage)]]">
-                  <cr-button class="restart-button"
+                    item.language.code, languages.prospectiveUILanguage)]]"
+                    restamp>
+                  <cr-button id="restartButton"
                       hidden="[[!pageVisibility.uiDisplayedInThisLanguage]]"
                       on-click="onRestartTap_">
                     $i18n{restart}
@@ -402,7 +403,7 @@
 </if> <!-- _google_chrome or not is_macosx -->
         <cr-lazy-render id="menu">
           <template>
-            <cr-action-menu
+            <cr-action-menu on-close="onCloseMenu_"
                 class$="[[getMenuClass_(prefs.translate.enabled.value)]]">
 <if expr="chromeos or is_win">
               <cr-checkbox id="uiLanguageItem"

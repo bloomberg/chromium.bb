@@ -140,7 +140,7 @@
         display: none;
       }
 
-      .restart-button {
+      #restartButton {
         margin-inline-start: var(--settings-controlled-by-spacing);
       }
     </style>
@@ -177,8 +177,9 @@
                   </div>
                 </div>
                 <template is="dom-if" if="[[isRestartRequired_(
-                        item.language.code, languages.prospectiveUILanguage)]]">
-                  <cr-button class="restart-button" on-click="onRestartTap_">
+                    item.language.code, languages.prospectiveUILanguage)]]"
+                    restamp>
+                  <cr-button id="restartButton" on-click="onRestartTap_">
                     $i18n{restart}
                   </cr-button>
                 </template>
@@ -240,8 +241,7 @@
         </iron-collapse>
         <cr-lazy-render id="menu">
           <template>
-            <cr-action-menu
-                class="complex">
+            <cr-action-menu class="complex" on-close="onCloseMenu_">
               <cr-checkbox id="uiLanguageItem"
                   class="dropdown-item"
                   checked="[[isProspectiveUILanguage_(
