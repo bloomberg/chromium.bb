@@ -1197,6 +1197,26 @@ should be able to be added at any place in this file.
   <description>A user has used autoclick to perform an action.</description>
 </action>
 
+<action name="Accessibility.Autoclick.ChangeScrollPoint">
+  <owner>katie@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A user has changed the position at which a scroll will occur by performing a
+    dwell at the new scroll point.
+  </description>
+</action>
+
+<action name="Accessibility.Autoclick.ScrollMenu.CloseButton">
+  <owner>katie@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A user has closed the autoclick Scroll menu using the close button within
+    the menu bubble.
+  </description>
+</action>
+
 <action name="Accessibility.Autoclick.TrayMenu.Open">
   <obsolete>
     Removed 3/2019. The autoclick menu is always onscreen when autoclick is
@@ -22260,9 +22280,13 @@ should be able to be added at any place in this file.
 
 <action-suffix separator="." ordering="suffix">
   <suffix name="DoubleClick" label="Double click action."/>
-  <suffix name="DragAndDrop" label="DragAndDrop action."/>
+  <suffix name="DragAndDrop" label="Click and drag action."/>
   <suffix name="LeftClick" label="Left click action."/>
   <suffix name="RightClick" label="Right click action."/>
+  <suffix name="ScrollDown" label="Scroll down action."/>
+  <suffix name="ScrollLeft" label="Scroll left action."/>
+  <suffix name="ScrollRight" label="Scroll right action."/>
+  <suffix name="ScrollUp" label="Scroll up action."/>
   <affected-action name="Accessibility.Autoclick"/>
 </action-suffix>
 

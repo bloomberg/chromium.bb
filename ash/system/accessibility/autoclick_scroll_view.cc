@@ -12,6 +12,7 @@
 #include "ash/system/unified/custom_shape_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -58,6 +59,8 @@ class AutoclickScrollCloseButton : public TopShortcutButton,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     Shell::Get()->autoclick_controller()->DoScrollAction(
         AutoclickController::ScrollPadAction::kScrollClose);
+    base::RecordAction(base::UserMetricsAction(
+        "Accessibility.Autoclick.ScrollMenu.CloseButton"));
   }
 
   // views::View:
@@ -152,7 +155,26 @@ class AutoclickScrollButton : public CustomShapeButton,
 
   void ProcessAction(AutoclickController::ScrollPadAction action) {
     Shell::Get()->autoclick_controller()->DoScrollAction(action);
-    // TODO(katie): Log UMA for scroll user action.
+    switch (action) {
+      case AutoclickController::ScrollPadAction::kScrollUp:
+        base::RecordAction(
+            base::UserMetricsAction("Accessibility.Autoclick.ScrollUp"));
+        return;
+      case AutoclickController::ScrollPadAction::kScrollDown:
+        base::RecordAction(
+            base::UserMetricsAction("Accessibility.Autoclick.ScrollDown"));
+        return;
+      case AutoclickController::ScrollPadAction::kScrollLeft:
+        base::RecordAction(
+            base::UserMetricsAction("Accessibility.Autoclick.ScrollLeft"));
+        return;
+      case AutoclickController::ScrollPadAction::kScrollRight:
+        base::RecordAction(
+            base::UserMetricsAction("Accessibility.Autoclick.ScrollRight"));
+        return;
+      default:
+        return;
+    }
   }
 
   void DoScrollAction() {

@@ -337,6 +337,8 @@ void AutoclickController::DoAutoclickAction() {
       // TODO(katie): Move the scroll bubble closer to the new scroll location.
       scroll_location_ = gesture_anchor_location_;
       UpdateScrollPosition(scroll_location_);
+      base::RecordAction(
+          base::UserMetricsAction("Accessibility.Autoclick.ChangeScrollPoint"));
     }
     return;
   }
@@ -564,7 +566,7 @@ void AutoclickController::RecordUserAction(
           base::UserMetricsAction("Accessibility.Autoclick.DragAndDrop"));
       return;
     case mojom::AutoclickEventType::kScroll:
-      // Scroll users actions will be recorded from AutoclickScrollView.
+      // Scroll users actions are recorded from AutoclickScrollView.
     case mojom::AutoclickEventType::kNoAction:
       // No action shouldn't have a UserAction, so we return.
       return;
