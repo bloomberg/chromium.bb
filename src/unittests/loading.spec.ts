@@ -2,7 +2,7 @@ export const description = `
 Tests for queries/filtering, loading, and running.
 `;
 
-import { DefaultFixture, objectEquals, paramsEquals, TestGroup, RunCase } from '../framework/index.js';
+import { DefaultFixture, objectEquals, paramsEquals, RunCase, TestGroup } from '../framework/index.js';
 import { IGroupDesc, IListing, ITestNode, TestLoader } from '../framework/loader.js';
 import { Logger } from '../framework/logger.js';
 
