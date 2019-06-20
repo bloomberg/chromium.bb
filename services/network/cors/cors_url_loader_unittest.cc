@@ -1227,6 +1227,36 @@ TEST_F(CorsURLLoaderTest, CorsExemptHeaderRemovalOnCrossOriginRedirects) {
       GetRequest().cors_exempt_headers.HasHeader(kTestCorsExemptHeader));
 }
 
+TEST_F(CorsURLLoaderTest, CorsExemptHeaderModificationOnRedirects) {
+  ResourceRequest request;
+  request.url = GURL("https://example.com/foo.png");
+  request.cors_exempt_headers.SetHeader(kTestCorsExemptHeader, "test-value");
+  CreateLoaderAndStart(request);
+  EXPECT_EQ(1, num_created_loaders());
+
+  NotifyLoaderClientOnReceiveRedirect(
+      CreateRedirectInfo(301, "GET", GURL("https://example.com/bar.png")));
+  RunUntilRedirectReceived();
+
+  ASSERT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_TRUE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_FALSE(client().has_received_completion());
+  EXPECT_TRUE(
+      GetRequest().cors_exempt_headers.HasHeader(kTestCorsExemptHeader));
+
+  net::HttpRequestHeaders modified_headers;
+  modified_headers.SetHeader(kTestCorsExemptHeader, "test-modified");
+  FollowRedirect({}, modified_headers);
+  RunUntilComplete();
+
+  ASSERT_EQ(1, num_created_loaders());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  ASSERT_TRUE(
+      GetRequest().cors_exempt_headers.HasHeader(kTestCorsExemptHeader));
+}
+
 // Tests if OriginAccessList is actually used to decide the cors flag.
 // Details for the OriginAccessList behaviors are verified in
 // OriginAccessListTest, but this test intends to verify if CorsURlLoader calls
