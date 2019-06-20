@@ -664,6 +664,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool ShouldIgnoreUnresponsiveRenderer() override;
   bool HideDownloadUI() const override;
   bool HasPersistentVideo() const override;
+  bool IsSpatialNavigationDisabled() const override;
   RenderFrameHost* GetPendingMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) override;
   void DidCommitAndDrawCompositorFrame(RenderViewHostImpl* source) override;
@@ -988,6 +989,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Updates the tracking information for |this| to know if there is
   // a video currently in Picture-in-Picture mode.
   void SetHasPictureInPictureVideo(bool has_picture_in_picture_video);
+
+  // Sets the spatial navigation state.
+  void SetSpatialNavigationDisabled(bool disabled);
 
 #if defined(OS_ANDROID)
   // Called by FindRequestManager when all of the find match rects are in.
@@ -1826,6 +1830,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   base::flat_map<MediaPlayerId, gfx::Size> cached_video_sizes_;
 
   bool has_persistent_video_ = false;
+
+  bool is_spatial_navigation_disabled_ = false;
 
   bool is_currently_audible_ = false;
   bool was_ever_audible_ = false;
