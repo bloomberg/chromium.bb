@@ -1,0 +1,7 @@
+{
+  "sysroot": {
+    "path": "/build/betty"
+  },
+  "test_results_dir": "/tmp/test_results",
+  "output_dir": "/tmp"
+}

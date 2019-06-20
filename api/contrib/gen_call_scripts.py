@@ -21,6 +21,7 @@ import os
 import re
 import shutil
 
+from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.scripts import build_api
@@ -84,7 +85,7 @@ def write_script(filename, service, method):
   os.chmod(script_path, 0o755)
 
 
-def write_scripts():
+def write_scripts(force=False):
   for service_data in get_services():
     for method_data in service_data['methods']:
       filename = '__'.join([service_data['name'], method_data['name']])
@@ -95,14 +96,43 @@ def write_scripts():
       example_input = os.path.join(EXAMPLES_PATH,
                                    '%s_example_input.json' % filename)
       input_file = os.path.join(OUTPUT_PATH, '%s_input.json' % filename)
-      if os.path.exists(input_file) and osutils.ReadFile(input_file) != '{}':
+
+      if not force and not _input_file_empty(input_file):
         logging.info('%s exists, skipping.', input_file)
       elif os.path.exists(example_input):
         logging.info('Example %s exists, copying.', example_input)
         shutil.copy(example_input, input_file)
-      else:
+      elif not os.path.exists(input_file):
         logging.info('No input could be found, writing empty input.')
         osutils.WriteFile(input_file, '{}')
 
-def main(_argv):
-  write_scripts()
+
+def _input_file_empty(input_file):
+  if not os.path.exists(input_file):
+    return True
+  contents = osutils.ReadFile(input_file).strip()
+  return not contents or contents == '{}'
+
+
+def GetParser():
+  """Build the argument parser."""
+  parser = commandline.ArgumentParser(description=__doc__)
+
+  parser.add_argument('--force', action='store_true', default=False,
+                      help='Force replace all input files, even if not empty.')
+
+  return parser
+
+
+def _ParseArgs(argv):
+  """Parse and validate arguments."""
+  parser = GetParser()
+  opts = parser.parse_args(argv)
+
+  opts.Freeze()
+  return opts
+
+
+def main(argv):
+  opts = _ParseArgs(argv)
+  write_scripts(force=opts.force)
