@@ -2100,6 +2100,9 @@
   {
     'name': 'chromium.gpu',
     'forbid_script_tests': True,
+    'mixins': [
+      'swarming_containment_auto',
+    ],
     'machines': {
       'Android Release (Nexus 5X)': {
         'browser_config': 'android-chromium',
@@ -2231,6 +2234,9 @@
   {
     'name': 'chromium.gpu.fyi',
     'forbid_script_tests': True,
+    'mixins': [
+      'swarming_containment_auto',
+    ],
     'machines': {
       # BEGIN Fake builder used as mirror targets for ANGLE's GPU tryservers
       'ANGLE GPU Linux Release (Intel HD 630)': {
