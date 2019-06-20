@@ -39,14 +39,14 @@ OAuthMultiloginResult::OAuthMultiloginResult(
     const OAuthMultiloginResult& other) {
   status_ = other.status();
   cookies_ = other.cookies();
-  failed_accounts_ = other.failed_accounts();
+  failed_gaia_ids_ = other.failed_gaia_ids();
 }
 
 OAuthMultiloginResult& OAuthMultiloginResult::operator=(
     const OAuthMultiloginResult& other) {
   status_ = other.status();
   cookies_ = other.cookies();
-  failed_accounts_ = other.failed_accounts();
+  failed_gaia_ids_ = other.failed_gaia_ids();
   return *this;
 }
 
@@ -74,9 +74,9 @@ void OAuthMultiloginResult::TryParseFailedAccountsFromValue(
     const std::string* gaia_id = account.FindStringKey("obfuscated_id");
     const std::string* status = account.FindStringKey("status");
     if (status && gaia_id && *status != "OK")
-      failed_accounts_.push_back(*gaia_id);
+      failed_gaia_ids_.push_back(*gaia_id);
   }
-  if (failed_accounts_.empty())
+  if (failed_gaia_ids_.empty())
     status_ = OAuthMultiloginResponseStatus::kUnknownStatus;
 }
 

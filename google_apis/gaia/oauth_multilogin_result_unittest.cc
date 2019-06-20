@@ -303,7 +303,7 @@ TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
       )";
   OAuthMultiloginResult result4(data_error_invalid_credentials);
   EXPECT_EQ(result4.status(), OAuthMultiloginResponseStatus::kInvalidTokens);
-  EXPECT_THAT(result4.failed_accounts(), ElementsAre(Eq("account1")));
+  EXPECT_THAT(result4.failed_gaia_ids(), ElementsAre(Eq("account1")));
 
   // Unknown status.
   OAuthMultiloginResult unknown_status(R"()]}'
