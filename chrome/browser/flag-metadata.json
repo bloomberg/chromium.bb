@@ -2702,14 +2702,14 @@
     "expiry_milestone": 82
   },
   {
+    "name": "shelf-hotseat",
+    "owners": [ "manucornet", "newcomer" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "shelf-hover-previews",
     "owners": [ "manucornet" ],
     "expiry_milestone": 77
-  },
-  {
-    "name": "shelf-new-ui",
-    "owners": [ "manucornet", "newcomer" ],
-    "expiry_milestone": 82
   },
   {
     "name": "shelf-scrollable",

@@ -983,11 +983,11 @@ extern const char kSharingDeviceRegistrationDescription[];
 extern const char kShelfDenseClamshellName[];
 extern const char kShelfDenseClamshellDescription[];
 
+extern const char kShelfHotseatName[];
+extern const char kShelfHotseatDescription[];
+
 extern const char kShelfHoverPreviewsName[];
 extern const char kShelfHoverPreviewsDescription[];
-
-extern const char kShelfNewUiName[];
-extern const char kShelfNewUiDescription[];
 
 extern const char kShelfScrollableName[];
 extern const char kShelfScrollableDescription[];

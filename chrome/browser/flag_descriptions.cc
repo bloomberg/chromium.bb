@@ -1661,16 +1661,17 @@ const char kShelfDenseClamshellName[] =
 const char kShelfDenseClamshellDescription[] =
     "Reduces the size of the shelf and its apps when in laptop mode.";
 
+const char kShelfHotseatName[] = "Enable a modular design for the shelf.";
+const char kShelfHotseatDescription[] =
+    "Shows a modular design for the shelf where the apps are shown separately "
+    "in a 'hotseat' interface when in tablet mode, and where various pieces "
+    "are separate and behave independently.";
+
 const char kShelfHoverPreviewsName[] =
     "Show previews of running apps when hovering over the shelf.";
 const char kShelfHoverPreviewsDescription[] =
     "Shows previews of the open windows for a given running app when hovering "
     "over the shelf.";
-
-const char kShelfNewUiName[] = "Enable a new modular design for the shelf.";
-const char kShelfNewUiDescription[] =
-    "Shows a new modular design for the shelf where the various pieces are "
-    "separate and behave independently, especially in tablet mode.";
 
 const char kShelfScrollableName[] =
     "Enable a scrollable list of apps on the shelf";
