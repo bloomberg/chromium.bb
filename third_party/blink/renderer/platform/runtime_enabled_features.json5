@@ -1113,6 +1113,7 @@
     },
     {
       name: "PauseExecutionContextOnBackgroundFreeze",
+      status: "experimental",
     },
     {
       name: "PaymentApp",
