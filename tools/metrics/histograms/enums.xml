@@ -51362,6 +51362,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="InOrder"/>
   <int value="5" label="Async"/>
   <int value="6" label="Immediate"/>
+  <int value="7" label="ForceDefer"/>
 </enum>
 
 <enum name="ScrollAnchorRestorationStatus">
