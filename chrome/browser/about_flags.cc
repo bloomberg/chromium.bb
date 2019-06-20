@@ -995,6 +995,16 @@ const FeatureEntry::FeatureVariation kTabSwitcherOnReturnVariations[] = {
 };
 #endif  // OS_ANDROID
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabVariation[] = {
+    {"tab_grid_layout_android_new_tab", "NewTabVariation"}};
+
+const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
+    {"New Tab Variation", kTabGridLayoutAndroid_NewTabVariation,
+     base::size(kTabGridLayoutAndroid_NewTabVariation), nullptr},
+};
+#endif  // OS_ANDROID
+
 const FeatureEntry::FeatureParam kVizHitTestDrawQuadEnabled[] = {
     {"provider", "draw_quad"}};
 
@@ -2966,7 +2976,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-tab-grid-layout", flag_descriptions::kTabGridLayoutAndroidName,
      flag_descriptions::kTabGridLayoutAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTabGridLayoutAndroid)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kTabGridLayoutAndroid,
+                                    kTabGridLayoutAndroidVariations,
+                                    "TabGridLayoutAndroid")},
 
     {"enable-tab-groups", flag_descriptions::kTabGroupsAndroidName,
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
