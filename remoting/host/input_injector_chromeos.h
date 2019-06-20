@@ -5,8 +5,6 @@
 #ifndef REMOTING_HOST_INPUT_INJECTOR_CHROMEOS_H_
 #define REMOTING_HOST_INPUT_INJECTOR_CHROMEOS_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/input_injector.h"
@@ -18,7 +16,8 @@ namespace remoting {
 class InputInjectorChromeos : public InputInjector {
  public:
   explicit InputInjectorChromeos(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      ui::SystemInputInjectorFactory* chromeos_system_input_injector_factory);
 
   ~InputInjectorChromeos() override;
 

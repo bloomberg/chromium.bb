@@ -53,7 +53,8 @@ std::unique_ptr<AudioCapturer> BasicDesktopEnvironment::CreateAudioCapturer() {
 std::unique_ptr<InputInjector> BasicDesktopEnvironment::CreateInputInjector() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return InputInjector::Create(input_task_runner(), ui_task_runner());
+  return InputInjector::Create(input_task_runner(), ui_task_runner(),
+                               system_input_injector_factory());
 }
 
 std::unique_ptr<ScreenControls>
@@ -100,12 +101,14 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    ui::SystemInputInjectorFactory* system_input_injector_factory,
     base::WeakPtr<ClientSessionControl> client_session_control,
     const DesktopEnvironmentOptions& options)
     : caller_task_runner_(caller_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
       input_task_runner_(input_task_runner),
       ui_task_runner_(ui_task_runner),
+      system_input_injector_factory_(system_input_injector_factory),
       client_session_control_(client_session_control),
       options_(options) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
@@ -128,11 +131,13 @@ BasicDesktopEnvironmentFactory::BasicDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    ui::SystemInputInjectorFactory* system_input_injector_factory)
     : caller_task_runner_(caller_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
       input_task_runner_(input_task_runner),
-      ui_task_runner_(ui_task_runner) {}
+      ui_task_runner_(ui_task_runner),
+      system_input_injector_factory_(system_input_injector_factory) {}
 
 BasicDesktopEnvironmentFactory::~BasicDesktopEnvironmentFactory() = default;
 

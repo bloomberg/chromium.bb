@@ -22,6 +22,7 @@ class SingleWindowDesktopEnvironmentFactory
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      ui::SystemInputInjectorFactory* system_input_injector_factory,
       webrtc::WindowId window_id);
   ~SingleWindowDesktopEnvironmentFactory() override;
 
