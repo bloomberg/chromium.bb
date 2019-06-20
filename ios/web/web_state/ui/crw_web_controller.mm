@@ -48,7 +48,7 @@
 #include "ios/web/common/features.h"
 #include "ios/web/common/referrer_util.h"
 #include "ios/web/common/url_util.h"
-#import "ios/web/favicon/favicon_util.h"
+#import "ios/web/favicon/favicon_manager.h"
 #import "ios/web/find_in_page/find_in_page_manager_impl.h"
 #include "ios/web/history_state_util.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
@@ -78,7 +78,6 @@
 #import "ios/web/public/deprecated/crw_native_content_provider.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
 #import "ios/web/public/download/download_controller.h"
-#include "ios/web/public/favicon/favicon_url.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
@@ -217,6 +216,9 @@ NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 
   // State of user interaction with web content.
   web::UserInteractionState _userInteractionState;
+
+  // Manager for favicon JavaScript messages.
+  std::unique_ptr<web::FaviconManager> _faviconManager;
 }
 
 // The WKNavigationDelegate handler class.
@@ -403,6 +405,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     web::BrowsingDataRemover::FromBrowserState(browserState)->AddObserver(self);
     web::WebFramesManagerImpl::CreateForWebState(_webStateImpl);
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
+    _faviconManager = std::make_unique<web::FaviconManager>(_webStateImpl);
     _legacyNativeController =
         [[CRWLegacyNativeContentController alloc] initWithWebState:webState];
     _legacyNativeController.delegate = self;
@@ -711,6 +714,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   _SSLStatusUpdater = nil;
   [self.UIHandler close];
   [self.JSNavigationHandler close];
+  _faviconManager.reset();
 
   self.swipeRecognizerProvider = nil;
   [self.legacyNativeController close];
@@ -1806,8 +1810,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   dispatch_once(&onceToken, ^{
     handlers = new std::map<std::string, SEL>();
     (*handlers)["chrome.send"] = @selector(handleChromeSendMessage:context:);
-    (*handlers)["document.favicons"] =
-        @selector(handleDocumentFaviconsMessage:context:);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
   });
   DCHECK(handlers);
@@ -1960,27 +1962,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   DLOG(WARNING)
       << "chrome.send message not handled because WebUI was not found.";
   return NO;
-}
-
-// Handles 'document.favicons' message.
-- (BOOL)handleDocumentFaviconsMessage:(base::DictionaryValue*)message
-                              context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-
-  std::vector<web::FaviconURL> URLs;
-  GURL originGURL;
-  id origin = context[kOriginURLKey];
-  if (origin) {
-    NSURL* originNSURL = base::mac::ObjCCastStrict<NSURL>(origin);
-    originGURL = net::GURLWithNSURL(originNSURL);
-  }
-  if (!web::ExtractFaviconURL(message, originGURL, &URLs))
-    return NO;
-
-  if (!URLs.empty())
-    self.webStateImpl->OnFaviconUrlUpdated(URLs);
-  return YES;
 }
 
 // Handles 'window.error' message.
