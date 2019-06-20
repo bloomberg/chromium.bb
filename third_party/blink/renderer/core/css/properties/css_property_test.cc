@@ -5,11 +5,8 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
-#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
-#include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
-#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_instances.h"
-#include "third_party/blink/renderer/core/css/properties/longhand.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/data_equivalency.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -46,10 +43,15 @@ TEST_F(CSSPropertyTest, InternalEffectiveZoomNotWebExposed) {
   EXPECT_FALSE(property.IsWebExposed());
 }
 
+TEST_F(CSSPropertyTest, InternalEffectiveZoomCanBeParsed) {
+  const CSSValue* value = css_test_helpers::ParseLonghand(
+      GetDocument(), GetCSSPropertyInternalEffectiveZoom(), "1.2");
+  ASSERT_TRUE(value);
+  EXPECT_EQ("1.2", value->CssText());
+}
+
 TEST_F(CSSPropertyTest, VisitedPropertiesCanParseValues) {
   scoped_refptr<ComputedStyle> initial_style = ComputedStyle::Create();
-  const auto* context = MakeGarbageCollected<CSSParserContext>(GetDocument());
-  CSSParserLocalContext local_context;
 
   // Count the number of 'visited' properties seen.
   size_t num_visited = 0;
@@ -65,20 +67,14 @@ TEST_F(CSSPropertyTest, VisitedPropertiesCanParseValues) {
         *initial_style, nullptr /* layout_object */, nullptr /* node */,
         false /* allow_visited_style */);
     ASSERT_TRUE(initial_value);
-
-    // Tokenize that value, and parse it using both the regular property, and
-    // the accompanying 'visited' property.
     String css_text = initial_value->CssText();
-    auto tokens = CSSTokenizer(css_text).TokenizeToEOF();
 
-    CSSParserTokenRange regular_range(tokens);
-    const CSSValue* parsed_regular_value =
-        To<Longhand>(property).ParseSingleValue(regular_range, *context,
-                                                local_context);
-    CSSParserTokenRange visited_range(tokens);
-    const CSSValue* parsed_visited_value =
-        To<Longhand>(*visited).ParseSingleValue(visited_range, *context,
-                                                local_context);
+    // Parse the initial value using both the regular property, and the
+    // accompanying 'visited' property.
+    const CSSValue* parsed_regular_value = css_test_helpers::ParseLonghand(
+        GetDocument(), property, initial_value->CssText());
+    const CSSValue* parsed_visited_value = css_test_helpers::ParseLonghand(
+        GetDocument(), *visited, initial_value->CssText());
 
     // The properties should have identical parsing behavior.
     EXPECT_TRUE(DataEquivalent(parsed_regular_value, parsed_visited_value));

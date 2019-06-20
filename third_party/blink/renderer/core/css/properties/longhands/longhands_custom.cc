@@ -2882,6 +2882,14 @@ void InternalEffectiveZoom::ApplyValue(StyleResolverState& state,
   state.SetEffectiveZoom(StyleBuilderConverter::ConvertZoom(state, value));
 }
 
+const CSSValue* InternalEffectiveZoom::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  ValueRange value_range = kValueRangeNonNegative;
+  return css_property_parser_helpers::ConsumeNumber(range, value_range);
+}
+
 void InternalVisitedColor::ApplyValue(StyleResolverState& state,
                                       const CSSValue& value) const {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);

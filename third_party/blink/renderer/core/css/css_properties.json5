@@ -5363,6 +5363,7 @@
     },
     {
       name: "-internal-effective-zoom",
+      property_methods: ["ParseSingleValue"],
       inherited: true,
       field_template: "primitive",
       type_name: "float",
