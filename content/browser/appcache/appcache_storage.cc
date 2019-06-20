@@ -54,8 +54,7 @@ AppCacheStorage::ResponseInfoLoadTask::ResponseInfoLoadTask(
   storage_->pending_info_loads_[response_id] = base::WrapUnique(this);
 }
 
-AppCacheStorage::ResponseInfoLoadTask::~ResponseInfoLoadTask() {
-}
+AppCacheStorage::ResponseInfoLoadTask::~ResponseInfoLoadTask() = default;
 
 void AppCacheStorage::ResponseInfoLoadTask::StartIfNeeded() {
   if (reader_)

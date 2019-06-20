@@ -44,8 +44,6 @@ struct HttpResponseInfoIOBuffer;
 
 class CONTENT_EXPORT AppCacheStorage {
  public:
-  using UsageMap = std::map<url::Origin, int64_t>;
-
   class CONTENT_EXPORT Delegate {
    public:
     Delegate(const Delegate&) = delete;
@@ -217,7 +215,7 @@ class CONTENT_EXPORT AppCacheStorage {
   AppCacheWorkingSet* working_set() { return &working_set_; }
 
   // A map of origins to usage.
-  const UsageMap* usage_map() { return &usage_map_; }
+  const std::map<url::Origin, int64_t>& usage_map() const { return usage_map_; }
 
   // Simple ptr back to the service object that owns us.
   AppCacheServiceImpl* service() { return service_; }
@@ -329,7 +327,7 @@ class CONTENT_EXPORT AppCacheStorage {
   int64_t last_response_id_;
 
   // Maps origin to usage (includes padding, unless padding feature is disabled)
-  UsageMap usage_map_;
+  std::map<url::Origin, int64_t> usage_map_;
   AppCacheWorkingSet working_set_;
   AppCacheServiceImpl* service_;
   DelegateReferenceMap delegate_references_;
