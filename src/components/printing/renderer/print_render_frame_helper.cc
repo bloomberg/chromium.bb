@@ -1165,8 +1165,8 @@ std::vector<char> PrintRenderFrameHelper::PrintToPDF(
   if (CalculateNumberOfPages(localframe, blink::WebNode(),
                              &expected_pages_count_) &&
       expected_pages_count_ > 0) {
-    PrintMsg_PrintPages_Params& params = *print_pages_params_;
-    PrintMsg_Print_Params& print_params = params.params;
+    const PrintMsg_PrintPages_Params& params = *print_pages_params_;
+    const PrintMsg_Print_Params& print_params = params.params;
     prep_frame_view_.reset(new PrepareFrameAndViewForPrint(
         print_params, localframe, blink::WebNode(), true));
 
@@ -1175,32 +1175,32 @@ std::vector<char> PrintRenderFrameHelper::PrintToPDF(
 
     blink::WebLocalFrame* frame = prep_frame_view_->frame();
 
+    // blpwtk2: This logic is borrowed from the PrintPagesNative function
+    // defined below
     std::vector<int> printed_pages = GetPrintedPages(params, page_count);
-    if (!printed_pages.empty()) {
-      // blpwtk2: This logic is borrowed from the PrintPagesNative function
-      // defined below
-      std::vector<gfx::Size> page_size_in_dpi(printed_pages.size());
-      std::vector<gfx::Rect> content_area_in_dpi(printed_pages.size());
+    if (printed_pages.empty())
+      return buffer;
 
-      MetafileSkia metafile(print_params.printed_doc_type,
-                            print_params.document_cookie);
-      CHECK(metafile.Init());
+    MetafileSkia metafile(print_params.printed_doc_type,
+                          print_params.document_cookie);
+    CHECK(metafile.Init());
 
-      PrintMsg_Print_Params page_params;
-      for (size_t i = 0; i < printed_pages.size(); ++i) {
-        const int page_number = printed_pages[i];
-        double scale_factor = GetScaleFactor(print_params.scale_factor,
-                                             !print_preview_context_.IsModifiable());
+    PrintHostMsg_DidPrintDocument_Params page_params;
 
-        PrintPageInternal(page_params, page_number, page_count, scale_factor, frame,
-                          &metafile, &page_size_in_dpi[i],
-                          &content_area_in_dpi[i]);
-      }
-      FinishFramePrinting();
-      metafile.FinishDocument();
-
-      metafile.GetDataAsVector(&buffer);
+    PrintPageInternal(print_params, printed_pages[0], page_count,
+                      print_params.scale_factor, frame, &metafile,
+                      &page_params.page_size, &page_params.content_area);
+    for (size_t i = 1; i < printed_pages.size(); ++i) {
+      PrintPageInternal(print_params, printed_pages[i], page_count,
+                        GetScaleFactor(print_params.scale_factor, true), frame,
+                        &metafile, nullptr, nullptr);
     }
+
+    // blink::printEnd() for PDF should be called before metafile is closed.
+    FinishFramePrinting();
+
+    metafile.FinishDocument();
+    metafile.GetDataAsVector(&buffer);
   }
 
   return buffer;
