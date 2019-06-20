@@ -191,3 +191,16 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     self._vm.qemu_bios_path = '/invalid/qemu/bios/path/'
     self.assertRaises(vm.VMError, self._vm.Start)
 
+  def testCreateQcow2Image(self):
+    """Tests that a qcow2 image is created with --copy-on-write."""
+    self._vm.copy_on_write = True
+    initial_img_path = self._vm.image_path
+    self._vm.Start()
+
+    self.assertCommandContains([
+        self._vm.qemu_img_path, 'create', '-f', 'qcow2', '-o',
+        'backing_file=%s' % initial_img_path, os.path.join(self._vm.vm_dir,
+                                                           'qcow2.img')])
+    self.assertEquals(self._vm.image_path,
+                      os.path.join(self._vm.vm_dir, 'qcow2.img'))
+    self.assertEquals(self._vm.image_format, 'qcow2')
