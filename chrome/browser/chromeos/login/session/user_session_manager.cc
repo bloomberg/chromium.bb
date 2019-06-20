@@ -1110,17 +1110,33 @@ void UserSessionManager::StartCrosSession() {
   btl->AddLoginTimeMarker("StartSession-End", false);
 }
 
-void UserSessionManager::OnUserNetworkPolicyParsed(bool send_password) {
-  if (send_password) {
-    if (user_context_.GetPasswordKey()->GetSecret().size() > 0) {
-      SessionManagerClient::Get()->SaveLoginPassword(
-          user_context_.GetPasswordKey()->GetSecret());
+void UserSessionManager::VoteForSavingLoginPassword(
+    PasswordConsumingService service,
+    bool save_password) {
+  DCHECK_LT(service, PasswordConsumingService::kCount);
+
+  // Prevent this code from being called twice from two services or else the
+  // second service would trigger the warning below (since the password has been
+  // cleared).
+  if (save_password && !password_was_saved_) {
+    password_was_saved_ = true;
+    const std::string& password = user_context_.GetPasswordKey()->GetSecret();
+    if (!password.empty()) {
+      VLOG(1) << "Saving login password for service "
+              << static_cast<size_t>(service);
+      SessionManagerClient::Get()->SaveLoginPassword(password);
     } else {
       LOG(WARNING) << "Not saving password because password is empty.";
     }
   }
 
-  user_context_.GetMutablePasswordKey()->ClearSecret();
+  // If we've already sent the password or if all services voted 'no', forget
+  // the password again, it's not needed anymore.
+  password_service_voted_.set(static_cast<size_t>(service), true);
+  if (save_password || password_service_voted_.all()) {
+    VLOG(1) << "Clearing login password";
+    user_context_.GetMutablePasswordKey()->ClearSecret();
+  }
 }
 
 void UserSessionManager::InitDemoSessionIfNeeded(base::OnceClosure callback) {

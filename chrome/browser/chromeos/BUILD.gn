@@ -2527,6 +2527,7 @@ source_set("unit_tests") {
     "login/screens/network_screen_unittest.cc",
     "login/screens/recommend_apps/recommend_apps_fetcher_impl_unittest.cc",
     "login/screens/update_screen_unittest.cc",
+    "login/session/user_session_manager_test.cc",
     "login/signin_partition_manager_unittest.cc",
     "login/supervised/supervised_user_authentication_unittest.cc",
     "login/ui/login_screen_extension_ui/login_screen_extension_ui_dialog_delegate_unittest.cc",

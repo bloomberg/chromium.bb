@@ -1058,8 +1058,6 @@ void SigninScreenHandler::AuthenticateExistingUser(const AccountId& account_id,
     user_context = UserContext(*user);
   }
   user_context.SetKey(Key(password));
-  // Save the user's plaintext password for possible authentication to a
-  // network. See https://crbug.com/386606 for details.
   user_context.SetPasswordKey(Key(password));
   user_context.SetIsUsingPin(authenticated_by_pin);
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY) {
