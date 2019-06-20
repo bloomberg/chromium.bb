@@ -718,7 +718,6 @@ class TabListMediator {
                 mModel.get(modelIndex).set(TabProperties.FAVICON, drawable);
             }
         };
-
         mTabListFaviconProvider.getFaviconForUrlAsync(
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
         if (mThumbnailProvider != null
@@ -814,7 +813,7 @@ class TabListMediator {
                                 getCreateGroupButtonListener(tab, isSelected))
                         .with(TabProperties.ALPHA, 1f)
                         .with(TabProperties.CARD_ANIMATION_STATUS,
-                                TabListRecyclerView.ANIMATION_STATUS_RESTORE)
+                                TabListRecyclerView.AnimationStatus.CARD_RESTORE)
                         .with(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER,
                                 mSelectableTabOnClickListener)
                         .with(TabProperties.TAB_SELECTION_DELEGATE, getTabSelectionDelegate())
