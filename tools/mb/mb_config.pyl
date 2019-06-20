@@ -717,6 +717,7 @@
       'gpu-fyi-try-linux-nvidia-dqp': 'deqp_release_trybot',
       'gpu-fyi-try-linux-nvidia-exp': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-linux-nvidia-rel': 'gpu_fyi_tests_release_trybot',
+      'gpu-fyi-try-linux-nvidia-skv': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-linux-nvidia-tsn': 'gpu_fyi_tests_release_trybot_tsan',
       'gpu-try-linux-nvidia-dbg': 'gpu_tests_debug_trybot',
       'layout_test_leak_detection': 'release_trybot',
