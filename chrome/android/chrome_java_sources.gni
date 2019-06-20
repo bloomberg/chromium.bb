@@ -1272,6 +1272,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/download/DownloadDirectoryAdapter.java",
   "java/src/org/chromium/chrome/browser/preferences/download/DownloadLocationPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/download/DownloadLocationPreferenceAdapter.java",
+  "java/src/org/chromium/chrome/browser/preferences/download/DownloadLocationPreferenceDialog.java",
   "java/src/org/chromium/chrome/browser/preferences/download/DownloadPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/languages/AddLanguageFragment.java",
   "java/src/org/chromium/chrome/browser/preferences/languages/LanguageItem.java",
