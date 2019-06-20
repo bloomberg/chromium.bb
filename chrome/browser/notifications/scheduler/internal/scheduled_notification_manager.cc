@@ -95,7 +95,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       delegate_->DisplayNotification(std::move(entry));
   }
 
-  void GetAllNotifications(Notifications* notifications) override {
+  void GetAllNotifications(Notifications* notifications) const override {
     DCHECK(notifications);
     notifications->clear();
 
@@ -110,6 +110,18 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     for (auto it = notifications->begin(); it != notifications->end(); ++it) {
       std::sort(it->second.begin(), it->second.end(), &CreateTimeCompare);
     }
+  }
+
+  void GetNotifications(
+      SchedulerClientType type,
+      std::vector<const NotificationEntry*>* notifications) const override {
+    DCHECK(notifications);
+    notifications->clear();
+    const auto it = notifications_.find(type);
+    if (it == notifications_.end())
+      return;
+    for (const auto& pair : it->second)
+      notifications->emplace_back(pair.second.get());
   }
 
   void DeleteNotifications(SchedulerClientType type) override {

@@ -228,6 +228,22 @@ TEST_F(ScheduledNotificationManagerTest, GetAllNotifications) {
   EXPECT_EQ(output2->create_time, entry2.create_time);
 }
 
+// Verifies GetNotifications() can return the correct values.
+TEST_F(ScheduledNotificationManagerTest, GetNotifications) {
+  auto entry = CreateNotificationEntry(SchedulerClientType::kTest1);
+  InitWithData(std::vector<NotificationEntry>({entry}));
+  std::vector<const NotificationEntry*> entries;
+  manager()->GetNotifications(SchedulerClientType::kTest2, &entries);
+  EXPECT_TRUE(entries.empty());
+
+  manager()->GetNotifications(SchedulerClientType::kTest1, &entries);
+  EXPECT_EQ(entries.size(), 1u);
+  EXPECT_EQ(*entries.back(), entry);
+
+  manager()->GetNotifications(SchedulerClientType::kTest2, &entries);
+  EXPECT_TRUE(entries.empty());
+}
+
 // Verify DeleteNotifications API, all notifications with given
 // SchedulerClientType should be deleted.
 TEST_F(ScheduledNotificationManagerTest, DeleteNotifications) {
