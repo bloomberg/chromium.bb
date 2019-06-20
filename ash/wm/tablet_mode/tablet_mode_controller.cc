@@ -104,8 +104,8 @@ constexpr char kTabletModeEnterHistogram[] =
 constexpr char kTabletModeExitHistogram[] =
     "Ash.TabletMode.AnimationSmoothness.Exit";
 
-// Set to true for unit tests so tablet mode can be changed synchronously.
-bool force_no_screenshot = false;
+// Set to false for tests so tablet mode can be changed synchronously.
+bool use_screenshot_for_test = true;
 
 // The angle between AccelerometerReadings are considered stable if
 // their magnitudes do not differ greatly. This returns false if the deviation
@@ -261,8 +261,8 @@ TabletModeController::~TabletModeController() {
 }
 
 // static
-void TabletModeController::SetForceNoScreenshotForTest() {
-  force_no_screenshot = true;
+void TabletModeController::SetUseScreenshotForTest(bool use_screenshot) {
+  use_screenshot_for_test = use_screenshot;
 }
 
 void TabletModeController::AddWindow(aura::Window* window) {
@@ -606,7 +606,7 @@ void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
     bool top_window_on_primary_display =
         top_window &&
         top_window->GetRootWindow() == Shell::GetPrimaryRootWindow();
-    if (!force_no_screenshot && top_window_on_primary_display) {
+    if (use_screenshot_for_test && top_window_on_primary_display) {
       screenshot_set_callback_.Reset(
           base::BindOnce(&TabletModeController::FinishInitTabletMode,
                          weak_factory_.GetWeakPtr()));
