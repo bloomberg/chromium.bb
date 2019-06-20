@@ -300,6 +300,12 @@ static int32_t read_tile_group_header(AV1Decoder *pbi,
     *start_tile = aom_rb_read_literal(rb, tile_bits);
     *end_tile = aom_rb_read_literal(rb, tile_bits);
   }
+  if (*start_tile != pbi->next_start_tile) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "tg_start (%d) must be equal to %d", *start_tile,
+                       pbi->next_start_tile);
+    return -1;
+  }
   if (*start_tile > *end_tile) {
     aom_internal_error(
         &cm->error, AOM_CODEC_CORRUPT_FRAME,
@@ -313,6 +319,7 @@ static int32_t read_tile_group_header(AV1Decoder *pbi,
                        num_tiles);
     return -1;
   }
+  pbi->next_start_tile = (*end_tile == num_tiles - 1) ? 0 : *end_tile + 1;
 
   return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
 }
@@ -339,7 +346,6 @@ static uint32_t read_one_tile_group_obu(
 
   tg_payload_size = (uint32_t)(*p_data_end - data);
 
-  // TODO(shan):  For now, assume all tile groups received in order
   *is_last_tg = end_tile == cm->tile_rows * cm->tile_cols - 1;
   return header_size + tg_payload_size;
 }
@@ -748,6 +754,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   ObuHeader obu_header;
   memset(&obu_header, 0, sizeof(obu_header));
   pbi->seen_frame_header = 0;
+  pbi->next_start_tile = 0;
 
   if (data_end < data) {
     cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
@@ -813,6 +820,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_TEMPORAL_DELIMITER:
         decoded_payload_size = read_temporal_delimiter_obu();
         pbi->seen_frame_header = 0;
+        pbi->next_start_tile = 0;
         break;
       case OBU_SEQUENCE_HEADER:
         decoded_payload_size = read_sequence_header_obu(pbi, &rb);
