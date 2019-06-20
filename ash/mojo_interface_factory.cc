@@ -21,7 +21,6 @@
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/tray_action/tray_action.h"
@@ -77,11 +76,6 @@ void BindCrosDisplayConfigControllerRequestOnMainThread(
   Shell::Get()->cros_display_config()->BindRequest(std::move(request));
 }
 
-void BindAshMessageCenterControllerRequestOnMainThread(
-    mojom::AshMessageCenterControllerRequest request) {
-  Shell::Get()->message_center_controller()->BindRequest(std::move(request));
-}
-
 void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
   Shell::Get()->ime_controller()->BindRequest(std::move(request));
 }
@@ -134,9 +128,6 @@ void RegisterInterfaces(
   }
   registry->AddInterface(
       base::BindRepeating(&BindCrosDisplayConfigControllerRequestOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindAshMessageCenterControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindImeControllerRequestOnMainThread),
