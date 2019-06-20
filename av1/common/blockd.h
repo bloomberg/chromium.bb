@@ -211,17 +211,14 @@ typedef struct {
 #define TXK_TYPE_BUF_LEN 64
 // This structure now relates to 4x4 block regions.
 typedef struct MB_MODE_INFO {
-  PALETTE_MODE_INFO palette_mode_info;
-  WarpedMotionParams wm_params;
   // interinter members
   INTERINTER_COMPOUND_DATA interinter_comp;
-  FILTER_INTRA_MODE_INFO filter_intra_mode_info;
+  WarpedMotionParams wm_params;
   int_mv mv[2];
+  int current_qindex;
   // Only for INTER blocks
   InterpFilters interp_filters;
   // TODO(debargha): Consolidate these flags
-
-  int current_qindex;
 #if CONFIG_RD_DEBUG
   RD_STATS rd_stats;
   int mi_row;
@@ -230,6 +227,7 @@ typedef struct MB_MODE_INFO {
 #if CONFIG_INSPECTION
   int16_t tx_skip[TXK_TYPE_BUF_LEN];
 #endif
+  PALETTE_MODE_INFO palette_mode_info;
   // Common for both INTER and INTRA blocks
   BLOCK_SIZE sb_type;
   PREDICTION_MODE mode;
@@ -241,6 +239,7 @@ typedef struct MB_MODE_INFO {
   PARTITION_TYPE partition;
   TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
   MV_REFERENCE_FRAME ref_frame[2];
+  FILTER_INTRA_MODE_INFO filter_intra_mode_info;
   int8_t use_wedge_interintra;
   int8_t skip;
   int8_t skip_mode;
