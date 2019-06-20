@@ -5,10 +5,8 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.PreferenceFragment;
-import android.widget.ListView;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
@@ -20,9 +18,8 @@ import java.text.NumberFormat;
 /**
  * Fragment to keep track of all the accessibility related preferences.
  */
-public class AccessibilityPreferences extends PreferenceFragment
-        implements OnPreferenceChangeListener {
-
+public class AccessibilityPreferences
+        extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener {
     static final String PREF_TEXT_SCALE = "text_scale";
     static final String PREF_FORCE_ENABLE_ZOOM = "force_enable_zoom";
     static final String PREF_READER_FOR_ACCESSIBILITY = "reader_for_accessibility";
@@ -31,8 +28,7 @@ public class AccessibilityPreferences extends PreferenceFragment
     private FontSizePrefs mFontSizePrefs;
 
     private TextScalePreference mTextScalePref;
-    private SeekBarLinkedCheckBoxPreference mForceEnableZoomPref;
-    private ChromeBaseCheckBoxPreference mAccessibilityTabSwitcherPref;
+    private ChromeBaseCheckBoxPreferenceCompat mForceEnableZoomPref;
 
     private FontSizePrefsObserver mFontSizePrefsObserver = new FontSizePrefsObserver() {
         @Override
@@ -47,8 +43,7 @@ public class AccessibilityPreferences extends PreferenceFragment
     };
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.prefs_accessibility);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.accessibility_preferences);
 
@@ -58,19 +53,19 @@ public class AccessibilityPreferences extends PreferenceFragment
         mTextScalePref = (TextScalePreference) findPreference(PREF_TEXT_SCALE);
         mTextScalePref.setOnPreferenceChangeListener(this);
 
-        mForceEnableZoomPref = (SeekBarLinkedCheckBoxPreference) findPreference(
-                PREF_FORCE_ENABLE_ZOOM);
+        mForceEnableZoomPref =
+                (ChromeBaseCheckBoxPreferenceCompat) findPreference(PREF_FORCE_ENABLE_ZOOM);
         mForceEnableZoomPref.setOnPreferenceChangeListener(this);
-        mForceEnableZoomPref.setLinkedSeekBarPreference(mTextScalePref);
 
-        ChromeBaseCheckBoxPreference readerForAccessibilityPref =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_READER_FOR_ACCESSIBILITY);
+        ChromeBaseCheckBoxPreferenceCompat readerForAccessibilityPref =
+                (ChromeBaseCheckBoxPreferenceCompat) findPreference(PREF_READER_FOR_ACCESSIBILITY);
         readerForAccessibilityPref.setChecked(
                 PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY_ENABLED));
         readerForAccessibilityPref.setOnPreferenceChangeListener(this);
 
-        mAccessibilityTabSwitcherPref = (ChromeBaseCheckBoxPreference) findPreference(
-                ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER);
+        ChromeBaseCheckBoxPreferenceCompat mAccessibilityTabSwitcherPref =
+                (ChromeBaseCheckBoxPreferenceCompat) findPreference(
+                        ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER);
         if (AccessibilityUtil.isAccessibilityEnabled()) {
             mAccessibilityTabSwitcherPref.setChecked(
                     ChromePreferenceManager.getInstance().readBoolean(
@@ -83,21 +78,21 @@ public class AccessibilityPreferences extends PreferenceFragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        ((ListView) getView().findViewById(android.R.id.list)).setItemsCanFocus(true);
-        ((ListView) getView().findViewById(android.R.id.list)).setDivider(null);
+        setDivider(null);
     }
 
     @Override
     public void onStart() {
         super.onStart();
         updateValues();
+        // TODO(crbug.com/977206): Move this call to make TextScalePreference self-contained
         mTextScalePref.startObservingFontPrefs();
         mFontSizePrefs.addObserver(mFontSizePrefsObserver);
     }
 
     @Override
     public void onStop() {
+        // TODO(crbug.com/977206): Move this call to make TextScalePreference self-contained
         mTextScalePref.stopObservingFontPrefs();
         mFontSizePrefs.removeObserver(mFontSizePrefsObserver);
         super.onStop();
@@ -111,6 +106,7 @@ public class AccessibilityPreferences extends PreferenceFragment
         mForceEnableZoomPref.setChecked(mFontSizePrefs.getForceEnableZoom());
     }
 
+    // TODO(crbug.com/977206): Move this to within TextScalePreference
     private void updateTextScaleSummary(float userFontScaleFactor) {
         mTextScalePref.setSummary(mFormat.format(userFontScaleFactor));
     }

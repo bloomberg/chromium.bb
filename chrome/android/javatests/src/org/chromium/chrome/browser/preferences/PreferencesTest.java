@@ -311,12 +311,12 @@ public class PreferencesTest {
         String accessibilityPrefClassname = AccessibilityPreferences.class.getName();
         AccessibilityPreferences accessibilityPref = (AccessibilityPreferences) startPreferences(
                 InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
-                                                             .getMainFragment();
+                                                             .getMainFragmentCompat();
         SeekBarPreference textScalePref = (SeekBarPreference) accessibilityPref.findPreference(
                 AccessibilityPreferences.PREF_TEXT_SCALE);
-        SeekBarLinkedCheckBoxPreference forceEnableZoomPref =
-                (SeekBarLinkedCheckBoxPreference) accessibilityPref
-                        .findPreference(AccessibilityPreferences.PREF_FORCE_ENABLE_ZOOM);
+        ChromeBaseCheckBoxPreferenceCompat forceEnableZoomPref =
+                (ChromeBaseCheckBoxPreferenceCompat) accessibilityPref.findPreference(
+                        AccessibilityPreferences.PREF_FORCE_ENABLE_ZOOM);
         NumberFormat percentFormat = NumberFormat.getPercentInstance();
         // Arbitrary value 0.4f to be larger and smaller than threshold.
         float fontSmallerThanThreshold =
@@ -397,7 +397,7 @@ public class PreferencesTest {
     }
 
     private static void userSetForceEnableZoom(final AccessibilityPreferences accessibilityPref,
-            final SeekBarLinkedCheckBoxPreference forceEnableZoomPref, final boolean enabled) {
+            final ChromeBaseCheckBoxPreferenceCompat forceEnableZoomPref, final boolean enabled) {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> { accessibilityPref.onPreferenceChange(forceEnableZoomPref, enabled); });
     }
