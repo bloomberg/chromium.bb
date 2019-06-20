@@ -86,6 +86,9 @@ TEST(AnimationInterpolationEffectTest, MultipleInterpolations) {
           CubicBezierTimingFunction::EaseType::EASE),
       0.5, 1.5, 0.5, 1.5);
 
+  // ease = cubicBezier(0.25, 0.1, 0.25, 1)
+  // ease(0.5) = 0.8024033877399112
+
   HeapVector<Member<Interpolation>> active_interpolations;
   interpolation_effect->GetActiveInterpolations(
       -0.5, kInterpolationTestDuration, active_interpolations);
@@ -106,14 +109,14 @@ TEST(AnimationInterpolationEffectTest, MultipleInterpolations) {
                                                 active_interpolations);
   EXPECT_EQ(2ul, active_interpolations.size());
   EXPECT_FLOAT_EQ(10, GetInterpolableNumber(active_interpolations.at(0)));
-  EXPECT_FLOAT_EQ(5.0282884f,
+  EXPECT_FLOAT_EQ(5.0120169f,
                   GetInterpolableNumber(active_interpolations.at(1)));
 
   interpolation_effect->GetActiveInterpolations(
       1, kInterpolationTestDuration * 1000, active_interpolations);
   EXPECT_EQ(2ul, active_interpolations.size());
   EXPECT_FLOAT_EQ(10, GetInterpolableNumber(active_interpolations.at(0)));
-  EXPECT_FLOAT_EQ(5.0120168f,
+  EXPECT_FLOAT_EQ(5.0120169f,
                   GetInterpolableNumber(active_interpolations.at(1)));
 
   interpolation_effect->GetActiveInterpolations(1.5, kInterpolationTestDuration,
