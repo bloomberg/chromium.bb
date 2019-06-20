@@ -660,6 +660,8 @@ jumbo_source_set("browser") {
     "contacts/contacts_manager_impl.cc",
     "contacts/contacts_manager_impl.h",
     "contacts/contacts_provider.h",
+    "content_index/content_index_service_impl.cc",
+    "content_index/content_index_service_impl.h",
     "startup_data_impl.cc",
     "startup_data_impl.h",
     "startup_helper.cc",

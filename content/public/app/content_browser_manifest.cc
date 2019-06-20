@@ -190,7 +190,8 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               std::set<const char*>{
                   "blink.mojom.BackgroundFetchService",
                   "blink.mojom.CacheStorage", "blink.mojom.CookieStore",
-                  "blink.mojom.IDBFactory", "blink.mojom.LockManager",
+                  "blink.mojom.ContentIndexService", "blink.mojom.IDBFactory",
+                  "blink.mojom.LockManager",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.PermissionService",
@@ -211,6 +212,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.CacheStorage",
                   "blink.mojom.ColorChooserFactory",
                   "blink.mojom.ContactsManager",
+                  "blink.mojom.ContentIndexService",
                   "blink.mojom.DateTimeChooser",
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
