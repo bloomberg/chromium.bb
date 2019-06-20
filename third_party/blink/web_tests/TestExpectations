@@ -6150,9 +6150,9 @@ crbug.com/973769 [ Linux ] media/W3C/audio/events/event_timeupdate_manual.html [
 # Flaky on Linux
 crbug.com/974660 [ Linux ] http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Pass Failure ]
 
-# Failing on windows with lazy-feedback-allocation feature in V8. See the bug
-# for more details.
-crbug.com/976587 [ Win Mac ] netinfo/gc-unused-listeners.html [ Pass Failure ]
+# Failing with lazy-feedback-allocation feature in V8. See the bug for more
+# details.
+crbug.com/976587 netinfo/gc-unused-listeners.html [ Pass Failure ]
 
 # TODO (michaelludwig): Remove after Skia roll and rebaseline
 crbug.com/976743 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
