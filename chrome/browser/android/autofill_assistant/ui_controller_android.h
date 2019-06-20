@@ -70,8 +70,10 @@ class UiControllerAndroid : public UiController {
   void OnInfoBoxChanged(const InfoBox* info_box) override;
   void OnProgressChanged(int progress) override;
   void OnProgressVisibilityChanged(bool visible) override;
-  void OnTouchableAreaChanged(const RectF& visual_viewport,
-                              const std::vector<RectF>& areas) override;
+  void OnTouchableAreaChanged(
+      const RectF& visual_viewport,
+      const std::vector<RectF>& touchable_areas,
+      const std::vector<RectF>& restricted_areas) override;
   void OnResizeViewportChanged(bool resize_viewport) override;
   void OnPeekModeChanged(
       ConfigureBottomSheetProto::PeekMode peek_mode) override;

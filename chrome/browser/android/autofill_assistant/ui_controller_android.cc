@@ -62,6 +62,17 @@ namespace {
 static constexpr base::TimeDelta kGracefulShutdownDelay =
     base::TimeDelta::FromSeconds(5);
 
+std::vector<float> ToFloatVector(const std::vector<RectF>& areas) {
+  std::vector<float> flattened;
+  for (const auto& rect : areas) {
+    flattened.emplace_back(rect.left);
+    flattened.emplace_back(rect.top);
+    flattened.emplace_back(rect.right);
+    flattened.emplace_back(rect.bottom);
+  }
+  return flattened;
+}
+
 }  // namespace
 
 // static
@@ -138,9 +149,11 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
 
     std::vector<RectF> area;
     ui_delegate->GetTouchableArea(&area);
+    std::vector<RectF> restricted_area;
+    ui_delegate->GetRestrictedArea(&restricted_area);
     RectF visual_viewport;
     ui_delegate->GetVisualViewport(&visual_viewport);
-    OnTouchableAreaChanged(visual_viewport, area);
+    OnTouchableAreaChanged(visual_viewport, area, restricted_area);
     OnResizeViewportChanged(ui_delegate->GetResizeViewport());
     OnPeekModeChanged(ui_delegate->GetPeekMode());
     OnFormChanged(ui_delegate->GetForm());
@@ -533,21 +546,20 @@ void UiControllerAndroid::SetOverlayState(OverlayState state) {
 
 void UiControllerAndroid::OnTouchableAreaChanged(
     const RectF& visual_viewport,
-    const std::vector<RectF>& areas) {
+    const std::vector<RectF>& touchable_areas,
+    const std::vector<RectF>& restricted_areas) {
   JNIEnv* env = AttachCurrentThread();
   Java_AssistantOverlayModel_setVisualViewport(
       env, GetOverlayModel(), visual_viewport.left, visual_viewport.top,
       visual_viewport.right, visual_viewport.bottom);
 
-  std::vector<float> flattened;
-  for (const auto& rect : areas) {
-    flattened.emplace_back(rect.left);
-    flattened.emplace_back(rect.top);
-    flattened.emplace_back(rect.right);
-    flattened.emplace_back(rect.bottom);
-  }
   Java_AssistantOverlayModel_setTouchableArea(
-      env, GetOverlayModel(), base::android::ToJavaFloatArray(env, flattened));
+      env, GetOverlayModel(),
+      base::android::ToJavaFloatArray(env, ToFloatVector(touchable_areas)));
+
+  Java_AssistantOverlayModel_setRestrictedArea(
+      AttachCurrentThread(), GetOverlayModel(),
+      base::android::ToJavaFloatArray(env, ToFloatVector(restricted_areas)));
 }
 
 void UiControllerAndroid::OnUnexpectedTaps() {

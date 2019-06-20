@@ -46,6 +46,10 @@ public class AssistantOverlayCoordinator {
                 List<RectF> area = model.get(AssistantOverlayModel.TOUCHABLE_AREA);
                 mEventFilter.setTouchableArea(area);
                 mDrawable.setTransparentArea(area);
+            } else if (AssistantOverlayModel.RESTRICTED_AREA == propertyKey) {
+                List<RectF> area = model.get(AssistantOverlayModel.RESTRICTED_AREA);
+                mEventFilter.setRestrictedArea(area);
+                mDrawable.setRestrictedArea(area);
             } else if (AssistantOverlayModel.DELEGATE == propertyKey) {
                 AssistantOverlayDelegate delegate = model.get(AssistantOverlayModel.DELEGATE);
                 mEventFilter.setDelegate(delegate);
