@@ -204,3 +204,17 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEquals(self._vm.image_path,
                       os.path.join(self._vm.vm_dir, 'qcow2.img'))
     self.assertEquals(self._vm.image_format, 'qcow2')
+
+  @mock.patch('os.path.isfile', return_value=False)
+  @mock.patch('chromite.lib.osutils.Which', return_value=None)
+  def testQemuNotFound(self, which_mock, is_file_mock):
+    """Verify that VMError is raised when qemu path cannot be set."""
+    self.assertRaises(vm.VMError, self._vm._SetQemuPath)
+    which_mock.assert_called()
+    is_file_mock.assert_called()
+
+  def testQemuImageNotFound(self):
+    """Veryify that VMError is raised for nonexistent qemu image path."""
+    self._vm.copy_on_write = True
+    self._vm.qemu_img_path = '/invalid/qemu/img/path/'
+    self.assertRaises(vm.VMError, self._vm._SetQemuPath)
