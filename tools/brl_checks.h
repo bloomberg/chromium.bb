@@ -68,7 +68,7 @@ typedef struct {
  * specified, and must be smaller than or equal to the total length of the input.
  * @param direction (optional) 0 for forward translation, 1 for backwards translation,
  * 2 for both directions. If
-* not specified it defaults to 0.
+ * not specified it defaults to 0.
  * @param diagnostics (optional) Print diagnostic output on failure if diagnostics is not
  * 0. If not specified it defaults to 1.
  * @return Return 0 if the translation is as expected and 1 otherwise.
@@ -80,18 +80,19 @@ typedef struct {
  *                .cursorPos = 5);
  * ~~~~~~~~~~~~~~~~~~~~~~
  */
-#define check(tables, input, expected, ...)                                      \
-	check_base(tables, input, expected, (optional_test_params){.typeform = NULL, \
-												.cursorPos = -1,                 \
-												.expected_cursorPos = -1,        \
-												.expected_inputPos = NULL,       \
-												.expected_outputPos = NULL,      \
-												.max_outlen = -1,                \
-												.real_inlen = -1,                \
-												.mode = 0,                       \
-												.direction = 0,                  \
-												.diagnostics = 1,                \
-												__VA_ARGS__ })
+#define check(tables, input, expected, ...)           \
+	check_base(tables, input, expected,               \
+			(optional_test_params){ .typeform = NULL, \
+					.cursorPos = -1,                  \
+					.expected_cursorPos = -1,         \
+					.expected_inputPos = NULL,        \
+					.expected_outputPos = NULL,       \
+					.max_outlen = -1,                 \
+					.real_inlen = -1,                 \
+					.mode = 0,                        \
+					.direction = 0,                   \
+					.diagnostics = 1,                 \
+					__VA_ARGS__ })
 
 int
 check_base(const char *tableList, const char *input, const char *expected,

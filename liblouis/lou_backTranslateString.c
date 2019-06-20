@@ -196,10 +196,10 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 			else
 				passbuf1[k] = _lou_getDotsForChar(inbuf[k]);
 		passbuf1[srcmax] = _lou_getDotsForChar(' ');
-		input = (InString){.chars = passbuf1, .length = srcmax, .bufferIndex = idx };
+		input = (InString){ .chars = passbuf1, .length = srcmax, .bufferIndex = idx };
 	}
 	idx = getStringBuffer(*outlen);
-	output = (OutString){.chars = stringBufferPool->buffers[idx],
+	output = (OutString){ .chars = stringBufferPool->buffers[idx],
 		.maxlength = *outlen,
 		.length = 0,
 		.bufferIndex = idx };
@@ -274,11 +274,11 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 		currentPass--;
 		if (currentPass >= lastPass && goodTrans) {
 			releaseStringBuffer(input.bufferIndex);
-			input = (InString){.chars = output.chars,
+			input = (InString){ .chars = output.chars,
 				.length = output.length,
 				.bufferIndex = output.bufferIndex };
 			idx = getStringBuffer(*outlen);
-			output = (OutString){.chars = stringBufferPool->buffers[idx],
+			output = (OutString){ .chars = stringBufferPool->buffers[idx],
 				.maxlength = *outlen,
 				.length = 0,
 				.bufferIndex = idx };
@@ -1027,10 +1027,11 @@ makeCorrections(const TranslationTableHeader *table, int mode, int currentPass,
 					currentRule = (TranslationTableRule *)&table->ruleArea[ruleOffset];
 					currentOpcode = currentRule->opcode;
 					int currentCharslen = currentRule->charslen;
-					if (tryThis == 1 || (currentCharslen <= length &&
-												compareChars(&currentRule->charsdots[0],
-														&input->chars[pos],
-														currentCharslen, 0, table))) {
+					if (tryThis == 1 ||
+							(currentCharslen <= length &&
+									compareChars(&currentRule->charsdots[0],
+											&input->chars[pos], currentCharslen, 0,
+											table))) {
 						if (currentOpcode == CTO_Correct &&
 								back_passDoTest(table, pos, input, currentOpcode,
 										currentRule, &passInstructions, &passIC,

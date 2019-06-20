@@ -33,7 +33,8 @@
 #include "brl_checks.h"
 
 static const struct option longopts[] = {
-	{ "help", no_argument, NULL, 'h' }, { "version", no_argument, NULL, 'v' },
+	{ "help", no_argument, NULL, 'h' },
+	{ "version", no_argument, NULL, 'v' },
 	{ NULL, 0, NULL, 0 },
 };
 
