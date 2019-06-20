@@ -3335,6 +3335,7 @@ def _CheckNoDeprecatedCss(input_api, output_api):
 _DEPRECATED_JS = [
   ( "__lookupGetter__", "Object.getOwnPropertyDescriptor" ),
   ( "__defineGetter__", "Object.defineProperty" ),
+  ( "__lookupSetter__", "Object.getOwnPropertyDescriptor" ),
   ( "__defineSetter__", "Object.defineProperty" ),
 ]
 
