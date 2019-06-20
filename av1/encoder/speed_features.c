@@ -127,6 +127,7 @@ static void set_good_speed_feature_framesize_dependent(
       sf->use_square_partition_only_threshold = BLOCK_32X32;
 
       sf->simple_motion_search_split = 1;
+      sf->intra_cnn_split = (speed == 1);
     }
 
     if (!is_720p_or_larger) {
@@ -750,6 +751,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->simple_motion_search_split = 0;
   sf->simple_motion_search_prune_rect = 0;
   sf->simple_motion_search_early_term_none = 0;
+  sf->intra_cnn_split = 0;
 
   // Set this at the appropriate speed levels
   sf->use_transform_domain_distortion = 0;

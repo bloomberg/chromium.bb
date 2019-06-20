@@ -2368,6 +2368,10 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
     return found_best_partition;
   }
 
+  if (frame_is_intra_only(cm) && bsize == BLOCK_64X64) {
+    x->quad_tree_idx = 0;
+  }
+
   if (bsize == cm->seq_params.sb_size) x->must_find_valid_partition = 0;
 
   // Override skipping rectangular partition operations for edge blocks
@@ -2456,6 +2460,19 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
   save_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
+
+  const int try_intra_cnn_split =
+      frame_is_intra_only(cm) && cpi->sf.intra_cnn_split &&
+      cm->seq_params.sb_size >= BLOCK_64X64 && bsize <= BLOCK_64X64 &&
+      bsize >= BLOCK_8X8 && mi_row + mi_size_high[bsize] <= cm->mi_rows &&
+      mi_col + mi_size_wide[bsize] <= cm->mi_cols;
+
+  if (try_intra_cnn_split) {
+    av1_intra_mode_cnn_partition(
+        &cpi->common, x, bsize, x->quad_tree_idx, &partition_none_allowed,
+        &partition_horz_allowed, &partition_vert_allowed, &do_rectangular_split,
+        &do_square_split);
+  }
 
   // Use simple_motion_search to prune partitions. This must be done prior to
   // PARTITION_SPLIT to propagate the initial mvs to a smaller blocksize.
@@ -2611,7 +2628,8 @@ BEGIN_PARTITION_SEARCH:
         found_best_partition = true;
         if (bsize_at_least_8x8) pc_tree->partitioning = PARTITION_NONE;
 
-        if ((do_square_split || do_rectangular_split) &&
+        if (!frame_is_intra_only(cm) &&
+            (do_square_split || do_rectangular_split) &&
             !x->e_mbd.lossless[xd->mi[0]->segment_id] && ctx_none->skippable) {
           const int use_ml_based_breakout =
               bsize <= cpi->sf.use_square_partition_only_threshold &&
@@ -2687,12 +2705,20 @@ BEGIN_PARTITION_SEARCH:
       av1_rd_stats_subtraction(x->rdmult, &best_rdc, &sum_rdc,
                                &best_remain_rdcost);
 
+      int curr_quad_tree_idx = 0;
+      if (frame_is_intra_only(cm) && bsize <= BLOCK_64X64) {
+        curr_quad_tree_idx = x->quad_tree_idx;
+        x->quad_tree_idx = 4 * curr_quad_tree_idx + idx + 1;
+      }
       if (!rd_pick_partition(cpi, td, tile_data, tp, mi_row + y_idx,
                              mi_col + x_idx, subsize, max_sq_part, min_sq_part,
                              &this_rdc, best_remain_rdcost, pc_tree->split[idx],
                              p_split_rd)) {
         av1_invalid_rd_stats(&sum_rdc);
         break;
+      }
+      if (frame_is_intra_only(cm) && bsize <= BLOCK_64X64) {
+        x->quad_tree_idx = curr_quad_tree_idx;
       }
 
       sum_rdc.rate += this_rdc.rate;

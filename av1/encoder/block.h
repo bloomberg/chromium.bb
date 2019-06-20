@@ -15,6 +15,11 @@
 #include "av1/common/entropymv.h"
 #include "av1/common/entropy.h"
 #include "av1/common/mvref_common.h"
+
+#if !CONFIG_REALTIME_ONLY
+#include "av1/encoder/partition_cnn_weights.h"
+#endif
+
 #include "av1/encoder/hash.h"
 #if CONFIG_DIST_8X8
 #include "aom/aomcx.h"
@@ -404,6 +409,12 @@ struct macroblock {
   int comp_rd_stats_idx;
 
   CB_COEFF_BUFFER *cb_coef_buff;
+
+#if !CONFIG_REALTIME_ONLY
+  int quad_tree_idx;
+  float cnn_buffer[CNN_OUT_BUF_SIZE];
+  float log_q;
+#endif
 };
 
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
