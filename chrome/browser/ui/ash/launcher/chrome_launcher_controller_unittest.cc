@@ -773,12 +773,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         case ash::TYPE_BROWSER_SHORTCUT:
           result += "Chrome";
           break;
-        case ash::TYPE_APP_LIST_DEPRECATED:
-          result += "AppList";
-          break;
-        case ash::TYPE_BACK_BUTTON_DEPRECATED:
-          result += "Back";
-          break;
         default:
           result += "Unknown";
           break;

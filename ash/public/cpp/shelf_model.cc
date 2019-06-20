@@ -18,9 +18,6 @@ static ShelfModel* g_shelf_model = nullptr;
 
 int ShelfItemTypeToWeight(ShelfItemType type) {
   switch (type) {
-    case TYPE_APP_LIST_DEPRECATED:
-    case TYPE_BACK_BUTTON_DEPRECATED:
-      return 0;
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_PINNED_APP:
       return 1;

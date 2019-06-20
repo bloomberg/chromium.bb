@@ -1238,8 +1238,6 @@ void ChromeLauncherController::ShelfItemMoved(int start_index,
                                               int target_index) {
   // Update the pin position preference as needed.
   const ash::ShelfItem& item = model_->items()[target_index];
-  DCHECK_NE(ash::TYPE_BACK_BUTTON_DEPRECATED, item.type);
-  DCHECK_NE(ash::TYPE_APP_LIST_DEPRECATED, item.type);
   if (ItemTypeIsPinned(item) && should_sync_pin_changes_)
     SyncPinPosition(item.id);
 }

@@ -254,8 +254,6 @@ bool ShelfButtonIsInDrag(const ShelfItemType item_type,
       return static_cast<const ShelfAppButton*>(item_view)->state() &
              ShelfAppButton::STATE_DRAGGING;
     case TYPE_DIALOG:
-    case TYPE_BACK_BUTTON_DEPRECATED:
-    case TYPE_APP_LIST_DEPRECATED:
     case TYPE_UNDEFINED:
       return false;
   }
@@ -671,12 +669,6 @@ void ShelfView::ButtonPressed(views::Button* sender,
           UMA_LAUNCHER_CLICK_ON_APP);
       break;
 
-    case TYPE_APP_LIST_DEPRECATED:
-      Shell::Get()->metrics()->RecordUserMetricsAction(
-          UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-      break;
-
-    case TYPE_BACK_BUTTON_DEPRECATED:
     case TYPE_DIALOG:
       break;
 
@@ -906,9 +898,6 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
       break;
     }
 
-    // The home and back buttons are created separately.
-    case TYPE_APP_LIST_DEPRECATED:
-    case TYPE_BACK_BUTTON_DEPRECATED:
     case TYPE_UNDEFINED:
       return nullptr;
   }
@@ -1598,8 +1587,7 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
 ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
   DCHECK(index >= 0 && index < model_->item_count());
   ShelfItemType type = model_->items()[index].type;
-  if (type == TYPE_APP_LIST_DEPRECATED || type == TYPE_DIALOG ||
-      type == TYPE_BACK_BUTTON_DEPRECATED)
+  if (type == TYPE_DIALOG)
     return NOT_REMOVABLE;
 
   if (model_->items()[index].pinned_by_policy)
@@ -1616,9 +1604,7 @@ bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
       return (typeb == TYPE_PINNED_APP || typeb == TYPE_BROWSER_SHORTCUT);
-    case TYPE_APP_LIST_DEPRECATED:
     case TYPE_APP:
-    case TYPE_BACK_BUTTON_DEPRECATED:
     case TYPE_DIALOG:
       return typeb == typea;
     case TYPE_UNDEFINED:
@@ -2205,7 +2191,7 @@ void ShelfView::OnMenuClosed(views::View* source) {
   closing_event_time_ = shelf_menu_model_adapter_->GetClosingEventTime();
 
   const ShelfItem* item = ShelfItemForView(source);
-  if (item && (item->type != TYPE_APP_LIST_DEPRECATED))
+  if (item)
     static_cast<ShelfAppButton*>(source)->OnMenuClosed();
 
   shelf_menu_model_adapter_.reset();
