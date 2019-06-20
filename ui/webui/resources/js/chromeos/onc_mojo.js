@@ -231,5 +231,3 @@ OncMojo.DeviceStateProperties;
 
 /** @typedef {chromeos.networkConfig.mojom.NetworkStateProperties} */
 OncMojo.NetworkStateProperties;
-
-OncMojo.NetworkType = chromeos.networkConfig.mojom.NetworkType;

@@ -178,10 +178,9 @@ Polymer({
   getDeviceStateProperties_: function() {
     this.networkConfigProxy_.getDeviceStateList().then(response => {
       const devices = response.result;
+      const kCellular = chromeos.networkConfig.mojom.NetworkType.kCellular;
       this.deviceStateProperties_ =
-          devices.find(
-              device => device.type == OncMojo.NetworkType.kCellular) ||
-          null;
+          devices.find(device => device.type == kCellular) || null;
       if (!this.deviceStateProperties_) {
         return;
       }

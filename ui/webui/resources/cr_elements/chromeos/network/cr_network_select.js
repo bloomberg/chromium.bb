@@ -88,10 +88,11 @@ Polymer({
   attached: function() {
     this.refreshNetworks();
 
-    /** @const */ const INTERVAL_MS = 10 * 1000;
-    this.networkConfigProxy_.requestNetworkScan(OncMojo.NetworkType.kAll);
+    const INTERVAL_MS = 10 * 1000;
+    const kAll = chromeos.networkConfig.mojom.NetworkType.kAll;
+    this.networkConfigProxy_.requestNetworkScan(kAll);
     this.scanIntervalId_ = window.setInterval(function() {
-      this.networkConfigProxy_.requestNetworkScan(OncMojo.NetworkType.kAll);
+      this.networkConfigProxy_.requestNetworkScan(kAll);
     }.bind(this), INTERVAL_MS);
   },
 
