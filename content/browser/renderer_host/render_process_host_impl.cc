@@ -3123,20 +3123,12 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     renderer_cmd->AppendSwitch(switches::kDisableGpuCompositing);
   }
 #elif !defined(OS_CHROMEOS)
-#if !BUILDFLAG(ENABLE_MUS)
   // If gpu compositing is not being used, tell the renderer at startup. This
   // is inherently racey, as it may change while the renderer is being launched,
   // but the renderer will hear about the correct state eventually. This
   // optimizes the common case to avoid wasted work.
-  // Note: There is no ImageTransportFactory with Mus, but there is also no
-  // software compositing on platforms where Mus is used, e.g. ChromeOS, so
-  // no need to check this state and forward it.
   if (ImageTransportFactory::GetInstance()->IsGpuCompositingDisabled())
     renderer_cmd->AppendSwitch(switches::kDisableGpuCompositing);
-#else   // BUILDFLAG(ENABLE_MUS)
-// TODO(tonikitoo): Check if renderer should use software compositing
-// through some mechanism that isn't ImageTransportFactory with mus.
-#endif  // !BUILDFLAG(ENABLE_MUS)
 #endif  // defined(OS_ANDROID)
 
   // Add kWaitForDebugger to let renderer process wait for a debugger.

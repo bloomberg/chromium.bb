@@ -51,7 +51,6 @@
 #include "ash/public/cpp/window_properties.h"               // nogncheck
 #include "ash/public/cpp/window_state_type.h"               // nogncheck
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #endif
 
@@ -88,15 +87,8 @@ const int kMaximizedWindowInset = 10;  // DIPs.
 #if defined(OS_CHROMEOS)
 
 // Returns the aura::Window which stores the window properties for tab-dragging.
-// It should return the root window when WindowService is used, since it is
-// corresponded with a widget in Ash.
 aura::Window* GetWindowForTabDraggingProperties(const TabDragContext* context) {
-  if (!context)
-    return nullptr;
-  aura::Window* window = context->AsView()->GetWidget()->GetNativeWindow();
-  if (features::IsUsingWindowService())
-    return window->GetRootWindow();
-  return window;
+  return context ? context->AsView()->GetWidget()->GetNativeWindow() : nullptr;
 }
 
 // Returns true if |context| browser window is snapped.
@@ -849,13 +841,6 @@ TabDragController::DragBrowserToNewTabStrip(TabDragContext* target_context,
   // Only Aura windows are gesture consumers.
   gfx::NativeView attached_native_view =
       GetAttachedBrowserWidget()->GetNativeView();
-#if defined(OS_CHROMEOS)
-  // When using WindowService, the touch events for the window move have
-  // happened on the root window, so the transfer should happen from the root of
-  // the currently attached window to the target.
-  if (features::IsUsingWindowService())
-    attached_native_view = attached_native_view->GetRootWindow();
-#endif
   GetAttachedBrowserWidget()->GetGestureRecognizer()->TransferEventsTo(
       attached_native_view,
       target_context->AsView()->GetWidget()->GetNativeView(),
@@ -1383,16 +1368,6 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
     attached_context_->AsView()->GetWidget()->ReleaseCapture();
     attached_context_->OwnDragController(this);
   }
-#if defined(OS_CHROMEOS)
-  // When the window service is used, there's some chance of having gesture
-  // events in the attached (moving) widget during the window move loop. Without
-  // setting the mouse handler, such gestures might arrive to a wrong view. See
-  // https://crbug.com/943316.
-  if (features::IsUsingWindowService()) {
-    attached_context_->AsView()->GetWidget()->GetRootView()->SetMouseHandler(
-        attached_context_->AsView());
-  }
-#endif
   const views::Widget::MoveLoopSource move_loop_source =
       event_source_ == EVENT_SOURCE_MOUSE ?
       views::Widget::MOVE_LOOP_SOURCE_MOUSE :
@@ -2024,13 +1999,8 @@ TabDragController::Liveness TabDragController::GetLocalProcessWindow(
   if (exclude_dragged_view) {
     gfx::NativeWindow dragged_window =
         attached_context_->AsView()->GetWidget()->GetNativeWindow();
-    if (dragged_window) {
-#if defined(OS_CHROMEOS)
-      if (features::IsUsingWindowService())
-        dragged_window = dragged_window->GetRootWindow();
-#endif
+    if (dragged_window)
       exclude.insert(dragged_window);
-    }
   }
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Exclude windows which are pending deletion via Browser::TabStripEmpty().

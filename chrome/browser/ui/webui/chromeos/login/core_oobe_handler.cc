@@ -56,7 +56,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_sink.h"
 #include "ui/gfx/geometry/size.h"
@@ -482,18 +481,11 @@ void CoreOobeHandler::UpdateA11yState() {
       "enableExperimentalA11yFeatures",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kEnableExperimentalAccessibilityFeatures));
-  if (!features::IsMultiProcessMash()) {
-    DCHECK(MagnificationManager::Get());
-    a11y_info.SetBoolean("screenMagnifierEnabled",
-                         MagnificationManager::Get()->IsMagnifierEnabled());
-    a11y_info.SetBoolean(
-        "dockedMagnifierEnabled",
-        MagnificationManager::Get()->IsDockedMagnifierEnabled());
-  } else {
-    // TODO: get MagnificationManager working with mash.
-    // https://crbug.com/817157
-    NOTIMPLEMENTED_LOG_ONCE();
-  }
+  DCHECK(MagnificationManager::Get());
+  a11y_info.SetBoolean("screenMagnifierEnabled",
+                       MagnificationManager::Get()->IsMagnifierEnabled());
+  a11y_info.SetBoolean("dockedMagnifierEnabled",
+                       MagnificationManager::Get()->IsDockedMagnifierEnabled());
   a11y_info.SetBoolean("virtualKeyboardEnabled",
                        AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
   CallJS("cr.ui.Oobe.refreshA11yInfo", a11y_info);
@@ -555,13 +547,9 @@ void CoreOobeHandler::UpdateDeviceRequisition() {
 }
 
 void CoreOobeHandler::UpdateKeyboardState() {
-  // TODO(crbug.com/646565): Support virtual keyboard under MASH. There is no
-  // KeyboardController in the browser process under MASH.
-  if (!features::IsUsingWindowService()) {
-    const bool is_keyboard_shown =
-        ChromeKeyboardControllerClient::Get()->is_keyboard_visible();
-    SetVirtualKeyboardShown(is_keyboard_shown);
-  }
+  const bool is_keyboard_shown =
+      ChromeKeyboardControllerClient::Get()->is_keyboard_visible();
+  SetVirtualKeyboardShown(is_keyboard_shown);
 }
 
 void CoreOobeHandler::OnTabletModeToggled(bool enabled) {

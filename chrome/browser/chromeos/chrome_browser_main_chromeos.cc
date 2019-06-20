@@ -288,9 +288,7 @@ namespace internal {
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
-    // In Mash, power policy is sent to powerd by ash.
-    if (!::features::IsMultiProcessMash())
-      PowerPolicyController::Initialize(PowerManagerClient::Get());
+    PowerPolicyController::Initialize(PowerManagerClient::Get());
 
     dbus::Bus* system_bus = DBusThreadManager::Get()->IsUsingFakes()
                                 ? nullptr
@@ -406,8 +404,7 @@ class DBusServices {
     drive_file_stream_service_.reset();
     ProcessDataCollector::Shutdown();
     PowerDataCollector::Shutdown();
-    if (!::features::IsMultiProcessMash())
-      PowerPolicyController::Shutdown();
+    PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
   }
 
@@ -754,12 +751,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   AccessibilityManager::Initialize();
 
-  if (!::features::IsMultiProcessMash()) {
-    // Initialize magnification manager before ash tray is created. And this
-    // must be placed after UserManager::SessionStarted();
-    // TODO(crbug.com/821551): Mash support.
-    MagnificationManager::Initialize();
-  }
+  // Initialize magnification manager before ash tray is created. And this
+  // must be placed after UserManager::SessionStarted();
+  MagnificationManager::Initialize();
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -1122,8 +1116,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (LoginScreenExtensionUiHandler::Get(false /*can_create*/))
     LoginScreenExtensionUiHandler::Shutdown();
 
-  if (!::features::IsMultiProcessMash())
-    MagnificationManager::Shutdown();
+  MagnificationManager::Shutdown();
 
   audio::SoundsManager::Shutdown();
 
@@ -1189,9 +1182,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun().
   arc_service_launcher_.reset();
 
-  // TODO(crbug.com/594887): Mash support.
-  if (!::features::IsMultiProcessMash())
-    AccessibilityManager::Shutdown();
+  AccessibilityManager::Shutdown();
 
   input_method::Shutdown();
 
