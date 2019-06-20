@@ -185,3 +185,9 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     check_min_version_mock.assert_called()
 
     self.assertEqual(self._vm.qemu_path, qemu_path)
+
+  def testInvalidQemuBiosPath(self):
+    """Verify that VMError is raised for nonexistent qemu bios path."""
+    self._vm.qemu_bios_path = '/invalid/qemu/bios/path/'
+    self.assertRaises(vm.VMError, self._vm.Start)
+
