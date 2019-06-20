@@ -1809,8 +1809,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     (*handlers)["document.favicons"] =
         @selector(handleDocumentFaviconsMessage:context:);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
-    (*handlers)["restoresession.error"] =
-        @selector(handleRestoreSessionErrorMessage:context:);
   });
   DCHECK(handlers);
   auto iter = handlers->find(command);
@@ -1995,28 +1993,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
   DLOG(ERROR) << "JavaScript error: " << errorMessage
               << " URL:" << [self currentURL].spec();
-  return YES;
-}
-
-// Handles 'restoresession.error' message.
-- (BOOL)handleRestoreSessionErrorMessage:(base::DictionaryValue*)message
-                                 context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-  std::string errorMessage;
-  if (!message->GetString("message", &errorMessage)) {
-    DLOG(WARNING) << "JS message parameter not found: message";
-    return NO;
-  }
-
-  // Restore session error is likely a result of coding error. Log diagnostics
-  // information that is sent back by the page to aid debugging.
-  NOTREACHED()
-      << "Session restore failed unexpectedly with error: " << errorMessage
-      << ". Web view URL: "
-      << (self.webView
-              ? net::GURLWithNSURL(self.webView.URL).possibly_invalid_spec()
-              : " N/A");
   return YES;
 }
 
