@@ -1175,11 +1175,18 @@ if (is_win) {
     }
   }
 
-  group("keystone_registration_framework") {
-    if (is_chrome_branded && enable_keystone_registration_framework) {
-      deps = [
-        "//third_party/googlemac/Releases/Keystone:keystone_registration",
+  if (is_chrome_branded && enable_keystone_registration_framework) {
+    bundle_data("keystone_registration_framework") {
+      sources = [
+        "//third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework",
       ]
+
+      outputs = [
+        "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}",
+      ]
+    }
+  } else {
+    group("keystone_registration_framework") {
     }
   }
 
