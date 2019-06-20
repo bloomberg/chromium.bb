@@ -2259,14 +2259,18 @@ def GenerateBuildConfigs(board, config_useflags):
     A jsonizable object which is the combination of config.yaml (for unibuild)
     and use flags.
   """
-  config_fname = os.path.join(
+  config_chroot_path = os.path.join(
       cros_build_lib.GetSysroot(board), 'usr', 'share', 'chromeos-config',
       'yaml', 'config.yaml')
+
+  config_fname = path_util.ToChrootPath(config_chroot_path)
 
   results = {}
   if os.path.exists(config_fname):
     with open(config_fname) as f:
       results = json.load(f)
+  else:
+    logging.warning('Cannot find config.yaml file in %s', config_fname)
 
   results['board'] = board
   results['useflags'] = portage_util.PortageqEnvvar(
