@@ -29,7 +29,7 @@
 #include "chromeos/printing/ppd_provider.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
@@ -175,11 +175,8 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
 std::unique_ptr<UsbPrinterDetector> UsbPrinterDetector::Create() {
   // Bind to the DeviceService for USB device manager.
   device::mojom::UsbDeviceManagerPtrInfo usb_manager_info;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&usb_manager_info));
-
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&usb_manager_info));
   return std::make_unique<UsbPrinterDetectorImpl>(std::move(usb_manager_info));
 }
 

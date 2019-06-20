@@ -173,9 +173,9 @@
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/common/service_manager_connection.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "dbus/object_path.h"
@@ -625,7 +625,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   system_token_certdb_initializer_->Initialize();
 
   CrasAudioHandler::Initialize(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      content::GetSystemConnector(),
       new AudioDevicesPrefHandlerImpl(g_browser_process->local_state()));
 
   content::MediaCaptureDevices::GetInstance()->AddVideoCaptureObserver(
@@ -741,10 +741,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
         new default_app_order::ExternalLoader(true /* async */));
   }
 
-  audio::SoundsManager::Create(
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->Clone());
+  audio::SoundsManager::Create(content::GetSystemConnector()->Clone());
 
   // |arc_service_launcher_| must be initialized before NoteTakingHelper.
   NoteTakingHelper::Initialize();
@@ -1043,7 +1040,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   }
 
   dark_resume_controller_ = std::make_unique<system::DarkResumeController>(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      content::GetSystemConnector());
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }

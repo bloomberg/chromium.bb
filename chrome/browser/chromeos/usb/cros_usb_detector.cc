@@ -20,7 +20,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
@@ -256,10 +256,7 @@ std::vector<SharedUsbDeviceInfo> CrosUsbDetector::GetSharedUsbDevices() {
 void CrosUsbDetector::ConnectToDeviceManager() {
   // Tests may set a fake manager.
   if (!device_manager_) {
-    // Request UsbDeviceManagerPtr from DeviceService.
-    auto* connection = content::ServiceManagerConnection::GetForProcess();
-    DCHECK(connection);
-    connection->GetConnector()->BindInterface(
+    content::GetSystemConnector()->BindInterface(
         device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
   }
   DCHECK(device_manager_);

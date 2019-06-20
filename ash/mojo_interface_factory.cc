@@ -38,64 +38,81 @@ base::LazyInstance<RegisterInterfacesCallback>::Leaky
 
 void BindAccessibilityControllerRequestOnMainThread(
     mojom::AccessibilityControllerRequest request) {
-  Shell::Get()->accessibility_controller()->BindRequest(std::move(request));
+  if (Shell::HasInstance())
+    Shell::Get()->accessibility_controller()->BindRequest(std::move(request));
 }
 
 void BindAssistantAlarmTimerControllerRequestOnMainThread(
     mojom::AssistantAlarmTimerControllerRequest request) {
-  Shell::Get()->assistant_controller()->alarm_timer_controller()->BindRequest(
-      std::move(request));
+  if (Shell::HasInstance()) {
+    Shell::Get()->assistant_controller()->alarm_timer_controller()->BindRequest(
+        std::move(request));
+  }
 }
 
 void BindAssistantControllerRequestOnMainThread(
     mojom::AssistantControllerRequest request) {
-  Shell::Get()->assistant_controller()->BindRequest(std::move(request));
+  if (Shell::HasInstance())
+    Shell::Get()->assistant_controller()->BindRequest(std::move(request));
 }
 
 void BindAssistantNotificationControllerRequestOnMainThread(
     mojom::AssistantNotificationControllerRequest request) {
-  Shell::Get()->assistant_controller()->notification_controller()->BindRequest(
-      std::move(request));
+  if (Shell::HasInstance()) {
+    Shell::Get()
+        ->assistant_controller()
+        ->notification_controller()
+        ->BindRequest(std::move(request));
+  }
 }
 
 void BindAssistantScreenContextControllerRequestOnMainThread(
     mojom::AssistantScreenContextControllerRequest request) {
-  Shell::Get()
-      ->assistant_controller()
-      ->screen_context_controller()
-      ->BindRequest(std::move(request));
+  if (Shell::HasInstance()) {
+    Shell::Get()
+        ->assistant_controller()
+        ->screen_context_controller()
+        ->BindRequest(std::move(request));
+  }
 }
 
 void BindAssistantVolumeControlRequestOnMainThread(
     mojom::AssistantVolumeControlRequest request) {
-  Shell::Get()->assistant_controller()->BindRequest(std::move(request));
+  if (Shell::HasInstance())
+    Shell::Get()->assistant_controller()->BindRequest(std::move(request));
 }
 
 void BindCrosDisplayConfigControllerRequestOnMainThread(
     mojom::CrosDisplayConfigControllerRequest request) {
-  Shell::Get()->cros_display_config()->BindRequest(std::move(request));
+  if (Shell::HasInstance())
+    Shell::Get()->cros_display_config()->BindRequest(std::move(request));
 }
 
 void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
-  Shell::Get()->ime_controller()->BindRequest(std::move(request));
+  if (Shell::HasInstance())
+    Shell::Get()->ime_controller()->BindRequest(std::move(request));
 }
 
 void BindNightLightControllerRequestOnMainThread(
     mojom::NightLightControllerRequest request) {
-  Shell::Get()->night_light_controller()->BindRequest(std::move(request));
+  if (Shell::HasInstance())
+    Shell::Get()->night_light_controller()->BindRequest(std::move(request));
 }
 
 void BindTrayActionRequestOnMainThread(mojom::TrayActionRequest request) {
-  Shell::Get()->tray_action()->BindRequest(std::move(request));
+  if (Shell::HasInstance())
+    Shell::Get()->tray_action()->BindRequest(std::move(request));
 }
 
 void BindVoiceInteractionControllerRequestOnMainThread(
     mojom::VoiceInteractionControllerRequest request) {
-  VoiceInteractionController::Get()->BindRequest(std::move(request));
+  if (Shell::HasInstance())
+    VoiceInteractionController::Get()->BindRequest(std::move(request));
 }
 
 void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
-  Shell::Get()->vpn_list()->BindRequest(std::move(request));
+  if (Shell::HasInstance())
+    Shell::Get()->vpn_list()->BindRequest(std::move(request));
 }
 
 }  // namespace

@@ -10,8 +10,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/view_type_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
@@ -78,9 +78,8 @@ ash::mojom::AccessibilityControllerPtr
 AccessibilityPanel::GetAccessibilityController() {
   // Connect to the accessibility mojo interface in ash.
   ash::mojom::AccessibilityControllerPtr accessibility_controller;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &accessibility_controller);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &accessibility_controller);
   return accessibility_controller;
 }
 

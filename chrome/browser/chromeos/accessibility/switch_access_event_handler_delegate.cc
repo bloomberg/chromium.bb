@@ -13,7 +13,7 @@
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -46,9 +46,8 @@ SwitchAccessEventHandlerDelegate::SwitchAccessEventHandlerDelegate()
     : binding_(this) {
   // Connect to ash's AccessibilityController interface.
   ash::mojom::AccessibilityControllerPtr accessibility_controller;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &accessibility_controller);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &accessibility_controller);
 
   // Set this object as the SwitchAccessEventHandlerDelegate.
   ash::mojom::SwitchAccessEventHandlerDelegatePtr ptr;

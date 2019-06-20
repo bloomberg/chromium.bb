@@ -72,10 +72,10 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -323,15 +323,12 @@ AccessibilityManager::AccessibilityManager()
                           weak_ptr_factory_.GetWeakPtr())));
 
   // Connect to ash's AccessibilityController interface.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &accessibility_controller_);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &accessibility_controller_);
 
   // Connect to the media session service.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(media_session::mojom::kServiceName,
-                      &audio_focus_manager_ptr_);
+  content::GetSystemConnector()->BindInterface(
+      media_session::mojom::kServiceName, &audio_focus_manager_ptr_);
 
   ash::AcceleratorController::SetVolumeAdjustmentSoundCallback(
       base::BindRepeating(&AccessibilityManager::PlayVolumeAdjustSound,
