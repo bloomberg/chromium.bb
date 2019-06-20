@@ -57433,6 +57433,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UncacheableReason">
+  <obsolete>
+    Deprecated 06/2019 in issue 975278.
+  </obsolete>
   <int value="0" label="kNoData"/>
   <int value="1" label="kPre11PartialResponse"/>
   <int value="2" label="kNoStrongValidatorOnPartialResponse"/>
