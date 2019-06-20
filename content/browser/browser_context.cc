@@ -339,8 +339,8 @@ void BrowserContext::AsyncObliterateStoragePartition(
     BrowserContext* browser_context,
     const GURL& site,
     const base::Closure& on_gc_required) {
-  GetStoragePartitionMap(browser_context)->AsyncObliterate(site,
-                                                           on_gc_required);
+  GetStoragePartitionMap(browser_context)
+      ->AsyncObliterate(site, on_gc_required);
 }
 
 // static
@@ -352,8 +352,7 @@ void BrowserContext::GarbageCollectStoragePartitions(
       ->GarbageCollect(std::move(active_paths), done);
 }
 
-DownloadManager* BrowserContext::GetDownloadManager(
-    BrowserContext* context) {
+DownloadManager* BrowserContext::GetDownloadManager(BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!context->GetUserData(kDownloadManagerKeyName)) {
     DownloadManager* download_manager = new DownloadManagerImpl(context);
@@ -431,8 +430,8 @@ StoragePartition* BrowserContext::GetStoragePartition(
 
   if (site_instance) {
     GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-        browser_context, site_instance->GetSiteURL(), true,
-        &partition_domain, &partition_name, &in_memory);
+        browser_context, site_instance->GetSiteURL(), true, &partition_domain,
+        &partition_name, &in_memory);
   }
 
   return GetStoragePartitionFromConfig(browser_context, partition_domain,
@@ -633,9 +632,8 @@ void BrowserContext::SetDownloadManagerForTesting(
 }
 
 // static
-void BrowserContext::Initialize(
-    BrowserContext* browser_context,
-    const base::FilePath& path) {
+void BrowserContext::Initialize(BrowserContext* browser_context,
+                                const base::FilePath& path) {
   const base::Token new_group = base::Token::CreateRandom();
   ServiceInstanceGroupHolder* holder = static_cast<ServiceInstanceGroupHolder*>(
       browser_context->GetUserData(kServiceInstanceGroup));
@@ -836,6 +834,11 @@ BrowserContext::GetSharedCorsOriginAccessList() const {
 }
 
 SmsService* BrowserContext::GetSmsService() {
+  return nullptr;
+}
+
+NativeFileSystemPermissionContext*
+BrowserContext::GetNativeFileSystemPermissionContext() {
   return nullptr;
 }
 

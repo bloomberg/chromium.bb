@@ -1326,6 +1326,8 @@ jumbo_source_set("browser") {
     "mime_registry_impl.h",
     "native_file_system/file_system_chooser.cc",
     "native_file_system/file_system_chooser.h",
+    "native_file_system/fixed_native_file_system_permission_grant.cc",
+    "native_file_system/fixed_native_file_system_permission_grant.h",
     "native_file_system/native_file_system_directory_handle_impl.cc",
     "native_file_system/native_file_system_directory_handle_impl.h",
     "native_file_system/native_file_system_file_handle_impl.cc",
