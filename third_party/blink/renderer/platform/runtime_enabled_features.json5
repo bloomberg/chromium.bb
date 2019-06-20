@@ -794,6 +794,10 @@
       status: "experimental",
     },
     {
+      name: "LargestContentfulPaint",
+      status: "experimental",
+    },
+    {
       // Exposes layout shift scores to Javascript. See explainer:
       // http://bit.ly/lsm-explainer.
       name: "LayoutInstabilityAPI",

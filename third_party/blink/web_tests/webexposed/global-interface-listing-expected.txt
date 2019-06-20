@@ -4390,6 +4390,11 @@ interface KeyframeEffect : AnimationEffect
     method setKeyframes
     setter composite
     setter target
+interface LargestContentfulPaint : PerformanceEntry
+    attribute @@toStringTag
+    getter size
+    method constructor
+    method toJSON
 interface LayoutShift : PerformanceEntry
     attribute @@toStringTag
     getter value

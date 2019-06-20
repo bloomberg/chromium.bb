@@ -23683,6 +23683,7 @@ Called by update_net_error_codes.py.-->
   <int value="2924" label="V8CallSiteAPIGetFunctionSloppyCall"/>
   <int value="2925" label="V8CallSiteAPIGetThisSloppyCall"/>
   <int value="2926" label="BuiltInModuleToast"/>
+  <int value="2927" label="LargestContentfulPaintExplicitlyRequested"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -23694,6 +23695,7 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Origins"/>
   <int value="6" label="KeywordsOnly"/>
   <int value="7" label="Mixed"/>
+  &gt;&gt;&gt;&gt;&gt;&gt;&gt; 9f172e486e8ccfee1dc0a15b090845abc21e8c26
 </enum>
 
 <enum name="FeaturePolicyFeature">

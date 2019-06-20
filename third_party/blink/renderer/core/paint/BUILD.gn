@@ -111,6 +111,8 @@ blink_core_sources("paint") {
     "inline_painter.h",
     "inline_text_box_painter.cc",
     "inline_text_box_painter.h",
+    "largest_contentful_paint_calculator.cc",
+    "largest_contentful_paint_calculator.h",
     "line_box_list_painter.cc",
     "line_box_list_painter.h",
     "link_highlight_impl.cc",
