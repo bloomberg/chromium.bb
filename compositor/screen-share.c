@@ -87,6 +87,7 @@ struct ss_seat {
 	struct weston_seat base;
 	struct shared_output *output;
 	struct wl_list link;
+	uint32_t id;
 
 	struct {
 		struct wl_seat *seat;
@@ -366,6 +367,7 @@ ss_seat_create(struct shared_output *so, uint32_t id)
 
 	weston_seat_init(&seat->base, so->output->compositor, "default");
 	seat->output = so;
+	seat->id = id;
 	seat->parent.seat = wl_registry_bind(so->parent.registry, id,
 					     &wl_seat_interface, 1);
 	wl_list_insert(so->seat_list.prev, &seat->link);
@@ -736,6 +738,12 @@ static void
 registry_handle_global_remove(void *data, struct wl_registry *registry,
 			      uint32_t name)
 {
+	struct shared_output *so = data;
+	struct ss_seat *seat, *next;
+
+	wl_list_for_each_safe(seat, next, &so->seat_list, link)
+		if (seat->id == name)
+			ss_seat_destroy(seat);
 }
 
 static const struct wl_registry_listener registry_listener = {
