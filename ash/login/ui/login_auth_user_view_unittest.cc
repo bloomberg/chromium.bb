@@ -104,7 +104,7 @@ TEST_F(LoginAuthUserViewUnittest, ShowingPasswordForcesOpaque) {
 // Verifies that pressing return with an empty password field when tap-to-unlock
 // is enabled attempts unlock.
 TEST_F(LoginAuthUserViewUnittest, PressReturnWithTapToUnlockEnabled) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
 
   ui::test::EventGenerator* generator = GetEventGenerator();
 
@@ -126,7 +126,7 @@ TEST_F(LoginAuthUserViewUnittest, PressReturnWithTapToUnlockEnabled) {
 }
 
 TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   LoginAuthUserView::TestApi test_auth_user_view(view_);
   views::Button* online_sign_in_message(
       test_auth_user_view.online_sign_in_message());
@@ -142,11 +142,10 @@ TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
   EXPECT_FALSE(pin_view->GetVisible());
 
   // Clicking the message triggers |ShowGaiaSignin|.
-  EXPECT_CALL(*client,
-              ShowGaiaSignin(
-                  true /*can_close*/,
-                  base::Optional<AccountId>(
-                      user_view->current_user().basic_user_info.account_id)));
+  EXPECT_CALL(
+      *client,
+      ShowGaiaSignin(true /*can_close*/,
+                     user_view->current_user().basic_user_info.account_id));
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
   view_->ButtonPressed(online_sign_in_message, event);
@@ -193,7 +192,7 @@ TEST_F(LoginAuthUserViewUnittest,
 
 TEST_F(LoginAuthUserViewUnittest, AttemptsUnlockOnLidOpen) {
   LoginAuthUserView::TestApi test_auth_user_view(view_);
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
 
   SetAuthMethods(LoginAuthUserView::AUTH_EXTERNAL_BINARY);
 

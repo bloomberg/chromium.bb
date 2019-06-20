@@ -305,7 +305,6 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
   login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
   // The conditions in this test should only hold while there are user pods on
   // the signin screen.
-  DataDispatcher()->AddObserver(login_shelf_view_);
   AddUsers(1);
 
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
@@ -373,7 +372,6 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
 
 TEST_F(LoginShelfViewTest, ShouldShowGuestButtonWhenNoUserPods) {
   login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
-  DataDispatcher()->AddObserver(login_shelf_view_);
   SetUserCount(0);
 
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
@@ -426,13 +424,13 @@ TEST_F(LoginShelfViewTest, ClickUnlockButton) {
 }
 
 TEST_F(LoginShelfViewTest, ClickCancelButton) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, CancelAddUser());
   Click(LoginShelfView::kCancel);
 }
 
 TEST_F(LoginShelfViewTest, ClickBrowseAsGuestButton) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, LoginAsGuest());
   Click(LoginShelfView::kBrowseAsGuest);
 }

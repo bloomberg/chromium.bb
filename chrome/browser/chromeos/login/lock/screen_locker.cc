@@ -204,19 +204,13 @@ void ScreenLocker::Init() {
 
   // Create and display lock screen.
   CHECK(LoginScreenClient::HasInstance());
-  LoginScreenClient::Get()->login_screen()->ShowLockScreen(base::BindOnce(
-      [](ViewsScreenLocker* screen_locker, bool did_show) {
-        CHECK(did_show);
-        screen_locker->OnLockScreenReady();
-
-        content::NotificationService::current()->Notify(
-            chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-            content::NotificationService::AllSources(),
-            content::NotificationService::NoDetails());
-      },
-      views_screen_locker_.get()));
-
+  ash::LoginScreen::Get()->ShowLockScreen();
   views_screen_locker_->Init();
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 
   // Start locking on ash side.
   SessionControllerClientImpl::Get()->StartLock(base::BindOnce(

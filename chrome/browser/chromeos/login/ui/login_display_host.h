@@ -52,9 +52,8 @@ class WizardController;
 // - LoginDisplayHostCommon is UI-agnostic code shared between the views and
 //   webui hosts.
 // - MockLoginDisplayHost is for tests.
-// - LoginDisplayHostMojo is for the login screen which is a mojo controller
-//   (ie, ash/public/interfaces/login_screen.mojom,
-//    ash/login/login_screen_controller.h).
+// - LoginDisplayHostMojo is for the login screen which is implemented in Ash.
+//   TODO(estade): rename LoginDisplayHostMojo since it no longer uses Mojo.
 // - LoginDisplayHostWebUI is for OOBE, which is written in HTML/JS/CSS.
 class LoginDisplayHost {
  public:
@@ -134,9 +133,8 @@ class LoginDisplayHost {
 
   // Show the gaia dialog. |can_close| determines if the user is allowed to
   // close the dialog. If available, |account| is preloaded in the gaia dialog.
-  virtual void ShowGaiaDialog(
-      bool can_close,
-      const base::Optional<AccountId>& prefilled_account) = 0;
+  virtual void ShowGaiaDialog(bool can_close,
+                              const AccountId& prefilled_account) = 0;
 
   // Hide any visible oobe dialog.
   virtual void HideOobeDialog() = 0;

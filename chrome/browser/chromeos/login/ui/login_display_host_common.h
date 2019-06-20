@@ -79,7 +79,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void OnStartSignInScreenCommon();
 
   // Common code for ShowGaiaDialog() call above.
-  void ShowGaiaDialogCommon(const base::Optional<AccountId>& prefilled_account);
+  void ShowGaiaDialogCommon(const AccountId& prefilled_account);
 
   // Active instance of authentication prewarmer.
   std::unique_ptr<AuthPrewarmer> auth_prewarmer_;

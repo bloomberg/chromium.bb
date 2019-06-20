@@ -112,9 +112,8 @@ bool FakeLoginDisplayHost::IsUserWhitelisted(const AccountId& account_id) {
   return false;
 }
 
-void FakeLoginDisplayHost::ShowGaiaDialog(
-    bool can_close,
-    const base::Optional<AccountId>& prefilled_account) {}
+void FakeLoginDisplayHost::ShowGaiaDialog(bool can_close,
+                                          const AccountId& prefilled_account) {}
 
 void FakeLoginDisplayHost::HideOobeDialog() {}
 

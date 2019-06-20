@@ -641,7 +641,7 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
     LOG_IF(FATAL, screen_type_ != LockScreen::ScreenType::kLogin)
         << "Empty user list received";
     Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-        false /*can_close*/, base::nullopt /*prefilled_account*/);
+        false /*can_close*/, EmptyAccountId() /*prefilled_account*/);
     return;
   }
 

@@ -53,9 +53,8 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void LoadWallpaper(const AccountId& account_id) override;
   void LoadSigninWallpaper() override;
   bool IsUserWhitelisted(const AccountId& account_id) override;
-  void ShowGaiaDialog(
-      bool can_close,
-      const base::Optional<AccountId>& prefilled_account) override;
+  void ShowGaiaDialog(bool can_close,
+                      const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogSize(int width, int height) override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;

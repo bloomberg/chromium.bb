@@ -27,7 +27,6 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -848,7 +847,7 @@ TEST_F(LockContentsViewUnitTest, ShowErrorBubbleOnAuthFailure) {
   LockContentsView::TestApi test_api(contents);
 
   // Password submit runs mojo.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   client->set_authenticate_user_callback_result(false);
   EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(
                            users()[0].basic_user_info.account_id, _, false, _));
@@ -879,7 +878,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorButtonClickable) {
   LockContentsView::TestApi test_api(contents);
 
   // Password submit runs mojo.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   client->set_authenticate_user_callback_result(false);
   EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(
                            users()[0].basic_user_info.account_id, _, false, _));
@@ -907,7 +906,6 @@ TEST_F(LockContentsViewUnitTest, AuthErrorButtonClickable) {
   // Should result in ShowAccountAccessHelpApp().
   generator->MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  Shell::Get()->login_screen_controller()->FlushForTesting();
 
   // AuthErrorButton should go away after button press.
   EXPECT_FALSE(test_api.auth_error_bubble()->GetVisible());
@@ -923,7 +921,7 @@ TEST_F(LockContentsViewUnitTest, GaiaNeverShownOnLockAfterFailedAuth) {
   SetUserCount(1);
   SetWidget(CreateWidgetWithContent(contents));
 
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   client->set_authenticate_user_callback_result(false);
 
   auto submit_password = [&]() {
@@ -949,7 +947,7 @@ TEST_F(LockContentsViewUnitTest, ShowGaiaAuthAfterManyFailedLoginAttempts) {
   SetUserCount(1);
   SetWidget(CreateWidgetWithContent(contents));
 
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   client->set_authenticate_user_callback_result(false);
 
   auto submit_password = [&]() {
@@ -966,10 +964,8 @@ TEST_F(LockContentsViewUnitTest, ShowGaiaAuthAfterManyFailedLoginAttempts) {
   Mock::VerifyAndClearExpectations(client.get());
 
   // The final attempt triggers ShowGaiaSignin.
-  EXPECT_CALL(*client,
-              ShowGaiaSignin(true /*can_close*/,
-                             base::Optional<AccountId>(
-                                 users()[0].basic_user_info.account_id)))
+  EXPECT_CALL(*client, ShowGaiaSignin(true /*can_close*/,
+                                      users()[0].basic_user_info.account_id))
       .Times(1);
   submit_password();
   Mock::VerifyAndClearExpectations(client.get());
@@ -1039,7 +1035,7 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleOnUntrustedDetachableBase) {
 
   // The current detachable base should be set as the last used one by the user
   // after they authenticate - test for this.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   client->set_authenticate_user_callback_result(true);
   EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(kFirstUserAccountId,
                                                           _, false, _));
@@ -1100,7 +1096,7 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleForUnauthenticatedDetachableBase) {
 
   // The last trusted detachable used by the user should not be overriden by
   // user authentication.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   client->set_authenticate_user_callback_result(true);
   EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(kSecondUserAccountId,
                                                           _, false, _));
@@ -1180,7 +1176,7 @@ TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
   EXPECT_FALSE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // Attempt and fail user auth - an auth error is expected to be shown.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   client->set_authenticate_user_callback_result(false);
   EXPECT_CALL(*client,
               AuthenticateUserWithPasswordOrPin_(kUserAccountId, _, false, _));
@@ -1240,7 +1236,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
 
   // Attempt and fail user auth - an auth error is expected to be shown.
   // Detachable base error should not be hidden.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   client->set_authenticate_user_callback_result(false);
   EXPECT_CALL(*client,
               AuthenticateUserWithPasswordOrPin_(kUserAccountId, _, false, _));
@@ -1407,7 +1403,7 @@ TEST_F(LockContentsViewKeyboardUnitTest, PinSubmitWithVirtualKeyboardShown) {
 
   // Require that AuthenticateUser is called with authenticated_by_pin set to
   // true.
-  auto client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(
                            _, "1111", true /*authenticated_by_pin*/, _));
 
@@ -1775,7 +1771,7 @@ TEST_F(LockContentsViewUnitTest, ExpandedPublicSessionView) {
             primary_id);
 
   // Expect LanuchPublicSession mojo call when the submit button is clicked.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, LaunchPublicSession(primary_id, _, _));
 
   // Click on the submit button.
@@ -2111,7 +2107,7 @@ TEST_F(LockContentsViewUnitTest, PowerwashShortcutSendsMojoCall) {
   SetUserCount(1);
   SetWidget(CreateWidgetWithContent(contents));
 
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, ShowResetScreen());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -2175,7 +2171,7 @@ TEST_F(LockContentsViewUnitTest, ShowHideWarningBannerBubble) {
 
   // Attempt and fail user auth - an auth error is expected to be shown.
   // The warning banner should not be hidden.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   client->set_authenticate_user_callback_result(false);
   EXPECT_CALL(*client,
               AuthenticateUserWithPasswordOrPin_(kUserAccountId, _, false, _));
@@ -2326,12 +2322,11 @@ TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithOobeDialogOpen) {
   SetWidget(CreateWidgetWithContent(lock));
 
   // FocusOobeDialog called when OOBE dialog visible.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, FocusOobeDialog()).Times(1);
 
   DataDispatcher()->NotifyOobeDialogState(OobeDialogState::GAIA_SIGNIN);
   lock->OnFocusLeavingSystemTray(false /* reverse */);
-  Shell::Get()->login_screen_controller()->FlushForTesting();
 }
 
 TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithOobeDialogClosed) {
@@ -2342,12 +2337,11 @@ TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithOobeDialogClosed) {
   SetWidget(CreateWidgetWithContent(lock));
 
   // FocusOobeDialog not called when OOBE dialog not visible.
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, FocusOobeDialog()).Times(0);
 
   DataDispatcher()->NotifyOobeDialogState(OobeDialogState::HIDDEN);
   lock->OnFocusLeavingSystemTray(false /* reverse */);
-  Shell::Get()->login_screen_controller()->FlushForTesting();
 }
 
 TEST_F(LockContentsViewUnitTest, LoginNotReactingOnEventsWithOobeDialogShown) {

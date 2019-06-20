@@ -130,7 +130,7 @@ struct ASH_PUBLIC_EXPORT EasyUnlockIconOptions {
   // If true, clicking the easy unlock icon should fire a hardlock event which
   // will disable easy unlock. The hardlock event will request a new icon
   // display via a separate EasyUnlockIconsOption update. See
-  // login_screen.mojom::HardlockPod.
+  // LoginScreenClient::HardlockPod.
   bool hardlock_on_click = false;
 };
 

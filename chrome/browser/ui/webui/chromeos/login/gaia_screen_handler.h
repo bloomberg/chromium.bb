@@ -56,7 +56,7 @@ class GaiaView {
   // either be shown immediately or after an asynchronous clean-up process that
   // cleans DNS cache and cookies. If available, |account_id| is used for
   // prefilling information.
-  virtual void ShowGaiaAsync(const base::Optional<AccountId>& account_id) = 0;
+  virtual void ShowGaiaAsync(const AccountId& account_id) = 0;
 
   // Show sign-in screen for the given credentials. |services| is a list of
   // services returned by userInfo call as JSON array. Should be an empty array
@@ -109,7 +109,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // GaiaView:
   void MaybePreloadAuthExtension() override;
   void DisableRestrictiveProxyCheckForTest() override;
-  void ShowGaiaAsync(const base::Optional<AccountId>& account_id) override;
+  void ShowGaiaAsync(const AccountId& account_id) override;
   void ShowSigninScreenForTest(const std::string& username,
                                const std::string& password,
                                const std::string& services) override;

@@ -122,10 +122,6 @@ void BindLocaleUpdateControllerOnMainThread(
   Shell::Get()->locale_update_controller()->BindRequest(std::move(request));
 }
 
-void BindLockScreenRequestOnMainThread(mojom::LoginScreenRequest request) {
-  Shell::Get()->login_screen_controller()->BindRequest(std::move(request));
-}
-
 void BindMediaControllerRequestOnMainThread(
     mojom::MediaControllerRequest request) {
   Shell::Get()->media_controller()->BindRequest(std::move(request));
@@ -213,9 +209,6 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindLocaleUpdateControllerOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindLockScreenRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindMediaControllerRequestOnMainThread),
