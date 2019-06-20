@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -23,6 +26,7 @@ public class AccessibilityPreferences
     static final String PREF_TEXT_SCALE = "text_scale";
     static final String PREF_FORCE_ENABLE_ZOOM = "force_enable_zoom";
     static final String PREF_READER_FOR_ACCESSIBILITY = "reader_for_accessibility";
+    static final String PREF_CAPTIONS = "captions";
 
     private NumberFormat mFormat;
     private FontSizePrefs mFontSizePrefs;
@@ -72,6 +76,22 @@ public class AccessibilityPreferences
                             ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER, true));
         } else {
             getPreferenceScreen().removePreference(mAccessibilityTabSwitcherPref);
+        }
+
+        Preference captions = findPreference(PREF_CAPTIONS);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CAPTION_SETTINGS)) {
+            captions.setOnPreferenceClickListener(preference -> {
+                Intent intent = new Intent(Settings.ACTION_CAPTIONING_SETTINGS);
+
+                // Open the activity in a new task because the back button on the caption
+                // settings page navigates to the previous settings page instead of Chrome.
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+
+                return true;
+            });
+        } else {
+            getPreferenceScreen().removePreference(captions);
         }
     }
 

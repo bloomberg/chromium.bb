@@ -25,4 +25,8 @@
         android:summary="@string/accessibility_tab_switcher_summary"
         android:title="@string/accessibility_tab_switcher_title" />
 
+    <android.support.v7.preference.Preference
+        android:key="captions"
+        android:title="@string/accessibility_captions_title"/>
+
 </android.support.v7.preference.PreferenceScreen>
