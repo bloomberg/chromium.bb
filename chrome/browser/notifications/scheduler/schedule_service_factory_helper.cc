@@ -20,6 +20,7 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_store.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
+#include "chrome/browser/notifications/scheduler/internal/webui_client.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_client_registrar.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -43,6 +44,8 @@ KeyedService* CreateNotificationScheduleService(
   auto config = SchedulerConfig::Create();
   auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  client_registrar->RegisterClient(SchedulerClientType::kWebUI,
+                                   std::make_unique<WebUIClient>());
 
   // Build icon store.
   base::FilePath icon_store_dir = storage_dir.Append(kIconDBName);
