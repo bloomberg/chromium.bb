@@ -412,6 +412,11 @@ const OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() const {
   return delegate_.get();
 }
 
+const base::ObserverList<AccessTokenDiagnosticsObserver, true>::Unchecked&
+OAuth2TokenService::GetAccessTokenDiagnosticsObservers() {
+  return token_manager_->diagnostics_observer_list_;
+}
+
 OAuth2TokenService::TokenCache& OAuth2TokenService::token_cache() {
   return token_manager_->token_cache();
 }
@@ -431,6 +436,16 @@ void OAuth2TokenService::AddDiagnosticsObserver(DiagnosticsObserver* observer) {
 void OAuth2TokenService::RemoveDiagnosticsObserver(
     DiagnosticsObserver* observer) {
   diagnostics_observer_list_.RemoveObserver(observer);
+}
+
+void OAuth2TokenService::AddAccessTokenDiagnosticsObserver(
+    AccessTokenDiagnosticsObserver* observer) {
+  token_manager_->AddDiagnosticsObserver(observer);
+}
+
+void OAuth2TokenService::RemoveAccessTokenDiagnosticsObserver(
+    AccessTokenDiagnosticsObserver* observer) {
+  token_manager_->RemoveDiagnosticsObserver(observer);
 }
 
 std::unique_ptr<OAuth2TokenService::Request>
@@ -510,13 +525,13 @@ OAuth2TokenService::StartRequestForClientWithContext(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::unique_ptr<RequestImpl> request(new RequestImpl(account_id, consumer));
-  for (auto& observer : diagnostics_observer_list_)
+  for (auto& observer : token_manager_->diagnostics_observer_list_)
     observer.OnAccessTokenRequested(account_id, consumer->id(), scopes);
 
   if (!RefreshTokenIsAvailable(account_id)) {
     GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
 
-    for (auto& observer : diagnostics_observer_list_) {
+    for (auto& observer : token_manager_->diagnostics_observer_list_) {
       observer.OnFetchAccessTokenComplete(account_id, consumer->id(), scopes,
                                           error, base::Time());
     }
@@ -581,7 +596,7 @@ void OAuth2TokenService::InformConsumerWithCachedTokenResponse(
     RequestImpl* request,
     const RequestParameters& request_parameters) {
   DCHECK(cache_token_response && cache_token_response->access_token.length());
-  for (auto& observer : diagnostics_observer_list_) {
+  for (auto& observer : token_manager_->diagnostics_observer_list_) {
     observer.OnFetchAccessTokenComplete(
         request_parameters.account_id, request->GetConsumerId(),
         request_parameters.scopes, GoogleServiceAuthError::AuthErrorNone(),
@@ -704,7 +719,7 @@ void OAuth2TokenService::OnFetchComplete(Fetcher* fetcher) {
       GetCachedTokenResponse(request_param);
   for (const base::WeakPtr<RequestImpl>& req : fetcher->waiting_requests()) {
     if (req) {
-      for (auto& observer : diagnostics_observer_list_) {
+      for (auto& observer : token_manager_->diagnostics_observer_list_) {
         observer.OnFetchAccessTokenComplete(
             req->GetAccountId(), req->GetConsumerId(), fetcher->GetScopeSet(),
             fetcher->error(), entry ? entry->expiration_time : base::Time());

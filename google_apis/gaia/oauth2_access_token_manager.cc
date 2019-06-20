@@ -14,6 +14,16 @@ OAuth2AccessTokenManager::OAuth2AccessTokenManager(
 
 OAuth2AccessTokenManager::~OAuth2AccessTokenManager() = default;
 
+void OAuth2AccessTokenManager::AddDiagnosticsObserver(
+    AccessTokenDiagnosticsObserver* observer) {
+  diagnostics_observer_list_.AddObserver(observer);
+}
+
+void OAuth2AccessTokenManager::RemoveDiagnosticsObserver(
+    AccessTokenDiagnosticsObserver* observer) {
+  diagnostics_observer_list_.RemoveObserver(observer);
+}
+
 void OAuth2AccessTokenManager::RegisterTokenResponse(
     const std::string& client_id,
     const CoreAccountId& account_id,
@@ -43,7 +53,7 @@ OAuth2AccessTokenManager::GetCachedTokenResponse(
 void OAuth2AccessTokenManager::ClearCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (const auto& entry : token_cache_) {
-    for (auto& observer : token_service_->GetDiagnicsObservers())
+    for (auto& observer : diagnostics_observer_list_)
       observer.OnAccessTokenRemoved(entry.first.account_id, entry.first.scopes);
   }
 
@@ -57,7 +67,7 @@ void OAuth2AccessTokenManager::ClearCacheForAccount(
        iter != token_cache_.end();
        /* iter incremented in body */) {
     if (iter->first.account_id == account_id) {
-      for (auto& observer : token_service_->GetDiagnicsObservers())
+      for (auto& observer : diagnostics_observer_list_)
         observer.OnAccessTokenRemoved(account_id, iter->first.scopes);
       token_cache_.erase(iter++);
     } else {
@@ -74,7 +84,7 @@ bool OAuth2AccessTokenManager::RemoveCachedTokenResponse(
       token_cache_.find(request_parameters);
   if (token_iterator != token_cache_.end() &&
       token_iterator->second.access_token == token_to_remove) {
-    for (auto& observer : token_service_->GetDiagnicsObservers()) {
+    for (auto& observer : diagnostics_observer_list_) {
       observer.OnAccessTokenRemoved(request_parameters.account_id,
                                     request_parameters.scopes);
     }

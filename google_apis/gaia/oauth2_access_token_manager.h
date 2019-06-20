@@ -21,6 +21,10 @@ class OAuth2AccessTokenManager {
   explicit OAuth2AccessTokenManager(OAuth2TokenService* token_service);
   virtual ~OAuth2AccessTokenManager();
 
+  // Add or remove observers of this token manager.
+  void AddDiagnosticsObserver(AccessTokenDiagnosticsObserver* observer);
+  void RemoveDiagnosticsObserver(AccessTokenDiagnosticsObserver* observer);
+
   // Add a new entry to the cache.
   void RegisterTokenResponse(
       const std::string& client_id,
@@ -58,6 +62,9 @@ class OAuth2AccessTokenManager {
 
   // The cache of currently valid tokens.
   OAuth2TokenService::TokenCache token_cache_;
+  // List of observers to notify when access token status changes.
+  base::ObserverList<AccessTokenDiagnosticsObserver, true>::Unchecked
+      diagnostics_observer_list_;
   // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
   // fully manages access tokens independently of OAuth2TokenService.
   OAuth2TokenService* token_service_;

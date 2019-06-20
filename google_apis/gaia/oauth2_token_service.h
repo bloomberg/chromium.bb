@@ -24,6 +24,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
+#include "google_apis/gaia/oauth2_access_token_manager_diagnostics_observer.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 
 namespace network {
@@ -92,27 +93,11 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
     std::string id_;
   };
 
-  // Classes that want to monitor status of access token and access token
+  // Classes that want to monitor status of refresh token and refresh token
   // request should implement this interface and register with the
   // AddDiagnosticsObserver() call.
   class DiagnosticsObserver {
    public:
-    // Called when receiving request for access token.
-    virtual void OnAccessTokenRequested(const CoreAccountId& account_id,
-                                        const std::string& consumer_id,
-                                        const ScopeSet& scopes) {}
-    // Called when access token fetching finished successfully or
-    // unsuccessfully. |expiration_time| are only valid with
-    // successful completion.
-    virtual void OnFetchAccessTokenComplete(const CoreAccountId& account_id,
-                                            const std::string& consumer_id,
-                                            const ScopeSet& scopes,
-                                            GoogleServiceAuthError error,
-                                            base::Time expiration_time) {}
-    // Called when an access token was removed.
-    virtual void OnAccessTokenRemoved(const CoreAccountId& account_id,
-                                      const ScopeSet& scopes) {}
-
     // Caled when a new refresh token is available. Contains diagnostic
     // information about the source of the update credentials operation.
     virtual void OnRefreshTokenAvailableFromSource(
@@ -157,6 +142,14 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // Add or remove observers of this token service.
   void AddDiagnosticsObserver(DiagnosticsObserver* observer);
   void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
+
+  // TODO(https://crbug.com/967598): Remove these APIs once we can use
+  // OAuth2AccessTokenManager without OAuth2TokenService.
+  // Add or remove observers of access token manager.
+  void AddAccessTokenDiagnosticsObserver(
+      AccessTokenDiagnosticsObserver* observer);
+  void RemoveAccessTokenDiagnosticsObserver(
+      AccessTokenDiagnosticsObserver* observer);
 
   // Checks in the cache for a valid access token for a specified |account_id|
   // and |scopes|, and if not found starts a request for an OAuth2 access token
@@ -260,9 +253,12 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   OAuth2TokenService::TokenCache& token_cache();
 
   const base::ObserverList<DiagnosticsObserver, true>::Unchecked&
-  GetDiagnicsObservers() {
+  GetDiagnosticsObservers() {
     return diagnostics_observer_list_;
   }
+
+  const base::ObserverList<AccessTokenDiagnosticsObserver, true>::Unchecked&
+  GetAccessTokenDiagnosticsObservers();
 
  protected:
   // Implements a cancelable |OAuth2TokenService::Request|, which should be
