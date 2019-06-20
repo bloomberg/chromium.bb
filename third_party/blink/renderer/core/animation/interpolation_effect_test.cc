@@ -67,6 +67,10 @@ TEST(AnimationInterpolationEffectTest, SingleInterpolation) {
   interpolation_effect->GetActiveInterpolations(3, kInterpolationTestDuration,
                                                 active_interpolations);
   EXPECT_EQ(0ul, active_interpolations.size());
+
+  interpolation_effect->GetActiveInterpolations(0, kInterpolationTestDuration,
+                                                active_interpolations);
+  EXPECT_EQ(1ul, active_interpolations.size());
 }
 
 TEST(AnimationInterpolationEffectTest, MultipleInterpolations) {
