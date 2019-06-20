@@ -6158,4 +6158,7 @@ crbug.com/976587 netinfo/gc-unused-listeners.html [ Pass Failure ]
 crbug.com/959129 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 
 # Sheriff 2019-06-20
-crbug.com/977153 [ Mac ]  fast/forms/validation-bubble-appearance-wrap.html [ Pass Failure ]
+crbug.com/977153 [ Mac ] fast/forms/validation-bubble-appearance-wrap.html [ Pass Failure ]
+crbug.com/976045 [ Win ] fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+crbug.com/976045 [ Win ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+crbug.com/976045 [ Win ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
