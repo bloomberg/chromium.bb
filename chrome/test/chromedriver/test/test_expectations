@@ -40,6 +40,9 @@ _NEGATIVE_FILTER = [
 _READY_TO_RUN_FILTER = [
     # marked as not yet implemented with chrome but already works
     'ProxySettingTest.canUsePACThatOnlyProxiesCertainHosts',
+    'ContentEditableTest.testShouldAppendToTinyMCE',
+    'ContentEditableTest.testShouldBeAbleToTypeIntoContentEditableElementWithExistingValue',
+    'ContentEditableTest.appendsTextToEndOfContentEditableWithMultipleTextNodes',
 ]
 
 _OS_NEGATIVE_FILTER = {}
