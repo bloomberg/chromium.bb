@@ -77,4 +77,14 @@ weston_log_subscription_add(struct weston_log_scope *scope,
 void
 weston_log_subscription_remove(struct weston_log_subscription *sub);
 
+struct weston_log_scope *
+weston_log_get_scope(struct weston_log_context *log_ctx, const char *name);
+
+void
+weston_log_run_begin_cb(struct weston_log_scope *scope);
+
+void
+weston_debug_protocol_advertise_scopes(struct weston_log_context *log_ctx,
+				       struct wl_resource *res);
+
 #endif /* WESTON_LOG_INTERNAL_H */

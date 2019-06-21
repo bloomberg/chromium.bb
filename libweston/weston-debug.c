@@ -240,17 +240,50 @@ weston_log_subscription_remove(struct weston_log_subscription *sub)
 	sub->source = NULL;
 }
 
-
-static struct weston_log_scope *
-get_scope(struct weston_log_context *log_ctx, const char *name)
+/** Look-up the scope from the scope list  stored in the log context, by
+ * matching against the \c name.
+ *
+ * @param log_ctx
+ * @param name the scope name, see weston_compositor_add_log_scope()
+ * @returns NULL if none found, or a pointer to a weston_log_scope
+ *
+ * @internal
+ */
+struct weston_log_scope *
+weston_log_get_scope(struct weston_log_context *log_ctx, const char *name)
 {
 	struct weston_log_scope *scope;
-
 	wl_list_for_each(scope, &log_ctx->scope_list, compositor_link)
 		if (strcmp(name, scope->name) == 0)
 			return scope;
-
 	return NULL;
+}
+
+/** Wrapper to invoke the weston_log_scope_cb. Allows to call the begin_cb of
+ * a log scope.
+ *
+ * @internal
+ */
+void
+weston_log_run_begin_cb(struct weston_log_scope *scope)
+{
+	if (scope->begin_cb)
+		scope->begin_cb(scope, scope->user_data);
+}
+
+/** Advertise the log scope name and the log scope description
+ *
+ * This is only used by the weston-debug protocol!
+ *
+ * @internal
+ */
+void
+weston_debug_protocol_advertise_scopes(struct weston_log_context *log_ctx,
+				       struct wl_resource *res)
+{
+	struct weston_log_scope *scope;
+	wl_list_for_each(scope, &log_ctx->scope_list, compositor_link)
+		weston_debug_v1_send_available(res, scope->name, scope->desc);
 }
 
 static void
@@ -379,7 +412,7 @@ stream_create(struct weston_log_context *log_ctx, const char *name,
 
 	sub = weston_log_subscription_create(&stream->base, name);
 
-	scope = get_scope(log_ctx, name);
+	scope = weston_log_get_scope(log_ctx, name);
 	if (scope) {
 		weston_log_subscription_add(scope, sub);
 		if (scope->begin_cb)
@@ -475,7 +508,6 @@ bind_weston_debug(struct wl_client *client,
 		   void *data, uint32_t version, uint32_t id)
 {
 	struct weston_log_context *log_ctx = data;
-	struct weston_log_scope *scope;
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client,
@@ -488,10 +520,7 @@ bind_weston_debug(struct wl_client *client,
 	wl_resource_set_implementation(resource, &weston_debug_impl,
 				       log_ctx, NULL);
 
-       wl_list_for_each(scope, &log_ctx->scope_list, compositor_link) {
-		weston_debug_v1_send_available(resource, scope->name,
-					       scope->desc);
-       }
+       weston_debug_protocol_advertise_scopes(log_ctx, resource);
 }
 
 /**
@@ -664,7 +693,7 @@ weston_compositor_add_log_scope(struct weston_log_context *log_ctx,
 		return NULL;
 	}
 
-	if (get_scope(log_ctx, name)){
+	if (weston_log_get_scope(log_ctx, name)){
 		weston_log("Error: debug scope named '%s' is already registered.\n",
 			   name);
 		return NULL;
