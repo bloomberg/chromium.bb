@@ -20,8 +20,6 @@ inline double CurrentTimeMS() {
   return CurrentTime() * 1000.0;
 }
 
-using TimeFunction = double (*)();
-
 // Monotonically increasing clock time since an arbitrary and unspecified origin
 // time. Mockable using SetTimeFunctionsForTesting().
 WTF_EXPORT base::TimeTicks CurrentTimeTicks();
