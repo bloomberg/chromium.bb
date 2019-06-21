@@ -1595,7 +1595,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spa
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-pseudo-before-following-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-pseudo-before.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/invalid-spanner-container-becomes-valid.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/relayout-abspos-in-relpos-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-abspos-next-to-spanner.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-and-insert-block-after-spanner.html [ Failure ]
