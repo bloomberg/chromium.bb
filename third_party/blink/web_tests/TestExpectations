@@ -5956,9 +5956,6 @@ crbug.com/952708 external/wpt/css/css-paint-api/parse-input-arguments-018.https.
 crbug.com/953153 virtual/speech-with-unified-autoplay/external/wpt/speech-api/idlharness.window.html [ Pass Failure Timeout ]
 crbug.com/953153 external/wpt/speech-api/idlharness.window.html [ Pass Failure Timeout ]
 
-# portals-adopt-predecessor occasionally times out.
-crbug.com/952584 external/wpt/portals/portals-adopt-predecessor.html [ Pass Timeout ]
-
 # portals/csp/frame-src.sub.html crashes because of a race between cancelling a
 # speculative navigation in the browser, and committing the navigation in the
 # renderer.
