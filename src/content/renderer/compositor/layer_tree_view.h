@@ -72,7 +72,8 @@ class LayerTreeView : public blink::WebLayerTreeView,
   // The |ukm_recorder_factory| may be null to disable recording (in tests
   // only).
   void Initialize(const cc::LayerTreeSettings& settings,
-                  std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
+                  std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+                  int routing_id);
 
   cc::AnimationHost* animation_host() { return animation_host_.get(); }
 
