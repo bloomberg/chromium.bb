@@ -8,200 +8,225 @@ const kDefaultLimits: GPULimits = {
 };
 
 class BindGroup implements GPUBindGroup {
-  public label: string | undefined;
+  label: string | undefined;
 }
 class BindGroupLayout implements GPUBindGroupLayout {
-  public label: string | undefined;
+  label: string | undefined;
 }
 class Buffer implements GPUBuffer {
-  public label: string | undefined;
-  public readonly mapping: ArrayBuffer | null = null;
-  constructor() { }
-  public destroy() { }
-  public unmap() { }
+  label: string | undefined;
+  readonly mapping: ArrayBuffer | null = null;
+  constructor() {}
+  destroy() {}
+  unmap() {}
 
-  public async mapReadAsync(): Promise<ArrayBuffer> {
+  async mapReadAsync(): Promise<ArrayBuffer> {
     return new ArrayBuffer(0);
   }
-  public async mapWriteAsync(): Promise<ArrayBuffer> {
+  async mapWriteAsync(): Promise<ArrayBuffer> {
     return new ArrayBuffer(0);
   }
-  public setSubData(
-    offset: number, src: ArrayBufferView, srcOffset: number = 0, byteLength: number = 0): void { }
+  setSubData(offset: number, src: ArrayBufferView, srcOffset = 0, byteLength = 0): void {}
 }
 class CommandEncoder implements GPUCommandEncoder {
-  public label: string | undefined;
-  public beginComputePass(): GPUComputePassEncoder {
+  label: string | undefined;
+  beginComputePass(): GPUComputePassEncoder {
     return new ComputePassEncoder();
   }
-  public beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder {
+  beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder {
     return new RenderPassEncoder();
   }
-  public blit(): void { }
-  public copyBufferToBuffer(
-    src: GPUBuffer, srcOffset: number, dst: GPUBuffer, dstOffset: number, size: number): void { }
-  public copyBufferToTexture(
-    source: GPUBufferCopyView, destination: GPUTextureCopyView, copySize: GPUExtent3D): void { }
-  public copyTextureToBuffer(
-    source: GPUTextureCopyView, destination: GPUBufferCopyView, copySize: GPUExtent3D): void { }
-  public copyTextureToTexture(
-    source: GPUTextureCopyView, destination: GPUTextureCopyView, copySize: GPUExtent3D): void { }
-  public finish(): GPUCommandBuffer {
+  blit(): void {}
+  copyBufferToBuffer(
+    src: GPUBuffer,
+    srcOffset: number,
+    dst: GPUBuffer,
+    dstOffset: number,
+    size: number
+  ): void {}
+  copyBufferToTexture(
+    source: GPUBufferCopyView,
+    destination: GPUTextureCopyView,
+    copySize: GPUExtent3D
+  ): void {}
+  copyTextureToBuffer(
+    source: GPUTextureCopyView,
+    destination: GPUBufferCopyView,
+    copySize: GPUExtent3D
+  ): void {}
+  copyTextureToTexture(
+    source: GPUTextureCopyView,
+    destination: GPUTextureCopyView,
+    copySize: GPUExtent3D
+  ): void {}
+  finish(): GPUCommandBuffer {
     return new CommandBuffer();
   }
 }
 class CommandBuffer implements GPUCommandBuffer {
-  public label: string | undefined;
+  label: string | undefined;
 }
 class ProgrammablePassEncoder implements GPUProgrammablePassEncoder {
-  public label: string | undefined;
-  constructor() { }
-  public endPass(): void { }
-  public insertDebugMarker(markerLabel: string): void { }
-  public popDebugGroup(): void { }
-  public pushDebugGroup(groupLabel: string): void { }
-  public setBindGroup(index: number, bindGroup: BindGroup): void { }
-  public setPipeline(pipeline: ComputePipeline | RenderPipeline): void { }
+  label: string | undefined;
+  constructor() {}
+  endPass(): void {}
+  insertDebugMarker(markerLabel: string): void {}
+  popDebugGroup(): void {}
+  pushDebugGroup(groupLabel: string): void {}
+  setBindGroup(index: number, bindGroup: BindGroup): void {}
+  setPipeline(pipeline: ComputePipeline | RenderPipeline): void {}
 }
 class ComputePassEncoder extends ProgrammablePassEncoder implements GPUComputePassEncoder {
-  public label: string | undefined;
-  public dispatch(x: number, y: number, z: number): void { }
+  label: string | undefined;
+  dispatch(x: number, y: number, z: number): void {}
 }
 class RenderPassEncoder extends ProgrammablePassEncoder implements GPURenderPassEncoder {
-  public label: string | undefined;
-  public draw(
-    vertexCount: number, instanceCount: number, firstVertex: number,
-    firstInstance: number): void { }
-  public drawIndexed(
-    indexCount: number, instanceCount: number, firstIndex: number, baseVertex: number,
-    firstInstance: number): void { }
-  public setBlendColor(color: GPUColor): void { }
-  public setIndexBuffer(buffer: Buffer, offset: number): void { }
-  public setScissorRect(x: number, y: number, width: number, height: number): void { }
-  public setStencilReference(reference: number): void { }
-  public setVertexBuffers(startSlot: number, buffers: Buffer[], offsets: number[]): void { }
-  public setViewport(
-    x: number, y: number, width: number, height: number, minDepth: number,
-    maxDepth: number): void { }
+  label: string | undefined;
+  draw(
+    vertexCount: number,
+    instanceCount: number,
+    firstVertex: number,
+    firstInstance: number
+  ): void {}
+  drawIndexed(
+    indexCount: number,
+    instanceCount: number,
+    firstIndex: number,
+    baseVertex: number,
+    firstInstance: number
+  ): void {}
+  setBlendColor(color: GPUColor): void {}
+  setIndexBuffer(buffer: Buffer, offset: number): void {}
+  setScissorRect(x: number, y: number, width: number, height: number): void {}
+  setStencilReference(reference: number): void {}
+  setVertexBuffers(startSlot: number, buffers: Buffer[], offsets: number[]): void {}
+  setViewport(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    minDepth: number,
+    maxDepth: number
+  ): void {}
 }
 class ComputePipeline implements GPUComputePipeline {
-  public label: string | undefined;
+  label: string | undefined;
 }
 class Fence implements GPUFence {
-  public label: string | undefined;
-  public getCompletedValue(): number {
+  label: string | undefined;
+  getCompletedValue(): number {
     return 0;
   }
-  public onCompletion(completionValue: number): Promise<void> {
+  onCompletion(completionValue: number): Promise<void> {
     return Promise.resolve();
   }
 }
 class PipelineLayout implements GPUPipelineLayout {
-  public label: string | undefined;
+  label: string | undefined;
 }
 class RenderPipeline implements GPURenderPipeline {
-  public label: string | undefined;
+  label: string | undefined;
 }
 class Sampler implements GPUSampler {
-  public label: string | undefined;
+  label: string | undefined;
 }
 class ShaderModule implements GPUShaderModule {
-  public label: string | undefined;
+  label: string | undefined;
 }
 class Texture implements GPUTexture {
-  public label: string | undefined;
-  constructor() { }
-  public createDefaultView(): TextureView {
+  label: string | undefined;
+  constructor() {}
+  createDefaultView(): TextureView {
     return new TextureView();
   }
-  public createView(desc: GPUTextureViewDescriptor): TextureView {
+  createView(desc: GPUTextureViewDescriptor): TextureView {
     return new TextureView();
   }
-  public destroy() { }
+  destroy() {}
 }
 class TextureView implements GPUTextureView {
-  public label: string | undefined;
-  constructor() { }
+  label: string | undefined;
+  constructor() {}
 }
 class Queue implements GPUQueue {
-  public label: string | undefined;
-  public createFence(descriptor: GPUFenceDescriptor): Fence {
+  label: string | undefined;
+  createFence(descriptor: GPUFenceDescriptor): Fence {
     return new Fence();
   }
-  public signal(fence: Fence, signalValue: number): void { }
-  public submit(buffers: CommandBuffer[]): void { }
-  public wait(fence: Fence, valueToWait: number): void { }
+  signal(fence: Fence, signalValue: number): void {}
+  submit(buffers: CommandBuffer[]): void {}
+  wait(fence: Fence, valueToWait: number): void {}
 }
 class SwapChain implements GPUSwapChain {
-  public getCurrentTexture(): Texture {
+  getCurrentTexture(): Texture {
     return new Texture();
   }
 }
 class Device extends EventTarget implements GPUDevice {
-  public readonly adapter: Adapter;
-  public readonly extensions: GPUExtensions;
-  public readonly limits = kDefaultLimits;
-  public readonly lost: Promise<GPUDeviceLostInfo> = new Promise(() => { });
+  readonly adapter: Adapter;
+  readonly extensions: GPUExtensions;
+  readonly limits = kDefaultLimits;
+  readonly lost: Promise<GPUDeviceLostInfo> = new Promise(() => {});
 
-  public onuncapturederror: Event | undefined;
+  onuncapturederror: Event | undefined;
   private queue: Queue = new Queue();
   constructor(adapter: Adapter, descriptor: GPUDeviceDescriptor) {
     super();
     this.adapter = adapter;
     this.extensions = descriptor.extensions || kNoExtensions;
   }
-  public createBindGroup(descriptor: GPUBindGroupDescriptor): BindGroup {
+  createBindGroup(descriptor: GPUBindGroupDescriptor): BindGroup {
     return new BindGroup();
   }
-  public createBindGroupLayout(descriptor: GPUBindGroupLayoutDescriptor): BindGroupLayout {
+  createBindGroupLayout(descriptor: GPUBindGroupLayoutDescriptor): BindGroupLayout {
     return new BindGroupLayout();
   }
-  public createBuffer(descriptor: GPUBufferDescriptor): Buffer {
+  createBuffer(descriptor: GPUBufferDescriptor): Buffer {
     return new Buffer();
   }
-  public createCommandEncoder(descriptor: GPUCommandEncoderDescriptor): CommandEncoder {
+  createCommandEncoder(descriptor: GPUCommandEncoderDescriptor): CommandEncoder {
     return new CommandEncoder();
   }
-  public createComputePipeline(descriptor: GPUComputePipelineDescriptor): ComputePipeline {
+  createComputePipeline(descriptor: GPUComputePipelineDescriptor): ComputePipeline {
     return new ComputePipeline();
   }
-  public createPipelineLayout(descriptor: GPUPipelineLayoutDescriptor): PipelineLayout {
+  createPipelineLayout(descriptor: GPUPipelineLayoutDescriptor): PipelineLayout {
     return new PipelineLayout();
   }
-  public createRenderPipeline(descriptor: GPURenderPipelineDescriptor): RenderPipeline {
+  createRenderPipeline(descriptor: GPURenderPipelineDescriptor): RenderPipeline {
     return new RenderPipeline();
   }
-  public createSampler(descriptor: GPUSamplerDescriptor): Sampler {
+  createSampler(descriptor: GPUSamplerDescriptor): Sampler {
     return new Sampler();
   }
-  public createShaderModule(descriptor: GPUShaderModuleDescriptor): ShaderModule {
+  createShaderModule(descriptor: GPUShaderModuleDescriptor): ShaderModule {
     return new ShaderModule();
   }
-  public createTexture(descriptor: GPUTextureDescriptor): Texture {
+  createTexture(descriptor: GPUTextureDescriptor): Texture {
     return new Texture();
   }
 
-  public getQueue(): Queue {
+  getQueue(): Queue {
     return this.queue;
   }
 
-  public createSwapChain(descriptor: GPUSwapChainDescriptor): SwapChain {
+  createSwapChain(descriptor: GPUSwapChainDescriptor): SwapChain {
     return new SwapChain();
   }
-  public async getSwapChainPreferredFormat(context: GPUCanvasContext): Promise<GPUTextureFormat> {
+  async getSwapChainPreferredFormat(context: GPUCanvasContext): Promise<GPUTextureFormat> {
     return 'rgba8unorm';
   }
 
-  public pushErrorScope(filter: GPUErrorFilter): void { }
-  public async popErrorScope(): Promise<GPUError | null> {
+  pushErrorScope(filter: GPUErrorFilter): void {}
+  async popErrorScope(): Promise<GPUError | null> {
     return null;
   }
 }
 
 class Adapter implements GPUAdapter {
-  public extensions = kNoExtensions;
-  public name = 'dummy';
-  public async requestDevice(descriptor: GPUDeviceDescriptor): Promise<Device> {
+  extensions = kNoExtensions;
+  name = 'dummy';
+  async requestDevice(descriptor: GPUDeviceDescriptor): Promise<Device> {
     return new Device(this, descriptor);
   }
 }

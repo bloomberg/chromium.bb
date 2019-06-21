@@ -15,11 +15,11 @@ export interface IResult {
 }
 
 export class Logger {
-  public readonly results: ITestLog[] = [];
+  readonly results: ITestLog[] = [];
 
-  constructor() { }
+  constructor() {}
 
-  public record(path: string): [ITestLog, GroupRecorder] {
+  record(path: string): [ITestLog, GroupRecorder] {
     const cases: IResult[] = [];
     const test: ITestLog = { path, cases };
     this.results.push(test);
@@ -34,7 +34,7 @@ export class GroupRecorder {
     this.test = test;
   }
 
-  public record(name: string, params: IParamsSpec | null): [IResult, CaseRecorder] {
+  record(name: string, params: IParamsSpec | null): [IResult, CaseRecorder] {
     const result: IResult = { name, params, status: 'running', timems: -1 };
     if (params) {
       result.params = params;
@@ -46,23 +46,23 @@ export class GroupRecorder {
 
 export class CaseRecorder {
   private result: IResult;
-  private failed: boolean = false;
-  private warned: boolean = false;
-  private startTime: number = -1;
+  private failed = false;
+  private warned = false;
+  private startTime = -1;
   private logs: string[] = [];
 
   constructor(result: IResult) {
     this.result = result;
   }
 
-  public start() {
+  start() {
     this.startTime = now();
     this.logs = [];
     this.failed = false;
     this.warned = false;
   }
 
-  public finish() {
+  finish() {
     if (this.startTime < 0) {
       throw new Error('finish() before start()');
     }
@@ -73,11 +73,11 @@ export class CaseRecorder {
     this.result.logs = this.logs;
   }
 
-  public log(msg: string) {
+  log(msg: string) {
     this.logs.push(msg);
   }
 
-  public warn(msg?: string) {
+  warn(msg?: string) {
     this.warned = true;
     let m = 'WARN';
     if (msg) {
@@ -87,7 +87,7 @@ export class CaseRecorder {
     this.log(m);
   }
 
-  public fail(msg?: string) {
+  fail(msg?: string) {
     this.failed = true;
     let m = 'FAIL';
     if (msg) {
@@ -97,7 +97,7 @@ export class CaseRecorder {
     this.log(m);
   }
 
-  public threw(e: Error) {
+  threw(e: Error) {
     this.failed = true;
     let m = 'EXCEPTION';
     m += ' ' + getStackTrace(e);

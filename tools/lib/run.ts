@@ -30,7 +30,11 @@ if (!fs.existsSync('tools/lib/run.ts')) {
   const listing = await loader.loadTests('./out', filters);
 
   const log = new Logger();
-  const entries = await Promise.all(Array.from(listing, ({ suite, path, node }) => node.then((n: ITestNode) => ({ suite, path, node: n }))));
+  const entries = await Promise.all(
+    Array.from(listing, ({ suite, path, node }) =>
+      node.then((n: ITestNode) => ({ suite, path, node: n }))
+    )
+  );
 
   const failed: IResult[] = [];
   const warned: IResult[] = [];
@@ -38,22 +42,27 @@ if (!fs.existsSync('tools/lib/run.ts')) {
   // TODO: don't run all tests all at once
   const running = [];
   for (const entry of entries) {
-    const { path, node: { group } } = entry;
+    const {
+      path,
+      node: { group },
+    } = entry;
     if (!group) {
       continue;
     }
 
     const [, rec] = log.record(path);
     for (const t of group.iterate(rec)) {
-      running.push((async () => {
-        const res = await t.run();
-        if (res.status === 'fail') {
-          failed.push(res);
-        }
-        if (res.status === 'warn') {
-          warned.push(res);
-        }
-      })());
+      running.push(
+        (async () => {
+          const res = await t.run();
+          if (res.status === 'fail') {
+            failed.push(res);
+          }
+          if (res.status === 'warn') {
+            warned.push(res);
+          }
+        })()
+      );
     }
   }
 
@@ -83,7 +92,7 @@ if (!fs.existsSync('tools/lib/run.ts')) {
   const total = running.length;
   const passed = total - warned.length - failed.length;
   function pct(x: number) {
-    return (100 * x / total).toFixed(2);
+    return ((100 * x) / total).toFixed(2);
   }
   function rpt(x: number) {
     const xs = x.toString().padStart(1 + Math.log10(total), ' ');

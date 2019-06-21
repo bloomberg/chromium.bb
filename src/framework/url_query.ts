@@ -3,7 +3,7 @@ import { ICase } from './test_group.js';
 
 export function encodeSelectively(s: string) {
   let ret = encodeURIComponent(s);
-  ret = ret.replace(/%20/g, '+');  // Encode space with +
+  ret = ret.replace(/%20/g, '+'); // Encode space with +
   ret = ret.replace(/%22/g, '"');
   ret = ret.replace(/%2C/g, ',');
   ret = ret.replace(/%2F/g, '/');

@@ -38,7 +38,7 @@ function* concat(lists: IPendingEntry[][]): IterableIterator<IPendingEntry> {
 type TestGroupFilter = (testcase: ICase) => boolean;
 function filterTestGroup(group: ITestGroup, filter: TestGroupFilter) {
   return {
-    * iterate(log: GroupRecorder): Iterable<RunCase> {
+    *iterate(log: GroupRecorder): Iterable<RunCase> {
       for (const rc of group.iterate(log)) {
         if (filter(rc.testcase)) {
           yield rc;
@@ -50,7 +50,7 @@ function filterTestGroup(group: ITestGroup, filter: TestGroupFilter) {
 
 // TODO: Unit test this.
 export abstract class TestLoader {
-  public async loadTests(outDir: string, filters: string[]): Promise<IterableIterator<IPendingEntry>> {
+  async loadTests(outDir: string, filters: string[]): Promise<IterableIterator<IPendingEntry>> {
     const listings = [];
     for (const filter of filters) {
       listings.push(this.loadFilter(outDir, filter));
@@ -88,7 +88,13 @@ export abstract class TestLoader {
       // - cts:buffers/mapWriteAsync:
       // - cts:buffers/mapWriteAsync:ba
       const testPrefix = filter.substring(i2 + 1);
-      return [{ suite, path: group, node: this.filterByTestMatch(suite, group, testPrefix) }];
+      return [
+        {
+          suite,
+          path: group,
+          node: this.filterByTestMatch(suite, group, testPrefix),
+        },
+      ];
     }
 
     const i3 = i2 + 1 + i3sub;
@@ -104,20 +110,24 @@ export abstract class TestLoader {
       // - cts:buffers/mapWriteAsync:basic~
       // - cts:buffers/mapWriteAsync:basic~{}
       // - cts:buffers/mapWriteAsync:basic~{filter:"params"}
-      return [{
-        suite,
-        path: group,
-        node: this.filterByParamsMatch(suite, group, test, params),
-      }];
+      return [
+        {
+          suite,
+          path: group,
+          node: this.filterByParamsMatch(suite, group, test, params),
+        },
+      ];
     } else if (token === ':') {
       // - cts:buffers/mapWriteAsync:basic:
       // - cts:buffers/mapWriteAsync:basic:{}
       // - cts:buffers/mapWriteAsync:basic:{exact:"params"}
-      return [{
-        suite,
-        path: group,
-        node: this.filterByParamsExact(suite, group, test, params),
-      }];
+      return [
+        {
+          suite,
+          path: group,
+          node: this.filterByParamsExact(suite, group, test, params),
+        },
+      ];
     } else {
       throw new Error("invalid character after test name; must be '~' or ':'");
     }
@@ -139,7 +149,11 @@ export abstract class TestLoader {
     return entries;
   }
 
-  private async filterByTestMatch(suite: string, group: string, testPrefix: string): Promise<ITestNode> {
+  private async filterByTestMatch(
+    suite: string,
+    group: string,
+    testPrefix: string
+  ): Promise<ITestNode> {
     const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
     if (!node.group) {
       return node;
@@ -150,27 +164,41 @@ export abstract class TestLoader {
     };
   }
 
-  private async filterByParamsMatch(suite: string, group: string, test: string, paramsMatch: IParamsAny | null): Promise<ITestNode> {
+  private async filterByParamsMatch(
+    suite: string,
+    group: string,
+    test: string,
+    paramsMatch: IParamsAny | null
+  ): Promise<ITestNode> {
     const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
     if (!node.group) {
       return node;
     }
     return {
       description: node.description,
-      group: filterTestGroup(node.group, testcase =>
-        testcase.name === test && paramsSupersets(testcase.params, paramsMatch)),
+      group: filterTestGroup(
+        node.group,
+        testcase => testcase.name === test && paramsSupersets(testcase.params, paramsMatch)
+      ),
     };
   }
 
-  private async filterByParamsExact(suite: string, group: string, test: string, paramsExact: IParamsAny | null): Promise<ITestNode> {
+  private async filterByParamsExact(
+    suite: string,
+    group: string,
+    test: string,
+    paramsExact: IParamsAny | null
+  ): Promise<ITestNode> {
     const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
     if (!node.group) {
       return node;
     }
     return {
       description: node.description,
-      group: filterTestGroup(node.group, testcase =>
-        testcase.name === test && paramsEquals(testcase.params, paramsExact)),
+      group: filterTestGroup(
+        node.group,
+        testcase => testcase.name === test && paramsEquals(testcase.params, paramsExact)
+      ),
     };
   }
 }

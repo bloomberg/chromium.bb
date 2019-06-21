@@ -5,11 +5,11 @@ import { Fixture } from '../framework/index.js';
 let shaderc: Promise<Shaderc.Shaderc> | undefined;
 
 export class GPUTest extends Fixture {
-  public device: GPUDevice = undefined as any;
-  public queue: GPUQueue = undefined as any;
-  public shaderc: Shaderc.Shaderc = undefined as any;
+  device: GPUDevice = undefined as any;
+  queue: GPUQueue = undefined as any;
+  shaderc: Shaderc.Shaderc = undefined as any;
 
-  public async init(): Promise<void> {
+  async init(): Promise<void> {
     super.init();
     const gpu = await getGPU();
     const adapter = await gpu.requestAdapter();
@@ -20,17 +20,17 @@ export class GPUTest extends Fixture {
     this.shaderc = await shaderc;
   }
 
-  public makeShaderModule(type: ('f' | 'v' | 'c'), source: string): GPUShaderModule {
+  makeShaderModule(type: 'f' | 'v' | 'c', source: string): GPUShaderModule {
     return this.device.createShaderModule({ code: this.compile(type, source) });
   }
 
-  public expect(success: boolean, message: string): void {
+  expect(success: boolean, message: string): void {
     if (!success) {
       this.rec.fail(message);
     }
   }
 
-  public async expectContents(src: GPUBuffer, expected: ArrayBufferView): Promise<void> {
+  async expectContents(src: GPUBuffer, expected: ArrayBufferView): Promise<void> {
     const exp = new Uint8Array(expected.buffer, expected.byteOffset, expected.byteLength);
 
     const size = expected.buffer.byteLength;
@@ -54,15 +54,15 @@ export class GPUTest extends Fixture {
     // TODO: log the actual and expected data
   }
 
-  private compile(type: ('f' | 'v' | 'c'), source: string): Uint32Array {
+  private compile(type: 'f' | 'v' | 'c', source: string): Uint32Array {
     const compiler = new this.shaderc.Compiler();
     const opts = new this.shaderc.CompileOptions();
-    const result = compiler.CompileGlslToSpv(
-      source,
-      type === 'f' ?
-        this.shaderc.shader_kind.fragment :
-        type === 'v' ? this.shaderc.shader_kind.vertex : this.shaderc.shader_kind.compute,
-      'a.glsl', 'main', opts);
+    const kinds = {
+      f: this.shaderc.shader_kind.fragment,
+      v: this.shaderc.shader_kind.vertex,
+      c: this.shaderc.shader_kind.compute,
+    };
+    const result = compiler.CompileGlslToSpv(source, kinds[type], 'a.glsl', 'main', opts);
     const error = result.GetErrorMessage();
     if (error) {
       // tslint:disable-next-line: no-console

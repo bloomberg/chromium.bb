@@ -10,7 +10,7 @@ import { Logger } from '../framework/logger.js';
 
 export const group = new TestGroup();
 
-group.test('construct', null, DefaultFixture, (t) => {
+group.test('construct', null, DefaultFixture, t => {
   const mylog = new Logger();
   const [testres, testrec] = mylog.record('foo/bar');
   const [res1] = testrec.record('baz', null);
@@ -33,7 +33,7 @@ group.test('construct', null, DefaultFixture, (t) => {
   t.expect(res2.timems < 0);
 });
 
-group.test('empty', null, DefaultFixture, (t) => {
+group.test('empty', null, DefaultFixture, t => {
   const mylog = new Logger();
   const [, testrec] = mylog.record('');
   const [res, rec] = testrec.record('baz', null);
@@ -45,7 +45,7 @@ group.test('empty', null, DefaultFixture, (t) => {
   t.expect(res.timems >= 0);
 });
 
-group.test('pass', null, DefaultFixture, (t) => {
+group.test('pass', null, DefaultFixture, t => {
   const mylog = new Logger();
   const [, testrec] = mylog.record('');
   const [res, rec] = testrec.record('baz', null);
@@ -58,7 +58,7 @@ group.test('pass', null, DefaultFixture, (t) => {
   t.expect(res.timems >= 0);
 });
 
-group.test('warn', null, DefaultFixture, (t) => {
+group.test('warn', null, DefaultFixture, t => {
   const mylog = new Logger();
   const [, testrec] = mylog.record('');
   const [res, rec] = testrec.record('baz', null);
@@ -71,7 +71,7 @@ group.test('warn', null, DefaultFixture, (t) => {
   t.expect(res.timems >= 0);
 });
 
-group.test('fail', null, DefaultFixture, (t) => {
+group.test('fail', null, DefaultFixture, t => {
   const mylog = new Logger();
   const [, testrec] = mylog.record('');
   const [res, rec] = testrec.record('baz', null);

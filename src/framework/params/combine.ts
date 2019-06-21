@@ -1,8 +1,4 @@
-import {
-  IParamsSpec,
-  ParamSpecIterable,
-  ParamSpecIterator,
-} from './index.js';
+import { IParamsSpec, ParamSpecIterable, ParamSpecIterator } from './index.js';
 
 export function pcombine(params: ParamSpecIterable[]) {
   return new PCombine(params);
@@ -40,7 +36,7 @@ class PCombine implements ParamSpecIterable {
     this.params = params;
   }
 
-  public [Symbol.iterator](): ParamSpecIterator {
+  [Symbol.iterator](): ParamSpecIterator {
     return cartesian(this.params);
   }
 }

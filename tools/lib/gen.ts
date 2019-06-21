@@ -26,7 +26,7 @@ if (!fs.existsSync('tools/lib/gen.ts')) {
 (async () => {
   for (const suite of process.argv.slice(2)) {
     const outFile = path.normalize(`out/${suite}/listing.json`);
-    const specDir = path.normalize(`src/${suite}/`);  // always ends in /
+    const specDir = path.normalize(`src/${suite}/`); // always ends in /
 
     const specSuffix = '.spec.ts';
     const specFiles = fg.sync(specDir + '**/{README.txt,*' + specSuffix + '}', {

@@ -1,8 +1,4 @@
-import {
-  IParamsAny,
-  ParamSpecIterable,
-  ParamSpecIterator,
-} from './index.js';
+import { IParamsAny, ParamSpecIterable, ParamSpecIterator } from './index.js';
 
 type Predicate = (o: IParamsAny) => boolean;
 
@@ -14,12 +10,12 @@ class PFilter implements ParamSpecIterable {
   private cases: ParamSpecIterable;
   private pred: Predicate;
 
-  public constructor(cases: ParamSpecIterable, pred: Predicate) {
+  constructor(cases: ParamSpecIterable, pred: Predicate) {
     this.cases = cases;
     this.pred = pred;
   }
 
-  public *[Symbol.iterator](): ParamSpecIterator {
+  *[Symbol.iterator](): ParamSpecIterator {
     for (const p of this.cases) {
       if (this.pred(p)) {
         yield p;

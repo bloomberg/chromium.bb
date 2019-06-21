@@ -7,7 +7,7 @@ import { GPUTest } from '../../gpu_test.js';
 
 export const group = new TestGroup();
 
-group.test('memcpy', null, GPUTest, async (t) => {
+group.test('memcpy', null, GPUTest, async t => {
   const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 8 | 128 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 128 });
@@ -27,7 +27,9 @@ group.test('memcpy', null, GPUTest, async (t) => {
     layout: bgl,
   });
 
-  const module = t.makeShaderModule('c', `#version 450
+  const module = t.makeShaderModule(
+    'c',
+    `#version 450
     layout(std140, set = 0, binding = 0) buffer Src {
       int value;
     } src;
@@ -38,7 +40,8 @@ group.test('memcpy', null, GPUTest, async (t) => {
     void main() {
       dst.value = src.value;
     }
-  `);
+  `
+  );
   const pl = t.device.createPipelineLayout({ bindGroupLayouts: [bgl] });
   const pipeline = t.device.createComputePipeline({
     computeStage: { module, entryPoint: 'main' },

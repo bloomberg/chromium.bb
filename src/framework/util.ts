@@ -69,6 +69,5 @@ export function objectEquals(x: any, y: any): boolean {
   }
 
   const p = Object.keys(x);
-  return Object.keys(y).every((i) => p.indexOf(i) !== -1) &&
-    p.every((i) => objectEquals(x[i], y[i]));
+  return Object.keys(y).every(i => p.indexOf(i) !== -1) && p.every(i => objectEquals(x[i], y[i]));
 }
