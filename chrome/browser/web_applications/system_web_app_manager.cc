@@ -224,9 +224,18 @@ void SystemWebAppManager::MigrateSystemWebApps(
     // installed.
     if (!type_and_info.second.migration_source.empty() &&
         !base::Contains(already_installed, type_and_info.first)) {
-      ui_delegate_->MigrateOSAttributes(
-          type_and_info.second.migration_source,
-          *GetAppIdForSystemApp(type_and_info.first));
+      base::Optional<AppId> system_app_id =
+          GetAppIdForSystemApp(type_and_info.first);
+      // TODO(crbug.com/977466): Replace with a DCHECK once we understand why
+      // this is happening.
+      if (!system_app_id) {
+        LOG(ERROR) << "System App Type "
+                   << static_cast<int>(type_and_info.first)
+                   << " could not be found when running migration.";
+        continue;
+      }
+      ui_delegate_->MigrateOSAttributes(type_and_info.second.migration_source,
+                                        *system_app_id);
     }
   }
 }
