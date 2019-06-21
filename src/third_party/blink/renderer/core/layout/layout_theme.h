@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/color_scheme.h"
 #include "third_party/blink/renderer/platform/theme_types.h"
@@ -151,6 +152,13 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual Color PlatformGrammarMarkerUnderlineColor() const;
 
   Color PlatformActiveSpellingMarkerHighlightColor() const;
+
+  // Highlighting colors for TextMatches.
+  static void SetTextSearchHighlightColor(int activeR, int activeG, int activeB,
+                                          int inactiveR, int inactiveG, int inactiveB);
+
+  // Highlight and text colors for TextMatches.
+  static void SetTextSearchColor(int activeR, int activeG, int activeB);
 
   // Highlight and text colors for TextMatches.
   Color PlatformTextSearchHighlightColor(bool active_match) const;
