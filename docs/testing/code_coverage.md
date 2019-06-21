@@ -47,14 +47,14 @@ There are two types of builder:
 
 CI Builder
 
-The Code-coverage CI Builders periodically build all the test targets and fuzzer
+The code coverage CI Builders periodically build all the test targets and fuzzer
 targets for a given platform and instrument all available source files. Then
 save the coverage data to a dedicated storage bucket.
 
 CQ Builder
 
 The code coverage CQ builders instrument only the files changed for a given CL.
-more information about per-cl coverage info in [this
+More information about per-cl coverage info in [this
 doc](code_coverage_in_gerrit.md).
 
 ### Coverage Service
@@ -75,33 +75,39 @@ It shows the full-code coverage reports with links to the builds that generated
 them, as well as per-directory and per-component aggregation, and can be drilled
 down to the single line of code level of detail.
 
-Refer tho the following screenshots, or this [18-second video
-tutorial](https://www.youtube.com/watch?v=eX7im2_3YfA).
-
-##### Project View
-
-![coverage dashboard main view]
+Refer to the following screenshots:
 
 ##### Directory View
+
+See coverage breakdown by directories (default landing page).
 
 ![coverage dashboard directory view]
 
 ##### Component View
 
+Use the view dropdown menu to switch between directory and component.
+
 ![coverage dashboard component view]
 
 ##### Source View
 
-When you click on a particular source file in one of the views above, you can check
-per-line coverage information such as
-
-- Uncovered / Covered line fragments, lines and code blocks. This information can be
-useful to identify areas of code that lack test coverage.
-- Per-line hit counts indicating how many times this line was hit by all tested targets.
-This information can be useful to determine hot spots in your code.
+Click on a particular source file in one of the views above to see line-by-line
+coverage breakdown, and it's useful to identify:
+- Uncovered lines and code blocks that lack test coverage.
 - Potentially dead code. See [dead code example].
+- Hot spots in your code.
 
 ![coverage dashboard file view]
+
+##### Project View
+
+Click on "Previous Reports" to check out the coverage history of the project.
+
+![coverage dashboard link to previous reports]
+
+List of historical coverage reports are in reverse chronological order.
+
+![coverage dashboard previous reports]
 
 #### Gerrit Coverage View
 
@@ -293,11 +299,6 @@ reported usually grows after that.
 
 ### How can I improve [coverage dashboard]?
 
-Source code of the dashboard is not open sourced at the moment, but if you are a
-Googler, you should have access to the code-coverage repository. There is a
-documentation and scripts for running it locally. To get access and report
-issues, ping the [code-coverage group].
-
 The code for the service and dashboard currently lives along with findit at
 [this location](https://chromium.googlesource.com/infra/infra/+/master/appengine/findit/)
 because of significant shared logic.
@@ -317,7 +318,8 @@ for that particular report (rightmost column on the [coverage dashboard]).
 If there is any failure, please upload a CL with the fix. If you can't fix it,
 feel free to [file a bug].
 * A particular test may not be available on a particular platform. As of now,
-only reports generated on Linux are available on the [coverage dashboard].
+only reports generated on Linux and CrOS are available on the
+[coverage dashboard].
 
 ### Is coverage reported for the code executed inside the sandbox?
 
@@ -336,7 +338,8 @@ information, see [crbug.com/842424].
 [coverage dashboard file view]: images/code_coverage_dashboard_file_view.png
 [coverage dashboard component view]: images/code_coverage_dashboard_component_view.png
 [coverage dashboard directory view]: images/code_coverage_dashboard_directory_view.png
-[coverage dashboard main view]: images/code_coverage_dashboard_main_view.png
+[coverage dashboard link to previous reports]: images/code_coverage_dashboard_link_to_previous_reports.png
+[coverage dashboard previous reports]: images/code_coverage_dashboard_previous_reports.png
 [crbug.com/821617]: https://crbug.com/821617
 [crbug.com/831939]: https://crbug.com/831939
 [crbug.com/834781]: https://crbug.com/834781
@@ -347,7 +350,7 @@ information, see [crbug.com/842424].
 [documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
 [file a new issue]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
-[gerrit coverage view]: images/code_coverage_uncovered_lines.png
+[gerrit coverage view]: images/code_coverage_annotations.png
 [guide]: http://llvm.org/docs/CommandGuide/llvm-cov.html
 [How do crashes affect code coverage?]: #how-do-crashes-affect-code-coverage
 [known issues]: https://bugs.chromium.org/p/chromium/issues/list?q=component:Tools%3ECodeCoverage
