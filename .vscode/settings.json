@@ -1,9 +1,11 @@
 {
   "clang-format.executable": "${workspaceRoot}/node_modules/.bin/clang-format",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.detectIndentation": false,
+  "editor.formatOnSave": true,
   "editor.rulers": [100],
   "editor.tabSize": 2,
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
-  "files.trimTrailingWhitespace": true,
+  "files.trimTrailingWhitespace": true
 }
