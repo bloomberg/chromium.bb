@@ -6352,6 +6352,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Selected"/>
 </enum>
 
+<enum name="BooleanSensitive">
+  <int value="0" label="Not Sensitive"/>
+  <int value="1" label="Sensitive"/>
+</enum>
+
 <enum name="BooleanSent">
   <int value="0" label="Not Sent"/>
   <int value="1" label="Sent"/>
@@ -11083,6 +11088,14 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Blocked"/>
   <int value="2" label="PlayedWithGesture"/>
   <int value="3" label="UserPaused"/>
+</enum>
+
+<enum name="CrossOriginProtectionDecision">
+  <int value="0" label="kAllow"/>
+  <int value="1" label="kBlock"/>
+  <int value="2" label="kNeedToSniffMore"/>
+  <int value="3" label="kAllowedAfterSniffing"/>
+  <int value="4" label="kBlockedAfterSniffing"/>
 </enum>
 
 <enum name="CrossProcessTimeDelta">
