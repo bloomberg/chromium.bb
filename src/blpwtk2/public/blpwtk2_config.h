@@ -85,6 +85,7 @@
 // feature 28
 #define BLPWTK2_FEATURE_MULTIHEAPTRACER
 // feature 29
+#define BLPWTK2_FEATURE_REROUTEMOUSEWHEEL
 // feature 30
 // feature 31
 // feature 32

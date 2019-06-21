@@ -301,6 +301,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // be sent to the widget.
     bool wants_mouse_events_when_inactive = false;
 
+    bool reroute_mouse_wheel_to_any_related_window;
+
     // A map of properties applied to windows when running in mus.
     std::map<std::string, std::vector<uint8_t>> mus_properties;
   };
