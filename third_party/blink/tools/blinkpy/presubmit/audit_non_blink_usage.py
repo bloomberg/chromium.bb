@@ -53,6 +53,7 @@ _CONFIG = [
             'base::SequencedTaskRunner',
             'base::SingleThreadTaskRunner',
             'base::ScopedFD',
+            'base::ScopedClosureRunner',
             'base::SupportsWeakPtr',
             'base::SysInfo',
             'base::ThreadChecker',
