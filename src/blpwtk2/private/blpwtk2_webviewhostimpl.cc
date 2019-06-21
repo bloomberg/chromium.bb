@@ -536,6 +536,11 @@ void WebViewHostImpl::applyRegion(
     std::move(callback).Run();
 }
 
+void WebViewHostImpl::activateKeyboardLayout(unsigned int hkl)
+{
+    d_impl->activateKeyboardLayout(hkl);
+}
+
 void WebViewHostImpl::clearTooltip()
 {
     d_impl->clearTooltip();
