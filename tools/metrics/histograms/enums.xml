@@ -46964,6 +46964,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PpdSource">
+  <obsolete>
+    Deprecated Q2 2019
+  </obsolete>
   <int value="0" label="PPD provided by user"/>
   <int value="1" label="PPD downloaded from SCS"/>
 </enum>
