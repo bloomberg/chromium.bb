@@ -128,14 +128,6 @@ enum SyncSignInUserAction {
   CHROME_SIGNIN_ACTION_COUNT
 };
 
-enum AccountChooserUsabilityMetric {
-  ACCOUNT_CHOOSER_LOOKS_OK,
-  ACCOUNT_CHOOSER_EMPTY_USERNAME,
-  ACCOUNT_CHOOSER_DUPLICATES,
-  ACCOUNT_CHOOSER_EMPTY_USERNAME_AND_DUPLICATES,
-  ACCOUNT_CHOOSER_USABILITY_COUNT,
-};
-
 enum CredentialManagerGetResult {
   // The promise is rejected.
   CREDENTIAL_MANAGER_GET_REJECTED,
@@ -396,12 +388,6 @@ void LogCountHttpMigratedPasswords(int count);
 
 // Logs mode of HTTP password migration.
 void LogHttpPasswordMigrationMode(HttpPasswordMigrationMode mode);
-
-// Log if the account chooser has empty username or duplicate usernames. In
-// addition record number of the placeholder avatars and total number of rows.
-void LogAccountChooserUsability(AccountChooserUsabilityMetric usability,
-                                int count_empty_icons,
-                                int count_accounts);
 
 // Log the result of navigator.credentials.get.
 void LogCredentialManagerGetResult(CredentialManagerGetResult result,

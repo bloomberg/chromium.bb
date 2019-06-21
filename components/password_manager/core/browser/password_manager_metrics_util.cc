@@ -121,17 +121,6 @@ void LogHttpPasswordMigrationMode(HttpPasswordMigrationMode mode) {
                             HTTP_PASSWORD_MIGRATION_MODE_COUNT);
 }
 
-void LogAccountChooserUsability(AccountChooserUsabilityMetric usability,
-                                int count_empty_icons,
-                                int count_accounts) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialogUsability",
-                            usability, ACCOUNT_CHOOSER_USABILITY_COUNT);
-  UMA_HISTOGRAM_COUNTS_100("PasswordManager.AccountChooserDialogEmptyAvatars",
-                           count_empty_icons);
-  UMA_HISTOGRAM_COUNTS_100("PasswordManager.AccountChooserDialogAccounts",
-                           count_accounts);
-}
-
 void LogCredentialManagerGetResult(CredentialManagerGetResult result,
                                    CredentialMediationRequirement mediation) {
   switch (mediation) {
