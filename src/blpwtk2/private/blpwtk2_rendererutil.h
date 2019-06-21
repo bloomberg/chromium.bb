@@ -48,9 +48,8 @@ struct RendererUtil
     // patch section: screen printing
 
 
-    // patch section: print to pdf
-    static String printToPDF(
-        content::RenderView* renderView, const std::string& propertyName);
+    // patch section: docprinter
+    static String printToPDF(content::RenderView* renderView);
 
 
 
