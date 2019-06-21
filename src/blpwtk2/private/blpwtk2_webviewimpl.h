@@ -246,8 +246,8 @@ class WebViewImpl final : public WebView,
     // patch section: gpu
 
 
-    // patch section: print to pdf
-    String printToPDF(const StringRef& propertyName) override;
+    // patch section: docprinter
+    String printToPDF() override;
 
 
 

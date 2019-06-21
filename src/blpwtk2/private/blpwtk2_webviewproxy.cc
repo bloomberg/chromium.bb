@@ -373,7 +373,7 @@ void WebViewProxy::setSecurityToken(v8::Isolate *isolate,
     d_securityToken.Reset(isolate, token);
 }
 
-String WebViewProxy::printToPDF(const StringRef& propertyName)
+String WebViewProxy::printToPDF()
 {
     content::RenderView *rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
     return RendererUtil::printToPDF(rv);
