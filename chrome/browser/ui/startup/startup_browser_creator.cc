@@ -923,7 +923,20 @@ bool StartupBrowserCreator::ProcessLoadApps(
 }
 
 // static
-void StartupBrowserCreator::ProcessCommandLineAlreadyRunningImpl(
+void StartupBrowserCreator::ProcessCommandLineOnProfileCreated(
+    const base::CommandLine& command_line,
+    const base::FilePath& cur_dir,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  if (status != Profile::CREATE_STATUS_INITIALIZED)
+    return;
+  StartupBrowserCreator startup_browser_creator;
+  startup_browser_creator.ProcessCmdLineImpl(command_line, cur_dir, false,
+                                             profile, Profiles());
+}
+
+// static
+void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
     const base::CommandLine& command_line,
     const base::FilePath& cur_dir,
     const base::FilePath& profile_path) {
@@ -942,35 +955,6 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunningImpl(
   StartupBrowserCreator startup_browser_creator;
   startup_browser_creator.ProcessCmdLineImpl(
       command_line, cur_dir, /*process_startup=*/false, profile, Profiles());
-}
-
-// static
-void StartupBrowserCreator::ProcessCommandLineOnProfileCreated(
-    const base::CommandLine& command_line,
-    const base::FilePath& cur_dir,
-    Profile* profile,
-    Profile::CreateStatus status) {
-  if (status != Profile::CREATE_STATUS_INITIALIZED)
-    return;
-  StartupBrowserCreator startup_browser_creator;
-  startup_browser_creator.ProcessCmdLineImpl(command_line, cur_dir, false,
-                                             profile, Profiles());
-}
-
-// static
-void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
-    const base::CommandLine& command_line,
-    const base::FilePath& cur_dir,
-    const base::FilePath& profile_path) {
-  // The Windows-specific code in browser_finder.cc that determines if a window
-  // is on the current virtual desktop uses a COM interface that can't be
-  // invoked if we're processing a SendMessage call. So, we post a task to
-  // finish the command line processing.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &StartupBrowserCreator::ProcessCommandLineAlreadyRunningImpl,
-          command_line, cur_dir, profile_path));
 }
 
 // static
