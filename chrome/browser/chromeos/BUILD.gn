@@ -2776,7 +2776,6 @@ source_set("unit_tests") {
     "//chrome/browser/ui",
     "//chrome/browser/ui:ash_test_support",
     "//chrome/browser/web_applications/components",
-    "//chrome/browser/web_applications/components:test_support",
     "//chrome/common",
     "//chrome/services/wilco_dtc_supportd/public/mojom",
     "//chrome/test:test_support",

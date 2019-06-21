@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/components/test_pending_app_manager.h"
+#include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 
 #include <string>
 #include <utility>
@@ -13,19 +13,24 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/test/test_app_registrar.h"
+#include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "url/gurl.h"
 
 namespace web_app {
 
 TestPendingAppManager::TestPendingAppManager()
-    : deduped_install_count_(0), deduped_uninstall_count_(0) {}
+    : PendingAppManager(&registrar_),
+      deduped_install_count_(0),
+      deduped_uninstall_count_(0) {}
 
 TestPendingAppManager::~TestPendingAppManager() = default;
 
 void TestPendingAppManager::SimulatePreviouslyInstalledApp(
     const GURL& url,
     InstallSource install_source) {
-  installed_apps_[url] = install_source;
+  registrar_.AddExternalApp(TestInstallFinalizer::GetAppIdForUrl(url),
+                            {url, install_source});
 }
 
 void TestPendingAppManager::SetInstallResultCode(
@@ -43,18 +48,18 @@ void TestPendingAppManager::Install(InstallOptions install_options,
       FROM_HERE,
       base::BindLambdaForTesting([this, weak_ptr, install_options, result_code,
                                   callback = std::move(callback)]() mutable {
+        const GURL& url = install_options.url;
         // Use a WeakPtr to be able to simulate the Install callback running
         // after PendingAppManager gets deleted.
         if (weak_ptr) {
-          auto i = installed_apps_.find(install_options.url);
-          if (i == installed_apps_.end()) {
-            installed_apps_[install_options.url] =
-                install_options.install_source;
+          if (!registrar_.LookupExternalAppId(url)) {
+            registrar_.AddExternalApp(TestInstallFinalizer::GetAppIdForUrl(url),
+                                      {url, install_options.install_source});
             deduped_install_count_++;
           }
           install_requests_.push_back(install_options);
         }
-        std::move(std::move(callback)).Run(install_options.url, result_code);
+        std::move(std::move(callback)).Run(url, result_code);
       }));
 }
 
@@ -73,9 +78,9 @@ void TestPendingAppManager::UninstallApps(std::vector<GURL> uninstall_urls,
         FROM_HERE,
         base::BindLambdaForTesting([this, weak_ptr, url, callback]() {
           if (weak_ptr) {
-            auto i = installed_apps_.find(url);
-            if (i != installed_apps_.end()) {
-              installed_apps_.erase(i);
+            base::Optional<AppId> app_id = registrar_.LookupExternalAppId(url);
+            if (app_id) {
+              registrar_.RemoveExternalApp(*app_id);
               deduped_uninstall_count_++;
             }
             uninstall_requests_.push_back(url);
@@ -83,28 +88,6 @@ void TestPendingAppManager::UninstallApps(std::vector<GURL> uninstall_urls,
           callback.Run(url, true /* succeeded */);
         }));
   }
-}
-
-std::vector<GURL> TestPendingAppManager::GetInstalledAppUrls(
-    InstallSource install_source) const {
-  std::vector<GURL> urls;
-  for (auto& it : installed_apps_) {
-    if (it.second == install_source) {
-      urls.emplace_back(it.first);
-    }
-  }
-  return urls;
-}
-
-base::Optional<AppId> TestPendingAppManager::LookupAppId(
-    const GURL& url) const {
-  return base::Optional<std::string>();
-}
-
-bool TestPendingAppManager::HasAppIdWithInstallSource(
-    const AppId& app_id,
-    web_app::InstallSource install_source) const {
-  return false;
 }
 
 }  // namespace web_app

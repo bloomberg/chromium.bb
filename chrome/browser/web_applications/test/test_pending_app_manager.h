@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_TEST_PENDING_APP_MANAGER_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_TEST_PENDING_APP_MANAGER_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_PENDING_APP_MANAGER_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_PENDING_APP_MANAGER_H_
 
 #include <map>
 #include <string>
@@ -11,9 +11,12 @@
 
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "url/gurl.h"
 
 namespace web_app {
+
+class TestAppRegistrar;
 
 class TestPendingAppManager : public PendingAppManager {
  public:
@@ -39,10 +42,6 @@ class TestPendingAppManager : public PendingAppManager {
     deduped_uninstall_count_ = 0;
   }
 
-  const std::map<GURL, InstallSource>& installed_apps() const {
-    return installed_apps_;
-  }
-
   void SimulatePreviouslyInstalledApp(const GURL& url,
                                       InstallSource install_source);
 
@@ -55,12 +54,6 @@ class TestPendingAppManager : public PendingAppManager {
                    const RepeatingInstallCallback& callback) override;
   void UninstallApps(std::vector<GURL> uninstall_urls,
                      const UninstallCallback& callback) override;
-  std::vector<GURL> GetInstalledAppUrls(
-      InstallSource install_source) const override;
-  base::Optional<AppId> LookupAppId(const GURL& url) const override;
-  bool HasAppIdWithInstallSource(
-      const AppId& app_id,
-      web_app::InstallSource install_source) const override;
   void Shutdown() override {}
 
  private:
@@ -68,11 +61,13 @@ class TestPendingAppManager : public PendingAppManager {
   std::vector<InstallOptions> install_requests_;
   std::vector<GURL> uninstall_requests_;
 
+  // TODO(calamity): Remove and replace with TestAppRegistrar methods.
   int deduped_install_count_;
   int deduped_uninstall_count_;
 
-  std::map<GURL, InstallSource> installed_apps_;
   InstallResultCode install_result_code_ = InstallResultCode::kSuccess;
+
+  TestAppRegistrar registrar_;
 
   base::WeakPtrFactory<TestPendingAppManager> weak_ptr_factory_{this};
 
@@ -81,4 +76,4 @@ class TestPendingAppManager : public PendingAppManager {
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_TEST_PENDING_APP_MANAGER_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_PENDING_APP_MANAGER_H_
