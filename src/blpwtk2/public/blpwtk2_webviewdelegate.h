@@ -104,7 +104,7 @@ class BLPWTK2_EXPORT WebViewDelegate {
         // contains the mouse position where the drag ended, in screen
         // coordinates.
 
-    virtual void ncDoubleClick(WebView *source, const POINT& endPoint);
+    virtual void ncDoubleClick(WebView *source, const POINT& point);
         // TODO(imran)
 
     virtual void findState(WebView *source,
