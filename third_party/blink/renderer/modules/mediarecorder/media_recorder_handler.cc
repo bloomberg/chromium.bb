@@ -127,7 +127,7 @@ MediaRecorderHandler::~MediaRecorderHandler() {
   if (client_) {
     client_->WriteData(
         nullptr, 0u, true,
-        (TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InMillisecondsF());
+        (TimeTicks::Now() - TimeTicks::UnixEpoch()).InMillisecondsF());
   }
 }
 
@@ -232,8 +232,8 @@ bool MediaRecorderHandler::Start(int timeslice) {
   DCHECK(timeslice_.is_zero());
   DCHECK(!webm_muxer_);
 
-  timeslice_ = base::TimeDelta::FromMilliseconds(timeslice);
-  slice_origin_timestamp_ = base::TimeTicks::Now();
+  timeslice_ = TimeDelta::FromMilliseconds(timeslice);
+  slice_origin_timestamp_ = TimeTicks::Now();
 
   video_tracks_ = media_stream_.VideoTracks();
   audio_tracks_ = media_stream_.AudioTracks();
@@ -311,7 +311,7 @@ void MediaRecorderHandler::Stop() {
 
   weak_factory_.InvalidateWeakPtrs();
   recording_ = false;
-  timeslice_ = base::TimeDelta::FromMilliseconds(0);
+  timeslice_ = TimeDelta::FromMilliseconds(0);
   video_recorders_.clear();
   audio_recorders_.clear();
   webm_muxer_.reset();
@@ -465,7 +465,7 @@ void MediaRecorderHandler::OnEncodedVideo(
     const media::WebmMuxer::VideoParameters& params,
     std::unique_ptr<std::string> encoded_data,
     std::unique_ptr<std::string> encoded_alpha,
-    base::TimeTicks timestamp,
+    TimeTicks timestamp,
     bool is_key_frame) {
   DCHECK(IsMainThread());
 
@@ -504,11 +504,11 @@ void MediaRecorderHandler::OnEncodedAudio(
 
 void MediaRecorderHandler::WriteData(base::StringPiece data) {
   DCHECK(IsMainThread());
-  const base::TimeTicks now = base::TimeTicks::Now();
+  const TimeTicks now = TimeTicks::Now();
   // Non-buffered mode does not need to check timestamps.
   if (timeslice_.is_zero()) {
     client_->WriteData(data.data(), data.length(), true /* lastInSlice */,
-                       (now - base::TimeTicks::UnixEpoch()).InMillisecondsF());
+                       (now - TimeTicks::UnixEpoch()).InMillisecondsF());
     return;
   }
 
@@ -517,7 +517,7 @@ void MediaRecorderHandler::WriteData(base::StringPiece data) {
   if (last_in_slice)
     slice_origin_timestamp_ = now;
   client_->WriteData(data.data(), data.length(), last_in_slice,
-                     (now - base::TimeTicks::UnixEpoch()).InMillisecondsF());
+                     (now - TimeTicks::UnixEpoch()).InMillisecondsF());
 }
 
 bool MediaRecorderHandler::UpdateTracksAndCheckIfChanged() {
