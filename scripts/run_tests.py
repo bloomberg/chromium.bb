@@ -387,10 +387,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
     output = tmpfile.read()
     if output:
       failed_tests.append(test)
-      print()
-      logging.error('### LOG: %s', test)
-      print(output.rstrip())
-      print()
+      logging.error('### LOG: %s\n%s\n', test, output.rstrip())
 
   if failed_tests:
     logging.error('The following %i tests failed:\n  %s', len(failed_tests),
