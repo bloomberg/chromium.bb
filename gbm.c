@@ -117,6 +117,14 @@ PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width, uint
 	if (!bo)
 		return NULL;
 
+	/*
+	 * HACK: This is for HAL_PIXEL_FORMAT_YV12 buffers allocated by arcvm.
+	 * None of our platforms can display YV12, so we can treat as a SW buffer.
+	 * Remove once this can be intelligently resolved in the guest.
+	 */
+	if (format == GBM_FORMAT_YVU420 && (usage & GBM_BO_USE_LINEAR))
+		format = DRM_FORMAT_YVU420_ANDROID;
+
 	bo->bo = drv_bo_create(gbm->drv, width, height, format, gbm_convert_usage(usage));
 
 	if (!bo->bo) {
