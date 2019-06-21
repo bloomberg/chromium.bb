@@ -1475,6 +1475,7 @@
     },
     {
       name: "StreamsNative",
+      status: "experimental",
     },
     {
       name: "TextFragmentIdentifiers",
