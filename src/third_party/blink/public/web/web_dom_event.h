@@ -33,6 +33,11 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
+#include "v8/include/v8.h"
+
+namespace v8 {
+class Isolate;
+}
 
 namespace blink {
 
@@ -51,6 +56,11 @@ class WebDOMEvent {
 
   BLINK_EXPORT void Reset();
   BLINK_EXPORT void Assign(const WebDOMEvent&);
+  BLINK_EXPORT static WebDOMEvent CreateCustomEvent(v8::Isolate* isolate,
+                                                    const char* name,
+                                                    bool canBubble,
+                                                    bool cancelable,
+                                                    v8::Local<v8::Value> value);
 
   bool IsNull() const { return private_.IsNull(); }
 
