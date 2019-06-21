@@ -6139,11 +6139,7 @@ crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/null.tentative.html [ Fa
 crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/usecredentials.tentative.html [ Failure ]
 
 # Flaky on Linux
-crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-duration.html [ Pass Failure ]
-crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-middle.html [ Pass Failure ]
 crbug.com/973769 [ Linux ] media/controls/controls-cast-do-not-fade-out.html [ Pass Timeout ]
-crbug.com/973769 [ Linux ] media/video-pause-immediately.html [ Pass Failure ]
-crbug.com/973769 [ Linux ] media/W3C/audio/events/event_timeupdate_manual.html [ Pass Failure ]
 
 # Flaky on Linux
 crbug.com/974660 [ Linux ] http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Pass Failure ]
