@@ -46,8 +46,8 @@ public class TabGridDialogCoordinator {
 
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
-                null, mMediator.getTabGridDialogHandler(), compositorViewHolder, null, false,
-                R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
+                null, mMediator.getTabGridDialogHandler(), null, null, compositorViewHolder, null,
+                false, R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
 
         mParentLayout = new TabGridDialogParent(context, compositorViewHolder);
     }
