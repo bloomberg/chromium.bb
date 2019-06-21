@@ -220,6 +220,13 @@ CrosUsbDetector::CrosUsbDetector()
   adb_device_filter_->subclass_code = kAdbSubclass;
   adb_device_filter_->has_protocol_code = true;
   adb_device_filter_->protocol_code = kAdbProtocol;
+
+  const int kFastbootProtocol = 0x3;
+  fastboot_device_filter_ = UsbFilterByClassCode(USB_CLASS_VENDOR_SPEC);
+  fastboot_device_filter_->has_subclass_code = true;
+  fastboot_device_filter_->subclass_code = kAdbSubclass;
+  fastboot_device_filter_->has_protocol_code = true;
+  fastboot_device_filter_->protocol_code = kFastbootProtocol;
 }
 
 CrosUsbDetector::~CrosUsbDetector() {
@@ -279,7 +286,8 @@ bool CrosUsbDetector::ShouldShowNotification(
   if (!crostini::IsCrostiniEnabled(profile())) {
     return false;
   }
-  if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info)) {
+  if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info) ||
+      device::UsbDeviceFilterMatches(*fastboot_device_filter_, device_info)) {
     return true;
   }
   return !device::UsbDeviceFilterMatchesAny(guest_os_classes_without_notif_,
@@ -288,7 +296,8 @@ bool CrosUsbDetector::ShouldShowNotification(
 
 bool CrosUsbDetector::IsDeviceSharable(
     const device::mojom::UsbDeviceInfo& device_info) {
-  if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info)) {
+  if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info) ||
+      device::UsbDeviceFilterMatches(*fastboot_device_filter_, device_info)) {
     return true;
   }
   return base::FeatureList::IsEnabled(features::kCrostiniUsbAllowUnsupported) &&
