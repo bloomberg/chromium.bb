@@ -389,7 +389,7 @@ cr.define('languages_page_tests', function() {
         assertTrue(actionMenu.open);
 
         // OS language is not 'sw'
-        const uiLanguageOption = getMenuItem('isDisplayedInThisLanguage');
+        const uiLanguageOption = getMenuItem('displayInThisLanguage');
         assertFalse(uiLanguageOption.disabled);
         assertFalse(uiLanguageOption.checked);
 
