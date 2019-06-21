@@ -2826,7 +2826,7 @@
       'name': 'MediaCacheSize',
       'type': 'int',
       'schema': { 'type': 'integer' },
-      'supported_on': ['chrome.*:17-'],
+      'supported_on': ['chrome.*:17-71'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,

@@ -442,7 +442,6 @@ void ProfileImpl::RegisterProfilePrefs(
   // Initialize the cache prefs.
   registry->RegisterFilePathPref(prefs::kDiskCacheDir, base::FilePath());
   registry->RegisterIntegerPref(prefs::kDiskCacheSize, 0);
-  registry->RegisterIntegerPref(prefs::kMediaCacheSize, 0);
 }
 
 ProfileImpl::ProfileImpl(
