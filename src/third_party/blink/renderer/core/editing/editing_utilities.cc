@@ -695,9 +695,9 @@ PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
                             ? std::min(boundary, next_candidate)
                             : boundary;
 
+  }
 #endif
 
-  }
   return editable_position;
 }
 
