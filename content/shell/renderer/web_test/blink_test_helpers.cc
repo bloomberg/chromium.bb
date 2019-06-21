@@ -71,8 +71,6 @@ namespace content {
 
 void ExportWebTestSpecificPreferences(const test_runner::TestPreferences& from,
                                       WebPreferences* to) {
-  to->allow_universal_access_from_file_urls =
-      from.allow_universal_access_from_file_urls;
   to->javascript_can_access_clipboard = from.java_script_can_access_clipboard;
   to->xss_auditor_enabled = from.xss_auditor_enabled;
   to->editing_behavior = static_cast<EditingBehavior>(from.editing_behavior);
