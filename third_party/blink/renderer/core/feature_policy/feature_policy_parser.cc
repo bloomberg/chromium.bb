@@ -121,6 +121,12 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
                           mojom::WebFeature::kUnoptimizedImagePolicies);
       }
 
+      // Detect usage of UnsizedMediaPolicy origin trial
+      if (feature == mojom::FeaturePolicyFeature::kUnsizedMedia) {
+        UseCounter::Count(execution_context,
+                          mojom::WebFeature::kUnsizedMediaPolicy);
+      }
+
       ParsedFeaturePolicyDeclaration allowlist(feature, feature_type);
       // TODO(loonybear): fallback value should be parsed from the new syntax.
       allowlist.fallback_value = GetFallbackValueForFeature(feature);

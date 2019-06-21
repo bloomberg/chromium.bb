@@ -28,7 +28,7 @@ bool ParseIntrinsicSizeAttribute(const String& value,
 bool IsMediaElement(const Element* element);
 
 // When |layout_object| is not properly styled (according to
-// FeaturePolocyFeature::kUnsizedMedia) this invocation counts a potential
+// FeaturePolicyFeature::kUnsizedMedia) this invocation counts a potential
 // violation. If |send_report| is set, then an actual violation report is
 // generated.
 void ReportUnsizedMediaViolation(const LayoutObject* layout_object,

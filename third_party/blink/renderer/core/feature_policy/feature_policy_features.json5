@@ -290,7 +290,7 @@
     {
       name: "UnsizedMedia",
       feature_policy_name: "unsized-media",
-      depends_on: ["ExperimentalProductivityFeatures"],
+      depends_on: ["UnsizedMediaPolicy"],
     },
     {
       name: "Usb",
