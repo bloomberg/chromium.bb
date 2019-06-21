@@ -51,7 +51,7 @@
 
 #include <libweston/libweston.h>
 #include <libweston/backend-drm.h>
-#include <libweston/weston-debug.h>
+#include <libweston/weston-log.h>
 #include "drm-internal.h"
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"

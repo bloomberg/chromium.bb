@@ -62,7 +62,7 @@
 #include <libweston/backend-x11.h>
 #include <libweston/backend-wayland.h>
 #include <libweston/windowed-output-api.h>
-#include <libweston/weston-debug.h>
+#include <libweston/weston-log.h>
 #include "../remoting/remoting-plugin.h"
 
 #define WINDOW_TITLE "Weston Compositor"

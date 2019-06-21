@@ -52,7 +52,7 @@
 
 #include <libweston/libweston.h>
 #include <libweston/backend-drm.h>
-#include <libweston/weston-debug.h>
+#include <libweston/weston-log.h>
 #include "shared/helpers.h"
 #include "libinput-seat.h"
 #include "backend.h"

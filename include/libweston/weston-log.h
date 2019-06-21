@@ -23,8 +23,8 @@
  * SOFTWARE.
  */
 
-#ifndef WESTON_DEBUG_H
-#define WESTON_DEBUG_H
+#ifndef WESTON_LOG_H
+#define WESTON_LOG_H
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -94,4 +94,4 @@ weston_log_scope_timestamp(struct weston_log_scope *scope,
 }
 #endif
 
-#endif /* WESTON_DEBUG_H */
+#endif /* WESTON_LOG_H */

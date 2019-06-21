@@ -56,7 +56,7 @@
 #include "timeline.h"
 
 #include <libweston/libweston.h>
-#include <libweston/weston-debug.h>
+#include <libweston/weston-log.h>
 #include "linux-dmabuf.h"
 #include "viewporter-server-protocol.h"
 #include "presentation-time-server-protocol.h"

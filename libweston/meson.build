@@ -27,7 +27,7 @@ srcs_libweston = [
 	'timeline.c',
 	'touch-calibration.c',
 	'weston-log-wayland.c',
-	'weston-debug.c',
+	'weston-log.c',
 	'zoom.c',
 	'../shared/matrix.c',
 	linux_dmabuf_unstable_v1_protocol_c,
