@@ -8,12 +8,16 @@
 #include <utility>
 #include <vector>
 
+#include "chrome/services/cups_proxy/cups_proxy_service_delegate.h"
+
 namespace chromeos {
 namespace printing {
 
 CupsProxyService::CupsProxyService(
-    service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)) {}
+    service_manager::mojom::ServiceRequest request,
+    std::unique_ptr<CupsProxyServiceDelegate> delegate)
+    : service_binding_(this, std::move(request)),
+      delegate_(std::move(delegate)) {}
 
 CupsProxyService::~CupsProxyService() = default;
 
