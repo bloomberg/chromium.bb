@@ -32610,6 +32610,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="12" label="Trusted Web Activity"/>
   <int value="13" label="WebShareTarget (WebAPK)"/>
   <int value="14" label="External intent from Chrome (WebAPK)"/>
+  <int value="15" label="WebShareTarget for Files (WebAPK)"/>
 </enum>
 
 <enum name="LaunchIntentFlags">
