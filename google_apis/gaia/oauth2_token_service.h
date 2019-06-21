@@ -294,10 +294,12 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
 
   // Cancels all requests that are currently in progress. Virtual so it can be
   // overridden for tests.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   virtual void CancelAllRequests();
 
   // Cancels all requests related to a given |account_id|. Virtual so it can be
   // overridden for tests.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   virtual void CancelRequestsForAccount(const CoreAccountId& account_id);
 
   // Fetches an OAuth token for the specified client/scopes. Virtual so it can
