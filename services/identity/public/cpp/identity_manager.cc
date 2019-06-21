@@ -11,6 +11,7 @@
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/ubertoken_fetcher_impl.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -65,7 +66,23 @@ IdentityManager::IdentityManager(
   DCHECK(account_fetcher_service_);
   DCHECK(accounts_cookie_mutator_);
   DCHECK(diagnostics_provider_);
-  primary_account_manager_->SetObserver(this);
+
+  // IdentityManager will outlive the PrimaryAccountManager, so base::Unretained
+  // is safe.
+  primary_account_manager_->SetGoogleSigninSucceededCallback(
+      base::BindRepeating(&IdentityManager::GoogleSigninSucceeded,
+                          base::Unretained(this)));
+  primary_account_manager_->SetAuthenticatedAccountSetCallback(
+      base::BindRepeating(&IdentityManager::AuthenticatedAccountSet,
+                          base::Unretained(this)));
+  primary_account_manager_->SetAuthenticatedAccountClearedCallback(
+      base::BindRepeating(&IdentityManager::AuthenticatedAccountCleared,
+                          base::Unretained(this)));
+#if !defined(OS_CHROMEOS)
+  primary_account_manager_->SetGoogleSignedOutCallback(base::BindRepeating(
+      &IdentityManager::GoogleSignedOut, base::Unretained(this)));
+#endif
+
   token_service_->AddObserver(this);
   token_service_->AddAccessTokenDiagnosticsObserver(this);
 
@@ -104,7 +121,6 @@ IdentityManager::~IdentityManager() {
   token_service_->Shutdown();
   account_tracker_service_->Shutdown();
 
-  primary_account_manager_->ClearObserver();
   token_service_->RemoveObserver(this);
   token_service_->RemoveAccessTokenDiagnosticsObserver(this);
 }

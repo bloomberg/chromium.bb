@@ -12,9 +12,9 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/ubertoken_fetcher.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
@@ -36,6 +36,7 @@ class SigninManagerAndroid;
 class AccountFetcherService;
 class AccountTrackerService;
 class GaiaCookieManagerService;
+class PrimaryAccountManager;
 class ProfileOAuth2TokenService;
 
 namespace identity {
@@ -51,8 +52,7 @@ struct CookieParams;
 
 // Gives access to information about the user's Google identities. See
 // ./README.md for detailed documentation.
-class IdentityManager : public PrimaryAccountManager::Observer,
-                        public AccessTokenDiagnosticsObserver,
+class IdentityManager : public AccessTokenDiagnosticsObserver,
                         public OAuth2TokenServiceObserver {
  public:
   class Observer {
@@ -575,11 +575,11 @@ class IdentityManager : public PrimaryAccountManager::Observer,
   AccountInfo GetAccountInfoForAccountWithRefreshToken(
       const CoreAccountId& account_id) const;
 
-  // PrimaryAccountManager::Observer:
-  void GoogleSigninSucceeded(const AccountInfo& account_info) override;
-  void GoogleSignedOut(const AccountInfo& account_info) override;
-  void AuthenticatedAccountSet(const AccountInfo& account_info) override;
-  void AuthenticatedAccountCleared() override;
+  // PrimaryAccountManager callbacks:
+  void GoogleSigninSucceeded(const AccountInfo& account_info);
+  void GoogleSignedOut(const AccountInfo& account_info);
+  void AuthenticatedAccountSet(const AccountInfo& account_info);
+  void AuthenticatedAccountCleared();
 
   // OAuth2TokenServiceObserver:
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
