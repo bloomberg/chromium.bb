@@ -26,6 +26,7 @@ BUILDER_CONFIG_FILENAME = os.path.join(
 PS_EXCLUDE_BUILDERS = [
     "chromite-postsubmit",
     "grunt-unittest-only-postsubmit",
+    "mistral-postsubmit",
     "moblab-generic-vm-postsubmit",
 ]
 
