@@ -25,6 +25,15 @@ using previous_session_info_constants::DeviceThermalState;
 
 namespace {
 
+// Percentage of battery level which is assumed low enough to have possibly
+// been the reason for the previous session ending in an unclean shutdown.
+// Percent rpresented by a value between 0 and 1.
+const float kCriticallyLowBatteryLevel = 0.01;
+
+// Amount of storage, in kilobytes, considered to be critical enough to
+// negatively effect device operation.
+const int kCriticallyLowDeviceStorage = 1024 * 5;
+
 // An enum representing the difference between two version numbers.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -147,13 +156,35 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
   PreviousSessionInfo* session_info = [PreviousSessionInfo sharedInstance];
   // Log metrics to improve categorization of crashes.
   LogApplicationBackgroundedTime(session_info.sessionEndTime);
+
   if (session_info.deviceBatteryState == DeviceBatteryState::kUnplugged) {
     LogBatteryCharge(session_info.deviceBatteryLevel);
   }
   LogAvailableStorage(session_info.availableDeviceStorage);
-  LogOSVersionChange(base::SysNSStringToUTF8(session_info.OSVersion));
+  std::string previous_os_version_string =
+      base::SysNSStringToUTF8(session_info.OSVersion);
+  LogOSVersionChange(previous_os_version_string);
   LogLowPowerMode(session_info.deviceWasInLowPowerMode);
   LogDeviceThermalState(session_info.deviceThermalState);
+
+  bool possible_explanation =
+      // Log any of the following cases as a possible explanation for the
+      // crash:
+      // - battery is critically low
+      (session_info.deviceBatteryState == DeviceBatteryState::kUnplugged &&
+       session_info.deviceBatteryLevel <= kCriticallyLowBatteryLevel) ||
+      // - storage is extremely low
+      session_info.availableDeviceStorage <= kCriticallyLowDeviceStorage ||
+      // - OS version changed
+      base::Version(version_info::GetVersionNumber())
+              .CompareTo(base::Version(previous_os_version_string)) != 0 ||
+      // - low power mode enabled
+      session_info.deviceWasInLowPowerMode ||
+      // - device in abnormal thermal state
+      session_info.deviceThermalState == DeviceThermalState::kCritical ||
+      session_info.deviceThermalState == DeviceThermalState::kSerious;
+  UMA_STABILITY_HISTOGRAM_BOOLEAN("Stability.iOS.UTE.HasPossibleExplanation",
+                                  possible_explanation);
 }
 
 MobileSessionShutdownType
