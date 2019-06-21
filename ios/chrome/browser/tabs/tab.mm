@@ -68,11 +68,6 @@
   return self.webController.viewForPrinting;
 }
 
-// Halt the tab, which amounts to halting its webController.
-- (void)terminateNetworkActivity {
-  [self.webController terminateNetworkActivity];
-}
-
 - (void)dismissModals {
   [self.webController dismissModals];
 }
