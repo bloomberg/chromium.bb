@@ -1530,6 +1530,11 @@ brailleIndicatorDefined(TranslationTableOffset offset,
 }
 
 static int
+capsletterDefined(const TranslationTableHeader *table) {
+	return table->emphRules[capsRule][letterOffset];
+}
+
+static int
 validMatch(const TranslationTableHeader *table, int pos, const InString *input,
 		formtype *typebuf, const TranslationTableRule *transRule, int transCharslen) {
 	/* Analyze the typeform parameter and also check for capitalization */
@@ -2234,7 +2239,10 @@ putCharacter(widechar character, const TranslationTableHeader *table, int pos,
 	TranslationTableOffset offset;
 	widechar d;
 	chardef = findCharOrDots(character, 0, table);
-	if ((chardef->attributes & CTC_Letter) && (chardef->attributes & CTC_UpperCase))
+	// If capsletter is defined, replace uppercase with lowercase letters. If capsletter
+	// is not defined, uppercase letters should be preserved because otherwise case info
+	// is lost.
+	if ((chardef->attributes & CTC_UpperCase) && capsletterDefined(table))
 		chardef = findCharOrDots(chardef->lowercase, 0, table);
 	offset = chardef->definitionRule;
 	if (offset) {
@@ -3042,7 +3050,7 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 		/* mark where emphasis in a word needs to be retriggered after it was reset */
 		resolveEmphasisResets(
 				emphasisBuffer, capsEmphClass, CTC_CapsMode, table, input, wordBuffer);
-	} else if (table->emphRules[capsRule][letterOffset]) {
+	} else if (capsletterDefined(table)) {
 		if (table->capsNoCont) /* capsnocont and no capsword */
 			resolveEmphasisAllCapsSymbols(emphasisBuffer, typebuf, input);
 		else
@@ -3371,7 +3379,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 	*posIncremented = 1;
 	insertEmphasesFrom = 0;
 	_lou_resetPassVariables();
-	if (typebuf && table->emphRules[capsRule][letterOffset])
+	if (typebuf && capsletterDefined(table))
 		for (k = 0; k < input->length; k++)
 			if (checkAttr(input->chars[k], CTC_UpperCase, 0, table))
 				typebuf[k] |= CAPSEMPH;
@@ -3545,8 +3553,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 			/* Only needs special handling if not within compbrl and
 			 * the table defines a capital sign. */
 			if (!(mode & (compbrlAtCursor | compbrlLeftCursor)) &&
-					(transRule->dotslen == 1 &&
-							table->emphRules[capsRule][letterOffset])) {
+					(transRule->dotslen == 1 && capsletterDefined(table))) {
 				if (!putCharacter(curCharDef->lowercase, table, pos, input, output,
 							posMapping, cursorPosition, cursorStatus))
 					goto failure;

@@ -12,6 +12,8 @@ issues]].
 - Handle word resets in the last word of an caps or emphasis passage
   if the end indicator was placed before the word. Thanks to Bert
   Frees.
+- Never convert to lowercase if capsletter is not defined. Thanks to
+  Bert Frees.
 
 ** Braille table improvements
 - Fix an issue with ordinal numbers inside caps passages in Dutch
