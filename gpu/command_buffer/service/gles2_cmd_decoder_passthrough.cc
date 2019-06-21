@@ -1360,6 +1360,7 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
           .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
       kGpuFeatureStatusEnabled;
   caps.post_sub_buffer = surface_->SupportsPostSubBuffer();
+  caps.swap_buffers_with_bounds = surface_->SupportsSwapBuffersWithBounds();
   caps.surfaceless = !offscreen_ && surface_->IsSurfaceless();
   caps.flips_vertically = !offscreen_ && surface_->FlipsVertically();
   caps.msaa_is_slow = feature_info_->workarounds().msaa_is_slow;
