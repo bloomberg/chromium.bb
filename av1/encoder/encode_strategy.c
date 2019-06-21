@@ -1168,8 +1168,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   cpi->td.mb.e_mbd.delta_qindex = 0;
 #if ENABLE_KF_TPL
-  if (oxcf->pass == 2 && frame_params.frame_type == KEY_FRAME &&
-      frame_params.show_frame) {
+  if (oxcf->lag_in_frames > 0 && oxcf->pass != 1 &&
+      frame_params.frame_type == KEY_FRAME && frame_params.show_frame) {
     av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
     av1_set_frame_size(cpi, cm->width, cm->height);
     av1_tpl_setup_stats(cpi, &frame_input);
@@ -1180,7 +1180,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     cm->using_qmatrix = cpi->oxcf.using_qm;
     cm->min_qmlevel = cpi->oxcf.qm_minlevel;
     cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
-    if (oxcf->pass == 2) {
+    if (oxcf->lag_in_frames > 0 && oxcf->pass != 1) {
       if (cpi->gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
         av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
         av1_set_frame_size(cpi, cm->width, cm->height);
