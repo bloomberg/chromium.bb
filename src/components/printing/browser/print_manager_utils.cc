@@ -70,6 +70,7 @@ void RenderParamsFromPrintSettings(const PrintSettings& settings,
   params->display_header_footer = settings.display_header_footer();
   params->title = settings.title();
   params->url = settings.url();
+  params->header_footer_html = settings.header_footer_html();
   params->printed_doc_type = IsOopifEnabled() && settings.is_modifiable()
                                  ? SkiaDocumentType::MSKP
                                  : SkiaDocumentType::PDF;
