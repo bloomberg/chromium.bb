@@ -45,7 +45,20 @@ namespace blink {
         DEFINE_WRAPPERTYPEINFO();
         USING_GARBAGE_COLLECTED_MIXIN(BBWindowHooks);
     public:
+        struct PumpConfigHooks {
+            base::RepeatingCallback<std::vector<std::string>(void)> listSchedulers;
+            base::RepeatingCallback<std::vector<std::string>(void)> listSchedulerTunables;
+            base::RepeatingCallback<int(int)> activateScheduler;
+            base::RepeatingCallback<int(unsigned,int)> setSchedulerTunable;
+        };
+
         static BBWindowHooks* Create(LocalFrame* frame) { return MakeGarbageCollected<BBWindowHooks>(frame); }
+        BLINK_EXPORT static void InstallPumpConfigHooks(PumpConfigHooks hooks);
+
+        String listPumpSchedulers();
+        String listPumpSchedulerTunables();
+        void activatePumpScheduler(long index);
+        void setPumpSchedulerTunable(long index, long value);
 
         bool isBlock(Node* node);
         String getPlainText(Node* node, const String& excluder = "", const String& mask = "");

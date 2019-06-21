@@ -20,6 +20,7 @@
  * IN THE SOFTWARE.
  */
 
+#include <base/no_destructor.h>
 #include "third_party/blink/renderer/core/page/bb_window_hooks.h"
 
 #include "third_party/blink/renderer/core/dom/character_data.h"
@@ -40,9 +41,57 @@
 
 namespace blink {
 
+static BBWindowHooks::PumpConfigHooks& GetPumpConfigHooks()
+{
+    static base::NoDestructor<BBWindowHooks::PumpConfigHooks> hooks;
+    return *hooks;
+}
+
 BBWindowHooks::BBWindowHooks(LocalFrame* frame)
     : DOMWindowClient(frame)
 {
+}
+
+// static
+void BBWindowHooks::InstallPumpConfigHooks(PumpConfigHooks hooks)
+{
+    GetPumpConfigHooks() = hooks;
+}
+
+String BBWindowHooks::listPumpSchedulers() {
+    std::vector<std::string> list = GetPumpConfigHooks().listSchedulers.Run();
+
+    std::string combined_list;
+    for (const auto& it : list) {
+        if (combined_list.empty())
+            combined_list = it;
+        else
+            combined_list += (", " + it);
+    }
+
+    return String::FromUTF8(combined_list.data(), combined_list.size());
+}
+
+String BBWindowHooks::listPumpSchedulerTunables() {
+    std::vector<std::string> list = GetPumpConfigHooks().listSchedulerTunables.Run();
+
+    std::string combined_list;
+    for (const auto& it : list) {
+        if (combined_list.empty())
+            combined_list = it;
+        else
+            combined_list += (", " + it);
+    }
+
+    return String::FromUTF8(combined_list.data(), combined_list.size());
+}
+
+void BBWindowHooks::activatePumpScheduler(long index) {
+    GetPumpConfigHooks().activateScheduler.Run(index);
+}
+
+void BBWindowHooks::setPumpSchedulerTunable(long index, long value) {
+    GetPumpConfigHooks().setSchedulerTunable.Run(index, value);
 }
 
 bool BBWindowHooks::matchSelector(Node *node, const String& selector)

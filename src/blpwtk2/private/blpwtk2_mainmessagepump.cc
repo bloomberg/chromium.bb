@@ -21,6 +21,8 @@
  */
 
 #include <blpwtk2_mainmessagepump.h>
+#include <blpwtk2_queuepumpscheduler.h>
+#include <blpwtk2_timerpumpscheduler.h>
 #include <blpwtk2_statics.h>
 
 #include <base/run_loop.h>
@@ -30,6 +32,7 @@
 #include <base/win/wrapped_window_proc.h>
 #include <base/time/time.h>
 #include <gin/public/debug.h>
+#include <third_party/blink/renderer/core/page/bb_window_hooks.h>
 #include <v8.h>
 
 namespace blpwtk2 {
@@ -114,7 +117,7 @@ LRESULT CALLBACK MainMessagePump::windowProcedure(NativeView window_handle,
         DWORD scheduleTime = pump->d_scheduleTime;
         DWORD currentTime = ::GetTickCount();
         if (pump->d_minTimer < currentTime - scheduleTime) {
-            pump->d_skipIdleWork = true;
+            pump->d_allowIdleWork = false;
             pump->schedulePumpIfNecessary();
         }
     }
@@ -185,7 +188,7 @@ LRESULT CALLBACK MainMessagePump::windowProcedureHook(int code,
 
         if (0 != scheduleTime &&
             pump->d_maxTimer < currentTime - scheduleTime) {
-            pump->d_skipIdleWork = true;
+            pump->d_allowIdleWork = false;
             pump->schedulePumpIfNecessary();
         }
     }
@@ -195,7 +198,12 @@ LRESULT CALLBACK MainMessagePump::windowProcedureHook(int code,
 
 void MainMessagePump::schedulePumpIfNecessary()
 {
-    if (work_scheduled_) {
+    // Store the atomic<bool> into a local variable. This helps us to see a
+    // snapshot of the variable during debugging in case another thread
+    // changes the value.
+    bool work_scheduled = work_scheduled_;
+
+    if (work_scheduled) {
         schedulePump();
     }
 }
@@ -247,6 +255,7 @@ void MainMessagePump::doWork()
     // by sending a synchronous message to the same window message handler.
 
     unsigned int maxPumpCount;
+    bool work_scheduled = false;
 
     if (!d_isInsideModalLoop) {
         maxPumpCount = 1;
@@ -257,18 +266,19 @@ void MainMessagePump::doWork()
 
     for (unsigned int i=0; i<maxPumpCount; ++i) {
         resetWorkState();
-        ::SendMessageW(message_window_.hwnd(),
-                       kMsgHaveWork,
-                       reinterpret_cast<WPARAM>(this),
-                       0);
+        MessagePumpForUI::HandleWorkMessage();
 
-        if (!work_scheduled_) {
+        // Store the atomic<bool> into a local variable. This helps us to see a
+        // snapshot of the variable during debugging in case another thread
+        // changes the value.
+        work_scheduled = work_scheduled_;
+        if (!work_scheduled) {
             // Break out of the loop if no more work is scheduled.
             break;
         }
     }
 
-    if (!d_skipIdleWork) {
+    if (!work_scheduled && d_allowIdleWork) {
         unsigned int startTime2 = ::GetTickCount();
         MessagePumpForUI::DoIdleWork();
         unsigned int endTime2 = ::GetTickCount();
@@ -279,7 +289,7 @@ void MainMessagePump::doWork()
         }
     }
     else {
-        d_skipIdleWork = false;
+        d_allowIdleWork = true;
     }
 
     unsigned int endTime1 = ::GetTickCount();
@@ -369,7 +379,7 @@ MainMessagePump::MainMessagePump()
     , d_isPumped(0)
     , d_needRepost(0)
     , d_scheduleTime(0)
-    , d_skipIdleWork(false)
+    , d_allowIdleWork(true)
     , d_windowProcedureHook(0)
     , d_messageFilter(0)
     , d_minTimer(USER_TIMER_MINIMUM)
@@ -416,6 +426,20 @@ MainMessagePump::MainMessagePump()
 
     gin::Debug::SetDebugBreakCallback(&MainMessagePump::OnDebugBreak);
     gin::Debug::SetDebugResumeCallback(&MainMessagePump::OnDebugResume);
+
+    // Active a default pump scheduler
+    activateScheduler(0);
+
+    // Install hooks into BBWindowHook so we can configure the tunables from
+    // JavaScript.
+
+    blink::BBWindowHooks::PumpConfigHooks hooks;
+    hooks.listSchedulers = base::BindRepeating(&MainMessagePump::listSchedulers, base::Unretained(this));
+    hooks.listSchedulerTunables = base::BindRepeating(&MainMessagePump::listSchedulerTunables, base::Unretained(this));
+    hooks.activateScheduler = base::BindRepeating(&MainMessagePump::activateScheduler, base::Unretained(this));
+    hooks.setSchedulerTunable = base::BindRepeating(&MainMessagePump::setSchedulerTunable, base::Unretained(this));
+
+    blink::BBWindowHooks::InstallPumpConfigHooks(hooks);
 }
 
 MainMessagePump::~MainMessagePump()
@@ -461,7 +485,11 @@ void MainMessagePump::flush()
     // loop.
 
     for (int i=0; i<255; ++i) {
-        if (work_scheduled_) {
+        // Store the atomic<bool> into a local variable. This helps us to see a
+        // snapshot of the variable during debugging in case another thread
+        // changes the value.
+        bool work_scheduled = work_scheduled_;
+        if (work_scheduled) {
             // This call to schedulePump() is not strictly required but it
             // helps to keep the data members in the expected state.   The
             // side effect of calling schedulePump() is the setting of the
@@ -519,38 +547,18 @@ void MainMessagePump::postHandleMessage(const MSG& msg)
         modalLoop(false);
     }
 
-    bool has_work = work_scheduled_;
+    bool work_scheduled = work_scheduled_;
     LONG wasPumped = d_isPumped;
 
-    if (has_work && 0 == wasPumped) {
-        MSG msg_ = {};
+    if (work_scheduled && 0 == wasPumped) {
+        bool allowNormalWork = false;
+        d_scheduler->isReadyToWork(&allowNormalWork, &d_allowIdleWork);
 
-        // We will unintrusively keep our own message loop pumping without
-        // preempting lower-priority messages.  We do this by first checking
-        // what's on the Windows message queue.
-        if (::PeekMessage(&msg_, nullptr, 0, 0, PM_NOREMOVE)) {
-            // There is a message on the queue.  Now we check if there are high
-            // priority messages in the queue.
+        // Normal work must be allowed if idle work is allowed.  The scheduler
+        // is at fault if it ever allows idle work but not normal work.
+        DCHECK(!d_allowIdleWork || allowNormalWork);
 
-            unsigned int flags = PM_NOREMOVE | PM_QS_POSTMESSAGE | PM_QS_SENDMESSAGE;
-            if (::PeekMessage(&msg_, nullptr, 0, 0, flags)) {
-
-                // We should never observe a kPumpMessage here if d_isPumped is false
-                DCHECK(kPumpMessage != msg_.message);
-
-                // Yes! There is a high priority message (other than our pump message)
-                // in the queue.  This means that we can piggyback on the current high
-                // priority message in the queue without introducing preemption of low
-                // priority messages.  Given that there are other messages in the
-                // queue, we won't consider the current state to be idle and so we will
-                // skip idle tasks for now.
-                d_skipIdleWork = true;
-                schedulePump();
-            }
-        }
-        else {
-            // No messages are in the queue.  We need to post our pump message to keep
-            // the loop pumping.
+        if (allowNormalWork) {
             schedulePump();
         }
     }
@@ -562,6 +570,50 @@ void MainMessagePump::setTraceThreshold(unsigned int timeoutMS)
     LOG(INFO) << "blpwtk2::MainMessagePump::setTraceThreshold: Set traceThreshold to "
               << timeoutMS
               << " ms";
+}
+
+std::vector<std::string> MainMessagePump::listSchedulers()
+{
+    std::vector<std::string> list;
+
+    list.push_back(QueuePumpScheduler::name());
+    list.push_back(TimerPumpScheduler::name());
+
+    return list;
+}
+
+std::vector<std::string> MainMessagePump::listSchedulerTunables()
+{
+    DCHECK(d_scheduler);
+    return d_scheduler->listTunables();
+}
+
+int MainMessagePump::activateScheduler(int index)
+{
+    int status = 0;
+
+    switch (index) {
+    case 0:
+      d_scheduler = std::make_unique<QueuePumpScheduler>();
+      break;
+
+    case 1:
+      d_scheduler = std::make_unique<TimerPumpScheduler>();
+      break;
+
+    default:
+      LOG(ERROR) << "blpwtk2::MainMessagePump::activateScheduler: index out of bound: " << index;
+      status = -1;
+      break;
+    }
+
+    return status;
+}
+
+int MainMessagePump::setSchedulerTunable(unsigned index, int value)
+{
+    DCHECK(d_scheduler);
+    return d_scheduler->setTunable(index, value);
 }
 
 void MainMessagePump::ScheduleWork()
@@ -582,15 +634,25 @@ void MainMessagePump::ScheduleWork()
     ::InterlockedExchange(&d_scheduleTime, ::GetTickCount());
 
     LONG isInsideMainLoop = d_isInsideMainLoop;
-    if (0 == isInsideMainLoop) {
+    if (Statics::isInApplicationMainThread() && 0 == isInsideMainLoop) {
         // We can guage the idleness of the Windows message queue by peeking at
         // it.  Given that the peek operation is not very cheap, we only do it
         // in postHandleMessage().  For all other times, we assume a non-idle
         // state.
-        d_skipIdleWork = true;
+        d_allowIdleWork = false;
         schedulePump();
     }
 }
+
+                        // --------------------------------
+                        // class MainMessagePump::Scheduler
+                        // --------------------------------
+
+MainMessagePump::Scheduler::~Scheduler()
+{
+}
+
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et

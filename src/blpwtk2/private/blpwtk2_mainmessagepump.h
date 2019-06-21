@@ -41,6 +41,18 @@ namespace blpwtk2 {
 // This message pump extends MessagePumpForUI and contains methods to
 // facilitate integration with an application's main message loop.
 class MainMessagePump final : public base::MessagePumpForUI {
+  public:
+    // TYPE
+    class Scheduler {
+      public:
+        virtual ~Scheduler();
+
+        virtual void isReadyToWork(bool *allowNormalWork, bool *allowIdleWork) = 0;
+        virtual std::vector<std::string> listTunables() = 0;
+        virtual int setTunable(unsigned index, int value) = 0;
+    };
+
+  private:
     // DATA
     NativeView d_window;
     std::unique_ptr<base::RunLoop> d_runLoop;
@@ -51,7 +63,7 @@ class MainMessagePump final : public base::MessagePumpForUI {
     LONG d_isPumped;
     LONG d_needRepost;
     DWORD d_scheduleTime;
-    bool d_skipIdleWork;
+    bool d_allowIdleWork;
     HHOOK d_windowProcedureHook;
     HHOOK d_messageFilter;
     unsigned int d_minTimer;
@@ -59,6 +71,7 @@ class MainMessagePump final : public base::MessagePumpForUI {
     unsigned int d_maxPumpCountInsideModalLoop;
     unsigned int d_traceThreshold;
     int d_nestLevel;
+    std::unique_ptr<Scheduler> d_scheduler;
 
     // ACCESSORS
     static const wchar_t* getClassName();
@@ -112,6 +125,11 @@ class MainMessagePump final : public base::MessagePumpForUI {
     bool preHandleMessage(const MSG& msg);
     void postHandleMessage(const MSG& msg);
     void setTraceThreshold(unsigned int timeoutMS);
+
+    std::vector<std::string> listSchedulers();
+    std::vector<std::string> listSchedulerTunables();
+    int activateScheduler(int index);
+    int setSchedulerTunable(unsigned index, int value);
 
     // base::MessagePumpForUI
     void ScheduleWork() override;

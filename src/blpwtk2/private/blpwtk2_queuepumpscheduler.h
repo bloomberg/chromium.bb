@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Bloomberg Finance L.P.
+ * Copyright (C) 2019 Bloomberg Finance L.P.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,25 +20,38 @@
  * IN THE SOFTWARE.
  */
 
-[
-    NoInterfaceObject
-] interface BBWindowHooks {
+#ifndef INCLUDED_BLPWTK2_QUEUEPUMPSCHEDULER_H
+#define INCLUDED_BLPWTK2_QUEUEPUMPSCHEDULER_H
 
-    DOMString listPumpSchedulers();
-    DOMString listPumpSchedulerTunables();
-    void activatePumpScheduler(long index);
-    void setPumpSchedulerTunable(long index, long value);
+#include <blpwtk2_mainmessagepump.h>
+#include <string>
+#include <vector>
 
-    boolean isBlock(Node node);
-    DOMString getPlainText(Node node, optional DOMString excluder, optional DOMString mask);
-    void setTextMatchMarkerVisibility(Document document, boolean highlight);
-    boolean checkSpellingForRange(Range range);
-    void removeMarker(Range range, long mask);
-    void addHighlightMarker(Range range, long foregroundColor, long backgroundColor, optional boolean includeNonSelectableText);
-    void removeHighlightMarker(Range range);
-    Range findPlainText(Range range, DOMString target, long options);
-    boolean checkSpellingForNode(Node node);
-    ClientRect getAbsoluteCaretRectAtOffset(Node node, long offset);
-    bool isOverwriteModeEnabled(Document document);
-    void toggleOverwriteMode(Document document);
+namespace blpwtk2 {
+
+                        // ========================
+                        // class QueuePumpScheduler
+                        // ========================
+
+class QueuePumpScheduler final : public MainMessagePump::Scheduler {
+    std::vector<std::pair<std::string,int>> d_tunables;
+    unsigned int d_importantWorkBudget = 0;
+    unsigned int d_idleWorkBudget = 0;
+
+  public:
+    static const std::string& name();
+
+    QueuePumpScheduler();
+    ~QueuePumpScheduler() final;
+
+    // MainMessagePump::Scheduler
+    void isReadyToWork(bool *allowNormalWork, bool *allowIdleWork) final;
+    std::vector<std::string> listTunables() final;
+    int setTunable(unsigned index, int value) final;
 };
+
+}  // close namespace blpwtk2
+
+#endif // INCLUDED_BLPWTK2_QUEUEPUMPSCHEDULER_H
+
+// vim: ts=4 et
