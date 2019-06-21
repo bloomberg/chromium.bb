@@ -1564,11 +1564,7 @@ void PictureLayerImpl::SanityCheckTilingState() const {
 }
 
 float PictureLayerImpl::MaximumTilingContentsScale() const {
-  if (tilings_->num_tilings() == 0) {
-    return 0.f;
-  }
-
-  float max_contents_scale = tilings_->tiling_at(0)->raster_scales().width();
+  float max_contents_scale = tilings_->GetMaximumContentsScale();
   return std::max(max_contents_scale, MinimumContentsScale());
 }
 
