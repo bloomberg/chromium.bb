@@ -31,11 +31,11 @@ void LargestContentfulPaintCalculator::OnLargestImageUpdated(
 }
 
 void LargestContentfulPaintCalculator::OnLargestTextUpdated(
-    base::WeakPtr<TextRecord> largest_text) {
+    const TextRecord* largest_text) {
   largest_text_.reset();
   if (largest_text) {
     largest_text_ = std::make_unique<TextRecord>(
-        largest_text->node_id, largest_text->first_size, FloatRect());
+        kInvalidDOMNodeId, largest_text->first_size, FloatRect());
     largest_text_->paint_time = largest_text->paint_time;
   }
 
