@@ -116,6 +116,10 @@ const char kEnableDirectCompositionLayers[] =
 const char kDisableDirectCompositionLayers[] =
     "disable-direct-composition-layers";
 
+// Disable falling back to software compositor in case of a GPU fatal error
+const char kDisableGpuCompositorFallBackToSoftwareOnGLError[] =
+    "disable-gpu-compositor-fallback-to-software-on-gl-error";
+
 // This is the list of switches passed from this file that are passed from the
 // GpuProcessHost to the GPU Process. Add your switch to this list if you need
 // to read it in the GPU process, else don't add it.
