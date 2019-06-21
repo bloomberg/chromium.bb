@@ -23,9 +23,8 @@ module.exports = function(grunt) {
         args: [ 'unittests' ]
       },
       'build-out': {
-        cmd: 'npx',
+        cmd: 'node_modules/.bin/babel',
         args: [
-          'babel',
           '--source-maps', 'true',
           '--extensions', '.ts',
           '--out-dir', 'out/',
@@ -33,26 +32,15 @@ module.exports = function(grunt) {
         ]
       },
       'build-shaderc': {
-        cmd: 'npx',
+        cmd: 'node_modules/.bin/babel',
         args: [
-          'babel',
           '--plugins', 'babel-plugin-transform-commonjs-es2015-modules',
           'node_modules/@webgpu/shaderc/dist/index.js',
           '-o', 'out/shaderc.js',
         ]
       },
-      'lint': {
-        cmd: 'npx',
-        args: ['tslint', '--project', '.']
-      },
-      'fix': {
-        cmd: 'npx',
-        args: ['tslint', '--project', '.', '--fix']
-      },
-      'check-git-is-clean': {
-        cmd: 'git',
-        args: ['diff-index', '--quiet', 'HEAD']
-      }
+      'gts-check': { cmd: 'node_modules/.bin/gts', args: ['check'] },
+      'gts-fix': { cmd: 'node_modules/.bin/gts', args: ['fix'] },
     },
 
     'http-server': {
@@ -86,10 +74,11 @@ module.exports = function(grunt) {
     publishedTasks.push({ name, desc });
   }
 
-  publishTask('check', 'Check Typescript build', [
+  publishTask('check', 'Check types and styles', [
     'ts:check',
+    'run:gts-check',
   ]);
-  publishedTasks.push({ name: 'run:{lint,fix}', desc: 'Run tslint' });
+  publishTask('fix', 'Fix lint and formatting', ['run:gts-fix']);
   publishTask('build', 'Build out/', [
     'mkdir:out',
     'run:build-shaderc',
@@ -110,12 +99,10 @@ module.exports = function(grunt) {
   });
 
   publishTask('presubmit', 'Run all presubmit checks', [
-    'check',
+    'ts:check',
     'build',
     'run:test',
 
-    // 'format',  // TODO
-    // 'run:fix',  // TODO
-    'run:check-git-is-clean',
+    'run:gts-check',
   ]);
 };

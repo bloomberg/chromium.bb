@@ -1,15 +1,12 @@
 {
+  "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
-    "target": "es2017",
-    "lib": ["dom", "es2017"],
+    "lib": ["dom", "es2016"],
 
     /* Output options */
-    "sourceMap": true,
-    "module": "commonjs",
     "noEmit": true,
 
     /* Strict type-checking options */
-    "strict": true,
     "alwaysStrict": true,
     "allowJs": false,
     "noImplicitAny": true,
@@ -20,15 +17,13 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
 
-    /* Additional checks */
-    "noFallthroughCasesInSwitch": true,
-
     /* Module Options */
     "moduleResolution": "node",
     "esModuleInterop": true,
     "baseUrl": "./src",
   },
   "include": [
-    "./src", "tools/run.ts", "tools/setup-ts-in-node.js", "tools/gen.ts",
+    "src/**/*.ts",
+    "tools/**/*.ts"
   ]
 }

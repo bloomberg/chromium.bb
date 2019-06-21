@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "es2017",
+    "module": "es2016",
     "noEmit": false,
     "outDir": "out/"
   }

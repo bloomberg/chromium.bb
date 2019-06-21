@@ -1,23 +1,13 @@
 {
-  "defaultSeverity": "error",
-  "extends": [
-    "tslint:latest"
-  ],
-  "jsRules": {},
+  "extends": "gts/tslint.json",
   "rules": {
-    "arrow-parens": [false],
-    "max-classes-per-file": false,
-    "max-line-length": [true, 180],
-    "no-bitwise": false,
-    "no-empty": false,
-    "object-literal-sort-keys": false,
-    "quotemark": [true, "single", "avoid-escape", "avoid-template"],
-    "variable-name": [true, "allow-leading-underscore"]
+    "interface-name": [true],
+    "no-any": false,
+    "no-default-export": false
   },
-  "rulesDirectory": [],
   "linterOptions": {
     "exclude": [
-      "node_modules/**"
+      "**/*.json"
     ]
   }
 }
