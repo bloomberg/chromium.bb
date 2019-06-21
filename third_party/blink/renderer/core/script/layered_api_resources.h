@@ -36,14 +36,15 @@ const LayeredAPIResource kLayeredAPIResources[] = {
     {"elements/switch/reflection.mjs",
      IDR_LAYERED_API_ELEMENTS_SWITCH_REFLECTION_MJS, Module::kElementsSwitch},
 
+    {"elements/toast/index.mjs", IDR_LAYERED_API_ELEMENTS_TOAST_INDEX_MJS,
+     Module::kElementsToast},
+
     {"kv-storage/async_iterator.mjs",
      IDR_LAYERED_API_KV_STORAGE_ASYNC_ITERATOR_MJS, Module::kKvStorage},
     {"kv-storage/idb_utils.mjs", IDR_LAYERED_API_KV_STORAGE_IDB_UTILS_MJS,
      Module::kKvStorage},
     {"kv-storage/index.mjs", IDR_LAYERED_API_KV_STORAGE_INDEX_MJS,
      Module::kKvStorage},
-
-    {"toast/index.mjs", IDR_LAYERED_API_TOAST_INDEX_MJS, Module::kToast},
 
     {"virtual-scroller/index.mjs", IDR_LAYERED_API_VIRTUAL_SCROLLER_INDEX_MJS,
      Module::kVirtualScroller},
