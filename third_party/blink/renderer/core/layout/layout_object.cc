@@ -3155,7 +3155,7 @@ void LayoutObject::WillBeRemovedFromTree() {
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
       RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
     if (LocalFrameView* frame_view = GetFrameView()) {
-      frame_view->GetPaintTimingDetector().NotifyNodeRemoved(*this);
+      frame_view->GetPaintTimingDetector().LayoutObjectWillBeDestroyed(*this);
     }
   }
 }
