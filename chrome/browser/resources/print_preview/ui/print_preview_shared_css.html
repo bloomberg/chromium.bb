@@ -39,6 +39,10 @@
         line-height: 20px;
       }
 
+      cr-input::part(row-container) {
+        min-height: var(--print-preview-row-height);
+      }
+
       a[href],
       a[is='action-link'] {
         color: var(--google-blue-600);  /* Same in light and dark mode. */
