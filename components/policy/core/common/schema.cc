@@ -1270,13 +1270,17 @@ bool Schema::Validate(const base::Value& value,
         bool all_subschemas_are_valid = true;
         for (auto subschema = schema_list.begin();
              subschema != schema_list.end(); ++subschema) {
-          if (!subschema->Validate(it.value(),
-                                   StrategyForNextLevel(strategy),
-                                   error_path,
-                                   error)) {
+          std::string new_error;
+          const bool validation_result =
+              subschema->Validate(it.value(), StrategyForNextLevel(strategy),
+                                  error_path, &new_error);
+          if (!new_error.empty()) {
+            AddDictKeyPrefixToPath(it.key(), error_path);
+            *error = std::move(new_error);
+          }
+          if (!validation_result) {
             // Invalid property was detected.
             all_subschemas_are_valid = false;
-            AddDictKeyPrefixToPath(it.key(), error_path);
             if (!StrategyAllowInvalidOnTopLevel(strategy))
               return false;
           }
@@ -1297,13 +1301,15 @@ bool Schema::Validate(const base::Value& value,
     }
   } else if (value.GetAsList(&list)) {
     for (auto it = list->begin(); it != list->end(); ++it) {
-      if (!GetItems().Validate(*it, StrategyForNextLevel(strategy), error_path,
-                               error)) {
-        // Invalid list item was detected.
+      std::string new_error;
+      const bool validation_result = GetItems().Validate(
+          *it, StrategyForNextLevel(strategy), error_path, &new_error);
+      if (!new_error.empty()) {
         AddListIndexPrefixToPath(it - list->begin(), error_path);
-        if (!StrategyAllowInvalidOnTopLevel(strategy))
-          return false;
+        *error = std::move(new_error);
       }
+      if (!validation_result && !StrategyAllowInvalidOnTopLevel(strategy))
+        return false;  // Invalid list item was detected.
     }
   } else if (value.GetAsInteger(&int_value)) {
     if (node_->extra != kInvalid &&
@@ -1355,30 +1361,30 @@ bool Schema::Normalize(base::Value* value,
       if (schema_list.empty()) {
         // Unknown property was detected.
         SchemaErrorFound(error_path, error, "Unknown property: " + it.key());
-        if (StrategyAllowUnknownOnTopLevel(strategy))
-          drop_list.push_back(it.key());
-        else
+        if (!StrategyAllowUnknownOnTopLevel(strategy))
           return false;
+        drop_list.push_back(it.key());
       } else {
         bool all_subschemas_are_valid = true;
         for (auto subschema = schema_list.begin();
              subschema != schema_list.end(); ++subschema) {
           base::Value* sub_value = nullptr;
           dict->GetWithoutPathExpansion(it.key(), &sub_value);
-          if (!subschema->Normalize(sub_value,
-                                    StrategyForNextLevel(strategy),
-                                    error_path,
-                                    error,
-                                    changed)) {
+          std::string new_error;
+          const bool normalization_result =
+              subschema->Normalize(sub_value, StrategyForNextLevel(strategy),
+                                   error_path, &new_error, changed);
+          if (!new_error.empty()) {
+            AddDictKeyPrefixToPath(it.key(), error_path);
+            *error = std::move(new_error);
+          }
+          if (!normalization_result) {
             // Invalid property was detected.
             all_subschemas_are_valid = false;
-            AddDictKeyPrefixToPath(it.key(), error_path);
-            if (StrategyAllowInvalidOnTopLevel(strategy)) {
-              drop_list.push_back(it.key());
-              break;
-            } else {
+            if (!StrategyAllowInvalidOnTopLevel(strategy))
               return false;
-            }
+            drop_list.push_back(it.key());
+            break;
           }
         }
         if (all_subschemas_are_valid)
@@ -1406,20 +1412,23 @@ bool Schema::Normalize(base::Value* value,
     return true;
   } else if (value->GetAsList(&list)) {
     std::vector<size_t> drop_list;  // Contains the indexes to drop.
+    // TODO: use iterators like in Validate() here instead of iterating over
+    // indices.
     for (size_t index = 0; index < list->GetSize(); index++) {
-      base::Value* sub_value = nullptr;
-      list->Get(index, &sub_value);
-      if (!sub_value || !GetItems().Normalize(sub_value,
-                                              StrategyForNextLevel(strategy),
-                                              error_path,
-                                              error,
-                                              changed)) {
-        // Invalid list item was detected.
+      base::Value& sub_value = list->GetList()[index];
+      std::string new_error;
+      const bool normalization_result =
+          GetItems().Normalize(&sub_value, StrategyForNextLevel(strategy),
+                               error_path, &new_error, changed);
+      if (!new_error.empty()) {
         AddListIndexPrefixToPath(index, error_path);
-        if (StrategyAllowInvalidOnTopLevel(strategy))
-          drop_list.push_back(index);
-        else
+        *error = std::move(new_error);
+      }
+      if (!normalization_result) {
+        // Invalid list item was detected.
+        if (!StrategyAllowInvalidOnTopLevel(strategy))
           return false;
+        drop_list.push_back(index);
       }
     }
     if (changed && !drop_list.empty())
