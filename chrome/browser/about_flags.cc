@@ -1663,6 +1663,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-search-ready-omnibox", flag_descriptions::kSearchReadyOmniboxName,
      flag_descriptions::kSearchReadyOmniboxDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kSearchReadyOmniboxFeature)},
+    {"enable-bookmark-reorder", flag_descriptions::kReorderBookmarksName,
+     flag_descriptions::kReorderBookmarksDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kReorderBookmarks)},
 #endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,

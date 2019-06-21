@@ -935,6 +935,9 @@ extern const char kRewriteLevelDBOnDeletionDescription[];
 extern const char kRendererSideResourceSchedulerName[];
 extern const char kRendererSideResourceSchedulerDescription[];
 
+extern const char kReorderBookmarksName[];
+extern const char kReorderBookmarksDescription[];
+
 extern const char kRequestTabletSiteName[];
 extern const char kRequestTabletSiteDescription[];
 
