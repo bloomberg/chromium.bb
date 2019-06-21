@@ -100,7 +100,7 @@ class WebViewProxy final : public WebView
 
     void setSecurityToken(v8::Isolate *isolate,
                           v8::Local<v8::Value> token) override;
-    String printToPDF(const StringRef& propertyName) override;
+    String printToPDF() override;
 
     DISALLOW_COPY_AND_ASSIGN(WebViewProxy);
 
