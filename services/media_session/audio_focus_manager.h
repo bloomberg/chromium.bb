@@ -31,6 +31,7 @@ class MockMediaSession;
 
 class AudioFocusRequest;
 class MediaController;
+class MediaPowerDelegate;
 
 struct EnforcementState {
   bool should_duck = false;
@@ -148,6 +149,9 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // A stack of Mojo interface pointers and their requested audio focus type.
   // A MediaSession must abandon audio focus before its destruction.
   std::list<std::unique_ptr<AudioFocusRequest>> audio_focus_stack_;
+
+  // Controls media playback when device power events occur.
+  std::unique_ptr<MediaPowerDelegate> power_delegate_;
 
   mojom::EnforcementMode enforcement_mode_;
 
