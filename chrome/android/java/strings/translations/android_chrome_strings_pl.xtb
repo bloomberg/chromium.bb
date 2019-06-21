@@ -50,7 +50,6 @@ Zanim pozwolisz stronie na dostęp, upewnij się, że możesz jej zaufać.</tran
 <translation id="1260236875608242557">Szukaj i przeglądaj</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
-<translation id="1272444412400969138">Selektor urządzenia, któremu udostępniasz kartę.</translation>
 <translation id="1283039547216852943">Kliknij, by rozwinąć</translation>
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="1291207594882862231">Wyczyść historię, pliki cookie, dane witryn, pamięć podręczną…</translation>
@@ -413,7 +412,6 @@ Zanim pozwolisz stronie na dostęp, upewnij się, że możesz jej zaufać.</tran
 <translation id="4008040567710660924">Zezwalaj na pliki cookie z określonej strony internetowej.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# godzina}few{# godziny}many{# godzin}other{# godziny}}</translation>
 <translation id="4042870126885713738">Pokazuj podpowiedzi, gdy nie można znaleźć adresu internetowego lub nawiązać połączenia</translation>
-<translation id="4044912625106523635">Selektor urządzenia, któremu udostępniasz kartę, jest otwarty na pełną wysokość.</translation>
 <translation id="4046123991198612571">Następny utwór</translation>
 <translation id="4048707525896921369">Poznaj tematy w witrynach bez opuszczania strony. Funkcja Kliknij, by wyszukać kopiuje słowo wraz z kontekstem i wkleja je w wyszukiwarce Google. Dzięki temu otrzymujesz definicje, grafiki, wyniki wyszukiwania i inne informacje.
 
@@ -752,7 +750,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6406506848690869874">Synchronizacja</translation>
 <translation id="641643625718530986">Drukuj…</translation>
 <translation id="6416782512398055893">Pobrano <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Selektor urządzenia, któremu udostępniasz kartę, jest zamknięty.</translation>
 <translation id="6427112570124116297">Tłumacz internet</translation>
 <translation id="6433501201775827830">Wybierz wyszukiwarkę</translation>
 <translation id="6437478888915024427">Informacje o stronie</translation>
@@ -793,7 +790,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="666268767214822976">Gdy piszesz na pasku adresu, korzystaj z podpowiedzi, by wyświetlać podobne zapytania i adresy popularnych stron</translation>
 <translation id="666731172850799929">Otwórz w <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Informacje na temat ochrony prywatności w Chrome</translation>
-<translation id="6672986458216094438">Selektor urządzenia, któremu udostępniasz kartę, jest otwarty na pół wysokości.</translation>
 <translation id="6697492270171225480">Gdy nie można odnaleźć strony, pokazuj sugestie podobnych stron</translation>
 <translation id="6697947395630195233">Chrome musi mieć dostęp do Twojej lokalizacji, by udostępnić ją tej stronie.</translation>
 <translation id="6698801883190606802">Zarządzaj synchronizowanymi danymi</translation>

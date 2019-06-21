@@ -50,7 +50,6 @@ Enne juurdepääsu andmist veenduge, et usaldaksite seda saiti.</translation>
 <translation id="1260236875608242557">Otsimine ja avastamine</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Peata</translation>
-<translation id="1272444412400969138">Seadmevalija, millega vahelehte jagatakse.</translation>
 <translation id="1283039547216852943">Laiendamiseks puudutage</translation>
 <translation id="1285320974508926690">Ära kunagi seda saiti tõlgi</translation>
 <translation id="1291207594882862231">Ajaloo, küpsiste, saidiandmete, vahemälu kustutamine …</translation>
@@ -413,7 +412,6 @@ Enne juurdepääsu andmist veenduge, et usaldaksite seda saiti.</translation>
 <translation id="4008040567710660924">Lubage konkreetse saidi küpsisefailid.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Soovituste näitamine, kui veebiaadressi ei saa lahendada või ühendust ei õnnestu luua</translation>
-<translation id="4044912625106523635">Seadmevalija, millega vahelehte jagatakse, on avatud täiskõrgusega.</translation>
 <translation id="4046123991198612571">Järgmine lugu</translation>
 <translation id="4048707525896921369">Vaadake veebisaidil olevaid teemasid lehelt lahkumata. Funktsioon Puuduta otsimiseks saadab sõna ja seda ümbritseva konteksti Google'i otsingusse, andes vastuseks definitsioonid, pildid, otsingutulemused ja muud üksikasjad.
 
@@ -752,7 +750,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6406506848690869874">Sünkroonimine</translation>
 <translation id="641643625718530986">Printimine ...</translation>
 <translation id="6416782512398055893">Alla on laaditud <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Seadmevalija, millega vahelehte jagatakse, on suletud.</translation>
 <translation id="6427112570124116297">Veebi tõlkimine</translation>
 <translation id="6433501201775827830">Valige oma otsingumootor</translation>
 <translation id="6437478888915024427">Lehe teave</translation>
@@ -793,7 +790,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="666268767214822976">Aadressiribale teksti sisestamisel ennustusteenuse abil seotud päringute ja populaarsete veebisaitide kuvamine</translation>
 <translation id="666731172850799929">Ava rakenduses <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome'i privaatsusteatis</translation>
-<translation id="6672986458216094438">Seadmevalija, millega vahelehte jagatakse, on avatud poole kõrgusega.</translation>
 <translation id="6697492270171225480">Kui lehte ei leita, kuvatakse sarnaste lehtede soovitusi</translation>
 <translation id="6697947395630195233">Chrome vajab juurdepääsu teie asukohale, et seda selle saidiga jagada.</translation>
 <translation id="6698801883190606802">Sünkroonitud andmete haldamine</translation>
