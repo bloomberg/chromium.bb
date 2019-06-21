@@ -518,7 +518,7 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
                          3, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED, 0,
+                         quic::QUIC_STREAM_CANCELLED,
                          /*include_stop_sending_if_v99=*/false));
     // After the STREAMS_BLOCKED is sent, receive a MAX_STREAMS to increase
     // the limit to 53.
@@ -657,7 +657,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
                          3, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED, 0,
+                         quic::QUIC_STREAM_CANCELLED,
                          /*include_stop_sending_if_v99=*/false));
   } else {
     quic_data.AddWrite(

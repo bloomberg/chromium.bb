@@ -466,14 +466,13 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
       RequestPriority request_priority,
       quic::QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
-      quic::QuicRstStreamErrorCode error_code,
-      size_t bytes_written) {
+      quic::QuicRstStreamErrorCode error_code) {
     spdy::SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
     return client_maker_.MakeRequestHeadersAndRstPacket(
         packet_number, stream_id, should_include_version, fin, priority,
         std::move(request_headers_), parent_stream_id,
-        spdy_headers_frame_length, error_code, bytes_written);
+        spdy_headers_frame_length, error_code);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructRequestHeadersPacket(
@@ -2373,7 +2372,7 @@ TEST_P(QuicHttpStreamTest, DataReadErrorSynchronous) {
   AddWrite(ConstructRequestAndRstPacket(
       2, GetNthClientInitiatedBidirectionalStreamId(0), kIncludeVersion, !kFin,
       DEFAULT_PRIORITY, 0, &spdy_request_headers_frame_length,
-      quic::QUIC_ERROR_PROCESSING_STREAM, 0));
+      quic::QUIC_ERROR_PROCESSING_STREAM));
 
   Initialize();
 
