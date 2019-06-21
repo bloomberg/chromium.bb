@@ -115,7 +115,6 @@ class CORE_EXPORT WebLocalFrameImpl final
                                              const WebScriptSource&) override;
   void ClearIsolatedWorldCSPForTesting(int world_id) override;
   void SetIsolatedWorldInfo(int world_id, const WebIsolatedWorldInfo&) override;
-  void AddMessageToConsole(const WebConsoleMessage&) override;
   void Alert(const WebString& message) override;
   bool Confirm(const WebString& message) override;
   WebString Prompt(const WebString& message,
@@ -312,6 +311,8 @@ class CORE_EXPORT WebLocalFrameImpl final
       TransferableMessage message,
       const WebSecurityOrigin& source_origin,
       const base::Optional<WebSecurityOrigin>& target_origin) override;
+  void AddMessageToConsoleImpl(const WebConsoleMessage&,
+                               bool discard_duplicates) override;
 
   // WebNavigationControl methods:
   bool DispatchBeforeUnloadEvent(bool) override;

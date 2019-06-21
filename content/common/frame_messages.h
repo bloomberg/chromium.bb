@@ -845,9 +845,10 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DidStartLoading)
 IPC_MESSAGE_ROUTED0(FrameMsg_DidStopLoading)
 
 // Add message to the frame console.
-IPC_MESSAGE_ROUTED2(FrameMsg_AddMessageToConsole,
+IPC_MESSAGE_ROUTED3(FrameMsg_AddMessageToConsole,
                     blink::mojom::ConsoleMessageLevel /* level */,
-                    std::string /* message */)
+                    std::string /* message */,
+                    bool /* discard_duplicates */)
 
 // Tells the renderer to reload the frame, optionally bypassing the cache while
 // doing so.
