@@ -1389,9 +1389,9 @@ v8::MaybeLocal<v8::Value> RenderWebView::callFunction(
 }
 
 #if defined(BLPWTK2_FEATURE_PRINTPDF)
-String RenderWebView::printToPDF(const StringRef& propertyName)
+String RenderWebView::printToPDF()
 {
-    return d_proxy->printToPDF(propertyName);
+    return d_proxy->printToPDF();
 }
 #endif
 
