@@ -2513,10 +2513,16 @@ void ChromeContentBrowserClient::OnCookiesRead(
   base::RepeatingCallback<content::WebContents*(void)> wc_getter =
       base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
                           routing_id);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
-                     first_party_url, cookie_list, blocked_by_policy));
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    // Internal calls from AllowGetCookie are on IO thread, so need to jump.
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
+                       first_party_url, cookie_list, blocked_by_policy));
+  } else {
+    TabSpecificContentSettings::CookiesRead(wc_getter, url, first_party_url,
+                                            cookie_list, blocked_by_policy);
+  }
 }
 
 void ChromeContentBrowserClient::OnCookieChange(
@@ -2529,10 +2535,16 @@ void ChromeContentBrowserClient::OnCookieChange(
   base::RepeatingCallback<content::WebContents*(void)> wc_getter =
       base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
                           routing_id);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&TabSpecificContentSettings::CookieChanged, wc_getter, url,
-                     first_party_url, cookie, blocked_by_policy));
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    // Internal calls from AllowSetCookie are on IO thread, so need to jump.
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&TabSpecificContentSettings::CookieChanged, wc_getter,
+                       url, first_party_url, cookie, blocked_by_policy));
+  } else {
+    TabSpecificContentSettings::CookieChanged(wc_getter, url, first_party_url,
+                                              cookie, blocked_by_policy);
+  }
 }
 
 void ChromeContentBrowserClient::AllowWorkerFileSystem(
