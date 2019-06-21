@@ -42,16 +42,17 @@ class TextPaintTimingDetectorTest
 
   LocalFrameView& GetChildFrameView() { return *ChildFrame().View(); }
 
-  unsigned CountVisibleTexts() {
-    if (!GetPaintTimingDetector().GetTextPaintTimingDetector())
-      return 0u;
+  TextPaintTimingDetector* GetTextPaintTimingDetector() {
+    return GetPaintTimingDetector().GetTextPaintTimingDetector();
+  }
 
-    return GetPaintTimingDetector()
-        .GetTextPaintTimingDetector()
+  wtf_size_t CountVisibleTexts() {
+    DCHECK(GetTextPaintTimingDetector());
+    return GetTextPaintTimingDetector()
         ->records_manager_.visible_node_map_.size();
   }
 
-  unsigned CountRankingSetSize() {
+  wtf_size_t CountRankingSetSize() {
     return GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
         ->records_manager_.size_ordered_set_.size();
@@ -118,14 +119,14 @@ class TextPaintTimingDetectorTest
     return div;
   }
 
-  TextRecord* TextRecordOfLargestTextPaint() {
+  base::WeakPtr<TextRecord> TextRecordOfLargestTextPaint() {
     return GetFrameView()
         .GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
         ->FindLargestPaintCandidate();
   }
 
-  TextRecord* ChildFrameTextRecordOfLargestTextPaint() {
+  base::WeakPtr<TextRecord> ChildFrameTextRecordOfLargestTextPaint() {
     return GetChildFrameView()
         .GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
@@ -282,19 +283,19 @@ TEST_F(TextPaintTimingDetectorTest, VisitSameNodeTwiceBeforePaintTimeIsSet) {
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportFirstPaintTime) {
   base::TimeTicks start_time = NowTicks();
-  AdvanceClock(base::TimeDelta::FromSecondsD(1));
+  AdvanceClock(TimeDelta::FromSecondsD(1));
   SetBodyInnerHTML(R"HTML(
   )HTML");
   Element* text = AppendDivElementToBody("text");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  AdvanceClock(base::TimeDelta::FromSecondsD(1));
+  AdvanceClock(TimeDelta::FromSecondsD(1));
   text->setAttribute(html_names::kStyleAttr,
                      AtomicString("position:fixed;left:30px"));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  AdvanceClock(base::TimeDelta::FromSecondsD(1));
-  TextRecord* record = TextRecordOfLargestTextPaint();
+  AdvanceClock(TimeDelta::FromSecondsD(1));
+  base::WeakPtr<TextRecord> record = TextRecordOfLargestTextPaint();
   EXPECT_TRUE(record);
-  EXPECT_EQ(record->paint_time, start_time + base::TimeDelta::FromSecondsD(1));
+  EXPECT_EQ(record->paint_time, start_time + TimeDelta::FromSecondsD(1));
 }
 
 TEST_F(TextPaintTimingDetectorTest,
@@ -438,11 +439,7 @@ TEST_F(TextPaintTimingDetectorTest, StopRecordingOverNodeLimit) {
   AppendDivElementToBody(WTF::String::Number(5000));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   // Reached limit, so stopped recording and now should have 0 texts.
-  EXPECT_EQ(CountVisibleTexts(), 0u);
-
-  AppendDivElementToBody(WTF::String::Number(5001));
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(CountVisibleTexts(), 0u);
+  EXPECT_FALSE(GetTextPaintTimingDetector());
 }
 
 // This is for comparison with the ClippedByViewport test.
@@ -522,7 +519,7 @@ TEST_F(TextPaintTimingDetectorTest, Iframe) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(CountPendingSwapTime(GetChildFrameView()), 1u);
   ChildFrameSwapTimeCallBack();
-  TextRecord* text = ChildFrameTextRecordOfLargestTextPaint();
+  base::WeakPtr<TextRecord> text = ChildFrameTextRecordOfLargestTextPaint();
   EXPECT_TRUE(text);
 }
 
