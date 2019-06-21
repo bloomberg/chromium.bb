@@ -76,6 +76,8 @@ class WebViewClient
 
     virtual void setParent(NativeView parent) = 0;
 
+    virtual void takeKeyboardFocus() = 0;
+
     virtual void find(const std::string& text,
                       bool               matchCase,
                       bool               forward) = 0;
