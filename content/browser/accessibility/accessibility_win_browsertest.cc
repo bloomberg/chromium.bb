@@ -836,7 +836,7 @@ class NativeWinEventWaiter {
   void OnEvent(const std::string& event_str) {
     DLOG(INFO) << "Got event " + event_str;
     if (base::MatchPattern(event_str, match_pattern_))
-      run_loop_.QuitClosure().Run();
+      run_loop_.Quit();
   }
 
   void Wait() { run_loop_.Run(); }
