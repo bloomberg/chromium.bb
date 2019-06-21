@@ -96,8 +96,7 @@ def BuildTargetUnitTest(input_proto, output_proto):
 def ChromiteUnitTest(_input_proto, _output_proto):
   """Run the chromite unit tests."""
   cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts', 'run_tests')]
-  result = cros_build_lib.RunCommand(cmd, error_code_ok=True,
-                                     combine_stdout_stderr=True)
+  result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
   if result.returncode == 0:
     return controller.RETURN_CODE_SUCCESS
   else:
