@@ -22,11 +22,37 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
-  serialized_pb=_b('\n chromite/api/test_metadata.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x1a\x63hromite/api/sysroot.proto\x1a\x17\x63hromiumos/common.proto\"a\n\x13TestMetadataRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12&\n\x07sysroot\x18\x02 \x01(\x0b\x32\x15.chromite.api.Sysroot\"L\n\x14TestMetadataResponse\x12\x34\n\x08\x61utotest\x18\x01 \x01(\x0b\x32\".chromite.api.AutotestTestMetadata\"n\n\x14\x41utotestTestMetadata\x12+\n\x06suites\x18\x01 \x03(\x0b\x32\x1b.chromite.api.AutotestSuite\x12)\n\x05tests\x18\x02 \x03(\x0b\x32\x1a.chromite.api.AutotestTest\"\xd8\x01\n\rAutotestSuite\x12\x0c\n\x04name\x18\x01 \x01(\t\x12@\n\x12\x63hild_dependencies\x18\x02 \x03(\x0b\x32$.chromite.api.AutotestTaskDependency\x12\x1e\n\x16\x63hild_task_timeout_sec\x18\x03 \x01(\x05\x12\x38\n\x05tests\x18\x04 \x03(\x0b\x32).chromite.api.AutotestSuite.TestReference\x1a\x1d\n\rTestReference\x12\x0c\n\x04name\x18\x01 \x01(\t\"\xb4\x01\n\x0c\x41utotestTest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12:\n\x0c\x64\x65pendencies\x18\x02 \x03(\x0b\x32$.chromite.api.AutotestTaskDependency\x12\x15\n\rallow_retries\x18\x03 \x01(\x08\x12\x13\n\x0bmax_retries\x18\x04 \x01(\x05\x12\x1b\n\x13needs_multiple_duts\x18\x05 \x01(\x08\x12\x11\n\tdut_count\x18\x06 \x01(\x05\"\'\n\x16\x41utotestTaskDependency\x12\r\n\x05label\x18\x01 \x01(\t2z\n\x13TestMetadataService\x12L\n\x03Get\x12!.chromite.api.TestMetadataRequest\x1a\".chromite.api.TestMetadataResponse\x1a\x15\xc2\xed\x1a\x11\n\rtest_metadata\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
+  serialized_pb=_b('\n chromite/api/test_metadata.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x1a\x63hromite/api/sysroot.proto\x1a\x17\x63hromiumos/common.proto\"a\n\x13TestMetadataRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12&\n\x07sysroot\x18\x02 \x01(\x0b\x32\x15.chromite.api.Sysroot\"L\n\x14TestMetadataResponse\x12\x34\n\x08\x61utotest\x18\x01 \x01(\x0b\x32\".chromite.api.AutotestTestMetadata\"n\n\x14\x41utotestTestMetadata\x12+\n\x06suites\x18\x01 \x03(\x0b\x32\x1b.chromite.api.AutotestSuite\x12)\n\x05tests\x18\x02 \x03(\x0b\x32\x1a.chromite.api.AutotestTest\"\xd8\x01\n\rAutotestSuite\x12\x0c\n\x04name\x18\x01 \x01(\t\x12@\n\x12\x63hild_dependencies\x18\x02 \x03(\x0b\x32$.chromite.api.AutotestTaskDependency\x12\x1e\n\x16\x63hild_task_timeout_sec\x18\x03 \x01(\x05\x12\x38\n\x05tests\x18\x04 \x03(\x0b\x32).chromite.api.AutotestSuite.TestReference\x1a\x1d\n\rTestReference\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x88\x03\n\x0c\x41utotestTest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12:\n\x0c\x64\x65pendencies\x18\x02 \x03(\x0b\x32$.chromite.api.AutotestTaskDependency\x12\x15\n\rallow_retries\x18\x03 \x01(\x08\x12\x13\n\x0bmax_retries\x18\x04 \x01(\x05\x12\x1b\n\x13needs_multiple_duts\x18\x05 \x01(\x08\x12\x11\n\tdut_count\x18\x06 \x01(\x05\x12N\n\x15\x65xecution_environment\x18\x07 \x01(\x0e\x32/.chromite.api.AutotestTest.ExecutionEnvironment\"\x81\x01\n\x14\x45xecutionEnvironment\x12%\n!EXECUTION_ENVIRONMENT_UNSPECIFIED\x10\x00\x12 \n\x1c\x45XECUTION_ENVIRONMENT_CLIENT\x10\x01\x12 \n\x1c\x45XECUTION_ENVIRONMENT_SERVER\x10\x02\"\'\n\x16\x41utotestTaskDependency\x12\r\n\x05label\x18\x01 \x01(\t2z\n\x13TestMetadataService\x12L\n\x03Get\x12!.chromite.api.TestMetadataRequest\x1a\".chromite.api.TestMetadataResponse\x1a\x15\xc2\xed\x1a\x11\n\rtest_metadata\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromite_dot_api_dot_sysroot__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
 
+
+_AUTOTESTTEST_EXECUTIONENVIRONMENT = _descriptor.EnumDescriptor(
+  name='ExecutionEnvironment',
+  full_name='chromite.api.AutotestTest.ExecutionEnvironment',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='EXECUTION_ENVIRONMENT_UNSPECIFIED', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='EXECUTION_ENVIRONMENT_CLIENT', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='EXECUTION_ENVIRONMENT_SERVER', index=2, number=2,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=905,
+  serialized_end=1034,
+)
+_sym_db.RegisterEnumDescriptor(_AUTOTESTTEST_EXECUTIONENVIRONMENT)
 
 
 _TESTMETADATAREQUEST = _descriptor.Descriptor(
@@ -267,11 +293,19 @@ _AUTOTESTTEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='execution_environment', full_name='chromite.api.AutotestTest.execution_environment', index=6,
+      number=7, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
+    _AUTOTESTTEST_EXECUTIONENVIRONMENT,
   ],
   serialized_options=None,
   is_extendable=False,
@@ -280,7 +314,7 @@ _AUTOTESTTEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=642,
-  serialized_end=822,
+  serialized_end=1034,
 )
 
 
@@ -310,8 +344,8 @@ _AUTOTESTTASKDEPENDENCY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=824,
-  serialized_end=863,
+  serialized_start=1036,
+  serialized_end=1075,
 )
 
 _TESTMETADATAREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
@@ -323,6 +357,8 @@ _AUTOTESTSUITE_TESTREFERENCE.containing_type = _AUTOTESTSUITE
 _AUTOTESTSUITE.fields_by_name['child_dependencies'].message_type = _AUTOTESTTASKDEPENDENCY
 _AUTOTESTSUITE.fields_by_name['tests'].message_type = _AUTOTESTSUITE_TESTREFERENCE
 _AUTOTESTTEST.fields_by_name['dependencies'].message_type = _AUTOTESTTASKDEPENDENCY
+_AUTOTESTTEST.fields_by_name['execution_environment'].enum_type = _AUTOTESTTEST_EXECUTIONENVIRONMENT
+_AUTOTESTTEST_EXECUTIONENVIRONMENT.containing_type = _AUTOTESTTEST
 DESCRIPTOR.message_types_by_name['TestMetadataRequest'] = _TESTMETADATAREQUEST
 DESCRIPTOR.message_types_by_name['TestMetadataResponse'] = _TESTMETADATARESPONSE
 DESCRIPTOR.message_types_by_name['AutotestTestMetadata'] = _AUTOTESTTESTMETADATA
@@ -390,8 +426,8 @@ _TESTMETADATASERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\021\n\rtest_metadata\020\001'),
-  serialized_start=865,
-  serialized_end=987,
+  serialized_start=1077,
+  serialized_end=1199,
   methods=[
   _descriptor.MethodDescriptor(
     name='Get',

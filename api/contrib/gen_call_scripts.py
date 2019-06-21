@@ -21,10 +21,10 @@ import os
 import re
 import shutil
 
+from chromite.api import router as router_lib
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
-from chromite.scripts import build_api
 
 _SCRIPT_TEMPLATE_FILE = os.path.join(os.path.dirname(__file__),
                                      'call_templates', 'script_template')
@@ -50,9 +50,7 @@ def _get_services():
   Returns:
     dict
   """
-  router = build_api.Router()
-  build_api.RegisterServices(router)
-
+  router = router_lib.GetRouter()
   return router.ListMethods()
 
 
