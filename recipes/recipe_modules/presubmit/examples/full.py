@@ -4,6 +4,7 @@
 
 DEPS = [
   'presubmit',
+  'recipe_engine/json'
 ]
 
 
@@ -12,4 +13,7 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic')
+  yield (
+    api.test('basic') +
+    api.step_data('presubmit', api.json.output({}))
+  )

@@ -1,5 +1,6 @@
 DEPS = [
   'depot_tools',
+  'recipe_engine/json',
   'recipe_engine/context',
   'recipe_engine/path',
   'recipe_engine/python',
