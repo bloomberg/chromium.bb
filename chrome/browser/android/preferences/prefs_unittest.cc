@@ -65,6 +65,8 @@ TEST_F(PrefsTest, TestIndex) {
   EXPECT_EQ(
       offline_pages::prefetch_prefs::kContentSuggestionsNotificationsEnabled,
       GetPrefName(CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED));
+  EXPECT_EQ(prefs::kSafeBrowsingExtendedReportingOptInAllowed,
+            GetPrefName(SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);
