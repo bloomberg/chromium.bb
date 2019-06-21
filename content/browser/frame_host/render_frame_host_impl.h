@@ -18,6 +18,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/id_map.h"
 #include "base/gtest_prod_util.h"
@@ -58,6 +59,7 @@
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/http/http_response_headers.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -943,6 +945,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::ConsoleMessageLevel level,
       const std::string& message);
 
+  // Add cookie SameSite deprecation messages to the DevTools console.
+  // TODO(crbug.com/977040): Remove when no longer needed.
+  void AddSameSiteCookieDeprecationMessage(
+      const std::string& cookie_url,
+      net::CanonicalCookie::CookieInclusionStatus status);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1640,6 +1648,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                const std::string& message,
                                bool discard_duplicates);
 
+  // Returns whether a cookie SameSite deprecation message should be sent for
+  // the given cookie url.
+  // TODO(crbug.com/977040): Remove when no longer needed.
+  bool ShouldAddCookieSameSiteDeprecationMessage(
+      const std::string& cookie_url,
+      base::circular_deque<size_t>* already_seen_url_hashes);
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
@@ -2134,6 +2149,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // They will be passed to the next navigation.
   scoped_refptr<PrefetchedSignedExchangeCache>
       prefetched_signed_exchange_cache_;
+
+  // Hold onto hashes of the last |kMaxCookieSameSiteDeprecationUrls| cookie
+  // URLs that we have seen since the last committed navigation, in order to
+  // partially deduplicate the corresponding cookie SameSite deprecation
+  // messages.
+  // TODO(crbug.com/977040): Remove when no longer needed.
+  base::circular_deque<size_t> cookie_no_samesite_deprecation_url_hashes_;
+  base::circular_deque<size_t>
+      cookie_samesite_none_insecure_deprecation_url_hashes_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

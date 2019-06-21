@@ -461,6 +461,9 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CloneFactoryBundle(
       bundle->Clone().release()));
 }
 
+// TODO(crbug.com/977040): Remove when no longer needed.
+const uint32_t kMaxCookieSameSiteDeprecationUrls = 20;
+
 }  // namespace
 
 class RenderFrameHostImpl::DroppedInterfaceRequestLogger
@@ -6577,8 +6580,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
                                               std::move(navigation_request),
                                               is_same_document_navigation);
 
-  if (!is_same_document_navigation)
+  if (!is_same_document_navigation) {
     scheduler_tracked_features_ = 0;
+    cookie_no_samesite_deprecation_url_hashes_.clear();
+    cookie_samesite_none_insecure_deprecation_url_hashes_.clear();
+  }
 
   return true;
 }
@@ -7025,6 +7031,69 @@ void RenderFrameHostImpl::AddMessageToConsoleImpl(
     bool discard_duplicates) {
   Send(new FrameMsg_AddMessageToConsole(routing_id_, level, message,
                                         discard_duplicates));
+}
+
+void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
+    const std::string& cookie_url,
+    net::CanonicalCookie::CookieInclusionStatus status) {
+  std::string deprecation_message;
+  if (status == net::CanonicalCookie::CookieInclusionStatus::
+                    EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
+    if (!ShouldAddCookieSameSiteDeprecationMessage(
+            cookie_url, &cookie_no_samesite_deprecation_url_hashes_)) {
+      return;
+    }
+    deprecation_message =
+        "[Deprecation] A cookie associated with a cross-site resource at " +
+        cookie_url +
+        " was set without the `SameSite` attribute. "
+        "A future release of Chrome will only deliver cookies with "
+        "cross-site requests if they are set with `SameSite=None`. You "
+        "can review cookies in developer tools under "
+        "Application>Storage>Cookies and see more details at "
+        "https://www.chromestatus.com/feature/5088147346030592.";
+  }
+  if (status == net::CanonicalCookie::CookieInclusionStatus::
+                    EXCLUDE_SAMESITE_NONE_INSECURE) {
+    if (!ShouldAddCookieSameSiteDeprecationMessage(
+            cookie_url,
+            &cookie_samesite_none_insecure_deprecation_url_hashes_)) {
+      return;
+    }
+    deprecation_message =
+        "[Deprecation] A cookie associated with a resource at " + cookie_url +
+        " was set with `SameSite=None` but without `Secure`. "
+        "A future release of Chrome will only deliver cookies marked "
+        "`SameSite=None` if they are also marked `Secure`. You "
+        "can review cookies in developer tools under "
+        "Application>Storage>Cookies and see more details at "
+        "https://www.chromestatus.com/feature/5633521622188032.";
+  }
+
+  if (deprecation_message.empty())
+    return;
+
+  AddUniqueMessageToConsole(blink::mojom::ConsoleMessageLevel::kWarning,
+                            deprecation_message);
+}
+
+bool RenderFrameHostImpl::ShouldAddCookieSameSiteDeprecationMessage(
+    const std::string& cookie_url,
+    base::circular_deque<size_t>* already_seen_url_hashes) {
+  DCHECK_LE(already_seen_url_hashes->size(), kMaxCookieSameSiteDeprecationUrls);
+  size_t cookie_url_hash = base::FastHash(cookie_url);
+  if (std::find(already_seen_url_hashes->begin(),
+                already_seen_url_hashes->end(),
+                cookie_url_hash) != already_seen_url_hashes->end()) {
+    return false;
+  }
+
+  // Put most recent ones at the front because we are likely to have multiple
+  // consecutive cookies with the same URL.
+  if (already_seen_url_hashes->size() == kMaxCookieSameSiteDeprecationUrls)
+    already_seen_url_hashes->pop_back();
+  already_seen_url_hashes->push_front(cookie_url_hash);
+  return true;
 }
 
 }  // namespace content
