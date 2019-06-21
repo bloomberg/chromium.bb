@@ -47,9 +47,12 @@ class TemporaryScriptWrappableVisitorScope {
     if (current)
       ScriptWrappableMarkingVisitor::PerformCleanup(isolate_);
 
-    V8PerIsolateData::From(isolate_)->SwapScriptWrappableMarkingVisitor(
-        saved_controller_);
-    isolate_->SetEmbedderHeapTracer(CurrentVisitor());
+    auto* data = V8PerIsolateData::From(isolate_);
+    data->SwapScriptWrappableMarkingVisitor(saved_controller_);
+
+    data->isolate_holder_.heap_tracer()->RemoveHeapTracer(gin::kEmbedderBlink);
+    data->isolate_holder_.heap_tracer()->AddHeapTracer(CurrentVisitor(),
+                                                       gin::kEmbedderBlink);
   }
 
   v8::Isolate* const isolate_;
