@@ -56,6 +56,18 @@ def ParseManifest(path):
   return doc, manifest_node, app_node
 
 
+def MakeElement(name, attributes=None):
+  _RegisterElementTreeNamespaces()
+  element = ElementTree.Element(name)
+  if attributes:
+    for attribute_name, attribute_val in attributes:
+      if attribute_name.startswith('android:'):
+        attribute_name = '{%s}%s' % (
+            ANDROID_NAMESPACE, attribute_name[attribute_name.find(':') + 1:])
+      element.set(attribute_name, attribute_val)
+  return element
+
+
 def SaveManifest(doc, path):
   with build_utils.AtomicOutput(path) as f:
     f.write(ElementTree.tostring(doc.getroot(), encoding='UTF-8'))
@@ -65,27 +77,9 @@ def GetPackage(manifest_node):
   return manifest_node.get('package')
 
 
-def AssertUsesSdk(manifest_node,
-                  min_sdk_version,
-                  target_sdk_version=None,
-                  max_sdk_version=None):
-  """Asserts values of attributes of <uses-sdk> element.
-
-  Will only assert if both the passed value is not None and the value of
-  attribute exist.
-  """
-  uses_sdk_node = manifest_node.find('./uses-sdk')
-  if uses_sdk_node is None:
-    return
-  for prefix, sdk_version in (('min', min_sdk_version), ('target',
-                                                         target_sdk_version),
-                              ('max', max_sdk_version)):
-    value = uses_sdk_node.get('{%s}%sSdkVersion' % (ANDROID_NAMESPACE, prefix))
-    if not value or not sdk_version:
-      continue
-    assert value == sdk_version, (
-        '%sSdkVersion in Android manifest is %s but we expect %s' %
-        (prefix, value, sdk_version))
+def AssertNoUsesSdk(manifest_node):
+  """Asserts that manifest has no <uses-sdk> element."""
+  assert manifest_node.find('./uses-sdk') is None, 'Must define uses-sdk in GN'
 
 
 def _SortAndStripElementTree(tree, reverse_toplevel=False):

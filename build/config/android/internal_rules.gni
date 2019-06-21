@@ -810,10 +810,6 @@ if (enable_java_templates) {
   android_default_aapt_path = "$android_sdk_build_tools/aapt"
 
   template("android_lint") {
-    _min_sdk_version = 19
-    if (defined(invoker.min_sdk_version)) {
-      _min_sdk_version = invoker.min_sdk_version
-    }
     action_with_pydeps(target_name) {
       forward_variables_from(invoker,
                              [
@@ -873,7 +869,6 @@ if (enable_java_templates) {
         "--result-path",
         rebase_path(_result_path, root_build_dir),
         "--include-unexpected-failures",
-        "--min-sdk-version=$_min_sdk_version",
       ]
       if (defined(invoker.android_manifest)) {
         inputs += [ invoker.android_manifest ]
@@ -888,7 +883,10 @@ if (enable_java_templates) {
       }
 
       if (defined(invoker.create_cache) && invoker.create_cache) {
-        args += [ "--silent" ]
+        args += [
+          "--create-cache",
+          "--silent",
+        ]
       } else {
         inputs += invoker.java_files
         inputs += [ invoker.build_config ]
@@ -912,6 +910,10 @@ if (enable_java_templates) {
             "--resource-sources=@FileArg($_rebased_build_config:deps_info:owned_resources_zips)",
           ]
         }
+      }
+
+      if (defined(invoker.min_sdk_version)) {
+        args += [ "--min-sdk-version=${invoker.min_sdk_version}" ]
       }
     }
   }
@@ -1760,6 +1762,12 @@ if (enable_java_templates) {
         "--min-sdk-version=${invoker.min_sdk_version}",
         "--target-sdk-version=${invoker.target_sdk_version}",
       ]
+
+      # TODO(crbug.com/891996): Only activate for non-Chromium code once
+      # downstream has been updated.
+      if ((defined(invoker.chromium_code) && !invoker.chromium_code) || true) {
+        args += [ "--allow-uses-sdk" ]
+      }
     }
   }
 
