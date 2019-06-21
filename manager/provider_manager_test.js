@@ -655,7 +655,7 @@ describe('Tests ProviderManager', function() {
       providerManager
           .updateMirroring(
               mockProvider1, localRoute, sourceUrn, undefined, callback)
-          .promise.catch(done);
+          .promise.catch(() => done());
     });
   });
 
@@ -947,7 +947,8 @@ describe('Tests ProviderManager', function() {
         expect(routeId).toBe(routeIdToTerminate);
         return Promise.reject(new Error('Some error'));
       });
-      providerManager.terminateRoute(routeIdToTerminate).then(done.fail, done);
+      providerManager.terminateRoute(routeIdToTerminate)
+          .then(done.fail, () => done());
     });
 
     it('and terminates a mirroring route', function(done) {

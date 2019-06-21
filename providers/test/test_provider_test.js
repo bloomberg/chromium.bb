@@ -115,7 +115,7 @@ describe('Tests TestProvider', function() {
           .then(route => {
             expect(route.sinkId).toBe(sinkId);
             provider.joinRoute(sourceUrn, presentationId, false)
-                .then(done.fail, done);
+                .then(done.fail, () => done());
           });
     });
 

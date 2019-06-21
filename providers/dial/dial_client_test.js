@@ -53,7 +53,7 @@ describe('Dial Client Tests', function() {
     const expectLaunchAppFails = function(done) {
       client.launchApp('YouTube', 'v=12345678').then(() => {
         fail('launchApp unexpectedly succeeded.');
-      }, done);
+      }, () => done());
     };
 
     it('Resolves', done => {
@@ -83,7 +83,7 @@ describe('Dial Client Tests', function() {
     const expectStopAppFails = function(done) {
       client.stopApp('YouTube').then(() => {
         fail('stopApp unexpectedly succeeded.');
-      }, done);
+      }, () => done());
     };
 
     it('Resolves', done => {
