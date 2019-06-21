@@ -2260,7 +2260,7 @@ def GenerateBuildConfigs(board, config_useflags):
       cros_build_lib.GetSysroot(board), 'usr', 'share', 'chromeos-config',
       'yaml', 'config.yaml')
 
-  config_fname = path_util.ToChrootPath(config_chroot_path)
+  config_fname = path_util.FromChrootPath(config_chroot_path)
 
   results = {}
   if os.path.exists(config_fname):
