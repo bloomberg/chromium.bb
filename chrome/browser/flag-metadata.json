@@ -2861,6 +2861,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "terminal-system-app",
+    "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/crostini/OWNERS" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "treat-unsafe-downloads-as-active-content",
     "owners": [ "jdeblasio", "cthomp" ],
     "expiry_milestone": 79

@@ -1986,6 +1986,11 @@ extern const char kWakeOnPacketsDescription[];
 
 #endif  // #if defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+extern const char kTerminalSystemAppName[];
+extern const char kTerminalSystemAppDescription[];
+#endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
+
 // All views-based platforms --------------------------------------------------
 
 #if defined(TOOLKIT_VIEWS)

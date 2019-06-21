@@ -3312,6 +3312,13 @@ const char kWakeOnPacketsDescription[] =
 
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+const char kTerminalSystemAppName[] = "Terminal System App";
+const char kTerminalSystemAppDescription[] =
+    "Enables the Terminal System App at chrome://terminal which is used for "
+    "the Chrome OS Linux terminal.";
+#endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
+
 // All views-based platforms --------------------------------------------------
 
 #if defined(TOOLKIT_VIEWS)
