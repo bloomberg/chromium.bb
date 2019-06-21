@@ -37,6 +37,7 @@ extern "C" {
 struct weston_compositor;
 struct weston_log_context;
 struct wl_display;
+struct weston_log_subscriber;
 
 void
 weston_compositor_enable_debug_protocol(struct weston_compositor *);
@@ -89,6 +90,11 @@ weston_log_scope_complete(struct weston_log_scope *scope);
 char *
 weston_log_scope_timestamp(struct weston_log_scope *scope,
 			     char *buf, size_t len);
+
+void
+weston_log_subscribe(struct weston_log_context *log_ctx,
+		     struct weston_log_subscriber *subscriber,
+		     const char *scope_name);
 
 #ifdef  __cplusplus
 }

@@ -107,6 +107,63 @@ struct weston_log_subscription {
 					  weston_log_context::pending_subscription_list */
 };
 
+static struct weston_log_subscription *
+find_pending_subscription(struct weston_log_context *log_ctx,
+			  const char *scope_name)
+{
+	struct weston_log_subscription *sub;
+
+	wl_list_for_each(sub, &log_ctx->pending_subscription_list, source_link)
+		if (!strncmp(sub->scope_name, scope_name, strlen(scope_name)))
+			return sub;
+
+	return NULL;
+}
+
+/** Create a pending subscription and add it the list of pending subscriptions
+ *
+ * @param owner a subscriber represented by weston_log_subscriber object
+ * @param scope_name the name of the scope (which we don't have in the list of scopes)
+ * @param log_ctx the logging context used to add the pending subscription
+ *
+ * @memberof weston_log_subscription
+ */
+static void
+weston_log_subscription_create_pending(struct weston_log_subscriber *owner,
+				       const char *scope_name,
+				       struct weston_log_context *log_ctx)
+{
+	assert(owner);
+	assert(scope_name);
+	struct weston_log_subscription *sub = zalloc(sizeof(*sub));
+
+	if (!sub)
+		return;
+
+	sub->scope_name = strdup(scope_name);
+	sub->owner = owner;
+
+	wl_list_insert(&log_ctx->pending_subscription_list, &sub->source_link);
+}
+
+/** Destroys the pending subscription created previously with
+ * weston_log_subscription_create_pending()
+ *
+ * @param sub the weston_log_subscription object to remove from the list
+ * of subscriptions and to destroy the subscription
+ *
+ * @memberof weston_log_subscription
+ */
+static void
+weston_log_subscription_destroy_pending(struct weston_log_subscription *sub)
+{
+	assert(sub);
+	/* pending subsriptions do not have a source */
+	wl_list_remove(&sub->source_link);
+	free(sub->scope_name);
+	free(sub);
+}
+
 /** Creates a new subscription using the subscriber by \c owner.
  *
  * The subscription created is added to the \c owner subscription list.
@@ -128,8 +185,8 @@ weston_log_subscription_create(struct weston_log_subscriber *owner,
 			       const char *scope_name)
 {
 	struct weston_log_subscription *sub;
-	assert(owner);
 	assert(scope_name);
+	assert(owner);
 
 	sub = zalloc(sizeof(*sub));
 	if (!sub)
@@ -302,6 +359,7 @@ weston_log_ctx_compositor_create(void)
 		return NULL;
 
 	wl_list_init(&log_ctx->scope_list);
+	wl_list_init(&log_ctx->pending_subscription_list);
 
 	return log_ctx;
 }
@@ -318,6 +376,7 @@ weston_log_ctx_compositor_destroy(struct weston_compositor *compositor)
 {
 	struct weston_log_context *log_ctx = compositor->weston_log_ctx;
 	struct weston_log_scope *scope;
+	struct weston_log_subscription *pending_sub, *pending_sub_tmp;
 
 	if (log_ctx->global)
 		wl_global_destroy(log_ctx->global);
@@ -328,6 +387,14 @@ weston_log_ctx_compositor_destroy(struct weston_compositor *compositor)
 
 	/* Remove head to not crash if scope removed later. */
 	wl_list_remove(&log_ctx->scope_list);
+
+	/* Remove any pending subscription(s) which nobody subscribed to */
+	wl_list_for_each_safe(pending_sub, pending_sub_tmp,
+			      &log_ctx->pending_subscription_list, source_link) {
+		weston_log_subscription_destroy_pending(pending_sub);
+	}
+
+	/* pending_subscription_list should be empty at this point */
 
 	free(log_ctx);
 
@@ -380,39 +447,49 @@ weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
 	return wc->weston_log_ctx->global != NULL;
 }
 
-/** Register a new debug stream name, creating a log scope
+/** Register a new stream name, creating a log scope.
  *
- * \param log_ctx The weston_log_context where to add.
- * \param name The debug stream/scope name; must not be NULL.
- * \param description The debug scope description for humans; must not be NULL.
- * \param begin_cb Optional callback when a client subscribes to this scope.
- * \param user_data Optional user data pointer for the callback.
- * \return A valid pointer on success, NULL on failure.
+ * @param log_ctx The weston_log_context where to add.
+ * @param name The debug stream/scope name; must not be NULL.
+ * @param description The log scope description for humans; must not be NULL.
+ * @param begin_cb Optional callback when a client subscribes to this scope.
+ * @param user_data Optional user data pointer for the callback.
+ * @returns A valid pointer on success, NULL on failure.
  *
- * This function is used to create a debug scope. All debug message printing
- * happens for a scope, which allows clients to subscribe to the kind of
- * debug messages they want by \c name.
+ * This function is used to create a log scope. All debug message printing
+ * happens for a scope, which allows clients to subscribe to the kind of debug
+ * messages they want by \c name. For the weston-debug protocol,
+ * subscription for the scope will happen automatically but for other types of
+ * streams, weston_log_subscribe() should be called as to create a subscription
+ * and tie it to the scope created by this function.
  *
- * \c name must be unique in the \c weston_compositor instance. \c name and
- * \c description must both be provided. The description is printed when a
- * client asks for a list of supported debug scopes.
+ * \p name must be unique in the weston_compositor instance. \p name
+ * and \p description must both be provided. In case of the weston-debug
+ * protocol, the description is printed when a client asks for a list of
+ * supported log scopes.
  *
- * \c begin_cb, if not NULL, is called when a client subscribes to the
- * debug scope creating a debug stream. This is for debug scopes that need
- * to print messages as a response to a client appearing, e.g. printing a
- * list of windows on demand or a static preamble. The argument \c user_data
- * is passed in to the callback and is otherwise unused.
+ * \p begin_cb, if not NULL, is called when a client subscribes to the log
+ * scope creating a debug stream. This is for log scopes that need to print
+ * messages as a response to a client appearing, e.g. printing a list of
+ * windows on demand or a static preamble. The argument \p user_data is
+ * passed in to the callback and is otherwise unused.
  *
  * For one-shot debug streams, \c begin_cb should finally call
- * weston_debug_stream_complete() to close the stream and tell the client
- * the printing is complete. Otherwise the client expects more to be written
- * to its file descriptor.
+ * weston_log_scope_complete() to close the stream and tell the client the
+ * printing is complete. Otherwise the client expects more data to be written.
+ * The complete callback in weston_log_subscriber should be installed to
+ * trigger it and it is set-up automatically for the weston-debug protocol.
  *
- * The debug scope must be destroyed before destroying the
- * \c weston_compositor.
+ * As subscription can take place before creating the scope, any pending
+ * subscriptions to scope added by weston_log_subscribe(), will be checked
+ * against the scope being created and if found will be added to the scope's
+ * subscription list.
  *
- * \memberof weston_log_scope
- * \sa weston_debug_stream, weston_log_scope_cb
+ * The log scope must be destroyed using weston_compositor_log_scope_destroy()
+ * before destroying the weston_compositor.
+ *
+ * @memberof weston_log_scope
+ * @sa weston_log_scope_cb, weston_log_subscribe
  */
 WL_EXPORT struct weston_log_scope *
 weston_compositor_add_log_scope(struct weston_log_context *log_ctx,
@@ -422,6 +499,7 @@ weston_compositor_add_log_scope(struct weston_log_context *log_ctx,
 				void *user_data)
 {
 	struct weston_log_scope *scope;
+	struct weston_log_subscription *pending_sub = NULL;
 
 	if (!name || !description) {
 		weston_log("Error: cannot add a debug scope without name or description.\n");
@@ -464,17 +542,31 @@ weston_compositor_add_log_scope(struct weston_log_context *log_ctx,
 
 	wl_list_insert(log_ctx->scope_list.prev, &scope->compositor_link);
 
+	/* check if there are any pending subscriptions to this scope */
+	while ((pending_sub = find_pending_subscription(log_ctx, scope->name)) != NULL) {
+		struct weston_log_subscription *sub =
+			weston_log_subscription_create(pending_sub->owner,
+						       scope->name);
+
+		weston_log_subscription_add(scope, sub);
+		weston_log_run_begin_cb(scope);
+
+		/* remove it from pending */
+		weston_log_subscription_destroy_pending(pending_sub);
+	}
+
+
 	return scope;
 }
 
 /** Destroy a log scope
  *
- * \param scope The log scope to destroy; may be NULL.
+ * @param scope The log scope to destroy; may be NULL.
  *
- * Destroys the log scope, closing all open streams subscribed to it and
- * sending them each a \c weston_debug_stream_v1.failure event.
+ * Destroys the log scope, calling each stream's destroy callback if one was
+ * installed/created.
  *
- * \memberof weston_log_scope
+ * @memberof weston_log_scope
  */
 WL_EXPORT void
 weston_compositor_log_scope_destroy(struct weston_log_scope *scope)
@@ -529,6 +621,18 @@ weston_log_scope_is_enabled(struct weston_log_scope *scope)
 	return !wl_list_empty(&scope->subscription_list);
 }
 
+/** Close the log scope.
+ *
+ * @param scope The log scope to complete; may be NULL.
+ *
+ * Complete the log scope, calling each stream's complete callback if one was
+ * installed/created. This can be useful to signal the reading end that the
+ * data has been transmited and should no longer expect that written over the
+ * stream. Particularly useful for the weston-debug protocol.
+ *
+ * @memberof weston_log_scope
+ * @sa weston_compositor_add_log_scope, weston_compositor_log_scope_destroy
+ */
 WL_EXPORT void
 weston_log_scope_complete(struct weston_log_scope *scope)
 {
@@ -662,4 +766,45 @@ weston_log_scope_timestamp(struct weston_log_scope *scope,
 	}
 
 	return buf;
+}
+
+/** Subscribe to a scope
+ *
+ * Creates a subscription which is used to subscribe the \p subscriber
+ * to the scope \c scope_name.
+ *
+ * If \c scope_name has already been created (using
+ * weston_compositor_add_log_scope) the subscription will take place
+ * immediately, otherwise we store the subscription into a pending list. See
+ * also weston_compositor_add_log_scope().
+ *
+ * @param log_ctx the log context, used for accessing pending list
+ * @param subscriber the subscriber, which has to be created before
+ * @param scope_name the scope name. In case the scope is not created
+ * we temporarily store the subscription in the pending list.
+ */
+WL_EXPORT void
+weston_log_subscribe(struct weston_log_context *log_ctx,
+		     struct weston_log_subscriber *subscriber,
+		     const char *scope_name)
+{
+	assert(log_ctx);
+	assert(subscriber);
+	assert(scope_name);
+
+	struct weston_log_scope *scope;
+	struct weston_log_subscription *sub;
+
+	scope = weston_log_get_scope(log_ctx, scope_name);
+	if (scope) {
+		sub = weston_log_subscription_create(subscriber, scope_name);
+		weston_log_subscription_add(scope, sub);
+		weston_log_run_begin_cb(scope);
+	} else {
+		/*
+		 * if we don't have already as scope for it, add it to pending
+		 * subscription list
+		 */
+		weston_log_subscription_create_pending(subscriber, scope_name, log_ctx);
+	}
 }
