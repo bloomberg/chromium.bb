@@ -33,6 +33,8 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 
 namespace blink {
 
@@ -590,6 +592,22 @@ TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
                 .GetCursor()
                 .GetType(),
             Cursor::Type::kIBeam);  // An I-beam signals editability.
+}
+
+TEST_F(EventHandlerTest, implicitSend) {
+  SetHtmlInnerHTML("<button>abc</button>");
+  GetDocument().GetSettings()->SetSpatialNavigationEnabled(true);
+
+  WebKeyboardEvent e{WebInputEvent::kRawKeyDown, WebInputEvent::kNoModifiers,
+                     WebInputEvent::GetStaticTimeStampForTests()};
+  e.dom_code = static_cast<int>(ui::DomCode::ARROW_DOWN);
+  e.dom_key = ui::DomKey::ARROW_DOWN;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+
+  // TODO(crbug.com/949766) Should cleanup these magic numbers.
+  e.dom_code = 0;
+  e.dom_key = 0x00200310;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
 }
 
 // Regression test for http://crbug.com/641403 to verify we use up-to-date
