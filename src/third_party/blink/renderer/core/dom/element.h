@@ -334,6 +334,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
 
   // patch section: spellcheck
+  void bbRequestSpellCheck();
 
 
 
