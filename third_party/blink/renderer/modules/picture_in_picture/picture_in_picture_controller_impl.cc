@@ -167,6 +167,19 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
     ScriptPromiseResolver* resolver,
     mojom::blink::PictureInPictureSessionPtr session_ptr,
     const WebSize& picture_in_picture_window_size) {
+  // If |session_ptr| is null then Picture-in-Picture is not supported by the
+  // browser. We should rarely see this because we should have already rejected
+  // with |kDisabledBySystem|.
+  if (!session_ptr) {
+    if (resolver) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Picture-in-Picture is not available."));
+    }
+
+    return;
+  }
+
   picture_in_picture_session_ = std::move(session_ptr);
 
   if (IsElementAllowed(*element) != Status::kEnabled) {
