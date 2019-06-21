@@ -920,6 +920,12 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             size, color_params, context_provider_wrapper, resource_dispatcher);
         break;
       case CanvasResourceType::kSharedImage: {
+        if (usage == kAcceleratedDirect2DResourceUsage ||
+            usage == kAcceleratedDirect3DResourceUsage) {
+          // Shared images don't work for single buffered canvas yet.
+          continue;
+        }
+
         // TODO(khushalsagar): Also kAcceleratedDirect2DResourceUsage when we
         // switch it to use shared images.
         const bool is_overlay_candidate =
