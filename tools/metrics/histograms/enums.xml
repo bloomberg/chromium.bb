@@ -20684,6 +20684,7 @@ Called by update_net_error_codes.py.-->
   <int value="20" label="Unknown Request Error">
     Catch-all for unknown request failures.
   </int>
+  <int value="21" label="No SplitCompat">SplitCompat has not been enabled.</int>
 </enum>
 
 <enum name="FeatureObserver">
